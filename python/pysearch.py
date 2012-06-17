@@ -11,20 +11,6 @@ import sys
 from searcher import Searcher
 from searchoptions import SearchOptions
 
-TARFILE_MODULE_AVAILABLE = True
-ZIPFILE_MODULE_AVAILABLE = True
-
-try:
-    import tarfile
-except ImportError, e:
-    print 'tarfile not imported: %s' % e
-    TARFILE_MODULE_AVAILABLE = False
-try:
-    import zipfile
-except ImportError, e:
-    print 'zipfile not imported: %s' % e
-    ZIPFILE_MODULE_AVAILABLE = False
-
 DEBUG = False
 
 def main():
