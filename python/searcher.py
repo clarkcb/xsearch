@@ -9,14 +9,28 @@ from datetime import datetime
 import os
 import re
 
+TARFILE_MODULE_AVAILABLE = True
+ZIPFILE_MODULE_AVAILABLE = True
+
+try:
+    import tarfile
+except ImportError, e:
+    print 'tarfile not imported: %s' % e
+    TARFILE_MODULE_AVAILABLE = False
+try:
+    import zipfile
+except ImportError, e:
+    print 'zipfile not imported: %s' % e
+    ZIPFILE_MODULE_AVAILABLE = False
+
 from fileutil import FileUtil
 from searchresult import SearchResult
 
 class Searcher:
     '''a class to search files'''
 
-    DEFAULT_DIR_FILTER_REGEXES = [re.compile(d) for d in [r'^CVS$',r'^\.svn$']]
-    DEFAULT_FILE_FILTER_REGEXES = [re.compile(f) for f in [r'^\.DS_Store$']]
+    DEFAULT_DIR_FILTER_REGEXES = [re.compile(d) for d in (r'^CVS$', r'^\.git$', r'^\.svn$')]
+    DEFAULT_FILE_FILTER_REGEXES = [re.compile(f) for f in (r'^\.DS_Store$',)]
 
     def __init__(self, searchsettings, **kargs):
         self.fileutil = FileUtil()
@@ -100,6 +114,24 @@ class Searcher:
             self.search_file(f)
         if self.settings.dotiming:
             self.stop_timer('search_files')
+        if self.settings.printresults:
+            print
+            self.print_res_counts()
+
+        if self.settings.listfiles:
+            file_list = self.get_matching_files()
+            if file_list:
+                print '\nFiles with matches:'
+                for f in file_list:
+                    print f
+
+        if self.settings.listlines:
+            line_list = self.get_matching_lines()
+            if line_list:
+                print '\nLines with matches:'
+                for line in line_list:
+                    print line
+
 
     def search_file(self, f):
         '''Search in a file, return number of matches found'''
@@ -382,7 +414,7 @@ class Searcher:
                 print '0 matches for "%s"' % (p)
 
 
-    def get_file_list(self, pattern=None):
+    def get_matching_files(self, pattern=None):
         '''Get list of files with matches for a given pattern (or all patterns if none given)'''
         patterns = []
         if pattern:
@@ -397,7 +429,7 @@ class Searcher:
         return file_list
 
 
-    def get_line_list(self, pattern=None):
+    def get_matching_lines(self, pattern=None):
         '''Get list of lines with matches for a given pattern (or all patterns if none given)'''
         patterns = []
         if pattern:
@@ -410,4 +442,3 @@ class Searcher:
         line_list = list(line_list)
         line_list.sort()
         return line_list
-

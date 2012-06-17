@@ -14,3 +14,10 @@ class SearchOption:
         self.func = func
         self.desc = desc
 
+    @property
+    def sortarg(self):
+        if self.shortarg:
+            return self.shortarg.lower()
+        else:
+            return self.longarg.lower()
+

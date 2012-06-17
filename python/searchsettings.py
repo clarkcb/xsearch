@@ -35,6 +35,8 @@ class SearchSettings:
         self.startpath = None
         self.debug = False
         self.dotiming = False
+        self.printusage = False
+        self.printversion = False
         self.verbose = False
 
     def add_searchpattern(self, pattern, casesensitive=True):
