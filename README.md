@@ -19,7 +19,7 @@ etc.
 
 A main function allows for executing searches from the command line, as long
 as a valid set of search settings-related arguments are included. A typical
-usage string, this one for csharp's CsSearch:
+usage string, this one for the csharp version CsSearch:
 
     Usage:
     CsSearch.exe [options] -s "<searchpattern>" <startdir>
