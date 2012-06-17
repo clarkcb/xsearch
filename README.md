@@ -21,16 +21,16 @@ A main function allows for executing searches from the command line, as long
 as a valid set of search settings-related arguments are included. A typical
 usage string, this one for csharp's CsSearch:
 
-  Usage:
-  CsSearch.exe [options] -s "<searchpattern>" <startdir>
-  Options:
-    -d "<dirname_pattern>"     Pattern for dirnames to include
-    -D "<dirname_pattern>"     Pattern for dirnames to exclude
-    -f "<filename_pattern>"    Pattern for filenames to include
-    -F "<filename_pattern>"    Pattern for filenames to exclude
-    --filelist                 Print list of matching files at end
-    -t                         Time the execution
-    -v                         Set verbose mode
-    -x "<ext1>[,<ext2>]"       Extension(s) for files to include
-    -X "<ext1>[,<ext2>]"       Extension(s) for files to exclude
-  
+    Usage:
+    CsSearch.exe [options] -s "<searchpattern>" <startdir>
+    Options:
+      -d "<dirname_pattern>"     Pattern for dirnames to include
+      -D "<dirname_pattern>"     Pattern for dirnames to exclude
+      -f "<filename_pattern>"    Pattern for filenames to include
+      -F "<filename_pattern>"    Pattern for filenames to exclude
+      --filelist                 Print list of matching files at end
+      -t                         Time the execution
+      -v                         Set verbose mode
+      -x "<ext1>[,<ext2>]"       Extension(s) for files to include
+      -X "<ext1>[,<ext2>]"       Extension(s) for files to exclude
+ 
