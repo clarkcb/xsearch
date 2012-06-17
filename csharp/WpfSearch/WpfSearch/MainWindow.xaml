@@ -1,0 +1,34 @@
+﻿<Window x:Class="WpfSearch.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WpfSearch" Height="600" Width="950" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <Grid>
+        <Grid Height="200" HorizontalAlignment="Left" Margin="2,2,0,0" Name="grdSearchCriteria" VerticalAlignment="Top" Width="924">
+            <Label Content="Enter your search criteria" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" Name="lblEnterCriteria" VerticalAlignment="Top" />
+            <Label Content="Starting directory:" Height="28" HorizontalAlignment="Left" Margin="15,38,0,0" Name="lblStartDir" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="130,42,0,0" Name="tbStartDir" VerticalAlignment="Top" Width="350" />
+            <Button Content="Browse" Height="23" HorizontalAlignment="Left" Margin="500,42,0,0" Name="btnBrowse" VerticalAlignment="Top" Width="75" Click="btnBrowse_Click" />
+            <Label Content="Include extensions:" Height="28" HorizontalAlignment="Left" Margin="10,76,0,0" Name="lblIncludeExt" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="130,80,0,0" Name="tbIncludeExtensions" VerticalAlignment="Top" Width="150" />
+            <Label Content="Exclude extensions:" Height="28" HorizontalAlignment="Left" Margin="315,76,0,0" Name="lblExcludeExt" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="435,80,0,0" Name="tbExcludeExtensions" VerticalAlignment="Top" Width="150" />
+            <Label Content="Include filepattern:" Height="28" HorizontalAlignment="Left" Margin="10,115,0,0" Name="lblIncludeFilenamePattern" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="130,119,0,0" Name="tbIncludeFilePattern" VerticalAlignment="Top" Width="150" />
+            <Label Content="Exclude filepattern:" Height="28" HorizontalAlignment="Left" Margin="315,115,0,0" Name="lblExcludeFilenamePattern" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="435,119,0,0" Name="tbExcludeFilePattern" VerticalAlignment="Top" Width="150" />
+            <Label Content="Search pattern:" Height="28" HorizontalAlignment="Left" Margin="25,150,0,0" Name="lblSearchPattern" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="130,155,0,0" Name="tbSearchPattern" VerticalAlignment="Top" Width="350" />
+            <Button Content="Search" Height="23" HorizontalAlignment="Left" Margin="500,154,0,0" Name="btnSearch" VerticalAlignment="Top" Width="75" Click="btnSearch_Click" />
+        </Grid>
+        <Grid Height="354" HorizontalAlignment="Left" Margin="2,204,2,2" Name="grdSearchResults" VerticalAlignment="Top" Width="924">
+            <DataGrid Name="dgSearchResults" ItemsSource="{Binding}" AutoGenerateColumns="False" Height="342" HorizontalAlignment="Left" Margin="6,6,0,0"
+                      VerticalAlignment="Top" Width="912" CanUserReorderColumns="False" CanUserResizeColumns="True" CanUserResizeRows="False" CanUserSortColumns="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="File"  Binding="{Binding File.Name}"/>
+                    <DataGridTextColumn Header="Line #" Binding="{Binding LineNum}" />
+                    <DataGridTextColumn Header="Line" Binding="{Binding Line}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</Window>
