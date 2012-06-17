@@ -33,4 +33,11 @@ usage string, this one for csharp's CsSearch:
       -v                         Set verbose mode
       -x "<ext1>[,<ext2>]"       Extension(s) for files to include
       -X "<ext1>[,<ext2>]"       Extension(s) for files to exclude
- 
+
+For example, to find lines matching "\bLogin" in csharp files under the
+current directory (recursively) that include "Controller" in the name but are
+not in a directory that includes "temp" in its name, and you want to time the
+execution and generate a list of matching files at the end, you would use a
+command like this:
+
+    CsSearch.exe -x cs -f "Controller" -D "temp" -s "\bLogin" -t --filelist .
