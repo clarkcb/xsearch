@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 ################################################################################
 #
-# com.eLocale.search
+# pysearch.py
 #
-# Class Searcher: search files
+# A file search utility implemented in python (2.x)
 #
 ################################################################################
 
 __version__ = "$Revision: $"
 # $Source$
 
+from cStringIO import StringIO
 from datetime import datetime
-from pprint import pprint
 import os
+from pprint import pprint
 import re
 import sys
-from cStringIO import StringIO
 
 TARFILE_MODULE_AVAILABLE = True
 ZIPFILE_MODULE_AVAILABLE = True
@@ -31,13 +31,18 @@ except ImportError, e:
     print 'zipfile not imported: %s' % e
     ZIPFILE_MODULE_AVAILABLE = False
 
-from com.eLocale.file import File
+DEBUG = False
 
-DEBUG = True
+class SearchOption:
+    '''a class to encapsulate a specific command line option'''
+    def __init__(self, shortarg, longarg, func, desc):
+        self.shortarg = shortarg
+        self.longarg = longarg
+        self.func = func
+        self.desc = desc
 
 class SearchSettings:
     '''a class to encapsulate search settings for a particular search session'''
-
     def __init__(self):
         self._searchpatterns = []
         self.ci_searchpatterns = set()
@@ -58,16 +63,24 @@ class SearchSettings:
         self.out_dirpatterns = set()
         self.out_extensions = set()
         self.out_filepatterns = set()
-        self.printresults = False
+        self.printresults = True
         self.re_search_set = set()
         self.searchcompressed = True
         self.startpath = None
+        self.debug = False
         self.dotiming = False
         self.verbose = False
-        self._searchpatterns.extend(self.cs_searchpatterns)
-        self._searchpatterns.extend(self.ci_searchpatterns)
-        self.re_search_set.update([re.compile(s, re.S) for s in self.cs_searchpatterns])
-        self.re_search_set.update([re.compile(s, re.I | re.S) for s in self.ci_searchpatterns])
+
+    def add_searchpattern(self, pattern, casesensitive=True):
+        if casesensitive:
+            self.cs_searchpatterns.add(pattern)
+            self.re_search_set.add(re.compile(pattern, re.S))
+        else:
+            self.ci_searchpatterns.add(pattern)
+            self.re_search_set.add(re.compile(pattern, re.I | re.S))
+
+    def set_property(self, name, val):
+        self.__dict__[name] = val
 
     @property
     def searchpatterns(self):
@@ -78,19 +91,29 @@ class SearchSettings:
         if self.in_extensions:
             s += ", in_extensions: %s" % str(self.in_extensions)
         if self.out_extensions:
-            s+= ", out_extensions: %s" % str(self.out_extensions)
+            s += ", out_extensions: %s" % str(self.out_extensions)
         if self.in_dirpatterns:
             s += ", in_dirpatterns: %s" % str(self.in_dirpatterns)
         if self.out_dirpatterns:
-            s+= ", out_dirpatterns: %s" % str(self.out_dirpatterns)
+            s += ", out_dirpatterns: %s" % str(self.out_dirpatterns)
         if self.in_filepatterns:
             s += ", in_filepatterns: %s" % str(self.in_filepatterns)
         if self.out_filepatterns:
-            s+= ", out_filepatterns: %s" % str(self.out_filepatterns)
+            s += ", out_filepatterns: %s" % str(self.out_filepatterns)
         if self.cs_searchpatterns:
-            s+= ", cs_searchpatterns: %s" % str(self.cs_searchpatterns)
+            s += ", cs_searchpatterns: %s" % str(self.cs_searchpatterns)
         if self.ci_searchpatterns:
-            s+= ", ci_searchpatterns: %s" % str(self.ci_searchpatterns)
+            s += ", ci_searchpatterns: %s" % str(self.ci_searchpatterns)
+        if self.numlinesafter:
+            s += ", numlinesafter: %d" % self.numlinesafter
+        if self.numlinesbefore:
+            s += ", numlinesbefore: %d" % self.numlinesbefore
+        s += ", listfiles: %s" % self.listfiles
+        s += ", listlines: %s" % self.listlines
+        s += ", searchcompressed: %s" % self.searchcompressed
+        s += ", dotiming: %s" % self.dotiming
+        s += ", verbose: %s" % self.verbose
+        s += ", debug: %s" % self.debug
         s += ")"
         return s
 
@@ -127,25 +150,28 @@ class FileUtil:
                          pc plg roff sun t tex texinfo tr xwd'''.split()
     SEARCHABLE_EXTS = BINARY_EXTS + COMPRESSED_EXTS + TEXT_EXTS
 
+    def get_extension(self, filename):
+        '''Returns the extension for a given filename, if any, else empty string'''
+        ext = ''
+        if os.path.basename(filename).rfind('.') > 0:
+            ext = filename.split('.')[-1]
+        return ext.lower()
+
     def is_binary_file(self, f):
         '''Return true if file is of a (known) searchable binary file type'''
-        ext = File.get_extension(f).lower()
-        return (ext in self.BINARY_EXTS)
+        return (self.get_extension(f) in self.BINARY_EXTS)
 
     def is_compressed_file(self, f):
         '''Return true if file is of a (known) compressed file type'''
-        ext = File.get_extension(f).lower()
-        return (ext in self.COMPRESSED_EXTS)
+        return (self.get_extension(f) in self.COMPRESSED_EXTS)
 
     def is_searchable_file(self, f):
         '''Return true if file is of a (known) searchable type'''
-        ext = File.get_extension(f).lower()
-        return (ext in self.SEARCHABLE_EXTS)
+        return (self.get_extension(f) in self.SEARCHABLE_EXTS)
 
     def is_text_file(self, f):
         '''Return true if file is of a (known) text file type'''
-        ext = File.get_extension(f).lower()
-        return (ext in self.TEXT_EXTS)
+        return (self.get_extension(f) in self.TEXT_EXTS)
 
 
 class Searcher:
@@ -182,9 +208,9 @@ class Searcher:
     def get_file_filter_predicates(self):
         file_filter_predicates = []
         if self.settings.in_extensions:
-            file_filter_predicates.append(lambda f: File.get_extension(f) in self.settings.in_extensions)
+            file_filter_predicates.append(lambda f: self.fileutil.get_extension(f) in self.settings.in_extensions)
         if self.settings.out_extensions:
-            file_filter_predicates.append(lambda f: not File.get_extension(f) in self.settings.out_extensions)
+            file_filter_predicates.append(lambda f: not self.fileutil.get_extension(f) in self.settings.out_extensions)
         if self.settings.in_dirpatterns:
             file_filter_predicates.append(lambda f: self.matches_any_pattern(os.path.dirname(f), self.settings.in_dirpatterns))
         if self.settings.out_dirpatterns:
@@ -256,25 +282,21 @@ class Searcher:
     def search_text_file(self, f, enc=None):
         '''Search a text file, return number of matches found'''
         matchesfound = 0
-        fo = File.get_file(f, 'r')
-        if fo:
-            results = self.search_text_file_obj(fo, f)
+        try:
+            fo = open(f, 'r')
+            results = {}
+            if self.settings.multilinesearch:
+                results = self.search_text_file_contents(fo, f)
+            else:
+                results = self.search_text_file_lines(fo, f)
             fo.close()
             matchesfound = len(results)
-            for pattern in results:
-                for search_result in results[pattern]:
-                    #print '%s:%d:%s' % (os.path.join(path, f),linenum, line)
-                    self.add_search_result(search_result)
+        except IOError, e:
+            print 'IOError: %s: %s' % (str(e), f)
+
         return matchesfound
 
-    def search_text_file_obj(self, fo, filename=''):
-        '''Search in a given text file object and return the results'''
-        if self.settings.multilinesearch:
-            return self.search_text_file_obj_contents(fo, filename)
-        else:
-            return self.search_text_file_obj_lines(fo, filename)
-
-    def search_text_file_obj_contents(self, fo, filename=''):
+    def search_text_file_contents(self, fo, filename=''):
         '''Search in a given text file object contents (all at once)
            and return the results
         '''
@@ -305,6 +327,7 @@ class Searcher:
                                              filename=filename,
                                              linenum=before_line_count+1,
                                              line=line)
+                self.add_search_result(search_result)
                 if s in results:
                     results[s].append(search_result)
                 else:
@@ -312,7 +335,7 @@ class Searcher:
         return results
 
 
-    def search_text_file_obj_lines(self, fo, filename=''):
+    def search_text_file_lines(self, fo, filename=''):
         '''Search in a given text file object by line and return the results'''
         results  = {}
         linenum = 0
@@ -373,6 +396,7 @@ class Searcher:
                                     search_result = None
                                     break
                     if search_result:
+                        self.add_search_result(search_result)
                         if s in results:
                             results[s].append(search_result)
                         else:
@@ -477,9 +501,10 @@ class Searcher:
     def print_result(self, search_result):
         '''Print the current search result info to the console'''
         s = ''
-        if len(self.searchpatterns) > 1:
+        if len(self.settings.searchpatterns) > 1:
             s += '%s: ' % search_result.pattern
-        s += '%s' % os.path.join(search_result.path, search_result.filename)
+        #s += '%s' % os.path.join(search_result.path, search_result.filename)
+        s += '%s' % search_result.filename
         if search_result.contained:
             s += ': %s' % search_result.contained
         if search_result.lines_before or search_result.lines_after:
@@ -596,185 +621,150 @@ class SearchResult:
         return s
 
 
-def usage():
-    print 'Usage:'
-    print '''%s [options] <startpath>
+arg_options = (
+    SearchOption('b', 'numlinesbefore', lambda x, settings: settings.set_property('numlinesbefore', int(x)),
+     'Number of lines to show before every match (default is 0)'),
+    SearchOption('B', 'numlinesafter', lambda x, settings: settings.set_property('numlinesafter', int(x)),
+     'Number of lines to show after every match (default is 0)'),
+    SearchOption('d', 'dirname', lambda x, settings: settings.in_dirpatterns.add(x),
+     'Specify name pattern for directories to include in search'),
+    SearchOption('D', 'dirfilter', lambda x, settings: settings.out_dirpatterns.add(x),
+     'Specify name pattern for directories to exclude from search'),
+    SearchOption('f', 'filename', lambda x, settings: settings.in_filepatterns.add(x),
+     'Specify name pattern for files to include in search'),
+    SearchOption('F', 'filefilter', lambda x, settings: settings.out_filepatterns.add(x),
+     'Specify name pattern for files to exclude from search'),
+    SearchOption('', 'ignorecasesearchfile', lambda x, settings: settings.set_property('ignorecasesearchfile', x),
+     'Specify file containing case-insensitive search patterns (one per line)'),
+    SearchOption('', 'linesafterfilter', lambda x, settings: settings.linesafterfilters.append(x),
+     'Specify pattern to filter the "lines-after" lines on (used with --numlinesafter)'),
+    SearchOption('', 'linesaftersearch', lambda x, settings: settings.linesaftersearches.append(x),
+     'Specify pattern to search the "lines-after" lines on (used with --numlinesafter)'),
+    SearchOption('', 'linesbeforefilter', lambda x, settings: settings.linesbeforefilters.append(x),
+     'Specify pattern to filter the "lines-before" lines on (used with --numlinesbefore)'),
+    SearchOption('', 'linesbeforesearch', lambda x, settings: settings.linesbeforesearches.append(x),
+     'Specify pattern to search the "lines-before" lines on (used with --numlinesbefore)'),
+    SearchOption('s', 'search', lambda x, settings: settings.add_searchpattern(x),
+     'Specify search pattern'),
+    SearchOption('S', 'ignorecasesearch', lambda x, settings: settings.add_searchpattern(x, casesensitive=False),
+     'Specify case-insensitive search pattern'),
+    SearchOption('', 'searchfile', lambda x, settings: settings.set_property('searchfile', x),
+     'Specify file containing search patterns (one per line)'),
+    SearchOption('x', 'ext', lambda x, settings: settings.in_extensions.add(x),
+     'Specify extension for files to include in search'),
+    SearchOption('X', 'extfilter', lambda x, settings: settings.out_extensions.add(x),
+     'Specify extension for files to exclude from search')
+)
+flag_options = (
+    SearchOption('1', 'firstmatch', lambda settings: settings.set_property('firstmatch', True),
+     'Capture only the first match for a file+search combination'),
+    SearchOption('a', 'allmatches', lambda settings: settings.set_property('firstmatch', False),
+     'Capture all matches*'),
+    SearchOption('c', 'casesensitive', lambda settings: settings.set_property('ignorecase', False),
+     'Do case-sensitive searching*'),
+    SearchOption('C', 'ignorecase', lambda settings: settings.set_property('ignorecase', True),
+     'Do case-insensitive searching'),
+    SearchOption('', 'debug', lambda settings: settings.set_property('debug', True),
+     'Set output mode to debug'),
+    SearchOption('', 'listfiles', lambda settings: settings.set_property('listfiles', True),
+     'Generate a list of the matching files after searching'),
+    SearchOption('', 'listlines', lambda settings: settings.set_property('listlines', True),
+     'Generate a list of the matching lines after searching'),
+    SearchOption('m', 'multilinesearch', lambda settings: settings.set_property('multilinesearch', True),
+     'Search files by line*'),
+    SearchOption('p', 'printmatches', lambda settings: settings.set_property('printresults', True),
+     'Print matches to stdout as found*'),
+    SearchOption('P', 'noprintmatches', lambda settings: settings.set_property('printresults', False),
+     'Suppress printing of matches to stdout'),
+    SearchOption('t', 'dotiming', lambda settings: settings.set_property('dotiming', True),
+     'Time search execution'),
+    SearchOption('v', 'verbose', lambda settings: settings.set_property('verbose', True),
+     'Specify verbose output'),
+    SearchOption('z', 'searchcompressed', lambda settings: settings.set_property('searchcompressed', True),
+     'Search compressed files (bz2, gz, tar, zip)*'),
+    SearchOption('Z', 'nosearchcompressed', lambda settings: settings.set_property('searchcompressed', False),
+     'Search compressed files (bz2, gz, tar, zip)')
+)
 
-options:
-  -1                             show only the first match for a file+search combination
-  --firstmatch                   (used to identify files with matches)
-
-  -a                             show all matches
-  --allmatches                   (the default)
-
-  -b                             number of lines to show before every match
-  --numlinesbefore               (default is 0)
-
-  -B                             number of lines to show after every match
-  --numlinesafter                (default is 0)
-
-  -c                             case-sensitive searches
-  --casesensitive                (applies to all searches; the default)
-
-  -C                             case-insensitive searches
-  --ignorecase                   (applies to all searches)
-
-  -d <pattern>                   0+ dir name patterns for dirs to be searched
-  --dirname=<pattern>            (default is all dirs)
-
-  -D <pattern>                   0+ dir name patterns for dirs to be skipped
-  --dirfilter=<pattern>          (default is no dirs filtered)
-
-  -f <pattern>                   0+ file name patterns for files to be searched
-  --filename=<pattern>           (default is all files)
-
-  -F <pattern>                   0+ file name patterns for files to be skipped
-  --filefilter=<pattern>         (default is no files filtered)
-
-  --ignorecasesearchfile=<file>  path to text file containing case-insensitive search strings
-                                 (one per line)
-
-  --linelist                     generate a list of the matching lines after searching
-
-  --linesafterfilter             a pattern to filter the "lines-after" lines on
-                                 (used with --numlinesafter)
-
-  --linesaftersearch             a pattern to search the "lines-after" lines on
-                                 (used with --numlinesafter)
-
-  --linesbeforefilter            a pattern to filter the "lines-before" lines on
-                                 (used with --numlinesbefore)
-
-  --linesbeforesearch            a pattern to search the "lines-before" lines on
-                                 (used with --numlinesbefore)
-
-  --listfiles                    generate a list of the matching files after searching
-
-  -p                             print matches to stdout as found
-  --printmatches                 (the default)
-
-  -P                             suppress printing of matches to stdout
-  --noprintmatches               
-
-  -s <search>                    a case-sensitive search pattern
-  --search=<search>              (one or more, compiled as regex)
-
-  -S <search>                    a case-insensitive search pattern
-  --ignorecasesearch=<search>    (zero or more, compiled as regex)
-
-  --searchfile=<file>            path to text file containing search strings
-                                 (one per line)
-
-  -x <ext>                       0+ file extensions for file types to be searched
-  --ext=<ext>                    (zero or more, comma-separated, default is *)
-
-  -X <ext>                       0+ file extensions for file types to be skipped
-  --extfilter=<ext>              (zero or more, comma-separated)
-
-  -v                             be verbose
-  --verbose
-
-  -z                             search compressed files (tar, bz2, gz, zip)
-  --searchcompressed             (the default)
-
-  -Z                             do not search compressed files
-  --nosearchcompressed           (tar, bz2, gz, zip)
-''' % os.path.basename(sys.argv[0])
-    sys.exit(1)
+def get_arg_maps():
+    '''Returns arg_map and flag_map'''
+    arg_dict = {}
+    for o in arg_options:
+        if o.shortarg:
+            arg_dict[o.shortarg] = o
+        arg_dict[o.longarg] = o
+    flag_dict = {}
+    for o in flag_options:
+         if o.shortarg:
+             flag_dict[o.shortarg] = o
+         flag_dict[o.longarg] = o
+    return arg_dict, flag_dict
 
 
 def search_settings_from_args(args):
-    # getopts
-    import getopt
-    shortargs = 'ab:B:1d:D:f:F:mn:N:pPs:S:tvVx:X:zZ'
-    longargs = '''allmatches dirfilter= dirname= dotiming ext= extfilter=
-                  filefilter= filename= firstmatch
-                  ignorecasesearch= ignorecasesearchfile=
-                  linesafterfilter= linesaftersearch=
-                  linesbeforefilter= linesbeforesearch= listfiles listlines
-                  multilinesearch name= noprintresults nosearchcompressed
-                  numlinesafter= numlinesbefore= printresults
-                  search= searchcompressed searchfile= verbose version'''.split()
-
-    try:
-        opts, args = getopt.getopt(args, shortargs, longargs)
-    except getopt.GetoptError:
-        usage()
-
-    if not opts and not args:
-        usage()
-
+    arg_dict, flag_dict = get_arg_maps()
     settings = SearchSettings()
 
-    for o, a in opts:
-        if o in ('-a', '--allmatches'):
-            settings.firstmatch = False
-        elif o in ('-b', '--numlinesbefore'):
-            settings.numlinesbefore = int(a)
-        elif o in ('-B', '--numlinesafter'):
-            settings.numlinesafter = int(a)
-        elif o in ('-1', '--firstmatch'):
-            settings.firstmatch = True
-        elif o in ('-c', '--casesensitive'):
-            settings.ignorecase = False
-        elif o in ('-C', '--ignorecase'):
-            settings.ignorecase = True
-        elif o in ('-d', '--dirname'):
-            settings.in_dirpatterns.add(a)
-        elif o in ('-D', '--dirfilter'):
-            settings.out_dirpatterns.add(a)
-        elif o in ('-f', '--filename'):
-            settings.in_filepatterns.add(a)
-        elif o in ('-F', '--filefilter'):
-            settings.out_filepatterns.add(a)
-        elif o == '--listfiles':
-            settings.listfiles = True
-        elif o == '--listlines':
-            settings.listlines = True
-        elif o in ('-m', '--multilinesearch'):
-            settings.multilinesearch = True
-        elif o in ('-p', '--printresults'):
-            settings.printresults = True
-        elif o in ('-P', '--noprintresults'):
-            settings.printresults = False
-        elif o in ('-s', '--search'):
-            settings.cs_searchpatterns.add(a)
-        elif o in ('-S', '--ignorecasesearch'):
-            settings.ci_searchpatterns.add(a)
-        elif o in ('-t', '--dotiming'):
-            settings.dotiming = True
-        elif o in ('-x', '--ext'):
-            settings.in_extensions.add(a)
-        elif o in ('-X', '--extfilter'):
-            settings.out_extensions.add(a)
-        elif o in ('-z', '--searchcompressed'):
-            settings.searchcompressed = True
-        elif o in ('-Z', '--nosearchcompressed'):
-            settings.searchcompressed = False
-        elif o == '--linesafterfilter':
-            settings.linesafterfilters.append(a)
-        elif o == '--linesbeforefilter':
-            settings.linesbeforefilters.append(a)
-        elif o == '--linesaftersearch':
-            settings.linesaftersearches.append(a)
-        elif o == '--linesbeforesearch':
-            settings.linesbeforesearches.append(a)
-        elif o in ('-v', '--verbose'):
-            settings.verbose = True
-        elif o in ('-V', '--version'):
-            print VERSION
-            sys.exit(0)
+    while args:
+        arg = args.pop(0)
+        if False:
+            print 'next arg: "%s"' % arg
+        if arg.startswith('-'):
+            while arg and arg.startswith('-'):
+                arg = arg[1:]
+            if arg in arg_dict:
+                if False:
+                    print '"%s" found in arg_dict' % arg
+                if args:
+                    argval = args.pop(0)
+                    arg_dict[arg].func(argval, settings)
+                else:
+                    print 'Error: missing value for option %s' % arg
+                    usage()
+            elif arg in flag_dict:
+                if False:
+                    print '"%s" found in flag_dict' % arg
+                flag_dict[arg].func(settings)
+            elif arg in ('V', 'version'):
+                print __version__
+                sys.exit(0)
+            else:
+                print 'Error: unknown option: %s' % arg
         else:
-            print 'o: %s' % str(o)
-            print 'a: %s' % str(a)
-            usage()
+            settings.startpath = arg
 
-    if args:
-        settings.startpath = args[0]
-    else:
-        settings.startpath = '.'
+    if not settings.startpath:
+        print 'Error: missing startpath'
+        usage()
 
     return settings
+
+def get_option_sort_elem(option):
+    if option.shortarg:
+        return option.shortarg.lower()
+    else:
+        return option.longarg.lower()
+
+def usage():
+    print 'Usage:'
+    print '%s [options] <startpath>\n\noptions:' % os.path.basename(sys.argv[0])
+    options = arg_options + flag_options
+    opt_strings = []
+    opt_descs = []
+    longest = 0
+    for opt in sorted(options, key=lambda opt: get_option_sort_elem(opt)):
+        s = ''
+        if opt.shortarg:
+            s += '-%s,' % opt.shortarg
+        s += '--%s' % opt.longarg
+        if len(s) > longest:
+            longest = len(s)
+        opt_strings.append(s)
+        opt_descs.append(opt.desc)
+    format_string = ' %%-%ds  %%s' % longest
+    for i,s in enumerate(opt_strings):
+        print format_string % (s, opt_descs[i])
+    sys.exit(1)
 
 
 def main():
@@ -784,13 +774,13 @@ def main():
     if len(sys.argv) < 4:
         usage()
 
-    searchsettings = search_settings_from_args(sys.argv[1:])
+    settings = search_settings_from_args(sys.argv[1:])
 
     if DEBUG:
-        print 'searchsettings: %s' % str(searchsettings)
+        print 'searchsettings: %s' % str(settings)
 
     try:
-        searcher = Searcher(searchsettings)
+        searcher = Searcher(settings)
         searcher.search()
     except KeyboardInterrupt:
         print
@@ -799,20 +789,17 @@ def main():
     print
     searcher.print_res_counts()
 
-    if searchsettings.printresults or DEBUG:
-        print '\nsearch results:'
-        pprint(searcher.results)
-
-
-        if searchsettings.listfiles:
-            print '\nfiles with results:'
-            file_list = searcher.get_file_list()
+    if settings.listfiles:
+        file_list = searcher.get_file_list()
+        if file_list:
+            print '\nFiles with matches:'
             for f in file_list:
                 print f
 
-        if searchsettings.listlines:
-            print '\nlines with results:'
-            line_list = searcher.get_line_list()
+    if settings.listlines:
+        line_list = searcher.get_line_list()
+        if line_list:
+            print '\nLines with matches:'
             for line in line_list:
                 print line
 
