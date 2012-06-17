@@ -229,12 +229,12 @@ class Searcher:
 
     def get_search_files(self):
         '''Get the list of files to search'''
-        searchfilelist = []
+        searchfiles = []
         for root, dirs, files in os.walk(self.settings.startpath):
-            searchfilelist.extend([
+            searchfiles.extend([
                 os.path.join(root,f) for f in files \
                 if self.is_target_file(os.path.join(root,f))])
-        return searchfilelist
+        return searchfiles
 
     def start_timer(self, name):
         start = datetime.now()
@@ -252,13 +252,13 @@ class Searcher:
         '''Search files to find instances of searchpattern(s) starting from startpath'''
         if self.settings.dotiming:
             self.start_timer('get_search_files')
-        searchfilelist = self.get_search_files()
+        searchfiles = self.get_search_files()
         if self.settings.dotiming:
             self.stop_timer('get_search_files')
-        #print 'searchfilelist: %s' % str(searchfilelist)
+        #print 'searchfiles: %s' % str(searchfiles)
         if self.settings.dotiming:
             self.start_timer('search_files')
-        for f in searchfilelist:
+        for f in searchfiles:
             self.search_file(f)
         if self.settings.dotiming:
             self.stop_timer('search_files')
@@ -417,7 +417,7 @@ class Searcher:
         ext = ext.lower()
         if ext in ('zip', 'jar', 'war', 'ear'):
             # handle zip files
-            if DEBUG:
+            if self.settings.debug:
                 print 'searching %s file: %s' % (ext, f) 
             try:
                 matchesfound = self.search_zip_file(f)
@@ -426,7 +426,7 @@ class Searcher:
                     print 'BadZipfile: %s: %s' % (str(e), f)
         elif ext in ('bz2', 'tar', 'tgz', 'gz') and tarfile.is_tarfile(f):
             # handle tar files
-            if DEBUG:
+            if self.settings.debug:
                 print 'searching %s file: %s' % (ext, f)
             try:
                 matchesfound = self.search_tar_file(f, ext)
@@ -441,11 +441,11 @@ class Searcher:
         z = zipfile.ZipFile(f, 'r')
         zipinfos = z.infolist()
         for zipinfo in zipinfos:
-            if DEBUG: print 'zipinfo.filename: %s' % zipinfo.filename
+            if self.settings.debug: print 'zipinfo.filename: %s' % zipinfo.filename
             if zipinfo.file_size and not self.filter_file(zipinfo.filename):
-                if DEBUG: print 'file_size and not filter_file: %s' % zipinfo.filename
+                if self.settings.debug: print 'file_size and not filter_file: %s' % zipinfo.filename
                 if self.is_text_file(zipinfo.filename):
-                    if DEBUG: print 'searchable text file in zip: %s' % zipinfo.filename
+                    if self.settings.debug: print 'searchable text file in zip: %s' % zipinfo.filename
                     sio = StringIO(z.read(zipinfo.filename))
                     sio.seek(0)
                     results = self.search_text_file_obj(sio, f, zipinfo.filename)
@@ -455,7 +455,7 @@ class Searcher:
                             #print '%s:%d:%s' % (f, linenum, line)
                             self.add_search_result(search_result)
                 elif self.is_searchable_file(zipinfo.filename):
-                    if DEBUG: print 'searchable binary file in zip: %s' % zipinfo.filename
+                    if self.settings.debug: print 'searchable binary file in zip: %s' % zipinfo.filename
         return matchesfound
 
 
@@ -466,9 +466,9 @@ class Searcher:
             tar = tarfile.open(f, 'r:'+ext)
             for tarinfo in tar:
                 if tarinfo.isreg() and not self.filter_file(tarinfo.name):
-                    if DEBUG: print 'isreg and not filter_file: %s' % tarinfo.name
+                    if self.settings.debug: print 'isreg and not filter_file: %s' % tarinfo.name
                     if self.is_text_file(tarinfo.name):
-                        if DEBUG: print 'searchable text file in tar: %s' % tarinfo.name
+                        if self.settings.debug: print 'searchable text file in tar: %s' % tarinfo.name
                         tf = tar.extractfile(tarinfo)
                         results = self.search_text_file_obj(tf, f, tarinfo.name)
                         matchesfound = len(results)
@@ -476,7 +476,7 @@ class Searcher:
                             for search_result in results[pattern]:
                                 self.add_search_result(search_result)
                     elif  self.is_searchable_file(tarinfo.name):
-                        if DEBUG: print 'searchable binary file in tar: %s' % tarinfo.name
+                        if self.settings.debug: print 'searchable binary file in tar: %s' % tarinfo.name
             tar.close()
         except tarfile.CompressionError, e:
             if not ext == 'tgz':
