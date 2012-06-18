@@ -79,12 +79,12 @@ namespace CsSearch
 
 		private bool IsTargetDirectory(DirectoryInfo d)
 		{
-			return DirectoryFilterPredicates.All(p => p(d));
+			return DirectoryFilterPredicates.Count == 0 || DirectoryFilterPredicates.All(p => p(d));
 		}
 
 		private bool IsTargetFile(FileInfo f)
 		{
-			return FileFilterPredicates.All(p => p(f));
+			return FileFilterPredicates.Count == 0  || FileFilterPredicates.All(p => p(f));
 		}
 
 		public void StartTimer(string name)
@@ -135,7 +135,8 @@ namespace CsSearch
 			{
 				throw new FileNotFoundException("File not found", startDir.FullName);
 			}
-			if (!IsTargetDirectory(startDir)) {
+			if (!IsTargetDirectory(startDir))
+			{
 				throw new Exception("Starting directory matches an exclusion filter or does not match an inclusion filter");
 			}
 			if (Settings.DoTiming)
@@ -143,10 +144,11 @@ namespace CsSearch
 				StartTimer("GetSearchFiles");
 			}
 			var files = GetSearchFiles(startDir);
-			if (Settings.DoTiming) {
+			if (Settings.DoTiming)
+			{
 				StopTimer("GetSearchFiles");
 			}
-			if (Settings.Verbose)
+			if (Settings.Verbose || Settings.Debug)
 			{
 				Console.WriteLine("Files to be searched:");
 				foreach (var f in files)

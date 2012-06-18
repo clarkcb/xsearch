@@ -61,7 +61,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arguments.cs" />
+    <Compile Include="SearchOption.cs" />
+    <Compile Include="SearchOptions.cs" />
     <Compile Include="SearchArgumentException.cs" />
     <Compile Include="SearchMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
