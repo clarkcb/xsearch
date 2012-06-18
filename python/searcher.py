@@ -5,6 +5,7 @@
 # class Searcher: executes a file search
 #
 ################################################################################
+from cStringIO import StringIO
 from datetime import datetime
 import os
 import re
@@ -363,39 +364,17 @@ class Searcher:
         self.patterndict.setdefault(pattern, list()).append(search_result)
         self.filedict.setdefault(fullfile, list()).append(search_result)
         if self.settings.printresults:
-            if search_result.lines_before or search_result.lines_after:
-                print '%s' % ('=' * 80)
             self.print_result(search_result)
 
 
     def print_result(self, search_result):
         '''Print the current search result info to the console'''
-        s = ''
+        sio = StringIO()
         if len(self.settings.searchpatterns) > 1:
-            s += '%s: ' % search_result.pattern
-        #s += '%s' % os.path.join(search_result.path, search_result.filename)
-        s += '%s' % search_result.filename
-        if search_result.contained:
-            s += ': %s' % search_result.contained
-        if search_result.lines_before or search_result.lines_after:
-            s += '\n%s\n' % ('-' * 80)
-            current_linenum = search_result.linenum
-            if search_result.lines_before:
-                current_linenum -= len(search_result.lines_before)
-                for l in search_result.lines_before:
-                    s += '  %d | %s' % (current_linenum, l)
-                    current_linenum += 1
-            s += '> %d | %s' % (search_result.linenum, search_result.line)
-            if search_result.lines_after:
-                current_linenum = search_result.linenum + 1
-                for l in search_result.lines_after:
-                    s += '  %d | %s' % (current_linenum, l)
-                    current_linenum += 1
-            else:
-                s += '\n'
-        else:
-            if search_result.linenum and search_result.line:
-                s += ': %d: %s' % (search_result.linenum, search_result.line.strip())
+            sio.write('%s: ' % search_result.pattern)
+        sio.write(str(search_result))
+        s = sio.getvalue()
+        sio.close()
         try:
             print s
         except UnicodeEncodeError, e:

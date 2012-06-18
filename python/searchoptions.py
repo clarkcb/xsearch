@@ -17,10 +17,10 @@ class SearchOptions:
     arg_options = (
         SearchOption('b', 'numlinesbefore',
          lambda x, settings: settings.set_property('numlinesbefore', int(x)),
-         'Number of lines to show before every match (default is 0)'),
+         'Number of lines to show before every matched line (default: 0)'),
         SearchOption('B', 'numlinesafter',
          lambda x, settings: settings.set_property('numlinesafter', int(x)),
-         'Number of lines to show after every match (default is 0)'),
+         'Number of lines to show after every matched line (default: 0)'),
         SearchOption('d', 'dirname',
          lambda x, settings: settings.in_dirpatterns.add(x),
          'Specify name pattern for directories to include in search'),
@@ -74,7 +74,7 @@ class SearchOptions:
         SearchOption('c', 'casesensitive',
          lambda settings: settings.set_property('ignorecase', False),
          'Do case-sensitive searching*'),
-        SearchOption('C', 'ignorecase',
+        SearchOption('C', 'caseinsensitive',
          lambda settings: settings.set_property('ignorecase', True),
          'Do case-insensitive searching'),
         SearchOption('', 'debug',
@@ -112,7 +112,7 @@ class SearchOptions:
          'Search compressed files (bz2, gz, tar, zip)*'),
         SearchOption('Z', 'nosearchcompressed',
          lambda settings: settings.set_property('searchcompressed', False),
-         'Search compressed files (bz2, gz, tar, zip)')
+         'Do not search compressed files (bz2, gz, tar, zip)')
     )
 
     def __init__(self):
@@ -156,9 +156,9 @@ class SearchOptions:
         return settings
 
     def get_usage_string(self, main_file_name='pysearch.py'):
-        s = StringIO()
-        s.write('Usage:\n')
-        s.write('%s [options] <startpath>\n\noptions:\n' % main_file_name)
+        sio = StringIO()
+        sio.write('Usage:\n')
+        sio.write('%s [options] <startpath>\n\noptions:\n' % main_file_name)
         opt_strings = []
         opt_descs = []
         longest = 0
@@ -172,8 +172,8 @@ class SearchOptions:
             opt_strings.append(opt_string)
             opt_descs.append(opt.desc)
         format_string = ' %%-%ds  %%s\n' % longest
-        for i,opt_string in enumerate(opt_strings):
-            s.write(format_string % (opt_string, opt_descs[i]))
-        usage = s.getvalue()
-        s.close()
+        for i, opt_string in enumerate(opt_strings):
+            sio.write(format_string % (opt_string, opt_descs[i]))
+        usage = sio.getvalue()
+        sio.close()
         return usage
