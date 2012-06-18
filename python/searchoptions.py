@@ -145,7 +145,7 @@ class SearchOptions:
                         raise Exception('Missing value for option %s' % arg)
                 elif arg in self.flag_dict:
                     self.flag_dict[arg].func(settings)
-                    if arg in ('h', 'help','V', 'version'):
+                    if arg in ('h', 'help', 'V', 'version'):
                         return settings
                 else:
                     raise Exception('Unknown option: %s' % arg)
@@ -153,6 +153,10 @@ class SearchOptions:
                 settings.startpath = arg
         if not settings.startpath:
             raise Exception('Missing startpath')
+        if not settings.searchpatterns:
+            raise Exception('No search patterns specified')
+        if settings.debug:
+            settings.verbose = True
         return settings
 
     def get_usage_string(self, main_file_name='pysearch.py'):

@@ -10,7 +10,7 @@ import re
 class SearchSettings:
     '''a class to encapsulate search settings for a particular search session'''
     def __init__(self):
-        self._searchpatterns = []
+        self._searchpatterns = set()
         self.ci_searchpatterns = set()
         self.cs_searchpatterns = set()
         self.firstmatch = False
@@ -42,9 +42,11 @@ class SearchSettings:
     def add_searchpattern(self, pattern, casesensitive=True):
         if casesensitive:
             self.cs_searchpatterns.add(pattern)
+            self._searchpatterns.add(pattern)
             self.re_search_set.add(re.compile(pattern, re.S))
         else:
             self.ci_searchpatterns.add(pattern)
+            self._searchpatterns.add(pattern)
             self.re_search_set.add(re.compile(pattern, re.I | re.S))
 
     def set_property(self, name, val):

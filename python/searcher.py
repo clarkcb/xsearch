@@ -108,7 +108,11 @@ class Searcher:
         searchfiles = self.get_search_files()
         if self.settings.dotiming:
             self.stop_timer('get_search_files')
-        #print 'searchfiles: %s' % str(searchfiles)
+        if self.settings.verbose:
+            print 'Files to be searched:'
+            for f in searchfiles:
+                print f
+            print
         if self.settings.dotiming:
             self.start_timer('search_files')
         for f in searchfiles:
