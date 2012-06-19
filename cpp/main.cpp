@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     char        action;
     double      amount;
 
-    if (argc > 1)
+    if (argc)
         account.deposit(atof(argv[1]));
 
     while (true)
