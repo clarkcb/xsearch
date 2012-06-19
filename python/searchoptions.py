@@ -162,7 +162,7 @@ class SearchOptions:
     def get_usage_string(self, main_file_name='pysearch.py'):
         sio = StringIO()
         sio.write('Usage:\n')
-        sio.write('%s [options] <startpath>\n\noptions:\n' % main_file_name)
+        sio.write(' %s [options] <startpath>\n\nOptions:\n' % main_file_name)
         opt_strings = []
         opt_descs = []
         longest = 0
