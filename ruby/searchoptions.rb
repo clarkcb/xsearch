@@ -26,10 +26,10 @@ class SearchOptions
   def set_options
     @arg_options = [
       SearchOption.new('b', 'numlinesbefore',
-        nil,
+        proc { |x, settings| puts "numlinesbefore: #{x}" },
         'Number of lines to show before every matched line (default: 0)'),
       SearchOption.new('B', 'numlinesafter',
-        nil,
+        proc { |x, settings| puts "numlinesafter: #{x}" },
         'Number of lines to show after every matched line (default: 0)'),
       SearchOption.new('d', 'dirname',
         proc { |x, settings| settings.in_dirpatterns.push(Regexp.new(x)) },
