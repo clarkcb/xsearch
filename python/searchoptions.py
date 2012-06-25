@@ -120,7 +120,7 @@ class SearchOptions:
         self.sorted_options = sorted(self.options, key=lambda opt: opt.sortarg)
         self.arg_dict = self.dict_from_options(self.arg_options)
         self.flag_dict = self.dict_from_options(self.flag_options)
-        
+
     def dict_from_options(self, options):
         '''Returns a dict for a give collection of SearchOption objects'''
         opt_dict = {}
@@ -159,10 +159,10 @@ class SearchOptions:
             settings.verbose = True
         return settings
 
-    def get_usage_string(self, main_file_name='pysearch.py'):
+    def get_usage_string(self):
         sio = StringIO()
         sio.write('Usage:\n')
-        sio.write(' %s [options] <startpath>\n\nOptions:\n' % main_file_name)
+        sio.write(' pysearch.py [options] <startpath>\n\nOptions:\n')
         opt_strings = []
         opt_descs = []
         longest = 0

@@ -141,7 +141,7 @@ class Searcher:
     def search_file(self, f):
         '''Search in a file, return number of matches found'''
         if not self.fileutil.is_searchable_file(f):
-            if self.verbose or DEBUG:
+            if self.settings.verbose or self.settings.debug:
                 print 'Skipping unsearchable file: %s' % f
                 return 0
         matchesfound = 0

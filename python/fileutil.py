@@ -30,7 +30,7 @@ class FileUtil:
                          env etx exp fls fs fsproj h hpp htm html ics iml in inc ini ipr iws
                          java js jsp layout log mak map master mht mxml
                          pas php php3 pl plist pm po properties py
-                         rc rc2 rdf resx rex rtf rtx
+                         rb rc rc2 rdf resx rex rtf rtx
                          scc sgm sgml sh sln smi smil spec sqc sql st str strings
                          suml svg sxw
                          t tcl tld tmx tsv txt url user
