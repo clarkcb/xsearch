@@ -32,28 +32,18 @@ class Searcher
       file_filter_predicates.push(proc { |f| not @settings.out_extensions.include?(@fileutil.get_extension(f)) })
     end
     if @settings.in_dirpatterns.count > 0
-      file_filter_predicates.push(proc { |f| matches_any_pattern(File.dirname(f), @settings.in_dirpatterns) })
+      file_filter_predicates.push(proc { |f| @settings.in_dirpatterns.any? {|p| p.match(File.dirname(f))} })
     end
     if @settings.out_dirpatterns.count > 0
-      file_filter_predicates.push(proc { |f| not matches_any_pattern(File.dirname(f), @settings.out_dirpatterns) })
+      file_filter_predicates.push(proc { |f| not @settings.out_dirpatterns.any? {|p| p.match(File.dirname(f))} })
     end
     if @settings.in_filepatterns.count > 0
-      file_filter_predicates.push(proc { |f| matches_any_pattern(Pathname.new(f).basename, @settings.in_filepatterns) })
+      file_filter_predicates.push(proc { |f| @settings.in_filepatterns.any? {|p| p.match(Pathname.new(f).basename)} })
     end
     if @settings.out_filepatterns.count > 0
-      file_filter_predicates.push(proc { |f| not matches_any_pattern(Pathname.new(f).basename, @settings.out_filepatterns) })
+      file_filter_predicates.push(proc { |f| not @settings.out_filepatterns.any? {|p| p.match(Pathname.new(f).basename)} })
     end
     file_filter_predicates
-  end
-
-  def matches_any_pattern(s, patterns)
-    patterns.each do |p|
-      p = re.compile(p)
-      if p.search(s)
-        return true
-      end
-    end
-    false
   end
 
   def is_target_file(f)
