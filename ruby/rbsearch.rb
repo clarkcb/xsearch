@@ -19,15 +19,11 @@ def main
 
   searchoptions = SearchOptions.new
 
-  if ARGV.count < 4
-    searchoptions.usage
-  end
-
   settings = nil
   begin
     settings = searchoptions.search_settings_from_args(ARGV)
   rescue ArgumentError => e
-    puts "ArgumentError: #{e.message}"
+    puts "\nArgumentError: #{e.message}\n\n"
     searchoptions.usage
   end
 

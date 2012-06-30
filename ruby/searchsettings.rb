@@ -42,7 +42,7 @@ class SearchSettings
     @printusage = false
     @printversion = false
     @searchcompressed = false
-    @startpath = '.'
+    @startpath = nil
     @verbose = false
 
     @in_dirpatterns = []

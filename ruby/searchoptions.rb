@@ -164,11 +164,11 @@ class SearchOptions
         settings.startpath = arg
       end
     end
-    #if not settings.startpath
-    #  raise Exception('Missing startpath')
-    #end
-    if not settings.searchpatterns
-      raise ArgumentError, "No search patterns specified"
+    if not settings.startpath
+      raise ArgumentError, 'Missing startpath'
+    end
+    if settings.searchpatterns.count < 1
+      raise ArgumentError, 'No search patterns specified'
     end
     if settings.debug
       settings.verbose = true

@@ -13,28 +13,21 @@ from searchoptions import SearchOptions
 
 DEBUG = False
 
-def usage(searchoptions):
-    print searchoptions.get_usage_string()
-    sys.exit(1)
-
 def main():
     if DEBUG:
         print 'sys.argv(%d): %s' % (len(sys.argv),str(sys.argv))
 
     searchoptions = SearchOptions()
 
-    if len(sys.argv) < 4:
-        usage(searchoptions)
-
     settings = None
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
     except Exception, e:
-        print 'Exception: %s' % e
-        usage(searchoptions)
+        print '\nException: %s\n' % e
+        searchoptions.usage()
 
     if settings.printusage:
-        usage(searchoptions)
+        searchoptions.usage()
 
     if settings.printversion:
         print 'Version: 0.1'

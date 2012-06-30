@@ -144,6 +144,10 @@ class SearchOptions:
             settings.verbose = True
         return settings
 
+    def usage(self):
+        print self.get_usage_string()
+        sys.exit(1)
+
     def get_usage_string(self):
         sio = StringIO()
         sio.write('Usage:\n')
