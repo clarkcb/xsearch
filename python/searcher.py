@@ -41,10 +41,6 @@ class Searcher:
         self.timers = {}
         self.filedict = {}
         self.rescounts = {}
-        self.linesbeforefilters = []
-        self.linesafterfilters = []
-        self.linesbeforesearches = []
-        self.linesaftersearches = []
         self.__dict__.update(kargs)
         self.file_filter_predicates = self.get_file_filter_predicates()
 
@@ -226,7 +222,7 @@ class Searcher:
                     #print 'AttributeError: %s' % e
                     break
             linenum += 1
-            for s in self.settings.re_search_set:
+            for s in self.settings.searchpatterns:
                 if s in results and self.settings.firstmatch:
                     continue
                 if s.search(line):
@@ -239,30 +235,30 @@ class Searcher:
                     search_result = SearchResult(pattern=s.pattern, filename=filename, linenum=linenum,
                                                  line=line, lines_before=lines_before[:], lines_after=lines_after[:])
                     if self.settings.numlinesbefore and lines_before:
-                        if self.settings.linesbeforefilters:
+                        if self.settings.out_linesbeforepatterns:
                             lines_before_filter_match = False
-                            for f in self.settings.linesbeforefilters:
+                            for f in self.settings.out_linesbeforepatterns:
                                 for l in lines_before:
-                                    if self.verbose or DEBUG:
-                                        print 'checking line for linesbeforefilter "%s": %s' % (f.pattern, l.strip())
+                                    if self.settings.verbose or self.settings.debug:
+                                        print 'checking line for out_linesbeforepatterns "%s": %s' % (f.pattern, l.strip())
                                     if f.search(l):
-                                        if self.verbose or DEBUG:
-                                            print 'found line before matching linesbeforefilter "%s": %s' % (f.pattern, l.strip())
+                                        if self.settings.verbose or self.settings.debug:
+                                            print 'found line before matching out_linesbeforepatterns "%s": %s' % (f.pattern, l.strip())
                                         lines_before_filter_match = True
                                         break
                                 if lines_before_filter_match:
                                     search_result = None
                                     break
                     if search_result and self.settings.numlinesafter and lines_after:
-                        if self.settings.linesafterfilters:
+                        if self.settings.out_linesafterpatterns:
                             lines_after_filter_match = False
-                            for f in self.settings.linesafterfilters:
+                            for f in self.settings.out_linesafterpatterns:
                                 for l in lines_after:
-                                    if self.verbose or DEBUG:
-                                        print 'checking line for linesafter filter "%s": %s' % (f.pattern, l.strip())
+                                    if self.settings.verbose or self.settings.debug:
+                                        print 'checking line for out_linesafterpatterns "%s": %s' % (f.pattern, l.strip())
                                     if f.search(l):
-                                        if self.verbose or DEBUG:
-                                            print 'found line after matching linesafterfilter "%s": %s' % (f.pattern, l.strip())
+                                        if self.settings.verbose or self.settings.debug:
+                                            print 'found line after matching out_linesafterpatterns "%s": %s' % (f.pattern, l.strip())
                                         lines_after_filter_match = True
                                         break
                                 if lines_after_filter_match:
