@@ -33,13 +33,13 @@ class SearchResult:
             if self.lines_before:
                 current_linenum -= len(self.lines_before)
                 for line_before in self.lines_before:
-                    sio.write('  %d | %s\n' % (current_linenum, line_before))
+                    sio.write('  %d | %s' % (current_linenum, line_before))
                     current_linenum += 1
-            sio.write('> %d | %s\n' % (self.linenum, self.line))
+            sio.write('> %d | %s' % (self.linenum, self.line))
             if self.lines_after:
-                current_linenum = search_result.linenum + 1
+                current_linenum = self.linenum + 1
                 for line_after in self.lines_after:
-                    sio.write('  %d | %s\n' % (current_linenum, line_after))
+                    sio.write('  %d | %s' % (current_linenum, line_after))
                     current_linenum += 1
             else:
                 sio.write('\n')

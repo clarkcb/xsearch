@@ -41,8 +41,6 @@ class Searcher:
         self.timers = {}
         self.filedict = {}
         self.rescounts = {}
-        self.numlinesbefore = 0
-        self.numlinesafter = 0
         self.linesbeforefilters = []
         self.linesafterfilters = []
         self.linesbeforesearches = []
@@ -232,8 +230,8 @@ class Searcher:
                 if s in results and self.settings.firstmatch:
                     continue
                 if s.search(line):
-                    if self.numlinesafter:
-                        while len(lines_after) < self.numlinesafter:
+                    if self.settings.numlinesafter:
+                        while len(lines_after) < self.settings.numlinesafter:
                             try:
                                 lines_after.append(fo.next())
                             except StopIteration, e:
@@ -276,10 +274,10 @@ class Searcher:
                             results[s].append(search_result)
                         else:
                             results[s] = [search_result]
-            if self.numlinesbefore:
-                if len(lines_before) == self.numlinesbefore:
+            if self.settings.numlinesbefore:
+                if len(lines_before) == self.settings.numlinesbefore:
                     lines_before.pop(0)
-                if len(lines_before) < self.numlinesbefore:
+                if len(lines_before) < self.settings.numlinesbefore:
                     lines_before.append(line)
         return results
 
