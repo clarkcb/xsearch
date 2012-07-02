@@ -242,7 +242,6 @@ class Searcher:
                             if [line_before for line_before in lines_before \
                                 if self.matches_any_pattern(line_before, self.settings.out_linesbeforepatterns)]:
                                     search_result = None
-                                    break
                     if search_result and self.settings.numlinesafter and lines_after:
                         if self.settings.in_linesafterpatterns:
                             if not [line_after for line_after in lines_after \
@@ -252,7 +251,6 @@ class Searcher:
                             if [line_after for line_after in lines_after \
                                 if self.matches_any_pattern(line_after, self.settings.out_linesafterpatterns)]:
                                     search_result = None
-                                    break
                     # if there's still a search_result after lines before and after filtering, add it
                     if search_result:
                         self.add_search_result(search_result)
