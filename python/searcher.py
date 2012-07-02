@@ -47,7 +47,6 @@ class Searcher:
     def matches_any_pattern(self, s, pattern_set):
         '''Returns true if string matches any pattern in pattern_set, else false'''
         for p in pattern_set:
-            p = re.compile(p)
             if p.search(s):
                 return True
         return False
@@ -235,35 +234,26 @@ class Searcher:
                     search_result = SearchResult(pattern=s.pattern, filename=filename, linenum=linenum,
                                                  line=line, lines_before=lines_before[:], lines_after=lines_after[:])
                     if self.settings.numlinesbefore and lines_before:
-                        if self.settings.out_linesbeforepatterns:
-                            lines_before_filter_match = False
-                            for f in self.settings.out_linesbeforepatterns:
-                                for l in lines_before:
-                                    if self.settings.verbose or self.settings.debug:
-                                        print 'checking line for out_linesbeforepatterns "%s": %s' % (f.pattern, l.strip())
-                                    if f.search(l):
-                                        if self.settings.verbose or self.settings.debug:
-                                            print 'found line before matching out_linesbeforepatterns "%s": %s' % (f.pattern, l.strip())
-                                        lines_before_filter_match = True
-                                        break
-                                if lines_before_filter_match:
+                        if self.settings.in_linesbeforepatterns:
+                            if not [line_before for line_before in lines_before \
+                                    if self.matches_any_pattern(line_before, self.settings.in_linesbeforepatterns)]:
+                                search_result = None
+                        if search_result and self.settings.out_linesbeforepatterns:
+                            if [line_before for line_before in lines_before \
+                                if self.matches_any_pattern(line_before, self.settings.out_linesbeforepatterns)]:
                                     search_result = None
                                     break
                     if search_result and self.settings.numlinesafter and lines_after:
-                        if self.settings.out_linesafterpatterns:
-                            lines_after_filter_match = False
-                            for f in self.settings.out_linesafterpatterns:
-                                for l in lines_after:
-                                    if self.settings.verbose or self.settings.debug:
-                                        print 'checking line for out_linesafterpatterns "%s": %s' % (f.pattern, l.strip())
-                                    if f.search(l):
-                                        if self.settings.verbose or self.settings.debug:
-                                            print 'found line after matching out_linesafterpatterns "%s": %s' % (f.pattern, l.strip())
-                                        lines_after_filter_match = True
-                                        break
-                                if lines_after_filter_match:
+                        if self.settings.in_linesafterpatterns:
+                            if not [line_after for line_after in lines_after \
+                                    if self.matches_any_pattern(line_after, self.settings.in_linesafterpatterns)]:
+                                search_result = None
+                        if search_result and self.settings.out_linesafterpatterns:
+                            if [line_after for line_after in lines_after \
+                                if self.matches_any_pattern(line_after, self.settings.out_linesafterpatterns)]:
                                     search_result = None
                                     break
+                    # if there's still a search_result after lines before and after filtering, add it
                     if search_result:
                         self.add_search_result(search_result)
                         if s in results:
