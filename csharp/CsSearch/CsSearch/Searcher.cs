@@ -10,6 +10,7 @@ namespace CsSearch
 	{
 		private List<Func<DirectoryInfo, bool>> _dirFilterPredicates;
 		private List<Func<FileInfo, bool>> _fileFilterPredicates;
+		private readonly FileUtil _fileUtil;
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
 		public ISet<FileInfo> FileSet { get; private set; }
@@ -72,6 +73,7 @@ namespace CsSearch
 			Settings = settings;
 			if (Settings.Verbose)
 				Console.WriteLine(Settings + "\n");
+			_fileUtil = new FileUtil();
 			Results = new List<SearchResult>();
 			FileSet = new HashSet<FileInfo>();
 			Timers = new Dictionary<string,Stopwatch>();
@@ -170,45 +172,22 @@ namespace CsSearch
 			}
 		}
 
-		public bool IsSearchableFile(FileInfo f)
-		{
-			return !Settings.NosearchExtensions.Contains(f.Extension.ToLowerInvariant());
-		}
-
-		private bool IsBinaryFile(FileInfo f)
-		{
-			return Settings.BinaryExtensions.Contains(f.Extension.ToLowerInvariant());
-		}
-
-		private bool IsTextFile(FileInfo f)
-		{
-			return Settings.TextExtensions.Contains(f.Extension.ToLowerInvariant());
-		}
-
-		private bool IsUnknownFile(FileInfo f)
-		{
-			return (Settings.UnknownExtensions.Contains(f.Extension.ToLowerInvariant()) ||
-					(!Settings.TextExtensions.Contains(f.Extension.ToLowerInvariant()) &&
-					 !Settings.BinaryExtensions.Contains(f.Extension.ToLowerInvariant()) &&
-					 !Settings.UnknownExtensions.Contains(f.Extension.ToLowerInvariant())));
-		}
-
 		public void SearchFile(FileInfo f)
 		{
-			if (IsUnknownFile(f))
+			if (_fileUtil.IsUnknownFile(f))
 			{
 				Console.WriteLine("Skipping file of unknown type: " + f.FullName);
 			}
-			else if (IsSearchableFile(f))
+			else if (_fileUtil.IsSearchableFile(f))
 			{
 				//if (Settings.DoTiming) {
 				//    StartTimer(f.FullName);
 				//}
-				if (IsTextFile(f))
+				if (_fileUtil.IsTextFile(f))
 				{
 					SearchTextFile(f);
 				}
-				else if (IsBinaryFile(f))
+				else if (_fileUtil.IsBinaryFile(f))
 				{
 					SearchBinaryFile(f);
 				}

@@ -11,8 +11,6 @@ namespace CsSearch
 			try
 			{
 				settings = options.SettingsFromArgs(args);
-				if (settings.SearchPatterns.Count < 1)
-					Usage(options);
 				var searcher = new Searcher(settings);
 				searcher.Search();
 				Console.WriteLine("Matches found: " + searcher.Results.Count);
@@ -24,15 +22,11 @@ namespace CsSearch
 					}
 				}
 			}
-			catch (SearchArgumentException)
+			catch (SearchArgumentException e)
 			{
-				Usage(options);
+				Console.WriteLine("Error: " + e.Message);
+				options.Usage(1);
 			}
-		}
-		static void Usage(SearchOptions options)
-		{
-			Console.WriteLine(options.GetUsageString());
-			Environment.Exit(1);
 		}
 	}
 }

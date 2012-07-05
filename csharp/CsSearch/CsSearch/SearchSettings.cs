@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -8,12 +7,6 @@ namespace CsSearch
 {
 	public class SearchSettings
 	{
-		public ISet<string> BinaryExtensions { get; private set; }
-		public ISet<string> CompressedExtensions { get; private set; }
-		public ISet<string> NosearchExtensions { get; private set; }
-		public ISet<string> TextExtensions { get; private set; }
-		public ISet<string> UnknownExtensions { get; private set; }
-	
 		public ISet<string> InExtensions { get; private set; }
 		public ISet<string> OutExtensions { get; private set; }
 		public ISet<Regex> InDirPatterns { get; private set; }
@@ -43,13 +36,6 @@ namespace CsSearch
 
 		public SearchSettings()
 		{
-			var appSettings = new Properties.Settings();
-			BinaryExtensions = new HashSet<string>(appSettings.BinaryExtensions.Split(' ').Select(x => "." + x));
-			CompressedExtensions = new HashSet<string>(appSettings.CompressedExtensions.Split(' ').Select(x => "." + x));
-			NosearchExtensions = new HashSet<string>(appSettings.NoSearchExtensions.Split(' ').Select(x => "." + x));
-			TextExtensions = new HashSet<string>(appSettings.TextExtensions.Split(' ').Select(x => "." + x));
-			UnknownExtensions = new HashSet<string>(appSettings.UnknownExtensions.Split(' ').Select(x => "." + x));
-
 			InExtensions = new HashSet<string>();
 			OutExtensions = new HashSet<string>();
 			InDirPatterns = new HashSet<Regex>();
@@ -90,12 +76,6 @@ namespace CsSearch
 			AddExtension(OutExtensions, ext);
 		}
 
-		public bool HasExtensions
-		{
-			get { return (InExtensions.Count > 0 || OutExtensions.Count > 0); }
-			
-		}
-
 		private static void AddPattern(ISet<Regex> set, string pattern)
 		{
 			set.Add(new Regex(pattern));
@@ -111,11 +91,6 @@ namespace CsSearch
 			AddPattern(OutDirPatterns, pattern);
 		}
 
-		public bool HasDirPatterns
-		{
-			get { return (InDirPatterns.Count > 0 || OutDirPatterns.Count > 0); }
-		}
-
 		public void AddInFilePattern(string pattern)
 		{
 			AddPattern(InFilePatterns, pattern);
@@ -124,11 +99,6 @@ namespace CsSearch
 		public void AddOutFilePattern(string pattern)
 		{
 			AddPattern(OutFilePatterns, pattern);
-		}
-
-		public bool HasFilePatterns
-		{
-			get { return (InFilePatterns.Count > 0 || OutFilePatterns.Count > 0); }
 		}
 
 		public void AddSearchPattern(string pattern)

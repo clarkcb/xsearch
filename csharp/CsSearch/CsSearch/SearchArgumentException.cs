@@ -7,5 +7,8 @@ namespace CsSearch
 {
 	class SearchArgumentException : Exception
 	{
+		public SearchArgumentException(string message) : base(message)
+		{
+		}
 	}
 }
