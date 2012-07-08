@@ -45,7 +45,6 @@
     <Compile Include="Utils.fs" />
     <Compile Include="FileUtil.fs" />
     <Compile Include="SearchSettings.fs" />
-    <Compile Include="SearchOption.fs" />
     <Compile Include="Arguments.fs" />
     <Compile Include="SearchResult.fs" />
     <Compile Include="Searcher.fs" />
