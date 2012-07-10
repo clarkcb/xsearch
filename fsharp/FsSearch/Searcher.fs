@@ -8,6 +8,7 @@ open System.Text.RegularExpressions
 
 type Searcher (settings : SearchSettings) =
     let _settings = settings
+    let _fileUtil = new FileUtil()
     let _results = new List<SearchResult>()
     let _fileSet = new HashSet<FileInfo>()
     let _timers = new Dictionary<string,Stopwatch>()
@@ -17,7 +18,6 @@ type Searcher (settings : SearchSettings) =
     member this.Results = _results
     member this.FileSet = _fileSet
     member this.Timers = _timers
-
 
     // member methods
     member this.IsTargetDirectory (d : DirectoryInfo) =
@@ -84,30 +84,15 @@ type Searcher (settings : SearchSettings) =
         if _settings.DoTiming then
             this.StopTimer "SearchFiles"
 
-    member this.IsSearchableFile (f : FileInfo) =
-        not (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.NoSearchExtensions)
-
-    member this.IsBinaryFile (f : FileInfo) =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.BinaryExtensions
-
-    member this.IsTextFile (f : FileInfo) =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.TextExtensions
-
-    member this.IsUnknownFile (f : FileInfo) =
-        (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.UnknownExtensions) ||
-        (not (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.TextExtensions) &&
-         not (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.BinaryExtensions) &&
-         not (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _settings.NoSearchExtensions))
-
     member this.SearchFile (f : FileInfo) =
-        if this.IsUnknownFile f then
+        if _fileUtil.IsUnknownFile f then
             printfn "Skipping file of unknown type: %s" f.FullName
-        elif this.IsSearchableFile f then
+        elif _fileUtil.IsSearchableFile f then
             if _settings.DoTiming then
                 this.StartTimer f.FullName
-            if this.IsTextFile f then
+            if _fileUtil.IsTextFile f then
                 this.SearchTextFile f
-            elif this.IsBinaryFile f then
+            elif _fileUtil.IsBinaryFile f then
                 this.SearchBinaryFile f
             if _settings.DoTiming then
                 this.StopTimer f.FullName

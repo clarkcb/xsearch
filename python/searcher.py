@@ -47,25 +47,37 @@ class Searcher:
     def matches_any_pattern(self, s, pattern_set):
         '''Returns true if string matches any pattern in pattern_set, else false'''
         for p in pattern_set:
-            p = re.compile(p)
             if p.search(s):
+                return True
+        return False
+
+    def any_matches_any_pattern(self, slist, pattern_set):
+        '''Returns true if any string in slist matches any pattern in pattern_set, else false'''
+        for s in slist:
+            if self.matches_any_pattern(s, pattern_set):
                 return True
         return False
 
     def get_file_filter_predicates(self):
         file_filter_predicates = []
         if self.settings.in_extensions:
-            file_filter_predicates.append(lambda f: self.fileutil.get_extension(f) in self.settings.in_extensions)
+            file_filter_predicates.append(
+                lambda f: self.fileutil.get_extension(f) in self.settings.in_extensions)
         if self.settings.out_extensions:
-            file_filter_predicates.append(lambda f: not self.fileutil.get_extension(f) in self.settings.out_extensions)
+            file_filter_predicates.append(
+                lambda f: not self.fileutil.get_extension(f) in self.settings.out_extensions)
         if self.settings.in_dirpatterns:
-            file_filter_predicates.append(lambda f: self.matches_any_pattern(os.path.dirname(f), self.settings.in_dirpatterns))
+            file_filter_predicates.append(
+                lambda f: self.matches_any_pattern(os.path.dirname(f), self.settings.in_dirpatterns))
         if self.settings.out_dirpatterns:
-            file_filter_predicates.append(lambda f: not self.matches_any_pattern(os.path.dirname(f), self.settings.out_dirpatterns))
+            file_filter_predicates.append(
+                lambda f: not self.matches_any_pattern(os.path.dirname(f), self.settings.out_dirpatterns))
         if self.settings.in_filepatterns:
-            file_filter_predicates.append(lambda f: self.matches_any_pattern(os.path.basename(f), self.settings.in_filepatterns))
+            file_filter_predicates.append(
+                lambda f: self.matches_any_pattern(os.path.basename(f), self.settings.in_filepatterns))
         if self.settings.out_filepatterns:
-            file_filter_predicates.append(lambda f: not self.matches_any_pattern(os.path.basename(f), self.settings.out_filepatterns))
+            file_filter_predicates.append(
+                lambda f: not self.matches_any_pattern(os.path.basename(f), self.settings.out_filepatterns))
         return file_filter_predicates
 
     def is_target_file(self, f):
@@ -216,54 +228,46 @@ class Searcher:
             else:
                 try:
                     line = fo.next()
-                except StopIteration, e:
+                except StopIteration:
                     break
-                except AttributeError, e:
+                except AttributeError as e:
                     #print 'AttributeError: %s' % e
                     break
             linenum += 1
+            if self.settings.numlinesafter:
+                while len(lines_after) < self.settings.numlinesafter:
+                    try:
+                        lines_after.append(fo.next())
+                    except StopIteration:
+                        break
             for s in self.settings.searchpatterns:
                 if s in results and self.settings.firstmatch:
                     continue
                 if s.search(line):
-                    if self.settings.numlinesafter:
-                        while len(lines_after) < self.settings.numlinesafter:
-                            try:
-                                lines_after.append(fo.next())
-                            except StopIteration, e:
-                                break
-                    search_result = SearchResult(pattern=s.pattern, filename=filename, linenum=linenum,
-                                                 line=line, lines_before=lines_before[:], lines_after=lines_after[:])
+                    search_result = SearchResult(pattern=s.pattern,
+                                                 filename=filename,
+                                                 linenum=linenum, line=line,
+                                                 lines_before=lines_before[:],
+                                                 lines_after=lines_after[:])
                     if self.settings.numlinesbefore and lines_before:
-                        if self.settings.out_linesbeforepatterns:
-                            lines_before_filter_match = False
-                            for f in self.settings.out_linesbeforepatterns:
-                                for l in lines_before:
-                                    if self.settings.verbose or self.settings.debug:
-                                        print 'checking line for out_linesbeforepatterns "%s": %s' % (f.pattern, l.strip())
-                                    if f.search(l):
-                                        if self.settings.verbose or self.settings.debug:
-                                            print 'found line before matching out_linesbeforepatterns "%s": %s' % (f.pattern, l.strip())
-                                        lines_before_filter_match = True
-                                        break
-                                if lines_before_filter_match:
-                                    search_result = None
-                                    break
+                        if self.settings.in_linesbeforepatterns:
+                            if not self.any_matches_any_pattern(lines_before,
+                                    self.settings.in_linesbeforepatterns):
+                                search_result = None
+                        if search_result and self.settings.out_linesbeforepatterns:
+                            if self.any_matches_any_pattern(lines_before,
+                                    self.settings.out_linesbeforepatterns):
+                                search_result = None
                     if search_result and self.settings.numlinesafter and lines_after:
-                        if self.settings.out_linesafterpatterns:
-                            lines_after_filter_match = False
-                            for f in self.settings.out_linesafterpatterns:
-                                for l in lines_after:
-                                    if self.settings.verbose or self.settings.debug:
-                                        print 'checking line for out_linesafterpatterns "%s": %s' % (f.pattern, l.strip())
-                                    if f.search(l):
-                                        if self.settings.verbose or self.settings.debug:
-                                            print 'found line after matching out_linesafterpatterns "%s": %s' % (f.pattern, l.strip())
-                                        lines_after_filter_match = True
-                                        break
-                                if lines_after_filter_match:
-                                    search_result = None
-                                    break
+                        if self.settings.in_linesafterpatterns:
+                            if not self.any_matches_any_pattern(lines_after,
+                                    self.settings.in_linesafterpatterns):
+                                search_result = None
+                        if search_result and self.settings.out_linesafterpatterns:
+                            if self.any_matches_any_pattern(lines_after,
+                                    self.settings.out_linesafterpatterns):
+                                search_result = None
+                    # if there's still a search_result after lines before and after filtering, add it
                     if search_result:
                         self.add_search_result(search_result)
                         if s in results:

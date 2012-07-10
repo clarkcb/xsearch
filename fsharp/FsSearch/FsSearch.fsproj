@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Utils.fs" />
+    <Compile Include="FileUtil.fs" />
     <Compile Include="SearchSettings.fs" />
     <Compile Include="Arguments.fs" />
     <Compile Include="SearchResult.fs" />

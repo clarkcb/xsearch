@@ -28,9 +28,6 @@ namespace CsSearch
 					new SearchArgOption("F", "filefilter",
 					                    (s, settings) => settings.AddOutFilePattern(s),
 					                    "Specify name pattern for files to exclude from search"),
-					//new SearchArgOption("", "ignorecasesearchfile",
-					//    (s, settings) => settings.SetProperty("ignorecasesearchfile", s),
-					//    "Specify file containing case-insensitive search patterns (one per line)"),
 					//new SearchArgOption("", "linesafterfilter",
 					//    (s, settings) => settings.linesafterfilters.append(s),
 					//    "Specify pattern to filter the "lines-after" lines on (used with --numlinesafter)"),
@@ -46,12 +43,6 @@ namespace CsSearch
 					new SearchArgOption("s", "search",
 					                    (s, settings) => settings.AddSearchPattern(s),
 					                    "Specify search pattern"),
-					//new SearchArgOption("S", "ignorecasesearch",
-					//    (s, settings) => settings.add_searchpattern(s, casesensitive=False),
-					//    "Specify case-insensitive search pattern"),
-					//new SearchArgOption("", "searchfile",
-					//    (s, settings) => settings.SetProperty("searchfile", s),
-					//    "Specify file containing search patterns (one per line)"),
 					new SearchArgOption("x", "ext",
 					                    (s, settings) => settings.AddInExtension(s),
 					                    "Specify extension for files to include in search"),
@@ -69,12 +60,6 @@ namespace CsSearch
 					new SearchFlagOption("a", "allmatches",
 					                     settings => settings.FirstMatch = false,
 					                     "Capture all matches*"),
-					//new SearchFlagOption("c", "casesensitive",
-					//                     settings => settings.SetProperty("ignorecase", false),
-					//                     "Do case-sensitive searching*"),
-					//new SearchFlagOption("C", "caseinsensitive",
-					//                     settings => settings.SetProperty("ignorecase", true),
-					//                     "Do case-insensitive searching"),
 					new SearchFlagOption("", "debug",
 					                     settings => settings.Debug = true,
 					                     "Set output mode to debug"),
@@ -163,13 +148,13 @@ namespace CsSearch
 							s = s.Substring(1);
 						}
 					}
-					catch (InvalidOperationException)
+					catch (InvalidOperationException e)
 					{
-						throw new SearchArgumentException();
+						throw new SearchArgumentException(e.Message);
 					}
 					if (string.IsNullOrWhiteSpace(s))
 					{
-						throw new SearchArgumentException();
+						throw new SearchArgumentException("Invalid option encountered");
 					}
 					if (ArgDictionary.ContainsKey(s))
 					{
@@ -177,9 +162,9 @@ namespace CsSearch
 						{
 							((SearchArgOption)ArgDictionary[s]).Action(queue.Dequeue(), settings);
 						}
-						catch (InvalidOperationException)
+						catch (InvalidOperationException e)
 						{
-							throw new SearchArgumentException();
+							throw new SearchArgumentException(e.Message);
 						}
 					}
 					else if (FlagDictionary.ContainsKey(s))
@@ -188,15 +173,14 @@ namespace CsSearch
 						{
 							((SearchFlagOption)FlagDictionary[s]).Action(settings);
 						}
-						catch (InvalidOperationException)
+						catch (InvalidOperationException e)
 						{
-							throw new SearchArgumentException();
+							throw new SearchArgumentException(e.Message);
 						}
 					}
 					else
 					{
-						Console.WriteLine("ERROR: Unknown option: " + s);
-						throw new SearchArgumentException();
+						throw new SearchArgumentException("Unknown option: " + s);
 					}
 				}
 				else
@@ -206,22 +190,26 @@ namespace CsSearch
 			}
 			if (settings.StartPath == null)
 			{
-				Console.WriteLine("ERROR: missing startpath");
-				throw new SearchArgumentException();
+				throw new SearchArgumentException("Missing startpath");
 			}
 			if (settings.SearchPatterns.Count < 1)
 			{
-				Console.WriteLine("ERROR: You must specify a search pattern");
-				throw new SearchArgumentException();
+				throw new SearchArgumentException("No search patterns specified");
 			}
 			return settings;
+		}
+
+		public void Usage(int exitCode = 0)
+		{
+			Console.WriteLine(GetUsageString());
+			Environment.Exit(exitCode);
 		}
 
 		public string GetUsageString()
 		{
 			var sb = new StringBuilder();
-			sb.AppendLine("Usage:");
-			sb.AppendLine("CsSearch.exe [options] <startpath>\n");
+			sb.AppendLine("\nUsage:");
+			sb.AppendLine(" CsSearch.exe [options] <startpath>\n");
 			sb.AppendLine("Options:");
 			var optStrings = new List<string>();
 			var optDescs = new List<string>();

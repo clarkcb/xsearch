@@ -1,0 +1,118 @@
+<!--
+ * ====================================================================
+ *  $Source: xsearch/java/build.xml,v $
+ *  $Name:  $
+ *  $Revision: 1.0 $
+ *  $Date: 2012/07/03 20:04:25 $
+ *  $Author: cary $
+ * ====================================================================
+-->
+<project name="main" default="build-all" basedir=".">
+
+  <!-- ************************************************************** -->
+  <!-- SET-GLOBAL-PROPERTIES                                          -->
+  <!-- ************************************************************** -->
+  <target name="set-global-properties">
+    <!-- get the environment variables -->
+    <property environment="env" />
+  </target>
+
+  <!-- ************************************************************** -->
+  <!-- INIT-ALL                                                       -->
+  <!-- ************************************************************** -->
+  <target name="init-all" depends="set-global-properties">
+    <property name="base.dir"     value="."/>
+    <property name="src.dir"     value="${base.dir}/src"/>
+    <property name="classes.dir" value="${base.dir}/classes"/>
+    <property name="lib.dir"     value="${base.dir}/lib"/>
+    <property name="test.dir"    value="${base.dir}/test"/>
+    <property name="dist.dir"    value="${base.dir}/dist"/>
+    <property name="jar.dir"     value="${base.dir}/jar"/>
+
+    <path id="lib.class.path">
+      <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <path id="project.class.path">
+      <pathelement path="${java.class.path}/"/>
+      <pathelement location="${classes.dir}"/>
+      <fileset dir="${lib.dir}">
+        <patternset>
+          <include name="*/*.jar"/>
+          <include name="**/*.jar"/>
+          <include name="*/*.zip"/>
+          <include name="**/*.zip"/>
+        </patternset>
+      </fileset>
+    </path>
+    <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${dist.dir}"/>
+    <mkdir dir="${jar.dir}"/>
+  </target>
+
+  <!-- ************************************************************** -->
+  <!-- CLEAN-ALL                                                      -->
+  <!-- ************************************************************** -->
+  <target name="clean-all" depends="init-all">
+    <delete>
+      <fileset dir="${classes.dir}" includes="**/*.class"/>
+    </delete>
+  </target>
+
+  <!-- ************************************************************** -->
+  <!-- BUILD-SRC                                                      -->
+  <!-- ************************************************************** -->
+  <target name="build-src" depends="init-all">
+    <echo message="----------- Compiling javasearch.* ------------"/>
+    <javac memoryMaximumSize="128m"
+           failonerror="true" fork="true" source="1.5"
+           srcdir="${src.dir}" destdir="${classes.dir}"
+           debug="${debug}"
+           optimize="${optimize}">
+      <classpath refid="project.class.path"/>
+    </javac>
+  </target>
+
+  <!-- ************************************************************** -->
+  <!-- BUILD-TEST                                                     -->
+  <!-- ************************************************************** -->
+  <target name="build-test" depends="init-all">
+    <echo message="----------- Compiling junit test cases ------------"/>
+    <javac memoryMaximumSize="128m"
+           failonerror="true" fork="true"
+           srcdir="${test.dir}" destdir="${classes.dir}"
+           debug="${debug}"
+           optimize="${optimize}">
+      <classpath refid="project.class.path"/>
+    </javac>
+  </target>
+
+  <!-- ************************************************************** -->
+  <!-- BUILD-ALL                                                      -->
+  <!-- ************************************************************** -->
+  <target name="build-all" depends="build-src, build-test">
+    <echo message="----------- Compiling all ------------"/>
+    <copy todir="${classes.dir}" >
+      <fileset dir="${src.dir}" >
+        <include name="**/*.properties"/>
+        <include name="**/*.xml"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- ************************************************************** -->
+  <!-- TEST-JAVASEARCH                                                -->
+  <!-- ************************************************************** -->
+  <target name="test-javasearch" depends="build-all">
+    <echo message="----------- Testing javasearch ------------"/>
+    <java classname="javasearch.SearchMain">
+      <arg value="-x"/>
+      <arg value="java"/>
+      <arg value="-s"/>
+      <arg value="Searcher"/>
+      <arg value="${src.dir}"/>
+      <classpath refid="project.class.path"/>
+    </java>
+  </target>
+
+</project>
