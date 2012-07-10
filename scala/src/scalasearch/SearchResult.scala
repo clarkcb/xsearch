@@ -1,3 +1,5 @@
+package scalasearch
+
 import java.io._
 import scala.io._
 

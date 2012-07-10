@@ -1,3 +1,5 @@
+package scalasearch
+
 class SearchSettings() {
     //val inExtensions = Set[String]
     //val outExtensions = Set[String]

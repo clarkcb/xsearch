@@ -1,3 +1,5 @@
+package scalasearch
+
 object SearchOptions {
 
     type OptionMap = Map[Symbol, Any]

@@ -1,7 +1,7 @@
+package scalasearch
+
 import java.io._
 import scala.io._
-import FileUtil
-import SearchResult
 
 object Searcher {
 
