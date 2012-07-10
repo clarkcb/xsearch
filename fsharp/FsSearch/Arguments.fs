@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 
 module Arguments =   
@@ -120,3 +121,48 @@ module Arguments =
  
         loopArgs (Array.toList args)
         settings
+
+    let GetUsageString () =
+        let optStrings =
+            let argStrings =
+                [ for opt in argOptions do
+                    let shortstring : String = 
+                        if opt.shortarg <> "" then "-" + opt.shortarg + ","
+                        else ""
+                    let longstring : String = "--" + opt.longarg
+                    yield shortstring + longstring ]
+            let flagStrings =
+                [ for opt in flagOptions do
+                    let shortstring : String = 
+                        if opt.shortarg <> "" then "-" + opt.shortarg + ","
+                        else ""
+                    let longstring : String = "--" + opt.longarg
+                    yield shortstring + longstring ]
+            List.append argStrings flagStrings
+            |> List.sort
+
+        let optDescs =
+            let argDescs = [ for opt in argOptions -> opt.description ]
+            let flagDescs = [ for opt in flagOptions -> opt.description ]
+            List.append argDescs flagDescs
+
+        let longest = 
+            [for optString in optStrings -> optString.Length]
+            |> List.max
+
+        let format = " {0,-" + longest.ToString() + "}  {1}"
+
+        let usageStrings =
+            [for i in 0 .. optStrings.Length-1 do
+                yield String.Format(format, optStrings.[i], optDescs.[i])]
+
+        let usageString = 
+            usageStrings
+            |> List.append ["\nUsage:"; " FsSearch.exe [options] <startpath>\n"; "Options:"] 
+            |> String.concat "\n"
+        usageString
+
+    let Usage (exitCode : int) =
+        let usageString = GetUsageString()
+        printfn "%s" usageString
+        Environment.Exit(exitCode)
