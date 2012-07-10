@@ -51,10 +51,10 @@ public class FileUtil {
 				 "dsw dtd env etx exp fls fs fsproj h hpp htm html ics iml in " +
 				 "inc ini ipr iws java js jsp layout log mak map master mht mxml " +
 				 "pas php php3 pl plist pm po properties py rb rc rc2 rdf resx " +
-				 "rex rtf rtx scc sgm sgml sh sln smi smil spec sqc sql st str " +
-				 "strings suml svg sxw t tcl tld tmx tsv txt url user vb vbproj " +
-				 "vbs vcf vcproj vdproj vm vrml vssscc vxml wbxml webinfo wml " +
-				 "wmls wrl wsd wsdd wsdl xlf xml xsd xsl xslt").split("\\s+")
+				 "rex rtf rtx scala scc sgm sgml sh sln smi smil spec sqc sql st " +
+				 "str strings suml svg sxw t tcl tld tmx tsv txt url user vb " +
+				 "vbproj vbs vcf vcproj vdproj vm vrml vssscc vxml wbxml webinfo " +
+				 "wml wmls wrl wsd wsdd wsdl xlf xml xsd xsl xslt").split("\\s+")
 			)
 		);
 	private static Set<String> _unknownExtensions =
