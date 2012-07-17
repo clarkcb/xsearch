@@ -1,14 +1,15 @@
 package scalasearch
 
+import java.util._
+
 class SearchSettings() {
-    //val inExtensions = Set[String]
-    //val outExtensions = Set[String]
-    //val inDirPatterns = Set[String]
-    //val outDirPatterns = Set[String]
-    //val inFilePatterns = Set[String]
-    //val outFilePatterns = Set[String]
-    //val searchStrings = Set[String]
-    //val startpath = String
+    val inExtensions = new HashSet[String]()
+    val outExtensions = new HashSet[String]()
+    val inDirPatterns = new HashSet[String]()
+    val outDirPatterns = new HashSet[String]()
+    val inFilePatterns = new HashSet[String]()
+    val outFilePatterns = new HashSet[String]()
+    val searchStrings = new HashSet[String]()
 
     var casesensitive = true
     var debug = false

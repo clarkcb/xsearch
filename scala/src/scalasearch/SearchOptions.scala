@@ -13,159 +13,134 @@ object SearchOptions {
         sys.exit(status)
     }
 
-    class SearchSettings() {
-        //val inExtensions = Set[String]
-        //val outExtensions = Set[String]
-        //val inDirPatterns = Set[String]
-        //val outDirPatterns = Set[String]
-        //val inFilePatterns = Set[String]
-        //val outFilePatterns = Set[String]
-        //val searchStrings = Set[String]
-        //val startpath = String
-
-        var casesensitive = true
-        var debug = false
-        var dotiming = false
-        var firstmatch = false
-        var listfiles = false
-        var listlines = false
-        var multilinesearch = false
-        var printresults = true
-        var printusage = false
-        var printversion = false
-        var searchcompressed = false
-        var startpath = ""
-        var verbose = false
-
-        override def toString() = {
-            "SearchSettings(" +
-            //"startpath: " + startpath +
-            //"inExtensions: " + inExtensions + ", " +
-            //"outExtensions: " + outExtensions + ", " +
-            //"inDirPatterns: " + inDirPatterns + ", " +
-            //"outDirPatterns: " + outDirPatterns + ", " +
-            //"inFilePatterns: " + inFilePatterns + ", " +
-            //"outFilePatterns: " + outFilePatterns + ", " +
-            //"searchStrings: " + searchStrings + ", " +
-            ")"
-        }
-    }
-
-    class ArgSearchOption(val shortarg: String, val longarg: String, val func: Function2[String, SearchSettings, Unit], val desc: String) {
+    class ArgSearchOption(val shortarg: String, val longarg: String, val desc: String, val func: Function2[String, SearchSettings, Unit]) {
         override def toString() = {
             "SearchOption(shortarg: " + shortarg + ", longarg: " + longarg + ")"
         }
     }
 
-    class FlagSearchOption(val shortarg: String, val longarg: String, val func: Function1[SearchSettings, Unit], val desc: String) {
+    class FlagSearchOption(val shortarg: String, val longarg: String, val desc: String, val func: Function1[SearchSettings, Unit]) {
         override def toString() = {
             "SearchOption(shortarg: " + shortarg + ", longarg: " + longarg + ")"
         }
     }
 
-    val ARG_OPTIONS = List(
+    val argTuples = List(
+        ("b", "numlinesbefore",
+         "Number of lines to show before every matched line (default: 0)",
+         (x: String, settings: SearchSettings) => { println("numlinesbefore: #{x}") }),
+        ("B", "numlinesafter",
+         "Number of lines to show after every matched line (default: 0)",
+         (x: String, settings: SearchSettings) => { println("numlinesafter: #{x}") })
+    )
+    val argOptions = List(
         new ArgSearchOption("b", "numlinesbefore",
-            (x: String, settings: SearchSettings) => { println("numlinesbefore: #{x}") },
-            "Number of lines to show before every matched line (default: 0)"),
+            "Number of lines to show before every matched line (default: 0)",
+            (x: String, settings: SearchSettings) => { println("numlinesbefore: #{x}") }),
         new ArgSearchOption("B", "numlinesafter",
-            (x: String, settings: SearchSettings) => { println("numlinesafter: #{x}") },
-            "Number of lines to show after every matched line (default: 0)"),
+            "Number of lines to show after every matched line (default: 0)",
+           (x: String, settings: SearchSettings) => { println("numlinesafter: #{x}") }),
         new ArgSearchOption("d", "dirpattern",
+            "Specify name pattern for directories to include in search",
             //(x: String, settings: SearchSettings) => { settings.in_dirpatterns.push(Regexp.new(x)) },
-            (x: String, settings: SearchSettings) => { println("dirpattern: ") + x },
-            "Specify name pattern for directories to include in search"),
+            (x: String, settings: SearchSettings) => { println("dirpattern: ") + x }),
         new ArgSearchOption("D", "dirfilter",
+            "Specify name pattern for directories to exclude from search",
             //(x: String, settings: SearchSettings) => { settings.out_dirpatterns.push(Regexp.new(x)) },
-            (x: String, settings: SearchSettings) => { println("dirfilter: ") + x },
-            "Specify name pattern for directories to exclude from search"),
+            (x: String, settings: SearchSettings) => { println("dirfilter: ") + x }),
         new ArgSearchOption("f", "filepattern",
+            "Specify name pattern for files to include in search",
             //(x: String, settings: SearchSettings) => { settings.in_filepatterns.push(Regexp.new(x)) },
-            (x: String, settings: SearchSettings) => { println("filepattern: ") + x },
-            "Specify name pattern for files to include in search"),
+            (x: String, settings: SearchSettings) => { println("filepattern: ") + x }),
         new ArgSearchOption("F", "filefilter",
+            "Specify name pattern for files to exclude from search",
             //(x: String, settings: SearchSettings) => { settings.out_filepatterns.push(Regexp.new(x)) },
-            (x: String, settings: SearchSettings) => { println("filefilter: ") + x },
-            "Specify name pattern for files to exclude from search"),
+            (x: String, settings: SearchSettings) => { println("filefilter: ") + x }),
         new ArgSearchOption("", "linesafterfilter",
-            (x: String, settings: SearchSettings) => { println("linesafterfilter: #{x}") },
-            "Specify pattern to filter the \"lines-after\" lines on (used with --numlinesafter)"),
+            "Specify pattern to filter the \"lines-after\" lines on (used with --numlinesafter)",
+            (x: String, settings: SearchSettings) => { println("linesafterfilter: #{x}") }),
         new ArgSearchOption("", "linesaftersearch",
-            (x: String, settings: SearchSettings) => { println("linesaftersearch: #{x}") },
-            "Specify pattern to search the \"lines-after\" lines on (used with --numlinesafter)"),
+            "Specify pattern to search the \"lines-after\" lines on (used with --numlinesafter)",
+            (x: String, settings: SearchSettings) => { println("linesaftersearch: #{x}") }),
         new ArgSearchOption("", "linesbeforefilter",
-            (x: String, settings: SearchSettings) => { println("linesbeforefilter: #{x}") },
-            "Specify pattern to filter the \"lines-before\" lines on (used with --numlinesbefore)"),
+            "Specify pattern to filter the \"lines-before\" lines on (used with --numlinesbefore)",
+            (x: String, settings: SearchSettings) => { println("linesbeforefilter: #{x}") }),
         new ArgSearchOption("", "linesbeforesearch",
-            (x: String, settings: SearchSettings) => { println("linesbeforesearch: #{x}") },
-            "Specify pattern to search the \"lines-before\" lines on (used with --numlinesbefore)"),
+            "Specify pattern to search the \"lines-before\" lines on (used with --numlinesbefore)",
+            (x: String, settings: SearchSettings) => { println("linesbeforesearch: #{x}") }),
         new ArgSearchOption("s", "search",
+            "Specify search pattern",
             //(x: String, settings: SearchSettings) => { settings.searchpatterns.push(Regexp.new(x)) },
-            (x: String, settings: SearchSettings) => { println("searchpattern: ") + x },
-            "Specify search pattern"),
+            (x: String, settings: SearchSettings) => { println("searchpattern: ") + x }),
         new ArgSearchOption("x", "ext",
             //(x: String, settings: SearchSettings) => { settings.in_extensions.push(x) },
-            (x: String, settings: SearchSettings) => { println("ext: ") + x },
-            "Specify extension for files to include in search"),
+            "Specify extension for files to include in search",
+            (x: String, settings: SearchSettings) => { println("ext: ") + x }),
         new ArgSearchOption("X", "extfilter",
+            "Specify extension for files to exclude from search",
             //(x: String, settings: SearchSettings) => { settings.out_extensions.push(x) },
-            (x: String, settings: SearchSettings) => { println("extfilter: ") + x },
-            "Specify extension for files to exclude from search")
+            (x: String, settings: SearchSettings) => { println("extfilter: ") + x })
     )
 
-    val FLAG_OPTIONS  = List(
+    val flagOptions  = List(
         new FlagSearchOption("1", "firstmatch",
-            (settings: SearchSettings) => { settings.firstmatch = true },
-            "Capture only the first match for a file+search combination"),
+            "Capture only the first match for a file+search combination",
+            (settings: SearchSettings) => { settings.firstmatch = true }),
         new FlagSearchOption("a", "allmatches",
-            (settings: SearchSettings) => { settings.firstmatch = false },
-            "Capture all matches*"),
+            "Capture all matches*",
+            (settings: SearchSettings) => { settings.firstmatch = false }),
         new FlagSearchOption("", "debug",
-            (settings: SearchSettings) => { settings.debug = true },
-            "Set output mode to debug"),
+            "Set output mode to debug",
+            (settings: SearchSettings) => { settings.debug = true }),
         new FlagSearchOption("h", "help",
-            (settings: SearchSettings) => { settings.printusage = true },
-            "Print this usage and exit"),
+            "Print this usage and exit",
+            (settings: SearchSettings) => { settings.printusage = true }),
         new FlagSearchOption("", "listfiles",
-            (settings: SearchSettings) => { settings.listfiles = true },
-            "Generate a list of the matching files after searching"),
+            "Generate a list of the matching files after searching",
+            (settings: SearchSettings) => { settings.listfiles = true }),
         new FlagSearchOption("", "listlines",
-            (settings: SearchSettings) => { settings.listlines = true },
-            "Generate a list of the matching lines after searching"),
+            "Generate a list of the matching lines after searching",
+            (settings: SearchSettings) => { settings.listlines = true }),
         new FlagSearchOption("m", "multilinesearch",
-            (settings: SearchSettings) => { settings.multilinesearch = true },
-            "Search files by line*"),
+            "Search files by line*",
+            (settings: SearchSettings) => { settings.multilinesearch = true }),
         new FlagSearchOption("p", "printmatches",
-            (settings: SearchSettings) => { settings.printresults = true },
-            "Print matches to stdout as found*"),
+            "Print matches to stdout as found*",
+            (settings: SearchSettings) => { settings.printresults = true }),
         new FlagSearchOption("P", "noprintmatches",
-            (settings: SearchSettings) => { settings.printresults = false },
-            "Suppress printing of matches to stdout"),
+            "Suppress printing of matches to stdout",
+            (settings: SearchSettings) => { settings.printresults = false }),
         new FlagSearchOption("t", "dotiming",
-            (settings: SearchSettings) => { settings.dotiming = true },
-            "Time search execution"),
+            "Time search execution",
+            (settings: SearchSettings) => { settings.dotiming = true }),
         new FlagSearchOption("v", "verbose",
-            (settings: SearchSettings) => { settings.verbose = true },
-            "Specify verbose output"),
+            "Specify verbose output",
+            (settings: SearchSettings) => { settings.verbose = true }),
         new FlagSearchOption("V", "version",
-            (settings: SearchSettings) => { settings.printversion = true },
-            "Print the version and exit"),
+            "Print the version and exit",
+            (settings: SearchSettings) => { settings.printversion = true }),
         new FlagSearchOption("z", "searchcompressed",
-            (settings: SearchSettings) => { settings.searchcompressed = true },
-            "Search compressed files (bz2, gz, tar, zip)*"),
+            "Search compressed files (bz2, gz, tar, zip)*",
+            (settings: SearchSettings) => { settings.searchcompressed = true }),
         new FlagSearchOption("Z", "nosearchcompressed",
-            (settings: SearchSettings) => { settings.searchcompressed = false },
-            "Do not search compressed files (bz2, gz, tar, zip)")
+            "Do not search compressed files (bz2, gz, tar, zip)",
+            (settings: SearchSettings) => { settings.searchcompressed = false })
     )
-
-    def main(args: Array[String]) = {
-        println("Hello from SearchOptions")
-        ARG_OPTIONS.foreach(s => println(s.toString))
-        FLAG_OPTIONS.foreach(s => println(s.toString))
-    }
 
     def getSearchSettingsFromArgs(args: List[String]): SearchSettings = {
         val settings = new SearchSettings()
+        val shortargs =
+            for (argOption <- argOptions if argOption.shortarg != "") yield (argOption.shortarg, argOption)
+        val longargs =
+            for (argOption <- argOptions) yield (argOption.longarg, argOption)
+
         settings
+    }
+
+    def main(args: Array[String]) = {
+        println("Hello from SearchOptions")
+        argOptions.foreach(s => println(s.toString))
+        flagOptions.foreach(s => println(s.toString))
     }
 
     /*def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
