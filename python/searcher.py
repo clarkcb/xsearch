@@ -42,7 +42,13 @@ class Searcher:
         self.filedict = {}
         self.rescounts = {}
         self.__dict__.update(kargs)
+        self.validate_searchsettings()
         self.file_filter_predicates = self.get_file_filter_predicates()
+
+    def validate_searchsettings(self):
+        assert self.settings.startpath, 'Startpath not defined'
+        assert os.path.exists(self.settings.startpath), 'Startpath not found'
+        assert self.settings.searchpatterns, 'No search patterns specified'
 
     def matches_any_pattern(self, s, pattern_set):
         '''Returns true if string matches any pattern in pattern_set, else false'''

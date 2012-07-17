@@ -136,10 +136,6 @@ class SearchOptions:
                     raise Exception('Unknown option: %s' % arg)
             else:
                 settings.startpath = arg
-        if not settings.startpath:
-            raise Exception('Missing startpath')
-        if not settings.searchpatterns:
-            raise Exception('No search patterns specified')
         if settings.debug:
             settings.verbose = True
         return settings
