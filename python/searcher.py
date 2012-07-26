@@ -15,23 +15,27 @@ ZIPFILE_MODULE_AVAILABLE = True
 
 try:
     import tarfile
-except ImportError, e:
-    print 'tarfile not imported: %s' % e
+except ImportError as e:
+    print 'tarfile not imported: {0!s}'.format(e)
     TARFILE_MODULE_AVAILABLE = False
 try:
     import zipfile
-except ImportError, e:
-    print 'zipfile not imported: %s' % e
+except ImportError as e:
+    print 'zipfile not imported: {0!s}'.format(e)
     ZIPFILE_MODULE_AVAILABLE = False
 
 from fileutil import FileUtil
 from searchresult import SearchResult
 
 class Searcher:
-    '''a class to search files'''
+    """a class to search files"""
 
-    DEFAULT_DIR_FILTER_REGEXES = [re.compile(d) for d in (r'^CVS$', r'^\.git$', r'^\.svn$')]
-    DEFAULT_FILE_FILTER_REGEXES = [re.compile(f) for f in (r'^\.DS_Store$',)]
+    DEFAULT_DIR_FILTER_REGEXES = [
+        re.compile(d) for d in (r'^CVS$', r'^\.git$', r'^\.svn$')
+    ]
+    DEFAULT_FILE_FILTER_REGEXES = [
+        re.compile(f) for f in (r'^\.DS_Store$',)
+    ]
 
     def __init__(self, searchsettings, **kargs):
         self.fileutil = FileUtil()
@@ -51,14 +55,15 @@ class Searcher:
         assert self.settings.searchpatterns, 'No search patterns specified'
 
     def matches_any_pattern(self, s, pattern_set):
-        '''Returns true if string matches any pattern in pattern_set, else false'''
+        """Returns true if string matches any pattern in pattern_set, else false"""
         for p in pattern_set:
             if p.search(s):
                 return True
         return False
 
     def any_matches_any_pattern(self, slist, pattern_set):
-        '''Returns true if any string in slist matches any pattern in pattern_set, else false'''
+        """Returns true if any string in slist matches any pattern in
+        pattern_set, else false"""
         for s in slist:
             if self.matches_any_pattern(s, pattern_set):
                 return True
@@ -68,22 +73,28 @@ class Searcher:
         file_filter_predicates = []
         if self.settings.in_extensions:
             file_filter_predicates.append(
-                lambda f: self.fileutil.get_extension(f) in self.settings.in_extensions)
+                lambda f:
+                    self.fileutil.get_extension(f) in self.settings.in_extensions)
         if self.settings.out_extensions:
             file_filter_predicates.append(
-                lambda f: not self.fileutil.get_extension(f) in self.settings.out_extensions)
+                lambda f:
+                    not self.fileutil.get_extension(f) in self.settings.out_extensions)
         if self.settings.in_dirpatterns:
             file_filter_predicates.append(
-                lambda f: self.matches_any_pattern(os.path.dirname(f), self.settings.in_dirpatterns))
+                lambda f:
+                    self.matches_any_pattern(os.path.dirname(f), self.settings.in_dirpatterns))
         if self.settings.out_dirpatterns:
             file_filter_predicates.append(
-                lambda f: not self.matches_any_pattern(os.path.dirname(f), self.settings.out_dirpatterns))
+                lambda f:
+                    not self.matches_any_pattern(os.path.dirname(f), self.settings.out_dirpatterns))
         if self.settings.in_filepatterns:
             file_filter_predicates.append(
-                lambda f: self.matches_any_pattern(os.path.basename(f), self.settings.in_filepatterns))
+                lambda f:
+                    self.matches_any_pattern(os.path.basename(f), self.settings.in_filepatterns))
         if self.settings.out_filepatterns:
             file_filter_predicates.append(
-                lambda f: not self.matches_any_pattern(os.path.basename(f), self.settings.out_filepatterns))
+                lambda f:
+                    not self.matches_any_pattern(os.path.basename(f), self.settings.out_filepatterns))
         return file_filter_predicates
 
     def is_target_file(self, f):
@@ -93,7 +104,7 @@ class Searcher:
         return True
 
     def get_search_files(self):
-        '''Get the list of files to search'''
+        """Get the list of files to search"""
         searchfiles = []
         for root, dirs, files in os.walk(self.settings.startpath):
             searchfiles.extend([
@@ -111,10 +122,11 @@ class Searcher:
         self.timers[name+':stop'] = stop
         elapsed = stop - start
         self.timers[name+':elapsed'] = elapsed
-        print 'Elapsed time for %s: %s' % (name, elapsed)
+        print 'Elapsed time for {0}: {1}'.format(name, elapsed)
 
     def search(self):
-        '''Search files to find instances of searchpattern(s) starting from startpath'''
+        """Search files to find instances of searchpattern(s) starting from
+           startpath"""
         if self.settings.dotiming:
             self.start_timer('get_search_files')
         searchfiles = self.get_search_files()
@@ -149,12 +161,11 @@ class Searcher:
                 for line in line_list:
                     print line
 
-
     def search_file(self, f):
-        '''Search in a file, return number of matches found'''
+        """Search in a file, return number of matches found"""
         if not self.fileutil.is_searchable_file(f):
             if self.settings.verbose or self.settings.debug:
-                print 'Skipping unsearchable file: %s' % f
+                print 'Skipping unsearchable file: {0}'.format(f)
                 return 0
         matchesfound = 0
         if self.fileutil.is_text_file(f):
@@ -162,12 +173,12 @@ class Searcher:
         elif self.fileutil.is_compressed_file(f) and self.searchcompressed:
             try:
                 matchesfound = self.search_compressed_file(f)
-            except IOError, e:
-                print 'IOError: %s: %s' % (str(e), f)
+            except IOError as e:
+                print 'IOError: {0!s}: {1}'.format(e, f)
         return matchesfound
 
     def search_text_file(self, f, enc=None):
-        '''Search a text file, return number of matches found'''
+        """Search a text file, return number of matches found"""
         matchesfound = 0
         try:
             fo = open(f, 'r')
@@ -178,15 +189,14 @@ class Searcher:
                 results = self.search_text_file_lines(fo, f)
             fo.close()
             matchesfound = len(results)
-        except IOError, e:
-            print 'IOError: %s: %s' % (str(e), f)
-
+        except IOError as e:
+            print 'IOError: {0!s}: {1}'.format(e, f)
         return matchesfound
 
     def search_text_file_contents(self, fo, filename=''):
-        '''Search in a given text file object contents (all at once)
+        """Search in a given text file object contents (all at once)
            and return the results
-        '''
+        """
         results  = {}
         contents = fo.read()
         for s in self.settings.searchpatterns:
@@ -194,7 +204,6 @@ class Searcher:
                 continue
             matches = s.finditer(contents)
             for m in matches:
-                #print "match: m: %s, m.group(): %s" % (m, m.group())
                 before_line_count = len(re.findall(r'(\r\n|\n)', m.string[0:m.start()]))
                 after_line_count = len(re.findall(r'(\r\n|\n)', m.string[m.end():]))
                 line_start_index = m.start()
@@ -207,8 +216,6 @@ class Searcher:
                     line_end_index = m.string.find('\n', m.end())
                 else:
                     line_end_index = len(m.string())-1
-                #print 'line_start_index: %d' % line_start_index
-                #print 'line_end_index: %d' % line_end_index
                 line = m.string[line_start_index:line_end_index]
                 search_result = SearchResult(pattern=s.pattern,
                                              filename=filename,
@@ -221,9 +228,8 @@ class Searcher:
                     results[s] = [search_result]
         return results
 
-
     def search_text_file_lines(self, fo, filename=''):
-        '''Search in a given text file object by line and return the results'''
+        """Search in a given text file object by line and return the results"""
         results  = {}
         linenum = 0
         lines_before = []
@@ -287,9 +293,8 @@ class Searcher:
                     lines_before.append(line)
         return results
 
-
     def search_compressed_file(self, f):
-        '''Search a compressed file, return number of matches found'''
+        """Search a compressed file, return number of matches found"""
         matchesfound = 0
         ext = File.get_extension(f)
         if not ext: return
@@ -297,34 +302,35 @@ class Searcher:
         if ext in ('zip', 'jar', 'war', 'ear'):
             # handle zip files
             if self.settings.debug:
-                print 'searching %s file: %s' % (ext, f) 
+                print 'searching {0} file: {1}'.format(ext, f) 
             try:
                 matchesfound = self.search_zip_file(f)
-            except zipfile.BadZipfile, e:
+            except zipfile.BadZipfile as e:
                 if not ext == 'ear':
-                    print 'BadZipfile: %s: %s' % (str(e), f)
+                    print 'BadZipfile: {0!s}: {1}'.format(e, f)
         elif ext in ('bz2', 'tar', 'tgz', 'gz') and tarfile.is_tarfile(f):
             # handle tar files
             if self.settings.debug:
-                print 'searching %s file: %s' % (ext, f)
+                print 'searching {0} file: {1}'.format(ext, f) 
             try:
                 matchesfound = self.search_tar_file(f, ext)
-            except Exception, e:
-                print 'Exception while searching a tar file %s: %s' % (f, str(e))
+            except Exception as e:
+                print 'Exception while searching a tar file {0}: {1!s}'.format(f, e)
         return matchesfound
 
-
     def search_zip_file(self, f):
-        '''Search a jar/zip file, return number of matches found'''
+        """Search a jar/zip file, return number of matches found"""
         matchesfound = 0
         z = zipfile.ZipFile(f, 'r')
         zipinfos = z.infolist()
         for zipinfo in zipinfos:
-            if self.settings.debug: print 'zipinfo.filename: %s' % zipinfo.filename
+            if self.settings.debug: print 'zipinfo.filename: {0}'.format(zipinfo.filename)
             if zipinfo.file_size and not self.filter_file(zipinfo.filename):
-                if self.settings.debug: print 'file_size and not filter_file: %s' % zipinfo.filename
+                if self.settings.debug:
+                    print 'file_size and not filter_file: {0}'.format(zipinfo.filename)
                 if self.is_text_file(zipinfo.filename):
-                    if self.settings.debug: print 'searchable text file in zip: %s' % zipinfo.filename
+                    if self.settings.debug:
+                        print 'searchable text file in zip: {0}'.format(zipinfo.filename)
                     sio = StringIO(z.read(zipinfo.filename))
                     sio.seek(0)
                     results = self.search_text_file_obj(sio, f, zipinfo.filename)
@@ -334,20 +340,23 @@ class Searcher:
                             #print '%s:%d:%s' % (f, linenum, line)
                             self.add_search_result(search_result)
                 elif self.is_searchable_file(zipinfo.filename):
-                    if self.settings.debug: print 'searchable binary file in zip: %s' % zipinfo.filename
+                    if self.settings.debug:
+                        print 'searchable binary file in zip: {0}'.format(zipinfo.filename)
         return matchesfound
 
 
     def search_tar_file(self, f, ext):
-        '''Search a tar file, return number of matches found'''
+        """Search a tar file, return number of matches found"""
         matchesfound = 0
         try:
             tar = tarfile.open(f, 'r:'+ext)
             for tarinfo in tar:
                 if tarinfo.isreg() and not self.filter_file(tarinfo.name):
-                    if self.settings.debug: print 'isreg and not filter_file: %s' % tarinfo.name
+                    if self.settings.debug:
+                        print 'isreg and not filter_file: {0}'.format(tarinfo.name)
                     if self.is_text_file(tarinfo.name):
-                        if self.settings.debug: print 'searchable text file in tar: %s' % tarinfo.name
+                        if self.settings.debug:
+                            print 'searchable text file in tar: {0}'.format(tarinfo.name)
                         tf = tar.extractfile(tarinfo)
                         results = self.search_text_file_obj(tf, f, tarinfo.name)
                         matchesfound = len(results)
@@ -355,16 +364,16 @@ class Searcher:
                             for search_result in results[pattern]:
                                 self.add_search_result(search_result)
                     elif  self.is_searchable_file(tarinfo.name):
-                        if self.settings.debug: print 'searchable binary file in tar: %s' % tarinfo.name
+                        if self.settings.debug:
+                            print 'searchable binary file in tar: {0}'.format(tarinfo.name)
             tar.close()
-        except tarfile.CompressionError, e:
+        except tarfile.CompressionError as e:
             if not ext == 'tgz':
-                print 'tarfile.CompressionError while trying to open %s: %s' % (f, str(e))
+                print 'tarfile.CompressionError while trying to open {0}: {1!s}'.format(f, e)
         return matchesfound
 
-
     def add_search_result(self, search_result):
-        '''Add to list of search results'''
+        """Add to list of search results"""
         self.results.append(search_result)
         pattern = search_result.pattern
         fullfile = os.path.abspath(search_result.filename)
@@ -374,35 +383,33 @@ class Searcher:
         if self.settings.printresults:
             self.print_result(search_result)
 
-
     def print_result(self, search_result):
-        '''Print the current search result info to the console'''
+        """Print the current search result info to the console"""
         sio = StringIO()
         if len(self.settings.searchpatterns) > 1:
-            sio.write('%s: ' % search_result.pattern)
+            sio.write('{0}: '.format(search_result.pattern))
         sio.write(str(search_result))
         s = sio.getvalue()
         sio.close()
         try:
             print s
-        except UnicodeEncodeError, e:
+        except UnicodeEncodeError as e:
             print repr(s)
 
-
     def print_res_counts(self):
-        '''Print result counts'''
+        """Print result counts"""
         for p in self.patterndict:
             if p in self.rescounts:
                 match = 'match'
                 if self.rescounts[p] > 1:
                     match += 'es'
-                print '%d %s for "%s"' % (self.rescounts[p], match, p)
+                print '{0} {1} for "{2}"'.format(self.rescounts[p], match, p)
             else:
-                print '0 matches for "%s"' % (p)
-
+                print '0 matches for "{0}"'.format(p)
 
     def get_matching_files(self, pattern=None):
-        '''Get list of files with matches for a given pattern (or all patterns if none given)'''
+        """Get list of files with matches for a given pattern
+           (or all patterns if none given)"""
         patterns = []
         if pattern:
             patterns.append(pattern)
@@ -415,9 +422,9 @@ class Searcher:
         file_list.sort()
         return file_list
 
-
     def get_matching_lines(self, pattern=None):
-        '''Get list of lines with matches for a given pattern (or all patterns if none given)'''
+        """Get list of lines with matches for a given pattern (or all patterns
+           if none given)"""
         patterns = []
         if pattern:
             patterns.append(pattern)

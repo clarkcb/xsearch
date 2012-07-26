@@ -15,7 +15,7 @@ DEBUG = False
 
 def main():
     if DEBUG:
-        print 'sys.argv(%d): %s' % (len(sys.argv),str(sys.argv))
+        print 'sys.argv({0}): {1!s}'.format(len(sys.argv), sys.argv)
 
     searchoptions = SearchOptions()
 
@@ -23,7 +23,7 @@ def main():
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
     except Exception, e:
-        print '\nException: %s\n' % e
+        print '\nException: {0!s}\n'.format(e)
         searchoptions.usage()
 
     if settings.printusage:
@@ -37,7 +37,7 @@ def main():
         settings.debug = True
 
     if settings.debug:
-        print 'settings: %s' % str(settings)
+        print 'settings: {0!s}'.format(settings)
 
     try:
         searcher = Searcher(settings)
