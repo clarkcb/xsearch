@@ -6,6 +6,7 @@
 #                      corresponding utility methods
 #
 ################################################################################
+from collections import deque
 from cStringIO import StringIO
 import os
 import sys
@@ -16,88 +17,119 @@ from searchsettings import SearchSettings
 class SearchOptions:
     arg_options = (
         SearchOption('b', 'linesbefore',
-         lambda x, settings: settings.set_property('numlinesbefore', int(x)),
-         'Number of lines to show before every matched line (default: 0)'),
+            'Number of lines to show before every matched line (default: 0)',
+            lambda x, settings:
+                settings.set_property('numlinesbefore', int(x))),
         SearchOption('B', 'linesafter',
-         lambda x, settings: settings.set_property('numlinesafter', int(x)),
-         'Number of lines to show after every matched line (default: 0)'),
+            'Number of lines to show after every matched line (default: 0)',
+            lambda x, settings:
+                settings.set_property('numlinesafter', int(x))),
         SearchOption('d', 'in-dirpattern',
-         lambda x, settings: settings.add_pattern(x, 'in_dirpatterns'),
-         'Specify name pattern for directories to include in search'),
+            'Specify name pattern for directories to include in search',
+            lambda x, settings:
+                settings.add_pattern(x, 'in_dirpatterns')),
         SearchOption('D', 'out-dirpattern',
-         lambda x, settings: settings.add_pattern(x, 'out_dirpatterns'),
-         'Specify name pattern for directories to exclude from search'),
+            'Specify name pattern for directories to exclude from search',
+            lambda x, settings:
+                settings.add_pattern(x, 'out_dirpatterns')),
         SearchOption('f', 'in-filepattern',
-         lambda x, settings: settings.add_pattern(x, 'in_filepatterns'),
-         'Specify name pattern for files to include in search'),
+            'Specify name pattern for files to include in search',
+            lambda x, settings:
+                settings.add_pattern(x, 'in_filepatterns')),
         SearchOption('F', 'out-filepattern',
-         lambda x, settings: settings.add_pattern(x, 'out_filepatterns'),
-         'Specify name pattern for files to exclude from search'),
+            'Specify name pattern for files to exclude from search',
+            lambda x, settings:
+                settings.add_pattern(x, 'out_filepatterns')),
         SearchOption('', 'out-linesafterpattern',
-         lambda x, settings: settings.add_pattern(x, 'out_linesafterpatterns'),
-         'Specify pattern to filter the "lines-after" lines on (used with --linesafter)'),
+            'Specify pattern to filter the "lines-after" lines on (used with' +
+            ' --linesafter)',
+            lambda x, settings:
+                settings.add_pattern(x, 'out_linesafterpatterns')),
         SearchOption('', 'in-linesafterpattern',
-         lambda x, settings: settings.add_pattern(x, 'in_linesafterpatterns'),
-         'Specify pattern to search the "lines-after" lines on (used with --linesafter)'),
+            'Specify pattern to search the "lines-after" lines on (used with' +
+            ' --linesafter)',
+            lambda x, settings:
+                settings.add_pattern(x, 'in_linesafterpatterns')),
         SearchOption('', 'out-linesbeforepattern',
-         lambda x, settings: settings.add_pattern(x, 'out_linesbeforepatterns'),
-         'Specify pattern to filter the "lines-before" lines on (used with --linesbefore)'),
+            'Specify pattern to filter the "lines-before" lines on (used with' +
+            ' --linesbefore)',
+            lambda x, settings:
+                settings.add_pattern(x, 'out_linesbeforepatterns')),
         SearchOption('', 'in-linesbeforepattern',
-         lambda x, settings: settings.add_pattern(x, 'in_linesbeforepatterns'),
-         'Specify pattern to search the "lines-before" lines on (used with --linesbefore)'),
+            'Specify pattern to search the "lines-before" lines on (used with' +
+            ' --linesbefore)',
+            lambda x, settings:
+                settings.add_pattern(x, 'in_linesbeforepatterns')),
         SearchOption('s', 'search',
-         lambda x, settings: settings.add_pattern(x, 'searchpatterns'),
-         'Specify search pattern'),
+            'Specify search pattern',
+            lambda x, settings:
+                settings.add_pattern(x, 'searchpatterns')),
         SearchOption('x', 'ext',
-         lambda x, settings: settings.in_extensions.add(x),
-         'Specify extension for files to include in search'),
+            'Specify extension for files to include in search',
+            lambda x, settings:
+                settings.in_extensions.add(x)),
         SearchOption('X', 'extfilter',
-         lambda x, settings: settings.out_extensions.add(x),
-         'Specify extension for files to exclude from search')
+            'Specify extension for files to exclude from search',
+            lambda x, settings:
+                settings.out_extensions.add(x))
     )
     flag_options = (
         SearchOption('1', 'firstmatch',
-         lambda settings: settings.set_property('firstmatch', True),
-         'Capture only the first match for a file+search combination'),
+            'Capture only the first match for a file+search combination',
+            lambda settings:
+                settings.set_property('firstmatch', True)),
         SearchOption('a', 'allmatches',
-         lambda settings: settings.set_property('firstmatch', False),
-         'Capture all matches*'),
+            'Capture all matches*',
+            lambda settings:
+                settings.set_property('firstmatch', False)),
         SearchOption('', 'debug',
-         lambda settings: settings.set_property('debug', True),
-         'Set output mode to debug'),
+            'Set output mode to debug',
+            lambda settings:
+                settings.set_property('debug', True)),
         SearchOption('h', 'help',
-         lambda settings: settings.set_property('printusage', True),
-         'Print this usage and exit'),
+            'Print this usage and exit',
+            lambda settings:
+                settings.set_property('printusage', True)),
         SearchOption('', 'listfiles',
-         lambda settings: settings.set_property('listfiles', True),
-         'Generate a list of the matching files after searching'),
+            'Generate a list of the matching files after searching',
+            lambda settings:
+                settings.set_property('listfiles', True)),
         SearchOption('', 'listlines',
-         lambda settings: settings.set_property('listlines', True),
-         'Generate a list of the matching lines after searching'),
+            'Generate a list of the matching lines after searching',
+            lambda settings:
+                settings.set_property('listlines', True)),
         SearchOption('m', 'multilinesearch',
-         lambda settings: settings.set_property('multilinesearch', True),
-         'Search files by line*'),
+            'Search files by line*',
+            lambda settings:
+                settings.set_property('multilinesearch', True)),
         SearchOption('p', 'printmatches',
-         lambda settings: settings.set_property('printresults', True),
-         'Print matches to stdout as found*'),
+            'Print matches to stdout as found*',
+            lambda settings:
+                settings.set_property('printresults', True)),
         SearchOption('P', 'noprintmatches',
-         lambda settings: settings.set_property('printresults', False),
-         'Suppress printing of matches to stdout'),
+            'Suppress printing of matches to stdout',
+            lambda settings:
+                settings.set_property('printresults', False)),
         SearchOption('t', 'dotiming',
-         lambda settings: settings.set_property('dotiming', True),
-         'Time search execution'),
+            'Time search execution',
+            lambda settings:
+                settings.set_property('dotiming', True)),
         SearchOption('v', 'verbose',
-         lambda settings: settings.set_property('verbose', True),
-         'Set output mode to verbose'),
+            'Set output mode to verbose',
+            lambda settings:
+                settings.set_property('verbose', True)),
         SearchOption('V', 'version',
-         lambda settings: settings.set_property('printversion', True),
-         'Print version and exit'),
+            'Print version and exit',
+            lambda settings:
+                settings.set_property('printversion', True)),
         SearchOption('z', 'searchcompressed',
-         lambda settings: settings.set_property('searchcompressed', True),
-         'Search compressed files (bz2, gz, tar, zip)*'),
+            'Search compressed files (bz2, gz, tar, zip)*',
+            lambda settings:
+                settings.set_property('searchcompressed', True)),
         SearchOption('Z', 'nosearchcompressed',
-         lambda settings: settings.set_property('searchcompressed', False),
-         'Do not search compressed files (bz2, gz, tar, zip)')
+            'Do not search compressed files (bz2, gz, tar, zip)',
+            lambda settings:
+                settings.set_property('searchcompressed', False))
     )
 
     def __init__(self):
@@ -107,7 +139,7 @@ class SearchOptions:
         self.flag_dict = self.dict_from_options(self.flag_options)
 
     def dict_from_options(self, options):
-        '''Returns a dict for a give collection of SearchOption objects'''
+        """Returns a dict for a given collection of SearchOption objects"""
         opt_dict = {}
         for o in options:
             if o.shortarg:
@@ -116,24 +148,27 @@ class SearchOptions:
         return opt_dict
 
     def search_settings_from_args(self, args):
+        """Returns a SearchSettings instance for a given list of args"""
         settings = SearchSettings()
-        while args:
-            arg = args.pop(0)
+        argdeque = deque(args)
+        while argdeque:
+            arg = argdeque.popleft()
             if arg.startswith('-'):
                 while arg and arg.startswith('-'):
                     arg = arg[1:]
                 if arg in self.arg_dict:
-                    if args:
-                        argval = args.pop(0)
+                    if argdeque:
+                        argval = argdeque.popleft()
                         self.arg_dict[arg].func(argval, settings)
                     else:
-                        raise Exception('Missing value for option %s' % arg)
+                        raise Exception('Missing value for option {0}'.
+                            format(arg))
                 elif arg in self.flag_dict:
                     self.flag_dict[arg].func(settings)
                     if arg in ('h', 'help', 'V', 'version'):
                         return settings
                 else:
-                    raise Exception('Unknown option: %s' % arg)
+                    raise Exception('Unknown option: {0}'.format(arg))
             else:
                 settings.startpath = arg
         if settings.debug:
@@ -154,8 +189,8 @@ class SearchOptions:
         for opt in self.sorted_options:
             opt_string = ''
             if opt.shortarg:
-                opt_string += '-%s,' % opt.shortarg
-            opt_string += '--%s' % opt.longarg
+                opt_string += '-{0},'.format(opt.shortarg)
+            opt_string += '--{0}'.format(opt.longarg)
             if len(opt_string) > longest:
                 longest = len(opt_string)
             opt_strings.append(opt_string)

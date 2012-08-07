@@ -7,12 +7,12 @@
 ################################################################################
 
 class SearchOption:
-    '''a class to encapsulate a specific command line option'''
-    def __init__(self, shortarg, longarg, func, desc):
+    """a class to encapsulate a specific command line option"""
+    def __init__(self, shortarg, longarg, desc, func):
         self.shortarg = shortarg
         self.longarg = longarg
-        self.func = func
         self.desc = desc
+        self.func = func
 
     @property
     def sortarg(self):

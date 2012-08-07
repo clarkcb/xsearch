@@ -42,6 +42,9 @@ def main():
     try:
         searcher = Searcher(settings)
         searcher.search()
+    except AssertionError as e:
+        print 'ERROR: {0!s}\n'.format(e)
+        searchoptions.usage()
     except KeyboardInterrupt:
         print
         sys.exit(0)
