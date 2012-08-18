@@ -1,15 +1,17 @@
 package scalasearch
 
-import java.util._
+//import java.util.{HashSet,Set}
+import scala.collection.mutable.Set
+import scala.util.matching.Regex
 
 class SearchSettings() {
-  val inExtensions = new HashSet[String]()
-  val outExtensions = new HashSet[String]()
-  val inDirPatterns = new HashSet[String]()
-  val outDirPatterns = new HashSet[String]()
-  val inFilePatterns = new HashSet[String]()
-  val outFilePatterns = new HashSet[String]()
-  val searchStrings = new HashSet[String]()
+  val inExtensions = Set[String]()
+  val outExtensions = Set[String]()
+  val inDirPatterns = Set[Regex]()
+  val outDirPatterns = Set[Regex]()
+  val inFilePatterns = Set[Regex]()
+  val outFilePatterns = Set[Regex]()
+  val searchPatterns = Set[Regex]()
 
   var casesensitive = true
   var debug = false
@@ -27,14 +29,14 @@ class SearchSettings() {
 
   override def toString() = {
     "SearchSettings(" +
-    //"startpath: " + startpath +
-    //"inExtensions: " + inExtensions + ", " +
-    //"outExtensions: " + outExtensions + ", " +
-    //"inDirPatterns: " + inDirPatterns + ", " +
-    //"outDirPatterns: " + outDirPatterns + ", " +
-    //"inFilePatterns: " + inFilePatterns + ", " +
-    //"outFilePatterns: " + outFilePatterns + ", " +
-    //"searchStrings: " + searchStrings + ", " +
+    "startpath: \"" + startpath + "\""  +
+    ", inExtensions: " + inExtensions + 
+    ", outExtensions: " + outExtensions +
+    ", inDirPatterns: " + inDirPatterns +
+    ", outDirPatterns: " + outDirPatterns +
+    ", inFilePatterns: " + inFilePatterns +
+    ", outFilePatterns: " + outFilePatterns +
+    ", searchPatterns: " + searchPatterns +
     ")"
   }
 }
