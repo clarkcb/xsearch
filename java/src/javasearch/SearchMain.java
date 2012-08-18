@@ -17,10 +17,6 @@ public class SearchMain {
 		SearchOptions options = new SearchOptions();
 		SearchSettings settings = new SearchSettings();
 
-		// setting this as the default for when Searcher
-		// is used via the command line
-		settings.setPrintResults(true);
-
 		if (args.length < 1) {
 			System.out.println("Error: missing required arguments\n");
 			options.usage(1);
@@ -42,6 +38,10 @@ public class SearchMain {
 		if (settings.getPrintUsage()) {
 			options.usage(0);
 		}
+
+		// setting this as the default for when Searcher
+		// is used via the command line
+		settings.setPrintResults(true);
 
 		Searcher searcher = new Searcher(settings);
 		searcher.search();

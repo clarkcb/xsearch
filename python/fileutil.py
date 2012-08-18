@@ -41,7 +41,8 @@ class FileUtil:
     SEARCHABLE_EXTS = BINARY_EXTS.union(COMPRESSED_EXTS, TEXT_EXTS)
 
     def get_extension(self, filename):
-        """Returns the extension for a given filename, if any, else empty string"""
+        """Returns the extension for a given filename, if any, else empty 
+           string"""
         ext = ''
         if os.path.basename(filename).rfind('.') > 0:
             ext = filename.split('.')[-1]
