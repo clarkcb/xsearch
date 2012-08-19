@@ -93,6 +93,7 @@ class Searcher (settings: SearchSettings) {
     for (f <- searchFiles) {
       searchFile(f)
     }
+    if (settings.printresults) println("%d results".format(_searchResults.length))
     if (settings.dotiming) stopTimer("searchFiles")
     if (settings.listfiles) printFileList
     if (settings.listlines) printLineList
@@ -112,13 +113,19 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       println("Searching text file " + f.getPath)
     }
+    var stop = false
     val source = Source.fromFile(f.getAbsolutePath)
     val lines = source.getLines
     var lineNum: Int = 0
-    for (line <- lines) {
+    while (lines.hasNext && !stop) {
+      val line = lines.next
       lineNum += 1
       for (p <- settings.searchPatterns if p.findFirstIn(line) != None) {
         addSearchResult(new SearchResult(p, f, lineNum, line))
+        if (settings.firstmatch &&
+            _fileMap.contains(f) &&
+            _fileMap(f).exists(_.searchPattern == p))
+          stop = true
       }
     }
     source.close()
