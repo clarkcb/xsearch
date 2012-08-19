@@ -95,6 +95,7 @@ class Searcher (settings: SearchSettings) {
     }
     if (settings.dotiming) stopTimer("searchFiles")
     if (settings.listfiles) printFileList
+    if (settings.listlines) printLineList
   }
 
   def searchFile(f: File) = {
@@ -154,6 +155,16 @@ class Searcher (settings: SearchSettings) {
     println("\nMatching files:")
     val files = _fileMap.keys.toList.sortWith(_.toString < _.toString)
     files.foreach(println(_))
+  }
+
+  def printLineList = {
+    val lineset = Set[String]()
+    for (r <- searchResults if r.line != null) {
+      lineset.add(r.line.trim)
+    }
+    println("\nMatching lines:")
+    val lines = lineset.toList.sortWith(_ < _)
+    lines.foreach(println(_))
   }
 }
 
