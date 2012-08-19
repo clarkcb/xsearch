@@ -7,9 +7,9 @@ object SearchOptions {
     def apply(s:String, settings:SearchSettings)
     def sortArg = {
       if (shortarg.length > 0)
-        shortarg
+        shortarg.toLowerCase
       else
-        longarg
+        longarg.toLowerCase
     }
     override def toString = {
       "SearchOption(shortarg: " + shortarg + ", longarg: " + longarg + ")"
@@ -170,12 +170,11 @@ object SearchOptions {
     sb.append(" scalasearch [options] <startpath>\n\n")
     sb.append("Options:\n")
 
-    var options:List[SearchOption] = (argOptions ::: flagOptions).sort(
-      (o1, o2) => (o1.sortArg.toLowerCase compareTo o2.sortArg.toLowerCase) < 0)
+    var options:List[SearchOption] = (argOptions ::: flagOptions).sortWith(_.sortArg < _.sortArg)
 
-    val optStrings = ((options.map(o => if (o.shortarg.length > 0) "-" + o.shortarg + "," else "")) zip (options.map(o => "--" + o.longarg))).map(o => o._1 + o._2)
-    val optDescs = options.map(o => o.desc)
-    val longest = optStrings.map(o => o.length).sort((o1, o2) => o1 > o2).head
+    val optStrings = ((options.map(o => if (o.shortarg.length > 0) "-" + o.shortarg + "," else "")) zip (options.map("--" + _.longarg))).map(o => o._1 + o._2)
+    val optDescs = options.map(_.desc)
+    val longest = optStrings.map(_.length).sortWith(_ > _).head
     val format = " %1$-"+longest+"s  %2$s\n"
     for (i <- 0 until optStrings.length) {
       sb.append(String.format(format, optStrings(i), optDescs(i)))
@@ -183,7 +182,3 @@ object SearchOptions {
     sb.toString
   }
 }
-
-
-
-
