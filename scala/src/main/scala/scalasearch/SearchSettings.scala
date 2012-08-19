@@ -1,6 +1,5 @@
 package scalasearch
 
-//import java.util.{HashSet,Set}
 import scala.collection.mutable.Set
 import scala.util.matching.Regex
 

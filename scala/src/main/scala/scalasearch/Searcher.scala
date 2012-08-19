@@ -1,7 +1,7 @@
 package scalasearch
 
 import java.io.File
-import scala.io._
+import scala.io.Source
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Set
 import scala.util.matching.Regex

@@ -1,7 +1,6 @@
 package scalasearch
 
-import java.io._
-import scala.io._
+import java.io.File
 
 object FileUtil {
 

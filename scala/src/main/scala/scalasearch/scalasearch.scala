@@ -1,8 +1,5 @@
 package scalasearch
 
-import java.io._
-import scala.io._
-
 object SearchMain {
 
   def main(args: Array[String]) = {

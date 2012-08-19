@@ -1,7 +1,6 @@
 package scalasearch
 
-import java.io._
-import scala.io._
+import java.io.File
 import scala.util.matching.Regex
 
 class SearchResult(val searchPattern: Regex, val file: File, val lineNum: Int, val line: String) {
