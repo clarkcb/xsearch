@@ -5,6 +5,7 @@
 # class Searcher: executes a file search
 #
 ################################################################################
+from collections import deque
 from cStringIO import StringIO
 from datetime import datetime
 import os
@@ -117,9 +118,9 @@ class Searcher:
         self.timers[name+':start'] = start
 
     def stop_timer(self, name):
-        start = self.timers[name+':start']
         stop = datetime.now()
         self.timers[name+':stop'] = stop
+        start = self.timers[name+':start']
         elapsed = stop - start
         self.timers[name+':elapsed'] = elapsed
         print 'Elapsed time for {0}: {1}'.format(name, elapsed)
@@ -235,11 +236,11 @@ class Searcher:
         """Search in a given text file object by line and return the results"""
         results  = {}
         linenum = 0
-        lines_before = []
-        lines_after = []
+        lines_before = deque()
+        lines_after = deque()
         while True:
             if lines_after:
-                line = lines_after.pop(0)
+                line = lines_after.popleft()
             else:
                 try:
                     line = fo.next()
@@ -262,8 +263,8 @@ class Searcher:
                     search_result = SearchResult(pattern=s.pattern,
                                                  filename=filename,
                                                  linenum=linenum, line=line,
-                                                 lines_before=lines_before[:],
-                                                 lines_after=lines_after[:])
+                                                 lines_before=list(lines_before),
+                                                 lines_after=list(lines_after))
                     if self.settings.numlinesbefore and lines_before:
                         if self.settings.in_linesbeforepatterns:
                             if not self.any_matches_any_pattern(lines_before,
@@ -296,7 +297,7 @@ class Searcher:
                             results[s] = [search_result]
             if self.settings.numlinesbefore:
                 if len(lines_before) == self.settings.numlinesbefore:
-                    lines_before.pop(0)
+                    lines_before.popleft()
                 if len(lines_before) < self.settings.numlinesbefore:
                     lines_before.append(line)
         return results
