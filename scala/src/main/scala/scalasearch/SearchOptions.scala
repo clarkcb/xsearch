@@ -177,7 +177,7 @@ object SearchOptions {
     val longest = optStrings.map(_.length).sortWith(_ > _).head
     val format = " %1$-"+longest+"s  %2$s\n"
     for (i <- 0 until optStrings.length) {
-      sb.append(String.format(format, optStrings(i), optDescs(i)))
+      sb.append(format.format(optStrings(i), optDescs(i)))
     }
     sb.toString
   }

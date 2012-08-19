@@ -44,11 +44,11 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isTargetFile(f: File, predicates: List[(File) => Boolean]): Boolean = {
-    predicates forall (p => p(f))
+    predicates forall (_(f))
   }
 
   def files(f: File): Iterable[File] = {
-    if (f.isDirectory()) {
+    if (f.isDirectory) {
       f.listFiles.flatMap(child => files(child))
     } else {
       Seq(f)
