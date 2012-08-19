@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,12 +29,14 @@ public class Searcher {
 	private List<SearchResult> results;
 	private FileUtil fileUtil;
 	private Set<File> fileSet;
+	private Map<String,Long> timers;
 
 	public Searcher(SearchSettings settings) {
 		this.settings = settings;
 		this.results = new ArrayList<SearchResult>();
 		this.fileUtil = new FileUtil();
 		this.fileSet = new HashSet<File>();
+		this.timers = new HashMap<String,Long>();
 	}
 	
 	public SearchSettings getSearchSettings() {
@@ -107,8 +111,27 @@ public class Searcher {
 		return searchFiles;
 	}
 
+	public void startTimer(String name) {
+		long startTime = System.currentTimeMillis();
+		this.timers.put(name+":start", startTime);
+	}
+
+	public void stopTimer(String name) {
+		long stopTime = System.currentTimeMillis();
+		this.timers.put(name+":stop", stopTime);
+		long startTime = this.timers.get(name+":start");
+		//float elapsed = (stopTime - startTime) / 100;
+		long elapsed = stopTime - startTime;
+		String elapsedString = String.format("Elapsed time for \"%s\": %d milliseconds", name, elapsed);
+		System.out.println(elapsedString);
+	}
+
 	public void search() {
+		if (this.settings.getDoTiming())
+			this.startTimer("getSearchFiles");
 		List<File> searchFiles = this.getSearchFiles(new File(this.settings.getStartPath()));
+		if (this.settings.getDoTiming())
+			this.stopTimer("getSearchFiles");
 		if (this.settings.getVerbose() || this.settings.getDebug()) {
 			System.out.println("\nFiles to be searched:");
 			for (File f : searchFiles) {
@@ -116,9 +139,13 @@ public class Searcher {
 			}
 			System.out.println("");
 		}
+		if (this.settings.getDoTiming())
+			this.startTimer("searchFiles");
 		for (File f : searchFiles) {
 			this.searchFile(f);
 		}
+		if (this.settings.getDoTiming())
+			this.stopTimer("searchFiles");
 	}
 
 	public void searchFile(File f) {

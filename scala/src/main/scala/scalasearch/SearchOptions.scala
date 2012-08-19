@@ -161,7 +161,7 @@ object SearchOptions {
 
   def usage(status: Int) = {
     println(getUsageString)
-    //sys.exit(status)
+    sys.exit(status)
   }
 
   def getUsageString = {

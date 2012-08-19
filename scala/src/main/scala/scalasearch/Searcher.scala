@@ -3,12 +3,14 @@ package scalasearch
 import java.io.File
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Map
 import scala.collection.mutable.Set
 import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
 
   val _searchResults = ListBuffer[SearchResult]()
+  val _timers = Map[String,Long]()
 
   def searchResults = _searchResults.toList
 
@@ -66,14 +68,31 @@ class Searcher (settings: SearchSettings) {
     stringList.mkString("[\"", "\", \"", "\"]")
   }
 
+  def startTimer(name:String) {
+    val startTime = System.currentTimeMillis
+    _timers.put(name+":start", startTime)
+  }
+
+  def stopTimer(name:String) {
+    val stopTime = System.currentTimeMillis
+    _timers.put(name+":stop", stopTime)
+    val startTime = _timers(name+":start")
+    val elapsed = stopTime - startTime
+    println("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
+  }
+
   def search = {
+    if (settings.dotiming) startTimer("getSearchFiles")
     val searchFiles = getSearchFiles
+    if (settings.dotiming) stopTimer("getSearchFiles")
     if (settings.verbose) {
       println("searchFiles:\n" + listString(searchFiles))
     }
+    if (settings.dotiming) startTimer("searchFiles")
     for (f <- searchFiles) {
       searchFile(f)
     }
+    if (settings.dotiming) stopTimer("searchFiles")
   }
 
   def searchFile(f: File) = {
