@@ -62,10 +62,14 @@ class Searcher (settings: SearchSettings) {
     searchFiles
   }
 
+  def listString(stringList:Iterable[Any]): String = {
+    stringList.mkString("[\"", "\", \"", "\"]")
+  }
+
   def search = {
     val searchFiles = getSearchFiles
     if (settings.verbose) {
-      println("searchFiles:\n" + searchFiles)
+      println("searchFiles:\n" + listString(searchFiles))
     }
     for (f <- searchFiles) {
       searchFile(f)
