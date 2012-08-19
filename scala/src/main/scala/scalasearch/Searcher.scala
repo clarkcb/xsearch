@@ -9,6 +9,7 @@ import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
 
+  val _fileMap = Map[File,ListBuffer[SearchResult]]()
   val _searchResults = ListBuffer[SearchResult]()
   val _timers = Map[String,Long]()
 
@@ -93,6 +94,7 @@ class Searcher (settings: SearchSettings) {
       searchFile(f)
     }
     if (settings.dotiming) stopTimer("searchFiles")
+    if (settings.listfiles) printFileList
   }
 
   def searchFile(f: File) = {
@@ -135,9 +137,34 @@ class Searcher (settings: SearchSettings) {
 
   def addSearchResult(r: SearchResult) = {
     _searchResults.append(r)
+    val resultListBuffer = _fileMap.getOrElse(r.file, ListBuffer[SearchResult]())
+    resultListBuffer.append(r)
+    _fileMap.put(r.file, resultListBuffer)
+    if (settings.printresults) printSearchResult(r)
+  }
+
+  def printSearchResult(r: SearchResult) = {
     if (settings.searchPatterns.size > 1) {
       print("\"" + r.searchPattern + "\": ")
     }
     println(r)
   }
+
+  def printFileList = {
+    println("\nMatching files:")
+    val files = _fileMap.keys.toList.sortWith(_.toString < _.toString)
+    files.foreach(println(_))
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
