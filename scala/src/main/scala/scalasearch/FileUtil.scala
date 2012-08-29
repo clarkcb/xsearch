@@ -11,8 +11,8 @@ object FileUtil {
   val COMPRESSED_EXTS = """bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war
                            zip Z""".split("""\s+""").toSet
   val BINARY_EXTS     = """ai bin class com dat dbmdl dcr dir dll dxr dms doc
-                           docx dot exe hlp indd lnk mo obj pdb ppt psd pyc pyo
-                           qxd so swf sys vsd xls xlsx xlt
+                           docx dot exe hlp indd lnk mo obj pdb ppt pptx psd pyc
+                           pyo qxd so swf sys vsd xls xlsx xlt
                            """.split("""\s+""").toSet
   val TEXT_EXTS       = """1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
                            am app as asc ascx asm asp aspx bash bat bdsproj bsh

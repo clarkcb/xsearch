@@ -92,7 +92,7 @@ object SearchOptions {
       "Generate a list of the matching lines after searching",
       (settings: SearchSettings) => { settings.listlines = true }),
     new FlagSearchOption("m", "multilinesearch",
-      "Search files by line*",
+      "Search files as single multiline content block",
       (settings: SearchSettings) => { settings.multilinesearch = true }),
     new FlagSearchOption("p", "printmatches",
       "Print matches to stdout as found*",

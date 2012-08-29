@@ -61,8 +61,7 @@ class Searcher (settings: SearchSettings) {
   def getSearchFiles: Iterable[File] = {
     val predicates = getFileFilterPredicates(fileFilterPredicateDefinitions)
     val startdir = new File(settings.startpath)
-    val searchFiles = files(startdir) filter { f => isTargetFile(f, predicates) }
-    searchFiles
+    files(startdir) filter { isTargetFile(_, predicates) }
   }
 
   def listString(stringList:Iterable[Any]): String = {
@@ -113,6 +112,71 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       println("Searching text file " + f.getPath)
     }
+    if (settings.multilinesearch)
+      searchTextFileContents(f)
+    else
+      searchTextFileLines(f)
+  }
+
+  def getLineCount(text: CharSequence) = {
+    """(\r\n|\n)""".r.findAllIn(text).toList.length
+  }
+
+  def startOfLineIndexFromCurrent(text: CharSequence, currentIndex: Int): Int = {
+    text.charAt(currentIndex) match {
+      case '\n' => currentIndex
+      case _ =>
+        if (currentIndex > 0)
+          startOfLineIndexFromCurrent(text, currentIndex-1)
+        else 0
+    }
+  }
+
+  def endOfLineIndexFromCurrent(text: CharSequence, currentIndex: Int): Int = {
+    text.charAt(currentIndex) match {
+      case '\n' => currentIndex
+      case _ =>
+        if (currentIndex < text.length)
+          endOfLineIndexFromCurrent(text, currentIndex+1)
+        else text.length
+    }
+  }
+
+  def searchTextFileContents(f: File) = {
+    val source = Source.fromFile(f.getAbsolutePath)
+    val contents = source.mkString
+    var stop = false
+    for (p <- settings.searchPatterns) {
+      val matches = p.findAllIn(contents).matchData
+      while (matches.hasNext && !stop) {
+        val m = matches.next
+        val beforeText = m.before
+        val beforeLineCount = 
+          if (beforeText == null) 0
+          else getLineCount(beforeText)
+        val lineStartIndex = 
+          if (beforeLineCount > 0)
+            startOfLineIndexFromCurrent(contents, m.start)
+          else 0
+        val afterText = m.after
+        val afterLineCount = 
+          if (afterText == null) 0
+          else getLineCount(afterText)
+        val lineEndIndex = 
+          if (afterLineCount > 0) endOfLineIndexFromCurrent(contents, m.start)
+          else contents.length
+        val line = contents.subSequence(lineStartIndex, lineEndIndex).toString
+        val searchResult = new SearchResult(p, f, beforeLineCount+1, line)
+        addSearchResult(searchResult)
+        if (settings.firstmatch &&
+            _fileMap.contains(f) &&
+            _fileMap(f).exists(_.searchPattern == p))
+          stop = true
+      }
+    }
+  }
+
+  def searchTextFileLines(f: File) = {
     var stop = false
     val source = Source.fromFile(f.getAbsolutePath)
     val lines = source.getLines
