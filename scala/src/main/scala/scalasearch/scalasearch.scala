@@ -10,7 +10,7 @@ object SearchMain {
 
     val arglist = args.toList
 
-    var settings = new SearchSettings()
+    var settings = new SearchSettings
 
     try {
      settings = SearchOptions.settingsFromArgs(arglist) 

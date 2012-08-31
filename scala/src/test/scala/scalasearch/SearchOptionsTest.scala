@@ -12,11 +12,10 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
   val searchString = "Search"
   val requiredArgs = List("-s", searchString, startpath)
 
-  test("print argOptions") {
-    SearchOptions.argOptions.foreach(s => println(s.toString))
-    SearchOptions.flagOptions.foreach(s => println(s.toString))
-
-  }
+  //test("print argOptions") {
+  //  SearchOptions.argOptions.foreach(s => println(s.toString))
+  //  SearchOptions.flagOptions.foreach(s => println(s.toString))
+  //}
 
   test("test getMapFromOptions") {
     val argMap = SearchOptions.mapFromOptions(SearchOptions.argOptions)
@@ -52,7 +51,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
     assertDefaultSettings(settings)
     assert(settings.startpath == startpath)
     assert(settings.searchPatterns.size == 1)
-    assert(settings.searchPatterns.toArray()(0).toString == searchString)
+    assert(settings.searchPatterns.toList.head.toString == searchString)
   }
 
   test("""test settingsFromArgs with args="-x scala ." """) {
@@ -60,8 +59,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
     println("args: "+args)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inExtensions: "+settings.inExtensions)
-    assert(settings.inExtensions.size() == 1)
-    assert(settings.inExtensions.toArray()(0) == "scala")
+    assert(settings.inExtensions.size == 1)
+    assert(settings.inExtensions.toList.head == "scala")
   }
 
   test("""test settingsFromArgs with args="-X scala ." """) {
@@ -69,8 +68,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
     println("args: "+args)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.outExtensions: "+settings.outExtensions)
-    assert(settings.outExtensions.size() == 1)
-    assert(settings.outExtensions.toArray()(0) == "scala")
+    assert(settings.outExtensions.size == 1)
+    assert(settings.outExtensions.toList.head == "scala")
   }
 
   test("""test settingsFromArgs with args="-1 ." """) {
@@ -85,8 +84,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
     println("args: "+args)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inDirPatterns: "+settings.inDirPatterns)
-    assert(settings.inDirPatterns.size() == 1)
-    assert(settings.inDirPatterns.toArray()(0).toString == "scalasearch")
+    assert(settings.inDirPatterns.size == 1)
+    assert(settings.inDirPatterns.toList.head.toString == "scalasearch")
   }
 
   test("""test settingsFromArgs with args="-f Search ." """) {
@@ -94,7 +93,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
     println("args: "+args)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inFilePatterns: "+settings.inFilePatterns)
-    assert(settings.inFilePatterns.size() == 1)
-    assert(settings.inFilePatterns.toArray()(0).toString == "Search")
+    assert(settings.inFilePatterns.size == 1)
+    assert(settings.inFilePatterns.toList.head.toString == "Search")
   }
 }

@@ -181,15 +181,30 @@ class Searcher (settings: SearchSettings) {
     val source = Source.fromFile(f.getAbsolutePath)
     val lines = source.getLines
     var lineNum: Int = 0
+    val linesBefore = new ListBuffer[String]
+    val linesAfter = new ListBuffer[String]
     while (lines.hasNext && !stop) {
-      val line = lines.next
+      val line = 
+        if (linesAfter.length > 0) linesAfter.remove(0)
+        else lines.next
       lineNum += 1
+      if (settings.numlinesafter > 0) {
+        while (linesAfter.length < settings.numlinesafter && lines.hasNext)
+          linesAfter += lines.next
+      }
       for (p <- settings.searchPatterns if p.findFirstIn(line) != None) {
-        addSearchResult(new SearchResult(p, f, lineNum, line))
+        addSearchResult(new SearchResult(p, f, lineNum, line,
+          linesBefore.toList, linesAfter.toList))
         if (settings.firstmatch &&
             _fileMap.contains(f) &&
             _fileMap(f).exists(_.searchPattern == p))
           stop = true
+      }
+      if (settings.numlinesbefore > 0) {
+        if (linesBefore.length == settings.numlinesbefore)
+          linesBefore.remove(0, 1)
+        if (linesBefore.length < settings.numlinesbefore)
+          linesBefore += line
       }
     }
     source.close()

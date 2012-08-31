@@ -3,7 +3,7 @@ package scalasearch
 import scala.collection.mutable.Set
 import scala.util.matching.Regex
 
-class SearchSettings() {
+class SearchSettings {
   val inExtensions = Set[String]()
   val outExtensions = Set[String]()
   val inDirPatterns = Set[Regex]()
@@ -19,6 +19,8 @@ class SearchSettings() {
   var listfiles = false
   var listlines = false
   var multilinesearch = false
+  var numlinesafter = 0
+  var numlinesbefore = 0
   var printresults = true
   var printusage = false
   var printversion = false
@@ -26,7 +28,7 @@ class SearchSettings() {
   var startpath = ""
   var verbose = false
 
-  override def toString() = {
+  override def toString = {
     "SearchSettings(" +
     "startpath: \"" + startpath + "\""  +
     ", inExtensions: " + inExtensions + 

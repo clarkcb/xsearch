@@ -31,12 +31,12 @@ object SearchOptions {
   }
 
   val argOptions = List(
-    //new ArgSearchOption("b", "numlinesbefore",
-    //  "Number of lines to show before every matched line (default: 0)",
-    //  (x: String, settings: SearchSettings) => { println("numlinesbefore: #{x}") }),
-    //new ArgSearchOption("B", "numlinesafter",
-    //  "Number of lines to show after every matched line (default: 0)",
-    //   (x: String, settings: SearchSettings) => { println("numlinesafter: #{x}") }),
+    new ArgSearchOption("b", "numlinesbefore",
+      "Number of lines to show before every matched line (default: 0)",
+      (x: String, settings: SearchSettings) => settings.numlinesbefore = x.toInt),
+    new ArgSearchOption("B", "numlinesafter",
+      "Number of lines to show after every matched line (default: 0)",
+       (x: String, settings: SearchSettings) => settings.numlinesafter = x.toInt),
     new ArgSearchOption("d", "dirpattern",
       "Specify name pattern for directories to include in search",
       (x: String, settings: SearchSettings) => settings.inDirPatterns.add(x.r)),
@@ -124,7 +124,7 @@ object SearchOptions {
   }
 
   def settingsFromArgs(args: List[String]): SearchSettings = {
-    val settings = new SearchSettings()
+    val settings = new SearchSettings
     val argMap = mapFromOptions(argOptions)
     val flagMap = mapFromOptions(flagOptions)
     val switchPattern = """^\-+(\w[\w\-]*)$""".r
@@ -165,14 +165,16 @@ object SearchOptions {
   }
 
   def getUsageString = {
-    val sb = new StringBuilder()
+    val sb = new StringBuilder
     sb.append("Usage:\n")
     sb.append(" scalasearch [options] <startpath>\n\n")
     sb.append("Options:\n")
 
-    var options:List[SearchOption] = (argOptions ::: flagOptions).sortWith(_.sortArg < _.sortArg)
+    var options:List[SearchOption] =
+      (argOptions ::: flagOptions).sortWith(_.sortArg < _.sortArg)
 
-    val optStrings = ((options.map(o => if (o.shortarg.length > 0) "-" + o.shortarg + "," else "")) zip (options.map("--" + _.longarg))).map(o => o._1 + o._2)
+    val optStrings = 
+      ((options.map(o => if (o.shortarg.length > 0) "-" + o.shortarg + "," else "")) zip (options.map("--" + _.longarg))).map(o => o._1 + o._2)
     val optDescs = options.map(_.desc)
     val longest = optStrings.map(_.length).sortWith(_ > _).head
     val format = " %1$-"+longest+"s  %2$s\n"
