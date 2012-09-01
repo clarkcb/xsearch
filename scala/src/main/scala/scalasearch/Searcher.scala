@@ -43,10 +43,14 @@ class Searcher (settings: SearchSettings) {
   }
 
   def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
-    patterns exists (p => p.findFirstIn(s) != None)
+    patterns exists (_.findFirstIn(s) != None)
   }
 
-  def isTargetFile(f: File, predicates: List[(File) => Boolean]): Boolean = {
+  def anyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]): Boolean = {
+    strings exists (matchesAnyPattern(_, patterns))
+  }
+
+  def isTargetFile(f: File, predicates: Iterable[(File) => Boolean]): Boolean = {
     predicates forall (_(f))
   }
 
@@ -64,7 +68,7 @@ class Searcher (settings: SearchSettings) {
     files(startdir) filter { isTargetFile(_, predicates) }
   }
 
-  def listString(stringList:Iterable[Any]): String = {
+  def listToString(stringList:Iterable[Any]): String = {
     stringList.mkString("[\"", "\", \"", "\"]")
   }
 
@@ -86,7 +90,7 @@ class Searcher (settings: SearchSettings) {
     val searchFiles = getSearchFiles
     if (settings.dotiming) stopTimer("getSearchFiles")
     if (settings.verbose) {
-      println("searchFiles:\n" + listString(searchFiles))
+      println("searchFiles:\n" + listToString(searchFiles))
     }
     if (settings.dotiming) startTimer("searchFiles")
     for (f <- searchFiles) {
@@ -176,6 +180,22 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
+  def linesMatch(lines: Iterable[String], inPatterns: Set[Regex],
+      outPatterns: Set[Regex]): Boolean = {
+    (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
+    (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
+  }
+
+  def linesBeforeMatch(linesBefore: Iterable[String]): Boolean = {
+    linesMatch(linesBefore, settings.inLinesBeforePatterns,
+      settings.outLinesBeforePatterns)
+  }
+
+  def linesAfterMatch(linesAfter: Iterable[String]): Boolean = {
+    linesMatch(linesAfter, settings.inLinesAfterPatterns,
+      settings.outLinesAfterPatterns)
+  }
+
   def searchTextFileLines(f: File) = {
     var stop = false
     val source = Source.fromFile(f.getAbsolutePath)
@@ -185,7 +205,7 @@ class Searcher (settings: SearchSettings) {
     val linesAfter = new ListBuffer[String]
     while (lines.hasNext && !stop) {
       val line = 
-        if (linesAfter.length > 0) linesAfter.remove(0)
+        if (!linesAfter.isEmpty) linesAfter.remove(0)
         else lines.next
       lineNum += 1
       if (settings.numlinesafter > 0) {
@@ -193,12 +213,15 @@ class Searcher (settings: SearchSettings) {
           linesAfter += lines.next
       }
       for (p <- settings.searchPatterns if p.findFirstIn(line) != None) {
-        addSearchResult(new SearchResult(p, f, lineNum, line,
-          linesBefore.toList, linesAfter.toList))
-        if (settings.firstmatch &&
-            _fileMap.contains(f) &&
-            _fileMap(f).exists(_.searchPattern == p))
-          stop = true
+        if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
+            (linesAfter.isEmpty || linesAfterMatch(linesAfter))) {
+          addSearchResult(new SearchResult(p, f, lineNum, line,
+            linesBefore.toList, linesAfter.toList))
+          if (settings.firstmatch &&
+              _fileMap.contains(f) &&
+              _fileMap(f).exists(_.searchPattern == p))
+            stop = true
+        }
       }
       if (settings.numlinesbefore > 0) {
         if (linesBefore.length == settings.numlinesbefore)

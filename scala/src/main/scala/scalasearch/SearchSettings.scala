@@ -11,6 +11,10 @@ class SearchSettings {
   val inFilePatterns = Set[Regex]()
   val outFilePatterns = Set[Regex]()
   val searchPatterns = Set[Regex]()
+  val inLinesBeforePatterns = Set[Regex]()
+  val outLinesBeforePatterns = Set[Regex]()
+  val inLinesAfterPatterns = Set[Regex]()
+  val outLinesAfterPatterns = Set[Regex]()
 
   var casesensitive = true
   var debug = false
