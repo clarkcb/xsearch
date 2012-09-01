@@ -99,7 +99,7 @@ class SearchOptions:
             lambda settings:
                 settings.set_property('listlines', True)),
         SearchOption('m', 'multilinesearch',
-            'Search files by line*',
+            'Search files as single multi-line content block',
             lambda settings:
                 settings.set_property('multilinesearch', True)),
         SearchOption('p', 'printmatches',
