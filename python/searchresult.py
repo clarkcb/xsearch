@@ -9,6 +9,7 @@ from cStringIO import StringIO
 
 class SearchResult:
     """encapsulates a search result"""
+    SEPARATOR_LEN = 80
 
     def __init__(self, **kargs):
         self.pattern = ''
@@ -20,20 +21,31 @@ class SearchResult:
         self.lines_after = []
         self.__dict__.update(kargs)
 
+    def __str__(self):
+        if self.lines_before or self.lines_after:
+            return self.__multiline_str()
+        else:
+            return self.__singleline_str()
+
+    def __singleline_str(self):
+        sio = StringIO()
+        sio.write(self.filename)
+        if self.linenum and self.line:
+            sio.write(': {0}: {1}'.format(self.linenum, self.line.strip()))
+        s = sio.getvalue()
+        sio.close()
+        return s
+
     def linenum_padding(self):
-        max_linenum = self.linenum + len(self.lines_before) + len(self.lines_after)
-        if max_linenum < 100: return 2
-        elif max_linenum < 1000: return 3
-        elif max_linenum < 10000: return 4
-        elif max_linenum < 100000: return 5
-        else: return 6
+        max_linenum = self.linenum + len(self.lines_after)
+        return len(str(max_linenum))
 
     def __multiline_str(self):
         sio = StringIO()
-        sio.write('{0}\n{1}'.format('=' * 80, self.filename))
+        sio.write('{0}\n{1}'.format('=' * self.SEPARATOR_LEN, self.filename))
         if self.contained:
             sio.write(': {0}'.format(self.contained))
-        sio.write('\n{0}\n'.format('-' * 80))
+        sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
         line_format = ' {0:>' + str(self.linenum_padding()) + '} | {1}'
         current_linenum = self.linenum
         if self.lines_before:
@@ -53,23 +65,8 @@ class SearchResult:
         sio.close()
         return s
 
-    def __singleline_str(self):
-        sio = StringIO()
-        sio.write(self.filename)
-        if self.linenum and self.line:
-            sio.write(': {0}: {1}'.format(self.linenum, self.line.strip()))
-        s = sio.getvalue()
-        sio.close()
-        return s
-
-    def __str__(self):
-        if self.lines_before or self.lines_after:
-            return self.__multiline_str()
-        else:
-            return self.__singleline_str()
-
     def __unicode__(self):
-        return self.__str__()
+        return unicode(self.__str__())
 
     def __repr__(self):
         s = '<{0}'.format(self.__class__.__name__)

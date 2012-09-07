@@ -10,6 +10,8 @@ class SearchResult(val searchPattern: Regex, val file: File, val lineNum: Int,
     this(searchPattern, file, lineNum, line, List[String](), List[String]())
   }
 
+  val sepLen = 80
+
   override def toString = {
     if (!linesBefore.isEmpty || !linesAfter.isEmpty)
       multilineToString
@@ -25,17 +27,13 @@ class SearchResult(val searchPattern: Regex, val file: File, val lineNum: Int,
   }
 
   def lineNumPadding: Int = {
-    val maxLineNum = lineNum + linesBefore.length + linesAfter.length
-    if (maxLineNum < 100) 2
-    else if (maxLineNum < 1000) 3
-    else if (maxLineNum < 10000) 4
-    else if (maxLineNum < 100000) 5
-    else 6
+    val maxLineNum = lineNum + linesAfter.length
+    "%d".format(maxLineNum).length
   }
 
   def multilineToString = {
     val sb = new StringBuilder
-    sb.append("%s\n%s\n%s\n".format("=" * 80, file.getPath, "-" * 80))
+    sb.append("%s\n%s\n%s\n".format("=" * sepLen, file.getPath, "-" * sepLen))
     val lineFormat = " %1$" + lineNumPadding + "d | %2$s\n"
     var currentLineNum = lineNum
     if (linesBefore.length > 0) {
