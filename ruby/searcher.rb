@@ -1,6 +1,6 @@
 ################################################################################
 #
-# searcher.py
+# searcher.rb
 #
 # class Searcher: executes a file search
 #
@@ -26,22 +26,28 @@ class Searcher
   def get_file_filter_predicates
     file_filter_predicates = []
     if @settings.in_extensions.count > 0
-      file_filter_predicates.push(proc { |f| @settings.in_extensions.include?(@fileutil.get_extension(f)) })
+      file_filter_predicates.push(proc { |f|
+        @settings.in_extensions.include?(@fileutil.get_extension(f)) })
     end
     if @settings.out_extensions.count > 0
-      file_filter_predicates.push(proc { |f| not @settings.out_extensions.include?(@fileutil.get_extension(f)) })
+      file_filter_predicates.push(proc { |f|
+        not @settings.out_extensions.include?(@fileutil.get_extension(f)) })
     end
     if @settings.in_dirpatterns.count > 0
-      file_filter_predicates.push(proc { |f| @settings.in_dirpatterns.any? {|p| p.match(File.dirname(f))} })
+      file_filter_predicates.push(proc { |f|
+        @settings.in_dirpatterns.any? {|p| p.match(File.dirname(f))} })
     end
     if @settings.out_dirpatterns.count > 0
-      file_filter_predicates.push(proc { |f| not @settings.out_dirpatterns.any? {|p| p.match(File.dirname(f))} })
+      file_filter_predicates.push(proc { |f|
+        not @settings.out_dirpatterns.any? {|p| p.match(File.dirname(f))} })
     end
     if @settings.in_filepatterns.count > 0
-      file_filter_predicates.push(proc { |f| @settings.in_filepatterns.any? {|p| p.match(Pathname.new(f).basename)} })
+      file_filter_predicates.push(proc { |f|
+        @settings.in_filepatterns.any? {|p| p.match(Pathname.new(f).basename)} })
     end
     if @settings.out_filepatterns.count > 0
-      file_filter_predicates.push(proc { |f| not @settings.out_filepatterns.any? {|p| p.match(Pathname.new(f).basename)} })
+      file_filter_predicates.push(proc { |f|
+        not @settings.out_filepatterns.any? {|p| p.match(Pathname.new(f).basename)} })
     end
     file_filter_predicates
   end
