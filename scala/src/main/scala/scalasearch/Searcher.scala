@@ -9,6 +9,7 @@ import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
 
+  val _fileUtil = new FileUtil
   val _fileMap = Map[File,ListBuffer[SearchResult]]()
   val _searchResults = ListBuffer[SearchResult]()
   val _timers = Map[String,Long]()
@@ -17,9 +18,9 @@ class Searcher (settings: SearchSettings) {
 
   val fileFilterPredicateDefinitions = List(
     (settings.inExtensions,
-     (f: File) => settings.inExtensions.contains(FileUtil.getExtension(f))),
+     (f: File) => settings.inExtensions.contains(_fileUtil.getExtension(f))),
     (settings.outExtensions,
-     (f: File) => !settings.outExtensions.contains(FileUtil.getExtension(f))),
+     (f: File) => !settings.outExtensions.contains(_fileUtil.getExtension(f))),
     (settings.inDirPatterns,
      (f: File) => matchesAnyPattern(f.getPath, settings.inDirPatterns)),
     (settings.outDirPatterns,
@@ -103,10 +104,10 @@ class Searcher (settings: SearchSettings) {
   }
 
   def searchFile(f: File) = {
-    if (FileUtil.isSearchableFile(f)) {
-      if (FileUtil.isTextFile(f)) {
+    if (_fileUtil.isSearchableFile(f)) {
+      if (_fileUtil.isTextFile(f)) {
         searchTextFile(f)
-      } else if (FileUtil.isBinaryFile(f)) {
+      } else if (_fileUtil.isBinaryFile(f)) {
         searchBinaryFile(f)
       }
     }
