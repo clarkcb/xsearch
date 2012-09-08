@@ -7,38 +7,42 @@
 #
 ################################################################################
 import os
+import xml.dom.minidom as minidom
 
 class FileUtil:
     """a file helper class"""
 
-    # file types
-    # for more info see /etc/httpd/mime.types
-    NOSEARCH_EXTS   = set('''aif aifc aiff au avi bmp cab dmg eps gif ico idlk
-                             ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4
-                             mpe mpeg mpg mxu ogg pdf pict png ps qt ra ram rm
-                             rpm scc snd suo tif tiff wav'''.split())
-    BINARY_EXTS     = set('''ai bin class com dat dbmdl dcr dir dll dxr dms doc
-                             docx dot exe hlp indd lnk mo obj pdb ppt pptx psd
-                             pyc pyo qxd so swf sys vsd xls xlsx xlt'''.split())
-    COMPRESSED_EXTS = set('''bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz
-                             war zip Z'''.split())
-    TEXT_EXTS       = set('''1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
-                             am app as asc ascx asm asp aspx bash bat bdsproj
-                             bsh c cc cfg clj cls cmd cnt conf config cpp cs
-                             csh csproj css csv ctl dat dbproj dbml dbschema
-                             ddl dep dfm disco dlg dof dpr dsp dsw dtd env etx
-                             exp fls fs fsproj h hpp htm html ics iml in inc
-                             ini ipr iws java js jsp layout log mak map master
-                             mht mxml pas php php3 pl plist pm po properties py
-                             rb rc rc2 rdf resx rex rtf rtx scala scc sgm sgml
-                             sh sln smi smil spec sqc sql st str strings suml
-                             svg sxw t tcl tld tmx tsv txt url user vb vbproj
-                             vbs vcf vcproj vdproj vm vrml vssscc vxml wbxml
-                             webinfo wml wmls wrl wsd wsdd wsdl xlf xml xsd xsl
-                             xslt'''.split())
-    UNKNOWN_EXTS    = set('''adm aps cli clw dat db def df2 ncb nt nt2 orig
-                             pc plg roff sun t tex texinfo tr xwd'''.split())
-    SEARCHABLE_EXTS = BINARY_EXTS.union(COMPRESSED_EXTS, TEXT_EXTS)
+    # TODO: move to a config file
+    FILETYPESPATH = '/Users/cary/src/git/xsearch/shared/filetypes.xml'
+
+    def __init__(self, **kargs):
+        self.filetypespath = self.FILETYPESPATH
+        self.filetypes = {}
+        self.__dict__.update(kargs)
+        self.populate_filetypes()
+
+    def get_text(self, nodelist):
+        rc = []
+        for node in nodelist:
+            if node.nodeType == node.TEXT_NODE:
+                rc.append(node.data)
+        return ''.join(rc)
+
+    def populate_filetypes(self):
+        types = 'binary compressed nosearch text unknown xml'.split()
+        filetypedom = minidom.parse(self.filetypespath)
+        filetypenodes = filetypedom.getElementsByTagName('filetype')
+        for filetypenode in filetypenodes:
+            name = filetypenode.getAttribute('name')
+            extnode = filetypenode.getElementsByTagName('extensions')[0]
+            exts = set(self.get_text(extnode.childNodes).split())
+            self.filetypes[name] = exts
+        self.filetypes['text'] = \
+            self.filetypes['text'].union(self.filetypes['code'],
+                self.filetypes['xml'])
+        self.filetypes['searchable'] = \
+            self.filetypes['binary'].union(self.filetypes['compressed'],
+                self.filetypes['text'])
 
     def get_extension(self, filename):
         """Returns the extension for a given filename, if any, else empty 
@@ -50,16 +54,16 @@ class FileUtil:
 
     def is_binary_file(self, f):
         """Return true if file is of a (known) searchable binary file type"""
-        return (self.get_extension(f) in self.BINARY_EXTS)
+        return (self.get_extension(f) in self.filetypes['binary'])
 
     def is_compressed_file(self, f):
         """Return true if file is of a (known) compressed file type"""
-        return (self.get_extension(f) in self.COMPRESSED_EXTS)
+        return (self.get_extension(f) in self.filetypes['compressed'])
 
     def is_searchable_file(self, f):
         """Return true if file is of a (known) searchable type"""
-        return (self.get_extension(f) in self.SEARCHABLE_EXTS)
+        return (self.get_extension(f) in self.filetypes['searchable'])
 
     def is_text_file(self, f):
         """Return true if file is of a (known) text file type"""
-        return (self.get_extension(f) in self.TEXT_EXTS)
+        return (self.get_extension(f) in self.filetypes['text'])
