@@ -4,7 +4,7 @@
     <extensions>ai bin class com dat dbmdl dcr dir dll dxr dms doc dot exe hlp indd lnk mo obj pdb ppt psd pyc pyo qxd so swf sys vsd xls xlt</extensions>
   </filetype>
   <filetype name="code">
-    <extensions>bash bat boo bsh c c++ cc clj cpp cs csh cxx fs h h++ hh hpp java js pas php php3 pl py rb scala sh tcl vb</extensions>
+    <extensions>bash bat boo bsh c c++ cc clj cpp cs csh cxx fs h h++ hh hpp java js pas php php3 pl py rb sbt scala sh tcl vb</extensions>
   </filetype>
   <filetype name="compressed">
     <extensions>bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip Z</extensions>
