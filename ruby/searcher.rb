@@ -17,10 +17,17 @@ class Searcher
 
   def initialize(settings)
     @settings = settings
+    validate_settings
     @fileutil = FileUtil.new
     @results = []
     @timers = {}
     @file_filter_predicates = get_file_filter_predicates
+  end
+
+  def validate_settings
+    raise 'Startpath not defined' unless @settings.startpath
+    raise 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
+    raise 'No search patterns specified' unless @settings.searchpatterns
   end
 
   def get_file_filter_predicates
@@ -117,26 +124,56 @@ class Searcher
         return 0
       end
     end
-    matchesfound = 0
     if @fileutil.is_text_file(f)
-      matchesfound = search_text_file(f)
+      search_text_file(f)
     end
-    matchesfound
   end
 
   def search_text_file(f, enc = nil)
-    matchesfound = 0
+    linenum = 0
+    if @settings.multilinesearch
+      search_text_file_contents(f, enc)
+    else
+      search_text_file_lines(f, enc)
+    end
+  end
+
+  def get_line_count(s)
+    s.scan(/(\r\n|\n)/m).size
+  end
+
+  def search_text_file_contents(f, enc = nil)
+    contents = File.open(f, "r").read
+    @settings.searchpatterns.each do |p|
+      m = p.match(contents)
+      while m
+        before_line_count = get_line_count(m.pre_match)
+        after_line_count = get_line_count(m.post_match)
+        line_start_index, line_end_index = m.offset(0)
+        if before_line_count
+          line_start_index = contents.rindex('\n', line_start_index)
+        end
+        if after_line_count
+          line_end_index = contents.index(/(\r\n|\n)/, line_end_index)
+        end
+        line = contents[line_start_index..line_end_index]
+        add_search_result(SearchResult.new(p, f, linenum, line))
+        contents = m.post_match
+        m = p.match(contents)
+      end
+    end
+  end
+
+  def search_text_file_lines(f, enc = nil)
     linenum = 0
     File.open(f, "r").each_line do |line|
       linenum += 1
       @settings.searchpatterns.each do |p|
         if p.match(line)
           add_search_result(SearchResult.new(p, f, linenum, line))
-          matchesfound += 1
         end
       end
     end
-    matchesfound
   end
 
   def add_search_result(search_result)

@@ -41,8 +41,13 @@ def main
     abort
   end
 
-  searcher = Searcher.new(settings)
-  searcher.search
+  begin
+    searcher = Searcher.new(settings)
+    searcher.search
+  rescue RuntimeError => e
+    puts "\nRuntimeError: #{e.message}\n\n"
+    searchoptions.usage
+  end
 
 end
 

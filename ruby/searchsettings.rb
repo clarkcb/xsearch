@@ -29,7 +29,6 @@ class SearchSettings
   attr_accessor :startpath
   attr_accessor :verbose
 
-
   def initialize
     @casesensitive = true
     @debug = false
