@@ -22,7 +22,7 @@
   <!-- ************************************************************** -->
   <target name="init-all" depends="set-global-properties">
     <property name="base.dir"     value="."/>
-    <property name="src.dir"     value="${base.dir}/src"/>
+    <property name="src.dir"     value="${base.dir}/src/main/java"/>
     <property name="classes.dir" value="${base.dir}/classes"/>
     <property name="lib.dir"     value="${base.dir}/lib"/>
     <property name="test.dir"    value="${base.dir}/test"/>
