@@ -50,11 +50,13 @@ public class FileUtil {
                 Set<String> extSet = new HashSet<String>(Arrays.asList(extensions.split("\\s+")));
                 fileTypeMap.put(name, extSet);
             }
-            Set<String> allText = (Set<String>) fileTypeMap.get("text");
+            Set<String> allText = new HashSet<String>();
+            allText.addAll((Set<String>) fileTypeMap.get("text"));
             allText.addAll((Set<String>) fileTypeMap.get("code"));
             allText.addAll((Set<String>) fileTypeMap.get("xml"));
             fileTypeMap.put("text", allText);
-            Set<String> allSearchable = (Set<String>) fileTypeMap.get("binary");
+            Set<String> allSearchable = new HashSet<String>();
+            allSearchable.addAll((Set<String>) fileTypeMap.get("binary"));
             allSearchable.addAll((Set<String>) fileTypeMap.get("compressed"));
             allSearchable.addAll((Set<String>) fileTypeMap.get("text"));
             fileTypeMap.put("searchable", allSearchable);
