@@ -31,19 +31,19 @@ from searchresult import SearchResult
 class Searcher:
     """a class to search files"""
 
-    def __init__(self, searchsettings, **kargs):
+    def __init__(self, settings, **kargs):
+        self.settings = settings
+        self.validate_settings()
         self.fileutil = FileUtil()
-        self.settings = searchsettings
         self.results = []
         self.patterndict = {}
         self.timers = {}
         self.filedict = {}
         self.rescounts = {}
         self.__dict__.update(kargs)
-        self.validate_searchsettings()
         self.file_filter_predicates = self.get_file_filter_predicates()
 
-    def validate_searchsettings(self):
+    def validate_settings(self):
         assert self.settings.startpath, 'Startpath not defined'
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
         assert self.settings.searchpatterns, 'No search patterns specified'
@@ -164,32 +164,27 @@ class Searcher:
         if not self.fileutil.is_searchable_file(f):
             if self.settings.verbose or self.settings.debug:
                 print 'Skipping unsearchable file: {0}'.format(f)
-                return 0
-        matchesfound = 0
+            return
         if self.fileutil.is_text_file(f):
-            matchesfound = self.search_text_file(f)
+            self.search_text_file(f)
         elif self.fileutil.is_compressed_file(f) and self.searchcompressed:
             try:
-                matchesfound = self.search_compressed_file(f)
+                self.search_compressed_file(f)
             except IOError as e:
                 print 'IOError: {0!s}: {1}'.format(e, f)
-        return matchesfound
 
     def search_text_file(self, f, enc=None):
         """Search a text file, return number of matches found"""
-        matchesfound = 0
         try:
             fo = open(f, 'r')
             results = {}
             if self.settings.multilinesearch:
-                results = self.search_text_file_contents(fo, f)
+                self.search_text_file_contents(fo, f)
             else:
-                results = self.search_text_file_lines(fo, f)
+                self.search_text_file_lines(fo, f)
             fo.close()
-            matchesfound = len(results)
         except IOError as e:
             print 'IOError: {0!s}: {1}'.format(e, f)
-        return matchesfound
 
     def get_line_count(self, s):
         return len(re.findall(r'(\r\n|\n)', s))
@@ -227,7 +222,6 @@ class Searcher:
                     results[s].append(search_result)
                 else:
                     results[s] = [search_result]
-        return results
 
     def lines_match(self, lines, in_patterns, out_patterns):
         if (not in_patterns or \
@@ -295,7 +289,6 @@ class Searcher:
                     lines_before.popleft()
                 if len(lines_before) < self.settings.numlinesbefore:
                     lines_before.append(line)
-        return results
 
     def search_compressed_file(self, f):
         """Search a compressed file, return number of matches found"""
@@ -321,7 +314,6 @@ class Searcher:
             except Exception as e:
                 msg = 'Exception while searching a tar file {0}: {1!s}'
                 print msg.format(f, e)
-        return matchesfound
 
     def search_zip_file(self, f):
         """Search a jar/zip file, return number of matches found"""
@@ -352,8 +344,6 @@ class Searcher:
                     if self.settings.debug:
                         msg = 'searchable binary file in zip: {0}'
                         print msg.format(zipinfo.filename)
-        return matchesfound
-
 
     def search_tar_file(self, f, ext):
         """Search a tar file, return number of matches found"""
@@ -384,7 +374,6 @@ class Searcher:
             if not ext == 'tgz':
                 msg = 'CompressionError while trying to open {0}: {1!s}'
                 print msg.format(f, e)
-        return matchesfound
 
     def add_search_result(self, search_result):
         """Add to list of search results"""
