@@ -9,7 +9,7 @@ class FileUtil {
   private val fileTypePath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
   private val fileTypeMap = getFileTypeMap
 
-  def getFileTypeMap: mutable.Map[String, Set[String]] = {
+  private def getFileTypeMap: mutable.Map[String, Set[String]] = {
     val fileTypeMap = mutable.Map.empty[String, Set[String]]
     val root = XML.loadFile(fileTypePath)
     val fileTypes = root \\ "filetype"

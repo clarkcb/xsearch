@@ -61,7 +61,7 @@ class Searcher
 
   def is_target_file(f)
     @file_filter_predicates.each do |pred|
-      if not pred.call(f)
+      unless pred.call(f)
         return false
       end
     end
@@ -71,7 +71,7 @@ class Searcher
   def get_search_files
     searchfiles = []
     Find.find(@settings.startpath) do |f|
-      if not FileTest.directory?(f)
+      unless FileTest.directory?(f)
         searchfiles.push(f) if is_target_file(f)
       end
     end
@@ -118,7 +118,7 @@ class Searcher
   end
 
   def search_file(f)
-    if not @fileutil.is_searchable_file(f)
+    unless @fileutil.is_searchable_file(f)
       if @settings.verbose or @settings.debug
         puts "Skipping unsearchable file: #{f}"
         return 0

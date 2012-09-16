@@ -167,7 +167,7 @@ class Searcher:
             return
         if self.fileutil.is_text_file(f):
             self.search_text_file(f)
-        elif self.fileutil.is_compressed_file(f) and self.searchcompressed:
+        elif self.fileutil.is_compressed_file(f) and self.settings.searchcompressed:
             try:
                 self.search_compressed_file(f)
             except IOError as e:
@@ -224,9 +224,9 @@ class Searcher:
                     results[s] = [search_result]
 
     def lines_match(self, lines, in_patterns, out_patterns):
-        if (not in_patterns or \
+        if (not in_patterns or
             self.any_matches_any_pattern(lines, in_patterns)) and \
-           (not out_patterns or \
+           (not out_patterns or
             not self.any_matches_any_pattern(lines, out_patterns)):
             return True
         return False
@@ -269,10 +269,10 @@ class Searcher:
                 if s in results and self.settings.firstmatch:
                     continue
                 if s.search(line):
-                    if (lines_before and \
+                    if (lines_before and
                         not self.lines_before_match(lines_before)) or \
-                        (lines_after and \
-                            not self.lines_after_match(lines_after)):
+                        (lines_after and
+                         not self.lines_after_match(lines_after)):
                         continue
                     search_result = SearchResult(pattern=s.pattern,
                                                  filename=filename,
@@ -292,7 +292,6 @@ class Searcher:
 
     def search_compressed_file(self, f):
         """Search a compressed file, return number of matches found"""
-        matchesfound = 0
         ext = File.get_extension(f)
         if not ext: return
         ext = ext.lower()
@@ -301,7 +300,7 @@ class Searcher:
             if self.settings.debug:
                 print 'searching {0} file: {1}'.format(ext, f) 
             try:
-                matchesfound = self.search_zip_file(f)
+                self.search_zip_file(f)
             except zipfile.BadZipfile as e:
                 if not ext == 'ear':
                     print 'BadZipfile: {0!s}: {1}'.format(e, f)
@@ -310,14 +309,13 @@ class Searcher:
             if self.settings.debug:
                 print 'searching {0} file: {1}'.format(ext, f) 
             try:
-                matchesfound = self.search_tar_file(f, ext)
+                self.search_tar_file(f, ext)
             except Exception as e:
                 msg = 'Exception while searching a tar file {0}: {1!s}'
                 print msg.format(f, e)
 
     def search_zip_file(self, f):
         """Search a jar/zip file, return number of matches found"""
-        matchesfound = 0
         z = zipfile.ZipFile(f, 'r')
         zipinfos = z.infolist()
         for zipinfo in zipinfos:
@@ -327,7 +325,7 @@ class Searcher:
                 if self.settings.debug:
                     msg = 'file_size and not filter_file: {0}'
                     print msg.format(zipinfo.filename)
-                if self.is_text_file(zipinfo.filename):
+                if self.fileutil.is_text_file(zipinfo.filename):
                     if self.settings.debug:
                         msg = 'searchable text file in zip: {0}'
                         print msg.format(zipinfo.filename)
@@ -335,19 +333,17 @@ class Searcher:
                     sio.seek(0)
                     results = \
                         self.search_text_file_obj(sio, f, zipinfo.filename)
-                    matchesfound = len(results)
                     for pattern in results:
                         for search_result in results[pattern]:
                             #print '%s:%d:%s' % (f, linenum, line)
                             self.add_search_result(search_result)
-                elif self.is_searchable_file(zipinfo.filename):
+                elif self.fileutil.is_searchable_file(zipinfo.filename):
                     if self.settings.debug:
                         msg = 'searchable binary file in zip: {0}'
                         print msg.format(zipinfo.filename)
 
     def search_tar_file(self, f, ext):
         """Search a tar file, return number of matches found"""
-        matchesfound = 0
         try:
             tar = tarfile.open(f, 'r:'+ext)
             for tarinfo in tar:
@@ -355,17 +351,16 @@ class Searcher:
                     if self.settings.debug:
                         msg = 'isreg and not filter_file: {0}'
                         print msg.format(tarinfo.name)
-                    if self.is_text_file(tarinfo.name):
+                    if self.fileutil.is_text_file(tarinfo.name):
                         if self.settings.debug:
                             msg = 'searchable text file in tar: {0}'
                             print msg.format(tarinfo.name)
                         tf = tar.extractfile(tarinfo)
                         results = self.search_text_file_obj(tf, f, tarinfo.name)
-                        matchesfound = len(results)
                         for pattern in results:
                             for search_result in results[pattern]:
                                 self.add_search_result(search_result)
-                    elif  self.is_searchable_file(tarinfo.name):
+                    elif  self.fileutil.is_searchable_file(tarinfo.name):
                         if self.settings.debug:
                             msg = 'searchable binary file in tar: {0}'
                             print msg.format(tarinfo.name)
