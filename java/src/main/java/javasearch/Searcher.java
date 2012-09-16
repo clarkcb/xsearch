@@ -116,23 +116,30 @@ public class Searcher {
 		this.timers.put(name+":start", startTime);
 	}
 
-	public void stopTimer(String name) {
-		long stopTime = System.currentTimeMillis();
-		this.timers.put(name+":stop", stopTime);
-		long startTime = this.timers.get(name+":start");
-		//float elapsed = (stopTime - startTime) / 100;
-		long elapsed = stopTime - startTime;
-		String elapsedString = String.format("Elapsed time for \"%s\": %d milliseconds", name, elapsed);
-		System.out.println(elapsedString);
-	}
+    public void stopTimer(String name) {
+        long stopTime = System.currentTimeMillis();
+        this.timers.put(name+":stop", stopTime);
+    }
 
-	public void search() {
+    public long getElapsed(String name) {
+        long startTime = this.timers.get(name+":start");
+        long stopTime = this.timers.get(name+":stop");
+        return stopTime - startTime;
+    }
+
+    public void printElapsed(String name) {
+        System.out.println(String.format("Elapsed time for \"%s\": %d milliseconds", name, getElapsed(name)));
+    }
+
+    public void search() {
 		if (this.settings.getDoTiming())
 			this.startTimer("getSearchFiles");
 		List<File> searchFiles = this.getSearchFiles(new File(this.settings.getStartPath()));
-		if (this.settings.getDoTiming())
-			this.stopTimer("getSearchFiles");
-		if (this.settings.getVerbose() || this.settings.getDebug()) {
+		if (this.settings.getDoTiming()) {
+            this.stopTimer("getSearchFiles");
+            this.printElapsed("getSearchFiles");
+        }
+		if (this.settings.getVerbose()) {
 			System.out.println("\nFiles to be searched:");
 			for (File f : searchFiles) {
 				System.out.println(f.getPath());
@@ -144,12 +151,14 @@ public class Searcher {
 		for (File f : searchFiles) {
 			this.searchFile(f);
 		}
-		if (this.settings.getDoTiming())
-			this.stopTimer("searchFiles");
+		if (this.settings.getDoTiming()) {
+            this.stopTimer("searchFiles");
+            this.printElapsed("searchFiles");
+        }
 	}
 
 	public void searchFile(File f) {
-		if (this.settings.getVerbose() || this.settings.getDebug()) {
+		if (this.settings.getVerbose()) {
 			System.out.println("Searching " + f.getPath());
 		}
 		if (this.fileUtil.isTextFile(f)) {
@@ -158,7 +167,7 @@ public class Searcher {
 	}
 
 	public void searchTextFile(File f) {
-		if (this.settings.getVerbose() || this.settings.getDebug()) {
+		if (this.settings.getVerbose()) {
 			System.out.println("Searching text file " + f.getPath());
 		}
 		try {
