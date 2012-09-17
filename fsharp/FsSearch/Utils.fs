@@ -2,7 +2,9 @@
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Text
+open System.Xml.Linq
 
 module Utils = 
     let ExtensionSet (s : string) =
@@ -17,6 +19,24 @@ module Utils =
                 exts
 
         extensionSet
+
+    let PopulateFileTypes (fileTypesPath : FileInfo) =
+        let fileTypesDictionary = new Dictionary<string, ISet<string>>()
+        let filetypes = XDocument.Load(new StreamReader(fileTypesPath.FullName)).Descendants(XName.Get("filetype"))
+        for f in filetypes do
+            let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
+            let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
+            fileTypesDictionary.Add(name, new HashSet<String>(extSet))
+        let allText = new HashSet<String>(fileTypesDictionary.["text"])
+        allText.UnionWith(fileTypesDictionary.["code"])
+        allText.UnionWith(fileTypesDictionary.["xml"])
+        if fileTypesDictionary.Remove("text") then
+            fileTypesDictionary.Add("text", allText)
+        let searchable = new HashSet<String>(fileTypesDictionary.["text"])
+        searchable.UnionWith(fileTypesDictionary.["binary"])
+        searchable.UnionWith(fileTypesDictionary.["compressed"])
+        fileTypesDictionary.Add("searchable", searchable)
+        fileTypesDictionary
 
     let PrintElapsed (name : string) (ts : TimeSpan) =
         let elapsedTime =
