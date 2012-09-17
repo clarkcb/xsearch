@@ -59,7 +59,8 @@ namespace CsSearch
 		public bool IsUnknownFile(FileInfo f)
 		{
 			return (_fileTypesDictionary["unknown"].Contains(f.Extension.ToLowerInvariant()) ||
-					!_fileTypesDictionary["searchable"].Contains(f.Extension.ToLowerInvariant()));
+					(!_fileTypesDictionary["searchable"].Contains(f.Extension.ToLowerInvariant()) &&
+					(!_fileTypesDictionary["nosearch"].Contains(f.Extension.ToLowerInvariant()))));
 		}
 	}
 }
