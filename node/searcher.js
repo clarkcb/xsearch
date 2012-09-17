@@ -140,7 +140,7 @@ function Searcher(settings) {
         if (_settings.verbose || _settings.debug) {
             console.log("Search initiated");
         }
-        if (!path.existsSync(_settings.startPath)) {
+        if (!fs.existsSync(_settings.startPath)) {
             throw new Error('Path not found: '+_settings.startPath);
         }
         var stats = fs.statSync(_settings.startPath);
