@@ -7,10 +7,8 @@
 var fs = require('fs');
 var path = require('path');
 
-var fileutil = require('./fileutil.js');
-var FileUtil = fileutil.FileUtil;
-var searchresult = require('./searchresult.js');
-var SearchResult = searchresult.SearchResult;
+var FileUtil = require('./fileutil.js').FileUtil;
+var SearchResult = require('./searchresult.js').SearchResult;
 
 function Searcher(settings) {
     var that = this;
@@ -28,7 +26,7 @@ function Searcher(settings) {
 
     var matchesAnyPattern = function (s, patterns) {
         for (var p in patterns) {
-            pattern = patterns[p];
+            var pattern = patterns[p];
             var match = pattern.exec(s);
             if (match) {
                 return true;
@@ -38,7 +36,7 @@ function Searcher(settings) {
     };
 
     var _fileFilterPredicates = (function () {
-        preds = [];
+        var preds = [];
         if (_settings.inExtensions.length) {
             preds.push(function(f) { return matchesAnyElement(_fileutil.getExtension(f), _settings.inExtensions); });
         }
@@ -61,7 +59,7 @@ function Searcher(settings) {
     })();
 
     if (_settings.debug) {
-        for (p in _fileFilterPredicates) {
+        for (var p in _fileFilterPredicates) {
             console.log("_fileFilterPredictates["+p+"]: "+_fileFilterPredicates[p]);
         }
     }
@@ -102,7 +100,7 @@ function Searcher(settings) {
                         files.push(filepath);
                     }
                 } else {
-                    if (_settings.verbose || _settings.debug) {
+                    if (_settings.debug) {
                         console.log("childItem neither directory nor file: "+filepath);
                     }
                 }
@@ -159,7 +157,7 @@ function Searcher(settings) {
         if (_settings.doTiming) {
             startTimer("SearchFiles");
         }
-        for (i in files) {
+        for (var i in files) {
             searchFile(files[i]);
         }
         if (_settings.doTiming) {
@@ -204,11 +202,12 @@ function Searcher(settings) {
             console.log('Searching text file: "'+filepath+'"');
         }
         var contents = fs.readFileSync(filepath).toString();
-        var lines = contents.toString().split(/(\r\n|\n)/);
+        var lines = contents.toString().split(/\r?\n/);
         var linenum = 0;
-        var pattern = '';
+        var pattern;
         for (i in lines) {
             linenum += 1;
+            //console.log("line["+linenum+"]: "+lines[i]);
             for (p in _settings.searchPatterns) {
                 pattern = _settings.searchPatterns[p];
                 var match = pattern.exec(lines[i]);
@@ -228,8 +227,8 @@ function Searcher(settings) {
     }
 
     var setFromArray = function (arr) {
-        hash = {};
-        set = [];
+        var hash = {};
+        var set = [];
         for (var a in arr) {
             hash[arr[a]] = 1;
         }
