@@ -11,12 +11,7 @@ import sys
 from searcher import Searcher
 from searchoptions import SearchOptions
 
-DEBUG = False
-
 def main():
-    if DEBUG:
-        print 'sys.argv({0}): {1!s}'.format(len(sys.argv), sys.argv)
-
     searchoptions = SearchOptions()
 
     settings = None
@@ -33,9 +28,6 @@ def main():
         print 'Version: 0.1'
         sys.exit(1)
 
-    if DEBUG:
-        settings.debug = True
-
     if settings.debug:
         print 'settings: {0!s}'.format(settings)
 
@@ -48,7 +40,6 @@ def main():
     except KeyboardInterrupt:
         print
         sys.exit(0)
-
 
 if __name__ == '__main__':
     main()
