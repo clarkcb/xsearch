@@ -2,3 +2,4 @@
 *.tmproj
 *.iml
 .idea/
+node_modules/
