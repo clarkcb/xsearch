@@ -14,10 +14,19 @@ function SearchSettings() {
     this.inFilenamePatterns = [];
     this.outFilenamePatterns = [];
     this.searchPatterns = [];
+    this.casesensitive = true;
     this.debug = false;
     this.doTiming = false;
     this.firstMatch = false;
     this.listFiles = false;
+    this.listLines = false;
+    this.multilineSearch = false;
+    this.numLinesAfter = 0;
+    this.numLinesBefore = 0;
+    this.printResults = false;
+    this.printUsage = false;
+    this.printVersion = false;
+    this.searchCompressed = false;
     this.verbose = false;
     var addExtension = function (ext, arr) {
         arr.push(ext);

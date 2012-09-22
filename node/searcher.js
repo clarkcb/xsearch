@@ -201,6 +201,40 @@ function Searcher(settings) {
         if (_settings.verbose) {
             console.log('Searching text file: "'+filepath+'"');
         }
+        if (_settings.multilineSearch)
+            searchTextFileContents(filepath)
+        else
+            searchTextFileLines(filepath)
+    };
+
+    var searchTextFileContents = function (filepath) {
+        if (_settings.verbose) {
+            console.log('Searching text file by line: "'+filepath+'"');
+        }
+        var contents = fs.readFileSync(filepath).toString();
+        var lines = contents.toString().split(/\r?\n/);
+        var linenum = 0;
+        var pattern;
+        for (i in lines) {
+            linenum += 1;
+            //console.log("line["+linenum+"]: "+lines[i]);
+            for (p in _settings.searchPatterns) {
+                pattern = _settings.searchPatterns[p];
+                var match = pattern.exec(lines[i]);
+                if (match) {
+                    addSearchResult(new SearchResult(pattern, filepath, linenum, lines[i]));
+                    if (_settings.firstMatch) {
+                        return;
+                    }
+                }
+            }
+        }
+    };
+
+    var searchTextFileLines = function (filepath) {
+        if (_settings.verbose) {
+            console.log('Searching text file by line: "'+filepath+'"');
+        }
         var contents = fs.readFileSync(filepath).toString();
         var lines = contents.toString().split(/\r?\n/);
         var linenum = 0;
