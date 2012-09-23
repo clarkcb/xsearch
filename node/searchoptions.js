@@ -6,6 +6,7 @@
 
 var SearchOption = require('./searchoption.js').SearchOption;
 var SearchSettings = require('./searchsettings.js').SearchSettings;
+var util = require('util');
 
 function SearchOptions() {
     var that = this;
@@ -99,10 +100,10 @@ function SearchOptions() {
             function(settings) { settings.searchCompressed = false; })
     ];
 
-    var mapFromOptions = function (options) {
+    var mapFromOptions = function (opts) {
         var optMap = {};
-        for (var o in options) {
-            var opt = options[o];
+        for (var o in opts) {
+            var opt = opts[o];
             if (opt.shortarg)
                 optMap[opt.shortarg] = opt;
             optMap[opt.longarg] = opt;
@@ -110,6 +111,8 @@ function SearchOptions() {
         return optMap;
     };
 
+    var options = argOptions.concat(flagOptions);
+    options.sort(function (a,b) {a.sortarg.localeCompare(b.sortarg);});
     var argMap = mapFromOptions(argOptions);
     var flagMap = mapFromOptions(flagOptions);
 
@@ -132,6 +135,8 @@ function SearchOptions() {
                     }
                 } else if (flagMap[arg]) {
                     flagMap[arg].func(settings);
+                    if (['h','help','V','version'].indexOf(arg) > -1)
+                        return settings;
                 } else {
                     throw new Error("Unknown option: "+arg);
                 }
@@ -141,6 +146,42 @@ function SearchOptions() {
         }
         return settings;
     };
+
+    this.usage = function () {
+        usageWithCode(0);
+    }
+
+    this.usageWithCode = function (exitCode) {
+        console.log(getUsageString());
+        process.exit(exitCode);
+    }
+
+    var getUsageString = function () {
+        var usage = 'Usage:\nnodesearch [options] <startpath>\n\n';
+        usage += 'Options:\n';
+        var optStrings = [];
+        var optDescs = [];
+        var longest = 0;
+        for (var o in options) {
+            var opt = options[o];
+            var optString = '';
+            if (opt.shortarg)
+                optString += util.format('-%s,', opt.shortarg)
+            optString += util.format('--%s', opt.longarg)
+            if (optString.length > longest)
+                longest = optString.length
+            optStrings.push(optString)
+            optDescs.push(opt.desc)
+        }
+        for (var o in optStrings) {
+            var optString = optStrings[o];
+            while (optString.length < longest)
+                optString += ' ';
+            usage +=  optString + '  ' + optDescs[o] + '\n';
+        }
+        return usage;
+    };
+
 
 };
 

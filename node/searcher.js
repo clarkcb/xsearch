@@ -4,6 +4,7 @@
  * file search utility written in node.js
  */
 
+var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
@@ -12,13 +13,17 @@ var SearchResult = require('./searchresult.js').SearchResult;
 
 function Searcher(settings) {
     var that = this;
-    if (!settings || !settings.startPath || !settings.searchPatterns.length) {
-        throw new Error("Searcher instantiated with invalid SearchSettings instance");
-    }
     var _settings = settings;
     var _fileutil = new FileUtil();
     var _timers = {};
     this.results = [];
+
+    var validateSettings = function () {
+        assert.ok(_settings.startPath, 'Startpath not defined');
+        assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
+        assert.ok(_settings.searchPatterns.length, 'No search patterns specified');
+    };
+    validateSettings();
 
     var matchesAnyElement = function (s, elements) {
         return elements.indexOf(s) > -1;
