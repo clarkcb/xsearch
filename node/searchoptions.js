@@ -6,7 +6,6 @@
 
 var SearchOption = require('./searchoption.js').SearchOption;
 var SearchSettings = require('./searchsettings.js').SearchSettings;
-var util = require('util');
 
 function SearchOptions() {
     var that = this;
@@ -166,8 +165,8 @@ function SearchOptions() {
             var opt = options[o];
             var optString = '';
             if (opt.shortarg)
-                optString += util.format('-%s,', opt.shortarg)
-            optString += util.format('--%s', opt.longarg)
+                optString += '-' + opt.shortarg + ','
+            optString += '--' + opt.longarg
             if (optString.length > longest)
                 longest = optString.length
             optStrings.push(optString)

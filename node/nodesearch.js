@@ -10,9 +10,6 @@ var SearchOptions = require('./searchoptions.js').SearchOptions;
 function searchMain() {
     var searchOptions = new SearchOptions();
 
-    if (process.argv.length < 3) {
-        throw new Error("Missing arguments");
-    }
     var args = process.argv.slice(2);
     //console.log('args: ', args);
 
