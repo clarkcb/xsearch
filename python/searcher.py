@@ -111,15 +111,16 @@ class Searcher:
         return searchfiles
 
     def start_timer(self, name):
-        start = datetime.now()
-        self.timers[name+':start'] = start
+        self.timers[name+':start'] = datetime.now()
 
     def stop_timer(self, name):
-        stop = datetime.now()
-        self.timers[name+':stop'] = stop
+        self.timers[name+':stop'] = datetime.now()
+        self.print_elapsed(name)
+
+    def print_elapsed(self, name):
         start = self.timers[name+':start']
+        stop = self.timers[name+':stop']
         elapsed = stop - start
-        self.timers[name+':elapsed'] = elapsed
         print 'Elapsed time for {0}: {1}'.format(name, elapsed)
 
     def search(self):
@@ -190,13 +191,12 @@ class Searcher:
         return len(re.findall(r'(\r\n|\n)', s))
 
     def search_text_file_contents(self, fo, filename=''):
-        """Search in a given text file object contents (all at once)
-           and return the results
+        """Search a given text file object contents all at once
         """
-        results  = {}
+        file_results  = {}
         contents = fo.read()
         for s in self.settings.searchpatterns:
-            if s in results and self.settings.firstmatch:
+            if self.settings.firstmatch and s in file_results:
                 continue
             matches = s.finditer(contents)
             for m in matches:
@@ -218,10 +218,9 @@ class Searcher:
                                              linenum=before_line_count+1,
                                              line=line)
                 self.add_search_result(search_result)
-                if s in results:
-                    results[s].append(search_result)
-                else:
-                    results[s] = [search_result]
+                if not s in file_results:
+                    file_results[s] = []
+                file_results[s].append(search_result)
 
     def lines_match(self, lines, in_patterns, out_patterns):
         if (not in_patterns or
@@ -243,7 +242,7 @@ class Searcher:
 
     def search_text_file_lines(self, fo, filename=''):
         """Search in a given text file object by line and return the results"""
-        results  = {}
+        file_results  = {}
         linenum = 0
         lines_before = deque()
         lines_after = deque()
@@ -266,7 +265,7 @@ class Searcher:
                     except StopIteration:
                         break
             for s in self.settings.searchpatterns:
-                if s in results and self.settings.firstmatch:
+                if self.settings.firstmatch and s in file_results:
                     continue
                 if s.search(line):
                     if (lines_before and
@@ -280,10 +279,9 @@ class Searcher:
                                                  lines_before=list(lines_before),
                                                  lines_after=list(lines_after))
                     self.add_search_result(search_result)
-                    if s in results:
-                        results[s].append(search_result)
-                    else:
-                        results[s] = [search_result]
+                    if not s in file_results:
+                        file_results[s] = []
+                    file_results[s].append(search_result)
             if self.settings.numlinesbefore:
                 if len(lines_before) == self.settings.numlinesbefore:
                     lines_before.popleft()

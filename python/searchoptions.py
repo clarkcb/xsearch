@@ -150,6 +150,7 @@ class SearchOptions:
     def search_settings_from_args(self, args):
         """Returns a SearchSettings instance for a given list of args"""
         settings = SearchSettings()
+        settings.printresults = True
         argdeque = deque(args)
         while argdeque:
             arg = argdeque.popleft()
