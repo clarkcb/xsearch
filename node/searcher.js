@@ -126,55 +126,63 @@ function Searcher(settings) {
     }
 
     var startTimer = function (name) {
-        var start = new Date();
-        _timers[name+":start"] = start;
+        _timers[name+":start"] = new Date();
     }
 
     var stopTimer = function (name) {
+        _timers[name+":stop"] = new Date();
+        printElapsed(name);
+    }
+
+    var printElapsed = function (name) {
         var start = _timers[name+":start"];
-        var stop = new Date();
-        _timers[name+":stop"] = stop;
+        var stop = _timers[name+":stop"];
         var elapsed = stop - start;
-        _timers[name+":elapsed"] = elapsed;
         console.log("Elapsed time for " + name + ": " + elapsed + " milliseconds");
     }
 
     this.search = function () {
-        if (_settings.verbose || _settings.debug) {
+        if (_settings.verbose)
             console.log("Search initiated");
-        }
-        if (!fs.existsSync(_settings.startPath)) {
-            throw new Error('Path not found: '+_settings.startPath);
-        }
-        var stats = fs.statSync(_settings.startPath);
-        if (!stats.isDirectory()) {
-            throw new Error("searchSettings.startPath is not a valid directory: "+_settings.startPath);
-        }
 
-        if (_settings.doTiming) {
+        if (_settings.doTiming)
             startTimer("GetSearchFiles");
-        }
         var files = getSearchFiles(_settings.startPath);
-        if (_settings.doTiming) {
+        if (_settings.doTiming)
             stopTimer("GetSearchFiles");
-        }
 
-        if (_settings.doTiming) {
+        if (_settings.doTiming)
             startTimer("SearchFiles");
-        }
         for (var i in files) {
             searchFile(files[i]);
         }
-        if (_settings.doTiming) {
+        if (_settings.doTiming)
             stopTimer("SearchFiles");
-        }
-        if (_settings.verbose) {
+
+        if (_settings.verbose)
             console.log("Search completed");
-        }
+
+        if (_settings.printResults)
+            console.log("Matches: " + that.results.length);
+
         if (_settings.doTiming && _settings.debug) {
             console.log("\nTimers:");
             for (var t in _timers) {
                 console.log(t + ": " + _timers[t]);
+            }
+        }
+        if (_settings.listFiles) {
+            var files = getFilesWithMatches();
+            console.log("\nMatching files:");
+            for (var f in files) {
+                console.log(files[f]);
+            }
+        }
+        if (_settings.listLines) {
+            var files = getLinesWithMatches();
+            console.log("\nMatching lines:");
+            for (var l in lines) {
+                console.log(lines[l]);
             }
         }
     };
@@ -212,26 +220,47 @@ function Searcher(settings) {
             searchTextFileLines(filepath)
     };
 
+    var getLineCount = function (contents) {
+        return contents.match(/(\r?\n)/g).length;
+    }
+
     var searchTextFileContents = function (filepath) {
         if (_settings.verbose) {
-            console.log('Searching text file by line: "'+filepath+'"');
+            console.log('Searching text file contents: "'+filepath+'"');
         }
+        var fileResults = {};
         var contents = fs.readFileSync(filepath).toString();
-        var lines = contents.toString().split(/\r?\n/);
-        var linenum = 0;
-        var pattern;
-        for (i in lines) {
-            linenum += 1;
-            //console.log("line["+linenum+"]: "+lines[i]);
-            for (p in _settings.searchPatterns) {
-                pattern = _settings.searchPatterns[p];
-                var match = pattern.exec(lines[i]);
-                if (match) {
-                    addSearchResult(new SearchResult(pattern, filepath, linenum, lines[i]));
-                    if (_settings.firstMatch) {
-                        return;
-                    }
+
+        for (p in _settings.searchPatterns) {
+            var pattern = new RegExp(_settings.searchPatterns[p].source, "g");
+            if (_settings.firstMatch && pattern in fileResults)
+                continue;
+            var match = pattern.exec(contents);
+            while (match) {
+                var beforeLineCount = 0;
+                if (match.index) {
+                    var beforeContents = contents.substring(0, match.index);
+                    beforeLineCount = getLineCount(beforeContents);
                 }
+                var afterLineCount = 0;
+                if (pattern.lastIndex < contents.length) {
+                    var afterContents = contents.substring(pattern.lastIndex);
+                    afterLineCount = getLineCount(afterContents);
+                }
+                var lineStartIndex = match.index;
+                while (lineStartIndex > 0 && contents.charAt(lineStartIndex) != '\n')
+                    lineStartIndex -= 1;
+                var lineEndIndex = pattern.lastIndex;
+                while (lineEndIndex < contents.length && contents.charAt(lineEndIndex) != '\n')
+                    lineEndIndex += 1;
+                line = contents.substring(lineStartIndex, lineEndIndex);
+                var searchResult = new SearchResult(pattern,
+                    filepath, beforeLineCount+1, line);
+                addSearchResult(searchResult);
+                if (!(pattern in fileResults))
+                    fileResults[pattern] = [];
+                fileResults[pattern].push(searchResult);
+                match = pattern.exec(contents);
             }
         }
     };
@@ -284,6 +313,16 @@ function Searcher(settings) {
             files.push(result.filename);
         }
         return setFromArray(files);
+    }
+
+    this.getLinesWithMatches = function () {
+        var lines = [];
+        for (var r in that.results) {
+            var result = that.results[r];
+            if (result.linenum)
+                lines.push(result.line);
+        }
+        return setFromArray(lines);
     }
 }
 

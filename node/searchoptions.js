@@ -117,6 +117,8 @@ function SearchOptions() {
 
     this.searchSettingsFromArgs = function (args) {
         var settings = new SearchSettings();
+        // default printResults to true since it's being run from cmd line
+        settings.printResults = true;
         while(args) {
             var arg = args.shift();
             if (!arg) {

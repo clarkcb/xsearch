@@ -21,35 +21,25 @@ function searchMain() {
         searchOptions.usageWithCode(1);
     }
 
-    if (settings.printUsage) {
+    if (settings.printUsage)
         searchOptions.usage();
-    }
 
     if (settings.printVersion) {
         console.log('Version: 0.1');
         process.exit(0);
     }
 
-    if (settings.debug) {
+    if (settings.debug)
         console.log("settings: " + settings.toString());
-    }
 
      try {
         var searcher = new Searcher(settings);
         searcher.search();
-        console.log("Matches: " + searcher.results.length);
     } catch (err) {
         console.log('\n'+err+'\n')
         searchOptions.usageWithCode(1);
     }
        
-    if (settings.listFiles) {
-        var files = searcher.getFilesWithMatches();
-        console.log("\nMatching files:");
-        for (var f in files) {
-            console.log(files[f]);
-        }
-    }
 }
 
 // node.js equivalent of python's if __name__ == '__main__'
