@@ -93,15 +93,12 @@ function Searcher(settings) {
             try {
                 var stats = fs.statSync(filepath);
                 if (stats.isDirectory()) {
-                    if (_settings.debug) {
-                        console.log('"'+filepath+'" is a directory')
-                    }
                     dirs.push(filepath);
                 } else if (stats.isFile()) {
-                    if (_settings.debug) {
-                        console.log('"'+filepath+'" is a file')
-                    }
                     if (isTargetFile(filepath)) {
+                        if (_settings.debug) {
+                            console.log('"'+filepath+'" is a target file');
+                        }
                         files.push(filepath);
                     }
                 } else {
@@ -125,19 +122,28 @@ function Searcher(settings) {
         return files;
     }
 
+    var addTimer = function (name, action) {
+        _timers[name+":"+action] = new Date();
+    }
+
     var startTimer = function (name) {
-        _timers[name+":start"] = new Date();
+        addTimer(name, "start");
     }
 
     var stopTimer = function (name) {
-        _timers[name+":stop"] = new Date();
-        printElapsed(name);
+        addTimer(name, "stop");
+        if (_settings.printResults)
+            printElapsed(name);
+    }
+
+    var getElapsed = function (name) {
+        var start = _timers[name+":start"];
+        var stop = _timers[name+":stop"];
+        return stop - start;
     }
 
     var printElapsed = function (name) {
-        var start = _timers[name+":start"];
-        var stop = _timers[name+":stop"];
-        var elapsed = stop - start;
+        var elapsed = getElapsed(name);
         console.log("Elapsed time for " + name + ": " + elapsed + " milliseconds");
     }
 
@@ -248,10 +254,12 @@ function Searcher(settings) {
                     afterLineCount = getLineCount(afterContents);
                 }
                 var lineStartIndex = match.index;
-                while (lineStartIndex > 0 && contents.charAt(lineStartIndex) != '\n')
+                while (lineStartIndex > 0 &&
+                       contents.charAt(lineStartIndex) != '\n')
                     lineStartIndex -= 1;
                 var lineEndIndex = pattern.lastIndex;
-                while (lineEndIndex < contents.length && contents.charAt(lineEndIndex) != '\n')
+                while (lineEndIndex < contents.length &&
+                       contents.charAt(lineEndIndex) != '\n')
                     lineEndIndex += 1;
                 line = contents.substring(lineStartIndex, lineEndIndex);
                 var searchResult = new SearchResult(pattern,
