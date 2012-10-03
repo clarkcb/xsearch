@@ -78,18 +78,28 @@ class Searcher
     searchfiles
   end
 
+  def add_timer(name, action)
+    @timers[name+':'+action] = Time.new
+  end
+
   def start_timer(name)
-    start = Time.new
-    @timers[name+':start'] = start
+    add_timer(name, 'start')
+  end
+
+  def get_elapsed(name)
+    start = @timers[name+':start']
+    stop = @timers[name+':stop']
+    stop - start
+  end
+
+  def print_elapsed(name)
+    elapsed = get_elapsed(name)
+    puts "Elapsed time for #{name}: #{elapsed}"
   end
 
   def stop_timer(name)
-    start = @timers[name+':start']
-    stop = Time.new
-    @timers[name+':stop'] = stop
-    elapsed = stop - start
-    @timers[name+':elapsed'] = elapsed
-    puts "Elapsed time for #{name}: #{elapsed}"
+    add_timer(name, 'stop')
+    print_elapsed(name)
   end
 
   def search

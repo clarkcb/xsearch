@@ -111,14 +111,16 @@ public class Searcher {
 		return searchFiles;
 	}
 
+	public void addTimer(String name, String action) {
+		this.timers.put(name+":"+action, System.currentTimeMillis());
+	}
+
 	public void startTimer(String name) {
-		long startTime = System.currentTimeMillis();
-		this.timers.put(name+":start", startTime);
+		this.addTimer(name, "start");
 	}
 
     public void stopTimer(String name) {
-        long stopTime = System.currentTimeMillis();
-        this.timers.put(name+":stop", stopTime);
+		this.addTimer(name, "stop");
     }
 
     public long getElapsed(String name) {
