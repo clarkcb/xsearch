@@ -110,17 +110,24 @@ class Searcher:
                 if self.is_target_file(os.path.join(root,f))])
         return searchfiles
 
+    def add_timer(self, name, action):
+        self.timers[name+':'+action] = datetime.now()
+
     def start_timer(self, name):
-        self.timers[name+':start'] = datetime.now()
+        self.add_timer(name, 'start')
 
     def stop_timer(self, name):
-        self.timers[name+':stop'] = datetime.now()
-        self.print_elapsed(name)
+        self.add_timer(name, 'stop')
+        if self.settings.printresults:
+            self.print_elapsed(name)
 
-    def print_elapsed(self, name):
+    def get_elapsed(self, name):
         start = self.timers[name+':start']
         stop = self.timers[name+':stop']
-        elapsed = stop - start
+        return stop - start
+
+    def print_elapsed(self, name):
+        elapsed = self.get_elapsed(name)
         print 'Elapsed time for {0}: {1}'.format(name, elapsed)
 
     def search(self):
@@ -190,33 +197,67 @@ class Searcher:
     def get_line_count(self, s):
         return len(re.findall(r'(\r\n|\n)', s))
 
+    def line_indices_for_current_index(self, index, contents):
+        """Get the start and end indices into contents that represent the
+           beginning and end of the line containing the character at index
+        """
+        startindex = endindex = index
+        while startindex > 0 and contents[startindex] != '\n':
+            startindex -= 1
+        if contents[startindex] == '\n':
+            startindex += 1
+        while endindex < len(contents) and contents[endindex] != '\n':
+            endindex += 1
+        if endindex < len(contents) and contents[endindex] == '\n':
+            endindex += 1
+        if startindex == endindex:
+            startindex -= 1
+        return startindex, endindex
+
     def search_text_file_contents(self, fo, filename=''):
         """Search a given text file object contents all at once
         """
         file_results  = {}
         contents = fo.read()
+        lines_before = deque()
+        lines_after = deque()
         for s in self.settings.searchpatterns:
             if self.settings.firstmatch and s in file_results:
                 continue
             matches = s.finditer(contents)
             for m in matches:
-                before_line_count = self.get_line_count(m.string[0:m.start()])
-                after_line_count = self.get_line_count(m.string[m.end():])
-                line_start_index = m.start()
-                line_end_index = m.end()
-                if before_line_count:
-                    line_start_index = m.string[0:m.start()].rfind('\n')
-                else:
-                    line_start_index = 0
-                if after_line_count:
-                    line_end_index = m.string.find('\n', m.end())
-                else:
-                    line_end_index = len(m.string())-1
-                line = m.string[line_start_index:line_end_index]
+                m_line_start_index, m_line_end_index = \
+                    self.line_indices_for_current_index(m.start(), contents)
+                before_line_count = 0
+                if m_line_start_index > 0:
+                    before_line_count = self.get_line_count(contents[0:m.start()])
+                line = contents[m_line_start_index:m_line_end_index]
+                if self.settings.debug:
+                    print 'line: "{0}"'.format(line)
+                if self.settings.numlinesbefore and before_line_count:
+                    b_line_start_index, b_line_end_index = m_line_start_index, m_line_end_index
+                    while b_line_start_index > 0 and \
+                          len(lines_before) < self.settings.numlinesbefore:
+                        b_line_start_index, b_line_end_index = \
+                            self.line_indices_for_current_index(b_line_start_index-2, contents)
+                        lines_before.appendleft(contents[b_line_start_index:b_line_end_index])
+                if self.settings.debug:
+                    print 'lines_before: {0!s}'.format(lines_before)
+                if self.settings.numlinesafter:
+                    a_line_start_index, a_line_end_index = m_line_end_index, m_line_end_index
+                    while a_line_end_index < len(contents) and \
+                          len(lines_after) < self.settings.numlinesafter:
+                        a_line_start_index, a_line_end_index = \
+                            self.line_indices_for_current_index(a_line_end_index, contents)
+                        lines_after.append(contents[a_line_start_index:a_line_end_index])
+                if self.settings.debug:
+                    print 'lines_after: {0!s}'.format(lines_after)
                 search_result = SearchResult(pattern=s.pattern,
                                              filename=filename,
                                              linenum=before_line_count+1,
-                                             line=line)
+                                             line=line,
+                                             lines_before=list(lines_before),
+                                             lines_after=list(lines_after))
                 self.add_search_result(search_result)
                 if not s in file_results:
                     file_results[s] = []
@@ -258,12 +299,11 @@ class Searcher:
                     #print 'AttributeError: %s' % e
                     break
             linenum += 1
-            if self.settings.numlinesafter:
-                while len(lines_after) < self.settings.numlinesafter:
-                    try:
-                        lines_after.append(fo.next())
-                    except StopIteration:
-                        break
+            while len(lines_after) < self.settings.numlinesafter:
+                try:
+                    lines_after.append(fo.next())
+                except StopIteration:
+                    break
             for s in self.settings.searchpatterns:
                 if self.settings.firstmatch and s in file_results:
                     continue
@@ -275,7 +315,8 @@ class Searcher:
                         continue
                     search_result = SearchResult(pattern=s.pattern,
                                                  filename=filename,
-                                                 linenum=linenum, line=line,
+                                                 linenum=linenum,
+                                                 line=line,
                                                  lines_before=list(lines_before),
                                                  lines_after=list(lines_after))
                     self.add_search_result(search_result)
