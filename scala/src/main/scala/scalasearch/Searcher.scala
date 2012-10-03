@@ -73,17 +73,29 @@ class Searcher (settings: SearchSettings) {
     stringList.mkString("[\"", "\", \"", "\"]")
   }
 
+  def addTimer(name:String, action:String) {
+    _timers.put(name+":"+action, System.currentTimeMillis)
+  }
+
   def startTimer(name:String) {
-    val startTime = System.currentTimeMillis
-    _timers.put(name+":start", startTime)
+    addTimer(name, "start")
+  }
+
+  def getElapsed(name:String) {
+    val startTime = _timers(name+":start")
+    val stopTime = _timers(name+":stop")
+    stopTime - startTime
+  }
+
+  def printElapsed(name:String) {
+    elapsed = getElapsed(name)
+    println("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
   }
 
   def stopTimer(name:String) {
-    val stopTime = System.currentTimeMillis
-    _timers.put(name+":stop", stopTime)
-    val startTime = _timers(name+":start")
-    val elapsed = stopTime - startTime
-    println("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
+    addTimer(name, "stop")
+    if (settings.printresults)
+      printElapsed(name)
   }
 
   def search = {
