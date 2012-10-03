@@ -13,11 +13,11 @@ class SearchOption
   attr_accessor :func
   attr_accessor :desc
 
-  def initialize(shortarg, longarg, func, desc)
+  def initialize(shortarg, longarg, desc, func)
     @shortarg = shortarg
     @longarg = longarg
-    @func = func
     @desc = desc
+    @func = func
   end
 
   def sortarg
