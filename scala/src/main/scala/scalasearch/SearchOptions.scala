@@ -128,7 +128,7 @@ object SearchOptions {
     val argMap = mapFromOptions(argOptions)
     val flagMap = mapFromOptions(flagOptions)
     val switchPattern = """^\-+(\w[\w\-]*)$""".r
-    def nextArg(arglist:List[String], settings:SearchSettings): Unit = {
+    def nextArg(arglist:List[String], settings:SearchSettings) {
       arglist match {
         case Nil => Unit
         case switchPattern(name) :: tail =>
@@ -181,6 +181,6 @@ object SearchOptions {
     for (i <- 0 until optStrings.length) {
       sb.append(format.format(optStrings(i), optDescs(i)))
     }
-    sb.toString
+    sb.toString()
   }
 }
