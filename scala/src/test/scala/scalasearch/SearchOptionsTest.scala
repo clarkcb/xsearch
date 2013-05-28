@@ -11,23 +11,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
   val searchString = "Search"
   val requiredArgs = List("-s", searchString, startpath)
 
-  //test("print argOptions") {
-  //  SearchOptions.argOptions.foreach(s => println(s.toString))
-  //  SearchOptions.flagOptions.foreach(s => println(s.toString))
-  //}
-
-  test("test getMapFromOptions") {
-    val argMap = SearchOptions.mapFromOptions(SearchOptions.argOptions)
-    println("argMap:")
-    println(argMap.toString())
-
-    val flagMap = SearchOptions.mapFromOptions(SearchOptions.flagOptions)
-    println("flagMap:")
-    println(flagMap.toString())
-  }
-
   def assertDefaultSettings(settings:SearchSettings) {
-    val defaultSettings = new SearchSettings()
+    val defaultSettings = SearchSettings()
     assert(settings.casesensitive == defaultSettings.casesensitive)
     assert(settings.debug == defaultSettings.debug)
     assert(settings.dotiming == defaultSettings.dotiming)

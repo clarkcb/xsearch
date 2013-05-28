@@ -1,8 +1,8 @@
 package scalasearch
 
 import java.io.File
-import scala.io.Source
 import scala.collection.mutable
+import scala.io.Source
 import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
