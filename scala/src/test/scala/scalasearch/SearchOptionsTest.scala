@@ -1,11 +1,10 @@
 package scalasearch
 
-import java.util.regex.Pattern
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import org.junit.runner.RunWith
+//import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
 class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
 
   val startpath = "."
@@ -20,14 +19,14 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
   test("test getMapFromOptions") {
     val argMap = SearchOptions.mapFromOptions(SearchOptions.argOptions)
     println("argMap:")
-    println(argMap.toString)
+    println(argMap.toString())
 
     val flagMap = SearchOptions.mapFromOptions(SearchOptions.flagOptions)
     println("flagMap:")
-    println(flagMap.toString)
+    println(flagMap.toString())
   }
 
-  def assertDefaultSettings(settings:SearchSettings) = {
+  def assertDefaultSettings(settings:SearchSettings) {
     val defaultSettings = new SearchSettings()
     assert(settings.casesensitive == defaultSettings.casesensitive)
     assert(settings.debug == defaultSettings.debug)
@@ -76,7 +75,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll{
     val args = List("-1") ::: requiredArgs
     println("args: "+args)
     val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.firstmatch == true)
+    assert(settings.firstmatch)
   }
 
   test("""test settingsFromArgs with args="-d scalasearch ." """) {

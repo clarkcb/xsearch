@@ -1,27 +1,28 @@
 package scalasearch
 
+import java.io.File
 import java.util.regex.Pattern
+//import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
 class FileUtilTest extends FunSuite with BeforeAndAfterAll{
 
-  test("print exts") {
-    println("\nNOSEARCH_EXTS:")
-    FileUtil.NOSEARCH_EXTS.toList.sortWith(_ < _).foreach(println(_))
+  val binFile = new File("binFile.exe")
+  val textFile = new File("textFile.txt")
 
-    println("\nCOMPRESSED_EXTS:")
-    FileUtil.COMPRESSED_EXTS.toList.sortWith(_ < _).foreach(println(_))
+  test("test bin file") {
+    assert(FileUtil.isBinaryFile(binFile))
+    assert(!FileUtil.isCompressedFile(binFile))
+    assert(FileUtil.isSearchableFile(binFile))
+    assert(!FileUtil.isTextFile(binFile))
+  }
 
-    println("\nBINARY_EXTS:")
-    FileUtil.BINARY_EXTS.toList.sortWith(_ < _).foreach(println(_))
-
-    println("\nTEXT_EXTS:")
-    FileUtil.TEXT_EXTS.toList.sortWith(_ < _).foreach(println(_))
-
-    println("\nUNKNOWN_EXTS:")
-    FileUtil.UNKNOWN_EXTS.toList.sortWith(_ < _).foreach(println(_))
+  test("test text file") {
+    assert(!FileUtil.isBinaryFile(textFile))
+    assert(!FileUtil.isCompressedFile(textFile))
+    assert(FileUtil.isSearchableFile(textFile))
+    assert(FileUtil.isTextFile(textFile))
   }
 }
