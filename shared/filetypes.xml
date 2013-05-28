@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <filetypes>
   <filetype name="binary">
-    <extensions>ai bin class com dat dbmdl dcr dir dll dxr dms doc dot exe hlp indd lnk mo obj pdb ppt psd pyc pyo qxd so swf sys vsd xls xlt</extensions>
+    <extensions>ai bin class com dat dbmdl dcr dir dll dxr dms doc dot exe hlp indd lnk mo obj pdb ppt psd pyc pyo qxd
+      so swf sys vsd xls xlt</extensions>
   </filetype>
   <filetype name="code">
-    <extensions>bash bat boo bsh c c++ cc clj cpp cs csh cxx fs h h++ hh hpp java js pas php php3 pl py rb sbt scala sh tcl vb</extensions>
+    <extensions>bash bat boo bsh c c++ cc clj cpp cs csh cxx fs h h++ hh hpp java js pas php php3 pl py rb sbt scala sh
+      tcl vb</extensions>
   </filetype>
   <filetype name="compressed">
     <extensions>bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip Z</extensions>
   </filetype>
   <filetype name="nosearch">
-    <extensions>aif aifc aiff au avi bmp cab db dmg eps gif ico idlk ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu ogg pdf pict png ps qt ra ram rm rpm scc snd suo tif tiff wav</extensions>
+    <extensions>aif aifc aiff au avi bmp cab db dmg eps gif ico idlk ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4
+      mpe mpeg mpg mxu ogg pdf pict png ps qt ra ram rm rpm scc snd suo tif tiff wav</extensions>
   </filetype>
   <filetype name="text">
-    <extensions>1 10 11 12 13 14 15 16 17 18 19 2 20 3 323 4 5 6 7 8 9 am app as asc ascx asm asp aspx bib brf cfg cls cmd cnt conf css csv ctl d dbml dbschema ddl dep dfm diff disco dlg dof dpr dsp dsw dtd env etx exp fls gcd hs htc htm html hxx ics icz iml in inc ini ipr iws jad jsp layout lhs log ltx mak manifest map master mht mml moc mxml p patch plist pm po pot properties rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml shtml sln smi smil spec sqc sql st str strings sty suml sxw t tex text tk tld tm tmx tsv txt uls url user vbs vcf vcs vm vrml vssscc vxml wbxml webinfo wml wmls wrl wsc wsd wsdd wsdl xlf</extensions>
+    <extensions>1 10 11 12 13 14 15 16 17 18 19 2 20 3 323 4 5 6 7 8 9 am app as asc ascx asm asp aspx bib brf cfg cls
+      cmd cnt conf css csv ctl d dbml dbschema ddl dep dfm diff disco dlg dof dpr dsp dsw dtd env etx exp fls gcd hs htc
+      htm html hxx ics icz iml in inc ini ipr iws jad jsp layout lhs log ltx mak manifest map master mht mml moc mxml p
+      patch plist pm po pot properties rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml shtml sln smi smil spec sqc sql st
+      str strings sty suml sxw t tex text tk tld tm tmx tsv txt uls url user vbs vcf vcs vm vrml vssscc vxml wbxml
+      webinfo wml wmls wrl wsc wsd wsdd wsdl xlf</extensions>
   </filetype>
   <filetype name="unknown">
     <extensions>adm aps cli clw def df2 ncb nt nt2 orig pc plg roff sun t tex texinfo tr xwd</extensions>
   </filetype>
   <filetype name="xml">
-    <extensions>atom atomcat atomsrv bdsproj config csproj davmount dbproj docx dotx fsproj kml potx ppsx pptx rdf resx rss settings sldx stc std sti stw svg svgz sxc sxd sxg sxi sxm sxw vbproj vcproj vdproj x3d xaml xhtml xht xlsx xltx xml xsd xsl xslt xspf xul</extensions>
+    <extensions>atom atomcat atomsrv bdsproj config csproj davmount dbproj docx dotx fsproj kml potx ppsx pptx rdf resx
+      rss settings sldx stc std sti stw svg svgz sxc sxd sxg sxi sxm sxw vbproj vcproj vdproj x3d xaml xhtml xht xlsx
+      xltx xml xsd xsl xslt xspf xul</extensions>
   </filetype>
 </filetypes>
