@@ -9,7 +9,7 @@ class Searcher (settings: SearchSettings) {
 
   val _fileMap = mutable.Map[File, mutable.ListBuffer[SearchResult]]()
   val _searchResults = mutable.ListBuffer[SearchResult]()
-  val _timers = Map[String,Long]()
+  val _timers = mutable.Map[String,Long]()
 
   def searchResults = _searchResults.toList
 
@@ -19,13 +19,13 @@ class Searcher (settings: SearchSettings) {
     (settings.outExtensions,
      (f: File) => !settings.outExtensions.contains(FileUtil.getExtension(f))),
     (settings.inDirPatterns,
-     (f: File) => matchesAnyPattern(f.getPath, settings.inDirPatterns)),
+     (f: File) => matchesAnyPattern(f.getPath, Set.empty[Regex] ++ settings.inDirPatterns)),
     (settings.outDirPatterns,
-     (f: File) => !matchesAnyPattern(f.getPath, settings.outDirPatterns)),
+     (f: File) => !matchesAnyPattern(f.getPath, Set.empty[Regex] ++ settings.outDirPatterns)),
     (settings.inFilePatterns,
-     (f: File) => matchesAnyPattern(f.getName, settings.inFilePatterns)),
+     (f: File) => matchesAnyPattern(f.getName, Set.empty[Regex] ++ settings.inFilePatterns)),
     (settings.outFilePatterns,
-     (f: File) => !matchesAnyPattern(f.getName, settings.outFilePatterns))
+     (f: File) => !matchesAnyPattern(f.getName, Set.empty[Regex] ++ settings.outFilePatterns))
   )
 
   def getFileFilterPredicates(predicateDefs:List[Any]): List[(File) => Boolean] = {
@@ -108,8 +108,8 @@ class Searcher (settings: SearchSettings) {
     }
     if (settings.printresults) println("%d results".format(_searchResults.length))
     if (settings.dotiming) stopTimer("searchFiles")
-    if (settings.listfiles) printFileList
-    if (settings.listlines) printLineList
+    if (settings.listfiles) printFileList()
+    if (settings.listlines) printLineList()
   }
 
   def searchFile(f: File) {
@@ -197,26 +197,26 @@ class Searcher (settings: SearchSettings) {
   }
 
   def linesBeforeMatch(linesBefore: Iterable[String]): Boolean = {
-    linesMatch(linesBefore, settings.inLinesBeforePatterns,
-      settings.outLinesBeforePatterns)
+    linesMatch(linesBefore, Set.empty[Regex] ++ settings.inLinesBeforePatterns,
+      Set.empty[Regex] ++ settings.outLinesBeforePatterns)
   }
 
   def linesAfterMatch(linesAfter: Iterable[String]): Boolean = {
-    linesMatch(linesAfter, settings.inLinesAfterPatterns,
-      settings.outLinesAfterPatterns)
+    linesMatch(linesAfter, Set.empty[Regex] ++ settings.inLinesAfterPatterns,
+      Set.empty[Regex] ++ settings.outLinesAfterPatterns)
   }
 
   def searchTextFileLines(f: File) {
     var stop = false
     val source = Source.fromFile(f.getAbsolutePath)
-    val lines = source.getLines
+    val lines = source.getLines()
     var lineNum: Int = 0
     val linesBefore = new mutable.ListBuffer[String]
     val linesAfter = new mutable.ListBuffer[String]
     while (lines.hasNext && !stop) {
       val line = 
         if (!linesAfter.isEmpty) linesAfter.remove(0)
-        else lines.next
+        else lines.next()
       lineNum += 1
       if (settings.numlinesafter > 0) {
         while (linesAfter.length < settings.numlinesafter && lines.hasNext)

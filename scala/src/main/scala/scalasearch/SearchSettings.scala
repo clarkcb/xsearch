@@ -1,20 +1,20 @@
 package scalasearch
 
-import scala.collection.mutable.Set
+import scala.collection.mutable
 import scala.util.matching.Regex
 
 class SearchSettings {
-  val inExtensions = Set[String]()
-  val outExtensions = Set[String]()
-  val inDirPatterns = Set[Regex]()
-  val outDirPatterns = Set[Regex]()
-  val inFilePatterns = Set[Regex]()
-  val outFilePatterns = Set[Regex]()
-  val searchPatterns = Set[Regex]()
-  val inLinesBeforePatterns = Set[Regex]()
-  val outLinesBeforePatterns = Set[Regex]()
-  val inLinesAfterPatterns = Set[Regex]()
-  val outLinesAfterPatterns = Set[Regex]()
+  val inExtensions = mutable.Set[String]()
+  val outExtensions = mutable.Set[String]()
+  val inDirPatterns = mutable.Set[Regex]()
+  val outDirPatterns = mutable.Set[Regex]()
+  val inFilePatterns = mutable.Set[Regex]()
+  val outFilePatterns = mutable.Set[Regex]()
+  val searchPatterns = mutable.Set[Regex]()
+  val inLinesBeforePatterns = mutable.Set[Regex]()
+  val outLinesBeforePatterns = mutable.Set[Regex]()
+  val inLinesAfterPatterns = mutable.Set[Regex]()
+  val outLinesAfterPatterns = mutable.Set[Regex]()
 
   var casesensitive = true
   var debug = false

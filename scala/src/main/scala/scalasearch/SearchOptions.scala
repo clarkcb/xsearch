@@ -19,7 +19,7 @@ object SearchOptions {
   class ArgSearchOption(shortarg: String, longarg: String, desc: String,
       val func: (String, SearchSettings) => Unit) extends SearchOption (
       shortarg, longarg, desc) {
-    override def apply(settings:SearchSettings) = Unit
+    override def apply(settings:SearchSettings): Unit = ()
     override def apply(s:String, settings:SearchSettings) = func(s, settings)
   }
 
