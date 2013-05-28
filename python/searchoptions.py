@@ -127,7 +127,7 @@ class SearchOptions:
         for searchoptionnode in searchoptionnodes:
             name = searchoptionnode.getAttribute('long')
             short = searchoptionnode.getAttribute('short')
-            desc = self.get_text(searchoptionnode.childNodes)
+            desc = self.get_text(searchoptionnode.childNodes).strip()
             func = None
             if name in self.arg_action_dict:
                 func = self.arg_action_dict[name]
