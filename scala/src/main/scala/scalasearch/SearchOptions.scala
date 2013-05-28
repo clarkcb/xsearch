@@ -33,16 +33,16 @@ object SearchOptions {
   }
 
   val argActionMap = Map[String, ((String, SettingsBuilder) => Unit)](
-    "dirfilter" -> ((x: String, sb: SettingsBuilder) => { sb.outDirPatterns.add(x.r) }),
-    "dirpattern" -> ((x: String, sb: SettingsBuilder) => sb.inDirPatterns.add(x.r)),
     "ext" -> ((x: String, sb: SettingsBuilder) => { sb.inExtensions.add(x) }),
     "extfilter" -> ((x: String, sb: SettingsBuilder) => { sb.outExtensions.add(x) }),
-    "filefilter" -> ((x: String, sb: SettingsBuilder) => { sb.outFilePatterns.add(x.r) }),
-    "filepattern" -> ((x: String, sb: SettingsBuilder) => { sb.inFilePatterns.add(x.r) }),
     "numlinesafter" -> ((x: String, sb: SettingsBuilder) => sb.numlinesafter = x.toInt),
     "numlinesbefore" -> ((x: String, sb: SettingsBuilder) => sb.numlinesbefore = x.toInt),
+    "in-dirpattern" -> ((x: String, sb: SettingsBuilder) => sb.inDirPatterns.add(x.r)),
+    "in-filepattern" -> ((x: String, sb: SettingsBuilder) => { sb.inFilePatterns.add(x.r) }),
     "in-linesafterpattern" -> ((x: String, sb: SettingsBuilder) => { sb.inLinesAfterPatterns.add(x.r) }),
     "in-linesbeforepattern" -> ((x: String, sb: SettingsBuilder) => { sb.inLinesBeforePatterns.add(x.r) }),
+    "out-dirpattern" -> ((x: String, sb: SettingsBuilder) => { sb.outDirPatterns.add(x.r) }),
+    "out-filepattern" -> ((x: String, sb: SettingsBuilder) => { sb.outFilePatterns.add(x.r) }),
     "out-linesafterpattern" -> ((x: String, sb: SettingsBuilder) => { sb.outLinesAfterPatterns.add(x.r) }),
     "out-linesbeforepattern" -> ((x: String, sb: SettingsBuilder) => { sb.outLinesBeforePatterns.add(x.r) }),
     "search" -> ((x: String, sb: SettingsBuilder) => { sb.searchPatterns.add(x.r) })
@@ -66,9 +66,8 @@ object SearchOptions {
   )
 
   def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
-    val optionTuples = (options map (o => (o.longarg, o))) :::
-      ((options filter (o => o.shortarg.length > 0)) map (o => (o.shortarg, o)))
-    optionTuples.toMap
+    ((options.map(o => (o.longarg, o))) ++
+      ((options.filter(o => o.shortarg.length > 0)).map(o => (o.shortarg, o)))).toMap
   }
 
   def settingsFromArgs(args: List[String]): SearchSettings = {
@@ -123,7 +122,7 @@ object SearchOptions {
       ((searchOptions.map(o => if (!o.shortarg.isEmpty) "-" + o.shortarg + "," else ""))
         zip (searchOptions.map("--" + _.longarg))).map(o => o._1 + o._2)
     val optDescs = searchOptions.map(_.desc)
-    val longest = optStrings.map(_.length).sortWith(_ > _).head
+    val longest = optStrings.map(_.length).max
     val format = " %1$-"+longest+"s  %2$s\n"
     for (i <- 0 until optStrings.length) {
       sb.append(format.format(optStrings(i), optDescs(i)))
