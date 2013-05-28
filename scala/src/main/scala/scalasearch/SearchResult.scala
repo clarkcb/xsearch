@@ -51,6 +51,6 @@ class SearchResult(val searchPattern: Regex, val file: File, val lineNum: Int,
         currentLineNum += 1
       }
     } else sb.append('\n')
-    sb.toString
+    sb.toString()
   }
 }

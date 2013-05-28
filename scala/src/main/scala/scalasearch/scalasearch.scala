@@ -2,7 +2,7 @@ package scalasearch
 
 object SearchMain {
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]) {
     if (args.length == 0) {
       println("Error: missing required arguments\n")
       SearchOptions.usage(1)
@@ -38,6 +38,6 @@ object SearchMain {
     settings.printresults = true
 
     val searcher = new Searcher(settings)
-    searcher.search
+    searcher.search()
   }
 }

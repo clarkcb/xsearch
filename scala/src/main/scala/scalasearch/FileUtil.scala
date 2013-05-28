@@ -4,25 +4,28 @@ import java.io.File
 import scala.collection.mutable
 import scala.xml._
 
-class FileUtil {
+object FileUtil {
   // TODO: move to config file
-  private val fileTypePath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
-  private val fileTypeMap = getFileTypeMap
+  private val _fileTypePath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
+  private val _fileTypeMap = mutable.Map.empty[String, Set[String]]
 
-  private def getFileTypeMap: mutable.Map[String, Set[String]] = {
-    val fileTypeMap = mutable.Map.empty[String, Set[String]]
-    val root = XML.loadFile(fileTypePath)
-    val fileTypes = root \\ "filetype"
-    for (fileType <- fileTypes) {
-      val name = (fileType \ "@name").text
-      val exts = (fileType \ "extensions").text.split("""\s+""").toSet
-      fileTypeMap(name) = exts
+  private def fileTypeMap: Map[String, Set[String]] = {
+    if (_fileTypeMap.isEmpty) {
+      val fileTypeMap = mutable.Map.empty[String, Set[String]]
+      val root = XML.loadFile(_fileTypePath)
+      val fileTypes = root \\ "filetype"
+      for (fileType <- fileTypes) {
+        val name = (fileType \ "@name").text
+        val exts = (fileType \ "extensions").text.split("""\s+""").toSet
+        fileTypeMap(name) = exts
+      }
+      fileTypeMap("text") = fileTypeMap("text") ++ fileTypeMap("code") ++
+        fileTypeMap("xml")
+      fileTypeMap("searchable") = fileTypeMap("text") ++ fileTypeMap("binary") ++
+        fileTypeMap("compressed")
+      _fileTypeMap ++= fileTypeMap
     }
-    fileTypeMap("text") = fileTypeMap("text") ++ fileTypeMap("code") ++
-      fileTypeMap("xml")
-    fileTypeMap("searchable") = fileTypeMap("text") ++ fileTypeMap("binary") ++
-      fileTypeMap("compressed")
-    fileTypeMap
+    Map.empty[String, Set[String]] ++ _fileTypeMap
   }
 
   def getExtension(f: File) = {
