@@ -39,7 +39,6 @@
   </repositories>
 
   <dependencies>
-    <dependency>
     <!-- scala -->
     <dependency>
       <groupId>org.scala-lang</groupId>
