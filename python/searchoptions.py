@@ -22,42 +22,42 @@ class SearchOptions:
     SEARCHOPTIONSPATH = '/Users/cary/src/git/xsearch/shared/searchoptions.xml'
 
     arg_action_dict = {
-        'ext':
-            lambda x, settings:
-                settings.in_extensions.add(x),
-        'extfilter':
-            lambda x, settings:
-                settings.out_extensions.add(x),
-        'linesbefore':
-            lambda x, settings:
-                settings.set_property('numlinesbefore', int(x)),
-        'linesafter':
-            lambda x, settings:
-                settings.set_property('numlinesafter', int(x)),
         'in-dirpattern':
             lambda x, settings:
                 settings.add_pattern(x, 'in_dirpatterns'),
-        'out-dirpattern':
+        'in-ext':
             lambda x, settings:
-                settings.add_pattern(x, 'out_dirpatterns'),
+                settings.in_extensions.add(x),
         'in-filepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'in_filepatterns'),
+        'in-linesafterpattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'in_linesafterpatterns'),
+        'in-linesbeforepattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'in_linesbeforepatterns'),
+        'linesafter':
+            lambda x, settings:
+                settings.set_property('numlinesafter', int(x)),
+        'linesbefore':
+            lambda x, settings:
+                settings.set_property('numlinesbefore', int(x)),
+        'out-dirpattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'out_dirpatterns'),
+        'out-ext':
+            lambda x, settings:
+                settings.out_extensions.add(x),
         'out-filepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_filepatterns'),
         'out-linesafterpattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_linesafterpatterns'),
-        'in-linesafterpattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_linesafterpatterns'),
         'out-linesbeforepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_linesbeforepatterns'),
-        'in-linesbeforepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_linesbeforepatterns'),
         'search':
             lambda x, settings:
                 settings.add_pattern(x, 'searchpatterns')
@@ -66,12 +66,15 @@ class SearchOptions:
         'allmatches':
             lambda settings:
                 settings.set_property('firstmatch', False),
-        'firstmatch':
-            lambda settings:
-                settings.set_property('firstmatch', True),
         'debug':
             lambda settings:
                 settings.set_property('debug', True),
+        'dotiming':
+            lambda settings:
+                settings.set_property('dotiming', True),
+        'firstmatch':
+            lambda settings:
+                settings.set_property('firstmatch', True),
         'help':
             lambda settings:
                 settings.set_property('printusage', True),
@@ -84,27 +87,24 @@ class SearchOptions:
         'multilinesearch':
             lambda settings:
                 settings.set_property('multilinesearch', True),
-        'printmatches':
-            lambda settings:
-                settings.set_property('printresults', True),
         'noprintmatches':
             lambda settings:
                 settings.set_property('printresults', False),
-        'dotiming':
+        'nosearchcompressed':
             lambda settings:
-                settings.set_property('dotiming', True),
+                settings.set_property('searchcompressed', False),
+        'printmatches':
+            lambda settings:
+                settings.set_property('printresults', True),
+        'searchcompressed':
+            lambda settings:
+                settings.set_property('searchcompressed', True),
         'verbose':
             lambda settings:
                 settings.set_property('verbose', True),
         'version':
             lambda settings:
-                settings.set_property('printversion', True),
-        'searchcompressed':
-            lambda settings:
-                settings.set_property('searchcompressed', True),
-        'nosearchcompressed':
-            lambda settings:
-                settings.set_property('searchcompressed', False)
+                settings.set_property('printversion', True)
     }
 
     def __init__(self):
@@ -133,6 +133,8 @@ class SearchOptions:
                 func = self.arg_action_dict[name]
             elif name in self.flag_action_dict:
                 func = self.flag_action_dict[name]
+            else:
+                raise ValueError('Unknown search option: %s' % long)
             option = SearchOption(short, name, desc, func)
             self.options.append(option)
             if name in self.arg_action_dict:
