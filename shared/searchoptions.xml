@@ -9,12 +9,6 @@
   <searchoption long="dotiming" short="t">
     Time search execution
   </searchoption>
-  <searchoption long="ext" short="x">
-    Specify extension for files to include in search
-  </searchoption>
-  <searchoption long="extfilter" short="X">
-    Specify extension for files to exclude from search
-  </searchoption>
   <searchoption long="firstmatch" short="1">
     Capture only the first match for a file+search combination
   </searchoption>
@@ -23,6 +17,9 @@
   </searchoption>
   <searchoption long="in-dirpattern" short="d">
     Specify name pattern for directories to include in search
+  </searchoption>
+  <searchoption long="in-ext" short="x">
+    Specify extension for files to include in search
   </searchoption>
   <searchoption long="in-filepattern" short="f">
     Specify name pattern for files to include in search
@@ -56,6 +53,9 @@
   </searchoption>
   <searchoption long="out-dirpattern" short="D">
     Specify name pattern for directories to exclude from search
+  </searchoption>
+  <searchoption long="out-ext" short="X">
+    Specify extension for files to exclude from search
   </searchoption>
   <searchoption long="out-filepattern" short="F">
     Specify name pattern for files to exclude from search
