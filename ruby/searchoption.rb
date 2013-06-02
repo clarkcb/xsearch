@@ -10,8 +10,8 @@ class SearchOption
 
   attr_accessor :shortarg
   attr_accessor :longarg
-  attr_accessor :func
   attr_accessor :desc
+  attr_accessor :func
 
   def initialize(shortarg, longarg, desc, func)
     @shortarg = shortarg
