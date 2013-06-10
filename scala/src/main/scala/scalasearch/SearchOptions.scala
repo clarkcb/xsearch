@@ -33,36 +33,63 @@ object SearchOptions {
   }
 
   val argActionMap = Map[String, ((String, SettingsBuilder) => Unit)](
-    "ext" -> ((x: String, sb: SettingsBuilder) => { sb.inExtensions.add(x) }),
-    "extfilter" -> ((x: String, sb: SettingsBuilder) => { sb.outExtensions.add(x) }),
-    "numlinesafter" -> ((x: String, sb: SettingsBuilder) => sb.numlinesafter = x.toInt),
-    "numlinesbefore" -> ((x: String, sb: SettingsBuilder) => sb.numlinesbefore = x.toInt),
-    "in-dirpattern" -> ((x: String, sb: SettingsBuilder) => sb.inDirPatterns.add(x.r)),
-    "in-filepattern" -> ((x: String, sb: SettingsBuilder) => { sb.inFilePatterns.add(x.r) }),
-    "in-linesafterpattern" -> ((x: String, sb: SettingsBuilder) => { sb.inLinesAfterPatterns.add(x.r) }),
-    "in-linesbeforepattern" -> ((x: String, sb: SettingsBuilder) => { sb.inLinesBeforePatterns.add(x.r) }),
-    "out-dirpattern" -> ((x: String, sb: SettingsBuilder) => { sb.outDirPatterns.add(x.r) }),
-    "out-filepattern" -> ((x: String, sb: SettingsBuilder) => { sb.outFilePatterns.add(x.r) }),
-    "out-linesafterpattern" -> ((x: String, sb: SettingsBuilder) => { sb.outLinesAfterPatterns.add(x.r) }),
-    "out-linesbeforepattern" -> ((x: String, sb: SettingsBuilder) => { sb.outLinesBeforePatterns.add(x.r) }),
-    "search" -> ((x: String, sb: SettingsBuilder) => { sb.searchPatterns.add(x.r) })
+    "in-dirpattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.inDirPatterns.add(x.r)),
+    "in-ext" ->
+      ((x: String, sb: SettingsBuilder) => sb.inExtensions.add(x)),
+    "in-filepattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.inFilePatterns.add(x.r)),
+    "in-linesafterpattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.inLinesAfterPatterns.add(x.r)),
+    "in-linesbeforepattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.inLinesBeforePatterns.add(x.r)),
+    "linesafter" ->
+      ((x: String, sb: SettingsBuilder) => sb.numlinesafter = x.toInt),
+    "linesbefore" ->
+      ((x: String, sb: SettingsBuilder) => sb.numlinesbefore = x.toInt),
+    "out-dirpattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.outDirPatterns.add(x.r)),
+    "out-ext" ->
+      ((x: String, sb: SettingsBuilder) => sb.outExtensions.add(x)),
+    "out-filepattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.outFilePatterns.add(x.r)),
+    "out-linesafterpattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.outLinesAfterPatterns.add(x.r)),
+    "out-linesbeforepattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.outLinesBeforePatterns.add(x.r)),
+    "search" ->
+      ((x: String, sb: SettingsBuilder) => sb.searchPatterns.add(x.r))
   )
 
   val flagActionMap = Map[String, (SettingsBuilder => Unit)](
-    "allmatches" -> ((sb: SettingsBuilder) => { sb.firstmatch = false }),
-    "debug" -> ((sb: SettingsBuilder) => { sb.debug = true }),
-    "dotiming" -> ((sb: SettingsBuilder) => { sb.dotiming = true }),
-    "firstmatch" -> ((sb: SettingsBuilder) => { sb.firstmatch = true }),
-    "help" -> ((sb: SettingsBuilder) => { sb.printusage = true }),
-    "listfiles" -> ((sb: SettingsBuilder) => { sb.listfiles = true }),
-    "listlines" -> ((sb: SettingsBuilder) => { sb.listlines = true }),
-    "multilinesearch" -> ((sb: SettingsBuilder) => { sb.multilinesearch = true }),
-    "noprintmatches" -> ((sb: SettingsBuilder) => { sb.printresults = false }),
-    "nosearchcompressed" -> ((sb: SettingsBuilder) => { sb.searchcompressed = false }),
-    "printmatches" -> ((sb: SettingsBuilder) => { sb.printresults = true }),
-    "searchcompressed" -> ((sb: SettingsBuilder) => { sb.searchcompressed = true }),
-    "verbose" -> ((sb: SettingsBuilder) => { sb.verbose = true }),
-    "version" -> ((sb: SettingsBuilder) => { sb.printversion = true })
+    "allmatches" ->
+      ((sb: SettingsBuilder) => sb.firstmatch = false),
+    "debug" ->
+      ((sb: SettingsBuilder) => sb.debug = true),
+    "dotiming" ->
+      ((sb: SettingsBuilder) => sb.dotiming = true),
+    "firstmatch" ->
+      ((sb: SettingsBuilder) => sb.firstmatch = true),
+    "help" ->
+      ((sb: SettingsBuilder) => sb.printusage = true),
+    "listfiles" ->
+      ((sb: SettingsBuilder) => sb.listfiles = true),
+    "listlines" ->
+      ((sb: SettingsBuilder) => sb.listlines = true),
+    "multilinesearch" ->
+      ((sb: SettingsBuilder) => sb.multilinesearch = true),
+    "noprintmatches" ->
+      ((sb: SettingsBuilder) => sb.printresults = false),
+    "nosearchcompressed" ->
+      ((sb: SettingsBuilder) => sb.searchcompressed = false),
+    "printmatches" ->
+      ((sb: SettingsBuilder) => sb.printresults = true),
+    "searchcompressed" ->
+      ((sb: SettingsBuilder) => sb.searchcompressed = true),
+    "verbose" ->
+      ((sb: SettingsBuilder) => sb.verbose = true),
+    "version" ->
+      ((sb: SettingsBuilder) => sb.printversion = true)
   )
 
   def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
