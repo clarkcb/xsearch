@@ -12,11 +12,12 @@ function SearchOption(shortarg, longarg, desc, func) {
     this.func = func;
 
     this.sortarg = (function () {
+        var sortarg = '';
         if (that.shortarg) {
-            return that.shortarg;
-        } else {
-            return that.longarg;
+            sortarg += that.shortarg.substring(0,1).toLowerCase() + 'a';
         }
+        sortarg += that.longarg.toLowerCase();
+        return sortarg;
     })();
 }
 

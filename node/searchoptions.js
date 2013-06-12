@@ -10,110 +10,113 @@ var SearchSettings = require('./searchsettings.js').SearchSettings;
 function SearchOptions() {
     var that = this;
 
-    var argOptions = [
-        new SearchOption('b', 'linesbefore',
-            'Number of lines to show before every matched line (default: 0)',
-            function(x, settings) { settings.numLinesBefore = x; }),
-        new SearchOption('B', 'linesafter',
-            'Number of lines to show after every matched line (default: 0)',
-            function(x, settings) { settings.numLinesAfter = x; }),
-        new SearchOption('d', 'in-dirpattern',
-            'Specify name pattern for directories to include in search',
-            function(x, settings) { settings.addInDirnamePattern(x); }),
-        new SearchOption('D', 'out-dirpattern',
-            'Specify name pattern for directories to exclude from search',
-            function(x, settings) { settings.addOutDirnamePattern(x); }),
-        new SearchOption('f', 'in-filepattern',
-            'Specify name pattern for files to include in search',
-            function(x, settings) { settings.addInFilenamePattern(x); }),
-        new SearchOption('F', 'out-filepattern',
-            'Specify name pattern for files to exclude from search',
-            function(x, settings) { settings.addOutFilenamePattern(x); }),
-        //new SearchOption('', 'out-linesafterpattern',
-        //    'Specify pattern to filter the "lines-after" lines on (used with --linesafter)',
-        //    function(x, settings) { settings.addOutLinesAfterPattern(x); }),
-        //new SearchOption('', 'in-linesafterpattern',
-        //    'Specify pattern to search the "lines-after" lines on (used with --linesafter)',
-        //    function(x, settings) { settings.addInLinesAfterPattern(x); }),
-        //new SearchOption('', 'out-linesbeforepattern',
-        //    'Specify pattern to filter the "lines-before" lines on (used with' +
-        //        ' --linesbefore)',
-        //    function(x, settings) { settings.addOutLinesBeforePattern(x); }),
-        //new SearchOption('', 'in-linesbeforepattern',
-        //    'Specify pattern to search the "lines-before" lines on (used with' +
-        //        ' --linesbefore)',
-        //    function(x, settings) { settings.addInLinesBeforePattern(x); }),
-        new SearchOption('s', 'search',
-            'Specify search pattern',
-            function(x, settings) { settings.addSearchPattern(x); }),
-        new SearchOption('x', 'ext',
-            'Specify extension for files to include in search',
-            function(x, settings) { settings.addInExtension(x); }),
-        new SearchOption('X', 'extfilter',
-            'Specify extension for files to exclude from search',
-            function(x, settings) { settings.addOutExtension(x); })
-    ];
+    //TODO: move to config file
+    var searchOptionsPath = '/Users/cary/src/git/xsearch/shared/searchoptions.xml';
 
-    var flagOptions = [
-        new SearchOption('1', 'firstmatch',
-            'Capture only the first match for a file+search combination',
-            function(settings) { settings.firstMatch = true; }),
-        new SearchOption('a', 'allmatches',
-            'Capture all matches*',
-            function(settings) { settings.firstMatch = false; }),
-        new SearchOption('', 'debug',
-            'Set output mode to debug',
-            function(settings) { settings.debug = true; }),
-        new SearchOption('h', 'help',
-            'Print this usage and exit',
-            function(settings) { settings.printUsage = true; }),
-        new SearchOption('', 'listfiles',
-            'Generate a list of the matching files after searching',
-            function(settings) { settings.listFiles = true; }),
-        new SearchOption('', 'listlines',
-            'Generate a list of the matching lines after searching',
-            function(settings) { settings.listLines = true; }),
-        new SearchOption('m', 'multilinesearch',
-            'Search files as single multi-line content block',
-            function(settings) { settings.multilineSearch = true; }),
-        new SearchOption('p', 'printmatches',
-            'Print matches to stdout as found*',
-            function(settings) { settings.printResults = true; }),
-        new SearchOption('P', 'noprintmatches',
-            'Suppress printing of matches to stdout',
-            function(settings) { settings.printResults = false; }),
-        new SearchOption('t', 'dotiming',
-            'Time search execution',
-            function(settings) { settings.doTiming = true; }),
-        new SearchOption('v', 'verbose',
-            'Set output mode to verbose',
-            function(settings) { settings.verbose = true; }),
-        new SearchOption('V', 'version',
-            'Print version and exit',
-            function(settings) { settings.printVersion = true; }),
-        new SearchOption('z', 'searchcompressed',
-            'Search compressed files (bz2, gz, tar, zip)*',
-            function(settings) { settings.searchCompressed = true; }),
-        new SearchOption('Z', 'nosearchcompressed',
-            'Do not search compressed files (bz2, gz, tar, zip)',
-            function(settings) { settings.searchCompressed = false; })
-    ];
+    // the list of SearchOption objects (populated by setOptionsFromXml)
+    var options = [];
+    var argMap = {};
+    var flagMap = {};
 
-    var mapFromOptions = function (opts) {
-        var optMap = {};
-        for (var o in opts) {
-            var opt = opts[o];
-            if (opt.shortarg)
-                optMap[opt.shortarg] = opt;
-            optMap[opt.longarg] = opt;
-        }
-        return optMap;
+    var argActionMap = {
+        'in-dirpattern':
+            function(x, settings) { settings.addInDirnamePattern(x); },
+        'in-ext':
+            function(x, settings) { settings.addInExtension(x); },
+        'in-filepattern':
+            function(x, settings) { settings.addInFilenamePattern(x); },
+        'in-linesafterpattern':
+            function(x, settings) { settings.addInLinesAfterPattern(x); },
+        'in-linesbeforepattern':
+            function(x, settings) { settings.addInLinesBeforePattern(x); },
+        'linesbefore':
+            function(x, settings) { settings.numLinesBefore = x; },
+        'linesafter':
+            function(x, settings) { settings.numLinesAfter = x; },
+        'out-dirpattern':
+            function(x, settings) { settings.addOutDirnamePattern(x); },
+        'out-ext':
+            function(x, settings) { settings.addOutExtension(x); },
+        'out-filepattern':
+            function(x, settings) { settings.addOutFilenamePattern(x); },
+        'out-linesafterpattern':
+            function(x, settings) { settings.addOutLinesAfterPattern(x); },
+        'out-linesbeforepattern':
+            function(x, settings) { settings.addOutLinesBeforePattern(x); },
+        'search':
+            function(x, settings) { settings.addSearchPattern(x); },
     };
 
-    var options = argOptions.concat(flagOptions);
-    options.sort(function (a,b) {a.sortarg.localeCompare(b.sortarg);});
-    var argMap = mapFromOptions(argOptions);
-    var flagMap = mapFromOptions(flagOptions);
+    var flagActionMap = {
+        'allmatches':
+            function(settings) { settings.firstMatch = false; },
+        'debug':
+            function(settings) { settings.debug = true; },
+        'dotiming':
+            function(settings) { settings.doTiming = true; },
+        'firstmatch':
+            function(settings) { settings.firstMatch = true; },
+        'help':
+            function(settings) { settings.printUsage = true; },
+        'listfiles':
+            function(settings) { settings.listFiles = true; },
+        'listlines':
+            function(settings) { settings.listLines = true; },
+        'multilinesearch':
+            function(settings) { settings.multilineSearch = true; },
+        'noprintmatches':
+            function(settings) { settings.printResults = false; },
+        'nosearchcompressed':
+            function(settings) { settings.searchCompressed = false; },
+        'printmatches':
+            function(settings) { settings.printResults = true; },
+        'searchcompressed':
+            function(settings) { settings.searchCompressed = true; },
+        'verbose':
+            function(settings) { settings.verbose = true; },
+        'version':
+            function(settings) { settings.printVersion = true; },
+    };
+
+    function optcmp(o1, o2) {
+        var a = o1.sortarg;
+        var b = o2.sortarg;
+        return a.localeCompare(b);
+    }
+
+    var setOptionsFromXml = function () {
+        var fs = require('fs');
+        var DomJS = require('dom-js').DomJS;
+
+        var domjs = new DomJS();
+
+        var xml = fs.readFileSync(searchOptionsPath).toString();
+        domjs.parse(xml, function(err, dom) {
+            for (var i in dom.children) {
+                var child = dom.children[i];
+                if (child.name && child.name === 'searchoption') {
+                    var long = child.attributes.long;
+                    var short = child.attributes.short;
+                    var desc = child.text().trim();
+                    var func = null;
+                    if (argActionMap[long]) func = argActionMap[long];
+                    else if (flagActionMap[long]) func = flagActionMap[long];
+                    else throw new Error("Unknown option: "+long);
+                    var option = new SearchOption(short, long, desc, func);
+                    options.push(option);
+                    if (argActionMap[long]) {
+                        argMap[long] = option;
+                        if (short) argMap[short] = option;
+                    } else if (flagActionMap[long]) {
+                        flagMap[long] = option;
+                        if (short) flagMap[short] = option;
+                    }
+                }
+            }
+        });
+        options.sort(optcmp);
+    };
+    setOptionsFromXml();
 
     this.searchSettingsFromArgs = function (args) {
         var settings = new SearchSettings();
@@ -178,7 +181,7 @@ function SearchOptions() {
             var optString = optStrings[o];
             while (optString.length < longest)
                 optString += ' ';
-            usage +=  optString + '  ' + optDescs[o] + '\n';
+            usage += optString + '  ' + optDescs[o] + '\n';
         }
         return usage;
     };
