@@ -4,12 +4,11 @@ import scala.collection.mutable
 import scala.xml._
 
 case class SearchOption(shortarg:String, longarg:String, desc:String) {
-    def sortarg = {
-    if (!shortarg.isEmpty)
-      shortarg.toLowerCase
+  val sortarg = 
+    if (shortarg.nonEmpty)
+      shortarg.toLowerCase + "a" + longarg.toLowerCase
     else
       longarg.toLowerCase
-  }
 }
 
 object SearchOptions {
@@ -93,8 +92,8 @@ object SearchOptions {
   )
 
   def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
-    ((options.map(o => (o.longarg, o))) ++
-      ((options.filter(o => o.shortarg.length > 0)).map(o => (o.shortarg, o)))).toMap
+    (options.map(o => (o.longarg, o)) ++
+      options.filter(o => o.shortarg.length > 0).map(o => (o.shortarg, o))).toMap
   }
 
   def settingsFromArgs(args: List[String]): SearchSettings = {
@@ -146,8 +145,8 @@ object SearchOptions {
     sb.append("Options:\n")
 
     val optStrings =
-      ((searchOptions.map(o => if (!o.shortarg.isEmpty) "-" + o.shortarg + "," else ""))
-        zip (searchOptions.map("--" + _.longarg))).map(o => o._1 + o._2)
+      (searchOptions.map(o => if (!o.shortarg.isEmpty) "-" + o.shortarg + "," else "")
+        zip searchOptions.map("--" + _.longarg)).map(o => o._1 + o._2)
     val optDescs = searchOptions.map(_.desc)
     val longest = optStrings.map(_.length).max
     val format = " %1$-"+longest+"s  %2$s\n"

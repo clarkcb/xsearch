@@ -17,7 +17,5 @@ class SearchOption:
     @property
     def sortarg(self):
         if self.shortarg:
-            return self.shortarg.lower()
-        else:
-            return self.longarg.lower()
-
+            return self.shortarg.lower() + 'a' + self.longarg.lower()
+        return self.longarg.lower()

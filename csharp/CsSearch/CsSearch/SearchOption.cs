@@ -10,7 +10,9 @@ namespace CsSearch
 		{
 			get
 			{
-				return !string.IsNullOrWhiteSpace(ShortArg) ? ShortArg : LongArg;
+				if (!string.IsNullOrWhiteSpace(ShortArg))
+					return ShortArg.ToLower() + "a" + LongArg;
+				return LongArg;
 			}
 		}
 		public string Description { get; private set; }

@@ -22,7 +22,7 @@ class SearchOption
 
   def sortarg
     if not @shortarg.nil? and not @shortarg.empty?
-        @shortarg.downcase
+        @shortarg.downcase + "a" + @longarg.downcase
     else
       @longarg.downcase
     end

@@ -36,8 +36,7 @@ public class SearchOption implements ISearchOption {
 
 	public String getSortArg() {
 		if (null != this.shortArg && !this.shortArg.equals(""))
-			return this.shortArg;
-		else
-			return this.longArg;
+			return this.shortArg.toLowerCase() + "a" + this.longArg;
+		return this.longArg;
 	}
 }

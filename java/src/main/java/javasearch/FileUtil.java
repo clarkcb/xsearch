@@ -32,7 +32,7 @@ public class FileUtil {
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String,Set<String>> getFileTypeMap() {
-        Map fileTypeMap = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> fileTypeMap = new HashMap<String, Set<String>>();
 
         File fileTypeFile = new File(fileTypePath);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -51,14 +51,14 @@ public class FileUtil {
                 fileTypeMap.put(name, extSet);
             }
             Set<String> allText = new HashSet<String>();
-            allText.addAll((Set<String>) fileTypeMap.get("text"));
-            allText.addAll((Set<String>) fileTypeMap.get("code"));
-            allText.addAll((Set<String>) fileTypeMap.get("xml"));
+            allText.addAll(fileTypeMap.get("text"));
+            allText.addAll(fileTypeMap.get("code"));
+            allText.addAll(fileTypeMap.get("xml"));
             fileTypeMap.put("text", allText);
             Set<String> allSearchable = new HashSet<String>();
-            allSearchable.addAll((Set<String>) fileTypeMap.get("binary"));
-            allSearchable.addAll((Set<String>) fileTypeMap.get("compressed"));
-            allSearchable.addAll((Set<String>) fileTypeMap.get("text"));
+            allSearchable.addAll(fileTypeMap.get("binary"));
+            allSearchable.addAll(fileTypeMap.get("compressed"));
+            allSearchable.addAll(fileTypeMap.get("text"));
             fileTypeMap.put("searchable", allSearchable);
         } catch (ParserConfigurationException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

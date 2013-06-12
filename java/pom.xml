@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>xsearch</groupId>
-  <artifactId>java</artifactId>
+  <artifactId>javasearch</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
 
