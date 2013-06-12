@@ -1,134 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace CsSearch
 {
 	class SearchOptions
 	{
-		public static List<SearchArgOption> ArgOptions =
-			new List<SearchArgOption>
-				{
-					//new SearchArgOption("b", "numlinesbefore",
-					//    (s, settings) => settings.SetProperty("numlinesbefore", int(s)),
-					//    "Number of lines to show before every matched line (default: 0)"),
-					//new SearchArgOption("B", "numlinesafter",
-					//    (s, settings) => settings.SetProperty("numlinesafter", int(s)),
-					//    "Number of lines to show after every matched line (default: 0)"),
-					new SearchArgOption("d", "dirname",
-					                    (s, settings) => settings.AddInDirPattern(s),
-					                    "Specify name pattern for directories to include in search"),
-					new SearchArgOption("D", "dirfilter",
-					                    (s, settings) => settings.AddOutDirPattern(s),
-					                    "Specify name pattern for directories to exclude from search"),
-					new SearchArgOption("f", "filename",
-					                    (s, settings) => settings.AddInFilePattern(s),
-					                    "Specify name pattern for files to include in search"),
-					new SearchArgOption("F", "filefilter",
-					                    (s, settings) => settings.AddOutFilePattern(s),
-					                    "Specify name pattern for files to exclude from search"),
-					//new SearchArgOption("", "linesafterfilter",
-					//    (s, settings) => settings.linesafterfilters.append(s),
-					//    "Specify pattern to filter the "lines-after" lines on (used with --numlinesafter)"),
-					//new SearchArgOption("", "linesaftersearch",
-					//    (s, settings) => settings.linesaftersearches.append(s),
-					//    "Specify pattern to search the "lines-after" lines on (used with --numlinesafter)"),
-					//new SearchArgOption("", "linesbeforefilter",
-					//    (s, settings) => settings.linesbeforefilters.append(s),
-					//    "Specify pattern to filter the "lines-before" lines on (used with --numlinesbefore)"),
-					//new SearchArgOption("", "linesbeforesearch",
-					//    (s, settings) => settings.linesbeforesearches.append(s),
-					//    "Specify pattern to search the \"lines-before\" lines on (used with --numlinesbefore)"),
-					new SearchArgOption("s", "search",
-					                    (s, settings) => settings.AddSearchPattern(s),
-					                    "Specify search pattern"),
-					new SearchArgOption("x", "ext",
-					                    (s, settings) => settings.AddInExtension(s),
-					                    "Specify extension for files to include in search"),
-					new SearchArgOption("X", "extfilter",
-					                    (s, settings) => settings.AddOutExtension(s),
-					                    "Specify extension for files to exclude from search")
+		private readonly FileInfo _searchOptionsPath;
 
-				};
-		public static List<SearchFlagOption> FlagOptions =
-			new List<SearchFlagOption>
+		public static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
+			new Dictionary<string,Action<string,SearchSettings>>
 				{
-					new SearchFlagOption("1", "firstmatch",
-					                     settings => settings.FirstMatch = true,
-					                     "Capture only the first match for a file+search combination"),
-					new SearchFlagOption("a", "allmatches",
-					                     settings => settings.FirstMatch = false,
-					                     "Capture all matches*"),
-					new SearchFlagOption("", "debug",
-					                     settings => settings.Debug = true,
-					                     "Set output mode to debug"),
-					new SearchFlagOption("h", "help",
-					                     settings => settings.PrintUsage = true,
-					                     "Print this usage and exit"),
-					new SearchFlagOption("", "listfiles",
-					                     settings => settings.ListFiles = true,
-					                     "Generate a list of the matching files after searching"),
-					new SearchFlagOption("", "listlines",
-					                     settings => settings.ListLines = true,
-					                     "Generate a list of the matching lines after searching"),
-					//new SearchFlagOption("m", "multilinesearch",
-					//                     settings => settings.SetProperty("multilinesearch", true),
-					//                     "Search files by line*"),
-					new SearchFlagOption("p", "printmatches",
-					                     settings => settings.PrintResults = true,
-					                     "Print matches to stdout as found*"),
-					new SearchFlagOption("P", "noprintmatches",
-					                     settings => settings.PrintResults = false,
-					                     "Suppress printing of matches to stdout"),
-					new SearchFlagOption("t", "dotiming",
-					                     settings => settings.DoTiming = true,
-					                     "Time search execution"),
-					new SearchFlagOption("v", "verbose",
-					                     settings => settings.Verbose = true,
-					                     "Specify verbose output"),
-					new SearchFlagOption("V", "version",
-					                     settings => settings.PrintVersion = true,
-					                     "Print the version and exit"),
-					new SearchFlagOption("z", "searchcompressed",
-					                     settings => settings.SearchCompressed = true,
-					                     "Search compressed files (bz2, gz, tar, zip)*"),
-					new SearchFlagOption("Z", "nosearchcompressed",
-					                     settings => settings.SearchCompressed = false,
-					                     "Do not search compressed files (bz2, gz, tar, zip)"),
+					{ "in-dir", (s, settings) => settings.AddInDirPattern(s) },
+					{ "in-ext", (s, settings) => settings.AddInExtension(s) },
+					{ "in-file", (s, settings) => settings.AddInFilePattern(s) },
+					//{ "in-linesafterpattern", (s, settings) => settings.linesaftersearches.append(s) },
+					//{ "in-linesbeforepattern", (s, settings) => settings.linesbeforesearches.append(s) },
+					//{ "linesafter", (s, settings) => settings.SetProperty("numlinesafter", int(s)) },
+					//{ "linesbefore", (s, settings) => settings.SetProperty("numlinesbefore", int(s)) },
+					{ "out-dir", (s, settings) => settings.AddOutDirPattern(s) },
+					{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
+					{ "out-file", (s, settings) => settings.AddOutFilePattern(s) },
+					//{ "out-linesafterpattern", (s, settings) => settings.linesafterfilters.append(s) },
+					//{ "out-linesbeforepattern", (s, settings) => settings.linesbeforefilters.append(s) },
+					{ "search", (s, settings) => settings.AddSearchPattern(s) },
+				};
+
+		public static Dictionary<string, Action<SearchSettings>> FlagActionDictionary =
+			new Dictionary<string,Action<SearchSettings>>
+				{
+					{ "allmatches", settings => settings.FirstMatch = false },
+					{ "debug", settings => settings.Debug = true },
+					{ "dotiming", settings => settings.DoTiming = true },
+					{ "firstmatch", settings => settings.FirstMatch = true },
+					{ "help", settings => settings.PrintUsage = true },
+					{ "listfiles", settings => settings.ListFiles = true },
+					{ "listlines", settings => settings.ListLines = true },
+					{ "noprintmatches", settings => settings.PrintResults = false },
+					{ "nosearchcompressed", settings => settings.SearchCompressed = false },
+					{ "printmatches", settings => settings.PrintResults = true },
+					{ "searchcompressed", settings => settings.SearchCompressed = true },
+					{ "verbose", settings => settings.Verbose = true },
+					{ "version", settings => settings.PrintVersion = true },
 				};
 
 		public List<SearchOption> Options { get; private set; }
 		public Dictionary<string, SearchOption> ArgDictionary { get; private set; }
 		public Dictionary<string, SearchOption> FlagDictionary { get; private set; }
 
-		private static Dictionary<string, SearchOption> DictionaryFromOptions(IEnumerable<SearchOption> options)
+		private void SetOptionsFromXml()
 		{
-			var dict = new Dictionary<string, SearchOption>();
-			try
+			var doc = XDocument.Load(new StreamReader(_searchOptionsPath.FullName));
+			foreach (var f in doc.Descendants("searchoption"))
 			{
-				foreach (var opt in options)
+				var longArg = f.Attributes("long").First().Value;
+				var shortArg = f.Attributes("short").First().Value;
+				var desc = f.Value.Trim();
+				if (ArgActionDictionary.ContainsKey(longArg))
 				{
-					if (!string.IsNullOrWhiteSpace(opt.ShortArg))
+					var option = new SearchArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
+					Options.Add(option);
+					ArgDictionary.Add(longArg, option);
+					if (!string.IsNullOrWhiteSpace(shortArg))
 					{
-						dict.Add(opt.ShortArg, opt);
+						ArgDictionary.Add(shortArg, option);
 					}
-					dict.Add(opt.LongArg, opt);
+				}
+				else if (FlagActionDictionary.ContainsKey(longArg))
+				{
+					var option = new SearchFlagOption(shortArg, longArg, FlagActionDictionary[longArg], desc);
+					Options.Add(option);
+					FlagDictionary.Add(longArg, option);
+					if (!string.IsNullOrWhiteSpace(shortArg))
+					{
+						FlagDictionary.Add(shortArg, option);
+					}
 				}
 			}
-			catch (ArgumentException e)
-			{
-				Console.WriteLine("Exception: " + e.Message);
-			}
-			return dict;
 		}
 
 		public SearchOptions()
 		{
-			Options = new List<SearchOption>(ArgOptions);
-			Options.AddRange(new List<SearchOption>(FlagOptions));
-			ArgDictionary = DictionaryFromOptions(ArgOptions);
-			FlagDictionary = DictionaryFromOptions(FlagOptions);
+			var appSettings = new Properties.Settings();
+			_searchOptionsPath = new FileInfo(appSettings.SearchOptionsPath);
+			Options = new List<SearchOption>();
+			ArgDictionary = new Dictionary<string, SearchOption>();
+			FlagDictionary = new Dictionary<string, SearchOption>();
+			SetOptionsFromXml();
 		}
 
 		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
