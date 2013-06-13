@@ -7,21 +7,19 @@ namespace CsSearch
 {
 	class FileUtil
 	{
-		private readonly FileInfo _fileTypesPath;
+		private readonly string _fileTypesResource;
 		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
 
 		public FileUtil()
 		{
-			var appSettings = new Properties.Settings();
-			_fileTypesPath = new FileInfo(appSettings.FileTypesPath);
+			_fileTypesResource = Properties.Resources.filetypes;
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
 			PopulateFileTypes();
 		}
 
 		private void PopulateFileTypes()
 		{
-			//var types = new[] {"binary", "code", "compressed", "nosearch", "text", "unknown", "xml"};
-			var doc = XDocument.Load(new StreamReader(_fileTypesPath.FullName));
+			var doc = XDocument.Parse(_fileTypesResource);
 			foreach (var f in doc.Descendants("filetype"))
 			{
 				var name = f.Attributes("name").First().Value;

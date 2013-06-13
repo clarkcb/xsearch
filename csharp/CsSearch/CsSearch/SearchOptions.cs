@@ -9,7 +9,7 @@ namespace CsSearch
 {
 	class SearchOptions
 	{
-		private readonly FileInfo _searchOptionsPath;
+		private readonly string _searchOptionsResource;
 
 		public static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
 			new Dictionary<string,Action<string,SearchSettings>>
@@ -53,7 +53,7 @@ namespace CsSearch
 
 		private void SetOptionsFromXml()
 		{
-			var doc = XDocument.Load(new StreamReader(_searchOptionsPath.FullName));
+			var doc = XDocument.Parse(_searchOptionsResource);
 			foreach (var f in doc.Descendants("searchoption"))
 			{
 				var longArg = f.Attributes("long").First().Value;
@@ -84,8 +84,7 @@ namespace CsSearch
 
 		public SearchOptions()
 		{
-			var appSettings = new Properties.Settings();
-			_searchOptionsPath = new FileInfo(appSettings.SearchOptionsPath);
+			_searchOptionsResource = Properties.Resources.searchoptions;
 			Options = new List<SearchOption>();
 			ArgDictionary = new Dictionary<string, SearchOption>();
 			FlagDictionary = new Dictionary<string, SearchOption>();

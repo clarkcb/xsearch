@@ -1,12 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CsSearch.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
   <Profiles />
-  <Settings>
-    <Setting Name="FileTypesPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Z:\cary\src\git\xsearch\shared\filetypes.xml</Value>
-    </Setting>
-    <Setting Name="SearchOptionsPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Z:\cary\src\git\xsearch\shared\searchoptions.xml</Value>
-    </Setting>
-  </Settings>
+  <Settings />
 </SettingsFile>

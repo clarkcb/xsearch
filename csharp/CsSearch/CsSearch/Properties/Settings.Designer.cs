@@ -22,23 +22,5 @@ namespace CsSearch.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Z:\\cary\\src\\git\\xsearch\\shared\\filetypes.xml")]
-        public string FileTypesPath {
-            get {
-                return ((string)(this["FileTypesPath"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Z:\\cary\\src\\git\\xsearch\\shared\\searchoptions.xml")]
-        public string SearchOptionsPath {
-            get {
-                return ((string)(this["SearchOptionsPath"]));
-            }
-        }
     }
 }
