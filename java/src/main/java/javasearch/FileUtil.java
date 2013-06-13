@@ -12,6 +12,7 @@ package javasearch;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,20 +27,17 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 public class FileUtil {
-
-	// TODO: move to config file
-	private static final String fileTypePath = "/Users/cary/src/git/xsearch/shared/filetypes.xml";
+	private static final String fileTypesXmlPath = "/filetypes.xml";
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String,Set<String>> getFileTypeMap() {
         Map<String, Set<String>> fileTypeMap = new HashMap<String, Set<String>>();
-
-        File fileTypeFile = new File(fileTypePath);
+        InputStream fileTypesInputStream = getClass().getResourceAsStream(fileTypesXmlPath);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(fileTypeFile);
+            Document doc = builder.parse(fileTypesInputStream);
             doc.getDocumentElement().normalize();
             NodeList filetypeNodes = doc.getElementsByTagName("filetype");
             for (int i = 0; i < filetypeNodes.getLength(); i++) {

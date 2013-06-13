@@ -10,7 +10,7 @@ Class to encapsulate all command line search options
 
 package javasearch;
 
-import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
@@ -22,8 +22,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class SearchOptions {
-    // TODO: move to config file
-    private File searchOptionsFile = new File("/Users/cary/src/git/xsearch/shared/searchoptions.xml");
+	private String searchOptionsXmlPath;
 	private List<ISearchOption> options;
 	private Map<String, ISearchOption> argMap;
 	private Map<String, ISearchOption> flagMap;
@@ -139,11 +138,11 @@ public class SearchOptions {
     };
 
     private void setOptionsFromXml() {
+        InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsXmlPath);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(searchOptionsFile);
+            Document doc = builder.parse(searchOptionsInputStream);
             doc.getDocumentElement().normalize();
             NodeList searchOptionNodes = doc.getElementsByTagName("searchoption");
             for (int i = 0; i < searchOptionNodes.getLength(); i++) {
@@ -177,6 +176,7 @@ public class SearchOptions {
     }
 
     public SearchOptions() {
+        searchOptionsXmlPath = "/searchoptions.xml";
 		options = new ArrayList<ISearchOption>();
         argMap = new HashMap<String, ISearchOption>();
         flagMap = new HashMap<String, ISearchOption>();

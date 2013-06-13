@@ -13,12 +13,12 @@ case class SearchOption(shortarg:String, longarg:String, desc:String) {
 
 object SearchOptions {
   // TODO: move to config file
-  private val _searchOptionsPath = "/Users/cary/src/git/xsearch/shared/searchoptions.xml"
+  private val _searchOptionsXmlPath = "/searchoptions.xml"
   private val _searchOptions = mutable.ListBuffer.empty[SearchOption]
 
   private def searchOptions: List[SearchOption] = {
     if (_searchOptions.isEmpty) {
-      val root = XML.loadFile(_searchOptionsPath)
+      val root = XML.load(getClass.getResourceAsStream(_searchOptionsXmlPath))
       val searchOptionNodes = root \\ "searchoption"
       for (searchOptionNode <- searchOptionNodes) {
         val short = (searchOptionNode \ "@short").text

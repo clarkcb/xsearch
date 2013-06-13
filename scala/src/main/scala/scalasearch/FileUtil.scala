@@ -5,14 +5,13 @@ import scala.collection.mutable
 import scala.xml._
 
 object FileUtil {
-  // TODO: move to config file
-  private val _fileTypePath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
+  private val _fileTypesXmlPath = "/filetypes.xml"
   private val _fileTypeMap = mutable.Map.empty[String, Set[String]]
 
   private def fileTypeMap: Map[String, Set[String]] = {
     if (_fileTypeMap.isEmpty) {
       val fileTypeMap = mutable.Map.empty[String, Set[String]]
-      val root = XML.loadFile(_fileTypePath)
+      val root = XML.load(getClass.getResourceAsStream(_fileTypesXmlPath))
       val fileTypes = root \\ "filetype"
       for (fileType <- fileTypes) {
         val name = (fileType \ "@name").text
