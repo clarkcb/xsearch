@@ -16,6 +16,6 @@ public class SearchFlagSetter {
 	}
 
 	public void setFlag(SearchSettings settings) {
-		//TODO: set the proper flag here
+        //this method is overridden to provide the specific setting functionality
 	}
 }

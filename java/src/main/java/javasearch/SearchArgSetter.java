@@ -16,6 +16,6 @@ public class SearchArgSetter {
 	}
 
 	public void setArg(String arg, SearchSettings settings) {
-		//TODO: add the arg here
+		//this method is overridden to provide the specific setting functionality
 	}
 }

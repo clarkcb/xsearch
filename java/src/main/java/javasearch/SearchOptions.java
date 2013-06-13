@@ -10,195 +10,177 @@ Class to encapsulate all command line search options
 
 package javasearch;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class SearchOptions {
-
+    // TODO: move to config file
+    private File searchOptionsFile = new File("/Users/cary/src/git/xsearch/shared/searchoptions.xml");
 	private List<ISearchOption> options;
 	private Map<String, ISearchOption> argMap;
 	private Map<String, ISearchOption> flagMap;
 
-	private static List<ISearchOption> argOptions = 
-		new ArrayList<ISearchOption>(
-			Arrays.asList(
-				new SearchArgOption("d", "dirname",
-					"Specify name pattern for directories to include in search",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addInDirPattern(arg);
-						}
-					}),
-				new SearchArgOption("D", "dirfilter",
-					"Specify name pattern for directories to exclude from search",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addOutDirPattern(arg);
-						}
-					}),
-				new SearchArgOption("f", "filename",
-					"Specify name pattern for files to include in search",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addInFilePattern(arg);
-						}
-					}),
-				new SearchArgOption("F", "filefilter",
-					"Specify name pattern for files to exclude from search",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addOutFilePattern(arg);
-						}
-					}),
-				new SearchArgOption("s", "search",
-					"Specify search pattern",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addSearchPattern(arg);
-						}
-					}),
-				new SearchArgOption("x", "ext",
-					"Specify extension of files to include in search",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addInExtension(arg);
-						}
-					}),
-				new SearchArgOption("X", "extfilter",
-					"Specify extension of files to exclude from search",
-					new SearchArgSetter() {
-						@Override public void setArg(String arg, SearchSettings settings) {
-							settings.addOutExtension(arg);
-						}
-					})
-			)
-		);
+    Map<String,SearchArgSetter> argActionMap = new HashMap<String,SearchArgSetter>() {
+        {
+            put("in-dir", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInDirPattern(arg);
+                }
+            });
+            put("out-dir", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutDirPattern(arg);
+                }
+            });
+            put("in-ext", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInExtension(arg);
+                }
+            });
+            put("out-ext", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutExtension(arg);
+                }
+            });
+            put("in-file", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInFilePattern(arg);
+                }
+            });
+            put("out-file", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutFilePattern(arg);
+                }
+            });
+            put("search", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addSearchPattern(arg);
+                }
+            });
+        }
+    };
 
-	private static List<ISearchOption> flagOptions = 
-		new ArrayList<ISearchOption>(
-			Arrays.asList(
-				new SearchFlagOption("1", "firstmatch",
-					"Capture only the first match for a file+search combination",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setFirstMatch(true);
-						}
-					}),
-				new SearchFlagOption("a", "allmatches",
-					"Capture all matches*",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setFirstMatch(false);
-						}
-					}),
-				new SearchFlagOption("", "debug",
-					"Set output mode to debug",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setDebug(true);
-						}
-					}),
-				new SearchFlagOption("h", "help",
-					"Print usage and exit",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setPrintUsage(true);
-						}
-					}),
-				new SearchFlagOption("", "listfiles",
-					"Generate a list of the matching files after searching",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setListFiles(true);
-						}
-					}),
-				new SearchFlagOption("", "listlines",
-					"Generate a list of the matching lines after searching",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setListLines(true);
-						}
-					}),
-				new SearchFlagOption("p", "printmatches",
-					"Print matches to stdout as found*",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setPrintResults(true);
-						}
-					}),
-				new SearchFlagOption("P", "noprintmatches",
-					"Suppress print of matches to stdout",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setPrintResults(false);
-						}
-					}),
-				new SearchFlagOption("t", "dotiming",
-					"Time search execution",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setDoTiming(true);
-						}
-					}),
-				new SearchFlagOption("v", "verbose",
-					"Specify verbose output",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setVerbose(true);
-						}
-					}),
-				new SearchFlagOption("V", "version",
-					"Print version and exit",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setPrintVersion(true);
-						}
-					}),
-				new SearchFlagOption("z", "searchcompressed",
-					"Search compressed files (bz2, gz, tar, zip)*",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setSearchCompressed(true);
-						}
-					}),
-				new SearchFlagOption("Z", "nosearchcompressed",
-					"Do not search compressed files (bz2, gz, tar, zip)",
-					new SearchFlagSetter() {
-						@Override public void setFlag(SearchSettings settings) {
-							settings.setSearchCompressed(true);
-						}
-					})
-			)
-		);
+    Map<String,SearchFlagSetter> flagActionMap = new HashMap<String,SearchFlagSetter>() {
+        {
+            put("firstmatch", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setFirstMatch(true);
+                }
+            });
+            put("allmatches", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setFirstMatch(false);
+                }
+            });
+            put("debug", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setDebug(true);
+                }
+            });
+            put("help", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setPrintUsage(true);
+                }
+            });
+            put("listfiles", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setListFiles(true);
+                }
+            });
+            put("listlines", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setListLines(true);
+                }
+            });
+            put("printmatches", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setPrintResults(true);
+                }
+            });
+            put("noprintmatches", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setPrintResults(false);
+                }
+            });
+            put("dotiming", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setDoTiming(true);
+                }
+            });
+            put("verbose", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setVerbose(true);
+                }
+            });
+            put("version", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setPrintVersion(true);
+                }
+            });
+            put("searchcompressed", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setSearchCompressed(true);
+                }
+            });
+            put("nosearchcompressed", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setSearchCompressed(true);
+                }
+            });
+        }
+    };
 
-	private Map<String, ISearchOption> mapFromOptions(List<ISearchOption> options) {
-		Map<String, ISearchOption> map = new HashMap<String, ISearchOption>();
-		try {
-			for (ISearchOption opt : options) {
-				String shortArg = opt.getShortArg();
-				if (null != shortArg && !shortArg.equals("")) {
-					map.put(shortArg, opt);
-				}
-				map.put(opt.getLongArg(), opt);
-			}
-		} catch (Exception e) {
-			System.out.println("Exception: " + e.toString());
-		}
-		return map;
-	}
+    private void setOptionsFromXml() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-	public SearchOptions() {
-		this.options = new ArrayList<ISearchOption>(argOptions);
-		this.options.addAll(flagOptions);
-		this.argMap = this.mapFromOptions(argOptions);
-		this.flagMap = this.mapFromOptions(flagOptions);
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(searchOptionsFile);
+            doc.getDocumentElement().normalize();
+            NodeList searchOptionNodes = doc.getElementsByTagName("searchoption");
+            for (int i = 0; i < searchOptionNodes.getLength(); i++) {
+                Node searchOptionNode = searchOptionNodes.item(i);
+                String longArg = searchOptionNode.getAttributes().getNamedItem("long").getNodeValue();
+                String shortArg = searchOptionNode.getAttributes().getNamedItem("short").getNodeValue();
+                String desc = searchOptionNode.getTextContent().trim();
+                if (argActionMap.containsKey(longArg)) {
+                    ISearchOption option = new SearchArgOption(shortArg, longArg, desc, argActionMap.get(longArg));
+                    options.add(option);
+                    argMap.put(longArg, option);
+                    if (null != shortArg && !shortArg.equals("")) {
+                        argMap.put(shortArg, option);
+                    }
+                } else if (flagActionMap.containsKey(longArg)) {
+                    ISearchOption option = new SearchFlagOption(shortArg, longArg, desc, flagActionMap.get(longArg));
+                    options.add(option);
+                    flagMap.put(longArg, option);
+                    if (null != shortArg && !shortArg.equals("")) {
+                        flagMap.put(shortArg, option);
+                    }
+                }
+            }
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (SAXException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public SearchOptions() {
+		options = new ArrayList<ISearchOption>();
+        argMap = new HashMap<String, ISearchOption>();
+        flagMap = new HashMap<String, ISearchOption>();
+        setOptionsFromXml();
 	}
 
 	public SearchSettings settingsFromArgs(String[] args) throws Exception {
@@ -264,9 +246,9 @@ public class SearchOptions {
 			StringBuilder optString = new StringBuilder();
 			String shortArg = opt.getShortArg();
 			if (null != shortArg && !shortArg.equals("")) {
-				optString.append("-" + shortArg + ",");
+				optString.append("-").append(shortArg).append(",");
 			}
-			optString.append("--" + opt.getLongArg());
+			optString.append("--").append(opt.getLongArg());
 			if (optString.length() > longest) {
 				longest = optString.length();
 			}
