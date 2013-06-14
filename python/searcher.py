@@ -331,7 +331,7 @@ class Searcher:
 
     def search_compressed_file(self, f):
         """Search a compressed file, return number of matches found"""
-        ext = File.get_extension(f)
+        ext = self.fileutil.get_extension(f)
         if not ext: return
         ext = ext.lower()
         if ext in ('zip', 'jar', 'war', 'ear'):
