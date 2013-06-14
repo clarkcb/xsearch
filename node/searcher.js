@@ -88,7 +88,7 @@ function Searcher(settings) {
         for (var c in childItems) {
             var filepath = path.join(currentPath, childItems[c]);
             if (_settings.debug) {
-                console.log('childItem: "'+filepath+'"');
+                console.log('childItem: "' + filepath + '"');
             }
             try {
                 var stats = fs.statSync(filepath);
@@ -97,13 +97,13 @@ function Searcher(settings) {
                 } else if (stats.isFile()) {
                     if (isTargetFile(filepath)) {
                         if (_settings.debug) {
-                            console.log('"'+filepath+'" is a target file');
+                            console.log('"' + filepath + '" is a target file');
                         }
                         files.push(filepath);
                     }
                 } else {
                     if (_settings.debug) {
-                        console.log("childItem neither directory nor file: "+filepath);
+                        console.log("childItem neither directory nor file: " + filepath);
                     }
                 }
             } catch (err) {
@@ -120,32 +120,32 @@ function Searcher(settings) {
             files.push.apply(files, getSearchFiles(dirs[d]));
         }
         return files;
-    }
+    };
 
     var addTimer = function (name, action) {
-        _timers[name+":"+action] = new Date();
-    }
+        _timers[name + ":" + action] = new Date();
+    };
 
     var startTimer = function (name) {
         addTimer(name, "start");
-    }
+    };
 
     var stopTimer = function (name) {
         addTimer(name, "stop");
         if (_settings.printResults)
             printElapsed(name);
-    }
+    };
 
     var getElapsed = function (name) {
         var start = _timers[name+":start"];
         var stop = _timers[name+":stop"];
         return stop - start;
-    }
+    };
 
     var printElapsed = function (name) {
         var elapsed = getElapsed(name);
         console.log("Elapsed time for " + name + ": " + elapsed + " milliseconds");
-    }
+    };
 
     this.search = function () {
         if (_settings.verbose)
@@ -228,7 +228,7 @@ function Searcher(settings) {
 
     var getLineCount = function (contents) {
         return contents.match(/(\r?\n)/g).length;
-    }
+    };
 
     var searchTextFileContents = function (filepath) {
         if (_settings.verbose) {
@@ -300,7 +300,7 @@ function Searcher(settings) {
     var addSearchResult = function (result) {
         console.log(result.toString());
         that.results.push(result);
-    }
+    };
 
     var setFromArray = function (arr) {
         var hash = {};
@@ -312,7 +312,7 @@ function Searcher(settings) {
             set.push(h);
         }
         return set;
-    }
+    };
 
     this.getFilesWithMatches = function () {
         var files = [];
@@ -321,7 +321,7 @@ function Searcher(settings) {
             files.push(result.filename);
         }
         return setFromArray(files);
-    }
+    };
 
     this.getLinesWithMatches = function () {
         var lines = [];

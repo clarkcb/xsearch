@@ -17,7 +17,7 @@ function searchMain() {
     try {
         settings = searchOptions.searchSettingsFromArgs(args);
     } catch (err) {
-        console.log('\nException: '+err+'\n')
+        console.log('\nException: ' + err + '\n');
         searchOptions.usageWithCode(1);
     }
 
@@ -36,7 +36,7 @@ function searchMain() {
         var searcher = new Searcher(settings);
         searcher.search();
     } catch (err) {
-        console.log('\n'+err+'\n')
+        console.log('\n' + err + '\n');
         searchOptions.usageWithCode(1);
     }
        

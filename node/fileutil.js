@@ -46,8 +46,8 @@ function FileUtil() {
                     }
                 }
             }
-            fileTypeMap['text'] = new Array().concat(fileTypeMap['text'], fileTypeMap['code'], fileTypeMap['xml']);
-            fileTypeMap['searchable'] = new Array().concat(fileTypeMap['text'], fileTypeMap['binary'],
+            fileTypeMap['text'] = [].concat(fileTypeMap['text'], fileTypeMap['code'], fileTypeMap['xml']);
+            fileTypeMap['searchable'] = [].concat(fileTypeMap['text'], fileTypeMap['binary'],
                 fileTypeMap['compressed']);
         });
         return fileTypeMap;

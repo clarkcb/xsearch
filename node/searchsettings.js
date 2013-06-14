@@ -75,6 +75,6 @@ function SearchSettings() {
         s = s + ', doTiming=' + that.doTiming + ', verbose=' + that.verbose + ')';
         return s;
     };
-};
+}
 
 exports.SearchSettings = SearchSettings;

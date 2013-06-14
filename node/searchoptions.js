@@ -44,7 +44,7 @@ function SearchOptions() {
         'out-linesbeforepattern':
             function(x, settings) { settings.addOutLinesBeforePattern(x); },
         'search':
-            function(x, settings) { settings.addSearchPattern(x); },
+            function(x, settings) { settings.addSearchPattern(x); }
     };
 
     var flagActionMap = {
@@ -75,7 +75,7 @@ function SearchOptions() {
         'verbose':
             function(settings) { settings.verbose = true; },
         'version':
-            function(settings) { settings.printVersion = true; },
+            function(settings) { settings.printVersion = true; }
     };
 
     function optcmp(o1, o2) {
@@ -95,21 +95,21 @@ function SearchOptions() {
             for (var i in dom.children) {
                 var child = dom.children[i];
                 if (child.name && child.name === 'searchoption') {
-                    var long = child.attributes.long;
-                    var short = child.attributes.short;
+                    var longArg = child.attributes.long;
+                    var shortArg = child.attributes.short;
                     var desc = child.text().trim();
                     var func = null;
-                    if (argActionMap[long]) func = argActionMap[long];
-                    else if (flagActionMap[long]) func = flagActionMap[long];
-                    else throw new Error("Unknown option: "+long);
-                    var option = new SearchOption(short, long, desc, func);
+                    if (argActionMap[longArg]) func = argActionMap[longArg];
+                    else if (flagActionMap[longArg]) func = flagActionMap[longArg];
+                    else throw new Error("Unknown option: "+longArg);
+                    var option = new SearchOption(shortArg, longArg, desc, func);
                     options.push(option);
-                    if (argActionMap[long]) {
-                        argMap[long] = option;
-                        if (short) argMap[short] = option;
-                    } else if (flagActionMap[long]) {
-                        flagMap[long] = option;
-                        if (short) flagMap[short] = option;
+                    if (argActionMap[longArg]) {
+                        argMap[longArg] = option;
+                        if (shortArg) argMap[shortArg] = option;
+                    } else if (flagActionMap[longArg]) {
+                        flagMap[longArg] = option;
+                        if (shortArg) flagMap[shortArg] = option;
                     }
                 }
             }
@@ -153,12 +153,12 @@ function SearchOptions() {
 
     this.usage = function () {
         usageWithCode(0);
-    }
+    };
 
     this.usageWithCode = function (exitCode) {
         console.log(getUsageString());
         process.exit(exitCode);
-    }
+    };
 
     var getUsageString = function () {
         var usage = 'Usage:\nnodesearch [options] <startpath>\n\n';
@@ -170,11 +170,11 @@ function SearchOptions() {
             var opt = options[o];
             var optString = '';
             if (opt.shortarg)
-                optString += '-' + opt.shortarg + ','
-            optString += '--' + opt.longarg
+                optString += '-' + opt.shortarg + ',';
+            optString += '--' + opt.longarg;
             if (optString.length > longest)
-                longest = optString.length
-            optStrings.push(optString)
+                longest = optString.length;
+            optStrings.push(optString);
             optDescs.push(opt.desc)
         }
         for (var o in optStrings) {
@@ -185,8 +185,6 @@ function SearchOptions() {
         }
         return usage;
     };
-
-
-};
+}
 
 exports.SearchOptions = SearchOptions;
