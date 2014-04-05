@@ -20,9 +20,9 @@ module Utils =
 
         extensionSet
 
-    let PopulateFileTypes (fileTypesPath : FileInfo) =
+    let PopulateFileTypes (fileStream : FileStream) =
         let fileTypesDictionary = new Dictionary<string, ISet<string>>()
-        let filetypes = XDocument.Load(new StreamReader(fileTypesPath.FullName)).Descendants(XName.Get("filetype"))
+        let filetypes = XDocument.Load(fileStream).Descendants(XName.Get("filetype"))
         for f in filetypes do
             let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
             let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
@@ -38,10 +38,17 @@ module Utils =
         fileTypesDictionary.Add("searchable", searchable)
         fileTypesDictionary
 
+    let PopulateFileTypesFromFileInfo (fileTypesPath : FileInfo) =
+        PopulateFileTypes(new FileStream(fileTypesPath.FullName, FileMode.Open))
+
     let PrintElapsed (name : string) (ts : TimeSpan) =
         let elapsedTime =
             String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10)
         printfn "Elapsed time for %s: %s" name elapsedTime
+
+    let PrintNames (names : string list) =
+        for name in names do
+            printfn "Name: %s" name
 ;;
