@@ -49,12 +49,9 @@ class Searcher:
         assert self.settings.searchpatterns, 'No search patterns specified'
 
     def matches_any_pattern(self, s, pattern_set):
-        """Returns true if string matches any pattern in pattern_set, else
+        """Returns true if string s matches any pattern in pattern_set, else
            false"""
-        for p in pattern_set:
-            if p.search(s):
-                return True
-        return False
+        any(p.search(s) for p in pattern_set)
 
     def any_matches_any_pattern(self, slist, pattern_set):
         """Returns true if any string in slist matches any pattern in
