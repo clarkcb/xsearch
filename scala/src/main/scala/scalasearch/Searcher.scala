@@ -6,6 +6,11 @@ import scala.io.Source
 import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
+  def validateSettings() {
+    assert(settings.startpath.nonEmpty, "Missing startpath")
+    assert(settings.searchPatterns.size > 0, "No search patterns defined")
+  }
+  validateSettings()
 
   val _fileMap = mutable.Map[File, mutable.ListBuffer[SearchResult]]()
   val _searchResults = mutable.ListBuffer[SearchResult]()
@@ -286,15 +291,3 @@ class Searcher (settings: SearchSettings) {
     lines.foreach(println(_))
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
