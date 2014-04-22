@@ -36,6 +36,9 @@
   <searchoption long="linesbefore" short="b">
     Number of lines to show before every matched line (default: 0)
   </searchoption>
+  <searchoption long="listdirs" short="">
+    Generate a list of the matching directories after searching
+  </searchoption>
   <searchoption long="listfiles" short="">
     Generate a list of the matching files after searching
   </searchoption>
