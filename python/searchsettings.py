@@ -22,6 +22,7 @@ class SearchSettings:
         'dotiming': False,
         'firstmatch': False,
         'includedefaults': True,
+        'listdirs': False,
         'listfiles': False,
         'listlines': False,
         'multilinesearch': False,
@@ -49,6 +50,10 @@ class SearchSettings:
                 self.add_pattern(out_dirpattern, 'out_dirpatterns')
             for out_filepattern in self.DEFAULT_OUT_FILEPATTERNS:
                 self.add_pattern(out_filepattern, 'out_filepatterns')
+
+    def add_comma_delimited_exts(self, exts, ext_set_name):
+        for x in [ext for ext in exts.split(',') if ext]:
+            self.__dict__[ext_set_name].add(x)
 
     def add_pattern(self, pattern, pattern_set_name):
         assert pattern_set_name in self._pattern_set_names

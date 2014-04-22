@@ -41,7 +41,6 @@ class Searcher:
         self.filedict = {}
         self.rescounts = {}
         self.__dict__.update(kargs)
-        self.file_filter_predicates = self.get_file_filter_predicates()
 
     def validate_settings(self):
         assert self.settings.startpath, 'Startpath not defined'
@@ -51,7 +50,7 @@ class Searcher:
     def matches_any_pattern(self, s, pattern_set):
         """Returns true if string s matches any pattern in pattern_set, else
            false"""
-        any(p.search(s) for p in pattern_set)
+        return any(p.search(s) for p in pattern_set)
 
     def any_matches_any_pattern(self, slist, pattern_set):
         """Returns true if any string in slist matches any pattern in
@@ -64,47 +63,51 @@ class Searcher:
     def get_ext(self, f):
         return self.fileutil.get_extension(f)
 
-    def get_file_filter_predicates(self):
-        predicate_definitions = [
-            (self.settings.in_extensions,
-             lambda f:
-                self.get_ext(f) in self.settings.in_extensions),
-            (self.settings.out_extensions,
-             lambda f:
-                not self.get_ext(f) in self.settings.out_extensions),
-
-            (self.settings.in_dirpatterns,
-             lambda f:
-                self.matches_any_pattern(os.path.dirname(f),
-                    self.settings.in_dirpatterns)),
-            (self.settings.out_dirpatterns,
-             lambda f:
-                not self.matches_any_pattern(os.path.dirname(f),
-                    self.settings.out_dirpatterns)),
-            (self.settings.in_filepatterns,
-             lambda f:
-                self.matches_any_pattern(os.path.basename(f),
-                    self.settings.in_filepatterns)),
-            (self.settings.out_filepatterns,
-             lambda f:
-                not self.matches_any_pattern(os.path.basename(f),
-                    self.settings.out_filepatterns)),
-        ]
-        return [p for (s,p) in predicate_definitions if s]
-
-    def is_target_file(self, f):
-        for pred in self.file_filter_predicates:
-            if not pred(f):
-                return False
+    def is_search_dir(self, d):
+        path_elems = [p for p in d.split(os.sep) if p not in ('.', '..')]
+        if self.settings.in_dirpatterns and \
+            not self.any_matches_any_pattern(path_elems, self.settings.in_dirpatterns):
+            return False
+        if self.settings.out_dirpatterns and \
+            self.any_matches_any_pattern(path_elems, self.settings.out_dirpatterns):
+            return False
         return True
 
-    def get_search_files(self):
-        """Get the list of files to search"""
-        searchfiles = []
+    def is_search_file(self, f):
+        if self.settings.in_extensions and \
+            not self.get_ext(f) in self.settings.in_extensions:
+            return False
+        if self.settings.out_extensions and \
+            self.get_ext(f) in self.settings.out_extensions:
+            return False
+        if self.settings.in_filepatterns and \
+            not self.matches_any_pattern(f, self.settings.in_filepatterns):
+            return False
+        if self.settings.out_filepatterns and \
+            self.matches_any_pattern(f, self.settings.out_filepatterns):
+            return False
+        return True
+
+    def get_search_dirs(self):
+        """Get the list of directories to search"""
+        if self.settings.debug:
+            print 'get_search_dirs()'
+        searchdirs = []
         for root, dirs, files in os.walk(self.settings.startpath):
+            searchdirs.extend([
+                os.path.join(root,d) for d in dirs \
+                if self.is_search_dir(os.path.join(root,d))])
+        return searchdirs
+
+    def get_search_files(self, searchdirs):
+        """Get the list of files to search"""
+        if self.settings.debug:
+            print 'get_search_files()'
+        searchfiles = []
+        for d in searchdirs:
+            files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f))]
             searchfiles.extend([
-                os.path.join(root,f) for f in files \
-                if self.is_target_file(os.path.join(root,f))])
+                os.path.join(d,f) for f in files if self.is_search_file(f)])
         return searchfiles
 
     def add_timer(self, name, action):
@@ -131,8 +134,19 @@ class Searcher:
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
         if self.settings.dotiming:
+            self.start_timer('get_search_dirs')
+        searchdirs = self.get_search_dirs()
+        if self.settings.dotiming:
+            self.stop_timer('get_search_dirs')
+        if self.settings.verbose:
+            print '\nDirectories to be searched ({0}):'.format(len(searchdirs))
+            for d in searchdirs:
+                print d
+            print
+
+        if self.settings.dotiming:
             self.start_timer('get_search_files')
-        searchfiles = self.get_search_files()
+        searchfiles = self.get_search_files(searchdirs)
         if self.settings.dotiming:
             self.stop_timer('get_search_files')
         if self.settings.verbose:
@@ -146,9 +160,10 @@ class Searcher:
             self.search_file(f)
         if self.settings.dotiming:
             self.stop_timer('search_files')
+
         if self.settings.printresults:
             print
-            self.print_res_counts()
+            self.print_results()
 
         if self.settings.listfiles:
             file_list = self.get_matching_files()
@@ -163,6 +178,12 @@ class Searcher:
                 print '\nLines with matches:'
                 for line in line_list:
                     print line
+
+    def print_results(self):
+        print 'Search results (%d):' % len(self.results)
+        for r in self.results:
+           self.print_result(r)
+        self.print_res_counts()
 
     def search_file(self, f):
         """Search in a file, return number of matches found"""
@@ -414,8 +435,6 @@ class Searcher:
         self.rescounts[pattern] = self.rescounts.setdefault(pattern, 0) + 1
         self.patterndict.setdefault(pattern, list()).append(search_result)
         self.filedict.setdefault(fullfile, list()).append(search_result)
-        if self.settings.printresults:
-            self.print_result(search_result)
 
     def print_result(self, search_result):
         """Print the current search result info to the console"""

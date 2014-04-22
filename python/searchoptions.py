@@ -27,7 +27,7 @@ class SearchOptions:
                 settings.add_pattern(x, 'in_dirpatterns'),
         'in-ext':
             lambda x, settings:
-                settings.in_extensions.add(x),
+                settings.add_comma_delimited_exts(x, 'in_extensions'),
         'in-filepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'in_filepatterns'),
@@ -48,7 +48,7 @@ class SearchOptions:
                 settings.add_pattern(x, 'out_dirpatterns'),
         'out-ext':
             lambda x, settings:
-                settings.out_extensions.add(x),
+                settings.add_comma_delimited_exts(x, 'out_extensions'),
         'out-filepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_filepatterns'),
@@ -78,6 +78,9 @@ class SearchOptions:
         'help':
             lambda settings:
                 settings.set_property('printusage', True),
+        'listdirs':
+            lambda settings:
+                settings.set_property('listdirs', True),
         'listfiles':
             lambda settings:
                 settings.set_property('listfiles', True),
