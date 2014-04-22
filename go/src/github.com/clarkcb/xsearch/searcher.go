@@ -283,8 +283,12 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, filepath string) er
 	}
 	linesBefore := []string{}
 	linesAfter := []string{}
+	findLimit := -1
+	if s.Settings.FirstMatch {
+		findLimit = 1
+	}
 	for _, p := range s.Settings.SearchPatterns {
-		allIndices := p.FindAllIndex(bytes, -1)
+		allIndices := p.FindAllIndex(bytes, findLimit)
 		if allIndices != nil {
 			for _,idx := range allIndices {
 				// get the start and end indices of the current line
@@ -340,15 +344,17 @@ ReadLines:
 			linesAfter = append(linesAfter, scanner.Text())
 		}
 		for _, p := range s.Settings.SearchPatterns {
+			// check for FirstMatch setting and stop if file+pattern match exists
+			if s.Settings.FirstMatch &&
+				s.searchResults.HasResultForFileAndPattern(filepath, p) {
+				if len(s.Settings.SearchPatterns) > 1 {
+					continue
+				} else {
+					break ReadLines
+				}
+			}
 			if p.MatchString(line) {
-				if s.Settings.FirstMatch &&
-					s.searchResults.HasResultForFileAndPattern(filepath, p) {
-					if len(s.Settings.SearchPatterns) > 1 {
-						continue
-					} else {
-						break ReadLines
-					}
-				} else if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
+				if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
 					continue
 				} else if len(linesAfter) > 0 && !s.linesAfterMatch(linesAfter) {
 					continue
