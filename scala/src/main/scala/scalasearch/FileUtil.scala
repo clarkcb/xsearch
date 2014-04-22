@@ -27,8 +27,12 @@ object FileUtil {
     Map.empty[String, Set[String]] ++ _fileTypeMap
   }
 
-  def getExtension(f: File) = {
-    f.getName.split('.').last
+  def getExtension(f: File): String = {
+    val name = f.getName
+    if (name.lastIndexOf('.') > 0 && name.lastIndexOf('.') < name.length-1)
+      name.split('.').last
+    else
+      ""
   }
 
   def isBinaryFile(f: File) = {

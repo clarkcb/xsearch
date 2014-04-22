@@ -33,31 +33,31 @@ object SearchOptions {
 
   val argActionMap = Map[String, ((String, SettingsBuilder) => Unit)](
     "in-dirpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.inDirPatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addInDirPattern(x)),
     "in-ext" ->
-      ((x: String, sb: SettingsBuilder) => sb.inExtensions.add(x)),
+      ((x: String, sb: SettingsBuilder) => sb.addInExtensions(x)),
     "in-filepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.inFilePatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addInFilePattern(x)),
     "in-linesafterpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.inLinesAfterPatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addInLinesAfterPattern(x)),
     "in-linesbeforepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.inLinesBeforePatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addInLinesBeforePattern(x)),
     "linesafter" ->
       ((x: String, sb: SettingsBuilder) => sb.numlinesafter = x.toInt),
     "linesbefore" ->
       ((x: String, sb: SettingsBuilder) => sb.numlinesbefore = x.toInt),
     "out-dirpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.outDirPatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addOutDirPattern(x)),
     "out-ext" ->
-      ((x: String, sb: SettingsBuilder) => sb.outExtensions.add(x)),
+      ((x: String, sb: SettingsBuilder) => sb.addOutExtensions(x)),
     "out-filepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.outFilePatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addOutFilePattern(x)),
     "out-linesafterpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.outLinesAfterPatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addOutLinesAfterPattern(x)),
     "out-linesbeforepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.outLinesBeforePatterns.add(x.r)),
+      ((x: String, sb: SettingsBuilder) => sb.addOutLinesBeforePattern(x)),
     "search" ->
-      ((x: String, sb: SettingsBuilder) => sb.searchPatterns.add(x.r))
+      ((x: String, sb: SettingsBuilder) => sb.addSearchPattern(x))
   )
 
   val flagActionMap = Map[String, (SettingsBuilder => Unit)](
@@ -71,6 +71,8 @@ object SearchOptions {
       ((sb: SettingsBuilder) => sb.firstmatch = true),
     "help" ->
       ((sb: SettingsBuilder) => sb.printusage = true),
+    "listdirs" ->
+      ((sb: SettingsBuilder) => sb.listdirs = true),
     "listfiles" ->
       ((sb: SettingsBuilder) => sb.listfiles = true),
     "listlines" ->
@@ -125,10 +127,6 @@ object SearchOptions {
       }
     }
     nextArg(args, sb)
-    if (!sb.printusage) {
-      assert(sb.startpath != "", "Missing startpath")
-      assert(sb.searchPatterns.size > 0, "No search patterns defined")
-    }
     if (sb.debug) sb.verbose = true
     sb.toSettings
   }

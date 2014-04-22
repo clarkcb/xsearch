@@ -3,13 +3,18 @@ package scalasearch
 import scala.collection.mutable
 import scala.util.matching.Regex
 
+object DefaultSettings {
+  val outDirPatterns = Set("""^\.git$""".r, """^\.svn$""".r, """^CVS$""".r)
+  val outFilePatterns = Set("""^\.DS_Store$""".r)
+}
+
 class SettingsBuilder {
   val inExtensions = mutable.Set[String]()
   val outExtensions = mutable.Set[String]()
   val inDirPatterns = mutable.Set[Regex]()
-  val outDirPatterns = mutable.Set[Regex]()
+  val outDirPatterns = mutable.Set[Regex]() ++ DefaultSettings.outDirPatterns
   val inFilePatterns = mutable.Set[Regex]()
-  val outFilePatterns = mutable.Set[Regex]()
+  val outFilePatterns = mutable.Set[Regex]() ++ DefaultSettings.outFilePatterns
   val searchPatterns = mutable.Set[Regex]()
   val inLinesBeforePatterns = mutable.Set[Regex]()
   val outLinesBeforePatterns = mutable.Set[Regex]()
@@ -20,6 +25,7 @@ class SettingsBuilder {
   var debug = false
   var dotiming = false
   var firstmatch = false
+  var listdirs = false
   var listfiles = false
   var listlines = false
   var multilinesearch = false
@@ -31,6 +37,52 @@ class SettingsBuilder {
   var searchcompressed = false
   var startpath = ""
   var verbose = false
+
+  // could be comma-separated
+  def addInExtensions(x:String) {
+    x.split(",").foreach(inExtensions.add)
+  }
+
+  // could be comma-separated
+  def addOutExtensions(x:String) {
+    x.split(",").foreach(outExtensions.add)
+  }
+
+  def addInDirPattern(p:String) {
+    inDirPatterns.add(p.r)
+  }
+
+  def addOutDirPattern(p:String) {
+    outDirPatterns.add(p.r)
+  }
+
+  def addInFilePattern(p:String) {
+    inFilePatterns.add(p.r)
+  }
+
+  def addOutFilePattern(p:String) {
+    outFilePatterns.add(p.r)
+  }
+
+  def addInLinesAfterPattern(p:String) {
+    inLinesAfterPatterns.add(p.r)
+  }
+
+  def addOutLinesAfterPattern(p:String) {
+    outLinesAfterPatterns.add(p.r)
+  }
+
+  def addInLinesBeforePattern(p:String) {
+    inLinesBeforePatterns.add(p.r)
+  }
+
+  def addOutLinesBeforePattern(p:String) {
+    outLinesBeforePatterns.add(p.r)
+  }
+
+  def addSearchPattern(p:String) {
+    searchPatterns.add(p.r)
+  }
 
   def toSettings:SearchSettings = {
     new SearchSettings(
@@ -49,6 +101,7 @@ class SettingsBuilder {
       debug,
       dotiming,
       firstmatch,
+      listdirs,
       listfiles,
       listlines,
       multilinesearch,
@@ -85,6 +138,7 @@ class SearchSettings(val inExtensions:Set[String],
                      val debug:Boolean,
                      val dotiming:Boolean,
                      val firstmatch:Boolean,
+                     val listdirs:Boolean,
                      val listfiles:Boolean,
                      val listlines:Boolean,
                      val multilinesearch:Boolean,
