@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -45,6 +44,9 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 			}
 			if af, isAction := argActionMap[k]; isAction {
 				i++
+				if len(args) < i+1 {
+					return nil, fmt.Errorf("Missing value for option: %s", k)
+				}
 				val := args[i]
 				af(val, settings)
 			} else if ff, isFlag := flagActionMap[k]; isFlag {
@@ -126,26 +128,19 @@ type argAction func(s string, settings *SearchSettings)
 func (so *SearchOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
 		"in-dirpattern": func(s string, settings *SearchSettings) {
-			settings.InDirPatterns = append(settings.InDirPatterns,
-				regexp.MustCompile(s))
+			settings.AddInDirPattern(s)
 		},
 		"in-ext": func(s string, settings *SearchSettings) {
-			for _,x := range strings.Split(s, ",") {
-				settings.InExtensions = append(settings.InExtensions,
-					strings.ToLower(x))
-			}
+			settings.AddInExtension(s)
 		},
 		"in-filepattern": func(s string, settings *SearchSettings) {
-			settings.InFilePatterns = append(settings.InFilePatterns,
-				regexp.MustCompile(s))
+			settings.AddInFilePattern(s)
 		},
 		"in-linesafterpattern": func(s string, settings *SearchSettings) {
-			settings.InLinesAfterPatterns = append(settings.InLinesAfterPatterns,
-				regexp.MustCompile(s))
+			settings.AddInLinesAfterPattern(s)
 		},
 		"in-linesbeforepattern": func(s string, settings *SearchSettings) {
-			settings.InLinesBeforePatterns = append(settings.InLinesBeforePatterns,
-				regexp.MustCompile(s))
+			settings.AddInLinesBeforePattern(s)
 		},
 		"linesafter": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
@@ -164,30 +159,22 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			}
 		},
 		"out-dirpattern": func(s string, settings *SearchSettings) {
-			settings.OutDirPatterns = append(settings.OutDirPatterns,
-				regexp.MustCompile(s))
+			settings.AddOutDirPattern(s)
 		},
 		"out-ext": func(s string, settings *SearchSettings) {
-			for _,x := range strings.Split(s, ",") {
-				settings.OutExtensions = append(settings.OutExtensions,
-					strings.ToLower(x))
-			}
+			settings.AddOutExtension(s)
 		},
 		"out-filepattern": func(s string, settings *SearchSettings) {
-			settings.OutFilePatterns = append(settings.OutFilePatterns,
-				regexp.MustCompile(s))
+			settings.AddOutFilePattern(s)
 		},
 		"out-linesafterpattern": func(s string, settings *SearchSettings) {
-			settings.OutLinesAfterPatterns = append(settings.OutLinesAfterPatterns,
-				regexp.MustCompile(s))
+			settings.AddOutLinesAfterPattern(s)
 		},
 		"out-linesbeforepattern": func(s string, settings *SearchSettings) {
-			settings.OutLinesBeforePatterns = append(settings.OutLinesBeforePatterns,
-				regexp.MustCompile(s))
+			settings.AddOutLinesBeforePattern(s)
 		},
 		"search": func(s string, settings *SearchSettings) {
-			settings.SearchPatterns = append(settings.SearchPatterns,
-				regexp.MustCompile(s))
+			settings.AddSearchPattern(s)
 		},
 	}
 	for _, o := range so.SearchOptions {

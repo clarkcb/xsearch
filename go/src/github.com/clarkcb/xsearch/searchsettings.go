@@ -37,7 +37,6 @@ type SearchSettings struct {
 	Verbose                bool
 }
 
-
 func GetDefaultSearchSettings() *SearchSettings {
 	DEFAULTOUTDIRPATTERNS := []*regexp.Regexp{
 		regexp.MustCompile("\\.git\\b"),
@@ -48,33 +47,33 @@ func GetDefaultSearchSettings() *SearchSettings {
 		regexp.MustCompile("\\.DS_Store\\b"),
 	}
 	return &SearchSettings{
-		"",                 // StartPath
-		[]string{},         // InExtensions
-		[]string{},         // OutExtensions
-		[]*regexp.Regexp{}, // InDirPatterns
-		DEFAULTOUTDIRPATTERNS, // OutDirPatterns
-		[]*regexp.Regexp{}, // InFilePatterns
+		"",                     // StartPath
+		[]string{},             // InExtensions
+		[]string{},             // OutExtensions
+		[]*regexp.Regexp{},     // InDirPatterns
+		DEFAULTOUTDIRPATTERNS,  // OutDirPatterns
+		[]*regexp.Regexp{},     // InFilePatterns
 		DEFAULTOUTFILEPATTERNS, // OutFilePatterns
-		[]*regexp.Regexp{}, // InLinesAfterPatterns
-		[]*regexp.Regexp{}, // OutLinesAfterPatterns
-		[]*regexp.Regexp{}, // InLinesBeforePatterns
-		[]*regexp.Regexp{}, // OutLinesBeforePatterns
-		[]*regexp.Regexp{}, // SearchPatterns
-		true,               // CaseSensitive
-		true,               // Debug - setting to true for now
-		false,              // DoTiming
-		false,              // FirstMatch
-		0,                  // LinesAfter
-		0,                  // LinesBefore
-		false,              // ListDirs
-		false,              // ListFiles
-		false,              // ListLines
-		false,              // MultiLineSearch
-		true,               // PrintResults
-		false,              // PrintUsage
-		false,              // PrintVersion
-		false,              // SearchCompressed
-		false,              // Verbose
+		[]*regexp.Regexp{},     // InLinesAfterPatterns
+		[]*regexp.Regexp{},     // OutLinesAfterPatterns
+		[]*regexp.Regexp{},     // InLinesBeforePatterns
+		[]*regexp.Regexp{},     // OutLinesBeforePatterns
+		[]*regexp.Regexp{},     // SearchPatterns
+		true,                   // CaseSensitive
+		true,                   // Debug - setting to true for now
+		false,                  // DoTiming
+		false,                  // FirstMatch
+		0,                      // LinesAfter
+		0,                      // LinesBefore
+		false,                  // ListDirs
+		false,                  // ListFiles
+		false,                  // ListLines
+		false,                  // MultiLineSearch
+		true,                   // PrintResults
+		false,                  // PrintUsage
+		false,                  // PrintVersion
+		false,                  // SearchCompressed
+		false,                  // Verbose
 	}
 }
 
@@ -93,6 +92,58 @@ func addStringListToBuffer(name string, list []string, buffer *bytes.Buffer) {
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
 	buffer.WriteString(strings.Join(list, ","))
 	buffer.WriteString("]")
+}
+
+func (s *SearchSettings) AddInExtension(xs string) {
+	for _, x := range strings.Split(xs, ",") {
+		s.InExtensions = append(s.InExtensions, strings.ToLower(x))
+	}
+}
+
+func (s *SearchSettings) AddOutExtension(xs string) {
+	for _, x := range strings.Split(xs, ",") {
+		s.OutExtensions = append(s.OutExtensions, strings.ToLower(x))
+	}
+}
+
+func addPattern(p string, patterns *[]*regexp.Regexp) {
+	*patterns = append(*patterns, regexp.MustCompile(p))
+}
+
+func (s *SearchSettings) AddInDirPattern(p string) {
+	addPattern(p, &s.InDirPatterns)
+}
+
+func (s *SearchSettings) AddOutDirPattern(p string) {
+	addPattern(p, &s.OutDirPatterns)
+}
+
+func (s *SearchSettings) AddInFilePattern(p string) {
+	addPattern(p, &s.InFilePatterns)
+}
+
+func (s *SearchSettings) AddOutFilePattern(p string) {
+	addPattern(p, &s.OutFilePatterns)
+}
+
+func (s *SearchSettings) AddInLinesBeforePattern(p string) {
+	addPattern(p, &s.InLinesBeforePatterns)
+}
+
+func (s *SearchSettings) AddOutLinesBeforePattern(p string) {
+	addPattern(p, &s.OutLinesBeforePatterns)
+}
+
+func (s *SearchSettings) AddInLinesAfterPattern(p string) {
+	addPattern(p, &s.InLinesAfterPatterns)
+}
+
+func (s *SearchSettings) AddOutLinesAfterPattern(p string) {
+	addPattern(p, &s.OutLinesAfterPatterns)
+}
+
+func (s *SearchSettings) AddSearchPattern(p string) {
+	addPattern(p, &s.SearchPatterns)
 }
 
 func (s *SearchSettings) String() string {
