@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type Searcher struct {
@@ -21,6 +22,7 @@ type Searcher struct {
 	searchDirs    []string
 	searchFiles   []string
 	searchResults *SearchResults
+	timerMap      map[string]time.Time
 }
 
 func NewSearcher(settings *SearchSettings) *Searcher {
@@ -30,6 +32,7 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 		[]string{},
 		[]string{},
 		NewSearchResults(),
+		map[string]time.Time{},
 	}
 }
 
@@ -128,19 +131,19 @@ func (s *Searcher) addSearchResult(r *SearchResult) {
 	s.searchResults.AddSearchResult(r)
 }
 
-func linesMatch(lines []string, inPatterns []*regexp.Regexp,
+func linesMatch(lines *[]string, inPatterns []*regexp.Regexp,
 	outPatterns []*regexp.Regexp) bool {
-	inLinesMatch := len(inPatterns) == 0 || anyMatchesAnyPattern(lines, inPatterns)
-	outLinesMatch := len(outPatterns) > 0 && anyMatchesAnyPattern(lines, outPatterns)
+	inLinesMatch := len(inPatterns) == 0 || anyMatchesAnyPattern(*lines, inPatterns)
+	outLinesMatch := len(outPatterns) > 0 && anyMatchesAnyPattern(*lines, outPatterns)
 	return inLinesMatch && !outLinesMatch
 }
 
-func (s *Searcher) linesAfterMatch(linesAfter []string) bool {
+func (s *Searcher) linesAfterMatch(linesAfter *[]string) bool {
 	return linesMatch(linesAfter, s.Settings.InLinesAfterPatterns,
 		s.Settings.OutLinesAfterPatterns)
 }
 
-func (s *Searcher) linesBeforeMatch(linesBefore []string) bool {
+func (s *Searcher) linesBeforeMatch(linesBefore *[]string) bool {
 	return linesMatch(linesBefore, s.Settings.InLinesBeforePatterns,
 		s.Settings.OutLinesBeforePatterns)
 }
@@ -157,7 +160,7 @@ func (s *Searcher) searchTextFileReader(r io.Reader, filepath string) error {
 }
 
 func hasNewLine(bytes []byte) bool {
-	for _,b := range bytes {
+	for _, b := range bytes {
 		if b == '\n' {
 			return true
 		}
@@ -167,7 +170,7 @@ func hasNewLine(bytes []byte) bool {
 
 func getNewLineCount(bytes []byte) int {
 	count := 0
-	for _,b := range bytes {
+	for _, b := range bytes {
 		if b == '\n' {
 			count++
 		}
@@ -177,7 +180,7 @@ func getNewLineCount(bytes []byte) int {
 
 func newlineIndices(bytes []byte) []int {
 	newlineidxs := []int{}
-	for i,b := range bytes {
+	for i, b := range bytes {
 		if b == '\n' {
 			newlineidxs = append(newlineidxs, i)
 		}
@@ -211,7 +214,7 @@ func splitIntoLines(bytes []byte) []string {
 	fmt.Printf("newlineidxs: %v\n", newlineidxs)
 	lines := []string{}
 	startidx, endidx := 0, 0
-	for _,n := range newlineidxs {
+	for _, n := range newlineidxs {
 		endidx = n
 		fmt.Printf("startidx: %d, endidx: %d\n", startidx, endidx)
 		if startidx == endidx {
@@ -249,9 +252,9 @@ func linesBeforeIndex(bytes []byte, idx int, lineCount int) []string {
 		}
 		beforeidx--
 	}
-	beforestartlineidx,_ := lineStartEndIndicesForIndex(beforeidx, bytes)
+	beforestartlineidx, _ := lineStartEndIndicesForIndex(beforeidx, bytes)
 	fmt.Printf("beforestartlineidx: %d\n", beforestartlineidx)
-	lines = splitIntoLines(bytes[beforestartlineidx:idx-1])
+	lines = splitIntoLines(bytes[beforestartlineidx : idx-1])
 	return lines
 }
 
@@ -270,7 +273,7 @@ func linesAfterIndex(bytes []byte, idx int, lineCount int) []string {
 		}
 		afteridx++
 	}
-	_,afterendlineidx := lineStartEndIndicesForIndex(afteridx-1, bytes)
+	_, afterendlineidx := lineStartEndIndicesForIndex(afteridx-1, bytes)
 	fmt.Printf("afterendlineidx: %d\n", afterendlineidx)
 	lines = splitIntoLines(bytes[idx:afterendlineidx])
 	return lines[:lineCount]
@@ -290,7 +293,7 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, filepath string) er
 	for _, p := range s.Settings.SearchPatterns {
 		allIndices := p.FindAllIndex(bytes, findLimit)
 		if allIndices != nil {
-			for _,idx := range allIndices {
+			for _, idx := range allIndices {
 				// get the start and end indices of the current line
 				startidx, endidx := lineStartEndIndicesForIndex(idx[0], bytes)
 				// grab the contents in that range as the line
@@ -354,9 +357,9 @@ ReadLines:
 				}
 			}
 			if p.MatchString(line) {
-				if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
+				if len(linesBefore) > 0 && !s.linesBeforeMatch(&linesBefore) {
 					continue
-				} else if len(linesAfter) > 0 && !s.linesAfterMatch(linesAfter) {
+				} else if len(linesAfter) > 0 && !s.linesAfterMatch(&linesAfter) {
 					continue
 				} else {
 					sr := &SearchResult{
@@ -587,6 +590,33 @@ func (s *Searcher) SearchFile(filepath string) error {
 	return s.searchFileReader(file, filepath)
 }
 
+func (s *Searcher) addTimer(name string, action string) {
+	timerName := fmt.Sprintf("%s:%s", name, action)
+	s.timerMap[timerName] = time.Now()
+}
+
+func (s *Searcher) startTimer(name string) {
+	s.addTimer(name, "start")
+}
+
+func (s *Searcher) stopTimer(name string) {
+	s.addTimer(name, "stop")
+	if s.Settings.PrintResults {
+		s.printElapsed(name)
+	}
+}
+
+func (s *Searcher) getElapsed(name string) time.Duration {
+	start := s.timerMap[name+":start"]
+	stop := s.timerMap[name+":stop"]
+	return stop.Sub(start)
+}
+
+func (s *Searcher) printElapsed(name string) {
+	elapsed := s.getElapsed(name)
+	fmt.Printf("Elapsed time for %s: %v", name, elapsed)
+}
+
 func (s *Searcher) Search() error {
 	if err := s.validSettings(); err != nil {
 		return err
@@ -595,7 +625,13 @@ func (s *Searcher) Search() error {
 	//s.testFileTypeChecking()
 
 	// get search directory list
+	if s.Settings.DoTiming {
+		s.startTimer("setSearchDirs")
+	}
 	err := s.setSearchDirs()
+	if s.Settings.DoTiming {
+		s.stopTimer("setSearchDirs")
+	}
 	if err != nil {
 		return err
 	}
@@ -608,7 +644,13 @@ func (s *Searcher) Search() error {
 	}
 
 	// get search file list
+	if s.Settings.DoTiming {
+		s.startTimer("setSearchFiles")
+	}
 	err = s.setSearchFiles()
+	if s.Settings.DoTiming {
+		s.stopTimer("setSearchFiles")
+	}
 	if err != nil {
 		return err
 	}
@@ -624,11 +666,17 @@ func (s *Searcher) Search() error {
 	if s.Settings.Verbose {
 		fmt.Println("\nStarting file search...\n")
 	}
+	if s.Settings.DoTiming {
+		s.startTimer("searchFiles")
+	}
 	for _, f := range s.searchFiles {
 		err = s.SearchFile(f)
 		if err != nil {
 			return err
 		}
+	}
+	if s.Settings.DoTiming {
+		s.stopTimer("searchFiles")
 	}
 	if s.Settings.Verbose {
 		fmt.Println("\nFile search complete.\n")
