@@ -92,11 +92,11 @@ func loadXmlFile(xmlFilePath string, targetStruct interface{}) error {
 	return nil
 }
 
-func matchesAnyPattern(s string, patterns []*regexp.Regexp) bool {
-	if len(patterns) == 0 {
+func matchesAnyPattern(s string, patterns *[]*regexp.Regexp) bool {
+	if len(*patterns) == 0 {
 		return true
 	}
-	for _, p := range patterns {
+	for _, p := range *patterns {
 		if p.MatchString(s) {
 			return true
 		}
@@ -104,8 +104,8 @@ func matchesAnyPattern(s string, patterns []*regexp.Regexp) bool {
 	return false
 }
 
-func anyMatchesAnyPattern(ss []string, patterns []*regexp.Regexp) bool {
-	for _, s := range ss {
+func anyMatchesAnyPattern(ss *[]string, patterns *[]*regexp.Regexp) bool {
+	for _, s := range *ss {
 		if matchesAnyPattern(s, patterns) {
 			return true
 		}

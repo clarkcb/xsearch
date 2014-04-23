@@ -60,7 +60,7 @@ func GetDefaultSearchSettings() *SearchSettings {
 		[]*regexp.Regexp{},     // OutLinesBeforePatterns
 		[]*regexp.Regexp{},     // SearchPatterns
 		true,                   // CaseSensitive
-		true,                   // Debug - setting to true for now
+		false,                  // Debug
 		false,                  // DoTiming
 		false,                  // FirstMatch
 		0,                      // LinesAfter

@@ -66,10 +66,10 @@ func (s *Searcher) testFileTypeChecking() {
 
 func (s *Searcher) isSearchDir(path string) bool {
 	//return true
-	if len(s.Settings.InDirPatterns) > 0 && !matchesAnyPattern(path, s.Settings.InDirPatterns) {
+	if len(s.Settings.InDirPatterns) > 0 && !matchesAnyPattern(path, &s.Settings.InDirPatterns) {
 		return false
 	}
-	if len(s.Settings.OutDirPatterns) > 0 && matchesAnyPattern(path, s.Settings.OutDirPatterns) {
+	if len(s.Settings.OutDirPatterns) > 0 && matchesAnyPattern(path, &s.Settings.OutDirPatterns) {
 		return false
 	}
 	return true
@@ -100,10 +100,10 @@ func (s *Searcher) isSearchFile(filename string) bool {
 	if len(s.Settings.OutExtensions) > 0 && contains(s.Settings.OutExtensions, ext) {
 		return false
 	}
-	if len(s.Settings.InFilePatterns) > 0 && !matchesAnyPattern(filename, s.Settings.InFilePatterns) {
+	if len(s.Settings.InFilePatterns) > 0 && !matchesAnyPattern(filename, &s.Settings.InFilePatterns) {
 		return false
 	}
-	if len(s.Settings.OutFilePatterns) > 0 && matchesAnyPattern(filename, s.Settings.OutFilePatterns) {
+	if len(s.Settings.OutFilePatterns) > 0 && matchesAnyPattern(filename, &s.Settings.OutFilePatterns) {
 		return false
 	}
 	return true
@@ -131,21 +131,21 @@ func (s *Searcher) addSearchResult(r *SearchResult) {
 	s.searchResults.AddSearchResult(r)
 }
 
-func linesMatch(lines *[]string, inPatterns []*regexp.Regexp,
-	outPatterns []*regexp.Regexp) bool {
-	inLinesMatch := len(inPatterns) == 0 || anyMatchesAnyPattern(*lines, inPatterns)
-	outLinesMatch := len(outPatterns) > 0 && anyMatchesAnyPattern(*lines, outPatterns)
+func linesMatch(lines *[]string, inPatterns *[]*regexp.Regexp,
+	outPatterns *[]*regexp.Regexp) bool {
+	inLinesMatch := len(*inPatterns) == 0 || anyMatchesAnyPattern(lines, inPatterns)
+	outLinesMatch := len(*outPatterns) > 0 && anyMatchesAnyPattern(lines, outPatterns)
 	return inLinesMatch && !outLinesMatch
 }
 
 func (s *Searcher) linesAfterMatch(linesAfter *[]string) bool {
-	return linesMatch(linesAfter, s.Settings.InLinesAfterPatterns,
-		s.Settings.OutLinesAfterPatterns)
+	return linesMatch(linesAfter, &s.Settings.InLinesAfterPatterns,
+		&s.Settings.OutLinesAfterPatterns)
 }
 
 func (s *Searcher) linesBeforeMatch(linesBefore *[]string) bool {
-	return linesMatch(linesBefore, s.Settings.InLinesBeforePatterns,
-		s.Settings.OutLinesBeforePatterns)
+	return linesMatch(linesBefore, &s.Settings.InLinesBeforePatterns,
+		&s.Settings.OutLinesBeforePatterns)
 }
 
 func (s *Searcher) searchTextFileReader(r io.Reader, filepath string) error {
