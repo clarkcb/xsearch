@@ -19,11 +19,7 @@ type SearchOptions struct {
 }
 
 func NewSearchOptions() *SearchOptions {
-	searchOptions, err := searchOptionsFromXml()
-	if err != nil {
-		panic(err.Error())
-	}
-	return searchOptions
+	return GetSearchOptions()
 }
 
 func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings, error) {
@@ -150,6 +146,12 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 				fmt.Printf("Invalid value for linesafter: %s\n", s)
 			}
 		},
+		"linesaftertopattern": func(s string, settings *SearchSettings) {
+			settings.AddLinesAfterToPattern(s)
+		},
+		"linesafteruntilpattern": func(s string, settings *SearchSettings) {
+			settings.AddLinesAfterUntilPattern(s)
+		},
 		"linesbefore": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
 			if err == nil {
@@ -248,7 +250,7 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 }
 
 type XmlSearchOptions struct {
-	SearchOptions []XmlSearchOption `xml:"searchoption"`
+	XmlSearchOptions []XmlSearchOption `xml:"searchoption"`
 }
 
 type XmlSearchOption struct {
@@ -267,7 +269,7 @@ func searchOptionsFromXml() (*SearchOptions, error) {
 		return nil, err
 	}
 
-	for _, x := range xmlSearchOptions.SearchOptions {
+	for _, x := range xmlSearchOptions.XmlSearchOptions {
 		searchOption := &SearchOption{x.Short, x.Long, strings.TrimSpace(x.Desc)}
 		searchOptions = append(searchOptions, *searchOption)
 	}
