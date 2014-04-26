@@ -7,7 +7,7 @@
     Set output mode to debug
   </searchoption>
   <searchoption long="dotiming" short="t">
-    Time search execution
+    Measure search execution duration
   </searchoption>
   <searchoption long="firstmatch" short="1">
     Capture only the first match for a file+search combination
@@ -31,10 +31,16 @@
     Specify pattern to search the "lines-before" lines on (used with --linesbefore)
   </searchoption>
   <searchoption long="linesafter" short="B">
-    Number of lines to show after every matched line (default: 0)
+    Number of lines to include after every matched line (default: 0)
+  </searchoption>
+  <searchoption long="linesaftertopattern" short="">
+    Specify pattern to collect lines after up to where pattern is matched (or EOF)
+  </searchoption>
+  <searchoption long="linesafteruntilpattern" short="">
+    Specify pattern to collect lines after until pattern is matched (or EOF)
   </searchoption>
   <searchoption long="linesbefore" short="b">
-    Number of lines to show before every matched line (default: 0)
+    Number of lines to include before every matched line (default: 0)
   </searchoption>
   <searchoption long="listdirs" short="">
     Generate a list of the matching directories after searching
@@ -70,7 +76,7 @@
     Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
   </searchoption>
   <searchoption long="printmatches" short="p">
-    Print matches to stdout as found*
+    Print matches to stdout
   </searchoption>
   <searchoption long="search" short="s">
     Specify search pattern
