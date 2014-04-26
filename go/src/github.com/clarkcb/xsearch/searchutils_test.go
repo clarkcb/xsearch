@@ -8,7 +8,7 @@ func TestContains(t *testing.T) {
 	}
 
 	others := []string{
-		"привет", "здравствуйте", "こんにちは", 
+		"привет", "здравствуйте", "こんにちは",
 	}
 
 	b := false

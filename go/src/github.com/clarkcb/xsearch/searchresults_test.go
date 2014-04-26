@@ -7,13 +7,13 @@ func TestAddSearchResult(t *testing.T) {
 	searchResults := NewSearchResults()
 
 	searchResult := &SearchResult{
-					regexp.MustCompile("^func\\s+TestAddSearchResult"),
-					"/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch/searchresults_test.go",
-					6,
-					"func TestAddSearchResult(t *testing.T) {",
-					[]string{},
-					[]string{},
-				}
+		regexp.MustCompile("^func\\s+TestAddSearchResult"),
+		"/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch/searchresults_test.go",
+		6,
+		"func TestAddSearchResult(t *testing.T) {",
+		[]string{},
+		[]string{},
+	}
 	searchResults.AddSearchResult(searchResult)
 
 	if !searchResults.HasSearchResults() {
