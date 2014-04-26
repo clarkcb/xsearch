@@ -197,3 +197,15 @@ func (r *SearchResult) singleLineString() string {
 		return fmt.Sprintf("%s matches", r.Filepath)
 	}
 }
+
+func (r *SearchResult) Text() string {
+	var buffer bytes.Buffer
+	for _, l := range r.LinesBefore {
+		buffer.WriteString(fmt.Sprintf("%s\n", l))
+	}
+	buffer.WriteString(fmt.Sprintf("%s\n", r.Line))
+	for _, l := range r.LinesAfter {
+		buffer.WriteString(fmt.Sprintf("%s\n", l))
+	}
+	return buffer.String()
+}
