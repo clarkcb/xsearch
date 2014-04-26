@@ -49,7 +49,6 @@ func GetFileTypesString() string {
 
 func GenFileTypesFile(path string) {
 	fileTypesString := GetFileTypesString()
-	fmt.Printf("fileTypesString:\n%s", fileTypesString)
 	ioutil.WriteFile(path, []byte(fileTypesString), 0644)
 }
 

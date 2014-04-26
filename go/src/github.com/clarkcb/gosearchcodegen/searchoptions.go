@@ -53,7 +53,6 @@ func GetSearchOptionsString() string {
 
 func GenSearchOptionsFile(path string) {
 	searchOptionsString := GetSearchOptionsString()
-	fmt.Printf("searchOptionsString:\n%s", searchOptionsString)
 	ioutil.WriteFile(path, []byte(searchOptionsString), 0644)
 }
 
