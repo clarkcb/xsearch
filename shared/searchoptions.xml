@@ -84,6 +84,9 @@
   <searchoption long="searchcompressed" short="z">
     Search compressed files (bz2, gz, tar, zip)*
   </searchoption>
+  <searchoption long="uniquelines" short="u">
+    Save only search results that have unique lines from previous search results
+  </searchoption>
   <searchoption long="verbose" short="v">
     Set output mode to verbose
   </searchoption>
