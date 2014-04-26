@@ -10,10 +10,8 @@ func TestGetExtension(t *testing.T) {
 		"archive.tar.gz": "gz",
 	}
 
-	fileUtil := NewFileUtil()
-
 	for k, v := range expected {
-		if ext := fileUtil.getExtension(k); ext != v {
+		if ext := getExtension(k); ext != v {
 			t.Errorf("getExtension(\"%s\")=\"%s\", expected=\"%s\"", k, ext, v)
 		}
 	}
@@ -28,10 +26,10 @@ func TestGetFileType(t *testing.T) {
 		"nonsense.zippitydooda": FILETYPE_UNKNOWN,
 	}
 
-	fileUtil := NewFileUtil()
+	fileTypes := GetFileTypes()
 
 	for k, v := range expected {
-		if ft := fileUtil.getFileType(k); ft != v {
+		if ft := fileTypes.getFileType(k); ft != v {
 			t.Errorf("getFileType(\"%s\")=\"%v\", expected=\"%v\"", k, ft, v)
 		}
 	}
@@ -46,10 +44,10 @@ func TestIsSearchableFile(t *testing.T) {
 		"nonsense.zippitydooda": false,
 	}
 
-	fileUtil := NewFileUtil()
+	fileTypes := GetFileTypes()
 
 	for k, v := range expected {
-		if is := fileUtil.IsSearchableFile(k); is != v {
+		if is := fileTypes.IsSearchableFile(k); is != v {
 			t.Errorf("getFileType(\"%s\")=\"%t\", expected=\"%t\"", k, is, v)
 		}
 	}
