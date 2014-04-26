@@ -116,7 +116,13 @@ func (s *Searcher) setSearchFiles() error {
 }
 
 func (s *Searcher) addSearchResult(r *SearchResult) {
-	s.searchResults.AddSearchResult(r)
+	if s.Settings.UniqueLines && s.searchResults.LineCounts[strings.TrimSpace(r.Line)] > 0 {
+		if s.Settings.Verbose {
+			fmt.Printf("Skipping search result with non-unique line: %s", strings.TrimSpace(r.Line))
+		}
+	} else {
+		s.searchResults.AddSearchResult(r)
+	}
 }
 
 func linesMatch(lines *[]string, inPatterns *[]*regexp.Regexp,
@@ -320,7 +326,7 @@ func (s *Searcher) searchTextFileReaderLines(r io.Reader, filepath string) error
 	linenum := 0
 	linesBefore := []string{}
 	linesAfter := []string{}
-	linesAfterUntilMatch := false
+	linesAfterIdx := 0
 ReadLines:
 	for {
 		linenum++
@@ -354,28 +360,38 @@ ReadLines:
 				if len(s.Settings.LinesAfterToPatterns) > 0 ||
 					len(s.Settings.LinesAfterUntilPatterns) > 0 {
 					for {
-						if !scanner.Scan() {
-							break
+						if len(linesAfter) < linesAfterIdx + 1 {
+							if !scanner.Scan() {
+								break
+							}
+							linesAfter = append(linesAfter, scanner.Text())
 						}
-						nextLine := scanner.Text()
-						linesAfter = append(linesAfter, nextLine)
+						nextLine := linesAfter[linesAfterIdx]
 						if len(s.Settings.LinesAfterToPatterns) > 0 &&
 							matchesAnyPattern(nextLine, &s.Settings.LinesAfterToPatterns) {
 							break
 						}
 						if len(s.Settings.LinesAfterUntilPatterns) > 0 &&
 							matchesAnyPattern(nextLine, &s.Settings.LinesAfterUntilPatterns) {
-							linesAfterUntilMatch = true
 							break
 						}
+						linesAfterIdx++
 					}
 				}
 				var srLinesAfter []string
-				if linesAfterUntilMatch {
-					srLinesAfter = linesAfter[:len(linesAfter)-2]
-					linesAfterUntilMatch = false
+				if linesAfterIdx > 0 {
+					lastIdx := linesAfterIdx + 1
+					if lastIdx > len(linesAfter) {
+						lastIdx = len(linesAfter)
+					}
+					if len(s.Settings.LinesAfterToPatterns) > 0 {
+						srLinesAfter = linesAfter[:lastIdx]
+					} else if len(s.Settings.LinesAfterUntilPatterns) > 0 {
+						srLinesAfter = linesAfter[:lastIdx-1]
+					}
+					linesAfterIdx = 0
 				} else {
-					srLinesAfter = linesAfter[:]
+					srLinesAfter = linesAfter
 				}
 				sr := &SearchResult{
 					p, filepath, linenum, line,

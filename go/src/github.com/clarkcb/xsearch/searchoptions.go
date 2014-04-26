@@ -232,6 +232,9 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 		"searchcompressed": func(settings *SearchSettings) {
 			settings.SearchCompressed = true
 		},
+		"uniquelines": func(settings *SearchSettings) {
+			settings.UniqueLines = true
+		},
 		"verbose": func(settings *SearchSettings) {
 			settings.Verbose = true
 		},

@@ -36,6 +36,7 @@ type SearchSettings struct {
 	PrintUsage              bool
 	PrintVersion            bool
 	SearchCompressed        bool
+	UniqueLines             bool
 	Verbose                 bool
 }
 
@@ -77,6 +78,7 @@ func GetDefaultSearchSettings() *SearchSettings {
 		false,                  // PrintUsage
 		false,                  // PrintVersion
 		false,                  // SearchCompressed
+		false,                  // UniqueLines
 		false,                  // Verbose
 	}
 }
@@ -202,6 +204,7 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString(fmt.Sprintf(", PrintUsage: %t", s.PrintUsage))
 	buffer.WriteString(fmt.Sprintf(", PrintVersion: %t", s.PrintVersion))
 	buffer.WriteString(fmt.Sprintf(", SearchCompressed: %t", s.SearchCompressed))
+	buffer.WriteString(fmt.Sprintf(", UniqueLines: %t", s.UniqueLines))
 	buffer.WriteString(fmt.Sprintf(", Verbose: %t", s.Verbose))
 	buffer.WriteString("}")
 	return buffer.String()

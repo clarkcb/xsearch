@@ -31,6 +31,7 @@ func GetSearchOptions() *SearchOptions {
 			SearchOption{"p", "printmatches", "Print matches to stdout"},
 			SearchOption{"s", "search", "Specify search pattern"},
 			SearchOption{"z", "searchcompressed", "Search compressed files (bz2, gz, tar, zip)*"},
+			SearchOption{"u", "uniquelines", "Save only search results that have unique lines from previous search results"},
 			SearchOption{"v", "verbose", "Set output mode to verbose"},
 			SearchOption{"V", "version", "Print version and exit"},
 		},
