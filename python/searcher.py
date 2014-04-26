@@ -93,6 +93,8 @@ class Searcher:
         if self.settings.debug:
             print 'get_search_dirs()'
         searchdirs = []
+        if self.is_search_dir(os.path.abspath(self.settings.startpath)):
+            searchdirs.append(self.settings.startpath)
         for root, dirs, files in os.walk(self.settings.startpath):
             searchdirs.extend([
                 os.path.join(root,d) for d in dirs \
@@ -305,6 +307,7 @@ class Searcher:
         linenum = 0
         lines_before = deque()
         lines_after = deque()
+        lines_after_until_match = False
         while True:
             if lines_after:
                 line = lines_after.popleft()
@@ -317,11 +320,12 @@ class Searcher:
                     #print 'AttributeError: %s' % e
                     break
             linenum += 1
-            while len(lines_after) < self.settings.numlinesafter:
-                try:
-                    lines_after.append(fo.next())
-                except StopIteration:
-                    break
+            if self.settings.numlinesafter:
+                while len(lines_after) < self.settings.numlinesafter:
+                    try:
+                        lines_after.append(fo.next())
+                    except StopIteration:
+                        break
             for s in self.settings.searchpatterns:
                 if self.settings.firstmatch and s in file_results:
                     continue
@@ -331,12 +335,35 @@ class Searcher:
                         (lines_after and
                          not self.lines_after_match(lines_after)):
                         continue
+                    # capture lines after until a linesaftertopattern or
+                    # linesafteruntilpattern is matched, if any are defined
+                    if self.settings.linesaftertopatterns or \
+                       self.settings.linesafteruntilpatterns:
+                        while True:
+                            try:
+                                next_line = fo.next()
+                                lines_after.append(next_line)
+                                if self.settings.linesaftertopatterns and \
+                                   self.matches_any_pattern(next_line,
+                                   self.settings.linesaftertopatterns):
+                                    break
+                                elif self.settings.linesafteruntilpatterns and \
+                                     self.matches_any_pattern(next_line,
+                                     self.settings.linesafteruntilpatterns):
+                                    lines_after_until_match = True
+                                    break
+                            except StopIteration:
+                                break
+                    sr_lines_after = list(lines_after)
+                    if lines_after_until_match:
+                        sr_lines_after = sr_lines_after[:-1]
+                        lines_after_until_match = False
                     search_result = SearchResult(pattern=s.pattern,
                                                  filename=filename,
                                                  linenum=linenum,
                                                  line=line,
                                                  lines_before=list(lines_before),
-                                                 lines_after=list(lines_after))
+                                                 lines_after=sr_lines_after)
                     self.add_search_result(search_result)
                     if not s in file_results:
                         file_results[s] = []

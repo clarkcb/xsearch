@@ -18,7 +18,7 @@ import (
 
 type Searcher struct {
 	Settings      *SearchSettings
-	fileUtil      *FileUtil
+	fileTypes     *FileTypes
 	searchDirs    []string
 	searchFiles   []string
 	searchResults *SearchResults
@@ -28,7 +28,7 @@ type Searcher struct {
 func NewSearcher(settings *SearchSettings) *Searcher {
 	return &Searcher{
 		settings,
-		NewFileUtil(),
+		GetFileTypes(),
 		[]string{},
 		[]string{},
 		NewSearchResults(),
@@ -49,27 +49,13 @@ func (s *Searcher) validSettings() error {
 	return nil
 }
 
-func (s *Searcher) testFileTypeChecking() {
-	// test file type checking
-	testFiles := []string{"hello.go", "cmp.zip", "runme.exe", "blabla.bla"}
-	for _, f := range testFiles {
-		fmt.Printf("IsSearchableFile(%s): %t\n", f,
-			s.fileUtil.IsSearchableFile(f))
-		fmt.Printf("IsTextFile(%s): %t\n", f,
-			s.fileUtil.IsTextFile(f))
-		fmt.Printf("IsBinaryFile(%s): %t\n", f,
-			s.fileUtil.IsBinaryFile(f))
-		fmt.Printf("IsCompressedFile(%s): %t\n", f,
-			s.fileUtil.IsCompressedFile(f))
-	}
-}
-
 func (s *Searcher) isSearchDir(path string) bool {
-	//return true
-	if len(s.Settings.InDirPatterns) > 0 && !matchesAnyPattern(path, &s.Settings.InDirPatterns) {
+	if len(s.Settings.InDirPatterns) > 0 &&
+		!matchesAnyPattern(path, &s.Settings.InDirPatterns) {
 		return false
 	}
-	if len(s.Settings.OutDirPatterns) > 0 && matchesAnyPattern(path, &s.Settings.OutDirPatterns) {
+	if len(s.Settings.OutDirPatterns) > 0 &&
+		matchesAnyPattern(path, &s.Settings.OutDirPatterns) {
 		return false
 	}
 	return true
@@ -90,20 +76,22 @@ func (s *Searcher) setSearchDirs() error {
 }
 
 func (s *Searcher) isSearchFile(filename string) bool {
-	if s.Settings.SearchCompressed && s.fileUtil.IsCompressedFile(filename) {
+	if s.Settings.SearchCompressed && s.fileTypes.IsCompressedFile(filename) {
 		return true
 	}
-	ext := s.fileUtil.getExtension(filename)
+	ext := getExtension(filename)
 	if len(s.Settings.InExtensions) > 0 && !contains(s.Settings.InExtensions, ext) {
 		return false
 	}
 	if len(s.Settings.OutExtensions) > 0 && contains(s.Settings.OutExtensions, ext) {
 		return false
 	}
-	if len(s.Settings.InFilePatterns) > 0 && !matchesAnyPattern(filename, &s.Settings.InFilePatterns) {
+	if len(s.Settings.InFilePatterns) > 0 &&
+		!matchesAnyPattern(filename, &s.Settings.InFilePatterns) {
 		return false
 	}
-	if len(s.Settings.OutFilePatterns) > 0 && matchesAnyPattern(filename, &s.Settings.OutFilePatterns) {
+	if len(s.Settings.OutFilePatterns) > 0 &&
+		matchesAnyPattern(filename, &s.Settings.OutFilePatterns) {
 		return false
 	}
 	return true
@@ -209,25 +197,25 @@ func lineStartEndIndicesForIndex(idx int, bytes []byte) (int, int) {
 }
 
 func splitIntoLines(bytes []byte) []string {
-	fmt.Printf("splitIntoLines(bytes=%s)\n", string(bytes))
+	//fmt.Printf("splitIntoLines(bytes=%s)\n", string(bytes))
 	newlineidxs := newlineIndices(bytes)
-	fmt.Printf("newlineidxs: %v\n", newlineidxs)
+	//fmt.Printf("newlineidxs: %v\n", newlineidxs)
 	lines := []string{}
 	startidx, endidx := 0, 0
 	for _, n := range newlineidxs {
 		endidx = n
-		fmt.Printf("startidx: %d, endidx: %d\n", startidx, endidx)
+		//fmt.Printf("startidx: %d, endidx: %d\n", startidx, endidx)
 		if startidx == endidx {
 			lines = append(lines, "")
 		} else if startidx < endidx {
 			nextline := string(bytes[startidx:endidx])
-			fmt.Printf("nextline: %s\n", nextline)
+			//fmt.Printf("nextline: %s\n", nextline)
 			lines = append(lines, nextline)
 		}
 		startidx = endidx + 1
 	}
 	endidx = len(bytes) - 1
-	fmt.Printf("endidx: %d\n", endidx)
+	//fmt.Printf("endidx: %d\n", endidx)
 	if bytes[endidx] == '\n' {
 		lines = append(lines, "")
 	}
@@ -235,8 +223,8 @@ func splitIntoLines(bytes []byte) []string {
 }
 
 func linesBeforeIndex(bytes []byte, idx int, lineCount int) []string {
-	fmt.Printf("linesBeforeIndex(idx=%d, lineCount=%d)\n", idx, lineCount)
-	fmt.Printf("bytes[%d]: %#U\n", idx, bytes[idx])
+	//fmt.Printf("linesBeforeIndex(idx=%d, lineCount=%d)\n", idx, lineCount)
+	//fmt.Printf("bytes[%d]: %#U\n", idx, bytes[idx])
 	lines := []string{}
 	if idx < 1 {
 		return lines
@@ -244,37 +232,37 @@ func linesBeforeIndex(bytes []byte, idx int, lineCount int) []string {
 	newlines := 0
 	beforeidx := idx
 	for beforeidx > 0 && newlines < lineCount {
-		fmt.Printf("beforeidx: %d\n", beforeidx)
-		fmt.Printf("bytes[%d]: %#U\n", beforeidx, bytes[beforeidx])
+		//fmt.Printf("beforeidx: %d\n", beforeidx)
+		//fmt.Printf("bytes[%d]: %#U\n", beforeidx, bytes[beforeidx])
 		if bytes[beforeidx] == '\n' {
 			newlines++
-			fmt.Printf("newlines: %d\n", newlines)
+			//fmt.Printf("newlines: %d\n", newlines)
 		}
 		beforeidx--
 	}
 	beforestartlineidx, _ := lineStartEndIndicesForIndex(beforeidx, bytes)
-	fmt.Printf("beforestartlineidx: %d\n", beforestartlineidx)
+	//fmt.Printf("beforestartlineidx: %d\n", beforestartlineidx)
 	lines = splitIntoLines(bytes[beforestartlineidx : idx-1])
 	return lines
 }
 
 func linesAfterIndex(bytes []byte, idx int, lineCount int) []string {
-	fmt.Printf("linesAfterIndex(idx=%d, lineCount=%d)\n", idx, lineCount)
-	fmt.Printf("bytes[%d]: %#U\n", idx, bytes[idx])
+	//fmt.Printf("linesAfterIndex(idx=%d, lineCount=%d)\n", idx, lineCount)
+	//fmt.Printf("bytes[%d]: %#U\n", idx, bytes[idx])
 	lines := []string{}
 	newlines := 0
 	afteridx := idx
 	for afteridx < len(bytes)-1 && newlines < lineCount {
-		fmt.Printf("afteridx: %d\n", afteridx)
-		fmt.Printf("bytes[%d]: %#U\n", afteridx, bytes[afteridx])
+		//fmt.Printf("afteridx: %d\n", afteridx)
+		//fmt.Printf("bytes[%d]: %#U\n", afteridx, bytes[afteridx])
 		if bytes[afteridx] == '\n' {
 			newlines++
-			fmt.Printf("newlines: %d\n", newlines)
+			//fmt.Printf("newlines: %d\n", newlines)
 		}
 		afteridx++
 	}
 	_, afterendlineidx := lineStartEndIndicesForIndex(afteridx-1, bytes)
-	fmt.Printf("afterendlineidx: %d\n", afterendlineidx)
+	//fmt.Printf("afterendlineidx: %d\n", afterendlineidx)
 	lines = splitIntoLines(bytes[idx:afterendlineidx])
 	return lines[:lineCount]
 }
@@ -332,6 +320,7 @@ func (s *Searcher) searchTextFileReaderLines(r io.Reader, filepath string) error
 	linenum := 0
 	linesBefore := []string{}
 	linesAfter := []string{}
+	linesAfterUntilMatch := false
 ReadLines:
 	for {
 		linenum++
@@ -361,14 +350,39 @@ ReadLines:
 					continue
 				} else if len(linesAfter) > 0 && !s.linesAfterMatch(&linesAfter) {
 					continue
-				} else {
-					sr := &SearchResult{
-						p, filepath, linenum, line,
-						linesBefore,
-						linesAfter,
-					}
-					s.addSearchResult(sr)
 				}
+				if len(s.Settings.LinesAfterToPatterns) > 0 ||
+					len(s.Settings.LinesAfterUntilPatterns) > 0 {
+					for {
+						if !scanner.Scan() {
+							break
+						}
+						nextLine := scanner.Text()
+						linesAfter = append(linesAfter, nextLine)
+						if len(s.Settings.LinesAfterToPatterns) > 0 &&
+							matchesAnyPattern(nextLine, &s.Settings.LinesAfterToPatterns) {
+							break
+						}
+						if len(s.Settings.LinesAfterUntilPatterns) > 0 &&
+							matchesAnyPattern(nextLine, &s.Settings.LinesAfterUntilPatterns) {
+							linesAfterUntilMatch = true
+							break
+						}
+					}
+				}
+				var srLinesAfter []string
+				if linesAfterUntilMatch {
+					srLinesAfter = linesAfter[:len(linesAfter)-2]
+					linesAfterUntilMatch = false
+				} else {
+					srLinesAfter = linesAfter[:]
+				}
+				sr := &SearchResult{
+					p, filepath, linenum, line,
+					linesBefore,
+					srLinesAfter,
+				}
+				s.addSearchResult(sr)
 			}
 		}
 		if s.Settings.LinesBefore > 0 {
@@ -496,7 +510,7 @@ func (s *Searcher) searchZipFileReader(r io.Reader, filepath string) error {
 		}
 		// f.FileHeader.Flags == 2 seems to mean it's a file (not a dir, etc.)
 		if f.FileHeader.Flags == 2 && s.isSearchFile(f.Name) {
-			switch s.fileUtil.getFileType(f.Name) {
+			switch s.fileTypes.getFileType(f.Name) {
 			case FILETYPE_TEXT:
 				if s.Settings.Verbose {
 					fmt.Printf("Searching text file {%s}%s\n", filepath, f.Name)
@@ -526,7 +540,7 @@ func (s *Searcher) searchZipFileReader(r io.Reader, filepath string) error {
 }
 
 func (s *Searcher) searchCompressedFileReader(r io.Reader, filepath string) error {
-	ext := s.fileUtil.getExtension(filepath)
+	ext := getExtension(filepath)
 	switch ext {
 	case "zip", "jar", "war", "ear":
 		return s.searchZipFileReader(r, filepath)
@@ -544,7 +558,7 @@ func (s *Searcher) searchFileReader(r io.Reader, filepath string) error {
 	if s.Settings.Verbose {
 		fmt.Printf("Searching file %s\n", filepath)
 	}
-	switch s.fileUtil.getFileType(filepath) {
+	switch s.fileTypes.getFileType(filepath) {
 	case FILETYPE_TEXT:
 		s.searchTextFileReader(r, filepath)
 	case FILETYPE_BINARY:
@@ -558,10 +572,6 @@ func (s *Searcher) searchFileReader(r io.Reader, filepath string) error {
 			}
 			return nil
 		}
-	//default:
-	//	//panic(fmt.Sprintf("Unknown file type: %s", file))
-	//	// for now we assume it's a text file, but will probably change this
-	//	return s.searchTextFile(file)
 	default:
 		fmt.Sprintf("Skipping unknown file type: %s", filepath)
 	}
@@ -569,8 +579,8 @@ func (s *Searcher) searchFileReader(r io.Reader, filepath string) error {
 }
 
 func (s *Searcher) SearchFile(filepath string) error {
-	if !s.fileUtil.IsSearchableFile(filepath) {
-		if contains(s.Settings.InExtensions, s.fileUtil.getExtension(filepath)) {
+	if !s.fileTypes.IsSearchableFile(filepath) {
+		if contains(s.Settings.InExtensions, getExtension(filepath)) {
 			if s.Settings.Debug {
 				fmt.Printf("File made searchable by passing in-ext: %s\n", filepath)
 			}
@@ -621,8 +631,6 @@ func (s *Searcher) Search() error {
 	if err := s.validSettings(); err != nil {
 		return err
 	}
-
-	//s.testFileTypeChecking()
 
 	// get search directory list
 	if s.Settings.DoTiming {

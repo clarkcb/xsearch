@@ -8,33 +8,35 @@ import (
 )
 
 type SearchSettings struct {
-	StartPath              string
-	InExtensions           []string
-	OutExtensions          []string
-	InDirPatterns          []*regexp.Regexp
-	OutDirPatterns         []*regexp.Regexp
-	InFilePatterns         []*regexp.Regexp
-	OutFilePatterns        []*regexp.Regexp
-	InLinesAfterPatterns   []*regexp.Regexp
-	OutLinesAfterPatterns  []*regexp.Regexp
-	InLinesBeforePatterns  []*regexp.Regexp
-	OutLinesBeforePatterns []*regexp.Regexp
-	SearchPatterns         []*regexp.Regexp
-	CaseSensitive          bool
-	Debug                  bool
-	DoTiming               bool
-	FirstMatch             bool
-	LinesAfter             int
-	LinesBefore            int
-	ListDirs               bool
-	ListFiles              bool
-	ListLines              bool
-	MultiLineSearch        bool
-	PrintResults           bool
-	PrintUsage             bool
-	PrintVersion           bool
-	SearchCompressed       bool
-	Verbose                bool
+	StartPath               string
+	InExtensions            []string
+	OutExtensions           []string
+	InDirPatterns           []*regexp.Regexp
+	OutDirPatterns          []*regexp.Regexp
+	InFilePatterns          []*regexp.Regexp
+	OutFilePatterns         []*regexp.Regexp
+	InLinesAfterPatterns    []*regexp.Regexp
+	OutLinesAfterPatterns   []*regexp.Regexp
+	InLinesBeforePatterns   []*regexp.Regexp
+	OutLinesBeforePatterns  []*regexp.Regexp
+	LinesAfterToPatterns    []*regexp.Regexp
+	LinesAfterUntilPatterns []*regexp.Regexp
+	SearchPatterns          []*regexp.Regexp
+	CaseSensitive           bool
+	Debug                   bool
+	DoTiming                bool
+	FirstMatch              bool
+	LinesAfter              int
+	LinesBefore             int
+	ListDirs                bool
+	ListFiles               bool
+	ListLines               bool
+	MultiLineSearch         bool
+	PrintResults            bool
+	PrintUsage              bool
+	PrintVersion            bool
+	SearchCompressed        bool
+	Verbose                 bool
 }
 
 func GetDefaultSearchSettings() *SearchSettings {
@@ -58,6 +60,8 @@ func GetDefaultSearchSettings() *SearchSettings {
 		[]*regexp.Regexp{},     // OutLinesAfterPatterns
 		[]*regexp.Regexp{},     // InLinesBeforePatterns
 		[]*regexp.Regexp{},     // OutLinesBeforePatterns
+		[]*regexp.Regexp{},     // LinesAfterToPatterns
+		[]*regexp.Regexp{},     // LinesAfterUntilPatterns
 		[]*regexp.Regexp{},     // SearchPatterns
 		true,                   // CaseSensitive
 		false,                  // Debug
@@ -75,23 +79,6 @@ func GetDefaultSearchSettings() *SearchSettings {
 		false,                  // SearchCompressed
 		false,                  // Verbose
 	}
-}
-
-func addRegexpListToBuffer(name string, list []*regexp.Regexp, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	for i, r := range list {
-		if i > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(r.String())
-	}
-	buffer.WriteString("]")
-}
-
-func addStringListToBuffer(name string, list []string, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	buffer.WriteString(strings.Join(list, ","))
-	buffer.WriteString("]")
 }
 
 func (s *SearchSettings) AddInExtension(xs string) {
@@ -142,8 +129,33 @@ func (s *SearchSettings) AddOutLinesAfterPattern(p string) {
 	addPattern(p, &s.OutLinesAfterPatterns)
 }
 
+func (s *SearchSettings) AddLinesAfterToPattern(p string) {
+	addPattern(p, &s.LinesAfterToPatterns)
+}
+
+func (s *SearchSettings) AddLinesAfterUntilPattern(p string) {
+	addPattern(p, &s.LinesAfterUntilPatterns)
+}
+
 func (s *SearchSettings) AddSearchPattern(p string) {
 	addPattern(p, &s.SearchPatterns)
+}
+
+func addRegexpListToBuffer(name string, list *[]*regexp.Regexp, buffer *bytes.Buffer) {
+	buffer.WriteString(fmt.Sprintf("%s: [", name))
+	for i, r := range *list {
+		if i > 0 {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(r.String())
+	}
+	buffer.WriteString("]")
+}
+
+func addStringListToBuffer(name string, list *[]string, buffer *bytes.Buffer) {
+	buffer.WriteString(fmt.Sprintf("%s: [", name))
+	buffer.WriteString(strings.Join(*list, ","))
+	buffer.WriteString("]")
 }
 
 func (s *SearchSettings) String() string {
@@ -151,27 +163,31 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString("SearchSettings{")
 	buffer.WriteString(fmt.Sprintf("StartPath: %s", s.StartPath))
 	buffer.WriteString(", ")
-	addStringListToBuffer("InExtensions", s.InExtensions, &buffer)
+	addStringListToBuffer("InExtensions", &s.InExtensions, &buffer)
 	buffer.WriteString(", ")
-	addStringListToBuffer("OutExtensions", s.OutExtensions, &buffer)
+	addStringListToBuffer("OutExtensions", &s.OutExtensions, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InDirPatterns", s.InDirPatterns, &buffer)
+	addRegexpListToBuffer("InDirPatterns", &s.InDirPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutDirPatterns", s.OutDirPatterns, &buffer)
+	addRegexpListToBuffer("OutDirPatterns", &s.OutDirPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InFilePatterns", s.InFilePatterns, &buffer)
+	addRegexpListToBuffer("InFilePatterns", &s.InFilePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutFilePatterns", s.OutFilePatterns, &buffer)
+	addRegexpListToBuffer("OutFilePatterns", &s.OutFilePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InLinesAfterPatterns", s.InLinesAfterPatterns, &buffer)
+	addRegexpListToBuffer("InLinesAfterPatterns", &s.InLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutLinesAfterPatterns", s.OutLinesAfterPatterns, &buffer)
+	addRegexpListToBuffer("OutLinesAfterPatterns", &s.OutLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InLinesBeforePatterns", s.InLinesBeforePatterns, &buffer)
+	addRegexpListToBuffer("InLinesBeforePatterns", &s.InLinesBeforePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutLinesBeforePatterns", s.OutLinesBeforePatterns, &buffer)
+	addRegexpListToBuffer("OutLinesBeforePatterns", &s.OutLinesBeforePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("SearchPatterns", s.SearchPatterns, &buffer)
+	addRegexpListToBuffer("LinesAfterToPatterns", &s.LinesAfterToPatterns, &buffer)
+	buffer.WriteString(", ")
+	addRegexpListToBuffer("LinesAfterUntilPatterns", &s.LinesAfterUntilPatterns, &buffer)
+	buffer.WriteString(", ")
+	addRegexpListToBuffer("SearchPatterns", &s.SearchPatterns, &buffer)
 	buffer.WriteString(fmt.Sprintf(", CaseSensitive: %t", s.CaseSensitive))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
 	buffer.WriteString(fmt.Sprintf(", DoTiming: %t", s.DoTiming))

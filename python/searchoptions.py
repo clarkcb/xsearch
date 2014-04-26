@@ -40,6 +40,12 @@ class SearchOptions:
         'linesafter':
             lambda x, settings:
                 settings.set_property('numlinesafter', int(x)),
+        'linesaftertopattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'linesaftertopatterns'),
+        'linesafteruntilpattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'linesafteruntilpatterns'),
         'linesbefore':
             lambda x, settings:
                 settings.set_property('numlinesbefore', int(x)),

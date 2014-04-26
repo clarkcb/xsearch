@@ -15,6 +15,7 @@ class SearchSettings:
                             in_filepatterns out_filepatterns
                             in_linesafterpatterns out_linesafterpatterns
                             in_linesbeforepatterns out_linesbeforepatterns
+                            linesaftertopatterns linesafteruntilpatterns
                             searchpatterns'''.split()
     _props_with_defaults = {
         'casesensitive': True,
