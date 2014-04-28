@@ -11,17 +11,17 @@ type SearchSettings struct {
 	StartPath               string
 	InExtensions            []string
 	OutExtensions           []string
-	InDirPatterns           []*regexp.Regexp
-	OutDirPatterns          []*regexp.Regexp
-	InFilePatterns          []*regexp.Regexp
-	OutFilePatterns         []*regexp.Regexp
-	InLinesAfterPatterns    []*regexp.Regexp
-	OutLinesAfterPatterns   []*regexp.Regexp
-	InLinesBeforePatterns   []*regexp.Regexp
-	OutLinesBeforePatterns  []*regexp.Regexp
-	LinesAfterToPatterns    []*regexp.Regexp
-	LinesAfterUntilPatterns []*regexp.Regexp
-	SearchPatterns          []*regexp.Regexp
+	InDirPatterns           *SearchPatterns
+	OutDirPatterns          *SearchPatterns
+	InFilePatterns          *SearchPatterns
+	OutFilePatterns         *SearchPatterns
+	InLinesAfterPatterns    *SearchPatterns
+	OutLinesAfterPatterns   *SearchPatterns
+	InLinesBeforePatterns   *SearchPatterns
+	OutLinesBeforePatterns  *SearchPatterns
+	LinesAfterToPatterns    *SearchPatterns
+	LinesAfterUntilPatterns *SearchPatterns
+	SearchPatterns          *SearchPatterns
 	CaseSensitive           bool
 	Debug                   bool
 	DoTiming                bool
@@ -40,46 +40,56 @@ type SearchSettings struct {
 	Verbose                 bool
 }
 
+func GetDefaultOutDirPatterns() *SearchPatterns {
+	return &SearchPatterns{
+		[]*regexp.Regexp{
+			regexp.MustCompile("\\.git\\b"),
+			regexp.MustCompile("\\.svn\\b"),
+			regexp.MustCompile("\\bCVS\\b"),
+		},
+	}
+}
+
+func GetDefaultOutFilePatterns() *SearchPatterns {
+	return &SearchPatterns{
+		[]*regexp.Regexp{
+			regexp.MustCompile("\\.DS_Store\\b"),
+		},
+	}
+}
+
 func GetDefaultSearchSettings() *SearchSettings {
-	DEFAULTOUTDIRPATTERNS := []*regexp.Regexp{
-		regexp.MustCompile("\\.git\\b"),
-		regexp.MustCompile("\\.svn\\b"),
-		regexp.MustCompile("\\bCVS\\b"),
-	}
-	DEFAULTOUTFILEPATTERNS := []*regexp.Regexp{
-		regexp.MustCompile("\\.DS_Store\\b"),
-	}
 	return &SearchSettings{
-		"",                     // StartPath
-		[]string{},             // InExtensions
-		[]string{},             // OutExtensions
-		[]*regexp.Regexp{},     // InDirPatterns
-		DEFAULTOUTDIRPATTERNS,  // OutDirPatterns
-		[]*regexp.Regexp{},     // InFilePatterns
-		DEFAULTOUTFILEPATTERNS, // OutFilePatterns
-		[]*regexp.Regexp{},     // InLinesAfterPatterns
-		[]*regexp.Regexp{},     // OutLinesAfterPatterns
-		[]*regexp.Regexp{},     // InLinesBeforePatterns
-		[]*regexp.Regexp{},     // OutLinesBeforePatterns
-		[]*regexp.Regexp{},     // LinesAfterToPatterns
-		[]*regexp.Regexp{},     // LinesAfterUntilPatterns
-		[]*regexp.Regexp{},     // SearchPatterns
-		true,                   // CaseSensitive
-		false,                  // Debug
-		false,                  // DoTiming
-		false,                  // FirstMatch
-		0,                      // LinesAfter
-		0,                      // LinesBefore
-		false,                  // ListDirs
-		false,                  // ListFiles
-		false,                  // ListLines
-		false,                  // MultiLineSearch
-		true,                   // PrintResults
-		false,                  // PrintUsage
-		false,                  // PrintVersion
-		false,                  // SearchCompressed
-		false,                  // UniqueLines
-		false,                  // Verbose
+		"",                          // StartPath
+		[]string{},                  // InExtensions
+		[]string{},                  // OutExtensions
+		NewSearchPatterns(),         // InDirPatterns
+		GetDefaultOutDirPatterns(),  // OutDirPatterns
+		NewSearchPatterns(),         // InFilePatterns
+		GetDefaultOutFilePatterns(), // OutFilePatterns
+		NewSearchPatterns(),         // InLinesAfterPatterns
+		NewSearchPatterns(),         // OutLinesAfterPatterns
+		NewSearchPatterns(),         // InLinesBeforePatterns
+		NewSearchPatterns(),         // OutLinesBeforePatterns
+		NewSearchPatterns(),         // LinesAfterToPatterns
+		NewSearchPatterns(),         // LinesAfterUntilPatterns
+		NewSearchPatterns(),         // SearchPatterns
+		true,                        // CaseSensitive
+		false,                       // Debug
+		false,                       // DoTiming
+		false,                       // FirstMatch
+		0,                           // LinesAfter
+		0,                           // LinesBefore
+		false,                       // ListDirs
+		false,                       // ListFiles
+		false,                       // ListLines
+		false,                       // MultiLineSearch
+		true,                        // PrintResults
+		false,                       // PrintUsage
+		false,                       // PrintVersion
+		false,                       // SearchCompressed
+		false,                       // UniqueLines
+		false,                       // Verbose
 	}
 }
 
@@ -95,57 +105,68 @@ func (s *SearchSettings) AddOutExtension(xs string) {
 	}
 }
 
-func addPattern(p string, patterns *[]*regexp.Regexp) {
-	*patterns = append(*patterns, regexp.MustCompile(p))
+func addPattern(p string, sp *SearchPatterns) {
+	sp.AddPattern(p)
 }
 
 func (s *SearchSettings) AddInDirPattern(p string) {
-	addPattern(p, &s.InDirPatterns)
+	addPattern(p, s.InDirPatterns)
 }
 
 func (s *SearchSettings) AddOutDirPattern(p string) {
-	addPattern(p, &s.OutDirPatterns)
+	addPattern(p, s.OutDirPatterns)
 }
 
 func (s *SearchSettings) AddInFilePattern(p string) {
-	addPattern(p, &s.InFilePatterns)
+	addPattern(p, s.InFilePatterns)
 }
 
 func (s *SearchSettings) AddOutFilePattern(p string) {
-	addPattern(p, &s.OutFilePatterns)
+	addPattern(p, s.OutFilePatterns)
 }
 
 func (s *SearchSettings) AddInLinesBeforePattern(p string) {
-	addPattern(p, &s.InLinesBeforePatterns)
+	addPattern(p, s.InLinesBeforePatterns)
 }
 
 func (s *SearchSettings) AddOutLinesBeforePattern(p string) {
-	addPattern(p, &s.OutLinesBeforePatterns)
+	addPattern(p, s.OutLinesBeforePatterns)
 }
 
 func (s *SearchSettings) AddInLinesAfterPattern(p string) {
-	addPattern(p, &s.InLinesAfterPatterns)
+	addPattern(p, s.InLinesAfterPatterns)
 }
 
 func (s *SearchSettings) AddOutLinesAfterPattern(p string) {
-	addPattern(p, &s.OutLinesAfterPatterns)
+	addPattern(p, s.OutLinesAfterPatterns)
 }
 
 func (s *SearchSettings) AddLinesAfterToPattern(p string) {
-	addPattern(p, &s.LinesAfterToPatterns)
+	addPattern(p, s.LinesAfterToPatterns)
 }
 
 func (s *SearchSettings) AddLinesAfterUntilPattern(p string) {
-	addPattern(p, &s.LinesAfterUntilPatterns)
+	addPattern(p, s.LinesAfterUntilPatterns)
 }
 
 func (s *SearchSettings) AddSearchPattern(p string) {
-	addPattern(p, &s.SearchPatterns)
+	addPattern(p, s.SearchPatterns)
 }
 
 func addRegexpListToBuffer(name string, list *[]*regexp.Regexp, buffer *bytes.Buffer) {
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
 	for i, r := range *list {
+		if i > 0 {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(r.String())
+	}
+	buffer.WriteString("]")
+}
+
+func addSearchPatternsToBuffer(name string, sp *SearchPatterns, buffer *bytes.Buffer) {
+	buffer.WriteString(fmt.Sprintf("%s: [", name))
+	for i, r := range sp.patterns {
 		if i > 0 {
 			buffer.WriteString(",")
 		}
@@ -169,27 +190,27 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString(", ")
 	addStringListToBuffer("OutExtensions", &s.OutExtensions, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InDirPatterns", &s.InDirPatterns, &buffer)
+	addSearchPatternsToBuffer("InDirPatterns", s.InDirPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutDirPatterns", &s.OutDirPatterns, &buffer)
+	addSearchPatternsToBuffer("OutDirPatterns", s.OutDirPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InFilePatterns", &s.InFilePatterns, &buffer)
+	addSearchPatternsToBuffer("InFilePatterns", s.InFilePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutFilePatterns", &s.OutFilePatterns, &buffer)
+	addSearchPatternsToBuffer("OutFilePatterns", s.OutFilePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InLinesAfterPatterns", &s.InLinesAfterPatterns, &buffer)
+	addSearchPatternsToBuffer("InLinesAfterPatterns", s.InLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutLinesAfterPatterns", &s.OutLinesAfterPatterns, &buffer)
+	addSearchPatternsToBuffer("OutLinesAfterPatterns", s.OutLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("InLinesBeforePatterns", &s.InLinesBeforePatterns, &buffer)
+	addSearchPatternsToBuffer("InLinesBeforePatterns", s.InLinesBeforePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("OutLinesBeforePatterns", &s.OutLinesBeforePatterns, &buffer)
+	addSearchPatternsToBuffer("OutLinesBeforePatterns", s.OutLinesBeforePatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("LinesAfterToPatterns", &s.LinesAfterToPatterns, &buffer)
+	addSearchPatternsToBuffer("LinesAfterToPatterns", s.LinesAfterToPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("LinesAfterUntilPatterns", &s.LinesAfterUntilPatterns, &buffer)
+	addSearchPatternsToBuffer("LinesAfterUntilPatterns", s.LinesAfterUntilPatterns, &buffer)
 	buffer.WriteString(", ")
-	addRegexpListToBuffer("SearchPatterns", &s.SearchPatterns, &buffer)
+	addSearchPatternsToBuffer("SearchPatterns", s.SearchPatterns, &buffer)
 	buffer.WriteString(fmt.Sprintf(", CaseSensitive: %t", s.CaseSensitive))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
 	buffer.WriteString(fmt.Sprintf(", DoTiming: %t", s.DoTiming))

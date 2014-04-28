@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -36,6 +35,10 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 	}
 }
 
+func (s *Searcher) GetSearchResults() *SearchResults {
+	return s.searchResults
+}
+
 func (s *Searcher) validSettings() error {
 	if s.Settings.StartPath == "" {
 		return fmt.Errorf("Missing startpath")
@@ -43,19 +46,19 @@ func (s *Searcher) validSettings() error {
 	if _, err := os.Stat(s.Settings.StartPath); err != nil {
 		return fmt.Errorf("Invalid startpath")
 	}
-	if len(s.Settings.SearchPatterns) == 0 {
+	if s.Settings.SearchPatterns.IsEmpty() {
 		return fmt.Errorf("No search patterns defined")
 	}
 	return nil
 }
 
 func (s *Searcher) isSearchDir(path string) bool {
-	if len(s.Settings.InDirPatterns) > 0 &&
-		!matchesAnyPattern(path, &s.Settings.InDirPatterns) {
+	if !s.Settings.InDirPatterns.IsEmpty() &&
+		!s.Settings.InDirPatterns.MatchesAny(path) {
 		return false
 	}
-	if len(s.Settings.OutDirPatterns) > 0 &&
-		matchesAnyPattern(path, &s.Settings.OutDirPatterns) {
+	if !s.Settings.OutDirPatterns.IsEmpty() &&
+		s.Settings.OutDirPatterns.MatchesAny(path) {
 		return false
 	}
 	return true
@@ -86,12 +89,13 @@ func (s *Searcher) isSearchFile(filename string) bool {
 	if len(s.Settings.OutExtensions) > 0 && contains(s.Settings.OutExtensions, ext) {
 		return false
 	}
-	if len(s.Settings.InFilePatterns) > 0 &&
-		!matchesAnyPattern(filename, &s.Settings.InFilePatterns) {
+
+	if !s.Settings.InFilePatterns.IsEmpty() &&
+		!s.Settings.InFilePatterns.MatchesAny(filename) {
 		return false
 	}
-	if len(s.Settings.OutFilePatterns) > 0 &&
-		matchesAnyPattern(filename, &s.Settings.OutFilePatterns) {
+	if !s.Settings.OutFilePatterns.IsEmpty() &&
+		s.Settings.OutFilePatterns.MatchesAny(filename) {
 		return false
 	}
 	return true
@@ -125,21 +129,21 @@ func (s *Searcher) addSearchResult(r *SearchResult) {
 	}
 }
 
-func linesMatch(lines *[]string, inPatterns *[]*regexp.Regexp,
-	outPatterns *[]*regexp.Regexp) bool {
-	inLinesMatch := len(*inPatterns) == 0 || anyMatchesAnyPattern(lines, inPatterns)
-	outLinesMatch := len(*outPatterns) > 0 && anyMatchesAnyPattern(lines, outPatterns)
+func linesMatch(lines *[]string, inPatterns *SearchPatterns,
+	outPatterns *SearchPatterns) bool {
+	inLinesMatch := inPatterns.IsEmpty() || inPatterns.AnyMatchesAny(lines)
+	outLinesMatch := !outPatterns.IsEmpty() && outPatterns.AnyMatchesAny(lines)
 	return inLinesMatch && !outLinesMatch
 }
 
 func (s *Searcher) linesAfterMatch(linesAfter *[]string) bool {
-	return linesMatch(linesAfter, &s.Settings.InLinesAfterPatterns,
-		&s.Settings.OutLinesAfterPatterns)
+	return linesMatch(linesAfter, s.Settings.InLinesAfterPatterns,
+		s.Settings.OutLinesAfterPatterns)
 }
 
 func (s *Searcher) linesBeforeMatch(linesBefore *[]string) bool {
-	return linesMatch(linesBefore, &s.Settings.InLinesBeforePatterns,
-		&s.Settings.OutLinesBeforePatterns)
+	return linesMatch(linesBefore, s.Settings.InLinesBeforePatterns,
+		s.Settings.OutLinesBeforePatterns)
 }
 
 func (s *Searcher) searchTextFileReader(r io.Reader, filepath string) error {
@@ -284,7 +288,9 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, filepath string) er
 	if s.Settings.FirstMatch {
 		findLimit = 1
 	}
-	for _, p := range s.Settings.SearchPatterns {
+	spi := s.Settings.SearchPatterns.Iterator()
+	for spi.Next() {
+		p := spi.Value()
 		allIndices := p.FindAllIndex(bytes, findLimit)
 		if allIndices != nil {
 			for _, idx := range allIndices {
@@ -341,11 +347,13 @@ ReadLines:
 		for len(linesAfter) < s.Settings.LinesAfter && scanner.Scan() {
 			linesAfter = append(linesAfter, scanner.Text())
 		}
-		for _, p := range s.Settings.SearchPatterns {
+		spi := s.Settings.SearchPatterns.Iterator()
+		for spi.Next() {
+			p := spi.Value()
 			// check for FirstMatch setting and stop if file+pattern match exists
 			if s.Settings.FirstMatch &&
 				s.searchResults.HasResultForFileAndPattern(filepath, p) {
-				if len(s.Settings.SearchPatterns) > 1 {
+				if !s.Settings.SearchPatterns.IsEmpty() {
 					continue
 				} else {
 					break ReadLines
@@ -357,8 +365,8 @@ ReadLines:
 				} else if len(linesAfter) > 0 && !s.linesAfterMatch(&linesAfter) {
 					continue
 				}
-				if len(s.Settings.LinesAfterToPatterns) > 0 ||
-					len(s.Settings.LinesAfterUntilPatterns) > 0 {
+				if !s.Settings.LinesAfterToPatterns.IsEmpty() ||
+					!s.Settings.LinesAfterUntilPatterns.IsEmpty() {
 					for {
 						if len(linesAfter) < linesAfterIdx + 1 {
 							if !scanner.Scan() {
@@ -367,12 +375,12 @@ ReadLines:
 							linesAfter = append(linesAfter, scanner.Text())
 						}
 						nextLine := linesAfter[linesAfterIdx]
-						if len(s.Settings.LinesAfterToPatterns) > 0 &&
-							matchesAnyPattern(nextLine, &s.Settings.LinesAfterToPatterns) {
+						if !s.Settings.LinesAfterToPatterns.IsEmpty() &&
+							s.Settings.LinesAfterToPatterns.MatchesAny(nextLine) {
 							break
 						}
-						if len(s.Settings.LinesAfterUntilPatterns) > 0 &&
-							matchesAnyPattern(nextLine, &s.Settings.LinesAfterUntilPatterns) {
+						if !s.Settings.LinesAfterUntilPatterns.IsEmpty() &&
+							s.Settings.LinesAfterUntilPatterns.MatchesAny(nextLine) {
 							break
 						}
 						linesAfterIdx++
@@ -384,9 +392,9 @@ ReadLines:
 					if lastIdx > len(linesAfter) {
 						lastIdx = len(linesAfter)
 					}
-					if len(s.Settings.LinesAfterToPatterns) > 0 {
+					if !s.Settings.LinesAfterToPatterns.IsEmpty() {
 						srLinesAfter = linesAfter[:lastIdx]
-					} else if len(s.Settings.LinesAfterUntilPatterns) > 0 {
+					} else if !s.Settings.LinesAfterUntilPatterns.IsEmpty() {
 						srLinesAfter = linesAfter[:lastIdx-1]
 					}
 					linesAfterIdx = 0
@@ -424,7 +432,9 @@ func (s *Searcher) searchBinaryFileReader(r io.Reader, filepath string) error {
 	if err != nil {
 		return err
 	}
-	for _, p := range s.Settings.SearchPatterns {
+	spi := s.Settings.SearchPatterns.Iterator()
+	for spi.Next() {
+		p := spi.Value()
 		if p.Match(bytes) {
 			sr := &SearchResult{
 				p, filepath, 0, "",
@@ -711,7 +721,10 @@ func (s *Searcher) Search() error {
 		s.searchResults.PrintSearchResults()
 		fmt.Println()
 		patternKeys := []string{}
-		for _, p := range s.Settings.SearchPatterns {
+
+		spi := s.Settings.SearchPatterns.Iterator()
+		for spi.Next() {
+			p := spi.Value()
 			patternKeys = append(patternKeys, p.String())
 		}
 		s.searchResults.PrintPatternCounts(patternKeys)
