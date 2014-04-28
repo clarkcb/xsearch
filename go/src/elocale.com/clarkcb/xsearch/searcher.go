@@ -53,6 +53,9 @@ func (s *Searcher) validSettings() error {
 }
 
 func (s *Searcher) isSearchDir(path string) bool {
+	if s.Settings.Debug {
+		fmt.Printf("isSearchDir(path=%s)\n", path)
+	}
 	if !s.Settings.InDirPatterns.IsEmpty() &&
 		!s.Settings.InDirPatterns.MatchesAny(path) {
 		return false
@@ -64,9 +67,13 @@ func (s *Searcher) isSearchDir(path string) bool {
 	return true
 }
 
+func (s *Searcher) addSearchDir(path string) {
+	s.searchDirs = append(s.searchDirs, path)
+}
+
 func (s *Searcher) checkAddSearchDir(path string, fi os.FileInfo, err error) error {
 	if fi.IsDir() && s.isSearchDir(path) {
-		s.searchDirs = append(s.searchDirs, path)
+		s.addSearchDir(path)
 	}
 	return nil
 }
@@ -79,7 +86,7 @@ func (s *Searcher) setSearchDirs() error {
 }
 
 func (s *Searcher) isSearchFile(filename string) bool {
-	if s.Settings.SearchCompressed && s.fileTypes.IsCompressedFile(filename) {
+	if s.Settings.SearchArchives && s.fileTypes.IsCompressedFile(filename) {
 		return true
 	}
 	ext := getExtension(filename)
@@ -590,7 +597,7 @@ func (s *Searcher) searchFileReader(r io.Reader, filepath string) error {
 	case FILETYPE_BINARY:
 		s.searchBinaryFileReader(r, filepath)
 	case FILETYPE_COMPRESSED:
-		if s.Settings.SearchCompressed {
+		if s.Settings.SearchArchives {
 			return s.searchCompressedFileReader(r, filepath)
 		} else {
 			if s.Settings.Verbose {

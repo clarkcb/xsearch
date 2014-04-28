@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	targetPath := "/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/xsearch"
+	targetPath := "/Users/cary/src/git/xsearch/go/src/elocale.com/clarkcb/xsearch"
 	
 	// generate the filetypes file
 	fileTypesFilePath := filepath.Join(targetPath, "filetypesgen.go")

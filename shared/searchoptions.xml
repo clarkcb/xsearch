@@ -57,8 +57,8 @@
   <searchoption long="noprintmatches" short="P">
     Suppress printing of matches to stdout
   </searchoption>
-  <searchoption long="nosearchcompressed" short="Z">
-    Do not search compressed files (bz2, gz, tar, zip)
+  <searchoption long="nosearcharchives" short="Z">
+    Do not search archive files (bz2, gz, tar, zip)
   </searchoption>
   <searchoption long="out-dirpattern" short="D">
     Specify name pattern for directories to exclude from search
@@ -81,8 +81,8 @@
   <searchoption long="search" short="s">
     Specify search pattern
   </searchoption>
-  <searchoption long="searchcompressed" short="z">
-    Search compressed files (bz2, gz, tar, zip)*
+  <searchoption long="searcharchives" short="z">
+    Search archive files (bz2, gz, tar, zip)*
   </searchoption>
   <searchoption long="uniquelines" short="u">
     Save only search results that have unique lines from previous search results

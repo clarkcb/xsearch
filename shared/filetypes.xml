@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <filetypes>
+  <filetype name="archive">
+    <extensions>bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx
+      Z</extensions>
+  </filetype>
   <filetype name="binary">
     <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dxr dms doc
       dot exe hi hlp indd lnk mdb mo nib o obj odt pdb ppt psd pyc pyo qxd so
@@ -10,10 +14,6 @@
       cxx el erl es fs fx go groovy h h++ hh hpp hs java js js2 jsf json jsp
       jspf m pas php php3 php4 php5 pl pm pxd pxi py pyw pyx rb rs sbt sc scala
       sh tcl vb</extensions>
-  </filetype>
-  <filetype name="compressed">
-    <extensions>bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx
-      Z</extensions>
   </filetype>
   <filetype name="nosearch">
     <extensions>aif aifc aiff au avi bmp cab db dmg eps gif icns ico idlk ief

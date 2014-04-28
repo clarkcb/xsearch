@@ -223,14 +223,14 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 		"noprintmatches": func(settings *SearchSettings) {
 			settings.PrintResults = false
 		},
-		"nosearchcompressed": func(settings *SearchSettings) {
-			settings.SearchCompressed = false
+		"nosearcharchives": func(settings *SearchSettings) {
+			settings.SearchArchives = false
 		},
 		"printmatches": func(settings *SearchSettings) {
 			settings.PrintResults = true
 		},
-		"searchcompressed": func(settings *SearchSettings) {
-			settings.SearchCompressed = true
+		"searcharchives": func(settings *SearchSettings) {
+			settings.searcharchives = true
 		},
 		"uniquelines": func(settings *SearchSettings) {
 			settings.UniqueLines = true
