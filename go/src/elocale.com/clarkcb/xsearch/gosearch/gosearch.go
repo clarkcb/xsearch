@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/clarkcb/xsearch"
+	"elocale.com/clarkcb/xsearch"
 	"os"
 )
 

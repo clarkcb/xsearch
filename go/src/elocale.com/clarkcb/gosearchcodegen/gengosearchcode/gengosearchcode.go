@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/clarkcb/gosearchcodegen"
+	"elocale.com/clarkcb/gosearchcodegen"
 	"path/filepath"
 )
 
