@@ -30,7 +30,7 @@ func (f *FileTypes) getFileType(file string) FileType {
 	if f.IsBinaryFile(file) {
 		return FILETYPE_BINARY
 	}
-	if f.IsCompressedFile(file) {
+	if f.IsArchiveFile(file) {
 		return FILETYPE_COMPRESSED
 	}
 	return FILETYPE_UNKNOWN
@@ -45,7 +45,7 @@ func (f *FileTypes) IsBinaryFile(file string) bool {
 	return f.isFileType("binary", file) || getExtension(file) == ""
 }
 
-func (f *FileTypes) IsCompressedFile(file string) bool {
+func (f *FileTypes) IsArchiveFile(file string) bool {
 	return f.isFileType("compressed", file)
 }
 
@@ -60,5 +60,5 @@ func (f *FileTypes) IsTextFile(file string) bool {
 }
 
 func (f *FileTypes) IsSearchableFile(file string) bool {
-	return f.IsTextFile(file) || f.IsBinaryFile(file) || f.IsCompressedFile(file)
+	return f.IsTextFile(file) || f.IsBinaryFile(file) || f.IsArchiveFile(file)
 }

@@ -53,9 +53,6 @@ func (s *Searcher) validSettings() error {
 }
 
 func (s *Searcher) isSearchDir(path string) bool {
-	if s.Settings.Debug {
-		fmt.Printf("isSearchDir(path=%s)\n", path)
-	}
 	if !s.Settings.InDirPatterns.IsEmpty() &&
 		!s.Settings.InDirPatterns.MatchesAny(path) {
 		return false
@@ -86,7 +83,7 @@ func (s *Searcher) setSearchDirs() error {
 }
 
 func (s *Searcher) isSearchFile(filename string) bool {
-	if s.Settings.SearchArchives && s.fileTypes.IsCompressedFile(filename) {
+	if s.Settings.SearchArchives && s.fileTypes.IsArchiveFile(filename) {
 		return true
 	}
 	ext := getExtension(filename)
