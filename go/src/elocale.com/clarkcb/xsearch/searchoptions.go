@@ -230,7 +230,7 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 			settings.PrintResults = true
 		},
 		"searcharchives": func(settings *SearchSettings) {
-			settings.searcharchives = true
+			settings.SearchArchives = true
 		},
 		"uniquelines": func(settings *SearchSettings) {
 			settings.UniqueLines = true
