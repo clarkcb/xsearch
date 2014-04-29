@@ -44,7 +44,7 @@ func (s *Searcher) validSettings() error {
 		return fmt.Errorf("Missing startpath")
 	}
 	if _, err := os.Stat(s.Settings.StartPath); err != nil {
-		return fmt.Errorf("Invalid startpath")
+		return fmt.Errorf("Invalid startpath: \"%s\"", s.Settings.StartPath)
 	}
 	if s.Settings.SearchPatterns.IsEmpty() {
 		return fmt.Errorf("No search patterns defined")
@@ -52,16 +52,20 @@ func (s *Searcher) validSettings() error {
 	return nil
 }
 
-func (s *Searcher) isSearchDir(path string) bool {
-	if !s.Settings.InDirPatterns.IsEmpty() &&
-		!s.Settings.InDirPatterns.MatchesAny(path) {
+func filterInBySearchPatterns(s string, inPatterns *SearchPatterns,
+	outPatterns *SearchPatterns) bool {
+	if !inPatterns.IsEmpty() && !inPatterns.MatchesAny(s) {
 		return false
 	}
-	if !s.Settings.OutDirPatterns.IsEmpty() &&
-		s.Settings.OutDirPatterns.MatchesAny(path) {
+	if !outPatterns.IsEmpty() && outPatterns.MatchesAny(s) {
 		return false
 	}
 	return true
+}
+
+func (s *Searcher) isSearchDir(path string) bool {
+	return filterInBySearchPatterns(path, s.Settings.InDirPatterns,
+		s.Settings.OutDirPatterns)
 }
 
 func (s *Searcher) addSearchDir(path string) {
@@ -82,8 +86,16 @@ func (s *Searcher) setSearchDirs() error {
 	return filepath.Walk(s.Settings.StartPath, s.checkAddSearchDir)
 }
 
+func (s *Searcher) isArchiveSearchFile(filename string) bool {
+	if s.fileTypes.IsArchiveFile(filename) {
+		return filterInBySearchPatterns(filename, s.Settings.InArchiveFilePatterns,
+			s.Settings.OutArchiveFilePatterns)
+	}
+	return false
+}
+
 func (s *Searcher) isSearchFile(filename string) bool {
-	if s.Settings.SearchArchives && s.fileTypes.IsArchiveFile(filename) {
+	if s.Settings.SearchArchives && s.isArchiveSearchFile(filename) {
 		return true
 	}
 	ext := getExtension(filename)
@@ -93,16 +105,8 @@ func (s *Searcher) isSearchFile(filename string) bool {
 	if len(s.Settings.OutExtensions) > 0 && contains(s.Settings.OutExtensions, ext) {
 		return false
 	}
-
-	if !s.Settings.InFilePatterns.IsEmpty() &&
-		!s.Settings.InFilePatterns.MatchesAny(filename) {
-		return false
-	}
-	if !s.Settings.OutFilePatterns.IsEmpty() &&
-		s.Settings.OutFilePatterns.MatchesAny(filename) {
-		return false
-	}
-	return true
+	return filterInBySearchPatterns(filename, s.Settings.InFilePatterns,
+		s.Settings.OutFilePatterns)
 }
 
 func (s *Searcher) setSearchFiles() error {
@@ -463,10 +467,20 @@ func (s *Searcher) searchTarFileReader(r io.Reader, filepath string) error {
 	tr := tar.NewReader(r)
 	for {
 		hdr, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
+
+			if err == io.EOF {
+				break
+			}
+			if err == io.ErrUnexpectedEOF {
+				if s.Settings.Debug {
+					fmt.Printf("Encountered unexpected EOF in tar file %s\n", filepath)
+				}
+				break
+			}
+			if s.Settings.Debug {
+				fmt.Printf("Error encountered in searchTarFileReader: %s\n", err)
+			}
 			return err
 		}
 		if !strings.HasSuffix(hdr.Name, "/") && s.isSearchFile(hdr.Name) {
@@ -485,6 +499,9 @@ func (s *Searcher) searchGzipFileReader(r io.Reader, filepath string) error {
 	}
 	gr, err := gzip.NewReader(r)
 	if err != nil {
+		if s.Settings.Debug {
+			fmt.Println("Error encountered in searchGzipFileReader: %s\n", err)
+		}
 		return err
 	}
 	defer func() {
@@ -569,7 +586,10 @@ func (s *Searcher) searchZipFileReader(r io.Reader, filepath string) error {
 	return nil
 }
 
-func (s *Searcher) searchCompressedFileReader(r io.Reader, filepath string) error {
+func (s *Searcher) searchArchiveFileReader(r io.Reader, filepath string) error {
+	if !s.isArchiveSearchFile(filepath) {
+		return nil
+	}
 	ext := getExtension(filepath)
 	switch ext {
 	case "zip", "jar", "war", "ear":
@@ -593,12 +613,12 @@ func (s *Searcher) searchFileReader(r io.Reader, filepath string) error {
 		s.searchTextFileReader(r, filepath)
 	case FILETYPE_BINARY:
 		s.searchBinaryFileReader(r, filepath)
-	case FILETYPE_COMPRESSED:
+	case FILETYPE_ARCHIVE:
 		if s.Settings.SearchArchives {
-			return s.searchCompressedFileReader(r, filepath)
+			return s.searchArchiveFileReader(r, filepath)
 		} else {
 			if s.Settings.Verbose {
-				fmt.Printf("Skipping compressed file: %s\n", filepath)
+				fmt.Printf("Skipping archive file: %s\n", filepath)
 			}
 			return nil
 		}
@@ -657,6 +677,16 @@ func (s *Searcher) printElapsed(name string) {
 	fmt.Printf("Elapsed time for %s: %v", name, elapsed)
 }
 
+func (s *Searcher) doFileSearch() error {
+	for _, f := range s.searchFiles {
+		err := s.SearchFile(f)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Searcher) Search() error {
 	if err := s.validSettings(); err != nil {
 		return err
@@ -707,19 +737,18 @@ func (s *Searcher) Search() error {
 	if s.Settings.DoTiming {
 		s.startTimer("searchFiles")
 	}
-	for _, f := range s.searchFiles {
-		err = s.SearchFile(f)
-		if err != nil {
-			return err
-		}
-	}
+	err = s.doFileSearch()
 	if s.Settings.DoTiming {
 		s.stopTimer("searchFiles")
 	}
 	if s.Settings.Verbose {
 		fmt.Println("\nFile search complete.\n")
 	}
+	if err != nil {
+		return err
+	}
 
+	// if there are results and PrintResults is true then print them out
 	if s.Settings.PrintResults && s.searchResults.HasSearchResults() {
 		fmt.Println()
 		s.searchResults.PrintSearchResults()

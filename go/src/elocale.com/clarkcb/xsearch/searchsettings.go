@@ -15,6 +15,8 @@ type SearchSettings struct {
 	OutDirPatterns          *SearchPatterns
 	InFilePatterns          *SearchPatterns
 	OutFilePatterns         *SearchPatterns
+	InArchiveFilePatterns   *SearchPatterns
+	OutArchiveFilePatterns  *SearchPatterns
 	InLinesAfterPatterns    *SearchPatterns
 	OutLinesAfterPatterns   *SearchPatterns
 	InLinesBeforePatterns   *SearchPatterns
@@ -67,6 +69,8 @@ func GetDefaultSearchSettings() *SearchSettings {
 		GetDefaultOutDirPatterns(),  // OutDirPatterns
 		NewSearchPatterns(),         // InFilePatterns
 		GetDefaultOutFilePatterns(), // OutFilePatterns
+		NewSearchPatterns(),         // InArchiveFilePatterns
+		NewSearchPatterns(),         // OutArchiveFilePatterns
 		NewSearchPatterns(),         // InLinesAfterPatterns
 		NewSearchPatterns(),         // OutLinesAfterPatterns
 		NewSearchPatterns(),         // InLinesBeforePatterns
@@ -123,6 +127,14 @@ func (s *SearchSettings) AddInFilePattern(p string) {
 
 func (s *SearchSettings) AddOutFilePattern(p string) {
 	addPattern(p, s.OutFilePatterns)
+}
+
+func (s *SearchSettings) AddInArchiveFilePattern(p string) {
+	addPattern(p, s.InArchiveFilePatterns)
+}
+
+func (s *SearchSettings) AddOutArchiveFilePattern(p string) {
+	addPattern(p, s.OutArchiveFilePatterns)
 }
 
 func (s *SearchSettings) AddInLinesBeforePattern(p string) {
@@ -197,6 +209,10 @@ func (s *SearchSettings) String() string {
 	addSearchPatternsToBuffer("InFilePatterns", s.InFilePatterns, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("OutFilePatterns", s.OutFilePatterns, &buffer)
+	buffer.WriteString(", ")
+	addSearchPatternsToBuffer("InArchiveFilePatterns", s.InArchiveFilePatterns, &buffer)
+	buffer.WriteString(", ")
+	addSearchPatternsToBuffer("OutArchiveFilePatterns", s.OutArchiveFilePatterns, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("InLinesAfterPatterns", s.InLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")

@@ -123,6 +123,9 @@ type argAction func(s string, settings *SearchSettings)
 
 func (so *SearchOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
+		"in-archivefilepattern": func(s string, settings *SearchSettings) {
+			settings.AddInArchiveFilePattern(s)
+		},
 		"in-dirpattern": func(s string, settings *SearchSettings) {
 			settings.AddInDirPattern(s)
 		},
@@ -159,6 +162,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			} else {
 				fmt.Printf("Invalid value for linesbefore: %s\n", s)
 			}
+		},
+		"out-archivefilepattern": func(s string, settings *SearchSettings) {
+			settings.AddOutArchiveFilePattern(s)
 		},
 		"out-dirpattern": func(s string, settings *SearchSettings) {
 			settings.AddOutDirPattern(s)
