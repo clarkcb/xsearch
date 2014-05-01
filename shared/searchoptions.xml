@@ -3,6 +3,9 @@
   <searchoption long="allmatches" short="a">
     Capture all matches*
   </searchoption>
+  <searchoption long="archivesonly" short="">
+    Search only archive files (also turns on searcharchives)
+  </searchoption>
   <searchoption long="debug" short="">
     Set output mode to debug
   </searchoption>

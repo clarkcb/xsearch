@@ -9,8 +9,8 @@ import (
 
 type SearchSettings struct {
 	StartPath               string
-	InExtensions            []string
-	OutExtensions           []string
+	InExtensions            []*string
+	OutExtensions           []*string
 	InDirPatterns           *SearchPatterns
 	OutDirPatterns          *SearchPatterns
 	InFilePatterns          *SearchPatterns
@@ -24,6 +24,7 @@ type SearchSettings struct {
 	LinesAfterToPatterns    *SearchPatterns
 	LinesAfterUntilPatterns *SearchPatterns
 	SearchPatterns          *SearchPatterns
+	ArchivesOnly            bool
 	CaseSensitive           bool
 	Debug                   bool
 	DoTiming                bool
@@ -63,8 +64,8 @@ func GetDefaultOutFilePatterns() *SearchPatterns {
 func GetDefaultSearchSettings() *SearchSettings {
 	return &SearchSettings{
 		"",                          // StartPath
-		[]string{},                  // InExtensions
-		[]string{},                  // OutExtensions
+		[]*string{},                 // InExtensions
+		[]*string{},                 // OutExtensions
 		NewSearchPatterns(),         // InDirPatterns
 		GetDefaultOutDirPatterns(),  // OutDirPatterns
 		NewSearchPatterns(),         // InFilePatterns
@@ -78,6 +79,7 @@ func GetDefaultSearchSettings() *SearchSettings {
 		NewSearchPatterns(),         // LinesAfterToPatterns
 		NewSearchPatterns(),         // LinesAfterUntilPatterns
 		NewSearchPatterns(),         // SearchPatterns
+		false,                       // ArchivesOnly
 		true,                        // CaseSensitive
 		false,                       // Debug
 		false,                       // DoTiming
@@ -99,81 +101,72 @@ func GetDefaultSearchSettings() *SearchSettings {
 
 func (s *SearchSettings) AddInExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
-		s.InExtensions = append(s.InExtensions, strings.ToLower(x))
+		ext := strings.ToLower(x)
+		s.InExtensions = append(s.InExtensions, &ext)
 	}
 }
 
 func (s *SearchSettings) AddOutExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
-		s.OutExtensions = append(s.OutExtensions, strings.ToLower(x))
+		ext := strings.ToLower(x)
+		s.OutExtensions = append(s.OutExtensions, &ext)
 	}
 }
 
-func addPattern(p string, sp *SearchPatterns) {
+func addPattern(p *string, sp *SearchPatterns) {
 	sp.AddPattern(p)
 }
 
 func (s *SearchSettings) AddInDirPattern(p string) {
-	addPattern(p, s.InDirPatterns)
+	addPattern(&p, s.InDirPatterns)
 }
 
 func (s *SearchSettings) AddOutDirPattern(p string) {
-	addPattern(p, s.OutDirPatterns)
+	addPattern(&p, s.OutDirPatterns)
 }
 
 func (s *SearchSettings) AddInFilePattern(p string) {
-	addPattern(p, s.InFilePatterns)
+	addPattern(&p, s.InFilePatterns)
 }
 
 func (s *SearchSettings) AddOutFilePattern(p string) {
-	addPattern(p, s.OutFilePatterns)
+	addPattern(&p, s.OutFilePatterns)
 }
 
 func (s *SearchSettings) AddInArchiveFilePattern(p string) {
-	addPattern(p, s.InArchiveFilePatterns)
+	addPattern(&p, s.InArchiveFilePatterns)
 }
 
 func (s *SearchSettings) AddOutArchiveFilePattern(p string) {
-	addPattern(p, s.OutArchiveFilePatterns)
+	addPattern(&p, s.OutArchiveFilePatterns)
 }
 
 func (s *SearchSettings) AddInLinesBeforePattern(p string) {
-	addPattern(p, s.InLinesBeforePatterns)
+	addPattern(&p, s.InLinesBeforePatterns)
 }
 
 func (s *SearchSettings) AddOutLinesBeforePattern(p string) {
-	addPattern(p, s.OutLinesBeforePatterns)
+	addPattern(&p, s.OutLinesBeforePatterns)
 }
 
 func (s *SearchSettings) AddInLinesAfterPattern(p string) {
-	addPattern(p, s.InLinesAfterPatterns)
+	addPattern(&p, s.InLinesAfterPatterns)
 }
 
 func (s *SearchSettings) AddOutLinesAfterPattern(p string) {
-	addPattern(p, s.OutLinesAfterPatterns)
+	addPattern(&p, s.OutLinesAfterPatterns)
 }
 
 func (s *SearchSettings) AddLinesAfterToPattern(p string) {
-	addPattern(p, s.LinesAfterToPatterns)
+	addPattern(&p, s.LinesAfterToPatterns)
 }
 
 func (s *SearchSettings) AddLinesAfterUntilPattern(p string) {
-	addPattern(p, s.LinesAfterUntilPatterns)
+	addPattern(&p, s.LinesAfterUntilPatterns)
 }
 
 func (s *SearchSettings) AddSearchPattern(p string) {
-	addPattern(p, s.SearchPatterns)
-}
-
-func addRegexpListToBuffer(name string, list *[]*regexp.Regexp, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	for i, r := range *list {
-		if i > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(r.String())
-	}
-	buffer.WriteString("]")
+	addPattern(&p, s.SearchPatterns)
 }
 
 func addSearchPatternsToBuffer(name string, sp *SearchPatterns, buffer *bytes.Buffer) {
@@ -187,9 +180,13 @@ func addSearchPatternsToBuffer(name string, sp *SearchPatterns, buffer *bytes.Bu
 	buffer.WriteString("]")
 }
 
-func addStringListToBuffer(name string, list *[]string, buffer *bytes.Buffer) {
+func addStringListToBuffer(name string, list []*string, buffer *bytes.Buffer) {
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	buffer.WriteString(strings.Join(*list, ","))
+	elems := []string{}
+	for _, l := range list {
+		elems = append(elems, *l)
+	}
+	buffer.WriteString(strings.Join(elems, ","))
 	buffer.WriteString("]")
 }
 
@@ -198,9 +195,9 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString("SearchSettings{")
 	buffer.WriteString(fmt.Sprintf("StartPath: %s", s.StartPath))
 	buffer.WriteString(", ")
-	addStringListToBuffer("InExtensions", &s.InExtensions, &buffer)
+	addStringListToBuffer("InExtensions", s.InExtensions, &buffer)
 	buffer.WriteString(", ")
-	addStringListToBuffer("OutExtensions", &s.OutExtensions, &buffer)
+	addStringListToBuffer("OutExtensions", s.OutExtensions, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("InDirPatterns", s.InDirPatterns, &buffer)
 	buffer.WriteString(", ")
@@ -227,6 +224,7 @@ func (s *SearchSettings) String() string {
 	addSearchPatternsToBuffer("LinesAfterUntilPatterns", s.LinesAfterUntilPatterns, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("SearchPatterns", s.SearchPatterns, &buffer)
+	buffer.WriteString(fmt.Sprintf(", ArchivesOnly: %t", s.ArchivesOnly))
 	buffer.WriteString(fmt.Sprintf(", CaseSensitive: %t", s.CaseSensitive))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
 	buffer.WriteString(fmt.Sprintf(", DoTiming: %t", s.DoTiming))

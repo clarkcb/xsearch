@@ -15,7 +15,7 @@ type SearchOption struct {
 }
 
 type SearchOptions struct {
-	SearchOptions []SearchOption
+	SearchOptions []*SearchOption
 }
 
 func NewSearchOptions() *SearchOptions {
@@ -202,6 +202,11 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 		"allmatches": func(settings *SearchSettings) {
 			settings.FirstMatch = false
 		},
+		"archivesonly": func(settings *SearchSettings) {
+			settings.ArchivesOnly = true
+			// makes sense to turn this on as well
+			settings.SearchArchives = true
+		},
 		"debug": func(settings *SearchSettings) {
 			settings.Debug = true
 		},
@@ -271,7 +276,7 @@ type XmlSearchOption struct {
 const searchOptionsXmlPath = "/Users/cary/src/git/xsearch/shared/searchoptions.xml"
 
 func searchOptionsFromXml() (*SearchOptions, error) {
-	var searchOptions []SearchOption
+	var searchOptions []*SearchOption
 	xmlSearchOptions := &XmlSearchOptions{}
 
 	if err := loadXmlFile(searchOptionsXmlPath, xmlSearchOptions); err != nil {
@@ -280,7 +285,7 @@ func searchOptionsFromXml() (*SearchOptions, error) {
 
 	for _, x := range xmlSearchOptions.XmlSearchOptions {
 		searchOption := &SearchOption{x.Short, x.Long, strings.TrimSpace(x.Desc)}
-		searchOptions = append(searchOptions, *searchOption)
+		searchOptions = append(searchOptions, searchOption)
 	}
 	return &SearchOptions{searchOptions}, nil
 }

@@ -38,10 +38,10 @@ func GetSearchOptionsString() string {
 	depth++
 	buffer.WriteString(fmt.Sprintf("%sreturn &SearchOptions{\n", strings.Repeat("\t", depth)))
 	depth++
-	buffer.WriteString(fmt.Sprintf("%s[]SearchOption{\n", strings.Repeat("\t", depth)))
+	buffer.WriteString(fmt.Sprintf("%s[]*SearchOption{\n", strings.Repeat("\t", depth)))
 	depth++
 	for _, so := range searchOptions.SearchOptions {
-		buffer.WriteString(fmt.Sprintf("%sSearchOption{\"%s\", \"%s\", \"%s\"},\n",
+		buffer.WriteString(fmt.Sprintf("%s&SearchOption{\"%s\", \"%s\", \"%s\"},\n",
 			strings.Repeat("\t", depth), so.Short, so.Long, escapeQuotes(so.Desc)))
 	}
 	depth--
