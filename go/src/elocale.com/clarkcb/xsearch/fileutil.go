@@ -50,7 +50,7 @@ func (f *FileTypes) IsBinaryFile(file string) bool {
 }
 
 func (f *FileTypes) IsTextFile(file string) bool {
-	textTypes := []string{"text", "code", "xml"}
+	textTypes := []string{"code", "text", "xml"}
 	for _, t := range textTypes {
 		if f.isFileType(t, file) {
 			return true

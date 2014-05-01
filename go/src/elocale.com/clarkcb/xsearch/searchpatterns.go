@@ -38,8 +38,8 @@ func NewSearchPatterns() *SearchPatterns {
 	}
 }
 
-func (sp *SearchPatterns) AddPattern(s string) {
-	sp.patterns = append(sp.patterns, regexp.MustCompile(s))
+func (sp *SearchPatterns) AddPattern(s *string) {
+	sp.patterns = append(sp.patterns, regexp.MustCompile(*s))
 }
 
 func (sp *SearchPatterns) IsEmpty() bool {
@@ -50,17 +50,17 @@ func (sp *SearchPatterns) Iterator() *SearchPatternsIterator {
 	return NewSearchPatternsIterator(sp)
 }
 
-func (sp *SearchPatterns) MatchesAny(s string) bool {
+func (sp *SearchPatterns) MatchesAny(s *string) bool {
 	for _, p := range sp.patterns {
-		if p.MatchString(s) {
+		if p.MatchString(*s) {
 			return true
 		}
 	}
 	return false
 }
 
-func (sp *SearchPatterns) AnyMatchesAny(ss *[]string) bool {
-	for _, s := range *ss {
+func (sp *SearchPatterns) AnyMatchesAny(ss []*string) bool {
+	for _, s := range ss {
 		if sp.MatchesAny(s) {
 			return true
 		}

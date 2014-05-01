@@ -3,7 +3,6 @@ package xsearch
 import (
 	"bytes"
 	"fmt"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -29,26 +28,56 @@ func NewSearchResults() *SearchResults {
 
 func (rs *SearchResults) AddSearchResult(r *SearchResult) {
 	rs.SearchResults = append(rs.SearchResults, r)
-	rs.DirCounts[filepath.Dir(r.Filepath)]++
-	rs.FileCounts[r.Filepath]++
-	if strings.TrimSpace(r.Line) != "" {
-		rs.LineCounts[strings.TrimSpace(r.Line)]++
+	rs.DirCounts[*r.File.Path]++
+	rs.FileCounts[r.File.String()]++
+	if strings.TrimSpace(*r.Line) != "" {
+		rs.LineCounts[strings.TrimSpace(*r.Line)]++
 	}
 	rs.PatternCounts[r.Pattern.String()]++
 }
 
-func (rs *SearchResults) HasSearchResults() bool {
-	return len(rs.SearchResults) > 0
+func (rs *SearchResults) Clear() {
+	rs.DirCounts = make(map[string]int)
+	rs.FileCounts = make(map[string]int)
+	rs.LineCounts = make(map[string]int)
+	rs.PatternCounts = make(map[string]int)
+	rs.SearchResults = nil
 }
 
-func (rs *SearchResults) HasResultForFileAndPattern(filepath string,
+func (rs *SearchResults) IsEmpty() bool {
+	return len(rs.SearchResults) == 0
+}
+
+func (rs *SearchResults) HasResultForFileAndPattern(si *SearchItem,
 	pattern *regexp.Regexp) bool {
 	for _, r := range rs.SearchResults {
-		if pattern.String() == r.Pattern.String() && filepath == r.Filepath {
+		if pattern.String() == r.Pattern.String() && si.String() == r.File.String() {
 			return true
 		}
 	}
 	return false
+}
+
+// methods for the sort.Interface interface (so you can call sort.Sort on
+// SearchResults instances)
+func (rs *SearchResults) Len() int {
+	return len(rs.SearchResults)
+}
+
+func (srs *SearchResults) Less(i, j int) bool {
+	sr1, sr2 := srs.SearchResults[i], srs.SearchResults[j]
+	fileCmp := bytes.Compare([]byte(sr1.File.String()), []byte(sr2.File.String()))
+	if fileCmp == 0 {
+		return sr1.LineNum <= sr2.LineNum
+	} else if fileCmp == -1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (srs *SearchResults) Swap(i, j int) {
+	srs.SearchResults[j], srs.SearchResults[i] = srs.SearchResults[i], srs.SearchResults[j]
 }
 
 func getSortedCountKeys(m map[string]int) []string {
@@ -131,6 +160,8 @@ func (rs *SearchResults) PrintPatternCounts(patterns []string) {
 }
 
 func (rs *SearchResults) PrintSearchResults() {
+	// sort them first
+	sort.Sort(rs)
 	fmt.Printf("Search results (%d):\n", len(rs.SearchResults))
 	for _, r := range rs.SearchResults {
 		if len(rs.PatternCounts) > 1 {
@@ -142,11 +173,11 @@ func (rs *SearchResults) PrintSearchResults() {
 
 type SearchResult struct {
 	Pattern     *regexp.Regexp
-	Filepath    string
-	Linenum     int
-	Line        string
-	LinesBefore []string
-	LinesAfter  []string
+	File        *SearchItem
+	LineNum     int
+	Line        *string
+	LinesBefore []*string
+	LinesAfter  []*string
 }
 
 func (r *SearchResult) String() string {
@@ -160,29 +191,29 @@ func (r *SearchResult) String() string {
 const SEPARATOR_LEN = 80
 
 func (r *SearchResult) lineNumPadding() int {
-	return len(fmt.Sprintf("%d", r.Linenum+len(r.LinesAfter)))
+	return len(fmt.Sprintf("%d", r.LineNum+len(r.LinesAfter)))
 }
 
 func (r *SearchResult) multiLineString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(strings.Repeat("=", SEPARATOR_LEN))
-	buffer.WriteString(fmt.Sprintf("\n%s\n", r.Filepath))
+	buffer.WriteString(fmt.Sprintf("\n%s\n", r.File.String()))
 	buffer.WriteString(strings.Repeat("-", SEPARATOR_LEN))
 	buffer.WriteString("\n")
 	lineFormat := fmt.Sprintf(" %%%dd | %%s\n", r.lineNumPadding())
-	currentLineNum := r.Linenum
+	currentLineNum := r.LineNum
 	if len(r.LinesBefore) > 0 {
 		currentLineNum -= len(r.LinesBefore)
 		for _, l := range r.LinesBefore {
-			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, l))
+			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
 			currentLineNum++
 		}
 	}
-	buffer.WriteString(">" + fmt.Sprintf(lineFormat, currentLineNum, r.Line))
+	buffer.WriteString(">" + fmt.Sprintf(lineFormat, currentLineNum, *r.Line))
 	if len(r.LinesAfter) > 0 {
 		currentLineNum++
 		for _, l := range r.LinesAfter {
-			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, l))
+			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
 			currentLineNum++
 		}
 	}
@@ -190,22 +221,22 @@ func (r *SearchResult) multiLineString() string {
 }
 
 func (r *SearchResult) singleLineString() string {
-	if r.Linenum > 0 {
-		return fmt.Sprintf("%s: %d: %s", r.Filepath, r.Linenum,
-			strings.TrimSpace(r.Line))
+	if r.LineNum > 0 {
+		return fmt.Sprintf("%s: %d: %s", r.File.String(), r.LineNum,
+			strings.TrimSpace(*r.Line))
 	} else {
-		return fmt.Sprintf("%s matches", r.Filepath)
+		return fmt.Sprintf("%s matches", r.File.String())
 	}
 }
 
 func (r *SearchResult) Text() string {
 	var buffer bytes.Buffer
 	for _, l := range r.LinesBefore {
-		buffer.WriteString(fmt.Sprintf("%s\n", l))
+		buffer.WriteString(fmt.Sprintf("%s\n", *l))
 	}
-	buffer.WriteString(fmt.Sprintf("%s\n", r.Line))
+	buffer.WriteString(fmt.Sprintf("%s\n", *r.Line))
 	for _, l := range r.LinesAfter {
-		buffer.WriteString(fmt.Sprintf("%s\n", l))
+		buffer.WriteString(fmt.Sprintf("%s\n", *l))
 	}
 	return buffer.String()
 }

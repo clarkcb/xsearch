@@ -18,9 +18,13 @@ import (
 type Searcher struct {
 	Settings      *SearchSettings
 	fileTypes     *FileTypes
-	searchDirs    []string
-	searchFiles   []string
+	searchDirs    []*string
+	searchItems   *SearchItems
+	itemChan      chan *SearchItem
+	doneChan      chan *string
+	errChan       chan error
 	searchResults *SearchResults
+	resultChan    chan *SearchResult
 	timerMap      map[string]time.Time
 }
 
@@ -28,11 +32,19 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 	return &Searcher{
 		settings,
 		GetFileTypes(),
-		[]string{},
-		[]string{},
+		[]*string{},
+		NewSearchItems(),
+		make(chan *SearchItem),
+		make(chan *string),
+		make(chan error),
 		NewSearchResults(),
+		make(chan *SearchResult),
 		map[string]time.Time{},
 	}
+}
+
+func (s *Searcher) ClearSearchResults() {
+	s.searchResults = nil
 }
 
 func (s *Searcher) GetSearchResults() *SearchResults {
@@ -52,7 +64,7 @@ func (s *Searcher) validSettings() error {
 	return nil
 }
 
-func filterInBySearchPatterns(s string, inPatterns *SearchPatterns,
+func filterInBySearchPatterns(s *string, inPatterns *SearchPatterns,
 	outPatterns *SearchPatterns) bool {
 	if !inPatterns.IsEmpty() && !inPatterns.MatchesAny(s) {
 		return false
@@ -63,18 +75,19 @@ func filterInBySearchPatterns(s string, inPatterns *SearchPatterns,
 	return true
 }
 
-func (s *Searcher) isSearchDir(path string) bool {
-	return filterInBySearchPatterns(path, s.Settings.InDirPatterns,
+func (s *Searcher) isSearchDir(d *string) bool {
+	return filterInBySearchPatterns(d, s.Settings.InDirPatterns,
 		s.Settings.OutDirPatterns)
 }
 
-func (s *Searcher) addSearchDir(path string) {
-	s.searchDirs = append(s.searchDirs, path)
+func (s *Searcher) addSearchDir(d *string) {
+	s.searchDirs = append(s.searchDirs, d)
 }
 
-func (s *Searcher) checkAddSearchDir(path string, fi os.FileInfo, err error) error {
-	if fi.IsDir() && s.isSearchDir(path) {
-		s.addSearchDir(path)
+// this method passed to the filepath.Walk method, it must have this signature
+func (s *Searcher) checkAddSearchDir(d string, fi os.FileInfo, err error) error {
+	if fi.IsDir() && s.isSearchDir(&d) {
+		s.addSearchDir(&d)
 	}
 	return nil
 }
@@ -86,19 +99,16 @@ func (s *Searcher) setSearchDirs() error {
 	return filepath.Walk(s.Settings.StartPath, s.checkAddSearchDir)
 }
 
-func (s *Searcher) isArchiveSearchFile(filename string) bool {
-	if s.fileTypes.IsArchiveFile(filename) {
+func (s *Searcher) isArchiveSearchFile(filename *string) bool {
+	if s.fileTypes.IsArchiveFile(*filename) {
 		return filterInBySearchPatterns(filename, s.Settings.InArchiveFilePatterns,
 			s.Settings.OutArchiveFilePatterns)
 	}
 	return false
 }
 
-func (s *Searcher) isSearchFile(filename string) bool {
-	if s.Settings.SearchArchives && s.isArchiveSearchFile(filename) {
-		return true
-	}
-	ext := getExtension(filename)
+func (s *Searcher) isSearchFile(filename *string) bool {
+	ext := getExtension(*filename)
 	if len(s.Settings.InExtensions) > 0 && !contains(s.Settings.InExtensions, ext) {
 		return false
 	}
@@ -109,60 +119,68 @@ func (s *Searcher) isSearchFile(filename string) bool {
 		s.Settings.OutFilePatterns)
 }
 
-func (s *Searcher) setSearchFiles() error {
+func (s *Searcher) setSearchFilesForDirectory(d *string) {
+	fileInfos, err := ioutil.ReadDir(*d)
+	if err != nil {
+		if s.Settings.Debug {
+			fmt.Printf("err in setSearchFilesForDirectory: %s\n", err.Error())
+		}
+		s.errChan <- err
+		return
+	}
+	for _, fi := range fileInfos {
+		if !fi.IsDir() {
+			name := fi.Name()
+			if s.Settings.SearchArchives && s.isArchiveSearchFile(&name) {
+				// this approach was too slow, reverting to adding archive file itself
+				//s.setArchiveSearchFiles(filepath.Join(d, name))
+				s.itemChan <- NewSearchItem(d, &name)
+			} else if !s.Settings.ArchivesOnly && s.isSearchFile(&name) {
+				s.itemChan <- NewSearchItem(d, &name)
+			}
+		}
+	}
+	s.doneChan <- d
+}
+
+func (s *Searcher) setSearchFiles() {
 	if s.Settings.Verbose {
 		fmt.Println("\nBuilding file search list")
 	}
 	for _, d := range s.searchDirs {
-		fileInfos, err := ioutil.ReadDir(d)
-		if err != nil {
-			return err
-		}
-		for _, fi := range fileInfos {
-			if !fi.IsDir() && s.isSearchFile(fi.Name()) {
-				s.searchFiles = append(s.searchFiles, filepath.Join(d, fi.Name()))
-			}
-		}
+		go func(dir *string) {
+			s.setSearchFilesForDirectory(dir)
+		}(d)
 	}
-	return nil
 }
 
 func (s *Searcher) addSearchResult(r *SearchResult) {
-	if s.Settings.UniqueLines && s.searchResults.LineCounts[strings.TrimSpace(r.Line)] > 0 {
+	if s.Settings.UniqueLines && 
+	s.searchResults.LineCounts[strings.TrimSpace(*r.Line)] > 0 {
 		if s.Settings.Verbose {
-			fmt.Printf("Skipping search result with non-unique line: %s", strings.TrimSpace(r.Line))
+			fmt.Printf("Skipping search result with non-unique line: %s",
+				strings.TrimSpace(*r.Line))
 		}
 	} else {
 		s.searchResults.AddSearchResult(r)
 	}
 }
 
-func linesMatch(lines *[]string, inPatterns *SearchPatterns,
+func linesMatch(lines []*string, inPatterns *SearchPatterns,
 	outPatterns *SearchPatterns) bool {
 	inLinesMatch := inPatterns.IsEmpty() || inPatterns.AnyMatchesAny(lines)
 	outLinesMatch := !outPatterns.IsEmpty() && outPatterns.AnyMatchesAny(lines)
 	return inLinesMatch && !outLinesMatch
 }
 
-func (s *Searcher) linesAfterMatch(linesAfter *[]string) bool {
+func (s *Searcher) linesAfterMatch(linesAfter []*string) bool {
 	return linesMatch(linesAfter, s.Settings.InLinesAfterPatterns,
 		s.Settings.OutLinesAfterPatterns)
 }
 
-func (s *Searcher) linesBeforeMatch(linesBefore *[]string) bool {
+func (s *Searcher) linesBeforeMatch(linesBefore []*string) bool {
 	return linesMatch(linesBefore, s.Settings.InLinesBeforePatterns,
 		s.Settings.OutLinesBeforePatterns)
-}
-
-func (s *Searcher) searchTextFileReader(r io.Reader, filepath string) error {
-	if s.Settings.Verbose {
-		fmt.Printf("Searching text file %s\n", filepath)
-	}
-	if s.Settings.MultiLineSearch {
-		return s.searchTextFileReaderContents(r, filepath)
-	} else {
-		return s.searchTextFileReaderLines(r, filepath)
-	}
 }
 
 func hasNewLine(bytes []byte) bool {
@@ -214,84 +232,69 @@ func lineStartEndIndicesForIndex(idx int, bytes []byte) (int, int) {
 	return startidx, endidx
 }
 
-func splitIntoLines(bytes []byte) []string {
-	//fmt.Printf("splitIntoLines(bytes=%s)\n", string(bytes))
+func splitIntoLines(bytes []byte) []*string {
 	newlineidxs := newlineIndices(bytes)
-	//fmt.Printf("newlineidxs: %v\n", newlineidxs)
-	lines := []string{}
+	emptyStr := ""
+	lines := []*string{}
 	startidx, endidx := 0, 0
 	for _, n := range newlineidxs {
 		endidx = n
-		//fmt.Printf("startidx: %d, endidx: %d\n", startidx, endidx)
 		if startidx == endidx {
-			lines = append(lines, "")
+			lines = append(lines, &emptyStr)
 		} else if startidx < endidx {
 			nextline := string(bytes[startidx:endidx])
-			//fmt.Printf("nextline: %s\n", nextline)
-			lines = append(lines, nextline)
+			lines = append(lines, &nextline)
 		}
 		startidx = endidx + 1
 	}
 	endidx = len(bytes) - 1
-	//fmt.Printf("endidx: %d\n", endidx)
 	if bytes[endidx] == '\n' {
-		lines = append(lines, "")
+		lines = append(lines, &emptyStr)
 	}
 	return lines
 }
 
-func linesBeforeIndex(bytes []byte, idx int, lineCount int) []string {
-	//fmt.Printf("linesBeforeIndex(idx=%d, lineCount=%d)\n", idx, lineCount)
-	//fmt.Printf("bytes[%d]: %#U\n", idx, bytes[idx])
-	lines := []string{}
+func linesBeforeIndex(bytes []byte, idx int, lineCount int) []*string {
+	lines := []*string{}
 	if idx < 1 {
 		return lines
 	}
 	newlines := 0
 	beforeidx := idx
 	for beforeidx > 0 && newlines < lineCount {
-		//fmt.Printf("beforeidx: %d\n", beforeidx)
-		//fmt.Printf("bytes[%d]: %#U\n", beforeidx, bytes[beforeidx])
 		if bytes[beforeidx] == '\n' {
 			newlines++
-			//fmt.Printf("newlines: %d\n", newlines)
 		}
 		beforeidx--
 	}
 	beforestartlineidx, _ := lineStartEndIndicesForIndex(beforeidx, bytes)
-	//fmt.Printf("beforestartlineidx: %d\n", beforestartlineidx)
 	lines = splitIntoLines(bytes[beforestartlineidx : idx-1])
 	return lines
 }
 
-func linesAfterIndex(bytes []byte, idx int, lineCount int) []string {
-	//fmt.Printf("linesAfterIndex(idx=%d, lineCount=%d)\n", idx, lineCount)
-	//fmt.Printf("bytes[%d]: %#U\n", idx, bytes[idx])
-	lines := []string{}
+func linesAfterIndex(bytes []byte, idx int, lineCount int) []*string {
+	lines := []*string{}
 	newlines := 0
 	afteridx := idx
 	for afteridx < len(bytes)-1 && newlines < lineCount {
-		//fmt.Printf("afteridx: %d\n", afteridx)
-		//fmt.Printf("bytes[%d]: %#U\n", afteridx, bytes[afteridx])
 		if bytes[afteridx] == '\n' {
 			newlines++
-			//fmt.Printf("newlines: %d\n", newlines)
 		}
 		afteridx++
 	}
 	_, afterendlineidx := lineStartEndIndicesForIndex(afteridx-1, bytes)
-	//fmt.Printf("afterendlineidx: %d\n", afterendlineidx)
 	lines = splitIntoLines(bytes[idx:afterendlineidx])
 	return lines[:lineCount]
 }
 
-func (s *Searcher) searchTextFileReaderContents(r io.Reader, filepath string) error {
+func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
 	bytes, err := ioutil.ReadAll(r)
 	if err != nil {
-		return err
+		s.errChan <- err
+		return
 	}
-	linesBefore := []string{}
-	linesAfter := []string{}
+	linesBefore := []*string{}
+	linesAfter := []*string{}
 	findLimit := -1
 	if s.Settings.FirstMatch {
 		findLimit = 1
@@ -320,57 +323,61 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, filepath string) er
 				if s.Settings.LinesAfter > 0 && afterLineCount > 0 {
 					linesAfter = linesAfterIndex(bytes, endidx, s.Settings.LinesAfter)
 				}
+				lineStr := strings.TrimRight(string(line), "\r\n")
 				sr := &SearchResult{
-					p, filepath, linenum,
-					strings.TrimRight(string(line), "\r\n"),
+					p,
+					si,
+					linenum,
+					&lineStr,
 					linesBefore,
 					linesAfter,
 				}
-				s.addSearchResult(sr)
+				s.resultChan <- sr
 				// reset linesBefore and LinesAfter
-				linesBefore, linesAfter = []string{}, []string{}
+				linesBefore, linesAfter = []*string{}, []*string{}
 			}
 		}
 	}
-	return nil
 }
 
-func (s *Searcher) searchTextFileReaderLines(r io.Reader, filepath string) error {
+func (s *Searcher) searchTextFileReaderLines(r io.Reader, si *SearchItem) {
 	scanner := bufio.NewScanner(r)
 	linenum := 0
-	linesBefore := []string{}
-	linesAfter := []string{}
+	linesBefore := []*string{}
+	linesAfter := []*string{}
 	linesAfterIdx := 0
 ReadLines:
 	for {
 		linenum++
-		var line string
+		var line *string
 		if len(linesAfter) > 0 {
 			line, linesAfter = linesAfter[0], linesAfter[1:]
 		} else if scanner.Scan() {
-			line = scanner.Text()
+			text := scanner.Text()
+			line = &text
 		} else {
 			break ReadLines
 		}
 		for len(linesAfter) < s.Settings.LinesAfter && scanner.Scan() {
-			linesAfter = append(linesAfter, scanner.Text())
+			lineAfter := scanner.Text()
+			linesAfter = append(linesAfter, &lineAfter)
 		}
 		spi := s.Settings.SearchPatterns.Iterator()
 		for spi.Next() {
 			p := spi.Value()
 			// check for FirstMatch setting and stop if file+pattern match exists
 			if s.Settings.FirstMatch &&
-				s.searchResults.HasResultForFileAndPattern(filepath, p) {
+				s.searchResults.HasResultForFileAndPattern(si, p) {
 				if !s.Settings.SearchPatterns.IsEmpty() {
 					continue
 				} else {
 					break ReadLines
 				}
 			}
-			if p.MatchString(line) {
-				if len(linesBefore) > 0 && !s.linesBeforeMatch(&linesBefore) {
+			if p.MatchString(*line) {
+				if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
 					continue
-				} else if len(linesAfter) > 0 && !s.linesAfterMatch(&linesAfter) {
+				} else if len(linesAfter) > 0 && !s.linesAfterMatch(linesAfter) {
 					continue
 				}
 				if !s.Settings.LinesAfterToPatterns.IsEmpty() ||
@@ -380,7 +387,8 @@ ReadLines:
 							if !scanner.Scan() {
 								break
 							}
-							linesAfter = append(linesAfter, scanner.Text())
+							lineAfter := scanner.Text()
+							linesAfter = append(linesAfter, &lineAfter)
 						}
 						nextLine := linesAfter[linesAfterIdx]
 						if !s.Settings.LinesAfterToPatterns.IsEmpty() &&
@@ -394,7 +402,7 @@ ReadLines:
 						linesAfterIdx++
 					}
 				}
-				var srLinesAfter []string
+				var srLinesAfter []*string
 				if linesAfterIdx > 0 {
 					lastIdx := linesAfterIdx + 1
 					if lastIdx > len(linesAfter) {
@@ -410,11 +418,14 @@ ReadLines:
 					srLinesAfter = linesAfter
 				}
 				sr := &SearchResult{
-					p, filepath, linenum, line,
+					p,
+					si,
+					linenum,
+					line,
 					linesBefore,
 					srLinesAfter,
 				}
-				s.addSearchResult(sr)
+				s.resultChan <- sr
 			}
 		}
 		if s.Settings.LinesBefore > 0 {
@@ -427,227 +438,244 @@ ReadLines:
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return err
+		s.errChan <- err
+		return
 	}
-	return nil
 }
 
-func (s *Searcher) searchBinaryFileReader(r io.Reader, filepath string) error {
+func (s *Searcher) searchTextFileReader(r io.Reader, si *SearchItem) {
 	if s.Settings.Verbose {
-		fmt.Printf("Searching binary file %s\n", filepath)
+		fmt.Printf("Searching text file %s\n", si.String())
+	}
+	if s.Settings.MultiLineSearch {
+		s.searchTextFileReaderContents(r, si)
+	} else {
+		s.searchTextFileReaderLines(r, si)
+	}
+}
+
+func (s *Searcher) searchBinaryFileReader(r io.Reader, si *SearchItem) {
+	if s.Settings.Verbose {
+		fmt.Printf("Searching binary file %s\n", si.String())
 	}
 	bytes, err := ioutil.ReadAll(r)
 	if err != nil {
-		return err
+		s.errChan <- err
+		return
 	}
 	spi := s.Settings.SearchPatterns.Iterator()
 	for spi.Next() {
 		p := spi.Value()
 		if p.Match(bytes) {
+			emptyStr := ""
 			sr := &SearchResult{
-				p, filepath, 0, "",
-				[]string{},
-				[]string{},
+				p,
+				si,
+				0,
+				&emptyStr,
+				[]*string{},
+				[]*string{},
 			}
-			s.addSearchResult(sr)
+			s.resultChan <- sr
 		}
 	}
-	return nil
 }
 
 func notR(c rune) bool {
 	return c != 'r'
 }
 
-func (s *Searcher) searchTarFileReader(r io.Reader, filepath string) error {
+func (s *Searcher) searchTarFileReader(r io.Reader, si *SearchItem) {
 	if s.Settings.Verbose {
-		tarName := strings.TrimRightFunc(filepath, notR)
+		tarName := strings.TrimRightFunc(si.String(), notR)
 		fmt.Printf("Searching tar file %s\n", tarName)
 	}
 	tr := tar.NewReader(r)
 	for {
 		hdr, err := tr.Next()
 		if err != nil {
-
 			if err == io.EOF {
 				break
 			}
 			if err == io.ErrUnexpectedEOF {
 				if s.Settings.Debug {
-					fmt.Printf("Encountered unexpected EOF in tar file %s\n", filepath)
+					fmt.Printf("Encountered unexpected EOF in tar file %s\n",
+						si.String())
 				}
 				break
 			}
 			if s.Settings.Debug {
 				fmt.Printf("Error encountered in searchTarFileReader: %s\n", err)
 			}
-			return err
+			s.errChan <- err
 		}
-		if !strings.HasSuffix(hdr.Name, "/") && s.isSearchFile(hdr.Name) {
-			err = s.searchFileReader(tr, fmt.Sprintf("{%s}%s", filepath, hdr.Name))
-			if err != nil {
-				return err
+		dir, file := filepath.Split(hdr.Name)
+		if !strings.HasSuffix(hdr.Name, "/") && s.isSearchFile(&file) {
+			newSearchItem := NewSearchItem(&dir, &file)
+			for _, c := range si.Containers {
+				newSearchItem.AddContainer(c)
 			}
+			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.searchFileReader(tr, newSearchItem)
+
 		}
 	}
-	return nil
 }
 
-func (s *Searcher) searchGzipFileReader(r io.Reader, filepath string) error {
+func (s *Searcher) searchGzipFileReader(r io.Reader, si *SearchItem) {
 	if s.Settings.Verbose {
-		fmt.Printf("Searching gzip file %s\n", filepath)
+		fmt.Printf("Searching gzip file %s\n", si.String())
 	}
 	gr, err := gzip.NewReader(r)
 	if err != nil {
 		if s.Settings.Debug {
 			fmt.Println("Error encountered in searchGzipFileReader: %s\n", err)
 		}
-		return err
+		s.errChan <- err
+		return
 	}
 	defer func() {
 		gr.Close()
 	}()
-	if strings.HasSuffix(filepath, "tar.gz") || strings.HasSuffix(filepath, "tgz") {
-		if err = s.searchTarFileReader(gr, filepath); err != nil {
-			return err
-		}
+	if strings.HasSuffix(*si.Name, "tar.gz") || strings.HasSuffix(*si.Name, "tgz") {
+		s.searchTarFileReader(gr, si)
 	} else {
-		if s.isSearchFile(gr.Name) {
-			err = s.searchFileReader(gr, fmt.Sprintf("{%s}%s", filepath, gr.Name))
-			if err != nil {
-				return err
+		name := gr.Name
+		if s.isSearchFile(&name) {
+			emptyStr := ""
+			newSearchItem := NewSearchItem(&emptyStr, &name)
+			for _, c := range si.Containers {
+				newSearchItem.AddContainer(c)
 			}
+			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.searchFileReader(gr, newSearchItem)
 		}
 	}
-	return nil
 }
 
-func (s *Searcher) searchBzip2FileReader(r io.Reader, fp string) error {
+func (s *Searcher) searchBzip2FileReader(r io.Reader, si *SearchItem) {
 	if s.Settings.Verbose {
-		fmt.Printf("Searching bzip2 file %s\n", fp)
+		fmt.Printf("Searching bzip2 file %s\n", si.String())
 	}
 	br := bzip2.NewReader(r)
-	if strings.HasSuffix(fp, "tar.bz2") {
-		if err := s.searchTarFileReader(br, fp); err != nil {
-			return err
-		}
+	if strings.HasSuffix(*si.Name, "tar.bz2") {
+		s.searchTarFileReader(br, si)
 	} else {
-		containedFileName := strings.TrimSuffix(filepath.Base(fp), ".bz2")
-		if s.isSearchFile(containedFileName) {
-			err := s.searchFileReader(br, fmt.Sprintf("{%s}%s", fp, containedFileName))
-			if err != nil {
-				return err
+		containedFileName := strings.TrimSuffix(*si.Name, ".bz2")
+		if s.isSearchFile(&containedFileName) {
+			emptyStr := ""
+			newSearchItem := NewSearchItem(&emptyStr, &containedFileName)
+			for _, c := range si.Containers {
+				newSearchItem.AddContainer(c)
 			}
+			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.searchFileReader(br, newSearchItem)
 		}
 	}
-	return nil
 }
 
-func (s *Searcher) searchZipFileReader(r io.Reader, filepath string) error {
+func (s *Searcher) searchZipFileReader(r io.Reader, si *SearchItem) {
+	if s.Settings.Verbose {
+		fmt.Printf("Searching zip file %s\n", si.String())
+	}
 	// zip.OpenReader returns a *zip.ReaderCloser struct type that extends Reader
-	zr, err := zip.OpenReader(filepath)
+	zr, err := zip.OpenReader(filepath.Join(*si.Path, *si.Name))
 	if err != nil {
-		return err
+		s.errChan <- err
+		return
 	}
 	defer zr.Close()
 	// f is a zip.File struct type
 	for _, f := range zr.File {
+		dir, file := filepath.Split(f.Name)
 		if f.FileHeader.Flags != 0 && f.FileHeader.Flags != 2 {
-			fmt.Printf("%s is an UNKNOWN file type\n", f.Name)
+			fmt.Printf("%s is an UNKNOWN file type\n", file)
 		}
 		// f.FileHeader.Flags == 2 seems to mean it's a file (not a dir, etc.)
-		if f.FileHeader.Flags == 2 && s.isSearchFile(f.Name) {
-			switch s.fileTypes.getFileType(f.Name) {
-			case FILETYPE_TEXT:
-				if s.Settings.Verbose {
-					fmt.Printf("Searching text file {%s}%s\n", filepath, f.Name)
-				}
-				rc, err := f.Open()
-				if err != nil {
-					return err
-				}
-				s.searchTextFileReader(rc, fmt.Sprintf("{%s}%s", filepath, f.Name))
-				rc.Close()
-			case FILETYPE_BINARY:
-				if s.Settings.Verbose {
-					fmt.Printf("Searching binary file {%s}%s\n", filepath, f.Name)
-				}
-				rc, err := f.Open()
-				if err != nil {
-					return err
-				}
-				s.searchBinaryFileReader(rc, fmt.Sprintf("{%s}%s", filepath, f.Name))
-				rc.Close()
-			default:
-				fmt.Sprintf("Skipping unknown file type: %s", f.Name)
+		if f.FileHeader.Flags == 2 && s.isSearchFile(&file) {
+			cr, err := f.Open()
+			if err != nil {
+				s.errChan <- err
+				return
 			}
+			newSearchItem := NewSearchItem(&dir, &file)
+			for _, c := range si.Containers {
+				newSearchItem.AddContainer(c)
+			}
+			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.searchFileReader(cr, newSearchItem)
+			cr.Close()
 		}
 	}
-	return nil
 }
 
-func (s *Searcher) searchArchiveFileReader(r io.Reader, filepath string) error {
-	if !s.isArchiveSearchFile(filepath) {
-		return nil
+func (s *Searcher) searchArchiveFileReader(r io.Reader, si *SearchItem) {
+	if !s.isArchiveSearchFile(si.Name) {
+		return
 	}
-	ext := getExtension(filepath)
+	ext := getExtension(*si.Name)
 	switch ext {
 	case "zip", "jar", "war", "ear":
-		return s.searchZipFileReader(r, filepath)
+		s.searchZipFileReader(r, si)
 	case "gz", "tgz":
-		return s.searchGzipFileReader(r, filepath)
+		s.searchGzipFileReader(r, si)
 	case "bz2":
-		return s.searchBzip2FileReader(r, filepath)
+		s.searchBzip2FileReader(r, si)
 	default:
 		fmt.Printf("Searching not currently supported for %s files\n", ext)
-		return nil
 	}
 }
 
-func (s *Searcher) searchFileReader(r io.Reader, filepath string) error {
+func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
 	if s.Settings.Verbose {
-		fmt.Printf("Searching file %s\n", filepath)
+		fmt.Printf("Searching file %s\n", si.String())
 	}
-	switch s.fileTypes.getFileType(filepath) {
+	switch s.fileTypes.getFileType(*si.Name) {
 	case FILETYPE_TEXT:
-		s.searchTextFileReader(r, filepath)
+		s.searchTextFileReader(r, si)
 	case FILETYPE_BINARY:
-		s.searchBinaryFileReader(r, filepath)
+		s.searchBinaryFileReader(r, si)
 	case FILETYPE_ARCHIVE:
 		if s.Settings.SearchArchives {
-			return s.searchArchiveFileReader(r, filepath)
+			s.searchArchiveFileReader(r, si)
 		} else {
 			if s.Settings.Verbose {
-				fmt.Printf("Skipping archive file: %s\n", filepath)
+				fmt.Printf("Skipping archive file: %s\n", si.String())
 			}
-			return nil
 		}
 	default:
-		fmt.Sprintf("Skipping unknown file type: %s", filepath)
+		fmt.Sprintf("Skipping unknown file type: %s", si.String())
 	}
-	return nil
 }
 
-func (s *Searcher) SearchFile(filepath string) error {
-	if !s.fileTypes.IsSearchableFile(filepath) {
-		if contains(s.Settings.InExtensions, getExtension(filepath)) {
+func (s *Searcher) searchSearchItem(si *SearchItem) {
+	if !s.fileTypes.IsSearchableFile(*si.Name) {
+		if contains(s.Settings.InExtensions, getExtension(*si.Name)) {
 			if s.Settings.Debug {
-				fmt.Printf("File made searchable by passing in-ext: %s\n", filepath)
+				fmt.Printf("File made searchable by passing in-ext: %s\n", si.String())
 			}
 		} else {
 			if s.Settings.Verbose {
-				fmt.Printf("Skipping unsearchable file: %s\n", filepath)
+				fmt.Printf("Skipping unsearchable file: %s\n", si.String())
 			}
-			return nil
+			return
 		}
 	}
-	// turn the file into an io.Reader
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
+	// make sure it doesn't have any containers (not sure how this could happen)
+	if len(si.Containers) > 0 {
+		fmt.Printf("Has containers: %s", si.String())
+	} else {
+		// create an io.Reader
+		fullName := filepath.Join(*si.Path, *si.Name)
+		r, err := os.Open(fullName)
+		if err != nil {
+			s.errChan <- err
+			return
+		}
+		defer r.Close()
+		s.searchFileReader(r, si)
+		s.doneChan <- &fullName
 	}
-	defer file.Close()
-	return s.searchFileReader(file, filepath)
 }
 
 func (s *Searcher) addTimer(name string, action string) {
@@ -661,7 +689,7 @@ func (s *Searcher) startTimer(name string) {
 
 func (s *Searcher) stopTimer(name string) {
 	s.addTimer(name, "stop")
-	if s.Settings.PrintResults {
+	if s.Settings.PrintResults || s.Settings.Debug {
 		s.printElapsed(name)
 	}
 }
@@ -674,17 +702,24 @@ func (s *Searcher) getElapsed(name string) time.Duration {
 
 func (s *Searcher) printElapsed(name string) {
 	elapsed := s.getElapsed(name)
-	fmt.Printf("Elapsed time for %s: %v", name, elapsed)
+	fmt.Printf("Elapsed time for %s: %v\n", name, elapsed)
 }
 
-func (s *Searcher) doFileSearch() error {
-	for _, f := range s.searchFiles {
-		err := s.SearchFile(f)
-		if err != nil {
-			return err
-		}
+func (s *Searcher) doFileSearch() {
+	sii := s.searchItems.Iterator()
+	for sii.Next() {
+		i := sii.Value()
+		go func(si *SearchItem) {
+			s.searchSearchItem(si)
+		}(i)
 	}
-	return nil
+}
+
+// the public-facing method takes a string and converts to a SearchItem type
+func (s *Searcher) SearchFile(fp string) {
+	dir, file := filepath.Split(fp)
+	searchItem := NewSearchItem(&dir, &file)
+	s.searchSearchItem(searchItem)
 }
 
 func (s *Searcher) Search() error {
@@ -707,7 +742,7 @@ func (s *Searcher) Search() error {
 	if s.Settings.Verbose {
 		fmt.Printf("\nDirectories to be searched (%d):\n", len(s.searchDirs))
 		for _, d := range s.searchDirs {
-			fmt.Println(d)
+			fmt.Println(*d)
 		}
 	}
 
@@ -715,18 +750,29 @@ func (s *Searcher) Search() error {
 	if s.Settings.DoTiming {
 		s.startTimer("setSearchFiles")
 	}
-	err = s.setSearchFiles()
+	s.setSearchFiles()
+
+	//get the search items (files) from the file channel
+	doneDirs := map[string]bool{}
+	for len(doneDirs) < len(s.searchDirs) {
+		select {
+		case i := <-s.itemChan:
+			s.searchItems.AddItem(i)
+		case d := <-s.doneChan:
+			doneDirs[*d] = true
+		case e := <-s.errChan:
+			panic(e)
+		}
+	}
 	if s.Settings.DoTiming {
 		s.stopTimer("setSearchFiles")
 	}
-	if err != nil {
-		return err
-	}
 
 	if s.Settings.Verbose {
-		fmt.Printf("\nFiles to be searched (%d):\n", len(s.searchFiles))
-		for _, f := range s.searchFiles {
-			fmt.Println(f)
+		fmt.Printf("\nFiles to be searched (%d):\n", s.searchItems.Count())
+		sfi := s.searchItems.Iterator()
+		for sfi.Next() {
+			fmt.Println(sfi.Value())
 		}
 	}
 
@@ -737,19 +783,29 @@ func (s *Searcher) Search() error {
 	if s.Settings.DoTiming {
 		s.startTimer("searchFiles")
 	}
-	err = s.doFileSearch()
+	s.doFileSearch()
+
+	//get the results from the results channel
+	doneFiles := map[string]bool{}
+	for len(doneFiles) < s.searchItems.Count() {
+		select {
+		case r := <-s.resultChan:
+			s.addSearchResult(r)
+		case f := <-s.doneChan:
+			doneFiles[*f] = true
+		case e := <-s.errChan:
+			panic(e)
+		}
+	}
 	if s.Settings.DoTiming {
 		s.stopTimer("searchFiles")
 	}
 	if s.Settings.Verbose {
 		fmt.Println("\nFile search complete.\n")
 	}
-	if err != nil {
-		return err
-	}
 
 	// if there are results and PrintResults is true then print them out
-	if s.Settings.PrintResults && s.searchResults.HasSearchResults() {
+	if s.Settings.PrintResults && !s.searchResults.IsEmpty() {
 		fmt.Println()
 		s.searchResults.PrintSearchResults()
 		fmt.Println()

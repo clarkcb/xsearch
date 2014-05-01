@@ -29,9 +29,9 @@ func union(s1, s2 set) set {
 	return set(s)
 }
 
-func contains(slice []string, s string) bool {
+func contains(slice []*string, s string) bool {
 	for _, as := range slice {
-		if s == as {
+		if s == *as {
 			return true
 		}
 	}

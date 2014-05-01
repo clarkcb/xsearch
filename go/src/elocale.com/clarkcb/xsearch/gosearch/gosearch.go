@@ -19,7 +19,7 @@ func main() {
 	}
 
 	if settings.Debug {
-		fmt.Printf("settings: %v\n", settings)
+		fmt.Printf("settings: %s\n", settings.String())
 	}
 
 	searcher := xsearch.NewSearcher(settings)
