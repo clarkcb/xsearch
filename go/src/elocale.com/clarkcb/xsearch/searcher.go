@@ -1,3 +1,24 @@
+/*
+Package xsearch provides functionality to search specific files in specific
+directories for content that matches any number of regular expressions.
+
+The Searcher class is the main class that provides the file searching
+functionality. It takes a SearchSettings instance argument on instantiation
+that defines the various search options (what files extension, what directory
+and/or file name patterns, what content search patterns, etc.).
+
+The two main methods of Searcher are:
+
+* Search - this performs the search based on the SearchSettings, starting in
+           StartPath. It has three main phases:
+
+    a) Find matching directories - get the list of directories to search
+    b) Find matching files - get the list of files to search under the directories
+    c) Search matching files - search the matching files
+
+* SearchFile - this performs a search of a single file. Its use is less common
+               but provided for cases where this is needed.
+*/
 package xsearch
 
 import (
@@ -12,6 +33,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,7 +42,7 @@ type Searcher struct {
 	fileTypes     *FileTypes
 	searchDirs    []*string
 	searchItems   *SearchItems
-	itemChan      chan *SearchItem
+	addItemChan   chan *SearchItem
 	doneChan      chan *string
 	errChan       chan error
 	searchResults *SearchResults
@@ -30,16 +52,16 @@ type Searcher struct {
 
 func NewSearcher(settings *SearchSettings) *Searcher {
 	return &Searcher{
-		settings,
-		GetFileTypes(),
-		[]*string{},
-		NewSearchItems(),
-		make(chan *SearchItem),
-		make(chan *string),
-		make(chan error),
-		NewSearchResults(),
-		make(chan *SearchResult),
-		map[string]time.Time{},
+		settings,                 // Settings
+		GetFileTypes(),           // fileTypes
+		[]*string{},              // searchDirs
+		NewSearchItems(),         // searchItems
+		make(chan *SearchItem),   // addItemChan
+		make(chan *string),       // doneChan
+		make(chan error),         // errChan
+		NewSearchResults(),       // searchResults
+		make(chan *SearchResult), // resultChan
+		map[string]time.Time{},   // timerMap
 	}
 }
 
@@ -134,9 +156,9 @@ func (s *Searcher) setSearchFilesForDirectory(d *string) {
 			if s.Settings.SearchArchives && s.isArchiveSearchFile(&name) {
 				// this approach was too slow, reverting to adding archive file itself
 				//s.setArchiveSearchFiles(filepath.Join(d, name))
-				s.itemChan <- NewSearchItem(d, &name)
+				s.addItemChan <- NewSearchItem(d, &name)
 			} else if !s.Settings.ArchivesOnly && s.isSearchFile(&name) {
-				s.itemChan <- NewSearchItem(d, &name)
+				s.addItemChan <- NewSearchItem(d, &name)
 			}
 		}
 	}
@@ -147,6 +169,8 @@ func (s *Searcher) setSearchFiles() {
 	if s.Settings.Verbose {
 		fmt.Println("\nBuilding file search list")
 	}
+
+	// gather search files concurrently for each search dir
 	for _, d := range s.searchDirs {
 		go func(dir *string) {
 			s.setSearchFilesForDirectory(dir)
@@ -155,8 +179,8 @@ func (s *Searcher) setSearchFiles() {
 }
 
 func (s *Searcher) addSearchResult(r *SearchResult) {
-	if s.Settings.UniqueLines && 
-	s.searchResults.LineCounts[strings.TrimSpace(*r.Line)] > 0 {
+	if s.Settings.UniqueLines &&
+		s.searchResults.LineCounts[strings.TrimSpace(*r.Line)] > 0 {
 		if s.Settings.Verbose {
 			fmt.Printf("Skipping search result with non-unique line: %s",
 				strings.TrimSpace(*r.Line))
@@ -383,7 +407,7 @@ ReadLines:
 				if !s.Settings.LinesAfterToPatterns.IsEmpty() ||
 					!s.Settings.LinesAfterUntilPatterns.IsEmpty() {
 					for {
-						if len(linesAfter) < linesAfterIdx + 1 {
+						if len(linesAfter) < linesAfterIdx+1 {
 							if !scanner.Scan() {
 								break
 							}
@@ -705,13 +729,51 @@ func (s *Searcher) printElapsed(name string) {
 	fmt.Printf("Elapsed time for %s: %v\n", name, elapsed)
 }
 
+// initiates goroutines to search each file in the batch, waiting for all
+// to finish before returning
+func (s *Searcher) doBatchFileSearch(searchItems []*SearchItem) {
+	wg := &sync.WaitGroup{}
+	wg.Add(len(searchItems)) // set the WaitGroup counter to searchItem length
+	for _, si := range searchItems {
+		go func(wg *sync.WaitGroup, si *SearchItem) {
+			s.searchSearchItem(si)
+			wg.Done() // decrement the counter
+		}(wg, si)
+	}
+	wg.Wait()
+}
+
 func (s *Searcher) doFileSearch() {
+	const batchSize = 240 // max files to search at one time
+	searchItems := []*SearchItem{}
 	sii := s.searchItems.Iterator()
 	for sii.Next() {
-		i := sii.Value()
-		go func(si *SearchItem) {
-			s.searchSearchItem(si)
-		}(i)
+		searchItems = append(searchItems, sii.Value())
+	}
+	// start the processSearchChannels goroutine
+	go s.processSearchChannels()
+
+	// batch search (to avoid too many files open at once)
+	for len(searchItems) > batchSize {
+		nextSearchItems := searchItems[:batchSize]
+		s.doBatchFileSearch(nextSearchItems)
+		searchItems = searchItems[batchSize:]
+	}
+	s.doBatchFileSearch(searchItems)
+}
+
+func (s *Searcher) processSearchChannels() {
+	//get the results from the results channel
+	doneFiles := map[string]bool{}
+	for len(doneFiles) < s.searchItems.Count() {
+		select {
+		case r := <-s.resultChan:
+			s.addSearchResult(r)
+		case f := <-s.doneChan:
+			doneFiles[*f] = true
+		case e := <-s.errChan:
+			panic(e)
+		}
 	}
 }
 
@@ -756,7 +818,7 @@ func (s *Searcher) Search() error {
 	doneDirs := map[string]bool{}
 	for len(doneDirs) < len(s.searchDirs) {
 		select {
-		case i := <-s.itemChan:
+		case i := <-s.addItemChan:
 			s.searchItems.AddItem(i)
 		case d := <-s.doneChan:
 			doneDirs[*d] = true
@@ -785,18 +847,6 @@ func (s *Searcher) Search() error {
 	}
 	s.doFileSearch()
 
-	//get the results from the results channel
-	doneFiles := map[string]bool{}
-	for len(doneFiles) < s.searchItems.Count() {
-		select {
-		case r := <-s.resultChan:
-			s.addSearchResult(r)
-		case f := <-s.doneChan:
-			doneFiles[*f] = true
-		case e := <-s.errChan:
-			panic(e)
-		}
-	}
 	if s.Settings.DoTiming {
 		s.stopTimer("searchFiles")
 	}

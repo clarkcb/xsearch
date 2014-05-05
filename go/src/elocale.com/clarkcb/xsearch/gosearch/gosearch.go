@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"elocale.com/clarkcb/xsearch"
+	"fmt"
 	"os"
 )
 

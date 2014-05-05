@@ -7,7 +7,7 @@ import (
 )
 
 type SearchItemsIterator struct {
-	idx int
+	idx   int
 	items *SearchItems
 }
 
@@ -31,7 +31,7 @@ func (i *SearchItemsIterator) Value() *SearchItem {
 }
 
 type SearchItems struct {
-	items []*SearchItem
+	items     []*SearchItem
 	strPtrMap map[string]*string
 }
 

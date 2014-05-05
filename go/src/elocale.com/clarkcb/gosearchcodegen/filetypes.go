@@ -9,7 +9,7 @@ import (
 )
 
 type FileType struct {
-	Name string
+	Name       string
 	Extensions set
 }
 
@@ -51,7 +51,6 @@ func GenFileTypesFile(path string) {
 	fileTypesString := GetFileTypesString()
 	ioutil.WriteFile(path, []byte(fileTypesString), 0644)
 }
-
 
 type XmlFileTypes struct {
 	XmlFileTypes []XmlFileType `xml:"filetype"`

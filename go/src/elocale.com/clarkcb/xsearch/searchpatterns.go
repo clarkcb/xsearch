@@ -5,7 +5,7 @@ import (
 )
 
 type SearchPatternsIterator struct {
-	idx int
+	idx      int
 	patterns *SearchPatterns
 }
 
