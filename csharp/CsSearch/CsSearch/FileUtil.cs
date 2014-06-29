@@ -31,7 +31,7 @@ namespace CsSearch
 			_fileTypesDictionary["text"].UnionWith(_fileTypesDictionary["xml"]);
 			_fileTypesDictionary["searchable"] = new HashSet<string>(_fileTypesDictionary["text"]);
 			_fileTypesDictionary["searchable"].UnionWith(_fileTypesDictionary["binary"]);
-			_fileTypesDictionary["searchable"].UnionWith(_fileTypesDictionary["compressed"]);
+			_fileTypesDictionary["searchable"].UnionWith(_fileTypesDictionary["archive"]);
 		}
 
 		public bool IsBinaryFile(FileInfo f)
@@ -39,9 +39,9 @@ namespace CsSearch
 			return _fileTypesDictionary["binary"].Contains(f.Extension.ToLowerInvariant());
 		}
 
-		public bool IsCompressedFile(FileInfo f)
+		public bool IsArchiveFile(FileInfo f)
 		{
-			return _fileTypesDictionary["compressed"].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary["archive"].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsSearchableFile(FileInfo f)

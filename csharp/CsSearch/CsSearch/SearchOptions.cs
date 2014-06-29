@@ -14,16 +14,16 @@ namespace CsSearch
 		public static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
 			new Dictionary<string,Action<string,SearchSettings>>
 				{
-					{ "in-dir", (s, settings) => settings.AddInDirPattern(s) },
+					{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
 					{ "in-ext", (s, settings) => settings.AddInExtension(s) },
-					{ "in-file", (s, settings) => settings.AddInFilePattern(s) },
+					{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
 					//{ "in-linesafterpattern", (s, settings) => settings.linesaftersearches.append(s) },
 					//{ "in-linesbeforepattern", (s, settings) => settings.linesbeforesearches.append(s) },
-					//{ "linesafter", (s, settings) => settings.SetProperty("numlinesafter", int(s)) },
-					//{ "linesbefore", (s, settings) => settings.SetProperty("numlinesbefore", int(s)) },
-					{ "out-dir", (s, settings) => settings.AddOutDirPattern(s) },
+					{ "linesafter", (s, settings) => settings.LinesAfter = int.Parse(s) },
+					{ "linesbefore", (s, settings) => settings.LinesBefore = int.Parse(s) },
+					{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
 					{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
-					{ "out-file", (s, settings) => settings.AddOutFilePattern(s) },
+					{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 					//{ "out-linesafterpattern", (s, settings) => settings.linesafterfilters.append(s) },
 					//{ "out-linesbeforepattern", (s, settings) => settings.linesbeforefilters.append(s) },
 					{ "search", (s, settings) => settings.AddSearchPattern(s) },
@@ -37,12 +37,13 @@ namespace CsSearch
 					{ "dotiming", settings => settings.DoTiming = true },
 					{ "firstmatch", settings => settings.FirstMatch = true },
 					{ "help", settings => settings.PrintUsage = true },
+					{ "listdirs", settings => settings.ListDirs = true },
 					{ "listfiles", settings => settings.ListFiles = true },
 					{ "listlines", settings => settings.ListLines = true },
 					{ "noprintmatches", settings => settings.PrintResults = false },
-					{ "nosearchcompressed", settings => settings.SearchCompressed = false },
+					{ "nosearcharchives", settings => settings.SearchArchives = false },
 					{ "printmatches", settings => settings.PrintResults = true },
-					{ "searchcompressed", settings => settings.SearchCompressed = true },
+					{ "searcharchives", settings => settings.SearchArchives = true },
 					{ "verbose", settings => settings.Verbose = true },
 					{ "version", settings => settings.PrintVersion = true },
 				};
@@ -94,6 +95,8 @@ namespace CsSearch
 		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
 		{
 			var settings = new SearchSettings();
+			// default to PrintResults = true since this is called from CLI functionality
+			settings.PrintResults = true;
 			var queue = new Queue<string>(args);
 
 			while (queue.Count > 0)
@@ -152,9 +155,17 @@ namespace CsSearch
 			{
 				throw new SearchArgumentException("Missing startpath");
 			}
+			if (!(new DirectoryInfo(settings.StartPath)).Exists)
+			{
+				throw new SearchArgumentException("Startpath not found");
+			}
 			if (settings.SearchPatterns.Count < 1)
 			{
 				throw new SearchArgumentException("No search patterns specified");
+			}
+			if (settings.Debug)
+			{
+				settings.Verbose = true;
 			}
 			return settings;
 		}
