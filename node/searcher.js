@@ -40,71 +40,44 @@ function Searcher(settings) {
         return false;
     };
 
-    var _fileFilterPredicates = (function () {
-        var preds = [];
-        if (_settings.inExtensions.length) {
-            preds.push(function(f) { return matchesAnyElement(_fileutil.getExtension(f), _settings.inExtensions); });
+    var isSearchDir = function (dir) {
+        if (_settings.inDirPatterns.length && !matchesAnyPattern(dir, _settings.inDirPatterns)) {
+            return false;
         }
-        if (_settings.outExtensions.length) {
-            preds.push(function(f) { return !matchesAnyElement(_fileutil.getExtension(f), _settings.outExtensions); });
-        }
-        if (_settings.inDirnamePatterns.length) {
-            preds.push(function(f) { return matchesAnyPattern(path.dirname(f), _settings.inDirnamePatterns) });
-        }
-        if (_settings.outDirnamePatterns.length) {
-            preds.push(function(f) { return !matchesAnyPattern(path.dirname(f), _settings.outDirnamePatterns) });
-        }
-        if (_settings.inFilenamePatterns.length) {
-            preds.push(function(f) { return matchesAnyPattern(path.basename(f), _settings.inFilenamePatterns) });
-        }
-        if (_settings.outFilenamePatterns.length) {
-            preds.push(function(f) { return !matchesAnyPattern(path.basename(f), _settings.outFilenamePatterns) });
-        }
-        return preds;
-    })();
-
-    if (_settings.debug) {
-        for (var p in _fileFilterPredicates) {
-            console.log("_fileFilterPredictates["+p+"]: "+_fileFilterPredicates[p]);
-        }
-    }
-
-    var isTargetFile = function (filepath) {
-        for (var p in _fileFilterPredicates) {
-            if (!_fileFilterPredicates[p](filepath)) {
-                return false;
-            }
+        if (_settings.outDirPatterns.length && matchesAnyPattern(dir, _settings.outDirPatterns)) {
+            return false;
         }
         return true;
     };
 
-    var getSearchFiles = function (currentPath) {
-        if (_settings.verbose || _settings.debug) {
-            console.log("Getting list of files to search under " + currentPath);
+    var isSearchFile = function (file) {
+        if (_settings.inExtensions.length && !matchesAnyElement(_fileutil.getExtension(file), _settings.inExtensions)) {
+            return false;
+        }
+        if (_settings.outExtensions.length && matchesAnyElement(_fileutil.getExtension(file), _settings.outExtensions)) {
+            return false;
+        }
+        if (_settings.inFilePatterns.length && !matchesAnyPattern(file, _settings.inFilePatterns)) {
+            return false;
+        }
+        if (_settings.outFilePatterns.length && matchesAnyPattern(file, _settings.outFilePatterns)) {
+            return false;
+        }
+        return true;
+    };
+
+    var getSearchDirs = function (currentPath) {
+        if (_settings.debug) {
+            console.log("Getting list of directories to search under " + currentPath);
         }
         var dirs = [];
-        var files = [];
         var childItems = fs.readdirSync(currentPath);
         for (var c in childItems) {
             var filepath = path.join(currentPath, childItems[c]);
-            if (_settings.debug) {
-                console.log('childItem: "' + filepath + '"');
-            }
             try {
                 var stats = fs.statSync(filepath);
-                if (stats.isDirectory()) {
+                if (stats.isDirectory() && isSearchDir(c)) {
                     dirs.push(filepath);
-                } else if (stats.isFile()) {
-                    if (isTargetFile(filepath)) {
-                        if (_settings.debug) {
-                            console.log('"' + filepath + '" is a target file');
-                        }
-                        files.push(filepath);
-                    }
-                } else {
-                    if (_settings.debug) {
-                        console.log("childItem neither directory nor file: " + filepath);
-                    }
                 }
             } catch (err) {
                 if (err.errno === 34 && err.code === "ENOENT") {
@@ -117,7 +90,49 @@ function Searcher(settings) {
             }
         }
         for (var d in dirs) {
-            files.push.apply(files, getSearchFiles(dirs[d]));
+            dirs.push.apply(dirs, getSearchDirs(dirs[d]));
+        }
+        return dirs;
+    };
+
+    var getSearchFilesForDirectory = function (dir) {
+        if (_settings.debug) {
+            console.log("Finding search files under " + dir);
+        }
+        var files = [];
+        var childItems = fs.readdirSync(dir);
+        for (var c in childItems) {
+            var filepath = path.join(dir, childItems[c]);
+            if (_settings.debug) {
+                console.log('childItem: "' + filepath + '"');
+            }
+            try {
+                var stats = fs.statSync(filepath);
+                if (stats.isFile()) {
+                    if (isSearchFile(filepath)) {
+                        files.push(filepath);
+                    }
+                }
+            } catch (err) {
+                if (err.errno === 34 && err.code === "ENOENT") {
+                    // this error seems to occur when the file is a soft link to a non-existent file
+                    continue;
+                } else {
+                    console.log(err);
+                    process.exit(1);
+                }
+            }
+        }
+        if (_settings.debug) {
+            console.log('Search files under '+dir+' ('+files.length+'):');
+        }
+        return files;
+    }
+
+    var getSearchFiles = function (searchDirs) {
+        var files = [];
+        for (var d in searchDirs) {
+            files.push.apply(files, getSearchFilesForDirectory(searchDirs[d]));
         }
         return files;
     };
@@ -151,11 +166,32 @@ function Searcher(settings) {
         if (_settings.verbose)
             console.log("Search initiated");
 
+        // get the search dirs
+        if (_settings.doTiming)
+            startTimer("GetSearchDirs");
+        var dirs = [_settings.startPath];
+        dirs.push.apply(dirs, getSearchDirs(_settings.startPath));
+        if (_settings.doTiming)
+            stopTimer("GetSearchDirs");
+        if (_settings.verbose) {
+            console.log("\nDirectories to be searched (" + dirs.length + "):");
+            for (var d in dirs) {
+                console.log(dirs[d]);
+            }
+        }
+
+        // get the search files
         if (_settings.doTiming)
             startTimer("GetSearchFiles");
-        var files = getSearchFiles(_settings.startPath);
+        var files = getSearchFiles(dirs);
         if (_settings.doTiming)
             stopTimer("GetSearchFiles");
+        if (_settings.verbose) {
+            console.log("\nFiles to be searched (" + files.length + "):");
+            for (var f in files) {
+                console.log(files[f]);
+            }
+        }
 
         if (_settings.doTiming)
             startTimer("SearchFiles");
@@ -177,16 +213,23 @@ function Searcher(settings) {
                 console.log(t + ": " + _timers[t]);
             }
         }
+        if (_settings.listDirs) {
+            var dirs = that.getDirsWithMatches();
+            console.log("\nDirectories with matches ("+dirs.length+"):");
+            for (var d in dirs) {
+                console.log(dirs[d]);
+            }
+        }
         if (_settings.listFiles) {
-            var files = getFilesWithMatches();
-            console.log("\nMatching files:");
+            var files = that.getFilesWithMatches();
+            console.log("\nFiles with matches ("+files.length+"):");
             for (var f in files) {
                 console.log(files[f]);
             }
         }
         if (_settings.listLines) {
-            var files = getLinesWithMatches();
-            console.log("\nMatching lines:");
+            var lines = that.getLinesWithMatches();
+            console.log("\nLines with matches ("+lines.length+"):");
             for (var l in lines) {
                 console.log(lines[l]);
             }
@@ -302,16 +345,30 @@ function Searcher(settings) {
         that.results.push(result);
     };
 
-    var setFromArray = function (arr) {
+    var boolHashFromArray = function (arr) {
         var hash = {};
-        var set = [];
         for (var a in arr) {
-            hash[arr[a]] = 1;
+            hash[arr[a]] = true;
         }
+        return hash;
+    };
+
+    var setFromArray = function (arr) {
+        var hash = boolHashFromArray(arr);
+        var set = [];
         for (var h in hash) {
             set.push(h);
         }
         return set;
+    };
+
+    this.getDirsWithMatches = function () {
+        var dirs = [];
+        for (var r in that.results) {
+            var result = that.results[r];
+            dirs.push(path.dirname(result.filename));
+        }
+        return setFromArray(dirs);
     };
 
     this.getFilesWithMatches = function () {

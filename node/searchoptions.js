@@ -19,26 +19,34 @@ function SearchOptions() {
     var flagMap = {};
 
     var argActionMap = {
+        'in-archivefilepattern':
+            function(x, settings) { settings.addInArchiveFilePattern(x); },
         'in-dirpattern':
-            function(x, settings) { settings.addInDirnamePattern(x); },
+            function(x, settings) { settings.addInDirPattern(x); },
         'in-ext':
             function(x, settings) { settings.addInExtension(x); },
         'in-filepattern':
-            function(x, settings) { settings.addInFilenamePattern(x); },
+            function(x, settings) { settings.addInFilePattern(x); },
         'in-linesafterpattern':
             function(x, settings) { settings.addInLinesAfterPattern(x); },
         'in-linesbeforepattern':
             function(x, settings) { settings.addInLinesBeforePattern(x); },
-        'linesbefore':
-            function(x, settings) { settings.numLinesBefore = x; },
         'linesafter':
-            function(x, settings) { settings.numLinesAfter = x; },
+            function(x, settings) { settings.linesAfter = x; },
+        'linesaftertopattern':
+            function(x, settings) { settings.addInLinesAfterToPattern(x); },
+        'linesafteruntilpattern':
+            function(x, settings) { settings.addInLinesAfterUntilPattern(x); },
+        'linesbefore':
+            function(x, settings) { settings.linesBefore = x; },
         'out-dirpattern':
-            function(x, settings) { settings.addOutDirnamePattern(x); },
+            function(x, settings) { settings.addOutDirPattern(x); },
+        'out-archivefilepattern':
+            function(x, settings) { settings.addOutArchiveFilePattern(x); },
         'out-ext':
             function(x, settings) { settings.addOutExtension(x); },
         'out-filepattern':
-            function(x, settings) { settings.addOutFilenamePattern(x); },
+            function(x, settings) { settings.addOutFilePattern(x); },
         'out-linesafterpattern':
             function(x, settings) { settings.addOutLinesAfterPattern(x); },
         'out-linesbeforepattern':
@@ -50,6 +58,8 @@ function SearchOptions() {
     var flagActionMap = {
         'allmatches':
             function(settings) { settings.firstMatch = false; },
+        'archivesonly':
+            function(settings) { settings.archivesOnly = true; },
         'debug':
             function(settings) { settings.debug = true; },
         'dotiming':
@@ -58,6 +68,8 @@ function SearchOptions() {
             function(settings) { settings.firstMatch = true; },
         'help':
             function(settings) { settings.printUsage = true; },
+        'listdirs':
+            function(settings) { settings.listDirs = true; },
         'listfiles':
             function(settings) { settings.listFiles = true; },
         'listlines':
@@ -66,12 +78,14 @@ function SearchOptions() {
             function(settings) { settings.multilineSearch = true; },
         'noprintmatches':
             function(settings) { settings.printResults = false; },
-        'nosearchcompressed':
-            function(settings) { settings.searchCompressed = false; },
+        'nosearcharchives':
+            function(settings) { settings.searchArchives = false; },
         'printmatches':
             function(settings) { settings.printResults = true; },
-        'searchcompressed':
-            function(settings) { settings.searchCompressed = true; },
+        'searcharchives':
+            function(settings) { settings.searchArchives = true; },
+        'uniquelines':
+            function(settings) { settings.uniqueLines = true; },
         'verbose':
             function(settings) { settings.verbose = true; },
         'version':
@@ -147,6 +161,9 @@ function SearchOptions() {
             } else {
                 settings.startPath = arg;
             }
+        }
+        if (settings.debug) {
+            settings.verbose = true;
         }
         return settings;
     };
