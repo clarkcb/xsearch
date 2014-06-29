@@ -22,6 +22,9 @@ class SearchOptions:
     SEARCHOPTIONSPATH = '/Users/cary/src/git/xsearch/shared/searchoptions.xml'
 
     arg_action_dict = {
+        'in-archivefilepattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'in_archivefilepatterns'),
         'in-dirpattern':
             lambda x, settings:
                 settings.add_pattern(x, 'in_dirpatterns'),
@@ -49,6 +52,9 @@ class SearchOptions:
         'linesbefore':
             lambda x, settings:
                 settings.set_property('numlinesbefore', int(x)),
+        'out-archivefilepattern':
+            lambda x, settings:
+                settings.add_pattern(x, 'out_archivefilepatterns'),
         'out-dirpattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_dirpatterns'),
@@ -72,6 +78,9 @@ class SearchOptions:
         'allmatches':
             lambda settings:
                 settings.set_property('firstmatch', False),
+        'archivesonly':
+            lambda settings:
+                settings.set_property('archivesonly', True),
         'debug':
             lambda settings:
                 settings.set_property('debug', True),
@@ -99,15 +108,18 @@ class SearchOptions:
         'noprintmatches':
             lambda settings:
                 settings.set_property('printresults', False),
-        'nosearchcompressed':
+        'nosearcharchives':
             lambda settings:
-                settings.set_property('searchcompressed', False),
+                settings.set_property('searcharchives', False),
         'printmatches':
             lambda settings:
                 settings.set_property('printresults', True),
-        'searchcompressed':
+        'searcharchives':
             lambda settings:
-                settings.set_property('searchcompressed', True),
+                settings.set_property('searcharchives', True),
+        'uniquelines':
+            lambda settings:
+                settings.set_property('uniquelines', True),
         'verbose':
             lambda settings:
                 settings.set_property('verbose', True),
@@ -143,7 +155,7 @@ class SearchOptions:
             elif name in self.flag_action_dict:
                 func = self.flag_action_dict[name]
             else:
-                raise ValueError('Unknown search option: %s' % long)
+                raise ValueError('Unknown search option: %s' % name)
             option = SearchOption(short, name, desc, func)
             self.options.append(option)
             if name in self.arg_action_dict:

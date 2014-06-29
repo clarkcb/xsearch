@@ -29,7 +29,7 @@ class FileUtil:
         return ''.join(rc)
 
     def populate_filetypes(self):
-        types = 'binary compressed nosearch text unknown xml'.split()
+        types = 'archive binary nosearch text unknown xml'.split()
         filetypedom = minidom.parse(self.filetypespath)
         filetypenodes = filetypedom.getElementsByTagName('filetype')
         for filetypenode in filetypenodes:
@@ -41,7 +41,7 @@ class FileUtil:
             self.filetypes['text'].union(self.filetypes['code'],
                 self.filetypes['xml'])
         self.filetypes['searchable'] = \
-            self.filetypes['binary'].union(self.filetypes['compressed'],
+            self.filetypes['binary'].union(self.filetypes['archive'],
                 self.filetypes['text'])
 
     def get_extension(self, filename):
@@ -52,13 +52,13 @@ class FileUtil:
             ext = filename.split('.')[-1]
         return ext.lower()
 
+    def is_archive_file(self, f):
+        """Return true if file is of a (known) archive file type"""
+        return (self.get_extension(f) in self.filetypes['archive'])
+
     def is_binary_file(self, f):
         """Return true if file is of a (known) searchable binary file type"""
         return (self.get_extension(f) in self.filetypes['binary'])
-
-    def is_compressed_file(self, f):
-        """Return true if file is of a (known) compressed file type"""
-        return (self.get_extension(f) in self.filetypes['compressed'])
 
     def is_searchable_file(self, f):
         """Return true if file is of a (known) searchable type"""

@@ -135,6 +135,7 @@ class Searcher:
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
+        # get the searchdirs
         if self.settings.dotiming:
             self.start_timer('get_search_dirs')
         searchdirs = self.get_search_dirs()
@@ -146,6 +147,7 @@ class Searcher:
                 print d
             print
 
+        # get the searchfiles
         if self.settings.dotiming:
             self.start_timer('get_search_files')
         searchfiles = self.get_search_files(searchdirs)
@@ -163,21 +165,29 @@ class Searcher:
         if self.settings.dotiming:
             self.stop_timer('search_files')
 
+        # print the results
         if self.settings.printresults:
             print
             self.print_results()
 
+        if self.settings.listdirs:
+            dir_list = self.get_matching_dirs()
+            if dir_list:
+                print '\nDirectories with matches (%d):' % len(dir_list)
+                for d in dir_list:
+                    print d
+
         if self.settings.listfiles:
             file_list = self.get_matching_files()
             if file_list:
-                print '\nFiles with matches:'
+                print '\nFiles with matches (%d):' % len(file_list)
                 for f in file_list:
                     print f
 
         if self.settings.listlines:
             line_list = self.get_matching_lines()
             if line_list:
-                print '\nLines with matches:'
+                print '\nLines with matches (%d):' % len(line_list)
                 for line in line_list:
                     print line
 
@@ -195,7 +205,7 @@ class Searcher:
             return
         if self.fileutil.is_text_file(f):
             self.search_text_file(f)
-        elif self.fileutil.is_compressed_file(f) and self.settings.searchcompressed:
+        elif self.fileutil.is_archive_file(f) and self.settings.searcharchives:
             try:
                 self.search_compressed_file(f)
             except IOError as e:
@@ -307,7 +317,6 @@ class Searcher:
         linenum = 0
         lines_before = deque()
         lines_after = deque()
-        lines_after_until_match = False
         while True:
             if lines_after:
                 line = lines_after.popleft()
@@ -330,6 +339,8 @@ class Searcher:
                 if self.settings.firstmatch and s in file_results:
                     continue
                 if s.search(line):
+                    # if there are lines_before or lines_after and none matches
+                    # then continue
                     if (lines_before and
                         not self.lines_before_match(lines_before)) or \
                         (lines_after and
@@ -337,27 +348,37 @@ class Searcher:
                         continue
                     # capture lines after until a linesaftertopattern or
                     # linesafteruntilpattern is matched, if any are defined
+                    lines_after_to_match = False
+                    lines_after_until_match = False
                     if self.settings.linesaftertopatterns or \
                        self.settings.linesafteruntilpatterns:
-                        while True:
+                        # check to see if lines_after has a match
+                        if self.settings.linesaftertopatterns and \
+                           self.any_matches_any_pattern(lines_after,
+                           self.settings.linesaftertopatterns):
+                           lines_after_to_match = True
+                        if self.settings.linesafteruntilpatterns and \
+                           self.any_matches_any_pattern(lines_after,
+                           self.settings.linesafteruntilpatterns):
+                           lines_after_until_match = True
+                        # if not read in more lines until a match or EOF
+                        while not lines_after_to_match and not lines_after_until_match:
                             try:
                                 next_line = fo.next()
                                 lines_after.append(next_line)
                                 if self.settings.linesaftertopatterns and \
                                    self.matches_any_pattern(next_line,
                                    self.settings.linesaftertopatterns):
-                                    break
+                                    lines_after_to_match = True
                                 elif self.settings.linesafteruntilpatterns and \
                                      self.matches_any_pattern(next_line,
                                      self.settings.linesafteruntilpatterns):
                                     lines_after_until_match = True
-                                    break
                             except StopIteration:
                                 break
                     sr_lines_after = list(lines_after)
                     if lines_after_until_match:
                         sr_lines_after = sr_lines_after[:-1]
-                        lines_after_until_match = False
                     search_result = SearchResult(pattern=s.pattern,
                                                  filename=filename,
                                                  linenum=linenum,
@@ -486,6 +507,22 @@ class Searcher:
                 print '{0} {1} for "{2}"'.format(self.rescounts[p], match, p)
             else:
                 print '0 matches for "{0}"'.format(p)
+
+    def get_matching_dirs(self, pattern=None):
+        """Get list of dirs with matches for a given pattern
+           (or all patterns if none given)"""
+        patterns = []
+        if pattern:
+            patterns.append(pattern)
+        else:
+            patterns.extend(self.patterndict.keys())
+        dir_list = set()
+        for p in patterns:
+            dir_list.update([
+                os.path.dirname(r.filename) for r in self.patterndict[p]])
+        dir_list = list(dir_list)
+        dir_list.sort()
+        return dir_list
 
     def get_matching_files(self, pattern=None):
         """Get list of files with matches for a given pattern

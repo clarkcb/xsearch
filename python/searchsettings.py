@@ -13,12 +13,13 @@ class SearchSettings:
     _extension_set_names = 'in_extensions out_extensions'.split()
     _pattern_set_names = '''in_dirpatterns out_dirpatterns
                             in_filepatterns out_filepatterns
+                            in_archivefilepatterns out_archivefilepatterns
                             in_linesafterpatterns out_linesafterpatterns
                             in_linesbeforepatterns out_linesbeforepatterns
                             linesaftertopatterns linesafteruntilpatterns
                             searchpatterns'''.split()
     _props_with_defaults = {
-        'casesensitive': True,
+        'archivesonly': False,
         'debug': False,
         'dotiming': False,
         'firstmatch': False,
@@ -32,7 +33,8 @@ class SearchSettings:
         'printresults': True,
         'printusage': False,
         'printversion': False,
-        'searchcompressed': True,
+        'searcharchives': True,
+        'uniquelines': False,
         'verbose': False,
     }
 
@@ -59,8 +61,6 @@ class SearchSettings:
     def add_pattern(self, pattern, pattern_set_name):
         assert pattern_set_name in self._pattern_set_names
         compile_flag = re.S | re.U
-        if not self.casesensitive:
-            compile_flag = re.I | compile_flag
         self.__dict__[pattern_set_name].add(re.compile(pattern, compile_flag))
 
     def set_property(self, name, val):
