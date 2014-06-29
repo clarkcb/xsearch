@@ -8,65 +8,12 @@ namespace CsSearch
 {
 	public class Searcher
 	{
-		private List<Func<DirectoryInfo, bool>> _dirFilterPredicates;
-		private List<Func<FileInfo, bool>> _fileFilterPredicates;
 		private readonly FileUtil _fileUtil;
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
-		public ISet<FileInfo> FileSet { get; private set; }
-		public IDictionary<string,Stopwatch> Timers { get; private set; }
-
-		protected List<Func<DirectoryInfo, bool>> DirectoryFilterPredicates
-		{
-			get
-			{
-				if (_dirFilterPredicates == null)
-				{
-					_dirFilterPredicates = new List<Func<DirectoryInfo, bool>>();
-					if (Settings.InDirPatterns.Count > 0)
-					{
-						_dirFilterPredicates.Add(d => Settings.InDirPatterns.Any(p => p.Match(d.FullName).Success));
-					}
-					if (Settings.OutDirPatterns.Count > 0)
-					{
-						_dirFilterPredicates.Add(d => !Settings.OutDirPatterns.Any(p => p.Match(d.FullName).Success));
-					}
-				}
-				return _dirFilterPredicates;
-			}
-		}
-
-		protected List<Func<FileInfo, bool>> FileFilterPredicates
-		{
-			get
-			{
-				if (_fileFilterPredicates == null)
-				{
-					_fileFilterPredicates = new List<Func<FileInfo, bool>>();
-
-					if (Settings.InExtensions.Count > 0)
-					{
-						_fileFilterPredicates.Add(f => Settings.InExtensions.Contains(f.Extension));
-					}
-					if (Settings.OutExtensions.Count > 0)
-					{
-						_fileFilterPredicates.Add(f => !Settings.OutExtensions.Contains(f.Extension));
-					}
-					{
-						_fileFilterPredicates.Add(f => Settings.InExtensions.Contains(f.Extension));
-					}
-					if (Settings.InFilePatterns.Count > 0)
-					{
-						_fileFilterPredicates.Add(f => Settings.InFilePatterns.Any(p => p.Match(f.Name).Success));
-					}
-					if (Settings.OutFilePatterns.Count > 0)
-					{
-						_fileFilterPredicates.Add(f => !Settings.OutFilePatterns.Any(p => p.Match(f.Name).Success));
-					}
-				}
-				return _fileFilterPredicates;
-			}
-		}
+		public ISet<string> DirNameSet { get; private set; }
+		public ISet<string> FileNameSet { get; private set; }
+		public IDictionary<string, Stopwatch> Timers { get; private set; }
 
 		public Searcher(SearchSettings settings)
 		{
@@ -75,18 +22,31 @@ namespace CsSearch
 				Console.WriteLine(Settings + "\n");
 			_fileUtil = new FileUtil();
 			Results = new List<SearchResult>();
-			FileSet = new HashSet<FileInfo>();
-			Timers = new Dictionary<string,Stopwatch>();
+			DirNameSet = new HashSet<string>();
+			FileNameSet = new HashSet<string>();
+			Timers = new Dictionary<string, Stopwatch>();
 		}
 
-		private bool IsTargetDirectory(DirectoryInfo d)
+		private bool IsSearchDirectory(DirectoryInfo d)
 		{
-			return DirectoryFilterPredicates.Count == 0 || DirectoryFilterPredicates.All(p => p(d));
+			if (Settings.InDirPatterns.Count > 0 && !Settings.InDirPatterns.Any(p => p.Match(d.FullName).Success))
+				return false;
+			if (Settings.OutDirPatterns.Count > 0 && Settings.OutDirPatterns.Any(p => p.Match(d.FullName).Success))
+				return false;
+			return true;
 		}
 
-		private bool IsTargetFile(FileInfo f)
+		private bool IsSearchFile(FileInfo f)
 		{
-			return FileFilterPredicates.Count == 0  || FileFilterPredicates.All(p => p(f));
+			if (Settings.InExtensions.Count > 0 && !Settings.InExtensions.Contains(f.Extension))
+				return false;
+			if (Settings.OutExtensions.Count > 0 && Settings.OutExtensions.Contains(f.Extension))
+				return false;
+			if (Settings.InFilePatterns.Count > 0 && !Settings.InFilePatterns.Any(p => p.Match(f.Name).Success))
+				return false;
+			if (Settings.OutFilePatterns.Count > 0 && Settings.OutFilePatterns.Any(p => p.Match(f.Name).Success))
+				return false;
+			return true;
 		}
 
 		public void StartTimer(string name)
@@ -111,49 +71,88 @@ namespace CsSearch
 			Console.WriteLine(string.Format("Elapsed time for {0}: {1}", name, elapsedTime));
 		}
 
-		public IEnumerable<FileInfo> GetSearchFiles(DirectoryInfo dir)
+		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo dir)
 		{
-			IEnumerable<FileInfo> files = new List<FileInfo>();
+			IEnumerable<DirectoryInfo> dirs = new List<DirectoryInfo>();
 			try
 			{
-				files = dir.EnumerateFiles().Where(IsTargetFile);
-				var dirs = dir.EnumerateDirectories().Where(IsTargetDirectory);
-				return dirs.Aggregate(files, (current, d) => current.Concat(GetSearchFiles(d)));
+				dirs = dir.EnumerateDirectories().Where(IsSearchDirectory);
+				return dirs.Aggregate(dirs, (current, d) => current.Concat(GetSearchDirs(d)));
 			}
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
 					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}", dir.FullName, e.Message));
 			}
-			return files;
+			return dirs;
+		}
+
+		public IEnumerable<FileInfo> GetSearchFilesForDir(DirectoryInfo dir)
+		{
+			if (Settings.Debug)
+			{
+				Console.WriteLine("Getting search files under "+dir);
+			}
+			IEnumerable<FileInfo> dirSearchFiles = new List<FileInfo>();
+			try
+			{
+				dirSearchFiles = dir.EnumerateFiles().Where(IsSearchFile);
+			}
+			catch (IOException e)
+			{
+				if (Settings.Verbose)
+					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}", dir.FullName, e.Message));
+			}
+			return dirSearchFiles;
+		}
+
+		public IEnumerable<FileInfo> GetSearchFiles(IEnumerable<DirectoryInfo> dirs)
+		{
+			var searchFiles = new List<FileInfo>();
+			foreach (var d in dirs)
+			{
+				searchFiles.AddRange(GetSearchFilesForDir(d));
+			}
+			return searchFiles;
 		}
 
 		public void Search()
 		{
 			var startDir = new DirectoryInfo(Settings.StartPath);
+			var searchDirs = new List<DirectoryInfo>();
+			searchDirs.Add(startDir);
+			if (Settings.DoTiming)
+			{
+				StartTimer("GetSearchDirs");
+			}
+			searchDirs.AddRange(GetSearchDirs(startDir));
+			if (Settings.DoTiming)
+			{
+				StopTimer("GetSearchDirs");
+			}
 			if (Settings.Verbose)
-				Console.WriteLine("Starting directory: " + startDir.FullName + "\n");
-			if (!startDir.Exists)
 			{
-				throw new FileNotFoundException("File not found", startDir.FullName);
+				Console.WriteLine(string.Format("Directories to be searched ({0}):", searchDirs.Count));
+				foreach (var d in searchDirs)
+				{
+					Console.WriteLine(d.FullName);
+				}
+				Console.WriteLine();
 			}
-			if (!IsTargetDirectory(startDir))
-			{
-				throw new Exception("Starting directory matches an exclusion filter or does not match an inclusion filter");
-			}
+
 			if (Settings.DoTiming)
 			{
 				StartTimer("GetSearchFiles");
 			}
-			var files = GetSearchFiles(startDir);
+			var searchFiles = GetSearchFiles(searchDirs);
 			if (Settings.DoTiming)
 			{
 				StopTimer("GetSearchFiles");
 			}
-			if (Settings.Verbose || Settings.Debug)
+			if (Settings.Verbose)
 			{
-				Console.WriteLine("Files to be searched:");
-				foreach (var f in files)
+				Console.WriteLine(string.Format("\nFiles to be searched ({0}):", searchFiles.Count()));
+				foreach (var f in searchFiles)
 				{
 					Console.WriteLine(f.FullName);
 				}
@@ -163,11 +162,12 @@ namespace CsSearch
 			if (Settings.DoTiming) {
 				StartTimer("SearchFiles");
 			}
-			foreach (var f in files)
+			foreach (var f in searchFiles)
 			{
 				SearchFile(f);
 			}
-			if (Settings.DoTiming) {
+			if (Settings.DoTiming)
+			{
 				StopTimer("SearchFiles");
 			}
 		}
@@ -249,9 +249,18 @@ namespace CsSearch
 
 		private void AddSearchResult(SearchResult searchResult)
 		{
-			Console.WriteLine(searchResult);
 			Results.Add(searchResult);
-			FileSet.Add(searchResult.File);
+			DirNameSet.Add(searchResult.File.Directory.ToString());
+			FileNameSet.Add(searchResult.File.ToString());
+		}
+
+		public void PrintResults()
+		{
+			Console.WriteLine(string.Format("Search results ({0}):", Results.Count));
+			foreach (var searchResult in Results)
+			{
+				Console.WriteLine(searchResult);
+			}
 		}
 	}
 }

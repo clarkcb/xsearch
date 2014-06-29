@@ -13,12 +13,28 @@ namespace CsSearch
 				settings = options.SettingsFromArgs(args);
 				var searcher = new Searcher(settings);
 				searcher.Search();
-				Console.WriteLine("Matches found: " + searcher.Results.Count);
 
-				if (settings.ListFiles) {
-					Console.WriteLine("\nFiles with matches:");
-					foreach (var f in searcher.FileSet) {
-						Console.WriteLine(f.FullName);
+				if (settings.PrintResults)
+				{
+					Console.WriteLine();
+					searcher.PrintResults();
+				}
+
+				if (settings.ListDirs)
+				{
+					Console.WriteLine(string.Format("\nDirectories with matches ({0}):", searcher.DirNameSet.Count));
+					foreach (var d in searcher.DirNameSet)
+					{
+						Console.WriteLine(d);
+					}
+				}
+
+				if (settings.ListFiles)
+				{
+					Console.WriteLine(string.Format("\nFiles with matches ({0}):", searcher.FileNameSet.Count));
+					foreach (var f in searcher.FileNameSet)
+					{
+						Console.WriteLine(f);
 					}
 				}
 			}
