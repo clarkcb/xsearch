@@ -2,4 +2,6 @@
 *.tmproj
 *.iml
 .idea/
+c/
 node_modules/
+objc/
