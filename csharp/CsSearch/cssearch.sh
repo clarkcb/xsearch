@@ -1,3 +1,7 @@
 #!/bin/sh
-CSSEARCHEXE=/Users/cary/src/git/xsearch/csharp/CsSearch/CsSearch/bin/Release/CsSearch.exe
+XSEARCH_PATH=/Users/cary/src/git/xsearch
+CSSEARCH_PATH=$XSEARCH_PATH/csharp/CsSearch
+CONFIGURATION=Debug
+#CONFIGURATION=Release
+CSSEARCHEXE=$CSSEARCH_PATH/CsSearch/bin/$CONFIGURATION/CsSearch.exe
 mono $CSSEARCHEXE $@
