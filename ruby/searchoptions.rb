@@ -27,10 +27,14 @@ class SearchOptions
 
   def set_actions
     @arg_action_dict = {
+      'in-archivefilepattern' =>
+        proc { |x, settings| settings.in_archivefilepatterns.push(Regexp.new(x)) },
       'in-dirpattern' =>
         proc { |x, settings| settings.in_dirpatterns.push(Regexp.new(x)) },
       'in-ext' =>
-        proc { |x, settings| settings.in_extensions.push(x) },
+        #proc { |x, settings| settings.in_extensions.push(x) },
+        proc { |x, settings| settings.add_comma_delimited_exts(x,
+          settings.in_extensions) },
       'in-filepattern' =>
         proc { |x, settings| settings.in_filepatterns.push(Regexp.new(x)) },
       'in-linesafterpattern' =>
@@ -39,12 +43,20 @@ class SearchOptions
         proc { |x, settings| puts "in-linesbeforepattern: #{x}" },
       'linesafter' =>
         proc { |x, settings| puts "linesafter: #{x}" },
+      'linesaftertopattern' =>
+        proc { |x, settings| settings.linesaftertopatterns.push(Regexp.new(x)) },
+      'linesafteruntilpattern' =>
+        proc { |x, settings| settings.linesafteruntilpatterns.push(Regexp.new(x)) },
       'linesbefore' =>
         proc { |x, settings| puts "linesbefore: #{x}" },
+      'out-archivefilepattern' =>
+        proc { |x, settings| settings.out_archivefilepatterns.push(Regexp.new(x)) },
       'out-dirpattern' =>
         proc { |x, settings| settings.out_dirpatterns.push(Regexp.new(x)) },
       'out-ext' =>
-        proc { |x, settings| settings.out_extensions.push(x) },
+        #proc { |x, settings| settings.out_extensions.push(x) },
+        proc { |x, settings| settings.add_comma_delimited_exts(x,
+          settings.out_extensions) },
       'out-filepattern' =>
         proc { |x, settings| settings.out_filepatterns.push(Regexp.new(x)) },
       'out-linesafterpattern' =>
@@ -57,6 +69,8 @@ class SearchOptions
     @flag_action_dict = {
       'allmatches' =>
         proc { |settings| settings.firstmatch = false },
+      'archivesonly' =>
+        proc { |settings| settings.archivesonly = true },
       'caseinsensitive' =>
         proc { |settings| settings.casesensitive = false },
       'casesensitive' =>
@@ -69,6 +83,8 @@ class SearchOptions
         proc { |settings| settings.firstmatch = true },
       'help' =>
         proc { |settings| settings.printusage = true },
+      'listdirs' =>
+        proc { |settings| settings.listdirs = true },
       'listfiles' =>
         proc { |settings| settings.listfiles = true },
       'listlines' =>
@@ -77,12 +93,14 @@ class SearchOptions
         proc { |settings| settings.multilinesearch = true },
       'noprintmatches' =>
         proc { |settings| settings.printresults = false },
-      'nosearchcompressed' =>
-        proc { |settings| settings.searchcompressed = false },
+      'nosearcharchives' =>
+        proc { |settings| settings.searcharchives = false },
       'printmatches' =>
         proc { |settings| settings.printresults = true },
-      'searchcompressed' =>
-        proc { |settings| settings.searchcompressed = true },
+      'searcharchives' =>
+        proc { |settings| settings.searcharchives = true },
+      'uniquelines' =>
+        proc { |settings| settings.uniquelines = true },
       'verbose' =>
         proc { |settings| settings.verbose = true },
       'version' =>

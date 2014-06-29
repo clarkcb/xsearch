@@ -27,8 +27,9 @@ def main
     searchoptions.usage
   end
 
-  if DEBUG
-    settings.debug = true
+  settings.debug = settings.debug || DEBUG
+
+  if settings.debug
     puts "settings:\n#{settings.to_s}"
   end
 

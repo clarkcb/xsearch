@@ -29,7 +29,7 @@ class FileUtil
     @file_type_map['text'] = @file_type_map['text'] + @file_type_map['code'] +
       @file_type_map['xml']
     @file_type_map['searchable'] = @file_type_map['text'] +
-      @file_type_map['compressed'] + @file_type_map['binary']
+      @file_type_map['archive'] + @file_type_map['binary']
   end
 
   def get_extension(filename)
@@ -46,7 +46,7 @@ class FileUtil
   end
 
   def is_compressed_file(f)
-    @file_type_map['compressed'].include?(get_extension(f))
+    @file_type_map['archive'].include?(get_extension(f))
   end
 
   def is_searchable_file(f)
