@@ -50,6 +50,9 @@ module Arguments =
             { shortarg = "h"; longarg = "help";
               description = "Print usage and exit";
               action = fun (settings : SearchSettings) -> settings.PrintUsage = true };
+            { shortarg = ""; longarg = "listdirs";
+              description = "Generate of list of matching directories after searching";
+              action = fun (settings : SearchSettings) -> settings.ListFiles = true };
             { shortarg = ""; longarg = "listfiles";
               description = "Generate of list of matching files after searching";
               action = fun (settings : SearchSettings) -> settings.ListFiles = true };
@@ -71,12 +74,12 @@ module Arguments =
             { shortarg = "V"; longarg = "version";
               description = "Print version and exit";
               action = fun (settings : SearchSettings) -> settings.PrintVersion = true };
-            { shortarg = "z"; longarg = "searchcompressed";
-              description = "Search compressed files (bz2, gz, tar, zip)*";
-              action = fun (settings : SearchSettings) -> settings.SearchCompressed = true };
-            { shortarg = "Z"; longarg = "nosearchcompressed";
-              description = "Do not search compressed files (bz2, gz, tar, zip)";
-              action = fun (settings : SearchSettings) -> settings.SearchCompressed = false };
+            { shortarg = "z"; longarg = "searcharchives";
+              description = "Search archive files (bz2, gz, tar, zip)*";
+              action = fun (settings : SearchSettings) -> settings.SearchArchives = true };
+            { shortarg = "Z"; longarg = "nosearcharchives";
+              description = "Do not search archive files (bz2, gz, tar, zip)";
+              action = fun (settings : SearchSettings) -> settings.SearchArchives = false };
         ]
 
     let SettingsFromArgs (args : string[]) =

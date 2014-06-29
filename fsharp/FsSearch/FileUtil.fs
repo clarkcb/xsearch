@@ -27,8 +27,8 @@ type FileUtil() =
     member this.IsBinaryFile (f : FileInfo) =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["binary"]
 
-    member this.IsCompressedFile (f : FileInfo) =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["compressed"]
+    member this.IsArchiveFile (f : FileInfo) =
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["archive"]
 
     member this.IsSearchableFile (f : FileInfo) =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["searchable"]

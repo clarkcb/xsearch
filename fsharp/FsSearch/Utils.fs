@@ -34,7 +34,7 @@ module Utils =
             fileTypesDictionary.Add("text", allText)
         let searchable = new HashSet<String>(fileTypesDictionary.["text"])
         searchable.UnionWith(fileTypesDictionary.["binary"])
-        searchable.UnionWith(fileTypesDictionary.["compressed"])
+        searchable.UnionWith(fileTypesDictionary.["archive"])
         fileTypesDictionary.Add("searchable", searchable)
         fileTypesDictionary
 
@@ -49,6 +49,13 @@ module Utils =
         printfn "Elapsed time for %s: %s" name elapsedTime
 
     let PrintNames (names : string list) =
+        for name in names do
+            printfn "Name: %s" name
+
+    let SetToString (set : HashSet<string>) =
+        let setList =
+            [ for s in set do yield s ]
+            |> List.sort
         for name in names do
             printfn "Name: %s" name
 ;;

@@ -20,12 +20,13 @@ type SearchSettings() =
     let mutable _debug = false
     let mutable _doTiming = false
     let mutable _firstMatch = false
+    let mutable _listDirs = false
     let mutable _listFiles = false
     let mutable _listLines = false
     let mutable _printResults = false
     let mutable _printUsage = false
     let mutable _printVersion = false
-    let mutable _searchCompressed = false
+    let mutable _searchArchives = false
     let mutable _verbose = false
 
     // read-only member properties
@@ -55,6 +56,9 @@ type SearchSettings() =
     member this.FirstMatch
         with get() = _firstMatch
         and set firstMatch = _firstMatch <- firstMatch
+    member this.ListDirs
+        with get () = _listDirs
+        and set listDirs = _listDirs <- listDirs
     member this.ListFiles
         with get () = _listFiles
         and set listFiles = _listFiles <- listFiles
@@ -70,9 +74,9 @@ type SearchSettings() =
     member this.PrintVersion
         with get () = _printVersion
         and set printVersion = _printVersion <- printVersion
-    member this.SearchCompressed
-        with get () = _searchCompressed
-        and set searchCompressed = _searchCompressed <- searchCompressed
+    member this.SearchArchives
+        with get () = _searchArchives
+        and set searchArchives = _searchArchives <- searchArchives
     member this.Verbose
         with get() = _verbose
         and set verbose = _verbose <- verbose
