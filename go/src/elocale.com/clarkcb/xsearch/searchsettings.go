@@ -25,7 +25,6 @@ type SearchSettings struct {
 	LinesAfterUntilPatterns *SearchPatterns
 	SearchPatterns          *SearchPatterns
 	ArchivesOnly            bool
-	CaseSensitive           bool
 	Debug                   bool
 	DoTiming                bool
 	FirstMatch              bool
@@ -80,7 +79,6 @@ func GetDefaultSearchSettings() *SearchSettings {
 		NewSearchPatterns(),         // LinesAfterUntilPatterns
 		NewSearchPatterns(),         // SearchPatterns
 		false,                       // ArchivesOnly
-		true,                        // CaseSensitive
 		false,                       // Debug
 		false,                       // DoTiming
 		false,                       // FirstMatch
@@ -225,7 +223,6 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("SearchPatterns", s.SearchPatterns, &buffer)
 	buffer.WriteString(fmt.Sprintf(", ArchivesOnly: %t", s.ArchivesOnly))
-	buffer.WriteString(fmt.Sprintf(", CaseSensitive: %t", s.CaseSensitive))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
 	buffer.WriteString(fmt.Sprintf(", DoTiming: %t", s.DoTiming))
 	buffer.WriteString(fmt.Sprintf(", FirstMatch: %t", s.FirstMatch))
