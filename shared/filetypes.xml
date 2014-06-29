@@ -18,7 +18,7 @@
   <filetype name="nosearch">
     <extensions>aif aifc aiff au avi bmp cab db dmg eps gif icns ico idlk ief
       iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu ogg pdf
-      pict png ps qt ra ram rm rpm scc snd suo tif tiff wav</extensions>
+      pict png ps qt ra ram rm rpm snd suo tif tiff wav</extensions>
   </filetype>
   <filetype name="text">
     <extensions>1 10 11 12 13 14 15 16 17 18 19 2 20 3 323 4 5 6 7 8 9 am app
@@ -34,7 +34,7 @@
     <names>.gitignore AUTHORS LICENSE mime.types README</names>
   </filetype>
   <filetype name="unknown">
-    <extensions>adm aps cli clw def df2 ncb nt nt2 orig pc plg roff sun t tex
+    <extensions>adm aps cli clw def df2 ncb nt nt2 orig pc plg roff sun
       texinfo tr xwd</extensions>
   </filetype>
   <filetype name="xml">
