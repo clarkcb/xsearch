@@ -16,7 +16,6 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     assert(settings.outDirPatterns.size == 3)
     assert(settings.outFilePatterns.size == 1)
     assert(settings.archivesOnly == defaultSettings.archivesOnly)
-    assert(settings.caseSensitive == defaultSettings.caseSensitive)
     assert(settings.debug == defaultSettings.debug)
     assert(settings.doTiming == defaultSettings.doTiming)
     assert(settings.firstMatch == defaultSettings.firstMatch)
