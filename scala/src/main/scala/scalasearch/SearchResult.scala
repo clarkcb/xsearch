@@ -13,7 +13,7 @@ class SearchResult(val searchPattern: Regex, val file: File, val lineNum: Int,
   val sepLen = 80
 
   override def toString = {
-    if (!linesBefore.isEmpty || !linesAfter.isEmpty)
+    if (linesBefore.nonEmpty || linesAfter.nonEmpty)
       multilineToString
     else
       singleLineToString

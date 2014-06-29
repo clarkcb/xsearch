@@ -22,7 +22,7 @@ object SearchMain {
           SearchOptions.usage(1)
       }
 
-    if (settings.printusage) {
+    if (settings.printUsage) {
       SearchOptions.usage(0)
     }
 

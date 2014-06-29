@@ -21,7 +21,7 @@ object FileUtil {
       fileTypeMap("text") = fileTypeMap("text") ++ fileTypeMap("code") ++
         fileTypeMap("xml")
       fileTypeMap("searchable") = fileTypeMap("text") ++ fileTypeMap("binary") ++
-        fileTypeMap("compressed")
+        fileTypeMap("archive")
       _fileTypeMap ++= fileTypeMap
     }
     Map.empty[String, Set[String]] ++ _fileTypeMap
@@ -35,19 +35,24 @@ object FileUtil {
       ""
   }
 
-  def isBinaryFile(f: File) = {
+  def isArchiveFile(f: File): Boolean = {
+    fileTypeMap("archive").contains(getExtension(f))
+  }
+
+  def isBinaryFile(f: File): Boolean = {
     fileTypeMap("binary").contains(getExtension(f))
   }
 
-  def isCompressedFile(f: File) = {
-    fileTypeMap("compressed").contains(getExtension(f))
-  }
-
-  def isSearchableFile(f: File) = {
+  def isSearchableFile(f: File): Boolean = {
     fileTypeMap("searchable").contains(getExtension(f))
   }
 
-  def isTextFile(f: File) = {
+  def isTextFile(f: File): Boolean = {
     fileTypeMap("text").contains(getExtension(f))
+  }
+
+  def isUnknownFile(f: File): Boolean = {
+    fileTypeMap("unknown").contains(getExtension(f)) ||
+    !fileTypeMap("searchable").contains(getExtension(f))
   }
 }

@@ -32,6 +32,8 @@ object SearchOptions {
   }
 
   val argActionMap = Map[String, ((String, SettingsBuilder) => Unit)](
+    "in-archivefilepattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.addInArchiveFilePattern(x)),
     "in-dirpattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addInDirPattern(x)),
     "in-ext" ->
@@ -43,9 +45,15 @@ object SearchOptions {
     "in-linesbeforepattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addInLinesBeforePattern(x)),
     "linesafter" ->
-      ((x: String, sb: SettingsBuilder) => sb.numlinesafter = x.toInt),
+      ((x: String, sb: SettingsBuilder) => sb.linesAfter = x.toInt),
+    "linesaftertopattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.addLinesAfterToPattern(x)),
+    "linesafteruntilpattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.addLinesAfterUntilPattern(x)),
     "linesbefore" ->
-      ((x: String, sb: SettingsBuilder) => sb.numlinesbefore = x.toInt),
+      ((x: String, sb: SettingsBuilder) => sb.linesBefore = x.toInt),
+    "out-archivefilepattern" ->
+      ((x: String, sb: SettingsBuilder) => sb.addOutArchiveFilePattern(x)),
     "out-dirpattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addOutDirPattern(x)),
     "out-ext" ->
@@ -61,36 +69,40 @@ object SearchOptions {
   )
 
   val flagActionMap = Map[String, (SettingsBuilder => Unit)](
+    "archivesonly" ->
+      ((sb: SettingsBuilder) => sb.archivesOnly = true),
     "allmatches" ->
-      ((sb: SettingsBuilder) => sb.firstmatch = false),
+      ((sb: SettingsBuilder) => sb.firstMatch = false),
     "debug" ->
       ((sb: SettingsBuilder) => sb.debug = true),
     "dotiming" ->
-      ((sb: SettingsBuilder) => sb.dotiming = true),
+      ((sb: SettingsBuilder) => sb.doTiming = true),
     "firstmatch" ->
-      ((sb: SettingsBuilder) => sb.firstmatch = true),
+      ((sb: SettingsBuilder) => sb.firstMatch = true),
     "help" ->
-      ((sb: SettingsBuilder) => sb.printusage = true),
+      ((sb: SettingsBuilder) => sb.printUsage = true),
     "listdirs" ->
-      ((sb: SettingsBuilder) => sb.listdirs = true),
+      ((sb: SettingsBuilder) => sb.listDirs = true),
     "listfiles" ->
-      ((sb: SettingsBuilder) => sb.listfiles = true),
+      ((sb: SettingsBuilder) => sb.listFiles = true),
     "listlines" ->
-      ((sb: SettingsBuilder) => sb.listlines = true),
+      ((sb: SettingsBuilder) => sb.listLines = true),
     "multilinesearch" ->
-      ((sb: SettingsBuilder) => sb.multilinesearch = true),
+      ((sb: SettingsBuilder) => sb.multiLineSearch = true),
     "noprintmatches" ->
-      ((sb: SettingsBuilder) => sb.printresults = false),
-    "nosearchcompressed" ->
-      ((sb: SettingsBuilder) => sb.searchcompressed = false),
+      ((sb: SettingsBuilder) => sb.printResults = false),
+    "nosearcharchives" ->
+      ((sb: SettingsBuilder) => sb.searchArchives = false),
     "printmatches" ->
-      ((sb: SettingsBuilder) => sb.printresults = true),
-    "searchcompressed" ->
-      ((sb: SettingsBuilder) => sb.searchcompressed = true),
+      ((sb: SettingsBuilder) => sb.printResults = true),
+    "searcharchives" ->
+      ((sb: SettingsBuilder) => sb.searchArchives = true),
+    "uniquelines" ->
+      ((sb: SettingsBuilder) => sb.uniqueLines = true),
     "verbose" ->
       ((sb: SettingsBuilder) => sb.verbose = true),
     "version" ->
-      ((sb: SettingsBuilder) => sb.printversion = true)
+      ((sb: SettingsBuilder) => sb.printVersion = true)
   )
 
   def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
@@ -121,7 +133,7 @@ object SearchOptions {
             throw new Exception("Undefined option: " + name)
           }
         case value :: Nil =>
-          sb.startpath = value
+          sb.startPath = value
         case _ =>
           throw new Exception("Invalid args: "+arglist.mkString(", "))
       }
