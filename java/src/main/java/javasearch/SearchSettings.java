@@ -10,6 +10,7 @@ Class to encapsulate search settings
 
 package javasearch;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -24,38 +25,84 @@ public class SearchSettings {
 	private Set<Pattern> outDirPatterns;
 	private Set<Pattern> inFilePatterns;
 	private Set<Pattern> outFilePatterns;
+	private Set<Pattern> inArchiveFilePatterns;
+	private Set<Pattern> outArchiveFilePatterns;
+	private Set<Pattern> inLinesAfterPatterns;
+	private Set<Pattern> outLinesAfterPatterns;
+	private Set<Pattern> inLinesBeforePatterns;
+	private Set<Pattern> outLinesBeforePatterns;
+	private Set<Pattern> linesAfterToPatterns;
+	private Set<Pattern> linesAfterUntilPatterns;
 	private Set<Pattern> searchPatterns;
 
+	private boolean archivesOnly;
+	private boolean caseSensitive;
 	private boolean debug;
 	private boolean doTiming;
 	private boolean firstMatch;
+	private int linesAfter;
+	private int linesBefore;
+	private boolean listDirs;
 	private boolean listFiles;
 	private boolean listLines;
+	private boolean multilinesearch;
 	private boolean printResults;
 	private boolean printUsage;
 	private boolean printVersion;
-	private boolean searchCompressed;
+	private boolean searchArchives;
+	private boolean uniqueLines;
 	private boolean verbose;
+
+	Set<Pattern> DEFAULT_OUT_DIRPATTERNS;
+	Set<Pattern> DEFAULT_OUT_FILEPATTERNS;
 
 	public SearchSettings() {
 		this.inExtensions = new HashSet<String>();
 		this.outExtensions = new HashSet<String>();
 		this.inDirPatterns = new HashSet<Pattern>();
-		this.outDirPatterns = new HashSet<Pattern>();
+        DEFAULT_OUT_DIRPATTERNS = new HashSet<Pattern>(
+            Arrays.asList(
+                Pattern.compile("\\bCVS$"),
+                Pattern.compile("\\.git$"),
+                Pattern.compile("\\.svn$")
+            )
+        );
+        this.outDirPatterns = DEFAULT_OUT_DIRPATTERNS;
 		this.inFilePatterns = new HashSet<Pattern>();
-		this.outFilePatterns = new HashSet<Pattern>();
+        DEFAULT_OUT_FILEPATTERNS = new HashSet<Pattern>(
+            Arrays.asList(
+                Pattern.compile("^\\.DS_Store$")
+            )
+        );
+        this.outFilePatterns = DEFAULT_OUT_FILEPATTERNS;
+		this.inArchiveFilePatterns = new HashSet<Pattern>();
+		this.outArchiveFilePatterns = new HashSet<Pattern>();
+		this.inLinesAfterPatterns = new HashSet<Pattern>();
+		this.outLinesAfterPatterns = new HashSet<Pattern>();
+		this.inLinesBeforePatterns = new HashSet<Pattern>();
+		this.outLinesBeforePatterns = new HashSet<Pattern>();
+		this.linesAfterToPatterns = new HashSet<Pattern>();
+		this.linesAfterUntilPatterns = new HashSet<Pattern>();
+
+
 		this.searchPatterns = new HashSet<Pattern>();
 
 		// set the defaults
+		this.archivesOnly = false;
 		this.debug = false;
 		this.doTiming = false;
 		this.firstMatch = false;
+		this.linesAfter = 0;
+		this.linesBefore = 0;
+		this.listDirs = false;
 		this.listFiles = false;
 		this.listLines = false;
+		this.multilinesearch = false;
 		this.printResults = false;
 		this.printUsage = false;
 		this.printVersion = false;
-		this.searchCompressed = false;
+		this.searchArchives = false;
+		this.uniqueLines = false;
 		this.verbose = false;
 	}
 
@@ -65,6 +112,14 @@ public class SearchSettings {
 
 	public void setStartPath(String startPath) {
 		this.startPath = startPath;
+	}
+
+	public boolean getArchivesOnly() {
+		return this.archivesOnly;
+	}
+
+	public void setArchivesOnly(boolean archivesOnly) {
+		this.archivesOnly = archivesOnly;
 	}
 
 	public boolean getDebug() {
@@ -91,6 +146,30 @@ public class SearchSettings {
 		this.firstMatch = firstMatch;
 	}
 
+	public int getLinesAfter() {
+		return this.linesAfter;
+	}
+
+	public void setLinesAfter(int linesAfter) {
+		this.linesAfter = linesAfter;
+	}
+
+	public int getLinesBefore() {
+		return this.linesBefore;
+	}
+
+	public void setLinesBefore(int linesBefore) {
+		this.linesBefore = linesBefore;
+	}
+
+	public boolean getListDirs() {
+		return this.listDirs;
+	}
+
+	public void setListDirs(boolean listDirs) {
+		this.listDirs = listDirs;
+	}
+
 	public boolean getListFiles() {
 		return this.listFiles;
 	}
@@ -105,6 +184,14 @@ public class SearchSettings {
 
 	public void setListLines(boolean listLines) {
 		this.listLines = listLines;
+	}
+
+	public boolean getMultiLineSearch() {
+		return this.multilinesearch;
+	}
+
+	public void setMultiLineSearch(boolean multilinesearch) {
+		this.multilinesearch = multilinesearch;
 	}
 
 	public boolean getPrintResults() {
@@ -131,12 +218,20 @@ public class SearchSettings {
 		this.printVersion = printVersion;
 	}
 
-	public boolean getSearchCompressed() {
-		return this.searchCompressed;
+	public boolean getSearchArchives() {
+		return this.searchArchives;
 	}
 
-	public void setSearchCompressed(boolean searchCompressed) {
-		this.searchCompressed = searchCompressed;
+	public void setSearchArchives(boolean searchArchives) {
+		this.searchArchives = searchArchives;
+	}
+
+	public boolean getUniqueLines() {
+		return this.uniqueLines;
+	}
+
+	public void setUniqueLines(boolean uniqueLines) {
+		this.uniqueLines = uniqueLines;
 	}
 
 	public boolean getVerbose() {
@@ -151,23 +246,19 @@ public class SearchSettings {
 		set.add(ext.toLowerCase());
 	}
 
-	public Set<String> getInExtensions()
-	{
+	public Set<String> getInExtensions() {
 		return this.inExtensions;
 	}
 
-	public void addInExtension(String ext)
-	{
+	public void addInExtension(String ext) {
 		addExtension(this.inExtensions, ext);
 	}
 
-	public Set<String> getOutExtensions()
-	{
+	public Set<String> getOutExtensions() {
 		return this.outExtensions;
 	}
 
-	public void addOutExtension(String ext)
-	{
+	public void addOutExtension(String ext) {
 		addExtension(this.outExtensions, ext);
 	}
 
@@ -175,8 +266,7 @@ public class SearchSettings {
 		set.add(Pattern.compile(pattern));
 	}
 
-	public Set<Pattern> getInDirPatterns()
-	{
+	public Set<Pattern> getInDirPatterns() {
 		return this.inDirPatterns;
 	}
 
@@ -184,8 +274,7 @@ public class SearchSettings {
 		addPattern(this.inDirPatterns, pattern);
 	}
 
-	public Set<Pattern> getOutDirPatterns()
-	{
+	public Set<Pattern> getOutDirPatterns() {
 		return this.outDirPatterns;
 	}
 
@@ -193,8 +282,7 @@ public class SearchSettings {
 		addPattern(this.outDirPatterns, pattern);
 	}
 
-	public Set<Pattern> getInFilePatterns()
-	{
+	public Set<Pattern> getInFilePatterns() {
 		return this.inFilePatterns;
 	}
 
@@ -202,8 +290,7 @@ public class SearchSettings {
 		addPattern(this.inFilePatterns, pattern);
 	}
 
-	public Set<Pattern> getOutFilePatterns()
-	{
+	public Set<Pattern> getOutFilePatterns() {
 		return this.outFilePatterns;
 	}
 
@@ -211,7 +298,72 @@ public class SearchSettings {
 		addPattern(this.outFilePatterns, pattern);
 	}
 
-	public void addSearchPattern(String pattern) {
+	public Set<Pattern> getInArchiveFilePatterns() {
+		return this.inArchiveFilePatterns;
+	}
+
+	public void addInArchiveFilePattern(String pattern) {
+		addPattern(this.inArchiveFilePatterns, pattern);
+	}
+
+	public Set<Pattern> getOutArchiveFilePatterns() {
+		return this.outArchiveFilePatterns;
+	}
+
+	public void addOutArchiveFilePattern(String pattern) {
+		addPattern(this.outArchiveFilePatterns, pattern);
+	}
+
+    public Set<Pattern> getInLinesAfterPatterns() {
+        return this.inLinesAfterPatterns;
+    }
+
+    public void addInLinesAfterPattern(String pattern) {
+        addPattern(this.inLinesAfterPatterns, pattern);
+    }
+
+    public Set<Pattern> getOutLinesAfterPatterns() {
+        return this.outLinesAfterPatterns;
+    }
+
+    public void addOutLinesAfterPattern(String pattern) {
+        addPattern(this.outLinesAfterPatterns, pattern);
+    }
+
+    public Set<Pattern> getInLinesBeforePatterns() {
+        return this.inLinesBeforePatterns;
+    }
+
+    public void addInLinesBeforePattern(String pattern) {
+        addPattern(this.inLinesBeforePatterns, pattern);
+    }
+
+    public Set<Pattern> getOutLinesBeforePatterns() {
+        return this.outLinesBeforePatterns;
+    }
+
+    public void addOutLinesBeforePattern(String pattern) {
+        addPattern(this.outLinesBeforePatterns, pattern);
+    }
+
+    public Set<Pattern> getLinesAfterToPatterns() {
+        return this.linesAfterToPatterns;
+    }
+
+    public void addLinesAfterToPattern(String pattern) {
+        addPattern(this.linesAfterToPatterns, pattern);
+    }
+
+
+    public Set<Pattern> getLinesAfterUntilPatterns() {
+        return this.linesAfterUntilPatterns;
+    }
+
+    public void addLinesAfterUntilPattern(String pattern) {
+        addPattern(this.linesAfterUntilPatterns, pattern);
+    }
+
+    public void addSearchPattern(String pattern) {
 		addPattern(this.searchPatterns, pattern);
 	}
 
@@ -225,7 +377,7 @@ public class SearchSettings {
 		for (String s : set) {
 			if (elemCount > 0)
 				sb.append(", ");
-			sb.append("\"" + s + "\"");
+			sb.append("\"").append(s).append("\"");
 			elemCount++;
 		}
 		sb.append("]");
@@ -238,7 +390,7 @@ public class SearchSettings {
 		for (Pattern p : set) {
 			if (elemCount > 0)
 				sb.append(", ");
-			sb.append("\"" + p.toString() + "\"");
+			sb.append("\"").append(p.toString()).append("\"");
 			elemCount++;
 		}
 		sb.append("]");
@@ -246,26 +398,28 @@ public class SearchSettings {
 	}
 
 	public String toString() {
-		StringBuilder sb = new StringBuilder("SearchSettings(");
-		sb.append("startPath: \"" + this.startPath + "\"");
-		sb.append(", inExtensions: " + stringSetToString(this.inExtensions));
-		sb.append(", outExtensions: " + stringSetToString(this.outExtensions));
-		sb.append(", inDirPatterns: " + patternSetToString(this.inDirPatterns));
-		sb.append(", outDirPatterns: " + patternSetToString(this.outDirPatterns));
-		sb.append(", inFilePatterns: " + patternSetToString(this.inFilePatterns));
-		sb.append(", outFilePatterns: " + patternSetToString(this.outFilePatterns));
-		sb.append(", searchPatterns: " + patternSetToString(this.searchPatterns));
-		sb.append(", debug: " + this.debug);
-		sb.append(", doTiming: " + this.doTiming);
-		sb.append(", firstMatch: " + this.firstMatch);
-		sb.append(", listFiles: " + this.listFiles);
-		sb.append(", listLines: " + this.listLines);
-		sb.append(", printResults: " + this.printResults);
-		sb.append(", printUsage: " + this.printUsage);
-		sb.append(", printVersion: " + this.printVersion);
-		sb.append(", searchCompressed: " + this.searchCompressed);
-		sb.append(", verbose: " + this.verbose);
-		sb.append(")");
-		return sb.toString();
+        return "SearchSettings(" + "startPath: \"" + this.startPath + "\"" +
+                ", inExtensions: " + stringSetToString(this.inExtensions) +
+                ", outExtensions: " + stringSetToString(this.outExtensions) +
+                ", inDirPatterns: " + patternSetToString(this.inDirPatterns) +
+                ", outDirPatterns: " + patternSetToString(this.outDirPatterns) +
+                ", inFilePatterns: " + patternSetToString(this.inFilePatterns) +
+                ", outFilePatterns: " + patternSetToString(this.outFilePatterns) +
+                ", searchPatterns: " + patternSetToString(this.searchPatterns) +
+                ", archivesOnly: " + this.archivesOnly +
+                ", debug: " + this.debug +
+                ", doTiming: " + this.doTiming +
+                ", firstMatch: " + this.firstMatch +
+                ", listDirs: " + this.listDirs +
+                ", listFiles: " + this.listFiles +
+                ", listLines: " + this.listLines +
+                ", multilinesearch: " + this.multilinesearch +
+                ", printResults: " + this.printResults +
+                ", printUsage: " + this.printUsage +
+                ", printVersion: " + this.printVersion +
+                ", searchArchives: " + this.searchArchives +
+                ", uniqueLines: " + this.uniqueLines +
+                ", verbose: " + this.verbose +
+                ")";
 	}
 }

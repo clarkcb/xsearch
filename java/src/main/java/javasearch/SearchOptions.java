@@ -29,34 +29,80 @@ public class SearchOptions {
 
     Map<String,SearchArgSetter> argActionMap = new HashMap<String,SearchArgSetter>() {
         {
-            put("in-dir", new SearchArgSetter() {
+            put("in-archivefilepattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInArchiveFilePattern(arg);
+                }
+            });
+            put("out-archivefilepattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutArchiveFilePattern(arg);
+                }
+            });
+            put("in-dirpattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addInDirPattern(arg);
                 }
             });
-            put("out-dir", new SearchArgSetter() {
+            put("out-dirpattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addOutDirPattern(arg);
                 }
             });
             put("in-ext", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
-                    settings.addInExtension(arg);
+                    for (String x : arg.split(",")) {
+                        if (!x.equals(""))
+                            settings.addInExtension(x);
+                    }
                 }
             });
             put("out-ext", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
-                    settings.addOutExtension(arg);
+                    for (String x : arg.split(",")) {
+                        if (!x.equals(""))
+                            settings.addOutExtension(arg);
+                    }
                 }
             });
-            put("in-file", new SearchArgSetter() {
+            put("in-filepattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addInFilePattern(arg);
                 }
             });
-            put("out-file", new SearchArgSetter() {
+            put("out-filepattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addOutFilePattern(arg);
+                }
+            });
+            put("in-linesafterpattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInLinesAfterPattern(arg);
+                }
+            });
+            put("out-linesafterpattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutLinesAfterPattern(arg);
+                }
+            });
+            put("in-linesbeforepattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInLinesBeforePattern(arg);
+                }
+            });
+            put("out-linesbeforepattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutLinesBeforePattern(arg);
+                }
+            });
+            put("linesaftertopattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addLinesAfterToPattern(arg);
+                }
+            });
+            put("linesafteruntilpattern", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addLinesAfterUntilPattern(arg);
                 }
             });
             put("search", new SearchArgSetter() {
@@ -69,9 +115,9 @@ public class SearchOptions {
 
     Map<String,SearchFlagSetter> flagActionMap = new HashMap<String,SearchFlagSetter>() {
         {
-            put("firstmatch", new SearchFlagSetter() {
+            put("archivesonly", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
-                    settings.setFirstMatch(true);
+                    settings.setArchivesOnly(true);
                 }
             });
             put("allmatches", new SearchFlagSetter() {
@@ -84,9 +130,24 @@ public class SearchOptions {
                     settings.setDebug(true);
                 }
             });
+            put("dotiming", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setDoTiming(true);
+                }
+            });
+            put("firstmatch", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setFirstMatch(true);
+                }
+            });
             put("help", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setPrintUsage(true);
+                }
+            });
+            put("listdirs", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setListDirs(true);
                 }
             });
             put("listfiles", new SearchFlagSetter() {
@@ -99,9 +160,9 @@ public class SearchOptions {
                     settings.setListLines(true);
                 }
             });
-            put("printmatches", new SearchFlagSetter() {
+            put("multilinesearch", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
-                    settings.setPrintResults(true);
+                    settings.setMultiLineSearch(true);
                 }
             });
             put("noprintmatches", new SearchFlagSetter() {
@@ -109,9 +170,24 @@ public class SearchOptions {
                     settings.setPrintResults(false);
                 }
             });
-            put("dotiming", new SearchFlagSetter() {
+            put("nosearcharchives", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
-                    settings.setDoTiming(true);
+                    settings.setSearchArchives(false);
+                }
+            });
+            put("printmatches", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setPrintResults(true);
+                }
+            });
+            put("searcharchives", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setSearchArchives(true);
+                }
+            });
+            put("uniquelines", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setUniqueLines(true);
                 }
             });
             put("verbose", new SearchFlagSetter() {
@@ -122,16 +198,6 @@ public class SearchOptions {
             put("version", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setPrintVersion(true);
-                }
-            });
-            put("searchcompressed", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setSearchCompressed(true);
-                }
-            });
-            put("nosearchcompressed", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setSearchCompressed(true);
                 }
             });
         }

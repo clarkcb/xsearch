@@ -49,13 +49,13 @@ public class FileUtil {
                 fileTypeMap.put(name, extSet);
             }
             Set<String> allText = new HashSet<String>();
-            allText.addAll(fileTypeMap.get("text"));
             allText.addAll(fileTypeMap.get("code"));
+            allText.addAll(fileTypeMap.get("text"));
             allText.addAll(fileTypeMap.get("xml"));
             fileTypeMap.put("text", allText);
             Set<String> allSearchable = new HashSet<String>();
+            allSearchable.addAll(fileTypeMap.get("archive"));
             allSearchable.addAll(fileTypeMap.get("binary"));
-            allSearchable.addAll(fileTypeMap.get("compressed"));
             allSearchable.addAll(fileTypeMap.get("text"));
             fileTypeMap.put("searchable", allSearchable);
         } catch (ParserConfigurationException e) {
@@ -82,13 +82,13 @@ public class FileUtil {
 		return ext;
 	}
 
+    public boolean isArchiveFile(File f) {
+        return fileTypeMap.get("archive").contains(getExtension(f));
+    }
+
 	public boolean isBinaryFile(File f) {
         return fileTypeMap.get("binary").contains(getExtension(f));
 	}
-
-	public boolean isCompressedFile(File f) {
-        return fileTypeMap.get("compressed").contains(getExtension(f));
-    }
 
 	public boolean isSearchableFile(File f) {
         return fileTypeMap.get("searchable").contains(getExtension(f));

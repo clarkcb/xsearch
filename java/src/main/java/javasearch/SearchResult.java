@@ -20,7 +20,8 @@ public class SearchResult {
 	private int lineNum;
 	private String line;
 
-	public SearchResult(Pattern searchPattern, File file, int lineNum, String line) {
+	public SearchResult(Pattern searchPattern, File file, int lineNum,
+		String line) {
 		this.searchPattern = searchPattern;
 		this.file = file;
 		this.lineNum = lineNum;
@@ -50,10 +51,14 @@ public class SearchResult {
 		} catch (Exception e) {
 			sb.append(this.file.getAbsolutePath());
 		}
-		sb.append(": ");
-		sb.append(this.lineNum);
-		sb.append(": ");
-		sb.append(this.line.trim());
+		if (this.lineNum == 0) {
+			sb.append(" matches");
+		} else {
+			sb.append(": ");
+			sb.append(this.lineNum);
+			sb.append(": ");
+			sb.append(this.line.trim());
+		}
 		return sb.toString();
 	}
 }

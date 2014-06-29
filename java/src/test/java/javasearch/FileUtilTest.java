@@ -27,39 +27,39 @@ public class FileUtilTest {
     public void binaryFileTest() {
         File file = new File("test.exe");
         assertEquals(fileUtil.getExtension(file), "exe");
+        assertFalse(fileUtil.isArchiveFile(file));
         assertTrue(fileUtil.isBinaryFile(file));
         assertTrue(fileUtil.isSearchableFile(file));
         assertFalse(fileUtil.isTextFile(file));
-        assertFalse(fileUtil.isCompressedFile(file));
     }
 
     @Test
     public void javaFileTest() {
         File file = new File("Test.java");
         assertEquals(fileUtil.getExtension(file), "java");
-        assertTrue(fileUtil.isTextFile(file));
-        assertTrue(fileUtil.isSearchableFile(file));
+        assertFalse(fileUtil.isArchiveFile(file));
         assertFalse(fileUtil.isBinaryFile(file));
-        assertFalse(fileUtil.isCompressedFile(file));
+        assertTrue(fileUtil.isSearchableFile(file));
+        assertTrue(fileUtil.isTextFile(file));
     }
 
     @Test
     public void textFileTest() {
         File file = new File("test.txt");
         assertEquals(fileUtil.getExtension(file), "txt");
-        assertTrue(fileUtil.isTextFile(file));
-        assertTrue(fileUtil.isSearchableFile(file));
+        assertFalse(fileUtil.isArchiveFile(file));
         assertFalse(fileUtil.isBinaryFile(file));
-        assertFalse(fileUtil.isCompressedFile(file));
+        assertTrue(fileUtil.isSearchableFile(file));
+        assertTrue(fileUtil.isTextFile(file));
     }
 
     @Test
     public void compressedFileTest() {
         File file = new File("test.zip");
         assertEquals(fileUtil.getExtension(file), "zip");
-        assertTrue(fileUtil.isCompressedFile(file));
-        assertTrue(fileUtil.isSearchableFile(file));
+        assertTrue(fileUtil.isArchiveFile(file));
         assertFalse(fileUtil.isBinaryFile(file));
+        assertTrue(fileUtil.isSearchableFile(file));
         assertFalse(fileUtil.isTextFile(file));
     }
 }

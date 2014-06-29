@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,15 +39,15 @@ public class Searcher {
 		this.fileUtil = new FileUtil();
 		this.fileSet = new HashSet<File>();
 		this.timers = new HashMap<String,Long>();
-	}
-	
-	public SearchSettings getSearchSettings() {
-		return this.settings;
+        validateSettings();
 	}
 
-	public List<SearchResult> getSearchResults() {
-		return this.results;
-	}
+    private void validateSettings() {
+        if ((!settings.getStartPath().equals("")))
+            throw new IllegalArgumentException("Missing startpath");
+        if ((settings.getSearchPatterns().size() < 1))
+            throw new IllegalArgumentException("No search patterns defined");
+    }
 
 	private boolean matchesAnyPattern(String s, Set<Pattern> patternSet) {
 		if (null == s)
@@ -59,68 +61,98 @@ public class Searcher {
 		return false;
 	}
 
-	private boolean isTargetDirectory(File d) {
-		if (this.settings.getDebug()) {
-			System.out.println("Called isTargetDirectory(\"" + d.getPath() + "\")");
+	private boolean isSearchDir(File d) {
+		if (settings.getDebug()) {
+			System.out.println("Called isSearchDir(\"" + d.getPath() + "\")");
 		}
-		return ((this.settings.getInDirPatterns().isEmpty() ||
-				 this.matchesAnyPattern(d.getParent(), this.settings.getInDirPatterns())) &&
-        		(this.settings.getOutDirPatterns().isEmpty() ||
-				!this.matchesAnyPattern(d.getParent(), this.settings.getOutDirPatterns())));
+		return (settings.getInDirPatterns().isEmpty() ||
+                !matchesAnyPattern(d.getName(), settings.getInDirPatterns()))
+                &&
+                (settings.getOutDirPatterns().isEmpty() ||
+                 matchesAnyPattern(d.getName(), settings.getOutDirPatterns()));
 	}
 
-	private boolean isTargetFile(File f) {
-		if (this.settings.getDebug()) {
-			System.out.println("Called isTargetFile(\"" + f.getName() + "\")");
-		}
-		String ext = this.fileUtil.getExtension(f);
-		if (this.settings.getDebug()) {
-			System.out.println("ext: " + ext);
-		}
-		return ((this.settings.getInExtensions().isEmpty() ||
-				 this.settings.getInExtensions().contains(ext)) &&
-				(this.settings.getOutExtensions().isEmpty() ||
-				!this.settings.getOutExtensions().contains(ext)) &&
-				(this.settings.getInFilePatterns().isEmpty() ||
-				 this.matchesAnyPattern(f.getName(), this.settings.getInFilePatterns())) &&
-				(this.settings.getOutFilePatterns().isEmpty() ||
-				!this.matchesAnyPattern(f.getName(), this.settings.getOutFilePatterns())));
-	}
-
-	public List<File> getSearchFiles(File startPath) {
-		if (this.settings.getDebug()) {
-			System.out.println("Getting files to search under " + startPath.getPath());
+	public List<File> getSearchDirs(File startPath) {
+		if (settings.getDebug()) {
+			System.out.println("Getting files to search under " +
+				startPath.getPath());
 		}
 		List<File> searchDirs = new ArrayList<File>();
-		List<File> searchFiles = new ArrayList<File>();
+		List<File> currentDirs = new ArrayList<File>();
 		File currentFiles[] = startPath.listFiles();
-		for (File f : currentFiles) {
-			if (f.isDirectory()) {
-				if (this.isTargetDirectory(f)) {
-					searchDirs.add(f);
-				}
-			} else {
-				if (this.isTargetFile(f)) {
-					searchFiles.add(f);
-				}
-			}
+        if (currentFiles != null) {
+            for (File f : currentFiles) {
+                if (f.isDirectory()) {
+                    if (isSearchDir(f)) {
+                        currentDirs.add(f);
+                    }
+                }
+            }
+        }
+        searchDirs.addAll(currentDirs);
+		for (File d : currentDirs) {
+			searchDirs.addAll(getSearchDirs(d));
 		}
+		return searchDirs;
+	}
+
+	private boolean isSearchFile(File f) {
+		if (settings.getDebug()) {
+			System.out.println("Called isSearchFile(\"" + f.getName() + "\")");
+		}
+		String ext = fileUtil.getExtension(f);
+		if (settings.getDebug()) {
+			System.out.println("ext: " + ext);
+		}
+		return (settings.getInExtensions().isEmpty() ||
+                !settings.getInExtensions().contains(ext))
+               &&
+               (settings.getOutExtensions().isEmpty() ||
+                settings.getOutExtensions().contains(ext))
+               &&
+               (settings.getInFilePatterns().isEmpty() ||
+                !matchesAnyPattern(f.getName(), settings.getInFilePatterns()))
+               &&
+               (settings.getOutFilePatterns().isEmpty() ||
+                matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
+	}
+
+	public List<File> getSearchFilesForDir(File dir) {
+		if (settings.getDebug()) {
+			System.out.println("Getting files to search under " + dir);
+		}
+		List<File> searchFiles = new ArrayList<File>();
+		File currentFiles[] = dir.listFiles();
+        if (currentFiles != null) {
+            for (File f : currentFiles) {
+                if (!f.isDirectory()) {
+                    if (isSearchFile(f)) {
+                        searchFiles.add(f);
+                    }
+                }
+            }
+        }
+        return searchFiles;
+	}
+
+	public List<File> getSearchFiles(List<File> searchDirs) {
+		List<File> searchFiles = new ArrayList<File>();
 		for (File d : searchDirs) {
-			searchFiles.addAll(this.getSearchFiles(d));
+			searchFiles.addAll(getSearchFilesForDir(d));
 		}
 		return searchFiles;
 	}
 
 	public void addTimer(String name, String action) {
-		this.timers.put(name+":"+action, System.currentTimeMillis());
+		timers.put(name+":"+action, System.currentTimeMillis());
 	}
 
 	public void startTimer(String name) {
-		this.addTimer(name, "start");
+		addTimer(name, "start");
 	}
 
     public void stopTimer(String name) {
-		this.addTimer(name, "stop");
+		addTimer(name, "stop");
     }
 
     public long getElapsed(String name) {
@@ -134,57 +166,100 @@ public class Searcher {
     }
 
     public void search() {
-		if (this.settings.getDoTiming())
-			this.startTimer("getSearchFiles");
-		List<File> searchFiles = this.getSearchFiles(new File(this.settings.getStartPath()));
-		if (this.settings.getDoTiming()) {
-            this.stopTimer("getSearchFiles");
-            this.printElapsed("getSearchFiles");
+
+		// get the search directories
+		if (settings.getDoTiming())
+			startTimer("getSearchDirs");
+		List<File> searchDirs = getSearchDirs(new File(settings.getStartPath()));
+		if (settings.getDoTiming()) {
+            stopTimer("getSearchDirs");
+            printElapsed("getSearchDirs");
         }
-		if (this.settings.getVerbose()) {
+		if (settings.getVerbose()) {
+			System.out.println("\nDirectories to be searched:");
+			for (File d : searchDirs) {
+				System.out.println(d.getPath());
+			}
+			System.out.println("");
+		}
+
+		// get the search files in the search directories
+		if (settings.getDoTiming())
+			startTimer("getSearchFiles");
+		List<File> searchFiles = getSearchFiles(searchDirs);
+		if (settings.getDoTiming()) {
+            stopTimer("getSearchFiles");
+            printElapsed("getSearchFiles");
+        }
+		if (settings.getVerbose()) {
 			System.out.println("\nFiles to be searched:");
 			for (File f : searchFiles) {
 				System.out.println(f.getPath());
 			}
 			System.out.println("");
 		}
-		if (this.settings.getDoTiming())
-			this.startTimer("searchFiles");
+
+		// search the files
+		if (settings.getDoTiming())
+			startTimer("searchFiles");
 		for (File f : searchFiles) {
-			this.searchFile(f);
+			searchFile(f);
 		}
-		if (this.settings.getDoTiming()) {
-            this.stopTimer("searchFiles");
-            this.printElapsed("searchFiles");
+		if (settings.getDoTiming()) {
+            stopTimer("searchFiles");
+            printElapsed("searchFiles");
+        }
+        if (settings.getVerbose()) {
+			System.out.println("\nFile search complete.\n");
+        }
+
+        // print the results
+        if (settings.getPrintResults()) {
+			System.out.println(String.format("Search results (%d):",
+				results.size()));
+			for (SearchResult r : results) {
+				printSearchResult(r);
+			}
+        }
+        if (settings.getListDirs()) {
+        	printDirList();
+        }
+        if (settings.getListFiles()) {
+        	printFileList();
+        }
+        if (settings.getListLines()) {
+        	printLineList();
         }
 	}
 
 	public void searchFile(File f) {
-		if (this.settings.getVerbose()) {
+		if (settings.getVerbose()) {
 			System.out.println("Searching " + f.getPath());
 		}
-		if (this.fileUtil.isTextFile(f)) {
-			this.searchTextFile(f);
+		if (fileUtil.isTextFile(f)) {
+			searchTextFile(f);
+		} else if (fileUtil.isBinaryFile(f)) {
+			searchBinaryFile(f);
 		}
 	}
 
 	public void searchTextFile(File f) {
-		if (this.settings.getVerbose()) {
+		if (settings.getVerbose()) {
 			System.out.println("Searching text file " + f.getPath());
 		}
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(f));
 			try {
-				String line = null;
+				String line;
 				int lineNum = 0;
 				while ((line = br.readLine()) != null) {
 					lineNum++;
-					for (Pattern p : this.settings.getSearchPatterns()) {
+					for (Pattern p : settings.getSearchPatterns()) {
 						Matcher m = p.matcher(line);
 						if (m.find()) {
 							SearchResult searchResult =
 								new SearchResult(p, f, lineNum, line);
-							this.addSearchResult(searchResult);
+							addSearchResult(searchResult);
 						}
 					}
 				}
@@ -197,12 +272,80 @@ public class Searcher {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public void searchBinaryFile(File f) {
+		if (settings.getVerbose()) {
+			System.out.println("Searching binary file " + f.getPath());
+		}
+		try {
+			Scanner scanner = new Scanner(f, "ISO8859-1").useDelimiter("\\Z");
+			try {
+				String content = scanner.next();
+
+				for (Pattern p : settings.getSearchPatterns()) {
+					Matcher m = p.matcher(content);
+					if (m.find()) {
+						SearchResult searchResult =
+							new SearchResult(p, f, 0, "");
+						addSearchResult(searchResult);
+					}
+				}
+			} catch (NoSuchElementException e) {
+				System.out.println(e.toString());
+			} catch (IllegalStateException e) {
+				System.out.println(e.toString());
+			} finally {
+				scanner.close();
+			}
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		}
+	}
+
 	private void addSearchResult(SearchResult searchResult) {
-		//if (this.settings.getPrintResults())
-		if (true)
-			System.out.println(searchResult.toString());
-		this.results.add(searchResult);
-		this.fileSet.add(searchResult.getFile());
+		results.add(searchResult);
+		fileSet.add(searchResult.getFile());
+	}
+
+	void printSearchResult(SearchResult searchResult) {
+		System.out.println(searchResult.toString());
+	}
+
+	void printDirList() {
+		Set<File> dirSet = new HashSet<File>();
+		for (File f : fileSet) {
+			dirSet.add(f.getParentFile());
+		}
+		List<File> dirs = new ArrayList<File>(dirSet);
+  		java.util.Collections.sort(dirs);
+		System.out.println(String.format("\nMatching directories (%d directories):",
+			dirs.size()));
+		for (File d : dirs) {
+			System.out.println(d.getPath());
+		}
+	}
+
+	void printFileList() {
+		List<File> files = new ArrayList<File>(fileSet);
+  		java.util.Collections.sort(files);
+		System.out.println(String.format("\nMatching files (%d files):",
+			files.size()));
+		for (File f : files) {
+			System.out.println(f.getPath());
+		}
+	}
+
+	void printLineList() {
+		Set<String> lineSet = new HashSet<String>();
+		for (SearchResult r : results) {
+			lineSet.add(r.getLine().trim());
+		}
+		List<String> lines = new ArrayList<String>(lineSet);
+  		java.util.Collections.sort(lines);
+		System.out.println(String.format("\nMatching lines (%d unique lines):",
+			lines.size()));
+		for (String line : lines) {
+			System.out.println(line);
+		}
 	}
 }
