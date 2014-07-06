@@ -28,7 +28,14 @@ object FileUtil {
   }
 
   def getExtension(f: File): String = {
-    val name = f.getName
+    getExtension(f.getName)
+  }
+
+  def getExtension(f: SearchFile): String = {
+    getExtension(f.file)
+  }
+
+  def getExtension(name: String): String = {
     if (name.lastIndexOf('.') > 0 && name.lastIndexOf('.') < name.length-1)
       name.split('.').last
     else
@@ -39,20 +46,41 @@ object FileUtil {
     fileTypeMap("archive").contains(getExtension(f))
   }
 
+  def isArchiveFile(sf: SearchFile): Boolean = {
+    fileTypeMap("archive").contains(getExtension(sf))
+  }
+
   def isBinaryFile(f: File): Boolean = {
     fileTypeMap("binary").contains(getExtension(f))
+  }
+
+  def isBinaryFile(sf: SearchFile): Boolean = {
+    fileTypeMap("binary").contains(getExtension(sf))
   }
 
   def isSearchableFile(f: File): Boolean = {
     fileTypeMap("searchable").contains(getExtension(f))
   }
 
+  def isSearchableFile(sf: SearchFile): Boolean = {
+    fileTypeMap("searchable").contains(getExtension(sf))
+  }
+
   def isTextFile(f: File): Boolean = {
     fileTypeMap("text").contains(getExtension(f))
+  }
+
+  def isTextFile(sf: SearchFile): Boolean = {
+    fileTypeMap("text").contains(getExtension(sf))
   }
 
   def isUnknownFile(f: File): Boolean = {
     fileTypeMap("unknown").contains(getExtension(f)) ||
     !fileTypeMap("searchable").contains(getExtension(f))
+  }
+
+  def isUnknownFile(sf: SearchFile): Boolean = {
+    fileTypeMap("unknown").contains(getExtension(sf)) ||
+    !fileTypeMap("searchable").contains(getExtension(sf))
   }
 }
