@@ -140,6 +140,7 @@ object SearchOptions {
     }
     nextArg(args, sb)
     if (sb.debug) sb.verbose = true
+    if (sb.archivesOnly) sb.searchArchives = true
     sb.toSettings
   }
 
