@@ -14,6 +14,7 @@
     <encoding>UTF-8</encoding>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <scala.version>2.9.1</scala.version>
@@ -68,6 +69,13 @@
       <version>1.0.7</version>
     </dependency>
 
+    <!-- archive file support -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.8.1</version>
+    </dependency>
+
     <!-- testing -->
     <dependency>
       <groupId>junit</groupId>
@@ -88,6 +96,22 @@
     <testSourceDirectory>src/test/scala</testSourceDirectory>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.surefire.plugin.version}</version>
+        <configuration>
+          <useFile>false</useFile>
+          <argLine>-Xms512m -Xmx512m</argLine>
+          <disableXmlReport>false</disableXmlReport>
+          <!-- If you have classpath issue like NoDefClassError,... -->
+          <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+          <includes>
+            <include>**/*Test.*</include>
+            <include>**/*Suite.*</include>
+          </includes>
+        </configuration>
+      </plugin>
 
       <!-- the Maven compiler plugin will compile Java source files -->
       <plugin>
@@ -123,6 +147,31 @@
         <configuration>
           <mainClass>scalasearch.SearchMain</mainClass>
         </configuration>
+      </plugin>
+
+      <!-- shade - specify main class, etc. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>scalasearch.SearchMain</mainClass>
+                  <manifestEntries>
+                    <Class-Path>.</Class-Path>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
