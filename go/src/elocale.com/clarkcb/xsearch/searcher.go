@@ -404,9 +404,21 @@ ReadLines:
 				} else if len(linesAfter) > 0 && !s.linesAfterMatch(linesAfter) {
 					continue
 				}
+				linesAfterToMatch := false
+				linesAfterUntilMatch := false
 				if !s.Settings.LinesAfterToPatterns.IsEmpty() ||
 					!s.Settings.LinesAfterUntilPatterns.IsEmpty() {
-					for {
+
+					if !s.Settings.LinesAfterToPatterns.IsEmpty() &&
+						s.Settings.LinesAfterToPatterns.AnyMatchesAny(linesAfter) {
+						linesAfterToMatch = true
+					}
+					if !s.Settings.LinesAfterUntilPatterns.IsEmpty() &&
+						s.Settings.LinesAfterUntilPatterns.AnyMatchesAny(linesAfter) {
+						linesAfterUntilMatch = true
+					}
+
+					for ; !linesAfterToMatch && !linesAfterUntilMatch;  {
 						if len(linesAfter) < linesAfterIdx+1 {
 							if !scanner.Scan() {
 								break
@@ -417,11 +429,11 @@ ReadLines:
 						nextLine := linesAfter[linesAfterIdx]
 						if !s.Settings.LinesAfterToPatterns.IsEmpty() &&
 							s.Settings.LinesAfterToPatterns.MatchesAny(nextLine) {
-							break
+							linesAfterToMatch = true
 						}
 						if !s.Settings.LinesAfterUntilPatterns.IsEmpty() &&
 							s.Settings.LinesAfterUntilPatterns.MatchesAny(nextLine) {
-							break
+							linesAfterUntilMatch = true
 						}
 						linesAfterIdx++
 					}
@@ -651,9 +663,6 @@ func (s *Searcher) searchArchiveFileReader(r io.Reader, si *SearchItem) {
 }
 
 func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
-	if s.Settings.Verbose {
-		fmt.Printf("Searching file %s\n", si.String())
-	}
 	switch s.fileTypes.getFileType(*si.Name) {
 	case FILETYPE_TEXT:
 		s.searchTextFileReader(r, si)

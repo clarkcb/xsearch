@@ -42,6 +42,7 @@ func NewSearchItems() *SearchItems {
 	}
 }
 
+// limits string pointers to one per distinct string (memory management)
 func (si *SearchItems) getStrPtr(s *string) *string {
 	strPtr := s
 	if sp, ok := si.strPtrMap[*s]; ok {

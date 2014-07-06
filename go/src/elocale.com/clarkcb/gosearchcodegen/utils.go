@@ -2,11 +2,13 @@ package gosearchcodegen
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 	"sort"
 )
 
 func loadXmlFile(xmlFilePath string, targetStruct interface{}) error {
+	fmt.Printf("loadXmlFile(xmlFilePath=%s)\n", xmlFilePath)
 	file, err := os.Open(xmlFilePath)
 	if err != nil {
 		panic(err.Error())
