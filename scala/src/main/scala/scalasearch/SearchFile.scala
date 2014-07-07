@@ -4,7 +4,7 @@ import java.io.File
 
 class SearchFile(val containers: List[String], val path: String, val file: String) {
 
-  val CONTAINER_SEPARATOR = "::"
+  val CONTAINER_SEPARATOR = "!"
 
   def this(path: String, file: String) = {
     this(List.empty[String], path, file)
@@ -30,7 +30,10 @@ class SearchFile(val containers: List[String], val path: String, val file: Strin
     if (containers.nonEmpty) {
       sb.append(containers.mkString(CONTAINER_SEPARATOR)).append(CONTAINER_SEPARATOR)
     }
-    sb.append(path).append(File.separator).append(file)
+    if (path.nonEmpty) {
+      sb.append(path).append(File.separator)
+    }
+    sb.append(file)
     sb.toString()
   }
 }

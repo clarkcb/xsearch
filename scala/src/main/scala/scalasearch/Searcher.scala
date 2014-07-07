@@ -3,7 +3,6 @@ package scalasearch
 import java.io.{BufferedInputStream, File, FileInputStream}
 import java.util.zip.{GZIPInputStream, ZipEntry, ZipFile}
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
-import org.kamranzafar.jtar.TarInputStream
 import scala.collection.JavaConversions.enumerationAsScalaIterator
 import scala.collection.mutable
 import scala.io.Source
@@ -362,8 +361,13 @@ class Searcher (settings: SearchSettings) {
     val zipExts = Set("zip", "jar", "war")
     if (zipExts contains FileUtil.getExtension(sf)) {
       searchZipFileSource(sf, source)
-    } else if (sf.file.toLowerCase.endsWith("tar.gz") ||
-      FileUtil.getExtension(sf) == "tgz") {
+    } else if (FileUtil.getExtension(sf) == "gz") {
+      if (sf.file.toLowerCase.endsWith("tar.gz")) {
+        searchTgzFileSource(sf, source)
+      } else {
+        searchGzFileSource(sf, source)
+      }
+    } else if (FileUtil.getExtension(sf) == "tgz") {
       searchTgzFileSource(sf, source)
     } else {
       println("Currently unsupported archive file type: %s (%s)".
@@ -403,27 +407,23 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  // apache commons-compress
   def searchTgzFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("[apache-commons-compress] Searching gzipped tar file " + sf.toString)
+      println("Searching gzipped tar file " + sf.toString)
     }
-    val tis = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(sf.getPath)))
+    val tis = new TarArchiveInputStream(new GZIPInputStream(
+      new BufferedInputStream(new FileInputStream(sf.getPath))))
     var entry: TarArchiveEntry = tis.getNextTarEntry
     while (entry != null) {
       if (!entry.isDirectory) {
-        println("entry: "+entry.getName)
         val dirName = new File(entry.getName).getParent
-        println("dirName: "+dirName)
         if (isSearchDir(dirName)) {
           val fileName = new File(entry.getName).getName
-          println("fileName: "+fileName)
           if (isSearchFile(fileName)) {
             var bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
             if (count > 0) {
               val tzsf = new SearchFile(List(sf.getPath), dirName, fileName)
-              println("tzsf: "+tzsf)
               val source = Source.fromBytes(bytes)
               searchFileSource(tzsf, source)
             }
@@ -434,20 +434,20 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  // jtar
-  def searchTgzFileJTar(sf: SearchFile) {
+  def searchGzFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("[jtar] Searching gzipped tar file " + sf.toString)
+      println("Searching gzipped file " + sf.toString)
     }
-    val tis = new TarInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(sf.getPath))))
-    var entry = tis.getNextEntry
-    while (entry != null) {
-      if (!entry.isDirectory) {
-        println("entry: "+entry.getName)
-      }
-      entry = tis.getNextEntry
+    val fileName = sf.file.take(sf.file.length - 3)
+    val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", fileName)
+    println("gzsf: "+gzsf)
+    if (isSearchFile(gzsf.file)) {
+      val gzis = new GZIPInputStream(new BufferedInputStream(
+        new FileInputStream(sf.getPath)))
+      val source = Source.fromInputStream(gzis)
+      searchFileSource(gzsf, source)
+      gzis.close()
     }
-    tis.close()
   }
 
   def addSearchResult(r: SearchResult) {
