@@ -91,11 +91,13 @@ func (si *SearchItem) AddContainer(c string) {
 	si.Containers = append(si.Containers, c)
 }
 
+const containerSeparator = "!"
+
 func (si *SearchItem) String() string {
 	var buffer bytes.Buffer
 	if len(si.Containers) > 0 {
-		buffer.WriteString(strings.Join(si.Containers, "::"))
-		buffer.WriteString("::")
+		buffer.WriteString(strings.Join(si.Containers, containerSeparator))
+		buffer.WriteString(containerSeparator)
 	}
 	buffer.WriteString(filepath.Join(*si.Path, *si.Name))
 	return buffer.String()
