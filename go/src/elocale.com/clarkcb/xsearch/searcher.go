@@ -546,14 +546,22 @@ func (s *Searcher) searchTarFileReader(r io.Reader, si *SearchItem) {
 			s.errChan <- err
 		}
 		dir, file := filepath.Split(hdr.Name)
-		if !strings.HasSuffix(hdr.Name, "/") && s.isSearchFile(&file) {
-			newSearchItem := NewSearchItem(&dir, &file)
-			for _, c := range si.Containers {
-				newSearchItem.AddContainer(c)
+		if !strings.HasSuffix(hdr.Name, "/") {
+			if s.isSearchFile(&file) {
+				newSearchItem := NewSearchItem(&dir, &file)
+				for _, c := range si.Containers {
+					newSearchItem.AddContainer(c)
+				}
+				newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+				s.searchFileReader(tr, newSearchItem)
+			} else if s.isArchiveSearchFile(&file) {
+				newSearchItem := NewSearchItem(&dir, &file)
+				for _, c := range si.Containers {
+					newSearchItem.AddContainer(c)
+				}
+				newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+				s.searchArchiveFileReader(tr, newSearchItem)
 			}
-			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
-			s.searchFileReader(tr, newSearchItem)
-
 		}
 	}
 }
