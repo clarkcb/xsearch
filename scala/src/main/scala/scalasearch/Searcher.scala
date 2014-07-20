@@ -1,8 +1,9 @@
 package scalasearch
 
-import java.io.{BufferedInputStream, File, FileInputStream}
+import java.io.{InputStream, BufferedInputStream, File, FileInputStream}
 import java.util.zip.{GZIPInputStream, ZipEntry, ZipFile}
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scala.collection.JavaConversions.enumerationAsScalaIterator
 import scala.collection.mutable
 import scala.io.Source
@@ -61,6 +62,14 @@ class Searcher (settings: SearchSettings) {
     searchDirs ++ getFilteredDirs(startDir)
   }
 
+  def getSearchFileType(f: File): SearchFileType.SearchFileType = getSearchFileType(f.getName)
+
+  def getSearchFileType(fileName: String): SearchFileType.SearchFileType = {
+    if (isSearchFile(fileName)) SearchFileType.SearchFile
+    else if (isArchiveSearchFile(fileName)) SearchFileType.ArchiveSearchFile
+    else SearchFileType.NonSearchFile
+  }
+
   def isSearchFile(f: File): Boolean = {
     isSearchFile(f.getName)
   }
@@ -77,17 +86,21 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isArchiveSearchFile(f: File): Boolean = {
-    filterInByPatterns(f.getName, settings.inArchiveFilePatterns,
-      settings.outArchiveFilePatterns)
+    isArchiveSearchFile(f.getName)
+  }
+
+  def isArchiveSearchFile(fileName: String): Boolean = {
+    settings.searchArchives &&
+      filterInByPatterns(fileName, settings.inArchiveFilePatterns,
+        settings.outArchiveFilePatterns)
   }
 
   def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
     val searchFiles = mutable.ArrayBuffer.empty[SearchFile]
     dir.listFiles().filterNot(_.isDirectory).map {
       f =>
-        if (FileUtil.isArchiveFile(f)) {
-          if (settings.searchArchives && isArchiveSearchFile(f))
-            searchFiles += new SearchFile(f.getParent, f.getName)
+        if (FileUtil.isArchiveFile(f) && isArchiveSearchFile(f)) {
+          searchFiles += new SearchFile(f.getParent, f.getName)
         } else if (!settings.archivesOnly && isSearchFile(f)) {
           searchFiles += new SearchFile(f.getParent, f.getName)
         }
@@ -361,14 +374,11 @@ class Searcher (settings: SearchSettings) {
     val zipExts = Set("zip", "jar", "war")
     if (zipExts contains FileUtil.getExtension(sf)) {
       searchZipFileSource(sf, source)
-    } else if (FileUtil.getExtension(sf) == "gz") {
-      if (sf.file.toLowerCase.endsWith("tar.gz")) {
-        searchTgzFileSource(sf, source)
-      } else {
-        searchGzFileSource(sf, source)
-      }
-    } else if (FileUtil.getExtension(sf) == "tgz") {
-      searchTgzFileSource(sf, source)
+    } else if (FileUtil.getExtension(sf) == "gz" ||
+      FileUtil.getExtension(sf) == "tgz") {
+      searchGzFileSource(sf, source)
+    } else if (FileUtil.getExtension(sf) == "bz2") {
+      searchBz2FileSource(sf, source)
     } else {
       println("Currently unsupported archive file type: %s (%s)".
         format(FileUtil.getExtension(sf), sf.toString))
@@ -396,10 +406,17 @@ class Searcher (settings: SearchSettings) {
           zes foreach {
             ze =>
               val fileName = new File(ze.getName).getName
-              if (isSearchFile(fileName)) {
-                val zsf = new SearchFile(List(sf.getPath), dirName, fileName)
+              val searchFileType = getSearchFileType(fileName)
+              if (searchFileType != SearchFileType.NonSearchFile) {
+                val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName, fileName)
                 val zis = zf.getInputStream(zf.getEntry(zsf.getPath))
-                searchFileSource(zsf, Source.fromInputStream(zis))
+                searchFileType match {
+                  case SearchFileType.SearchFile =>
+                    searchFileSource(zsf, Source.fromInputStream(zis))
+                  case SearchFileType.ArchiveSearchFile =>
+                    searchArchiveFileSource(zsf, Source.fromInputStream(zis))
+                  case _ => // do nothing
+                }
                 zis.close()
               }
           }
@@ -407,25 +424,31 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchTgzFileSource(sf: SearchFile, source: Source) {
+  def searchTarFileInputStream(sf: SearchFile, is: InputStream) {
     if (settings.verbose) {
-      println("Searching gzipped tar file " + sf.toString)
+      println("Searching tar file " + sf.toString)
     }
-    val tis = new TarArchiveInputStream(new GZIPInputStream(
-      new BufferedInputStream(new FileInputStream(sf.getPath))))
+    val tis = new TarArchiveInputStream(is)
     var entry: TarArchiveEntry = tis.getNextTarEntry
     while (entry != null) {
       if (!entry.isDirectory) {
         val dirName = new File(entry.getName).getParent
         if (isSearchDir(dirName)) {
           val fileName = new File(entry.getName).getName
-          if (isSearchFile(fileName)) {
+          val searchFileType = getSearchFileType(fileName)
+          if (searchFileType != SearchFileType.NonSearchFile) {
             var bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
             if (count > 0) {
-              val tzsf = new SearchFile(List(sf.getPath), dirName, fileName)
+              val tzsf = new SearchFile(sf.containers, dirName, fileName)
               val source = Source.fromBytes(bytes)
-              searchFileSource(tzsf, source)
+              searchFileType match {
+                case SearchFileType.SearchFile =>
+                  searchFileSource(tzsf, source)
+                case SearchFileType.ArchiveSearchFile =>
+                  searchArchiveFileSource(tzsf, source)
+                case _ => // do nothing
+              }
             }
           }
         }
@@ -436,17 +459,41 @@ class Searcher (settings: SearchSettings) {
 
   def searchGzFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching gzipped file " + sf.toString)
+      println("Searching gzip file " + sf.toString)
     }
-    val fileName = sf.file.take(sf.file.length - 3)
-    val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", fileName)
-    println("gzsf: "+gzsf)
-    if (isSearchFile(gzsf.file)) {
+    val containedFileName = sf.file.take(sf.file.length - 3)
+    val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName)
+    if (isSearchFile(gzsf.file) || FileUtil.getExtension(containedFileName) == "tar") {
       val gzis = new GZIPInputStream(new BufferedInputStream(
         new FileInputStream(sf.getPath)))
-      val source = Source.fromInputStream(gzis)
-      searchFileSource(gzsf, source)
+      if (FileUtil.getExtension(containedFileName) == "tar") {
+        searchTarFileInputStream(gzsf, gzis)
+      }
+      else {
+        val source = Source.fromInputStream(gzis)
+        searchFileSource(gzsf, source)
+      }
       gzis.close()
+    }
+  }
+
+  def searchBz2FileSource(sf: SearchFile, source: Source) {
+    if (settings.verbose) {
+      println("Searching bzip2 file " + sf.toString)
+    }
+    val containedFileName = sf.file.take(sf.file.length - 4)
+    val bzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName)
+    if (isSearchFile(bzsf.file) || FileUtil.getExtension(containedFileName) == "tar") {
+      val bzis = new BZip2CompressorInputStream(new BufferedInputStream(
+        new FileInputStream(sf.getPath)))
+      if (FileUtil.getExtension(containedFileName) == "tar") {
+        searchTarFileInputStream(bzsf, bzis)
+      }
+      else {
+        val source = Source.fromInputStream(bzis)
+        searchFileSource(bzsf, source)
+      }
+      bzis.close()
     }
   }
 
