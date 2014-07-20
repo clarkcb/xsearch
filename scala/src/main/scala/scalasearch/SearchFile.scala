@@ -37,3 +37,10 @@ class SearchFile(val containers: List[String], val path: String, val file: Strin
     sb.toString()
   }
 }
+
+object SearchFileType extends Enumeration {
+  type SearchFileType = Value
+  val NonSearchFile = Value // a file that does not match search criteria
+  val SearchFile = Value // a regular file that matches search criteria
+  val ArchiveSearchFile = Value // an archive file that matches search criteria
+}
