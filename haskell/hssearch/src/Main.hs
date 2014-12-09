@@ -1,10 +1,7 @@
 module Main where
 
 import System.Environment (getArgs)
-import System.FilePath (takeExtension)
 
-import FileUtility
-import FileTypes
 import SearchOptions
 import Searcher
 import SearchResult
