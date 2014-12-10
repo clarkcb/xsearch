@@ -30,10 +30,10 @@ strip = T.unpack . T.strip . T.pack
 
 getSearchOption = atTag "searchoption" >>>
   proc f -> do
-    long <- getAttrValue "long" -< f
-    short <- getAttrValue "short" -< f
-    desc <- text -< f
-    returnA -< SearchOption { long = long, short = short, desc = strip desc }
+    l <- getAttrValue "long" -< f
+    s <- getAttrValue "short" -< f
+    d <- text -< f
+    returnA -< SearchOption { long = l, short = s, desc = strip d }
 
 getSearchOptions :: IO [SearchOption]
 getSearchOptions = runX (readDocument [withValidate no] searchOptionsPath
@@ -47,10 +47,10 @@ getUsage searchOptions =
 getOptStrings :: [SearchOption] -> [String]
 getOptStrings searchOptions = 
   map formatOpts searchOptions
-  where formatOpts SearchOption {long=l, short=""} = long l
+  where formatOpts SearchOption {long=l, short=""} = getLong l
         formatOpts SearchOption {long=l, short=s}  = shortAndLong s l
-        long l = "--" ++ l
-        shortAndLong s l = "-" ++ s ++ "," ++ long l
+        getLong l = "--" ++ l
+        shortAndLong s l = "-" ++ s ++ "," ++ getLong l
 
 getOptDesc :: SearchOption -> String
 getOptDesc SearchOption {desc=""} = error "No description for SearchOption"
@@ -118,7 +118,7 @@ newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "
 flagActions :: [(String, FlagAction)]
 flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("archivesonly", \ss -> ss {archivesOnly=True})
-              , ("debug", \ss -> ss {debug=True})
+              , ("debug", \ss -> ss {debug=True, verbose=True})
               , ("dotiming", \ss -> ss {doTiming=True})
               , ("excludehidden", \ss -> ss {excludeHidden=True})
               , ("firstmatch", \ss -> ss {firstMatch=True})
@@ -140,13 +140,14 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               ]
 
 shortToLong :: [SearchOption] -> String -> String
-shortToLong opts "" = ""
+shortToLong _ "" = ""
 shortToLong opts s | length s == 2 && head s == '-' = "--" ++ getLongForShort s
                    | otherwise = s
-  where getLongForShort s = (long . head . filter (\so -> short so == tail s)) opts
+  where getLongForShort x = (long . head . filter (\so -> short so == tail x)) opts
 
 settingsFromArgs :: [SearchOption] -> [String] -> SearchSettings
-settingsFromArgs opts args = recSettingsFromArgs defaultSearchSettings $ map (shortToLong opts) args
+settingsFromArgs opts arguments =
+  recSettingsFromArgs defaultSearchSettings $ map (shortToLong opts) arguments
   where recSettingsFromArgs :: SearchSettings -> [String] -> SearchSettings
         recSettingsFromArgs settings args =
           case args of
@@ -157,6 +158,7 @@ settingsFromArgs opts args = recSettingsFromArgs defaultSearchSettings $ map (sh
             FlagActionType -> recSettingsFromArgs ((getFlagAction (argName a)) settings) as
             UnknownActionType -> error ("Unknown option: " ++ (argName a))
           [s] -> settings {startPath=s}
+          a:_ -> error ("Unknown option: " ++ a)
         getActionType :: String -> ActionType
         getActionType a = if (isArgAction a)
                           then ArgActionType
@@ -166,28 +168,10 @@ settingsFromArgs opts args = recSettingsFromArgs defaultSearchSettings $ map (sh
         argName :: String -> String
         argName a = (dropWhile (=='-') a)
         getArgAction ::String -> ArgAction
-        getArgAction a = snd $ head $ filter (\(x,y) -> a==x) argActions
+        getArgAction a = snd $ head $ filter (\(x,_) -> a==x) argActions
         getFlagAction ::String -> FlagAction
-        getFlagAction a = snd $ head $ filter (\(x,y) -> a==x) flagActions
+        getFlagAction a = snd $ head $ filter (\(x,_) -> a==x) flagActions
         isArgAction ::String -> Bool
         isArgAction a = isJust $ lookup a argActions
         isFlagAction ::String -> Bool
         isFlagAction a = isJust $ lookup a flagActions
-
-
-main :: IO ()
-main = do
-  searchOptions <- getSearchOptions
-  -- print searchOptions
-  putStrLn $ getUsage searchOptions
-  let args1 = [] :: [String]
-  putStrLn $ "\nsettingsFromArgs " ++ show args1 ++ ": " ++ show (settingsFromArgs searchOptions args1)
-
-  let args2 = ["--debug", "--archivesonly", "."]
-  putStrLn $ "\nsettingsFromArgs " ++ show args2 ++ ": " ++ show (settingsFromArgs searchOptions args2)
-
-  let args3 = ["--search", "SearchPattern", "--search", "SearchPattern2", "."]
-  putStrLn $ "\nsettingsFromArgs " ++ show args3 ++ ": " ++ show (settingsFromArgs searchOptions args3)
-
-  let args4 = ["-s", "SearchPattern", "-x", "hs", "-x", "hi", "."]
-  putStrLn $ "\nsettingsFromArgs " ++ show args4 ++ ": " ++ show (settingsFromArgs searchOptions args4)
