@@ -52,6 +52,9 @@ class SearchOptions:
         'linesbefore':
             lambda x, settings:
                 settings.set_property('numlinesbefore', int(x)),
+        'maxlinelength':
+            lambda x, settings:
+                settings.set_property('maxlinelength', int(x)),
         'out-archivefilepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_archivefilepatterns'),
@@ -87,12 +90,18 @@ class SearchOptions:
         'dotiming':
             lambda settings:
                 settings.set_property('dotiming', True),
+        'excludehidden':
+            lambda settings:
+                settings.set_property('excludehidden', True),
         'firstmatch':
             lambda settings:
                 settings.set_property('firstmatch', True),
         'help':
             lambda settings:
                 settings.set_property('printusage', True),
+        'includehidden':
+            lambda settings:
+                settings.set_property('excludehidden', False),
         'listdirs':
             lambda settings:
                 settings.set_property('listdirs', True),
@@ -108,12 +117,18 @@ class SearchOptions:
         'noprintmatches':
             lambda settings:
                 settings.set_property('printresults', False),
+        'norecursive':
+            lambda settings:
+                settings.set_property('recursive', False),
         'nosearcharchives':
             lambda settings:
                 settings.set_property('searcharchives', False),
         'printmatches':
             lambda settings:
                 settings.set_property('printresults', True),
+        'recursive':
+            lambda settings:
+                settings.set_property('recursive', True),
         'searcharchives':
             lambda settings:
                 settings.set_property('searcharchives', True),
@@ -170,6 +185,7 @@ class SearchOptions:
     def search_settings_from_args(self, args):
         """Returns a SearchSettings instance for a given list of args"""
         settings = SearchSettings()
+        # default printresults to True since running from command line
         settings.printresults = True
         argdeque = deque(args)
         while argdeque:

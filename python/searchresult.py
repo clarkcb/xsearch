@@ -19,6 +19,9 @@ class SearchResult:
         self.contained = ''
         self.lines_before = []
         self.lines_after = []
+        self.match_start_index = 0
+        self.match_end_index = 0
+        self.maxlinelength = 150
         self.__dict__.update(kargs)
 
     def __str__(self):
@@ -31,10 +34,56 @@ class SearchResult:
         sio = StringIO()
         sio.write(self.filename)
         if self.linenum and self.line:
-            sio.write(': {0}: {1}'.format(self.linenum, self.line.strip()))
+            sio.write(': {0} [{1}:{2}]'.format(self.linenum,
+                self.match_start_index, self.match_end_index))
+            sio.write(': {0}'.format(self.__format_matching_line()))
+        else:
+            sio.write(' matches')
         s = sio.getvalue()
         sio.close()
         return s
+
+    def __atmost_before_index(self, s, maxlen, start_index):
+        if start_index >= maxlen:
+            return '...' + s[start_index - maxlen - 3:start_index]
+        else:
+            return s[:start_index]
+
+    def __atmost_after_index(self, s, maxlen, start_index):
+        if len(s[start_index:]) > maxlen:
+            return s[start_index:maxlen - 3] + '...'
+        else:
+            return s[start_index:]
+
+    def __format_line(self, line):
+        formatted = self.__atmost_after_index(line, self.maxlinelength, 0).strip()
+        return formatted
+
+    def __format_matching_line(self):
+        formatted = self.line
+        linelength = len(self.line)
+        matchlength = self.match_end_index - self.match_start_index
+        if linelength > self.maxlinelength:
+            adjusted_maxlength = self.maxlinelength - matchlength
+            before_index = self.match_start_index
+            if self.match_start_index > 0:
+                before_index = before_index - (adjusted_maxlength / 4)
+                if before_index < 0:
+                    before_index = 0
+            adjusted_maxlength = adjusted_maxlength - (self.match_start_index - before_index)
+            after_index = self.match_end_index + adjusted_maxlength
+            if after_index > linelength:
+                after_index = linelength
+            before = ''
+            if before_index > 3:
+                before = '...'
+                before_index += 3
+            after = ''
+            if after_index < linelength - 3:
+                after = '...'
+                after_index -= 3
+            formatted = before + self.line[before_index:after_index] + after
+        return formatted.strip()
 
     def linenum_padding(self):
         max_linenum = self.linenum + len(self.lines_after)

@@ -34,6 +34,33 @@ def main():
     try:
         searcher = Searcher(settings)
         searcher.search()
+
+        # print the results
+        if settings.printresults:
+            print
+            searcher.print_results()
+
+        if settings.listdirs:
+            dir_list = searcher.get_matching_dirs()
+            if dir_list:
+                print '\nDirectories with matches (%d):' % len(dir_list)
+                for d in dir_list:
+                    print d
+
+        if settings.listfiles:
+            file_list = searcher.get_matching_files()
+            if file_list:
+                print '\nFiles with matches (%d):' % len(file_list)
+                for f in file_list:
+                    print f
+
+        if settings.listlines:
+            line_list = searcher.get_matching_lines()
+            if line_list:
+                print '\nLines with matches (%d):' % len(line_list)
+                for line in line_list:
+                    print line
+
     except AssertionError as e:
         print 'ERROR: {0!s}\n'.format(e)
         searchoptions.usage()
