@@ -51,34 +51,41 @@ function Searcher(settings) {
         var pathElems = dir.split(path.sep);
         if (_settings.excludeHidden) {
             for (var p in pathElems) {
-                if (!matchesAnyElement(pathElems[p], ['.','..']) && pathElems[p].startsWith('.')) {
+                if (!matchesAnyElement(pathElems[p], ['.','..']) &&
+                    pathElems[p].startsWith('.')) {
                     return false;
                 }
             }
         }
-        if (_settings.inDirPatterns.length && !matchesAnyPattern(dir, _settings.inDirPatterns)) {
+        if (_settings.inDirPatterns.length && !matchesAnyPattern(dir,
+            _settings.inDirPatterns)) {
             return false;
         }
-        if (_settings.outDirPatterns.length && matchesAnyPattern(dir, _settings.outDirPatterns)) {
+        if (_settings.outDirPatterns.length && matchesAnyPattern(dir,
+            _settings.outDirPatterns)) {
             return false;
         }
         return true;
     };
 
     var isSearchFile = function (file) {
-        if (_settings.excludeHidden && file.startsWith(".")) {
+        if (file.startsWith(".") && _settings.excludeHidden) {
             return false;
         }
-        if (_settings.inExtensions.length && !matchesAnyElement(_fileutil.getExtension(file), _settings.inExtensions)) {
+        if (_settings.inExtensions.length &&
+            !matchesAnyElement(_fileutil.getExtension(file), _settings.inExtensions)) {
             return false;
         }
-        if (_settings.outExtensions.length && matchesAnyElement(_fileutil.getExtension(file), _settings.outExtensions)) {
+        if (_settings.outExtensions.length &&
+            matchesAnyElement(_fileutil.getExtension(file), _settings.outExtensions)) {
             return false;
         }
-        if (_settings.inFilePatterns.length && !matchesAnyPattern(file, _settings.inFilePatterns)) {
+        if (_settings.inFilePatterns.length &&
+            !matchesAnyPattern(file, _settings.inFilePatterns)) {
             return false;
         }
-        if (_settings.outFilePatterns.length && matchesAnyPattern(file, _settings.outFilePatterns)) {
+        if (_settings.outFilePatterns.length &&
+            matchesAnyPattern(file, _settings.outFilePatterns)) {
             return false;
         }
         return true;

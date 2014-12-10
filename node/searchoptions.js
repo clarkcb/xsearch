@@ -108,7 +108,8 @@ function SearchOptions() {
         return a.localeCompare(b);
     }
 
-    var setOptionsFromXml = function () {
+    // setOptionsFromXml
+    (function () {
         var fs = require('fs');
         var DomJS = require('dom-js').DomJS;
 
@@ -139,8 +140,7 @@ function SearchOptions() {
             }
         });
         options.sort(optcmp);
-    };
-    setOptionsFromXml();
+    })();
 
     this.searchSettingsFromArgs = function (args) {
         var settings = new SearchSettings();

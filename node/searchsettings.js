@@ -6,18 +6,20 @@
 
 function SearchSettings() {
     var that = this;
-    this.DEFAULT_OUT_DIRPATTERNS = [
-        new RegExp("\\bCVS"),
-        new RegExp("\\.git"),
-        new RegExp("\\.svn")]
-    this.DEFAULT_OUT_FILEPATTERNS = [new RegExp("^\\.DS_Store$")]
+    //this.DEFAULT_OUT_DIRPATTERNS = [
+    //    new RegExp("\\bCVS"),
+    //    new RegExp("\\.git"),
+    //    new RegExp("\\.svn")]
+    //this.DEFAULT_OUT_FILEPATTERNS = [new RegExp("^\\.DS_Store$")]
     this.startPath = "";
     this.inExtensions = [];
     this.outExtensions = [];
     this.inDirPatterns = [];
-    this.outDirPatterns = this.DEFAULT_OUT_DIRPATTERNS;
+    //this.outDirPatterns = this.DEFAULT_OUT_DIRPATTERNS;
+    this.outDirPatterns = [];
     this.inFilePatterns = [];
-    this.outFilePatterns = this.DEFAULT_OUT_FILEPATTERNS;
+    //this.outFilePatterns = this.DEFAULT_OUT_FILEPATTERNS;
+    this.outFilePatterns = [];
     this.inArchiveFilePatterns = [];
     this.outArchiveFilePatterns = [];
     this.inLinesAfterPatterns = [];
@@ -99,52 +101,56 @@ function SearchSettings() {
         addPattern(pattern, that.linesAfterUntilPatterns);
     };
 
+    var listToString = function (name, lst) {
+        return name + '=["' + lst.join('","') + '"]';
+    } 
+
     this.toString = function () {
         var s = 'SearchSettings(startPath="' + that.startPath + '"';
         if (that.inExtensions.length) {
-            s = s + ', inExtensions=["' + that.inExtensions.join('","') + '"]';
+            s = s + ', ' + listToString('inExtensions', that.inExtensions);
         }
         if (that.outExtensions.length) {
-            s = s + ', outExtensions=["' + that.outExtensions.join('","') + '"]';
+            s = s + ', ' + listToString('outExtensions', that.outExtensions);
         }
         if (that.inDirPatterns.length) {
-            s = s + ', inDirPatterns=["' + that.inDirPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('inDirPatterns', that.inDirPatterns);
         }
         if (that.outDirPatterns.length) {
-            s = s + ', outDirPatterns=["' + that.outDirPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('outDirPatterns', that.outDirPatterns);
         }
         if (that.inFilePatterns.length) {
-            s = s + ', inFilePatterns=["' + that.inFilePatterns.join('","') + '"]';
+            s = s + ', ' + listToString('inFilePatterns', that.inFilePatterns);
         }
         if (that.outFilePatterns.length) {
-            s = s + ', outFilePatterns=["' + that.outFilePatterns.join('","') + '"]';
+            s = s + ', ' + listToString('outFilePatterns', that.outFilePatterns);
         }
         if (that.inArchiveFilePatterns.length) {
-            s = s + ', inArchiveFilePatterns=["' + that.inArchiveFilePatterns.join('","') + '"]';
+            s = s + ', ' + listToString('inArchiveFilePatterns', that.inArchiveFilePatterns);
         }
         if (that.outArchiveFilePatterns.length) {
-            s = s + ', outArchiveFilePatterns=["' + that.outArchiveFilePatterns.join('","') + '"]';
+            s = s + ', ' + listToString('outArchiveFilePatterns', that.outArchiveFilePatterns);
         }
         if (that.inLinesAfterPatterns.length) {
-            s = s + ', inLinesAfterPatterns=["' + that.inLinesAfterPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('inLinesAfterPatterns', that.inLinesAfterPatterns);
         }
         if (that.outLinesAfterPatterns.length) {
-            s = s + ', outLinesAfterPatterns=["' + that.outLinesAfterPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('outLinesAfterPatterns', that.outLinesAfterPatterns);
         }
         if (that.inLinesBeforePatterns.length) {
-            s = s + ', inLinesBeforePatterns=["' + that.inLinesBeforePatterns.join('","') + '"]';
+            s = s + ', ' + listToString('inLinesBeforePatterns', that.inLinesBeforePatterns);
         }
         if (that.outLinesBeforePatterns.length) {
-            s = s + ', outLinesBeforePatterns=["' + that.outLinesBeforePatterns.join('","') + '"]';
+            s = s + ', ' + listToString('outLinesBeforePatterns', that.outLinesBeforePatterns);
         }
         if (that.linesAfterToPatterns.length) {
-            s = s + ', linesAfterToPatterns=["' + that.linesAfterToPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('linesAfterToPatterns', that.linesAfterToPatterns);
         }
         if (that.linesAfterUntilPatterns.length) {
-            s = s + ', linesAfterUntilPatterns=["' + that.linesAfterUntilPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('linesAfterUntilPatterns', that.linesAfterUntilPatterns);
         }
         if (that.searchPatterns.length) {
-            s = s + ', searchPatterns=["' + that.searchPatterns.join('","') + '"]';
+            s = s + ', ' + listToString('searchPatterns', that.searchPatterns);
         }
         s = s + ', archivesOnly=' + that.archivesOnly;
         s = s + ', debug=' + that.debug;
