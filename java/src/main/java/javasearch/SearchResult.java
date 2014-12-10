@@ -11,6 +11,8 @@ Class to encapsulate a command line search option
 package javasearch;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class SearchResult {
@@ -21,18 +23,29 @@ public class SearchResult {
     private int matchStartIndex;
     private int matchEndIndex;
 	private String line;
+	private List<String> linesBefore;
+	private List<String> linesAfter;
 
     // temp
-    private int MAXLINELENGTH = 150;
+    private final int MAXLINELENGTH = 150;
 
 	public SearchResult(Pattern searchPattern, File file, int lineNum,
                         int matchStartIndex, int matchEndIndex, String line) {
+		this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
+                new ArrayList<String>(), new ArrayList<String>());
+	}
+
+	public SearchResult(Pattern searchPattern, File file, int lineNum,
+                        int matchStartIndex, int matchEndIndex, String line,
+                        List<String> linesBefore, List<String> linesAfter) {
 		this.searchPattern = searchPattern;
 		this.file = file;
         this.lineNum = lineNum;
         this.matchStartIndex = matchStartIndex;
         this.matchEndIndex = matchEndIndex;
 		this.line = line;
+		this.linesBefore = linesBefore;
+		this.linesAfter = linesAfter;
 	}
 
 	public Pattern getSearchPattern() {
@@ -49,6 +62,14 @@ public class SearchResult {
 
 	public String getLine() {
 		return this.line;
+	}
+
+	public List<String> getLinesBefore() {
+		return this.linesBefore;
+	}
+
+	public List<String> getLinesAfter() {
+		return this.linesAfter;
 	}
 
 	public String toString() {
