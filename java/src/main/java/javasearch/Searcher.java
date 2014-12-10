@@ -62,9 +62,6 @@ public class Searcher {
 	}
 
 	private boolean isSearchDir(File d) {
-		if (settings.getDebug()) {
-			System.out.println("Called isSearchDir(\"" + d.getPath() + "\")");
-		}
         List<String> pathElems = Arrays.asList(d.toString().split(File.separator));
         if (settings.getExcludeHidden()) {
             for (String p : pathElems) {
@@ -123,16 +120,10 @@ public class Searcher {
 	}
 
 	private boolean isSearchFile(File f) {
-		if (settings.getDebug()) {
-			System.out.println("Called isSearchFile(\"" + f.getName() + "\")");
-		}
-        if (settings.getExcludeHidden()) {
-            if (f.toString().startsWith(".")) return false;
+        if (f.getName().startsWith(".") && settings.getExcludeHidden()) {
+            return false;
         }
 		String ext = fileUtil.getExtension(f);
-		if (settings.getDebug()) {
-			System.out.println("ext: " + ext);
-		}
 		return (settings.getInExtensions().isEmpty() ||
                 settings.getInExtensions().contains(ext))
                &&
@@ -191,7 +182,8 @@ public class Searcher {
     }
 
     public void printElapsed(String name) {
-        System.out.println(String.format("Elapsed time for \"%s\": %d milliseconds", name, getElapsed(name)));
+        System.out.println(String.format("Elapsed time for \"%s\": %d milliseconds",
+				name, getElapsed(name)));
     }
 
     public void search() {
@@ -205,7 +197,9 @@ public class Searcher {
             printElapsed("getSearchDirs");
         }
 		if (settings.getVerbose()) {
-			System.out.println("\nDirectories to be searched:");
+			String hdr = String.format("\nDirectories to be searched (%d):",
+					searchDirs.size());
+			System.out.println(hdr);
 			for (File d : searchDirs) {
 				System.out.println(d.getPath());
 			}
@@ -221,7 +215,9 @@ public class Searcher {
             printElapsed("getSearchFiles");
         }
 		if (settings.getVerbose()) {
-			System.out.println("\nFiles to be searched:");
+			String hdr = String.format("\nFiles to be searched (%d):",
+					searchFiles.size());
+			System.out.println(hdr);
 			for (File f : searchFiles) {
 				System.out.println(f.getPath());
 			}
