@@ -54,7 +54,7 @@ class Searcher (settings: SearchSettings) {
   def isSearchDir(dirName: String): Boolean = {
     println("isSearchDir(dirName=\"%s\")".format(dirName))
     val pathElems = pathElemsFromPath(dirName)
-    if (settings.excludeHidden && pathElems.exists(_.startsWith(".")))
+    if (pathElems.exists(_.startsWith(".") && settings.excludeHidden))
       false
     else
       filterInByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
@@ -89,6 +89,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isSearchFile(fileName: String): Boolean = {
+    if (fileName.startsWith(".") && settings.excludeHidden) false
     ((settings.inExtensions.isEmpty ||
       settings.inExtensions.contains(FileUtil.getExtension(fileName)))
       &&
