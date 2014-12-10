@@ -31,7 +31,6 @@ errsOrUsage searchOptions settings = do
                  then errMsg ++ getUsage searchOptions
                  else ""
         
-
 formatResults :: [SearchResult] -> String
 formatResults results = if length results > 0
   then "\nSearch results (" ++ show (length results) ++ "):\n" ++ unlines (map formatSearchResult results)
