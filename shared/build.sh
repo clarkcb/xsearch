@@ -39,6 +39,7 @@ copy_resources () {
 ########################################
 
 build_csharp () {
+    echo
     log "build_csharp"
     CSHARP_PATH=$PROJECT_PATH/csharp
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
@@ -53,6 +54,7 @@ build_csharp () {
 }
 
 build_fsharp () {
+    echo
     log "build_fsharp"
     FSHARP_PATH=$PROJECT_PATH/fsharp
     RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
@@ -66,6 +68,7 @@ build_fsharp () {
 }
 
 build_go () {
+    echo
     log "build_go"
     export GOPATH=$PROJECT_PATH/go
     export PATH=$GOPATH/bin:$PATH
@@ -83,7 +86,19 @@ build_go () {
     go install elocale.com/clarkcb/xsearch/gosearch
 }
 
+build_haskell () {
+    echo
+    log "build_haskell"
+    HASKELL_PATH=$PROJECT_PATH/haskell
+    HSSEARCH_PATH=$HASKELL_PATH/hssearch
+
+    # build with cabal
+    log "Building hssearch"
+    cd $HSSEARCH_PATH/; cabal build; cd -
+}
+
 build_java () {
+    echo
     log "build_java"
     JAVA_PATH=$PROJECT_PATH/java
     RESOURCES_PATH=$JAVA_PATH/src/main/resources
@@ -97,6 +112,7 @@ build_java () {
 }
 
 build_scala () {
+    echo
     log "build_scala"
     SCALA_PATH=$PROJECT_PATH/scala
     RESOURCES_PATH=$SCALA_PATH/src/main/resources
@@ -117,6 +133,8 @@ build_all () {
     build_fsharp
 
     build_go
+
+    build_haskell
 
     build_java
 
@@ -142,6 +160,8 @@ elif [ "$ARG" == "fsharp" ]; then
     build_fsharp
 elif [ "$ARG" == "go" ]; then
     build_go
+elif [ "$ARG" == "haskell" ]; then
+    build_haskell
 elif [ "$ARG" == "java" ]; then
     build_java
 elif [ "$ARG" == "scala" ]; then
@@ -149,5 +169,4 @@ elif [ "$ARG" == "scala" ]; then
 else
     echo "ERROR: unknown build argument: $ARG"
 fi
-
 
