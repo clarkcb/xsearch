@@ -71,31 +71,33 @@ class SearchSettings
     @linesaftertopatterns = []
     @linesafteruntilpatterns = []
     @out_archivefilepatterns = []
-    @out_dirpatterns = get_default_out_dirpatterns()
+    #@out_dirpatterns = get_default_out_dirpatterns()
+    @out_dirpatterns = []
     @out_extensions = []
-    @out_filepatterns = get_default_out_filepatterns()
+    #@out_filepatterns = get_default_out_filepatterns()
+    @out_filepatterns = []
     @out_linesafterpatterns = []
     @out_linesbeforepatterns = []
     @searchpatterns = []
   end
 
-  def get_default_out_dirpatterns()
-    out_dirs = ["\\bCVS$", "\\.git$", "\\.svn$"]
-    out_dirpatterns = []
-    out_dirs.each do |d|
-      out_dirpatterns.push(Regexp.new(d))
-    end
-    out_dirpatterns
-  end
+  #def get_default_out_dirpatterns()
+  #  out_dirs = ["\\bCVS$", "\\.git$", "\\.svn$"]
+  #  out_dirpatterns = []
+  #  out_dirs.each do |d|
+  #    out_dirpatterns.push(Regexp.new(d))
+  #  end
+  #  out_dirpatterns
+  #end
 
-  def get_default_out_filepatterns()
-    out_files = ["^\\.DS_Store$"]
-    out_filepatterns = []
-    out_files.each do |f|
-      out_filepatterns.push(Regexp.new(f))
-    end
-    out_filepatterns
-  end
+  #def get_default_out_filepatterns()
+  #  out_files = ["^\\.DS_Store$"]
+  #  out_filepatterns = []
+  #  out_files.each do |f|
+  #    out_filepatterns.push(Regexp.new(f))
+  #  end
+  #  out_filepatterns
+  #end
 
   def add_comma_delimited_exts(exts, ext_set)
     exts.split(",").each do |x|
@@ -107,27 +109,19 @@ class SearchSettings
     @searchpatterns.push(Regexp.new(pattern, true))
   end
 
+  def list_to_s(name, lst)
+    "#{name}=[\"#{lst.join("\", \"")}\"]"
+  end
+
   def to_s
     s = "SearchSettings(startpath: \"#{@startpath}\""
-    s += ", searchpatterns: [\"#{@searchpatterns.join("\", \"")}\"]"
-    if @in_extensions
-      s += ", in_extensions: [#{@in_extensions.join(", ")}]"
-    end
-    if @out_extensions
-      s += ", out_extensions: [#{@out_extensions.join(", ")}]"
-    end
-    if @in_dirpatterns
-      s += ", in_dirpatterns: [#{@in_dirpatterns.join(", ")}]"
-    end
-    if @out_dirpatterns
-      s += ", out_dirpatterns: [#{@out_dirpatterns.join(", ")}]"
-    end
-    if @in_filepatterns
-      s += ", in_filepatterns: [#{@in_filepatterns.join(", ")}]"
-    end
-    if @out_filepatterns
-      s += ", out_filepatterns: [#{@out_filepatterns.join(", ")}]"
-    end
+    s += ", " + list_to_s("searchpatterns", @searchpatterns)
+    s += ", " + list_to_s("in_extensions", @in_extensions)
+    s += ", " + list_to_s("out_extensions", @out_extensions)
+    s += ", " + list_to_s("in_dirpatterns", @in_dirpatterns)
+    s += ", " + list_to_s("out_dirpatterns", @out_dirpatterns)
+    s += ", " + list_to_s("in_filepatterns", @in_filepatterns)
+    s += ", " + list_to_s("out_filepatterns", @out_filepatterns)
     s += ", archivesonly: #{@archivesonly}"
     s += ", debug: #{@debug}"
     s += ", dotiming: #{@dotiming}"

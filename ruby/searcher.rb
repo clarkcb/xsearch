@@ -242,6 +242,7 @@ class Searcher
         search_line = true
         pos = 0
         while search_line and pos < line.length
+          # TODO: catch ArgumentError: "in `match': invalid byte sequence in US-ASCII"
           m = p.match(line, pos)
           if m
             if @settings.firstmatch and file_pattern_matches.include?(p)
