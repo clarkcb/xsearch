@@ -99,6 +99,11 @@ func filterInBySearchPatterns(s *string, inPatterns *SearchPatterns,
 }
 
 func (s *Searcher) isSearchDir(d *string) bool {
+	if *d != "." && *d != ".." {
+		if strings.HasPrefix(*d, ".") && s.Settings.ExcludeHidden {
+			return false
+		}
+	}
 	return filterInBySearchPatterns(d, s.Settings.InDirPatterns,
 		s.Settings.OutDirPatterns)
 }
@@ -141,6 +146,9 @@ func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 }
 
 func (s *Searcher) isSearchFile(filename *string) bool {
+	if strings.HasPrefix(*filename, ".") && s.Settings.ExcludeHidden {
+		return false
+	}
 	ext := getExtension(*filename)
 	if len(s.Settings.InExtensions) > 0 && !contains(s.Settings.InExtensions, ext) {
 		return false
