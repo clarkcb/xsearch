@@ -31,24 +31,27 @@ errsOrUsage searchOptions settings = do
                  then errMsg ++ getUsage searchOptions
                  else ""
         
-formatResults :: [SearchResult] -> String
-formatResults results =
-  if length results > 0
-    then "\nSearch results (" ++ show (length results) ++ "):\n" ++
-         unlines (map formatSearchResult results)
-    else "\nSearch results: none"
+formatResults :: SearchSettings -> [SearchResult] -> String
+formatResults settings results =
+  "\nSearch results (" ++ show (length results) ++ "):" ++
+    (if length results > 0
+       then "\n" ++ unlines (map formatSearchResult results)
+       else "") ++
+    (concat (map matchString (searchPatterns settings)))
+  where matchString p = "\nMatches for "++ show p ++ ": " ++ show (patternCount p)
+        patternCount :: String -> Int
+        patternCount p = foldr (\x acc -> if p == (searchPattern x) then acc + 1 else acc) 0 results
+
 
 main :: IO ()
 main = do
   args <- getArgs
-
   searchOptions <- getSearchOptions
   let settings = settingsFromArgs searchOptions args
   putStr $ if debug settings
            then "\nsettingsFromArgs " ++ show args ++ ": " ++ show settings ++
                 "\n"
            else ""
-
   let maybeUsage = errsOrUsage searchOptions settings
   case maybeUsage of
     Just usage -> putStrLn usage
@@ -67,5 +70,5 @@ main = do
                else ""
       results <- doSearchFiles settings searchFiles
       putStrLn $ if printResults settings
-                  then formatResults results
-                  else ""
+                 then formatResults settings results
+                 else ""
