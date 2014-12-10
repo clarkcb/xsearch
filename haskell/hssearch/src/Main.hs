@@ -1,6 +1,8 @@
 module Main where
 
+import Data.List (nubBy, sort)
 import System.Environment (getArgs)
+import System.FilePath (takeDirectory)
 
 import SearchOptions
 import Searcher
@@ -42,6 +44,25 @@ formatResults settings results =
         patternCount :: String -> Int
         patternCount p = foldr (\x acc -> if p == (searchPattern x) then acc + 1 else acc) 0 results
 
+getMatchingDirs :: [SearchResult] -> [FilePath]
+getMatchingDirs results = sort $ map (\r -> takeDirectory (filePath r)) (nubBy matchingDirs results)
+  where matchingDirs x y = takeDirectory (filePath x) == takeDirectory (filePath y)
+
+formatMatchingDirs :: [SearchResult] -> String
+formatMatchingDirs results = 
+  "\n\nDirectories with matches (" ++ show (length matchingDirs) ++ "):\n" ++
+  unlines matchingDirs
+  where matchingDirs = getMatchingDirs results
+
+getMatchingFiles :: [SearchResult] -> [FilePath]
+getMatchingFiles results = sort $ map (\r -> filePath r) (nubBy matchingFilePaths results)
+  where matchingFilePaths x y = filePath x == filePath y
+
+formatMatchingFiles :: [SearchResult] -> String
+formatMatchingFiles results = 
+  "\n\nFiles with matches (" ++ show (length matchingFiles) ++ "):\n" ++
+  unlines matchingFiles
+  where matchingFiles = getMatchingFiles results
 
 main :: IO ()
 main = do
@@ -69,6 +90,14 @@ main = do
                     unlines searchFiles
                else ""
       results <- doSearchFiles settings searchFiles
-      putStrLn $ if printResults settings
-                 then formatResults settings results
-                 else ""
+      putStr $ if printResults settings
+               then formatResults settings results
+               else ""
+      putStr $ if listDirs settings
+               then formatMatchingDirs results
+               else ""
+      putStr $ if listFiles settings
+               then formatMatchingFiles results
+               else ""
+
+      putStrLn ""
