@@ -12,11 +12,17 @@
   <searchoption long="dotiming" short="t">
     Measure search execution duration
   </searchoption>
+  <searchoption long="excludehidden" short="">
+    Exclude hidden files and directories*
+  </searchoption>
   <searchoption long="firstmatch" short="1">
     Capture only the first match for a file+search combination
   </searchoption>
   <searchoption long="help" short="h">
     Print this usage and exit
+  </searchoption>
+  <searchoption long="includehidden" short="">
+    Include hidden files and directories
   </searchoption>
   <searchoption long="in-archivefilepattern" short="">
     Specify name pattern for archive files to include in search
