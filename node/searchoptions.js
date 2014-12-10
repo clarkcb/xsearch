@@ -39,6 +39,8 @@ function SearchOptions() {
             function(x, settings) { settings.addInLinesAfterUntilPattern(x); },
         'linesbefore':
             function(x, settings) { settings.linesBefore = x; },
+        'maxlinelength':
+            function(x, settings) { settings.maxLineLength = x; },
         'out-dirpattern':
             function(x, settings) { settings.addOutDirPattern(x); },
         'out-archivefilepattern':
@@ -64,8 +66,12 @@ function SearchOptions() {
             function(settings) { settings.debug = true; },
         'dotiming':
             function(settings) { settings.doTiming = true; },
+        'excludehidden':
+            function(settings) { settings.excludeHidden = true; },
         'firstmatch':
             function(settings) { settings.firstMatch = true; },
+        'includehidden':
+            function(settings) { settings.excludeHidden = false; },
         'help':
             function(settings) { settings.printUsage = true; },
         'listdirs':
@@ -78,10 +84,14 @@ function SearchOptions() {
             function(settings) { settings.multilineSearch = true; },
         'noprintmatches':
             function(settings) { settings.printResults = false; },
+        'norecursive':
+            function(settings) { settings.recursive = false; },
         'nosearcharchives':
             function(settings) { settings.searchArchives = false; },
         'printmatches':
             function(settings) { settings.printResults = true; },
+        'recursive':
+            function(settings) { settings.recursive = true; },
         'searcharchives':
             function(settings) { settings.searchArchives = true; },
         'uniquelines':

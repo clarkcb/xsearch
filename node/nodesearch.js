@@ -35,6 +35,30 @@ function searchMain() {
      try {
         var searcher = new Searcher(settings);
         searcher.search();
+
+        if (settings.printResults) {
+            console.log("\nSearch results ("+searcher.results.length+"):");
+            for (var r in searcher.results) {
+                console.log(searcher.results[r].toString());
+            }
+        }
+
+        //if (settings.doTiming && settings.debug) {
+        //    console.log("\nTimers:");
+        //    for (var t in _timers) {
+        //        console.log(t + ": " + _timers[t]);
+        //    }
+        //}
+        if (settings.listDirs) {
+            searcher.printMatchingDirs();
+        }
+        if (settings.listFiles) {
+            searcher.printMatchingFiles();
+        }
+        if (settings.listLines) {
+            searcher.printMatchingLines();
+        }
+
     } catch (err) {
         console.log('\n' + err + '\n');
         searchOptions.usageWithCode(1);

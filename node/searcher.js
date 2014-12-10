@@ -11,6 +11,13 @@ var path = require('path');
 var FileUtil = require('./fileutil.js').FileUtil;
 var SearchResult = require('./searchresult.js').SearchResult;
 
+// add a startsWith method to String type
+if (typeof String.prototype.startsWith != 'function') {
+    String.prototype.startsWith = function (str){
+        return this.slice(0, str.length) == str;
+    };
+}
+
 function Searcher(settings) {
     var that = this;
     var _settings = settings;
@@ -41,6 +48,14 @@ function Searcher(settings) {
     };
 
     var isSearchDir = function (dir) {
+        var pathElems = dir.split(path.sep);
+        if (_settings.excludeHidden) {
+            for (var p in pathElems) {
+                if (!matchesAnyElement(pathElems[p], ['.','..']) && pathElems[p].startsWith('.')) {
+                    return false;
+                }
+            }
+        }
         if (_settings.inDirPatterns.length && !matchesAnyPattern(dir, _settings.inDirPatterns)) {
             return false;
         }
@@ -51,6 +66,9 @@ function Searcher(settings) {
     };
 
     var isSearchFile = function (file) {
+        if (_settings.excludeHidden && file.startsWith(".")) {
+            return false;
+        }
         if (_settings.inExtensions.length && !matchesAnyElement(_fileutil.getExtension(file), _settings.inExtensions)) {
             return false;
         }
@@ -66,18 +84,28 @@ function Searcher(settings) {
         return true;
     };
 
-    var getSearchDirs = function (currentPath) {
+    var getSearchDirs = function (startPath) {
         if (_settings.debug) {
-            console.log("Getting list of directories to search under " + currentPath);
+            console.log("Getting list of directories to search under " + startPath);
         }
-        var dirs = [];
-        var childItems = fs.readdirSync(currentPath);
+        var searchDirs = [];
+        if (_settings.recursive) {
+            searchDirs.push.apply(searchDirs, recGetSearchDirs(startPath));
+        } else if (isSearchDir(startPath)) {
+            searchDirs.push(startPath);
+        }
+        return searchDirs;
+    }
+
+    var getSubDirs = function (dir) {
+        var subDirs = [];
+        var childItems = fs.readdirSync(dir);
         for (var c in childItems) {
-            var filepath = path.join(currentPath, childItems[c]);
+            var filepath = path.join(dir, childItems[c]);
             try {
                 var stats = fs.statSync(filepath);
-                if (stats.isDirectory() && isSearchDir(c)) {
-                    dirs.push(filepath);
+                if (stats.isDirectory()) {
+                    subDirs.push(filepath);
                 }
             } catch (err) {
                 if (err.errno === 34 && err.code === "ENOENT") {
@@ -89,29 +117,32 @@ function Searcher(settings) {
                 }
             }
         }
-        for (var d in dirs) {
-            dirs.push.apply(dirs, getSearchDirs(dirs[d]));
-        }
-        return dirs;
+        return subDirs;
     };
 
-    var getSearchFilesForDirectory = function (dir) {
-        if (_settings.debug) {
-            console.log("Finding search files under " + dir);
+    var recGetSearchDirs = function (currentDir) {
+        var searchDirs = [];
+        var subDirs = getSubDirs(currentDir);
+        for (var d in subDirs) {
+            if (isSearchDir(subDirs[d])) {
+                searchDirs.push(subDirs[d]);
+            }
         }
+        for (var d in subDirs) {
+            searchDirs.push.apply(searchDirs, recGetSearchDirs(subDirs[d]));
+        }
+        return searchDirs;
+    };
+
+    var getFilesForDirectory = function (dir) {
         var files = [];
         var childItems = fs.readdirSync(dir);
         for (var c in childItems) {
             var filepath = path.join(dir, childItems[c]);
-            if (_settings.debug) {
-                console.log('childItem: "' + filepath + '"');
-            }
             try {
                 var stats = fs.statSync(filepath);
                 if (stats.isFile()) {
-                    if (isSearchFile(filepath)) {
-                        files.push(filepath);
-                    }
+                    files.push(filepath);
                 }
             } catch (err) {
                 if (err.errno === 34 && err.code === "ENOENT") {
@@ -123,18 +154,26 @@ function Searcher(settings) {
                 }
             }
         }
-        if (_settings.debug) {
-            console.log('Search files under '+dir+' ('+files.length+'):');
-        }
         return files;
     }
 
-    var getSearchFiles = function (searchDirs) {
-        var files = [];
-        for (var d in searchDirs) {
-            files.push.apply(files, getSearchFilesForDirectory(searchDirs[d]));
+    var getSearchFilesForDirectory = function (dir) {
+        var searchFiles = [];
+        var dirFiles = getFilesForDirectory(dir);
+        for (var d in dirFiles) {
+            if (isSearchFile(dirFiles[d])) {
+                searchFiles.push(dirFiles[d]);
+            }
         }
-        return files;
+        return searchFiles;
+    }
+
+    var getSearchFiles = function (searchDirs) {
+        var searchFiles = [];
+        for (var d in searchDirs) {
+            searchFiles.push.apply(searchFiles, getSearchFilesForDirectory(searchDirs[d]));
+        }
+        return searchFiles;
     };
 
     var addTimer = function (name, action) {
@@ -191,6 +230,7 @@ function Searcher(settings) {
             for (var f in files) {
                 console.log(files[f]);
             }
+            console.log("");
         }
 
         if (_settings.doTiming)
@@ -202,38 +242,7 @@ function Searcher(settings) {
             stopTimer("SearchFiles");
 
         if (_settings.verbose)
-            console.log("Search completed");
-
-        if (_settings.printResults)
-            console.log("Matches: " + that.results.length);
-
-        if (_settings.doTiming && _settings.debug) {
-            console.log("\nTimers:");
-            for (var t in _timers) {
-                console.log(t + ": " + _timers[t]);
-            }
-        }
-        if (_settings.listDirs) {
-            var dirs = that.getDirsWithMatches();
-            console.log("\nDirectories with matches ("+dirs.length+"):");
-            for (var d in dirs) {
-                console.log(dirs[d]);
-            }
-        }
-        if (_settings.listFiles) {
-            var files = that.getFilesWithMatches();
-            console.log("\nFiles with matches ("+files.length+"):");
-            for (var f in files) {
-                console.log(files[f]);
-            }
-        }
-        if (_settings.listLines) {
-            var lines = that.getLinesWithMatches();
-            console.log("\nLines with matches ("+lines.length+"):");
-            for (var l in lines) {
-                console.log(lines[l]);
-            }
-        }
+            console.log("Search complete.");
     };
 
     var searchFile = function (filepath) {
@@ -274,9 +283,6 @@ function Searcher(settings) {
     };
 
     var searchTextFileContents = function (filepath) {
-        if (_settings.verbose) {
-            console.log('Searching text file contents: "'+filepath+'"');
-        }
         var fileResults = {};
         var contents = fs.readFileSync(filepath).toString();
 
@@ -317,9 +323,6 @@ function Searcher(settings) {
     };
 
     var searchTextFileLines = function (filepath) {
-        if (_settings.verbose) {
-            console.log('Searching text file by line: "'+filepath+'"');
-        }
         var contents = fs.readFileSync(filepath).toString();
         var lines = contents.toString().split(/\r?\n/);
         var linenum = 0;
@@ -328,20 +331,22 @@ function Searcher(settings) {
             linenum += 1;
             //console.log("line["+linenum+"]: "+lines[i]);
             for (p in _settings.searchPatterns) {
-                pattern = _settings.searchPatterns[p];
+                pattern = new RegExp(_settings.searchPatterns[p].source, "g");
                 var match = pattern.exec(lines[i]);
-                if (match) {
-                    addSearchResult(new SearchResult(pattern, filepath, linenum, lines[i]));
+                while (match) {
+                    addSearchResult(new SearchResult(pattern, filepath, linenum,
+                        lines[i], match.index, pattern.lastIndex));
                     if (_settings.firstMatch) {
                         return;
                     }
+                    match = pattern.exec(lines[i]);
                 }
             }
         }
     };
 
     var addSearchResult = function (result) {
-        console.log(result.toString());
+        //console.log(result.toString());
         that.results.push(result);
     };
 
@@ -362,7 +367,7 @@ function Searcher(settings) {
         return set;
     };
 
-    this.getDirsWithMatches = function () {
+    this.getMatchingDirs = function () {
         var dirs = [];
         for (var r in that.results) {
             var result = that.results[r];
@@ -371,7 +376,15 @@ function Searcher(settings) {
         return setFromArray(dirs);
     };
 
-    this.getFilesWithMatches = function () {
+    this.printMatchingDirs = function () {
+        var dirs = that.getMatchingDirs();
+        console.log("\nDirectories with matches ("+dirs.length+"):");
+        for (var d in dirs) {
+            console.log(dirs[d]);
+        }
+    };
+
+    this.getMatchingFiles = function () {
         var files = [];
         for (var r in that.results) {
             var result = that.results[r];
@@ -380,7 +393,15 @@ function Searcher(settings) {
         return setFromArray(files);
     };
 
-    this.getLinesWithMatches = function () {
+    this.printMatchingFiles = function () {
+        var files = that.getMatchingFiles();
+        console.log("\nFiles with matches ("+files.length+"):");
+        for (var f in files) {
+            console.log(files[f]);
+        }
+    };
+
+    this.getMatchingLines = function () {
         var lines = [];
         for (var r in that.results) {
             var result = that.results[r];
@@ -388,7 +409,15 @@ function Searcher(settings) {
                 lines.push(result.line);
         }
         return setFromArray(lines);
-    }
+    };
+
+    this.printMatchingLines = function () {
+        var lines = that.getMatchingLines();
+        console.log("\nLines with matches ("+lines.length+"):");
+        for (var l in lines) {
+            console.log(lines[l]);
+        }
+    };
 }
 
 exports.Searcher = Searcher;
