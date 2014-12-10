@@ -28,5 +28,13 @@ object SearchMain {
 
     val searcher = new Searcher(settings)
     searcher.search()
+
+    if (settings.printResults) {
+      println("Search results (%d):".format(searcher.searchResults.length))
+      searcher.printSearchResults()
+    }
+    if (settings.listDirs) searcher.printMatchingDirs()
+    if (settings.listFiles) searcher.printMatchingFiles()
+    if (settings.listLines) searcher.printMatchingLines()
   }
 }

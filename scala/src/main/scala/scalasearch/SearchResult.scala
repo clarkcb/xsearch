@@ -2,11 +2,26 @@ package scalasearch
 
 import scala.util.matching.Regex
 
-class SearchResult(val searchPattern: Regex, val file: SearchFile, val lineNum: Int,
-    val line: String, linesBefore: List[String], linesAfter: List[String]) {
+case class StringSearchResult(searchPattern: Regex, lineNum:Int,
+                              matchStartIndex:Int, matchEndIndex:Int, line:String,
+                              linesBefore: List[String]=List.empty[String],
+                              linesAfter: List[String]=List.empty[String])
+
+class SearchResult(val searchPattern: Regex, val file: SearchFile,
+                   val lineNum: Int, val line: String,
+                   val matchStartIndex:Int, val matchEndIndex:Int,
+                   linesBefore: List[String], linesAfter: List[String],
+                   maxLineLength:Int=DefaultSettings.maxLineLength) {
+
+  def this(searchPattern: Regex, file: SearchFile, lineNum: Int, line: String,
+           matchStartIndex:Int, matchEndIndex:Int) = {
+    this(searchPattern, file, lineNum, line, matchStartIndex, matchEndIndex,
+      List.empty[String], List.empty[String])
+  }
 
   def this(searchPattern: Regex, file: SearchFile, lineNum: Int, line: String) = {
-    this(searchPattern, file, lineNum, line, List[String](), List[String]())
+    this(searchPattern, file, lineNum, line, 0, 0,
+      List.empty[String], List.empty[String])
   }
 
   val sepLen = 80
@@ -21,8 +36,40 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile, val lineNum: 
   def singleLineToString = {
     val matchString =
       if (lineNum == 0) " matches"
-      else ": %d: %s".format(lineNum, line.trim)
+      else ": %d [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
+        formatMatchingLine)
     file.getPathWithContainers + matchString
+  }
+
+  private def formatMatchingLine:String = {
+    val lineLength = line.length
+    val matchLength = matchEndIndex - matchStartIndex
+    val formatted =
+      if (lineLength > maxLineLength) {
+        var adjustedMaxLength = maxLineLength - matchLength
+        var beforeIndex = matchStartIndex
+        if (matchStartIndex > 0) {
+          beforeIndex -= (adjustedMaxLength / 4)
+          if (beforeIndex < 0) beforeIndex = 0
+        }
+        adjustedMaxLength -= (matchStartIndex - beforeIndex)
+        var afterIndex = matchEndIndex + adjustedMaxLength
+        if (afterIndex > lineLength) afterIndex = lineLength
+        val before =
+          if (beforeIndex > 3) {
+            beforeIndex += 3
+            "..."
+          } else ""
+        val after =
+          if (afterIndex < lineLength - 3) {
+            afterIndex -= 3
+            "..."
+          } else ""
+        before + line.substring(beforeIndex, afterIndex) + after
+      } else {
+        line
+      }
+    formatted.trim
   }
 
   def lineNumPadding: Int = {

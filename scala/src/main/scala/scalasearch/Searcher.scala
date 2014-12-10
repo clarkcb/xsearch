@@ -8,6 +8,7 @@ import scala.collection.JavaConversions.enumerationAsScalaIterator
 import scala.collection.mutable
 import scala.io.Source
 import scala.util.matching.Regex
+import scala.util.matching.Regex.Match
 
 class Searcher (settings: SearchSettings) {
   def validateSettings() {
@@ -46,25 +47,38 @@ class Searcher (settings: SearchSettings) {
     isSearchDir(d.getName)
   }
 
+  def pathElemsFromPath(path: String): Iterable[String] = {
+    path.split(File.separator).filterNot(p => Set(".", "..").contains(p))
+  }
+
   def isSearchDir(dirName: String): Boolean = {
-    filterInByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
+    println("isSearchDir(dirName=\"%s\")".format(dirName))
+    val pathElems = pathElemsFromPath(dirName)
+    if (settings.excludeHidden && pathElems.exists(_.startsWith(".")))
+      false
+    else
+      filterInByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
+  }
+
+  private def getSearchSubDirs(dir:File): Iterable[File] = {
+    val searchSubDirs = dir.listFiles.filter(_.isDirectory).filter(isSearchDir)
+    searchSubDirs ++ searchSubDirs.flatMap(getSearchSubDirs)
   }
 
   def getSearchDirs(startDir:File): Iterable[File] = {
     if (settings.verbose) println("getSearchDirs(%s)".format(startDir.toString))
-    val searchDirs =
+    val startDirs =
       if (isSearchDir(startDir)) Seq[File](startDir)
       else Seq.empty[File]
-    def getFilteredDirs(dir:File): Iterable[File] = {
-      val filteredDirs = dir.listFiles.filter(_.isDirectory).filter(isSearchDir)
-      filteredDirs ++ filteredDirs.flatMap(getFilteredDirs)
-    }
-    searchDirs ++ getFilteredDirs(startDir)
+    val subDirs =
+      if (settings.recursive) getSearchSubDirs(startDir)
+      else Seq.empty[File]
+    startDirs ++ subDirs
   }
 
-  def getSearchFileType(f: File): SearchFileType.SearchFileType = getSearchFileType(f.getName)
+  def getSearchFileType(f: File): SearchFileType.Value = getSearchFileType(f.getName)
 
-  def getSearchFileType(fileName: String): SearchFileType.SearchFileType = {
+  def getSearchFileType(fileName: String): SearchFileType.Value = {
     if (isSearchFile(fileName)) SearchFileType.SearchFile
     else if (isArchiveSearchFile(fileName)) SearchFileType.ArchiveSearchFile
     else SearchFileType.NonSearchFile
@@ -90,22 +104,24 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isArchiveSearchFile(fileName: String): Boolean = {
-    settings.searchArchives &&
       filterInByPatterns(fileName, settings.inArchiveFilePatterns,
         settings.outArchiveFilePatterns)
   }
 
   def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
-    val searchFiles = mutable.ArrayBuffer.empty[SearchFile]
-    dir.listFiles().filterNot(_.isDirectory).map {
+    val searchFiles: Array[Option[SearchFile]] = dir.listFiles().filterNot(_.isDirectory).map {
       f =>
-        if (FileUtil.isArchiveFile(f) && isArchiveSearchFile(f)) {
-          searchFiles += new SearchFile(f.getParent, f.getName)
+        if (FileUtil.isArchiveFile(f)) {
+          if (settings.searchArchives && isArchiveSearchFile(f))
+            Some(new SearchFile(f.getParent, f.getName))
+          else None
         } else if (!settings.archivesOnly && isSearchFile(f)) {
-          searchFiles += new SearchFile(f.getParent, f.getName)
+          Some(new SearchFile(f.getParent, f.getName))
+        } else {
+          None
         }
     }
-    searchFiles.toList
+    searchFiles.flatten.asInstanceOf[Array[SearchFile]]
   }
 
   def getSearchFiles(searchDirs:Iterable[File]): Iterable[SearchFile] = {
@@ -175,13 +191,6 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       println("\nFile search complete.\n")
     }
-    if (settings.printResults) {
-      println("Search results (%d):".format(_searchResults.length))
-      _searchResults.foreach(printSearchResult)
-    }
-    if (settings.listDirs) printDirList()
-    if (settings.listFiles) printFileList()
-    if (settings.listLines) printLineList()
   }
 
   def searchFile(sf: SearchFile) {
@@ -189,14 +198,15 @@ class Searcher (settings: SearchSettings) {
   }
 
   def searchFileSource(sf: SearchFile, source: Source) {
-    if (FileUtil.isSearchableFile(sf)) {
-      if (FileUtil.isTextFile(sf)) {
+    FileUtil.getFileType(sf) match {
+      case FileType.Text =>
         searchTextFileSource(sf, source)
-      } else if (FileUtil.isBinaryFile(sf)) {
+      case FileType.Binary =>
         searchBinaryFileSource(sf, source)
-      } else if (FileUtil.isArchiveFile(sf)) {
+      case FileType.Archive =>
         searchArchiveFileSource(sf, source)
-      }
+      case _ =>
+        println("Skipping unknown file type: " + sf)
     }
   }
 
@@ -234,6 +244,60 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
+  def searchTextFileSourceContentsNew(sf: SearchFile, source: Source) {
+    val contents = source.mkString
+    searchMultiLineString(contents).foreach { r =>
+      addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
+          r.line, r.matchStartIndex, r.matchEndIndex))
+      }
+    }
+
+  def searchMultiLineString(s: String): Seq[StringSearchResult] = {
+    val stringSearchResults = mutable.ArrayBuffer.empty[StringSearchResult]
+    for (p <- settings.searchPatterns) {
+      stringSearchResults ++= searchMultiLineStringForPattern(s, p)
+    }
+    stringSearchResults
+  }
+
+  def searchMultiLineStringForPattern(s: String, p: Regex): Seq[StringSearchResult] = {
+    val lineIndices: Seq[(Int, Int)] = Searcher.getLineIndices(s)
+    val stringSearchResults = mutable.ArrayBuffer.empty[StringSearchResult]
+    val matches = p.findAllIn(s).matchData
+    var stop = false
+    while (matches.hasNext && !stop) {
+      val m = matches.next()
+      val thisLineIndices = lineIndices.filter(_._1 <= m.start).last
+      val beforeLineCount = lineIndices.count(_._1 < thisLineIndices._1)
+      val line = s.substring(thisLineIndices._1, thisLineIndices._2)
+      val linesBefore: List[String] =
+        if (settings.linesBefore > 0) {
+          lineIndices.filter(_._1 < thisLineIndices._1).
+            takeRight(settings.linesBefore).
+            map(li => s.substring(li._1, li._2)).toList
+        } else {
+          List.empty[String]
+        }
+      val linesAfter: List[String] =
+        if (settings.linesAfter > 0) {
+          lineIndices.filter(_._1 > thisLineIndices._2).
+            take(settings.linesAfter).
+            map(li => s.substring(li._1, li._2)).toList
+        } else {
+          List.empty[String]
+        }
+      if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
+        (linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
+        stringSearchResults += new StringSearchResult(p, beforeLineCount + 1,
+          m.start - thisLineIndices._1, m.end - thisLineIndices._1, line, linesBefore,
+          linesAfter)
+        if (settings.firstMatch)
+          stop = true
+      }
+    }
+    stringSearchResults
+  }
+
   def searchTextFileSourceContents(sf: SearchFile, source: Source) {
     val contents = source.mkString
     var stop = false
@@ -242,22 +306,23 @@ class Searcher (settings: SearchSettings) {
       while (matches.hasNext && !stop) {
         val m = matches.next()
         val beforeText = m.before
-        val beforeLineCount = 
+        val beforeLineCount =
           if (beforeText == null) 0
           else getLineCount(beforeText)
-        val lineStartIndex = 
+        val lineStartIndex =
           if (beforeLineCount > 0)
             startOfLineIndexFromCurrent(contents, m.start)
           else 0
         val afterText = m.after
-        val afterLineCount = 
+        val afterLineCount =
           if (afterText == null) 0
           else getLineCount(afterText)
-        val lineEndIndex = 
+        val lineEndIndex =
           if (afterLineCount > 0) endOfLineIndexFromCurrent(contents, m.start)
           else contents.length
         val line = contents.subSequence(lineStartIndex, lineEndIndex).toString
-        val searchResult = new SearchResult(p, sf, beforeLineCount+1, line)
+        val searchResult = new SearchResult(p, sf, beforeLineCount+1, line,
+          m.start, m.end)
         addSearchResult(searchResult)
         if (settings.firstMatch &&
             _fileMap.contains(sf) &&
@@ -287,12 +352,20 @@ class Searcher (settings: SearchSettings) {
     searchTextFileSourceLines(sf, Source.fromFile(sf.toFile))
   }
 
-  def searchTextFileSourceLines(f: SearchFile, source: Source) {
+  def searchTextFileSourceLines(sf: SearchFile, source: Source) {
+    searchLineStringIterator(source.getLines()).foreach { r =>
+      addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
+        r.line, r.matchStartIndex, r.matchEndIndex))
+    }
+  }
+
+  def searchLineStringIterator(lines: Iterator[String]): Seq[StringSearchResult] = {
     var stop = false
-    val lines = source.getLines()
     var lineNum: Int = 0
     val linesBefore = new mutable.ListBuffer[String]
     val linesAfter = new mutable.ListBuffer[String]
+    val patternMatches = mutable.Map.empty[Regex,Int]
+    val stringSearchResults = mutable.ArrayBuffer.empty[StringSearchResult]
     while (lines.hasNext && !stop) {
       val line = 
         if (linesAfter.nonEmpty) linesAfter.remove(0)
@@ -303,47 +376,51 @@ class Searcher (settings: SearchSettings) {
           linesAfter += lines.next
       }
       // search the line with each searchPatterns
-      for (p <- settings.searchPatterns if p.findFirstIn(line).isDefined) {
-        if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
+      //for (p <- settings.searchPatterns if p.findFirstIn(line).isDefined) {
+      for (p <- settings.searchPatterns) {
+        for (m <- p.findAllIn(line).matchData) {
+          if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
             (linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
 
-          // take care of linesAfterToPatterns or linesAfterUntilPatterns
-          var lineAfterToMatch = false
-          var lineAfterUntilMatch = false
-          if (settings.linesAfterToPatterns.nonEmpty ||
-            settings.linesAfterUntilPatterns.nonEmpty) {
-            // check to see if linesAfter has a match
-            if (settings.linesAfterToPatterns.nonEmpty &&
-              anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)) {
-              lineAfterToMatch = true
-            } else if (settings.linesAfterUntilPatterns.nonEmpty &&
-              anyMatchesAnyPattern(linesAfter, settings.linesAfterUntilPatterns)) {
-              lineAfterUntilMatch = true
-            }
-            // if not read more lines into linesAfter until match or EOF
-            while (lines.hasNext && !lineAfterToMatch && !lineAfterUntilMatch) {
-              val nextLine = lines.next()
-              linesAfter += nextLine
+            // take care of linesAfterToPatterns or linesAfterUntilPatterns
+            var lineAfterToMatch = false
+            var lineAfterUntilMatch = false
+            if (settings.linesAfterToPatterns.nonEmpty ||
+              settings.linesAfterUntilPatterns.nonEmpty) {
+              // check to see if linesAfter has a match
               if (settings.linesAfterToPatterns.nonEmpty &&
-                matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
+                anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)) {
                 lineAfterToMatch = true
               } else if (settings.linesAfterUntilPatterns.nonEmpty &&
-                matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
+                anyMatchesAnyPattern(linesAfter, settings.linesAfterUntilPatterns)) {
                 lineAfterUntilMatch = true
               }
+              // if not read more lines into linesAfter until match or EOF
+              while (lines.hasNext && !lineAfterToMatch && !lineAfterUntilMatch) {
+                val nextLine = lines.next()
+                linesAfter += nextLine
+                if (settings.linesAfterToPatterns.nonEmpty &&
+                  matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
+                  lineAfterToMatch = true
+                } else if (settings.linesAfterUntilPatterns.nonEmpty &&
+                  matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
+                  lineAfterUntilMatch = true
+                }
+              }
+            }
+            val resLinesAfter =
+              if (lineAfterUntilMatch) linesAfter.init.toList
+              else linesAfter.toList
+
+            if (settings.firstMatch && patternMatches.contains(p)) {
+              stop = true
+            } else {
+              // add the search result
+              stringSearchResults += new StringSearchResult(p, lineNum,
+                m.start, m.end, line, linesBefore.toList, resLinesAfter)
+              patternMatches(p) = 1
             }
           }
-          val resLinesAfter =
-            if (lineAfterUntilMatch) linesAfter.init.toList
-            else linesAfter.toList
-
-          // add the search result
-          addSearchResult(new SearchResult(p, f, lineNum, line,
-            linesBefore.toList, resLinesAfter))
-          if (settings.firstMatch &&
-              _fileMap.contains(f) &&
-              _fileMap(f).exists(_.searchPattern == p))
-            stop = true
         }
       }
       if (settings.linesBefore > 0) {
@@ -353,7 +430,7 @@ class Searcher (settings: SearchSettings) {
           linesBefore += line
       }
     }
-    source.close()
+    stringSearchResults
   }
 
   def searchBinaryFileSource(sf: SearchFile, source: Source) {
@@ -398,29 +475,27 @@ class Searcher (settings: SearchSettings) {
         entryMap(f.getParent) = entryMap.getOrElse(f.getParent,
           List.empty[ZipEntry]) :+ ze
     }
-    entryMap foreach {
-      e =>
-        val dirName = e._1
-        if (isSearchDir(dirName)) {
-          val zes = e._2
-          zes foreach {
-            ze =>
-              val fileName = new File(ze.getName).getName
-              val searchFileType = getSearchFileType(fileName)
-              if (searchFileType != SearchFileType.NonSearchFile) {
-                val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName, fileName)
-                val zis = zf.getInputStream(zf.getEntry(zsf.getPath))
-                searchFileType match {
-                  case SearchFileType.SearchFile =>
-                    searchFileSource(zsf, Source.fromInputStream(zis))
-                  case SearchFileType.ArchiveSearchFile =>
-                    searchArchiveFileSource(zsf, Source.fromInputStream(zis))
-                  case _ => // do nothing
-                }
-                zis.close()
-              }
+    entryMap foreach { e =>
+      val dirName = e._1
+      if (isSearchDir(dirName)) {
+        val zes = e._2
+        zes foreach { ze =>
+          val fileName = new File(ze.getName).getName
+          val searchFileType = getSearchFileType(fileName)
+          if (searchFileType != SearchFileType.NonSearchFile) {
+            val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName, fileName)
+            val zis = zf.getInputStream(zf.getEntry(zsf.getPath))
+            searchFileType match {
+              case SearchFileType.SearchFile =>
+                searchFileSource(zsf, Source.fromInputStream(zis))
+              case SearchFileType.ArchiveSearchFile =>
+                searchArchiveFileSource(zsf, Source.fromInputStream(zis))
+              case _ => // do nothing
+            }
+            zis.close()
           }
         }
+      }
     }
   }
 
@@ -502,6 +577,10 @@ class Searcher (settings: SearchSettings) {
     _fileMap.put(r.file, _fileMap.getOrElse(r.file, List.empty[SearchResult]) :+ r )
   }
 
+  def printSearchResults() {
+    _searchResults.foreach(printSearchResult)
+ }
+
   def printSearchResult(r: SearchResult) {
     if (settings.searchPatterns.size > 1) {
       print("\"" + r.searchPattern + "\": ")
@@ -509,26 +588,57 @@ class Searcher (settings: SearchSettings) {
     println(r)
   }
 
-  def printDirList() {
-    val dirs = _fileMap.keySet.map(_.path).toList.
-      sortWith(_.toString < _.toString)
+  def getMatchingDirs:List[File] = {
+    _fileMap.keySet.map(_.toFile).map(_.getParentFile).toList.sortWith(_.toString < _.toString)
+  }
+
+  def printMatchingDirs() {
+    val dirs = getMatchingDirs
     println("\nMatching directories (%d directories):".format(dirs.length))
     dirs.foreach(println(_))
   }
 
-  def printFileList() {
-    val files = _fileMap.keys.toList.sortWith(_.toString < _.toString)
+  def getMatchingFiles:List[File] = {
+    _fileMap.keySet.map(_.toFile).toList.sortWith(_.toString < _.toString)
+  }
+
+  def printMatchingFiles() {
+    val files = getMatchingFiles
     println("\nMatching files (%d files):".format(files.length))
     files.foreach(println(_))
   }
 
-  def printLineList() {
-    val lineset = mutable.Set[String]()
+  def getMatchingLines:List[String] = {
+    val allLines = mutable.ArrayBuffer[String]()
     for (r <- searchResults if r.line != null) {
-      lineset.add(r.line.trim)
+      allLines.append(r.line.trim)
     }
-    val lines = lineset.toList.sortWith(_ < _)
-    println("\nMatching lines (%d unique lines):".format(lines.length))
+    val lines =
+      if (settings.uniqueLines) allLines.toSet.toList.sortWith(_ < _)
+      else allLines.toList.sortWith(_ < _)
+    lines
+  }
+
+  def printMatchingLines() {
+    val lines = getMatchingLines
+    val hdr =
+      if (settings.uniqueLines) "\nMatching lines (%d unique lines)".format(lines.length)
+      else "\nMatching lines (%d lines)".format(lines.length)
+    println(hdr)
     lines.foreach(println(_))
+  }
+}
+
+// doing this so I can test methods in Searcher class that can be static
+object Searcher {
+  def getLineIndices(contents:String): Seq[(Int,Int)] = {
+    val newLineIndices = contents.zipWithIndex.collect { case ('\n',i) => i }
+    if (newLineIndices.length > 0) {
+      val lineIndices = mutable.ArrayBuffer[(Int,Int)]((0,newLineIndices(0)))
+      lineIndices ++= newLineIndices.map(_ + 1).zip(newLineIndices.tail :+ contents.length)
+      lineIndices
+    } else {
+      Seq[(Int,Int)]((0,contents.length-1))
+    }
   }
 }

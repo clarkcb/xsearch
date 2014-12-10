@@ -6,7 +6,7 @@ import scala.xml._
 case class SearchOption(shortarg:String, longarg:String, desc:String) {
   val sortarg = 
     if (shortarg.nonEmpty)
-      shortarg.toLowerCase + "a" + longarg.toLowerCase
+      shortarg.toLowerCase + "@" + longarg.toLowerCase
     else
       longarg.toLowerCase
 }
@@ -52,6 +52,8 @@ object SearchOptions {
       ((x: String, sb: SettingsBuilder) => sb.addLinesAfterUntilPattern(x)),
     "linesbefore" ->
       ((x: String, sb: SettingsBuilder) => sb.linesBefore = x.toInt),
+    "maxlinelength" ->
+      ((x: String, sb: SettingsBuilder) => sb.maxLineLength = x.toInt),
     "out-archivefilepattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addOutArchiveFilePattern(x)),
     "out-dirpattern" ->
@@ -77,10 +79,14 @@ object SearchOptions {
       ((sb: SettingsBuilder) => sb.debug = true),
     "dotiming" ->
       ((sb: SettingsBuilder) => sb.doTiming = true),
+    "excludehidden" ->
+      ((sb: SettingsBuilder) => sb.excludeHidden = true),
     "firstmatch" ->
       ((sb: SettingsBuilder) => sb.firstMatch = true),
     "help" ->
       ((sb: SettingsBuilder) => sb.printUsage = true),
+    "includehidden" ->
+      ((sb: SettingsBuilder) => sb.excludeHidden = false),
     "listdirs" ->
       ((sb: SettingsBuilder) => sb.listDirs = true),
     "listfiles" ->
@@ -91,10 +97,14 @@ object SearchOptions {
       ((sb: SettingsBuilder) => sb.multiLineSearch = true),
     "noprintmatches" ->
       ((sb: SettingsBuilder) => sb.printResults = false),
+    "norecursive" ->
+      ((sb: SettingsBuilder) => sb.recursive = false),
     "nosearcharchives" ->
       ((sb: SettingsBuilder) => sb.searchArchives = false),
     "printmatches" ->
       ((sb: SettingsBuilder) => sb.printResults = true),
+    "recursive" ->
+      ((sb: SettingsBuilder) => sb.recursive = true),
     "searcharchives" ->
       ((sb: SettingsBuilder) => sb.searchArchives = true),
     "uniquelines" ->
@@ -154,9 +164,8 @@ object SearchOptions {
     sb.append("Usage:\n")
     sb.append(" scalasearch [options] <startpath>\n\n")
     sb.append("Options:\n")
-
     val optStrings =
-      (searchOptions.map(o => if (!o.shortarg.isEmpty) "-" + o.shortarg + "," else "")
+      (searchOptions.map(o => if (o.shortarg.nonEmpty) "-" + o.shortarg + "," else "")
         zip searchOptions.map("--" + _.longarg)).map(o => o._1 + o._2)
     val optDescs = searchOptions.map(_.desc)
     val longest = optStrings.map(_.length).max

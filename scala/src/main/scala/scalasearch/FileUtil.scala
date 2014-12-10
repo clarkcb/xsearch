@@ -4,6 +4,14 @@ import java.io.File
 import scala.collection.mutable
 import scala.xml._
 
+object FileType extends Enumeration {
+  type FileType = Value
+  val Unknown = Value
+  val Archive = Value
+  val Binary  = Value
+  val Text    = Value
+}
+
 object FileUtil {
   private val _fileTypesXmlPath = "/filetypes.xml"
   private val _fileTypeMap = mutable.Map.empty[String, Set[String]]
@@ -40,6 +48,20 @@ object FileUtil {
       name.split('.').last
     else
       ""
+  }
+
+  def getFileType(f: File): FileType.Value = {
+    if (isArchiveFile(f)) FileType.Archive
+    else if (isBinaryFile(f)) FileType.Binary
+    else if (isTextFile(f)) FileType.Text
+    else FileType.Unknown
+  }
+
+  def getFileType(sf: SearchFile): FileType.Value = {
+    if (isArchiveFile(sf)) FileType.Archive
+    else if (isBinaryFile(sf)) FileType.Binary
+    else if (isTextFile(sf)) FileType.Text
+    else FileType.Unknown
   }
 
   def isArchiveFile(f: File): Boolean = {

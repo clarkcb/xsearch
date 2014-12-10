@@ -6,6 +6,7 @@ import scala.util.matching.Regex
 object DefaultSettings {
   val outDirPatterns = Set("""^\.git$""".r, """^\.svn$""".r, """^CVS$""".r)
   val outFilePatterns = Set("""^\.DS_Store$""".r)
+  val maxLineLength = 150
 }
 
 class SettingsBuilder {
@@ -29,16 +30,19 @@ class SettingsBuilder {
   var archivesOnly = false
   var debug = false
   var doTiming = false
+  var excludeHidden = true
   var firstMatch = false
   var linesAfter = 0
   var linesBefore = 0
   var listDirs = false
   var listFiles = false
   var listLines = false
+  var maxLineLength = DefaultSettings.maxLineLength
   var multiLineSearch = false
   var printResults = true
   var printUsage = false
   var printVersion = false
+  var recursive = true
   var searchArchives = false
   var uniqueLines = false
   var verbose = false
@@ -126,16 +130,19 @@ class SettingsBuilder {
       archivesOnly,
       debug,
       doTiming,
+      excludeHidden,
       firstMatch,
       linesAfter,
       linesBefore,
       listDirs,
       listFiles,
       listLines,
+      maxLineLength,
       multiLineSearch,
       printResults,
       printUsage,
       printVersion,
+      recursive,
       searchArchives,
       uniqueLines,
       verbose)
@@ -168,16 +175,19 @@ class SearchSettings(val startpath:String,
                      val archivesOnly:Boolean,
                      val debug:Boolean,
                      val doTiming:Boolean,
+                     val excludeHidden:Boolean,
                      val firstMatch:Boolean,
                      val linesAfter:Int,
                      val linesBefore:Int,
                      val listDirs:Boolean,
                      val listFiles:Boolean,
                      val listLines:Boolean,
+                     val maxLineLength:Int,
                      val multiLineSearch:Boolean,
                      val printResults:Boolean,
                      val printUsage:Boolean,
                      val printVersion:Boolean,
+                     val recursive:Boolean,
                      val searchArchives:Boolean,
                      val uniqueLines:Boolean,
                      val verbose:Boolean) {
@@ -205,16 +215,19 @@ class SearchSettings(val startpath:String,
     ", archivesOnly: " + archivesOnly +
     ", debug: " + debug +
     ", doTiming: " + doTiming +
+    ", excludeHidden: " + excludeHidden +
     ", firstMatch: " + firstMatch +
     ", linesAfter: " + linesAfter +
     ", linesBefore: " + linesBefore +
     ", listDirs: " + listDirs +
     ", listFiles: " + listFiles +
     ", listLines: " + listLines +
+    ", maxLineLength: " + maxLineLength +
     ", multiLineSearch: " + multiLineSearch +
     ", printResults: " + printResults +
     ", printUsage: " + printUsage +
     ", printVersion: " + printVersion +
+    ", recursive: " + recursive +
     ", searchArchives: " + searchArchives +
     ", uniqueLines: " + uniqueLines +
     ", verbose: " + verbose +
