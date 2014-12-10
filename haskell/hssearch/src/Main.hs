@@ -1,6 +1,8 @@
 module Main where
 
-import Data.List (nubBy, sort)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
+import Data.List (nub, sort)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 
@@ -42,11 +44,12 @@ formatResults settings results =
     (concat (map matchString (searchPatterns settings)))
   where matchString p = "\nMatches for "++ show p ++ ": " ++ show (patternCount p)
         patternCount :: String -> Int
-        patternCount p = foldr (\x acc -> if p == (searchPattern x) then acc + 1 else acc) 0 results
+        patternCount p = foldr accMatches 0 results
+          where accMatches x acc = if p == (searchPattern x) then acc + 1 else acc
 
 getMatchingDirs :: [SearchResult] -> [FilePath]
-getMatchingDirs results = sort $ map (\r -> takeDirectory (filePath r)) (nubBy matchingDirs results)
-  where matchingDirs x y = takeDirectory (filePath x) == takeDirectory (filePath y)
+getMatchingDirs results = (sort . nub . map getDirectory) results
+  where getDirectory r = takeDirectory (filePath r)
 
 formatMatchingDirs :: [SearchResult] -> String
 formatMatchingDirs results = 
@@ -55,14 +58,34 @@ formatMatchingDirs results =
   where matchingDirs = getMatchingDirs results
 
 getMatchingFiles :: [SearchResult] -> [FilePath]
-getMatchingFiles results = sort $ map (\r -> filePath r) (nubBy matchingFilePaths results)
-  where matchingFilePaths x y = filePath x == filePath y
+getMatchingFiles results = (sort . nub . map filePath) results
 
 formatMatchingFiles :: [SearchResult] -> String
 formatMatchingFiles results = 
   "\n\nFiles with matches (" ++ show (length matchingFiles) ++ "):\n" ++
   unlines matchingFiles
   where matchingFiles = getMatchingFiles results
+
+getMatchingLines :: [SearchResult] -> [B.ByteString]
+getMatchingLines results = (sort . nub . map trimLine) results
+  where trimLine = BC.dropWhile isWhitespace . line
+        isWhitespace c = c `elem` [' ', '\t']
+
+formatMatchingLines :: [SearchResult] -> String
+formatMatchingLines results = 
+  "\n\nLines with matches (" ++ show (length matchingLines) ++ "):\n" ++
+  BC.unpack (BC.intercalate (BC.pack "\n") matchingLines)
+  where matchingLines = getMatchingLines results
+
+formatSearchDirs :: [FilePath] -> String
+formatSearchDirs dirs = 
+  "\nDirectories to be searched (" ++ show (length dirs) ++ "):\n" ++
+  unlines dirs
+
+formatSearchFiles :: [FilePath] -> String
+formatSearchFiles files = 
+  "\nFiles to be searched (" ++ show (length files) ++ "):\n" ++
+  unlines files
 
 main :: IO ()
 main = do
@@ -73,21 +96,16 @@ main = do
            then "\nsettingsFromArgs " ++ show args ++ ": " ++ show settings ++
                 "\n"
            else ""
-  let maybeUsage = errsOrUsage searchOptions settings
-  case maybeUsage of
+  case errsOrUsage searchOptions settings of
     Just usage -> putStrLn usage
     Nothing -> do
       searchDirs <- getSearchDirs settings
       putStr $ if verbose settings
-               then "\nDirectories to be searched (" ++
-                    show (length searchDirs) ++ "):\n" ++
-                    unlines searchDirs
+               then formatSearchDirs searchDirs
                else ""
       searchFiles <- getSearchFiles settings searchDirs
       putStr $ if verbose settings
-               then "\nFiles to be searched (" ++
-                    show (length searchFiles) ++ "):\n" ++
-                    unlines searchFiles
+               then formatSearchFiles searchFiles
                else ""
       results <- doSearchFiles settings searchFiles
       putStr $ if printResults settings
@@ -99,5 +117,7 @@ main = do
       putStr $ if listFiles settings
                then formatMatchingFiles results
                else ""
-
+      putStr $ if listLines settings
+               then formatMatchingLines results
+               else ""
       putStrLn ""
