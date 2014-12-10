@@ -45,6 +45,46 @@ def main
   begin
     searcher = Searcher.new(settings)
     searcher.search
+
+    # print the results
+    if settings.printresults
+      puts
+      searcher.print_results()
+    end
+
+    if settings.listdirs
+      puts
+      dirs = searcher.get_matching_dirs()
+      if not dirs.empty?
+        puts "Directories with matches (#{dirs.count}):"
+        dirs.each do |d|
+          puts "#{d}\n"
+        end
+      end
+    end
+
+    if settings.listfiles
+      puts
+      files = searcher.get_matching_files()
+      if not files.empty?
+        puts "Files with matches (#{files.count}):"
+        files.each do |f|
+          puts "#{f}\n"
+        end
+      end
+    end
+
+    if settings.listlines
+      puts
+      lines = searcher.get_matching_lines()
+      if not lines.empty?
+        puts "Lines with matches (#{lines.count}):"
+        lines.each do |line|
+          puts "#{line}\n"
+        end
+      end
+    end
+
   rescue RuntimeError => e
     puts "\nRuntimeError: #{e.message}\n\n"
     searchoptions.usage

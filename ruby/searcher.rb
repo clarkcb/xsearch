@@ -8,6 +8,7 @@
 
 require 'find'
 require 'pathname'
+require 'set'
 require 'fileutil.rb'
 require 'searchresult.rb'
 
@@ -21,6 +22,7 @@ class Searcher
     @fileutil = FileUtil.new
     @results = []
     @timers = {}
+    @filehash = Hash.new([])
   end
 
   def validate_settings
@@ -43,8 +45,10 @@ class Searcher
   end
 
   def is_search_dir(d)
-    result = true
-    path_elems = d.split(File::SEPARATOR)
+    path_elems = d.split(File::SEPARATOR) - ['.', '..']
+    if @settings.excludehidden and path_elems.any? {|p| p.start_with?('.')}
+      return false
+    end
     if @settings.in_dirpatterns.count > 0 and
       not any_matches_any_pattern(path_elems, @settings.in_dirpatterns)
       return false
@@ -57,6 +61,9 @@ class Searcher
   end
 
   def is_search_file(f)
+    if @settings.excludehidden and f.start_with?('.')
+      return false
+    end
     if @settings.in_extensions.count > 0 and 
       not @settings.in_extensions.include?(@fileutil.get_extension(f))
       return false
@@ -79,10 +86,14 @@ class Searcher
 
   def get_search_dirs
     searchdirs = []
-    Find.find(@settings.startpath) do |f|
-      if FileTest.directory?(f)
-        searchdirs.push(f) if is_search_dir(f)
+    if @settings.recursive
+      Find.find(@settings.startpath) do |f|
+        if FileTest.directory?(f)
+          searchdirs.push(f) if is_search_dir(f)
+        end
       end
+    else
+      searchdirs.push(@settings.startpath) if is_search_dir(@settings.startpath)
     end
     searchdirs
   end
@@ -162,13 +173,6 @@ class Searcher
     if @settings.dotiming
       stop_timer('search_files')
     end
-
-    # print the results
-    if @settings.printresults
-      puts
-      print_results()
-    end
-
   end
 
   def search_file(f)
@@ -180,6 +184,17 @@ class Searcher
     end
     if @fileutil.is_text_file(f)
       search_text_file(f)
+    elsif @fileutil.is_binary_file(f)
+      search_binary_file(f)
+    end
+  end
+
+  def search_binary_file(f)
+    contents = File.open(f, "rb").read
+    @settings.searchpatterns.each do |p|
+      if p.match(contents)
+        add_search_result(SearchResult.new(p, f, 0, nil))
+      end
     end
   end
 
@@ -220,11 +235,26 @@ class Searcher
 
   def search_text_file_lines(f, enc = nil)
     linenum = 0
+    file_pattern_matches = {}
     File.open(f, "r").each_line do |line|
       linenum += 1
       @settings.searchpatterns.each do |p|
-        if p.match(line)
-          add_search_result(SearchResult.new(p, f, linenum, line))
+        search_line = true
+        pos = 0
+        while search_line and pos < line.length
+          m = p.match(line, pos)
+          if m
+            if @settings.firstmatch and file_pattern_matches.include?(p)
+              search_line = false
+            else
+              add_search_result(SearchResult.new(p, f, linenum, line, m.begin(0),
+                m.end(0)))
+              pos = m.end(0) + 1
+              file_pattern_matches[p] = 1
+            end
+          else
+            search_line = false
+          end
         end
       end
     end
@@ -232,7 +262,6 @@ class Searcher
 
   def add_search_result(search_result)
     @results.push(search_result)
-    pattern = search_result.pattern
   end
 
   def print_results()
@@ -251,4 +280,50 @@ class Searcher
     puts s
   end
 
+  def get_matching_dirs(patterns = [])
+    if patterns.empty?
+      patterns = @settings.searchpatterns
+    end
+    pattern_set = Set.new patterns
+    dirs = Set.new
+    @results.each do |r|
+      if pattern_set.include? r.pattern
+        dirs.add(File.dirname(r.filename))
+      end
+    end
+    dirs = dirs.to_a
+    dirs.sort!
+    dirs
+  end
+
+  def get_matching_files(patterns = [])
+    if patterns.empty?
+      patterns = @settings.searchpatterns
+    end
+    pattern_set = Set.new patterns
+    files = Set.new
+    @results.each do |r|
+      if pattern_set.include? r.pattern
+        files.add(r.filename)
+      end
+    end
+    files = files.to_a
+    files.sort!
+    files
+  end
+
+  def get_matching_lines(patterns = [])
+    if patterns.empty?
+      patterns = @settings.searchpatterns
+    end
+    pattern_set = Set.new patterns
+    lines = []
+    @results.each do |r|
+      if pattern_set.include? r.pattern
+        lines.push(r.line.strip)
+      end
+    end
+    lines.sort!
+    lines
+  end
 end

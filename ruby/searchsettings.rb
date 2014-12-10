@@ -11,6 +11,7 @@ class SearchSettings
   attr_accessor :archivesonly
   attr_accessor :debug
   attr_accessor :dotiming
+  attr_accessor :excludehidden
   attr_accessor :firstmatch
   attr_accessor :in_archivefilepatterns
   attr_accessor :in_dirpatterns
@@ -23,6 +24,7 @@ class SearchSettings
   attr_accessor :listdirs
   attr_accessor :listfiles
   attr_accessor :listlines
+  attr_accessor :maxlinelength
   attr_accessor :multilinesearch
   attr_accessor :out_archivefilepatterns
   attr_accessor :out_dirpatterns
@@ -31,6 +33,7 @@ class SearchSettings
   attr_accessor :printresults
   attr_accessor :printusage
   attr_accessor :printversion
+  attr_accessor :recursive
   attr_accessor :searcharchives
   attr_accessor :searchpatterns
   attr_accessor :startpath
@@ -41,16 +44,19 @@ class SearchSettings
     @archivesonly = true
     @debug = false
     @dotiming = false
+    @excludehidden = true
     @firstmatch = false
     @linesafter = 0
     @linesbefore = 0
     @listdirs = false
     @listfiles = false
     @listlines = false
+    @maxlinelength = 150
     @multilinesearch = false
     @printresults = true
     @printusage = false
     @printversion = false
+    @recursive = true
     @searcharchives = false
     @startpath = nil
     @uniquelines = false
@@ -126,20 +132,22 @@ class SearchSettings
     s += ", debug: #{@debug}"
     s += ", dotiming: #{@dotiming}"
     s += ", firstmatch: #{@firstmatch}"
+    s += ", excludehidden: #{@excludehidden}"
     s += ", linesafter: #{@linesafter}"
     s += ", linesbefore: #{@linesbefore}"
     s += ", listdirs: #{@listdirs}"
     s += ", listfiles: #{@listfiles}"
     s += ", listlines: #{@listlines}"
+    s += ", maxlinelength: #{@maxlinelength}"
     s += ", multilinesearch: #{@multilinesearch}"
     s += ", printresults: #{@printresults}"
     s += ", printusage: #{@printusage}"
     s += ", printversion: #{@printversion}"
+    s += ", recursive: #{@recursive}"
     s += ", searcharchives: #{@searcharchives}"
     s += ", uniquelines: #{@uniquelines}"
     s += ", verbose: #{@verbose}"
     s += ")"
     s
   end
-
 end

@@ -49,6 +49,8 @@ class SearchOptions
         proc { |x, settings| settings.linesafteruntilpatterns.push(Regexp.new(x)) },
       'linesbefore' =>
         proc { |x, settings| puts "linesbefore: #{x}" },
+      'maxlinelength' =>
+        proc { |x, settings| settings.maxlinelength = x.to_i },
       'out-archivefilepattern' =>
         proc { |x, settings| settings.out_archivefilepatterns.push(Regexp.new(x)) },
       'out-dirpattern' =>
@@ -79,10 +81,14 @@ class SearchOptions
         proc { |settings| settings.debug = true },
       'dotiming' =>
         proc { |settings| settings.dotiming = true },
+      'excludehidden' =>
+        proc { |settings| settings.excludehidden = true },
       'firstmatch' =>
         proc { |settings| settings.firstmatch = true },
       'help' =>
         proc { |settings| settings.printusage = true },
+      'includehidden' =>
+        proc { |settings| settings.excludehidden = false },
       'listdirs' =>
         proc { |settings| settings.listdirs = true },
       'listfiles' =>
@@ -93,10 +99,14 @@ class SearchOptions
         proc { |settings| settings.multilinesearch = true },
       'noprintmatches' =>
         proc { |settings| settings.printresults = false },
+      'norecursive' =>
+        proc { |settings| settings.recursive = false },
       'nosearcharchives' =>
         proc { |settings| settings.searcharchives = false },
       'printmatches' =>
         proc { |settings| settings.printresults = true },
+      'recursive' =>
+        proc { |settings| settings.recursive = true },
       'searcharchives' =>
         proc { |settings| settings.searcharchives = true },
       'uniquelines' =>
