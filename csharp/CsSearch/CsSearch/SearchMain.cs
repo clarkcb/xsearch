@@ -22,20 +22,17 @@ namespace CsSearch
 
 				if (settings.ListDirs)
 				{
-					Console.WriteLine(string.Format("\nDirectories with matches ({0}):", searcher.DirNameSet.Count));
-					foreach (var d in searcher.DirNameSet)
-					{
-						Console.WriteLine(d);
-					}
+					searcher.PrintMatchingDirs();
 				}
 
 				if (settings.ListFiles)
 				{
-					Console.WriteLine(string.Format("\nFiles with matches ({0}):", searcher.FileNameSet.Count));
-					foreach (var f in searcher.FileNameSet)
-					{
-						Console.WriteLine(f);
-					}
+					searcher.PrintMatchingFiles();
+				}
+
+				if (settings.ListLines)
+				{
+					searcher.PrintMatchingLines();
 				}
 			}
 			catch (SearchArgumentException e)

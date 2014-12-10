@@ -13,7 +13,28 @@ namespace CsSearch
 		public ISet<Regex> OutDirPatterns { get; private set; }
 		public ISet<Regex> InFilePatterns { get; private set; }
 		public ISet<Regex> OutFilePatterns { get; private set; }
+		public ISet<Regex> InArchiveFilePatterns { get; private set; }
+		public ISet<Regex> OutArchiveFilePatterns { get; private set; }
+
+		public ISet<Regex> InLinesAfterPatterns { get; private set; }
+		public ISet<Regex> OutLinesAfterPatterns { get; private set; }
+		public ISet<Regex> InLinesBeforePatterns { get; private set; }
+		public ISet<Regex> OutLinesBeforePatterns { get; private set; }
+		public ISet<Regex> LinesAfterToPatterns { get; private set; }
+		public ISet<Regex> LinesAfterUntilPatterns { get; private set; }
+
 		public ISet<Regex> SearchPatterns { get; private set; }
+
+		private ISet<Regex> defaultOutDirPatterns = new HashSet<Regex>()
+		                                            	{
+		                                            		new Regex("\\bCVS$"),
+		                                            		new Regex("\\.git$"),
+		                                            		new Regex("\\.svn$")
+		                                            	};
+		private ISet<Regex> defaultOutFilePatterns = new HashSet<Regex>()
+		                                            	{
+		                                            		new Regex("\\.DS_Store$")
+		                                            	};
 
 		private string _startPath;
 
@@ -23,6 +44,7 @@ namespace CsSearch
 			set { _startPath = Path.GetFullPath(value); }
 		}
 
+		public bool ArchivesOnly { get; set; }
 		public bool Debug { get; set; }
 		public bool DoTiming { get; set; }
 		public bool FirstMatch { get; set; }
@@ -31,9 +53,12 @@ namespace CsSearch
 		public bool ListDirs { get; set; }
 		public bool ListFiles { get; set; }
 		public bool ListLines { get; set; }
+		public int MaxLineLength { get; set; }
+		public bool MultiLineSearch { get; set; }
 		public bool PrintResults { get; set; }
 		public bool PrintUsage { get; set; }
 		public bool PrintVersion { get; set; }
+		public bool Recursive { get; set; }
 		public bool SearchArchives { get; set; }
 		public bool UniqueLines { get; set; }
 		public bool Verbose { get; set; }
@@ -43,10 +68,19 @@ namespace CsSearch
 			InExtensions = new HashSet<string>();
 			OutExtensions = new HashSet<string>();
 			InDirPatterns = new HashSet<Regex>();
-			OutDirPatterns = new HashSet<Regex>();
+			OutDirPatterns = defaultOutDirPatterns;
 			InFilePatterns = new HashSet<Regex>();
-			OutFilePatterns = new HashSet<Regex>();
+			OutFilePatterns = defaultOutFilePatterns;
+			InArchiveFilePatterns = new HashSet<Regex>();
+			OutArchiveFilePatterns = new HashSet<Regex>();
+			InLinesAfterPatterns = new HashSet<Regex>();
+			OutLinesAfterPatterns = new HashSet<Regex>();
+			InLinesBeforePatterns = new HashSet<Regex>();
+			OutLinesBeforePatterns = new HashSet<Regex>();
+			LinesAfterToPatterns = new HashSet<Regex>();
+			LinesAfterUntilPatterns = new HashSet<Regex>();
 			SearchPatterns = new HashSet<Regex>();
+			ArchivesOnly = false;
 			Debug = false;
 			DoTiming = false;
 			FirstMatch = false;
@@ -55,24 +89,27 @@ namespace CsSearch
 			ListDirs = false;
 			ListFiles = false;
 			ListLines = false;
+			MaxLineLength = 150;
+			MultiLineSearch = false;
 			PrintResults = false;
 			PrintUsage = false;
 			PrintVersion = false;
+			Recursive = true;
 			SearchArchives = false;
 			UniqueLines = false;
 			Verbose = false;
 		}
 
-		public void SetProperty(string name, bool value)
+		private static void AddExtension(ISet<string> set, string extList)
 		{
-			
-		}
-
-		private static void AddExtension(ISet<string> set, string ext)
-		{
-			if (!ext.StartsWith("."))
-				ext = "." + ext;
-			set.Add(ext.ToLowerInvariant());
+			var exts = extList.Split(new char[] { ',' });
+			foreach (var x in exts)
+			{
+				var ext = x;
+				if (!ext.StartsWith("."))
+					ext = "." + ext;
+				set.Add(ext.ToLowerInvariant());
+			}
 		}
 
 		public void AddInExtension(string ext)
@@ -110,6 +147,46 @@ namespace CsSearch
 			AddPattern(OutFilePatterns, pattern);
 		}
 
+		public void AddInArchiveFilePattern(string pattern)
+		{
+			AddPattern(InArchiveFilePatterns, pattern);
+		}
+
+		public void AddOutArchiveFilePattern(string pattern)
+		{
+			AddPattern(OutArchiveFilePatterns, pattern);
+		}
+
+		public void AddInLinesAfterPattern(string pattern)
+		{
+			AddPattern(InLinesAfterPatterns, pattern);
+		}
+
+		public void AddOutLinesAfterPattern(string pattern)
+		{
+			AddPattern(OutLinesAfterPatterns, pattern);
+		}
+
+		public void AddInLinesBeforePattern(string pattern)
+		{
+			AddPattern(InLinesBeforePatterns, pattern);
+		}
+
+		public void AddOutLinesBeforePattern(string pattern)
+		{
+			AddPattern(OutLinesBeforePatterns, pattern);
+		}
+
+		public void AddLinesAfterToPattern(string pattern)
+		{
+			AddPattern(LinesAfterToPatterns, pattern);
+		}
+
+		public void AddLinesAfterUntilPattern(string pattern)
+		{
+			AddPattern(LinesAfterUntilPatterns, pattern);
+		}
+
 		public void AddSearchPattern(string pattern)
 		{
 			AddPattern(SearchPatterns, pattern);
@@ -140,7 +217,10 @@ namespace CsSearch
 			sb.Append(", OutDirPatterns: " + EnumerableToString(OutDirPatterns));
 			sb.Append(", InFilePatterns: " + EnumerableToString(InFilePatterns));
 			sb.Append(", OutFilePatterns: " + EnumerableToString(OutFilePatterns));
+			sb.Append(", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns));
+			sb.Append(", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns));
 			sb.Append(", SearchPatterns: " + EnumerableToString(SearchPatterns));
+			sb.Append(", ArchivesOnly: " + ArchivesOnly);
 			sb.Append(", Debug: " + Debug);
 			sb.Append(", DoTiming: " + DoTiming);
 			sb.Append(", FirstMatch: " + FirstMatch);
@@ -149,9 +229,12 @@ namespace CsSearch
 			sb.Append(", ListDirs: " + ListDirs);
 			sb.Append(", ListFiles: " + ListFiles);
 			sb.Append(", ListLines: " + ListLines);
+			sb.Append(", MaxLineLength: " + MaxLineLength);
+			sb.Append(", MultiLineSearch: " + MultiLineSearch);
 			sb.Append(", PrintResults: " + PrintResults);
 			sb.Append(", PrintUsage: " + PrintUsage);
 			sb.Append(", PrintVersion: " + PrintVersion);
+			sb.Append(", Recursive: " + Recursive);
 			sb.Append(", SearchArchives: " + SearchArchives);
 			sb.Append(", UniqueLines: " + UniqueLines);
 			sb.Append(", Verbose: " + Verbose);

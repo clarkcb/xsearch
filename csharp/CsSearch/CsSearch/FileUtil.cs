@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -23,8 +24,10 @@ namespace CsSearch
 			foreach (var f in doc.Descendants("filetype"))
 			{
 				var name = f.Attributes("name").First().Value;
+				//Console.WriteLine("name: " + name);
 				var extensions = f.Descendants("extensions").First().Value;
-				var extensionSet = new HashSet<string>(extensions.Split(' ').Select(x => "." + x));
+				//Console.WriteLine("extensions: " + extensions);
+				var extensionSet = new HashSet<string>(extensions.Split(new char[]{' ','\n'}).Select(x => "." + x));
 				_fileTypesDictionary[name] = extensionSet;
 			}
 			_fileTypesDictionary["text"].UnionWith(_fileTypesDictionary["code"]);

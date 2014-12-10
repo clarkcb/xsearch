@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace CsSearch
 {
@@ -11,8 +12,8 @@ namespace CsSearch
 		private readonly FileUtil _fileUtil;
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
-		public ISet<string> DirNameSet { get; private set; }
-		public ISet<string> FileNameSet { get; private set; }
+		public ISet<DirectoryInfo> DirSet { get; private set; }
+		public ISet<FileInfo> FileSet { get; private set; }
 		public IDictionary<string, Stopwatch> Timers { get; private set; }
 
 		public Searcher(SearchSettings settings)
@@ -20,18 +21,29 @@ namespace CsSearch
 			Settings = settings;
 			if (Settings.Verbose)
 				Console.WriteLine(Settings + "\n");
+			ValidateSettings();
 			_fileUtil = new FileUtil();
 			Results = new List<SearchResult>();
-			DirNameSet = new HashSet<string>();
-			FileNameSet = new HashSet<string>();
+			DirSet = new HashSet<DirectoryInfo>();
+			FileSet = new HashSet<FileInfo>();
 			Timers = new Dictionary<string, Stopwatch>();
+		}
+
+		private void ValidateSettings()
+		{
+			if (string.IsNullOrEmpty(Settings.StartPath))
+				throw new SearchArgumentException("Startpath not defined");
+			if (!(new DirectoryInfo(Settings.StartPath)).Exists)
+				throw new SearchArgumentException("Startpath not found");
+			if (Settings.SearchPatterns.Count < 1)
+				throw new SearchArgumentException("No search patterns specified");
 		}
 
 		private bool IsSearchDirectory(DirectoryInfo d)
 		{
-			if (Settings.InDirPatterns.Count > 0 && !Settings.InDirPatterns.Any(p => p.Match(d.FullName).Success))
+			if (Settings.InDirPatterns.Count > 0 && !Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
 				return false;
-			if (Settings.OutDirPatterns.Count > 0 && Settings.OutDirPatterns.Any(p => p.Match(d.FullName).Success))
+			if (Settings.OutDirPatterns.Count > 0 && Settings.OutDirPatterns.Any(p => p.Match(d.Name).Success))
 				return false;
 			return true;
 		}
@@ -71,20 +83,34 @@ namespace CsSearch
 			Console.WriteLine(string.Format("Elapsed time for {0}: {1}", name, elapsedTime));
 		}
 
-		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo dir)
+		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo startDir)
 		{
-			IEnumerable<DirectoryInfo> dirs = new List<DirectoryInfo>();
+			var searchDirs = new List<DirectoryInfo>();
+			if (IsSearchDirectory(startDir))
+			{
+				searchDirs.Add(startDir);
+			}
+			if (Settings.Recursive)
+			{
+				searchDirs.AddRange(RecGetSearchDirs(startDir));
+			}
+			return searchDirs;
+		}
+
+		public IEnumerable<DirectoryInfo> RecGetSearchDirs(DirectoryInfo dir)
+		{
+			IEnumerable<DirectoryInfo> searchDirs = new List<DirectoryInfo>();
 			try
 			{
-				dirs = dir.EnumerateDirectories().Where(IsSearchDirectory);
-				return dirs.Aggregate(dirs, (current, d) => current.Concat(GetSearchDirs(d)));
+				searchDirs = dir.EnumerateDirectories().Where(IsSearchDirectory);
+				return searchDirs.Aggregate(searchDirs, (current, d) => current.Concat(RecGetSearchDirs(d)));
 			}
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
 					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}", dir.FullName, e.Message));
 			}
-			return dirs;
+			return searchDirs;
 		}
 
 		public IEnumerable<FileInfo> GetSearchFilesForDir(DirectoryInfo dir)
@@ -118,13 +144,12 @@ namespace CsSearch
 
 		public void Search()
 		{
-			var startDir = new DirectoryInfo(Settings.StartPath);
-			var searchDirs = new List<DirectoryInfo>();
-			searchDirs.Add(startDir);
 			if (Settings.DoTiming)
 			{
 				StartTimer("GetSearchDirs");
 			}
+			var startDir = new DirectoryInfo(Settings.StartPath);
+			var searchDirs = new List<DirectoryInfo>();
 			searchDirs.AddRange(GetSearchDirs(startDir));
 			if (Settings.DoTiming)
 			{
@@ -205,6 +230,13 @@ namespace CsSearch
 		{
 			if (Settings.Verbose)
 				Console.WriteLine("Searching text file " + f.FullName);
+			// TODO: SearchTextFileContents
+			SearchTextFileLines(f);
+		}
+
+		private void SearchTextFileLines(FileInfo f)
+		{
+			var patternMatches = new Dictionary<Regex, int>();
 			try
 			{
 				using (var sr = new StreamReader(f.FullName))
@@ -214,9 +246,19 @@ namespace CsSearch
 					while ((line = sr.ReadLine()) != null)
 					{
 						lineNum++;
-						foreach (var p in Settings.SearchPatterns.Where(p => p.Match(line).Success))
+						foreach (var p in Settings.SearchPatterns)
 						{
-							AddSearchResult(new SearchResult(p, f, lineNum, line));
+							var matches = p.Matches(line);
+							foreach (Match match in matches)
+							{
+								if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+								{
+									continue;
+								}
+								AddSearchResult(new SearchResult(p, f, lineNum,
+								    match.Index, match.Index + match.Length, line));
+								patternMatches[p] = 1;
+							}
 						}
 					}
 				}
@@ -237,7 +279,7 @@ namespace CsSearch
 				{
 					var contents = sr.ReadToEnd();
 					foreach (var p in Settings.SearchPatterns.Where(p => p.Match(contents).Success)) {
-						AddSearchResult(new SearchResult(p, f, 0, null));
+						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null));
 					}
 				}
 			}
@@ -250,8 +292,8 @@ namespace CsSearch
 		private void AddSearchResult(SearchResult searchResult)
 		{
 			Results.Add(searchResult);
-			DirNameSet.Add(searchResult.File.Directory.ToString());
-			FileNameSet.Add(searchResult.File.ToString());
+			DirSet.Add(searchResult.File.Directory);
+			FileSet.Add(searchResult.File);
 		}
 
 		public void PrintResults()
@@ -260,6 +302,58 @@ namespace CsSearch
 			foreach (var searchResult in Results)
 			{
 				Console.WriteLine(searchResult);
+			}
+		}
+
+		public IEnumerable<DirectoryInfo> GetMatchingDirs()
+		{
+			IEnumerable<DirectoryInfo> matchingDirs = new List<DirectoryInfo>(DirSet.Distinct()).OrderBy(d => d.FullName);
+			return matchingDirs;
+		}
+
+		public void PrintMatchingDirs()
+		{
+			IEnumerable<DirectoryInfo> matchingDirs = GetMatchingDirs();
+			Console.WriteLine(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
+			foreach (var d in matchingDirs)
+			{
+				Console.WriteLine(d);
+			}
+		}
+
+		public IEnumerable<FileInfo> GetMatchingFiles()
+		{
+			IEnumerable<FileInfo> matchingFiles = new List<FileInfo>(FileSet).OrderBy(d => d.FullName);
+			return matchingFiles;
+		}
+
+		public void PrintMatchingFiles()
+		{
+			IEnumerable<FileInfo> matchingFiles = GetMatchingFiles();
+			Console.WriteLine(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
+			foreach (var f in matchingFiles)
+			{
+				Console.WriteLine(f);
+			}
+		}
+
+		public IEnumerable<string> GetMatchingLines()
+		{
+			List<string> matchingLines = new List<string>();
+			foreach (var r in Results)
+			{
+				matchingLines.Add(r.Line.Trim());
+			}
+			return matchingLines;
+		}
+
+		public void PrintMatchingLines()
+		{
+			IEnumerable<string> matchingLines = GetMatchingLines();
+			Console.WriteLine(string.Format("\nLines with matches ({0}):", matchingLines.Count()));
+			foreach (var m in matchingLines)
+			{
+				Console.WriteLine(m);
 			}
 		}
 	}

@@ -14,18 +14,23 @@ namespace CsSearch
 		public static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
 			new Dictionary<string,Action<string,SearchSettings>>
 				{
+					{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
 					{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
 					{ "in-ext", (s, settings) => settings.AddInExtension(s) },
 					{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
-					//{ "in-linesafterpattern", (s, settings) => settings.linesaftersearches.append(s) },
-					//{ "in-linesbeforepattern", (s, settings) => settings.linesbeforesearches.append(s) },
+					{ "in-linesafterpattern", (s, settings) => settings.AddInLinesAfterPattern(s) },
+					{ "in-linesbeforepattern", (s, settings) => settings.AddInLinesBeforePattern(s) },
 					{ "linesafter", (s, settings) => settings.LinesAfter = int.Parse(s) },
+					{ "linesaftertopattern", (s, settings) => settings.AddLinesAfterToPattern(s) },
+					{ "linesafteruntilpattern", (s, settings) => settings.AddLinesAfterUntilPattern(s) },
 					{ "linesbefore", (s, settings) => settings.LinesBefore = int.Parse(s) },
+					{ "maxlinelength", (s, settings) => settings.MaxLineLength = int.Parse(s) },
+					{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
 					{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
 					{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
 					{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
-					//{ "out-linesafterpattern", (s, settings) => settings.linesafterfilters.append(s) },
-					//{ "out-linesbeforepattern", (s, settings) => settings.linesbeforefilters.append(s) },
+					{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
+					{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
 					{ "search", (s, settings) => settings.AddSearchPattern(s) },
 				};
 
@@ -33,6 +38,7 @@ namespace CsSearch
 			new Dictionary<string,Action<SearchSettings>>
 				{
 					{ "allmatches", settings => settings.FirstMatch = false },
+					{ "archivesonly", settings => settings.ArchivesOnly = true },
 					{ "debug", settings => settings.Debug = true },
 					{ "dotiming", settings => settings.DoTiming = true },
 					{ "firstmatch", settings => settings.FirstMatch = true },
@@ -40,10 +46,14 @@ namespace CsSearch
 					{ "listdirs", settings => settings.ListDirs = true },
 					{ "listfiles", settings => settings.ListFiles = true },
 					{ "listlines", settings => settings.ListLines = true },
+					{ "multilinesearch", settings => settings.MultiLineSearch = true },
 					{ "noprintmatches", settings => settings.PrintResults = false },
+					{ "norecursive", settings => settings.Recursive = false },
 					{ "nosearcharchives", settings => settings.SearchArchives = false },
 					{ "printmatches", settings => settings.PrintResults = true },
+					{ "recursive", settings => settings.Recursive = true },
 					{ "searcharchives", settings => settings.SearchArchives = true },
+					{ "uniquelines", settings => settings.UniqueLines = true },
 					{ "verbose", settings => settings.Verbose = true },
 					{ "version", settings => settings.PrintVersion = true },
 				};
