@@ -39,11 +39,21 @@ public class SearchMain {
 			options.usage(0);
 		}
 
-		// setting this as the default for when Searcher
-		// is used via the command line
-		settings.setPrintResults(true);
-
 		Searcher searcher = new Searcher(settings);
 		searcher.search();
+
+        // print the results
+        if (settings.getPrintResults()) {
+        	searcher.printSearchResults();
+        }
+        if (settings.getListDirs()) {
+        	searcher.printMatchingDirs();
+        }
+        if (settings.getListFiles()) {
+        	searcher.printMatchingFiles();
+        }
+        if (settings.getListLines()) {
+        	searcher.printMatchingLines();
+        }
     }
 }

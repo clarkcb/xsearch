@@ -14,14 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,11 +36,18 @@ public class Searcher {
 	}
 
     private void validateSettings() {
-        if ((!settings.getStartPath().equals("")))
+        if (settings.getStartPath() == null || settings.getStartPath().equals(""))
             throw new IllegalArgumentException("Missing startpath");
         if ((settings.getSearchPatterns().size() < 1))
             throw new IllegalArgumentException("No search patterns defined");
     }
+
+	private boolean anyMatchesAnyPattern(List<String> sList, Set<Pattern> patternSet) {
+		for (String s : sList) {
+			if (matchesAnyPattern(s, patternSet)) return true;
+		}
+		return false;
+	}
 
 	private boolean matchesAnyPattern(String s, Set<Pattern> patternSet) {
 		if (null == s)
@@ -65,11 +65,18 @@ public class Searcher {
 		if (settings.getDebug()) {
 			System.out.println("Called isSearchDir(\"" + d.getPath() + "\")");
 		}
+        List<String> pathElems = Arrays.asList(d.toString().split(File.separator));
+        if (settings.getExcludeHidden()) {
+            for (String p : pathElems) {
+                if (p.equals(".") || p.equals("..")) continue;
+                if (p.startsWith(".")) return false;
+            }
+        }
 		return (settings.getInDirPatterns().isEmpty() ||
-                !matchesAnyPattern(d.getName(), settings.getInDirPatterns()))
+                anyMatchesAnyPattern(pathElems, settings.getInDirPatterns()))
                 &&
                 (settings.getOutDirPatterns().isEmpty() ||
-                 matchesAnyPattern(d.getName(), settings.getOutDirPatterns()));
+                 !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
 	}
 
 	public List<File> getSearchDirs(File startPath) {
@@ -78,20 +85,39 @@ public class Searcher {
 				startPath.getPath());
 		}
 		List<File> searchDirs = new ArrayList<File>();
-		List<File> currentDirs = new ArrayList<File>();
-		File currentFiles[] = startPath.listFiles();
-        if (currentFiles != null) {
-            for (File f : currentFiles) {
+        if (isSearchDir(startPath)) {
+            searchDirs.add(startPath);
+        }
+		if (settings.getRecursive()) {
+			searchDirs.addAll(recGetSearchDirs(startPath));
+		}
+		return searchDirs;
+	}
+
+	private List<File> getSubDirs(File dir) {
+		List<File> subDirs = new ArrayList<File>();
+		File dirFiles[] = dir.listFiles();
+        if (dirFiles != null) {
+            for (File f : dirFiles) {
                 if (f.isDirectory()) {
-                    if (isSearchDir(f)) {
-                        currentDirs.add(f);
-                    }
+                    subDirs.add(f);
                 }
             }
         }
-        searchDirs.addAll(currentDirs);
-		for (File d : currentDirs) {
-			searchDirs.addAll(getSearchDirs(d));
+        return subDirs;
+    }
+
+	private List<File> recGetSearchDirs(File dir) {
+		List<File> searchDirs = new ArrayList<File>();
+		List<File> subDirs = getSubDirs(dir);
+
+        for (File f : subDirs) {
+            if (isSearchDir(f)) {
+                searchDirs.add(f);
+            }
+        }
+		for (File d : subDirs) {
+			searchDirs.addAll(recGetSearchDirs(d));
 		}
 		return searchDirs;
 	}
@@ -100,21 +126,24 @@ public class Searcher {
 		if (settings.getDebug()) {
 			System.out.println("Called isSearchFile(\"" + f.getName() + "\")");
 		}
+        if (settings.getExcludeHidden()) {
+            if (f.toString().startsWith(".")) return false;
+        }
 		String ext = fileUtil.getExtension(f);
 		if (settings.getDebug()) {
 			System.out.println("ext: " + ext);
 		}
 		return (settings.getInExtensions().isEmpty() ||
-                !settings.getInExtensions().contains(ext))
+                settings.getInExtensions().contains(ext))
                &&
                (settings.getOutExtensions().isEmpty() ||
-                settings.getOutExtensions().contains(ext))
+                !settings.getOutExtensions().contains(ext))
                &&
                (settings.getInFilePatterns().isEmpty() ||
-                !matchesAnyPattern(f.getName(), settings.getInFilePatterns()))
+                matchesAnyPattern(f.getName(), settings.getInFilePatterns()))
                &&
                (settings.getOutFilePatterns().isEmpty() ||
-                matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
+                !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
 	}
 
 	public List<File> getSearchFilesForDir(File dir) {
@@ -212,24 +241,6 @@ public class Searcher {
         if (settings.getVerbose()) {
 			System.out.println("\nFile search complete.\n");
         }
-
-        // print the results
-        if (settings.getPrintResults()) {
-			System.out.println(String.format("Search results (%d):",
-				results.size()));
-			for (SearchResult r : results) {
-				printSearchResult(r);
-			}
-        }
-        if (settings.getListDirs()) {
-        	printDirList();
-        }
-        if (settings.getListFiles()) {
-        	printFileList();
-        }
-        if (settings.getListLines()) {
-        	printLineList();
-        }
 	}
 
 	public void searchFile(File f) {
@@ -247,6 +258,12 @@ public class Searcher {
 		if (settings.getVerbose()) {
 			System.out.println("Searching text file " + f.getPath());
 		}
+		// TODO: searchTextFileContents
+		searchTextFileLines(f);
+	}
+
+	public void searchTextFileLines(File f) {
+        Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(f));
 			try {
@@ -256,10 +273,17 @@ public class Searcher {
 					lineNum++;
 					for (Pattern p : settings.getSearchPatterns()) {
 						Matcher m = p.matcher(line);
-						if (m.find()) {
-							SearchResult searchResult =
-								new SearchResult(p, f, lineNum, line);
-							addSearchResult(searchResult);
+                        boolean found = m.find();
+						while (found) {
+                            if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
+                                found = false;
+                            } else {
+                                SearchResult searchResult = new SearchResult(p, f,
+                                        lineNum, m.start(), m.end(), line);
+                                addSearchResult(searchResult);
+                                patternMatches.put(p, 1);
+                                found = m.find(m.end());
+                            }
 						}
 					}
 				}
@@ -286,7 +310,7 @@ public class Searcher {
 					Matcher m = p.matcher(content);
 					if (m.find()) {
 						SearchResult searchResult =
-							new SearchResult(p, f, 0, "");
+							new SearchResult(p, f, 0, 0, 0, "");
 						addSearchResult(searchResult);
 					}
 				}
@@ -307,17 +331,26 @@ public class Searcher {
 		fileSet.add(searchResult.getFile());
 	}
 
-	void printSearchResult(SearchResult searchResult) {
-		System.out.println(searchResult.toString());
+	void printSearchResults() {
+		System.out.println(String.format("Search results (%d):",
+			results.size()));
+		for (SearchResult r : results) {
+			System.out.println(r.toString());
+		}
 	}
 
-	void printDirList() {
+	public List<File> getMatchingDirs() {
 		Set<File> dirSet = new HashSet<File>();
 		for (File f : fileSet) {
 			dirSet.add(f.getParentFile());
 		}
 		List<File> dirs = new ArrayList<File>(dirSet);
   		java.util.Collections.sort(dirs);
+        return dirs;
+	}
+
+    public void printMatchingDirs() {
+		List<File> dirs = getMatchingDirs();
 		System.out.println(String.format("\nMatching directories (%d directories):",
 			dirs.size()));
 		for (File d : dirs) {
@@ -325,9 +358,14 @@ public class Searcher {
 		}
 	}
 
-	void printFileList() {
+	public List<File> gettMatchingFiles() {
 		List<File> files = new ArrayList<File>(fileSet);
   		java.util.Collections.sort(files);
+        return files;
+	}
+
+    public void printMatchingFiles() {
+		List<File> files = gettMatchingFiles();
 		System.out.println(String.format("\nMatching files (%d files):",
 			files.size()));
 		for (File f : files) {
@@ -335,13 +373,18 @@ public class Searcher {
 		}
 	}
 
-	void printLineList() {
+	public List<String> gettMatchingLines() {
 		Set<String> lineSet = new HashSet<String>();
 		for (SearchResult r : results) {
 			lineSet.add(r.getLine().trim());
 		}
 		List<String> lines = new ArrayList<String>(lineSet);
-  		java.util.Collections.sort(lines);
+		java.util.Collections.sort(lines);
+        return lines;
+	}
+
+    public void printMatchingLines() {
+		List<String> lines = gettMatchingLines();
 		System.out.println(String.format("\nMatching lines (%d unique lines):",
 			lines.size()));
 		for (String line : lines) {

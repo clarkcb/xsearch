@@ -39,16 +39,19 @@ public class SearchSettings {
 	private boolean caseSensitive;
 	private boolean debug;
 	private boolean doTiming;
-	private boolean firstMatch;
+    private boolean excludeHidden;
+    private boolean firstMatch;
 	private int linesAfter;
 	private int linesBefore;
 	private boolean listDirs;
 	private boolean listFiles;
 	private boolean listLines;
-	private boolean multilinesearch;
+	private int maxLineLength;
+	private boolean multiLineSearch;
 	private boolean printResults;
 	private boolean printUsage;
 	private boolean printVersion;
+	private boolean recursive;
 	private boolean searchArchives;
 	private boolean uniqueLines;
 	private boolean verbose;
@@ -84,23 +87,26 @@ public class SearchSettings {
 		this.linesAfterToPatterns = new HashSet<Pattern>();
 		this.linesAfterUntilPatterns = new HashSet<Pattern>();
 
-
 		this.searchPatterns = new HashSet<Pattern>();
 
 		// set the defaults
 		this.archivesOnly = false;
-		this.debug = false;
+        this.caseSensitive = true;
+        this.debug = false;
 		this.doTiming = false;
-		this.firstMatch = false;
+        this.firstMatch = false;
+        this.excludeHidden = true;
 		this.linesAfter = 0;
 		this.linesBefore = 0;
 		this.listDirs = false;
 		this.listFiles = false;
 		this.listLines = false;
-		this.multilinesearch = false;
+		this.maxLineLength = 100;
+		this.multiLineSearch = false;
 		this.printResults = false;
 		this.printUsage = false;
 		this.printVersion = false;
+		this.recursive = true;
 		this.searchArchives = false;
 		this.uniqueLines = false;
 		this.verbose = false;
@@ -146,6 +152,14 @@ public class SearchSettings {
 		this.firstMatch = firstMatch;
 	}
 
+	public boolean getExcludeHidden() {
+		return this.excludeHidden;
+	}
+
+	public void setExcludeHidden(boolean excludeHidden) {
+		this.excludeHidden = excludeHidden;
+	}
+
 	public int getLinesAfter() {
 		return this.linesAfter;
 	}
@@ -186,12 +200,20 @@ public class SearchSettings {
 		this.listLines = listLines;
 	}
 
-	public boolean getMultiLineSearch() {
-		return this.multilinesearch;
+	public int getMaxLineLength() {
+		return this.maxLineLength;
 	}
 
-	public void setMultiLineSearch(boolean multilinesearch) {
-		this.multilinesearch = multilinesearch;
+	public void setMaxLineLength(int maxLineLength) {
+		this.maxLineLength = maxLineLength;
+	}
+
+	public boolean getMultiLineSearch() {
+		return this.multiLineSearch;
+	}
+
+	public void setMultiLineSearch(boolean multiLineSearch) {
+		this.multiLineSearch = multiLineSearch;
 	}
 
 	public boolean getPrintResults() {
@@ -216,6 +238,14 @@ public class SearchSettings {
 
 	public void setPrintVersion(boolean printVersion) {
 		this.printVersion = printVersion;
+	}
+
+	public boolean getRecursive() {
+		return this.recursive;
+	}
+
+	public void setRecursive(boolean recursive) {
+		this.recursive = recursive;
 	}
 
 	public boolean getSearchArchives() {
@@ -409,14 +439,17 @@ public class SearchSettings {
                 ", archivesOnly: " + this.archivesOnly +
                 ", debug: " + this.debug +
                 ", doTiming: " + this.doTiming +
+                ", excludeHidden: " + this.excludeHidden +
                 ", firstMatch: " + this.firstMatch +
                 ", listDirs: " + this.listDirs +
                 ", listFiles: " + this.listFiles +
                 ", listLines: " + this.listLines +
-                ", multilinesearch: " + this.multilinesearch +
+                ", maxLineLength: " + this.maxLineLength +
+                ", multiLineSearch: " + this.multiLineSearch +
                 ", printResults: " + this.printResults +
                 ", printUsage: " + this.printUsage +
                 ", printVersion: " + this.printVersion +
+                ", recursive: " + this.recursive +
                 ", searchArchives: " + this.searchArchives +
                 ", uniqueLines: " + this.uniqueLines +
                 ", verbose: " + this.verbose +

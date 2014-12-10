@@ -12,11 +12,17 @@
   <searchoption long="dotiming" short="t">
     Measure search execution duration
   </searchoption>
+  <searchoption long="excludehidden" short="">
+    Exclude hidden files and directories*
+  </searchoption>
   <searchoption long="firstmatch" short="1">
     Capture only the first match for a file+search combination
   </searchoption>
   <searchoption long="help" short="h">
     Print this usage and exit
+  </searchoption>
+  <searchoption long="includehidden" short="">
+    Include hidden files and directories
   </searchoption>
   <searchoption long="in-archivefilepattern" short="">
     Specify name pattern for archive files to include in search
@@ -57,11 +63,17 @@
   <searchoption long="listlines" short="">
     Generate a list of the matching lines after searching
   </searchoption>
+  <searchoption long="maxlinelength" short="w">
+    Maximum number of characters to print out per line of result (default: 150)
+  </searchoption>
   <searchoption long="multilinesearch" short="m">
     Search files as single multi-line content block
   </searchoption>
   <searchoption long="noprintmatches" short="P">
     Suppress printing of matches to stdout
+  </searchoption>
+  <searchoption long="norecursive" short="R">
+    Do not search recursively
   </searchoption>
   <searchoption long="nosearcharchives" short="Z">
     Do not search archive files (bz2, gz, tar, zip)
@@ -85,7 +97,10 @@
     Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
   </searchoption>
   <searchoption long="printmatches" short="p">
-    Print matches to stdout
+    Print matches to stdout*
+  </searchoption>
+  <searchoption long="recursive" short="r">
+    Search recursively through subdirectories*
   </searchoption>
   <searchoption long="search" short="s">
     Specify search pattern

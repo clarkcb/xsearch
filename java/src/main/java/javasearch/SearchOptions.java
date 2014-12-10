@@ -105,6 +105,11 @@ public class SearchOptions {
                     settings.addLinesAfterUntilPattern(arg);
                 }
             });
+            put("maxlinelength", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.setMaxLineLength(Integer.parseInt(arg));
+                }
+            });
             put("search", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addSearchPattern(arg);
@@ -135,6 +140,11 @@ public class SearchOptions {
                     settings.setDoTiming(true);
                 }
             });
+            put("excludehidden", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setExcludeHidden(true);
+                }
+            });
             put("firstmatch", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setFirstMatch(true);
@@ -143,6 +153,11 @@ public class SearchOptions {
             put("help", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setPrintUsage(true);
+                }
+            });
+            put("includehidden", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setExcludeHidden(false);
                 }
             });
             put("listdirs", new SearchFlagSetter() {
@@ -170,6 +185,11 @@ public class SearchOptions {
                     settings.setPrintResults(false);
                 }
             });
+            put("norecursive", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setRecursive(false);
+                }
+            });
             put("nosearcharchives", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setSearchArchives(false);
@@ -178,6 +198,11 @@ public class SearchOptions {
             put("printmatches", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setPrintResults(true);
+                }
+            });
+            put("recursive", new SearchFlagSetter() {
+                @Override public void setFlag(SearchSettings settings) {
+                    settings.setRecursive(true);
                 }
             });
             put("searcharchives", new SearchFlagSetter() {
@@ -251,6 +276,8 @@ public class SearchOptions {
 
 	public SearchSettings settingsFromArgs(String[] args) throws Exception {
 		SearchSettings settings = new SearchSettings();
+        // default printresults to True since running from command line
+        settings.setPrintResults(true);
 		Queue<String> queue = new LinkedList<String>(Arrays.asList(args));
 		while (!queue.isEmpty()) {
 			String arg = queue.remove();
