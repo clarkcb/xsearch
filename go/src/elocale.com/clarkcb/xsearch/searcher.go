@@ -32,6 +32,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -871,34 +872,30 @@ func (s *Searcher) Search() error {
 		fmt.Println("\nFile search complete.\n")
 	}
 
-	// if there are results and PrintResults is true then print them out
-	if s.Settings.PrintResults && !s.searchResults.IsEmpty() {
-		fmt.Println()
-		s.searchResults.PrintSearchResults()
-		fmt.Println()
-		patternKeys := []string{}
-
-		spi := s.Settings.SearchPatterns.Iterator()
-		for spi.Next() {
-			p := spi.Value()
-			patternKeys = append(patternKeys, p.String())
-		}
-		s.searchResults.PrintPatternCounts(patternKeys)
-
-		if s.Settings.ListDirs {
-			fmt.Println()
-			s.searchResults.PrintDirCounts()
-		}
-
-		if s.Settings.ListFiles {
-			fmt.Println()
-			s.searchResults.PrintFileCounts()
-		}
-
-		if s.Settings.ListLines {
-			fmt.Println()
-			s.searchResults.PrintLineCounts()
-		}
-	}
 	return nil
+}
+
+func (s *Searcher) PrintSearchResults() {
+	s.searchResults.PrintSearchResults()
+	fmt.Println()
+	patternKeys := []string{}
+
+	spi := s.Settings.SearchPatterns.Iterator()
+	for spi.Next() {
+		p := spi.Value()
+		patternKeys = append(patternKeys, p.String())
+	}
+	s.searchResults.PrintPatternCounts(patternKeys)
+}
+
+func (s *Searcher) PrintDirCounts() {
+	s.searchResults.PrintDirCounts()
+}
+
+func (s *Searcher) PrintFileCounts() {
+	s.searchResults.PrintFileCounts()
+}
+
+func (s *Searcher) PrintLineCounts() {
+	s.searchResults.PrintLineCounts()
 }

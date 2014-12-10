@@ -28,4 +28,25 @@ func main() {
 		fmt.Println(err)
 		searchOptions.PrintUsage()
 	}
+
+	// if there are results and PrintResults is true then print them out
+	if settings.PrintResults {
+		fmt.Println()
+		searcher.PrintSearchResults()
+	}
+
+	if settings.ListDirs {
+		fmt.Println()
+		searcher.PrintDirCounts()
+	}
+
+	if settings.ListFiles {
+		fmt.Println()
+		searcher.PrintFileCounts()
+	}
+
+	if settings.ListLines {
+		fmt.Println()
+		searcher.PrintLineCounts()
+	}
 }
