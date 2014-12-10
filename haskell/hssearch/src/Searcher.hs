@@ -1,6 +1,7 @@
 module Searcher
     (
       doSearch
+    , doSearchFiles
     , getSearchDirs
     , getSearchFiles
     ) where
