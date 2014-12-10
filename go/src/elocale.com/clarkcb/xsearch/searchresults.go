@@ -68,7 +68,11 @@ func (srs *SearchResults) Less(i, j int) bool {
 	sr1, sr2 := srs.SearchResults[i], srs.SearchResults[j]
 	fileCmp := bytes.Compare([]byte(sr1.File.String()), []byte(sr2.File.String()))
 	if fileCmp == 0 {
-		return sr1.LineNum <= sr2.LineNum
+		if sr1.LineNum == sr2.LineNum {
+			return sr1.MatchStartIndex <= sr2.MatchStartIndex
+		} else {
+			return sr1.LineNum < sr2.LineNum
+		}
 	} else if fileCmp == -1 {
 		return true
 	} else {
@@ -172,12 +176,14 @@ func (rs *SearchResults) PrintSearchResults() {
 }
 
 type SearchResult struct {
-	Pattern     *regexp.Regexp
-	File        *SearchItem
-	LineNum     int
-	Line        *string
-	LinesBefore []*string
-	LinesAfter  []*string
+	Pattern         *regexp.Regexp
+	File            *SearchItem
+	LineNum         int
+	MatchStartIndex int
+	MatchEndIndex   int
+	Line            *string
+	LinesBefore     []*string
+	LinesAfter      []*string
 }
 
 func (r *SearchResult) String() string {
@@ -222,11 +228,51 @@ func (r *SearchResult) multiLineString() string {
 
 func (r *SearchResult) singleLineString() string {
 	if r.LineNum > 0 {
-		return fmt.Sprintf("%s: %d: %s", r.File.String(), r.LineNum,
-			strings.TrimSpace(*r.Line))
+		return fmt.Sprintf("%s: %d [%d:%d]: %s", r.File.String(), r.LineNum,
+			r.MatchStartIndex, r.MatchEndIndex, r.formatMatchingLine())
 	} else {
 		return fmt.Sprintf("%s matches", r.File.String())
 	}
+}
+
+
+// temp
+const MAXLINELENGTH = 150
+
+// TODO: resize line as necessary to match MaxLineLength
+func (r *SearchResult) formatMatchingLine() string {
+	formatted := *r.Line
+	lineLength := len(formatted)
+	matchLength := r.MatchEndIndex - r.MatchStartIndex
+
+    if lineLength > MAXLINELENGTH {
+        adjustedMaxLength := MAXLINELENGTH - matchLength
+        beforeIndex := r.MatchStartIndex
+        if r.MatchStartIndex > 0 {
+            beforeIndex = beforeIndex - (adjustedMaxLength / 4)
+            if beforeIndex < 0 {
+                beforeIndex = 0
+            }
+        }
+        adjustedMaxLength = adjustedMaxLength - (r.MatchStartIndex - beforeIndex)
+        afterIndex := r.MatchEndIndex + adjustedMaxLength
+        if afterIndex > lineLength {
+            afterIndex = lineLength
+        }
+
+        before := ""
+        if beforeIndex > 3 {
+            before = "..."
+            beforeIndex += 3
+        }
+        after := ""
+        if afterIndex < lineLength - 3 {
+            after = "..."
+            afterIndex -= 3
+        }
+        formatted = before + formatted[beforeIndex:afterIndex] + after
+    }
+	return strings.TrimSpace(formatted)
 }
 
 func (r *SearchResult) Text() string {

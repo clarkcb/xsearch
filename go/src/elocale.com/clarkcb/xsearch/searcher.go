@@ -107,10 +107,17 @@ func (s *Searcher) addSearchDir(d *string) {
 	s.searchDirs = append(s.searchDirs, d)
 }
 
+func (s *Searcher) checkAddSearchDir(d *string) error {
+	if s.isSearchDir(d) {
+		s.addSearchDir(d)
+	}
+	return nil
+}
+
 // this method passed to the filepath.Walk method, it must have this signature
-func (s *Searcher) checkAddSearchDir(d string, fi os.FileInfo, err error) error {
-	if fi.IsDir() && s.isSearchDir(&d) {
-		s.addSearchDir(&d)
+func (s *Searcher) checkAddSearchWalkDir(d string, fi os.FileInfo, err error) error {
+	if fi.IsDir() {
+		return s.checkAddSearchDir(&d)
 	}
 	return nil
 }
@@ -119,7 +126,10 @@ func (s *Searcher) setSearchDirs() error {
 	if s.Settings.Verbose {
 		fmt.Println("\nBuilding directory search list")
 	}
-	return filepath.Walk(s.Settings.StartPath, s.checkAddSearchDir)
+	if s.Settings.Recursive {
+		return filepath.Walk(s.Settings.StartPath, s.checkAddSearchWalkDir)
+	}
+	return s.checkAddSearchDir(&s.Settings.StartPath)
 }
 
 func (s *Searcher) isArchiveSearchFile(filename *string) bool {
@@ -353,6 +363,8 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
 					p,
 					si,
 					linenum,
+					0, // todo: figure out line-relative indices
+					0, // 
 					&lineStr,
 					linesBefore,
 					linesAfter,
@@ -371,6 +383,7 @@ func (s *Searcher) searchTextFileReaderLines(r io.Reader, si *SearchItem) {
 	linesBefore := []*string{}
 	linesAfter := []*string{}
 	linesAfterIdx := 0
+	patternMatches := map[*regexp.Regexp]int{}
 ReadLines:
 	for {
 		linenum++
@@ -390,16 +403,8 @@ ReadLines:
 		spi := s.Settings.SearchPatterns.Iterator()
 		for spi.Next() {
 			p := spi.Value()
-			// check for FirstMatch setting and stop if file+pattern match exists
-			if s.Settings.FirstMatch &&
-				s.searchResults.HasResultForFileAndPattern(si, p) {
-				if !s.Settings.SearchPatterns.IsEmpty() {
-					continue
-				} else {
-					break ReadLines
-				}
-			}
-			if p.MatchString(*line) {
+			//if p.MatchString(*line) {
+			if matchIndices := p.FindAllStringIndex(*line, -1); matchIndices != nil {
 				if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
 					continue
 				} else if len(linesAfter) > 0 && !s.linesAfterMatch(linesAfter) {
@@ -454,15 +459,27 @@ ReadLines:
 				} else {
 					srLinesAfter = linesAfter
 				}
-				sr := &SearchResult{
-					p,
-					si,
-					linenum,
-					line,
-					linesBefore,
-					srLinesAfter,
+				// iterate through matchIndices
+				for _, m := range matchIndices {
+					// check for FirstMatch setting and stop if file+pattern match exists
+					_,patternMatched := patternMatches[p]
+					if s.Settings.FirstMatch && patternMatched {
+						continue
+					} else {
+						sr := &SearchResult{
+							p,
+							si,
+							linenum,
+							m[0],
+							m[1],
+							line,
+							linesBefore,
+							srLinesAfter,
+						}
+						s.resultChan <- sr
+						patternMatches[p] = 1
+					}
 				}
-				s.resultChan <- sr
 			}
 		}
 		if s.Settings.LinesBefore > 0 {
@@ -508,6 +525,8 @@ func (s *Searcher) searchBinaryFileReader(r io.Reader, si *SearchItem) {
 			sr := &SearchResult{
 				p,
 				si,
+				0,
+				0,
 				0,
 				&emptyStr,
 				[]*string{},

@@ -89,10 +89,12 @@ func (so *SearchOptions) getSortKeyMap() map[string]string {
 	m := map[string]string{}
 	for _, o := range so.SearchOptions {
 		sortKey := ""
-		if o.Short != "" {
-			sortKey = strings.ToLower(o.Short)
+		if o.Short == "" {
+			sortKey = strings.ToLower(o.Long)
+		} else {
+			sortKey = fmt.Sprintf("%s@%s", strings.ToLower(o.Short),
+				strings.ToLower(o.Long))
 		}
-		sortKey = fmt.Sprintf("%s%s", sortKey, strings.ToLower(o.Long))
 		m[sortKey] = o.Long
 	}
 	return m
@@ -163,6 +165,14 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 				fmt.Printf("Invalid value for linesbefore: %s\n", s)
 			}
 		},
+		"maxlinelength": func(s string, settings *SearchSettings) {
+			num, err := strconv.Atoi(s)
+			if err == nil {
+				settings.MaxLineLength = num
+			} else {
+				fmt.Printf("Invalid value for maxlinelength: %s\n", s)
+			}
+		},
 		"out-archivefilepattern": func(s string, settings *SearchSettings) {
 			settings.AddOutArchiveFilePattern(s)
 		},
@@ -213,11 +223,17 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 		"dotiming": func(settings *SearchSettings) {
 			settings.DoTiming = true
 		},
+		"excludehidden": func(settings *SearchSettings) {
+			settings.ExcludeHidden = true
+		},
 		"firstmatch": func(settings *SearchSettings) {
 			settings.FirstMatch = true
 		},
 		"help": func(settings *SearchSettings) {
 			settings.PrintUsage = true
+		},
+		"includehidden": func(settings *SearchSettings) {
+			settings.ExcludeHidden = false
 		},
 		"listdirs": func(settings *SearchSettings) {
 			settings.ListDirs = true
@@ -234,11 +250,17 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 		"noprintmatches": func(settings *SearchSettings) {
 			settings.PrintResults = false
 		},
+		"norecursive": func(settings *SearchSettings) {
+			settings.Recursive = false
+		},
 		"nosearcharchives": func(settings *SearchSettings) {
 			settings.SearchArchives = false
 		},
 		"printmatches": func(settings *SearchSettings) {
 			settings.PrintResults = true
+		},
+		"recursive": func(settings *SearchSettings) {
+			settings.Recursive = true
 		},
 		"searcharchives": func(settings *SearchSettings) {
 			settings.SearchArchives = true

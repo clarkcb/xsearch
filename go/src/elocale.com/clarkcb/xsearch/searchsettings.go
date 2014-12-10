@@ -27,16 +27,19 @@ type SearchSettings struct {
 	ArchivesOnly            bool
 	Debug                   bool
 	DoTiming                bool
+	ExcludeHidden           bool
 	FirstMatch              bool
 	LinesAfter              int
 	LinesBefore             int
 	ListDirs                bool
 	ListFiles               bool
 	ListLines               bool
+	MaxLineLength           int
 	MultiLineSearch         bool
 	PrintResults            bool
 	PrintUsage              bool
 	PrintVersion            bool
+	Recursive               bool
 	SearchArchives          bool
 	UniqueLines             bool
 	Verbose                 bool
@@ -81,16 +84,19 @@ func GetDefaultSearchSettings() *SearchSettings {
 		false,                       // ArchivesOnly
 		false,                       // Debug
 		false,                       // DoTiming
+		true,                        // ExcludeHidden
 		false,                       // FirstMatch
 		0,                           // LinesAfter
 		0,                           // LinesBefore
 		false,                       // ListDirs
 		false,                       // ListFiles
 		false,                       // ListLines
+		150,                         // MaxLineLength
 		false,                       // MultiLineSearch
 		true,                        // PrintResults
 		false,                       // PrintUsage
 		false,                       // PrintVersion
+		true,                        // Recursive
 		false,                       // SearchArchives
 		false,                       // UniqueLines
 		false,                       // Verbose
@@ -225,16 +231,19 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString(fmt.Sprintf(", ArchivesOnly: %t", s.ArchivesOnly))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
 	buffer.WriteString(fmt.Sprintf(", DoTiming: %t", s.DoTiming))
+	buffer.WriteString(fmt.Sprintf(", ExcludeHidden: %t", s.ExcludeHidden))
 	buffer.WriteString(fmt.Sprintf(", FirstMatch: %t", s.FirstMatch))
 	buffer.WriteString(fmt.Sprintf(", LinesAfter: %d", s.LinesAfter))
 	buffer.WriteString(fmt.Sprintf(", LinesBefore: %d", s.LinesBefore))
 	buffer.WriteString(fmt.Sprintf(", ListDirs: %t", s.ListDirs))
 	buffer.WriteString(fmt.Sprintf(", ListFiles: %t", s.ListFiles))
 	buffer.WriteString(fmt.Sprintf(", ListLines: %t", s.ListLines))
+	buffer.WriteString(fmt.Sprintf(", MaxLineLength: %d", s.MaxLineLength))
 	buffer.WriteString(fmt.Sprintf(", MultiLineSearch: %t", s.MultiLineSearch))
 	buffer.WriteString(fmt.Sprintf(", PrintResults: %t", s.PrintResults))
 	buffer.WriteString(fmt.Sprintf(", PrintUsage: %t", s.PrintUsage))
 	buffer.WriteString(fmt.Sprintf(", PrintVersion: %t", s.PrintVersion))
+	buffer.WriteString(fmt.Sprintf(", Recursive: %t", s.Recursive))
 	buffer.WriteString(fmt.Sprintf(", SearchArchives: %t", s.SearchArchives))
 	buffer.WriteString(fmt.Sprintf(", UniqueLines: %t", s.UniqueLines))
 	buffer.WriteString(fmt.Sprintf(", Verbose: %t", s.Verbose))
