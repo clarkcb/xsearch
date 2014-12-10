@@ -78,7 +78,7 @@ class Searcher:
         return True
 
     def is_search_file(self, f):
-        if self.settings.excludehidden and f.startswith('.'):
+        if f.startswith('.') and self.settings.excludehidden:
             return False
         if self.settings.in_extensions and \
             not self.get_ext(f) in self.settings.in_extensions:
