@@ -32,9 +32,11 @@ errsOrUsage searchOptions settings = do
                  else ""
         
 formatResults :: [SearchResult] -> String
-formatResults results = if length results > 0
-  then "\nSearch results (" ++ show (length results) ++ "):\n" ++ unlines (map formatSearchResult results)
-  else "\nSearch results: none"
+formatResults results =
+  if length results > 0
+    then "\nSearch results (" ++ show (length results) ++ "):\n" ++
+         unlines (map formatSearchResult results)
+    else "\nSearch results: none"
 
 main :: IO ()
 main = do
@@ -42,20 +44,28 @@ main = do
 
   searchOptions <- getSearchOptions
   let settings = settingsFromArgs searchOptions args
-  putStrLn $ if debug settings
-             then "\nsettingsFromArgs " ++ show args ++ ": " ++ show settings
-             else ""
+  putStr $ if debug settings
+           then "\nsettingsFromArgs " ++ show args ++ ": " ++ show settings ++
+                "\n"
+           else ""
 
   let maybeUsage = errsOrUsage searchOptions settings
   case maybeUsage of
     Just usage -> putStrLn usage
     Nothing -> do
-      putStrLn $ "Performing search... "
       searchDirs <- getSearchDirs settings
-      putStrLn $ "searchDirs (" ++ show (length searchDirs) ++ "):\n" ++ unlines searchDirs
+      putStr $ if verbose settings
+               then "\nDirectories to be searched (" ++
+                    show (length searchDirs) ++ "):\n" ++
+                    unlines searchDirs
+               else ""
       searchFiles <- getSearchFiles settings searchDirs
-      putStrLn $ "searchFiles (" ++ show (length searchFiles) ++ "):\n" ++ unlines searchFiles
-      --searchFileTypes <- getFileTypes searchFiles
-      --putStrLn $ "searchFileTypes (" ++ show (length searchFileTypes) ++ "):\n" ++ unlines (map show searchFileTypes)
-      results <- doSearch settings
-      putStrLn $ formatResults results
+      putStr $ if verbose settings
+               then "\nFiles to be searched (" ++
+                    show (length searchFiles) ++ "):\n" ++
+                    unlines searchFiles
+               else ""
+      results <- doSearchFiles settings searchFiles
+      putStrLn $ if printResults settings
+                  then formatResults results
+                  else ""
