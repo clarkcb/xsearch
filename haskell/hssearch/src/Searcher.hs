@@ -7,8 +7,8 @@ module Searcher
     ) where
 
 import Control.Monad (liftM)
-import qualified Data.ByteString as BL
-import qualified Data.ByteString.Internal as BL (c2w)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
 import Text.Regex.PCRE
 
 import FileTypes
@@ -69,16 +69,40 @@ getSearchFiles settings dirs = do
   let searchableFiles = map (\ft -> fst ft) (filter isSearchable filesWithTypes)
   return $ filter (isSearchFile settings) searchableFiles
 
+searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
+searchBinaryFile settings f = do
+  blobEither <- getFileByteString f
+  case blobEither of
+    (Left _) -> return [] -- todo: figure out to relay error
+    (Right blob) -> return $ addFilePath (searchBlob settings blob)
+  where addFilePath = map (\r -> r {filePath=f})
+
+searchBlob :: SearchSettings -> B.ByteString -> [SearchResult]
+searchBlob settings blob =
+  concat $ map (searchBlobForPattern settings blob) (searchPatterns settings)
+
+searchBlobForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
+searchBlobForPattern settings blob pattern = if hasMatch
+                                             then [blobResult pattern]
+                                             else []
+  where hasMatch = blob =~ pattern :: Bool
+        blobResult p = blankSearchResult { searchPattern=p
+                                         , lineNum=0
+                                         , matchStartIndex=0
+                                         , matchEndIndex=0
+                                         , line=B.empty
+                                         }
+
 searchTextFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFile settings f = do
   if (multiLineSearch settings)
     then searchTextFileContents settings f
     else searchTextFileLines settings f
 
-matchOffsetsAndLengths :: BL.ByteString -> String -> [(MatchOffset,MatchLength)]
+matchOffsetsAndLengths :: B.ByteString -> String -> [(MatchOffset,MatchLength)]
 matchOffsetsAndLengths s p = getAllMatches $ s =~ p :: [(MatchOffset,MatchLength)]
 
-matchIndices :: BL.ByteString -> String -> [(Int,Int)]
+matchIndices :: B.ByteString -> String -> [(Int,Int)]
 matchIndices s p = map (\(x,y) -> (x, x+y)) (matchOffsetsAndLengths s p)
 
 searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
@@ -89,11 +113,11 @@ searchTextFileContents settings f = do
     (Right contents) -> return $ addFilePath (searchContents settings contents)
   where addFilePath = map (\r -> r {filePath=f})
 
-searchContents :: SearchSettings -> BL.ByteString -> [SearchResult]
+searchContents :: SearchSettings -> B.ByteString -> [SearchResult]
 searchContents settings contents =
   concat $ map (searchContentsForPattern settings contents) (searchPatterns settings)
 
-searchContentsForPattern :: SearchSettings -> BL.ByteString -> String -> [SearchResult]
+searchContentsForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
 searchContentsForPattern settings contents pattern = patternResults pattern
   where patternResults p = map (resultFromLinePatternIndices p) (firstOrAllIndices p)
         firstOrAllIndices p = if firstMatch settings
@@ -101,19 +125,19 @@ searchContentsForPattern settings contents pattern = patternResults pattern
                               else matchIndices contents p
         startLineIndex idx = case idx of
                              0 -> 0
-                             i | BL.index contents i == (BL.c2w '\n') -> i + 1
+                             i | BC.index contents i == '\n' -> i + 1
                              i -> startLineIndex (i-1)
         endLineIndex idx = case idx of
-                           i | BL.index contents i == (BL.c2w '\n') -> i
-                           i | i == (BL.length contents - 1) -> i
+                           i | BC.index contents i == '\n' -> i
+                           i | i == (B.length contents - 1) -> i
                            i -> endLineIndex (i+1)
         lineLength i = (endLineIndex i) - (startLineIndex i)
-        lineFromMatchIndex i = BL.take (lineLength i) $ BL.drop (startLineIndex i) contents
-        countNewlines s = BL.length $ BL.filter (==(BL.c2w '\n')) s
+        lineFromMatchIndex i = B.take (lineLength i) $ B.drop (startLineIndex i) contents
+        countNewlines s = BC.length $ BC.filter (=='\n') s
         resultFromLinePatternIndices :: String -> (Int, Int) -> SearchResult
         resultFromLinePatternIndices p ix =
-          blankSearchResult {searchPattern=p
-                            , lineNum=(countNewlines (BL.take (fst ix) contents))+1
+          blankSearchResult { searchPattern=p
+                            , lineNum=(countNewlines (B.take (fst ix) contents))+1
                             , matchStartIndex=(fst ix) - (startLineIndex (fst ix))
                             , matchEndIndex=(snd ix) - (startLineIndex (fst ix))
                             , line=lineFromMatchIndex (fst ix)
@@ -127,9 +151,9 @@ searchTextFileLines settings f = do
     (Right fileLines) -> return $ addFilePath (searchLineList settings fileLines)
   where addFilePath = map (\r -> r {filePath=f})
 
-searchLineList :: SearchSettings -> [BL.ByteString] -> [SearchResult]
+searchLineList :: SearchSettings -> [B.ByteString] -> [SearchResult]
 searchLineList settings bs = recSearchLineList bs 0 []
-  where recSearchLineList :: [BL.ByteString] -> Int -> [SearchResult] -> [SearchResult]
+  where recSearchLineList :: [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
         recSearchLineList lst num results =
           case lst of
             []     -> results
@@ -143,13 +167,13 @@ searchLineList settings bs = recSearchLineList bs 0 []
                 firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
                 patterns = searchPatterns settings
 
-searchLineForPattern :: SearchSettings -> Int -> BL.ByteString -> String -> [SearchResult]
+searchLineForPattern :: SearchSettings -> Int -> B.ByteString -> String -> [SearchResult]
 searchLineForPattern settings num l pattern = patternResults pattern
   where patternResults :: String -> [SearchResult]
         patternResults p = map (resultFromLinePatternIndices p) (matchIndices l p)
         resultFromLinePatternIndices :: String -> (Int, Int) -> SearchResult
         resultFromLinePatternIndices p ix =
-          blankSearchResult {searchPattern=p
+          blankSearchResult { searchPattern=p
                             , lineNum=num
                             , matchStartIndex=fst ix
                             , matchEndIndex=snd ix
@@ -160,6 +184,7 @@ doSearchFile :: SearchSettings -> (FilePath,FileType) -> IO [SearchResult]
 doSearchFile settings ft = do
   case snd ft of
     Text -> searchTextFile settings $ fst ft
+    Binary -> searchBinaryFile settings $ fst ft
     _ -> return []
 
 doSearchFiles :: SearchSettings -> [FilePath] -> IO [SearchResult]

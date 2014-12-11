@@ -27,11 +27,16 @@ blankSearchResult = SearchResult {
                                  }
 
 formatSearchResult :: SearchResult -> String
-formatSearchResult result = filePath result ++ ": " ++
-                            show (lineNum result) ++ ": [" ++
-                            show (matchStartIndex result) ++ ":" ++
-                            show (matchEndIndex result) ++ "]: " ++
-                            trimLeadingWhitespace (bytesToString $ BL.unpack (line result))
+formatSearchResult result = if (lineNum result) == 0
+                            then formatBinaryResult
+                            else formatTextResult
+  where path = filePath result
+        formatBinaryResult = path ++ " matches"
+        formatTextResult = path ++ ": " ++
+                           show (lineNum result) ++ ": [" ++
+                           show (matchStartIndex result) ++ ":" ++
+                           show (matchEndIndex result) ++ "]: " ++
+                           trimLeadingWhitespace (bytesToString $ BL.unpack (line result))
 
 trimLeadingWhitespace :: String -> String
 trimLeadingWhitespace s = dropWhile isWhitespace s
