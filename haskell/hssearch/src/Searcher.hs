@@ -90,8 +90,10 @@ searchContents settings contents =
 
 searchContentsForPattern :: SearchSettings -> BL.ByteString -> String -> [SearchResult]
 searchContentsForPattern settings contents pattern = patternResults pattern
-  where patternResults :: String -> [SearchResult]
-        patternResults p = map (resultFromLinePatternIndices p) (matchIndices contents p)
+  where patternResults p = map (resultFromLinePatternIndices p) (firstOrAllIndices p)
+        firstOrAllIndices p = if firstMatch settings
+                              then take 1 (matchIndices contents p)
+                              else matchIndices contents p
         startLineIndex idx = case idx of
                              0 -> 0
                              i | BL.index contents i == (BL.c2w '\n') -> i + 1
