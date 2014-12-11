@@ -18,8 +18,8 @@ module FileUtility
 
 import Control.Exception (IOException, bracket, handle)
 import Control.Monad (filterM, forM)
-import qualified Data.ByteString as BL
-import qualified Data.ByteString.Internal as BL (c2w)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
 import System.Directory (doesDirectoryExist, doesFileExist, getDirectoryContents)
@@ -94,16 +94,16 @@ getRecursiveDirectories dir = do
     else return []
   return (concat paths)
 
-getFileByteString :: FilePath -> IO (Either String BL.ByteString)
+getFileByteString :: FilePath -> IO (Either String B.ByteString)
 getFileByteString f = handle (\(e :: IOException) -> return (Left (show e))) $
   bracket (openFile f ReadMode) hClose $ \h -> do
     hSetNewlineMode h universalNewlineMode
-    contents <- BL.hGetContents h
+    contents <- B.hGetContents h
     return (Right contents)
 
-getFileLines :: FilePath -> IO (Either String [BL.ByteString])
+getFileLines :: FilePath -> IO (Either String [B.ByteString])
 getFileLines f = do
   fileByteString <- getFileByteString f
   case fileByteString of
     Left e -> return $ Left e
-    Right c -> return $ Right (BL.split (BL.c2w '\n') c)
+    Right contents -> return $ Right (BC.split '\n' contents)
