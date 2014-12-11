@@ -6,6 +6,7 @@ module Searcher
     , getSearchFiles
     ) where
 
+import Control.Monad (liftM)
 import qualified Data.ByteString as BL
 import qualified Data.ByteString.Internal as BL (c2w)
 import Text.Regex.PCRE
@@ -61,8 +62,12 @@ isSearchFile settings fp = and $ map ($fp) tests
 
 getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
-  files <- mapM getDirectoryFiles dirs
-  return $ filter (isSearchFile settings) $ concat files
+  files <- concat `liftM` mapM getDirectoryFiles dirs
+  fileTypes <- getFileTypes files
+  let filesWithTypes = zip files fileTypes
+  let isSearchable ft = isSearchableFileType (snd ft)
+  let searchableFiles = map (\ft -> fst ft) (filter isSearchable filesWithTypes)
+  return $ filter (isSearchFile settings) searchableFiles
 
 searchTextFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFile settings f = do

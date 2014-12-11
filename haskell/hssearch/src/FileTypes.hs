@@ -1,5 +1,9 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
-module FileTypes (FileType(..), getFileTypes) where
+module FileTypes
+  ( FileType(..)
+  , getFileTypes
+  , isSearchableFileType
+  ) where
 
 import Text.XML.HXT.Core
 
@@ -40,6 +44,9 @@ getFileType xmlFileTypes f =
   case getExtension f of
     Just x -> matchingTypeForExtension xmlFileTypes x
     Nothing -> Unknown
+
+isSearchableFileType :: FileType -> Bool
+isSearchableFileType t = t `elem` [Text, Binary, Archive]
 
 matchingTypeForExtension :: [XmlFileType] -> String -> FileType
 matchingTypeForExtension xmlFileTypes x =
