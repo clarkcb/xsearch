@@ -83,7 +83,8 @@ class SearchOptions:
                 settings.set_property('firstmatch', False),
         'archivesonly':
             lambda settings:
-                settings.set_property('archivesonly', True),
+                settings.set_properties({'archivesonly': True,
+                                         'searcharchives': True}),
         'debug':
             lambda settings:
                 settings.set_property('debug', True),

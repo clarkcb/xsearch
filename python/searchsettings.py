@@ -60,6 +60,10 @@ class SearchSettings:
     def set_property(self, name, val):
         self.__dict__[name] = val
 
+    def set_properties(self, propdict):
+        for p in propdict:
+            self.set_property(p, propdict[p])
+
     def __str__(self):
         s = '{0}(startpath: "{1}"'.format(self.__class__.__name__, self.startpath)
         for name in self._extension_set_names:
