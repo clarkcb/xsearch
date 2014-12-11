@@ -48,12 +48,6 @@ matchingTypeForExtension xmlFileTypes x =
     fts -> case fileTypeName fts of
            "archive" -> Archive
            "binary" -> Binary
-           name | name `elem` ["code", "text", "xml"] -> Text
+           tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
   where fileTypeName = (name . head)
-
-
-main :: IO ()
-main = do
-  xmlFileTypes <- getXmlFileTypes
-  print xmlFileTypes
