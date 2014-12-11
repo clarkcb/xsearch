@@ -126,11 +126,15 @@ searchLineList settings bs = recSearchLineList bs 0 []
         recSearchLineList lst num results =
           case lst of
             []     -> results
-            (l:ls) -> recSearchLineList ls (num + 1) (results ++ (searchLine settings (num + 1) l))
-
-searchLine :: SearchSettings -> Int -> BL.ByteString -> [SearchResult]
-searchLine settings num l =
-  concat $ map (searchLineForPattern settings num l) (searchPatterns settings)
+            (l:ls) -> recSearchLineList ls (num + 1) (updatedResults l)
+          where updatedResults l = results ++ (newResults l)
+                newResults l = concat $ map (searchNextPattern l) filteredPatterns
+                searchNextPattern l = searchLineForPattern settings (num + 1) l
+                filteredPatterns = if firstMatch settings
+                                   then filter firstMatchNotMet patterns
+                                   else patterns
+                firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
+                patterns = searchPatterns settings
 
 searchLineForPattern :: SearchSettings -> Int -> BL.ByteString -> String -> [SearchResult]
 searchLineForPattern settings num l pattern = patternResults pattern
