@@ -4,8 +4,6 @@ import scala.collection.mutable
 import scala.util.matching.Regex
 
 object DefaultSettings {
-  val outDirPatterns = Set("""^\.git$""".r, """^\.svn$""".r, """^CVS$""".r)
-  val outFilePatterns = Set("""^\.DS_Store$""".r)
   val maxLineLength = 150
 }
 
@@ -14,9 +12,9 @@ class SettingsBuilder {
   val inExtensions = mutable.Set[String]()
   val outExtensions = mutable.Set[String]()
   val inDirPatterns = mutable.Set[Regex]()
-  val outDirPatterns = mutable.Set[Regex]() ++ DefaultSettings.outDirPatterns
+  val outDirPatterns = mutable.Set[Regex]()
   val inFilePatterns = mutable.Set[Regex]()
-  val outFilePatterns = mutable.Set[Regex]() ++ DefaultSettings.outFilePatterns
+  val outFilePatterns = mutable.Set[Regex]()
   val inArchiveFilePatterns = mutable.Set[Regex]()
   val outArchiveFilePatterns = mutable.Set[Regex]()
   val inLinesBeforePatterns = mutable.Set[Regex]()

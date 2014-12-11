@@ -333,16 +333,12 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("shortArgs: "+shortArgs)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.outDirPatterns: "+shortSettings.outDirPatterns)
-    assert(shortSettings.outDirPatterns.size ==
-      DefaultSettings.outDirPatterns.size + 1)
     assert(shortSettings.outDirPatterns.map(_.toString()).contains("search"))
 
     val longArgs = List("--out-dirpattern", "search") ::: requiredArgs
     println("longArgs: "+longArgs)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.outDirPatterns: "+longSettings.outDirPatterns)
-    assert(longSettings.outDirPatterns.size ==
-      DefaultSettings.outDirPatterns.size + 1)
     assert(longSettings.outDirPatterns.map(_.toString()).contains("search"))
   }
 
@@ -383,16 +379,12 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("shortArgs: "+shortArgs)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.outFilePatterns: "+shortSettings.outFilePatterns)
-    assert(shortSettings.outFilePatterns.size ==
-      DefaultSettings.outFilePatterns.size + 1)
     assert(shortSettings.outFilePatterns.map(_.toString()).contains("Search"))
 
     val longArgs = List("--out-filepattern", "Search") ::: requiredArgs
     println("longArgs: "+longArgs)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.outFilePatterns: "+longSettings.outFilePatterns)
-    assert(longSettings.outFilePatterns.size ==
-      DefaultSettings.outFilePatterns.size + 1)
     assert(longSettings.outFilePatterns.map(_.toString()).contains("Search"))
   }
 
