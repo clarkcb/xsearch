@@ -6,19 +6,12 @@
 
 function SearchSettings() {
     var that = this;
-    //this.DEFAULT_OUT_DIRPATTERNS = [
-    //    new RegExp("\\bCVS"),
-    //    new RegExp("\\.git"),
-    //    new RegExp("\\.svn")]
-    //this.DEFAULT_OUT_FILEPATTERNS = [new RegExp("^\\.DS_Store$")]
     this.startPath = "";
     this.inExtensions = [];
     this.outExtensions = [];
     this.inDirPatterns = [];
-    //this.outDirPatterns = this.DEFAULT_OUT_DIRPATTERNS;
     this.outDirPatterns = [];
     this.inFilePatterns = [];
-    //this.outFilePatterns = this.DEFAULT_OUT_FILEPATTERNS;
     this.outFilePatterns = [];
     this.inArchiveFilePatterns = [];
     this.outArchiveFilePatterns = [];
