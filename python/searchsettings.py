@@ -24,7 +24,6 @@ class SearchSettings:
         'dotiming': False,
         'firstmatch': False,
         'excludehidden': True,
-        'includedefaults': True,
         'listdirs': False,
         'listfiles': False,
         'listlines': False,
@@ -41,9 +40,6 @@ class SearchSettings:
         'verbose': False,
     }
 
-    DEFAULT_OUT_DIRPATTERNS = (r'\bCVS$', r'\.git$', r'\.svn$')
-    DEFAULT_OUT_FILEPATTERNS = (r'^\.DS_Store$',)
-
     def __init__(self):
         self.startpath = None
         for name in self._extension_set_names:
@@ -51,11 +47,6 @@ class SearchSettings:
         for name in self._pattern_set_names:
             self.__dict__[name] = set()
         self.__dict__.update(self._props_with_defaults)
-        if self.includedefaults:
-            for out_dirpattern in self.DEFAULT_OUT_DIRPATTERNS:
-                self.add_pattern(out_dirpattern, 'out_dirpatterns')
-            for out_filepattern in self.DEFAULT_OUT_FILEPATTERNS:
-                self.add_pattern(out_filepattern, 'out_filepatterns')
 
     def add_comma_delimited_exts(self, exts, ext_set_name):
         for x in [ext for ext in exts.split(',') if ext]:
