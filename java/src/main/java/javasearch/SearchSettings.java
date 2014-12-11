@@ -56,28 +56,13 @@ public class SearchSettings {
 	private boolean uniqueLines;
 	private boolean verbose;
 
-	Set<Pattern> DEFAULT_OUT_DIRPATTERNS;
-	Set<Pattern> DEFAULT_OUT_FILEPATTERNS;
-
 	public SearchSettings() {
 		this.inExtensions = new HashSet<String>();
 		this.outExtensions = new HashSet<String>();
 		this.inDirPatterns = new HashSet<Pattern>();
-        DEFAULT_OUT_DIRPATTERNS = new HashSet<Pattern>(
-            Arrays.asList(
-                Pattern.compile("\\bCVS$"),
-                Pattern.compile("\\.git$"),
-                Pattern.compile("\\.svn$")
-            )
-        );
-        this.outDirPatterns = DEFAULT_OUT_DIRPATTERNS;
+        this.outDirPatterns = new HashSet<Pattern>();
 		this.inFilePatterns = new HashSet<Pattern>();
-        DEFAULT_OUT_FILEPATTERNS = new HashSet<Pattern>(
-            Arrays.asList(
-                Pattern.compile("^\\.DS_Store$")
-            )
-        );
-        this.outFilePatterns = DEFAULT_OUT_FILEPATTERNS;
+		this.outFilePatterns = new HashSet<Pattern>();
 		this.inArchiveFilePatterns = new HashSet<Pattern>();
 		this.outArchiveFilePatterns = new HashSet<Pattern>();
 		this.inLinesAfterPatterns = new HashSet<Pattern>();
