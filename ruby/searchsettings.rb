@@ -71,33 +71,13 @@ class SearchSettings
     @linesaftertopatterns = []
     @linesafteruntilpatterns = []
     @out_archivefilepatterns = []
-    #@out_dirpatterns = get_default_out_dirpatterns()
     @out_dirpatterns = []
     @out_extensions = []
-    #@out_filepatterns = get_default_out_filepatterns()
     @out_filepatterns = []
     @out_linesafterpatterns = []
     @out_linesbeforepatterns = []
     @searchpatterns = []
   end
-
-  #def get_default_out_dirpatterns()
-  #  out_dirs = ["\\bCVS$", "\\.git$", "\\.svn$"]
-  #  out_dirpatterns = []
-  #  out_dirs.each do |d|
-  #    out_dirpatterns.push(Regexp.new(d))
-  #  end
-  #  out_dirpatterns
-  #end
-
-  #def get_default_out_filepatterns()
-  #  out_files = ["^\\.DS_Store$"]
-  #  out_filepatterns = []
-  #  out_files.each do |f|
-  #    out_filepatterns.push(Regexp.new(f))
-  #  end
-  #  out_filepatterns
-  #end
 
   def add_comma_delimited_exts(exts, ext_set)
     exts.split(",").each do |x|
