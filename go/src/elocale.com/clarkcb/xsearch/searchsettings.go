@@ -3,7 +3,6 @@ package xsearch
 import (
 	"bytes"
 	"fmt"
-	"regexp"
 	"strings"
 )
 
@@ -45,33 +44,15 @@ type SearchSettings struct {
 	Verbose                 bool
 }
 
-func GetDefaultOutDirPatterns() *SearchPatterns {
-	return &SearchPatterns{
-		[]*regexp.Regexp{
-			regexp.MustCompile("\\.git\\b"),
-			regexp.MustCompile("\\.svn\\b"),
-			regexp.MustCompile("\\bCVS\\b"),
-		},
-	}
-}
-
-func GetDefaultOutFilePatterns() *SearchPatterns {
-	return &SearchPatterns{
-		[]*regexp.Regexp{
-			regexp.MustCompile("\\.DS_Store\\b"),
-		},
-	}
-}
-
 func GetDefaultSearchSettings() *SearchSettings {
 	return &SearchSettings{
 		"",                          // StartPath
 		[]*string{},                 // InExtensions
 		[]*string{},                 // OutExtensions
 		NewSearchPatterns(),         // InDirPatterns
-		GetDefaultOutDirPatterns(),  // OutDirPatterns
+		NewSearchPatterns(),         // OutDirPatterns
 		NewSearchPatterns(),         // InFilePatterns
-		GetDefaultOutFilePatterns(), // OutFilePatterns
+		NewSearchPatterns(),         // OutFilePatterns
 		NewSearchPatterns(),         // InArchiveFilePatterns
 		NewSearchPatterns(),         // OutArchiveFilePatterns
 		NewSearchPatterns(),         // InLinesAfterPatterns
