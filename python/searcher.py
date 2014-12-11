@@ -77,6 +77,17 @@ class Searcher:
             return False
         return True
 
+    def is_archive_search_file(self, f):
+        if not self.fileutil.is_archive_file(f):
+            return False
+        if self.settings.in_archivefilepatterns and \
+            not self.matches_any_pattern(f, self.settings.in_archivefilepatterns):
+            return False
+        if self.settings.out_archivefilepatterns and \
+            self.matches_any_pattern(f, self.settings.out_archivefilepatterns):
+            return False
+        return True
+
     def is_search_file(self, f):
         if f.startswith('.') and self.settings.excludehidden:
             return False
@@ -114,10 +125,15 @@ class Searcher:
             print 'get_search_files()'
         searchfiles = []
         for d in searchdirs:
-            files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f))]
-            searchfiles.extend([
-                os.path.join(d,f) for f in files if self.is_search_file(f)])
+            searchfiles.extend(self.get_search_files_for_directory(d))
         return searchfiles
+
+    def get_search_files_for_directory(self, d):
+        """Get the list of files to search in a given directory"""
+        files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f))]
+        return [os.path.join(d,f) for f in files
+                if (self.settings.searcharchives and self.is_archive_search_file(f))
+                or (not self.settings.archivesonly and self.is_search_file(f))]
 
     def add_timer(self, name, action):
         self.timers[name+':'+action] = datetime.now()

@@ -35,7 +35,7 @@ class SearchSettings:
         'printusage': False,
         'printversion': False,
         'recursive': True,
-        'searcharchives': True,
+        'searcharchives': False,
         'uniquelines': False,
         'verbose': False,
     }
