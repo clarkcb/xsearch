@@ -25,17 +25,6 @@ namespace CsSearch
 
 		public ISet<Regex> SearchPatterns { get; private set; }
 
-		private ISet<Regex> defaultOutDirPatterns = new HashSet<Regex>()
-		                                            	{
-		                                            		new Regex("\\bCVS$"),
-		                                            		new Regex("\\.git$"),
-		                                            		new Regex("\\.svn$")
-		                                            	};
-		private ISet<Regex> defaultOutFilePatterns = new HashSet<Regex>()
-		                                            	{
-		                                            		new Regex("\\.DS_Store$")
-		                                            	};
-
 		private string _startPath;
 
 		public string StartPath
@@ -68,9 +57,9 @@ namespace CsSearch
 			InExtensions = new HashSet<string>();
 			OutExtensions = new HashSet<string>();
 			InDirPatterns = new HashSet<Regex>();
-			OutDirPatterns = defaultOutDirPatterns;
+			OutDirPatterns = new HashSet<Regex>();
 			InFilePatterns = new HashSet<Regex>();
-			OutFilePatterns = defaultOutFilePatterns;
+			OutFilePatterns = new HashSet<Regex>();
 			InArchiveFilePatterns = new HashSet<Regex>();
 			OutArchiveFilePatterns = new HashSet<Regex>();
 			InLinesAfterPatterns = new HashSet<Regex>();
