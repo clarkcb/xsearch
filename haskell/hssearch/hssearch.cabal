@@ -31,7 +31,8 @@ executable hssearch
                        regex-pcre-builtin >=0.94.4,
                        split >=0.2.2,
                        template-haskell,
-                       text
+                       text,
+                       timeit
   default-language:    Haskell2010
 
 library
@@ -46,5 +47,6 @@ library
                        regex-pcre-builtin >=0.94.4,
                        split >=0.2.2,
                        template-haskell,
-                       text
+                       text,
+                       timeit
   default-language:    Haskell2010

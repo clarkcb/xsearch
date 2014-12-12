@@ -5,6 +5,7 @@ import qualified Data.ByteString.Char8 as BC
 import Data.List (nub, sort)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
+import System.TimeIt
 
 import SearchOptions
 import Searcher
@@ -99,15 +100,24 @@ main = do
   case errsOrUsage searchOptions settings of
     Just usage -> putStrLn usage
     Nothing -> do
-      searchDirs <- getSearchDirs settings
+      (sdt, searchDirs) <- timeItT (getSearchDirs settings)
+      putStr $ if doTiming settings
+               then "\nElapsed time for getSearchDirs: " ++ show sdt ++ "\n"
+               else ""
       putStr $ if verbose settings
                then formatSearchDirs searchDirs
                else ""
-      searchFiles <- getSearchFiles settings searchDirs
+      (sft, searchFiles) <- timeItT (getSearchFiles settings searchDirs)
+      putStr $ if doTiming settings
+               then "\nElapsed time for getSearchFiles: " ++ show sft ++ "\n"
+               else ""
       putStr $ if verbose settings
                then formatSearchFiles searchFiles
                else ""
-      results <- doSearchFiles settings searchFiles
+      (rt, results) <- timeItT (doSearchFiles settings searchFiles)
+      putStr $ if doTiming settings
+               then "\nElapsed time for searching: " ++ show rt ++ "\n"
+               else ""
       putStr $ if printResults settings
                then formatResults settings results
                else ""
