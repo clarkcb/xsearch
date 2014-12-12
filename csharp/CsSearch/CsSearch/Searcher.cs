@@ -322,7 +322,9 @@ namespace CsSearch
 						lineNum,
 						match.Index - startIndex,
 						match.Index - startIndex + match.Length,
-						line));
+						line,
+						new List<string>(),
+						new List<string>()));
 					patternMatches[p] = 1;
 
 					if (Settings.FirstMatch && patternMatches.ContainsKey(p))
@@ -356,8 +358,15 @@ namespace CsSearch
 								{
 									continue;
 								}
-								AddSearchResult(new SearchResult(p, f, lineNum,
-									match.Index, match.Index + match.Length, line));
+								AddSearchResult(new SearchResult(
+									p,
+									f,
+									lineNum,
+									match.Index,
+									match.Index + match.Length,
+									line,
+									new List<string>(),
+									new List<string>()));
 								patternMatches[p] = 1;
 							}
 						}
@@ -387,8 +396,14 @@ namespace CsSearch
 						{
 							continue;
 						}
-						results.Add(new SearchResult(p, null, lineNum,
-							match.Index, match.Index + match.Length, line));
+						results.Add(new SearchResult(p,
+							null,
+							lineNum,
+							match.Index,
+							match.Index + match.Length,
+							line,
+							new List<string>(),
+							new List<string>()));
 						patternMatches[p] = 1;
 					}
 				}
@@ -407,7 +422,7 @@ namespace CsSearch
 				{
 					var contents = sr.ReadToEnd();
 					foreach (var p in Settings.SearchPatterns.Where(p => p.Match(contents).Success)) {
-						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null));
+						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null, new List<string>(), new List<string>()));
 					}
 				}
 			}

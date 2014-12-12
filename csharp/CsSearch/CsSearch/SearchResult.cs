@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,12 +14,15 @@ namespace CsSearch
 		public int MatchStartIndex { get; private set; }
 		public int MatchEndIndex { get; private set; }
 		public string Line { get; private set; }
+		public IEnumerable<string> LinesBefore { get; private set; }
+		public IEnumerable<string> LinesAfter { get; private set; }
 
 		// temp
 		private const int MAXLINELENGTH = 150;
 
 		public SearchResult(Regex searchPattern, FileInfo file, int lineNum,
-			int matchStartIndex, int matchEndIndex, string line)
+			int matchStartIndex, int matchEndIndex, string line,
+			IEnumerable<string> linesBefore, IEnumerable<string> linesAfter)
 		{
 			SearchPattern = searchPattern;
 			File = file;
@@ -26,6 +30,8 @@ namespace CsSearch
 			MatchStartIndex = matchStartIndex;
 			MatchEndIndex = matchEndIndex;
 			Line = line;
+			LinesBefore = linesBefore;
+			LinesAfter = linesAfter;
 		}
 
 		public override string ToString()
