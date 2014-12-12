@@ -45,6 +45,10 @@ class SettingsBuilder {
   var uniqueLines = false
   var verbose = false
 
+  def setArchivesOnly() {
+    archivesOnly = true
+    searchArchives = true
+  }
   // could be comma-separated
   def addInExtensions(x:String) {
     x.split(",").foreach(inExtensions.add)

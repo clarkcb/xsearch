@@ -32,7 +32,6 @@ class SearchOptions
       'in-dirpattern' =>
         proc { |x, settings| settings.in_dirpatterns.push(Regexp.new(x)) },
       'in-ext' =>
-        #proc { |x, settings| settings.in_extensions.push(x) },
         proc { |x, settings| settings.add_comma_delimited_exts(x,
           settings.in_extensions) },
       'in-filepattern' =>
@@ -56,7 +55,6 @@ class SearchOptions
       'out-dirpattern' =>
         proc { |x, settings| settings.out_dirpatterns.push(Regexp.new(x)) },
       'out-ext' =>
-        #proc { |x, settings| settings.out_extensions.push(x) },
         proc { |x, settings| settings.add_comma_delimited_exts(x,
           settings.out_extensions) },
       'out-filepattern' =>
@@ -72,7 +70,8 @@ class SearchOptions
       'allmatches' =>
         proc { |settings| settings.firstmatch = false },
       'archivesonly' =>
-        proc { |settings| settings.archivesonly = true },
+        proc { |settings| settings.archivesonly = true;
+                          settings.searcharchives = true },
       'caseinsensitive' =>
         proc { |settings| settings.casesensitive = false },
       'casesensitive' =>

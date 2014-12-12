@@ -61,7 +61,8 @@ function SearchOptions() {
         'allmatches':
             function(settings) { settings.firstMatch = false; },
         'archivesonly':
-            function(settings) { settings.archivesOnly = true; },
+            function(settings) { settings.archivesOnly = true;
+                                 settings.searchArchives = true; },
         'debug':
             function(settings) { settings.debug = true; },
         'dotiming':

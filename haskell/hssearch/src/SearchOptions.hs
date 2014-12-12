@@ -117,7 +117,8 @@ newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "
 
 flagActions :: [(String, FlagAction)]
 flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
-              , ("archivesonly", \ss -> ss {archivesOnly=True})
+              , ("archivesonly", \ss -> ss {archivesOnly=True,
+                                            searchArchives=True})
               , ("debug", \ss -> ss {debug=True, verbose=True})
               , ("dotiming", \ss -> ss {doTiming=True})
               , ("excludehidden", \ss -> ss {excludeHidden=True})

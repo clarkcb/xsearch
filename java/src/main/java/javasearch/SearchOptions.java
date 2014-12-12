@@ -123,6 +123,7 @@ public class SearchOptions {
             put("archivesonly", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setArchivesOnly(true);
+                    settings.setSearchArchives(true);
                 }
             });
             put("allmatches", new SearchFlagSetter() {

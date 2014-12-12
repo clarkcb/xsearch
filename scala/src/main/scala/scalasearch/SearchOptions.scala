@@ -72,7 +72,7 @@ object SearchOptions {
 
   val flagActionMap = Map[String, (SettingsBuilder => Unit)](
     "archivesonly" ->
-      ((sb: SettingsBuilder) => sb.archivesOnly = true),
+      ((sb: SettingsBuilder) => sb.setArchivesOnly()),
     "allmatches" ->
       ((sb: SettingsBuilder) => sb.firstMatch = false),
     "debug" ->
