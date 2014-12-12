@@ -38,11 +38,13 @@ namespace CsSearch
 			new Dictionary<string,Action<SearchSettings>>
 				{
 					{ "allmatches", settings => settings.FirstMatch = false },
-					{ "archivesonly", settings => settings.ArchivesOnly = true },
+					{ "archivesonly", settings => settings.SetArchivesOnly() },
 					{ "debug", settings => settings.Debug = true },
 					{ "dotiming", settings => settings.DoTiming = true },
+					{ "excludehidden", settings => settings.ExcludeHidden = true },
 					{ "firstmatch", settings => settings.FirstMatch = true },
 					{ "help", settings => settings.PrintUsage = true },
+					{ "includehidden", settings => settings.ExcludeHidden = false },
 					{ "listdirs", settings => settings.ListDirs = true },
 					{ "listfiles", settings => settings.ListFiles = true },
 					{ "listlines", settings => settings.ListLines = true },

@@ -39,8 +39,15 @@ namespace CsSearch
 				throw new SearchArgumentException("No search patterns specified");
 		}
 
+		private bool IsHiddenFile(FileSystemInfo f)
+		{
+			return (f.Attributes & FileAttributes.Hidden) != 0;
+		}
+
 		private bool IsSearchDirectory(DirectoryInfo d)
 		{
+			if (Settings.ExcludeHidden && IsHiddenFile(d))
+				return false;
 			if (Settings.InDirPatterns.Count > 0 && !Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
 				return false;
 			if (Settings.OutDirPatterns.Count > 0 && Settings.OutDirPatterns.Any(p => p.Match(d.Name).Success))
@@ -50,6 +57,8 @@ namespace CsSearch
 
 		private bool IsSearchFile(FileInfo f)
 		{
+			if (Settings.ExcludeHidden && IsHiddenFile(f))
+				return false;
 			if (Settings.InExtensions.Count > 0 && !Settings.InExtensions.Contains(f.Extension))
 				return false;
 			if (Settings.OutExtensions.Count > 0 && Settings.OutExtensions.Contains(f.Extension))
@@ -57,6 +66,17 @@ namespace CsSearch
 			if (Settings.InFilePatterns.Count > 0 && !Settings.InFilePatterns.Any(p => p.Match(f.Name).Success))
 				return false;
 			if (Settings.OutFilePatterns.Count > 0 && Settings.OutFilePatterns.Any(p => p.Match(f.Name).Success))
+				return false;
+			return true;
+		}
+
+		private bool IsArchiveSearchFile(FileInfo f)
+		{
+			if (Settings.ExcludeHidden && IsHiddenFile(f))
+				return false;
+			if (Settings.InArchiveFilePatterns.Count > 0 && !Settings.InArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
+				return false;
+			if (Settings.OutArchiveFilePatterns.Count > 0 && Settings.OutArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
 				return false;
 			return true;
 		}
@@ -112,6 +132,13 @@ namespace CsSearch
 			}
 			return searchDirs;
 		}
+		private bool IsValidSearchFile(FileInfo f)
+		{
+			return
+				(_fileUtil.IsArchiveFile(f) && Settings.SearchArchives && IsArchiveSearchFile(f))
+				||
+				(!Settings.ArchivesOnly && IsSearchFile(f));
+		}
 
 		public IEnumerable<FileInfo> GetSearchFilesForDir(DirectoryInfo dir)
 		{
@@ -122,7 +149,7 @@ namespace CsSearch
 			IEnumerable<FileInfo> dirSearchFiles = new List<FileInfo>();
 			try
 			{
-				dirSearchFiles = dir.EnumerateFiles().Where(IsSearchFile);
+				dirSearchFiles = dir.EnumerateFiles().Where(IsValidSearchFile);
 			}
 			catch (IOException e)
 			{
@@ -205,9 +232,6 @@ namespace CsSearch
 			}
 			else if (_fileUtil.IsSearchableFile(f))
 			{
-				//if (Settings.DoTiming) {
-				//    StartTimer(f.FullName);
-				//}
 				if (_fileUtil.IsTextFile(f))
 				{
 					SearchTextFile(f);
@@ -216,9 +240,6 @@ namespace CsSearch
 				{
 					SearchBinaryFile(f);
 				}
-				//if (Settings.DoTiming) {
-				//    StopTimer(f.FullName);
-				//}
 			}
 			else if (Settings.Verbose)
 			{

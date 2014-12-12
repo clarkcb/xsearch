@@ -8,6 +8,8 @@ namespace CsSearch
 {
 	class FileUtil
 	{
+		public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
+
 		private readonly string _fileTypesResource;
 		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
 

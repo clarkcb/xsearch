@@ -36,6 +36,7 @@ namespace CsSearch
 		public bool ArchivesOnly { get; set; }
 		public bool Debug { get; set; }
 		public bool DoTiming { get; set; }
+		public bool ExcludeHidden { get; set; }
 		public bool FirstMatch { get; set; }
 		public int LinesAfter { get; set; }
 		public int LinesBefore { get; set; }
@@ -72,6 +73,7 @@ namespace CsSearch
 			ArchivesOnly = false;
 			Debug = false;
 			DoTiming = false;
+			ExcludeHidden = true;
 			FirstMatch = false;
 			LinesAfter = 0;
 			LinesBefore = 0;
@@ -181,6 +183,12 @@ namespace CsSearch
 			AddPattern(SearchPatterns, pattern);
 		}
 
+		public void SetArchivesOnly()
+		{
+			ArchivesOnly = true;
+			SearchArchives = true;
+		}
+
 		private static string EnumerableToString(IEnumerable<object> hashSet)
 		{
 			var sb = new StringBuilder("[");
@@ -212,6 +220,7 @@ namespace CsSearch
 			sb.Append(", ArchivesOnly: " + ArchivesOnly);
 			sb.Append(", Debug: " + Debug);
 			sb.Append(", DoTiming: " + DoTiming);
+			sb.Append(", ExcludeHidden: " + ExcludeHidden);
 			sb.Append(", FirstMatch: " + FirstMatch);
 			sb.Append(", LinesAfter: " + LinesAfter);
 			sb.Append(", LinesBefore: " + LinesBefore);
