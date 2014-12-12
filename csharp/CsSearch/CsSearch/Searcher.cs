@@ -98,8 +98,8 @@ namespace CsSearch
 		{
 			var elapsedTime =
 				String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-				              ts.Hours, ts.Minutes, ts.Seconds,
-				              ts.Milliseconds/10);
+							  ts.Hours, ts.Minutes, ts.Seconds,
+							  ts.Milliseconds/10);
 			Console.WriteLine(string.Format("Elapsed time for {0}: {1}", name, elapsedTime));
 		}
 
@@ -252,7 +252,87 @@ namespace CsSearch
 			if (Settings.Verbose)
 				Console.WriteLine("Searching text file " + f.FullName);
 			// TODO: SearchTextFileContents
-			SearchTextFileLines(f);
+			if (Settings.MultiLineSearch)
+				SearchTextFileContents(f);
+			else
+				SearchTextFileLines(f);
+		}
+
+		private void SearchTextFileContents(FileInfo f)
+		{
+			try
+			{
+				using (var sr = new StreamReader(f.FullName))
+				{
+					var contents = sr.ReadToEnd();
+					var results = SearchContents(contents);
+					foreach (SearchResult r in results)
+					{
+						r.File = f;
+						AddSearchResult(r);
+					}
+				}
+			}
+			catch (IOException e)
+			{
+				Console.WriteLine(e.Message);
+			}
+		}
+
+		private int CountNewlines(string text)
+		{
+			return text.Count(c => c == '\n');
+		}
+
+		private int GetStartLineIndex(string text, int matchIndex)
+		{
+			var startIndex = matchIndex;
+			while (startIndex > 0 && text[startIndex-1] != '\n')
+				startIndex--;
+			return startIndex;
+		}
+
+		private int GetEndLineIndex(string text, int matchIndex)
+		{
+			var endIndex = matchIndex;
+			while (endIndex < text.Length && text[endIndex] != '\r' &&
+				text[endIndex] != '\n')
+				endIndex++;
+			return endIndex;
+		}
+
+		private IList<SearchResult> SearchContents(string contents)
+		{
+			var patternMatches = new Dictionary<Regex, int>();
+			var results = new List<SearchResult>();
+
+			foreach (var p in Settings.SearchPatterns)
+			{
+				var match = p.Match(contents);
+				while (match.Success)
+				{
+					//TODO: add lineNum and line retrieval from contents
+					var lineNum = CountNewlines(contents.Substring(0, match.Index)) + 1;
+					var startIndex = GetStartLineIndex(contents, match.Index);
+					var endIndex = GetEndLineIndex(contents, match.Index);
+					var line = contents.Substring(startIndex, endIndex - startIndex);
+					results.Add(new SearchResult(
+						p,
+						null,
+						lineNum,
+						match.Index - startIndex,
+						match.Index - startIndex + match.Length,
+						line));
+					patternMatches[p] = 1;
+
+					if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+					{
+						break;
+					}
+					match = match.NextMatch();
+				}
+			}
+			return results;
 		}
 
 		private void SearchTextFileLines(FileInfo f)
@@ -277,7 +357,7 @@ namespace CsSearch
 									continue;
 								}
 								AddSearchResult(new SearchResult(p, f, lineNum,
-								    match.Index, match.Index + match.Length, line));
+									match.Index, match.Index + match.Length, line));
 								patternMatches[p] = 1;
 							}
 						}
@@ -290,6 +370,33 @@ namespace CsSearch
 			}
 		}
 
+		private IList<SearchResult> SearchLines(IEnumerable<string> lines)
+		{
+			var patternMatches = new Dictionary<Regex, int>();
+			var results = new List<SearchResult>();
+			var lineNum = 0;
+			foreach (string line in lines)
+			{
+				lineNum++;
+				foreach (var p in Settings.SearchPatterns)
+				{
+					var matches = p.Matches(line);
+					foreach (Match match in matches)
+					{
+						if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+						{
+							continue;
+						}
+						results.Add(new SearchResult(p, null, lineNum,
+							match.Index, match.Index + match.Length, line));
+						patternMatches[p] = 1;
+					}
+				}
+			}
+			return results;
+		}
+
+		// TODO: switch to use SearchLines with buffering
 		private void SearchBinaryFile(FileInfo f)
 		{
 			if (Settings.Verbose)

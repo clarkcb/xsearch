@@ -8,7 +8,7 @@ namespace CsSearch
 	public class SearchResult
 	{
 		public Regex SearchPattern { get; private set; }
-		public FileInfo File { get; private set; }
+		public FileInfo File { get; set; }
 		public int LineNum { get; private set; }
 		public int MatchStartIndex { get; private set; }
 		public int MatchEndIndex { get; private set; }
