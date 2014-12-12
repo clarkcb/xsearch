@@ -88,8 +88,12 @@ class Searcher (settings: SearchSettings) {
     isSearchFile(f.getName)
   }
 
+  def isHiddenFile(fileName: String): Boolean = {
+    fileName.startsWith(".")
+  }
+
   def isSearchFile(fileName: String): Boolean = {
-    if (fileName.startsWith(".") && settings.excludeHidden) false
+    if (settings.excludeHidden && isHiddenFile(fileName)) false
     ((settings.inExtensions.isEmpty ||
       settings.inExtensions.contains(FileUtil.getExtension(fileName)))
       &&
@@ -105,8 +109,9 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isArchiveSearchFile(fileName: String): Boolean = {
-      filterInByPatterns(fileName, settings.inArchiveFilePatterns,
-        settings.outArchiveFilePatterns)
+    if (settings.excludeHidden && isHiddenFile(fileName)) false
+    filterInByPatterns(fileName, settings.inArchiveFilePatterns,
+      settings.outArchiveFilePatterns)
   }
 
   def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
