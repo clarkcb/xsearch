@@ -17,6 +17,7 @@ type SearchSettings() =
 
     let mutable _startPath = ""
 
+    let mutable _archivesOnly = false
     let mutable _debug = false
     let mutable _doTiming = false
     let mutable _firstMatch = false
@@ -26,7 +27,9 @@ type SearchSettings() =
     let mutable _printResults = false
     let mutable _printUsage = false
     let mutable _printVersion = false
+    let mutable _recursive = true
     let mutable _searchArchives = false
+    let mutable _uniqueLines = false
     let mutable _verbose = false
 
     // read-only member properties
@@ -47,6 +50,9 @@ type SearchSettings() =
     member this.StartPath
         with get () = _startPath
         and set startPath = _startPath <- startPath
+    member this.ArchivesOnly
+        with get() = _archivesOnly
+        and set archivesOnly = _archivesOnly <- archivesOnly
     member this.Debug
         with get() = _debug
         and set debug = _debug <- debug
@@ -74,9 +80,15 @@ type SearchSettings() =
     member this.PrintVersion
         with get () = _printVersion
         and set printVersion = _printVersion <- printVersion
+    member this.Recursive
+        with get () = _recursive
+        and set recursiv = _recursive <- recursiv
     member this.SearchArchives
         with get () = _searchArchives
         and set searchArchives = _searchArchives <- searchArchives
+    member this.UniqueLines
+        with get() = _uniqueLines
+        and set uniqueLines = _uniqueLines <- uniqueLines
     member this.Verbose
         with get() = _verbose
         and set verbose = _verbose <- verbose
@@ -114,15 +126,6 @@ type SearchSettings() =
     member this.AddSearchPattern(pattern : string) =
         this.AddPattern(_searchPatterns, pattern)
 
-    member this.SetDoTiming(flag : bool) =
-        _doTiming <- flag
-
-    member this.SetListFiles(flag : bool) =
-        _listFiles <- flag
-
-    member this.SetVerbose(flag : bool) =
-        _verbose <- flag
-
     override this.ToString() =
         "SearchSettings(" +
         String.Format("StartPath: \"{0}\"", _startPath) +
@@ -133,5 +136,18 @@ type SearchSettings() =
         String.Format(", InFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inFilePatterns) + "\"]") +
         String.Format(", OutFilePatterns: {0}", "[\"" + String.Join("\", \"", _outFilePatterns) + "\"]") +
         String.Format(", SearchPatterns: {0}", "[\"" + String.Join("\", \"", _searchPatterns) + "\"]") +
+        String.Format(", ArchivesOnly: {0}", _archivesOnly) +
+        String.Format(", Debug: {0}", _debug) +
+        String.Format(", DoTiming: {0}", _doTiming) +
+        String.Format(", FirstMatch: {0}", _firstMatch) +
+        String.Format(", ListDirs: {0}", _listDirs) +
+        String.Format(", ListFiles: {0}", _listFiles) +
+        String.Format(", ListLines: {0}", _listLines) +
+        String.Format(", PrintResults: {0}", _printResults) +
+        String.Format(", PrintUsage: {0}", _printUsage) +
+        String.Format(", PrintVersion: {0}", _printVersion) +
+        String.Format(", Recursive: {0}", _recursive) +
+        String.Format(", SearchArchives: {0}", _searchArchives) +
+        String.Format(", Verbose: {0}", _verbose) +
         ")"
     ;;

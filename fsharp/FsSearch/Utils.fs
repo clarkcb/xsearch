@@ -52,10 +52,10 @@ module Utils =
         for name in names do
             printfn "Name: %s" name
 
-    let SetToString (set : HashSet<string>) =
-        let setList =
-            [ for s in set do yield s ]
-            |> List.sort
-        for name in names do
-            printfn "Name: %s" name
+    //let SetToString (set : HashSet<string>) =
+    //    let setList =
+    //        [ for s in set do yield s ]
+    //        |> List.sort
+    //    for name in names do
+    //        printfn "Name: %s" name
 ;;

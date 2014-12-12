@@ -17,8 +17,10 @@ type FileUtil() =
     //let fileTypesFileStream = executingAssembly.GetFile(@"Resources\filestypes.xml")
     //let _fileTypesDictionary = Utils.PopulateFileTypes(fileTypesFileStream)
 
-    let _fileTypesPath = new FileInfo(@"Z:\cary\src\git\xsearch\shared\filetypes.xml")
-    let _fileTypesDictionary = Utils.PopulateFileTypesFromFileInfo(_fileTypesPath)
+    //let _fileTypesPath = @"Z:\cary\src\git\xsearch\shared\filetypes.xml"
+    let _fileTypesPath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
+    let _fileTypesFileInfo = new FileInfo(_fileTypesPath)
+    let _fileTypesDictionary = Utils.PopulateFileTypesFromFileInfo(_fileTypesFileInfo)
 
     // read-only member properties
     //member this.FileTypesPath = _fileTypesPath
