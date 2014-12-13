@@ -40,7 +40,7 @@ formatResults :: SearchSettings -> [SearchResult] -> String
 formatResults settings results =
   "\nSearch results (" ++ show (length results) ++ "):" ++
     (if length results > 0
-       then "\n" ++ unlines (map formatSearchResult results)
+       then "\n" ++ unlines (map (formatSearchResult settings) results)
        else "") ++
     (concat (map matchString (searchPatterns settings)))
   where matchString p = "\nMatches for "++ show p ++ ": " ++ show (patternCount p)

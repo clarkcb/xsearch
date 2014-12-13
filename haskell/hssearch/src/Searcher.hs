@@ -152,23 +152,29 @@ searchTextFileLines settings f = do
   where addFilePath = map (\r -> r {filePath=f})
 
 searchLineList :: SearchSettings -> [B.ByteString] -> [SearchResult]
-searchLineList settings bs = recSearchLineList bs 0 []
-  where recSearchLineList :: [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
-        recSearchLineList lst num results =
+searchLineList settings lineList = recSearchLineList [] lineList 0 []
+  where recSearchLineList :: [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
+        recSearchLineList beforeList lst num results =
           case lst of
             []     -> results
-            (l:ls) -> recSearchLineList ls (num + 1) (updatedResults l)
-          where updatedResults l = results ++ (newResults l)
+            (l:ls) -> recSearchLineList (newBefore l) ls (num + 1) (updatedResults l)
+          where beforeNum = linesBefore settings
+                newBefore l | beforeNum == 0 = []
+                            | length beforeList == beforeNum = tail beforeList ++ [l]
+                            | otherwise = beforeList ++ [l]
+                afterNum = linesAfter settings
+                afterList = take afterNum (tail lst)
+                updatedResults l = results ++ (newResults l)
                 newResults l = concat $ map (searchNextPattern l) filteredPatterns
-                searchNextPattern l = searchLineForPattern settings (num + 1) l
+                searchNextPattern l = searchLineForPattern settings (num + 1) beforeList l afterList
                 filteredPatterns = if firstMatch settings
                                    then filter firstMatchNotMet patterns
                                    else patterns
                 firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
                 patterns = searchPatterns settings
 
-searchLineForPattern :: SearchSettings -> Int -> B.ByteString -> String -> [SearchResult]
-searchLineForPattern settings num l pattern = patternResults pattern
+searchLineForPattern :: SearchSettings -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
+searchLineForPattern settings num bs l as pattern = patternResults pattern
   where patternResults :: String -> [SearchResult]
         patternResults p = map (resultFromLinePatternIndices p) (matchIndices l p)
         resultFromLinePatternIndices :: String -> (Int, Int) -> SearchResult
@@ -178,6 +184,8 @@ searchLineForPattern settings num l pattern = patternResults pattern
                             , matchStartIndex=fst ix
                             , matchEndIndex=snd ix
                             , line=l
+                            , beforeLines=bs
+                            , afterLines=as
                             }
 
 doSearchFile :: SearchSettings -> (FilePath,FileType) -> IO [SearchResult]
