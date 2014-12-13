@@ -73,6 +73,7 @@ isArchiveSearchFile settings fp = and $ map ($fp) tests
         outPatterns = outArchiveFilePatterns settings
         includeHidden = not $ excludeHidden settings
 
+-- TODO: use this type with all file-based functions
 data SearchFile = SearchFile {
                                 searchFilePath :: FilePath
                               , searchFileType :: FileType
@@ -149,24 +150,37 @@ searchContentsForPattern settings contents pattern = patternResults pattern
         firstOrAllIndices p = if firstMatch settings
                               then take 1 (matchIndices contents p)
                               else matchIndices contents p
-        startLineIndex idx = case idx of
-                             0 -> 0
-                             i | BC.index contents i == '\n' -> i + 1
-                             i -> startLineIndex (i-1)
-        endLineIndex idx = case idx of
-                           i | BC.index contents i == '\n' -> i
-                           i | i == (B.length contents - 1) -> i
-                           i -> endLineIndex (i+1)
+        newlineIndices =  BC.findIndices (=='\n') contents
+        startLineIndices = [0] ++ map (+1) newlineIndices
+        startLineIndex idx = case takeWhile (<=idx) startLineIndices of
+                             [] -> 0
+                             x  -> last x
+        endLineIndex idx   = case dropWhile (<=idx) startLineIndices of
+                             [] -> BC.length contents - 1
+                             x  -> head x - 1
         lineLength i = (endLineIndex i) - (startLineIndex i)
-        lineFromMatchIndex i = B.take (lineLength i) $ B.drop (startLineIndex i) contents
+        lineAtIndex i = B.take (lineLength i) $ B.drop (startLineIndex i) contents
         countNewlines s = BC.length $ BC.filter (=='\n') s
+        linesBeforeNum = linesBefore settings
+        takeRight n = reverse . take n . reverse
+        linesBeforeIndices i n = (takeRight n . takeWhile (<i)) startLineIndices
+        getLinesBefore i n = map lineAtIndex (linesBeforeIndices i n)
+        beforeLns i | linesBeforeNum == 0 = []
+                    | otherwise = getLinesBefore (startLineIndex i) linesBeforeNum
+        linesAfterNum = linesAfter settings
+        linesAfterIndices i n = (take n . dropWhile (<=i)) startLineIndices
+        getLinesAfter i n = map lineAtIndex (linesAfterIndices i n)
+        afterLns i | linesAfterNum == 0 = []
+                   | otherwise = getLinesAfter (startLineIndex i) linesAfterNum
         resultFromLinePatternIndices :: String -> (Int, Int) -> SearchResult
         resultFromLinePatternIndices p ix =
           blankSearchResult { searchPattern=p
                             , lineNum=(countNewlines (B.take (fst ix) contents))+1
                             , matchStartIndex=(fst ix) - (startLineIndex (fst ix))
                             , matchEndIndex=(snd ix) - (startLineIndex (fst ix))
-                            , line=lineFromMatchIndex (fst ix)
+                            , line=lineAtIndex (fst ix)
+                            , beforeLines=beforeLns (fst ix)
+                            , afterLines=afterLns (fst ix)
                             }
 
 searchTextFileLines :: SearchSettings -> FilePath -> IO [SearchResult]

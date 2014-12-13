@@ -2,6 +2,7 @@ module Main where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
+import Data.Char (isSpace)
 import Data.List (nub, sort)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
@@ -69,8 +70,7 @@ formatMatchingFiles results =
 
 getMatchingLines :: [SearchResult] -> [B.ByteString]
 getMatchingLines results = (sort . nub . map trimLine) results
-  where trimLine = BC.dropWhile isWhitespace . line
-        isWhitespace c = c `elem` [' ', '\t']
+  where trimLine = BC.dropWhile isSpace . line
 
 formatMatchingLines :: [SearchResult] -> String
 formatMatchingLines results = 

@@ -6,6 +6,7 @@ module SearchResult
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
+import Data.Char (isSpace)
 
 import SearchSettings
 
@@ -45,7 +46,7 @@ formatSearchResult settings result = if (lineNum result) == 0
 formatSingleLine :: SearchResult -> String
 formatSingleLine result =
   filePath result ++ ": " ++
-  show (lineNum result) ++ ": [" ++
+  show (lineNum result) ++ " [" ++
   show (matchStartIndex result) ++ ":" ++
   show (matchEndIndex result) ++ "]: " ++
   trimLeadingWhitespace (BC.unpack (line result))
@@ -53,7 +54,10 @@ formatSingleLine result =
 formatMultiLine :: SearchResult -> String
 formatMultiLine result =
   ((take 80 . repeat) '=') ++ "\n" ++
-  filePath result ++ "\n" ++
+  filePath result ++ ": " ++
+  show (lineNum result) ++ " [" ++
+  show (matchStartIndex result) ++ ":" ++
+  show (matchEndIndex result) ++ "]:" ++ "\n" ++
   ((take 80 . repeat) '-') ++ "\n" ++
   unlines (map formatLine (zip beforeLineNums resultBeforeLines)) ++
   "> " ++ padNumString (show resultLineNum) ++ " | " ++
@@ -75,5 +79,4 @@ formatMultiLine result =
         formatLine (n,l) = "  " ++ padNumString (show n) ++ " | " ++ l
 
 trimLeadingWhitespace :: String -> String
-trimLeadingWhitespace s = dropWhile isWhitespace s
-  where isWhitespace c = c `elem` [' ', '\t']
+trimLeadingWhitespace s = dropWhile isSpace s
