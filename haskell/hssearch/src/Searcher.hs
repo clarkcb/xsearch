@@ -39,35 +39,61 @@ isSearchFile :: SearchSettings -> FilePath -> Bool
 isSearchFile settings fp = and $ map ($fp) tests
   where tests :: [FilePath -> Bool]
         tests = [ (\x -> length inExts == 0
-                         || isInExt x)
+                         || hasInExt x)
                 , (\x -> length outExts == 0
-                         || not (isOutExt x))
+                         || not (hasOutExt x))
                 , (\x -> length inPatterns == 0
                          || any (\p -> x =~ p :: Bool) inPatterns)
                 , (\x -> length outPatterns == 0
                          || all (\p -> not $ x =~ p :: Bool) outPatterns)
                 , (\x -> not (isHiddenFilePath x) || includeHidden)
                 ]
-        isInExt f = case getExtension f of
-                      Just x -> x `elem` inExts
-                      Nothing -> null inExts
         inExts = inExtensions settings
-        isOutExt f = case getExtension f of
-                       Just x -> x `elem` outExts
-                       Nothing -> False
+        hasInExt f = case getExtension f of
+                       Just x -> x `elem` inExts
+                       Nothing -> null inExts
         outExts = outExtensions settings
+        hasOutExt f = case getExtension f of
+                        Just x -> x `elem` outExts
+                        Nothing -> False
         inPatterns = inFilePatterns settings
         outPatterns = outFilePatterns settings
         includeHidden = not $ excludeHidden settings
+
+isArchiveSearchFile :: SearchSettings -> FilePath -> Bool
+isArchiveSearchFile settings fp = and $ map ($fp) tests
+  where tests :: [FilePath -> Bool]
+        tests = [ (\x -> length inPatterns == 0
+                         || any (\p -> x =~ p :: Bool) inPatterns)
+                , (\x -> length outPatterns == 0
+                         || all (\p -> not $ x =~ p :: Bool) outPatterns)
+                , (\x -> not (isHiddenFilePath x) || includeHidden)
+                ]
+        inPatterns = inArchiveFilePatterns settings
+        outPatterns = outArchiveFilePatterns settings
+        includeHidden = not $ excludeHidden settings
+
+data SearchFile = SearchFile {
+                                searchFilePath :: FilePath
+                              , searchFileType :: FileType
+                              } deriving (Show, Eq)
 
 getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
   files <- concat `liftM` mapM getDirectoryFiles dirs
   fileTypes <- getFileTypes files
-  let filesWithTypes = zip files fileTypes
-  let isSearchable ft = isSearchableFileType (snd ft)
-  let searchableFiles = map (\ft -> fst ft) (filter isSearchable filesWithTypes)
-  return $ filter (isSearchFile settings) searchableFiles
+  let makeSearchFile (f,t) = SearchFile {searchFilePath=f, searchFileType=t}
+  let filesWithTypes = map makeSearchFile (zip files fileTypes)
+  let isSearchable sf = isSearchableFileType (searchFileType sf)
+  let searchableFiles = filter isSearchable filesWithTypes
+  let isArchiveFile sf = searchFileType sf == Archive
+  let includeArchiveFile sf = (searchArchives settings) &&
+                              isArchiveSearchFile settings (searchFilePath sf)
+  let includeFile sf = (not (archivesOnly settings)) &&
+                       isSearchFile settings (searchFilePath sf)
+  let isValidFile sf | isArchiveFile sf = includeArchiveFile sf
+                     | otherwise        = includeFile sf
+  return $ map searchFilePath (filter isValidFile searchableFiles)
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do
