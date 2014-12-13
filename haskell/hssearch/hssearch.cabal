@@ -4,7 +4,7 @@
 name:                hssearch
 version:             0.1.0.0
 synopsis:            File search utility in Haskell
-description:         File search utility in Haskell
+description:         This is the Haskell version of the xsearch file search utility
 license:             BSD3
 license-file:        LICENSE
 author:              Cary Clark
@@ -14,7 +14,7 @@ category:            Data
 build-type:          Simple
 cabal-version:       >=1.10
 tested-with:         GHC == 7.8.3
-
+data-files:          data/*.xml
 -- source-repository
 --   type:                git
 --   location:            git://github.com/clarkcb/xsearch.git
@@ -39,6 +39,7 @@ library
   ghc-options:         -Wall
   hs-source-dirs:      src
   exposed-modules:     HsSearch
+  other-modules:       Paths_hssearch
   build-depends:       base >= 4.7 && <5,
                        bytestring,
                        directory,

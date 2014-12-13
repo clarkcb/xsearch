@@ -8,6 +8,7 @@ module FileTypes
 import Text.XML.HXT.Core
 
 import FileUtility (getExtension, normalizeExtension)
+import Paths_hssearch (getDataFileName)
 
 data FileType = Archive
               | Binary
@@ -18,8 +19,8 @@ data FileType = Archive
 data XmlFileType = XmlFileType { name :: String, extensions :: [String] }
   deriving (Show, Eq)
 
-fileTypesXmlPath :: [Char]
-fileTypesXmlPath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
+fileTypesXmlFile :: FilePath
+fileTypesXmlFile = "filetypes.xml"
 
 atTag tag = deep (isElem >>> hasName tag)
 
@@ -32,7 +33,9 @@ getXmlFileType = atTag "filetype" >>>
     returnA -< XmlFileType { name = ftname, extensions = map normalizeExtension $ words exts }
 
 getXmlFileTypes :: IO [XmlFileType]
-getXmlFileTypes = runX (readDocument [withValidate no] fileTypesXmlPath >>> getXmlFileType)
+getXmlFileTypes = do
+  fileTypesXmlPath <- getDataFileName fileTypesXmlFile
+  runX (readDocument [withValidate no] fileTypesXmlPath >>> getXmlFileType)
 
 getFileTypes :: [FilePath] -> IO [FileType]
 getFileTypes files = do

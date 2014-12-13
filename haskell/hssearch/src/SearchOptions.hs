@@ -13,13 +13,14 @@ import qualified Data.Text as T
 import Text.XML.HXT.Core
 
 import FileUtility (normalizeExtension)
+import Paths_hssearch (getDataFileName)
 import SearchSettings
 
 data SearchOption = SearchOption { long, short, desc :: String }
   deriving (Show, Eq)
 
-searchOptionsPath :: [Char]
-searchOptionsPath = "/Users/cary/src/git/xsearch/shared/searchoptions.xml"
+searchOptionsFile :: FilePath
+searchOptionsFile = "searchoptions.xml"
 
 atTag tag = deep (isElem >>> hasName tag)
 
@@ -36,8 +37,10 @@ getSearchOption = atTag "searchoption" >>>
     returnA -< SearchOption { long = l, short = s, desc = strip d }
 
 getSearchOptions :: IO [SearchOption]
-getSearchOptions = runX (readDocument [withValidate no] searchOptionsPath
-  >>> getSearchOption)
+getSearchOptions = do
+  searchOptionsPath <- getDataFileName searchOptionsFile
+  runX (readDocument [withValidate no] searchOptionsPath
+    >>> getSearchOption)
 
 getUsage :: [SearchOption] -> String
 getUsage searchOptions =

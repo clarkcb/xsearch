@@ -16,6 +16,14 @@ import FileUtility
 import SearchResult
 import SearchSettings
 
+
+-- TODO: use this type with all file-based functions
+data SearchFile = SearchFile {
+                                searchFilePath :: FilePath
+                              , searchFileType :: FileType
+                              } deriving (Show, Eq)
+
+
 isSearchDir :: SearchSettings -> FilePath -> Bool
 isSearchDir settings d = and $ map ($d) tests
   where tests :: [FilePath -> Bool]
@@ -72,12 +80,6 @@ isArchiveSearchFile settings fp = and $ map ($fp) tests
         inPatterns = inArchiveFilePatterns settings
         outPatterns = outArchiveFilePatterns settings
         includeHidden = not $ excludeHidden settings
-
--- TODO: use this type with all file-based functions
-data SearchFile = SearchFile {
-                                searchFilePath :: FilePath
-                              , searchFileType :: FileType
-                              } deriving (Show, Eq)
 
 getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
