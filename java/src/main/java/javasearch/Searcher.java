@@ -137,6 +137,24 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
 	}
 
+	private boolean isArchiveSearchFile(File f) {
+        if (f.getName().startsWith(".") && settings.getExcludeHidden()) {
+            return false;
+        }
+		String ext = fileUtil.getExtension(f);
+		return (settings.getInArchiveExtensions().isEmpty() ||
+                settings.getInArchiveExtensions().contains(ext))
+               &&
+               (settings.getOutArchiveExtensions().isEmpty() ||
+                !settings.getOutArchiveExtensions().contains(ext))
+               &&
+               (settings.getInArchiveFilePatterns().isEmpty() ||
+                matchesAnyPattern(f.getName(), settings.getInArchiveFilePatterns()))
+               &&
+               (settings.getOutArchiveFilePatterns().isEmpty() ||
+                !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
+	}
+
 	public List<File> getSearchFilesForDir(File dir) {
 		if (settings.getDebug()) {
 			System.out.println("Getting files to search under " + dir);
@@ -146,7 +164,11 @@ public class Searcher {
         if (currentFiles != null) {
             for (File f : currentFiles) {
                 if (!f.isDirectory()) {
-                    if (isSearchFile(f)) {
+                    if (fileUtil.isArchiveFile(f) &&
+							settings.getSearchArchives() &&
+							isArchiveSearchFile(f)) {
+                        searchFiles.add(f);
+                    } else if (!settings.getArchivesOnly() && isSearchFile(f)) {
                         searchFiles.add(f);
                     }
                 }

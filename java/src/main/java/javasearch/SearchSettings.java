@@ -10,7 +10,6 @@ Class to encapsulate search settings
 
 package javasearch;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -25,6 +24,8 @@ public class SearchSettings {
 	private Set<Pattern> outDirPatterns;
 	private Set<Pattern> inFilePatterns;
 	private Set<Pattern> outFilePatterns;
+	private Set<String> inArchiveExtensions;
+	private Set<String> outArchiveExtensions;
 	private Set<Pattern> inArchiveFilePatterns;
 	private Set<Pattern> outArchiveFilePatterns;
 	private Set<Pattern> inLinesAfterPatterns;
@@ -63,6 +64,8 @@ public class SearchSettings {
         this.outDirPatterns = new HashSet<Pattern>();
 		this.inFilePatterns = new HashSet<Pattern>();
 		this.outFilePatterns = new HashSet<Pattern>();
+		this.inArchiveExtensions = new HashSet<String>();
+		this.outArchiveExtensions = new HashSet<String>();
 		this.inArchiveFilePatterns = new HashSet<Pattern>();
 		this.outArchiveFilePatterns = new HashSet<Pattern>();
 		this.inLinesAfterPatterns = new HashSet<Pattern>();
@@ -257,8 +260,13 @@ public class SearchSettings {
 		this.verbose = verbose;
 	}
 
-	private static void addExtension(Set<String> set, String ext) {
-		set.add(ext.toLowerCase());
+	// could be a comma-separated list
+	private static void addExtensions(Set<String> set, String exts) {
+		for (String x : exts.split(",")) {
+			if (!x.equals(""))
+				set.add(x.toLowerCase());
+		}
+
 	}
 
 	public Set<String> getInExtensions() {
@@ -266,7 +274,7 @@ public class SearchSettings {
 	}
 
 	public void addInExtension(String ext) {
-		addExtension(this.inExtensions, ext);
+		addExtensions(this.inExtensions, ext);
 	}
 
 	public Set<String> getOutExtensions() {
@@ -274,7 +282,23 @@ public class SearchSettings {
 	}
 
 	public void addOutExtension(String ext) {
-		addExtension(this.outExtensions, ext);
+		addExtensions(this.outExtensions, ext);
+	}
+
+	public Set<String> getInArchiveExtensions() {
+		return this.inArchiveExtensions;
+	}
+
+	public void addInArchiveExtension(String ext) {
+		addExtensions(this.inArchiveExtensions, ext);
+	}
+
+	public Set<String> getOutArchiveExtensions() {
+		return this.outArchiveExtensions;
+	}
+
+	public void addOutArchiveExtension(String ext) {
+		addExtensions(this.outArchiveExtensions, ext);
 	}
 
 	private static void addPattern(Set<Pattern> set, String pattern) {
@@ -421,6 +445,10 @@ public class SearchSettings {
                 ", inFilePatterns: " + patternSetToString(this.inFilePatterns) +
                 ", outFilePatterns: " + patternSetToString(this.outFilePatterns) +
                 ", searchPatterns: " + patternSetToString(this.searchPatterns) +
+				", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions) +
+				", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions) +
+				", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns) +
+				", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns) +
                 ", archivesOnly: " + this.archivesOnly +
                 ", debug: " + this.debug +
                 ", doTiming: " + this.doTiming +

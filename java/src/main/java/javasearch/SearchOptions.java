@@ -29,6 +29,16 @@ public class SearchOptions {
 
     Map<String,SearchArgSetter> argActionMap = new HashMap<String,SearchArgSetter>() {
         {
+            put("in-archiveext", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addInArchiveExtension(arg);
+                }
+            });
+            put("out-archiveext", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.addOutArchiveExtension(arg);
+                }
+            });
             put("in-archivefilepattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addInArchiveFilePattern(arg);
@@ -51,22 +61,17 @@ public class SearchOptions {
             });
             put("in-ext", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
-                    for (String x : arg.split(",")) {
-                        if (!x.equals(""))
-                            settings.addInExtension(x);
-                    }
+                    settings.addInExtension(arg);
                 }
             });
             put("out-ext", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
-                    for (String x : arg.split(",")) {
-                        if (!x.equals(""))
-                            settings.addOutExtension(arg);
-                    }
+                    settings.addOutExtension(arg);
                 }
             });
             put("in-filepattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override
+                public void setArg(String arg, SearchSettings settings) {
                     settings.addInFilePattern(arg);
                 }
             });
@@ -95,6 +100,11 @@ public class SearchOptions {
                     settings.addOutLinesBeforePattern(arg);
                 }
             });
+            put("linesafter", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.setLinesAfter(Integer.parseInt(arg));
+                }
+            });
             put("linesaftertopattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addLinesAfterToPattern(arg);
@@ -103,6 +113,11 @@ public class SearchOptions {
             put("linesafteruntilpattern", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
                     settings.addLinesAfterUntilPattern(arg);
+                }
+            });
+            put("linesbefore", new SearchArgSetter() {
+                @Override public void setArg(String arg, SearchSettings settings) {
+                    settings.setLinesBefore(Integer.parseInt(arg));
                 }
             });
             put("maxlinelength", new SearchArgSetter() {
