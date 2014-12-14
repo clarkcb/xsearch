@@ -71,12 +71,24 @@ isSearchFile settings fp = and $ map ($fp) tests
 isArchiveSearchFile :: SearchSettings -> FilePath -> Bool
 isArchiveSearchFile settings fp = and $ map ($fp) tests
   where tests :: [FilePath -> Bool]
-        tests = [ (\x -> length inPatterns == 0
+        tests = [ (\x -> length inExts == 0
+                         || hasInExt x)
+                , (\x -> length outExts == 0
+                         || not (hasOutExt x))
+                , (\x -> length inPatterns == 0
                          || any (\p -> x =~ p :: Bool) inPatterns)
                 , (\x -> length outPatterns == 0
                          || all (\p -> not $ x =~ p :: Bool) outPatterns)
                 , (\x -> not (isHiddenFilePath x) || includeHidden)
                 ]
+        inExts = inArchiveExtensions settings
+        hasInExt f = case getExtension f of
+                       Just x -> x `elem` inExts
+                       Nothing -> null inExts
+        outExts = outArchiveExtensions settings
+        hasOutExt f = case getExtension f of
+                        Just x -> x `elem` outExts
+                        Nothing -> False
         inPatterns = inArchiveFilePatterns settings
         outPatterns = outArchiveFilePatterns settings
         includeHidden = not $ excludeHidden settings

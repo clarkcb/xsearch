@@ -10,6 +10,7 @@ data SearchSettings = SearchSettings {
                                      , doTiming :: Bool
                                      , excludeHidden :: Bool
                                      , firstMatch :: Bool
+                                     , inArchiveExtensions :: [String]
                                      , inArchiveFilePatterns :: [String]
                                      , inDirPatterns :: [String]
                                      , inExtensions :: [String]
@@ -25,6 +26,7 @@ data SearchSettings = SearchSettings {
                                      , listLines :: Bool
                                      , maxLineLength :: Int
                                      , multiLineSearch :: Bool
+                                     , outArchiveExtensions :: [String]
                                      , outArchiveFilePatterns :: [String]
                                      , outDirPatterns :: [String]
                                      , outExtensions :: [String]
@@ -49,6 +51,7 @@ defaultSearchSettings = SearchSettings {
                                        , doTiming=False
                                        , excludeHidden=True
                                        , firstMatch=False
+                                       , inArchiveExtensions=[]
                                        , inArchiveFilePatterns=[]
                                        , inDirPatterns=[]
                                        , inExtensions=[]
@@ -64,6 +67,7 @@ defaultSearchSettings = SearchSettings {
                                        , listLines=False
                                        , maxLineLength=200
                                        , multiLineSearch=False
+                                       , outArchiveExtensions=[]
                                        , outArchiveFilePatterns=[]
                                        , outDirPatterns=[]
                                        , outExtensions=[]

@@ -92,7 +92,8 @@ type ArgAction = SearchSettings -> String -> SearchSettings
 type FlagAction = SearchSettings -> SearchSettings
 
 argActions :: [(String, ArgAction)]
-argActions = [ ("in-archivefilepattern", \ss s -> ss {inArchiveFilePatterns = inArchiveFilePatterns ss ++ [s]})
+argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ (newExtensions s)})
+             , ("in-archivefilepattern", \ss s -> ss {inArchiveFilePatterns = inArchiveFilePatterns ss ++ [s]})
              , ("in-dirpattern", \ss s -> ss {inDirPatterns = inDirPatterns ss ++ [s]})
              , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ (newExtensions s)})
              , ("in-filepattern", \ss s -> ss {inFilePatterns = inFilePatterns ss ++ [s]})
@@ -103,6 +104,7 @@ argActions = [ ("in-archivefilepattern", \ss s -> ss {inArchiveFilePatterns = in
              , ("linesafteruntilpattern", \ss s -> ss {linesAfterUntilPatterns = linesAfterUntilPatterns ss ++ [s]})
              , ("linesbefore", \ss s -> ss {linesBefore = read s})
              , ("maxlinelength", \ss s -> ss {maxLineLength = read s})
+             , ("out-archivefext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ (newExtensions s)})
              , ("out-archivefilepattern", \ss s -> ss {outArchiveFilePatterns = outArchiveFilePatterns ss ++ [s]})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})
              , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ (newExtensions s)})
