@@ -80,6 +80,14 @@ class Searcher:
     def is_archive_search_file(self, f):
         if not self.fileutil.is_archive_file(f):
             return False
+        if f.startswith('.') and self.settings.excludehidden:
+            return False
+        if self.settings.in_archiveextensions and \
+            not self.get_ext(f) in self.settings.in_archiveextensions:
+            return False
+        if self.settings.out_archiveextensions and \
+            self.get_ext(f) in self.settings.out_archiveextensions:
+            return False
         if self.settings.in_archivefilepatterns and \
             not self.matches_any_pattern(f, self.settings.in_archivefilepatterns):
             return False

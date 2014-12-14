@@ -10,7 +10,8 @@ import re
 class SearchSettings:
     """a class to encapsulate search settings for a particular search session"""
 
-    _extension_set_names = 'in_extensions out_extensions'.split()
+    _extension_set_names = '''in_extensions out_extensions
+                              in_archiveextensions out_archiveextensions'''.split()
     _pattern_set_names = '''in_dirpatterns out_dirpatterns
                             in_filepatterns out_filepatterns
                             in_archivefilepatterns out_archivefilepatterns

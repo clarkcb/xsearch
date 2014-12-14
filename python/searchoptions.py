@@ -22,6 +22,9 @@ class SearchOptions:
     SEARCHOPTIONSPATH = '/Users/cary/src/git/xsearch/shared/searchoptions.xml'
 
     arg_action_dict = {
+        'in-archiveext':
+            lambda x, settings:
+                settings.add_comma_delimited_exts(x, 'in_archiveextensions'),
         'in-archivefilepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'in_archivefilepatterns'),
@@ -55,6 +58,9 @@ class SearchOptions:
         'maxlinelength':
             lambda x, settings:
                 settings.set_property('maxlinelength', int(x)),
+        'out-archiveext':
+            lambda x, settings:
+                settings.add_comma_delimited_exts(x, 'out_archiveextensions'),
         'out-archivefilepattern':
             lambda x, settings:
                 settings.add_pattern(x, 'out_archivefilepatterns'),
