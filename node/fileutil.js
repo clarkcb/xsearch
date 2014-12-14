@@ -61,13 +61,13 @@ function FileUtil() {
             return '';
         }
     };
+    this.isArchiveFile = function (filename) {
+        var ext = that.getExtension(filename);
+        return fileTypeMap['archive'].indexOf(ext) > -1;
+    };
     this.isBinaryFile = function (filename) {
         var ext = that.getExtension(filename);
         return fileTypeMap['binary'].indexOf(ext) > -1;
-    };
-    this.isCompressedFile = function (filename) {
-        var ext = that.getExtension(filename);
-        return fileTypeMap['compressed'].indexOf(ext) > -1;
     };
     this.isSearchableFile = function (filename) {
         var ext = that.getExtension(filename);

@@ -13,6 +13,8 @@ function SearchSettings() {
     this.outDirPatterns = [];
     this.inFilePatterns = [];
     this.outFilePatterns = [];
+    this.inArchiveExtensions = [];
+    this.outArchiveExtensions = [];
     this.inArchiveFilePatterns = [];
     this.outArchiveFilePatterns = [];
     this.inLinesAfterPatterns = [];
@@ -41,14 +43,18 @@ function SearchSettings() {
     this.searchArchives = false;
     this.uniqueLines = false;
     this.verbose = false;
-    var addExtension = function (ext, arr) {
-        arr.push(ext);
+    var addExtensions = function (exts, arr) {
+        var xs = exts.split(/,/);
+        for (i in xs) {
+            if (xs[i] != "")
+                arr.push(xs[i]);
+        }
     };
     this.addInExtension = function (ext) {
-        addExtension(ext, that.inExtensions);
+        addExtensions(ext, that.inExtensions);
     };
     this.addOutExtension = function (ext) {
-        addExtension(ext, that.outExtensions);
+        addExtensions(ext, that.outExtensions);
     };
     var addPattern = function (pattern, arr) {
         arr.push(new RegExp(pattern));
@@ -67,6 +73,12 @@ function SearchSettings() {
     };
     this.addSearchPattern = function (pattern) {
         addPattern(pattern, that.searchPatterns);
+    };
+    this.addInArchiveExtension = function (ext) {
+        addExtensions(ext, that.inArchiveExtensions);
+    };
+    this.addOutArchiveExtension = function (ext) {
+        addExtensions(ext, that.outArchiveExtensions);
     };
     this.addInArchiveFilePattern = function (pattern) {
         addPattern(pattern, that.inArchiveFilePatterns);
@@ -117,6 +129,12 @@ function SearchSettings() {
         }
         if (that.outFilePatterns.length) {
             s = s + ', ' + listToString('outFilePatterns', that.outFilePatterns);
+        }
+        if (that.inArchiveExtensions.length) {
+            s = s + ', ' + listToString('inArchiveExtensions', that.inArchiveExtensions);
+        }
+        if (that.outArchiveExtensions.length) {
+            s = s + ', ' + listToString('outArchiveExtensions', that.outArchiveExtensions);
         }
         if (that.inArchiveFilePatterns.length) {
             s = s + ', ' + listToString('inArchiveFilePatterns', that.inArchiveFilePatterns);

@@ -19,6 +19,8 @@ function SearchOptions() {
     var flagMap = {};
 
     var argActionMap = {
+        'in-archiveext':
+            function(x, settings) { settings.addInArchiveExtension(x); },
         'in-archivefilepattern':
             function(x, settings) { settings.addInArchiveFilePattern(x); },
         'in-dirpattern':
@@ -43,6 +45,8 @@ function SearchOptions() {
             function(x, settings) { settings.maxLineLength = x; },
         'out-dirpattern':
             function(x, settings) { settings.addOutDirPattern(x); },
+        'out-archiveext':
+            function(x, settings) { settings.addOutArchiveExtension(x); },
         'out-archivefilepattern':
             function(x, settings) { settings.addOutArchiveFilePattern(x); },
         'out-ext':

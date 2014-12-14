@@ -91,6 +91,29 @@ function Searcher(settings) {
         return true;
     };
 
+    var isArchiveSearchFile = function (file) {
+        if (file.startsWith(".") && _settings.excludeHidden) {
+            return false;
+        }
+        if (_settings.inArchiveExtensions.length &&
+            !matchesAnyElement(_fileutil.getExtension(file), _settings.inArchiveExtensions)) {
+            return false;
+        }
+        if (_settings.outArchiveExtensions.length &&
+            matchesAnyElement(_fileutil.getExtension(file), _settings.outArchiveExtensions)) {
+            return false;
+        }
+        if (_settings.inArchiveFilePatterns.length &&
+            !matchesAnyPattern(file, _settings.inArchiveFilePatterns)) {
+            return false;
+        }
+        if (_settings.outArchiveFilePatterns.length &&
+            matchesAnyPattern(file, _settings.outArchiveFilePatterns)) {
+            return false;
+        }
+        return true;
+    };
+
     var getSearchDirs = function (startPath) {
         if (_settings.debug) {
             console.log("Getting list of directories to search under " + startPath);
@@ -168,8 +191,12 @@ function Searcher(settings) {
         var searchFiles = [];
         var dirFiles = getFilesForDirectory(dir);
         for (var d in dirFiles) {
-            if (isSearchFile(dirFiles[d])) {
-                searchFiles.push(dirFiles[d]);
+            var f = dirFiles[d];
+            if (_fileutil.isArchiveFile(f) && _settings.searchArchives &&
+                isArchiveSearchFile(f)) {
+                searchFiles.push(f);
+            } else if (!_settings.archivesOnly && isSearchFile(f)) {
+                searchFiles.push(f);
             }
         }
         return searchFiles;
