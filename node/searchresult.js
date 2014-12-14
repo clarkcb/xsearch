@@ -4,14 +4,17 @@
  * file search utility written in node.js
  */
 
-function SearchResult(pattern, filename, linenum, line, matchStartIndex, matchEndIndex) {
+function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex,
+    line, linesBefore, linesAfter) {
     var that = this;
     this.pattern = pattern;
     this.filename = filename;
     this.linenum = linenum;
-    this.line = line;
     this.matchStartIndex = matchStartIndex;
     this.matchEndIndex = matchEndIndex;
+    this.line = line;
+    this.linesBefore = linesBefore;
+    this.linesAfter = linesAfter;
     this.maxLineLength = 150;
 
     this.toString = function () {

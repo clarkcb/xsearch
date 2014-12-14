@@ -297,7 +297,7 @@ function Searcher(settings) {
             pattern = _settings.searchPatterns[p];
             var match = pattern.exec(contents);
             if (match) {
-                addSearchResult(new SearchResult(pattern, filepath, 0, null));
+                addSearchResult(new SearchResult(pattern, filepath, 0, 0, 0, null, [], []));
             }
         }
     };
@@ -346,7 +346,7 @@ function Searcher(settings) {
                     lineEndIndex += 1;
                 line = contents.substring(lineStartIndex, lineEndIndex);
                 var searchResult = new SearchResult(pattern,
-                    filepath, beforeLineCount+1, line);
+                    filepath, beforeLineCount+1, 0, 0, line, [], []);
                 addSearchResult(searchResult);
                 if (!(pattern in fileResults))
                     fileResults[pattern] = [];
@@ -369,7 +369,7 @@ function Searcher(settings) {
                 var match = pattern.exec(lines[i]);
                 while (match) {
                     addSearchResult(new SearchResult(pattern, filepath, linenum,
-                        lines[i], match.index, pattern.lastIndex));
+                        match.index, pattern.lastIndex, lines[i], [], []));
                     if (_settings.firstMatch) {
                         return;
                     }
