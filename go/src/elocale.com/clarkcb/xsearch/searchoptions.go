@@ -125,6 +125,9 @@ type argAction func(s string, settings *SearchSettings)
 
 func (so *SearchOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
+		"in-archiveext": func(s string, settings *SearchSettings) {
+			settings.AddInArchiveExtension(s)
+		},
 		"in-archivefilepattern": func(s string, settings *SearchSettings) {
 			settings.AddInArchiveFilePattern(s)
 		},
@@ -172,6 +175,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			} else {
 				fmt.Printf("Invalid value for maxlinelength: %s\n", s)
 			}
+		},
+		"out-archiveext": func(s string, settings *SearchSettings) {
+			settings.AddOutArchiveExtension(s)
 		},
 		"out-archivefilepattern": func(s string, settings *SearchSettings) {
 			settings.AddOutArchiveFilePattern(s)

@@ -139,6 +139,17 @@ func (s *Searcher) setSearchDirs() error {
 
 func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 	if s.fileTypes.IsArchiveFile(*filename) {
+
+		if strings.HasPrefix(*filename, ".") && s.Settings.ExcludeHidden {
+			return false
+		}
+		ext := getExtension(*filename)
+		if len(s.Settings.InArchiveExtensions) > 0 && !contains(s.Settings.InArchiveExtensions, ext) {
+			return false
+		}
+		if len(s.Settings.OutArchiveExtensions) > 0 && contains(s.Settings.OutArchiveExtensions, ext) {
+			return false
+		}
 		return filterInBySearchPatterns(filename, s.Settings.InArchiveFilePatterns,
 			s.Settings.OutArchiveFilePatterns)
 	}

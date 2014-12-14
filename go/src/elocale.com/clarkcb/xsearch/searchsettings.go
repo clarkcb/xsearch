@@ -14,6 +14,8 @@ type SearchSettings struct {
 	OutDirPatterns          *SearchPatterns
 	InFilePatterns          *SearchPatterns
 	OutFilePatterns         *SearchPatterns
+	InArchiveExtensions     []*string
+	OutArchiveExtensions    []*string
 	InArchiveFilePatterns   *SearchPatterns
 	OutArchiveFilePatterns  *SearchPatterns
 	InLinesAfterPatterns    *SearchPatterns
@@ -53,6 +55,8 @@ func GetDefaultSearchSettings() *SearchSettings {
 		NewSearchPatterns(),    // OutDirPatterns
 		NewSearchPatterns(),    // InFilePatterns
 		NewSearchPatterns(),    // OutFilePatterns
+		[]*string{},            // InArchiveExtensions
+		[]*string{},            // OutArchiveExtensions
 		NewSearchPatterns(),    // InArchiveFilePatterns
 		NewSearchPatterns(),    // OutArchiveFilePatterns
 		NewSearchPatterns(),    // InLinesAfterPatterns
@@ -116,6 +120,20 @@ func (s *SearchSettings) AddInFilePattern(p string) {
 
 func (s *SearchSettings) AddOutFilePattern(p string) {
 	addPattern(&p, s.OutFilePatterns)
+}
+
+func (s *SearchSettings) AddInArchiveExtension(xs string) {
+	for _, x := range strings.Split(xs, ",") {
+		ext := strings.ToLower(x)
+		s.InArchiveExtensions = append(s.InArchiveExtensions, &ext)
+	}
+}
+
+func (s *SearchSettings) AddOutArchiveExtension(xs string) {
+	for _, x := range strings.Split(xs, ",") {
+		ext := strings.ToLower(x)
+		s.OutArchiveExtensions = append(s.OutArchiveExtensions, &ext)
+	}
 }
 
 func (s *SearchSettings) AddInArchiveFilePattern(p string) {
