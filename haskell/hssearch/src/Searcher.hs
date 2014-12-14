@@ -9,6 +9,7 @@ module Searcher
 import Control.Monad (liftM)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
+import Data.Maybe (catMaybes)
 import Text.Regex.PCRE
 
 import FileTypes
@@ -174,7 +175,8 @@ searchContents settings contents =
 
 searchContentsForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
 searchContentsForPattern settings contents pattern = patternResults pattern
-  where patternResults p = map (resultFromPatternMatchIndices p) (firstOrAllIndices p)
+  where patternResults p = catMaybes (maybePatternResults p)
+        maybePatternResults p = map (maybeResultFromPatternMatchIndices p) (firstOrAllIndices p)
         firstOrAllIndices p = if firstMatch settings
                               then take 1 (matchIndices contents p)
                               else matchIndices contents p
@@ -200,16 +202,33 @@ searchContentsForPattern settings contents pattern = patternResults pattern
         getLinesAfter i n = map lineAtIndex (linesAfterIndices i n)
         afterLns i | linesAfterNum == 0 = []
                    | otherwise = getLinesAfter (startLineIndex i) linesAfterNum
-        resultFromPatternMatchIndices :: String -> (Int, Int) -> SearchResult
-        resultFromPatternMatchIndices p ix =
-          blankSearchResult { searchPattern=p
-                            , lineNum=(countNewlines (B.take (fst ix) contents))+1
-                            , matchStartIndex=(fst ix) - (startLineIndex (fst ix))
-                            , matchEndIndex=(snd ix) - (startLineIndex (fst ix))
-                            , line=lineAtIndex (fst ix)
-                            , beforeLines=beforeLns (fst ix)
-                            , afterLines=afterLns (fst ix)
-                            }
+        checkBefore = (linesBefore settings) > 0
+        beforeLinesMatch bs =
+          not checkBefore
+          || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
+        checkAfter = (linesAfter settings) > 0
+        afterLinesMatch as =
+          not checkAfter
+          || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
+        maybeResultFromPatternMatchIndices :: String -> (Int, Int) -> Maybe SearchResult
+        maybeResultFromPatternMatchIndices p ix =
+          if (beforeLinesMatch bs) && (afterLinesMatch as)
+          then
+            Just blankSearchResult { searchPattern=p
+                                   , lineNum=lineCount
+                                   , matchStartIndex=msi
+                                   , matchEndIndex=mei
+                                   , line=lineAtIndex (fst ix)
+                                   , beforeLines=bs
+                                   , afterLines=as
+                                   }
+          else Nothing
+          where lineCount = (countNewlines (B.take (fst ix) contents)) + 1
+                sli = startLineIndex (fst ix)
+                msi = (fst ix) - sli
+                mei = (snd ix) - sli
+                bs = beforeLns (fst ix)
+                as = afterLns (fst ix)
 
 searchTextFileLines :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFileLines settings f = do
@@ -241,19 +260,20 @@ searchLineList settings lineList = recSearchLineList [] lineList 0 []
                 firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
                 patterns = searchPatterns settings
 
-checkBefore :: SearchSettings -> Bool
-checkBefore settings = (linesBefore settings) > 0
-
 searchLineForPattern :: SearchSettings -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
 searchLineForPattern settings num bs l as pattern = patternResults pattern
   where checkBefore = (linesBefore settings) > 0
-        beforeLinesMatch = not checkBefore || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
+        beforeLinesMatch =
+          not checkBefore
+          || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
         checkAfter = (linesAfter settings) > 0
-        afterLinesMatch = not checkAfter || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
+        afterLinesMatch =
+          not checkAfter
+          || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
         lineMatchIndices :: String -> [(Int,Int)]
         lineMatchIndices p = if beforeLinesMatch && afterLinesMatch
-                           then matchIndices l p
-                           else []
+                             then matchIndices l p
+                             else []
         patternResults :: String -> [SearchResult]
         patternResults p = map (resultFromPatternMatchIndices p) (lineMatchIndices p)
         resultFromPatternMatchIndices :: String -> (Int, Int) -> SearchResult
