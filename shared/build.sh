@@ -91,6 +91,10 @@ build_haskell () {
     log "build_haskell"
     HASKELL_PATH=$PROJECT_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
+    RESOURCES_PATH=$HSSEARCH_PATH/data
+
+    # copy the shared xml files to the local resource location
+    copy_resources $RESOURCES_PATH
 
     # build with cabal
     log "Building hssearch"
