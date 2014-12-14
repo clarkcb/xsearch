@@ -146,6 +146,20 @@ matchOffsetsAndLengths s p = getAllMatches $ s =~ p :: [(MatchOffset,MatchLength
 matchIndices :: B.ByteString -> String -> [(Int,Int)]
 matchIndices s p = map (\(x,y) -> (x, x+y)) (matchOffsetsAndLengths s p)
 
+linesMatch :: [B.ByteString] -> [String] -> [String] -> Bool
+linesMatch [] _ _ = False
+linesMatch _ [] [] = True
+linesMatch ls lsInPatterns lsOutPatterns = inPatternMatches && not outPatternMatches
+  where inPatternMatches = null lsInPatterns || anyMatchesAnyPattern ls lsInPatterns
+        outPatternMatches = not (null lsOutPatterns) && anyMatchesAnyPattern ls lsOutPatterns
+
+anyMatchesAnyPattern :: [B.ByteString] -> [String] -> Bool
+anyMatchesAnyPattern ls ps = or (map (anyMatchesPattern ls) ps) 
+
+anyMatchesPattern :: [B.ByteString] -> String -> Bool
+anyMatchesPattern ls p = any matchesPattern ls
+  where matchesPattern l = l =~ p :: Bool
+
 searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFileContents settings f = do
   contentsEither <- getFileByteString f
@@ -160,7 +174,7 @@ searchContents settings contents =
 
 searchContentsForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
 searchContentsForPattern settings contents pattern = patternResults pattern
-  where patternResults p = map (resultFromLinePatternIndices p) (firstOrAllIndices p)
+  where patternResults p = map (resultFromPatternMatchIndices p) (firstOrAllIndices p)
         firstOrAllIndices p = if firstMatch settings
                               then take 1 (matchIndices contents p)
                               else matchIndices contents p
@@ -186,8 +200,8 @@ searchContentsForPattern settings contents pattern = patternResults pattern
         getLinesAfter i n = map lineAtIndex (linesAfterIndices i n)
         afterLns i | linesAfterNum == 0 = []
                    | otherwise = getLinesAfter (startLineIndex i) linesAfterNum
-        resultFromLinePatternIndices :: String -> (Int, Int) -> SearchResult
-        resultFromLinePatternIndices p ix =
+        resultFromPatternMatchIndices :: String -> (Int, Int) -> SearchResult
+        resultFromPatternMatchIndices p ix =
           blankSearchResult { searchPattern=p
                             , lineNum=(countNewlines (B.take (fst ix) contents))+1
                             , matchStartIndex=(fst ix) - (startLineIndex (fst ix))
@@ -227,12 +241,23 @@ searchLineList settings lineList = recSearchLineList [] lineList 0 []
                 firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
                 patterns = searchPatterns settings
 
+checkBefore :: SearchSettings -> Bool
+checkBefore settings = (linesBefore settings) > 0
+
 searchLineForPattern :: SearchSettings -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
 searchLineForPattern settings num bs l as pattern = patternResults pattern
-  where patternResults :: String -> [SearchResult]
-        patternResults p = map (resultFromLinePatternIndices p) (matchIndices l p)
-        resultFromLinePatternIndices :: String -> (Int, Int) -> SearchResult
-        resultFromLinePatternIndices p ix =
+  where checkBefore = (linesBefore settings) > 0
+        beforeLinesMatch = not checkBefore || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
+        checkAfter = (linesAfter settings) > 0
+        afterLinesMatch = not checkAfter || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
+        lineMatchIndices :: String -> [(Int,Int)]
+        lineMatchIndices p = if beforeLinesMatch && afterLinesMatch
+                           then matchIndices l p
+                           else []
+        patternResults :: String -> [SearchResult]
+        patternResults p = map (resultFromPatternMatchIndices p) (lineMatchIndices p)
+        resultFromPatternMatchIndices :: String -> (Int, Int) -> SearchResult
+        resultFromPatternMatchIndices p ix =
           blankSearchResult { searchPattern=p
                             , lineNum=num
                             , matchStartIndex=fst ix
