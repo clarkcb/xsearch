@@ -27,6 +27,9 @@ class SearchOptions
 
   def set_actions
     @arg_action_dict = {
+      'in-archiveext' =>
+        proc { |x, settings| settings.add_comma_delimited_exts(x,
+          settings.in_archiveextensions) },
       'in-archivefilepattern' =>
         proc { |x, settings| settings.in_archivefilepatterns.push(Regexp.new(x)) },
       'in-dirpattern' =>
@@ -50,6 +53,9 @@ class SearchOptions
         proc { |x, settings| puts "linesbefore: #{x}" },
       'maxlinelength' =>
         proc { |x, settings| settings.maxlinelength = x.to_i },
+      'out-archiveext' =>
+        proc { |x, settings| settings.add_comma_delimited_exts(x,
+          settings.out_archiveextensions) },
       'out-archivefilepattern' =>
         proc { |x, settings| settings.out_archivefilepatterns.push(Regexp.new(x)) },
       'out-dirpattern' =>

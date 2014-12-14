@@ -13,6 +13,7 @@ class SearchSettings
   attr_accessor :dotiming
   attr_accessor :excludehidden
   attr_accessor :firstmatch
+  attr_accessor :in_archiveextensions
   attr_accessor :in_archivefilepatterns
   attr_accessor :in_dirpatterns
   attr_accessor :in_extensions
@@ -26,6 +27,7 @@ class SearchSettings
   attr_accessor :listlines
   attr_accessor :maxlinelength
   attr_accessor :multilinesearch
+  attr_accessor :out_archiveextensions
   attr_accessor :out_archivefilepatterns
   attr_accessor :out_dirpatterns
   attr_accessor :out_extensions
@@ -62,6 +64,7 @@ class SearchSettings
     @uniquelines = false
     @verbose = false
 
+    @in_archiveextensions = []
     @in_archivefilepatterns = []
     @in_dirpatterns = []
     @in_extensions = []
@@ -70,6 +73,7 @@ class SearchSettings
     @in_linesbeforepatterns = []
     @linesaftertopatterns = []
     @linesafteruntilpatterns = []
+    @out_archiveextensions = []
     @out_archivefilepatterns = []
     @out_dirpatterns = []
     @out_extensions = []
@@ -102,6 +106,10 @@ class SearchSettings
     s += ", " + list_to_s("out_dirpatterns", @out_dirpatterns)
     s += ", " + list_to_s("in_filepatterns", @in_filepatterns)
     s += ", " + list_to_s("out_filepatterns", @out_filepatterns)
+    s += ", " + list_to_s("in_archiveextensions", @in_archiveextensions)
+    s += ", " + list_to_s("out_archiveextensions", @out_archiveextensions)
+    s += ", " + list_to_s("in_archivefilepatterns", @in_archivefilepatterns)
+    s += ", " + list_to_s("out_archivefilepatterns", @out_archivefilepatterns)
     s += ", archivesonly: #{@archivesonly}"
     s += ", debug: #{@debug}"
     s += ", dotiming: #{@dotiming}"
