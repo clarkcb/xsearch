@@ -84,6 +84,30 @@ class Searcher
     true
   end
 
+  def is_archive_search_file(f)
+    if @settings.excludehidden and f.start_with?('.')
+      return false
+    end
+    if @settings.in_archiveextensions.count > 0 and 
+      not @settings.in_archiveextensions.include?(@fileutil.get_extension(f))
+      return false
+    end
+    if @settings.out_archiveextensions.count > 0 and
+      @settings.out_archiveextensions.include?(@fileutil.get_extension(f))
+      return false
+    end
+    filename = Pathname.new(f).basename.to_s
+    if @settings.in_archivefilepatterns.count > 0 and
+      not matches_any_pattern(filename, @settings.in_archivefilepatterns)
+      return false
+    end
+    if @settings.out_archivefilepatterns.count > 0 and
+      matches_any_pattern(filename, @settings.out_archivefilepatterns)
+      return false
+    end
+    true
+  end
+
   def get_search_dirs
     searchdirs = []
     if @settings.recursive
@@ -104,7 +128,11 @@ class Searcher
         all_dirs = Dir.entries(d)
         all_dirs.each do |f|
           unless FileTest.directory?(f)
-            searchfiles.push(Pathname.new(d).join(f).to_s) if is_search_file(f)
+            if @fileutil.is_archive_file(f) and @settings.searcharchives and is_archive_search_file(f)
+              searchfiles.push(Pathname.new(d).join(f).to_s)
+            elsif not @settings.archivesonly and is_search_file(f)
+              searchfiles.push(Pathname.new(d).join(f).to_s)
+            end
           end
         end
       end

@@ -41,12 +41,12 @@ class FileUtil
     ext
   end
 
-  def is_binary_file(f)
-    @file_type_map['binary'].include?(get_extension(f))
+  def is_archive_file(f)
+    @file_type_map['archive'].include?(get_extension(f))
   end
 
-  def is_compressed_file(f)
-    @file_type_map['archive'].include?(get_extension(f))
+  def is_binary_file(f)
+    @file_type_map['binary'].include?(get_extension(f))
   end
 
   def is_searchable_file(f)

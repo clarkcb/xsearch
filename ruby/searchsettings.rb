@@ -43,7 +43,7 @@ class SearchSettings
   attr_accessor :verbose
 
   def initialize
-    @archivesonly = true
+    @archivesonly = false
     @debug = false
     @dotiming = false
     @excludehidden = true
