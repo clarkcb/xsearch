@@ -110,8 +110,14 @@ class Searcher (settings: SearchSettings) {
 
   def isArchiveSearchFile(fileName: String): Boolean = {
     if (settings.excludeHidden && isHiddenFile(fileName)) false
-    filterInByPatterns(fileName, settings.inArchiveFilePatterns,
-      settings.outArchiveFilePatterns)
+    ((settings.inArchiveExtensions.isEmpty ||
+      settings.inArchiveExtensions.contains(FileUtil.getExtension(fileName)))
+      &&
+      (settings.outArchiveExtensions.isEmpty ||
+        !settings.outArchiveExtensions.contains(FileUtil.getExtension(fileName)))
+      &&
+      filterInByPatterns(fileName, settings.inArchiveFilePatterns,
+        settings.outArchiveFilePatterns))
   }
 
   def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {

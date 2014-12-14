@@ -32,6 +32,8 @@ object SearchOptions {
   }
 
   val argActionMap = Map[String, ((String, SettingsBuilder) => Unit)](
+    "in-archiveext" ->
+      ((x: String, sb: SettingsBuilder) => sb.addInArchiveExtensions(x)),
     "in-archivefilepattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addInArchiveFilePattern(x)),
     "in-dirpattern" ->
@@ -54,6 +56,8 @@ object SearchOptions {
       ((x: String, sb: SettingsBuilder) => sb.linesBefore = x.toInt),
     "maxlinelength" ->
       ((x: String, sb: SettingsBuilder) => sb.maxLineLength = x.toInt),
+    "out-archiveext" ->
+      ((x: String, sb: SettingsBuilder) => sb.addOutArchiveExtensions(x)),
     "out-archivefilepattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addOutArchiveFilePattern(x)),
     "out-dirpattern" ->

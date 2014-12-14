@@ -15,6 +15,8 @@ class SettingsBuilder {
   val outDirPatterns = mutable.Set[Regex]()
   val inFilePatterns = mutable.Set[Regex]()
   val outFilePatterns = mutable.Set[Regex]()
+  val inArchiveExtensions = mutable.Set[String]()
+  val outArchiveExtensions = mutable.Set[String]()
   val inArchiveFilePatterns = mutable.Set[Regex]()
   val outArchiveFilePatterns = mutable.Set[Regex]()
   val inLinesBeforePatterns = mutable.Set[Regex]()
@@ -49,14 +51,25 @@ class SettingsBuilder {
     archivesOnly = true
     searchArchives = true
   }
-  // could be comma-separated
-  def addInExtensions(x:String) {
-    x.split(",").foreach(inExtensions.add)
+
+  def addCommaSeparatedExtensions(x:String, extensions:mutable.Set[String]) {
+    x.split(",").foreach(extensions.add)
   }
 
-  // could be comma-separated
+  def addInExtensions(x:String) {
+    addCommaSeparatedExtensions(x, inExtensions)
+  }
+
   def addOutExtensions(x:String) {
-    x.split(",").foreach(outExtensions.add)
+    addCommaSeparatedExtensions(x, outExtensions)
+  }
+
+  def addInArchiveExtensions(x:String) {
+    addCommaSeparatedExtensions(x, inArchiveExtensions)
+  }
+
+  def addOutArchiveExtensions(x:String) {
+    addCommaSeparatedExtensions(x, outArchiveExtensions)
   }
 
   def addInArchiveFilePattern(p: String) {
@@ -120,6 +133,8 @@ class SettingsBuilder {
       Set.empty[Regex] ++ outDirPatterns,
       Set.empty[Regex] ++ inFilePatterns,
       Set.empty[Regex] ++ outFilePatterns,
+      Set.empty[String] ++ inArchiveExtensions,
+      Set.empty[String] ++ outArchiveExtensions,
       Set.empty[Regex] ++ inArchiveFilePatterns,
       Set.empty[Regex] ++ outArchiveFilePatterns,
       Set.empty[Regex] ++ inLinesBeforePatterns,
@@ -165,6 +180,8 @@ class SearchSettings(val startpath:String,
                      val outDirPatterns:Set[Regex],
                      val inFilePatterns:Set[Regex],
                      val outFilePatterns:Set[Regex],
+                     val inArchiveExtensions:Set[String],
+                     val outArchiveExtensions:Set[String],
                      val inArchiveFilePatterns:Set[Regex],
                      val outArchiveFilePatterns:Set[Regex],
                      val inLinesBeforePatterns:Set[Regex],
@@ -211,6 +228,8 @@ class SearchSettings(val startpath:String,
     ", outDirPatterns: " + outDirPatterns +
     ", inFilePatterns: " + inFilePatterns +
     ", outFilePatterns: " + outFilePatterns +
+    ", inArchiveExtensions: " + inArchiveExtensions +
+    ", outArchiveExtenions: " + outArchiveExtensions +
     ", inArchiveFilePatterns: " + inArchiveFilePatterns +
     ", outArchiveFilePatterns: " + outArchiveFilePatterns +
     ", searchPatterns: " + searchPatterns +
