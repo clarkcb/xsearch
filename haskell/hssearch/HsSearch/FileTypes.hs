@@ -1,5 +1,5 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
-module FileTypes
+module HsSearch.FileTypes
   ( FileType(..)
   , getFileTypes
   , isSearchableFileType
@@ -7,8 +7,8 @@ module FileTypes
 
 import Text.XML.HXT.Core
 
-import FileUtility (getExtension, normalizeExtension)
-import Paths_hssearch (getDataFileName)
+import HsSearch.FileUtility (getExtension, normalizeExtension)
+import HsSearch.Paths_hssearch (getDataFileName)
 
 data FileType = Archive
               | Binary

@@ -1,4 +1,4 @@
-module SearchSettings
+module HsSearch.SearchSettings
   ( SearchSettings(..)
   , defaultSearchSettings
   ) where

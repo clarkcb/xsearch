@@ -1,4 +1,4 @@
-module SearchResult
+module HsSearch.SearchResult
   ( SearchResult(..)
   , blankSearchResult
   , formatSearchResult
@@ -8,7 +8,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (isSpace)
 
-import SearchSettings
+import HsSearch.SearchSettings
 
 data SearchResult = SearchResult {
                                    searchPattern :: String

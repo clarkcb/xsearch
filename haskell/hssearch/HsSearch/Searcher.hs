@@ -1,4 +1,4 @@
-module Searcher
+module HsSearch.Searcher
     (
       doSearch
     , doSearchFiles
@@ -12,10 +12,10 @@ import qualified Data.ByteString.Char8 as BC
 import Data.Maybe (catMaybes)
 import Text.Regex.PCRE
 
-import FileTypes
-import FileUtility
-import SearchResult
-import SearchSettings
+import HsSearch.FileTypes
+import HsSearch.FileUtility
+import HsSearch.SearchResult
+import HsSearch.SearchSettings
 
 
 -- TODO: use this type with all file-based functions

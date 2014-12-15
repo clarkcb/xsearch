@@ -1,4 +1,4 @@
-module Paths_hssearch where
+module HsSearch.Paths_hssearch where
 
 import System.FilePath ((</>))
 

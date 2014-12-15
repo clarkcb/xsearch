@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module FileUtility
+module HsSearch.FileUtility
     (
       filterDirectories
     , filterFiles

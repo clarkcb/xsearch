@@ -1,4 +1,4 @@
-module Main where
+module HsSearch.Main (main) where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
@@ -8,10 +8,10 @@ import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 import System.TimeIt
 
-import SearchOptions
-import Searcher
-import SearchResult
-import SearchSettings
+import HsSearch.SearchOptions
+import HsSearch.Searcher
+import HsSearch.SearchResult
+import HsSearch.SearchSettings
 
 
 validateSettings :: SearchSettings -> [String]

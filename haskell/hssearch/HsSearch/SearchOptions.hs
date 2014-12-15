@@ -1,5 +1,5 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
-module SearchOptions (
+module HsSearch.SearchOptions (
     SearchOption(..)
   , getSearchOptions
   , getUsage
@@ -12,9 +12,9 @@ import Data.Maybe (isJust)
 import qualified Data.Text as T
 import Text.XML.HXT.Core
 
-import FileUtility (normalizeExtension)
-import Paths_hssearch (getDataFileName)
-import SearchSettings
+import HsSearch.FileUtility (normalizeExtension)
+import HsSearch.Paths_hssearch (getDataFileName)
+import HsSearch.SearchSettings
 
 data SearchOption = SearchOption { long, short, desc :: String }
   deriving (Show, Eq)
