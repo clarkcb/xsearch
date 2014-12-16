@@ -1,4 +1,4 @@
-module HsSearch.Main (main) where
+module Main (main) where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
