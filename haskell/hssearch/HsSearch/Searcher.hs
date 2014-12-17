@@ -121,10 +121,10 @@ searchBinaryFile settings f = do
 
 searchBlob :: SearchSettings -> B.ByteString -> [SearchResult]
 searchBlob settings blob =
-  concat $ map (searchBlobForPattern settings blob) (searchPatterns settings)
+  concat $ map (searchBlobForPattern blob) (searchPatterns settings)
 
-searchBlobForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
-searchBlobForPattern settings blob pattern = if hasMatch
+searchBlobForPattern :: B.ByteString -> String -> [SearchResult]
+searchBlobForPattern blob pattern = if hasMatch
                                              then [blobResult pattern]
                                              else []
   where hasMatch = blob =~ pattern :: Bool
@@ -160,6 +160,10 @@ anyMatchesAnyPattern ls ps = or (map (anyMatchesPattern ls) ps)
 anyMatchesPattern :: [B.ByteString] -> String -> Bool
 anyMatchesPattern ls p = any matchesPattern ls
   where matchesPattern l = l =~ p :: Bool
+
+matchesAnyPattern :: B.ByteString -> [String] -> Bool
+matchesAnyPattern l ps = any matchesPattern ps
+  where matchesPattern p = l =~ p :: Bool
 
 searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFileContents settings f = do
@@ -239,26 +243,44 @@ searchTextFileLines settings f = do
   where addFilePath = map (\r -> r {filePath=f})
 
 searchLineList :: SearchSettings -> [B.ByteString] -> [SearchResult]
-searchLineList settings lineList = recSearchLineList [] lineList 0 []
-  where recSearchLineList :: [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
-        recSearchLineList beforeList lst num results =
-          case lst of
-            []     -> results
-            (l:ls) -> recSearchLineList (newBefore l) ls (num + 1) (updatedResults l)
-          where beforeNum = linesBefore settings
-                newBefore l | beforeNum == 0 = []
-                            | length beforeList == beforeNum = tail beforeList ++ [l]
-                            | otherwise = beforeList ++ [l]
-                afterNum = linesAfter settings
-                afterList = take afterNum (tail lst)
-                updatedResults l = results ++ (newResults l)
-                newResults l = concat $ map (searchNextPattern l) filteredPatterns
-                searchNextPattern l = searchLineForPattern settings (num + 1) beforeList l afterList
-                filteredPatterns = if firstMatch settings
-                                   then filter firstMatchNotMet patterns
-                                   else patterns
-                firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
-                patterns = searchPatterns settings
+searchLineList settings lineList = recSearchLineList settings [] lineList 0 []
+
+recSearchLineList :: SearchSettings -> [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
+recSearchLineList settings beforeList lst num results =
+  case lst of
+    []     -> results
+    (l:ls) -> recSearchLineList settings (newBefore l) ls (num + 1) (updatedResults l)
+  where beforeNum = linesBefore settings
+        newBefore l | beforeNum == 0 = []
+                    | length beforeList == beforeNum = tail beforeList ++ [l]
+                    | otherwise = beforeList ++ [l]
+        afterNum = linesAfter settings
+        afterToPatterns = linesAfterToPatterns settings
+        afterUntilPatterns = linesAfterUntilPatterns settings
+        checkAfterTo = length afterToPatterns > 0
+        checkAfterUntil = length afterUntilPatterns > 0
+        notMatchesAnyPattern ps l = not $ matchesAnyPattern l ps
+        afterToCount =
+          if checkAfterTo
+          then length (takeWhile (notMatchesAnyPattern afterToPatterns) (tail lst)) + 1
+          else 0
+        afterUntilCount =
+          if checkAfterUntil
+          then length (takeWhile (notMatchesAnyPattern afterUntilPatterns) (tail lst))
+          else 0
+        afterList = if checkAfterTo
+                    then take afterToCount (tail lst)
+                    else if checkAfterUntil
+                         then take afterUntilCount (tail lst)
+                         else take afterNum (tail lst)
+        updatedResults l = results ++ (newResults l)
+        newResults l = concat $ map (searchNextPattern l) filteredPatterns
+        searchNextPattern l = searchLineForPattern settings (num + 1) beforeList l afterList
+        filteredPatterns = if firstMatch settings
+                           then filter firstMatchNotMet patterns
+                           else patterns
+        firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
+        patterns = searchPatterns settings
 
 searchLineForPattern :: SearchSettings -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
 searchLineForPattern settings num bs l as pattern = patternResults pattern
