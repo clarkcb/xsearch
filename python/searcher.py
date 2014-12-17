@@ -361,16 +361,24 @@ class Searcher:
 
     def search_text_file_lines(self, fo, filename=''):
         """Search in a given text file object by line and return the results"""
-        file_pattern_matches = {}
+        search_results = self.search_line_iterator(fo)
+        for search_result in search_results:
+            search_result.filename = filename
+            self.add_search_result(search_result)
+
+    def search_line_iterator(self, lines):
+        """Consecutively search the lines of a line iterator and return results"""
+        pattern_match_dict = {}
         linenum = 0
         lines_before = deque()
         lines_after = deque()
+        results = []
         while True:
             if lines_after:
                 line = lines_after.popleft()
             else:
                 try:
-                    line = fo.next()
+                    line = lines.next()
                 except StopIteration:
                     break
                 except AttributeError as e:
@@ -380,7 +388,7 @@ class Searcher:
             if self.settings.numlinesafter:
                 while len(lines_after) < self.settings.numlinesafter:
                     try:
-                        lines_after.append(fo.next())
+                        lines_after.append(lines.next())
                     except StopIteration:
                         break
             for p in self.settings.searchpatterns:
@@ -417,7 +425,7 @@ class Searcher:
                             # if not read in more lines until a match or EOF
                             while not lines_after_to_match and not lines_after_until_match:
                                 try:
-                                    next_line = fo.next()
+                                    next_line = lines.next()
                                     lines_after.append(next_line)
                                     if self.settings.linesaftertopatterns and \
                                        self.matches_any_pattern(next_line,
@@ -433,11 +441,10 @@ class Searcher:
                         if lines_after_until_match:
                             sr_lines_after = sr_lines_after[:-1]
 
-                        if self.settings.firstmatch and p in file_pattern_matches:
+                        if self.settings.firstmatch and p in pattern_match_dict:
                             continue
                         else:
                             search_result = SearchResult(pattern=p.pattern,
-                                                         filename=filename,
                                                          linenum=linenum,
                                                          line=line,
                                                          lines_before=list(lines_before),
@@ -445,13 +452,14 @@ class Searcher:
                                                          maxlinelength=self.settings.maxlinelength,
                                                          match_start_index=match.start(),
                                                          match_end_index=match.end())
-                            self.add_search_result(search_result)
-                            file_pattern_matches[p] = 1
+                            results.append(search_result)
+                            pattern_match_dict[p] = 1
             if self.settings.numlinesbefore:
                 if len(lines_before) == self.settings.numlinesbefore:
                     lines_before.popleft()
                 if len(lines_before) < self.settings.numlinesbefore:
                     lines_before.append(line)
+        return results
 
     def search_archive_file(self, f):
         """Search an archive (compressed) file"""
