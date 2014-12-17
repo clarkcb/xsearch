@@ -191,6 +191,7 @@ class Searcher
       searchfiles.each do |f|
         puts "#{f}"
       end
+      puts "\n"
     end
     if @settings.dotiming
       start_timer('search_files')
@@ -227,7 +228,9 @@ class Searcher
   end
 
   def search_text_file(f, enc = nil)
-    linenum = 0
+    if @settings.debug
+      puts "Searching text file #{f}"
+    end
     if @settings.multilinesearch
       search_text_file_contents(f, enc)
     else
@@ -241,24 +244,36 @@ class Searcher
 
   def search_text_file_contents(f, enc = nil)
     contents = File.open(f, "r").read
+    results = search_contents(contents)
+    results.each do |r|
+      r.filename = f
+      add_search_result(r)
+    end
+  end
+
+  def search_contents(contents)
+    results = []
     @settings.searchpatterns.each do |p|
       m = p.match(contents)
       while m
         before_line_count = get_line_count(m.pre_match)
         after_line_count = get_line_count(m.post_match)
         line_start_index, line_end_index = m.offset(0)
-        if before_line_count
-          line_start_index = contents.rindex('\n', line_start_index)
+        if before_line_count > 0
+          line_start_index = contents.rindex("\n", line_start_index) + 1
         end
-        if after_line_count
-          line_end_index = contents.index(/(\r\n|\n)/, line_end_index)
+        if after_line_count > 0
+          line_end_index = contents.index(/(\r\n|\n)/, line_end_index) - 1
         end
         line = contents[line_start_index..line_end_index]
-        add_search_result(SearchResult.new(p, f, linenum, line))
-        contents = m.post_match
-        m = p.match(contents)
+        match_start_index = m.begin(0) - line_start_index
+        match_end_index = m.end(0) - line_start_index
+        results.push(SearchResult.new(p, '', before_line_count+1, line,
+          match_start_index, match_end_index))
+        m = p.match(contents, line_start_index+match_end_index)
       end
     end
+    results
   end
 
   def search_text_file_lines(f, enc = nil)
