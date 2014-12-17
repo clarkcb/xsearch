@@ -8,19 +8,19 @@ case class StringSearchResult(searchPattern: Regex, lineNum:Int,
                               linesAfter: List[String]=List.empty[String])
 
 class SearchResult(val searchPattern: Regex, val file: SearchFile,
-                   val lineNum: Int, val line: String,
-                   val matchStartIndex:Int, val matchEndIndex:Int,
+                   val lineNum: Int, val matchStartIndex:Int,
+                   val matchEndIndex:Int, val line: String,
                    linesBefore: List[String], linesAfter: List[String],
                    maxLineLength:Int=DefaultSettings.maxLineLength) {
 
-  def this(searchPattern: Regex, file: SearchFile, lineNum: Int, line: String,
-           matchStartIndex:Int, matchEndIndex:Int) = {
-    this(searchPattern, file, lineNum, line, matchStartIndex, matchEndIndex,
+  def this(searchPattern: Regex, file: SearchFile, lineNum: Int,
+           matchStartIndex:Int, matchEndIndex:Int, line: String) = {
+    this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       List.empty[String], List.empty[String])
   }
 
   def this(searchPattern: Regex, file: SearchFile, lineNum: Int, line: String) = {
-    this(searchPattern, file, lineNum, line, 0, 0,
+    this(searchPattern, file, lineNum, 0, 0, line,
       List.empty[String], List.empty[String])
   }
 

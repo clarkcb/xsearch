@@ -52,7 +52,6 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isSearchDir(dirName: String): Boolean = {
-    println("isSearchDir(dirName=\"%s\")".format(dirName))
     val pathElems = pathElemsFromPath(dirName)
     if (pathElems.exists(_.startsWith(".") && settings.excludeHidden))
       false
@@ -133,6 +132,7 @@ class Searcher (settings: SearchSettings) {
           None
         }
     }
+    // this cast is required regardless of what IDEA says
     searchFiles.flatten.asInstanceOf[Array[SearchFile]]
   }
 
@@ -256,14 +256,6 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchTextFileSourceContentsNew(sf: SearchFile, source: Source) {
-    val contents = source.mkString
-    searchMultiLineString(contents).foreach { r =>
-      addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
-          r.line, r.matchStartIndex, r.matchEndIndex))
-      }
-    }
-
   def searchMultiLineString(s: String): Seq[StringSearchResult] = {
     val stringSearchResults = mutable.ArrayBuffer.empty[StringSearchResult]
     for (p <- settings.searchPatterns) {
@@ -312,35 +304,9 @@ class Searcher (settings: SearchSettings) {
 
   def searchTextFileSourceContents(sf: SearchFile, source: Source) {
     val contents = source.mkString
-    var stop = false
-    for (p <- settings.searchPatterns) {
-      val matches = p.findAllIn(contents).matchData
-      while (matches.hasNext && !stop) {
-        val m = matches.next()
-        val beforeText = m.before
-        val beforeLineCount =
-          if (beforeText == null) 0
-          else getLineCount(beforeText)
-        val lineStartIndex =
-          if (beforeLineCount > 0)
-            startOfLineIndexFromCurrent(contents, m.start)
-          else 0
-        val afterText = m.after
-        val afterLineCount =
-          if (afterText == null) 0
-          else getLineCount(afterText)
-        val lineEndIndex =
-          if (afterLineCount > 0) endOfLineIndexFromCurrent(contents, m.start)
-          else contents.length
-        val line = contents.subSequence(lineStartIndex, lineEndIndex).toString
-        val searchResult = new SearchResult(p, sf, beforeLineCount+1, line,
-          m.start, m.end)
-        addSearchResult(searchResult)
-        if (settings.firstMatch &&
-            _fileMap.contains(sf) &&
-            _fileMap(sf).exists(_.searchPattern == p))
-          stop = true
-      }
+    searchMultiLineString(contents).foreach { r =>
+      addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
+        r.matchStartIndex, r.matchEndIndex, r.line))
     }
   }
 
@@ -367,11 +333,12 @@ class Searcher (settings: SearchSettings) {
   def searchTextFileSourceLines(sf: SearchFile, source: Source) {
     searchLineStringIterator(source.getLines()).foreach { r =>
       addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
-        r.line, r.matchStartIndex, r.matchEndIndex))
+        r.matchStartIndex, r.matchEndIndex, r.line))
     }
   }
 
   def searchLineStringIterator(lines: Iterator[String]): Seq[StringSearchResult] = {
+    println("searchLineStringIterator")
     var stop = false
     var lineNum: Int = 0
     val linesBefore = new mutable.ListBuffer[String]
