@@ -22,15 +22,16 @@ data XmlFileType = XmlFileType { name :: String, extensions :: [String] }
 fileTypesXmlFile :: FilePath
 fileTypesXmlFile = "filetypes.xml"
 
+atTag :: ArrowXml a => String -> a XmlTree XmlTree
 atTag tag = deep (isElem >>> hasName tag)
 
-text = getChildren >>> getText
-
+getXmlFileType :: IOSLA (XIOState ()) XmlTree XmlFileType
 getXmlFileType = atTag "filetype" >>>
   proc f -> do
     ftname <- getAttrValue "name" -< f
-    exts <- text <<< atTag "extensions" -< f
-    returnA -< XmlFileType { name = ftname, extensions = map normalizeExtension $ words exts }
+    exts <- (getChildren >>> getText) <<< atTag "extensions" -< f
+    returnA -< XmlFileType { name = ftname, extensions = normalized exts }
+  where normalized exts = map normalizeExtension $ words exts
 
 getXmlFileTypes :: IO [XmlFileType]
 getXmlFileTypes = do

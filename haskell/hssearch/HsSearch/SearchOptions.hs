@@ -22,18 +22,18 @@ data SearchOption = SearchOption { long, short, desc :: String }
 searchOptionsFile :: FilePath
 searchOptionsFile = "searchoptions.xml"
 
+atTag :: ArrowXml a => String -> a XmlTree XmlTree
 atTag tag = deep (isElem >>> hasName tag)
-
-text = getChildren >>> getText
 
 strip :: String -> String
 strip = T.unpack . T.strip . T.pack
 
+getSearchOption :: IOSLA (XIOState ()) XmlTree SearchOption
 getSearchOption = atTag "searchoption" >>>
   proc f -> do
     l <- getAttrValue "long" -< f
     s <- getAttrValue "short" -< f
-    d <- text -< f
+    d <- getChildren >>> getText -< f
     returnA -< SearchOption { long = l, short = s, desc = strip d }
 
 getSearchOptions :: IO [SearchOption]
