@@ -300,14 +300,14 @@ class Searcher:
         lines_before = deque()
         lines_after = deque()
         search_results = []
-        matches = s.finditer(contents)
+        matches = p.finditer(s)
         for m in matches:
             m_line_start_index, m_line_end_index = \
-                self.line_indices_for_current_index(m.start(), contents)
+                self.line_indices_for_current_index(m.start(), s)
             before_line_count = 0
             if m_line_start_index > 0:
-                before_line_count = self.get_line_count(contents[0:m.start()])
-            line = contents[m_line_start_index:m_line_end_index]
+                before_line_count = self.get_line_count(s[0:m.start()])
+            line = s[m_line_start_index:m_line_end_index]
             if self.settings.debug:
                 print 'line: "{0}"'.format(line)
             if self.settings.numlinesbefore and before_line_count:
@@ -315,25 +315,27 @@ class Searcher:
                 while b_line_start_index > 0 and \
                       len(lines_before) < self.settings.numlinesbefore:
                     b_line_start_index, b_line_end_index = \
-                        self.line_indices_for_current_index(b_line_start_index-2, contents)
-                    lines_before.appendleft(contents[b_line_start_index:b_line_end_index])
+                        self.line_indices_for_current_index(b_line_start_index-2, s)
+                    lines_before.appendleft(s[b_line_start_index:b_line_end_index])
             if self.settings.debug:
                 print 'lines_before: {0!s}'.format(lines_before)
             if self.settings.numlinesafter:
                 a_line_start_index, a_line_end_index = m_line_end_index, m_line_end_index
-                while a_line_end_index < len(contents) and \
+                while a_line_end_index < len(s) and \
                       len(lines_after) < self.settings.numlinesafter:
                     a_line_start_index, a_line_end_index = \
-                        self.line_indices_for_current_index(a_line_end_index, contents)
-                    lines_after.append(contents[a_line_start_index:a_line_end_index])
+                        self.line_indices_for_current_index(a_line_end_index, s)
+                    lines_after.append(s[a_line_start_index:a_line_end_index])
             if self.settings.debug:
                 print 'lines_after: {0!s}'.format(lines_after)
             if self.settings.firstmatch:
                 continue
             else:
-                search_result = SearchResult(pattern=s.pattern,
+                search_result = SearchResult(pattern=p.pattern,
                                              linenum=before_line_count+1,
                                              line=line,
+                                             match_start_index=m.start()-m_line_start_index,
+                                             match_end_index=m.end()-m_line_start_index,
                                              lines_before=list(lines_before),
                                              lines_after=list(lines_after))
                 search_results.append(search_result)
@@ -381,9 +383,9 @@ class Searcher:
                         lines_after.append(fo.next())
                     except StopIteration:
                         break
-            for s in self.settings.searchpatterns:
+            for p in self.settings.searchpatterns:
                 # find all matches for the line
-                matchiter = s.finditer(line)
+                matchiter = p.finditer(line)
                 while True:
                     try:
                         match = matchiter.next()
@@ -431,10 +433,10 @@ class Searcher:
                         if lines_after_until_match:
                             sr_lines_after = sr_lines_after[:-1]
 
-                        if self.settings.firstmatch and s in file_pattern_matches:
+                        if self.settings.firstmatch and p in file_pattern_matches:
                             continue
                         else:
-                            search_result = SearchResult(pattern=s.pattern,
+                            search_result = SearchResult(pattern=p.pattern,
                                                          filename=filename,
                                                          linenum=linenum,
                                                          line=line,
@@ -444,7 +446,7 @@ class Searcher:
                                                          match_start_index=match.start(),
                                                          match_end_index=match.end())
                             self.add_search_result(search_result)
-                            file_pattern_matches[s] = 1
+                            file_pattern_matches[p] = 1
             if self.settings.numlinesbefore:
                 if len(lines_before) == self.settings.numlinesbefore:
                     lines_before.popleft()
