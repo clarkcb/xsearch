@@ -278,28 +278,46 @@ class Searcher
 
   def search_text_file_lines(f, enc = nil)
     linenum = 0
-    file_pattern_matches = {}
-    File.open(f, "r").each_line do |line|
-      linenum += 1
-      @settings.searchpatterns.each do |p|
-        search_line = true
-        pos = 0
-        while search_line and pos < line.length
-          # TODO: catch ArgumentError: "in `match': invalid byte sequence in US-ASCII"
-          m = p.match(line, pos)
-          if m
-            if @settings.firstmatch and file_pattern_matches.include?(p)
-              search_line = false
+    fo = File.open(f, "r")
+    line_iterator = fo.each_line
+    results = search_line_iterator(line_iterator)
+    fo.close
+    results.each do |r|
+      r.filename = f
+      add_search_result(r)
+    end
+  end
+
+  def search_line_iterator(lines)
+    linenum = 0
+    pattern_matches = {}
+    results = []
+    while true
+      begin
+        line = lines.next
+        linenum += 1
+        @settings.searchpatterns.each do |p|
+          search_line = true
+          pos = 0
+          while search_line and pos < line.length
+            # TODO: catch ArgumentError: "in `match': invalid byte sequence in US-ASCII"
+            m = p.match(line, pos)
+            if m
+              if @settings.firstmatch and pattern_matches.include?(p)
+                search_line = false
+              else
+                results.push(SearchResult.new(p, '', linenum, line, m.begin(0),
+                  m.end(0)))
+                pos = m.end(0) + 1
+                pattern_matches[p] = 1
+              end
             else
-              add_search_result(SearchResult.new(p, f, linenum, line, m.begin(0),
-                m.end(0)))
-              pos = m.end(0) + 1
-              file_pattern_matches[p] = 1
+              search_line = false
             end
-          else
-            search_line = false
           end
         end
+      rescue StopIteration
+        return results
       end
     end
   end
