@@ -313,16 +313,34 @@ function Searcher(settings) {
     };
 
     var getLineCount = function (contents) {
-        return contents.match(/(\r?\n)/g).length;
+        var lineCount = 0;
+        if (contents) {
+            var matches = contents.match(/(\r?\n)/g);
+            if (matches) lineCount = matches.length;
+        }
+        return lineCount;
     };
 
     var searchTextFileContents = function (filepath) {
-        var fileResults = {};
         var contents = fs.readFileSync(filepath).toString();
+        var results = searchContents(contents);
+        for (i in results) {
+            var r = results[i];
+            var resultWithFilepath =
+                new SearchResult(r.pattern, filepath, r.linenum,
+                        r.matchStartIndex, r.matchEndIndex, r.line,
+                        r.linesBefore, r.linesAfter);
+            addSearchResult(resultWithFilepath);
+        }
+    }
 
+    var searchContents = function (contents) {
+        //console.log("contents:\n" + contents);
+        var patternResults = {};
+        var results = [];
         for (p in _settings.searchPatterns) {
             var pattern = new RegExp(_settings.searchPatterns[p].source, "g");
-            if (_settings.firstMatch && pattern in fileResults)
+            if (_settings.firstMatch && pattern in patternResults)
                 continue;
             var match = pattern.exec(contents);
             while (match) {
@@ -345,22 +363,37 @@ function Searcher(settings) {
                        contents.charAt(lineEndIndex) != '\n')
                     lineEndIndex += 1;
                 line = contents.substring(lineStartIndex, lineEndIndex);
-                var searchResult = new SearchResult(pattern,
-                    filepath, beforeLineCount+1, 0, 0, line, [], []);
-                addSearchResult(searchResult);
-                if (!(pattern in fileResults))
-                    fileResults[pattern] = [];
-                fileResults[pattern].push(searchResult);
+                var searchResult = new SearchResult(pattern, '',
+                    beforeLineCount+1, 0, 0, line, [], []);
+                results.push(searchResult);
+                if (!(pattern in patternResults))
+                    patternResults[pattern] = [];
+                patternResults[pattern].push(searchResult);
                 match = pattern.exec(contents);
             }
         }
+        return results;
     };
 
     var searchTextFileLines = function (filepath) {
         var contents = fs.readFileSync(filepath).toString();
         var lines = contents.toString().split(/\r?\n/);
+        var results = searchLines(lines);
+        for (i in results) {
+            var r = results[i];
+            var resultWithFilepath =
+                new SearchResult(r.pattern, filepath, r.linenum,
+                        r.matchStartIndex, r.matchEndIndex, r.line,
+                        r.linesBefore, r.linesAfter);
+            addSearchResult(resultWithFilepath);
+        }
+    };
+
+    // return results so that filepath can be added to them
+    var searchLines = function (lines) {
         var linenum = 0;
         var pattern;
+        var results = [];
         for (i in lines) {
             linenum += 1;
             //console.log("line["+linenum+"]: "+lines[i]);
@@ -368,7 +401,7 @@ function Searcher(settings) {
                 pattern = new RegExp(_settings.searchPatterns[p].source, "g");
                 var match = pattern.exec(lines[i]);
                 while (match) {
-                    addSearchResult(new SearchResult(pattern, filepath, linenum,
+                    results.push(new SearchResult(pattern, '', linenum,
                         match.index, pattern.lastIndex, lines[i], [], []));
                     if (_settings.firstMatch) {
                         return;
@@ -377,10 +410,11 @@ function Searcher(settings) {
                 }
             }
         }
+        return results;
     };
 
     var addSearchResult = function (result) {
-        //console.log(result.toString());
+        console.log(result.toString());
         that.results.push(result);
     };
 
