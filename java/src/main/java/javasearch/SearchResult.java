@@ -81,6 +81,8 @@ public class SearchResult {
 		try {
 			//sb.append(this.file.getCanonicalPath());
 			sb.append(this.file.getPath());
+		} catch (NullPointerException e) {
+			sb.append("");
 		} catch (Exception e) {
 			sb.append(this.file.getAbsolutePath());
 		}

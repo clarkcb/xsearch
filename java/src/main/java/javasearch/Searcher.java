@@ -10,9 +10,10 @@ Class to perform the file search
 
 package javasearch;
 
-import java.io.BufferedReader;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
+
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -364,16 +365,6 @@ public class Searcher {
 		return minVal;
 	}
 
-	private String longListToString(List<Integer> vals) {
-		StringBuilder sb = new StringBuilder("[");
-		for (int i=0; i < vals.size(); i++) {
-			if (i > 0) sb.append(",");
-			sb.append(vals.get(i));
-		}
-		sb.append("]");
-		return sb.toString();
-	}
-
 	public List<SearchResult> searchMultiLineString(String s) {
 		Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
 		List<SearchResult> results = new ArrayList<SearchResult>();
@@ -390,7 +381,7 @@ public class Searcher {
 					int startLineIndex = getMax(lessThan);
 					List<Integer> greaterThan = getGreaterThan(m.start(), startLineIndices);
 					int endLineIndex = getMin(greaterThan);
-					String line = s.substring((int)startLineIndex, (int)endLineIndex);
+					String line = s.substring(startLineIndex, endLineIndex);
 					SearchResult searchResult = new SearchResult(p, null,
 							lineNum, m.start() - startLineIndex, m.end() - startLineIndex, line);
 					results.add(searchResult);
@@ -403,38 +394,46 @@ public class Searcher {
 	}
 
 	public void searchTextFileLines(File f) {
-        Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
+		LineIterator it = null;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(f));
-			try {
-				String line;
-				int lineNum = 0;
-				while ((line = br.readLine()) != null) {
-					lineNum++;
-					for (Pattern p : settings.getSearchPatterns()) {
-						Matcher m = p.matcher(line);
-                        boolean found = m.find();
-						while (found) {
-                            if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
-                                found = false;
-                            } else {
-                                SearchResult searchResult = new SearchResult(p, f,
-                                        lineNum, m.start(), m.end(), line);
-                                addSearchResult(searchResult);
-                                patternMatches.put(p, 1);
-                                found = m.find(m.end());
-                            }
-						}
-					}
-				}
-			} catch (IOException e) {
-				System.out.println(e.toString());
-			} finally {
-				br.close();
+			it = FileUtils.lineIterator(f, "ISO8859-1");
+			List<SearchResult> results = searchStringIterator(it);
+			for (SearchResult r : results) {
+				r.setFile(f);
+				addSearchResult(r);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			if (it != null) it.close();
 		}
+	}
+
+	public List<SearchResult> searchStringIterator(Iterator<String> it) {
+		Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
+		List<SearchResult> results = new ArrayList<SearchResult>();
+		String line;
+		int lineNum = 0;
+		while (it.hasNext()) {
+			line = it.next();
+			lineNum++;
+			for (Pattern p : settings.getSearchPatterns()) {
+				Matcher m = p.matcher(line);
+				boolean found = m.find();
+				while (found) {
+					if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
+						found = false;
+					} else {
+						SearchResult searchResult = new SearchResult(p, null,
+								lineNum, m.start(), m.end(), line);
+						results.add(searchResult);
+						patternMatches.put(p, 1);
+						found = m.find(m.end());
+					}
+				}
+			}
+		}
+		return results;
 	}
 
 	public void searchBinaryFile(File f) {
