@@ -276,8 +276,130 @@ public class Searcher {
 		if (settings.getVerbose()) {
 			System.out.println("Searching text file " + f.getPath());
 		}
-		// TODO: searchTextFileContents
-		searchTextFileLines(f);
+		if (settings.getMultiLineSearch()) {
+			searchTextFileContents(f);
+		} else {
+			searchTextFileLines(f);
+		}
+	}
+
+	public void searchTextFileContents(File f) {
+		try {
+			Scanner scanner = new Scanner(f, "ISO8859-1").useDelimiter("\\Z");
+			try {
+				String content = scanner.next();
+				List<SearchResult> results = searchMultiLineString(content);
+				for (SearchResult r : results) {
+					r.setFile(f);
+					addSearchResult(r);
+				}
+			} catch (NoSuchElementException e) {
+				System.out.println(e.toString());
+			} catch (IllegalStateException e) {
+				System.out.println(e.toString());
+			} finally {
+				scanner.close();
+			}
+		} catch (IOException e) {
+			System.out.println(e.toString());
+		}
+	}
+
+	private List<Integer> getNewLineIndices(String s) {
+		List<Integer> newlineIndices = new ArrayList<Integer>();
+		newlineIndices.add(0);
+		for (int i=1; i < s.length(); i++) {
+			if (s.charAt(i) == '\n')
+				newlineIndices.add(i);
+		}
+		return newlineIndices;
+	}
+
+	private List<Integer> getStartLineIndices(String s) {
+		List<Integer> newLineIndices = getNewLineIndices(s);
+		List<Integer> startLineIndices = new ArrayList<Integer>();
+		startLineIndices.add(0);
+		for (Integer newLineIndex : newLineIndices) {
+			startLineIndices.add(newLineIndex + 1);
+		}
+		return startLineIndices;
+	}
+
+	private List<Integer> getLessThan(int val, List<Integer> vals) {
+		List<Integer> lessThans = new ArrayList<Integer>();
+		for (Integer v : vals) {
+			if (v < val)
+				lessThans.add(v);
+		}
+		return lessThans;
+	}
+
+	private int getMax(List<Integer> vals) {
+		int maxVal = 0;
+		for (Integer v : vals) {
+			if (v > maxVal)
+				maxVal = v;
+		}
+		return maxVal;
+	}
+
+	private List<Integer> getGreaterThan(int val, List<Integer> vals) {
+		List<Integer> greaterThans = new ArrayList<Integer>();
+		for (Integer v : vals) {
+			if (v > val)
+				greaterThans.add(v);
+		}
+		return greaterThans;
+	}
+
+	private int getMin(List<Integer> vals) {
+		int minVal = 0;
+		if (vals.size() > 0) {
+			minVal = vals.get(0);
+			for (Integer v : vals) {
+				if (v < minVal)
+					minVal = v;
+			}
+		}
+		return minVal;
+	}
+
+	private String longListToString(List<Integer> vals) {
+		StringBuilder sb = new StringBuilder("[");
+		for (int i=0; i < vals.size(); i++) {
+			if (i > 0) sb.append(",");
+			sb.append(vals.get(i));
+		}
+		sb.append("]");
+		return sb.toString();
+	}
+
+	public List<SearchResult> searchMultiLineString(String s) {
+		Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
+		List<SearchResult> results = new ArrayList<SearchResult>();
+		List<Integer> startLineIndices = getStartLineIndices(s);
+		for (Pattern p : settings.getSearchPatterns()) {
+			Matcher m = p.matcher(s);
+			boolean found = m.find();
+			while (found) {
+				if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
+					found = false;
+				} else {
+					List<Integer> lessThan = getLessThan(m.start(), startLineIndices);
+					int lineNum = lessThan.size() - 1;
+					int startLineIndex = getMax(lessThan);
+					List<Integer> greaterThan = getGreaterThan(m.start(), startLineIndices);
+					int endLineIndex = getMin(greaterThan);
+					String line = s.substring((int)startLineIndex, (int)endLineIndex);
+					SearchResult searchResult = new SearchResult(p, null,
+							lineNum, m.start() - startLineIndex, m.end() - startLineIndex, line);
+					results.add(searchResult);
+					patternMatches.put(p, 1);
+					found = m.find(m.end());
+				}
+			}
+		}
+		return results;
 	}
 
 	public void searchTextFileLines(File f) {

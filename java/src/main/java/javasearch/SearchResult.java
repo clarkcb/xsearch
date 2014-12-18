@@ -56,6 +56,10 @@ public class SearchResult {
 		return this.file;
 	}
 
+	protected void setFile(File f) {
+		this.file = f;
+	}
+
 	public int getLineNum() {
 		return this.lineNum;
 	}
