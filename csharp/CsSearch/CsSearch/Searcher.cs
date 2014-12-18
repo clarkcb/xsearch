@@ -301,7 +301,7 @@ namespace CsSearch
 			return endIndex;
 		}
 
-		private IList<SearchResult> SearchContents(string contents)
+		private IEnumerable<SearchResult> SearchContents(string contents)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
 			var results = new List<SearchResult>();
@@ -339,38 +339,15 @@ namespace CsSearch
 
 		private void SearchTextFileLines(FileInfo f)
 		{
-			var patternMatches = new Dictionary<Regex, int>();
 			try
 			{
-				using (var sr = new StreamReader(f.FullName))
+				var enumerableLines = EnumerableStringFromFile(f);
+				var results = SearchLines(enumerableLines);
+
+				foreach (var r in results)
 				{
-					var lineNum = 0;
-					String line;
-					while ((line = sr.ReadLine()) != null)
-					{
-						lineNum++;
-						foreach (var p in Settings.SearchPatterns)
-						{
-							var matches = p.Matches(line);
-							foreach (Match match in matches)
-							{
-								if (Settings.FirstMatch && patternMatches.ContainsKey(p))
-								{
-									continue;
-								}
-								AddSearchResult(new SearchResult(
-									p,
-									f,
-									lineNum,
-									match.Index,
-									match.Index + match.Length,
-									line,
-									new List<string>(),
-									new List<string>()));
-								patternMatches[p] = 1;
-							}
-						}
-					}
+					r.File = f;
+					AddSearchResult(r);
 				}
 			}
 			catch (IOException e)
@@ -379,12 +356,27 @@ namespace CsSearch
 			}
 		}
 
-		private IList<SearchResult> SearchLines(IEnumerable<string> lines)
+		private static IEnumerable<string> EnumerableStringFromFile(FileInfo f)
+		{
+			string line;
+			//using (var file = System.IO.File.OpenText(fileName))
+			using (var sr = new StreamReader(f.FullName))
+			{
+				// read each line, ensuring not null (EOF)
+				while ((line = sr.ReadLine()) != null)
+				{
+					// return trimmed line
+					yield return line;
+				}
+			}
+		}
+
+		private IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
 			var results = new List<SearchResult>();
 			var lineNum = 0;
-			foreach (string line in lines)
+			foreach (var line in lines)
 			{
 				lineNum++;
 				foreach (var p in Settings.SearchPatterns)
@@ -422,7 +414,8 @@ namespace CsSearch
 				{
 					var contents = sr.ReadToEnd();
 					foreach (var p in Settings.SearchPatterns.Where(p => p.Match(contents).Success)) {
-						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null, new List<string>(), new List<string>()));
+						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null,
+							new List<string>(), new List<string>()));
 					}
 				}
 			}
