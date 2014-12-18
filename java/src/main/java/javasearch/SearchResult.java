@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 public class SearchResult {
 
 	private Pattern searchPattern;
-	private File file;
+	private SearchFile searchFile;
     private int lineNum;
     private int matchStartIndex;
     private int matchEndIndex;
@@ -29,17 +29,17 @@ public class SearchResult {
     // temp
     private final int MAXLINELENGTH = 150;
 
-	public SearchResult(Pattern searchPattern, File file, int lineNum,
+	public SearchResult(Pattern searchPattern, SearchFile file, int lineNum,
                         int matchStartIndex, int matchEndIndex, String line) {
 		this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
                 new ArrayList<String>(), new ArrayList<String>());
 	}
 
-	public SearchResult(Pattern searchPattern, File file, int lineNum,
+	public SearchResult(Pattern searchPattern, SearchFile file, int lineNum,
                         int matchStartIndex, int matchEndIndex, String line,
                         List<String> linesBefore, List<String> linesAfter) {
 		this.searchPattern = searchPattern;
-		this.file = file;
+		this.searchFile = file;
         this.lineNum = lineNum;
         this.matchStartIndex = matchStartIndex;
         this.matchEndIndex = matchEndIndex;
@@ -52,12 +52,12 @@ public class SearchResult {
 		return this.searchPattern;
 	}
 
-	public File getFile() {
-		return this.file;
+	public SearchFile getSearchFile() {
+		return this.searchFile;
 	}
 
-	protected void setFile(File f) {
-		this.file = f;
+	protected void setSearchFile(SearchFile sf) {
+		this.searchFile = sf;
 	}
 
 	public int getLineNum() {
@@ -80,11 +80,9 @@ public class SearchResult {
 		StringBuilder sb = new StringBuilder();
 		try {
 			//sb.append(this.file.getCanonicalPath());
-			sb.append(this.file.getPath());
+			sb.append(this.searchFile.toString());
 		} catch (NullPointerException e) {
 			sb.append("");
-		} catch (Exception e) {
-			sb.append(this.file.getAbsolutePath());
 		}
 		if (this.lineNum == 0) {
 			sb.append(" matches");
