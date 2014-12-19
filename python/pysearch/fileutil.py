@@ -9,6 +9,12 @@
 import os
 import xml.dom.minidom as minidom
 
+class FileType:
+    Archive = 1
+    Binary  = 2
+    Text    = 3
+    Unknown = 4
+
 class FileUtil:
     """a file helper class"""
 
@@ -20,6 +26,16 @@ class FileUtil:
         self.filetypes = {}
         self.__dict__.update(kargs)
         self.populate_filetypes()
+
+    def get_filetype(self, filename):
+        if self.is_text_file(filename):
+            return FileType.Text
+        elif self.is_binary_file(filename):
+            return FileType.Binary
+        elif self.is_archive_file(filename):
+            return FileType.Archive
+        else:
+            return FileType.Unknown
 
     def get_text(self, nodelist):
         rc = []
