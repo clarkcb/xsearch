@@ -20,7 +20,8 @@ import HsSearch.SearchSettings
 
 -- TODO: use this type with all file-based functions
 data SearchFile = SearchFile {
-                                searchFilePath :: FilePath
+                                searchFileContainers :: [FilePath]
+                              , searchFilePath :: FilePath
                               , searchFileType :: FileType
                               } deriving (Show, Eq)
 
@@ -98,7 +99,9 @@ getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
   files <- concat `liftM` mapM getDirectoryFiles dirs
   fileTypes <- getFileTypes files
-  let makeSearchFile (f,t) = SearchFile {searchFilePath=f, searchFileType=t}
+  let makeSearchFile (f,t) = SearchFile { searchFileContainers=[]
+                                        , searchFilePath=f
+                                        , searchFileType=t }
   let filesWithTypes = map makeSearchFile (zip files fileTypes)
   let isSearchable sf = isSearchableFileType (searchFileType sf)
   let searchableFiles = filter isSearchable filesWithTypes
