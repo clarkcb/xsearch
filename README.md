@@ -14,51 +14,51 @@ Here's the current usage text for the haskell version (the same for each
 language except for executable name):
 
 <pre>
-  Usage:
-    hssearch [options] &lt;startpath&gt;
-  
-  Options:
-    -1,--firstmatch           Capture only the first match for a file+search combination
-    -a,--allmatches           Capture all matches*
-    --archivesonly            Search only archive files (also turns on searcharchives)
-    -B,--linesafter           Number of lines to include after every matched line (default: 0)
-    -b,--linesbefore          Number of lines to include before every matched line (default: 0)
-    -d,--in-dirpattern        Specify name pattern for directories to include in search
-    -D,--out-dirpattern       Specify name pattern for directories to exclude from search
-    --debug                   Set output mode to debug
-    --excludehidden           Exclude hidden files and directories*
-    -f,--in-filepattern       Specify name pattern for files to include in search
-    -F,--out-filepattern      Specify name pattern for files to exclude from search
-    -h,--help                 Print this usage and exit
-    --in-archiveext           Specify extension for archive files to include in search
-    --in-archivefilepattern   Specify name pattern for archive files to include in search
-    --in-linesafterpattern    Specify pattern to search the "lines-after" lines on (used with --linesafter)
-    --in-linesbeforepattern   Specify pattern to search the "lines-before" lines on (used with --linesbefore)
-    --includehidden           Include hidden files and directories
-    --linesaftertopattern     Specify pattern to collect lines after up to where pattern is matched (or EOF)
-    --linesafteruntilpattern  Specify pattern to collect lines after until pattern is matched (or EOF)
-    --listdirs                Generate a list of the matching directories after searching
-    --listfiles               Generate a list of the matching files after searching
-    --listlines               Generate a list of the matching lines after searching
-    -m,--multilinesearch      Search files as single multi-line content block
-    --out-archiveext          Specify extension for archive files to exclude from search
-    --out-archivefilepattern  Specify name pattern for archive files to exclude from search
-    --out-linesafterpattern   Specify pattern to filter the "lines-after" lines on (used with --linesafter)
-    --out-linesbeforepattern  Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
-    -P,--noprintmatches       Suppress printing of matches to stdout
-    -p,--printmatches         Print matches to stdout*
-    -R,--norecursive          Do not search recursively
-    -r,--recursive            Search recursively through subdirectories*
-    -s,--search               Specify search pattern
-    -t,--dotiming             Measure search execution duration
-    -u,--uniquelines          Save only search results that have unique lines from previous search results
-    -v,--verbose              Set output mode to verbose
-    -V,--version              Print version and exit
-    -w,--maxlinelength        Maximum number of characters to print out per line of result (default: 150)
-    -x,--in-ext               Specify extension for files to include in search
-    -X,--out-ext              Specify extension for files to exclude from search
-    -Z,--nosearcharchives     Do not search archive files (bz2, gz, tar, zip)
-    -z,--searcharchives       Search archive files (bz2, gz, tar, zip)*
+Usage:
+  hssearch [options] &lt;startpath&gt;
+
+Options:
+  -1,--firstmatch           Capture only the first match for a file+search combination
+  -a,--allmatches           Capture all matches*
+  --archivesonly            Search only archive files (also turns on searcharchives)
+  -B,--linesafter           Number of lines to include after every matched line (default: 0)
+  -b,--linesbefore          Number of lines to include before every matched line (default: 0)
+  -d,--in-dirpattern        Specify name pattern for directories to include in search
+  -D,--out-dirpattern       Specify name pattern for directories to exclude from search
+  --debug                   Set output mode to debug
+  --excludehidden           Exclude hidden files and directories*
+  -f,--in-filepattern       Specify name pattern for files to include in search
+  -F,--out-filepattern      Specify name pattern for files to exclude from search
+  -h,--help                 Print this usage and exit
+  --in-archiveext           Specify extension for archive files to include in search
+  --in-archivefilepattern   Specify name pattern for archive files to include in search
+  --in-linesafterpattern    Specify pattern to search the "lines-after" lines on (used with --linesafter)
+  --in-linesbeforepattern   Specify pattern to search the "lines-before" lines on (used with --linesbefore)
+  --includehidden           Include hidden files and directories
+  --linesaftertopattern     Specify pattern to collect lines after up to where pattern is matched (or EOF)
+  --linesafteruntilpattern  Specify pattern to collect lines after until pattern is matched (or EOF)
+  --listdirs                Generate a list of the matching directories after searching
+  --listfiles               Generate a list of the matching files after searching
+  --listlines               Generate a list of the matching lines after searching
+  -m,--multilinesearch      Search files as single multi-line content block
+  --out-archiveext          Specify extension for archive files to exclude from search
+  --out-archivefilepattern  Specify name pattern for archive files to exclude from search
+  --out-linesafterpattern   Specify pattern to filter the "lines-after" lines on (used with --linesafter)
+  --out-linesbeforepattern  Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
+  -P,--noprintmatches       Suppress printing of matches to stdout
+  -p,--printmatches         Print matches to stdout*
+  -R,--norecursive          Do not search recursively
+  -r,--recursive            Search recursively through subdirectories*
+  -s,--search               Specify search pattern
+  -t,--dotiming             Measure search execution duration
+  -u,--uniquelines          Save only search results that have unique lines from previous search results
+  -v,--verbose              Set output mode to verbose
+  -V,--version              Print version and exit
+  -w,--maxlinelength        Maximum number of characters to print out per line of result (default: 150)
+  -x,--in-ext               Specify extension for files to include in search
+  -X,--out-ext              Specify extension for files to exclude from search
+  -Z,--nosearcharchives     Do not search archive files (bz2, gz, tar, zip)
+  -z,--searcharchives       Search archive files (bz2, gz, tar, zip)*
 </pre>
 
 For example, say you want to perform a search according to these settings:
@@ -104,11 +104,10 @@ Currently, there are only two language versions that search archive files: go an
 scala. A slightly larger number supports before- and after-line capturing and
 matching: go, haskell, python and scala. The rest of the functionality is more
 or less implemented in all of the languages. However, it should be noted that
-the clojure and C++ versions are mostly nonexistent, and the F# version has
-fallen fairly far behind the rest (soon to be brought up to speed).
+the clojure and C++ versions are very incomplete, and the F# version has
+fallen fairly far behind the rest.
 
-The basic code structure (with obvious variations per language) includes these
-elements:
+The basic code structure includes these elements:
 
 * SearchOptions - transforms option data in XML into the usage text, also builds
   a SearchSettings instance from command line arguments
@@ -356,7 +355,7 @@ Languages that I'm currently considering (listed alphabetically):
 
 
 It is possible there will be other languages besides those, but there are some
-languages that I don't current see myself ever doing or am quite sure I won't:
+languages that I don't currently see myself ever doing or am quite sure I won't:
 
 * Ada
 * Bash
