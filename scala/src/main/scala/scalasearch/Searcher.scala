@@ -292,8 +292,13 @@ class Searcher (settings: SearchSettings) {
         }
       if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
         (linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
-        stringSearchResults += new StringSearchResult(p, beforeLineCount + 1,
-          m.start - thisLineIndices._1, m.end - thisLineIndices._1, line, linesBefore,
+        stringSearchResults += new StringSearchResult(
+          p,
+          beforeLineCount + 1,
+          m.start - thisLineIndices._1 + 1,
+          m.end - thisLineIndices._1 + 1,
+          line,
+          linesBefore,
           linesAfter)
         if (settings.firstMatch)
           stop = true
@@ -338,7 +343,6 @@ class Searcher (settings: SearchSettings) {
   }
 
   def searchLineStringIterator(lines: Iterator[String]): Seq[StringSearchResult] = {
-    println("searchLineStringIterator")
     var stop = false
     var lineNum: Int = 0
     val linesBefore = new mutable.ListBuffer[String]
@@ -395,8 +399,14 @@ class Searcher (settings: SearchSettings) {
               stop = true
             } else {
               // add the search result
-              stringSearchResults += new StringSearchResult(p, lineNum,
-                m.start, m.end, line, linesBefore.toList, resLinesAfter)
+              stringSearchResults += new StringSearchResult(
+                p,
+                lineNum,
+                m.start + 1,
+                m.end + 1,
+                line,
+                linesBefore.toList,
+                resLinesAfter)
               patternMatches(p) = 1
             }
           }
