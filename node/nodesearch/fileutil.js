@@ -26,13 +26,14 @@ function FileUtil() {
         var fileTypePath = "/Users/cary/src/git/xsearch/shared/filetypes.xml";
         var fileTypeMap = {};
 
-        var util = require('util');
         var DomJS = require("dom-js").DomJS;
-
         var domjs = new DomJS();
 
         var xml = fs.readFileSync(fileTypePath).toString();
         domjs.parse(xml, function(err, dom) {
+            if (err) {
+                throw err;
+            }
             for (var i in dom.children) {
                 var child = dom.children[i];
                 if (child.name && child.name === 'filetype') {

@@ -28,9 +28,9 @@ function Searcher(settings) {
     var validateSettings = function () {
         assert.ok(_settings.startPath, 'Startpath not defined');
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
+        assert.ok(isSearchDir(_settings.startPath), 'Startpath does not match search settings');
         assert.ok(_settings.searchPatterns.length, 'No search patterns specified');
     };
-    validateSettings();
 
     var matchesAnyElement = function (s, elements) {
         return elements.indexOf(s) > -1;
@@ -67,6 +67,8 @@ function Searcher(settings) {
         }
         return true;
     };
+    // can validate now that isSearchDir is defined
+    validateSettings();
 
     var isSearchFile = function (file) {
         if (file.startsWith(".") && _settings.excludeHidden) {
@@ -121,10 +123,18 @@ function Searcher(settings) {
         var searchDirs = [];
         if (_settings.recursive) {
             searchDirs.push.apply(searchDirs, recGetSearchDirs(startPath));
-        } else if (isSearchDir(startPath)) {
-            searchDirs.push(startPath);
         }
         return searchDirs;
+    }
+
+    var handleFsError = function (err) {
+        if (err.errno === 34 && err.code === "ENOENT") {
+            // this error seems to occur when the file is a soft link
+            // to a non-existent file
+        } else {
+            console.log(err);
+            process.exit(1);
+        }
     }
 
     var getSubDirs = function (dir) {
@@ -138,13 +148,7 @@ function Searcher(settings) {
                     subDirs.push(filepath);
                 }
             } catch (err) {
-                if (err.errno === 34 && err.code === "ENOENT") {
-                    // this error seems to occur when the file is a soft link to a non-existent file
-                    continue;
-                } else {
-                    console.log(err);
-                    process.exit(1);
-                }
+                handleFsError(err);
             }
         }
         return subDirs;
@@ -175,13 +179,7 @@ function Searcher(settings) {
                     files.push(filepath);
                 }
             } catch (err) {
-                if (err.errno === 34 && err.code === "ENOENT") {
-                    // this error seems to occur when the file is a soft link to a non-existent file
-                    continue;
-                } else {
-                    console.log(err);
-                    process.exit(1);
-                }
+                handleFsError(err);
             }
         }
         return files;
@@ -297,7 +295,8 @@ function Searcher(settings) {
             pattern = _settings.searchPatterns[p];
             var match = pattern.exec(contents);
             if (match) {
-                addSearchResult(new SearchResult(pattern, filepath, 0, 0, 0, null, [], []));
+                addSearchResult(new SearchResult(pattern, filepath, 0, 0, 0,
+                    null, [], []));
             }
         }
     };
@@ -307,9 +306,9 @@ function Searcher(settings) {
             console.log('Searching text file: "'+filepath+'"');
         }
         if (_settings.multilineSearch)
-            searchTextFileContents(filepath)
+            searchTextFileContents(filepath);
         else
-            searchTextFileLines(filepath)
+            searchTextFileLines(filepath);
     };
 
     var getLineCount = function (contents) {
@@ -335,7 +334,6 @@ function Searcher(settings) {
     }
 
     var searchContents = function (contents) {
-        //console.log("contents:\n" + contents);
         var patternResults = {};
         var results = [];
         for (p in _settings.searchPatterns) {
@@ -396,7 +394,6 @@ function Searcher(settings) {
         var results = [];
         for (i in lines) {
             linenum += 1;
-            //console.log("line["+linenum+"]: "+lines[i]);
             for (p in _settings.searchPatterns) {
                 pattern = new RegExp(_settings.searchPatterns[p].source, "g");
                 var match = pattern.exec(lines[i]);
@@ -414,7 +411,6 @@ function Searcher(settings) {
     };
 
     var addSearchResult = function (result) {
-        console.log(result.toString());
         that.results.push(result);
     };
 

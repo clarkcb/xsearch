@@ -122,6 +122,9 @@ function SearchOptions() {
 
         var xml = fs.readFileSync(searchOptionsPath).toString();
         domjs.parse(xml, function(err, dom) {
+            if (err) {
+                throw err;
+            }
             for (var i in dom.children) {
                 var child = dom.children[i];
                 if (child.name && child.name === 'searchoption') {
@@ -147,7 +150,8 @@ function SearchOptions() {
         options.sort(optcmp);
     })();
 
-    this.searchSettingsFromArgs = function (args) {
+    this.searchSettingsFromArgs = function (args, callback) {
+        var err = null;
         var settings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
@@ -164,14 +168,14 @@ function SearchOptions() {
                     if (args) {
                         argMap[arg].func(args.shift(), settings);
                     } else {
-                        throw new Error("Missing argument for option "+arg);
+                        err = new Error("Missing argument for option "+arg);
                     }
                 } else if (flagMap[arg]) {
                     flagMap[arg].func(settings);
                     if (['h','help','V','version'].indexOf(arg) > -1)
                         return settings;
                 } else {
-                    throw new Error("Unknown option: "+arg);
+                    err = new Error("Unknown option: "+arg);
                 }
             } else {
                 settings.startPath = arg;
@@ -180,7 +184,7 @@ function SearchOptions() {
         if (settings.debug) {
             settings.verbose = true;
         }
-        return settings;
+        callback(err, settings);
     };
 
     this.usage = function () {
