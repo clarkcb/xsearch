@@ -268,8 +268,13 @@ class Searcher
         line = contents[line_start_index..line_end_index]
         match_start_index = m.begin(0) - line_start_index
         match_end_index = m.end(0) - line_start_index
-        results.push(SearchResult.new(p, '', before_line_count+1, line,
-          match_start_index, match_end_index))
+        results.push(SearchResult.new(
+          p,
+          '',
+          before_line_count+1,
+          line,
+          match_start_index + 1,
+          match_end_index + 1))
         m = p.match(contents, line_start_index+match_end_index)
       end
     end
@@ -306,8 +311,13 @@ class Searcher
               if @settings.firstmatch and pattern_matches.include?(p)
                 search_line = false
               else
-                results.push(SearchResult.new(p, '', linenum, line, m.begin(0),
-                  m.end(0)))
+                results.push(SearchResult.new(
+                  p,
+                  '',
+                  linenum,
+                  line,
+                  m.begin(0) + 1,
+                  m.end(0) + 1))
                 pos = m.end(0) + 1
                 pattern_matches[p] = 1
               end
