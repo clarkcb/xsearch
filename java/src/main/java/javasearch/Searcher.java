@@ -380,8 +380,13 @@ public class Searcher {
 					List<Integer> greaterThan = getGreaterThan(m.start(), startLineIndices);
 					int endLineIndex = getMin(greaterThan);
 					String line = s.substring(startLineIndex, endLineIndex);
-					SearchResult searchResult = new SearchResult(p, null,
-							lineNum, m.start() - startLineIndex, m.end() - startLineIndex, line);
+					SearchResult searchResult = new SearchResult(
+							p,
+							null,
+							lineNum,
+							m.start() - startLineIndex + 1,
+							m.end() - startLineIndex + 1,
+							line);
 					results.add(searchResult);
 					patternMatches.put(p, 1);
 					found = m.find(m.end());
@@ -422,8 +427,13 @@ public class Searcher {
 					if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
 						found = false;
 					} else {
-						SearchResult searchResult = new SearchResult(p, null,
-								lineNum, m.start(), m.end(), line);
+						SearchResult searchResult = new SearchResult(
+								p,
+								null,
+								lineNum,
+								m.start() + 1,
+								m.end() + 1,
+								line);
 						results.add(searchResult);
 						patternMatches.put(p, 1);
 						found = m.find(m.end());
