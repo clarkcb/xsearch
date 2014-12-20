@@ -232,8 +232,8 @@ searchContentsForPattern settings contents pattern = patternResults pattern
           else Nothing
           where lineCount = (countNewlines (B.take (fst ix) contents)) + 1
                 sli = startLineIndex (fst ix)
-                msi = (fst ix) - sli
-                mei = (snd ix) - sli
+                msi = (fst ix) - sli + 1
+                mei = (snd ix) - sli + 1
                 bs = beforeLns (fst ix)
                 as = afterLns (fst ix)
 
@@ -305,8 +305,8 @@ searchLineForPattern settings num bs l as pattern = patternResults pattern
         resultFromPatternMatchIndices p ix =
           blankSearchResult { searchPattern=p
                             , lineNum=num
-                            , matchStartIndex=fst ix
-                            , matchEndIndex=snd ix
+                            , matchStartIndex=(fst ix) + 1
+                            , matchEndIndex=(snd ix) + 1
                             , line=l
                             , beforeLines=bs
                             , afterLines=as
