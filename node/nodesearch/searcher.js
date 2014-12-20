@@ -399,7 +399,7 @@ function Searcher(settings) {
                 var match = pattern.exec(lines[i]);
                 while (match) {
                     results.push(new SearchResult(pattern, '', linenum,
-                        match.index, pattern.lastIndex, lines[i], [], []));
+                        match.index+1, pattern.lastIndex+1, lines[i], [], []));
                     if (_settings.firstMatch) {
                         return;
                     }
