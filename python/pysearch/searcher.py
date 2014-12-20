@@ -344,11 +344,13 @@ class Searcher:
             if self.settings.firstmatch:
                 continue
             else:
+                match_start_index = m.start() - m_line_start_index + 1
+                match_end_index = m.end() - m_line_start_index + 1
                 search_result = SearchResult(pattern=p.pattern,
                                              linenum=before_line_count+1,
                                              line=line,
-                                             match_start_index=m.start()-m_line_start_index,
-                                             match_end_index=m.end()-m_line_start_index,
+                                             match_start_index=match_start_index,
+                                             match_end_index=match_end_index,
                                              lines_before=list(lines_before),
                                              lines_after=list(lines_after))
                 search_results.append(search_result)
@@ -457,14 +459,15 @@ class Searcher:
                         if self.settings.firstmatch and p in pattern_match_dict:
                             continue
                         else:
-                            search_result = SearchResult(pattern=p.pattern,
-                                                         linenum=linenum,
-                                                         line=line,
-                                                         lines_before=list(lines_before),
-                                                         lines_after=sr_lines_after,
-                                                         maxlinelength=self.settings.maxlinelength,
-                                                         match_start_index=match.start(),
-                                                         match_end_index=match.end())
+                            search_result = \
+                                SearchResult(pattern=p.pattern,
+                                             linenum=linenum,
+                                             line=line,
+                                             match_start_index=match.start() + 1,
+                                             match_end_index=match.end() + 1,
+                                             lines_before=list(lines_before),
+                                             lines_after=sr_lines_after,
+                                             maxlinelength=self.settings.maxlinelength)
                             results.append(search_result)
                             pattern_match_dict[p] = 1
             if self.settings.numlinesbefore:
