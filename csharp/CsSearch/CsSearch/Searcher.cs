@@ -251,7 +251,6 @@ namespace CsSearch
 		{
 			if (Settings.Verbose)
 				Console.WriteLine("Searching text file " + f.FullName);
-			// TODO: SearchTextFileContents
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else
@@ -320,8 +319,8 @@ namespace CsSearch
 						p,
 						null,
 						lineNum,
-						match.Index - startIndex,
-						match.Index - startIndex + match.Length,
+						match.Index - startIndex + 1,
+						match.Index - startIndex + match.Length + 1,
 						line,
 						new List<string>(),
 						new List<string>()));
@@ -391,8 +390,8 @@ namespace CsSearch
 						results.Add(new SearchResult(p,
 							null,
 							lineNum,
-							match.Index,
-							match.Index + match.Length,
+							match.Index + 1,
+							match.Index + match.Length + 1,
 							line,
 							new List<string>(),
 							new List<string>()));
