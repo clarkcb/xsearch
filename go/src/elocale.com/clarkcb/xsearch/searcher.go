@@ -382,8 +382,8 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
 					p,
 					si,
 					linenum,
-					0, // todo: figure out line-relative indices
-					0, // 
+					idx[0] - startidx + 1,
+					idx[1] - startidx + 1,
 					&lineStr,
 					linesBefore,
 					linesAfter,
@@ -489,8 +489,8 @@ ReadLines:
 							p,
 							si,
 							linenum,
-							m[0],
-							m[1],
+							m[0] + 1,
+							m[1] + 1,
 							line,
 							linesBefore,
 							srLinesAfter,
