@@ -10,7 +10,6 @@ Class to encapsulate a command line search option
 
 package javasearch;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -77,6 +76,55 @@ public class SearchResult {
 	}
 
 	public String toString() {
+		if (linesBefore.size() > 0 || linesAfter.size() > 0)
+			return multiLineToString();
+		else
+			return singleLineToString();
+	}
+
+	private String repeatString(String s, int times) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i < times; i++) {
+			sb.append(s);
+		}
+		return sb.toString();
+	}
+
+	private int lineNumPadding() {
+		int maxLineNum = lineNum + linesAfter.size();
+		return String.format("%d", maxLineNum).length();
+	}
+
+	public String multiLineToString() {
+		StringBuilder sb = new StringBuilder()
+				.append(repeatString("=", 80)).append("\n")
+				.append(searchFile).append(": ").append(lineNum).append(": ")
+				.append("[").append(matchStartIndex).append(":")
+				.append(matchEndIndex).append("]\n")
+				.append(repeatString("-", 80)).append("\n");
+		int currentLineNum = lineNum;
+		String lineFormat = " %1$" + lineNumPadding() + "d | %2$s\n";
+		if (linesBefore.size() > 0) {
+			currentLineNum -= linesBefore.size();
+			for (String lineBefore : linesBefore) {
+				sb.append(" ")
+						.append(String.format(lineFormat, currentLineNum, lineBefore));
+				currentLineNum++;
+			}
+		}
+		sb.append(">").append(String.format(lineFormat, lineNum, line));
+		if (linesAfter.size() > 0) {
+			currentLineNum++;
+			for (String lineAfter : linesAfter) {
+				sb.append(" ")
+						.append(String.format(lineFormat, currentLineNum, lineAfter));
+				currentLineNum++;
+			}
+		}
+		return sb.toString();
+	}
+
+	public String singleLineToString() {
 		StringBuilder sb = new StringBuilder();
 		try {
 			//sb.append(this.file.getCanonicalPath());
