@@ -412,33 +412,74 @@ public class Searcher {
 		}
 	}
 
+	private boolean linesMatch(List<String> lines, Set<Pattern> inPatterns,
+							   Set<Pattern> outPatterns) {
+		return (inPatterns.size() == 0 || anyMatchesAnyPattern(lines, inPatterns)
+				&&
+				(outPatterns.size() == 0 || !anyMatchesAnyPattern(lines, outPatterns)));
+	}
+
+	private boolean linesBeforeMatch(List<String> linesBefore) {
+		return linesMatch(linesBefore, settings.getInLinesBeforePatterns(),
+				settings.getOutLinesBeforePatterns());
+	}
+
+	private boolean linesAfterMatch(List<String> linesAfter) {
+		return linesMatch(linesAfter, settings.getInLinesAfterPatterns(),
+				settings.getOutLinesAfterPatterns());
+	}
+
 	public List<SearchResult> searchStringIterator(Iterator<String> it) {
+		boolean stop = false;
+		int lineNum = 0;
+		String line;
+		List<String> linesBefore = new ArrayList<String>();
+		List<String> linesAfter = new ArrayList<String>();
 		Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
 		List<SearchResult> results = new ArrayList<SearchResult>();
-		String line;
-		int lineNum = 0;
-		while (it.hasNext()) {
-			line = it.next();
+		while ((it.hasNext() || linesAfter.size() > 0) && !stop) {
 			lineNum++;
-			for (Pattern p : settings.getSearchPatterns()) {
-				Matcher m = p.matcher(line);
-				boolean found = m.find();
-				while (found) {
-					if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
-						found = false;
-					} else {
-						SearchResult searchResult = new SearchResult(
-								p,
-								null,
-								lineNum,
-								m.start() + 1,
-								m.end() + 1,
-								line);
-						results.add(searchResult);
-						patternMatches.put(p, 1);
-						found = m.find(m.end());
+			if (linesAfter.size() > 0)
+				line = linesAfter.remove(0);
+			else
+				line = it.next();
+			if (settings.getLinesAfter() > 0) {
+				while (linesAfter.size() < settings.getLinesAfter() && it.hasNext())
+					linesAfter.add(it.next());
+			}
+
+			if ((settings.getLinesBefore() == 0 || linesBefore.size() == 0 || linesBeforeMatch(linesBefore)) &&
+					(settings.getLinesAfter() == 0 || linesAfter.size() == 0 || linesAfterMatch(linesAfter))) {
+
+				for (Pattern p : settings.getSearchPatterns()) {
+					Matcher m = p.matcher(line);
+					boolean found = m.find();
+					while (found) {
+						if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
+							found = false;
+						} else {
+							SearchResult searchResult = new SearchResult(
+									p,
+									null,
+									lineNum,
+									m.start() + 1,
+									m.end() + 1,
+									line,
+									new ArrayList<String>(linesBefore),
+									new ArrayList<String>(linesAfter));
+							results.add(searchResult);
+							patternMatches.put(p, 1);
+							found = m.find(m.end());
+						}
 					}
 				}
+			}
+
+			if (settings.getLinesBefore() > 0) {
+				if (linesBefore.size() == settings.getLinesBefore())
+					linesBefore.remove(0);
+				if (linesBefore.size() < settings.getLinesBefore())
+					linesBefore.add(line);
 			}
 		}
 		return results;

@@ -454,6 +454,8 @@ public class SearchSettings {
                 ", doTiming: " + this.doTiming +
                 ", excludeHidden: " + this.excludeHidden +
                 ", firstMatch: " + this.firstMatch +
+                ", linesAfter: " + this.linesAfter +
+                ", linesBefore: " + this.linesBefore +
                 ", listDirs: " + this.listDirs +
                 ", listFiles: " + this.listFiles +
                 ", listLines: " + this.listLines +
