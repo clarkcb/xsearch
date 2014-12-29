@@ -63,6 +63,14 @@ public class SearchResult {
 		return this.lineNum;
 	}
 
+	public int getMatchStartIndex() {
+		return this.matchStartIndex;
+	}
+
+	public int getMatchEndIndex() {
+		return this.matchEndIndex;
+	}
+
 	public String getLine() {
 		return this.line;
 	}
@@ -104,7 +112,7 @@ public class SearchResult {
 				.append(repeatString("-", 80)).append("\n");
 		int currentLineNum = lineNum;
 		String lineFormat = " %1$" + lineNumPadding() + "d | %2$s\n";
-		if (linesBefore.size() > 0) {
+		if (!linesBefore.isEmpty()) {
 			currentLineNum -= linesBefore.size();
 			for (String lineBefore : linesBefore) {
 				sb.append(" ")
@@ -113,7 +121,7 @@ public class SearchResult {
 			}
 		}
 		sb.append(">").append(String.format(lineFormat, lineNum, line));
-		if (linesAfter.size() > 0) {
+		if (!linesAfter.isEmpty()) {
 			currentLineNum++;
 			for (String lineAfter : linesAfter) {
 				sb.append(" ")
