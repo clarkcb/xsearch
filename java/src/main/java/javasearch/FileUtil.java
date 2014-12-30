@@ -82,6 +82,13 @@ public class FileUtil {
 		return ext;
 	}
 
+    public FileType getFileType(File f) {
+        if (isArchiveFile(f)) return FileType.ARCHIVE;
+        if (isBinaryFile(f)) return FileType.BINARY;
+        if (isTextFile(f)) return FileType.TEXT;
+        return FileType.UNKNOWN;
+    }
+
     public boolean isArchiveFile(File f) {
         return fileTypeMap.get("archive").contains(getExtension(f));
     }

@@ -8,16 +8,19 @@ public class SearchFile {
     public static String CONTAINER_SEPARATOR = "!";
     private List<String> containers;
     private String path;
-    private String file;
+    private String fileName;
+    private FileType fileType;
 
-    public SearchFile(String path, String file) {
-        this(new ArrayList<String>(), path, file);
+    public SearchFile(String path, String fileName, FileType fileType) {
+        this(new ArrayList<String>(), path, fileName, fileType);
     }
 
-    public SearchFile(List<String> containers, String path, String file) {
+    public SearchFile(List<String> containers, String path, String fileName,
+                      FileType fileType) {
         this.containers = containers;
         this.path = path;
-        this.file = file;
+        this.fileName = fileName;
+        this.fileType = fileType;
     }
 
     public void addContainer(String c) {
@@ -40,17 +43,25 @@ public class SearchFile {
         this.path = p;
     }
 
-    public String getFile() {
-        return this.file;
+    public String getFileName() {
+        return this.fileName;
     }
 
-    protected void setFile(String f) {
-        this.file = f;
+    protected void setFileName(String f) {
+        this.fileName = f;
+    }
+
+    public FileType getFileType() {
+        return this.fileType;
+    }
+
+    protected void setFileType(FileType ft) {
+        this.fileType = ft;
     }
 
     public File toFile() {
         File dir = new File(path);
-        return new File(dir, file);
+        return new File(dir, fileName);
     }
 
     public String toString() {
@@ -65,7 +76,7 @@ public class SearchFile {
         if (path != null && !path.equals("")) {
             sb.append(path).append(File.separator);
         }
-        sb.append(file);
+        sb.append(fileName);
         return sb.toString();
     }
 

@@ -165,10 +165,11 @@ public class Searcher {
         if (currentFiles != null) {
             for (File f : currentFiles) {
                 if (!f.isDirectory()) {
-                    if ((fileUtil.isArchiveFile(f) && settings.getSearchArchives() && isArchiveSearchFile(f))
+					FileType fileType = fileUtil.getFileType(f);
+                    if ((fileType == FileType.ARCHIVE && settings.getSearchArchives() && isArchiveSearchFile(f))
 						||
 						(!settings.getArchivesOnly() && isSearchFile(f))) {
-                        searchFiles.add(new SearchFile(f.getParent(), f.getName()));
+                        searchFiles.add(new SearchFile(f.getParent(), f.getName(), fileType));
                     }
                 }
             }
@@ -264,9 +265,10 @@ public class Searcher {
 		if (settings.getVerbose()) {
 			System.out.println("Searching " + sf.toString());
 		}
-		if (fileUtil.isTextFile(sf.toFile())) {
+		FileType fileType = sf.getFileType();
+		if (fileType == FileType.TEXT) {
 			searchTextFile(sf);
-		} else if (fileUtil.isBinaryFile(sf.toFile())) {
+		} else if (fileType == FileType.BINARY) {
 			searchBinaryFile(sf);
 		}
 	}
