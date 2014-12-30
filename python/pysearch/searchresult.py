@@ -95,7 +95,7 @@ class SearchResult:
         if self.contained:
             sio.write(': {0}'.format(self.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
-        line_format = ' {0:>' + str(self.linenum_padding()) + '} | {1}'
+        line_format = ' {0:>' + str(self.linenum_padding()) + '} | {1}\n'
         current_linenum = self.linenum
         if self.lines_before:
             current_linenum -= len(self.lines_before)

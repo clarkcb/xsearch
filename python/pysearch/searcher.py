@@ -296,64 +296,94 @@ class Searcher:
             search_result.filename = str(sf)
             self.add_search_result(search_result)
 
+    def get_start_line_indices(self, s):
+        indices = [0]
+        for i, c in enumerate(s):
+            if c == '\n':
+                indices.append(i+1)
+        return indices
+
     def search_multiline_string(self, s):
         """Search a given searchable string possibly containing multiple newlines
            and return a list of SearchResult instances (without filename)
         """
         search_results = []
+        start_line_indices = self.get_start_line_indices(s)
         for p in self.settings.searchpatterns:
-            search_results.extend(self.search_multiline_string_for_pattern(s, p))
+            search_results.extend(
+                self.search_multiline_string_for_pattern(s, p, start_line_indices))
         return search_results
 
-    def search_multiline_string_for_pattern(self, s, p):
+    def get_lines_before(self, line_count, s, start_line_index, before_start_indices):
+        if not before_start_indices:
+            return []
+        if len(before_start_indices) >= line_count:
+            before_start_indices = before_start_indices[(line_count*-1):]
+        lines_before = []
+        for i,x in enumerate(before_start_indices[:-1]):
+            if i < len(before_start_indices) - 1:
+                lines_before.append(s[before_start_indices[i]:before_start_indices[i+1]-1])
+        lines_before.append(s[before_start_indices[-1]:start_line_index-1])
+        return lines_before
+
+    def get_lines_after(self, line_count, s, start_line_index, after_start_indices):
+        if not after_start_indices:
+            return []
+        if len(after_start_indices) > line_count:
+            after_start_indices = after_start_indices[0:line_count+1]
+        elif len(after_start_indices) == line_count:
+            after_start_indices.append(len(s)-1)
+        lines_after = []
+        for i,x in enumerate(after_start_indices):
+            if i < len(after_start_indices) - 1:
+                lines_after.append(s[after_start_indices[i]:after_start_indices[i+1]-1])
+        return lines_after
+
+    def search_multiline_string_for_pattern(self, s, p, start_line_indices):
         """Search a given searchable string possibly containing multiple newlines
            and a specific pattern and return a list of SearchResult instances
            (without filename)
         """
-        lines_before = deque()
-        lines_after = deque()
+        lines_before = []
+        lines_after = []
         search_results = []
         matches = p.finditer(s)
         for m in matches:
-            m_line_start_index, m_line_end_index = \
-                self.line_indices_for_current_index(m.start(), s)
+            m_line_start_index = 0
+            m_line_end_index = len(s) - 1
+            before_start_indices = [x for x in start_line_indices if x < m.start()]
+            if before_start_indices:
+                m_line_start_index = before_start_indices[-1]
+            after_start_indices = [x for x in start_line_indices if x > m.start()]
+            if after_start_indices:
+                m_line_end_index = after_start_indices[0] - 1
             before_line_count = 0
-            if m_line_start_index > 0:
-                before_line_count = self.get_line_count(s[0:m.start()])
+            if before_start_indices:
+                before_line_count = len(before_start_indices) - 1
             line = s[m_line_start_index:m_line_end_index]
-            if self.settings.debug:
-                print 'line: "{0}"'.format(line)
             if self.settings.numlinesbefore and before_line_count:
-                b_line_start_index, b_line_end_index = m_line_start_index, m_line_end_index
-                while b_line_start_index > 0 and \
-                      len(lines_before) < self.settings.numlinesbefore:
-                    b_line_start_index, b_line_end_index = \
-                        self.line_indices_for_current_index(b_line_start_index-2, s)
-                    lines_before.appendleft(s[b_line_start_index:b_line_end_index])
-            if self.settings.debug:
-                print 'lines_before: {0!s}'.format(lines_before)
+                lines_before = self.get_lines_before(self.settings.numlinesbefore,
+                    s, m_line_start_index, before_start_indices[:-1])
             if self.settings.numlinesafter:
-                a_line_start_index, a_line_end_index = m_line_end_index, m_line_end_index
-                while a_line_end_index < len(s) and \
-                      len(lines_after) < self.settings.numlinesafter:
-                    a_line_start_index, a_line_end_index = \
-                        self.line_indices_for_current_index(a_line_end_index, s)
-                    lines_after.append(s[a_line_start_index:a_line_end_index])
-            if self.settings.debug:
-                print 'lines_after: {0!s}'.format(lines_after)
+                lines_after = self.get_lines_after(self.settings.numlinesafter, s,
+                    m_line_start_index, after_start_indices)
             if self.settings.firstmatch:
                 continue
-            else:
-                match_start_index = m.start() - m_line_start_index + 1
-                match_end_index = m.end() - m_line_start_index + 1
-                search_result = SearchResult(pattern=p.pattern,
-                                             linenum=before_line_count+1,
-                                             line=line,
-                                             match_start_index=match_start_index,
-                                             match_end_index=match_end_index,
-                                             lines_before=list(lines_before),
-                                             lines_after=list(lines_after))
-                search_results.append(search_result)
+            if (lines_before and
+                not self.lines_before_match(lines_before)) or \
+                (lines_after and
+                 not self.lines_after_match(lines_after)):
+                continue
+            match_start_index = m.start() - m_line_start_index + 1
+            match_end_index = m.end() - m_line_start_index + 1
+            search_result = SearchResult(pattern=p.pattern,
+                                         linenum=before_line_count + 1,
+                                         line=line,
+                                         match_start_index=match_start_index,
+                                         match_end_index=match_end_index,
+                                         lines_before=list(lines_before),
+                                         lines_after=list(lines_after))
+            search_results.append(search_result)
         return search_results
 
     def lines_match(self, lines, in_patterns, out_patterns):
@@ -393,7 +423,7 @@ class Searcher:
                 line = lines_after.popleft()
             else:
                 try:
-                    line = lines.next()
+                    line = lines.next().rstrip('\r\n')
                 except StopIteration:
                     break
                 except AttributeError as e:
@@ -403,7 +433,7 @@ class Searcher:
             if self.settings.numlinesafter:
                 while len(lines_after) < self.settings.numlinesafter:
                     try:
-                        lines_after.append(lines.next())
+                        lines_after.append(lines.next().rstrip('\r\n'))
                     except StopIteration:
                         break
             for p in self.settings.searchpatterns:
@@ -458,18 +488,17 @@ class Searcher:
 
                         if self.settings.firstmatch and p in pattern_match_dict:
                             continue
-                        else:
-                            search_result = \
-                                SearchResult(pattern=p.pattern,
-                                             linenum=linenum,
-                                             line=line,
-                                             match_start_index=match.start() + 1,
-                                             match_end_index=match.end() + 1,
-                                             lines_before=list(lines_before),
-                                             lines_after=sr_lines_after,
-                                             maxlinelength=self.settings.maxlinelength)
-                            results.append(search_result)
-                            pattern_match_dict[p] = 1
+                        search_result = \
+                            SearchResult(pattern=p.pattern,
+                                         linenum=linenum,
+                                         line=line,
+                                         match_start_index=match.start() + 1,
+                                         match_end_index=match.end() + 1,
+                                         lines_before=list(lines_before),
+                                         lines_after=sr_lines_after,
+                                         maxlinelength=self.settings.maxlinelength)
+                        results.append(search_result)
+                        pattern_match_dict[p] = 1
             if self.settings.numlinesbefore:
                 if len(lines_before) == self.settings.numlinesbefore:
                     lines_before.popleft()
