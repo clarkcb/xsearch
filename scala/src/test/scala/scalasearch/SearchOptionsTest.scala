@@ -12,34 +12,38 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
   val requiredArgs = List("-s", searchString, startpath)
 
   def assertDefaultSettings(settings:SearchSettings) {
-    val defaultSettings = SearchSettings()
-    assert(settings.outDirPatterns.size == 3)
-    assert(settings.outFilePatterns.size == 1)
-    assert(settings.archivesOnly == defaultSettings.archivesOnly)
-    assert(settings.debug == defaultSettings.debug)
-    assert(settings.doTiming == defaultSettings.doTiming)
-    assert(settings.firstMatch == defaultSettings.firstMatch)
-    assert(settings.linesAfter == defaultSettings.linesAfter)
-    assert(settings.linesBefore == defaultSettings.linesBefore)
-    assert(settings.listDirs == defaultSettings.listDirs)
-    assert(settings.listFiles == defaultSettings.listFiles)
-    assert(settings.listLines == defaultSettings.listLines)
-    assert(settings.multiLineSearch == defaultSettings.multiLineSearch)
-    assert(settings.printResults == defaultSettings.printResults)
-    assert(settings.printUsage == defaultSettings.printUsage)
-    assert(settings.printVersion == defaultSettings.printVersion)
-    assert(settings.searchArchives == defaultSettings.searchArchives)
-    assert(settings.uniqueLines == defaultSettings.uniqueLines)
-    assert(settings.verbose == defaultSettings.verbose)
+    assert(settings.archivesOnly == DefaultSettings.archivesOnly)
+    assert(settings.debug == DefaultSettings.debug)
+    assert(settings.doTiming == DefaultSettings.doTiming)
+    assert(settings.excludeHidden == DefaultSettings.excludeHidden)
+    assert(settings.firstMatch == DefaultSettings.firstMatch)
+    assert(settings.linesAfter == DefaultSettings.linesAfter)
+    assert(settings.linesBefore == DefaultSettings.linesBefore)
+    assert(settings.listDirs == DefaultSettings.listDirs)
+    assert(settings.listFiles == DefaultSettings.listFiles)
+    assert(settings.listLines == DefaultSettings.listLines)
+    assert(settings.multiLineSearch == DefaultSettings.multiLineSearch)
+    assert(settings.printResults == DefaultSettings.printResults)
+    assert(settings.printUsage == DefaultSettings.printUsage)
+    assert(settings.printVersion == DefaultSettings.printVersion)
+    assert(settings.searchArchives == DefaultSettings.searchArchives)
+    assert(settings.uniqueLines == DefaultSettings.uniqueLines)
+    assert(settings.verbose == DefaultSettings.verbose)
   }
 
-  // test default settings
+  // test defaults
+  test("""test settingsFromArgs with defaults""") {
+    val args = requiredArgs
+    val settings = SearchOptions.settingsFromArgs(args)
+    assertDefaultSettings(settings)
+  }
+
+  // test requiredArgs only
   test("""test settingsFromArgs with requiredArgs""") {
     val args = requiredArgs
     println("args: "+args)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.startpath: "+settings.startpath)
-    assertDefaultSettings(settings)
     assert(settings.startpath == startpath)
     assert(settings.searchPatterns.size == 1)
     assert(settings.searchPatterns.toList.head.toString == searchString)
@@ -87,7 +91,16 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     assert(longSettings.doTiming)
   }
 
-  // test -a / --firstmatch
+  // test --excludehidden
+  test("""test settingsFromArgs with args="--excludehidden" """) {
+    val args = List("--excludehidden") ::: requiredArgs
+    println("args: "+args)
+    val settings = SearchOptions.settingsFromArgs(args)
+    println("settings.excludeHidden: "+settings.excludeHidden)
+    assert(settings.excludeHidden)
+  }
+
+  // test -1 / --firstmatch
   test("""test settingsFromArgs with args="-1" / "--firstmatch" """) {
     val shortArgs = List("-1") ::: requiredArgs
     println("shortArgs: "+shortArgs)
@@ -111,6 +124,15 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("longArgs: "+longArgs)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.printUsage)
+  }
+
+  // test --includehidden
+  test("""test settingsFromArgs with args="--includehidden" """) {
+    val args = List("--includehidden") ::: requiredArgs
+    println("args: "+args)
+    val settings = SearchOptions.settingsFromArgs(args)
+    println("settings.excludeHidden: "+settings.excludeHidden)
+    assert(!settings.excludeHidden)
   }
 
   // test --in-archivefilepattern
