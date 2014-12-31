@@ -13,6 +13,7 @@
 
 PROJECT_PATH=/Users/cary/src/git/xsearch
 SHARED_PATH=$PROJECT_PATH/shared
+TEST_FILE_PATH=$SHARED_PATH/testFiles
 
 
 ########################################
@@ -32,6 +33,13 @@ copy_resources () {
     cp $SHARED_PATH/filetypes.xml $resources_path/
     log "cp $SHARED_PATH/searchoptions.xml $resources_path/"
     cp $SHARED_PATH/searchoptions.xml $resources_path/
+}
+
+# copy_resources
+copy_test_resources () {
+    local test_resources_path="$1"
+    log "cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/"
+    cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/
 }
 
 ########################################
@@ -106,9 +114,13 @@ build_java () {
     log "build_java"
     JAVA_PATH=$PROJECT_PATH/java
     RESOURCES_PATH=$JAVA_PATH/src/main/resources
+    TEST_RESOURCES_PATH=$JAVA_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
     copy_resources $RESOURCES_PATH
+
+    # copy the test files to the local test resource location
+    copy_test_resources $TEST_RESOURCES_PATH
 
     # run a maven clean build
     log "Building javasearch"
@@ -120,14 +132,18 @@ build_scala () {
     log "build_scala"
     SCALA_PATH=$PROJECT_PATH/scala
     RESOURCES_PATH=$SCALA_PATH/src/main/resources
+    TEST_RESOURCES_PATH=$SCALA_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
     copy_resources $RESOURCES_PATH
 
+    # copy the test files to the local test resource location
+    copy_test_resources $TEST_RESOURCES_PATH
+
     # run a maven clean build
     log "Building scalasearch"
-    #mvn -f $SCALA_PATH/pom.xml clean install
-    mvn -f $SCALA_PATH/pom.xml -DskipTests=true clean install
+    mvn -f $SCALA_PATH/pom.xml clean install
+    #mvn -f $SCALA_PATH/pom.xml -DskipTests=true clean install
 }
 
 build_all () {
