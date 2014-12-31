@@ -140,7 +140,6 @@ class Searcher:
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
         files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f))]
-        #return [os.path.join(d,f) for f in files
         searchfiles = [SearchFile(path=d,
                         filename=f,
                         filetype=self.fileutil.get_filetype(f))
@@ -217,13 +216,10 @@ class Searcher:
             if self.settings.verbose or self.settings.debug:
                 print 'Skipping unsearchable file: {0}'.format(f)
             return
-        #if self.fileutil.is_text_file(f):
         if sf.filetype == FileType.Text:
             self.search_text_file(sf)
-        #elif self.fileutil.is_binary_file(f):
         elif sf.filetype == FileType.Binary:
             self.search_binary_file(sf)
-        #elif self.fileutil.is_archive_file(f) and self.settings.searcharchives:
         elif sf.filetype == FileType.Archive and self.settings.searcharchives:
             try:
                 self.search_archive_file(sf)
@@ -232,6 +228,8 @@ class Searcher:
 
     def search_binary_file(self, sf):
         """Search a binary file"""
+        if self.settings.debug:
+            print "Searching binary file {0!s}".format(sf.relativepath) 
         try:
             fo = open(sf.relativepath, 'rb')
             self.search_binary_file_obj(sf, fo)
@@ -253,6 +251,8 @@ class Searcher:
 
     def search_text_file(self, sf, enc=None):
         """Search a text file"""
+        if self.settings.debug:
+            print "Searching text file {0!s}".format(sf.relativepath) 
         try:
             fo = open(sf.relativepath, 'r')
             self.search_text_file_obj(sf, fo)
@@ -266,9 +266,6 @@ class Searcher:
             self.search_text_file_contents(sf, fo)
         else:
             self.search_text_file_lines(sf, fo)
-
-    def get_line_count(self, s):
-        return len(re.findall(r'(\r\n|\n)', s))
 
     def line_indices_for_current_index(self, index, contents):
         """Get the start and end indices into contents that represent the
@@ -314,21 +311,49 @@ class Searcher:
                 self.search_multiline_string_for_pattern(s, p, start_line_indices))
         return search_results
 
-    def get_lines_before(self, line_count, s, start_line_index, before_start_indices):
+    def get_lines_before(self, s, start_line_index, before_start_indices):
         if not before_start_indices:
             return []
+        line_count = self.settings.numlinesbefore
         if len(before_start_indices) >= line_count:
             before_start_indices = before_start_indices[(line_count*-1):]
         lines_before = []
         for i,x in enumerate(before_start_indices[:-1]):
             if i < len(before_start_indices) - 1:
-                lines_before.append(s[before_start_indices[i]:before_start_indices[i+1]-1])
+                lines_before.append(
+                    s[before_start_indices[i]:before_start_indices[i+1]-1])
         lines_before.append(s[before_start_indices[-1]:start_line_index-1])
         return lines_before
 
-    def get_lines_after(self, line_count, s, start_line_index, after_start_indices):
+    def get_lines_after_to_or_until(self, s, after_start_indices):
+        lines_after_patterns = []
+        if self.settings.linesaftertopatterns:
+            lines_after_patterns = self.settings.linesaftertopatterns
+        else:
+            lines_after_patterns = self.settings.linesafteruntilpatterns
+        lines_after = []
+        match_indices = {}
+        for p in lines_after_patterns:
+            m = p.search(s[after_start_indices[0]:])
+            if m:
+                match_indices[p] = m.start() + after_start_indices[0]
+        if match_indices:
+            first_index = min(x for x in match_indices.values())
+            for i,x in enumerate(after_start_indices):
+                if x < first_index and i < len(after_start_indices) - 1:
+                    lines_after.append(
+                        s[after_start_indices[i]:after_start_indices[i+1]-1])
+        if self.settings.linesaftertopatterns:
+            return lines_after
+        else:
+            return lines_after[:-1]
+
+    def get_lines_after(self, s, after_start_indices):
         if not after_start_indices:
             return []
+        if self.do_lines_after_or_until():
+            return self.get_lines_after_to_or_until(s, after_start_indices)
+        line_count = self.settings.numlinesafter
         if len(after_start_indices) > line_count:
             after_start_indices = after_start_indices[0:line_count+1]
         elif len(after_start_indices) == line_count:
@@ -336,8 +361,20 @@ class Searcher:
         lines_after = []
         for i,x in enumerate(after_start_indices):
             if i < len(after_start_indices) - 1:
-                lines_after.append(s[after_start_indices[i]:after_start_indices[i+1]-1])
+                lines_after.append(
+                    s[after_start_indices[i]:after_start_indices[i+1]-1])
         return lines_after
+
+    def do_lines_after_or_until(self):
+        if self.settings.linesaftertopatterns or \
+            self.settings.linesafteruntilpatterns:
+            return True
+        return False
+
+    def do_lines_after(self):
+        if self.settings.numlinesafter or self.do_lines_after_or_until():
+            return True
+        return False
 
     def search_multiline_string_for_pattern(self, s, p, start_line_indices):
         """Search a given searchable string possibly containing multiple newlines
@@ -362,11 +399,12 @@ class Searcher:
                 before_line_count = len(before_start_indices) - 1
             line = s[m_line_start_index:m_line_end_index]
             if self.settings.numlinesbefore and before_line_count:
-                lines_before = self.get_lines_before(self.settings.numlinesbefore,
-                    s, m_line_start_index, before_start_indices[:-1])
-            if self.settings.numlinesafter:
-                lines_after = self.get_lines_after(self.settings.numlinesafter, s,
-                    m_line_start_index, after_start_indices)
+                lines_before = self.get_lines_before(s, m_line_start_index,
+                    before_start_indices[:-1])
+            if self.do_lines_after():
+                lines_after = self.get_lines_after(s, after_start_indices)
+                if after_start_indices and not lines_after:
+                    continue
             if self.settings.firstmatch:
                 continue
             if (lines_before and
@@ -400,6 +438,8 @@ class Searcher:
             self.settings.out_linesbeforepatterns)
 
     def lines_after_match(self, lines_after):
+        if self.do_lines_after_or_until():
+            return True
         return self.lines_match(lines_after,
             self.settings.in_linesafterpatterns,
             self.settings.out_linesafterpatterns)
@@ -456,8 +496,7 @@ class Searcher:
                         # linesafteruntilpattern is matched, if any are defined
                         lines_after_to_match = False
                         lines_after_until_match = False
-                        if self.settings.linesaftertopatterns or \
-                           self.settings.linesafteruntilpatterns:
+                        if self.do_lines_after_or_until():
                             # check to see if lines_after has a match
                             if self.settings.linesaftertopatterns and \
                                self.any_matches_any_pattern(lines_after,
@@ -468,9 +507,10 @@ class Searcher:
                                self.settings.linesafteruntilpatterns):
                                lines_after_until_match = True
                             # if not read in more lines until a match or EOF
-                            while not lines_after_to_match and not lines_after_until_match:
+                            while not lines_after_to_match and \
+                                  not lines_after_until_match:
                                 try:
-                                    next_line = lines.next()
+                                    next_line = lines.next().rstrip('\r\n')
                                     lines_after.append(next_line)
                                     if self.settings.linesaftertopatterns and \
                                        self.matches_any_pattern(next_line,
@@ -482,10 +522,13 @@ class Searcher:
                                         lines_after_until_match = True
                                 except StopIteration:
                                     break
-                        sr_lines_after = list(lines_after)
-                        if lines_after_until_match:
-                            sr_lines_after = sr_lines_after[:-1]
-
+                        sr_lines_after = []
+                        if lines_after_to_match:
+                            sr_lines_after = list(lines_after)
+                        elif lines_after_until_match:
+                            sr_lines_after = list(lines_after)[:-1]
+                        else:
+                            continue
                         if self.settings.firstmatch and p in pattern_match_dict:
                             continue
                         search_result = \
@@ -510,25 +553,26 @@ class Searcher:
         """Search an archive (compressed) file"""
         ext = self.fileutil.get_extension(sf.filename)
         if not ext: return
-        ext = ext.lower()
+        if self.settings.debug:
+            print 'Searching {0} file {1}'.format(ext, sf) 
         if ext in ('zip', 'jar', 'war', 'ear'):
             # handle zip files
-            if self.settings.debug:
-                print 'searching {0} file: {1}'.format(ext, sf) 
             try:
                 self.search_zip_file(sf)
             except zipfile.BadZipfile as e:
                 if not ext == 'ear':
                     print 'BadZipfile: {0!s}: {1}'.format(e, sf)
-        elif ext in ('bz2', 'tar', 'tgz', 'gz') and tarfile.is_tarfile(sf.relativepath):
+        elif ext in ('bz2', 'tar', 'tgz', 'gz') and \
+             tarfile.is_tarfile(sf.relativepath):
             # handle tar files
-            if self.settings.debug:
-                print 'searching {0} file: {1}'.format(ext, sf) 
             try:
                 self.search_tar_file(sf, ext)
             except Exception as e:
                 msg = 'Exception while searching a tar file {0}: {1!s}'
                 print msg.format(sf, e)
+        else:
+            msg = 'Searching archive file type "{0}" is unsupported at this time'
+            print msg.format(ext)
 
     def search_zip_file(self, sf):
         """Search an archive file compressed with zip"""
