@@ -3,6 +3,9 @@
 *.class
 target/
 
+# for now
+src/test/resources/
+
 # Package Files #
 *.jar
 *.war

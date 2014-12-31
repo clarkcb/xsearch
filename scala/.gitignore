@@ -1,6 +1,9 @@
 *.class
 *.log
 
+# for now
+src/test/resources/
+
 # sbt specific
 dist/*
 target/

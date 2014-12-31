@@ -3,6 +3,8 @@
 *.iml
 .idea/
 c/
+clojure/
 erlang/
+fsharp/
 node_modules/
 objc/
