@@ -12,3 +12,5 @@ target/
 .idea/
 *.iml
 
+# Maven artifacts
+dependency-reduced-pom.xml

@@ -3,5 +3,6 @@
 *.iml
 .idea/
 c/
+erlang/
 node_modules/
 objc/

@@ -12,3 +12,5 @@ project/plugins/project/
 # Scala-IDE specific
 .scala_dependencies
 
+# Maven artifacts
+dependency-reduced-pom.xml
