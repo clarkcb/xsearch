@@ -27,11 +27,11 @@ class Searcher (settings: SearchSettings) {
 
   def searchResults: List[SearchResult] = _searchResults.toList
 
-  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
+  def matchesAnyPattern(s: String, patterns: Iterable[Regex]): Boolean = {
     patterns exists (_.findFirstMatchIn(s).isDefined)
   }
 
-  def anyMatchesAnyPattern(strings: Iterable[String], patterns: Set[Regex]):
+  def anyMatchesAnyPattern(strings: Iterable[String], patterns: Iterable[Regex]):
     Boolean = {
     strings exists (matchesAnyPattern(_, patterns))
   }
@@ -80,12 +80,8 @@ class Searcher (settings: SearchSettings) {
     isSearchFile(f.getName)
   }
 
-  def isHiddenFile(fileName: String): Boolean = {
-    fileName.startsWith(".")
-  }
-
   def isSearchFile(fileName: String): Boolean = {
-    if (settings.excludeHidden && isHiddenFile(fileName)) false
+    if (settings.excludeHidden && FileUtil.isHiddenFile(fileName)) false
     ((settings.inExtensions.isEmpty ||
       settings.inExtensions.contains(FileUtil.getExtension(fileName)))
       &&
@@ -101,7 +97,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isArchiveSearchFile(fileName: String): Boolean = {
-    if (settings.excludeHidden && isHiddenFile(fileName)) false
+    if (settings.excludeHidden && FileUtil.isHiddenFile(fileName)) false
     ((settings.inArchiveExtensions.isEmpty ||
       settings.inArchiveExtensions.contains(FileUtil.getExtension(fileName)))
       &&
@@ -149,15 +145,15 @@ class Searcher (settings: SearchSettings) {
     stringList.mkString("[\"", "\", \"", "\"]")
   }
 
-  def addTimer(name:String, action:String) {
+  private def addTimer(name:String, action:String) {
     _timers.put(name+":"+action, System.currentTimeMillis)
   }
 
-  def startTimer(name:String) {
+  private def startTimer(name:String) {
     addTimer(name, "start")
   }
 
-  def getElapsed(name:String): Long = {
+  private def getElapsed(name:String): Long = {
     val startTime = _timers(name+":start")
     val stopTime = _timers(name+":stop")
     stopTime - startTime
@@ -168,7 +164,7 @@ class Searcher (settings: SearchSettings) {
     println("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
   }
 
-  def stopTimer(name:String) {
+  private def stopTimer(name:String) {
     addTimer(name, "stop")
     if (settings.printResults)
       printElapsed(name)
@@ -229,27 +225,11 @@ class Searcher (settings: SearchSettings) {
       searchTextFileSourceLines(sf, source)
   }
 
-  def getLineCount(text: CharSequence) = {
-    """(\r\n|\n)""".r.findAllIn(text).toList.length
-  }
-
-  def startOfLineIndexFromCurrent(text: CharSequence, currentIndex: Int): Int = {
-    text.charAt(currentIndex) match {
-      case '\n' => currentIndex
-      case _ =>
-        if (currentIndex > 0)
-          startOfLineIndexFromCurrent(text, currentIndex-1)
-        else 0
-    }
-  }
-
-  def endOfLineIndexFromCurrent(text: CharSequence, currentIndex: Int): Int = {
-    text.charAt(currentIndex) match {
-      case '\n' => currentIndex
-      case _ =>
-        if (currentIndex < text.length)
-          endOfLineIndexFromCurrent(text, currentIndex+1)
-        else text.length
+  def searchTextFileSourceContents(sf: SearchFile, source: Source) {
+    val contents = source.mkString
+    searchMultiLineString(contents).foreach { r =>
+      addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
+        r.matchStartIndex, r.matchEndIndex, r.line, r.linesBefore, r.linesAfter))
     }
   }
 
@@ -259,6 +239,36 @@ class Searcher (settings: SearchSettings) {
       stringSearchResults ++= searchMultiLineStringForPattern(s, p)
     }
     stringSearchResults
+  }
+
+  def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
+                                       lineIndices: Seq[(Int, Int)]): List[String] = {
+    if (settings.hasLinesAfterToOrUntilPatterns) {
+      val matchIndices = (settings.linesAfterToPatterns ++ settings.linesAfterUntilPatterns).map {
+        p =>
+          p.findFirstMatchIn(s.substring(startIndex)) match {
+            case Some(m) => m.start + startIndex
+            case None => -1
+          }
+      }.filter(_ > -1)
+      if (matchIndices.nonEmpty) {
+        val lines = lineIndices.
+          filter(_._1 < matchIndices.min).
+          map(li => s.substring(li._1, li._2)).toList
+        if (settings.hasLinesAfterUntilPatterns && lines.nonEmpty)
+          lines.init
+        else
+          lines
+      } else {
+        List.empty[String]
+      }
+    } else if (settings.linesAfter > 0) {
+      lineIndices.
+        take(settings.linesAfter).
+        map(li => s.substring(li._1, li._2)).toList
+    } else {
+      List.empty[String]
+    }
   }
 
   def searchMultiLineStringForPattern(s: String, p: Regex): Seq[StringSearchResult] = {
@@ -279,16 +289,9 @@ class Searcher (settings: SearchSettings) {
         } else {
           List.empty[String]
         }
-      val linesAfter: List[String] =
-        if (settings.linesAfter > 0) {
-          lineIndices.filter(_._1 > thisLineIndices._2).
-            take(settings.linesAfter).
-            map(li => s.substring(li._1, li._2)).toList
-        } else {
-          List.empty[String]
-        }
-      if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
-        (linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
+      val linesAfter = getLinesAfterFromMultiLineString(s, thisLineIndices._2,
+        lineIndices.filter(_._1 > thisLineIndices._2))
+      if (linesBeforeMatch(linesBefore) && linesAfterMatch(linesAfter)) {
         stringSearchResults += new StringSearchResult(
           p,
           beforeLineCount + 1,
@@ -304,28 +307,29 @@ class Searcher (settings: SearchSettings) {
     stringSearchResults
   }
 
-  def searchTextFileSourceContents(sf: SearchFile, source: Source) {
-    val contents = source.mkString
-    searchMultiLineString(contents).foreach { r =>
-      addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
-        r.matchStartIndex, r.matchEndIndex, r.line))
-    }
-  }
-
-  def linesMatch(lines: Iterable[String], inPatterns: Set[Regex],
-      outPatterns: Set[Regex]): Boolean = {
+  private def linesMatch(lines: Iterable[String], inPatterns: Iterable[Regex],
+      outPatterns: Iterable[Regex]): Boolean = {
     (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
     (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
   }
 
-  def linesBeforeMatch(linesBefore: Iterable[String]): Boolean = {
-    linesMatch(linesBefore, Set.empty[Regex] ++ settings.inLinesBeforePatterns,
-      Set.empty[Regex] ++ settings.outLinesBeforePatterns)
+  private def linesBeforeMatch(linesBefore: Iterable[String]): Boolean = {
+    if (settings.hasLinesBeforePatterns) {
+      linesMatch(linesBefore, settings.inLinesBeforePatterns,
+        settings.outLinesBeforePatterns)
+    } else true
   }
 
-  def linesAfterMatch(linesAfter: Iterable[String]): Boolean = {
-    linesMatch(linesAfter, Set.empty[Regex] ++ settings.inLinesAfterPatterns,
-      Set.empty[Regex] ++ settings.outLinesAfterPatterns)
+  private def linesAfterMatch(linesAfter: Iterable[String]): Boolean = {
+    if (settings.hasLinesAfterToPatterns) {
+      linesAfter.nonEmpty &&
+        anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)
+    } else if (settings.hasLinesAfterUntilPatterns) {
+      linesAfter.nonEmpty
+    } else if (settings.hasLinesAfterPatterns) {
+      linesMatch(linesAfter, settings.inLinesAfterPatterns,
+        settings.outLinesAfterPatterns)
+    } else true
   }
 
   def searchTextFileLines(sf: SearchFile) {
@@ -335,7 +339,7 @@ class Searcher (settings: SearchSettings) {
   def searchTextFileSourceLines(sf: SearchFile, source: Source) {
     searchLineStringIterator(source.getLines()).foreach { r =>
       addSearchResult(new SearchResult(r.searchPattern, sf, r.lineNum,
-        r.matchStartIndex, r.matchEndIndex, r.line))
+        r.matchStartIndex, r.matchEndIndex, r.line, r.linesBefore, r.linesAfter))
     }
   }
 
@@ -359,46 +363,45 @@ class Searcher (settings: SearchSettings) {
 
       // make sure linesBefore and linesAfter match before continuing
       if ((settings.linesBefore == 0 || linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
-        (settings.linesAfter == 0 || linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
+          (settings.linesAfter == 0  || linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
 
         // search the line with each searchPatterns
-        //for (p <- settings.searchPatterns if p.findFirstIn(line).isDefined) {
         for (p <- settings.searchPatterns) {
           for (m <- p.findAllIn(line).matchData) {
             // take care of linesAfterToPatterns or linesAfterUntilPatterns
-            var lineAfterToMatch = false
-            var lineAfterUntilMatch = false
-            if (settings.linesAfterToPatterns.nonEmpty ||
-              settings.linesAfterUntilPatterns.nonEmpty) {
+            var linesAfterToMatch = false
+            var linesAfterUntilMatch = false
+            if (settings.hasLinesAfterToOrUntilPatterns) {
               // check to see if linesAfter has a match
               if (settings.linesAfterToPatterns.nonEmpty &&
                 anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)) {
-                lineAfterToMatch = true
+                linesAfterToMatch = true
               } else if (settings.linesAfterUntilPatterns.nonEmpty &&
                 anyMatchesAnyPattern(linesAfter, settings.linesAfterUntilPatterns)) {
-                lineAfterUntilMatch = true
+                linesAfterUntilMatch = true
               }
               // if not read more lines into linesAfter until match or EOF
-              while (lines.hasNext && !lineAfterToMatch && !lineAfterUntilMatch) {
+              while (lines.hasNext && !linesAfterToMatch && !linesAfterUntilMatch) {
                 val nextLine = lines.next()
                 linesAfter += nextLine
                 if (settings.linesAfterToPatterns.nonEmpty &&
                   matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
-                  lineAfterToMatch = true
+                  linesAfterToMatch = true
                 } else if (settings.linesAfterUntilPatterns.nonEmpty &&
                   matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
-                  lineAfterUntilMatch = true
+                  linesAfterUntilMatch = true
                 }
               }
             }
             val resLinesAfter =
-              if (lineAfterUntilMatch) linesAfter.init.toList
+              if (linesAfterUntilMatch) linesAfter.init.toList
               else linesAfter.toList
 
             if (settings.firstMatch && patternMatches.contains(p)) {
               stop = true
-            } else {
-              // add the search result
+            } else if (!settings.hasLinesAfterToOrUntilPatterns ||
+                (settings.hasLinesAfterToOrUntilPatterns &&
+                  (linesAfterToMatch || linesAfterUntilMatch))) {
               stringSearchResults += new StringSearchResult(
                 p,
                 lineNum,
@@ -567,7 +570,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def addSearchResult(r: SearchResult) {
+  private def addSearchResult(r: SearchResult) {
     _searchResults.append(r)
     _fileMap.put(r.file, _fileMap.getOrElse(r.file, List.empty[SearchResult]) :+ r)
   }
@@ -584,7 +587,8 @@ class Searcher (settings: SearchSettings) {
   }
 
   def getMatchingDirs:List[File] = {
-    _fileMap.keySet.map(_.toFile).map(_.getParentFile).toList.sortWith(_.toString < _.toString)
+    _fileMap.keySet.map(_.toFile).map(_.getParentFile).toList.
+      sortWith(_.toString < _.toString)
   }
 
   def printMatchingDirs() {
@@ -617,8 +621,10 @@ class Searcher (settings: SearchSettings) {
   def printMatchingLines() {
     val lines = getMatchingLines
     val hdr =
-      if (settings.uniqueLines) "\nMatching lines (%d unique lines)".format(lines.length)
-      else "\nMatching lines (%d lines)".format(lines.length)
+      if (settings.uniqueLines)
+        "\nMatching lines (%d unique lines)".format(lines.length)
+      else
+        "\nMatching lines (%d lines)".format(lines.length)
     println(hdr)
     lines.foreach(println(_))
   }

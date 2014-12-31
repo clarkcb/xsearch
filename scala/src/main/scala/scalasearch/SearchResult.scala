@@ -4,20 +4,13 @@ import scala.util.matching.Regex
 
 case class StringSearchResult(searchPattern: Regex, lineNum:Int,
                               matchStartIndex:Int, matchEndIndex:Int, line:String,
-                              linesBefore: List[String]=List.empty[String],
-                              linesAfter: List[String]=List.empty[String])
+                              linesBefore: List[String], linesAfter: List[String])
 
 class SearchResult(val searchPattern: Regex, val file: SearchFile,
                    val lineNum: Int, val matchStartIndex:Int,
                    val matchEndIndex:Int, val line: String,
-                   linesBefore: List[String], linesAfter: List[String],
+                   val linesBefore: List[String], val linesAfter: List[String],
                    maxLineLength:Int=DefaultSettings.maxLineLength) {
-
-  def this(searchPattern: Regex, file: SearchFile, lineNum: Int,
-           matchStartIndex:Int, matchEndIndex:Int, line: String) = {
-    this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
-      List.empty[String], List.empty[String])
-  }
 
   def this(searchPattern: Regex, file: SearchFile, lineNum: Int, line: String) = {
     this(searchPattern, file, lineNum, 0, 0, line,
@@ -34,10 +27,12 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
   }
 
   def singleLineToString = {
-    val matchString =
-      if (lineNum == 0) " matches"
-      else ": %d [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
-        formatMatchingLine)
+    val matchString = file.fileType match {
+      case FileType.Text =>
+        ": %d [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
+          formatMatchingLine)
+      case _ => " matches"
+    }
     file.getPathWithContainers + matchString
   }
 

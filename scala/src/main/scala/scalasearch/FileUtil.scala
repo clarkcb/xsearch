@@ -65,6 +65,10 @@ object FileUtil {
     else FileType.Unknown
   }
 
+  def isHiddenFile(fileName: String): Boolean = {
+    fileName.startsWith(".")
+  }
+
   def isArchiveFile(f: File): Boolean = {
     isArchiveFile(f.getName)
   }

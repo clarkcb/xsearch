@@ -4,7 +4,25 @@ import scala.collection.mutable
 import scala.util.matching.Regex
 
 object DefaultSettings {
+  val archivesOnly = false
+  val debug = false
+  val doTiming = false
+  val excludeHidden = true
+  val firstMatch = false
+  val linesAfter = 0
+  val linesBefore = 0
+  val listDirs = false
+  val listFiles = false
+  val listLines = false
   val maxLineLength = 150
+  var multiLineSearch = false
+  var printResults = true
+  var printUsage = false
+  var printVersion = false
+  var recursive = true
+  var searchArchives = false
+  var uniqueLines = false
+  var verbose = false
 }
 
 class SettingsBuilder {
@@ -27,25 +45,25 @@ class SettingsBuilder {
   val linesAfterUntilPatterns = mutable.Set[Regex]()
   val searchPatterns = mutable.Set[Regex]()
 
-  var archivesOnly = false
-  var debug = false
-  var doTiming = false
-  var excludeHidden = true
-  var firstMatch = false
-  var linesAfter = 0
-  var linesBefore = 0
-  var listDirs = false
-  var listFiles = false
-  var listLines = false
+  var archivesOnly = DefaultSettings.archivesOnly
+  var debug = DefaultSettings.debug
+  var doTiming = DefaultSettings.doTiming
+  var excludeHidden = DefaultSettings.excludeHidden
+  var firstMatch = DefaultSettings.firstMatch
+  var linesAfter = DefaultSettings.linesAfter
+  var linesBefore = DefaultSettings.linesBefore
+  var listDirs = DefaultSettings.listDirs
+  var listFiles = DefaultSettings.listFiles
+  var listLines = DefaultSettings.listLines
   var maxLineLength = DefaultSettings.maxLineLength
-  var multiLineSearch = false
-  var printResults = true
-  var printUsage = false
-  var printVersion = false
-  var recursive = true
-  var searchArchives = false
-  var uniqueLines = false
-  var verbose = false
+  var multiLineSearch = DefaultSettings.multiLineSearch
+  var printResults = DefaultSettings.printResults
+  var printUsage = DefaultSettings.printUsage
+  var printVersion = DefaultSettings.printVersion
+  var recursive = DefaultSettings.recursive
+  var searchArchives = DefaultSettings.searchArchives
+  var uniqueLines = DefaultSettings.uniqueLines
+  var verbose = DefaultSettings.verbose
 
   def setArchivesOnly() {
     archivesOnly = true
@@ -212,11 +230,27 @@ class SearchSettings(val startpath:String,
                      val verbose:Boolean) {
 
   def hasLinesBefore: Boolean = {
-    linesBefore > 0 || inLinesBeforePatterns.size > 0 || outLinesBeforePatterns.size > 0
+    linesBefore > 0 || hasLinesBeforePatterns
+  }
+
+  def hasLinesBeforePatterns: Boolean = {
+    inLinesBeforePatterns.nonEmpty || outLinesBeforePatterns.nonEmpty
   }
 
   def hasLinesAfter: Boolean = {
-    linesAfter > 0 || inLinesAfterPatterns.size > 0 || outLinesAfterPatterns.size > 0
+    linesAfter > 0 || hasLinesAfterPatterns
+  }
+
+  def hasLinesAfterPatterns: Boolean = {
+    inLinesAfterPatterns.nonEmpty || outLinesAfterPatterns.nonEmpty
+  }
+
+  def hasLinesAfterToPatterns: Boolean = linesAfterToPatterns.nonEmpty
+
+  def hasLinesAfterUntilPatterns: Boolean = linesAfterUntilPatterns.nonEmpty
+
+  def hasLinesAfterToOrUntilPatterns: Boolean = {
+    hasLinesAfterToPatterns || hasLinesAfterUntilPatterns
   }
 
   override def toString = {
