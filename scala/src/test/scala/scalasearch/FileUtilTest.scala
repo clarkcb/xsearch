@@ -19,6 +19,8 @@ class FileUtilTest extends FunSuite {
         assert(FileUtil.isSearchableFile(archiveFile))
         assert(!FileUtil.isTextFile(archiveFile))
         assert(!FileUtil.isUnknownFile(archiveFile))
+        val fileType = FileUtil.getFileType(archiveFile)
+        assert(fileType == FileType.Archive)
     }
   }
 
@@ -34,6 +36,8 @@ class FileUtilTest extends FunSuite {
         assert(FileUtil.isSearchableFile(binFile))
         assert(!FileUtil.isTextFile(binFile))
         assert(!FileUtil.isUnknownFile(binFile))
+        val fileType = FileUtil.getFileType(binFile)
+        assert(fileType == FileType.Binary)
     }
   }
 
@@ -50,6 +54,8 @@ class FileUtilTest extends FunSuite {
         assert(FileUtil.isSearchableFile(codeFile))
         assert(FileUtil.isTextFile(codeFile))
         assert(!FileUtil.isUnknownFile(codeFile))
+        val fileType = FileUtil.getFileType(codeFile)
+        assert(fileType == FileType.Text)
     }
   }
 
@@ -66,6 +72,8 @@ class FileUtilTest extends FunSuite {
         assert(!FileUtil.isSearchableFile(nosearchFile))
         assert(!FileUtil.isTextFile(nosearchFile))
         assert(FileUtil.isUnknownFile(nosearchFile))
+        val fileType = FileUtil.getFileType(nosearchFile)
+        assert(fileType == FileType.Unknown)
     }
   }
 
@@ -88,6 +96,8 @@ class FileUtilTest extends FunSuite {
         assert(FileUtil.isSearchableFile(textFile))
         assert(FileUtil.isTextFile(textFile))
         assert(!FileUtil.isUnknownFile(textFile))
+        val fileType = FileUtil.getFileType(textFile)
+        assert(fileType == FileType.Text)
     }
   }
 
@@ -102,6 +112,8 @@ class FileUtilTest extends FunSuite {
         assert(!FileUtil.isSearchableFile(unknownFile))
         assert(!FileUtil.isTextFile(unknownFile))
         assert(FileUtil.isUnknownFile(unknownFile))
+        val fileType = FileUtil.getFileType(unknownFile)
+        assert(fileType == FileType.Unknown)
     }
   }
 
@@ -119,6 +131,8 @@ class FileUtilTest extends FunSuite {
         assert(FileUtil.isSearchableFile(xmlFile))
         assert(FileUtil.isTextFile(xmlFile))
         assert(!FileUtil.isUnknownFile(xmlFile))
+        val fileType = FileUtil.getFileType(xmlFile)
+        assert(fileType == FileType.Text)
     }
   }
 }
