@@ -2,17 +2,18 @@ package scalasearch
 
 import java.io.File
 
-class SearchFile(val containers: List[String], val path: String, val file: String) {
+class SearchFile(val containers: List[String], val path: String,
+                 val fileName: String, val fileType: FileType.Value) {
 
   val CONTAINER_SEPARATOR = "!"
 
-  def this(path: String, file: String) = {
-    this(List.empty[String], path, file)
+  def this(path: String, file: String, fileType: FileType.Value) = {
+    this(List.empty[String], path, file, fileType)
   }
 
   def toFile: File = {
     val p = new File(path)
-    new File(p, file)
+    new File(p, fileName)
   }
 
   // get just the path inside the container(s)
@@ -33,14 +34,7 @@ class SearchFile(val containers: List[String], val path: String, val file: Strin
     if (path.nonEmpty) {
       sb.append(path).append(File.separator)
     }
-    sb.append(file)
+    sb.append(fileName)
     sb.toString()
   }
-}
-
-object SearchFileType extends Enumeration {
-  type SearchFileType = Value
-  val NonSearchFile = Value // a file that does not match search criteria
-  val SearchFile = Value // a regular file that matches search criteria
-  val ArchiveSearchFile = Value // an archive file that matches search criteria
 }

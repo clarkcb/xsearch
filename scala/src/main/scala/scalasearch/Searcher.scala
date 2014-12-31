@@ -75,13 +75,6 @@ class Searcher (settings: SearchSettings) {
     startDirs ++ subDirs
   }
 
-  def getSearchFileType(f: File): SearchFileType.Value = getSearchFileType(f.getName)
-
-  def getSearchFileType(fileName: String): SearchFileType.Value = {
-    if (isSearchFile(fileName)) SearchFileType.SearchFile
-    else if (isArchiveSearchFile(fileName)) SearchFileType.ArchiveSearchFile
-    else SearchFileType.NonSearchFile
-  }
 
   def isSearchFile(f: File): Boolean = {
     isSearchFile(f.getName)
@@ -122,14 +115,18 @@ class Searcher (settings: SearchSettings) {
   def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
     val searchFiles: Array[Option[SearchFile]] = dir.listFiles().filterNot(_.isDirectory).map {
       f =>
-        if (FileUtil.isArchiveFile(f)) {
-          if (settings.searchArchives && isArchiveSearchFile(f))
-            Some(new SearchFile(f.getParent, f.getName))
-          else None
-        } else if (!settings.archivesOnly && isSearchFile(f)) {
-          Some(new SearchFile(f.getParent, f.getName))
-        } else {
-          None
+        FileUtil.getFileType(f) match {
+          case FileType.Unknown => None
+          case fileType@FileType.Archive =>
+            if (settings.searchArchives && isArchiveSearchFile(f))
+              Some(new SearchFile(f.getParent, f.getName, fileType))
+            else
+              None
+          case fileType =>
+            if (!settings.archivesOnly && isSearchFile(f))
+              Some(new SearchFile(f.getParent, f.getName, fileType))
+            else
+              None
         }
     }
     // this cast is required regardless of what IDEA says
@@ -349,22 +346,25 @@ class Searcher (settings: SearchSettings) {
     val linesAfter = new mutable.ListBuffer[String]
     val patternMatches = mutable.Map.empty[Regex,Int]
     val stringSearchResults = mutable.ArrayBuffer.empty[StringSearchResult]
+    // TODO: verify that this works when matches are on last line
     while (lines.hasNext && !stop) {
-      val line = 
+      lineNum += 1
+      val line =
         if (linesAfter.nonEmpty) linesAfter.remove(0)
         else lines.next()
-      lineNum += 1
       if (settings.linesAfter > 0) {
         while (linesAfter.length < settings.linesAfter && lines.hasNext)
           linesAfter += lines.next
       }
-      // search the line with each searchPatterns
-      //for (p <- settings.searchPatterns if p.findFirstIn(line).isDefined) {
-      for (p <- settings.searchPatterns) {
-        for (m <- p.findAllIn(line).matchData) {
-          if ((linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
-            (linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
 
+      // make sure linesBefore and linesAfter match before continuing
+      if ((settings.linesBefore == 0 || linesBefore.isEmpty || linesBeforeMatch(linesBefore)) &&
+        (settings.linesAfter == 0 || linesAfter.isEmpty  || linesAfterMatch(linesAfter))) {
+
+        // search the line with each searchPatterns
+        //for (p <- settings.searchPatterns if p.findFirstIn(line).isDefined) {
+        for (p <- settings.searchPatterns) {
+          for (m <- p.findAllIn(line).matchData) {
             // take care of linesAfterToPatterns or linesAfterUntilPatterns
             var lineAfterToMatch = false
             var lineAfterUntilMatch = false
@@ -437,14 +437,15 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       println("Searching archive file " + sf.toString)
     }
-    val zipExts = Set("zip", "jar", "war")
-    if (zipExts contains FileUtil.getExtension(sf)) {
+    if (FileUtil.isZipArchiveFile(sf))
       searchZipFileSource(sf, source)
-    } else if (FileUtil.getExtension(sf) == "gz" ||
-      FileUtil.getExtension(sf) == "tgz") {
+    else if (FileUtil.isGzArchiveFile(sf))
       searchGzFileSource(sf, source)
-    } else if (FileUtil.getExtension(sf) == "bz2") {
+    else if (FileUtil.isBz2ArchiveFile(sf))
       searchBz2FileSource(sf, source)
+    else if (FileUtil.isTarArchiveFile(sf)) {
+      val tis = new BufferedInputStream(new FileInputStream(sf.getPath))
+      searchTarFileInputStream(sf, tis)
     } else {
       println("Currently unsupported archive file type: %s (%s)".
         format(FileUtil.getExtension(sf), sf.toString))
@@ -469,17 +470,17 @@ class Searcher (settings: SearchSettings) {
       if (isSearchDir(dirName)) {
         val zes = e._2
         zes foreach { ze =>
-          val fileName = new File(ze.getName).getName
-          val searchFileType = getSearchFileType(fileName)
-          if (searchFileType != SearchFileType.NonSearchFile) {
-            val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName, fileName)
+          val file = new File(ze.getName)
+          val fileType = FileUtil.getFileType(file)
+          if (fileType != FileType.Unknown) {
+            val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName,
+              file.getName, fileType)
             val zis = zf.getInputStream(zf.getEntry(zsf.getPath))
-            searchFileType match {
-              case SearchFileType.SearchFile =>
-                searchFileSource(zsf, Source.fromInputStream(zis))
-              case SearchFileType.ArchiveSearchFile =>
+            fileType match {
+              case FileType.Archive =>
                 searchArchiveFileSource(zsf, Source.fromInputStream(zis))
-              case _ => // do nothing
+              case _ =>
+                searchFileSource(zsf, Source.fromInputStream(zis))
             }
             zis.close()
           }
@@ -498,20 +499,20 @@ class Searcher (settings: SearchSettings) {
       if (!entry.isDirectory) {
         val dirName = new File(entry.getName).getParent
         if (isSearchDir(dirName)) {
-          val fileName = new File(entry.getName).getName
-          val searchFileType = getSearchFileType(fileName)
-          if (searchFileType != SearchFileType.NonSearchFile) {
+          val file = new File(entry.getName)
+          val fileType = FileUtil.getFileType(file)
+          if (fileType != FileType.Unknown) {
             var bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
             if (count > 0) {
-              val tzsf = new SearchFile(sf.containers, dirName, fileName)
+              val tzsf = new SearchFile(sf.containers, dirName, file.getName,
+                fileType)
               val source = Source.fromBytes(bytes)
-              searchFileType match {
-                case SearchFileType.SearchFile =>
-                  searchFileSource(tzsf, source)
-                case SearchFileType.ArchiveSearchFile =>
+              fileType match {
+                case FileType.Archive =>
                   searchArchiveFileSource(tzsf, source)
-                case _ => // do nothing
+                case _ =>
+                  searchFileSource(tzsf, source)
               }
             }
           }
@@ -525,15 +526,17 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       println("Searching gzip file " + sf.toString)
     }
-    val containedFileName = sf.file.take(sf.file.length - 3)
-    val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName)
-    if (isSearchFile(gzsf.file) || FileUtil.getExtension(containedFileName) == "tar") {
+    val containedFileName = sf.fileName.split("\\.").init.mkString(".")
+    val containedFileType = FileUtil.getFileType(sf)
+    val containedExtension = FileUtil.getExtension(sf)
+    val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName,
+      containedFileType)
+    if (containedExtension == "tar" || isSearchFile(gzsf.fileName)) {
       val gzis = new GZIPInputStream(new BufferedInputStream(
         new FileInputStream(sf.getPath)))
-      if (FileUtil.getExtension(containedFileName) == "tar") {
+      if (containedExtension == "tar") {
         searchTarFileInputStream(gzsf, gzis)
-      }
-      else {
+      } else {
         val source = Source.fromInputStream(gzis)
         searchFileSource(gzsf, source)
       }
@@ -545,12 +548,15 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       println("Searching bzip2 file " + sf.toString)
     }
-    val containedFileName = sf.file.take(sf.file.length - 4)
-    val bzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName)
-    if (isSearchFile(bzsf.file) || FileUtil.getExtension(containedFileName) == "tar") {
+    val containedFileName = sf.fileName.split("\\.").init.mkString(".")
+    val containedFileType = FileUtil.getFileType(sf)
+    val containedExtension = FileUtil.getExtension(sf)
+    val bzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName,
+      containedFileType)
+    if (containedExtension == "tar" || isSearchFile(bzsf.fileName)) {
       val bzis = new BZip2CompressorInputStream(new BufferedInputStream(
         new FileInputStream(sf.getPath)))
-      if (FileUtil.getExtension(containedFileName) == "tar") {
+      if (containedExtension == "tar") {
         searchTarFileInputStream(bzsf, bzis)
       }
       else {
@@ -563,7 +569,7 @@ class Searcher (settings: SearchSettings) {
 
   def addSearchResult(r: SearchResult) {
     _searchResults.append(r)
-    _fileMap.put(r.file, _fileMap.getOrElse(r.file, List.empty[SearchResult]) :+ r )
+    _fileMap.put(r.file, _fileMap.getOrElse(r.file, List.empty[SearchResult]) :+ r)
   }
 
   def printSearchResults() {

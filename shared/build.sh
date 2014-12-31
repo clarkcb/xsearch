@@ -126,7 +126,8 @@ build_scala () {
 
     # run a maven clean build
     log "Building scalasearch"
-    mvn -f $SCALA_PATH/pom.xml clean install
+    #mvn -f $SCALA_PATH/pom.xml clean install
+    mvn -f $SCALA_PATH/pom.xml -DskipTests=true clean install
 }
 
 build_all () {

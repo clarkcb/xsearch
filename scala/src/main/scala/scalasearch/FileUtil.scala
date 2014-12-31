@@ -40,69 +40,105 @@ object FileUtil {
   }
 
   def getExtension(f: SearchFile): String = {
-    getExtension(f.file)
+    getExtension(f.fileName)
   }
 
   def getExtension(name: String): String = {
-    if (name.lastIndexOf('.') > 0 && name.lastIndexOf('.') < name.length-1)
+    val lastIndex = name.lastIndexOf('.')
+    if (lastIndex > 0 && lastIndex < name.length-1)
       name.split('.').last
     else
       ""
   }
 
   def getFileType(f: File): FileType.Value = {
-    if (isArchiveFile(f)) FileType.Archive
+    if (isTextFile(f)) FileType.Text
     else if (isBinaryFile(f)) FileType.Binary
-    else if (isTextFile(f)) FileType.Text
+    else if (isArchiveFile(f)) FileType.Archive
     else FileType.Unknown
   }
 
   def getFileType(sf: SearchFile): FileType.Value = {
-    if (isArchiveFile(sf)) FileType.Archive
+    if (isTextFile(sf)) FileType.Text
     else if (isBinaryFile(sf)) FileType.Binary
-    else if (isTextFile(sf)) FileType.Text
+    else if (isArchiveFile(sf)) FileType.Archive
     else FileType.Unknown
   }
 
   def isArchiveFile(f: File): Boolean = {
-    fileTypeMap("archive").contains(getExtension(f))
+    isArchiveFile(f.getName)
   }
 
   def isArchiveFile(sf: SearchFile): Boolean = {
-    fileTypeMap("archive").contains(getExtension(sf))
+    isArchiveFile(sf.fileName)
+  }
+
+  def isArchiveFile(fileName: String): Boolean = {
+    fileTypeMap("archive").contains(getExtension(fileName))
   }
 
   def isBinaryFile(f: File): Boolean = {
-    fileTypeMap("binary").contains(getExtension(f))
+    isBinaryFile(f.getName)
   }
 
   def isBinaryFile(sf: SearchFile): Boolean = {
-    fileTypeMap("binary").contains(getExtension(sf))
+    isBinaryFile(sf.fileName)
+  }
+
+  def isBinaryFile(fileName: String): Boolean = {
+    fileTypeMap("binary").contains(getExtension(fileName))
   }
 
   def isSearchableFile(f: File): Boolean = {
-    fileTypeMap("searchable").contains(getExtension(f))
+    isSearchableFile(f.getName)
   }
 
   def isSearchableFile(sf: SearchFile): Boolean = {
-    fileTypeMap("searchable").contains(getExtension(sf))
+    isSearchableFile(sf.fileName)
+  }
+
+  def isSearchableFile(fileName: String): Boolean = {
+    fileTypeMap("searchable").contains(getExtension(fileName))
   }
 
   def isTextFile(f: File): Boolean = {
-    fileTypeMap("text").contains(getExtension(f))
+    isTextFile(f.getName)
   }
 
   def isTextFile(sf: SearchFile): Boolean = {
-    fileTypeMap("text").contains(getExtension(sf))
+    isTextFile(sf.fileName)
+  }
+
+  def isTextFile(fileName: String): Boolean = {
+    fileTypeMap("text").contains(getExtension(fileName))
   }
 
   def isUnknownFile(f: File): Boolean = {
-    fileTypeMap("unknown").contains(getExtension(f)) ||
-    !fileTypeMap("searchable").contains(getExtension(f))
+    isUnknownFile(f.getName)
   }
 
   def isUnknownFile(sf: SearchFile): Boolean = {
-    fileTypeMap("unknown").contains(getExtension(sf)) ||
-    !fileTypeMap("searchable").contains(getExtension(sf))
+    isUnknownFile(sf.fileName)
+  }
+
+  def isUnknownFile(fileName: String): Boolean = {
+    fileTypeMap("unknown").contains(getExtension(fileName)) ||
+    !fileTypeMap("searchable").contains(getExtension(fileName))
+  }
+
+  def isZipArchiveFile(sf: SearchFile): Boolean = {
+    Set("zip", "jar", "war").contains(getExtension(sf))
+  }
+
+  def isGzArchiveFile(sf: SearchFile): Boolean = {
+    Set("gz", "tgz").contains(getExtension(sf))
+  }
+
+  def isBz2ArchiveFile(sf: SearchFile): Boolean = {
+    "bz2" == getExtension(sf)
+  }
+
+  def isTarArchiveFile(sf: SearchFile): Boolean = {
+    "tar" == getExtension(sf)
   }
 }
