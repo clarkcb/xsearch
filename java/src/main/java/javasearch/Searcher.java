@@ -156,7 +156,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
 	}
 
-	public List<SearchFile> getSearchFilesForDir(File dir) {
+	private List<SearchFile> getSearchFilesForDir(File dir) {
 		if (settings.getDebug()) {
 			System.out.println("Getting files to search under " + dir);
 		}
@@ -185,15 +185,15 @@ public class Searcher {
 		return searchFiles;
 	}
 
-	public void addTimer(String name, String action) {
+	private void addTimer(String name, String action) {
 		timers.put(name+":"+action, System.currentTimeMillis());
 	}
 
-	public void startTimer(String name) {
+	private void startTimer(String name) {
 		addTimer(name, "start");
 	}
 
-    public void stopTimer(String name) {
+	private void stopTimer(String name) {
 		addTimer(name, "stop");
     }
 
