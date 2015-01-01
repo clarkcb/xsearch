@@ -81,5 +81,13 @@ namespace CsSearch
 					(!_fileTypesDictionary["searchable"].Contains(f.Extension.ToLowerInvariant()) &&
 					(!_fileTypesDictionary["nosearch"].Contains(f.Extension.ToLowerInvariant()))));
 		}
+
+		public static string GetRelativePath(string fullPath)
+		{
+			var filePath = fullPath;
+			if (filePath.StartsWith(Environment.CurrentDirectory))
+				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
+			return filePath;
+		}
 	}
 }
