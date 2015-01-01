@@ -13,6 +13,8 @@ namespace CsSearch
 		public ISet<Regex> OutDirPatterns { get; private set; }
 		public ISet<Regex> InFilePatterns { get; private set; }
 		public ISet<Regex> OutFilePatterns { get; private set; }
+		public ISet<string> InArchiveExtensions { get; private set; }
+		public ISet<string> OutArchiveExtensions { get; private set; }
 		public ISet<Regex> InArchiveFilePatterns { get; private set; }
 		public ISet<Regex> OutArchiveFilePatterns { get; private set; }
 
@@ -61,6 +63,8 @@ namespace CsSearch
 			OutDirPatterns = new HashSet<Regex>();
 			InFilePatterns = new HashSet<Regex>();
 			OutFilePatterns = new HashSet<Regex>();
+			InArchiveExtensions = new HashSet<string>();
+			OutArchiveExtensions = new HashSet<string>();
 			InArchiveFilePatterns = new HashSet<Regex>();
 			OutArchiveFilePatterns = new HashSet<Regex>();
 			InLinesAfterPatterns = new HashSet<Regex>();
@@ -136,6 +140,16 @@ namespace CsSearch
 		public void AddOutFilePattern(string pattern)
 		{
 			AddPattern(OutFilePatterns, pattern);
+		}
+
+		public void AddInArchiveExtension(string ext)
+		{
+			AddExtension(InArchiveExtensions, ext);
+		}
+
+		public void AddOutArchiveExtension(string ext)
+		{
+			AddExtension(OutArchiveExtensions, ext);
 		}
 
 		public void AddInArchiveFilePattern(string pattern)
@@ -214,6 +228,8 @@ namespace CsSearch
 			sb.Append(", OutDirPatterns: " + EnumerableToString(OutDirPatterns));
 			sb.Append(", InFilePatterns: " + EnumerableToString(InFilePatterns));
 			sb.Append(", OutFilePatterns: " + EnumerableToString(OutFilePatterns));
+			sb.Append(", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions));
+			sb.Append(", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions));
 			sb.Append(", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns));
 			sb.Append(", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns));
 			sb.Append(", SearchPatterns: " + EnumerableToString(SearchPatterns));

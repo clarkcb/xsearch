@@ -12,8 +12,6 @@ namespace CsSearch
 		private readonly FileUtil _fileUtil;
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
-		public ISet<DirectoryInfo> DirSet { get; private set; }
-		public ISet<FileInfo> FileSet { get; private set; }
 		public IDictionary<string, Stopwatch> Timers { get; private set; }
 
 		public Searcher(SearchSettings settings)
@@ -24,8 +22,6 @@ namespace CsSearch
 			ValidateSettings();
 			_fileUtil = new FileUtil();
 			Results = new List<SearchResult>();
-			DirSet = new HashSet<DirectoryInfo>();
-			FileSet = new HashSet<FileInfo>();
 			Timers = new Dictionary<string, Stopwatch>();
 		}
 
@@ -48,9 +44,11 @@ namespace CsSearch
 		{
 			if (Settings.ExcludeHidden && IsHiddenFile(d))
 				return false;
-			if (Settings.InDirPatterns.Count > 0 && !Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
+			if (Settings.InDirPatterns.Count > 0 &&
+				!Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
 				return false;
-			if (Settings.OutDirPatterns.Count > 0 && Settings.OutDirPatterns.Any(p => p.Match(d.Name).Success))
+			if (Settings.OutDirPatterns.Count > 0 &&
+				Settings.OutDirPatterns.Any(p => p.Match(d.Name).Success))
 				return false;
 			return true;
 		}
@@ -59,13 +57,17 @@ namespace CsSearch
 		{
 			if (Settings.ExcludeHidden && IsHiddenFile(f))
 				return false;
-			if (Settings.InExtensions.Count > 0 && !Settings.InExtensions.Contains(f.Extension))
+			if (Settings.InExtensions.Count > 0 &&
+				!Settings.InExtensions.Contains(f.Extension))
 				return false;
-			if (Settings.OutExtensions.Count > 0 && Settings.OutExtensions.Contains(f.Extension))
+			if (Settings.OutExtensions.Count > 0 &&
+				Settings.OutExtensions.Contains(f.Extension))
 				return false;
-			if (Settings.InFilePatterns.Count > 0 && !Settings.InFilePatterns.Any(p => p.Match(f.Name).Success))
+			if (Settings.InFilePatterns.Count > 0 &&
+				!Settings.InFilePatterns.Any(p => p.Match(f.Name).Success))
 				return false;
-			if (Settings.OutFilePatterns.Count > 0 && Settings.OutFilePatterns.Any(p => p.Match(f.Name).Success))
+			if (Settings.OutFilePatterns.Count > 0 &&
+				Settings.OutFilePatterns.Any(p => p.Match(f.Name).Success))
 				return false;
 			return true;
 		}
@@ -74,9 +76,17 @@ namespace CsSearch
 		{
 			if (Settings.ExcludeHidden && IsHiddenFile(f))
 				return false;
-			if (Settings.InArchiveFilePatterns.Count > 0 && !Settings.InArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
+			if (Settings.InArchiveExtensions.Count > 0 &&
+				!Settings.InArchiveExtensions.Contains(f.Extension))
 				return false;
-			if (Settings.OutArchiveFilePatterns.Count > 0 && Settings.OutArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
+			if (Settings.OutArchiveExtensions.Count > 0 &&
+				Settings.OutArchiveExtensions.Contains(f.Extension))
+				return false;
+			if (Settings.InArchiveFilePatterns.Count > 0 &&
+				!Settings.InArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
+				return false;
+			if (Settings.OutArchiveFilePatterns.Count > 0 &&
+				Settings.OutArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
 				return false;
 			return true;
 		}
@@ -140,16 +150,23 @@ namespace CsSearch
 				(!Settings.ArchivesOnly && IsSearchFile(f));
 		}
 
-		public IEnumerable<FileInfo> GetSearchFilesForDir(DirectoryInfo dir)
+		private SearchFile SearchFileFromFileInfo(FileInfo f)
+		{
+			return new SearchFile(new List<string>(), f.DirectoryName, f.Name, _fileUtil.GetFileType(f));
+		}
+
+		public IEnumerable<SearchFile> GetSearchFilesForDir(DirectoryInfo dir)
 		{
 			if (Settings.Debug)
 			{
 				Console.WriteLine("Getting search files under "+dir);
 			}
-			IEnumerable<FileInfo> dirSearchFiles = new List<FileInfo>();
+			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
 			try
 			{
-				dirSearchFiles = dir.EnumerateFiles().Where(IsValidSearchFile);
+				dirSearchFiles = dir.EnumerateFiles().
+					Where(IsValidSearchFile).
+					Select((f,i) => SearchFileFromFileInfo(f));
 			}
 			catch (IOException e)
 			{
@@ -159,9 +176,9 @@ namespace CsSearch
 			return dirSearchFiles;
 		}
 
-		public IEnumerable<FileInfo> GetSearchFiles(IEnumerable<DirectoryInfo> dirs)
+		public IEnumerable<SearchFile> GetSearchFiles(IEnumerable<DirectoryInfo> dirs)
 		{
-			var searchFiles = new List<FileInfo>();
+			var searchFiles = new List<SearchFile>();
 			foreach (var d in dirs)
 			{
 				searchFiles.AddRange(GetSearchFilesForDir(d));
@@ -216,7 +233,7 @@ namespace CsSearch
 			}
 			foreach (var f in searchFiles)
 			{
-				SearchFile(f);
+				DoSearchFile(f);
 			}
 			if (Settings.DoTiming)
 			{
@@ -224,30 +241,23 @@ namespace CsSearch
 			}
 		}
 
-		public void SearchFile(FileInfo f)
+		public void DoSearchFile(SearchFile f)
 		{
-			if (_fileUtil.IsUnknownFile(f))
+			if (f.Type == FileType.Text)
 			{
-				Console.WriteLine("Skipping file of unknown type: " + f.FullName);
+				SearchTextFile(f);
 			}
-			else if (_fileUtil.IsSearchableFile(f))
+			else if (f.Type == FileType.Binary)
 			{
-				if (_fileUtil.IsTextFile(f))
-				{
-					SearchTextFile(f);
-				}
-				else if (_fileUtil.IsBinaryFile(f))
-				{
-					SearchBinaryFile(f);
-				}
+				SearchBinaryFile(f);
 			}
 			else if (Settings.Verbose)
 			{
-				Console.WriteLine("Skipping unsearchable file: " + f.FullName);
+				Console.WriteLine("Skipping file: " + f.FullName);
 			}
 		}
 
-		private void SearchTextFile(FileInfo f)
+		private void SearchTextFile(SearchFile f)
 		{
 			if (Settings.Verbose)
 				Console.WriteLine("Searching text file " + f.FullName);
@@ -257,7 +267,7 @@ namespace CsSearch
 				SearchTextFileLines(f);
 		}
 
-		private void SearchTextFileContents(FileInfo f)
+		private void SearchTextFileContents(SearchFile f)
 		{
 			try
 			{
@@ -336,7 +346,7 @@ namespace CsSearch
 			return results;
 		}
 
-		private void SearchTextFileLines(FileInfo f)
+		private void SearchTextFileLines(SearchFile f)
 		{
 			try
 			{
@@ -355,7 +365,7 @@ namespace CsSearch
 			}
 		}
 
-		private static IEnumerable<string> EnumerableStringFromFile(FileInfo f)
+		private static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
 		{
 			string line;
 			//using (var file = System.IO.File.OpenText(fileName))
@@ -403,7 +413,7 @@ namespace CsSearch
 		}
 
 		// TODO: switch to use SearchLines with buffering
-		private void SearchBinaryFile(FileInfo f)
+		private void SearchBinaryFile(SearchFile f)
 		{
 			if (Settings.Verbose)
 				Console.WriteLine("Searching binary file " + f.FullName);
@@ -427,8 +437,6 @@ namespace CsSearch
 		private void AddSearchResult(SearchResult searchResult)
 		{
 			Results.Add(searchResult);
-			DirSet.Add(searchResult.File.Directory);
-			FileSet.Add(searchResult.File);
 		}
 
 		public void PrintResults()
@@ -442,13 +450,15 @@ namespace CsSearch
 
 		public IEnumerable<DirectoryInfo> GetMatchingDirs()
 		{
-			IEnumerable<DirectoryInfo> matchingDirs = new List<DirectoryInfo>(DirSet.Distinct()).OrderBy(d => d.FullName);
-			return matchingDirs;
+			return new List<DirectoryInfo>(
+				Results.Select(r => r.File.FilePath).
+				Distinct().Select(d => new DirectoryInfo(d)).
+				OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingDirs()
 		{
-			IEnumerable<DirectoryInfo> matchingDirs = GetMatchingDirs();
+			var matchingDirs = GetMatchingDirs();
 			Console.WriteLine(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
 			foreach (var d in matchingDirs)
 			{
@@ -458,13 +468,15 @@ namespace CsSearch
 
 		public IEnumerable<FileInfo> GetMatchingFiles()
 		{
-			IEnumerable<FileInfo> matchingFiles = new List<FileInfo>(FileSet).OrderBy(d => d.FullName);
-			return matchingFiles;
+			return new List<FileInfo>(
+				Results.Select(r => r.File.PathAndName).
+				Distinct().Select(f => new FileInfo(f)).
+				OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingFiles()
 		{
-			IEnumerable<FileInfo> matchingFiles = GetMatchingFiles();
+			var matchingFiles = GetMatchingFiles();
 			Console.WriteLine(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
 			foreach (var f in matchingFiles)
 			{
@@ -474,17 +486,12 @@ namespace CsSearch
 
 		public IEnumerable<string> GetMatchingLines()
 		{
-			List<string> matchingLines = new List<string>();
-			foreach (var r in Results)
-			{
-				matchingLines.Add(r.Line.Trim());
-			}
-			return matchingLines;
+			return Results.Select(r => r.Line.Trim()).ToList();
 		}
 
 		public void PrintMatchingLines()
 		{
-			IEnumerable<string> matchingLines = GetMatchingLines();
+			var matchingLines = GetMatchingLines();
 			Console.WriteLine(string.Format("\nLines with matches ({0}):", matchingLines.Count()));
 			foreach (var m in matchingLines)
 			{

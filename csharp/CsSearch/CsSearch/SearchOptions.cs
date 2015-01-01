@@ -14,6 +14,7 @@ namespace CsSearch
 		public static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
 			new Dictionary<string,Action<string,SearchSettings>>
 				{
+					{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
 					{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
 					{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
 					{ "in-ext", (s, settings) => settings.AddInExtension(s) },
@@ -25,6 +26,7 @@ namespace CsSearch
 					{ "linesafteruntilpattern", (s, settings) => settings.AddLinesAfterUntilPattern(s) },
 					{ "linesbefore", (s, settings) => settings.LinesBefore = int.Parse(s) },
 					{ "maxlinelength", (s, settings) => settings.MaxLineLength = int.Parse(s) },
+					{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
 					{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
 					{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
 					{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
