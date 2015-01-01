@@ -9,7 +9,7 @@ namespace CsSearch
 	public class SearchResult
 	{
 		public Regex SearchPattern { get; private set; }
-		public FileInfo File { get; set; }
+		public SearchFile File { get; set; }
 		public int LineNum { get; private set; }
 		public int MatchStartIndex { get; private set; }
 		public int MatchEndIndex { get; private set; }
@@ -20,7 +20,7 @@ namespace CsSearch
 		// temp
 		private const int MAXLINELENGTH = 150;
 
-		public SearchResult(Regex searchPattern, FileInfo file, int lineNum,
+		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
 			int matchStartIndex, int matchEndIndex, string line,
 			IEnumerable<string> linesBefore, IEnumerable<string> linesAfter)
 		{

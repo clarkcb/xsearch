@@ -6,6 +6,14 @@ using System.Xml.Linq;
 
 namespace CsSearch
 {
+	public enum FileType
+	{
+		Archive,
+		Binary,
+		Text,
+		Unknown
+	};
+
 	class FileUtil
 	{
 		public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
@@ -37,6 +45,14 @@ namespace CsSearch
 			_fileTypesDictionary["searchable"] = new HashSet<string>(_fileTypesDictionary["text"]);
 			_fileTypesDictionary["searchable"].UnionWith(_fileTypesDictionary["binary"]);
 			_fileTypesDictionary["searchable"].UnionWith(_fileTypesDictionary["archive"]);
+		}
+
+		public FileType GetFileType(FileInfo f)
+		{
+			if (IsArchiveFile(f)) return FileType.Archive;
+			if (IsBinaryFile(f)) return FileType.Binary;
+			if (IsTextFile(f)) return FileType.Text;
+			return FileType.Unknown;
 		}
 
 		public bool IsBinaryFile(FileInfo f)

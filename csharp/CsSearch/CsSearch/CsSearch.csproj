@@ -67,6 +67,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SearchFile.cs" />
     <Compile Include="SearchOption.cs" />
     <Compile Include="SearchOptions.cs" />
     <Compile Include="SearchArgumentException.cs" />
