@@ -14,15 +14,15 @@ namespace CsSearch
 		public int MatchStartIndex { get; private set; }
 		public int MatchEndIndex { get; private set; }
 		public string Line { get; private set; }
-		public IEnumerable<string> LinesBefore { get; private set; }
-		public IEnumerable<string> LinesAfter { get; private set; }
+		public IList<string> LinesBefore { get; private set; }
+		public IList<string> LinesAfter { get; private set; }
 
 		// temp
 		private const int MAXLINELENGTH = 150;
 
 		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
 			int matchStartIndex, int matchEndIndex, string line,
-			IEnumerable<string> linesBefore, IEnumerable<string> linesAfter)
+			IList<string> linesBefore, IList<string> linesAfter)
 		{
 			SearchPattern = searchPattern;
 			File = file;
@@ -36,10 +36,60 @@ namespace CsSearch
 
 		public override string ToString()
 		{
-			var filePath = File.FullName;
-			if (filePath.StartsWith(Environment.CurrentDirectory))
-				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
-			var sb = new StringBuilder().Append(filePath);
+			if (LinesBefore.Count > 0 || LinesAfter.Count > 0)
+			{
+				return MultiLineToString();
+			}
+			else
+			{
+				return SingleLineToString();
+			}
+		}
+
+		private int LineNumPadding()
+		{
+			int maxLineNum = LineNum + LinesAfter.Count;
+			return string.Format("{0}", maxLineNum).Length;
+		}
+
+		private string MultiLineToString()
+		{
+			var sb = new StringBuilder().
+				Append(new String('=', 80)).Append('\n').
+				Append(FileUtil.GetRelativePath(File.FullName)).Append(": ").
+				Append(LineNum).Append(": ").
+				Append('[').Append(MatchStartIndex).Append(':').
+				Append(MatchEndIndex).Append("]\n").
+				Append(new String('-', 80)).Append('\n');
+			int currentLineNum = LineNum;
+			string lineFormat = " {0,-" + LineNumPadding() + "} | {1}\n";
+			if (LinesBefore.Count > 0)
+			{
+				currentLineNum -= LinesBefore.Count;
+				foreach (string lineBefore in LinesBefore)
+				{
+					sb.Append(' ').
+						Append(string.Format(lineFormat, currentLineNum, lineBefore));
+					currentLineNum++;
+				}
+			}
+			sb.Append('>').Append(string.Format(lineFormat, LineNum, Line));
+			if (LinesAfter.Count > 0)
+			{
+				currentLineNum++;
+				foreach (string lineAfter in LinesAfter)
+				{
+					sb.Append(' ').
+						Append(string.Format(lineFormat, currentLineNum, lineAfter));
+					currentLineNum++;
+				}
+			}
+			return sb.ToString();
+		}
+
+		private string SingleLineToString()
+		{
+			var sb = new StringBuilder().Append(FileUtil.GetRelativePath(File.FullName));
 			if (LineNum == 0)
 			{
 				//sb.Append(" has match for pattern \"" + SearchPattern + "\"");
