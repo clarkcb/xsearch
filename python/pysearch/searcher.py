@@ -17,12 +17,12 @@ ZIPFILE_MODULE_AVAILABLE = True
 try:
     import tarfile
 except ImportError as e:
-    print 'tarfile not imported: {0!s}'.format(e)
+    print('tarfile not imported: {0!s}'.format(e))
     TARFILE_MODULE_AVAILABLE = False
 try:
     import zipfile
 except ImportError as e:
-    print 'zipfile not imported: {0!s}'.format(e)
+    print('zipfile not imported: {0!s}'.format(e))
     ZIPFILE_MODULE_AVAILABLE = False
 
 from fileutil import FileType, FileUtil
@@ -42,6 +42,9 @@ class Searcher:
         self.filedict = {}
         self.rescounts = {}
         self.__dict__.update(kargs)
+
+    def log(self, message):
+        print(message)
 
     def validate_settings(self):
         assert self.settings.startpath, 'Startpath not defined'
@@ -117,7 +120,7 @@ class Searcher:
     def get_search_dirs(self):
         """Get the list of directories to search"""
         if self.settings.debug:
-            print 'get_search_dirs()'
+            self.log('get_search_dirs()')
         searchdirs = []
         if self.is_search_dir(os.path.abspath(self.settings.startpath)):
             searchdirs.append(self.settings.startpath)
@@ -131,7 +134,7 @@ class Searcher:
     def get_search_files(self, searchdirs):
         """Get the list of files to search"""
         if self.settings.debug:
-            print 'get_search_files()'
+            self.log('get_search_files()')
         searchfiles = []
         for d in searchdirs:
             searchfiles.extend(self.get_search_files_for_directory(d))
@@ -169,7 +172,7 @@ class Searcher:
 
     def print_elapsed(self, name):
         elapsed = self.get_elapsed(name)
-        print 'Elapsed time for {0}: {1}'.format(name, elapsed)
+        self.log('Elapsed time for {0}: {1}'.format(name, elapsed))
 
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
@@ -181,10 +184,10 @@ class Searcher:
         if self.settings.dotiming:
             self.stop_timer('get_search_dirs')
         if self.settings.verbose:
-            print '\nDirectories to be searched ({0}):'.format(len(searchdirs))
+            self.log('\nDirectories to be searched ({0}):'.format(len(searchdirs)))
             for d in searchdirs:
-                print d
-            print
+                self.log(d)
+            self.log("")
 
         # get the searchfiles
         if self.settings.dotiming:
@@ -193,10 +196,10 @@ class Searcher:
         if self.settings.dotiming:
             self.stop_timer('get_search_files')
         if self.settings.verbose:
-            print '\nFiles to be searched ({0}):'.format(len(searchfiles))
+            self.log('\nFiles to be searched ({0}):'.format(len(searchfiles)))
             for f in searchfiles:
-                print f
-            print
+                self.log(f)
+            self.log("")
         if self.settings.dotiming:
             self.start_timer('search_files')
         for sf in searchfiles:
@@ -205,7 +208,7 @@ class Searcher:
             self.stop_timer('search_files')
 
     def print_results(self):
-        print 'Search results (%d):' % len(self.results)
+        self.log('Search results (%d):' % len(self.results))
         for r in self.results:
            self.print_result(r)
         self.print_res_counts()
@@ -214,7 +217,7 @@ class Searcher:
         """Search in a file, return number of matches found"""
         if not self.fileutil.is_searchable_file(sf.filename):
             if self.settings.verbose or self.settings.debug:
-                print 'Skipping unsearchable file: {0}'.format(f)
+                self.log('Skipping unsearchable file: {0}'.format(f))
             return
         if sf.filetype == FileType.Text:
             self.search_text_file(sf)
@@ -224,18 +227,18 @@ class Searcher:
             try:
                 self.search_archive_file(sf)
             except IOError as e:
-                print 'IOError: {0!s}: {1!s}'.format(e, sf)
+                self.log('IOError: {0!s}: {1!s}'.format(e, sf))
 
     def search_binary_file(self, sf):
         """Search a binary file"""
         if self.settings.debug:
-            print "Searching binary file {0!s}".format(sf.relativepath) 
+            self.log("Searching binary file {0!s}".format(sf.relativepath))
         try:
             fo = open(sf.relativepath, 'rb')
             self.search_binary_file_obj(sf, fo)
             fo.close()
         except IOError as e:
-            print 'IOError: {0!s}: {1!s}'.format(e, sf)
+            self.log('IOError: {0!s}: {1!s}'.format(e, sf))
 
     def search_binary_file_obj(self, sf, fo):
         """Search a binary file file object"""
@@ -252,13 +255,13 @@ class Searcher:
     def search_text_file(self, sf, enc=None):
         """Search a text file"""
         if self.settings.debug:
-            print "Searching text file {0!s}".format(sf.relativepath) 
+            self.log("Searching text file {0!s}".format(sf.relativepath))
         try:
             fo = open(sf.relativepath, 'r')
             self.search_text_file_obj(sf, fo)
             fo.close()
         except IOError as e:
-            print 'IOError: {0!s}: {1}'.format(e, sf)
+            self.log('IOError: {0!s}: {1}'.format(e, sf))
 
     def search_text_file_obj(self, sf, fo):
         """Search a text file file object"""
@@ -467,7 +470,7 @@ class Searcher:
                 except StopIteration:
                     break
                 except AttributeError as e:
-                    #print 'AttributeError: %s' % e
+                    #self.log('AttributeError: %s' % e)
                     break
             linenum += 1
             if self.settings.numlinesafter:
@@ -554,14 +557,14 @@ class Searcher:
         ext = self.fileutil.get_extension(sf.filename)
         if not ext: return
         if self.settings.debug:
-            print 'Searching {0} file {1}'.format(ext, sf) 
+            self.log('Searching {0} file {1}'.format(ext, sf))
         if ext in ('zip', 'jar', 'war', 'ear'):
             # handle zip files
             try:
                 self.search_zip_file(sf)
             except zipfile.BadZipfile as e:
                 if not ext == 'ear':
-                    print 'BadZipfile: {0!s}: {1}'.format(e, sf)
+                    self.log('BadZipfile: {0!s}: {1}'.format(e, sf))
         elif ext in ('bz2', 'tar', 'tgz', 'gz') and \
              tarfile.is_tarfile(sf.relativepath):
             # handle tar files
@@ -569,10 +572,10 @@ class Searcher:
                 self.search_tar_file(sf, ext)
             except Exception as e:
                 msg = 'Exception while searching a tar file {0}: {1!s}'
-                print msg.format(sf, e)
+                self.log(msg.format(sf, e))
         else:
             msg = 'Searching archive file type "{0}" is unsupported at this time'
-            print msg.format(ext)
+            self.log(msg.format(ext))
 
     def search_zip_file(self, sf):
         """Search an archive file compressed with zip"""
@@ -584,7 +587,7 @@ class Searcher:
         zipinfos = zfo.infolist()
         for zipinfo in zipinfos:
             #if self.settings.debug:
-            #   print 'zipinfo.filename: {0}'.format(zipinfo.filename)
+            #   self.log('zipinfo.filename: {0}'.format(zipinfo.filename))
             if zipinfo.file_size and self.is_search_file(zipinfo.filename):
                 zio = StringIO(zfo.read(zipinfo.filename))
                 zio.seek(0)
@@ -597,12 +600,12 @@ class Searcher:
         if self.fileutil.is_text_file(sf.filename):
             #if self.settings.debug:
             #   msg = 'searchable text file in zip: {0}'
-            #   print msg.format(zio.filename)
+            #   self.log(msg.format(zio.filename))
             self.search_text_file_obj(sf, zio)
         elif self.fileutil.is_binary_file(sf.filename):
             #if self.settings.debug:
             #   msg = 'searchable binary file in zip: {0}'
-            #   print msg.format(zipinfo.filename)
+            #   self.log(msg.format(zipinfo.filename))
             self.search_binary_file_obj(sf, zio)
 
     def search_tar_file(self, sf, ext):
@@ -614,7 +617,7 @@ class Searcher:
         except tarfile.CompressionError as e:
             if not ext == 'tgz':
                 msg = 'CompressionError while trying to open {0}: {1!s}'
-                print msg.format(sf, e)
+                self.log(msg.format(sf, e))
 
     def search_tarfile_obj(self, sf, tar):
         """Search a tarfile object"""
@@ -623,27 +626,25 @@ class Searcher:
             if tarinfo.isfile() and self.is_search_file(tarinfo.name):
                 #if self.settings.debug:
                 #    msg = 'isfile and is_search_file: {0}'
-                #    print msg.format(tarinfo.name)
+                #    self.log(msg.format(tarinfo.name))
                 #tio = tar.extractfile(tarinfo)
                 tio = StringIO(tar.extractfile(tarinfo).read())
                 tio.seek(0)
                 nsf = SearchFile(containers=sf.containers + [sf.relativepath])
                 nsf.path,nsf.filename = os.path.split(tarinfo.name)
-                #print 'nsf.path: {0}'.format(nsf.path)
-                #print 'nsf.filename: {0}'.format(nsf.filename)
+                #self.log('nsf.path: {0}'.format(nsf.path))
+                #self.log('nsf.filename: {0}'.format(nsf.filename))
                 self.search_tarinfo_obj(nsf, tio)
 
     def search_tarinfo_obj(self, sf, tio):
         """Search a tarinfo object"""
         if self.fileutil.is_text_file(sf.filename):
             if self.settings.debug:
-                msg = 'searchable text file in tar: {0}'
-                print msg.format(sf.filename)
+                self.log('searchable text file in tar: {0}'.format(sf.filename))
             self.search_text_file_obj(sf, tio)
         elif  self.fileutil.is_binary_file(sf.filename):
             if self.settings.debug:
-                msg = 'searchable binary file in tar: {0}'
-                print msg.format(sf.filename)
+                self.log('searchable binary file in tar: {0}'.format(sf.filename))
             self.search_binary_file_obj(sf, tio)
 
     def add_search_result(self, search_result):
@@ -664,9 +665,9 @@ class Searcher:
         s = sio.getvalue()
         sio.close()
         try:
-            print s
+            self.log(s)
         except UnicodeEncodeError as e:
-            print repr(s)
+            self.log(repr(s))
 
     def print_res_counts(self):
         """Print result counts"""
@@ -675,9 +676,9 @@ class Searcher:
                 match = 'match'
                 if self.rescounts[p] > 1:
                     match += 'es'
-                print '{0} {1} for "{2}"'.format(self.rescounts[p], match, p)
+                self.log('{0} {1} for "{2}"'.format(self.rescounts[p], match, p))
             else:
-                print '0 matches for "{0}"'.format(p)
+                self.log('0 matches for "{0}"'.format(p))
 
     def get_matching_dirs(self, pattern=None):
         """Get list of dirs with matches for a given pattern
