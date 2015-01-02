@@ -2,9 +2,14 @@ package xsearch
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 	"sort"
 )
+
+func log(message string) {
+	fmt.Println(message)
+}
 
 type set map[string]bool
 

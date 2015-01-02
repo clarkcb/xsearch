@@ -28,15 +28,15 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 	flagActionMap := so.getFlagActionMap()
 
 	if false {
-		fmt.Printf("argActionMap: %v", argActionMap)
-		fmt.Printf("flagActionMap: %v", flagActionMap)
+		log(fmt.Sprintf("argActionMap: %v", argActionMap))
+		log(fmt.Sprintf("flagActionMap: %v", flagActionMap))
 	}
 
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
 			k := strings.TrimLeft(args[i], "-")
 			if false {
-				fmt.Printf("k: %s\n", k)
+				log(fmt.Sprintf("k: %s\n", k))
 			}
 			if af, isAction := argActionMap[k]; isAction {
 				i++
@@ -81,7 +81,7 @@ func (so *SearchOptions) getUsageString() string {
 }
 
 func (so *SearchOptions) PrintUsage() {
-	fmt.Println(so.getUsageString())
+	log(so.getUsageString())
 	os.Exit(0)
 }
 
@@ -151,7 +151,7 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			if err == nil {
 				settings.LinesAfter = num
 			} else {
-				fmt.Printf("Invalid value for linesafter: %s\n", s)
+				log(fmt.Sprintf("Invalid value for linesafter: %s\n", s))
 			}
 		},
 		"linesaftertopattern": func(s string, settings *SearchSettings) {
@@ -165,7 +165,7 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			if err == nil {
 				settings.LinesBefore = num
 			} else {
-				fmt.Printf("Invalid value for linesbefore: %s\n", s)
+				log(fmt.Sprintf("Invalid value for linesbefore: %s\n", s))
 			}
 		},
 		"maxlinelength": func(s string, settings *SearchSettings) {
@@ -173,7 +173,7 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			if err == nil {
 				settings.MaxLineLength = num
 			} else {
-				fmt.Printf("Invalid value for maxlinelength: %s\n", s)
+				log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
 			}
 		},
 		"out-archiveext": func(s string, settings *SearchSettings) {

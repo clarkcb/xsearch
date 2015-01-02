@@ -130,13 +130,13 @@ func printCounts(singName string, pluralName string, countKeys []string,
 	if len(countKeys) == 1 {
 		countName = singName
 	}
-	fmt.Printf("%s match counts (%d %s):\n", strings.Title(singName),
-		len(countKeys), countName)
+	log(fmt.Sprintf("%s match counts (%d %s):\n", strings.Title(singName),
+		len(countKeys), countName))
 	longestKeyLen := getLongestLen(countKeys) + 1
 	longestNumLen := getNumLen2(getHighestMapVal(countMap))
-	lineFormat := fmt.Sprintf("%%-%ds %%%dd\n", longestKeyLen, longestNumLen)
+	lineFormat := fmt.Sprintf("%%-%ds %%%dd", longestKeyLen, longestNumLen)
 	for _, k := range countKeys {
-		fmt.Printf(lineFormat, k+":", countMap[k])
+		log(fmt.Sprintf(lineFormat, k+":", countMap[k]))
 	}
 }
 
@@ -166,12 +166,12 @@ func (rs *SearchResults) PrintPatternCounts(patterns []string) {
 func (rs *SearchResults) PrintSearchResults() {
 	// sort them first
 	sort.Sort(rs)
-	fmt.Printf("Search results (%d):\n", len(rs.SearchResults))
+	log(fmt.Sprintf("Search results (%d):\n", len(rs.SearchResults)))
 	for _, r := range rs.SearchResults {
 		if len(rs.PatternCounts) > 1 {
-			fmt.Printf("\"%s\": ", r.Pattern.String())
+			log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
 		}
-		fmt.Println(r.String())
+		log(r.String())
 	}
 }
 
