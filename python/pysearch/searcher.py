@@ -44,9 +44,11 @@ class Searcher:
         self.__dict__.update(kargs)
 
     def log(self, message):
+        """log a message (for now just print to stdout)"""
         print(message)
 
     def validate_settings(self):
+        """Assert required settings in SearchSettings instance"""
         assert self.settings.startpath, 'Startpath not defined'
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
         assert self.settings.searchpatterns, 'No search patterns specified'
@@ -127,8 +129,8 @@ class Searcher:
         if self.settings.recursive:
             for root, dirs, files in os.walk(self.settings.startpath):
                 searchdirs.extend([
-                    os.path.join(root,d) for d in dirs \
-                    if self.is_search_dir(os.path.join(root,d))])
+                    os.path.join(root, d) for d in dirs \
+                    if self.is_search_dir(os.path.join(root, d))])
         return searchdirs
 
     def get_search_files(self, searchdirs):
@@ -142,7 +144,7 @@ class Searcher:
 
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
-        files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f))]
+        files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
         searchfiles = [SearchFile(path=d,
                         filename=f,
                         filetype=self.fileutil.get_filetype(f))
@@ -304,7 +306,7 @@ class Searcher:
         if len(before_start_indices) >= line_count:
             before_start_indices = before_start_indices[(line_count*-1):]
         lines_before = []
-        for i,x in enumerate(before_start_indices[:-1]):
+        for i, x in enumerate(before_start_indices[:-1]):
             if i < len(before_start_indices) - 1:
                 lines_before.append(
                     s[before_start_indices[i]:before_start_indices[i+1]-1])
@@ -325,7 +327,7 @@ class Searcher:
                 match_indices[p] = m.start() + after_start_indices[0]
         if match_indices:
             first_index = min(x for x in match_indices.values())
-            for i,x in enumerate(after_start_indices):
+            for i, x in enumerate(after_start_indices):
                 if x < first_index and i < len(after_start_indices) - 1:
                     lines_after.append(
                         s[after_start_indices[i]:after_start_indices[i+1]-1])
@@ -345,7 +347,7 @@ class Searcher:
         elif len(after_start_indices) == line_count:
             after_start_indices.append(len(s)-1)
         lines_after = []
-        for i,x in enumerate(after_start_indices):
+        for i, x in enumerate(after_start_indices):
             if i < len(after_start_indices) - 1:
                 lines_after.append(
                     s[after_start_indices[i]:after_start_indices[i+1]-1])
@@ -576,7 +578,7 @@ class Searcher:
                 zio = StringIO(zfo.read(zipinfo.filename))
                 zio.seek(0)
                 nsf = SearchFile(containers=sf.containers + [sf.relativepath])
-                nsf.path,nsf.filename = os.path.split(zipinfo.filename)
+                nsf.path, nsf.filename = os.path.split(zipinfo.filename)
                 self.search_zipinfo_obj(nsf, zio)
 
     def search_zipinfo_obj(self, sf, zio):
@@ -615,7 +617,7 @@ class Searcher:
                 tio = StringIO(tar.extractfile(tarinfo).read())
                 tio.seek(0)
                 nsf = SearchFile(containers=sf.containers + [sf.relativepath])
-                nsf.path,nsf.filename = os.path.split(tarinfo.name)
+                nsf.path, nsf.filename = os.path.split(tarinfo.name)
                 #self.log('nsf.path: {0}'.format(nsf.path))
                 #self.log('nsf.filename: {0}'.format(nsf.filename))
                 self.search_tarinfo_obj(nsf, tio)
