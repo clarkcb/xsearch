@@ -6,19 +6,27 @@ import "testing"
 func TestAddSearchResult(t *testing.T) {
 	searchResults := NewSearchResults()
 
+	path := "/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
+	name := "searchresults_test.go"
+	searchItem := NewSearchItem(&path, &name)
+
+	line := "func TestAddSearchResult(t *testing.T) {"
+
 	searchResult := &SearchResult{
 		regexp.MustCompile("^func\\s+TestAddSearchResult"),
-		"/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch/searchresults_test.go",
+		searchItem,
 		6,
-		"func TestAddSearchResult(t *testing.T) {",
-		[]string{},
-		[]string{},
+		1,
+		25,
+		&line,
+		[]*string{},
+		[]*string{},
 	}
 	searchResults.AddSearchResult(searchResult)
 
-	if !searchResults.HasSearchResults() {
-		t.Errorf("searchResults.HasSearchResults()=%t, expected=true",
-			searchResults.HasSearchResults())
+	if searchResults.IsEmpty() {
+		t.Errorf("searchResults.IsEmpty()=%t, expected=false",
+			searchResults.IsEmpty())
 	}
 
 	if len(searchResults.SearchResults) != 1 {

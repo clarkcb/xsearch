@@ -43,6 +43,15 @@ func contains(slice []*string, s string) bool {
 	return false
 }
 
+func containsV(slice []string, s string) bool {
+	for _, as := range slice {
+		if s == as {
+			return true
+		}
+	}
+	return false
+}
+
 func getLongestLen(slice []string) int {
 	longestLen := 0
 	for _, s := range slice {

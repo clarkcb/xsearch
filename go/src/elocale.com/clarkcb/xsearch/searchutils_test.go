@@ -13,13 +13,13 @@ func TestContains(t *testing.T) {
 
 	b := false
 	for _, g := range greetings {
-		if b = contains(greetings, g); !b {
+		if b = containsV(greetings, g); !b {
 			t.Errorf("contains(greetings, \"%s\")=%t, expected=true", b)
 		}
 	}
 
 	for _, g := range others {
-		if b = contains(greetings, g); b {
+		if b = containsV(greetings, g); b {
 			t.Errorf("contains(greetings, \"%s\")=%t, expected=false", b)
 		}
 	}

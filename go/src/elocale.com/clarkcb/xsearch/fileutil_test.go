@@ -22,7 +22,7 @@ func TestGetFileType(t *testing.T) {
 		"hello.txt":             FILETYPE_TEXT,
 		"lib.a":                 FILETYPE_BINARY,
 		"noext":                 FILETYPE_BINARY,
-		"archive.tar.gz":        FILETYPE_COMPRESSED,
+		"archive.tar.gz":        FILETYPE_ARCHIVE,
 		"nonsense.zippitydooda": FILETYPE_UNKNOWN,
 	}
 

@@ -18,8 +18,13 @@ func TestSearchSettingsFromArgs(t *testing.T) {
 		t.Errorf("settings.StartPath (%s) != \".\"", settings.StartPath)
 	}
 
-	if len(settings.InExtensions) != 1 || settings.InExtensions[0] != "go" {
-		t.Errorf("settings.InExtensions (%v) != []string{\"go\"}",
-			settings.InExtensions)
+	if len(settings.InExtensions) != 1 {
+		t.Errorf("len(settings.InExtensions) = %i, expected 1",
+			len(settings.InExtensions))
+	}
+	expectedExt := "go"
+	if *settings.InExtensions[0] != expectedExt {
+		t.Errorf("settings.InExtensions[0] (\"%s\") != \"%s\"",
+			*settings.InExtensions[0], expectedExt)
 	}
 }
