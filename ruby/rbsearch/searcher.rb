@@ -399,6 +399,9 @@ class Searcher
         lines.push(r.line.strip)
       end
     end
+    if @settings.uniquelines
+      lines.uniq!
+    end
     lines.sort!
     lines
   end

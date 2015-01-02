@@ -59,33 +59,31 @@ def main
     if settings.listdirs
       log("\n")
       dirs = searcher.get_matching_dirs()
-      if not dirs.empty?
-        log("Directories with matches (#{dirs.count}):")
-        dirs.each do |d|
-          log("#{d}\n")
-        end
+      log("Directories with matches (#{dirs.count}):")
+      dirs.each do |d|
+        log("#{d}\n")
       end
     end
 
     if settings.listfiles
       log("\n")
       files = searcher.get_matching_files()
-      if not files.empty?
-        log("Files with matches (#{files.count}):")
-        files.each do |f|
-          log("#{f}\n")
-        end
+      log("Files with matches (#{files.count}):")
+      files.each do |f|
+        log("#{f}\n")
       end
     end
 
     if settings.listlines
       log("\n")
       lines = searcher.get_matching_lines()
-      if not lines.empty?
-        log("Lines with matches (#{lines.count}):")
-        lines.each do |line|
-          log("#{line}\n")
-        end
+      hdrText = "Lines with matches"
+      if settings.uniquelines
+        hdrText = "Unique lines with matches"
+      end
+      log("#{hdrText} (#{lines.count}):")
+      lines.each do |line|
+        log("#{line}\n")
       end
     end
 
