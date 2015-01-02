@@ -13,9 +13,23 @@ var SearchResult = require('./searchresult.js').SearchResult;
 
 // add a startsWith method to String type
 if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
+    String.prototype.startsWith = function (str) {
         return this.slice(0, str.length) == str;
     };
+}
+
+// add a format method to String type (use {0} style placeholders)
+// from http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format/4673436#4673436
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
 }
 
 function Searcher(settings) {
@@ -24,6 +38,10 @@ function Searcher(settings) {
     var _fileutil = new FileUtil();
     var _timers = {};
     this.results = [];
+
+    var log = function (message) {
+        console.log(message);
+    }
 
     var validateSettings = function () {
         assert.ok(_settings.startPath, 'Startpath not defined');
@@ -118,7 +136,7 @@ function Searcher(settings) {
 
     var getSearchDirs = function (startPath) {
         if (_settings.debug) {
-            console.log("Getting list of directories to search under " + startPath);
+            log("Getting list of directories to search under " + startPath);
         }
         var searchDirs = [];
         if (_settings.recursive) {
@@ -132,7 +150,7 @@ function Searcher(settings) {
             // this error seems to occur when the file is a soft link
             // to a non-existent file
         } else {
-            console.log(err);
+            log(err);
             process.exit(1);
         }
     }
@@ -230,12 +248,12 @@ function Searcher(settings) {
 
     var printElapsed = function (name) {
         var elapsed = getElapsed(name);
-        console.log("Elapsed time for " + name + ": " + elapsed + " milliseconds");
+        log("Elapsed time for " + name + ": " + elapsed + " milliseconds");
     };
 
     this.search = function () {
         if (_settings.verbose)
-            console.log("Search initiated");
+            log("Search initiated");
 
         // get the search dirs
         if (_settings.doTiming)
@@ -245,9 +263,9 @@ function Searcher(settings) {
         if (_settings.doTiming)
             stopTimer("GetSearchDirs");
         if (_settings.verbose) {
-            console.log("\nDirectories to be searched (" + dirs.length + "):");
+            log("\nDirectories to be searched (" + dirs.length + "):");
             for (var d in dirs) {
-                console.log(dirs[d]);
+                log(dirs[d]);
             }
         }
 
@@ -258,11 +276,11 @@ function Searcher(settings) {
         if (_settings.doTiming)
             stopTimer("GetSearchFiles");
         if (_settings.verbose) {
-            console.log("\nFiles to be searched (" + files.length + "):");
+            log("\nFiles to be searched (" + files.length + "):");
             for (var f in files) {
-                console.log(files[f]);
+                log(files[f]);
             }
-            console.log("");
+            log("");
         }
 
         if (_settings.doTiming)
@@ -274,7 +292,7 @@ function Searcher(settings) {
             stopTimer("SearchFiles");
 
         if (_settings.verbose)
-            console.log("Search complete.");
+            log("Search complete.");
     };
 
     var searchFile = function (filepath) {
@@ -287,7 +305,7 @@ function Searcher(settings) {
 
     var searchBinaryFile = function (filepath) {
         if (_settings.verbose) {
-            console.log('Searching binary file: "'+filepath+'"');
+            log('Searching binary file: "'+filepath+'"');
         }
         var contents = fs.readFileSync(filepath).toString();
         var pattern = '';
@@ -303,7 +321,7 @@ function Searcher(settings) {
 
     var searchTextFile = function (filepath) {
         if (_settings.verbose) {
-            console.log('Searching text file: "'+filepath+'"');
+            log('Searching text file: "'+filepath+'"');
         }
         if (_settings.multilineSearch)
             searchTextFileContents(filepath);
@@ -442,9 +460,9 @@ function Searcher(settings) {
 
     this.printMatchingDirs = function () {
         var dirs = that.getMatchingDirs();
-        console.log("\nDirectories with matches ("+dirs.length+"):");
+        log("\nDirectories with matches ("+dirs.length+"):");
         for (var d in dirs) {
-            console.log(dirs[d]);
+            log(dirs[d]);
         }
     };
 
@@ -459,9 +477,9 @@ function Searcher(settings) {
 
     this.printMatchingFiles = function () {
         var files = that.getMatchingFiles();
-        console.log("\nFiles with matches ("+files.length+"):");
+        log("\nFiles with matches ("+files.length+"):");
         for (var f in files) {
-            console.log(files[f]);
+            log(files[f]);
         }
     };
 
@@ -477,9 +495,9 @@ function Searcher(settings) {
 
     this.printMatchingLines = function () {
         var lines = that.getMatchingLines();
-        console.log("\nLines with matches ("+lines.length+"):");
+        log("\nLines with matches ("+lines.length+"):");
         for (var l in lines) {
-            console.log(lines[l]);
+            log(lines[l]);
         }
     };
 }

@@ -7,8 +7,12 @@
 var Searcher = require('./searcher.js').Searcher;
 var SearchOptions = require('./searchoptions.js').SearchOptions;
 
+function log(message) {
+    console.log(message);
+}
+
 function handleError(err, searchOptions) {
-    console.log('\n' + err + '\n');
+    log('\n' + err + '\n');
     searchOptions.usageWithCode(1);
 }
 
@@ -16,7 +20,7 @@ function searchMain() {
     var searchOptions = new SearchOptions();
 
     var args = process.argv.slice(2);
-    //console.log('args: ', args);
+    //log('args: ', args);
 
     searchOptions.searchSettingsFromArgs(args, function(err, settings) {
         if (err) {
@@ -27,21 +31,21 @@ function searchMain() {
             searchOptions.usage();
 
         if (settings.printVersion) {
-            console.log('Version: 0.1');
+            log('Version: 0.1');
             process.exit(0);
         }
 
         if (settings.debug)
-            console.log("settings: " + settings.toString());
+            log("settings: " + settings.toString());
 
          try {
             var searcher = new Searcher(settings);
             searcher.search();
 
             if (settings.printResults) {
-                console.log("\nSearch results ("+searcher.results.length+"):");
+                log("\nSearch results ("+searcher.results.length+"):");
                 for (var r in searcher.results) {
-                    console.log(searcher.results[r].toString());
+                    log(searcher.results[r].toString());
                 }
             }
 
