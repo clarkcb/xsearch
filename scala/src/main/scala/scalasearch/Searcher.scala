@@ -215,13 +215,13 @@ class Searcher (settings: SearchSettings) {
       case FileType.Archive =>
         searchArchiveFileSource(sf, source)
       case _ =>
-        log("Skipping unknown file type: " + sf)
+        log("Skipping unknown file type: %s".format(sf))
     }
   }
 
   def searchTextFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      log("Searching text file " + sf.getPathWithContainers)
+      log("Searching text file %s".format(sf.getPathWithContainers))
     }
     if (settings.multiLineSearch)
       searchTextFileSourceContents(sf, source)
@@ -431,7 +431,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchBinaryFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      log("Searching binary file " + sf.toString)
+      log("Searching binary file %s".format(sf.toString))
     }
     val contents = source.mkString
     source.close()
@@ -442,7 +442,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchArchiveFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      log("Searching archive file " + sf.toString)
+      log("Searching archive file %s".format(sf.toString))
     }
     if (FileUtil.isZipArchiveFile(sf))
       searchZipFileSource(sf, source)
@@ -461,7 +461,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchZipFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      log("Searching zip file " + sf.toString)
+      log("Searching zip file %s".format(sf.toString))
     }
     val zf = new ZipFile(sf.toFile)
     val entries = zf.entries().filterNot(_.isDirectory)
@@ -498,7 +498,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchTarFileInputStream(sf: SearchFile, is: InputStream) {
     if (settings.verbose) {
-      log("Searching tar file " + sf.toString)
+      log("Searching tar file %s".format(sf.toString))
     }
     val tis = new TarArchiveInputStream(is)
     var entry: TarArchiveEntry = tis.getNextTarEntry
@@ -531,7 +531,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchGzFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      log("Searching gzip file " + sf.toString)
+      log("Searching gzip file %s".format(sf.toString))
     }
     val containedFileName = sf.fileName.split("\\.").init.mkString(".")
     val containedFileType = FileUtil.getFileType(sf)
@@ -553,7 +553,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchBz2FileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      log("Searching bzip2 file " + sf.toString)
+      log("Searching bzip2 file %s".format(sf.toString))
     }
     val containedFileName = sf.fileName.split("\\.").init.mkString(".")
     val containedFileType = FileUtil.getFileType(sf)
@@ -597,7 +597,7 @@ class Searcher (settings: SearchSettings) {
 
   def printMatchingDirs() {
     val dirs = getMatchingDirs
-    log("\nMatching directories (%d directories):".format(dirs.length))
+    log("\nDirectories with matches (%d):".format(dirs.length))
     dirs.foreach(f => log(f.toString))
   }
 
@@ -607,7 +607,7 @@ class Searcher (settings: SearchSettings) {
 
   def printMatchingFiles() {
     val files = getMatchingFiles
-    log("\nMatching files (%d files):".format(files.length))
+    log("\nFiles with matches (%d):".format(files.length))
     files.foreach(f => log(f.toString))
   }
 
@@ -626,10 +626,10 @@ class Searcher (settings: SearchSettings) {
     val lines = getMatchingLines
     val hdr =
       if (settings.uniqueLines)
-        "\nMatching lines (%d unique lines)".format(lines.length)
+        "\nUnique lines with matches (%d):"
       else
-        "\nMatching lines (%d lines)".format(lines.length)
-    log(hdr)
+        "\nLines with matches (%d):"
+    log(hdr.format(lines.length))
     lines.foreach(log)
   }
 }
