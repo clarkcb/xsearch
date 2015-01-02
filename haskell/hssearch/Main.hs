@@ -69,15 +69,19 @@ formatMatchingFiles results =
   unlines matchingFiles
   where matchingFiles = getMatchingFiles results
 
-getMatchingLines :: [SearchResult] -> [B.ByteString]
-getMatchingLines results = (sort . nub . map trimLine) results
+getMatchingLines :: [SearchResult] -> Bool -> [B.ByteString]
+getMatchingLines results unique | unique = (sort . nub . map trimLine) results
+                                | otherwise = (sort . map trimLine) results
   where trimLine = BC.dropWhile isSpace . line
 
-formatMatchingLines :: [SearchResult] -> String
-formatMatchingLines results = 
-  "\nLines with matches (" ++ show (length matchingLines) ++ "):" ++
+formatMatchingLines :: [SearchResult] -> Bool -> String
+formatMatchingLines results unique = 
+  "\n" ++ hdrText ++ " (" ++ show (length matchingLines) ++ "):\n" ++
   BC.unpack (BC.intercalate (BC.pack "\n") matchingLines) ++ "\n"
-  where matchingLines = getMatchingLines results
+  where matchingLines = getMatchingLines results unique
+        hdrText = if unique
+                  then "Unique lines with matches"
+                  else "Lines with matches"
 
 formatSearchDirs :: [FilePath] -> String
 formatSearchDirs dirs = 
@@ -132,6 +136,6 @@ main = do
                then formatMatchingFiles results
                else ""
       logMsg $ if listLines settings
-               then formatMatchingLines results
+               then formatMatchingLines results (uniqueLines settings)
                else ""
       logMsg ""
