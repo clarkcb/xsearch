@@ -88,46 +88,49 @@ formatSearchFiles files =
   "\nFiles to be searched (" ++ show (length files) ++ "):\n" ++
   unlines files
 
+logMsg :: String -> IO ()
+logMsg message = putStr message
+
 main :: IO ()
 main = do
   args <- getArgs
   searchOptions <- getSearchOptions
   let settings = settingsFromArgs searchOptions args
-  putStr $ if debug settings
+  logMsg $ if debug settings
            then "\nsettingsFromArgs " ++ show args ++ ": " ++ show settings ++
                 "\n"
            else ""
   case errsOrUsage searchOptions settings of
-    Just usage -> putStrLn usage
+    Just usage -> logMsg $ usage ++ "\n"
     Nothing -> do
       (sdt, searchDirs) <- timeItT (getSearchDirs settings)
-      putStr $ if doTiming settings
+      logMsg $ if doTiming settings
                then "\nElapsed time for getSearchDirs: " ++ show sdt ++ "\n"
                else ""
-      putStr $ if verbose settings
+      logMsg $ if verbose settings
                then formatSearchDirs searchDirs
                else ""
       (sft, searchFiles) <- timeItT (getSearchFiles settings searchDirs)
-      putStr $ if doTiming settings
+      logMsg $ if doTiming settings
                then "\nElapsed time for getSearchFiles: " ++ show sft ++ "\n"
                else ""
-      putStr $ if verbose settings
+      logMsg $ if verbose settings
                then formatSearchFiles searchFiles
                else ""
       (rt, results) <- timeItT (doSearchFiles settings searchFiles)
-      putStr $ if doTiming settings
+      logMsg $ if doTiming settings
                then "\nElapsed time for searching: " ++ show rt ++ "\n"
                else ""
-      putStr $ if printResults settings
+      logMsg $ if printResults settings
                then formatResults settings results
                else ""
-      putStr $ if listDirs settings
+      logMsg $ if listDirs settings
                then formatMatchingDirs results
                else ""
-      putStr $ if listFiles settings
+      logMsg $ if listFiles settings
                then formatMatchingFiles results
                else ""
-      putStr $ if listLines settings
+      logMsg $ if listLines settings
                then formatMatchingLines results
                else ""
-      putStrLn ""
+      logMsg ""
