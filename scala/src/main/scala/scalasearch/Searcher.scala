@@ -18,7 +18,7 @@ class Searcher (settings: SearchSettings) {
   validateSettings()
 
   if (settings.debug) {
-    println("settings: "+settings)
+    log("settings: "+settings)
   }
 
   private val _fileMap = mutable.Map[SearchFile, List[SearchResult]]()
@@ -26,6 +26,10 @@ class Searcher (settings: SearchSettings) {
   private val _timers = mutable.Map[String,Long]()
 
   def searchResults: List[SearchResult] = _searchResults.toList
+
+  def log(message: String): Unit = {
+    println(message)
+  }
 
   def matchesAnyPattern(s: String, patterns: Iterable[Regex]): Boolean = {
     patterns exists (_.findFirstMatchIn(s).isDefined)
@@ -65,7 +69,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def getSearchDirs(startDir:File): Iterable[File] = {
-    if (settings.verbose) println("getSearchDirs(%s)".format(startDir.toString))
+    if (settings.verbose) log("getSearchDirs(%s)".format(startDir.toString))
     val startDirs =
       if (isSearchDir(startDir)) Seq[File](startDir)
       else Seq.empty[File]
@@ -161,7 +165,7 @@ class Searcher (settings: SearchSettings) {
 
   def printElapsed(name:String) {
     val elapsed = getElapsed(name)
-    println("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
+    log("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
   }
 
   private def stopTimer(name:String) {
@@ -175,18 +179,18 @@ class Searcher (settings: SearchSettings) {
     val searchDirs = getSearchDirs(new File(settings.startpath))
     if (settings.doTiming) stopTimer("getSearchDirs")
     if (settings.verbose) {
-      println("\nDirectories to be searched (%d):\n%s".format(searchDirs.size,
+      log("\nDirectories to be searched (%d):\n%s".format(searchDirs.size,
         searchDirs.mkString("\n")))
     }
     if (settings.doTiming) startTimer("getSearchFiles")
     val searchFiles: Iterable[SearchFile] = getSearchFiles(searchDirs)
     if (settings.doTiming) stopTimer("getSearchFiles")
     if (settings.verbose) {
-      println("\nFiles to be searched (%d):\n%s".format(searchFiles.size,
+      log("\nFiles to be searched (%d):\n%s".format(searchFiles.size,
         searchFiles.mkString("\n")))
     }
     if (settings.verbose) {
-      println("\nStarting file search...\n")
+      log("\nStarting file search...\n")
     }
     if (settings.doTiming) startTimer("searchFiles")
     for (f <- searchFiles) {
@@ -194,7 +198,7 @@ class Searcher (settings: SearchSettings) {
     }
     if (settings.doTiming) stopTimer("searchFiles")
     if (settings.verbose) {
-      println("\nFile search complete.\n")
+      log("\nFile search complete.\n")
     }
   }
 
@@ -211,13 +215,13 @@ class Searcher (settings: SearchSettings) {
       case FileType.Archive =>
         searchArchiveFileSource(sf, source)
       case _ =>
-        println("Skipping unknown file type: " + sf)
+        log("Skipping unknown file type: " + sf)
     }
   }
 
   def searchTextFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching text file " + sf.getPathWithContainers)
+      log("Searching text file " + sf.getPathWithContainers)
     }
     if (settings.multiLineSearch)
       searchTextFileSourceContents(sf, source)
@@ -427,7 +431,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchBinaryFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching binary file " + sf.toString)
+      log("Searching binary file " + sf.toString)
     }
     val contents = source.mkString
     source.close()
@@ -438,7 +442,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchArchiveFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching archive file " + sf.toString)
+      log("Searching archive file " + sf.toString)
     }
     if (FileUtil.isZipArchiveFile(sf))
       searchZipFileSource(sf, source)
@@ -450,14 +454,14 @@ class Searcher (settings: SearchSettings) {
       val tis = new BufferedInputStream(new FileInputStream(sf.getPath))
       searchTarFileInputStream(sf, tis)
     } else {
-      println("Currently unsupported archive file type: %s (%s)".
+      log("Currently unsupported archive file type: %s (%s)".
         format(FileUtil.getExtension(sf), sf.toString))
     }
   }
 
   def searchZipFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching zip file " + sf.toString)
+      log("Searching zip file " + sf.toString)
     }
     val zf = new ZipFile(sf.toFile)
     val entries = zf.entries().filterNot(_.isDirectory)
@@ -494,7 +498,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchTarFileInputStream(sf: SearchFile, is: InputStream) {
     if (settings.verbose) {
-      println("Searching tar file " + sf.toString)
+      log("Searching tar file " + sf.toString)
     }
     val tis = new TarArchiveInputStream(is)
     var entry: TarArchiveEntry = tis.getNextTarEntry
@@ -527,7 +531,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchGzFileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching gzip file " + sf.toString)
+      log("Searching gzip file " + sf.toString)
     }
     val containedFileName = sf.fileName.split("\\.").init.mkString(".")
     val containedFileType = FileUtil.getFileType(sf)
@@ -549,7 +553,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchBz2FileSource(sf: SearchFile, source: Source) {
     if (settings.verbose) {
-      println("Searching bzip2 file " + sf.toString)
+      log("Searching bzip2 file " + sf.toString)
     }
     val containedFileName = sf.fileName.split("\\.").init.mkString(".")
     val containedFileType = FileUtil.getFileType(sf)
@@ -583,7 +587,7 @@ class Searcher (settings: SearchSettings) {
     if (settings.searchPatterns.size > 1) {
       print("\"" + r.searchPattern + "\": ")
     }
-    println(r)
+    log(r.toString)
   }
 
   def getMatchingDirs:List[File] = {
@@ -593,18 +597,18 @@ class Searcher (settings: SearchSettings) {
 
   def printMatchingDirs() {
     val dirs = getMatchingDirs
-    println("\nMatching directories (%d directories):".format(dirs.length))
-    dirs.foreach(println(_))
+    log("\nMatching directories (%d directories):".format(dirs.length))
+    dirs.foreach(f => log(f.toString))
   }
 
-  def getMatchingFiles:List[File] = {
+  def getMatchingFiles: List[File] = {
     _fileMap.keySet.map(_.toFile).toList.sortWith(_.toString < _.toString)
   }
 
   def printMatchingFiles() {
     val files = getMatchingFiles
-    println("\nMatching files (%d files):".format(files.length))
-    files.foreach(println(_))
+    log("\nMatching files (%d files):".format(files.length))
+    files.foreach(f => log(f.toString))
   }
 
   def getMatchingLines:List[String] = {
@@ -625,8 +629,8 @@ class Searcher (settings: SearchSettings) {
         "\nMatching lines (%d unique lines)".format(lines.length)
       else
         "\nMatching lines (%d lines)".format(lines.length)
-    println(hdr)
-    lines.foreach(println(_))
+    log(hdr)
+    lines.foreach(log)
   }
 }
 
