@@ -488,14 +488,22 @@ function Searcher(settings) {
         for (var r in that.results) {
             var result = that.results[r];
             if (result.linenum)
-                lines.push(result.line);
+                lines.push(result.line.trim());
         }
-        return setFromArray(lines);
+        if (_settings.uniqueLines)
+            lines = setFromArray(lines);
+        lines.sort();
+        return lines;
     };
 
     this.printMatchingLines = function () {
         var lines = that.getMatchingLines();
-        log("\nLines with matches ("+lines.length+"):");
+        var hdrText;
+        if (_settings.uniqueLines)
+            hdrText = "Unique lines with matches";
+        else
+            hdrText = "Lines with matches";
+        log("\n"+hdrText+" ("+lines.length+"):");
         for (var l in lines) {
             log(lines[l]);
         }
