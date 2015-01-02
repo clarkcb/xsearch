@@ -556,13 +556,20 @@ namespace CsSearch
 
 		public IEnumerable<string> GetMatchingLines()
 		{
-			return Results.Select(r => r.Line.Trim()).ToList();
+			var lines = Results.Select(r => r.Line.Trim()).ToList();
+			if (Settings.UniqueLines)
+			{
+				lines = new HashSet<string>(lines).ToList();
+			}
+			lines.Sort();
+			return lines;
 		}
 
 		public void PrintMatchingLines()
 		{
 			var matchingLines = GetMatchingLines();
-			Log(string.Format("\nLines with matches ({0}):", matchingLines.Count()));
+			var hdrText = Settings.UniqueLines ? "Unique lines with matches" : "Lines with matches";
+			Log(string.Format("\n{0} ({1}):", hdrText, matchingLines.Count()));
 			foreach (var m in matchingLines)
 			{
 				Log(m);
