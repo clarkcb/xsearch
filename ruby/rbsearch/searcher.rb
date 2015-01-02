@@ -25,6 +25,10 @@ class Searcher
     @filehash = Hash.new([])
   end
 
+  def log(message)
+    puts message
+  end
+
   def validate_settings
     raise 'Startpath not defined' unless @settings.startpath
     raise 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
@@ -64,7 +68,7 @@ class Searcher
     if @settings.excludehidden and f.start_with?('.')
       return false
     end
-    if @settings.in_extensions.count > 0 and 
+    if @settings.in_extensions.count > 0 and
       not @settings.in_extensions.include?(@fileutil.get_extension(f))
       return false
     end
@@ -155,7 +159,7 @@ class Searcher
 
   def print_elapsed(name)
     elapsed = get_elapsed(name)
-    puts "Elapsed time for #{name}: #{elapsed}"
+    log("Elapsed time for #{name}: #{elapsed}")
   end
 
   def stop_timer(name)
@@ -173,9 +177,9 @@ class Searcher
       stop_timer('get_search_dirs')
     end
     if @settings.verbose
-      puts "\nDirectories to be searched (#{searchdirs.count}):"
+      log("\nDirectories to be searched (#{searchdirs.count}):")
       searchdirs.each do |d|
-        puts "#{d}"
+        log("#{d}")
       end
     end
     # get the searchfiles
@@ -187,11 +191,11 @@ class Searcher
       stop_timer('get_search_files')
     end
     if @settings.verbose
-      puts "\nFiles to be searched (#{searchfiles.count}):"
+      log("\nFiles to be searched (#{searchfiles.count}):")
       searchfiles.each do |f|
-        puts "#{f}"
+        log("#{f}")
       end
-      puts "\n"
+      log("\n")
     end
     if @settings.dotiming
       start_timer('search_files')
@@ -207,7 +211,7 @@ class Searcher
   def search_file(f)
     unless @fileutil.is_searchable_file(f)
       if @settings.verbose or @settings.debug
-        puts "Skipping unsearchable file: #{f}"
+        log("Skipping unsearchable file: #{f}")
         return 0
       end
     end
@@ -229,7 +233,7 @@ class Searcher
 
   def search_text_file(f, enc = nil)
     if @settings.debug
-      puts "Searching text file #{f}"
+      log("Searching text file #{f}")
     end
     if @settings.multilinesearch
       search_text_file_contents(f, enc)
@@ -337,7 +341,7 @@ class Searcher
   end
 
   def print_results()
-    puts "Search results (#{@results.count}):"
+    log("Search results (#{@results.count}):")
     @results.each do |r|
       print_result(r)
     end
@@ -349,7 +353,7 @@ class Searcher
       s += "#{search_result.pattern}: "
     end
     s += search_result.to_s
-    puts s
+    log(s)
   end
 
   def get_matching_dirs(patterns = [])
