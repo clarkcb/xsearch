@@ -14,16 +14,9 @@ import Text.Regex.PCRE
 
 import HsSearch.FileTypes
 import HsSearch.FileUtility
+import HsSearch.SearchFile
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
-
-
--- TODO: use this type with all file-based functions
-data SearchFile = SearchFile {
-                                searchFileContainers :: [FilePath]
-                              , searchFilePath :: FilePath
-                              , searchFileType :: FileType
-                              } deriving (Show, Eq)
 
 
 isSearchDir :: SearchSettings -> FilePath -> Bool
@@ -59,13 +52,11 @@ isSearchFile settings fp = and $ map ($fp) tests
                 , (\x -> not (isHiddenFilePath x) || includeHidden)
                 ]
         inExts = inExtensions settings
-        hasInExt f = case getExtension f of
-                       Just x -> x `elem` inExts
-                       Nothing -> null inExts
+        hasInExt f | null inExts = True
+                   | otherwise   = any (hasExtension f) inExts
         outExts = outExtensions settings
-        hasOutExt f = case getExtension f of
-                        Just x -> x `elem` outExts
-                        Nothing -> False
+        hasOutExt f | null outExts = False
+                    | otherwise    = any (hasExtension f) outExts
         inPatterns = inFilePatterns settings
         outPatterns = outFilePatterns settings
         includeHidden = not $ excludeHidden settings
@@ -84,13 +75,11 @@ isArchiveSearchFile settings fp = and $ map ($fp) tests
                 , (\x -> not (isHiddenFilePath x) || includeHidden)
                 ]
         inExts = inArchiveExtensions settings
-        hasInExt f = case getExtension f of
-                       Just x -> x `elem` inExts
-                       Nothing -> null inExts
+        hasInExt f | null inExts = True
+                   | otherwise   = any (hasExtension f) inExts
         outExts = outArchiveExtensions settings
-        hasOutExt f = case getExtension f of
-                        Just x -> x `elem` outExts
-                        Nothing -> False
+        hasOutExt f | null outExts = False
+                    | otherwise    = any (hasExtension f) outExts
         inPatterns = inArchiveFilePatterns settings
         outPatterns = outArchiveFilePatterns settings
         includeHidden = not $ excludeHidden settings
@@ -103,16 +92,14 @@ getSearchFiles settings dirs = do
                                         , searchFilePath=f
                                         , searchFileType=t }
   let filesWithTypes = map makeSearchFile (zip files fileTypes)
-  let isSearchable sf = isSearchableFileType (searchFileType sf)
-  let searchableFiles = filter isSearchable filesWithTypes
-  let isArchiveFile sf = searchFileType sf == Archive
+  let searchableFiles = filter isSearchableFile filesWithTypes
   let includeArchiveFile sf = (searchArchives settings) &&
                               isArchiveSearchFile settings (searchFilePath sf)
   let includeFile sf = (not (archivesOnly settings)) &&
                        isSearchFile settings (searchFilePath sf)
-  let isValidFile sf | isArchiveFile sf = includeArchiveFile sf
-                     | otherwise        = includeFile sf
-  return $ map searchFilePath (filter isValidFile searchableFiles)
+  let isTargetFile sf | isArchiveFile sf = includeArchiveFile sf
+                      | otherwise        = includeFile sf
+  return $ map searchFilePath (filter isTargetFile searchableFiles)
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do

@@ -16,6 +16,12 @@ data FileType = Archive
               | Unknown
   deriving (Show, Eq)
 
+searchableFileTypes :: [FileType]
+searchableFileTypes = [Text, Binary, Archive]
+
+isSearchableFileType :: FileType -> Bool
+isSearchableFileType t = t `elem` searchableFileTypes
+
 data XmlFileType = XmlFileType { name :: String, extensions :: [String] }
   deriving (Show, Eq)
 
@@ -48,9 +54,6 @@ getFileType xmlFileTypes f =
   case getExtension f of
     Just x -> matchingTypeForExtension xmlFileTypes x
     Nothing -> Unknown
-
-isSearchableFileType :: FileType -> Bool
-isSearchableFileType t = t `elem` [Text, Binary, Archive]
 
 matchingTypeForExtension :: [XmlFileType] -> String -> FileType
 matchingTypeForExtension xmlFileTypes x =

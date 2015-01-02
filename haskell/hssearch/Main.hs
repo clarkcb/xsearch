@@ -44,7 +44,8 @@ formatResults settings results =
        then "\n" ++ unlines (map (formatSearchResult settings) results)
        else "") ++
     (concat (map matchString (searchPatterns settings)))
-  where matchString p = "\nMatches for "++ show p ++ ": " ++ show (patternCount p)
+  where matchString p = "\nMatches for "++ show p ++ ": " ++
+          show (patternCount p) ++ "\n"
         patternCount :: String -> Int
         patternCount p = foldr accMatches 0 results
           where accMatches x acc = if p == (searchPattern x) then acc + 1 else acc
@@ -55,8 +56,8 @@ getMatchingDirs results = (sort . nub . map getDirectory) results
 
 formatMatchingDirs :: [SearchResult] -> String
 formatMatchingDirs results = 
-  "\n\nDirectories with matches (" ++ show (length matchingDirs) ++ "):\n" ++
-  unlines matchingDirs
+  "\nDirectories with matches (" ++ show (length matchingDirs) ++ "):\n" ++
+  unlines matchingDirs ++ "\n"
   where matchingDirs = getMatchingDirs results
 
 getMatchingFiles :: [SearchResult] -> [FilePath]
@@ -64,7 +65,7 @@ getMatchingFiles results = (sort . nub . map filePath) results
 
 formatMatchingFiles :: [SearchResult] -> String
 formatMatchingFiles results = 
-  "\n\nFiles with matches (" ++ show (length matchingFiles) ++ "):\n" ++
+  "\nFiles with matches (" ++ show (length matchingFiles) ++ "):\n" ++
   unlines matchingFiles
   where matchingFiles = getMatchingFiles results
 
@@ -74,8 +75,8 @@ getMatchingLines results = (sort . nub . map trimLine) results
 
 formatMatchingLines :: [SearchResult] -> String
 formatMatchingLines results = 
-  "\n\nLines with matches (" ++ show (length matchingLines) ++ "):\n" ++
-  BC.unpack (BC.intercalate (BC.pack "\n") matchingLines)
+  "\nLines with matches (" ++ show (length matchingLines) ++ "):" ++
+  BC.unpack (BC.intercalate (BC.pack "\n") matchingLines) ++ "\n"
   where matchingLines = getMatchingLines results
 
 formatSearchDirs :: [FilePath] -> String
