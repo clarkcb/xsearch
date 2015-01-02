@@ -36,16 +36,16 @@ public class Searcher {
         validateSettings();
 	}
 
-    private void validateSettings() {
+	private void log(String message) {
+		System.out.println(message);
+	}
+
+	private void validateSettings() {
         if (settings.getStartPath() == null || settings.getStartPath().equals(""))
             throw new IllegalArgumentException("Missing startpath");
         if ((settings.getSearchPatterns().size() < 1))
             throw new IllegalArgumentException("No search patterns defined");
     }
-
-	private void log(String message) {
-		System.out.println(message);
-	}
 
 	private boolean anyMatchesAnyPattern(List<String> sList, Set<Pattern> patternSet) {
 		for (String s : sList) {
@@ -84,7 +84,7 @@ public class Searcher {
 	public List<File> getSearchDirs(File startPath) {
 		if (settings.getDebug()) {
 			log(String.format("Getting files to search under %s",
-				startPath.getPath()));
+					startPath.getPath()));
 		}
 		List<File> searchDirs = new ArrayList<File>();
         if (isSearchDir(startPath)) {
@@ -589,19 +589,26 @@ public class Searcher {
 	}
 
 	public List<String> getMatchingLines() {
-		Set<String> lineSet = new HashSet<String>();
+		List<String> lines = new ArrayList<String>();
 		for (SearchResult r : results) {
-			lineSet.add(r.getLine().trim());
+			lines.add(r.getLine().trim());
 		}
-		List<String> lines = new ArrayList<String>(lineSet);
+		if (settings.getUniqueLines()) {
+			Set<String> lineSet = new HashSet<String>(lines);
+			lines = new ArrayList<String>(lineSet);
+		}
 		java.util.Collections.sort(lines);
         return lines;
 	}
 
     public void printMatchingLines() {
 		List<String> lines = getMatchingLines();
-		log(String.format("\nLines with matches (%d):",
-			lines.size()));
+		String hdr;
+		if (settings.getUniqueLines())
+			hdr = "\nUnique lines with matches (%d):";
+		else
+			hdr = "\nLines with matches (%d):";
+		log(String.format(hdr, lines.size()));
 		for (String line : lines) {
 			log(line);
 		}
