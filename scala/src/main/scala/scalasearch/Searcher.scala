@@ -355,7 +355,7 @@ class Searcher (settings: SearchSettings) {
     val patternMatches = mutable.Map.empty[Regex,Int]
     val stringSearchResults = mutable.ArrayBuffer.empty[StringSearchResult]
     // TODO: verify that this works when matches are on last line
-    while (lines.hasNext && !stop) {
+    while ((lines.hasNext || linesAfter.nonEmpty) && !stop) {
       lineNum += 1
       val line =
         if (linesAfter.nonEmpty) linesAfter.remove(0)
@@ -376,36 +376,41 @@ class Searcher (settings: SearchSettings) {
             var linesAfterToMatch = false
             var linesAfterUntilMatch = false
             if (settings.hasLinesAfterToOrUntilPatterns) {
-              // check to see if linesAfter has a match
-              if (settings.linesAfterToPatterns.nonEmpty &&
-                anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)) {
-                linesAfterToMatch = true
-              } else if (settings.linesAfterUntilPatterns.nonEmpty &&
-                anyMatchesAnyPattern(linesAfter, settings.linesAfterUntilPatterns)) {
-                linesAfterUntilMatch = true
-              }
-              // if not read more lines into linesAfter until match or EOF
-              while (lines.hasNext && !linesAfterToMatch && !linesAfterUntilMatch) {
-                val nextLine = lines.next()
-                linesAfter += nextLine
-                if (settings.linesAfterToPatterns.nonEmpty &&
-                  matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
+              if (settings.hasLinesAfterToPatterns) {
+                if (anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)) {
                   linesAfterToMatch = true
-                } else if (settings.linesAfterUntilPatterns.nonEmpty &&
-                  matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
+                } else {
+                  while (lines.hasNext && !linesAfterToMatch) {
+                    val nextLine = lines.next()
+                    linesAfter += nextLine
+                    if (matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
+                      linesAfterToMatch = true
+                    }
+                  }
+                }
+              } else if (settings.hasLinesAfterUntilPatterns) {
+                if (anyMatchesAnyPattern(linesAfter, settings.linesAfterUntilPatterns)) {
                   linesAfterUntilMatch = true
+                } else {
+                  while (lines.hasNext && !linesAfterUntilMatch) {
+                    val nextLine = lines.next()
+                    linesAfter += nextLine
+                    if (matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
+                      linesAfterUntilMatch = true
+                    }
+                  }
                 }
               }
             }
-            val resLinesAfter =
-              if (linesAfterUntilMatch) linesAfter.init.toList
-              else linesAfter.toList
 
             if (settings.firstMatch && patternMatches.contains(p)) {
               stop = true
             } else if (!settings.hasLinesAfterToOrUntilPatterns ||
                 (settings.hasLinesAfterToOrUntilPatterns &&
                   (linesAfterToMatch || linesAfterUntilMatch))) {
+              val resLinesAfter =
+                if (linesAfterUntilMatch) linesAfter.init.toList
+                else linesAfter.toList
               stringSearchResults += new StringSearchResult(
                 p,
                 lineNum,
