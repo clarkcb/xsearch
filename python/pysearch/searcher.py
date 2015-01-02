@@ -270,23 +270,6 @@ class Searcher:
         else:
             self.search_text_file_lines(sf, fo)
 
-    def line_indices_for_current_index(self, index, contents):
-        """Get the start and end indices into contents that represent the
-           beginning and end of the line containing the character at index
-        """
-        startindex = endindex = index
-        while startindex > 0 and contents[startindex] != '\n':
-            startindex -= 1
-        if contents[startindex] == '\n':
-            startindex += 1
-        while endindex < len(contents) and contents[endindex] != '\n':
-            endindex += 1
-        if endindex < len(contents) and contents[endindex] == '\n':
-            endindex += 1
-        if startindex == endindex:
-            startindex -= 1
-        return startindex, endindex
-
     def search_text_file_contents(self, sf, fo):
         """Search a given text file object contents all at once
         """
