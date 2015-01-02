@@ -347,6 +347,20 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
 		s.errChan <- err
 		return
 	}
+	results := s.searchTextBytes(bytes)
+	for _, sr := range results {
+		sr.File = si
+		s.resultChan <- sr
+	}
+}
+
+// public method to search a multi-line string
+func (s *Searcher) SearchMultiLineString(str string) []*SearchResult {
+	return s.searchTextBytes([]byte(str))
+}
+
+func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
+	results := []*SearchResult{}
 	linesBefore := []*string{}
 	linesAfter := []*string{}
 	findLimit := -1
@@ -380,7 +394,7 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
 				lineStr := strings.TrimRight(string(line), "\r\n")
 				sr := &SearchResult{
 					p,
-					si,
+					nil,
 					linenum,
 					idx[0] - startidx + 1,
 					idx[1] - startidx + 1,
@@ -388,15 +402,26 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
 					linesBefore,
 					linesAfter,
 				}
-				s.resultChan <- sr
+				results = append(results, sr)
+
 				// reset linesBefore and LinesAfter
 				linesBefore, linesAfter = []*string{}, []*string{}
 			}
 		}
 	}
+	return results
 }
 
 func (s *Searcher) searchTextFileReaderLines(r io.Reader, si *SearchItem) {
+	results := s.SearchTextReaderLines(r)
+	for _, sr := range results {
+		sr.File = si
+		s.resultChan <- sr
+	}
+}
+
+func (s *Searcher) SearchTextReaderLines(r io.Reader) []*SearchResult {
+	results := []*SearchResult{}
 	scanner := bufio.NewScanner(r)
 	linenum := 0
 	linesBefore := []*string{}
@@ -422,7 +447,6 @@ ReadLines:
 		spi := s.Settings.SearchPatterns.Iterator()
 		for spi.Next() {
 			p := spi.Value()
-			//if p.MatchString(*line) {
 			if matchIndices := p.FindAllStringIndex(*line, -1); matchIndices != nil {
 				if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
 					continue
@@ -487,7 +511,7 @@ ReadLines:
 					} else {
 						sr := &SearchResult{
 							p,
-							si,
+							nil,
 							linenum,
 							m[0] + 1,
 							m[1] + 1,
@@ -495,7 +519,7 @@ ReadLines:
 							linesBefore,
 							srLinesAfter,
 						}
-						s.resultChan <- sr
+						results = append(results, sr)
 						patternMatches[p] = 1
 					}
 				}
@@ -512,8 +536,8 @@ ReadLines:
 	}
 	if err := scanner.Err(); err != nil {
 		s.errChan <- err
-		return
 	}
+	return results
 }
 
 func (s *Searcher) searchTextFileReader(r io.Reader, si *SearchItem) {
