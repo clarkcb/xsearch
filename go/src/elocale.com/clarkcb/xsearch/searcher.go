@@ -370,8 +370,7 @@ func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
 	spi := s.Settings.SearchPatterns.Iterator()
 	for spi.Next() {
 		p := spi.Value()
-		allIndices := p.FindAllIndex(bytes, findLimit)
-		if allIndices != nil {
+		if allIndices := p.FindAllIndex(bytes, findLimit); allIndices != nil {
 			for _, idx := range allIndices {
 				// get the start and end indices of the current line
 				startidx, endidx := lineStartEndIndicesForIndex(idx[0], bytes)
@@ -391,6 +390,13 @@ func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
 				if s.Settings.LinesAfter > 0 && afterLineCount > 0 {
 					linesAfter = linesAfterIndex(bytes, endidx, s.Settings.LinesAfter)
 				}
+
+				if len(linesBefore) > 0 && !s.linesBeforeMatch(linesBefore) {
+					continue
+				} else if len(linesAfter) > 0 && !s.linesAfterMatch(linesAfter) {
+					continue
+				}
+
 				lineStr := strings.TrimRight(string(line), "\r\n")
 				sr := &SearchResult{
 					p,
