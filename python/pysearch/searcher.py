@@ -526,12 +526,13 @@ class Searcher:
                                 except StopIteration:
                                     break
                         sr_lines_after = []
-                        if lines_after_to_match:
-                            sr_lines_after = list(lines_after)
-                        elif lines_after_until_match:
-                            sr_lines_after = list(lines_after)[:-1]
-                        else:
-                            continue
+                        if self.do_lines_after_or_until():
+                            if lines_after_to_match:
+                                sr_lines_after = list(lines_after)
+                            elif lines_after_until_match:
+                                sr_lines_after = list(lines_after)[:-1]
+                            else:
+                                continue
                         if self.settings.firstmatch and p in pattern_match_dict:
                             continue
                         search_result = \
