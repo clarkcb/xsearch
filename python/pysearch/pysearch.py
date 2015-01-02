@@ -12,7 +12,8 @@ from searcher import Searcher
 from searchoptions import SearchOptions
 
 def log(message):
-    print(message)
+    """log a message (for now just print to stdout)"""
+    print message
 
 def main():
     searchoptions = SearchOptions()
