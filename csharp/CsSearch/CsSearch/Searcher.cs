@@ -138,7 +138,8 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}", dir.FullName, e.Message));
+					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}",
+						FileUtil.GetRelativePath(dir.FullName), e.Message));
 			}
 			return searchDirs;
 		}
@@ -159,7 +160,8 @@ namespace CsSearch
 		{
 			if (Settings.Debug)
 			{
-				Console.WriteLine(string.Format("Getting search files under {0}", FileUtil.GetRelativePath(dir.FullName)));
+				Console.WriteLine(string.Format("Getting search files under {0}",
+					FileUtil.GetRelativePath(dir.FullName)));
 			}
 			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
 			try
@@ -171,7 +173,8 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}", dir.FullName, e.Message));
+					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}",
+						FileUtil.GetRelativePath(dir.FullName), e.Message));
 			}
 			return dirSearchFiles;
 		}
@@ -251,16 +254,23 @@ namespace CsSearch
 			{
 				SearchBinaryFile(f);
 			}
+			else if (f.Type == FileType.Archive)
+			{
+				Console.WriteLine(string.Format("Skipping archive file {0}",
+					FileUtil.GetRelativePath(f.FullName)));
+			}
 			else if (Settings.Verbose)
 			{
-				Console.WriteLine("Skipping file: " + FileUtil.GetRelativePath(f.FullName));
+				Console.WriteLine(string.Format("Skipping file {0}",
+					FileUtil.GetRelativePath(f.FullName)));
 			}
 		}
 
 		private void SearchTextFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Console.WriteLine("Searching text file " + FileUtil.GetRelativePath(f.FullName));
+				Console.WriteLine(string.Format("Searching text file {0}",
+					FileUtil.GetRelativePath(f.FullName)));
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else
@@ -380,12 +390,41 @@ namespace CsSearch
 			}
 		}
 
+		private bool AnyMatchesAnyPattern(IEnumerable<string> strings,
+			ICollection<Regex> patterns)
+		{
+			return strings.Any(s => MatchesAnyPattern(s, patterns));
+		}
+
+		private bool MatchesAnyPattern(string s, ICollection<Regex> patterns)
+		{
+			return !string.IsNullOrEmpty(s) && patterns.Any(p => p.Match(s).Success);
+		}
+
+		private bool LinesMatch(IEnumerable<string> lines,
+			ICollection<Regex> inPatterns, ICollection<Regex> outPatterns)
+		{
+			return ((inPatterns.Count == 0 || AnyMatchesAnyPattern(lines, inPatterns))
+				&& (outPatterns.Count == 0 || !AnyMatchesAnyPattern(lines, outPatterns)));
+		}
+
+		private bool LinesBeforeMatch(IEnumerable<string> linesBefore)
+		{
+			return LinesMatch(linesBefore, Settings.InLinesBeforePatterns,
+				Settings.OutLinesBeforePatterns);
+		}
+
+		private bool LinesAfterMatch(IEnumerable<string> linesAfter)
+		{
+			return LinesMatch(linesAfter, Settings.InLinesAfterPatterns,
+				Settings.OutLinesAfterPatterns);
+		}
+
 		private IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
 			var results = new List<SearchResult>();
 			var lineNum = 0;
-			string line;
 			var linesBefore = new Queue<string>();
 			var linesAfter = new Queue<string>();
 			var lineEnumerator = lines.GetEnumerator();
@@ -393,7 +432,7 @@ namespace CsSearch
 			while (lineEnumerator.MoveNext() || linesAfter.Count > 0)
 			{
 				lineNum++;
-				line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
+				var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
 				if (Settings.LinesAfter > 0)
 				{
 					while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
@@ -401,24 +440,30 @@ namespace CsSearch
 						linesAfter.Enqueue(lineEnumerator.Current);
 					}
 				}
-				foreach (var p in Settings.SearchPatterns)
+
+				if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
+					&&
+					(Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
 				{
-					var matches = p.Matches(line);
-					foreach (Match match in matches)
+					foreach (var p in Settings.SearchPatterns)
 					{
-						if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+						var matches = p.Matches(line);
+						foreach (Match match in matches)
 						{
-							continue;
+							if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+							{
+								continue;
+							}
+							results.Add(new SearchResult(p,
+								null,
+								lineNum,
+								match.Index + 1,
+								match.Index + match.Length + 1,
+								line,
+								new List<string>(linesBefore),
+								new List<string>(linesAfter)));
+							patternMatches[p] = 1;
 						}
-						results.Add(new SearchResult(p,
-							null,
-							lineNum,
-							match.Index + 1,
-							match.Index + match.Length + 1,
-							line,
-							new List<string>(linesBefore),
-							new List<string>(linesAfter)));
-						patternMatches[p] = 1;
 					}
 				}
 				if (Settings.LinesBefore > 0)
@@ -440,7 +485,8 @@ namespace CsSearch
 		private void SearchBinaryFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Console.WriteLine("Searching binary file " + f.FullName);
+				Console.WriteLine(string.Format("Searching binary file {0}",
+					FileUtil.GetRelativePath(f.FullName)));
 			try
 			{
 				using (var sr = new StreamReader(f.FullName))
