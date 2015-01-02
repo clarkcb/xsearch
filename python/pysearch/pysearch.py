@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 ################################################################################
 #
 # pysearch.py
 #
-# A file search utility implemented in python (2.x)
+# A CLI file search utility implemented in python (2.x)
 #
 ################################################################################
 import sys
