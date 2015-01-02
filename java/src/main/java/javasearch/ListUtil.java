@@ -17,6 +17,13 @@ public class ListUtil {
         return left;
     }
 
+    public static <T> List<T> init(List<T> list) {
+        if (list.size() == 0)
+            throw new IllegalArgumentException("init of empty list");
+        else
+            return take(list, list.size() - 1);
+    }
+
     public static <T> List<T> takeRight(List<T> list, int count) {
         if (list.size() <= count)
             return list;

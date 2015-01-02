@@ -410,6 +410,19 @@ public class SearchSettings {
 		return this.searchPatterns;
 	}
 
+
+	public boolean hasLinesAfterToPatterns() {
+		return linesAfterToPatterns.size() > 0;
+	}
+
+	public boolean hasLinesAfterUntilPatterns() {
+		return linesAfterUntilPatterns.size() > 0;
+	}
+
+	public boolean hasLinesAfterToOrUntilPatterns() {
+		return hasLinesAfterToPatterns() || hasLinesAfterUntilPatterns();
+	}
+
 	private static String stringSetToString(Set<String> set) {
 		StringBuilder sb = new StringBuilder("[");
 		int elemCount = 0;

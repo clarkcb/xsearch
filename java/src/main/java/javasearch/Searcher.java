@@ -482,9 +482,50 @@ public class Searcher {
 					Matcher m = p.matcher(line);
 					boolean found = m.find();
 					while (found) {
+						// take care of linesAfterToPatterns or linesAfterUntilPatterns
+						boolean linesAfterToMatch = false;
+						boolean linesAfterUntilMatch = false;
+						if (settings.hasLinesAfterToOrUntilPatterns()) {
+							if (settings.hasLinesAfterToPatterns()) {
+								Set<Pattern> linesAfterToPatterns = settings.getLinesAfterToPatterns();
+								if (anyMatchesAnyPattern(linesAfter, linesAfterToPatterns)) {
+									linesAfterToMatch = true;
+								} else {
+									while (it.hasNext() && !linesAfterToMatch) {
+										String nextLine = it.next();
+										linesAfter.add(nextLine);
+										if (matchesAnyPattern(nextLine, linesAfterToPatterns)) {
+											linesAfterToMatch = true;
+										}
+									}
+								}
+							} else if (settings.hasLinesAfterUntilPatterns()) {
+								Set<Pattern> linesAfterUntilPatterns = settings.getLinesAfterUntilPatterns();
+								if (anyMatchesAnyPattern(linesAfter, linesAfterUntilPatterns)) {
+									linesAfterUntilMatch = true;
+								} else {
+									while (it.hasNext() && !linesAfterUntilMatch) {
+										String nextLine = it.next();
+										linesAfter.add(nextLine);
+										if (matchesAnyPattern(nextLine, linesAfterUntilPatterns)) {
+											linesAfterUntilMatch = true;
+										}
+									}
+								}
+							}
+						}
+
 						if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
+							stop = true;
+						} else if (settings.hasLinesAfterToOrUntilPatterns() &&
+								!linesAfterToMatch && !linesAfterUntilMatch) {
 							found = false;
 						} else {
+							List<String> resLinesAfter;
+							if (linesAfterUntilMatch)
+								resLinesAfter = ListUtil.init(linesAfter);
+							else
+								resLinesAfter = linesAfter;
 							SearchResult searchResult = new SearchResult(
 									p,
 									null,
@@ -493,7 +534,7 @@ public class Searcher {
 									m.end() + 1,
 									line,
 									new ArrayList<String>(linesBefore),
-									new ArrayList<String>(linesAfter));
+									new ArrayList<String>(resLinesAfter));
 							results.add(searchResult);
 							patternMatches.put(p, 1);
 							found = m.find(m.end());
