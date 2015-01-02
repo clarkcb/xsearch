@@ -89,5 +89,10 @@ namespace CsSearch
 				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
 			return filePath;
 		}
+
+		public static bool IsHiddenFile(FileSystemInfo f)
+		{
+			return (f.Attributes & FileAttributes.Hidden) != 0;
+		}
 	}
 }

@@ -18,11 +18,16 @@ namespace CsSearch
 		{
 			Settings = settings;
 			if (Settings.Verbose)
-				Console.WriteLine(Settings + "\n");
+				Log(Settings + "\n");
 			ValidateSettings();
 			_fileUtil = new FileUtil();
 			Results = new List<SearchResult>();
 			Timers = new Dictionary<string, Stopwatch>();
+		}
+
+		private void Log(string message)
+		{
+			Console.WriteLine(message);
 		}
 
 		private void ValidateSettings()
@@ -35,14 +40,9 @@ namespace CsSearch
 				throw new SearchArgumentException("No search patterns specified");
 		}
 
-		private bool IsHiddenFile(FileSystemInfo f)
-		{
-			return (f.Attributes & FileAttributes.Hidden) != 0;
-		}
-
 		private bool IsSearchDirectory(DirectoryInfo d)
 		{
-			if (Settings.ExcludeHidden && IsHiddenFile(d))
+			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(d))
 				return false;
 			if (Settings.InDirPatterns.Count > 0 &&
 				!Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
@@ -55,7 +55,7 @@ namespace CsSearch
 
 		private bool IsSearchFile(FileInfo f)
 		{
-			if (Settings.ExcludeHidden && IsHiddenFile(f))
+			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(f))
 				return false;
 			if (Settings.InExtensions.Count > 0 &&
 				!Settings.InExtensions.Contains(f.Extension))
@@ -74,7 +74,7 @@ namespace CsSearch
 
 		private bool IsArchiveSearchFile(FileInfo f)
 		{
-			if (Settings.ExcludeHidden && IsHiddenFile(f))
+			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(f))
 				return false;
 			if (Settings.InArchiveExtensions.Count > 0 &&
 				!Settings.InArchiveExtensions.Contains(f.Extension))
@@ -110,7 +110,7 @@ namespace CsSearch
 				String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
 							  ts.Hours, ts.Minutes, ts.Seconds,
 							  ts.Milliseconds/10);
-			Console.WriteLine(string.Format("Elapsed time for {0}: {1}", name, elapsedTime));
+			Log(string.Format("Elapsed time for {0}: {1}", name, elapsedTime));
 		}
 
 		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo startDir)
@@ -138,7 +138,7 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}",
+					Log(String.Format("Error while accessing dir {0}: {1}",
 						FileUtil.GetRelativePath(dir.FullName), e.Message));
 			}
 			return searchDirs;
@@ -160,7 +160,7 @@ namespace CsSearch
 		{
 			if (Settings.Debug)
 			{
-				Console.WriteLine(string.Format("Getting search files under {0}",
+				Log(string.Format("Getting search files under {0}",
 					FileUtil.GetRelativePath(dir.FullName)));
 			}
 			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
@@ -173,7 +173,7 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Console.WriteLine(String.Format("Error while accessing dir {0}: {1}",
+					Log(String.Format("Error while accessing dir {0}: {1}",
 						FileUtil.GetRelativePath(dir.FullName), e.Message));
 			}
 			return dirSearchFiles;
@@ -204,12 +204,12 @@ namespace CsSearch
 			}
 			if (Settings.Verbose)
 			{
-				Console.WriteLine(string.Format("Directories to be searched ({0}):", searchDirs.Count));
+				Log(string.Format("Directories to be searched ({0}):", searchDirs.Count));
 				foreach (var d in searchDirs)
 				{
-					Console.WriteLine(FileUtil.GetRelativePath(d.FullName));
+					Log(FileUtil.GetRelativePath(d.FullName));
 				}
-				Console.WriteLine();
+				Log("");
 			}
 
 			if (Settings.DoTiming)
@@ -223,12 +223,12 @@ namespace CsSearch
 			}
 			if (Settings.Verbose)
 			{
-				Console.WriteLine(string.Format("\nFiles to be searched ({0}):", searchFiles.Count()));
+				Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Count()));
 				foreach (var f in searchFiles)
 				{
-					Console.WriteLine(FileUtil.GetRelativePath(f.FullName));
+					Log(FileUtil.GetRelativePath(f.FullName));
 				}
-				Console.WriteLine();
+				Log("");
 			}
 
 			if (Settings.DoTiming) {
@@ -256,12 +256,12 @@ namespace CsSearch
 			}
 			else if (f.Type == FileType.Archive)
 			{
-				Console.WriteLine(string.Format("Skipping archive file {0}",
+				Log(string.Format("Skipping archive file {0}",
 					FileUtil.GetRelativePath(f.FullName)));
 			}
 			else if (Settings.Verbose)
 			{
-				Console.WriteLine(string.Format("Skipping file {0}",
+				Log(string.Format("Skipping file {0}",
 					FileUtil.GetRelativePath(f.FullName)));
 			}
 		}
@@ -269,7 +269,7 @@ namespace CsSearch
 		private void SearchTextFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Console.WriteLine(string.Format("Searching text file {0}",
+				Log(string.Format("Searching text file {0}",
 					FileUtil.GetRelativePath(f.FullName)));
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
@@ -294,7 +294,7 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				Console.WriteLine(e.Message);
+				Log(e.Message);
 			}
 		}
 
@@ -371,7 +371,7 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				Console.WriteLine(e.Message);
+				Log(e.Message);
 			}
 		}
 
@@ -485,7 +485,7 @@ namespace CsSearch
 		private void SearchBinaryFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Console.WriteLine(string.Format("Searching binary file {0}",
+				Log(string.Format("Searching binary file {0}",
 					FileUtil.GetRelativePath(f.FullName)));
 			try
 			{
@@ -500,7 +500,7 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				Console.WriteLine(e.Message);
+				Log(e.Message);
 			}
 		}
 
@@ -511,10 +511,10 @@ namespace CsSearch
 
 		public void PrintResults()
 		{
-			Console.WriteLine(string.Format("Search results ({0}):", Results.Count));
+			Log(string.Format("Search results ({0}):", Results.Count));
 			foreach (var searchResult in Results)
 			{
-				Console.WriteLine(searchResult);
+				Log(searchResult.ToString());
 			}
 		}
 
@@ -529,10 +529,10 @@ namespace CsSearch
 		public void PrintMatchingDirs()
 		{
 			var matchingDirs = GetMatchingDirs();
-			Console.WriteLine(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
+			Log(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
 			foreach (var d in matchingDirs)
 			{
-				Console.WriteLine(FileUtil.GetRelativePath(d.FullName));
+				Log(FileUtil.GetRelativePath(d.FullName));
 			}
 		}
 
@@ -547,10 +547,10 @@ namespace CsSearch
 		public void PrintMatchingFiles()
 		{
 			var matchingFiles = GetMatchingFiles();
-			Console.WriteLine(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
+			Log(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
 			foreach (var f in matchingFiles)
 			{
-				Console.WriteLine(FileUtil.GetRelativePath(f.FullName));
+				Log(FileUtil.GetRelativePath(f.FullName));
 			}
 		}
 
@@ -562,10 +562,10 @@ namespace CsSearch
 		public void PrintMatchingLines()
 		{
 			var matchingLines = GetMatchingLines();
-			Console.WriteLine(string.Format("\nLines with matches ({0}):", matchingLines.Count()));
+			Log(string.Format("\nLines with matches ({0}):", matchingLines.Count()));
 			foreach (var m in matchingLines)
 			{
-				Console.WriteLine(m);
+				Log(m);
 			}
 		}
 	}
