@@ -11,13 +11,19 @@ public class ListUtil {
         for (T s : list) {
             if (elemCount > 0)
                 sb.append(", ");
+            if (s instanceof String)
+                sb.append("\"");
             sb.append(s);
+            if (s instanceof String)
+                sb.append("\"");
             elemCount++;
         }
         sb.append("]");
         return sb.toString();
     }
 
+    // return a new list with count number of elements dropped from the beginning,
+    // or an empty list if the list is shorter than count
     public static <T> List<T> drop(List<T> list, int count) {
         List<T>	left = new ArrayList<T>();
         int lastIndex = count;
@@ -28,6 +34,8 @@ public class ListUtil {
         return left;
     }
 
+    // return a new list with only the first count number of elements,
+    // or a shorter list if the list is shorter than count
     public static <T> List<T> take(List<T> list, int count) {
         if (list.size() <= count)
             return list;
@@ -41,6 +49,7 @@ public class ListUtil {
         return left;
     }
 
+    // return a new list with all but the last element in it
     public static <T> List<T> init(List<T> list) {
         if (list.size() == 0)
             throw new IllegalArgumentException("init of empty list");
@@ -48,7 +57,8 @@ public class ListUtil {
             return take(list, list.size() - 1);
     }
 
-    public static <T> List<T> last(List<T> list) {
+    // return a new list with all but the first element in it
+    public static <T> List<T> tail(List<T> list) {
         return drop(list, 1);
     }
 
