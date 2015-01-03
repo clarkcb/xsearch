@@ -203,15 +203,20 @@ namespace CsSearch
 			SearchArchives = true;
 		}
 
-		private static string EnumerableToString(IEnumerable<object> hashSet)
+		protected static string EnumerableToString<T>(IEnumerable<T> enumerable)
 		{
 			var sb = new StringBuilder("[");
 			var elemCount = 0;
-			foreach (var s in hashSet)
+			foreach (var x in enumerable)
 			{
+				var t = x.GetType();
 				if (elemCount > 0)
 					sb.Append(", ");
-				sb.Append("\"" + s + "\"");
+				if (t == typeof(string))
+					sb.Append("\"");
+				sb.Append(x);
+				if (t == typeof(string))
+					sb.Append("\"");
 				elemCount++;
 			}
 			sb.Append("]");

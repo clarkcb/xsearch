@@ -25,7 +25,7 @@ namespace CsSearch
 			Timers = new Dictionary<string, Stopwatch>();
 		}
 
-		private void Log(string message)
+		private static void Log(string message)
 		{
 			Console.WriteLine(message);
 		}
@@ -298,58 +298,105 @@ namespace CsSearch
 			}
 		}
 
-		private int CountNewlines(string text)
+		private static IEnumerable<int> GetNewLineIndices(string text)
 		{
-			return text.Count(c => c == '\n');
+			// to keep it simple, only get indices of '\n' and deal with '\r' later
+			IList<int> newLineIndices = new List<int>();
+			for (var i = 0; i < text.Length; i++)
+			{
+				if (text[i] == '\n')
+					newLineIndices.Add(i);
+			}
+			return newLineIndices;
 		}
 
-		private int GetStartLineIndex(string text, int matchIndex)
+		private static IEnumerable<int> GetStartLineIndices(IEnumerable<int> newLineIndices)
 		{
-			var startIndex = matchIndex;
-			while (startIndex > 0 && text[startIndex-1] != '\n')
-				startIndex--;
-			return startIndex;
+			var startLineIndices = new List<int> {0};
+			startLineIndices.AddRange(newLineIndices.Select(i => i + 1));
+			return startLineIndices;
 		}
 
-		private int GetEndLineIndex(string text, int matchIndex)
+		private static IEnumerable<int> GetEndLineIndices(string text,
+			IEnumerable<int> newLineIndices)
 		{
-			var endIndex = matchIndex;
-			while (endIndex < text.Length && text[endIndex] != '\r' &&
-				text[endIndex] != '\n')
-				endIndex++;
-			return endIndex;
+			var endLineIndices = new List<int>(newLineIndices) {text.Length - 1};
+			return endLineIndices;
 		}
 
-		private IEnumerable<SearchResult> SearchContents(string contents)
+		private IEnumerable<string> GetLinesBeforeFromContents(string content,
+			IEnumerable<int> beforeStartIndices, IEnumerable<int> beforeEndIndices)
+		{
+			var linesBefore = new List<string>();
+			if (Settings.LinesBefore > 0)
+			{
+				var starts = beforeStartIndices.Reverse().Take(Settings.LinesBefore).Reverse().ToList();
+				var ends = beforeEndIndices.Reverse().Take(Settings.LinesBefore + 1).Reverse().Skip(1).ToList();
+				linesBefore.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
+			}
+			return linesBefore;
+		}
+
+		private IEnumerable<string> GetLinesAfterFromContents(string content,
+			IEnumerable<int> afterStartIndices, IEnumerable<int> afterEndIndices)
+		{
+			var linesAfter = new List<string>();
+			if (Settings.LinesAfter > 0)
+			{
+				var starts = afterStartIndices.Take(Settings.LinesAfter).ToList();
+				var ends = afterEndIndices.Skip(1).Take(Settings.LinesAfter).ToList();
+				linesAfter.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
+			}
+			return linesAfter;
+		}
+
+		public IEnumerable<SearchResult> SearchContents(string contents)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
 			var results = new List<SearchResult>();
+			var newLineIndices = GetNewLineIndices(contents);
+			var startLineIndices = GetStartLineIndices(newLineIndices).ToList();
+			var endLineIndices = GetEndLineIndices(contents, newLineIndices).ToList();
 
 			foreach (var p in Settings.SearchPatterns)
 			{
 				var match = p.Match(contents);
 				while (match.Success)
 				{
-					//TODO: add lineNum and line retrieval from contents
-					var lineNum = CountNewlines(contents.Substring(0, match.Index)) + 1;
-					var startIndex = GetStartLineIndex(contents, match.Index);
-					var endIndex = GetEndLineIndex(contents, match.Index);
-					var line = contents.Substring(startIndex, endIndex - startIndex);
-					results.Add(new SearchResult(
-						p,
-						null,
-						lineNum,
-						match.Index - startIndex + 1,
-						match.Index - startIndex + match.Length + 1,
-						line,
-						new List<string>(),
-						new List<string>()));
-					patternMatches[p] = 1;
-
 					if (Settings.FirstMatch && patternMatches.ContainsKey(p))
 					{
 						break;
 					}
+					var matchIndex = match.Index;
+					// get the start and end indices before the match index
+					var beforeStartIndices = startLineIndices.TakeWhile(i => i <= matchIndex).ToList();
+					var beforeEndIndices = endLineIndices.TakeWhile(i => i < matchIndex).ToList();
+					// add another end line index if it exists or the last index of the string
+					if (endLineIndices.Count > beforeEndIndices.Count)
+						beforeEndIndices.ToList().Add(endLineIndices[beforeEndIndices.Count]);
+					else
+						beforeEndIndices.ToList().Add(contents.Length - 1);
+					var afterStartIndices = startLineIndices.SkipWhile(i => i <= matchIndex).ToList();
+					var afterEndIndices = endLineIndices.SkipWhile(i => i <= matchIndex).ToList();
+					var lineNum = beforeStartIndices.ToList().Count;
+					var startLineIndex = beforeStartIndices.Max();
+					var endLineIndex = afterStartIndices.Min() - 1;
+					var line = contents.Substring(startLineIndex, endLineIndex - startLineIndex);
+					var linesBefore = GetLinesBeforeFromContents(contents,
+						beforeStartIndices.AsEnumerable().Reverse().Skip(1).Reverse(),
+						beforeEndIndices);
+					var linesAfter = GetLinesAfterFromContents(contents, afterStartIndices, afterEndIndices);
+					results.Add(new SearchResult(
+						p,
+						null,
+						lineNum,
+						match.Index - startLineIndex + 1,
+						match.Index - startLineIndex + match.Length + 1,
+						line,
+						new List<string>(linesBefore),
+						new List<string>(linesAfter)));
+					patternMatches[p] = 1;
+
 					match = match.NextMatch();
 				}
 			}
@@ -377,11 +424,10 @@ namespace CsSearch
 
 		private static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
 		{
-			string line;
-			//using (var file = System.IO.File.OpenText(fileName))
 			using (var sr = new StreamReader(f.FullName))
 			{
 				// read each line, ensuring not null (EOF)
+				string line;
 				while ((line = sr.ReadLine()) != null)
 				{
 					// return trimmed line
@@ -390,18 +436,18 @@ namespace CsSearch
 			}
 		}
 
-		private bool AnyMatchesAnyPattern(IEnumerable<string> strings,
-			ICollection<Regex> patterns)
+		private static bool AnyMatchesAnyPattern(IEnumerable<string> strings,
+			IEnumerable<Regex> patterns)
 		{
 			return strings.Any(s => MatchesAnyPattern(s, patterns));
 		}
 
-		private bool MatchesAnyPattern(string s, ICollection<Regex> patterns)
+		private static bool MatchesAnyPattern(string s, IEnumerable<Regex> patterns)
 		{
 			return !string.IsNullOrEmpty(s) && patterns.Any(p => p.Match(s).Success);
 		}
 
-		private bool LinesMatch(IEnumerable<string> lines,
+		private static bool LinesMatch(IEnumerable<string> lines,
 			ICollection<Regex> inPatterns, ICollection<Regex> outPatterns)
 		{
 			return ((inPatterns.Count == 0 || AnyMatchesAnyPattern(lines, inPatterns))
