@@ -309,21 +309,31 @@ public class Searcher {
 
 	private List<Number> getNewLineIndices(String s) {
 		List<Number> newlineIndices = new ArrayList<Number>();
-		for (int i=1; i < s.length(); i++) {
+		for (int i=0; i < s.length(); i++) {
 			if (s.charAt(i) == '\n')
 				newlineIndices.add(i);
 		}
 		return newlineIndices;
 	}
 
-	private List<Number> getStartLineIndices(String s) {
-		List<Number> newLineIndices = getNewLineIndices(s);
+	private List<Number> getStartLineIndicesFromNewLineIndices(String s,
+															   List<Number> newLineIndices) {
 		List<Number> startLineIndices = new ArrayList<Number>();
 		startLineIndices.add(0);
 		for (Number newLineIndex : newLineIndices) {
 			startLineIndices.add(newLineIndex.longValue() + 1);
 		}
 		return startLineIndices;
+	}
+
+	private List<Number> getEndLineIndicesFromNewLineIndices(String s,
+															 List<Number> newLineIndices) {
+		List<Number> endLineIndices = new ArrayList<Number>();
+		for (Number newLineIndex : newLineIndices) {
+			endLineIndices.add(newLineIndex.longValue());
+		}
+		endLineIndices.add(s.length() - 1);
+		return endLineIndices;
 	}
 
 	public List<SearchResult> searchMultiLineString(String s) {
@@ -336,41 +346,32 @@ public class Searcher {
 		return results;
 	}
 
-	private List<String> getLinesBeforeFromMultiLineString(int currentStartIndex,
-														   List<Number> startLineIndices,
-														   String content) {
+	private List<String> getLinesBeforeFromMultiLineString(String s,
+														   List<Number> beforeStartIndices,
+														   List<Number> beforeEndIndices) {
 		List<String> linesBefore = new ArrayList<String>();
-		if (settings.getLinesBefore() > 0 && currentStartIndex > 0) {
-			List<Number> lessThan = ListUtil.lessThan(currentStartIndex, startLineIndices);
-			List<Number> lastElems = ListUtil.takeRight(lessThan, settings.getLinesBefore());
-			int nextIndex=0;
-			while (nextIndex < lastElems.size() - 1) {
-				linesBefore.add(content.substring(lastElems.get(nextIndex).intValue(),
-						lastElems.get(nextIndex+1).intValue() - 1));
-				nextIndex++;
+		if (settings.getLinesBefore() > 0) {
+			List<Number> starts = ListUtil.takeRight(beforeStartIndices, settings.getLinesBefore());
+			List<Number> ends = ListUtil.last(ListUtil.takeRight(beforeEndIndices,
+					settings.getLinesBefore() + 1));
+			for (int i=0; i < starts.size(); i++) {
+				linesBefore.add(s.substring(starts.get(i).intValue(),
+						ends.get(i).intValue() - 1));
 			}
-			linesBefore.add(content.substring(lastElems.get(lastElems.size() - 1).intValue(),
-					currentStartIndex - 1));
 		}
 		return linesBefore;
 	}
 
-	private List<String> getLinesAfterFromMultiLineString(int currentStartIndex,
-														  List<Number> startLineIndices,
-														  String content) {
+	private List<String> getLinesAfterFromMultiLineString(String s,
+														  List<Number> afterStartIndices,
+														  List<Number> afterEndIndices) {
 		List<String> linesAfter = new ArrayList<String>();
 		if (settings.getLinesAfter() > 0) {
-			List<Number> greaterThan = ListUtil.greaterThan(currentStartIndex, startLineIndices);
-			// add content length+1 so the last line end can be determined if necessary
-			greaterThan.add(content.length() + 1);
-			if (greaterThan.size() > 0) {
-				List<Number> firstElems = ListUtil.take(greaterThan, settings.getLinesAfter() + 1);
-				int nextIndex=0;
-				while (nextIndex < firstElems.size() - 1) {
-					linesAfter.add(content.substring(firstElems.get(nextIndex).intValue(),
-							firstElems.get(nextIndex + 1).intValue() - 1));
-					nextIndex++;
-				}
+			List<Number> starts = ListUtil.take(afterStartIndices, settings.getLinesAfter());
+			List<Number> ends = ListUtil.last(ListUtil.take(afterEndIndices, settings.getLinesAfter() + 1));
+			for (int i=0; i < starts.size(); i++) {
+				linesAfter.add(s.substring(starts.get(i).intValue(),
+						ends.get(i).intValue() - 1));
 			}
 		}
 		return linesAfter;
@@ -379,29 +380,36 @@ public class Searcher {
 	private List<SearchResult> searchMultiLineStringForPattern(String s, Pattern p) {
 		Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
 		List<SearchResult> results = new ArrayList<SearchResult>();
-		List<Number> startLineIndices = getStartLineIndices(s);
+		List<Number> newLineIndices = getNewLineIndices(s);
+		List<Number> startLineIndices = getStartLineIndicesFromNewLineIndices(s,
+				newLineIndices);
+		List<Number> endLineIndices = getEndLineIndicesFromNewLineIndices(s,
+				newLineIndices);
 		Matcher m = p.matcher(s);
 		boolean found = m.find();
 		while (found) {
 			if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
 				found = false;
 			} else {
-				List<Number> lessOrEq = ListUtil.lessThanOrEqualTo(m.start(), startLineIndices);
-				int lineNum = 1;
-				if (lessOrEq.size() > 1) lineNum = lessOrEq.size();
-				int startLineIndex = ListUtil.max(lessOrEq).intValue();
-				List<Number> greaterThan = ListUtil.greaterThan(m.start(), startLineIndices);
-				int endLineIndex = ListUtil.min(greaterThan).intValue() - 1;
+				List<Number> beforeStartIndices = ListUtil.lessThanOrEqualTo(m.start(), startLineIndices);
+				List<Number> beforeEndIndices = ListUtil.lessThan(m.start(), endLineIndices);
+				if (endLineIndices.size() > beforeEndIndices.size())
+					beforeEndIndices.add(endLineIndices.get(beforeEndIndices.size()));
+				else
+					beforeEndIndices.add(s.length() - 1);
+				List<Number> afterStartIndices = ListUtil.greaterThan(m.start(), startLineIndices);
+				List<Number> afterEndIndices = ListUtil.greaterThan(m.start(), endLineIndices);
+				int lineNum = beforeStartIndices.size();
+				int startLineIndex = ListUtil.max(beforeStartIndices).intValue();
+				int endLineIndex = ListUtil.min(afterStartIndices).intValue() - 1;
 				String line = s.substring(startLineIndex, endLineIndex);
-				List<String> linesBefore = getLinesBeforeFromMultiLineString(
-						startLineIndex, startLineIndices, s);
-				List<String> linesAfter = getLinesAfterFromMultiLineString(
-						startLineIndex, startLineIndices, s);
-				if ((settings.getLinesBefore() == 0 || linesBefore.isEmpty() ||
-						linesBeforeMatch(linesBefore))
+				List<String> linesBefore = getLinesBeforeFromMultiLineString(s,
+						ListUtil.init(beforeStartIndices), ListUtil.init(beforeEndIndices));
+				List<String> linesAfter = getLinesAfterFromMultiLineString(s,
+						afterStartIndices, afterEndIndices);
+				if ((linesBefore.isEmpty() || linesBeforeMatch(linesBefore))
 						&&
-						(settings.getLinesAfter() == 0 || linesAfter.isEmpty() ||
-								linesAfterMatch(linesAfter))) {
+						(linesAfter.isEmpty() || linesAfterMatch(linesAfter))) {
 					SearchResult searchResult = new SearchResult(
 							p,
 							null,

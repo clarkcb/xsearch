@@ -4,6 +4,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListUtil {
+
+    public static <T> String listToString(List<T> list) {
+        StringBuilder sb = new StringBuilder("[");
+        int elemCount = 0;
+        for (T s : list) {
+            if (elemCount > 0)
+                sb.append(", ");
+            sb.append(s);
+            elemCount++;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static <T> List<T> drop(List<T> list, int count) {
+        List<T>	left = new ArrayList<T>();
+        int lastIndex = count;
+        while (lastIndex < list.size()) {
+            left.add(list.get(lastIndex));
+            lastIndex++;
+        }
+        return left;
+    }
+
     public static <T> List<T> take(List<T> list, int count) {
         if (list.size() <= count)
             return list;
@@ -22,6 +46,10 @@ public class ListUtil {
             throw new IllegalArgumentException("init of empty list");
         else
             return take(list, list.size() - 1);
+    }
+
+    public static <T> List<T> last(List<T> list) {
+        return drop(list, 1);
     }
 
     public static <T> List<T> takeRight(List<T> list, int count) {
