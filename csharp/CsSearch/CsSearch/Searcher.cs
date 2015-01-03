@@ -386,6 +386,9 @@ namespace CsSearch
 						beforeStartIndices.AsEnumerable().Reverse().Skip(1).Reverse(),
 						beforeEndIndices);
 					var linesAfter = GetLinesAfterFromContents(contents, afterStartIndices, afterEndIndices);
+					if ((linesBefore.ToList().Count == 0 || LinesBeforeMatch(linesBefore))
+						&&
+						(linesAfter.ToList().Count == 0 || LinesAfterMatch(linesAfter)))
 					results.Add(new SearchResult(
 						p,
 						null,
