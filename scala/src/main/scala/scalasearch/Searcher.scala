@@ -24,6 +24,7 @@ class Searcher (settings: SearchSettings) {
   private val _fileMap = mutable.Map[SearchFile, List[SearchResult]]()
   private val _searchResults = mutable.ListBuffer[SearchResult]()
   private val _timers = mutable.Map[String,Long]()
+  private var _totalElapsedTime: Long = 0L
 
   def searchResults: List[SearchResult] = _searchResults.toList
 
@@ -160,12 +161,18 @@ class Searcher (settings: SearchSettings) {
   private def getElapsed(name:String): Long = {
     val startTime = _timers(name+":start")
     val stopTime = _timers(name+":stop")
-    stopTime - startTime
+    val elapsed = stopTime - startTime
+    _totalElapsedTime += elapsed
+    elapsed
   }
 
   def printElapsed(name:String) {
     val elapsed = getElapsed(name)
-    log("Elapsed time for \"%s\": %d milliseconds".format(name, elapsed))
+    log("Elapsed time for \"%s\": %d ms".format(name, elapsed))
+  }
+
+  def printTotalElapsed() {
+    log("Total elapsed time: %d ms".format(_totalElapsedTime))
   }
 
   private def stopTimer(name:String) {
@@ -196,7 +203,11 @@ class Searcher (settings: SearchSettings) {
     for (f <- searchFiles) {
       searchFile(f)
     }
-    if (settings.doTiming) stopTimer("searchFiles")
+    if (settings.doTiming) {
+      stopTimer("searchFiles")
+      if (settings.printResults)
+        printTotalElapsed()
+    }
     if (settings.verbose) {
       log("\nFile search complete.\n")
     }
