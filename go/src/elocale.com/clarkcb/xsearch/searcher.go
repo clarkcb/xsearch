@@ -49,6 +49,7 @@ type Searcher struct {
 	searchResults *SearchResults
 	resultChan    chan *SearchResult
 	timerMap      map[string]time.Time
+	totalElapsed  time.Duration
 }
 
 func NewSearcher(settings *SearchSettings) *Searcher {
@@ -63,6 +64,7 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 		NewSearchResults(),       // searchResults
 		make(chan *SearchResult), // resultChan
 		map[string]time.Time{},   // timerMap
+		time.Duration(0),         // totalElapsed
 	}
 }
 
@@ -810,12 +812,18 @@ func (s *Searcher) stopTimer(name string) {
 func (s *Searcher) getElapsed(name string) time.Duration {
 	start := s.timerMap[name+":start"]
 	stop := s.timerMap[name+":stop"]
-	return stop.Sub(start)
+	elapsed := stop.Sub(start)
+	s.totalElapsed += elapsed
+	return elapsed
 }
 
 func (s *Searcher) printElapsed(name string) {
 	elapsed := s.getElapsed(name)
-	log(fmt.Sprintf("Elapsed time for %s: %v\n", name, elapsed))
+	log(fmt.Sprintf("Elapsed time for %s: %v", name, elapsed))
+}
+
+func (s *Searcher) printTotalElapsed() {
+	log(fmt.Sprintf("Total elapsed time: %v", s.totalElapsed))
 }
 
 // initiates goroutines to search each file in the batch, waiting for all
@@ -938,6 +946,7 @@ func (s *Searcher) Search() error {
 
 	if s.Settings.DoTiming {
 		s.stopTimer("searchFiles")
+		s.printTotalElapsed()
 	}
 	if s.Settings.Verbose {
 		log("\nFile search complete.\n")

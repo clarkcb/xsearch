@@ -166,7 +166,7 @@ func (rs *SearchResults) PrintPatternCounts(patterns []string) {
 func (rs *SearchResults) PrintSearchResults() {
 	// sort them first
 	sort.Sort(rs)
-	log(fmt.Sprintf("Search results (%d):\n", len(rs.SearchResults)))
+	log(fmt.Sprintf("Search results (%d):", len(rs.SearchResults)))
 	for _, r := range rs.SearchResults {
 		if len(rs.PatternCounts) > 1 {
 			log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
@@ -234,7 +234,6 @@ func (r *SearchResult) singleLineString() string {
 		return fmt.Sprintf("%s matches", r.File.String())
 	}
 }
-
 
 // temp
 const MAXLINELENGTH = 150
