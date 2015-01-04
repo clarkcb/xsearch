@@ -37,6 +37,7 @@ function Searcher(settings) {
     var _settings = settings;
     var _fileutil = new FileUtil();
     var _timers = {};
+    var _totalElapsed = 0;
     this.results = [];
 
     var log = function (message) {
@@ -243,12 +244,20 @@ function Searcher(settings) {
     var getElapsed = function (name) {
         var start = _timers[name+":start"];
         var stop = _timers[name+":stop"];
-        return stop - start;
+        var elapsed = stop - start;
+        _totalElapsed += elapsed;
+        return elapsed;
     };
 
     var printElapsed = function (name) {
         var elapsed = getElapsed(name);
-        log("Elapsed time for " + name + ": " + elapsed + " milliseconds");
+        var msg = "Elapsed time for {0}: {1} ms";
+        log(msg.format(name, elapsed));
+    };
+
+    var printTotalElapsed = function () {
+        var msg = "Total elapsed time: {0} ms";
+        log(msg.format(_totalElapsed));
     };
 
     this.search = function () {
@@ -288,8 +297,10 @@ function Searcher(settings) {
         for (var i in files) {
             searchFile(files[i]);
         }
-        if (_settings.doTiming)
+        if (_settings.doTiming) {
             stopTimer("SearchFiles");
+            printTotalElapsed();
+        }
 
         if (_settings.verbose)
             log("Search complete.");
