@@ -110,21 +110,22 @@ main = do
     Nothing -> do
       (sdt, searchDirs) <- timeItT (getSearchDirs settings)
       logMsg $ if doTiming settings
-               then "\nElapsed time for getSearchDirs: " ++ show sdt ++ "\n"
+               then "\nElapsed time for getSearchDirs: " ++ show (sdt * 1000) ++ " ms"
                else ""
       logMsg $ if verbose settings
                then formatSearchDirs searchDirs
                else ""
       (sft, searchFiles) <- timeItT (getSearchFiles settings searchDirs)
       logMsg $ if doTiming settings
-               then "\nElapsed time for getSearchFiles: " ++ show sft ++ "\n"
+               then "\nElapsed time for getSearchFiles: " ++ show (sft * 1000) ++ " ms"
                else ""
       logMsg $ if verbose settings
                then formatSearchFiles searchFiles
                else ""
       (rt, results) <- timeItT (doSearchFiles settings searchFiles)
       logMsg $ if doTiming settings
-               then "\nElapsed time for searching: " ++ show rt ++ "\n"
+               then "\nElapsed time for searching: " ++ show (rt * 1000) ++ " ms" ++
+                    "\nTotal elapsed time: " ++ show ((sdt + sft + rt) * 1000) ++ " ms"
                else ""
       logMsg $ if printResults settings
                then formatResults settings results
