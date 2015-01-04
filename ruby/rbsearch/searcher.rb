@@ -22,6 +22,7 @@ class Searcher
     @fileutil = FileUtil.new
     @results = []
     @timers = {}
+    @totalElapsed = 0
     @filehash = Hash.new([])
   end
 
@@ -154,12 +155,18 @@ class Searcher
   def get_elapsed(name)
     start = @timers[name+':start']
     stop = @timers[name+':stop']
-    stop - start
+    elapsed = stop - start
+    @totalElapsed += elapsed
+    elapsed
   end
 
   def print_elapsed(name)
-    elapsed = get_elapsed(name)
-    log("Elapsed time for #{name}: #{elapsed}")
+    elapsed = get_elapsed(name) * 1000
+    log("Elapsed time for #{name}: #{elapsed} ms")
+  end
+
+  def print_total_elapsed
+    log("Total elapsed time: #{@totalElapsed * 1000} ms")
   end
 
   def stop_timer(name)
@@ -205,6 +212,7 @@ class Searcher
     end
     if @settings.dotiming
       stop_timer('search_files')
+      print_total_elapsed
     end
   end
 
