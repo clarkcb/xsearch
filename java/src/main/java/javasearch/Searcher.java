@@ -26,6 +26,7 @@ public class Searcher {
 	private FileUtil fileUtil;
 	private Set<SearchFile> searchFileSet;
 	private Map<String,Long> timers;
+	private long totalElapsedTime;
 
 	public Searcher(SearchSettings settings) {
 		this.settings = settings;
@@ -33,6 +34,7 @@ public class Searcher {
 		this.fileUtil = new FileUtil();
 		this.searchFileSet = new HashSet<SearchFile>();
 		this.timers = new HashMap<String,Long>();
+		this.totalElapsedTime = 0L;
         validateSettings();
 	}
 
@@ -206,12 +208,18 @@ public class Searcher {
     public long getElapsed(String name) {
         long startTime = this.timers.get(name+":start");
         long stopTime = this.timers.get(name+":stop");
-        return stopTime - startTime;
+		long elapsed = stopTime - startTime;
+		totalElapsedTime += elapsed;
+        return elapsed;
     }
 
     public void printElapsed(String name) {
-        log(String.format("Elapsed time for \"%s\": %d milliseconds",
+        log(String.format("Elapsed time for \"%s\": %d ms",
 				name, getElapsed(name)));
+    }
+
+    public void printTotalElapsed() {
+        log(String.format("Total elapsed time: %d ms", totalElapsedTime));
     }
 
     public void search() {
@@ -259,6 +267,7 @@ public class Searcher {
 		if (settings.getDoTiming()) {
             stopTimer("searchFiles");
             printElapsed("searchFiles");
+			printTotalElapsed();
         }
         if (settings.getVerbose()) {
 			log("\nFile search complete.\n");

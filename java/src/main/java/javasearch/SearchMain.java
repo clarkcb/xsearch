@@ -44,6 +44,7 @@ public class SearchMain {
 
         // print the results
         if (settings.getPrintResults()) {
+			System.out.println();
         	searcher.printSearchResults();
         }
         if (settings.getListDirs()) {
