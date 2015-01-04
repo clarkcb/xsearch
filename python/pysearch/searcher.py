@@ -8,7 +8,7 @@
 ################################################################################
 from collections import deque
 from cStringIO import StringIO
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import re
 
@@ -40,6 +40,7 @@ class Searcher:
         self.results = []
         self.patterndict = {}
         self.timers = {}
+        self.total_elapsed = timedelta()
         self.filedict = {}
         self.rescounts = {}
         self.__dict__.update(kargs)
@@ -171,11 +172,18 @@ class Searcher:
     def get_elapsed(self, name):
         start = self.timers[name+':start']
         stop = self.timers[name+':stop']
-        return stop - start
+        elapsed = stop - start
+        self.total_elapsed += elapsed
+        return elapsed
 
     def print_elapsed(self, name):
-        elapsed = self.get_elapsed(name)
-        self.log('Elapsed time for {0}: {1}'.format(name, elapsed))
+        ms = self.get_elapsed(name).total_seconds() * 1000
+        self.log('Elapsed time for {0}: {1} ms'.format(name, ms))
+
+    def print_total_elapsed(self):
+        msg = 'Total elapsed time: {0} ms'
+        ms = self.total_elapsed.total_seconds() * 1000
+        self.log(msg.format(ms))
 
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
@@ -209,6 +217,8 @@ class Searcher:
             self.search_file(sf)
         if self.settings.dotiming:
             self.stop_timer('search_files')
+            if self.settings.printresults:
+                self.print_total_elapsed()
 
     def print_results(self):
         self.log('Search results (%d):' % len(self.results))
