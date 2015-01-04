@@ -13,6 +13,7 @@ namespace CsSearch
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
 		public IDictionary<string, Stopwatch> Timers { get; private set; }
+		private TimeSpan TotalElapsedTime { get; set; }
 
 		public Searcher(SearchSettings settings)
 		{
@@ -23,6 +24,7 @@ namespace CsSearch
 			_fileUtil = new FileUtil();
 			Results = new List<SearchResult>();
 			Timers = new Dictionary<string, Stopwatch>();
+			TotalElapsedTime = new TimeSpan();
 		}
 
 		private static void Log(string message)
@@ -101,16 +103,18 @@ namespace CsSearch
 		public void StopTimer(string name) {
 			var timer = Timers[name];
 			timer.Stop();
+			TotalElapsedTime = TotalElapsedTime.Add(timer.Elapsed);
 			PrintElapsed(name, timer.Elapsed);
 		}
 
-		public void PrintElapsed (string name, TimeSpan ts)
+		public void PrintElapsed(string name, TimeSpan ts)
 		{
-			var elapsedTime =
-				String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-							  ts.Hours, ts.Minutes, ts.Seconds,
-							  ts.Milliseconds/10);
-			Log(string.Format("Elapsed time for {0}: {1}", name, elapsedTime));
+			Log(string.Format("Elapsed time for {0}: {1} ms", name, ts.TotalMilliseconds));
+		}
+
+		public void PrintTotalElapsed()
+		{
+			Log(string.Format("Total elapsed time: {0} ms", TotalElapsedTime.TotalMilliseconds));
 		}
 
 		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo startDir)
@@ -241,6 +245,7 @@ namespace CsSearch
 			if (Settings.DoTiming)
 			{
 				StopTimer("SearchFiles");
+				PrintTotalElapsed();
 			}
 		}
 
