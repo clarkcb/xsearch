@@ -946,7 +946,9 @@ func (s *Searcher) Search() error {
 
 	if s.Settings.DoTiming {
 		s.stopTimer("searchFiles")
-		s.printTotalElapsed()
+		if s.Settings.PrintResults {
+			s.printTotalElapsed()
+		}
 	}
 	if s.Settings.Verbose {
 		log("\nFile search complete.\n")
