@@ -84,16 +84,24 @@ public class Searcher {
 	}
 
 	public List<File> getSearchDirs(File startPath) {
-		if (settings.getDebug()) {
-			log(String.format("Getting files to search under %s",
-					startPath.getPath()));
-		}
 		List<File> searchDirs = new ArrayList<File>();
-        if (isSearchDir(startPath)) {
-            searchDirs.add(startPath);
-        }
-		if (settings.getRecursive()) {
-			searchDirs.addAll(recGetSearchDirs(startPath));
+		if (startPath.isDirectory()) {
+			if (settings.getDebug()) {
+				log(String.format("Getting files to search under %s",
+						startPath.getPath()));
+			}
+			if (isSearchDir(startPath)) {
+				searchDirs.add(startPath);
+			}
+			if (settings.getRecursive()) {
+				searchDirs.addAll(recGetSearchDirs(startPath));
+			}
+		} else if (startPath.isFile()) {
+			File d = startPath.getParentFile();
+			if (null == d)
+				d = new File(".");
+			if (isSearchDir(d))
+				searchDirs.add(d);
 		}
 		return searchDirs;
 	}
@@ -172,13 +180,13 @@ public class Searcher {
             for (File f : currentFiles) {
                 if (!f.isDirectory()) {
 					FileType fileType = fileUtil.getFileType(f);
-                    if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
+					if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
 							&& isArchiveSearchFile(f))
-						||
-						(!settings.getArchivesOnly() && isSearchFile(f))) {
-                        searchFiles.add(new SearchFile(f.getParent(), f.getName(),
+							||
+							(!settings.getArchivesOnly() && isSearchFile(f))) {
+						searchFiles.add(new SearchFile(f.getParent(), f.getName(),
 								fileType));
-                    }
+					}
                 }
             }
         }
@@ -186,9 +194,23 @@ public class Searcher {
 	}
 
 	public List<SearchFile> getSearchFiles(List<File> searchDirs) {
+		File f = new File(settings.getStartPath());
 		List<SearchFile> searchFiles = new ArrayList<SearchFile>();
-		for (File d : searchDirs) {
-			searchFiles.addAll(getSearchFilesForDir(d));
+		if (f.isDirectory()) {
+			for (File d : searchDirs) {
+				searchFiles.addAll(getSearchFilesForDir(d));
+			}
+		} else if (f.isFile()) {
+			FileType fileType = fileUtil.getFileType(f);
+			if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
+					&& isArchiveSearchFile(f))
+					||
+					(!settings.getArchivesOnly() && isSearchFile(f))) {
+				File d = f.getParentFile();
+				if (null == d)
+					d = new File(".");
+				searchFiles.add(new SearchFile(d.getPath(), f.getName(), fileType));
+			}
 		}
 		return searchFiles;
 	}
