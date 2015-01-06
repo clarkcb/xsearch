@@ -2,14 +2,33 @@ package gosearchcodegen
 
 import (
 	"encoding/xml"
-	"fmt"
 	"os"
 	"sort"
+	"strings"
 )
 
+func getHome() string {
+	home := ""
+	env := os.Environ()
+	for _, x := range env {
+		if strings.HasPrefix(x, "HOME=") {
+			home = strings.TrimPrefix(x, "HOME=")
+			break
+		}
+	}
+	return home
+}
+
+func normalizePath(filePath string) string {
+	if strings.HasPrefix(filePath, "~") {
+		home := getHome()
+		return home + strings.TrimPrefix(filePath, "~")
+	}
+	return filePath
+}
+
 func loadXmlFile(xmlFilePath string, targetStruct interface{}) error {
-	fmt.Printf("loadXmlFile(xmlFilePath=%s)\n", xmlFilePath)
-	file, err := os.Open(xmlFilePath)
+	file, err := os.Open(normalizePath(xmlFilePath))
 	if err != nil {
 		panic(err.Error())
 	}

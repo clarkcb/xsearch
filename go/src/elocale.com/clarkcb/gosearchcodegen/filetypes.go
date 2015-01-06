@@ -65,7 +65,7 @@ type XmlExtensions struct {
 	Extensions string `xml:",chardata"`
 }
 
-const fileTypesXmlPath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
+const fileTypesXmlPath = "~/src/git/xsearch/shared/filetypes.xml"
 
 func getFileTypesFromXml() (*FileTypes, error) {
 	xmlFileTypes := &XmlFileTypes{}
