@@ -119,6 +119,133 @@ The basic code structure includes these elements:
 * SearchResult - encapsulates a single search result
 
 
+Installing / Running
+--------------------
+
+I have xsearch cloned to this path: ~/src/git/xsearch. To run the various language
+versions I compile them (if necessary) and create a soft link to the executable
+or script under ~/bin, which I include in the PATH. For example, to run the
+Haskell version I compiled it and then created the following soft link:
+
+    $ cd ~/bin
+    $ ln -s ~/src/git/xsearch/haskell/hssearch/dist/build/hssearch/hssearch
+
+
+In some cases I have bash scripts under the root of some of the language versions
+to facilitate running that version. I will probably add more of these for consistency.
+
+For each language version that you want to compile/run, you will need to install
+the compilers/interpreters for those languages, unless that system already has
+them installed (e.g. python and ruby on Linux / OSX).
+
+I have a script under the xsearch/shared directory called build.sh that can be
+used to compile various compiled language versions. For example, you can build
+the Haskell version (after installing GHC) by running:
+
+    $ cd ~/src/git/xsearch
+    $ ./shared/build.sh haskell
+
+You can also run it without a language to build all compiled versions at once.
+
+Below is some additional info for some of the languages.
+
+
+### C# / F# ###
+
+For writing the C# and F# code I use MS Visual Studio on a Windows 7 VM. To
+compile/run/test them I use the [Mono](http://www.mono-project.com/)
+environment installed on my OSX system. If you take a look at the shared/build.sh
+script you will see this command to compile the C# version:
+
+    xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln
+
+You can change Configuration to Release if you want to create a release build.
+
+To run the cssearch version, I created a soft link to a bash script under CsSearch:
+
+    $ cd ~/bin
+    $ ln -s ~/src/git/xsearch/csharp/CsSearch/cssearch.sh cssearch
+
+This information is similarly applicable for the F# version.
+
+
+### Go ###
+
+You can download go from this page: http://golang.org/. After you have installed
+it you will have the __go__ command available; run it by itself to see what options
+are.
+
+If you look in the build.sh script you will see this command to build gosearch:
+
+    go install elocale.com/clarkcb/xsearch/gosearch
+
+Note that I set the GOPATH environment variable. This is important for go
+because it expects it to be defined and point to a standard directory structure
+that contains a src directory with project-specific source directories under that.
+
+Note also that something called gengosearchcode is installed and ran before
+the gosearch install. This executable generates go code files from xml that get
+used in gosearch. 
+
+The compiled executable gets created under go/bin. To run gosearch I then create
+a soft link to it in my ~/bin directory:
+
+    $ cd ~/bin
+    $ ln -s ~/src/git/xsearch/go/bin/gosearch
+
+Alternatively, you could add $GOPATH/bin to PATH.
+
+
+### Haskell ###
+
+You can download Haskell from this page: https://www.haskell.org/haskellwiki/Haskell.
+After you have run the installer you will have access to these commands:
+
+* __ghc__ - the compiler
+* __ghci__ - the REPL
+* __cabal__ - a tool for building, packaging, and managing dependencies
+
+The hssearch version has a number of dependencies, which you will use cabal to
+download and install. To start, I recommend running these commands first:
+
+    $ cd ~/src/git/xsearch/haskell/hssearch
+    $ cabal sandbox init
+
+This will create a hidden directory called .cabal-sandbox, where the dependencies
+will be downloaded to and built. You can then try compiling from the same directory:
+
+    $ cabal build
+
+Cabal will complain about missing dependencies. You will need to install them.
+For example, for this specified dependency:
+
+    --dependency='timeit=timeit-1.0.0.0-b5d83acfe823666e0ea6354a3ae30d03'
+
+Run this cabal command:
+
+    $ cabal install timeit
+
+Once all dependencies satisfied, you should be able to build hssearch successfully
+with cabal build. This will create the hssearch executable under
+dist/build/HsSearch/hssearch, to which I then created a soft link under ~/bin.
+
+
+### Java / Scala ###
+
+I use Maven to build and manage dependencies for the Java and Scala versions.
+You will find pom.xml files under the root of those source trees.
+
+To build the javasearch and scalasearch versions I run this command in those
+root directories:
+
+    $ mvn clean install
+
+This creates the executable jar under the target directory. To run them I created
+bash scripts at their root levels - javasearch and scalasearch - to which I then
+created soft links under ~/bin. You will need to edit those scripts to change
+the path to the jar if xsearch is not cloned under ~/src/git/xsearch.
+
+
 History / Motivation
 --------------------
 
