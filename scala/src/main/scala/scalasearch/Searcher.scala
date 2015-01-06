@@ -113,25 +113,23 @@ class Searcher (settings: SearchSettings) {
         settings.outArchiveFilePatterns))
   }
 
-  def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
-    val searchFiles: Array[Option[SearchFile]] = dir.listFiles().filterNot(_.isDirectory).map {
-      f =>
-        FileUtil.getFileType(f) match {
-          case FileType.Unknown => None
-          case fileType@FileType.Archive =>
-            if (settings.searchArchives && isArchiveSearchFile(f))
-              Some(new SearchFile(f.getParent, f.getName, fileType))
-            else
-              None
-          case fileType =>
-            if (!settings.archivesOnly && isSearchFile(f))
-              Some(new SearchFile(f.getParent, f.getName, fileType))
-            else
-              None
-        }
+  def filterFile(f:File): Boolean = {
+    FileUtil.getFileType(f) match {
+      case FileType.Unknown => false
+      case fileType@FileType.Archive =>
+        if (settings.searchArchives && isArchiveSearchFile(f)) true
+        else false
+      case fileType =>
+        if (!settings.archivesOnly && isSearchFile(f)) true
+        else false
     }
-    // this cast is required regardless of what IDEA says
-    searchFiles.flatten.asInstanceOf[Array[SearchFile]]
+  }
+
+  def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
+    dir.listFiles().filterNot(_.isDirectory).filter(filterFile).map {
+      f =>
+        new SearchFile(f.getParent, f.getName, FileUtil.getFileType(f))
+    }
   }
 
   def getSearchFiles(searchDirs:Iterable[File]): Iterable[SearchFile] = {
@@ -182,6 +180,26 @@ class Searcher (settings: SearchSettings) {
   }
 
   def search() {
+    val startPathFile = new File(settings.startpath)
+    if (startPathFile.isDirectory) {
+      if (isSearchDir(startPathFile)) {
+        searchPath(startPathFile)
+      } else {
+        throw new SearchException("Startpath does not match search settings")
+      }
+    } else if (startPathFile.isFile) {
+      if (filterFile(startPathFile)) {
+        val fileType = FileUtil.getFileType(startPathFile)
+        var d: File = startPathFile.getParentFile
+        if (null == d) d = new File(".")
+        searchFile(new SearchFile(d.getPath, startPathFile.getName, fileType))
+      } else {
+        throw new SearchException("Startpath does not match search settings")
+      }
+    }
+  }
+
+  def searchPath(filePath:File) {
     if (settings.doTiming) startTimer("getSearchDirs")
     val searchDirs = getSearchDirs(new File(settings.startpath))
     if (settings.doTiming) stopTimer("getSearchDirs")
