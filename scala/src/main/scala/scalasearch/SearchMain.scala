@@ -14,10 +14,7 @@ object SearchMain {
       try {
         SearchOptions.settingsFromArgs(arglist)
       } catch {
-        case ae: AssertionError =>
-          println("Error: " + ae.getMessage + "\n")
-          SearchOptions.usage(1)
-        case e: Exception =>
+        case e: SearchException =>
           println("Error: " + e.getMessage + "\n")
           SearchOptions.usage(1)
       }
@@ -27,7 +24,14 @@ object SearchMain {
     }
 
     val searcher = new Searcher(settings)
-    searcher.search()
+    try {
+      searcher.search()
+    } catch {
+      case e: SearchException =>
+        println("Error: " + e.getMessage + "\n")
+        SearchOptions.usage(1)
+    }
+
 
     if (settings.printResults) {
       println("Search results (%d):".format(searcher.searchResults.length))

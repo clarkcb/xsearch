@@ -138,18 +138,18 @@ object SearchOptions {
               argActionMap(argMap(name).longarg)(tail.head, sb)
               nextArg(tail.tail, sb)
             } else {
-              throw new Exception("Arg without required value: "+name)
+              throw new SearchException("Arg without required value: "+name)
             }
           } else if (flagMap.contains(name)) {
             flagActionMap(flagMap(name).longarg)(sb)
             nextArg(tail, sb)
           } else {
-            throw new Exception("Undefined option: " + name)
+            throw new SearchException("Undefined option: " + name)
           }
         case value :: Nil =>
           sb.startPath = value
         case _ =>
-          throw new Exception("Invalid args: "+arglist.mkString(", "))
+          throw new SearchException("Invalid args: "+arglist.mkString(", "))
       }
     }
     nextArg(args, sb)
