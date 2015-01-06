@@ -9,6 +9,7 @@
 from collections import deque
 from cStringIO import StringIO
 from datetime import datetime, timedelta
+from pprint import pprint
 import os
 import re
 
@@ -166,14 +167,15 @@ class Searcher:
 
     def stop_timer(self, name):
         self.add_timer(name, 'stop')
-        if self.settings.printresults:
-            self.print_elapsed(name)
+        self.add_elapsed(name)
+
+    def add_elapsed(self, name):
+        self.total_elapsed += self.get_elapsed(name)
 
     def get_elapsed(self, name):
         start = self.timers[name+':start']
         stop = self.timers[name+':stop']
         elapsed = stop - start
-        self.total_elapsed += elapsed
         return elapsed
 
     def print_elapsed(self, name):
@@ -194,6 +196,8 @@ class Searcher:
         searchdirs = self.get_search_dirs()
         if self.settings.dotiming:
             self.stop_timer('get_search_dirs')
+            if self.settings.printresults:
+                self.print_elapsed('get_search_dirs')
         if self.settings.verbose:
             self.log('\nDirectories to be searched ({0}):'.format(len(searchdirs)))
             for d in searchdirs:
@@ -206,6 +210,8 @@ class Searcher:
         searchfiles = self.get_search_files(searchdirs)
         if self.settings.dotiming:
             self.stop_timer('get_search_files')
+            if self.settings.printresults:
+                self.print_elapsed('get_search_files')
         if self.settings.verbose:
             self.log('\nFiles to be searched ({0}):'.format(len(searchfiles)))
             for f in searchfiles:
