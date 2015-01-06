@@ -35,11 +35,9 @@ namespace CsSearch
 		private void ValidateSettings()
 		{
 			if (string.IsNullOrEmpty(Settings.StartPath))
-				throw new SearchArgumentException("Startpath not defined");
-			if (!(new DirectoryInfo(Settings.StartPath)).Exists)
-				throw new SearchArgumentException("Startpath not found");
+				throw new SearchException("Startpath not defined");
 			if (Settings.SearchPatterns.Count < 1)
-				throw new SearchArgumentException("No search patterns specified");
+				throw new SearchException("No search patterns specified");
 		}
 
 		private bool IsSearchDirectory(DirectoryInfo d)
@@ -153,7 +151,7 @@ namespace CsSearch
 			}
 			return searchDirs;
 		}
-		private bool IsValidSearchFile(FileInfo f)
+		private bool FilterFile(FileInfo f)
 		{
 			return
 				(_fileUtil.IsArchiveFile(f) && Settings.SearchArchives && IsArchiveSearchFile(f))
@@ -177,7 +175,7 @@ namespace CsSearch
 			try
 			{
 				dirSearchFiles = dir.EnumerateFiles().
-					Where(IsValidSearchFile).
+					Where(FilterFile).
 					Select((f,i) => SearchFileFromFileInfo(f));
 			}
 			catch (IOException e)
@@ -205,7 +203,40 @@ namespace CsSearch
 			{
 				StartTimer("GetSearchDirs");
 			}
-			var startDir = new DirectoryInfo(Settings.StartPath);
+			var attr = File.GetAttributes(Settings.StartPath);
+			if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+			{
+				var startDir = new DirectoryInfo(Settings.StartPath);
+				if (IsSearchDirectory(startDir))
+				{
+					SearchPath(startDir);
+				}
+				else
+				{
+					throw new SearchException("Startpath does not match search settings");
+				}
+			}
+			else
+			{
+				var f = new FileInfo(Settings.StartPath);
+				if (f.Exists && FilterFile(f))
+				{
+					DoSearchFile(new SearchFile(f.DirectoryName, f.Name, _fileUtil.GetFileType(f)));
+				}
+				else
+				{
+					throw new SearchException("Startpath does not match search settings");
+				}
+			}
+		}
+
+		public void SearchPath(DirectoryInfo path)
+		{
+			if (Settings.DoTiming)
+			{
+				StartTimer("GetSearchDirs");
+			}
+			var startDir = path;
 			var searchDirs = new List<DirectoryInfo>();
 			searchDirs.AddRange(GetSearchDirs(startDir));
 			if (Settings.DoTiming)

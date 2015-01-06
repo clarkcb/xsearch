@@ -127,11 +127,11 @@ namespace CsSearch
 					}
 					catch (InvalidOperationException e)
 					{
-						throw new SearchArgumentException(e.Message);
+						throw new SearchException(e.Message);
 					}
 					if (string.IsNullOrWhiteSpace(s))
 					{
-						throw new SearchArgumentException("Invalid option encountered");
+						throw new SearchException("Invalid option encountered");
 					}
 					if (ArgDictionary.ContainsKey(s))
 					{
@@ -141,7 +141,7 @@ namespace CsSearch
 						}
 						catch (InvalidOperationException e)
 						{
-							throw new SearchArgumentException(e.Message);
+							throw new SearchException(e.Message);
 						}
 					}
 					else if (FlagDictionary.ContainsKey(s))
@@ -152,12 +152,12 @@ namespace CsSearch
 						}
 						catch (InvalidOperationException e)
 						{
-							throw new SearchArgumentException(e.Message);
+							throw new SearchException(e.Message);
 						}
 					}
 					else
 					{
-						throw new SearchArgumentException("Unknown option: " + s);
+						throw new SearchException("Unknown option: " + s);
 					}
 				}
 				else
@@ -167,15 +167,11 @@ namespace CsSearch
 			}
 			if (settings.StartPath == null)
 			{
-				throw new SearchArgumentException("Missing startpath");
-			}
-			if (!(new DirectoryInfo(settings.StartPath)).Exists)
-			{
-				throw new SearchArgumentException("Startpath not found");
+				throw new SearchException("Missing startpath");
 			}
 			if (settings.SearchPatterns.Count < 1)
 			{
-				throw new SearchArgumentException("No search patterns specified");
+				throw new SearchException("No search patterns specified");
 			}
 			if (settings.Debug)
 			{

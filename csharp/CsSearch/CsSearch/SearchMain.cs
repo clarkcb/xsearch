@@ -35,7 +35,7 @@ namespace CsSearch
 					searcher.PrintMatchingLines();
 				}
 			}
-			catch (SearchArgumentException e)
+			catch (SearchException e)
 			{
 				Console.WriteLine("Error: " + e.Message);
 				options.Usage(1);

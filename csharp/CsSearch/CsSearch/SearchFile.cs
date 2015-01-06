@@ -23,6 +23,8 @@ namespace CsSearch
 			get { return FilePath + Path.DirectorySeparatorChar + FileName; }
 		}
 
+		public SearchFile(string path, string fileName, FileType type) : this(new List<string>(), path, fileName, type) {}
+
 		public SearchFile(IList<string> containers, string path,
 			string fileName, FileType type)
 		{
