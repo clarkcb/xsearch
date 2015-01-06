@@ -237,15 +237,17 @@ function Searcher(settings) {
 
     var stopTimer = function (name) {
         addTimer(name, "stop");
-        if (_settings.printResults)
-            printElapsed(name);
+        addElapsed(name);
+    };
+
+    var addElapsed = function (name) {
+        _totalElapsed += getElapsed(name);
     };
 
     var getElapsed = function (name) {
         var start = _timers[name+":start"];
         var stop = _timers[name+":stop"];
         var elapsed = stop - start;
-        _totalElapsed += elapsed;
         return elapsed;
     };
 
@@ -269,8 +271,11 @@ function Searcher(settings) {
             startTimer("GetSearchDirs");
         var dirs = [_settings.startPath];
         dirs.push.apply(dirs, getSearchDirs(_settings.startPath));
-        if (_settings.doTiming)
+        if (_settings.doTiming) {
             stopTimer("GetSearchDirs");
+            if (_settings.printResults)
+                printElapsed("GetSearchDirs");
+        }
         if (_settings.verbose) {
             log("\nDirectories to be searched (" + dirs.length + "):");
             for (var d in dirs) {
@@ -282,8 +287,11 @@ function Searcher(settings) {
         if (_settings.doTiming)
             startTimer("GetSearchFiles");
         var files = getSearchFiles(dirs);
-        if (_settings.doTiming)
+        if (_settings.doTiming) {
             stopTimer("GetSearchFiles");
+            if (_settings.printResults)
+                printElapsed("GetSearchFiles");
+        }
         if (_settings.verbose) {
             log("\nFiles to be searched (" + files.length + "):");
             for (var f in files) {
@@ -299,7 +307,10 @@ function Searcher(settings) {
         }
         if (_settings.doTiming) {
             stopTimer("SearchFiles");
-            printTotalElapsed();
+            if (_settings.printResults) {
+                printElapsed("SearchFiles");
+                printTotalElapsed();
+            }
         }
 
         if (_settings.verbose)
