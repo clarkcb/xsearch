@@ -290,7 +290,7 @@ public class SearchOptions {
         setOptionsFromXml();
 	}
 
-	public SearchSettings settingsFromArgs(String[] args) throws Exception {
+	public SearchSettings settingsFromArgs(String[] args) throws SearchException {
 		SearchSettings settings = new SearchSettings();
         // default printresults to True since running from command line
         settings.setPrintResults(true);
@@ -307,23 +307,23 @@ public class SearchOptions {
 						SearchArgOption option = (SearchArgOption)this.argMap.get(arg);
 						option.setArg(argVal, settings);
 					} else {
-						throw new Exception("Missing value for option " + arg);
+						throw new SearchException("Missing value for option " + arg);
 					}
 				} else if (this.flagMap.containsKey(arg)) {
 					SearchFlagOption option = (SearchFlagOption)this.flagMap.get(arg);
 					option.setFlag(settings);
 				} else {
-					throw new Exception("Undefined option: " + arg);
+					throw new SearchException("Undefined option: " + arg);
 				}
 			} else {
 				settings.setStartPath(arg);
 			}
 		}
 		if (null == settings.getStartPath() || settings.getStartPath().equals("")) {
-			throw new Exception("Startpath not defined");
+			throw new SearchException("Startpath not defined");
 		}
 		if (settings.getSearchPatterns().isEmpty()) {
-			throw new Exception("No search patterns defined");
+			throw new SearchException("No search patterns defined");
 		}
 		return settings;
 	}

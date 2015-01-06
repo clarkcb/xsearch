@@ -24,7 +24,7 @@ public class SearchMain {
 
 		try {
 			settings = options.settingsFromArgs(args);
-		} catch (Exception e) {
+		} catch (SearchException e) {
 			System.out.println("Error: " + e.getMessage() + "\n");
 			options.usage(1);
 		}
@@ -40,9 +40,15 @@ public class SearchMain {
 		}
 
 		Searcher searcher = new Searcher(settings);
-		searcher.search();
 
-        // print the results
+		try {
+			searcher.search();
+		} catch (SearchException e) {
+			System.out.println("Error: " + e.getMessage() + "\n");
+			options.usage(1);
+		}
+
+		// print the results
         if (settings.getPrintResults()) {
 			System.out.println();
         	searcher.printSearchResults();
