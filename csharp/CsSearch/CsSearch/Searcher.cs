@@ -104,11 +104,17 @@ namespace CsSearch
 			var timer = Timers[name];
 			timer.Stop();
 			TotalElapsedTime = TotalElapsedTime.Add(timer.Elapsed);
-			PrintElapsed(name, timer.Elapsed);
 		}
 
-		public void PrintElapsed(string name, TimeSpan ts)
+		public TimeSpan GetElapsed(string name)
 		{
+			var timer = Timers[name];
+			return timer.Elapsed;
+		}
+
+		public void PrintElapsed(string name)
+		{
+			var ts = GetElapsed(name);
 			Log(string.Format("Elapsed time for {0}: {1} ms", name, ts.TotalMilliseconds));
 		}
 
@@ -205,6 +211,8 @@ namespace CsSearch
 			if (Settings.DoTiming)
 			{
 				StopTimer("GetSearchDirs");
+				if (Settings.PrintResults)
+					PrintElapsed("GetSearchDirs");
 			}
 			if (Settings.Verbose)
 			{
@@ -224,6 +232,8 @@ namespace CsSearch
 			if (Settings.DoTiming)
 			{
 				StopTimer("GetSearchFiles");
+				if (Settings.PrintResults)
+					PrintElapsed("GetSearchFiles");
 			}
 			if (Settings.Verbose)
 			{
@@ -245,7 +255,11 @@ namespace CsSearch
 			if (Settings.DoTiming)
 			{
 				StopTimer("SearchFiles");
-				PrintTotalElapsed();
+				if (Settings.PrintResults)
+				{
+					PrintElapsed("SearchFiles");
+					PrintTotalElapsed();
+				}
 			}
 		}
 
