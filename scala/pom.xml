@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>xsearch</groupId>
-  <artifactId>scala</artifactId>
+  <artifactId>scalasearch</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
 
@@ -17,7 +17,7 @@
     <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <scala.version>2.9.1</scala.version>
+    <scala.version>2.9.2</scala.version>
     <slf4j.version>1.6.1</slf4j.version>
   </properties>
 
