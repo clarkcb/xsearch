@@ -122,10 +122,11 @@ The basic code structure includes these elements:
 Installing / Running
 --------------------
 
-I have xsearch cloned to this path: ~/src/git/xsearch. To run the various language
-versions I compile them (if necessary) and create a soft link to the executable
-or script under ~/bin, which I include in the PATH. For example, to run the
-Haskell version I compiled it and then created the following soft link:
+I have xsearch cloned to this path: _~/src/git/xsearch_. To run the various
+language versions, I compile them (if necessary) and create a soft link to the
+executable or script under _~/bin_, which I have included in the <code>PATH</code>
+environment variable. For example, to run the Haskell version I compiled it and
+then created the following soft link:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/haskell/hssearch/dist/build/hssearch/hssearch
@@ -138,14 +139,15 @@ For each language version that you want to compile/run, you will need to install
 the compilers/interpreters for those languages, unless that system already has
 them installed (e.g. python and ruby on Linux / OSX).
 
-I have a script under the xsearch/shared directory called build.sh that can be
-used to compile various compiled language versions. For example, you can build
-the Haskell version (after installing GHC) by running:
+I have a script under the _xsearch/shared_ directory called _build.sh_ that can
+be used to compile any or all of the compiled language versions. For example,
+you can build the Haskell version (after installing GHC) by running:
 
     $ cd ~/src/git/xsearch
     $ ./shared/build.sh haskell
 
-You can also run it without a language to build all compiled versions at once.
+You can also run it without a language name to build all compiled versions in
+one run.
 
 Below is some additional info for some of the languages.
 
@@ -154,14 +156,16 @@ Below is some additional info for some of the languages.
 
 For writing the C# and F# code I use MS Visual Studio on a Windows 7 VM. To
 compile/run/test them I use the [Mono](http://www.mono-project.com/)
-environment installed on my OSX system. If you take a look at the shared/build.sh
-script you will see this command to compile the C# version:
+environment installed on my OSX system. If you take a look at the
+_shared/build.sh_ script you will see this command to compile the C# version:
 
     xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln
 
-You can change Configuration to Release if you want to create a release build.
+You can change <code>Configuration</code> to <code>Release</code> if you want to
+create a release build.
 
-To run the cssearch version, I created a soft link to a bash script under CsSearch:
+To run the <code>cssearch</code> version, I created a soft link to a bash script
+under _CsSearch_:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/csharp/CsSearch/cssearch.sh cssearch
@@ -172,28 +176,30 @@ This information is similarly applicable for the F# version.
 ### Go ###
 
 You can download go from this page: http://golang.org/. After you have installed
-it you will have the __go__ command available; run it by itself to see what options
-are.
+it you will have the <code>go</code> command available; run it by itself to get
+basic usage instructions.
 
-If you look in the build.sh script you will see this command to build gosearch:
+If you look in the _build.sh_ script in the <code>build_go()</code> function you
+will see this command to build <code>gosearch</code>:
 
     go install elocale.com/clarkcb/xsearch/gosearch
 
-Note that I set the GOPATH environment variable. This is important for go
-because it expects it to be defined and point to a standard directory structure
-that contains a src directory with project-specific source directories under that.
+Note that I set the <code>GOPATH</code> environment variable. This is important
+for go because it expects it to be defined and point to a standard directory
+structure that contains a _src_ directory with project-specific source
+directories under that.
 
-Note also that something called gengosearchcode is installed and ran before
-the gosearch install. This executable generates go code files from xml that get
-used in gosearch. 
+Note also that something called <code>gengosearchcode</code> is installed and
+ran before the <code>gosearch</code> install. This executable generates some go
+code files from xml that get used in <code>gosearch</code>.
 
-The compiled executable gets created under go/bin. To run gosearch I then create
-a soft link to it in my ~/bin directory:
+The compiled executable gets created under _go/bin_. To run <code>gosearch</code>
+I then create a soft link to it in my _~/bin_ directory:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/go/bin/gosearch
 
-Alternatively, you could add $GOPATH/bin to PATH.
+Alternatively, you could add <code>$GOPATH/bin</code> to <code>PATH</code>.
 
 
 ### Haskell ###
@@ -201,49 +207,70 @@ Alternatively, you could add $GOPATH/bin to PATH.
 You can download Haskell from this page: https://www.haskell.org/haskellwiki/Haskell.
 After you have run the installer you will have access to these commands:
 
-* __ghc__ - the compiler
-* __ghci__ - the REPL
-* __cabal__ - a tool for building, packaging, and managing dependencies
+* <code>ghc</code> - the compiler
+* <code>ghci</code> - the REPL
+* <code>cabal</code> - a tool for building, packaging, and managing dependencies
 
-The hssearch version has a number of dependencies, which you will use cabal to
-download and install. To start, I recommend running these commands first:
+The <code>hssearch</code> version has a number of dependencies, which you will
+use <code>cabal</code> to download and install. To start, I recommend running
+these commands first:
 
     $ cd ~/src/git/xsearch/haskell/hssearch
     $ cabal sandbox init
 
-This will create a hidden directory called .cabal-sandbox, where the dependencies
-will be downloaded to and built. You can then try compiling from the same directory:
+This will create a hidden directory called _.cabal-sandbox_, where the
+dependencies will be downloaded to and built. You can then try compiling from
+the same directory:
 
     $ cabal build
 
-Cabal will complain about missing dependencies. You will need to install them.
-For example, for this specified dependency:
+<code>cabal</code> will complain about missing dependencies. You will need to
+install them. For example, for this specified dependency:
 
     --dependency='timeit=timeit-1.0.0.0-b5d83acfe823666e0ea6354a3ae30d03'
 
-Run this cabal command:
+Run this <code>cabal</code> command:
 
     $ cabal install timeit
 
-Once all dependencies satisfied, you should be able to build hssearch successfully
-with cabal build. This will create the hssearch executable under
-dist/build/HsSearch/hssearch, to which I then created a soft link under ~/bin.
+Once all dependencies satisfied, you should be able to build <code>hssearch</code> 
+successfully with <code>cabal build</code>. This will create the <code>hssearch</code>
+executable under _dist/build/HsSearch/hssearch_, to which I then created a soft
+link under _~/bin_.
 
 
 ### Java / Scala ###
 
 I use Maven to build and manage dependencies for the Java and Scala versions.
-You will find pom.xml files under the root of those source trees.
+You will find _pom.xml_ files at the roots of those source trees.
 
-To build the javasearch and scalasearch versions I run this command in those
-root directories:
+To build the <code>javasearch</code> and <code>scalasearch</code> versions I run
+this command in those root directories:
 
     $ mvn clean install
 
-This creates the executable jar under the target directory. To run them I created
-bash scripts at their root levels - javasearch and scalasearch - to which I then
-created soft links under ~/bin. You will need to edit those scripts to change
-the path to the jar if xsearch is not cloned under ~/src/git/xsearch.
+This creates the executable jar under the _target_ directory. To run them I
+created bash scripts at their root levels - _javasearch_ and _scalasearch_ - to
+which I then created soft links under _~/bin_. You will need to edit those
+scripts to change the path to the jar if xsearch is not cloned under
+_~/src/git/xsearch_.
+
+
+### Python / Ruby ###
+
+Since python and ruby are interpreted languages, and since their interpreters are
+automatically installed on most Unix-style systems (e.g. Linux and OSX), there's
+not much you will need to do to run these (on Windows you will need to download
+and install them from http://www.python.org and https://www.ruby-lang.org/).
+Unless I'm forgetting a dependency that had to be installed, it should just be
+a matter of running the scripts _pysearch.py_ and _rbsearch.rb_. I created soft
+links to both of these in my _~/bin_ to run them from anywhere.
+
+I'm starting to work on creating installable packages of these versions, but I
+still have work to do on that.
+
+Also note: the python code is in 2.x style, I have not converted it to 3.x yet
+but I plan to.
 
 
 History / Motivation
