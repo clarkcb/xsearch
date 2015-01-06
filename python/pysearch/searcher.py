@@ -136,7 +136,10 @@ class Searcher:
                         os.path.join(root, d) for d in dirs \
                         if self.is_search_dir(os.path.join(root, d))])
         elif os.path.isfile(self.settings.startpath):
-            searchdirs.append(os.path.dirname(self.settings.startpath))
+            d = os.path.dirname(self.settings.startpath)
+            if not d:
+                d = '.'
+            searchdirs.append(d)
         return searchdirs
 
     def get_search_files(self, searchdirs):

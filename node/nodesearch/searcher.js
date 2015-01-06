@@ -136,12 +136,20 @@ function Searcher(settings) {
     };
 
     var getSearchDirs = function (startPath) {
-        if (_settings.debug) {
-            log("Getting list of directories to search under " + startPath);
-        }
         var searchDirs = [];
-        if (_settings.recursive) {
-            searchDirs.push.apply(searchDirs, recGetSearchDirs(startPath));
+        var stats = fs.statSync(startPath);
+        if (stats.isDirectory()) {
+            if (_settings.debug) {
+                log("Getting list of directories to search under " + startPath);
+            }
+            searchDirs.push(startPath)
+            if (_settings.recursive) {
+                searchDirs.push.apply(searchDirs, recGetSearchDirs(startPath));
+            }
+        } else if (stats.isFile()) {
+            var d = path.dirname(startPath)
+            if (!d) d = "."
+                searchDirs.push(d)
         }
         return searchDirs;
     }
@@ -221,8 +229,13 @@ function Searcher(settings) {
 
     var getSearchFiles = function (searchDirs) {
         var searchFiles = [];
-        for (var d in searchDirs) {
-            searchFiles.push.apply(searchFiles, getSearchFilesForDirectory(searchDirs[d]));
+        var stats = fs.statSync(_settings.startPath);
+        if (stats.isDirectory()) {
+            for (var d in searchDirs) {
+                searchFiles.push.apply(searchFiles, getSearchFilesForDirectory(searchDirs[d]));
+            }
+        } else if (stats.isFile()) {
+            searchFiles.push(_settings.startPath);
         }
         return searchFiles;
     };
@@ -269,7 +282,7 @@ function Searcher(settings) {
         // get the search dirs
         if (_settings.doTiming)
             startTimer("GetSearchDirs");
-        var dirs = [_settings.startPath];
+        var dirs = [];
         dirs.push.apply(dirs, getSearchDirs(_settings.startPath));
         if (_settings.doTiming) {
             stopTimer("GetSearchDirs");
