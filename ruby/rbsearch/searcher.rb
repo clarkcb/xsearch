@@ -152,12 +152,19 @@ class Searcher
     add_timer(name, 'start')
   end
 
+  def stop_timer(name)
+    add_timer(name, 'stop')
+    add_elapsed(name)
+  end
+
   def get_elapsed(name)
     start = @timers[name+':start']
     stop = @timers[name+':stop']
-    elapsed = stop - start
-    @totalElapsed += elapsed
-    elapsed
+    stop - start
+  end
+
+  def add_elapsed(name)
+    @totalElapsed += get_elapsed(name)
   end
 
   def print_elapsed(name)
@@ -169,11 +176,6 @@ class Searcher
     log("Total elapsed time: #{@totalElapsed * 1000} ms")
   end
 
-  def stop_timer(name)
-    add_timer(name, 'stop')
-    print_elapsed(name)
-  end
-
   def search
     # get the searchdirs
     if @settings.dotiming
@@ -182,6 +184,9 @@ class Searcher
     searchdirs = get_search_dirs()
     if @settings.dotiming
       stop_timer('get_search_dirs')
+      if @settings.printresults
+        print_elapsed('get_search_dirs')
+      end
     end
     if @settings.verbose
       log("\nDirectories to be searched (#{searchdirs.count}):")
@@ -196,6 +201,9 @@ class Searcher
     searchfiles = get_search_files(searchdirs)
     if @settings.dotiming
       stop_timer('get_search_files')
+      if @settings.printresults
+        print_elapsed('get_search_files')
+      end
     end
     if @settings.verbose
       log("\nFiles to be searched (#{searchfiles.count}):")
@@ -212,7 +220,10 @@ class Searcher
     end
     if @settings.dotiming
       stop_timer('search_files')
-      print_total_elapsed
+      if @settings.printresults
+        print_elapsed('search_files')
+        print_total_elapsed
+      end
     end
   end
 
