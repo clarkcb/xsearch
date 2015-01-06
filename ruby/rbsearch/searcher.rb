@@ -115,21 +115,30 @@ class Searcher
 
   def get_search_dirs
     searchdirs = []
-    if @settings.recursive
-      Find.find(@settings.startpath) do |f|
-        if FileTest.directory?(f)
-          searchdirs.push(f) if is_search_dir(f)
+    if FileTest.directory?(@settings.startpath)
+      if @settings.recursive
+        Find.find(@settings.startpath) do |f|
+          if FileTest.directory?(f)
+            searchdirs.push(f) if is_search_dir(f)
+          end
         end
+      else
+        searchdirs.push(@settings.startpath) if is_search_dir(@settings.startpath)
       end
-    else
-      searchdirs.push(@settings.startpath) if is_search_dir(@settings.startpath)
+    elsif FileTest.file?(@settings.startpath)
+      d = File.dirname(@settings.startpath)
+      if not d
+        d = '.'
+      end
+      searchdirs.push(d) if is_search_dir(d)
     end
     searchdirs
   end
 
   def get_search_files(searchdirs)
     searchfiles = []
-    searchdirs.each do |d|
+    if FileTest.directory?(@settings.startpath)
+      searchdirs.each do |d|
         all_dirs = Dir.entries(d)
         all_dirs.each do |f|
           unless FileTest.directory?(f)
@@ -141,6 +150,9 @@ class Searcher
           end
         end
       end
+    elsif FileTest.file?(@settings.startpath)
+      searchfiles.push(@settings.startpath) if is_search_file(@settings.startpath)
+    end
     searchfiles
   end
 
