@@ -1,4 +1,4 @@
 #!/bin/sh
-JAVASEARCHJAR=/Users/cary/src/git/xsearch/java/target/javasearch-1.0-SNAPSHOT.jar
+JAVASEARCHJAR=~/src/git/xsearch/java/target/javasearch-1.0-SNAPSHOT.jar
 java -cp $JAVASEARCHJAR javasearch.SearchMain $@
 
