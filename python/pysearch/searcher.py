@@ -127,13 +127,16 @@ class Searcher:
         if self.settings.debug:
             self.log('get_search_dirs()')
         searchdirs = []
-        if self.is_search_dir(os.path.abspath(self.settings.startpath)):
-            searchdirs.append(self.settings.startpath)
-        if self.settings.recursive:
-            for root, dirs, files in os.walk(self.settings.startpath):
-                searchdirs.extend([
-                    os.path.join(root, d) for d in dirs \
-                    if self.is_search_dir(os.path.join(root, d))])
+        if os.path.isdir(self.settings.startpath):
+            if self.is_search_dir(os.path.abspath(self.settings.startpath)):
+                searchdirs.append(self.settings.startpath)
+            if self.settings.recursive:
+                for root, dirs, files in os.walk(self.settings.startpath):
+                    searchdirs.extend([
+                        os.path.join(root, d) for d in dirs \
+                        if self.is_search_dir(os.path.join(root, d))])
+        elif os.path.isfile(self.settings.startpath):
+            searchdirs.append(os.path.dirname(self.settings.startpath))
         return searchdirs
 
     def get_search_files(self, searchdirs):
@@ -141,8 +144,16 @@ class Searcher:
         if self.settings.debug:
             self.log('get_search_files()')
         searchfiles = []
-        for d in searchdirs:
-            searchfiles.extend(self.get_search_files_for_directory(d))
+        if os.path.isdir(self.settings.startpath):
+            for d in searchdirs:
+                searchfiles.extend(self.get_search_files_for_directory(d))
+        elif os.path.isfile(self.settings.startpath):
+            (d,f) = os.path.split(self.settings.startpath)
+            if not d:
+                d = '.'
+            searchfiles.append(SearchFile(path=d,
+                                          filename=f,
+                                          filetype=self.fileutil.get_filetype(f)))
         return searchfiles
 
     def get_search_files_for_directory(self, d):
@@ -224,6 +235,7 @@ class Searcher:
         if self.settings.dotiming:
             self.stop_timer('search_files')
             if self.settings.printresults:
+                self.print_elapsed('search_files')
                 self.print_total_elapsed()
 
     def print_results(self):
