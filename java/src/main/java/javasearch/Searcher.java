@@ -203,14 +203,13 @@ public class Searcher {
 
 	private void stopTimer(String name) {
 		addTimer(name, "stop");
+		totalElapsedTime += getElapsed(name);
     }
 
     public long getElapsed(String name) {
         long startTime = this.timers.get(name+":start");
         long stopTime = this.timers.get(name+":stop");
-		long elapsed = stopTime - startTime;
-		totalElapsedTime += elapsed;
-        return elapsed;
+		return stopTime - startTime;
     }
 
     public void printElapsed(String name) {
@@ -230,7 +229,9 @@ public class Searcher {
 		List<File> searchDirs = getSearchDirs(new File(settings.getStartPath()));
 		if (settings.getDoTiming()) {
             stopTimer("getSearchDirs");
-            printElapsed("getSearchDirs");
+			if (settings.getPrintResults()) {
+				printElapsed("getSearchDirs");
+			}
         }
 		if (settings.getVerbose()) {
 			log(String.format("\nDirectories to be searched (%d):",
@@ -247,7 +248,9 @@ public class Searcher {
 		List<SearchFile> searchFiles = getSearchFiles(searchDirs);
 		if (settings.getDoTiming()) {
             stopTimer("getSearchFiles");
-            printElapsed("getSearchFiles");
+			if (settings.getPrintResults()) {
+				printElapsed("getSearchFiles");
+			}
         }
 		if (settings.getVerbose()) {
 			log(String.format("\nFiles to be searched (%d):",
@@ -266,8 +269,10 @@ public class Searcher {
 		}
 		if (settings.getDoTiming()) {
             stopTimer("searchFiles");
-            printElapsed("searchFiles");
-			printTotalElapsed();
+			if (settings.getPrintResults()) {
+				printElapsed("searchFiles");
+				printTotalElapsed();
+			}
         }
         if (settings.getVerbose()) {
 			log("\nFile search complete.\n");
