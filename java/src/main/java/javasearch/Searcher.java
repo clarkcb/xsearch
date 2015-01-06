@@ -85,23 +85,13 @@ public class Searcher {
 
 	public List<File> getSearchDirs(File startPath) {
 		List<File> searchDirs = new ArrayList<File>();
-		if (startPath.isDirectory()) {
-			if (settings.getDebug()) {
-				log(String.format("Getting files to search under %s",
-						startPath.getPath()));
-			}
-			if (isSearchDir(startPath)) {
-				searchDirs.add(startPath);
-			}
-			if (settings.getRecursive()) {
-				searchDirs.addAll(recGetSearchDirs(startPath));
-			}
-		} else if (startPath.isFile()) {
-			File d = startPath.getParentFile();
-			if (null == d)
-				d = new File(".");
-			if (isSearchDir(d))
-				searchDirs.add(d);
+		if (settings.getDebug()) {
+			log(String.format("Getting files to search under %s",
+					startPath.getPath()));
+		}
+		searchDirs.add(startPath);
+		if (settings.getRecursive()) {
+			searchDirs.addAll(recGetSearchDirs(startPath));
 		}
 		return searchDirs;
 	}
@@ -196,21 +186,8 @@ public class Searcher {
 	public List<SearchFile> getSearchFiles(List<File> searchDirs) {
 		File f = new File(settings.getStartPath());
 		List<SearchFile> searchFiles = new ArrayList<SearchFile>();
-		if (f.isDirectory()) {
-			for (File d : searchDirs) {
-				searchFiles.addAll(getSearchFilesForDir(d));
-			}
-		} else if (f.isFile()) {
-			FileType fileType = fileUtil.getFileType(f);
-			if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
-					&& isArchiveSearchFile(f))
-					||
-					(!settings.getArchivesOnly() && isSearchFile(f))) {
-				File d = f.getParentFile();
-				if (null == d)
-					d = new File(".");
-				searchFiles.add(new SearchFile(d.getPath(), f.getName(), fileType));
-			}
+		for (File d : searchDirs) {
+			searchFiles.addAll(getSearchFilesForDir(d));
 		}
 		return searchFiles;
 	}
@@ -243,18 +220,49 @@ public class Searcher {
         log(String.format("Total elapsed time: %d ms", totalElapsedTime));
     }
 
-    public void search() {
+	public void search() throws SearchException {
 
+		// figure out if startPath is a directory or a file and search accordingly
+		File startPathFile = new File(settings.getStartPath());
+		if (startPathFile.isDirectory()) {
+			if (isSearchDir(startPathFile)) {
+				searchPath(startPathFile);
+			} else {
+				throw new SearchException("Startpath does not match search settings");
+			}
+		} else if (startPathFile.isFile()) {
+			FileType fileType = fileUtil.getFileType(startPathFile);
+			if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
+					&& isArchiveSearchFile(startPathFile))
+					||
+					(!settings.getArchivesOnly() && isSearchFile(startPathFile))) {
+				File d = startPathFile.getParentFile();
+				if (null == d)
+					d = new File(".");
+				searchFile(new SearchFile(d.getPath(), startPathFile.getName(),
+						fileType));
+			} else {
+				throw new SearchException("Startpath does not match search settings");
+			}
+		} else {
+			throw new SearchException("Startpath is not a searchable file type");
+		}
+		if (settings.getVerbose()) {
+			log("\nFile search complete.\n");
+		}
+	}
+
+	public void searchPath(File filePath) {
 		// get the search directories
 		if (settings.getDoTiming())
 			startTimer("getSearchDirs");
-		List<File> searchDirs = getSearchDirs(new File(settings.getStartPath()));
+		List<File> searchDirs = getSearchDirs(filePath);
 		if (settings.getDoTiming()) {
-            stopTimer("getSearchDirs");
+			stopTimer("getSearchDirs");
 			if (settings.getPrintResults()) {
 				printElapsed("getSearchDirs");
 			}
-        }
+		}
 		if (settings.getVerbose()) {
 			log(String.format("\nDirectories to be searched (%d):",
 					searchDirs.size()));
@@ -269,11 +277,11 @@ public class Searcher {
 			startTimer("getSearchFiles");
 		List<SearchFile> searchFiles = getSearchFiles(searchDirs);
 		if (settings.getDoTiming()) {
-            stopTimer("getSearchFiles");
+			stopTimer("getSearchFiles");
 			if (settings.getPrintResults()) {
 				printElapsed("getSearchFiles");
 			}
-        }
+		}
 		if (settings.getVerbose()) {
 			log(String.format("\nFiles to be searched (%d):",
 					searchFiles.size()));
@@ -290,15 +298,12 @@ public class Searcher {
 			searchFile(sf);
 		}
 		if (settings.getDoTiming()) {
-            stopTimer("searchFiles");
+			stopTimer("searchFiles");
 			if (settings.getPrintResults()) {
 				printElapsed("searchFiles");
 				printTotalElapsed();
 			}
-        }
-        if (settings.getVerbose()) {
-			log("\nFile search complete.\n");
-        }
+		}
 	}
 
 	public void searchFile(SearchFile sf) {
