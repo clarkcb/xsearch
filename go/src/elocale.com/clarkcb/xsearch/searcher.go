@@ -58,9 +58,9 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 		GetFileTypes(),           // fileTypes
 		[]*string{},              // searchDirs
 		NewSearchItems(),         // searchItems
-		make(chan *SearchItem),   // addItemChan
-		make(chan *string),       // doneChan
-		make(chan error),         // errChan
+		make(chan *SearchItem, 1),// addItemChan
+		make(chan *string, 10),   // doneChan
+		make(chan error, 1),      // errChan
 		NewSearchResults(),       // searchResults
 		make(chan *SearchResult), // resultChan
 		map[string]time.Time{},   // timerMap
@@ -133,10 +133,24 @@ func (s *Searcher) setSearchDirs() error {
 	if s.Settings.Verbose {
 		log("\nBuilding directory search list")
 	}
-	if s.Settings.Recursive {
-		return filepath.Walk(s.Settings.StartPath, s.checkAddSearchWalkDir)
+	startPath := normalizePath(s.Settings.StartPath)
+	fi, err := os.Stat(startPath)
+	if err != nil {
+		return err
 	}
-	return s.checkAddSearchDir(&s.Settings.StartPath)
+	if fi.IsDir() {
+		if s.Settings.Recursive {
+			return filepath.Walk(startPath, s.checkAddSearchWalkDir)
+		}
+		return s.checkAddSearchDir(&startPath)
+	}
+	dir, _ := filepath.Split(startPath)
+	if dir == "" {
+		dir = "."
+	} else {
+		dir = normalizePath(dir)
+	}
+	return s.checkAddSearchDir(&dir)
 }
 
 func (s *Searcher) isArchiveSearchFile(filename *string) bool {
@@ -173,6 +187,16 @@ func (s *Searcher) isSearchFile(filename *string) bool {
 		s.Settings.OutFilePatterns)
 }
 
+func (s *Searcher) filterFile(f *string) bool {
+	if s.Settings.SearchArchives && s.isArchiveSearchFile(f) {
+		return true
+	}
+	if !s.Settings.ArchivesOnly && s.isSearchFile(f) {
+		return true
+	}
+	return false
+}
+
 func (s *Searcher) setSearchFilesForDirectory(d *string) {
 	fileInfos, err := ioutil.ReadDir(*d)
 	if err != nil {
@@ -185,11 +209,7 @@ func (s *Searcher) setSearchFilesForDirectory(d *string) {
 	for _, fi := range fileInfos {
 		if !fi.IsDir() {
 			name := fi.Name()
-			if s.Settings.SearchArchives && s.isArchiveSearchFile(&name) {
-				// this approach was too slow, reverting to adding archive file itself
-				//s.setArchiveSearchFiles(filepath.Join(d, name))
-				s.addItemChan <- NewSearchItem(d, &name)
-			} else if !s.Settings.ArchivesOnly && s.isSearchFile(&name) {
+			if s.filterFile(&name) {
 				s.addItemChan <- NewSearchItem(d, &name)
 			}
 		}
@@ -197,17 +217,40 @@ func (s *Searcher) setSearchFilesForDirectory(d *string) {
 	s.doneChan <- d
 }
 
-func (s *Searcher) setSearchFiles() {
+func (s *Searcher) setSearchFiles() error {
 	if s.Settings.Verbose {
 		log("\nBuilding file search list")
 	}
-
-	// gather search files concurrently for each search dir
-	for _, d := range s.searchDirs {
-		go func(dir *string) {
-			s.setSearchFilesForDirectory(dir)
-		}(d)
+	// check if StartPath is directory or file
+	fi, err := os.Stat(s.Settings.StartPath)
+	if err != nil {
+		return err
 	}
+	if fi.IsDir() {
+		// gather search files concurrently for each search dir
+		for _, d := range s.searchDirs {
+			go func(dir *string) {
+				s.setSearchFilesForDirectory(dir)
+			}(d)
+		}
+	} else if fi.Mode().IsRegular() {
+		go func() {
+			dir, file := filepath.Split(s.Settings.StartPath)
+			if s.filterFile(&file) {
+				if dir == "" {
+					dir = "."
+				} else {
+					dir = normalizePath(dir)
+				}
+				s.addItemChan <- NewSearchItem(&dir, &file)
+				time.Sleep(10 * time.Millisecond)
+				s.doneChan <- &dir
+			} else {
+				s.errChan <- fmt.Errorf("Startpath does not match search settings")
+			}
+		}()
+	}
+	return nil
 }
 
 func (s *Searcher) addSearchResult(r *SearchResult) {
@@ -881,6 +924,21 @@ func (s *Searcher) SearchFile(fp string) {
 	s.searchSearchItem(searchItem)
 }
 
+//get the search items (files) from the file channel
+func (s *Searcher) getSearchItems() {
+	doneDirs := map[string]bool{}
+	for len(doneDirs) < len(s.searchDirs) {
+		select {
+		case i := <-s.addItemChan:
+			s.searchItems.AddItem(i)
+		case d := <-s.doneChan:
+			doneDirs[*d] = true
+		case e := <-s.errChan:
+			panic(e)
+		}
+	}
+}
+
 func (s *Searcher) Search() error {
 	if err := s.validSettings(); err != nil {
 		return err
@@ -909,22 +967,13 @@ func (s *Searcher) Search() error {
 	if s.Settings.DoTiming {
 		s.startTimer("setSearchFiles")
 	}
-	s.setSearchFiles()
-
-	//get the search items (files) from the file channel
-	doneDirs := map[string]bool{}
-	for len(doneDirs) < len(s.searchDirs) {
-		select {
-		case i := <-s.addItemChan:
-			s.searchItems.AddItem(i)
-		case d := <-s.doneChan:
-			doneDirs[*d] = true
-		case e := <-s.errChan:
-			panic(e)
-		}
-	}
+	err = s.setSearchFiles()
+	s.getSearchItems()
 	if s.Settings.DoTiming {
 		s.stopTimer("setSearchFiles")
+	}
+	if err != nil {
+		return err
 	}
 
 	if s.Settings.Verbose {

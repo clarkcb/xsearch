@@ -23,6 +23,10 @@ func getExtension(file string) string {
 	return strings.ToLower(strings.TrimLeft(ext, "."))
 }
 
+func normalizePath(path string) string {
+	return strings.TrimRight(path, "/")
+}
+
 func (f *FileTypes) getFileType(file string) FileType {
 	if f.IsTextFile(file) {
 		return FILETYPE_TEXT
