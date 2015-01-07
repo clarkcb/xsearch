@@ -9,9 +9,11 @@ module HsSearch.FileUtility
     , getFileByteString
     , getFileLines
     , getNonDotDirectoryContents
+    , getParentPath
     , getRecursiveContents
     , getRecursiveDirectories
     , hasExtension
+    , isDirectory
     , isHiddenFilePath
     , normalizeExtension
     ) where
@@ -23,7 +25,7 @@ import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
 import System.Directory (doesDirectoryExist, doesFileExist, getDirectoryContents)
-import System.FilePath ((</>), splitPath, takeFileName)
+import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hClose, hSetNewlineMode, IOMode(..), universalNewlineMode, openFile)
 
 -- preferring this over System.FilePath (takeExtension)
@@ -40,6 +42,9 @@ normalizeExtension x = case x of
                        ('.':_) -> lower x
                        _ -> ['.'] ++ lower x
   where lower s = map toLower s
+
+getParentPath :: FilePath -> FilePath
+getParentPath = dropFileName
 
 hasExtension :: String -> String -> Bool
 hasExtension fp x = getExtension fp == (Just . normalizeExtension) x
@@ -70,12 +75,15 @@ getNonDotDirectoryContents dir = do
 notDotDir :: FilePath -> Bool
 notDotDir dir = dir `notElem` [".", ".."]
 
+isDirectory :: FilePath -> IO Bool
+isDirectory = doesDirectoryExist
+
 getRecursiveContents :: FilePath -> IO [FilePath]
 getRecursiveContents dir = do
   filePaths <- getNonDotDirectoryContents dir
   paths <- forM filePaths $ \path -> do
-    isDirectory <- doesDirectoryExist path
-    if isDirectory
+    isDir <- doesDirectoryExist path
+    if isDir
       then do
         subNames <- getRecursiveContents path
         return $ [path] ++ subNames
@@ -86,8 +94,8 @@ getRecursiveDirectories :: FilePath -> IO [FilePath]
 getRecursiveDirectories dir = do
   filePaths <- getNonDotDirectoryContents dir
   paths <- forM filePaths $ \path -> do
-    isDirectory <- doesDirectoryExist path
-    if isDirectory
+    isDir <- doesDirectoryExist path
+    if isDir
       then do
         subNames <- getRecursiveDirectories path
         return $ [path] ++ subNames

@@ -34,9 +34,17 @@ isSearchDir settings d = and $ map ($d) tests
 
 getSearchDirs :: SearchSettings -> IO [FilePath]
 getSearchDirs settings = do
-  dirs <- getRecursiveDirectories $ startPath settings
-  let searchDirs = filter (isSearchDir settings) $ [startPath settings] ++ dirs
+  isStartPathDir <- isDirectory $ startPath settings
+  searchDirs <- do if isStartPathDir
+                     then do
+                       ds <- getDirectories
+                       return ds
+                     else return [getParentPath (startPath settings)]
   return searchDirs
+  where getDirectories :: IO [FilePath]
+        getDirectories = do
+          dirs <- getRecursiveDirectories $ startPath settings
+          return $ filter (isSearchDir settings) $ [startPath settings] ++ dirs
 
 isSearchFile :: SearchSettings -> FilePath -> Bool
 isSearchFile settings fp = and $ map ($fp) tests
@@ -86,7 +94,12 @@ isArchiveSearchFile settings fp = and $ map ($fp) tests
 
 getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
-  files <- concat `liftM` mapM getDirectoryFiles dirs
+  isStartPathDir <- isDirectory $ startPath settings
+  files <- do if isStartPathDir
+                then do
+                  fs <- concat `liftM` mapM getDirectoryFiles dirs
+                  return fs
+                else return [startPath settings]
   fileTypes <- getFileTypes files
   let makeSearchFile (f,t) = SearchFile { searchFileContainers=[]
                                         , searchFilePath=f
