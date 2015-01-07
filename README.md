@@ -45,8 +45,8 @@ Options:
   --out-archivefilepattern  Specify name pattern for archive files to exclude from search
   --out-linesafterpattern   Specify pattern to filter the "lines-after" lines on (used with --linesafter)
   --out-linesbeforepattern  Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
-  -P,--noprintmatches       Suppress printing of matches to stdout
-  -p,--printmatches         Print matches to stdout*
+  -P,--noprintmatches       Suppress printing of search results to stdout
+  -p,--printmatches         Print search results to stdout*
   -R,--norecursive          Do not search recursively
   -r,--recursive            Search recursively through subdirectories*
   -s,--search               Specify search pattern
@@ -57,8 +57,8 @@ Options:
   -w,--maxlinelength        Maximum number of characters to print out per line of result (default: 150)
   -x,--in-ext               Specify extension for files to include in search
   -X,--out-ext              Specify extension for files to exclude from search
-  -Z,--nosearcharchives     Do not search archive files (bz2, gz, tar, zip)
-  -z,--searcharchives       Search archive files (bz2, gz, tar, zip)*
+  -Z,--nosearcharchives     Do not search archive files (bz2, gz, tar, zip)*
+  -z,--searcharchives       Search archive files (bz2, gz, tar, zip)
 </pre>
 
 For example, say you want to perform a search according to these settings:
