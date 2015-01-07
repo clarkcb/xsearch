@@ -163,8 +163,7 @@ settingsFromArgs opts arguments =
             ArgActionType -> recSettingsFromArgs ((getArgAction (argName a)) settings (head as)) (tail as)
             FlagActionType -> recSettingsFromArgs ((getFlagAction (argName a)) settings) as
             UnknownActionType -> error ("Unknown option: " ++ (argName a))
-          [s] -> settings {startPath=s}
-          a:_ -> error ("Unknown option: " ++ a)
+          a:as -> recSettingsFromArgs (settings {startPath=a}) as
         getActionType :: String -> ActionType
         getActionType a = if (isArgAction a)
                           then ArgActionType
