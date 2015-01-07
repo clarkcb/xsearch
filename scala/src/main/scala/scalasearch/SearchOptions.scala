@@ -132,22 +132,23 @@ object SearchOptions {
     def nextArg(arglist:List[String], sb:SettingsBuilder) {
       arglist match {
         case Nil => Unit
-        case switchPattern(name) :: tail =>
-          if (argMap.contains(name)) {
+        case switchPattern(arg) :: tail =>
+          if (argMap.contains(arg)) {
             if (tail.length > 0) {
-              argActionMap(argMap(name).longarg)(tail.head, sb)
+              argActionMap(argMap(arg).longarg)(tail.head, sb)
               nextArg(tail.tail, sb)
             } else {
-              throw new SearchException("Arg without required value: "+name)
+              throw new SearchException("Arg without required value: "+arg)
             }
-          } else if (flagMap.contains(name)) {
-            flagActionMap(flagMap(name).longarg)(sb)
+          } else if (flagMap.contains(arg)) {
+            flagActionMap(flagMap(arg).longarg)(sb)
             nextArg(tail, sb)
           } else {
-            throw new SearchException("Undefined option: " + name)
+            throw new SearchException("Undefined option: " + arg)
           }
-        case value :: Nil =>
-          sb.startPath = value
+        case arg :: tail =>
+          sb.startPath = arg
+          nextArg(tail, sb)
         case _ =>
           throw new SearchException("Invalid args: "+arglist.mkString(", "))
       }
