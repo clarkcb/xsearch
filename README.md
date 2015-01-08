@@ -137,7 +137,7 @@ to facilitate running that version. I will probably add more of these for consis
 
 For each language version that you want to compile/run, you will need to install
 the compilers/interpreters for those languages, unless that system already has
-them installed (e.g. python and ruby on Linux / OSX).
+them installed (e.g. php, python and ruby on Linux / OSX).
 
 I have a script under the _xsearch/shared_ directory called _build.sh_ that can
 be used to compile any or all of the compiled language versions. For example,
@@ -148,6 +148,11 @@ you can build the Haskell version (after installing GHC) by running:
 
 You can also run it without a language name to build all compiled versions in
 one run.
+
+I have also included a basic test script - _.shared/test.sh_ - that can be run
+to test an individual language version or test and compare all versions in a
+single run. Edit that script to see how to run it and also to change test
+parameters.
 
 Below is some additional info for some of the languages.
 
@@ -256,15 +261,18 @@ scripts to change the path to the jar if xsearch is not cloned under
 _~/src/git/xsearch_.
 
 
-### Python / Ruby ###
+### PHP / Python / Ruby ###
 
-Since python and ruby are interpreted languages, and since their interpreters are
-automatically installed on most Unix-style systems (e.g. Linux and OSX), there's
-not much you will need to do to run these (on Windows you will need to download
-and install them from http://www.python.org and https://www.ruby-lang.org/).
+Since php, python and ruby are interpreted languages, and since their interpreters
+are automatically installed on most Unix-style systems (e.g. Linux and OSX),
+there's not much you will need to do to run these (on Windows you will need to
+download and install them from http://php.net/, http://www.python.org and
+https://www.ruby-lang.org/).
+
 Unless I'm forgetting a dependency that had to be installed, it should just be
-a matter of running the scripts _pysearch.py_ and _rbsearch.rb_. I created soft
-links to both of these in my _~/bin_ to run them from anywhere.
+a matter of running the scripts _phpsearch.php_,  _pysearch.py_ and
+_rbsearch.rb_. I created soft links to each of these in my _~/bin_ to run them
+from anywhere.
 
 I'm starting to work on creating installable packages of these versions, but I
 still have work to do on that.
@@ -319,27 +327,29 @@ current favorites:
 
 * __hssearch__ - I'm pleasantly surprised by the succintness of the Haskell code
   even after the first version, and the readability is better than I thought
-  it would be. Also, this version is the fastest. Perhaps that isn't too surprising,
-  since haskell and go are the two natively compiled languages, but I'm a little
-  surprised how fast it is, and that is is faster than the go version,, even
-  without me having done any performance optimizations (concurrency, etc.).
+  it would be. Also, this version is the fastest. Perhaps that isn't too
+  surprising, since haskell and go are the two natively compiled languages, but
+  I'm a little surprised how fast it is, and especially that is is faster than
+  the go version, even without me having done any performance optimizations
+  (concurrency, etc.).
 
-* __gosearch__ - This is the second fastest version. Frankly I expected it to be
-  the fastest, given then fact that it is natively compiled and also the fact
+* __gosearch__ - This is the second fastest version. Frankly, I expected it to
+  be the fastest, given the fact that it is natively compiled and also the fact
   that I added concurrency. In fact, it's the only language version that I added
-  concurrency to, mainly because channels make it so easy. Also, the
-  available standard library packages made it fairly easy to implement some of 
-  the more advanced features, like archive file searching.
+  concurrency to, mainly because channels make it easy. Also, the available
+  standard library packages made it fairly easy to implement some of the more
+  advanced features, like archive file searching.
 
 * __scalasearch__ - I first wrote this version when I wanted to learn scala and
   was looking at possibly having a scala development opportunity. I did end up
-  working in it professionally for 2.5 years, and in that time my functional language
-  skills have improved quite a bit, and it's been interesting to see how this
-  version has evolved.
+  working in it professionally for several years, and in that time my functional
+  language skills improved a fair amount, and it's been interesting to see how
+  this version has evolved.
 
 * __pysearch.py__ - When I use this tool, which I still do regularly, I usually
   end up using the python version. That's mostly out of habit, but also because
-  as the first language version I still sort of treat it as the reference version.
+  as the first language version I still sort of treat it as the reference
+  version.
 
 
 Also, here are some thoughts on each language that I have done implementations
@@ -412,6 +422,16 @@ for so far:
   development of web apps. Still, javascript just isn't that compelling of a
   language in my opinion. I will withhold final judgement until I have rewritten
   the node version with async/non-blocking calls.
+
+* [PHP](http://php.net/) [1] - I have a fair amount of web dev experience with
+  PHP, but had never done any non-web/CLI work in it, and I had also never
+  worked with PHP 5 classes. Also, I wanted to see how fast I could put a PHP
+  version together. The experience was actually not too painful. PHP is not
+  my favorite language for sure, but the class implementation is fine,
+  and I discovered that PHP has some functional aspects to it, such as first-
+  class functions and some functional-style functions (array_filter, array_map,
+  etc.). I got a basic working version (everything except linesafterto/until
+  and archive file searching) done in a little over a day.
 
 * [Python](https://www.python.org/) -
   This was my 2nd go-to scripting language (after perl), and the first language
@@ -548,7 +568,7 @@ implementations for yet, but I have several different ideas for ones to choose:
 2. Choose a language I don't know because it seems to be up-and-coming as well
    as interesting.
 3. Choose a language I don't know because it is different from other languages
-   you have done and therefore gives new challenges.
+   I have done and therefore gives new challenges.
 
 
 Languages that I'm currently considering (listed alphabetically):
@@ -571,10 +591,6 @@ Languages that I'm currently considering (listed alphabetically):
 
 * [Perl](https://www.perl.org/) [1] - Perl was my first go-to scripting language.
   I would be curious to see how quickly I could implement a perl version.
-
-* [PHP](http://php.net/) [1] - I have web dev experience with PHP, but I'm
-  curious to see what it's like to write a non-web app in PHP. Also, similarly
-  to perl, I'd like to see how quickly I could implement a PHP version.
 
 * [Rust](http://www.rust-lang.org/) [2,3] - I don't know much about rust yet, but
   from the little bit I've seen it looks interesting. It seems to be a
