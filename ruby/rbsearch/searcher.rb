@@ -135,6 +135,16 @@ class Searcher
     searchdirs
   end
 
+  def filter_file(f)
+    if @fileutil.is_archive_file(f) and @settings.searcharchives and is_archive_search_file(f)
+      true
+    elsif not @settings.archivesonly and is_search_file(f)
+      true
+    else
+      false
+    end
+  end
+
   def get_search_files(searchdirs)
     searchfiles = []
     if FileTest.directory?(@settings.startpath)
@@ -142,9 +152,7 @@ class Searcher
         all_dirs = Dir.entries(d)
         all_dirs.each do |f|
           unless FileTest.directory?(f)
-            if @fileutil.is_archive_file(f) and @settings.searcharchives and is_archive_search_file(f)
-              searchfiles.push(Pathname.new(d).join(f).to_s)
-            elsif not @settings.archivesonly and is_search_file(f)
+            if filter_file(f)
               searchfiles.push(Pathname.new(d).join(f).to_s)
             end
           end
@@ -193,7 +201,7 @@ class Searcher
     if @settings.dotiming
       start_timer('get_search_dirs')
     end
-    searchdirs = get_search_dirs()
+    searchdirs = get_search_dirs
     if @settings.dotiming
       stop_timer('get_search_dirs')
       if @settings.printresults
