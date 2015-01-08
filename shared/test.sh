@@ -80,6 +80,13 @@ test_node () {
     time nodesearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
+test_php () {
+    echo -e "\n################################################################################"
+    log "test_php"
+    log "phpsearch.php $SEARCH_PARAMS"
+    time phpsearch.php -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+}
+
 test_python () {
     echo -e "\n################################################################################"
     log "test_python"
@@ -122,6 +129,8 @@ test_all () {
 
     test_node
 
+    test_php
+
     test_python
 
     test_ruby
@@ -152,6 +161,14 @@ elif [ "$ARG" == "haskell" ]; then
     test_haskell
 elif [ "$ARG" == "java" ]; then
     test_java
+elif [ "$ARG" == "node" ]; then
+    test_node
+elif [ "$ARG" == "php" ]; then
+    test_php
+elif [ "$ARG" == "python" ]; then
+    test_python
+elif [ "$ARG" == "ruby" ]; then
+    test_ruby
 elif [ "$ARG" == "scala" ]; then
     test_scala
 else
