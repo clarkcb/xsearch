@@ -313,11 +313,11 @@ class Searcher:
             search_result.filename = str(sf)
             self.add_search_result(search_result)
 
-    def get_start_line_indices(self, s):
-        indices = [0]
+    def get_new_line_indices(self, s):
+        indices = []
         for i, c in enumerate(s):
             if c == '\n':
-                indices.append(i+1)
+                indices.append(i)
         return indices
 
     def search_multiline_string(self, s):
@@ -325,10 +325,13 @@ class Searcher:
            and return a list of SearchResult instances (without filename)
         """
         search_results = []
-        start_line_indices = self.get_start_line_indices(s)
+        new_line_indices = self.get_new_line_indices(s)
+        start_line_indices = [0] + [i+1 for i in new_line_indices]
+        end_line_indices = [i for i in new_line_indices] + [len(s) - 1]
         for p in self.settings.searchpatterns:
             search_results.extend(
-                self.search_multiline_string_for_pattern(s, p, start_line_indices))
+                self.search_multiline_string_for_pattern(s, p, start_line_indices,
+                    end_line_indices))
         return search_results
 
     def get_lines_before(self, s, start_line_index, before_start_indices):
@@ -396,7 +399,8 @@ class Searcher:
             return True
         return False
 
-    def search_multiline_string_for_pattern(self, s, p, start_line_indices):
+    def search_multiline_string_for_pattern(self, s, p, start_line_indices,
+        end_line_indices):
         """Search a given searchable string possibly containing multiple newlines
            and a specific pattern and return a list of SearchResult instances
            (without filename)
@@ -409,14 +413,12 @@ class Searcher:
             m_line_start_index = 0
             m_line_end_index = len(s) - 1
             before_start_indices = [x for x in start_line_indices if x < m.start()]
-            if before_start_indices:
-                m_line_start_index = before_start_indices[-1]
-            after_start_indices = [x for x in start_line_indices if x > m.start()]
-            if after_start_indices:
-                m_line_end_index = after_start_indices[0] - 1
             before_line_count = 0
             if before_start_indices:
+                m_line_start_index = before_start_indices[-1]
                 before_line_count = len(before_start_indices) - 1
+            m_line_end_index = end_line_indices[start_line_indices.index(m_line_start_index)]
+            after_start_indices = [x for x in start_line_indices if x > m.start()]
             line = s[m_line_start_index:m_line_end_index]
             if self.settings.numlinesbefore and before_line_count:
                 lines_before = self.get_lines_before(s, m_line_start_index,
@@ -425,8 +427,6 @@ class Searcher:
                 lines_after = self.get_lines_after(s, after_start_indices)
                 if after_start_indices and not lines_after:
                     continue
-            if self.settings.firstmatch:
-                continue
             if (lines_before and
                 not self.lines_before_match(lines_before)) or \
                 (lines_after and
@@ -442,6 +442,8 @@ class Searcher:
                                          lines_before=list(lines_before),
                                          lines_after=list(lines_after))
             search_results.append(search_result)
+            if self.settings.firstmatch:
+                break
         return search_results
 
     def lines_match(self, lines, in_patterns, out_patterns):
@@ -497,6 +499,8 @@ class Searcher:
                     except StopIteration:
                         break
             for p in self.settings.searchpatterns:
+                if self.settings.firstmatch and p in pattern_match_dict:
+                    continue
                 # find all matches for the line
                 matchiter = p.finditer(line)
                 while True:
@@ -550,8 +554,6 @@ class Searcher:
                                 sr_lines_after = list(lines_after)[:-1]
                             else:
                                 continue
-                        if self.settings.firstmatch and p in pattern_match_dict:
-                            continue
                         search_result = \
                             SearchResult(pattern=p.pattern,
                                          linenum=linenum,
