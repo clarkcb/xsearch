@@ -38,7 +38,7 @@ class FileUtil {
     }
 
     public static function normalize_path($path) {
-        return trim($path, '/');
+        return rtrim($path, '/');
     }
 
     public static function split_path($path) {

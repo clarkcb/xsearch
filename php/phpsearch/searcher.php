@@ -93,7 +93,7 @@ class Searcher {
 
     private function get_non_dot_dirs($d) {
         $filter_non_dot_dirs = function($f) use ($d) {
-            return is_dir(FileUtil::join_path($d, $f)) && !FileUtil::is_dot_dir($f);
+            return (is_dir(FileUtil::join_path($d, $f)) && !FileUtil::is_dot_dir($f));
         };
         return array_filter(scandir($d), $filter_non_dot_dirs);
     }
@@ -122,9 +122,14 @@ class Searcher {
                     $searchdirs = array_merge($searchdirs,
                         $this->rec_get_search_dirs($this->settings->startpath));
                 }
+            } else {
+                throw new SearchException("Startpath does not match search settings");
             }
         } else if (is_file($this->settings->startpath)) {
-            $searchdirs[] = dirname($this->settings->startpath);
+            if ($this->filter_file($this->settings->startpath))
+                $searchdirs[] = dirname($this->settings->startpath);
+            else
+                throw new SearchException("Startpath does not match search settings");
         }
         sort($searchdirs);
         return $searchdirs;
