@@ -199,10 +199,6 @@ namespace CsSearch
 
 		public void Search()
 		{
-			if (Settings.DoTiming)
-			{
-				StartTimer("GetSearchDirs");
-			}
 			var attr = File.GetAttributes(Settings.StartPath);
 			if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
 			{
