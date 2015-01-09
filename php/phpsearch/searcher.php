@@ -468,7 +468,7 @@ class Searcher {
                         ($lines_after && !$this->lines_after_match($lines_after)))
                         continue;
                     foreach ($matches[0] as $m) {
-                        $start_index = $m[1];
+                        $start_index = $m[1] + 1;
                         $end_index = $start_index + strlen($m[0]);
                         $r = new SearchResult(
                             $pattern,
