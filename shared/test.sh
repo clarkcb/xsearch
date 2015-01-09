@@ -11,17 +11,18 @@
 # Configuration
 ########################################
 
-PROJECT_PATH=/Users/cary/src/git/xsearch
+PROJECT_PATH=~/src/git/xsearch
 SHARED_PATH=$PROJECT_PATH/shared
 
 SEARCHSTRING="Searcher"
-EXTS="-x rb"
+EXTS="-x py,rb"
 DEBUG=""
 DOTIMING="-t"
+MULTILINE=""
 PRINT="-p"
 SEARCHARCHIVES="-Z"
 
-SEARCH_PARAMS="-s \"$SEARCHSTRING\" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH"
+SEARCH_PARAMS="-s \"$SEARCHSTRING\" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH"
 
 
 ########################################
@@ -43,62 +44,62 @@ test_csharp () {
     echo -e "\n################################################################################"
     log "test_csharp"
     log "cssearch $SEARCH_PARAMS"
-    time cssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time cssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_fsharp () {
     echo -e "\n################################################################################"
     log "test_fsharp"
-    time fssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time fssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_go () {
     echo -e "\n################################################################################"
     log "test_go"
     log "gosearch $SEARCH_PARAMS"
-    time gosearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time gosearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_haskell () {
     echo -e "\n################################################################################"
     log "test_haskell"
     log "hssearch $SEARCH_PARAMS"
-    time hssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time hssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_java () {
     echo -e "\n################################################################################"
     log "test_java"
     log "javasearch $SEARCH_PARAMS"
-    time javasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time javasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_node () {
     echo -e "\n################################################################################"
     log "test_node"
     log "nodesearch $SEARCH_PARAMS"
-    time nodesearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time nodesearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_php () {
     echo -e "\n################################################################################"
     log "test_php"
     log "phpsearch.php $SEARCH_PARAMS"
-    time phpsearch.php -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time phpsearch.php -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_python () {
     echo -e "\n################################################################################"
     log "test_python"
     log "pysearch.py $SEARCH_PARAMS"
-    time pysearch.py -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time pysearch.py -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_ruby () {
     echo -e "\n################################################################################"
     log "test_ruby"
     log "rbsearch.rb $SEARCH_PARAMS"
-    time rbsearch.rb -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time rbsearch.rb -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_scala () {
@@ -111,7 +112,7 @@ test_scala () {
 
     # do the test search
     log "scalasearch $SEARCH_PARAMS"
-    time scalasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $PRINT $SEARCHARCHIVES $PROJECT_PATH
+    time scalasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
 test_all () {
