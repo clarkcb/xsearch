@@ -96,27 +96,80 @@ which will output the lists of directories and files to be searched, and even
 more with the <code>--debug</code> option, which will also output the
 <code>SearchSettings</code> and other debug info.
 
-The completeness of the functionality of the tool varies from language to language.
-Currently, only three of the language versions have archive file (zip, tar, gz, etc.)
-searching functionality: go, python and scala. A larger number supports most of
-the before- and after-line capturing and matching: C#, go, haskell, java, python
-and scala. The rest of the functionality is more or less implemented in all of
-the languages. The exceptions to this are C++, which is mostly non-existent,
-Clojure, which is very incomplete, and F#, which has fallen pretty far behind
-the rest.
+The completeness of the functionality of the tool varies from language to
+language. I have three rough functionality groups:
+
+* __Group I__ - Basic search functionality
+  - Search binary files
+  - Search text files by line
+  - Search text files by content (as multi-line string)
+  - Include/exclude hidden files
+  - Determine file type as archive, binary, text, or unknown
+  - Filter directories based on directory-specific name patterns
+  - Filter files based on file extension and/or file-specific name patterns
+  - Search single directory or recursively
+  - Search a single file
+  - Report all matches for a file or just the first
+  - Operate in normal, verbose or debug mode
+  - Print search results
+  - Print matching directories
+  - Print matching files
+  - Print all matching lines
+  - Print unique matching lines
+  - Ensure valid SearchSettings
+  - Time the execution
+
+* __Group II__ - Lines before/after functionality (implemented for searching by line
+  and also by content)
+  - Capture a specified number of lines before each match
+  - Capture a specified number of lines after each match
+  - Filter results by specific lines-before patterns
+  - Filter results by specific lines-after patterns
+  - Capture all lines after a match up to and including a line matching a
+    specific "linesafterto" pattern, or exclude result if matching line not
+    found
+  - Capture all lines after a match up to but excluding a line matching a
+    specific "linesafteruntil" pattern, or exclude result if matching line not
+    found
+  - Print search results in multi-line mode or single-line mode (depending on
+    whether there are lines before or lines after in the result)
+
+* __Group III__ - Archive file searching
+  - Turn archive file searching on or off
+  - Filter archive files based on archive file extension and/or archive
+    file-specific name patterns
+  - Search regular files only, archive files only, or all matching files
+  - Search zip files (also includes jar and war)
+  - Search tar files
+  - Search gz/tgz files
+  - Search bz2 files
+  - Search files by file object/handle/source/stream (facilitates searching
+    of files contained in archive files)
+  - Reference search files as SearchFile instances (allows for capturing
+    archive file containers)
+  - Print search results with container prefixes in filepath
+
+
+Here's the breakdown of languages for each group.
+
+* __Group I__: all languages except C++, clojure, and F#
+* __Group II__: C#, go, haskell, java, php, python, scala (only python and
+                scala have linesafterto/until)
+* __Group III__: go, python, scala
+
 
 The basic code structure includes these elements:
 
-* <code>SearchOptions</code> - transforms option data in XML into the usage text,
-  also builds a <code>SearchSettings</code> instance from command line arguments
+* <code>FileUtil</code> - helps determine file type (e.g. binary vs. text),
+  searchability, etc.
+* <code>Searcher</code> - executes the file search based on the
+  <code>SearchSettings</code>
+* <code>SearchOptions</code> - loads option data from XML, generates usage text,
+  builds a <code>SearchSettings</code> instance from command line arguments
+* <code>SearchResult</code> - encapsulates a single search result
 * <code>SearchSettings</code> - encapsulates the search settings, including what
   directories or files to include/exclude, search patterns, lines before or after,
   etc.
-* <code>Searcher</code> - executes the file search based on the
-  <code>SearchSettings</code>
-* <code>FileUtil</code> - helps determine file type (e.g. binary vs. text),
-  searchability, etc.
-* <code>SearchResult</code> - encapsulates a single search result
 
 
 Installing / Running
