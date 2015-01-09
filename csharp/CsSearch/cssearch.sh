@@ -1,5 +1,5 @@
 #!/bin/sh
-XSEARCH_PATH=/Users/cary/src/git/xsearch
+XSEARCH_PATH=~/src/git/xsearch
 CSSEARCH_PATH=$XSEARCH_PATH/csharp/CsSearch
 CONFIGURATION=Debug
 #CONFIGURATION=Release

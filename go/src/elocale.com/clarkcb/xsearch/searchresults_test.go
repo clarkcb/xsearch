@@ -6,7 +6,7 @@ import "testing"
 func TestAddSearchResult(t *testing.T) {
 	searchResults := NewSearchResults()
 
-	path := "/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
+	path := "~/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
 	name := "searchresults_test.go"
 	searchItem := NewSearchItem(&path, &name)
 
@@ -34,7 +34,7 @@ func TestAddSearchResult(t *testing.T) {
 			len(searchResults.SearchResults))
 	}
 
-	expectedDir := "/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
+	expectedDir := "~/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
 	c, b := searchResults.DirCounts[expectedDir]
 	if !b {
 		t.Errorf("searchResults.DirCounts does not contain expected dir key: %s",
@@ -45,7 +45,7 @@ func TestAddSearchResult(t *testing.T) {
 			expectedDir, searchResults.DirCounts[expectedDir])
 	}
 
-	expectedFile := "/Users/cary/src/git/xsearch/go/src/github.com/clarkcb/gosearch/searchresults_test.go"
+	expectedFile := "~/src/git/xsearch/go/src/github.com/clarkcb/gosearch/searchresults_test.go"
 	c, b = searchResults.FileCounts[expectedFile]
 	if !b {
 		t.Errorf("searchResults.FileCounts does not contain expected file key: %s",

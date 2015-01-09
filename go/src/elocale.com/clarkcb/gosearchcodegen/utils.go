@@ -19,7 +19,7 @@ func getHome() string {
 	return home
 }
 
-func normalizePath(filePath string) string {
+func NormalizePath(filePath string) string {
 	if strings.HasPrefix(filePath, "~") {
 		home := getHome()
 		return home + strings.TrimPrefix(filePath, "~")
@@ -28,7 +28,7 @@ func normalizePath(filePath string) string {
 }
 
 func loadXmlFile(xmlFilePath string, targetStruct interface{}) error {
-	file, err := os.Open(normalizePath(xmlFilePath))
+	file, err := os.Open(NormalizePath(xmlFilePath))
 	if err != nil {
 		panic(err.Error())
 	}

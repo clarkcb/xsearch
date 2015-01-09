@@ -301,13 +301,13 @@ type XmlSearchOption struct {
 	Desc  string `xml:",chardata"`
 }
 
-const searchOptionsXmlPath = "/Users/cary/src/git/xsearch/shared/searchoptions.xml"
+const searchOptionsXmlPath = "~/src/git/xsearch/shared/searchoptions.xml"
 
 func searchOptionsFromXml() (*SearchOptions, error) {
 	var searchOptions []*SearchOption
 	xmlSearchOptions := &XmlSearchOptions{}
 
-	if err := loadXmlFile(searchOptionsXmlPath, xmlSearchOptions); err != nil {
+	if err := loadXmlFile(expandPath(searchOptionsXmlPath), xmlSearchOptions); err != nil {
 		return nil, err
 	}
 
