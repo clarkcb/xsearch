@@ -44,13 +44,13 @@ class SearchOptions
       'in-linesbeforepattern' =>
         proc { |x, settings| puts "in-linesbeforepattern: #{x}" },
       'linesafter' =>
-        proc { |x, settings| puts "linesafter: #{x}" },
+        proc { |x, settings| settings.linesafter = x.to_i },
       'linesaftertopattern' =>
         proc { |x, settings| settings.linesaftertopatterns.push(Regexp.new(x)) },
       'linesafteruntilpattern' =>
         proc { |x, settings| settings.linesafteruntilpatterns.push(Regexp.new(x)) },
       'linesbefore' =>
-        proc { |x, settings| puts "linesbefore: #{x}" },
+        proc { |x, settings| settings.linesbefore = x.to_i },
       'maxlinelength' =>
         proc { |x, settings| settings.maxlinelength = x.to_i },
       'out-archiveext' =>

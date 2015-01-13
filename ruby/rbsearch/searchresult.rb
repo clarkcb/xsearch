@@ -15,8 +15,8 @@ class SearchResult
 
   @@SEPARATOR_LEN = 80
 
-  def initialize(pattern, filename, linenum=0, line='', match_start_index=0,
-     match_end_index=0, lines_before=[], lines_after=[])
+  def initialize(pattern, filename, linenum=0, match_start_index=0,
+     match_end_index=0, line='', lines_before=[], lines_after=[])
     @pattern = pattern
     @filename = filename
     @linenum = linenum
@@ -81,18 +81,33 @@ class SearchResult
     formatted.strip
   end
 
-
-
   def linenum_padding
     max_linenum = @linenum + @lines_after.length
     max_linenum.to_s.length
   end
 
   def __multiline_s
-    s = "=" * @@SEPARATOR_LEN
-    s += "\n#{@filename}\n"
-    s += "-" * @@SEPARATOR_LEN
-    s += "\n> #{@linenum} | #{@line}\n"
+    s = "=" * @@SEPARATOR_LEN + "\n"
+    s += "#{@filename}: #{@linenum}\n"
+    s += "-" * @@SEPARATOR_LEN + "\n"
+    line_format = " %%%dd | %%s\n" % [linenum_padding]
+    current_linenum = @linenum
+    if @lines_before.length > 0
+      current_linenum -= @lines_before.length
+      @lines_before.each {|line_before|
+        s += ' ' + line_format % [current_linenum, line_before.rstrip]
+        current_linenum += 1
+      }
+    end
+    s += '>' + line_format % [current_linenum, @line.rstrip]
+    if @lines_after
+      current_linenum += 1
+      @lines_after.each {|line_after|
+        s += ' ' + line_format % [current_linenum, line_after.rstrip]
+        current_linenum += 1
+      }
+    end
+    s += "\n"
     s
   end
 end

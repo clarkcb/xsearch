@@ -284,38 +284,96 @@ class Searcher
 
   def search_text_file_contents(f, enc = nil)
     contents = File.open(f, "r").read
-    results = search_contents(contents)
+    results = search_multiline_string(contents)
     results.each do |r|
       r.filename = f
       add_search_result(r)
     end
   end
 
-  def search_contents(contents)
+  def get_new_line_indices(s)
+    indices = []
+    i = 0
+    s.chars.each do |c|
+      if c == "\n"
+        indices.push(i)
+      end
+      i += 1
+    end
+    indices
+  end
+
+  def get_lines_before(s, before_start_indices, start_line_indices,
+    end_line_indices)
+    #log("before_start_indices: #{before_start_indices}")
+    if not before_start_indices
+      []
+    end
+    lines_before = []
+    before_start_indices.each {|i|
+      line_before = s[start_line_indices[start_line_indices.index(i)]..end_line_indices[start_line_indices.index(i)]]
+      lines_before.push(line_before)
+    }
+    lines_before
+  end
+
+  def get_lines_after(s, after_start_indices, start_line_indices,
+    end_line_indices)
+    #log("after_start_indices: #{after_start_indices}")
+    if not after_start_indices
+      []
+    end
+    lines_after = []
+    after_start_indices.each {|i|
+      line_after = s[start_line_indices[start_line_indices.index(i)]..end_line_indices[start_line_indices.index(i)]]
+      lines_after.push(line_after)
+    }
+    lines_after
+  end
+
+  def search_multiline_string(s)
+    lines_before = []
+    lines_after = []
     results = []
+    new_line_indices = get_new_line_indices(s)
+    start_line_indices = [0] + new_line_indices.map { |n| n+1 }
+    end_line_indices = new_line_indices + [s.length - 1]
     @settings.searchpatterns.each do |p|
-      m = p.match(contents)
+      m = p.match(s)
       while m
-        before_line_count = get_line_count(m.pre_match)
-        after_line_count = get_line_count(m.post_match)
-        line_start_index, line_end_index = m.offset(0)
-        if before_line_count > 0
-          line_start_index = contents.rindex("\n", line_start_index) + 1
+        m_line_start_index = 0
+        m_line_end_index = s.length - 1
+        before_start_indices = start_line_indices.take_while { |i| i <= m.begin(0) }
+        before_line_count = 0
+        if before_start_indices
+          m_line_start_index = before_start_indices.last
+          before_line_count = before_start_indices.count - 1
         end
-        if after_line_count > 0
-          line_end_index = contents.index(/(\r\n|\n)/, line_end_index) - 1
+        m_line_end_index = end_line_indices[start_line_indices.index(m_line_start_index)]
+        after_start_indices = start_line_indices.drop_while { |i| i <= m.begin(0) }
+        line = s[m_line_start_index..m_line_end_index]
+        if @settings.linesbefore && before_line_count
+          before_start_indices = before_start_indices[0, before_start_indices.size-1].last(@settings.linesbefore)
+          lines_before = get_lines_before(s, before_start_indices,
+            start_line_indices, end_line_indices)
         end
-        line = contents[line_start_index..line_end_index]
-        match_start_index = m.begin(0) - line_start_index
-        match_end_index = m.end(0) - line_start_index
+        if @settings.linesafter && after_start_indices
+          after_start_indices = after_start_indices[0, @settings.linesafter]
+          lines_after = get_lines_after(s, after_start_indices,
+            start_line_indices, end_line_indices)
+        end
+        match_start_index = m.begin(0) - m_line_start_index
+        match_end_index = m.end(0) - m_line_start_index
         results.push(SearchResult.new(
           p,
           '',
           before_line_count+1,
-          line,
           match_start_index + 1,
-          match_end_index + 1))
-        m = p.match(contents, line_start_index+match_end_index)
+          match_end_index + 1,
+          line,
+          lines_before,
+          lines_after))
+        m = p.match(s, m_line_start_index+match_end_index)
       end
     end
     results
@@ -335,39 +393,73 @@ class Searcher
 
   def search_line_iterator(lines)
     linenum = 0
+    lines_before = []
+    lines_after = []
     pattern_matches = {}
     results = []
     while true
-      begin
-        line = lines.next
-        linenum += 1
-        @settings.searchpatterns.each do |p|
-          search_line = true
-          pos = 0
-          while search_line and pos < line.length
-            # TODO: catch ArgumentError: "in `match': invalid byte sequence in US-ASCII"
+      line = ""
+      if lines_after.length > 0
+        line = lines_after.shift
+      else
+        begin
+          line = lines.next
+        rescue StopIteration
+          return results
+        end
+      end
+      linenum += 1
+      if @settings.linesafter
+        while lines_after.length < @settings.linesafter
+          begin
+            lines_after.push(lines.next)
+          rescue StopIteration
+            break
+          end
+        end
+      end
+      @settings.searchpatterns.each do |p|
+        search_line = true
+        pos = 0
+        while search_line and pos < line.length
+          begin
             m = p.match(line, pos)
             if m
               if @settings.firstmatch and pattern_matches.include?(p)
                 search_line = false
               else
+                #log("lines_before: #{lines_before}")
+                #log("line: #{line}")
+                #log("lines_after: #{lines_after}")
                 results.push(SearchResult.new(
                   p,
                   '',
                   linenum,
-                  line,
                   m.begin(0) + 1,
-                  m.end(0) + 1))
+                  m.end(0) + 1,
+                  line,
+                  [].concat(lines_before),
+                  [].concat(lines_after)))
                 pos = m.end(0) + 1
                 pattern_matches[p] = 1
               end
             else
               search_line = false
             end
+          rescue ArgumentError => e
+            # TODO: handle ArgumentError "in `match': invalid byte sequence in US-ASCII"
+            log("\nArgumentError: #{e.message}\n\n")
+            search_line = false
           end
         end
-      rescue StopIteration
-        return results
+      end
+      if @settings.linesbefore
+        if lines_before.length == @settings.linesbefore
+          lines_before.shift
+        end
+        if lines_before.length < @settings.linesbefore
+          lines_before.push(line)
+        end
       end
     end
   end
