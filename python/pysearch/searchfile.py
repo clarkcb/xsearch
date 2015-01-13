@@ -9,7 +9,7 @@
 from cStringIO import StringIO
 import os
 
-from fileutil import FileType, FileUtil
+from filetypes import FileType
 
 class SearchFile:
     """encapsulates a search file"""

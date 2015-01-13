@@ -27,7 +27,8 @@ except ImportError as e:
     print('zipfile not imported: {0!s}'.format(e))
     ZIPFILE_MODULE_AVAILABLE = False
 
-from fileutil import FileType, FileUtil
+from filetypes import FileType, FileTypes
+from fileutil import FileUtil
 from searchfile import SearchFile
 from searchresult import SearchResult
 
@@ -37,7 +38,7 @@ class Searcher:
     def __init__(self, settings, **kargs):
         self.settings = settings
         self.validate_settings()
-        self.fileutil = FileUtil()
+        self.filetypes = FileTypes()
         self.results = []
         self.patterndict = {}
         self.timers = {}
@@ -70,7 +71,7 @@ class Searcher:
         return False
 
     def get_ext(self, f):
-        return self.fileutil.get_extension(f)
+        return FileUtil.get_extension(f)
 
     def is_search_dir(self, d):
         path_elems = [p for p in d.split(os.sep) if p not in ('.', '..')]
@@ -87,7 +88,7 @@ class Searcher:
         return True
 
     def is_archive_search_file(self, f):
-        if not self.fileutil.is_archive_file(f):
+        if not self.filetypes.is_archive_file(f):
             return False
         if f.startswith('.') and self.settings.excludehidden:
             return False
@@ -156,7 +157,7 @@ class Searcher:
                 d = '.'
             searchfiles.append(SearchFile(path=d,
                                           filename=f,
-                                          filetype=self.fileutil.get_filetype(f)))
+                                          filetype=self.filetypes.get_filetype(f)))
         return searchfiles
 
     def get_search_files_for_directory(self, d):
@@ -164,7 +165,7 @@ class Searcher:
         files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
         searchfiles = [SearchFile(path=d,
                         filename=f,
-                        filetype=self.fileutil.get_filetype(f))
+                        filetype=self.filetypes.get_filetype(f))
                         for f in files]
         return [sf for sf in searchfiles
                 if (self.settings.searcharchives and 
@@ -249,7 +250,7 @@ class Searcher:
 
     def search_file(self, sf):
         """Search in a file, return number of matches found"""
-        if not self.fileutil.is_searchable_file(sf.filename):
+        if not self.filetypes.is_searchable_file(sf.filename):
             if self.settings.verbose or self.settings.debug:
                 self.log('Skipping unsearchable file: {0}'.format(f))
             return
@@ -327,7 +328,7 @@ class Searcher:
         search_results = []
         new_line_indices = self.get_new_line_indices(s)
         start_line_indices = [0] + [i+1 for i in new_line_indices]
-        end_line_indices = [i for i in new_line_indices] + [len(s) - 1]
+        end_line_indices = new_line_indices + [len(s) - 1]
         for p in self.settings.searchpatterns:
             search_results.extend(
                 self.search_multiline_string_for_pattern(s, p, start_line_indices,
@@ -574,7 +575,7 @@ class Searcher:
 
     def search_archive_file(self, sf):
         """Search an archive (compressed) file"""
-        ext = self.fileutil.get_extension(sf.filename)
+        ext = FileUtil.get_extension(sf.filename)
         if not ext: return
         if self.settings.debug:
             self.log('Searching {0} file {1}'.format(ext, sf))
@@ -617,12 +618,12 @@ class Searcher:
 
     def search_zipinfo_obj(self, sf, zio):
         """Search a ZipInfo object"""
-        if self.fileutil.is_text_file(sf.filename):
+        if self.filetypes.is_text_file(sf.filename):
             #if self.settings.debug:
             #   msg = 'searchable text file in zip: {0}'
             #   self.log(msg.format(zio.filename))
             self.search_text_file_obj(sf, zio)
-        elif self.fileutil.is_binary_file(sf.filename):
+        elif self.filetypes.is_binary_file(sf.filename):
             #if self.settings.debug:
             #   msg = 'searchable binary file in zip: {0}'
             #   self.log(msg.format(zipinfo.filename))
@@ -658,11 +659,11 @@ class Searcher:
 
     def search_tarinfo_obj(self, sf, tio):
         """Search a tarinfo object"""
-        if self.fileutil.is_text_file(sf.filename):
+        if self.filetypes.is_text_file(sf.filename):
             if self.settings.debug:
                 self.log('searchable text file in tar: {0}'.format(sf.filename))
             self.search_text_file_obj(sf, tio)
-        elif  self.fileutil.is_binary_file(sf.filename):
+        elif  self.filetypes.is_binary_file(sf.filename):
             if self.settings.debug:
                 self.log('searchable binary file in tar: {0}'.format(sf.filename))
             self.search_binary_file_obj(sf, tio)
