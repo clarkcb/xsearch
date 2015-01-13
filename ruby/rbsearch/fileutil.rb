@@ -12,13 +12,13 @@ include REXML
 class FileUtil
   def initialize
     # TODO: move to config
-    @file_types_path = '/Users/cary/src/git/xsearch/shared/filetypes.xml'
+    @file_types_path = '~/src/git/xsearch/shared/filetypes.xml'
     set_file_type_map
   end
 
   def set_file_type_map
     @file_type_map = {}
-    doc = Document.new(File.new(@file_types_path))
+    doc = Document.new(File.new(File.expand_path(@file_types_path)))
     doc.elements.each('filetypes/filetype') { |filetype|
       name = filetype.attributes['name']
       filetype.elements.each('extensions') { |extensions|

@@ -428,9 +428,6 @@ class Searcher
               if @settings.firstmatch and pattern_matches.include?(p)
                 search_line = false
               else
-                #log("lines_before: #{lines_before}")
-                #log("line: #{line}")
-                #log("lines_after: #{lines_after}")
                 results.push(SearchResult.new(
                   p,
                   '',

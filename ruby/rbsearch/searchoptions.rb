@@ -16,7 +16,7 @@ class SearchOptions
   
   def initialize
     # TODO: move to a config file
-    @searchoptionspath = '/Users/cary/src/git/xsearch/shared/searchoptions.xml'
+    @searchoptionspath = '~/src/git/xsearch/shared/searchoptions.xml'
     @options = []
     @arg_dict = {}
     @flag_dict = {}
@@ -40,9 +40,9 @@ class SearchOptions
       'in-filepattern' =>
         proc { |x, settings| settings.in_filepatterns.push(Regexp.new(x)) },
       'in-linesafterpattern' =>
-        proc { |x, settings| puts "in-linesafterpattern: #{x}" },
+        proc { |x, settings| settings.in_linesafterpattern.push(Regexp.new(x)) },
       'in-linesbeforepattern' =>
-        proc { |x, settings| puts "in-linesbeforepattern: #{x}" },
+        proc { |x, settings| settings.in_linesbeforepattern.push(Regexp.new(x)) },
       'linesafter' =>
         proc { |x, settings| settings.linesafter = x.to_i },
       'linesaftertopattern' =>
@@ -66,9 +66,9 @@ class SearchOptions
       'out-filepattern' =>
         proc { |x, settings| settings.out_filepatterns.push(Regexp.new(x)) },
       'out-linesafterpattern' =>
-        proc { |x, settings| puts "out-linesafterpattern: #{x}" },
+        proc { |x, settings| settings.out_linesafterpattern.push(Regexp.new(x)) },
       'out-linesbeforepattern' =>
-        proc { |x, settings| puts "out-linesbeforepattern: #{x}" },
+        proc { |x, settings| settings.out_linesbeforepattern.push(Regexp.new(x)) },
       'search' =>
         proc { |x, settings| settings.searchpatterns.push(Regexp.new(x)) }
     }
@@ -124,7 +124,7 @@ class SearchOptions
   end
 
   def set_options_from_xml
-    doc = Document.new(File.new(@searchoptionspath))
+    doc = Document.new(File.new(File.expand_path(@searchoptionspath)))
     doc.elements.each('searchoptions/searchoption') { |searchoption|
       long = searchoption.attributes['long']
       short = searchoption.attributes['short']
