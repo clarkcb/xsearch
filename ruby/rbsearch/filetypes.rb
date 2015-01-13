@@ -1,15 +1,22 @@
 ################################################################################
 #
-# fileutil.rb
+# filetypes.rb
 #
-# class FileUtil: provides utility functions for getting file extension and
-#                 determining file type
+# Provides information on file type (archive, binary, text, unknown)
 #
 ################################################################################
 require 'rexml/document'
+require 'fileutil.rb'
 include REXML
 
-class FileUtil
+module FileType
+  Archive = 1
+  Binary  = 2
+  Text    = 3
+  Unknown = 4
+end
+
+class FileTypes
   def initialize
     # TODO: move to config
     @file_types_path = '~/src/git/xsearch/shared/filetypes.xml'
@@ -32,29 +39,31 @@ class FileUtil
       @file_type_map['archive'] + @file_type_map['binary']
   end
 
-  def get_extension(filename)
-    ext = ''
-    index = filename.rindex('.')
-    if index and index < (filename.length - 1)
-      ext = filename[index+1..filename.length].downcase
+  def get_filetype(filename)
+    if is_text_file(filename)
+      FileType::Text
+    elsif is_binary_file(filename)
+      FileType::Binary
+    elsif is_archive_file(filename)
+      FileType::Archive
+    else
+      FileType::Unknown
     end
-    ext
   end
 
   def is_archive_file(f)
-    @file_type_map['archive'].include?(get_extension(f))
+    @file_type_map['archive'].include?(FileUtil::get_extension(f))
   end
 
   def is_binary_file(f)
-    @file_type_map['binary'].include?(get_extension(f))
+    @file_type_map['binary'].include?(FileUtil::get_extension(f))
   end
 
   def is_searchable_file(f)
-    @file_type_map['searchable'].include?(get_extension(f))
+    @file_type_map['searchable'].include?(FileUtil::get_extension(f))
   end
 
   def is_text_file(f)
-    @file_type_map['text'].include?(get_extension(f))
+    @file_type_map['text'].include?(FileUtil::get_extension(f))
   end
-
 end

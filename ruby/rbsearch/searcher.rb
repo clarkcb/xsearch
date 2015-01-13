@@ -10,6 +10,7 @@ require 'find'
 require 'pathname'
 require 'set'
 require 'common.rb'
+require 'filetypes.rb'
 require 'fileutil.rb'
 require 'searchresult.rb'
 
@@ -20,7 +21,7 @@ class Searcher
   def initialize(settings)
     @settings = settings
     validate_settings
-    @fileutil = FileUtil.new
+    @filetypes = FileTypes.new
     @results = []
     @timers = {}
     @totalElapsed = 0
@@ -67,11 +68,11 @@ class Searcher
       return false
     end
     if @settings.in_extensions.count > 0 and
-      not @settings.in_extensions.include?(@fileutil.get_extension(f))
+      not @settings.in_extensions.include?(FileUtil::get_extension(f))
       return false
     end
     if @settings.out_extensions.count > 0 and
-      @settings.out_extensions.include?(@fileutil.get_extension(f))
+      @settings.out_extensions.include?(FileUtil::get_extension(f))
       return false
     end
     filename = Pathname.new(f).basename.to_s
@@ -91,11 +92,11 @@ class Searcher
       return false
     end
     if @settings.in_archiveextensions.count > 0 and 
-      not @settings.in_archiveextensions.include?(@fileutil.get_extension(f))
+      not @settings.in_archiveextensions.include?(FileUtil::get_extension(f))
       return false
     end
     if @settings.out_archiveextensions.count > 0 and
-      @settings.out_archiveextensions.include?(@fileutil.get_extension(f))
+      @settings.out_archiveextensions.include?(FileUtil::get_extension(f))
       return false
     end
     filename = Pathname.new(f).basename.to_s
@@ -133,7 +134,7 @@ class Searcher
   end
 
   def filter_file(f)
-    if @fileutil.is_archive_file(f) and @settings.searcharchives and is_archive_search_file(f)
+    if @filetypes.is_archive_file(f) and @settings.searcharchives and is_archive_search_file(f)
       true
     elsif not @settings.archivesonly and is_search_file(f)
       true
@@ -245,15 +246,16 @@ class Searcher
   end
 
   def search_file(f)
-    unless @fileutil.is_searchable_file(f)
+    unless @filetypes.is_searchable_file(f)
       if @settings.verbose or @settings.debug
         log("Skipping unsearchable file: #{f}")
         return 0
       end
     end
-    if @fileutil.is_text_file(f)
+    filetype = @filetypes.get_filetype(f)
+    if filetype == FileType::Text
       search_text_file(f)
-    elsif @fileutil.is_binary_file(f)
+    elsif filetype == FileType::Binary
       search_binary_file(f)
     end
   end
