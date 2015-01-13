@@ -9,6 +9,7 @@
 require 'find'
 require 'pathname'
 require 'set'
+require 'common.rb'
 require 'fileutil.rb'
 require 'searchresult.rb'
 
@@ -24,10 +25,6 @@ class Searcher
     @timers = {}
     @totalElapsed = 0
     @filehash = Hash.new([])
-  end
-
-  def log(message)
-    puts message
   end
 
   def validate_settings

@@ -7,14 +7,9 @@
 #
 ################################################################################
 
+require 'common.rb'
 require 'searcher.rb'
 require 'searchoptions.rb'
-
-DEBUG = false
-
-def log(message)
-  puts message
-end
 
 def main
   if DEBUG
