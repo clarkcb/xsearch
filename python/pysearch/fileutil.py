@@ -20,10 +20,10 @@ class FileUtil:
     """a file helper class"""
 
     # TODO: move to a config file
-    FILETYPESPATH = '/Users/cary/src/git/xsearch/shared/filetypes.xml'
+    FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml'
 
     def __init__(self, **kargs):
-        self.filetypespath = self.FILETYPESPATH
+        self.filetypespath = os.path.expanduser(self.FILETYPESPATH)
         self.filetypes = {}
         self.__dict__.update(kargs)
         self.populate_filetypes()
