@@ -40,9 +40,9 @@ class SearchOptions
       'in-filepattern' =>
         proc { |x, settings| settings.in_filepatterns.push(Regexp.new(x)) },
       'in-linesafterpattern' =>
-        proc { |x, settings| settings.in_linesafterpattern.push(Regexp.new(x)) },
+        proc { |x, settings| settings.in_linesafterpatterns.push(Regexp.new(x)) },
       'in-linesbeforepattern' =>
-        proc { |x, settings| settings.in_linesbeforepattern.push(Regexp.new(x)) },
+        proc { |x, settings| settings.in_linesbeforepatterns.push(Regexp.new(x)) },
       'linesafter' =>
         proc { |x, settings| settings.linesafter = x.to_i },
       'linesaftertopattern' =>
@@ -66,9 +66,9 @@ class SearchOptions
       'out-filepattern' =>
         proc { |x, settings| settings.out_filepatterns.push(Regexp.new(x)) },
       'out-linesafterpattern' =>
-        proc { |x, settings| settings.out_linesafterpattern.push(Regexp.new(x)) },
+        proc { |x, settings| settings.out_linesafterpatterns.push(Regexp.new(x)) },
       'out-linesbeforepattern' =>
-        proc { |x, settings| settings.out_linesbeforepattern.push(Regexp.new(x)) },
+        proc { |x, settings| settings.out_linesbeforepatterns.push(Regexp.new(x)) },
       'search' =>
         proc { |x, settings| settings.searchpatterns.push(Regexp.new(x)) }
     }

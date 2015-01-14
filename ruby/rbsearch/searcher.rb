@@ -49,14 +49,14 @@ class Searcher
 
   def is_search_dir(d)
     path_elems = d.split(File::SEPARATOR) - ['.', '..']
-    if @settings.excludehidden and path_elems.any? {|p| p.start_with?('.')}
+    if @settings.excludehidden && path_elems.any? {|p| p.start_with?('.')}
       return false
     end
-    if @settings.in_dirpatterns.count > 0 and
-      not any_matches_any_pattern(path_elems, @settings.in_dirpatterns)
+    if @settings.in_dirpatterns.count > 0 &&
+      ! any_matches_any_pattern(path_elems, @settings.in_dirpatterns)
       return false
     end
-    if @settings.out_dirpatterns.count > 0 and
+    if @settings.out_dirpatterns.count > 0 &&
       any_matches_any_pattern(path_elems, @settings.out_dirpatterns)
       return false
     end
@@ -64,23 +64,23 @@ class Searcher
   end
 
   def is_search_file(f)
-    if @settings.excludehidden and f.start_with?('.')
+    if @settings.excludehidden && f.start_with?('.')
       return false
     end
-    if @settings.in_extensions.count > 0 and
-      not @settings.in_extensions.include?(FileUtil::get_extension(f))
+    if @settings.in_extensions.count > 0 &&
+      ! @settings.in_extensions.include?(FileUtil::get_extension(f))
       return false
     end
-    if @settings.out_extensions.count > 0 and
+    if @settings.out_extensions.count > 0 &&
       @settings.out_extensions.include?(FileUtil::get_extension(f))
       return false
     end
     filename = Pathname.new(f).basename.to_s
-    if @settings.in_filepatterns.count > 0 and
-      not matches_any_pattern(filename, @settings.in_filepatterns)
+    if @settings.in_filepatterns.count > 0 &&
+      ! matches_any_pattern(filename, @settings.in_filepatterns)
       return false
     end
-    if @settings.out_filepatterns.count > 0 and
+    if @settings.out_filepatterns.count > 0 &&
       matches_any_pattern(filename, @settings.out_filepatterns)
       return false
     end
@@ -88,23 +88,23 @@ class Searcher
   end
 
   def is_archive_search_file(f)
-    if @settings.excludehidden and f.start_with?('.')
+    if @settings.excludehidden && f.start_with?('.')
       return false
     end
-    if @settings.in_archiveextensions.count > 0 and 
-      not @settings.in_archiveextensions.include?(FileUtil::get_extension(f))
+    if @settings.in_archiveextensions.count > 0 &&
+      ! @settings.in_archiveextensions.include?(FileUtil::get_extension(f))
       return false
     end
-    if @settings.out_archiveextensions.count > 0 and
+    if @settings.out_archiveextensions.count > 0 &&
       @settings.out_archiveextensions.include?(FileUtil::get_extension(f))
       return false
     end
     filename = Pathname.new(f).basename.to_s
-    if @settings.in_archivefilepatterns.count > 0 and
-      not matches_any_pattern(filename, @settings.in_archivefilepatterns)
+    if @settings.in_archivefilepatterns.count > 0 &&
+      ! matches_any_pattern(filename, @settings.in_archivefilepatterns)
       return false
     end
-    if @settings.out_archivefilepatterns.count > 0 and
+    if @settings.out_archivefilepatterns.count > 0 &&
       matches_any_pattern(filename, @settings.out_archivefilepatterns)
       return false
     end
@@ -125,7 +125,7 @@ class Searcher
       end
     elsif FileTest.file?(@settings.startpath)
       d = File.dirname(@settings.startpath)
-      if not d
+      if ! d
         d = '.'
       end
       searchdirs.push(d) if is_search_dir(d)
@@ -134,13 +134,12 @@ class Searcher
   end
 
   def filter_file(f)
-    if @filetypes.is_archive_file(f) and @settings.searcharchives and is_archive_search_file(f)
-      true
-    elsif not @settings.archivesonly and is_search_file(f)
-      true
-    else
-      false
+    if @filetypes.is_archive_file(f) && @settings.searcharchives && is_archive_search_file(f)
+      return true
+    elsif ! @settings.archivesonly && is_search_file(f)
+      return true
     end
+    false
   end
 
   def get_search_files(searchdirs)
@@ -247,7 +246,7 @@ class Searcher
 
   def search_file(f)
     unless @filetypes.is_searchable_file(f)
-      if @settings.verbose or @settings.debug
+      if @settings.verbose || @settings.debug
         log("Skipping unsearchable file: #{f}")
         return 0
       end
@@ -308,7 +307,7 @@ class Searcher
   def get_lines_before(s, before_start_indices, start_line_indices,
     end_line_indices)
     #log("before_start_indices: #{before_start_indices}")
-    if not before_start_indices
+    if ! before_start_indices
       []
     end
     lines_before = []
@@ -322,7 +321,7 @@ class Searcher
   def get_lines_after(s, after_start_indices, start_line_indices,
     end_line_indices)
     #log("after_start_indices: #{after_start_indices}")
-    if not after_start_indices
+    if ! after_start_indices
       []
     end
     lines_after = []
@@ -381,6 +380,37 @@ class Searcher
     results
   end
 
+  def lines_match(lines, in_patterns, out_patterns)
+    if ((in_patterns.length == 0 || any_matches_any_pattern(lines, in_patterns)) &&
+       (out_patterns.length == 0 || ! any_matches_any_pattern(lines, out_patterns)))
+      return true
+    end
+    false
+  end
+
+  def lines_before_match(lines_before)
+    lines_match(lines_before, @settings.in_linesbeforepatterns,
+      @settings.out_linesbeforepatterns)
+  end
+
+
+  def do_lines_after_or_until
+    @settings.linesaftertopatterns.length > 0 ||
+    @settings.linesafteruntilpatterns.length > 0
+  end
+
+  def do_lines_after
+    @settings.linesafter || do_lines_after_or_until
+  end
+
+  def lines_after_match(lines_after)
+    if do_lines_after_or_until
+      true
+    end
+    lines_match(lines_after, @settings.in_linesafterpatterns,
+      @settings.out_linesafterpatterns)
+  end
+
   def search_text_file_lines(f, enc = nil)
     linenum = 0
     fo = File.open(f, "r")
@@ -422,12 +452,16 @@ class Searcher
       end
       @settings.searchpatterns.each do |p|
         search_line = true
+        if @settings.firstmatch && pattern_matches.include?(p)
+          search_line = false
+        end
         pos = 0
-        while search_line and pos < line.length
+        while search_line && pos < line.length
           begin
             m = p.match(line, pos)
             if m
-              if @settings.firstmatch and pattern_matches.include?(p)
+              if (lines_before.length > 0 && ! lines_before_match(lines_before)) ||
+                 (lines_after.length > 0 && ! lines_after_match(lines_after))
                 search_line = false
               else
                 results.push(SearchResult.new(

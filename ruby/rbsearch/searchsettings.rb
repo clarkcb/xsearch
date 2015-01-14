@@ -18,6 +18,8 @@ class SearchSettings
   attr_accessor :in_dirpatterns
   attr_accessor :in_extensions
   attr_accessor :in_filepatterns
+  attr_accessor :in_linesafterpatterns
+  attr_accessor :in_linesbeforepatterns
   attr_accessor :linesafter
   attr_accessor :linesaftertopatterns
   attr_accessor :linesafteruntilpatterns
@@ -32,6 +34,8 @@ class SearchSettings
   attr_accessor :out_dirpatterns
   attr_accessor :out_extensions
   attr_accessor :out_filepatterns
+  attr_accessor :out_linesafterpatterns
+  attr_accessor :out_linesbeforepatterns
   attr_accessor :printresults
   attr_accessor :printusage
   attr_accessor :printversion
