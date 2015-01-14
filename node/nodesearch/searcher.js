@@ -44,6 +44,15 @@ function Searcher(settings) {
         return false;
     };
 
+    var anyMatchesAnyPattern = function (ss, patterns) {
+        for (var i in ss) {
+            if (matchesAnyPattern(ss[i], patterns)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
     var isSearchDir = function (dir) {
         var pathElems = dir.split(path.sep);
         if (_settings.excludeHidden) {
@@ -356,8 +365,8 @@ function Searcher(settings) {
 
     var searchTextFileContents = function (filepath) {
         var contents = fs.readFileSync(filepath).toString();
-        var results = searchContents(contents);
-        for (i in results) {
+        var results = self.searchMultiLineString(contents);
+        for (var i in results) {
             var r = results[i];
             var resultWithFilepath =
                 new SearchResult(r.pattern, filepath, r.linenum,
@@ -367,45 +376,118 @@ function Searcher(settings) {
         }
     }
 
-    var searchContents = function (contents) {
+    var getNewLineIndices = function (s) {
+        var indices = [];
+        for (var i = 0; i < s.length; i++) {
+            if (s.charAt(i) == "\n") {
+                indices.push(i);
+            }
+        }
+        return indices;
+    };
+
+    var getLinesAtIndices = function(s, atIndices, startLineIndices, endLineIndices) {
+        if (atIndices.length == 0)
+            return [];
+        var lines = [];
+        for (a in atIndices) {
+            var i = atIndices[a];
+            var line = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
+            lines.push(line);
+        }
+        return lines;
+    };
+
+    var getLinesBefore = function(s, beforeStartIndices, startLineIndices, endLineIndices) {
+        return getLinesAtIndices(s, beforeStartIndices, startLineIndices, endLineIndices);
+    };
+
+    var getLinesAfter = function(s, afterStartIndices, startLineIndices, endLineIndices) {
+        return getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
+    };
+
+    self.searchMultiLineString = function (s) {
         var patternResults = {};
+        var linesBefore = [];
+        var linesAfter = [];
         var results = [];
+        var newLineIndices = getNewLineIndices(s);
+        var plusOne = function(i) { return i+1; }
+        var startLineIndices = [0].concat(newLineIndices.map(plusOne));
+        var endLineIndices = newLineIndices.concat([s.length - 1]);
         for (p in _settings.searchPatterns) {
             var pattern = new RegExp(_settings.searchPatterns[p].source, "g");
             if (_settings.firstMatch && pattern in patternResults)
                 continue;
-            var match = pattern.exec(contents);
+            var match = pattern.exec(s);
             while (match) {
+                var lineStartIndex = 0;
+                var lineEndIndex = s.length - 1;
                 var beforeLineCount = 0;
-                if (match.index) {
-                    var beforeContents = contents.substring(0, match.index);
-                    beforeLineCount = getLineCount(beforeContents);
+                var lessOrEqual = function(i) { return i <= match.index; }
+                var beforeStartIndices = startLineIndices.filter(lessOrEqual);
+                if (beforeStartIndices.length > 0) {
+                    lineStartIndex = beforeStartIndices.pop();
+                    beforeLineCount = beforeStartIndices.length;
+                    if (beforeStartIndices.length > _settings.linesBefore) {
+                        beforeStartIndices = beforeStartIndices.slice(
+                            beforeStartIndices.length - _settings.linesBefore);
+                    }
                 }
-                var afterLineCount = 0;
-                if (pattern.lastIndex < contents.length) {
-                    var afterContents = contents.substring(pattern.lastIndex);
-                    afterLineCount = getLineCount(afterContents);
+                var lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
+                line = s.substring(lineStartIndex, lineEndIndex);
+                if (_settings.linesBefore && beforeLineCount) {
+                    linesBefore = getLinesBefore(s, beforeStartIndices,
+                        startLineIndices, endLineIndices);
                 }
-                var lineStartIndex = match.index;
-                while (lineStartIndex > 0 &&
-                       contents.charAt(lineStartIndex) != '\n')
-                    lineStartIndex -= 1;
-                var lineEndIndex = pattern.lastIndex;
-                while (lineEndIndex < contents.length &&
-                       contents.charAt(lineEndIndex) != '\n')
-                    lineEndIndex += 1;
-                line = contents.substring(lineStartIndex, lineEndIndex);
-                var searchResult = new SearchResult(pattern, '',
-                    beforeLineCount+1, 0, 0, line, [], []);
-                results.push(searchResult);
-                if (!(pattern in patternResults))
-                    patternResults[pattern] = [];
-                patternResults[pattern].push(searchResult);
-                match = pattern.exec(contents);
+                if (_settings.linesAfter) {
+                    var greaterThan = function(i) { return i > match.index; }
+                    var afterStartIndices = startLineIndices.filter(greaterThan);
+                    if (afterStartIndices.length > _settings.linesAfter) {
+                        afterStartIndices = afterStartIndices.slice(0,
+                            _settings.linesAfter);
+                    }
+                    linesAfter = getLinesAfter(s, afterStartIndices,
+                        startLineIndices, endLineIndices);
+                }
+                var matchStartIndex = match.index - lineStartIndex + 1;
+                var matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
+                if ((_settings.linesBefore == 0 || linesBeforeMatch(linesBefore)) &&
+                    (_settings.linesAfter == 0 || linesAfterMatch(linesAfter))) {
+                    var searchResult = new SearchResult(
+                        pattern,
+                        '',
+                        beforeLineCount+1,
+                        matchStartIndex,
+                        matchEndIndex,
+                        line,
+                        [].concat(linesBefore),
+                        [].concat(linesAfter));
+                    results.push(searchResult);
+                    if (!(pattern in patternResults))
+                        patternResults[pattern] = [];
+                    patternResults[pattern].push(searchResult);
+                }
+                match = pattern.exec(s);
             }
         }
         return results;
     };
+
+    var linesMatch = function(lines, inPatterns, outPatterns) {
+        return ((inPatterns.length == 0 || anyMatchesAnyPattern(lines, inPatterns)) &&
+               (outPatterns.length == 0 || ! anyMatchesAnyPattern(lines, outPatterns)));
+    }
+
+    var linesBeforeMatch = function(linesBefore) {
+        return linesMatch(linesBefore, _settings.inLinesBeforePatterns,
+            _settings.outLinesBeforePatterns);
+    }
+
+    var linesAfterMatch = function(linesAfter) {
+        return linesMatch(linesAfter, _settings.inLinesAfterPatterns,
+            _settings.outLinesAfterPatterns);
+    }
 
     var searchTextFileLines = function (filepath) {
         var contents = fs.readFileSync(filepath).toString();
@@ -425,23 +507,53 @@ function Searcher(settings) {
     var searchLines = function (lines) {
         var linenum = 0;
         var pattern;
+        var linesBefore = [];
+        var linesAfter = [];
         var results = [];
-        for (i in lines) {
+        while (true) {
+            var line = "";
+            if (linesAfter.length > 0) {
+                line = linesAfter.shift();
+            } else if (lines.length > 0) {
+                line = lines.shift();
+            } else {
+                return results;
+            }
             linenum += 1;
-            for (p in _settings.searchPatterns) {
-                pattern = new RegExp(_settings.searchPatterns[p].source, "g");
-                var match = pattern.exec(lines[i]);
-                while (match) {
-                    results.push(new SearchResult(pattern, '', linenum,
-                        match.index+1, pattern.lastIndex+1, lines[i], [], []));
-                    if (_settings.firstMatch) {
-                        return;
-                    }
-                    match = pattern.exec(lines[i]);
+            if (_settings.linesAfter > 0) {
+                while (linesAfter.length < _settings.linesAfter && lines.length > 0) {
+                    linesAfter.push(lines.shift());
                 }
             }
+            for (p in _settings.searchPatterns) {
+                pattern = new RegExp(_settings.searchPatterns[p].source, "g");
+                var match = pattern.exec(line);
+                while (match) {
+                    if ((_settings.linesBefore == 0 || linesBeforeMatch(linesBefore)) &&
+                        (_settings.linesAfter == 0 || linesAfterMatch(linesAfter))) {
+                        results.push(new SearchResult(
+                            pattern,
+                            '',
+                            linenum,
+                            match.index+1,
+                            pattern.lastIndex+1,
+                            line,
+                            [].concat(linesBefore),
+                            [].concat(linesAfter)));
+                        if (_settings.firstMatch) {
+                            break;
+                        }
+                    }
+                    match = pattern.exec(line);
+                }
+            }
+            if (_settings.linesBefore > 0) {
+                if (linesBefore.length == _settings.linesBefore)
+                    linesBefore.shift();
+                if (linesBefore.length < _settings.linesBefore)
+                    linesBefore.push(line);
+            }
         }
-        return results;
     };
 
     var addSearchResult = function (result) {

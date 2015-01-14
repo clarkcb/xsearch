@@ -35,15 +35,15 @@ function SearchOptions() {
         'in-linesbeforepattern':
             function(x, settings) { settings.addInLinesBeforePattern(x); },
         'linesafter':
-            function(x, settings) { settings.linesAfter = x; },
+            function(x, settings) { settings.linesAfter = parseInt(x); },
         'linesaftertopattern':
             function(x, settings) { settings.addInLinesAfterToPattern(x); },
         'linesafteruntilpattern':
             function(x, settings) { settings.addInLinesAfterUntilPattern(x); },
         'linesbefore':
-            function(x, settings) { settings.linesBefore = x; },
+            function(x, settings) { settings.linesBefore = parseInt(x); },
         'maxlinelength':
-            function(x, settings) { settings.maxLineLength = x; },
+            function(x, settings) { settings.maxLineLength = parseInt(x); },
         'out-dirpattern':
             function(x, settings) { settings.addOutDirPattern(x); },
         'out-archiveext':
