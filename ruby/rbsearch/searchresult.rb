@@ -87,7 +87,7 @@ class SearchResult
 
   def __multiline_s
     s = "=" * @@SEPARATOR_LEN + "\n"
-    s += "#{@filename}: #{@linenum}\n"
+    s += "#{@filename}: #{@linenum}: [#{@match_start_index}:#{@match_end_index}]\n"
     s += "-" * @@SEPARATOR_LEN + "\n"
     line_format = " %%%dd | %%s\n" % [linenum_padding]
     current_linenum = @linenum
