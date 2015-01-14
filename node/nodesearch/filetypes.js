@@ -11,7 +11,7 @@ var FileType = require('./filetype.js').FileType;
 var FileUtil = require('./fileutil.js').FileUtil;
 
 function FileTypes() {
-    var that = this;
+    var self = this;
 
     var fileTypeMap = (function () {
         //TODO: move to config file
@@ -47,11 +47,11 @@ function FileTypes() {
     })();
 
     this.getFileType = function (filename) {
-        if (that.isTextFile)
+        if (self.isTextFile)
             return FileType.TEXT;
-        if (that.isBinaryFile)
+        if (self.isBinaryFile)
             return FileType.BINARY;
-        if (that.isArchiveFile)
+        if (self.isArchiveFile)
             return FileType.ARCHIVE;
         return FileType.UNKNOWN;
     };

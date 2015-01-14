@@ -15,12 +15,12 @@ var FileUtil = require('./fileutil.js').FileUtil;
 var SearchResult = require('./searchresult.js').SearchResult;
 
 function Searcher(settings) {
-    var that = this;
+    var self = this;
     var _settings = settings;
     var _filetypes = new FileTypes();
     var _timers = {};
     var _totalElapsed = 0;
-    this.results = [];
+    self.results = [];
 
     var validateSettings = function () {
         assert.ok(_settings.startPath, 'Startpath not defined');
@@ -71,12 +71,13 @@ function Searcher(settings) {
         if (file.startsWith(".") && _settings.excludeHidden) {
             return false;
         }
+        var ext = FileUtil.getExtension(file);
         if (_settings.inExtensions.length &&
-            !matchesAnyElement(FileUtil.getExtension(file), _settings.inExtensions)) {
+            !matchesAnyElement(ext, _settings.inExtensions)) {
             return false;
         }
         if (_settings.outExtensions.length &&
-            matchesAnyElement(FileUtil.getExtension(file), _settings.outExtensions)) {
+            matchesAnyElement(ext, _settings.outExtensions)) {
             return false;
         }
         if (_settings.inFilePatterns.length &&
@@ -94,12 +95,13 @@ function Searcher(settings) {
         if (file.startsWith(".") && _settings.excludeHidden) {
             return false;
         }
+        var ext = FileUtil.getExtension(file);
         if (_settings.inArchiveExtensions.length &&
-            !matchesAnyElement(FileUtil.getExtension(file), _settings.inArchiveExtensions)) {
+            !matchesAnyElement(ext, _settings.inArchiveExtensions)) {
             return false;
         }
         if (_settings.outArchiveExtensions.length &&
-            matchesAnyElement(FileUtil.getExtension(file), _settings.outArchiveExtensions)) {
+            matchesAnyElement(ext, _settings.outArchiveExtensions)) {
             return false;
         }
         if (_settings.inArchiveFilePatterns.length &&
@@ -253,7 +255,7 @@ function Searcher(settings) {
         common.log(msg.format(_totalElapsed));
     };
 
-    this.search = function () {
+    self.search = function () {
         if (_settings.verbose)
             common.log("Search initiated");
 
@@ -443,47 +445,47 @@ function Searcher(settings) {
     };
 
     var addSearchResult = function (result) {
-        that.results.push(result);
+        self.results.push(result);
     };
 
-    this.getMatchingDirs = function () {
+    self.getMatchingDirs = function () {
         var dirs = [];
-        for (var r in that.results) {
-            var result = that.results[r];
+        for (var r in self.results) {
+            var result = self.results[r];
             dirs.push(path.dirname(result.filename));
         }
         return common.setFromArray(dirs);
     };
 
-    this.printMatchingDirs = function () {
-        var dirs = that.getMatchingDirs();
+    self.printMatchingDirs = function () {
+        var dirs = self.getMatchingDirs();
         common.log("\nDirectories with matches ({0}):".format(dirs.length));
         for (var d in dirs) {
             common.log(dirs[d]);
         }
     };
 
-    this.getMatchingFiles = function () {
+    self.getMatchingFiles = function () {
         var files = [];
-        for (var r in that.results) {
-            var result = that.results[r];
+        for (var r in self.results) {
+            var result = self.results[r];
             files.push(result.filename);
         }
         return common.setFromArray(files);
     };
 
-    this.printMatchingFiles = function () {
-        var files = that.getMatchingFiles();
+    self.printMatchingFiles = function () {
+        var files = self.getMatchingFiles();
         common.log("\nFiles with matches ({0}):".format(files.length));
         for (var f in files) {
             common.log(files[f]);
         }
     };
 
-    this.getMatchingLines = function () {
+    self.getMatchingLines = function () {
         var lines = [];
-        for (var r in that.results) {
-            var result = that.results[r];
+        for (var r in self.results) {
+            var result = self.results[r];
             if (result.linenum)
                 lines.push(result.line.trim());
         }
@@ -493,8 +495,8 @@ function Searcher(settings) {
         return lines;
     };
 
-    this.printMatchingLines = function () {
-        var lines = that.getMatchingLines();
+    self.printMatchingLines = function () {
+        var lines = self.getMatchingLines();
         var hdrText;
         if (_settings.uniqueLines)
             hdrText = "\nUnique lines with matches ({0}):";

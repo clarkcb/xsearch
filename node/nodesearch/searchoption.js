@@ -5,16 +5,16 @@
  */
 
 function SearchOption(shortarg, longarg, desc, func) {
-    var that = this;
-    this.shortarg = shortarg;
-    this.longarg = longarg;
-    this.desc = desc;
-    this.func = func;
+    var self = this;
+    self.shortarg = shortarg;
+    self.longarg = longarg;
+    self.desc = desc;
+    self.func = func;
 
-    this.sortarg = (function () {
-        if (that.shortarg)
-            return that.shortarg.toLowerCase() + 'a' + that.longarg.toLowerCase();
-        return that.longarg.toLowerCase();
+    self.sortarg = (function () {
+        if (self.shortarg)
+            return self.shortarg.toLowerCase() + 'a' + self.longarg.toLowerCase();
+        return self.longarg.toLowerCase();
     })();
 }
 
