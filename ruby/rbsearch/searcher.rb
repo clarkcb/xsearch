@@ -304,32 +304,24 @@ class Searcher
     indices
   end
 
-  def get_lines_before(s, before_start_indices, start_line_indices,
-    end_line_indices)
-    #log("before_start_indices: #{before_start_indices}")
-    if ! before_start_indices
+  def get_lines_at_indices(s, at_indices, start_line_indices, end_line_indices)
+    if ! at_indices
       []
     end
-    lines_before = []
-    before_start_indices.each {|i|
-      line_before = s[start_line_indices[start_line_indices.index(i)]..end_line_indices[start_line_indices.index(i)]]
-      lines_before.push(line_before)
+    lines = []
+    at_indices.each {|i|
+      line = s[i..end_line_indices[start_line_indices.index(i)]]
+      lines.push(line)
     }
-    lines_before
+    lines
   end
 
-  def get_lines_after(s, after_start_indices, start_line_indices,
-    end_line_indices)
-    #log("after_start_indices: #{after_start_indices}")
-    if ! after_start_indices
-      []
-    end
-    lines_after = []
-    after_start_indices.each {|i|
-      line_after = s[start_line_indices[start_line_indices.index(i)]..end_line_indices[start_line_indices.index(i)]]
-      lines_after.push(line_after)
-    }
-    lines_after
+  def get_lines_before(s, before_start_indices, start_line_indices, end_line_indices)
+    get_lines_at_indices(s, before_start_indices, start_line_indices, end_line_indices)
+  end
+
+  def get_lines_after(s, after_start_indices, start_line_indices, end_line_indices)
+    get_lines_at_indices(s, after_start_indices, start_line_indices, end_line_indices)
   end
 
   def search_multiline_string(s)
@@ -384,11 +376,8 @@ class Searcher
   end
 
   def lines_match(lines, in_patterns, out_patterns)
-    if ((in_patterns.length == 0 || any_matches_any_pattern(lines, in_patterns)) &&
-       (out_patterns.length == 0 || ! any_matches_any_pattern(lines, out_patterns)))
-      return true
-    end
-    false
+    ((in_patterns.length == 0 || any_matches_any_pattern(lines, in_patterns)) &&
+    (out_patterns.length == 0 || ! any_matches_any_pattern(lines, out_patterns)))
   end
 
   def lines_before_match(lines_before)
