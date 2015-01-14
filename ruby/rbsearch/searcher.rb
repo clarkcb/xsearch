@@ -365,15 +365,18 @@ class Searcher
         end
         match_start_index = m.begin(0) - m_line_start_index
         match_end_index = m.end(0) - m_line_start_index
-        results.push(SearchResult.new(
-          p,
-          '',
-          before_line_count+1,
-          match_start_index + 1,
-          match_end_index + 1,
-          line,
-          lines_before,
-          lines_after))
+        if (lines_before.length == 0 || lines_before_match(lines_before)) &&
+          (lines_after.length == 0 || lines_after_match(lines_after))
+          results.push(SearchResult.new(
+            p,
+            '',
+            before_line_count+1,
+            match_start_index + 1,
+            match_end_index + 1,
+            line,
+            lines_before,
+            lines_after))
+        end
         m = p.match(s, m_line_start_index+match_end_index)
       end
     end
@@ -393,7 +396,6 @@ class Searcher
       @settings.out_linesbeforepatterns)
   end
 
-
   def do_lines_after_or_until
     @settings.linesaftertopatterns.length > 0 ||
     @settings.linesafteruntilpatterns.length > 0
@@ -405,7 +407,7 @@ class Searcher
 
   def lines_after_match(lines_after)
     if do_lines_after_or_until
-      true
+      return true
     end
     lines_match(lines_after, @settings.in_linesafterpatterns,
       @settings.out_linesafterpatterns)
