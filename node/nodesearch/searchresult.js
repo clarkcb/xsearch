@@ -1,7 +1,7 @@
 /*
- * nodesearch.js
+ * searchresults.js
  *
- * file search utility written in node.js
+ * SearchResult class represents a search result
  */
 
 function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex,
@@ -20,7 +20,6 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     this.toString = function () {
         var s = that.filename;
         if (that.linenum && that.line) {
-            //s = s + ': ' + that.linenum + ': ' + that.line.trim();
             s = s + ': ' + that.linenum + ' [' + that.matchStartIndex + ':' +
                 that.matchEndIndex +']: ' + formatMatchingLine();
         } else {
@@ -60,7 +59,6 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
         }
         return formatted.trim();
     };
-
 }
 
 exports.SearchResult = SearchResult;

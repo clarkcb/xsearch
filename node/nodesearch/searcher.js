@@ -1,48 +1,26 @@
 /*
- * nodesearch.js
+ * searcher.js
  *
- * file search utility written in node.js
+ * performs the searching based on the given SearchSettings instance
  */
 
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
+var common = require('./common.js');
+var FileType = require('./filetype.js').FileType;
+var FileTypes = require('./filetypes.js').FileTypes;
 var FileUtil = require('./fileutil.js').FileUtil;
 var SearchResult = require('./searchresult.js').SearchResult;
-
-// add a startsWith method to String type
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str) {
-        return this.slice(0, str.length) == str;
-    };
-}
-
-// add a format method to String type (use {0} style placeholders)
-// from http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format/4673436#4673436
-if (!String.prototype.format) {
-  String.prototype.format = function() {
-    var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) { 
-      return typeof args[number] != 'undefined'
-        ? args[number]
-        : match
-      ;
-    });
-  };
-}
 
 function Searcher(settings) {
     var that = this;
     var _settings = settings;
-    var _fileutil = new FileUtil();
+    var _filetypes = new FileTypes();
     var _timers = {};
     var _totalElapsed = 0;
     this.results = [];
-
-    var log = function (message) {
-        console.log(message);
-    }
 
     var validateSettings = function () {
         assert.ok(_settings.startPath, 'Startpath not defined');
@@ -94,11 +72,11 @@ function Searcher(settings) {
             return false;
         }
         if (_settings.inExtensions.length &&
-            !matchesAnyElement(_fileutil.getExtension(file), _settings.inExtensions)) {
+            !matchesAnyElement(FileUtil.getExtension(file), _settings.inExtensions)) {
             return false;
         }
         if (_settings.outExtensions.length &&
-            matchesAnyElement(_fileutil.getExtension(file), _settings.outExtensions)) {
+            matchesAnyElement(FileUtil.getExtension(file), _settings.outExtensions)) {
             return false;
         }
         if (_settings.inFilePatterns.length &&
@@ -117,11 +95,11 @@ function Searcher(settings) {
             return false;
         }
         if (_settings.inArchiveExtensions.length &&
-            !matchesAnyElement(_fileutil.getExtension(file), _settings.inArchiveExtensions)) {
+            !matchesAnyElement(FileUtil.getExtension(file), _settings.inArchiveExtensions)) {
             return false;
         }
         if (_settings.outArchiveExtensions.length &&
-            matchesAnyElement(_fileutil.getExtension(file), _settings.outArchiveExtensions)) {
+            matchesAnyElement(FileUtil.getExtension(file), _settings.outArchiveExtensions)) {
             return false;
         }
         if (_settings.inArchiveFilePatterns.length &&
@@ -140,7 +118,7 @@ function Searcher(settings) {
         var stats = fs.statSync(startPath);
         if (stats.isDirectory()) {
             if (_settings.debug) {
-                log("Getting list of directories to search under " + startPath);
+                common.log("Getting list of directories to search under {0}".format(startPath));
             }
             searchDirs.push(startPath)
             if (_settings.recursive) {
@@ -159,7 +137,7 @@ function Searcher(settings) {
             // this error seems to occur when the file is a soft link
             // to a non-existent file
         } else {
-            log(err);
+            common.log(err);
             process.exit(1);
         }
     }
@@ -217,7 +195,7 @@ function Searcher(settings) {
         var dirFiles = getFilesForDirectory(dir);
         for (var d in dirFiles) {
             var f = dirFiles[d];
-            if (_fileutil.isArchiveFile(f) && _settings.searchArchives &&
+            if (_filetypes.isArchiveFile(f) && _settings.searchArchives &&
                 isArchiveSearchFile(f)) {
                 searchFiles.push(f);
             } else if (!_settings.archivesOnly && isSearchFile(f)) {
@@ -267,17 +245,17 @@ function Searcher(settings) {
     var printElapsed = function (name) {
         var elapsed = getElapsed(name);
         var msg = "Elapsed time for {0}: {1} ms";
-        log(msg.format(name, elapsed));
+        common.log(msg.format(name, elapsed));
     };
 
     var printTotalElapsed = function () {
         var msg = "Total elapsed time: {0} ms";
-        log(msg.format(_totalElapsed));
+        common.log(msg.format(_totalElapsed));
     };
 
     this.search = function () {
         if (_settings.verbose)
-            log("Search initiated");
+            common.log("Search initiated");
 
         // get the search dirs
         if (_settings.doTiming)
@@ -290,9 +268,9 @@ function Searcher(settings) {
                 printElapsed("GetSearchDirs");
         }
         if (_settings.verbose) {
-            log("\nDirectories to be searched (" + dirs.length + "):");
+            common.log("\nDirectories to be searched ({0}):".format(dirs.length));
             for (var d in dirs) {
-                log(dirs[d]);
+                common.log(dirs[d]);
             }
         }
 
@@ -306,11 +284,11 @@ function Searcher(settings) {
                 printElapsed("GetSearchFiles");
         }
         if (_settings.verbose) {
-            log("\nFiles to be searched (" + files.length + "):");
+            common.log("\nFiles to be searched ({0}):".format(files.length));
             for (var f in files) {
-                log(files[f]);
+                common.log(files[f]);
             }
-            log("");
+            common.log("");
         }
 
         if (_settings.doTiming)
@@ -327,20 +305,21 @@ function Searcher(settings) {
         }
 
         if (_settings.verbose)
-            log("Search complete.");
+            common.log("Search complete.");
     };
 
     var searchFile = function (filepath) {
-        if (_fileutil.isTextFile(filepath)) {
+        var filetype = _filetypes.getFileType(filepath);
+        if (filetype === FileType.TEXT) {
             searchTextFile(filepath);
-        } else if (_fileutil.isBinaryFile(filepath)) {
+        } else if (filetype === FileType.BINARY) {
             searchBinaryFile(filepath);
         }
     };
 
     var searchBinaryFile = function (filepath) {
         if (_settings.verbose) {
-            log('Searching binary file: "'+filepath+'"');
+            common.log('Searching binary file: "{0}"'.format(filepath));
         }
         var contents = fs.readFileSync(filepath).toString();
         var pattern = '';
@@ -356,7 +335,7 @@ function Searcher(settings) {
 
     var searchTextFile = function (filepath) {
         if (_settings.verbose) {
-            log('Searching text file: "'+filepath+'"');
+            common.log('Searching text file {0}'.format(filepath));
         }
         if (_settings.multilineSearch)
             searchTextFileContents(filepath);
@@ -467,37 +446,20 @@ function Searcher(settings) {
         that.results.push(result);
     };
 
-    var boolHashFromArray = function (arr) {
-        var hash = {};
-        for (var a in arr) {
-            hash[arr[a]] = true;
-        }
-        return hash;
-    };
-
-    var setFromArray = function (arr) {
-        var hash = boolHashFromArray(arr);
-        var set = [];
-        for (var h in hash) {
-            set.push(h);
-        }
-        return set;
-    };
-
     this.getMatchingDirs = function () {
         var dirs = [];
         for (var r in that.results) {
             var result = that.results[r];
             dirs.push(path.dirname(result.filename));
         }
-        return setFromArray(dirs);
+        return common.setFromArray(dirs);
     };
 
     this.printMatchingDirs = function () {
         var dirs = that.getMatchingDirs();
-        log("\nDirectories with matches ("+dirs.length+"):");
+        common.log("\nDirectories with matches ({0}):".format(dirs.length));
         for (var d in dirs) {
-            log(dirs[d]);
+            common.log(dirs[d]);
         }
     };
 
@@ -507,14 +469,14 @@ function Searcher(settings) {
             var result = that.results[r];
             files.push(result.filename);
         }
-        return setFromArray(files);
+        return common.setFromArray(files);
     };
 
     this.printMatchingFiles = function () {
         var files = that.getMatchingFiles();
-        log("\nFiles with matches ("+files.length+"):");
+        common.log("\nFiles with matches ({0}):".format(files.length));
         for (var f in files) {
-            log(files[f]);
+            common.log(files[f]);
         }
     };
 
@@ -526,7 +488,7 @@ function Searcher(settings) {
                 lines.push(result.line.trim());
         }
         if (_settings.uniqueLines)
-            lines = setFromArray(lines);
+            lines = common.setFromArray(lines);
         lines.sort();
         return lines;
     };
@@ -535,12 +497,12 @@ function Searcher(settings) {
         var lines = that.getMatchingLines();
         var hdrText;
         if (_settings.uniqueLines)
-            hdrText = "Unique lines with matches";
+            hdrText = "\nUnique lines with matches ({0}):";
         else
-            hdrText = "Lines with matches";
-        log("\n"+hdrText+" ("+lines.length+"):");
+            hdrText = "\nLines with matches ({0}):";
+        common.log(hdrText.format(lines.length));
         for (var l in lines) {
-            log(lines[l]);
+            common.log(lines[l]);
         }
     };
 }

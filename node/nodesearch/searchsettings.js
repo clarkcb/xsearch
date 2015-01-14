@@ -1,7 +1,7 @@
 /*
- * nodesearch.js
+ * searchsettings.js
  *
- * file search utility written in node.js
+ * represents the settings to use when performing the search
  */
 
 function SearchSettings() {
