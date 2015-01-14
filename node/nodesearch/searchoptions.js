@@ -9,7 +9,7 @@ var SearchOption = require('./searchoption.js').SearchOption;
 var SearchSettings = require('./searchsettings.js').SearchSettings;
 
 function SearchOptions() {
-    var that = this;
+    var self = this;
 
     //TODO: move to config file
     var searchOptionsPath = '~/src/git/xsearch/shared/searchoptions.xml';
@@ -151,7 +151,7 @@ function SearchOptions() {
         options.sort(optcmp);
     })();
 
-    this.searchSettingsFromArgs = function (args, callback) {
+    self.searchSettingsFromArgs = function (args, callback) {
         var err = null;
         var settings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
@@ -188,11 +188,11 @@ function SearchOptions() {
         callback(err, settings);
     };
 
-    this.usage = function () {
+    self.usage = function () {
         usageWithCode(0);
     };
 
-    this.usageWithCode = function (exitCode) {
+    self.usageWithCode = function (exitCode) {
         console.log(getUsageString());
         process.exit(exitCode);
     };

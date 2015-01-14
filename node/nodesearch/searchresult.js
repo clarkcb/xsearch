@@ -6,22 +6,22 @@
 
 function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex,
     line, linesBefore, linesAfter) {
-    var that = this;
-    this.pattern = pattern;
-    this.filename = filename;
-    this.linenum = linenum;
-    this.matchStartIndex = matchStartIndex;
-    this.matchEndIndex = matchEndIndex;
-    this.line = line;
-    this.linesBefore = linesBefore;
-    this.linesAfter = linesAfter;
-    this.maxLineLength = 150;
+    var self = this;
+    self.pattern = pattern;
+    self.filename = filename;
+    self.linenum = linenum;
+    self.matchStartIndex = matchStartIndex;
+    self.matchEndIndex = matchEndIndex;
+    self.line = line;
+    self.linesBefore = linesBefore;
+    self.linesAfter = linesAfter;
+    self.maxLineLength = 150;
 
-    this.toString = function () {
-        var s = that.filename;
-        if (that.linenum && that.line) {
-            s = s + ': ' + that.linenum + ' [' + that.matchStartIndex + ':' +
-                that.matchEndIndex +']: ' + formatMatchingLine();
+    self.toString = function () {
+        var s = self.filename;
+        if (self.linenum && self.line) {
+            s = s + ': ' + self.linenum + ' [' + self.matchStartIndex + ':' +
+                self.matchEndIndex +']: ' + formatMatchingLine();
         } else {
             s = s + ' matches';
         }
@@ -29,19 +29,19 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     };
 
     var formatMatchingLine = function () {
-        var formatted = that.line;
-        var lineLength = that.line.length;
-        var matchLength = that.matchEndIndex - that.matchStartIndex;
-        if (lineLength > that.maxLineLength) {
-            var adjustedMaxLength = that.maxLineLength - matchLength;
-            var beforeIndex = that.matchStartIndex;
-            if (that.matchStartIndex > 0) {
+        var formatted = self.line;
+        var lineLength = self.line.length;
+        var matchLength = self.matchEndIndex - self.matchStartIndex;
+        if (lineLength > self.maxLineLength) {
+            var adjustedMaxLength = self.maxLineLength - matchLength;
+            var beforeIndex = self.matchStartIndex;
+            if (self.matchStartIndex > 0) {
                 beforeIndex = beforeIndex - (adjustedMaxLength / 4);
                 if (beforeIndex < 0)
                     beforeIndex = 0;
             }
-            adjustedMaxLength = adjustedMaxLength - (that.matchStartIndex - beforeIndex);
-            var afterIndex = that.matchEndIndex + adjustedMaxLength
+            adjustedMaxLength = adjustedMaxLength - (self.matchStartIndex - beforeIndex);
+            var afterIndex = self.matchEndIndex + adjustedMaxLength
             if (afterIndex > lineLength)
                 afterIndex = lineLength;
 
@@ -55,7 +55,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
                 after = '...';
                 afterIndex -= 3;
             }
-            formatted = before + that.line.substring(beforeIndex, afterIndex) + after;
+            formatted = before + self.line.substring(beforeIndex, afterIndex) + after;
         }
         return formatted.trim();
     };
