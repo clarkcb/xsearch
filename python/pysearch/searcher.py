@@ -547,8 +547,8 @@ class Searcher:
                                 sr_lines_after = list(lines_after)
                             elif lines_after_until_match:
                                 sr_lines_after = list(lines_after)[:-1]
-                            else:
-                                continue
+                        else:
+                            sr_lines_after = list(lines_after)
                         search_result = \
                             SearchResult(pattern=p.pattern,
                                          linenum=linenum,
