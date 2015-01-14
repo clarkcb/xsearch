@@ -335,18 +335,14 @@ class Searcher:
                     end_line_indices))
         return search_results
 
-    def get_lines_before(self, s, start_line_index, before_start_indices):
+    def get_lines_before(self, s, before_start_indices, start_line_indices,
+        end_line_indices):
         if not before_start_indices:
             return []
-        line_count = self.settings.numlinesbefore
-        if len(before_start_indices) >= line_count:
-            before_start_indices = before_start_indices[(line_count*-1):]
         lines_before = []
-        for i, x in enumerate(before_start_indices[:-1]):
-            if i < len(before_start_indices) - 1:
-                lines_before.append(
-                    s[before_start_indices[i]:before_start_indices[i+1]-1])
-        lines_before.append(s[before_start_indices[-1]:start_line_index-1])
+        for i in before_start_indices:
+            line_before = s[i:end_line_indices[start_line_indices.index(i)]]
+            lines_before.append(line_before)
         return lines_before
 
     def get_lines_after_to_or_until(self, s, after_start_indices):
@@ -372,21 +368,16 @@ class Searcher:
         else:
             return lines_after[:-1]
 
-    def get_lines_after(self, s, after_start_indices):
+    def get_lines_after(self, s, after_start_indices, start_line_indices,
+        end_line_indices):
         if not after_start_indices:
             return []
         if self.do_lines_after_or_until():
             return self.get_lines_after_to_or_until(s, after_start_indices)
-        line_count = self.settings.numlinesafter
-        if len(after_start_indices) > line_count:
-            after_start_indices = after_start_indices[0:line_count+1]
-        elif len(after_start_indices) == line_count:
-            after_start_indices.append(len(s)-1)
         lines_after = []
-        for i, x in enumerate(after_start_indices):
-            if i < len(after_start_indices) - 1:
-                lines_after.append(
-                    s[after_start_indices[i]:after_start_indices[i+1]-1])
+        for i in after_start_indices:
+            line_after = s[i:end_line_indices[start_line_indices.index(i)]]
+            lines_after.append(line_after)
         return lines_after
 
     def do_lines_after_or_until(self):
@@ -396,7 +387,7 @@ class Searcher:
         return False
 
     def do_lines_after(self):
-        if self.settings.numlinesafter or self.do_lines_after_or_until():
+        if self.settings.linesafter or self.do_lines_after_or_until():
             return True
         return False
 
@@ -413,19 +404,22 @@ class Searcher:
         for m in matches:
             m_line_start_index = 0
             m_line_end_index = len(s) - 1
-            before_start_indices = [x for x in start_line_indices if x < m.start()]
+            before_start_indices = [x for x in start_line_indices if x <= m.start()]
             before_line_count = 0
             if before_start_indices:
-                m_line_start_index = before_start_indices[-1]
-                before_line_count = len(before_start_indices) - 1
+                m_line_start_index = before_start_indices.pop()
+                before_line_count = len(before_start_indices)
+                before_start_indices = before_start_indices[self.settings.linesbefore * -1:]
             m_line_end_index = end_line_indices[start_line_indices.index(m_line_start_index)]
             after_start_indices = [x for x in start_line_indices if x > m.start()]
+            after_start_indices = after_start_indices[:self.settings.linesafter]
             line = s[m_line_start_index:m_line_end_index]
-            if self.settings.numlinesbefore and before_line_count:
-                lines_before = self.get_lines_before(s, m_line_start_index,
-                    before_start_indices[:-1])
+            if self.settings.linesbefore and before_line_count:
+                lines_before = self.get_lines_before(s, before_start_indices,
+                    start_line_indices, end_line_indices)
             if self.do_lines_after():
-                lines_after = self.get_lines_after(s, after_start_indices)
+                lines_after = self.get_lines_after(s, after_start_indices,
+                    start_line_indices, end_line_indices)
                 if after_start_indices and not lines_after:
                     continue
             if (lines_before and
@@ -493,8 +487,8 @@ class Searcher:
                     #self.log('AttributeError: %s' % e)
                     break
             linenum += 1
-            if self.settings.numlinesafter:
-                while len(lines_after) < self.settings.numlinesafter:
+            if self.settings.linesafter:
+                while len(lines_after) < self.settings.linesafter:
                     try:
                         lines_after.append(lines.next().rstrip('\r\n'))
                     except StopIteration:
@@ -566,10 +560,10 @@ class Searcher:
                                          maxlinelength=self.settings.maxlinelength)
                         results.append(search_result)
                         pattern_match_dict[p] = 1
-            if self.settings.numlinesbefore:
-                if len(lines_before) == self.settings.numlinesbefore:
+            if self.settings.linesbefore:
+                if len(lines_before) == self.settings.linesbefore:
                     lines_before.popleft()
-                if len(lines_before) < self.settings.numlinesbefore:
+                if len(lines_before) < self.settings.linesbefore:
                     lines_before.append(line)
         return results
 
@@ -607,8 +601,6 @@ class Searcher:
         """Search a ZipFile object"""
         zipinfos = zfo.infolist()
         for zipinfo in zipinfos:
-            #if self.settings.debug:
-            #   self.log('zipinfo.filename: {0}'.format(zipinfo.filename))
             if zipinfo.file_size and self.is_search_file(zipinfo.filename):
                 zio = StringIO(zfo.read(zipinfo.filename))
                 zio.seek(0)
@@ -618,15 +610,10 @@ class Searcher:
 
     def search_zipinfo_obj(self, sf, zio):
         """Search a ZipInfo object"""
-        if self.filetypes.is_text_file(sf.filename):
-            #if self.settings.debug:
-            #   msg = 'searchable text file in zip: {0}'
-            #   self.log(msg.format(zio.filename))
+        filetype = self.filetypes.get_filetype(sf.filename)
+        if filetype == FileType.Text:
             self.search_text_file_obj(sf, zio)
-        elif self.filetypes.is_binary_file(sf.filename):
-            #if self.settings.debug:
-            #   msg = 'searchable binary file in zip: {0}'
-            #   self.log(msg.format(zipinfo.filename))
+        elif filetype == FileType.Binary:
             self.search_binary_file_obj(sf, zio)
 
     def search_tar_file(self, sf, ext):
@@ -643,27 +630,21 @@ class Searcher:
     def search_tarfile_obj(self, sf, tar):
         """Search a tarfile object"""
         for tarinfo in tar:
-            #if tarinfo.isreg() and not self.filter_file(tarinfo.name):
             if tarinfo.isfile() and self.is_search_file(tarinfo.name):
-                #if self.settings.debug:
-                #    msg = 'isfile and is_search_file: {0}'
-                #    self.log(msg.format(tarinfo.name))
-                #tio = tar.extractfile(tarinfo)
                 tio = StringIO(tar.extractfile(tarinfo).read())
                 tio.seek(0)
                 nsf = SearchFile(containers=sf.containers + [sf.relativepath])
                 nsf.path, nsf.filename = os.path.split(tarinfo.name)
-                #self.log('nsf.path: {0}'.format(nsf.path))
-                #self.log('nsf.filename: {0}'.format(nsf.filename))
                 self.search_tarinfo_obj(nsf, tio)
 
     def search_tarinfo_obj(self, sf, tio):
         """Search a tarinfo object"""
-        if self.filetypes.is_text_file(sf.filename):
+        filetype = self.filetypes.get_filetype(sf.filename)
+        if filetype == FileType.Text:
             if self.settings.debug:
                 self.log('searchable text file in tar: {0}'.format(sf.filename))
             self.search_text_file_obj(sf, tio)
-        elif  self.filetypes.is_binary_file(sf.filename):
+        elif filetype == FileType.Binary:
             if self.settings.debug:
                 self.log('searchable binary file in tar: {0}'.format(sf.filename))
             self.search_binary_file_obj(sf, tio)
