@@ -335,15 +335,20 @@ class Searcher:
                     end_line_indices))
         return search_results
 
+    def get_lines_at_indices(self, s, at_indices, start_line_indices,
+        end_line_indices):
+        if not at_indices:
+            return []
+        lines = []
+        for i in at_indices:
+            line = s[i:end_line_indices[start_line_indices.index(i)]]
+            lines.append(line)
+        return lines
+
     def get_lines_before(self, s, before_start_indices, start_line_indices,
         end_line_indices):
-        if not before_start_indices:
-            return []
-        lines_before = []
-        for i in before_start_indices:
-            line_before = s[i:end_line_indices[start_line_indices.index(i)]]
-            lines_before.append(line_before)
-        return lines_before
+        return self.get_lines_at_indices(s, before_start_indices,
+            start_line_indices, end_line_indices)
 
     def get_lines_after_to_or_until(self, s, after_start_indices):
         lines_after_patterns = []
@@ -370,26 +375,17 @@ class Searcher:
 
     def get_lines_after(self, s, after_start_indices, start_line_indices,
         end_line_indices):
-        if not after_start_indices:
-            return []
         if self.do_lines_after_or_until():
             return self.get_lines_after_to_or_until(s, after_start_indices)
-        lines_after = []
-        for i in after_start_indices:
-            line_after = s[i:end_line_indices[start_line_indices.index(i)]]
-            lines_after.append(line_after)
-        return lines_after
+        return self.get_lines_at_indices(s, after_start_indices,
+            start_line_indices, end_line_indices)
 
     def do_lines_after_or_until(self):
-        if self.settings.linesaftertopatterns or \
-            self.settings.linesafteruntilpatterns:
-            return True
-        return False
+        return len(self.settings.linesaftertopatterns) > 0 or \
+            len(self.settings.linesafteruntilpatterns) > 0
 
     def do_lines_after(self):
-        if self.settings.linesafter or self.do_lines_after_or_until():
-            return True
-        return False
+        return self.settings.linesafter > 0 or self.do_lines_after_or_until()
 
     def search_multiline_string_for_pattern(self, s, p, start_line_indices,
         end_line_indices):
@@ -411,13 +407,13 @@ class Searcher:
                 before_line_count = len(before_start_indices)
                 before_start_indices = before_start_indices[self.settings.linesbefore * -1:]
             m_line_end_index = end_line_indices[start_line_indices.index(m_line_start_index)]
-            after_start_indices = [x for x in start_line_indices if x > m.start()]
-            after_start_indices = after_start_indices[:self.settings.linesafter]
             line = s[m_line_start_index:m_line_end_index]
             if self.settings.linesbefore and before_line_count:
                 lines_before = self.get_lines_before(s, before_start_indices,
                     start_line_indices, end_line_indices)
             if self.do_lines_after():
+                after_start_indices = [x for x in start_line_indices if x > m.start()]
+                after_start_indices = after_start_indices[:self.settings.linesafter]
                 lines_after = self.get_lines_after(s, after_start_indices,
                     start_line_indices, end_line_indices)
                 if after_start_indices and not lines_after:
