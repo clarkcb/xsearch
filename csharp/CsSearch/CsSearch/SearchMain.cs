@@ -37,7 +37,7 @@ namespace CsSearch
 			}
 			catch (SearchException e)
 			{
-				Console.WriteLine("Error: " + e.Message);
+				Console.WriteLine("Error: {0}", e.Message);
 				options.Usage(1);
 			}
 		}

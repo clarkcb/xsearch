@@ -97,7 +97,7 @@ namespace CsSearch
 
 		private static void AddExtension(ISet<string> set, string extList)
 		{
-			var exts = extList.Split(new char[] { ',' });
+			var exts = extList.Split(new[] { ',' });
 			foreach (var x in exts)
 			{
 				var ext = x;

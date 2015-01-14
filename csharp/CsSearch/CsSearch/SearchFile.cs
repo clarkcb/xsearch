@@ -6,7 +6,7 @@ namespace CsSearch
 {
 	public class SearchFile
 	{
-		public static string CONTAINER_SEPARATOR = "!";
+		public static string ContainerSeparator = "!";
 
 		public IList<string> Containers { get; private set; }
 		public string FilePath { get; private set; }
@@ -46,10 +46,10 @@ namespace CsSearch
 			{
 				for (int i = 0; i < Containers.Count; i++)
 				{
-					if (i > 0) sb.Append(CONTAINER_SEPARATOR);
+					if (i > 0) sb.Append(ContainerSeparator);
 					sb.Append(Containers[i]);
 				}
-				sb.Append(CONTAINER_SEPARATOR);
+				sb.Append(ContainerSeparator);
 			}
 			if (FilePath != null && !FilePath.Equals(""))
 			{

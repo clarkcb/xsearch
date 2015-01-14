@@ -9,7 +9,7 @@ namespace CsSearch
 {
 	public class Searcher
 	{
-		private readonly FileUtil _fileUtil;
+		private readonly FileTypes _fileTypes;
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
 		public IDictionary<string, Stopwatch> Timers { get; private set; }
@@ -21,7 +21,7 @@ namespace CsSearch
 			if (Settings.Verbose)
 				Log(Settings + "\n");
 			ValidateSettings();
-			_fileUtil = new FileUtil();
+			_fileTypes = new FileTypes();
 			Results = new List<SearchResult>();
 			Timers = new Dictionary<string, Stopwatch>();
 			TotalElapsedTime = new TimeSpan();
@@ -154,14 +154,14 @@ namespace CsSearch
 		private bool FilterFile(FileInfo f)
 		{
 			return
-				(_fileUtil.IsArchiveFile(f) && Settings.SearchArchives && IsArchiveSearchFile(f))
+				(_fileTypes.IsArchiveFile(f) && Settings.SearchArchives && IsArchiveSearchFile(f))
 				||
 				(!Settings.ArchivesOnly && IsSearchFile(f));
 		}
 
 		private SearchFile SearchFileFromFileInfo(FileInfo f)
 		{
-			return new SearchFile(new List<string>(), f.DirectoryName, f.Name, _fileUtil.GetFileType(f));
+			return new SearchFile(new List<string>(), f.DirectoryName, f.Name, _fileTypes.GetFileType(f));
 		}
 
 		private IEnumerable<SearchFile> GetSearchFilesForDir(DirectoryInfo dir)
@@ -217,7 +217,7 @@ namespace CsSearch
 				var f = new FileInfo(Settings.StartPath);
 				if (f.Exists && FilterFile(f))
 				{
-					DoSearchFile(new SearchFile(f.DirectoryName, f.Name, _fileUtil.GetFileType(f)));
+					DoSearchFile(new SearchFile(f.DirectoryName, f.Name, _fileTypes.GetFileType(f)));
 				}
 				else
 				{

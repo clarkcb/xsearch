@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -18,7 +17,7 @@ namespace CsSearch
 		public IList<string> LinesAfter { get; private set; }
 
 		// temp
-		private const int MAXLINELENGTH = 150;
+		private const int MaxLineLength = 150;
 
 		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
 			int matchStartIndex, int matchEndIndex, string line,
@@ -40,10 +39,7 @@ namespace CsSearch
 			{
 				return MultiLineToString();
 			}
-			else
-			{
-				return SingleLineToString();
-			}
+			return SingleLineToString();
 		}
 
 		private int LineNumPadding()
@@ -110,9 +106,9 @@ namespace CsSearch
 			var lineLength = Line.Length;
 			var matchLength = MatchEndIndex - MatchStartIndex;
 
-			if (lineLength > MAXLINELENGTH)
+			if (lineLength > MaxLineLength)
 			{
-				var adjustedMaxLength = MAXLINELENGTH - matchLength;
+				var adjustedMaxLength = MaxLineLength - matchLength;
 				var beforeIndex = MatchStartIndex;
 				if (MatchStartIndex > 0)
 				{

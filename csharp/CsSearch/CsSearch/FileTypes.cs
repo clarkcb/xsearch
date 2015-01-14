@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -14,14 +13,14 @@ namespace CsSearch
 		Unknown
 	};
 
-	class FileUtil
+	class FileTypes
 	{
 		public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
 
 		private readonly string _fileTypesResource;
 		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
 
-		public FileUtil()
+		public FileTypes()
 		{
 			_fileTypesResource = Properties.Resources.filetypes;
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
@@ -34,10 +33,8 @@ namespace CsSearch
 			foreach (var f in doc.Descendants("filetype"))
 			{
 				var name = f.Attributes("name").First().Value;
-				//Console.WriteLine("name: " + name);
 				var extensions = f.Descendants("extensions").First().Value;
-				//Console.WriteLine("extensions: " + extensions);
-				var extensionSet = new HashSet<string>(extensions.Split(new char[]{' ','\n'}).Select(x => "." + x));
+				var extensionSet = new HashSet<string>(extensions.Split(new[]{' ','\n'}).Select(x => "." + x));
 				_fileTypesDictionary[name] = extensionSet;
 			}
 			_fileTypesDictionary["text"].UnionWith(_fileTypesDictionary["code"]);
@@ -80,19 +77,6 @@ namespace CsSearch
 			return (_fileTypesDictionary["unknown"].Contains(f.Extension.ToLowerInvariant()) ||
 					(!_fileTypesDictionary["searchable"].Contains(f.Extension.ToLowerInvariant()) &&
 					(!_fileTypesDictionary["nosearch"].Contains(f.Extension.ToLowerInvariant()))));
-		}
-
-		public static string GetRelativePath(string fullPath)
-		{
-			var filePath = fullPath;
-			if (filePath.StartsWith(Environment.CurrentDirectory))
-				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
-			return filePath;
-		}
-
-		public static bool IsHiddenFile(FileSystemInfo f)
-		{
-			return (f.Attributes & FileAttributes.Hidden) != 0;
 		}
 	}
 }
