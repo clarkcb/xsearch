@@ -8,7 +8,6 @@ import scala.collection.JavaConversions.enumerationAsScalaIterator
 import scala.collection.mutable
 import scala.io.Source
 import scala.util.matching.Regex
-import scala.util.matching.Regex.Match
 
 class Searcher (settings: SearchSettings) {
   def validateSettings() {
@@ -114,7 +113,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def filterFile(f:File): Boolean = {
-    FileUtil.getFileType(f) match {
+    FileTypes.getFileType(f) match {
       case FileType.Unknown => false
       case fileType@FileType.Archive =>
         if (settings.searchArchives && isArchiveSearchFile(f)) true
@@ -128,7 +127,7 @@ class Searcher (settings: SearchSettings) {
   def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
     dir.listFiles().filterNot(_.isDirectory).filter(filterFile).map {
       f =>
-        new SearchFile(f.getParent, f.getName, FileUtil.getFileType(f))
+        new SearchFile(f.getParent, f.getName, FileTypes.getFileType(f))
     }
   }
 
@@ -189,7 +188,7 @@ class Searcher (settings: SearchSettings) {
       }
     } else if (startPathFile.isFile) {
       if (filterFile(startPathFile)) {
-        val fileType = FileUtil.getFileType(startPathFile)
+        val fileType = FileTypes.getFileType(startPathFile)
         var d: File = startPathFile.getParentFile
         if (null == d) d = new File(".")
         searchFile(new SearchFile(d.getPath, startPathFile.getName, fileType))
@@ -236,7 +235,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def searchFileSource(sf: SearchFile, source: Source) {
-    FileUtil.getFileType(sf) match {
+    FileTypes.getFileType(sf) match {
       case FileType.Text =>
         searchTextFileSource(sf, source)
       case FileType.Binary =>
@@ -478,13 +477,13 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       log("Searching archive file %s".format(sf.toString))
     }
-    if (FileUtil.isZipArchiveFile(sf))
+    if (FileTypes.isZipArchiveFile(sf))
       searchZipFileSource(sf, source)
-    else if (FileUtil.isGzArchiveFile(sf))
+    else if (FileTypes.isGzArchiveFile(sf))
       searchGzFileSource(sf, source)
-    else if (FileUtil.isBz2ArchiveFile(sf))
+    else if (FileTypes.isBz2ArchiveFile(sf))
       searchBz2FileSource(sf, source)
-    else if (FileUtil.isTarArchiveFile(sf)) {
+    else if (FileTypes.isTarArchiveFile(sf)) {
       val tis = new BufferedInputStream(new FileInputStream(sf.getPath))
       searchTarFileInputStream(sf, tis)
     } else {
@@ -512,7 +511,7 @@ class Searcher (settings: SearchSettings) {
         val zes = e._2
         zes foreach { ze =>
           val file = new File(ze.getName)
-          val fileType = FileUtil.getFileType(file)
+          val fileType = FileTypes.getFileType(file)
           if (fileType != FileType.Unknown) {
             val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName,
               file.getName, fileType)
@@ -541,7 +540,7 @@ class Searcher (settings: SearchSettings) {
         val dirName = new File(entry.getName).getParent
         if (isSearchDir(dirName)) {
           val file = new File(entry.getName)
-          val fileType = FileUtil.getFileType(file)
+          val fileType = FileTypes.getFileType(file)
           if (fileType != FileType.Unknown) {
             var bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
@@ -568,7 +567,7 @@ class Searcher (settings: SearchSettings) {
       log("Searching gzip file %s".format(sf.toString))
     }
     val containedFileName = sf.fileName.split("\\.").init.mkString(".")
-    val containedFileType = FileUtil.getFileType(sf)
+    val containedFileType = FileTypes.getFileType(sf)
     val containedExtension = FileUtil.getExtension(sf)
     val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName,
       containedFileType)
@@ -590,7 +589,7 @@ class Searcher (settings: SearchSettings) {
       log("Searching bzip2 file %s".format(sf.toString))
     }
     val containedFileName = sf.fileName.split("\\.").init.mkString(".")
-    val containedFileType = FileUtil.getFileType(sf)
+    val containedFileType = FileTypes.getFileType(sf)
     val containedExtension = FileUtil.getExtension(sf)
     val bzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName,
       containedFileType)
