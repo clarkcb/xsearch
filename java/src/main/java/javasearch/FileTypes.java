@@ -1,33 +1,21 @@
-/*******************************************************************************
-FileUtil
-
-Utility class to determine file types, etc.
-
-@author Cary Clark &lt;clarkcb@gmail.com&gt;
-@version $Rev$
-@copyright Cary Clark 2012
-*******************************************************************************/
-
 package javasearch;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
-
-public class FileUtil {
-	private static final String fileTypesXmlPath = "/filetypes.xml";
+public class FileTypes {
+    private static final String fileTypesXmlPath = "/filetypes.xml";
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String,Set<String>> getFileTypeMap() {
@@ -69,18 +57,9 @@ public class FileUtil {
         return fileTypeMap;
     }
 
-    public FileUtil() {
+    public FileTypes() {
         fileTypeMap = getFileTypeMap();
     }
-
-	public String getExtension(File f) {
-		String ext = "";
-		String fileName = f.getName();
-		int lastIndex = fileName.lastIndexOf(".");
-		if (lastIndex > 0 && fileName.length() > lastIndex)
-			ext = fileName.substring(lastIndex + 1);
-		return ext;
-	}
 
     public FileType getFileType(File f) {
         if (isArchiveFile(f)) return FileType.ARCHIVE;
@@ -90,23 +69,24 @@ public class FileUtil {
     }
 
     public boolean isArchiveFile(File f) {
-        return fileTypeMap.get("archive").contains(getExtension(f));
+        return fileTypeMap.get("archive").contains(FileUtil.getExtension(f));
     }
 
-	public boolean isBinaryFile(File f) {
-        return fileTypeMap.get("binary").contains(getExtension(f));
-	}
-
-	public boolean isSearchableFile(File f) {
-        return fileTypeMap.get("searchable").contains(getExtension(f));
+    public boolean isBinaryFile(File f) {
+        return fileTypeMap.get("binary").contains(FileUtil.getExtension(f));
     }
 
-	public boolean isTextFile(File f) {
-        return fileTypeMap.get("text").contains(getExtension(f));
+    public boolean isSearchableFile(File f) {
+        return fileTypeMap.get("searchable").contains(FileUtil.getExtension(f));
     }
 
-	public boolean isUnknownFile(File f) {
-        return fileTypeMap.get("unknown").contains(getExtension(f)) ||
-               !fileTypeMap.get("searchable").contains(getExtension(f));
+    public boolean isTextFile(File f) {
+        return fileTypeMap.get("text").contains(FileUtil.getExtension(f));
     }
+
+    public boolean isUnknownFile(File f) {
+        return fileTypeMap.get("unknown").contains(FileUtil.getExtension(f)) ||
+                !fileTypeMap.get("searchable").contains(FileUtil.getExtension(f));
+    }
+
 }

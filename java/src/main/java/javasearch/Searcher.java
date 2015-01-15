@@ -23,7 +23,7 @@ public class Searcher {
 
 	private SearchSettings settings;
 	private List<SearchResult> results;
-	private FileUtil fileUtil;
+	private FileTypes fileTypes;
 	private Set<SearchFile> searchFileSet;
 	private Map<String,Long> timers;
 	private long totalElapsedTime;
@@ -31,7 +31,7 @@ public class Searcher {
 	public Searcher(SearchSettings settings) {
 		this.settings = settings;
 		this.results = new ArrayList<SearchResult>();
-		this.fileUtil = new FileUtil();
+		this.fileTypes = new FileTypes();
 		this.searchFileSet = new HashSet<SearchFile>();
 		this.timers = new HashMap<String,Long>();
 		this.totalElapsedTime = 0L;
@@ -128,7 +128,7 @@ public class Searcher {
         if (f.getName().startsWith(".") && settings.getExcludeHidden()) {
             return false;
         }
-		String ext = fileUtil.getExtension(f);
+		String ext = FileUtil.getExtension(f);
 		return (settings.getInExtensions().isEmpty() ||
                 settings.getInExtensions().contains(ext))
                &&
@@ -146,7 +146,7 @@ public class Searcher {
         if (f.getName().startsWith(".") && settings.getExcludeHidden()) {
             return false;
         }
-		String ext = fileUtil.getExtension(f);
+		String ext = FileUtil.getExtension(f);
 		return (settings.getInArchiveExtensions().isEmpty() ||
                 settings.getInArchiveExtensions().contains(ext))
                &&
@@ -169,7 +169,7 @@ public class Searcher {
         if (currentFiles != null) {
             for (File f : currentFiles) {
                 if (!f.isDirectory()) {
-					FileType fileType = fileUtil.getFileType(f);
+					FileType fileType = fileTypes.getFileType(f);
 					if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
 							&& isArchiveSearchFile(f))
 							||
@@ -221,7 +221,6 @@ public class Searcher {
     }
 
 	public void search() throws SearchException {
-
 		// figure out if startPath is a directory or a file and search accordingly
 		File startPathFile = new File(settings.getStartPath());
 		if (startPathFile.isDirectory()) {
@@ -231,7 +230,7 @@ public class Searcher {
 				throw new SearchException("Startpath does not match search settings");
 			}
 		} else if (startPathFile.isFile()) {
-			FileType fileType = fileUtil.getFileType(startPathFile);
+			FileType fileType = fileTypes.getFileType(startPathFile);
 			if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
 					&& isArchiveSearchFile(startPathFile))
 					||
@@ -357,8 +356,7 @@ public class Searcher {
 		return newlineIndices;
 	}
 
-	private List<Number> getStartLineIndicesFromNewLineIndices(String s,
-															   List<Number> newLineIndices) {
+	private List<Number> getStartLineIndicesFromNewLineIndices(List<Number> newLineIndices) {
 		List<Number> startLineIndices = new ArrayList<Number>();
 		startLineIndices.add(0);
 		for (Number newLineIndex : newLineIndices) {
@@ -424,8 +422,7 @@ public class Searcher {
 		Map<Pattern,Integer> patternMatches = new HashMap<Pattern,Integer>();
 		List<SearchResult> results = new ArrayList<SearchResult>();
 		List<Number> newLineIndices = getNewLineIndices(s);
-		List<Number> startLineIndices = getStartLineIndicesFromNewLineIndices(s,
-				newLineIndices);
+		List<Number> startLineIndices = getStartLineIndicesFromNewLineIndices(newLineIndices);
 		List<Number> endLineIndices = getEndLineIndicesFromNewLineIndices(s,
 				newLineIndices);
 		Matcher m = p.matcher(s);
