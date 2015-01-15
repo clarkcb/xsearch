@@ -1,0 +1,38 @@
+/*******************************************************************************
+FileUtil
+
+Utility class to determine file types, etc.
+
+@author Cary Clark &lt;clarkcb@gmail.com&gt;
+@version $Rev$
+@copyright Cary Clark 2012
+*******************************************************************************/
+
+package javasearch;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+public class FileUtil {
+	public static String getExtension(File f) {
+		String ext = "";
+		String fileName = f.getName();
+		int lastIndex = fileName.lastIndexOf(".");
+		if (lastIndex > 0 && fileName.length() > lastIndex)
+			ext = fileName.substring(lastIndex + 1);
+		return ext;
+	}
+}
