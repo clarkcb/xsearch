@@ -10,9 +10,9 @@
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
-  (use [clojure.set :only (union)])
-  (use [clojure.string :only (join split)])
-  (use [clojure.xml]))
+  (:use [clojure.set :only (union)])
+  (:use [clojure.string :only (join split)])
+  (:use [clojure.xml]))
 
 ;;; TODO: move to a config file
 (def FILETYPESPATH "/Users/cary/src/git/xsearch/shared/filetypes.xml")
