@@ -9,10 +9,7 @@
 (ns cljsearch.searchsettings
   #^{:author "Cary Clark",
      :doc "Defines the settings for a given search instance"}
-  (:import (java.io File))
-  (use [clojure.set :only (union)])
-  (use [clojure.string :only (join split)])
-  (use [clojure.xml]))
+  (:require [clojure.string :as str :only (split)]))
 
 (defrecord SearchSettings
   [
@@ -98,8 +95,13 @@
 (defn add-element [x coll]
   (conj coll x))
 
-(defn add-extension [settings x extname]
-  (update-in settings [extname] #(add-element x %)))
+(defn add-extensions [settings exts extname]
+  (if (empty? exts)
+    settings
+    (add-extensions
+      (update-in settings [extname] #(add-element (first exts) %)) (rest exts) extname)))
+(defn add-extension [settings ext extname]
+  (add-extensions settings (str/split ext #",") extname))
 
 (defn add-pattern [settings p patname]
   (update-in settings [patname] #(add-element p %)))
