@@ -9,204 +9,314 @@
   (:import (java.io File)
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
-  (:use [clojure.java.io :only (reader)])
-  (:use [elocale.file :as file])
-  (:use [elocale.utils :as utils]))
+  (:use [clojure.java.io :only (file reader)])
+  (:require [clojure.string :as str :only (join trim)])
+  (:use [cljsearch.common])
+  (:use [cljsearch.filetypes])
+  (:use [cljsearch.fileutil])
+  (:use [cljsearch.searchresult])
+)
 
-(defn printlines? [opts]
-  (get opts :p))
-
-(defn print-search-result
-  "Prints a search-result"
-  [file line linenum pattern opts]
-  (if (> (count (get opts :s)) 1)
-    (print (str pattern ": ")))
-  (if (> linenum 0)
-    (println (format "%s: %d: %s" (get-path file) linenum (.trim line)))
-    (println (format "%s has match" (get-path file)))))
+; ref to contain the seq of SearchResult records
+(def search-results (ref []))
 
 (defn save-search-result
-  "Creates a search-result struct and conjoins it to the search-results vector ref"
-  [file line linenum pattern opts]
+  "Saves a SearchResult to the search-results vector ref"
+  [r]
   (dosync
-    (alter search-results conj (struct search-result file line linenum pattern)))
-  (if (printlines? opts)
-    (print-search-result file line linenum pattern opts)))
+    (alter search-results conj r)))
 
-(defn search-text-file-line [file line linenum opts]
-  (if line
-    (loop [patterns (get opts :s)]
-      (if (> (count (re-seq (first patterns) line)) 0)
-        (save-search-result file line linenum (first patterns) opts))
-      (if (second patterns)
-        (recur
-          (rest patterns))))))
+(defn is-search-dir [d settings]
+  (let [in-dirpatterns (:in-dirpatterns settings)
+        out-dirpatterns (:out-dirpatterns settings)]
+    (or
+      (is-dot-dir? (get-name d))
+      (and
+        (or
+          (not (:excludehidden settings))
+          (not (hidden-dir? d)))
+        (or
+          (empty? in-dirpatterns)
+          (some #(re-find % (.getPath d)) in-dirpatterns))
+        (or
+          (empty? out-dirpatterns)
+          (not-any? #(re-find % (.getPath d)) out-dirpatterns))))))
 
-(defn search-reader [rdr file opts]
-  (loop [lines (line-seq rdr)
-         linenum 1]
-    (search-text-file-line file (first lines) linenum opts)
-    (if (second lines)
-      (recur
-        (rest lines)
-        (inc linenum)))))
+(defn print-search-result [r]
+  (log-msg (search-result-to-string r)))
 
-(defn search-text-file [file opts]
-  ;(println "search-text-file" file)
-  (with-open [rdr (get-reader file)]
-    (search-reader rdr (get-path file) opts)))
+(defn print-search-results []
+  (log-msg (format"\nSearch results (%d):" (count (deref search-results))))
+  (doseq [r (deref search-results)] (print-search-result r)))
 
-(defn search-binary-file [file opts]
-  ;(println "search-binary-file" file)
-  (let [contents (get-contents file)]
-    (loop [patterns (get opts :s)]
-      (if (> (count (re-seq (first patterns) contents)) 0)
-        (save-search-result file "" 0 (first patterns) opts))
-      (if (second patterns)
-        (recur
-          (rest patterns))))))
+(defn get-matching-dirs []
+  (sort (distinct (map #(.getParent (:file %)) (deref search-results)))))
 
-(defn search-binary? [opts]
-  (get opts :b))
+(defn print-matching-dirs []
+  (let [dirs (get-matching-dirs)]
+    (log-msg (format"\nDirectories with matches (%d):" (count dirs)))
+    (doseq [d dirs] (log-msg d))))
 
-(defn get-zip-file-entries [zipfile opts]
-  (let [entries (filter #(not (.isDirectory %)) (enumeration-seq (.entries zipfile)))]
-    (filter-out-by-ext (concat NOSEARCH-EXTS (get opts :X))
-      (filter-in-by-ext (get opts :x) entries))))
+(defn get-matching-files []
+  (sort (distinct (map #(.getPath (:file %)) (deref search-results)))))
 
-(defn search-zip-file [zipfile opts]
-  (doseq [zipentry (get-zip-file-entries zipfile opts)]
-    (if (text-file? zipentry)
-      (with-open [rdr (reader (.getInputStream zipfile zipentry))]
-        (search-reader rdr (str (.getName zipfile) "[" (.getName zipentry) "]") opts)))))
+(defn print-matching-files []
+  (let [files (get-matching-files)]
+    (log-msg (format"\nFiles with matches (%d):" (count files)))
+    (doseq [f files] (log-msg f))))
 
-(defn search-compressed-file [file opts]
-  (cond (has-ext? "zip" file) (search-zip-file (ZipFile. file) opts)
-        (has-ext? "jar" file) (search-zip-file (JarFile. file) opts)))
+(defn get-matching-lines [settings]
+  (let [lines (sort (map #(str/trim (:line %)) (deref search-results)))]
+    (if (:uniquelines settings)
+      (distinct lines)
+      lines)))
 
-(defn search-compressed? [opts]
-  (get opts :z))
+(defn print-matching-lines [settings]
+  (let [lines (get-matching-lines settings)]
+    (log-msg
+      (if (:uniquelines settings)
+        (format"\nUnique lines with matches (%d):" (count lines))
+        (format"\nLines with matches (%d):" (count lines))))
+    (doseq [l lines] (log-msg l))))
 
-(defn search-file [file opts]
-  (cond (text-file? file) (search-text-file file opts)
-        (compressed-file? file) (search-compressed-file file opts)
-        ;(binary-file? file) (search-binary-file file opts)))
-        :else (if-not (no-search-file? file) (search-binary-file file opts))))
+(defn validate-settings [settings]
+  (let [startpath (:startpath settings)
+        startdir (file startpath)
+        tests [(fn [ss] (if (empty? startpath) "Startpath not defined" nil))
+               (fn [ss] (if (not (.exists startdir)) "Startpath not found" nil))
+               (fn [ss] (if (not (is-search-dir startdir ss)) "Startpath does not match settings" nil))
+               (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns specified" nil))]]
+    (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
-(defn get-exclude-exts [opts]
-  (let [exclude-exts (set (get opts :X))]
-    (if (> (count exclude-exts) 0)
-      (set
-        (concat
-          exclude-exts
-          NOSEARCH-EXTS
-          (if (search-binary? opts)
-            #{}
-            BINARY-EXTS)
-          (if (search-compressed? opts)
-            #{}
-            COMPRESSED-EXTS)))
-      #{})))
+(defn get-search-dirs [settings]
+  (let [startdir (file (:startpath settings))]
+    (if (:recursive settings)
+      (vec (filter #(is-search-dir % settings) (filter #(.isDirectory %) (file-seq startdir))))
+      [startdir])))
 
-(defn get-include-exts [opts]
-  (let [include-exts (set (get opts :x))]
-    (if (> (count include-exts) 0)
-      (set
-        (concat
-          include-exts
-          (if (search-compressed? opts)
-            COMPRESSED-EXTS
-            #{})))
-      #{})))
+(defn is-archive-search-file [f settings]
+  (let [in-extensions (:in-archiveextensions settings)
+        out-extensions (:out-archiveextensions settings)
+        in-filepatterns (:in-archivefilepatterns settings)
+        out-filepatterns (:out-archivefilepatterns settings)]
+    (and
+      (or
+        (empty? in-extensions)
+        (some #(= % (get-ext f)) in-extensions))
+      (or
+        (empty? out-extensions)
+        (not-any? #(= % (get-ext f)) out-extensions))
+      (or
+        (empty? in-filepatterns)
+        (some #(re-find % (.getName f)) in-filepatterns))
+      (or
+        (empty? out-filepatterns)
+        (not-any? #(re-find % (.getName f)) out-filepatterns)))))
 
-(defn filtered-files [startdir opts]
-  (let [files (filter #(file? %) (get-file-seq startdir))
-        exclude-exts (get-exclude-exts opts)
-        include-exts (get-include-exts opts)]
-    ;(println "exclude-exts: " exclude-exts)
-    ;(println "include-exts: " include-exts)
-    (filter-out-by-ext exclude-exts
-      (filter-in-by-ext include-exts
-        (filter-out-by-pattern (get opts :F)
-          (filter-in-by-pattern (get opts :f) files))))))
+(defn is-search-file [f settings]
+  (let [in-extensions (:in-extensions settings)
+        out-extensions (:out-extensions settings)
+        in-filepatterns (:in-filepatterns settings)
+        out-filepatterns (:out-filepatterns settings)]
+    (and
+      (or
+        (empty? in-extensions)
+        (some #(= % (get-ext f)) in-extensions))
+      (or
+        (empty? out-extensions)
+        (not-any? #(= % (get-ext f)) out-extensions))
+      (or
+        (empty? in-filepatterns)
+        (some #(re-find % (.getName f)) in-filepatterns))
+      (or
+        (empty? out-filepatterns)
+        (not-any? #(re-find % (.getName f)) out-filepatterns)))))
 
-(defn print-search-results [opts]
-  (loop [patterns (get opts :s)]
-    (println
-      (format
-        "Matches for \"%s\": %d"
-        (first patterns)
-        (count (for [result @search-results :when (= (:pattern result) (first patterns))] result))))
-    (if (second patterns)
-      (recur
-        (rest patterns)))))
+(defn filter-file [f settings]
+  (and
+    (or
+      (not (:excludehidden settings))
+      (not (hidden-file? f)))
+    (or
+      (and
+        (archive-file? f)
+        (:searcharchives settings)
+        (is-archive-search-file f settings))
+      (and
+        (not (:archivesonly settings))
+        (is-search-file f settings)))))
 
-(defn search [startdir opts]
-  (doseq [file (filtered-files startdir opts)]
-    (search-file file opts))
-  (print-search-results opts))
+(defn get-search-files-for-directory [d settings]
+  (vec (filter #(filter-file % settings) (get-files-in-directory d))))
 
-(defn indexed [coll] (map vector (iterate inc 0) coll))
+(defn get-search-files [searchdirs settings]
+  (apply concat (map #(get-search-files-for-directory % settings) searchdirs)))
 
-(defn get-args-for-opt [coll o]
-  (if ((set coll) o)
-    (vec
-      (set
-        (for [[i elem] (indexed coll)
-              :when (and (= elem o) (> (count coll) (+ i 1)))]
-          (nth coll (inc i)))))
+(defn search-archive-file [f settings]
+  (if (:verbose settings)
+    (log-msg (format "Searching archive file %s" f))
+  )
+)
+
+(defn search-binary-string-for-pattern [b p settings]
+  (if (:debug settings)
+    (log-msg (format "Searching binary string for pattern %s" p)))
+  (if (re-find p b)
+    [(->SearchResult p nil 0 0 0 "" [] [])]
     []))
 
-(defn get-opts [coll]
-  (let [a (not (contains? (set coll) "-1"))   ; flag for all matches vs. first match only per file
-        b (not (contains? (set coll) "-B"))   ; flag for searching binary files
-        f (vec (map #(re-pattern %) (get-args-for-opt coll "-f"))) ; inclusive file name patterns
-        F (vec (map #(re-pattern %) (get-args-for-opt coll "-F"))) ; exclusive file name patterns
-        filelist (contains? (set coll) "--filelist")   ; flag for listing the files with matches
-        linelist (contains? (set coll) "--linelist")   ; flag for listing the lines with matches
-        p (not (contains? (set coll) "-P"))   ; flag for printing results as found
-        s (vec (map #(re-pattern %) (get-args-for-opt coll "-s"))) ; search strings
-        x (get-args-for-opt coll "-x")        ; the extensions to include
-        X (get-args-for-opt coll "-X")        ; the extensions to exclude
-        z (not (contains? (set coll) "-Z"))]  ; flag for searching compressed files
-    {:a a, :b b, :f f, :F F, :filelist filelist, :linelist linelist, :p p, :s s, :x x, :X X, :z z}))
+(defn search-binary-string [b settings]
+  (if (:debug settings)
+    (log-msg "Searching binary string"))
+  (apply concat (map #(search-binary-string-for-pattern b % settings) (:searchpatterns settings))))
 
-(defn print-linelist
-  "print the unique list of lines with matches"
-  []
-  (let [lines (sort (set (for [result @search-results :when (not (= (get result :line) ""))] (get result :line))))]
-    (println (format "Lines with matches (%d lines):" (count lines)))
-    (doseq [line lines]
-      (println line))))
+(defn search-binary-file [f settings]
+  (if (:verbose settings)
+    (log-msg (format "Searching binary file %s" f)))
+  (let [contents (slurp f)
+        search-results (search-binary-string contents settings)
+        with-file-results (map #(assoc-in % [:file] f) search-results)]
+    (doseq [r with-file-results] (save-search-result r))))
 
-(defn print-filelist
-  "print the unique list of files with matches"
-  []
-  (let [files (sort (set (for [result @search-results] (get result :file))))]
-    (println (format "Files with matches (%d files):" (count files)))
-    (doseq [file files]
-      (println file))))
+(defn get-newline-indices [s]
+  (map first 
+    (filter #(= (second %) \newline)
+      (map-indexed vector s))))
 
-(defn has-errors [opts startdir]
-  (cond
-    (< (count (get opts :s)) 1) true
-    (contains? (set (concat (vals opts))) startdir) true
-    :else false))
+(defn get-multiline-linesbefore [s beforestartindices beforeendindices settings]
+  (if (> (:linesbefore settings) 0)
+    (let [linesbefore (:linesbefore settings)
+          startindices (take-last linesbefore beforestartindices)
+          endindices (take-last linesbefore beforeendindices)]
+      (if (and startindices endindices)
+        (map #(.substring s (first %) (second %)) (map vector startindices endindices))
+        []))
+    []))
 
-(defn main []
-  (if (or (nil? *command-line-args*) (< (count *command-line-args*) 3))
-    (usage))
-  (let [opts (get-opts (butlast *command-line-args*))
-        startdir (last *command-line-args*)]
-    ;(println (format "*command-line-args*: %s" *command-line-args*))
-    (println (format "opts: %s" opts))
-    ;(println (format "startdir: %s" startdir))
-    (if (has-errors opts startdir)
-      (usage))
-    (search startdir opts)
-    (if (get opts :filelist)
-      (print-filelist))
-    (if (get opts :linelist)
-      (print-linelist))))
+(defn get-multiline-linesafter [s afterstartindices afterendindices settings]
+  (if (> (:linesafter settings) 0)
+    (let [linesafter (:linesafter settings)
+          startindices (take linesafter afterstartindices)
+          endindices (take linesafter afterendindices)]
+      (if (and startindices endindices)
+        (map #(.substring s (first %) (second %)) (map vector startindices endindices))
+        []))
+    []))
 
-(time (main))
+(defn search-multiline-string-for-pattern
+  ([s p settings]
+    (if (:debug settings)
+      (log-msg (format "Searching multi-line string for pattern %s" p)))
+    (let [m (re-matcher p s)]
+      (if (.find m 0)
+        (let [newlineindices (get-newline-indices s)
+              startlineindices (concat [0] (map inc newlineindices))
+              endlineindices (concat newlineindices [(count s)])]
+          (search-multiline-string-for-pattern s m 0 startlineindices
+            endlineindices settings)))))
+  ([s m i startlineindices endlineindices settings]
+    (if (.find m i)
+      (do
+        (if (:debug settings)
+          (log-msg (format "\nFound match for pattern %s in multi-line string"
+            (.pattern m))))
+        (let [startmatchindex (.start m)
+              endmatchindex (.end m)
+              beforestartindices (filter #(<= % startmatchindex) startlineindices)
+              beforeendindices (filter #(< % startmatchindex) endlineindices)
+              startlineindex (apply max beforestartindices)
+              endlineindex (apply min (filter #(> % startmatchindex) endlineindices))
+              line (.substring s startlineindex endlineindex)
+              linenum (count beforestartindices)
+              linesbefore (get-multiline-linesbefore s (butlast beforestartindices)
+                beforeendindices settings)
+              afterstartindices (filter #(> % startmatchindex) startlineindices)
+              afterendindices (filter #(> % startmatchindex) endlineindices)
+              linesafter (get-multiline-linesafter s afterstartindices
+                (rest afterendindices) settings)
+              result (->SearchResult
+                       (.pattern m)
+                       nil 
+                       linenum
+                       (+ (- startmatchindex startlineindex) 1)
+                       (+ (- endmatchindex startlineindex) 1)
+                       line
+                       linesbefore
+                       linesafter)]
+          ;(log-msg (format "startmatchindex: %d" startmatchindex))
+          ;(log-msg (format "endmatchindex: %d" endmatchindex))
+          ;(log-msg (format "startlineindices (%d): (%s)" (count startlineindices) (str/join "," startlineindices)))
+          ;(log-msg (format "endlineindices (%d): (%s)" (count endlineindices) (str/join "," endlineindices)))
+          ;(log-msg (format "beforestartindices (%d): (%s)" (count beforestartindices) (str/join "," beforestartindices)))
+          ;(log-msg (format "beforeendindices (%d): (%s)" (count beforeendindices) (str/join "," beforeendindices)))
+          ;(log-msg (format "afterstartindices (%d): (%s)" (count afterstartindices) (str/join "," afterstartindices)))
+          ;(log-msg (format "afterendindices (%d): (%s)" (count afterendindices) (str/join "," afterendindices)))
+          ;(log-msg (format "startlineindex: %d" startlineindex))
+          ;(log-msg (format "endlineindex: %d" endlineindex))
+          ;(log-msg (format "line: \"%s\"" line))
+          ;(log-msg (format "linenum: %d" linenum))
+          (if (:firstmatch settings)
+            [result]
+            (concat [result] (search-multiline-string-for-pattern s m
+              endmatchindex startlineindices endlineindices settings)))))
+      [])))
+
+(defn search-multiline-string [s settings]
+  (if (:debug settings)
+    (log-msg "Searching multi-line string"))
+  (apply concat (map #(search-multiline-string-for-pattern s % settings) (:searchpatterns settings))))
+
+(defn search-text-file-contents [f settings]
+  (if (:debug settings)
+    (log-msg (format "Searching text file contents: %s" f)))
+  (let [contents (slurp f)
+        search-results (search-multiline-string contents settings)
+        with-file-results (map #(assoc-in % [:file] f) search-results)]
+    (doseq [r with-file-results] (save-search-result r))))
+
+(defn search-text-file-lines [f settings]
+  (if (:debug settings)
+    (log-msg (format "Searching text file lines: %s" f)))
+  ;; TODO
+)
+
+(defn search-text-file [f settings]
+  (if (:verbose settings)
+    (log-msg (format "Searching text file %s" f)))
+  (if (:multilinesearch settings)
+    (search-text-file-contents f settings)
+    (search-text-file-lines f settings)))
+
+(defn search-file [f settings]
+  (let [filetype (get-filetype f)
+        verbose (:verbose settings)]
+    (cond
+      (= filetype :text) (search-text-file f settings)
+      (= filetype :binary) (search-binary-file f settings)
+      (= filetype :archive)
+        (if (:searcharchives settings)
+          (search-archive-file f settings)
+          (if verbose (log-msg (format "Skipping archive file %s" f))))
+      :else
+        (if verbose (log-msg (format "Skipping file of unknown type: %s" f))))))
+
+(defn search-files [searchfiles settings]
+  (if (:verbose settings)
+    (do
+      (log-msg (format "\nFiles to be searched (%d):" (count searchfiles)))
+      (doseq [f searchfiles] (log-msg (.getPath f)))
+      (log-msg "")))
+  (doseq [f searchfiles] (search-file f settings)))
+
+(defn search-dirs [searchdirs settings]
+  (if (:verbose settings)
+    (do
+      (log-msg (format "\nDirectories to be searched (%d):" (count searchdirs)))
+      (doseq [d searchdirs] (log-msg (.getPath d)))))
+  (search-files (get-search-files searchdirs settings) settings))
+
+(defn search [settings]
+  (let [errs (validate-settings settings)]
+    (if (not (empty? errs))
+      (log-errors errs)
+      (search-dirs (get-search-dirs settings) settings))))

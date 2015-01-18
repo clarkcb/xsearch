@@ -68,8 +68,8 @@
 
 (def flag-action-map
   { :allmatches (fn [settings] (assoc settings :firstmatch false))
-    :archivesonly (fn [settings] (assoc settings :archivesonly true))
-    :debug (fn [settings] (assoc settings :debug true))
+    :archivesonly (fn [settings] (set-archivesonly settings))
+    :debug (fn [settings] (set-debug settings))
     :dotiming (fn [settings] (assoc settings :dotiming true))
     :excludehidden (fn [settings] (assoc settings :excludehidden true))
     :firstmatch (fn [settings] (assoc settings :firstmatch true))

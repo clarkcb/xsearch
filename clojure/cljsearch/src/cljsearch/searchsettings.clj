@@ -100,8 +100,17 @@
     settings
     (add-extensions
       (update-in settings [extname] #(add-element (first exts) %)) (rest exts) extname)))
+
 (defn add-extension [settings ext extname]
   (add-extensions settings (str/split ext #",") extname))
 
 (defn add-pattern [settings p patname]
-  (update-in settings [patname] #(add-element p %)))
+  (update-in settings [patname] #(add-element (re-pattern p) %)))
+
+(defn set-archivesonly [settings]
+  (let [with-searcharchives (assoc settings :searcharchives true)]
+    (assoc with-searcharchives :archivesonly true)))
+
+(defn set-debug [settings]
+  (let [with-verbose (assoc settings :verbose true)]
+    (assoc with-verbose :debug true)))
