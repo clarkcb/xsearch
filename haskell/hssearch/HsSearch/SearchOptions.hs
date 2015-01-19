@@ -104,7 +104,7 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("linesafteruntilpattern", \ss s -> ss {linesAfterUntilPatterns = linesAfterUntilPatterns ss ++ [s]})
              , ("linesbefore", \ss s -> ss {linesBefore = read s})
              , ("maxlinelength", \ss s -> ss {maxLineLength = read s})
-             , ("out-archivefext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ (newExtensions s)})
+             , ("out-archiveext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ (newExtensions s)})
              , ("out-archivefilepattern", \ss s -> ss {outArchiveFilePatterns = outArchiveFilePatterns ss ++ [s]})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})
              , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ (newExtensions s)})

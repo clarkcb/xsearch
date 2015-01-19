@@ -128,8 +128,8 @@ searchBlob settings blob =
 
 searchBlobForPattern :: B.ByteString -> String -> [SearchResult]
 searchBlobForPattern blob pattern = if hasMatch
-                                             then [blobResult pattern]
-                                             else []
+                                      then [blobResult pattern]
+                                      else []
   where hasMatch = blob =~ pattern :: Bool
         blobResult p = blankSearchResult { searchPattern=p
                                          , lineNum=0
