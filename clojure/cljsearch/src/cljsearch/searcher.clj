@@ -168,7 +168,8 @@
 (defn search-binary-string [b settings]
   (if (:debug settings)
     (log-msg "Searching binary string"))
-  (apply concat (map #(search-binary-string-for-pattern b % settings) (:searchpatterns settings))))
+  (apply concat
+    (map #(search-binary-string-for-pattern b % settings) (:searchpatterns settings))))
 
 (defn search-binary-file [f settings]
   (if (:verbose settings)
@@ -205,8 +206,6 @@
 
 (defn search-multiline-string-for-pattern
   ([s p settings]
-    (if (:debug settings)
-      (log-msg (format "Searching multi-line string for pattern %s" p)))
     (let [m (re-matcher p s)]
       (if (.find m 0)
         (let [newlineindices (get-newline-indices s)
@@ -217,9 +216,6 @@
   ([s m i startlineindices endlineindices settings]
     (if (.find m i)
       (do
-        (if (:debug settings)
-          (log-msg (format "\nFound match for pattern %s in multi-line string"
-            (.pattern m))))
         (let [startmatchindex (.start m)
               endmatchindex (.end m)
               beforestartindices (filter #(<= % startmatchindex) startlineindices)
@@ -262,23 +258,116 @@
       [])))
 
 (defn search-multiline-string [s settings]
-  (if (:debug settings)
-    (log-msg "Searching multi-line string"))
-  (apply concat (map #(search-multiline-string-for-pattern s % settings) (:searchpatterns settings))))
+  (apply concat
+    (map #(search-multiline-string-for-pattern s % settings) (:searchpatterns settings))))
 
 (defn search-text-file-contents [f settings]
-  (if (:debug settings)
-    (log-msg (format "Searching text file contents: %s" f)))
   (let [contents (slurp f)
         search-results (search-multiline-string contents settings)
         with-file-results (map #(assoc-in % [:file] f) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
 
-(defn search-text-file-lines [f settings]
-  (if (:debug settings)
-    (log-msg (format "Searching text file lines: %s" f)))
-  ;; TODO
+(defn matches-any-pattern [s pp]
+  (some #(re-find % s) pp))
+
+(defn any-matches-any-pattern [ss pp]
+  (some true? (map #(matches-any-pattern % pp) ss)))
+
+(defn linesmatch [lines inpatterns outpatterns]
+  (and
+    (or
+      (empty? inpatterns)
+      (any-matches-any-pattern lines inpatterns))
+    (or
+      (empty? outpatterns)
+      (not (any-matches-any-pattern lines outpatterns)))))
+
+(defn linesbefore-match [linesbefore settings]
+  (linesmatch linesbefore (:in-linesbeforepatterns settings) (:out-linesbeforepatterns settings)))
+
+(defn linesafter-match [linesafter settings]
+  (linesmatch linesafter (:in-linesafterpatterns settings) (:out-linesafterpatterns settings)))
+
+(defn search-line-for-pattern
+  ([linenum line linesbefore linesafter p settings]
+    (let [m (re-matcher p line)]
+      (if
+        (and
+          (.find m 0)
+          (linesbefore-match linesbefore settings)
+          (linesafter-match linesafter settings))
+        (search-line-for-pattern linenum line linesbefore linesafter m 0 [] settings)
+        [])))
+  ([linenum line linesbefore linesafter m i results settings]
+    (if (.find m i)
+      (do
+        (let [startmatchindex (.start m)
+              endmatchindex (.end m)
+              result (->SearchResult
+                       (.pattern m)
+                       nil 
+                       linenum
+                       (+ startmatchindex 1)
+                       (+ endmatchindex 1)
+                       line
+                       linesbefore
+                       linesafter)]
+          ;(log-msg result)
+          (if (:firstmatch settings)
+            [result]
+            (search-line-for-pattern linenum line linesbefore linesafter m
+              endmatchindex (concat results [result]) settings))))
+      results)))
+
+(defn search-line [linenum line linesbefore linesafter settings]
+  (apply concat
+    (map #(search-line-for-pattern linenum line linesbefore linesafter % settings)
+      (:searchpatterns settings))))
+
+(defn search-lines
+  ([lines settings]
+    ; (if (:debug settings)
+    ;   (log-msg "Searching lines"))
+    (let [line (first lines)
+          nextlines (drop (:linesafter settings) lines)
+          linesbefore []
+          linesafter (take (:linesafter settings) lines)]
+      (search-lines 1 line nextlines linesbefore linesafter [] settings)
+    )
+  )
+  ([linenum line lines linesbefore linesafter results settings]
+    (if line
+      (let [nextresults (search-line linenum line linesbefore linesafter settings)
+            nextlinenum (+ linenum 1)
+            nextline (if (empty? linesafter) (first lines) (first linesafter))
+            nextlinesbefore
+              (if (> (:linesbefore settings) 0)
+                (if (= (count linesbefore) (:linesbefore settings))
+                  (concat (rest linesbefore) [line])
+                  (concat linesbefore [line]))
+                [])
+            nextlinesafter
+              (if (> (:linesafter settings) 0)
+                (concat (rest linesafter) (take 1 lines))
+                [])
+            ]
+          ; (if (not (empty? nextresults))
+          ;   (do
+          ;     (log-msg "nextresults:")
+          ;     (log-msg nextresults)))
+          (search-lines nextlinenum nextline (rest lines) nextlinesbefore
+            nextlinesafter (concat results nextresults) settings)
+      )
+      results
+    )
+  )
 )
+
+(defn search-text-file-lines [f settings]
+  (with-open [rdr (reader f)]
+    (let [search-results (search-lines (line-seq rdr) settings)
+          with-file-results (map #(assoc-in % [:file] f) search-results)]
+      (doseq [r with-file-results] (save-search-result r)))))
 
 (defn search-text-file [f settings]
   (if (:verbose settings)
@@ -317,6 +406,13 @@
 
 (defn search [settings]
   (let [errs (validate-settings settings)]
-    (if (not (empty? errs))
-      (log-errors errs)
-      (search-dirs (get-search-dirs settings) settings))))
+    (if (empty? errs)
+      (do
+        (search-dirs (get-search-dirs settings) settings)
+        []
+      )
+      errs
+    )
+  )
+)
+
