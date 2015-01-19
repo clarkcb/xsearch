@@ -90,8 +90,6 @@ class Searcher:
     def is_archive_search_file(self, f):
         if not self.filetypes.is_archive_file(f):
             return False
-        if f.startswith('.') and self.settings.excludehidden:
-            return False
         if self.settings.in_archiveextensions and \
             not self.get_ext(f) in self.settings.in_archiveextensions:
             return False
@@ -107,8 +105,6 @@ class Searcher:
         return True
 
     def is_search_file(self, f):
-        if f.startswith('.') and self.settings.excludehidden:
-            return False
         if self.settings.in_extensions and \
             not self.get_ext(f) in self.settings.in_extensions:
             return False
@@ -160,6 +156,18 @@ class Searcher:
                                           filetype=self.filetypes.get_filetype(f)))
         return searchfiles
 
+    def filter_file(self, sf):
+        if sf.filename.startswith('.') and self.settings.excludehidden:
+            return False
+        if (sf.filetype == FileType.Archive and
+            self.settings.searcharchives and 
+            self.is_archive_search_file(sf.filename)):
+            return True
+        if (not self.settings.archivesonly and
+            self.is_search_file(sf.filename)):
+            return True
+        return False
+
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
         files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
@@ -167,12 +175,7 @@ class Searcher:
                         filename=f,
                         filetype=self.filetypes.get_filetype(f))
                         for f in files]
-        return [sf for sf in searchfiles
-                if (self.settings.searcharchives and 
-                    sf.filetype == FileType.Archive and
-                    self.is_archive_search_file(sf.filename))
-                or (not self.settings.archivesonly and
-                    self.is_search_file(sf.filename))]
+        return [sf for sf in searchfiles if self.filter_file(sf)]
 
     def add_timer(self, name, action):
         self.timers[name+':'+action] = datetime.now()
