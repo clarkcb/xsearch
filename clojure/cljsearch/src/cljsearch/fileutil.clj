@@ -12,6 +12,13 @@
   (:import (java.io File))
   (:use [clojure.string :only (split)]))
 
+; needs string argumet and returns string
+(defn expand-path [f]
+  (let [home (File. (System/getProperty "user.home"))]
+    (if (.startsWith f "~")
+      (str home (.substring f 1))
+      f)))
+
 (defn get-name [f]
   (if (or (instance? java.io.File f)
           (instance? java.util.zip.ZipEntry f)

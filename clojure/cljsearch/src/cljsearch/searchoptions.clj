@@ -14,14 +14,16 @@
   (:require [clojure.string :as str :only (join replace)])
   (:use [clojure.xml])
   (:use [cljsearch.common])
+  (:use [cljsearch.fileutil :only (expand-path)])
   (:use [cljsearch.searchsettings]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
-(def SEARCHOPTIONSFILE "/Users/cary/src/git/xsearch/shared/searchoptions.xml")
+(def SEARCHOPTIONSFILE "~/src/git/xsearch/shared/searchoptions.xml")
 
 (defn get-searchoptions-from-xml [f]
-  (let [searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse (File. f))))
+  (let [sofile (File. (expand-path SEARCHOPTIONSFILE))
+        searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse sofile)))
         longnames (map :long (map :attrs searchoptions))
         shortnames (map :short (map :attrs searchoptions))
         longshortmap (zipmap longnames shortnames)

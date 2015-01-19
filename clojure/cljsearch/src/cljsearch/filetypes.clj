@@ -17,10 +17,11 @@
   )
 
 ;;; TODO: move to a config file
-(def FILETYPESPATH "/Users/cary/src/git/xsearch/shared/filetypes.xml")
+(def FILETYPESPATH "~/src/git/xsearch/shared/filetypes.xml")
 
 (defn get-filetypemap [f]
-  (let [filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse (File. f))))
+  (let [ftfile (File. (expand-path FILETYPESPATH))
+        filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse ftfile)))
         typenames (map :name (map :attrs filetypes))
         extension-nodes (map first (map :content (map first (map :content filetypes))))
         extension-sets (map #(set %) (map #(split % #"\s+") extension-nodes))
