@@ -14,8 +14,7 @@
   (:use [cljsearch.common])
   (:use [cljsearch.filetypes])
   (:use [cljsearch.fileutil])
-  (:use [cljsearch.searchresult])
-)
+  (:use [cljsearch.searchresult]))
 
 ; ref to contain the seq of SearchResult records
 (def search-results (ref []))
@@ -239,18 +238,6 @@
                        line
                        linesbefore
                        linesafter)]
-          ;(log-msg (format "startmatchindex: %d" startmatchindex))
-          ;(log-msg (format "endmatchindex: %d" endmatchindex))
-          ;(log-msg (format "startlineindices (%d): (%s)" (count startlineindices) (str/join "," startlineindices)))
-          ;(log-msg (format "endlineindices (%d): (%s)" (count endlineindices) (str/join "," endlineindices)))
-          ;(log-msg (format "beforestartindices (%d): (%s)" (count beforestartindices) (str/join "," beforestartindices)))
-          ;(log-msg (format "beforeendindices (%d): (%s)" (count beforeendindices) (str/join "," beforeendindices)))
-          ;(log-msg (format "afterstartindices (%d): (%s)" (count afterstartindices) (str/join "," afterstartindices)))
-          ;(log-msg (format "afterendindices (%d): (%s)" (count afterendindices) (str/join "," afterendindices)))
-          ;(log-msg (format "startlineindex: %d" startlineindex))
-          ;(log-msg (format "endlineindex: %d" endlineindex))
-          ;(log-msg (format "line: \"%s\"" line))
-          ;(log-msg (format "linenum: %d" linenum))
           (if (:firstmatch settings)
             [result]
             (concat [result] (search-multiline-string-for-pattern s m
@@ -312,11 +299,8 @@
                        line
                        linesbefore
                        linesafter)]
-          ;(log-msg result)
-          (if (:firstmatch settings)
-            [result]
-            (search-line-for-pattern linenum line linesbefore linesafter m
-              endmatchindex (concat results [result]) settings))))
+          (search-line-for-pattern linenum line linesbefore linesafter m
+            endmatchindex (concat results [result]) settings)))
       results)))
 
 (defn search-line [linenum line linesbefore linesafter settings]
@@ -326,15 +310,11 @@
 
 (defn search-lines
   ([lines settings]
-    ; (if (:debug settings)
-    ;   (log-msg "Searching lines"))
     (let [line (first lines)
-          nextlines (drop (:linesafter settings) lines)
+          nextlines (drop (:linesafter settings) (rest lines))
           linesbefore []
-          linesafter (take (:linesafter settings) lines)]
-      (search-lines 1 line nextlines linesbefore linesafter [] settings)
-    )
-  )
+          linesafter (take (:linesafter settings) (rest lines))]
+      (search-lines 1 line nextlines linesbefore linesafter [] settings)))
   ([linenum line lines linesbefore linesafter results settings]
     (if line
       (let [nextresults (search-line linenum line linesbefore linesafter settings)
@@ -349,19 +329,15 @@
             nextlinesafter
               (if (> (:linesafter settings) 0)
                 (concat (rest linesafter) (take 1 lines))
-                [])
-            ]
-          ; (if (not (empty? nextresults))
-          ;   (do
-          ;     (log-msg "nextresults:")
-          ;     (log-msg nextresults)))
+                [])]
           (search-lines nextlinenum nextline (rest lines) nextlinesbefore
-            nextlinesafter (concat results nextresults) settings)
-      )
-      results
-    )
-  )
-)
+            nextlinesafter (concat results nextresults) settings))
+      (if
+        (and
+          (> (count results) 0)
+          (:firstmatch settings))
+        (take 1 results)
+        results))))
 
 (defn search-text-file-lines [f settings]
   (with-open [rdr (reader f)]
@@ -409,10 +385,5 @@
     (if (empty? errs)
       (do
         (search-dirs (get-search-dirs settings) settings)
-        []
-      )
-      errs
-    )
-  )
-)
-
+        [])
+      errs)))
