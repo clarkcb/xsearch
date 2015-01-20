@@ -46,6 +46,25 @@ copy_test_resources () {
 # Build Functions
 ########################################
 
+build_clojure () {
+    echo
+    log "build_clojure"
+    CLJSEARCH_PATH=$PROJECT_PATH/clojure/cljsearch
+    RESOURCES_PATH=$CLJSEARCH_PATH/resources
+
+    # copy the shared xml files to the local resource location
+    copy_resources $RESOURCES_PATH
+
+    # Create uberjar with lein
+    log "Building cljsearch"
+    cd $CLJSEARCH_PATH
+    log "lein clean"
+    lein clean
+    log "lein uberjar"
+    lein uberjar
+    cd -
+}
+
 build_csharp () {
     echo
     log "build_csharp"
@@ -57,6 +76,7 @@ build_csharp () {
 
     # run a mono xbuild
     log "Building cssearch"
+    log "xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln"
     xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln
 
 }
@@ -72,6 +92,7 @@ build_fsharp () {
 
     # run a mono xbuild
     log "Building fssearch"
+    log "xbuild /p:Configuration=Debug $FSHARP_PATH/FsSearch.sln"
     xbuild /p:Configuration=Debug $FSHARP_PATH/FsSearch.sln
 }
 
@@ -83,14 +104,17 @@ build_go () {
 
     # build the code to generate the dynamic code for gosearch
     log "Building gengosearchcode"
+    echo "go install elocale.com/clarkcb/gosearchcodegen/gengosearchcode"
     go install elocale.com/clarkcb/gosearchcodegen/gengosearchcode
 
     # run it to generate the dynamic gosearch code
     log "Running gengosearchcode"
+    log "gengosearchcode"
     gengosearchcode
 
     # now build gosearch
     log "Building gosearch"
+    log "go install elocale.com/clarkcb/xsearch/gosearch"
     go install elocale.com/clarkcb/xsearch/gosearch
 }
 
@@ -106,6 +130,7 @@ build_haskell () {
 
     # build with cabal
     log "Building hssearch"
+    log "cabal build"
     cd $HSSEARCH_PATH/; cabal build; cd -
 }
 
@@ -124,6 +149,7 @@ build_java () {
 
     # run a maven clean build
     log "Building javasearch"
+    log "mvn -f $JAVA_PATH/pom.xml clean install"
     mvn -f $JAVA_PATH/pom.xml clean install
 }
 
@@ -142,6 +168,7 @@ build_scala () {
 
     # run a maven clean build
     log "Building scalasearch"
+    log "mvn -f $SCALA_PATH/pom.xml clean install"
     mvn -f $SCALA_PATH/pom.xml clean install
     #mvn -f $SCALA_PATH/pom.xml -DskipTests=true clean install
 }
@@ -149,6 +176,8 @@ build_scala () {
 build_all () {
     log "build_all"
     
+    build_clojure
+
     build_csharp
 
     build_fsharp
@@ -175,6 +204,8 @@ fi
 
 if [ "$ARG" == "all" ]; then
     build_all
+elif [ "$ARG" == "clojure" ]; then
+    build_clojure
 elif [ "$ARG" == "csharp" ]; then
     build_csharp
 elif [ "$ARG" == "fsharp" ]; then

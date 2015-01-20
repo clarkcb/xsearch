@@ -40,6 +40,13 @@ log () {
 # Build Functions
 ########################################
 
+test_clojure () {
+    echo -e "\n################################################################################"
+    log "test_clojure"
+    log "cljsearch $SEARCH_PARAMS"
+    time cljsearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
+}
+
 test_csharp () {
     echo -e "\n################################################################################"
     log "test_csharp"
@@ -117,7 +124,9 @@ test_scala () {
 
 test_all () {
     log "test_all"
-    
+
+    test_clojure
+
     test_csharp
 
     #test_fsharp
@@ -152,6 +161,8 @@ fi
 
 if [ "$ARG" == "all" ]; then
     test_all
+elif [ "$ARG" == "clojure" ]; then
+    test_clojure
 elif [ "$ARG" == "csharp" ]; then
     test_csharp
 elif [ "$ARG" == "fsharp" ]; then
@@ -175,4 +186,3 @@ elif [ "$ARG" == "scala" ]; then
 else
     echo "ERROR: unknown test argument: $ARG"
 fi
-
