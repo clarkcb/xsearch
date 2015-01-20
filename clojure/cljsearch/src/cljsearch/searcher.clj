@@ -178,6 +178,27 @@
         with-file-results (map #(assoc-in % [:file] f) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
 
+(defn matches-any-pattern [s pp]
+  (some #(re-find % s) pp))
+
+(defn any-matches-any-pattern [ss pp]
+  (some #(not (= % nil)) (map #(matches-any-pattern % pp) ss)))
+
+(defn linesmatch [lines inpatterns outpatterns]
+  (and
+    (or
+      (empty? inpatterns)
+      (any-matches-any-pattern lines inpatterns))
+    (or
+      (empty? outpatterns)
+      (not (any-matches-any-pattern lines outpatterns)))))
+
+(defn linesbefore-match [linesbefore settings]
+  (linesmatch linesbefore (:in-linesbeforepatterns settings) (:out-linesbeforepatterns settings)))
+
+(defn linesafter-match [linesafter settings]
+  (linesmatch linesafter (:in-linesafterpatterns settings) (:out-linesafterpatterns settings)))
+
 (defn get-newline-indices [s]
   (map first 
     (filter #(= (second %) \newline)
@@ -238,10 +259,19 @@
                        line
                        linesbefore
                        linesafter)]
-          (if (:firstmatch settings)
-            [result]
-            (concat [result] (search-multiline-string-for-pattern s m
-              endmatchindex startlineindices endlineindices settings)))))
+          (if
+            (and
+              (or
+                (= (:linesbefore settings) 0)
+                (linesbefore-match linesbefore settings))
+              (or
+                (= (:linesafter settings) 0)
+                (linesafter-match linesafter settings)))
+            (if (:firstmatch settings)
+              [result]
+              (concat [result] (search-multiline-string-for-pattern s m
+                endmatchindex startlineindices endlineindices settings)))
+            [])))
       [])))
 
 (defn search-multiline-string [s settings]
@@ -253,27 +283,6 @@
         search-results (search-multiline-string contents settings)
         with-file-results (map #(assoc-in % [:file] f) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
-
-(defn matches-any-pattern [s pp]
-  (some #(re-find % s) pp))
-
-(defn any-matches-any-pattern [ss pp]
-  (some true? (map #(matches-any-pattern % pp) ss)))
-
-(defn linesmatch [lines inpatterns outpatterns]
-  (and
-    (or
-      (empty? inpatterns)
-      (any-matches-any-pattern lines inpatterns))
-    (or
-      (empty? outpatterns)
-      (not (any-matches-any-pattern lines outpatterns)))))
-
-(defn linesbefore-match [linesbefore settings]
-  (linesmatch linesbefore (:in-linesbeforepatterns settings) (:out-linesbeforepatterns settings)))
-
-(defn linesafter-match [linesafter settings]
-  (linesmatch linesafter (:in-linesafterpatterns settings) (:out-linesafterpatterns settings)))
 
 (defn search-line-for-pattern
   ([linenum line linesbefore linesafter p settings]
