@@ -83,7 +83,7 @@
         startdir (file startpath)
         tests [(fn [ss] (if (empty? startpath) "Startpath not defined" nil))
                (fn [ss] (if (not (.exists startdir)) "Startpath not found" nil))
-               (fn [ss] (if (not (is-search-dir startdir ss)) "Startpath does not match settings" nil))
+               ; (fn [ss] (if (not (is-search-dir startdir ss)) "Startpath does not match settings" nil))
                (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns specified" nil))]]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
@@ -392,7 +392,9 @@
 (defn search [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
-      (do
-        (search-dirs (get-search-dirs settings) settings)
-        [])
-      errs)))
+      (let [startfile (file (:startpath settings))]
+        (if (.isFile startfile)
+          (search-file startfile settings)
+          (search-dirs (get-search-dirs settings) settings))
+        []))
+      errs))
