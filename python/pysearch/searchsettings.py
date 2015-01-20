@@ -8,7 +8,7 @@
 ################################################################################
 import re
 
-class SearchSettings:
+class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
     _extension_set_names = '''in_extensions out_extensions
@@ -26,13 +26,13 @@ class SearchSettings:
         'dotiming': False,
         'firstmatch': False,
         'excludehidden': True,
+        'linesafter': 0,
+        'linesbefore': 0,
         'listdirs': False,
         'listfiles': False,
         'listlines': False,
         'maxlinelength': 150,
         'multilinesearch': False,
-        'linesafter': 0,
-        'linesbefore': 0,
         'printresults': True,
         'printusage': False,
         'printversion': False,

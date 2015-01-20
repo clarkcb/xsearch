@@ -32,7 +32,7 @@ from fileutil import FileUtil
 from searchfile import SearchFile
 from searchresult import SearchResult
 
-class Searcher:
+class Searcher(object):
     """a class to search files"""
 
     def __init__(self, settings, **kargs):

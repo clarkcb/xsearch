@@ -18,7 +18,7 @@ class FileType:
     Text    = 3
     Unknown = 4
 
-class FileTypes:
+class FileTypes(object):
     """a class to provide file type information"""
 
     # TODO: move to a config file

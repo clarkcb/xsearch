@@ -16,7 +16,7 @@ import xml.dom.minidom as minidom
 from searchoption import SearchOption
 from searchsettings import SearchSettings
 
-class SearchOptions:
+class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
 
     # TODO: move to a config file
@@ -94,7 +94,8 @@ class SearchOptions:
                                          'searcharchives': True}),
         'debug':
             lambda settings:
-                settings.set_property('debug', True),
+                settings.set_properties({'debug': True,
+                                         'verbose': True}),
         'dotiming':
             lambda settings:
                 settings.set_property('dotiming', True),
@@ -216,8 +217,6 @@ class SearchOptions:
                     raise Exception('Unknown option: {0}'.format(arg))
             else:
                 settings.startpath = arg
-        if settings.debug:
-            settings.verbose = True
         return settings
 
     def usage(self):
