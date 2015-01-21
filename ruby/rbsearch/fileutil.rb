@@ -11,7 +11,7 @@ class FileUtil
   def self.get_extension(filename)
     ext = ''
     index = filename.rindex('.')
-    if index and index < (filename.length - 1)
+    if index and index > 0 and index < (filename.length - 1)
       ext = filename[index+1..filename.length].downcase
     end
     ext

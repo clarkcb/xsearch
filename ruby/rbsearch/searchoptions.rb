@@ -31,24 +31,24 @@ class SearchOptions
         proc { |x, settings| settings.add_comma_delimited_exts(x,
           settings.in_archiveextensions) },
       'in-archivefilepattern' =>
-        proc { |x, settings| settings.in_archivefilepatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.in_archivefilepatterns) },
       'in-dirpattern' =>
-        proc { |x, settings| settings.in_dirpatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.in_dirpatterns) },
       'in-ext' =>
         proc { |x, settings| settings.add_comma_delimited_exts(x,
           settings.in_extensions) },
       'in-filepattern' =>
-        proc { |x, settings| settings.in_filepatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.in_filepatterns) },
       'in-linesafterpattern' =>
-        proc { |x, settings| settings.in_linesafterpatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.in_linesafterpatterns) },
       'in-linesbeforepattern' =>
-        proc { |x, settings| settings.in_linesbeforepatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.in_linesbeforepatterns) },
       'linesafter' =>
         proc { |x, settings| settings.linesafter = x.to_i },
       'linesaftertopattern' =>
-        proc { |x, settings| settings.linesaftertopatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.linesaftertopatterns) },
       'linesafteruntilpattern' =>
-        proc { |x, settings| settings.linesafteruntilpatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.linesafteruntilpatterns) },
       'linesbefore' =>
         proc { |x, settings| settings.linesbefore = x.to_i },
       'maxlinelength' =>
@@ -57,20 +57,20 @@ class SearchOptions
         proc { |x, settings| settings.add_comma_delimited_exts(x,
           settings.out_archiveextensions) },
       'out-archivefilepattern' =>
-        proc { |x, settings| settings.out_archivefilepatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.out_archivefilepatterns) },
       'out-dirpattern' =>
-        proc { |x, settings| settings.out_dirpatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.out_dirpatterns) },
       'out-ext' =>
         proc { |x, settings| settings.add_comma_delimited_exts(x,
           settings.out_extensions) },
       'out-filepattern' =>
-        proc { |x, settings| settings.out_filepatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.out_filepatterns) },
       'out-linesafterpattern' =>
-        proc { |x, settings| settings.out_linesafterpatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.out_linesafterpatterns) },
       'out-linesbeforepattern' =>
-        proc { |x, settings| settings.out_linesbeforepatterns.push(Regexp.new(x)) },
+        proc { |x, settings| settings.add_pattern(x, settings.out_linesbeforepatterns) },
       'search' =>
-        proc { |x, settings| settings.searchpatterns.push(Regexp.new(x)) }
+        proc { |x, settings| settings.add_pattern(x, settings.searchpatterns) }
     }
     @flag_action_dict = {
       'allmatches' =>
@@ -83,7 +83,8 @@ class SearchOptions
       'casesensitive' =>
         proc { |settings| settings.casesensitive = true },
       'debug' =>
-        proc { |settings| settings.debug = true },
+        proc { |settings| settings.debug = true;
+                          settings.verbose = true },
       'dotiming' =>
         proc { |settings| settings.dotiming = true },
       'excludehidden' =>
@@ -180,9 +181,6 @@ class SearchOptions
       else
         settings.startpath = arg
       end
-    end
-    if settings.debug
-      settings.verbose = true
     end
     settings
   end

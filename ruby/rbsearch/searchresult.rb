@@ -20,11 +20,11 @@ class SearchResult
     @pattern = pattern
     @filename = filename
     @linenum = linenum
+    @match_start_index = match_start_index
+    @match_end_index = match_end_index
     @line = line
     @lines_before = lines_before
     @lines_after = lines_after
-    @match_start_index = match_start_index
-    @match_end_index = match_end_index
     @maxlinelength = 150
   end
 

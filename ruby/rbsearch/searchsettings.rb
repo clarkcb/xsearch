@@ -93,8 +93,8 @@ class SearchSettings
     end
   end
 
-  def add_searchpattern(pattern)
-    @searchpatterns.push(Regexp.new(pattern, true))
+  def add_pattern(pattern, pattern_set)
+    pattern_set.push(Regexp.new(pattern))
   end
 
   def list_to_s(name, lst)
