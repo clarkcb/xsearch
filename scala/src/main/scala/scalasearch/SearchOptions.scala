@@ -80,7 +80,7 @@ object SearchOptions {
     "allmatches" ->
       ((sb: SettingsBuilder) => sb.firstMatch = false),
     "debug" ->
-      ((sb: SettingsBuilder) => sb.debug = true),
+      ((sb: SettingsBuilder) => sb.setDebug()),
     "dotiming" ->
       ((sb: SettingsBuilder) => sb.doTiming = true),
     "excludehidden" ->
@@ -131,7 +131,7 @@ object SearchOptions {
     val switchPattern = """^\-+(\w[\w\-]*)$""".r
     def nextArg(arglist:List[String], sb:SettingsBuilder) {
       arglist match {
-        case Nil => Unit
+        case Nil =>
         case switchPattern(arg) :: tail =>
           if (argMap.contains(arg)) {
             if (tail.length > 0) {
@@ -154,8 +154,6 @@ object SearchOptions {
       }
     }
     nextArg(args, sb)
-    if (sb.debug) sb.verbose = true
-    if (sb.archivesOnly) sb.searchArchives = true
     sb.toSettings
   }
 

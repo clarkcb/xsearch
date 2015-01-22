@@ -70,6 +70,11 @@ class SettingsBuilder {
     searchArchives = true
   }
 
+  def setDebug() {
+    debug = true
+    verbose = true
+  }
+
   def addCommaSeparatedExtensions(x:String, extensions:mutable.Set[String]) {
     x.split(",").foreach(extensions.add)
   }
