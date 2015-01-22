@@ -1,15 +1,6 @@
 <?php
 
-namespace PhpSearch;
-
-require_once 'fileutil.php';
-
-abstract class FileType {
-    const Archive = 1;
-    const Binary  = 2;
-    const Text    = 3;
-    const Unknown = -1;
-}
+require_once 'autoload.php';
 
 class FileTypes {
     const FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml';
@@ -65,6 +56,10 @@ class FileTypes {
 
     public function is_searchable($f) {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['searchable']);
+    }
+
+    public function is_unknown($f) {
+        return !$this->is_searchable($f);
     }
 }
 

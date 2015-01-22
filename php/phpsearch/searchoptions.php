@@ -1,10 +1,6 @@
 <?php
 
-namespace PhpSearch;
-
-require_once 'fileutil.php';
-require_once 'searchoption.php';
-require_once 'searchsettings.php';
+require_once 'autoload.php';
 
 class SearchOptions {
     const SEARCHOPTIONSPATH = '~/src/git/xsearch/shared/searchoptions.xml';

@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpSearch;
-
 class SearchOption {
     function __construct($shortarg, $longarg, $desc, $func) {
         $this->shortarg = $shortarg;

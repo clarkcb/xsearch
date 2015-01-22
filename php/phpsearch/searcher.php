@@ -1,12 +1,7 @@
 <?php
 
-namespace PhpSearch;
-
+require_once 'autoload.php';
 require_once 'common.php';
-require_once 'filetypes.php';
-require_once 'fileutil.php';
-require_once 'searchexception.php';
-require_once 'searchresult.php';
 
 class Searcher {
     function __construct($settings) {

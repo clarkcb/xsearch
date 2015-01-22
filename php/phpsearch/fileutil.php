@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpSearch;
-
 class FileUtil {
 
     const FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml';

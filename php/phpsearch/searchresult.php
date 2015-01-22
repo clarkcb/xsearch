@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpSearch;
-
 class SearchResult {
     const SEPARATOR_LEN = 80;
 

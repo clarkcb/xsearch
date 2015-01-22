@@ -1,12 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-namespace PhpSearch;
-
+require_once 'autoload.php';
 require_once 'common.php';
-require_once 'searcher.php';
-require_once 'searchexception.php';
-require_once 'searchoptions.php';
 
 function main($argv) {
     $searchoptions = new SearchOptions();

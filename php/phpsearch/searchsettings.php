@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpSearch;
-
 class SearchSettings {
     public $archivesonly = false;
     public $debug = false;
