@@ -201,15 +201,21 @@ function Searcher(settings) {
         return files;
     }
 
+    var filterFile = function (f) {
+        if (_filetypes.isArchiveFile(f) && _settings.searchArchives &&
+            isArchiveSearchFile(f))
+            return true;
+        if (!_settings.archivesOnly && isSearchFile(f))
+            return true;
+        return false;
+    }
+
     var getSearchFilesForDirectory = function (dir) {
         var searchFiles = [];
         var dirFiles = getFilesForDirectory(dir);
         for (var d in dirFiles) {
             var f = dirFiles[d];
-            if (_filetypes.isArchiveFile(f) && _settings.searchArchives &&
-                isArchiveSearchFile(f)) {
-                searchFiles.push(f);
-            } else if (!_settings.archivesOnly && isSearchFile(f)) {
+            if (filterFile(f)) {
                 searchFiles.push(f);
             }
         }
