@@ -5,9 +5,9 @@
       Z</extensions>
   </filetype>
   <filetype name="binary">
-    <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dxr dms doc
-      dot exe hi hlp indd lnk mdb mo nib o obj odt pdb ppt psd pyc pyo qxd so
-      swf sys vsd xls xlt</extensions>
+    <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dms doc dot
+      dxr dylib exe hi hlp indd lnk mdb mo nib o obj odt pdb ppt psd pyc pyo qxd
+      so swf sys vsd xls xlt</extensions>
   </filetype>
   <filetype name="code">
     <extensions>applejs as bash bat boo bsh c c++ cc cgi clj coffee cpp cs csh

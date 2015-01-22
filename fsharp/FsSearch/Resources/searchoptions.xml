@@ -24,6 +24,9 @@
   <searchoption long="includehidden" short="">
     Include hidden files and directories
   </searchoption>
+  <searchoption long="in-archiveext" short="">
+    Specify extension for archive files to include in search
+  </searchoption>
   <searchoption long="in-archivefilepattern" short="">
     Specify name pattern for archive files to include in search
   </searchoption>
@@ -70,13 +73,16 @@
     Search files as single multi-line content block
   </searchoption>
   <searchoption long="noprintmatches" short="P">
-    Suppress printing of matches to stdout
+    Suppress printing of search results to stdout
   </searchoption>
   <searchoption long="norecursive" short="R">
     Do not search recursively
   </searchoption>
   <searchoption long="nosearcharchives" short="Z">
-    Do not search archive files (bz2, gz, tar, zip)
+    Do not search archive files (bz2, gz, tar, zip)*
+  </searchoption>
+  <searchoption long="out-archiveext" short="">
+    Specify extension for archive files to exclude from search
   </searchoption>
   <searchoption long="out-archivefilepattern" short="">
     Specify name pattern for archive files to exclude from search
@@ -97,7 +103,7 @@
     Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
   </searchoption>
   <searchoption long="printmatches" short="p">
-    Print matches to stdout*
+    Print search results to stdout*
   </searchoption>
   <searchoption long="recursive" short="r">
     Search recursively through subdirectories*
@@ -106,7 +112,7 @@
     Specify search pattern
   </searchoption>
   <searchoption long="searcharchives" short="z">
-    Search archive files (bz2, gz, tar, zip)*
+    Search archive files (bz2, gz, tar, zip)
   </searchoption>
   <searchoption long="uniquelines" short="u">
     Save only search results that have unique lines from previous search results
