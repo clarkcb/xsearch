@@ -160,6 +160,15 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
 	}
 
+	private boolean filterFile(File f, FileType fileType) {
+		if (fileType == FileType.ARCHIVE && settings.getSearchArchives()
+				&& isArchiveSearchFile(f))
+			return true;
+		if (!settings.getArchivesOnly() && isSearchFile(f))
+			return true;
+		return false;
+	}
+
 	private List<SearchFile> getSearchFilesForDir(File dir) {
 		if (settings.getDebug()) {
 			log(String.format("Getting files to search under %s", dir));
@@ -170,10 +179,7 @@ public class Searcher {
             for (File f : currentFiles) {
                 if (!f.isDirectory()) {
 					FileType fileType = fileTypes.getFileType(f);
-					if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
-							&& isArchiveSearchFile(f))
-							||
-							(!settings.getArchivesOnly() && isSearchFile(f))) {
+					if (filterFile(f, fileType)) {
 						searchFiles.add(new SearchFile(f.getParent(), f.getName(),
 								fileType));
 					}
