@@ -37,7 +37,6 @@ public class SearchSettings {
 	private Set<Pattern> searchPatterns;
 
 	private boolean archivesOnly;
-	private boolean caseSensitive;
 	private boolean debug;
 	private boolean doTiming;
     private boolean excludeHidden;
@@ -79,7 +78,6 @@ public class SearchSettings {
 
 		// set the defaults
 		this.archivesOnly = false;
-        this.caseSensitive = true;
         this.debug = false;
 		this.doTiming = false;
         this.firstMatch = false;
@@ -89,9 +87,9 @@ public class SearchSettings {
 		this.listDirs = false;
 		this.listFiles = false;
 		this.listLines = false;
-		this.maxLineLength = 100;
+		this.maxLineLength = 150;
 		this.multiLineSearch = false;
-		this.printResults = false;
+		this.printResults = true;
 		this.printUsage = false;
 		this.printVersion = false;
 		this.recursive = true;

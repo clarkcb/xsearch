@@ -1,13 +1,3 @@
-/*******************************************************************************
-FileUtil
-
-Utility class to determine file types, etc.
-
-@author Cary Clark &lt;clarkcb@gmail.com&gt;
-@version $Rev$
-@copyright Cary Clark 2012
-*******************************************************************************/
-
 package javasearch;
 
 import static org.junit.Assert.assertEquals;
@@ -24,6 +14,17 @@ public class FileTypesTest {
     }
 
     @Test
+    public void archiveFileTest() {
+        File file = new File("test.zip");
+        assertEquals(FileUtil.getExtension(file), "zip");
+        assertTrue(fileTypes.isArchiveFile(file));
+        assertFalse(fileTypes.isBinaryFile(file));
+        assertTrue(fileTypes.isSearchableFile(file));
+        assertFalse(fileTypes.isTextFile(file));
+        assertEquals(fileTypes.getFileType(file), FileType.ARCHIVE);
+    }
+
+    @Test
     public void binaryFileTest() {
         File file = new File("test.exe");
         assertEquals(FileUtil.getExtension(file), "exe");
@@ -31,6 +32,7 @@ public class FileTypesTest {
         assertTrue(fileTypes.isBinaryFile(file));
         assertTrue(fileTypes.isSearchableFile(file));
         assertFalse(fileTypes.isTextFile(file));
+        assertEquals(fileTypes.getFileType(file), FileType.BINARY);
     }
 
     @Test
@@ -41,6 +43,7 @@ public class FileTypesTest {
         assertFalse(fileTypes.isBinaryFile(file));
         assertTrue(fileTypes.isSearchableFile(file));
         assertTrue(fileTypes.isTextFile(file));
+        assertEquals(fileTypes.getFileType(file), FileType.TEXT);
     }
 
     @Test
@@ -51,15 +54,6 @@ public class FileTypesTest {
         assertFalse(fileTypes.isBinaryFile(file));
         assertTrue(fileTypes.isSearchableFile(file));
         assertTrue(fileTypes.isTextFile(file));
-    }
-
-    @Test
-    public void compressedFileTest() {
-        File file = new File("test.zip");
-        assertEquals(FileUtil.getExtension(file), "zip");
-        assertTrue(fileTypes.isArchiveFile(file));
-        assertFalse(fileTypes.isBinaryFile(file));
-        assertTrue(fileTypes.isSearchableFile(file));
-        assertFalse(fileTypes.isTextFile(file));
+        assertEquals(fileTypes.getFileType(file), FileType.TEXT);
     }
 }

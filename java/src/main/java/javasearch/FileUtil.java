@@ -31,7 +31,7 @@ public class FileUtil {
 		String ext = "";
 		String fileName = f.getName();
 		int lastIndex = fileName.lastIndexOf(".");
-		if (lastIndex > 0 && fileName.length() > lastIndex)
+		if (lastIndex > 0 && lastIndex < fileName.length()-1)
 			ext = fileName.substring(lastIndex + 1);
 		return ext;
 	}
