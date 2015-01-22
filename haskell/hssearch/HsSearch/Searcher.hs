@@ -110,9 +110,9 @@ getSearchFiles settings dirs = do
                               isArchiveSearchFile settings (searchFilePath sf)
   let includeFile sf = (not (archivesOnly settings)) &&
                        isSearchFile settings (searchFilePath sf)
-  let isTargetFile sf | isArchiveFile sf = includeArchiveFile sf
-                      | otherwise        = includeFile sf
-  return $ map searchFilePath (filter isTargetFile searchableFiles)
+  let filterFile sf | isArchiveFile sf = includeArchiveFile sf
+                    | otherwise        = includeFile sf
+  return $ map searchFilePath (filter filterFile searchableFiles)
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do
