@@ -3,4 +3,5 @@
 target/
 
 # resource files
-*.xml
+filetypes.xml
+searchoptions.xml

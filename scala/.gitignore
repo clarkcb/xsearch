@@ -17,3 +17,7 @@ project/plugins/project/
 
 # Maven artifacts
 dependency-reduced-pom.xml
+
+# resource files
+filetypes.xml
+searchoptions.xml

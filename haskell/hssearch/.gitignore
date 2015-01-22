@@ -13,3 +13,7 @@ cabal.config
 *.prof
 *.hp
 *.aux
+
+# resource files
+filetypes.xml
+searchoptions.xml
