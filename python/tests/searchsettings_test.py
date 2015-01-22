@@ -20,25 +20,25 @@ class SearchSettingsTest(TestCase):
 
     def test_default_settings(self):
         # test the props
-        self.assertEqual(self.settings.archivesonly, False)
-        self.assertEqual(self.settings.debug, False)
-        self.assertEqual(self.settings.dotiming, False)
-        self.assertEqual(self.settings.firstmatch, False)
-        self.assertEqual(self.settings.excludehidden, True)
+        self.assertFalse(self.settings.archivesonly)
+        self.assertFalse(self.settings.debug)
+        self.assertFalse(self.settings.dotiming)
+        self.assertFalse(self.settings.firstmatch)
+        self.assertTrue(self.settings.excludehidden)
         self.assertEqual(self.settings.linesafter, 0)
         self.assertEqual(self.settings.linesbefore, 0)
-        self.assertEqual(self.settings.listdirs, False)
-        self.assertEqual(self.settings.listfiles, False)
-        self.assertEqual(self.settings.listlines, False)
+        self.assertFalse(self.settings.listdirs)
+        self.assertFalse(self.settings.listfiles)
+        self.assertFalse(self.settings.listlines)
         self.assertEqual(self.settings.maxlinelength, 150)
-        self.assertEqual(self.settings.multilinesearch, False)
-        self.assertEqual(self.settings.printresults, True)
-        self.assertEqual(self.settings.printusage, False)
-        self.assertEqual(self.settings.printversion, False)
-        self.assertEqual(self.settings.recursive, True)
-        self.assertEqual(self.settings.searcharchives, False)
-        self.assertEqual(self.settings.uniquelines, False)
-        self.assertEqual(self.settings.verbose, False)
+        self.assertFalse(self.settings.multilinesearch)
+        self.assertTrue(self.settings.printresults)
+        self.assertFalse(self.settings.printusage)
+        self.assertFalse(self.settings.printversion)
+        self.assertTrue(self.settings.recursive)
+        self.assertFalse(self.settings.searcharchives)
+        self.assertFalse(self.settings.uniquelines)
+        self.assertFalse(self.settings.verbose)
         # test the extensino and pattern sets
         self.assertFalse(self.settings.in_archiveextensions)
         self.assertFalse(self.settings.in_archivefilepatterns)
@@ -105,6 +105,7 @@ class SearchSettingsTest(TestCase):
 
     def test_add_comma_delimited_extensions(self):
         self.settings.add_comma_delimited_exts('py,rb,scala', 'in_extensions')
+        self.assertEqual(len(self.settings.in_extensions), 3)
         for x in set(['py', 'rb', 'scala']):
             self.assertIn(x, self.settings.in_extensions)
 
