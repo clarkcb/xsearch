@@ -142,9 +142,11 @@ build_java () {
     TEST_RESOURCES_PATH=$JAVA_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
     # copy the test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
     copy_test_resources $TEST_RESOURCES_PATH
 
     # run a maven clean build
@@ -161,9 +163,11 @@ build_scala () {
     TEST_RESOURCES_PATH=$SCALA_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
     # copy the test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
     copy_test_resources $TEST_RESOURCES_PATH
 
     # run a maven clean build
