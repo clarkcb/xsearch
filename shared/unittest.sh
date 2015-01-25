@@ -105,6 +105,27 @@ unittest_java () {
     mvn -f $JAVA_PATH/pom.xml test
 }
 
+unittest_php () {
+    echo
+    log "unittest_php"
+    PHP_PATH=$PROJECT_PATH/php
+    TESTS_PATH=$PHP_PATH/tests
+    PHPUNIT="phpunit --bootstrap $PHP_PATH/phpsearch/autoload.php"
+
+    # run tests with phpunit
+    cd $TESTS_PATH
+    log "Unit-testing phpsearch"
+    log "$PHPUNIT filetypes_test.php"
+    $PHPUNIT filetypes_test.php
+    log "$PHPUNIT fileutil_test.php"
+    $PHPUNIT fileutil_test.php
+    log "$PHPUNIT searchoptions_test.php"
+    $PHPUNIT searchoptions_test.php
+    log "$PHPUNIT searchsettings_test.php"
+    $PHPUNIT searchsettings_test.php
+    cd -
+}
+
 unittest_python () {
     echo
     log "unittest_python"
@@ -118,6 +139,7 @@ unittest_python () {
 
     # Run the individual tests
     cd $PYTHON_PATH
+    log "Unit-testing pysearch"
     log "python tests/filetypes_test.py"
     $PYTHON tests/filetypes_test.py
     log "python tests/fileutil_test.py"
@@ -140,6 +162,7 @@ unittest_ruby () {
 
     # Run the individual tests
     cd $TESTS_PATH
+    log "Unit-testing rbsearch"
     log "ruby filetypes_test.rb"
     ruby filetypes_test.rb
     log "ruby fileutil_test.rb"
@@ -209,6 +232,8 @@ elif [ "$ARG" == "haskell" ]; then
     unittest_haskell
 elif [ "$ARG" == "java" ]; then
     unittest_java
+elif [ "$ARG" == "php" ]; then
+    unittest_php
 elif [ "$ARG" == "python" ]; then
     unittest_python
 elif [ "$ARG" == "ruby" ]; then
