@@ -106,25 +106,28 @@
 ;(println (str "1: " (get-long-arg "1") "\n"))
 ;(println (str "blarg: " (get-long-arg "blarg") "\n"))
 
-(defn settings-from-args [settings args errs]
-  (if (empty? args)
-    [settings errs]
-    (let [arg (first args)
-          a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
-          k (if a (get-long-arg a))
-          a2 (second args)]
-      (if a
-        (do
-          (cond
-            (contains? arg-action-map k)
-              (if a2
-                (settings-from-args ((k arg-action-map) settings a2) (rest (rest args)) errs)
-                (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
-            (contains? flag-action-map k)
-              (settings-from-args ((k flag-action-map) settings) (rest args) errs)
-            :else
-              (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a)))))
-        (settings-from-args (assoc settings :startpath arg) (rest args) errs)))))
+(defn settings-from-args
+  ([args]
+    (settings-from-args DEFAULT-SETTINGS args []))
+  ([settings args errs]
+    (if (empty? args)
+      [settings errs]
+      (let [arg (first args)
+            a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
+            k (if a (get-long-arg a))
+            a2 (second args)]
+        (if a
+          (do
+            (cond
+              (contains? arg-action-map k)
+                (if a2
+                  (settings-from-args ((k arg-action-map) settings a2) (rest (rest args)) errs)
+                  (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
+              (contains? flag-action-map k)
+                (settings-from-args ((k flag-action-map) settings) (rest args) errs)
+              :else
+                (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a)))))
+          (settings-from-args (assoc settings :startpath arg) (rest args) errs))))))
 
 (defn longest-length [options]
   (let [lens (map #(+ 2 (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]

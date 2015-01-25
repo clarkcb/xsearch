@@ -2,13 +2,12 @@
   (:gen-class)
   (:use cljsearch.common)
   (:use cljsearch.searcher)
-  (:use cljsearch.searchoptions)
-  (:use cljsearch.searchsettings))
+  (:use cljsearch.searchoptions))
 
 (defn -main
   "This will be the main function for cljsearch"
   [& args]
-  (let [[settings errs] (settings-from-args DEFAULT-SETTINGS args [])]
+  (let [[settings errs] (settings-from-args args)]
     (if (:debug settings) (log-msg settings))
     (if (empty? errs)
       (do
