@@ -200,6 +200,8 @@ unittest_all () {
 
     unittest_java
 
+    unittest_php
+
     unittest_python
 
     unittest_ruby
