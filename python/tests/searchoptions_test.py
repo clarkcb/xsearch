@@ -8,13 +8,13 @@
 ################################################################################
 import re
 import sys
-from unittest import TestCase
+import unittest
 
 from pysearch.searchoptions import SearchOptions
 
 sys.path.insert(0, '/Users/cary/src/git/xsearch/python')
 
-class SearchOptionsTest(TestCase):
+class SearchOptionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.searchoptions = SearchOptions()

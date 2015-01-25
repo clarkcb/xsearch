@@ -7,13 +7,13 @@
 #
 ################################################################################
 import sys
-from unittest import TestCase
+import unittest
 
 from pysearch.filetypes import FileType, FileTypes
 
 sys.path.insert(0, '/Users/cary/src/git/xsearch/python')
 
-class FileTypesTest(TestCase):
+class FileTypesTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.filetypes = FileTypes()

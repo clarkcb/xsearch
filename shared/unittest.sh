@@ -105,6 +105,33 @@ unittest_java () {
     mvn -f $JAVA_PATH/pom.xml test
 }
 
+unittest_python () {
+    echo
+    log "unittest_python"
+    PYTHON_PATH=$PROJECT_PATH/python
+    VENV_PATH=$PYTHON_PATH/.env
+    PYTHON=$VENV_PATH/bin/python
+    export PYTHONPATH=$PYTHON_PATH:$PYTHONPATH
+
+    # activate the virtualenv
+    source $PYTHON_PATH/.env/bin/activate
+
+    # Run the individual tests
+    cd $PYTHON_PATH
+    log "python tests/filetypes_test.py"
+    $PYTHON tests/filetypes_test.py
+    log "python tests/fileutil_test.py"
+    $PYTHON tests/fileutil_test.py
+    log "python tests/searchoptions_test.py"
+    $PYTHON tests/searchoptions_test.py
+    log "python tests/searchsettings_test.py"
+    $PYTHON tests/searchsettings_test.py
+    cd -
+
+    # deactivate the virtualenv
+    deactivate
+}
+
 unittest_scala () {
     echo
     log "unittest_scala"
@@ -130,6 +157,8 @@ unittest_all () {
     unittest_haskell
 
     unittest_java
+
+    unittest_python
 
     unittest_scala
 }
@@ -159,6 +188,8 @@ elif [ "$ARG" == "haskell" ]; then
     unittest_haskell
 elif [ "$ARG" == "java" ]; then
     unittest_java
+elif [ "$ARG" == "python" ]; then
+    unittest_python
 elif [ "$ARG" == "scala" ]; then
     unittest_scala
 else
