@@ -80,9 +80,9 @@
 
 (defn validate-settings [settings]
   (let [startpath (:startpath settings)
-        startdir (file startpath)
-        tests [(fn [ss] (if (empty? startpath) "Startpath not defined" nil))
-               (fn [ss] (if (not (.exists startdir)) "Startpath not found" nil))
+        startdir (if startpath (file startpath) nil)
+        tests [(fn [ss] (if (not startpath) "Startpath not defined" nil))
+               (fn [ss] (if (or (not startdir) (not (.exists startdir))) "Startpath not found" nil))
                ; (fn [ss] (if (not (is-search-dir startdir ss)) "Startpath does not match settings" nil))
                (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns specified" nil))]]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))

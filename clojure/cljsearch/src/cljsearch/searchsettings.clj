@@ -58,36 +58,36 @@
     false ; dotiming
     true  ; excludehidden
     false ; firstmatch
-    []    ; in-archiveextensions
-    []    ; in-archivefilepatterns
-    []    ; in-dirpatterns
-    []    ; in-extensions
-    []    ; in-filepatterns
-    []    ; in-linesafterpatterns
-    []    ; in-linesbeforepatterns
+    #{}   ; in-archiveextensions
+    #{}   ; in-archivefilepatterns
+    #{}   ; in-dirpatterns
+    #{}   ; in-extensions
+    #{}   ; in-filepatterns
+    #{}   ; in-linesafterpatterns
+    #{}   ; in-linesbeforepatterns
     0     ; linesafter
-    []    ; linesaftertopatterns
-    []    ; linesafteruntilpatterns
+    #{}   ; linesaftertopatterns
+    #{}   ; linesafteruntilpatterns
     0     ; linesbefore
     false ; listdirs
     false ; listfiles
     false ; listlines
     150   ; maxlinelength
     false ; multilinesearch
-    []    ; out-archiveextensions
-    []    ; out-archivefilepatterns
-    []    ; out-dirpatterns
-    []    ; out-extensions
-    []    ; out-filepatterns
-    []    ; out-linesafterpatterns
-    []    ; out-linesbeforepatterns
+    #{}   ; out-archiveextensions
+    #{}   ; out-archivefilepatterns
+    #{}   ; out-dirpatterns
+    #{}   ; out-extensions
+    #{}   ; out-filepatterns
+    #{}   ; out-linesafterpatterns
+    #{}   ; out-linesbeforepatterns
     true  ; printresults
     false ; printusage
     false ; printversion
     true  ; recursive
     false ; searcharchives
-    []    ; searchpatterns
-    ""    ; startpath
+    #{}   ; searchpatterns
+    nil   ; startpath
     false ; uniquelines
     false ; verbose
   ))
