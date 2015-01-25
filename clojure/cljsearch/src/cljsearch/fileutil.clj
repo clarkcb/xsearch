@@ -28,7 +28,10 @@
 
 (defn get-ext [f]
   (let [name (get-name f)]
-    (if (> (.lastIndexOf name ".") 0)
+    (if 
+      (and
+        (> (.lastIndexOf name ".") 0)
+        (< (.lastIndexOf name ".") (- (.length name) 1)))
       (.toLowerCase (last (split name #"\.")))
       "")))
 
