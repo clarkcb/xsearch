@@ -153,9 +153,7 @@
 
 (defn search-archive-file [f settings]
   (if (:verbose settings)
-    (log-msg (format "Searching archive file %s" f))
-  )
-)
+    (log-msg (format "Searching archive file %s" f))))
 
 (defn search-binary-string-for-pattern [b p settings]
   (if (:debug settings)

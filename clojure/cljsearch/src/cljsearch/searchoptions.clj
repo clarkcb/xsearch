@@ -43,8 +43,6 @@
 (defn print-options []
   (doseq [o OPTIONS] (print-option o)))
 
-;(print-options)
-
 (def arg-action-map
   { :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
     :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archivefilepatterns))
