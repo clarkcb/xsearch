@@ -132,6 +132,25 @@ unittest_python () {
     deactivate
 }
 
+unittest_ruby () {
+    echo
+    log "unittest_ruby"
+    RUBY_PATH=$PROJECT_PATH/ruby
+    TESTS_PATH=$RUBY_PATH/tests
+
+    # Run the individual tests
+    cd $TESTS_PATH
+    log "ruby filetypes_test.rb"
+    ruby filetypes_test.rb
+    log "ruby fileutil_test.rb"
+    ruby fileutil_test.rb
+    log "ruby searchoptions_test.rb"
+    ruby searchoptions_test.rb
+    log "ruby searchsettings_test.rb"
+    ruby searchsettings_test.rb
+    cd -
+}
+
 unittest_scala () {
     echo
     log "unittest_scala"
@@ -159,6 +178,8 @@ unittest_all () {
     unittest_java
 
     unittest_python
+
+    unittest_ruby
 
     unittest_scala
 }
@@ -190,6 +211,8 @@ elif [ "$ARG" == "java" ]; then
     unittest_java
 elif [ "$ARG" == "python" ]; then
     unittest_python
+elif [ "$ARG" == "ruby" ]; then
+    unittest_ruby
 elif [ "$ARG" == "scala" ]; then
     unittest_scala
 else
