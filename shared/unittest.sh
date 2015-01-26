@@ -49,13 +49,14 @@ unittest_csharp () {
     echo
     log "unittest_csharp"
     CSHARP_PATH=$PROJECT_PATH/csharp
-    RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
+    CSSEARCHTESTS_PATH=$CSHARP_PATH/CsSearch/CsSearchTests
+    CONFIGURATION=Debug
+    #CONFIGURATION=Release
 
     # run a mono xbuild
     log "Unit-testing cssearch"
-    #log "xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln"
-    #xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln
-
+    log "mono $CSSEARCHTESTS_PATH/bin/$CONFIGURATION/CsSearchTests.exe"
+    mono $CSSEARCHTESTS_PATH/bin/$CONFIGURATION/CsSearchTests.exe
 }
 
 unittest_fsharp () {
@@ -66,8 +67,6 @@ unittest_fsharp () {
 
     # run a mono xbuild
     log "Unit-testing fssearch"
-    #log "xbuild /p:Configuration=Debug $FSHARP_PATH/FsSearch.sln"
-    #xbuild /p:Configuration=Debug $FSHARP_PATH/FsSearch.sln
 }
 
 unittest_go () {

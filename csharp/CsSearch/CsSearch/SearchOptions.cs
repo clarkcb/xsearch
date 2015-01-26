@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace CsSearch
 {
-	class SearchOptions
+	public class SearchOptions
 	{
 		private readonly string _searchOptionsResource;
 
@@ -163,18 +163,6 @@ namespace CsSearch
 				{
 					settings.StartPath = s;
 				}
-			}
-			if (settings.StartPath == null)
-			{
-				throw new SearchException("Missing startpath");
-			}
-			if (settings.SearchPatterns.Count < 1)
-			{
-				throw new SearchException("No search patterns specified");
-			}
-			if (settings.Debug)
-			{
-				settings.Verbose = true;
 			}
 			return settings;
 		}

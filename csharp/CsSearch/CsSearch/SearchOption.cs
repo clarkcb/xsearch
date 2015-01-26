@@ -2,7 +2,7 @@
 
 namespace CsSearch
 {
-	class SearchOption
+	public class SearchOption
 	{
 		public string ShortArg { get; private set; }
 		public string LongArg { get; private set; }

@@ -13,7 +13,7 @@ namespace CsSearch
 		Unknown
 	};
 
-	class FileTypes
+	public class FileTypes
 	{
 		public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
 

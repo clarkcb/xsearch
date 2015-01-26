@@ -203,6 +203,12 @@ namespace CsSearch
 			SearchArchives = true;
 		}
 
+		public void SetDebug()
+		{
+			Debug = true;
+			Verbose = true;
+		}
+
 		protected static string EnumerableToString<T>(IEnumerable<T> enumerable)
 		{
 			var sb = new StringBuilder("[");

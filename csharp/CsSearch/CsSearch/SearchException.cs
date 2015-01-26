@@ -2,7 +2,7 @@
 
 namespace CsSearch
 {
-	class SearchException : Exception
+	public class SearchException : Exception
 	{
 		public SearchException(string message) : base(message)
 		{
