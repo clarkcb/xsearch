@@ -2,7 +2,37 @@ package xsearch
 
 import "testing"
 
-func TestSearchSettingsFromArgs(t *testing.T) {
+func TestSearchSettingsFromNoArgs(t *testing.T) {
+	searchOptions := NewSearchOptions()
+
+	args := []string{}
+
+	settings, err := searchOptions.SearchSettingsFromArgs(args)
+	if err != nil {
+		t.Errorf("SearchSettingsFromArgs: err: %v", err)
+	}
+
+	if settings.ArchivesOnly ||
+	   settings.Debug ||
+	   settings.DoTiming ||
+	   !settings.ExcludeHidden ||
+	   settings.FirstMatch ||
+	   settings.ListDirs ||
+	   settings.ListFiles ||
+	   settings.ListLines ||
+	   settings.MultiLineSearch ||
+	   !settings.PrintResults ||
+	   settings.PrintUsage ||
+	   settings.PrintVersion ||
+	   !settings.Recursive ||
+	   settings.SearchArchives ||
+	   settings.UniqueLines ||
+	   settings.Verbose {
+		t.Errorf("settings did not match defaults")
+	}
+}
+
+func TestSearchSettingsFromValidArgs(t *testing.T) {
 	searchOptions := NewSearchOptions()
 
 	args := []string{
