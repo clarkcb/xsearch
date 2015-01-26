@@ -8,7 +8,7 @@ class FileUtil {
 
     public static function expand_user_home_path($path) {
         if (strpos($path, '~') === 0) {
-            return str_replace('~', $_ENV['HOME'], $path);
+            return str_replace('~', getenv('HOME'), $path);
         }
         return $path;
     }
