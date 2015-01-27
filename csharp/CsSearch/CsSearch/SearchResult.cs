@@ -81,18 +81,20 @@ namespace CsSearch
 				foreach (string lineBefore in LinesBefore)
 				{
 					sb.Append(' ').
-						Append(string.Format(lineFormat, currentLineNum, lineBefore));
+						Append(string.Format(lineFormat, currentLineNum,
+						lineBefore.TrimEnd()));
 					currentLineNum++;
 				}
 			}
-			sb.Append('>').Append(string.Format(lineFormat, LineNum, Line));
+			sb.Append('>').Append(string.Format(lineFormat, LineNum, Line.TrimEnd()));
 			if (LinesAfter.Count > 0)
 			{
 				currentLineNum++;
 				foreach (string lineAfter in LinesAfter)
 				{
 					sb.Append(' ').
-						Append(string.Format(lineFormat, currentLineNum, lineAfter));
+						Append(string.Format(lineFormat, currentLineNum,
+						lineAfter.TrimEnd()));
 					currentLineNum++;
 				}
 			}

@@ -588,8 +588,7 @@ namespace CsSearch
 				{
 					var contents = sr.ReadToEnd();
 					foreach (var p in Settings.SearchPatterns.Where(p => p.Match(contents).Success)) {
-						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null,
-							new List<string>(), new List<string>()));
+						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null));
 					}
 				}
 			}

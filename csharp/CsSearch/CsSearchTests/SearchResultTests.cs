@@ -36,9 +36,9 @@ namespace CsSearchTests
 			var lineNum = 10;
 			var matchStartIndex = 15;
 			var matchEndIndex = 23;
-			var line = "\tpublic class Searcher";
-			var linesBefore = new List<string> { "namespace CsSearch", "{" };
-			var linesAfter = new List<string> {"\t{", "\t\tprivate readonly FileTypes _fileTypes;"};
+			var line = "\tpublic class Searcher\n";
+			var linesBefore = new List<string> { "namespace CsSearch\n", "{\n" };
+			var linesAfter = new List<string> {"\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"};
 
 			;
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
