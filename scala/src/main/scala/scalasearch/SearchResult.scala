@@ -12,8 +12,9 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
                    val linesBefore: List[String], val linesAfter: List[String],
                    maxLineLength:Int=DefaultSettings.maxLineLength) {
 
-  def this(searchPattern: Regex, file: SearchFile, lineNum: Int, line: String) = {
-    this(searchPattern, file, lineNum, 0, 0, line,
+  def this(searchPattern:Regex, file:SearchFile, lineNum:Int, matchStartIndex:Int,
+           matchEndIndex:Int, line:String) = {
+    this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       List.empty[String], List.empty[String])
   }
 
@@ -29,7 +30,7 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
   def singleLineToString = {
     val matchString = file.fileType match {
       case FileType.Text =>
-        ": %d [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
+        ": %d: [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
           formatMatchingLine)
       case _ => " matches"
     }
@@ -72,24 +73,33 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
     "%d".format(maxLineNum).length
   }
 
+  val newLineChars = Set('\n', '\r')
+
+  def trimNewLines(s:String):String = {
+    if (s == "") ""
+    if (newLineChars.contains(s.last)) trimNewLines(s.init)
+    else s
+  }
+
   def multilineToString = {
     val sb = new StringBuilder
-    sb.append("%s\n%s\n%s\n".format("=" * sepLen, file.getPathWithContainers,
+    sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen,
+      file.getPathWithContainers, lineNum, matchStartIndex, matchEndIndex,
       "-" * sepLen))
     val lineFormat = " %1$" + lineNumPadding + "d | %2$s\n"
     var currentLineNum = lineNum
     if (linesBefore.length > 0) {
       currentLineNum -= linesBefore.length
       for (lineBefore <- linesBefore) {
-        sb.append(" " + lineFormat.format(currentLineNum, lineBefore))
+        sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineBefore)))
         currentLineNum += 1
       }
     }
-    sb.append(">" + lineFormat.format(lineNum, line))
+    sb.append(">" + lineFormat.format(lineNum, trimNewLines(line)))
     if (linesAfter.length > 0) {
       currentLineNum += 1
       for (lineAfter <- linesAfter) {
-        sb.append(" " + lineFormat.format(currentLineNum, lineAfter))
+        sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
         currentLineNum += 1
       }
     } else sb.append('\n')

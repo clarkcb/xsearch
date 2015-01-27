@@ -1,7 +1,5 @@
 package scalasearch
 
-import java.io.File
-
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner

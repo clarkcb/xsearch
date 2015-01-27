@@ -469,7 +469,7 @@ class Searcher (settings: SearchSettings) {
     val contents = source.mkString
     source.close()
     for (p <- settings.searchPatterns if p.findFirstIn(contents) != None) {
-      addSearchResult(new SearchResult(p, sf, 0, null))
+      addSearchResult(new SearchResult(p, sf, 0, 0, 0, null))
     }
   }
 
