@@ -50,10 +50,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileUtilTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FileTypeTests.cs" />
-    <Compile Include="SearchOptionsTest.cs" />
+    <Compile Include="SearchFileTests.cs" />
+    <Compile Include="SearchOptionsTests.cs" />
+    <Compile Include="SearchResultTests.cs" />
     <Compile Include="SearchSettingsTests.cs" />
   </ItemGroup>
   <ItemGroup>

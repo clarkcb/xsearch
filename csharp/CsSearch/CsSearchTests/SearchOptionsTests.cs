@@ -8,7 +8,7 @@ using CsSearch;
 namespace CsSearchTests
 {
 	[TestFixture]
-	public class SearchOptionsTest
+	public class SearchOptionsTests
 	{
 		SearchOptions searchOptions = new SearchOptions();
 
