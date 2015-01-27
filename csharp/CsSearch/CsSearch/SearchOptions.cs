@@ -40,7 +40,7 @@ namespace CsSearch
 				{
 					{ "allmatches", settings => settings.FirstMatch = false },
 					{ "archivesonly", settings => settings.SetArchivesOnly() },
-					{ "debug", settings => settings.Debug = true },
+					{ "debug", settings => settings.SetDebug() },
 					{ "dotiming", settings => settings.DoTiming = true },
 					{ "excludehidden", settings => settings.ExcludeHidden = true },
 					{ "firstmatch", settings => settings.FirstMatch = true },
