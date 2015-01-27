@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace CsSearch
 {
-	class FileUtil
+	public class FileUtil
 	{
+		private static ISet<string> dotDirs = new HashSet<string> { ".", ".." };
+
+		private static char[] dirSeps = new char[] { '/', '\\' };
+
 		public static string GetRelativePath(string fullPath)
 		{
 			var filePath = fullPath;
@@ -13,9 +18,24 @@ namespace CsSearch
 			return filePath;
 		}
 
+		public static string NormalizePath(string path)
+		{
+			return path.TrimEnd(dirSeps);
+		}
+
+		public static string JoinPath(string path1, string path2)
+		{
+			var dirSep = '/';
+			if (path1.IndexOf('\\') > -1)
+				dirSep = '\\';
+			return NormalizePath(path1) + dirSep + path2;
+		}
+
 		public static bool IsHiddenFile(FileSystemInfo f)
 		{
-			return (f.Attributes & FileAttributes.Hidden) != 0;
+			var startsWithDot = f.Name.StartsWith(".") && !dotDirs.Contains(f.Name);
+			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
+			return (startsWithDot || hasHiddenAttribute);
 		}
 	}
 }
