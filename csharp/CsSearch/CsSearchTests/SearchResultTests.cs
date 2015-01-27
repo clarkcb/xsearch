@@ -56,5 +56,23 @@ namespace CsSearchTests
 								 expectedPath, lineNum, matchStartIndex, matchEndIndex);
 			Assert.AreEqual(searchResult.ToString(), expectedOutput);
 		}
+
+		[Test]
+		public void SearchResultBinaryFile_ToString_EqualsExpected()
+		{
+			var pattern = new Regex("Search");
+			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
+				"Searcher.exe", FileType.Binary);
+			var lineNum = 0;
+			var matchStartIndex = 0;
+			var matchEndIndex = 0;
+			string line = null;
+			var searchResult = new SearchResult(pattern, searchFile, lineNum,
+				matchStartIndex, matchEndIndex, line);
+			var expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
+			var expectedOutput = string.Format("{0} matches", expectedPath);
+
+			Assert.AreEqual(searchResult.ToString(), expectedOutput);
+		}
 	}
 }
