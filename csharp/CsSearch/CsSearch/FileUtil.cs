@@ -18,6 +18,13 @@ namespace CsSearch
 			return filePath;
 		}
 
+		public static bool IsHiddenFile(FileSystemInfo f)
+		{
+			var startsWithDot = f.Name.StartsWith(".") && !dotDirs.Contains(f.Name);
+			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
+			return (startsWithDot || hasHiddenAttribute);
+		}
+
 		public static string NormalizePath(string path)
 		{
 			return path.TrimEnd(dirSeps);
@@ -29,13 +36,6 @@ namespace CsSearch
 			if (path1.IndexOf('\\') > -1)
 				dirSep = '\\';
 			return NormalizePath(path1) + dirSep + path2;
-		}
-
-		public static bool IsHiddenFile(FileSystemInfo f)
-		{
-			var startsWithDot = f.Name.StartsWith(".") && !dotDirs.Contains(f.Name);
-			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
-			return (startsWithDot || hasHiddenAttribute);
 		}
 	}
 }

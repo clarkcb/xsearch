@@ -20,7 +20,23 @@ namespace CsSearch
 		private const int MaxLineLength = 150;
 
 		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
+			int matchStartIndex, int matchEndIndex, string line)
+		{
+			Initialize(searchPattern, file, lineNum, matchStartIndex,
+				matchEndIndex, line, new List<string>(), new List<string>());
+		}
+
+		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
 			int matchStartIndex, int matchEndIndex, string line,
+			IList<string> linesBefore, IList<string> linesAfter)
+		{
+			Initialize(searchPattern, file, lineNum, matchStartIndex,
+				matchEndIndex, line, linesBefore, linesAfter);
+
+		}
+
+		private void Initialize(Regex searchPattern, SearchFile file,
+			int lineNum, int matchStartIndex, int matchEndIndex, string line,
 			IList<string> linesBefore, IList<string> linesAfter)
 		{
 			SearchPattern = searchPattern;
@@ -93,7 +109,7 @@ namespace CsSearch
 			}
 			else
 			{
-				sb.Append(string.Format(": {0} [{1}:{2}]: ", LineNum,
+				sb.Append(string.Format(": {0}: [{1}:{2}]: ", LineNum,
 					MatchStartIndex, MatchEndIndex));
 				sb.Append(FormatMatchingLine());
 			}
