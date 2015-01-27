@@ -45,7 +45,7 @@
   (log-msg (search-result-to-string r)))
 
 (defn print-search-results []
-  (log-msg (format"\nSearch results (%d):" (count (deref search-results))))
+  (log-msg (format "\nSearch results (%d):" (count (deref search-results))))
   (doseq [r (deref search-results)] (print-search-result r)))
 
 (defn get-matching-dirs []
@@ -53,7 +53,7 @@
 
 (defn print-matching-dirs []
   (let [dirs (get-matching-dirs)]
-    (log-msg (format"\nDirectories with matches (%d):" (count dirs)))
+    (log-msg (format "\nDirectories with matches (%d):" (count dirs)))
     (doseq [d dirs] (log-msg d))))
 
 (defn get-matching-files []
@@ -61,7 +61,7 @@
 
 (defn print-matching-files []
   (let [files (get-matching-files)]
-    (log-msg (format"\nFiles with matches (%d):" (count files)))
+    (log-msg (format "\nFiles with matches (%d):" (count files)))
     (doseq [f files] (log-msg f))))
 
 (defn get-matching-lines [settings]

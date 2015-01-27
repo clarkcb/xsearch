@@ -9,7 +9,7 @@
 (ns cljsearch.searchresult
   #^{:author "Cary Clark",
      :doc "Search results record and functions"}
-  (:require [clojure.string :as str :only (trim)]))
+  (:require [clojure.string :as str :only (trim trim-newline)]))
 
 ; record to hold a search-result
 (defrecord SearchResult [pattern file linenum startmatchindex endmatchindex line
@@ -17,8 +17,9 @@
 
 (defn multiline-to-string [r]
   (let [linenum (:linenum r)
-        linesbefore (:linesbefore r)
-        linesafter (:linesafter r)
+        linesbefore (map #(str/trim-newline %) (:linesbefore r))
+        line (str/trim-newline (:line r))
+        linesafter (map #(str/trim-newline %) (:linesafter r))
         maxlinenum (+ linenum (count linesafter))
         linenumpadding (count (str maxlinenum))
         lineformat (str "%1$s %2$" linenumpadding "d | %3$s\n")
@@ -29,9 +30,9 @@
       (:file r) ": " (:linenum r) ": [" (:startmatchindex r) ":" (:endmatchindex r) "]\n"
       (apply str (take 80 (repeat "-"))) "\n"
       (apply str
-        (map #(format lineformat " " (+ (- linenum (count linesbefore)) (first %)) (second %))
-          linesbefore-indexed))
-      (format lineformat ">" linenum (:line r))
+        (map #(format lineformat " " (+ (- linenum (count linesbefore)) (first %))
+          (second %)) linesbefore-indexed))
+      (format lineformat ">" linenum line)
       (apply str
         (map #(format lineformat " " (+ linenum (first %) 1) (second %))
           linesafter-indexed)))))
