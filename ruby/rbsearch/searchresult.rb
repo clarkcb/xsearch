@@ -39,7 +39,7 @@ class SearchResult
   def __singleline_s
     s = "#{@filename}"
     if @linenum > 0 and not @line.empty?
-      s += ": #{@linenum} [#{@match_start_index}:#{@match_end_index}]:"
+      s += ": #{@linenum}: [#{@match_start_index}:#{@match_end_index}]:"
       s += " #{__format_matching_line}"
     else
       s += " matches"

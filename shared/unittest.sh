@@ -172,6 +172,8 @@ unittest_ruby () {
     ruby fileutil_test.rb
     log "ruby searchoptions_test.rb"
     ruby searchoptions_test.rb
+    log "ruby searchresult_test.rb"
+    ruby searchresult_test.rb
     log "ruby searchsettings_test.rb"
     ruby searchsettings_test.rb
     cd -
