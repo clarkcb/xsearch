@@ -116,16 +116,19 @@ public class SearchResult {
 			currentLineNum -= linesBefore.size();
 			for (String lineBefore : linesBefore) {
 				sb.append(" ")
-						.append(String.format(lineFormat, currentLineNum, lineBefore));
+						.append(String.format(lineFormat, currentLineNum,
+								StringUtil.trimNewLine(lineBefore)));
 				currentLineNum++;
 			}
 		}
-		sb.append(">").append(String.format(lineFormat, lineNum, line));
+		sb.append(">").append(String.format(lineFormat, lineNum,
+				StringUtil.trimNewLine(line)));
 		if (!linesAfter.isEmpty()) {
 			currentLineNum++;
 			for (String lineAfter : linesAfter) {
 				sb.append(" ")
-						.append(String.format(lineFormat, currentLineNum, lineAfter));
+						.append(String.format(lineFormat, currentLineNum,
+								StringUtil.trimNewLine(lineAfter)));
 				currentLineNum++;
 			}
 		}
@@ -145,7 +148,7 @@ public class SearchResult {
 		} else {
 			sb.append(": ");
 			sb.append(this.lineNum);
-			sb.append(" [");
+			sb.append(": [");
             sb.append(this.matchStartIndex);
 			sb.append(":");
             sb.append(this.matchEndIndex);
