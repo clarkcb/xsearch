@@ -20,7 +20,10 @@ namespace CsSearch
 
 		public string PathAndName
 		{
-			get { return FilePath + Path.DirectorySeparatorChar + FileName; }
+			get
+			{
+				return FileUtil.JoinPath(FilePath, FileName);
+			}
 		}
 
 		public SearchFile(string path, string fileName, FileType type) : this(new List<string>(), path, fileName, type) {}
@@ -34,6 +37,11 @@ namespace CsSearch
 			Type = type;
 		}
 
+		public void AddContainer(string container)
+		{
+			Containers.Add(container);
+		}
+
 		public FileInfo ToFileInfo()
 		{
 			return new FileInfo(PathAndName);
@@ -44,18 +52,14 @@ namespace CsSearch
 			var sb = new StringBuilder();
 			if (Containers.Count > 0)
 			{
-				for (int i = 0; i < Containers.Count; i++)
+				for (var i = 0; i < Containers.Count; i++)
 				{
 					if (i > 0) sb.Append(ContainerSeparator);
 					sb.Append(Containers[i]);
 				}
 				sb.Append(ContainerSeparator);
 			}
-			if (FilePath != null && !FilePath.Equals(""))
-			{
-				sb.Append(FilePath).Append(Path.DirectorySeparatorChar);
-			}
-			sb.Append(FileName);
+			sb.Append(PathAndName);
 			return sb.ToString();
 		}
 	}
