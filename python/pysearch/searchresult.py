@@ -35,7 +35,7 @@ class SearchResult:
         sio = StringIO()
         sio.write(self.filename)
         if self.linenum and self.line:
-            sio.write(': {0} [{1}:{2}]'.format(self.linenum,
+            sio.write(': {0}: [{1}:{2}]'.format(self.linenum,
                 self.match_start_index, self.match_end_index))
             sio.write(': {0}'.format(self.__format_matching_line()))
         else:
@@ -90,9 +90,14 @@ class SearchResult:
         max_linenum = self.linenum + len(self.lines_after)
         return len(str(max_linenum))
 
+    def strip_newlines(self, s):
+        return s.rstrip("\r\n")
+
     def __multiline_str(self):
         sio = StringIO()
-        sio.write('{0}\n{1}'.format('=' * self.SEPARATOR_LEN, self.filename))
+        sio.write('{0}\n{1}:'.format('=' * self.SEPARATOR_LEN, self.filename))
+        sio.write(' {0}: [{1}:{2}]'.format(self.linenum, self.match_start_index,
+            self.match_end_index))
         if self.contained:
             sio.write(': {0}'.format(self.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
@@ -101,13 +106,16 @@ class SearchResult:
         if self.lines_before:
             current_linenum -= len(self.lines_before)
             for line_before in self.lines_before:
-                sio.write(' ' + line_format.format(current_linenum, line_before))
+                sio.write(' ' + line_format.format(current_linenum,
+                    self.strip_newlines(line_before)))
                 current_linenum += 1
-        sio.write('>' + line_format.format(self.linenum, self.line))
+        sio.write('>' + line_format.format(self.linenum,
+            self.strip_newlines(self.line)))
         if self.lines_after:
             current_linenum = self.linenum + 1
             for line_after in self.lines_after:
-                sio.write(' ' + line_format.format(current_linenum, line_after))
+                sio.write(' ' + line_format.format(current_linenum,
+                    self.strip_newlines(line_after)))
                 current_linenum += 1
         else:
             sio.write('\n')

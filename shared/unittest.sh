@@ -147,6 +147,8 @@ unittest_python () {
     $PYTHON tests/fileutil_test.py
     log "python tests/searchoptions_test.py"
     $PYTHON tests/searchoptions_test.py
+    log "python tests/searchresult_test.py"
+    $PYTHON tests/searchresult_test.py
     log "python tests/searchsettings_test.py"
     $PYTHON tests/searchsettings_test.py
     cd -
