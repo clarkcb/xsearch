@@ -120,6 +120,8 @@ unittest_php () {
     $PHPUNIT fileutil_test.php
     log "$PHPUNIT searchoptions_test.php"
     $PHPUNIT searchoptions_test.php
+    log "$PHPUNIT searchresult_test.php"
+    $PHPUNIT searchresult_test.php
     log "$PHPUNIT searchsettings_test.php"
     $PHPUNIT searchsettings_test.php
     cd -

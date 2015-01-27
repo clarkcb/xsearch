@@ -19,10 +19,10 @@ class SearchResult {
         if ($this->lines_before || $this->lines_after) {
             return $this->multiline_tostring();
         }
-        return $this->single_line_tostring();
+        return $this->singleline_tostring();
     }
 
-    private function single_line_tostring() {
+    private function singleline_tostring() {
         $s = $this->file;
         if ($this->linenum) {
             $s .= ': ' . $this->linenum . ': ';
@@ -38,6 +38,10 @@ class SearchResult {
         return strlen(sprintf("%d", $this->linenum + count($this->lines_after)));
     }
 
+    private function trim_newline($s) {
+        return rtrim($s, "\r\n");
+    }
+
     private function multiline_tostring() {
         $s = str_repeat('=', self::SEPARATOR_LEN) . "\n";
         $s .= $this->file . ': ' . $this->linenum . ': ';
@@ -48,15 +52,15 @@ class SearchResult {
         if ($this->lines_before) {
             $current_linenum -= count($this->lines_before);
             foreach ($this->lines_before as $line_before) {
-                $s .= sprintf(' '.$lineformat, $current_linenum, $line_before);
+                $s .= sprintf(' '.$lineformat, $current_linenum, $this->trim_newline($line_before));
                 $current_linenum++;
             }
         }
-        $s .= sprintf('>'.$lineformat, $current_linenum, $this->line);
+        $s .= sprintf('>'.$lineformat, $current_linenum, $this->trim_newline($this->line));
         if ($this->lines_after) {
             $current_linenum++;
             foreach ($this->lines_after as $line_after) {
-                $s .= sprintf(' '.$lineformat, $current_linenum, $line_after);
+                $s .= sprintf(' '.$lineformat, $current_linenum, $this->trim_newline($line_after));
                 $current_linenum++;
             }
         }
