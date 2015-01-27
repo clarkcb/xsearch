@@ -39,8 +39,6 @@ namespace CsSearchTests
 			var line = "\tpublic class Searcher\n";
 			var linesBefore = new List<string> { "namespace CsSearch\n", "{\n" };
 			var linesAfter = new List<string> {"\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"};
-
-			;
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 												matchStartIndex, matchEndIndex,
 												line, linesBefore, linesAfter);
@@ -48,8 +46,8 @@ namespace CsSearchTests
 			var expectedOutput = string.Format(new string('=', 80) + "\n" +
 								 "{0}: {1}: [{2}:{3}]\n" +
 								 new string('-', 80) + "\n" +
-								 "  8  | namespace CsSearch\n" +
-								 "  9  | {{\n" +
+								 "   8 | namespace CsSearch\n" +
+								 "   9 | {{\n" +
 								 "> 10 | 	public class Searcher\n" +
 								 "  11 | 	{{\n" +
 								 "  12 | 		private readonly FileTypes _fileTypes;\n",

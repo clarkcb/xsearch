@@ -74,7 +74,7 @@ namespace CsSearch
 				Append(MatchEndIndex).Append("]\n").
 				Append(new String('-', 80)).Append('\n');
 			int currentLineNum = LineNum;
-			string lineFormat = " {0,-" + LineNumPadding() + "} | {1}\n";
+			string lineFormat = " {0," + LineNumPadding() + "} | {1}\n";
 			if (LinesBefore.Count > 0)
 			{
 				currentLineNum -= LinesBefore.Count;
