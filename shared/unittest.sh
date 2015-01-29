@@ -104,6 +104,28 @@ unittest_java () {
     mvn -f $JAVA_PATH/pom.xml test
 }
 
+unittest_perl () {
+    echo
+    log "unittest_perl"
+    PERL_PATH=$PROJECT_PATH/perl
+    TESTS_PATH=$PERL_PATH/tests
+
+    # run tests using Test::Simple
+    cd $TESTS_PATH
+    log "Unit-testing plsearch"
+    log "perl filetypes_test.pl"
+    perl filetypes_test.pl
+    log "perl fileutil_test.pl"
+    perl fileutil_test.pl
+    log "perl searchoptions_test.pl"
+    perl searchoptions_test.pl
+    log "perl searchresult_test.pl"
+    perl searchresult_test.pl
+    log "perl searchsettings_test.pl"
+    perl searchsettings_test.pl
+    cd -
+}
+
 unittest_php () {
     echo
     log "unittest_php"
@@ -205,6 +227,8 @@ unittest_all () {
 
     unittest_java
 
+    unittest_perl
+
     unittest_php
 
     unittest_python
@@ -239,6 +263,8 @@ elif [ "$ARG" == "haskell" ]; then
     unittest_haskell
 elif [ "$ARG" == "java" ]; then
     unittest_java
+elif [ "$ARG" == "perl" ]; then
+    unittest_perl
 elif [ "$ARG" == "php" ]; then
     unittest_php
 elif [ "$ARG" == "python" ]; then

@@ -126,6 +126,7 @@ build_haskell () {
     RESOURCES_PATH=$HSSEARCH_PATH/data
 
     # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
     # build with cabal

@@ -1,7 +1,7 @@
 #!/bin/bash
 ################################################################################
 #
-# test_all.sh
+# test.sh
 #
 # Runs and times a common search across the versions
 #
@@ -88,6 +88,13 @@ test_node () {
     time nodesearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
 
+test_perl () {
+    echo -e "\n################################################################################"
+    log "test_perl"
+    log "plsearch.pl $SEARCH_PARAMS"
+    time plsearch.pl -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
+}
+
 test_php () {
     echo -e "\n################################################################################"
     log "test_php"
@@ -139,6 +146,8 @@ test_all () {
 
     test_node
 
+    test_perl
+
     test_php
 
     test_python
@@ -175,6 +184,8 @@ elif [ "$ARG" == "java" ]; then
     test_java
 elif [ "$ARG" == "node" ]; then
     test_node
+elif [ "$ARG" == "perl" ]; then
+    test_perl
 elif [ "$ARG" == "php" ]; then
     test_php
 elif [ "$ARG" == "python" ]; then
