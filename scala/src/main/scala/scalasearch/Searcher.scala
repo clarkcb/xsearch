@@ -11,8 +11,15 @@ import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
   def validateSettings() {
-    assert(settings.startpath.nonEmpty, "Missing startpath")
-    assert(settings.searchPatterns.size > 0, "No search patterns defined")
+    settings.startPath match {
+      case Some(path) if path.length > 0 =>
+        if (!new File(path).exists())
+          throw new SearchException("Startpath not found");
+      case _ =>
+        throw new SearchException("Startpath not defined");
+    }
+    if (settings.searchPatterns.size == 0)
+      throw new SearchException("No search patterns defined");
   }
   validateSettings()
 
@@ -51,13 +58,10 @@ class Searcher (settings: SearchSettings) {
     isSearchDir(d.getName)
   }
 
-  def pathElemsFromPath(path: String): Iterable[String] = {
-    path.split(File.separator).filterNot(p => Set(".", "..").contains(p))
-  }
 
   def isSearchDir(dirName: String): Boolean = {
-    val pathElems = pathElemsFromPath(dirName)
-    if (pathElems.exists(_.startsWith(".") && settings.excludeHidden))
+    val pathElems = FileUtil.splitPath(dirName)
+    if (pathElems.exists(p => FileUtil.isHidden(p)) && settings.excludeHidden)
       false
     else
       filterInByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
@@ -79,13 +83,12 @@ class Searcher (settings: SearchSettings) {
     startDirs ++ subDirs
   }
 
-
   def isSearchFile(f: File): Boolean = {
     isSearchFile(f.getName)
   }
 
   def isSearchFile(fileName: String): Boolean = {
-    if (settings.excludeHidden && FileUtil.isHiddenFile(fileName)) false
+    if (FileUtil.isHidden(fileName) && settings.excludeHidden) false
     ((settings.inExtensions.isEmpty ||
       settings.inExtensions.contains(FileUtil.getExtension(fileName)))
       &&
@@ -101,7 +104,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def isArchiveSearchFile(fileName: String): Boolean = {
-    if (settings.excludeHidden && FileUtil.isHiddenFile(fileName)) false
+    if (FileUtil.isHidden(fileName) && settings.excludeHidden) false
     ((settings.inArchiveExtensions.isEmpty ||
       settings.inArchiveExtensions.contains(FileUtil.getExtension(fileName)))
       &&
@@ -179,7 +182,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def search() {
-    val startPathFile = new File(settings.startpath)
+    val startPathFile = new File(settings.startPath.get)
     if (startPathFile.isDirectory) {
       if (isSearchDir(startPathFile)) {
         searchPath(startPathFile)
@@ -200,7 +203,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchPath(filePath:File) {
     if (settings.doTiming) startTimer("getSearchDirs")
-    val searchDirs = getSearchDirs(new File(settings.startpath))
+    val searchDirs = getSearchDirs(new File(settings.startPath.get))
     if (settings.doTiming) stopTimer("getSearchDirs")
     if (settings.verbose) {
       log("\nDirectories to be searched (%d):\n%s".format(searchDirs.size,

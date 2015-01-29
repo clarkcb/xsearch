@@ -21,12 +21,13 @@ object DefaultSettings {
   var printVersion = false
   var recursive = true
   var searchArchives = false
+  var startPath:Option[String] = None
   var uniqueLines = false
   var verbose = false
 }
 
 class SettingsBuilder {
-  var startPath = ""
+  var startPath = DefaultSettings.startPath
   val inExtensions = mutable.Set[String]()
   val outExtensions = mutable.Set[String]()
   val inDirPatterns = mutable.Set[Regex]()
@@ -196,7 +197,7 @@ object SearchSettings {
   }
 }
 
-class SearchSettings(val startpath:String,
+class SearchSettings(val startPath:Option[String],
                      val inExtensions:Set[String],
                      val outExtensions:Set[String],
                      val inDirPatterns:Set[Regex],
@@ -260,37 +261,37 @@ class SearchSettings(val startpath:String,
 
   override def toString = {
     "SearchSettings(" +
-    "startpath: \"" + startpath + "\""  +
-    ", inExtensions: " + inExtensions +
-    ", outExtensions: " + outExtensions +
-    ", inDirPatterns: " + inDirPatterns +
-    ", outDirPatterns: " + outDirPatterns +
-    ", inFilePatterns: " + inFilePatterns +
-    ", outFilePatterns: " + outFilePatterns +
-    ", inArchiveExtensions: " + inArchiveExtensions +
-    ", outArchiveExtenions: " + outArchiveExtensions +
-    ", inArchiveFilePatterns: " + inArchiveFilePatterns +
-    ", outArchiveFilePatterns: " + outArchiveFilePatterns +
-    ", searchPatterns: " + searchPatterns +
-    ", archivesOnly: " + archivesOnly +
-    ", debug: " + debug +
-    ", doTiming: " + doTiming +
-    ", excludeHidden: " + excludeHidden +
-    ", firstMatch: " + firstMatch +
-    ", linesAfter: " + linesAfter +
-    ", linesBefore: " + linesBefore +
-    ", listDirs: " + listDirs +
-    ", listFiles: " + listFiles +
-    ", listLines: " + listLines +
-    ", maxLineLength: " + maxLineLength +
-    ", multiLineSearch: " + multiLineSearch +
-    ", printResults: " + printResults +
-    ", printUsage: " + printUsage +
-    ", printVersion: " + printVersion +
-    ", recursive: " + recursive +
-    ", searchArchives: " + searchArchives +
-    ", uniqueLines: " + uniqueLines +
-    ", verbose: " + verbose +
-    ")"
+      "archivesOnly: " + archivesOnly +
+      ", debug: " + debug +
+      ", doTiming: " + doTiming +
+      ", excludeHidden: " + excludeHidden +
+      ", firstMatch: " + firstMatch +
+      ", inArchiveExtensions: " + inArchiveExtensions +
+      ", inArchiveFilePatterns: " + inArchiveFilePatterns +
+      ", inDirPatterns: " + inDirPatterns +
+      ", inExtensions: " + inExtensions +
+      ", inFilePatterns: " + inFilePatterns +
+      ", linesAfter: " + linesAfter +
+      ", linesBefore: " + linesBefore +
+      ", listDirs: " + listDirs +
+      ", listFiles: " + listFiles +
+      ", listLines: " + listLines +
+      ", maxLineLength: " + maxLineLength +
+      ", multiLineSearch: " + multiLineSearch +
+      ", outArchiveExtensions: " + outArchiveExtensions +
+      ", outArchiveFilePatterns: " + outArchiveFilePatterns +
+      ", outDirPatterns: " + outDirPatterns +
+      ", outExtensions: " + outExtensions +
+      ", outFilePatterns: " + outFilePatterns +
+      ", printResults: " + printResults +
+      ", printUsage: " + printUsage +
+      ", printVersion: " + printVersion +
+      ", recursive: " + recursive +
+      ", searchArchives: " + searchArchives +
+      ", searchPatterns: " + searchPatterns +
+      ", startpath: " + startPath  +
+      ", uniqueLines: " + uniqueLines +
+      ", verbose: " + verbose +
+      ")"
   }
 }

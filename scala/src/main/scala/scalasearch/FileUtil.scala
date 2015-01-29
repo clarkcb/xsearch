@@ -3,10 +3,6 @@ package scalasearch
 import java.io.File
 
 object FileUtil {
-  def getExtension(f: File): String = {
-    getExtension(f.getName)
-  }
-
   def getExtension(f: SearchFile): String = {
     getExtension(f.fileName)
   }
@@ -19,15 +15,16 @@ object FileUtil {
       ""
   }
 
-  def isHiddenFile(f: File): Boolean = {
-    isHiddenFile(f.getName)
+  def isDotDir(name: String): Boolean = {
+    Set(".", "..").contains(name)
   }
 
-  def isHiddenFile(f: SearchFile): Boolean = {
-    isHiddenFile(f.fileName)
+  def isHidden(name: String): Boolean = {
+    val n = new File(name).getName
+    n.length > 1 && n.startsWith(".") && !isDotDir(n)
   }
 
-  def isHiddenFile(name: String): Boolean = {
-    name.startsWith(".") && !Set(".", "..").contains(name)
+  def splitPath(path: String): Iterable[String] = {
+    path.split(File.separator).filterNot(isDotDir)
   }
 }

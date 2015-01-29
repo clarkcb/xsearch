@@ -20,8 +20,6 @@ class SearchResultTest extends FunSuite {
     val expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
     val expectedOutput = "%s: %d: [%d:%d]: %s".format(expectedPath,
       lineNum, matchStartIndex, matchEndIndex, line.trim)
-    System.out.println("\nsearchResult.toString():\n" + searchResult.toString)
-    System.out.println("expectedOutput:\n" + expectedOutput)
     assertEquals(searchResult.toString, expectedOutput)
   }
 
@@ -37,8 +35,6 @@ class SearchResultTest extends FunSuite {
       matchStartIndex, matchEndIndex, line)
     val expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
     val expectedOutput = "%s matches".format(expectedPath)
-    System.out.println("\nsearchResult.toString():\n" + searchResult.toString)
-    System.out.println("expectedOutput:\n" + expectedOutput)
     assertEquals(searchResult.toString, expectedOutput)
   }
 
@@ -65,8 +61,6 @@ class SearchResultTest extends FunSuite {
         |  11 | 	{
         |  12 | 		private readonly FileTypes _fileTypes;
         |""".stripMargin.format(expectedPath, lineNum, matchStartIndex, matchEndIndex)
-    System.out.println("\nsearchResult.toString():\n" + searchResult.toString)
-    System.out.println("expectedOutput:\n" + expectedOutput)
     assertEquals(searchResult.toString, expectedOutput)
   }
 }

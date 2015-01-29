@@ -124,7 +124,7 @@ object SearchOptions {
       options.filter(o => o.shortarg.length > 0).map(o => (o.shortarg, o))).toMap
   }
 
-  def settingsFromArgs(args: List[String]): SearchSettings = {
+  def settingsFromArgs(args: Array[String]): SearchSettings = {
     val sb = new SettingsBuilder
     val argMap = mapFromOptions(searchOptions.filter(o => argActionMap.contains(o.longarg)))
     val flagMap = mapFromOptions(searchOptions.filter(o => flagActionMap.contains(o.longarg)))
@@ -138,22 +138,20 @@ object SearchOptions {
               argActionMap(argMap(arg).longarg)(tail.head, sb)
               nextArg(tail.tail, sb)
             } else {
-              throw new SearchException("Arg without required value: "+arg)
+              throw new SearchException("Missing value for arg %s".format(arg))
             }
           } else if (flagMap.contains(arg)) {
             flagActionMap(flagMap(arg).longarg)(sb)
             nextArg(tail, sb)
           } else {
-            throw new SearchException("Undefined option: " + arg)
+            throw new SearchException("Unknown option: %s".format(arg))
           }
         case arg :: tail =>
-          sb.startPath = arg
+          sb.startPath = Some(arg)
           nextArg(tail, sb)
-        case _ =>
-          throw new SearchException("Invalid args: "+arglist.mkString(", "))
       }
     }
-    nextArg(args, sb)
+    nextArg(args.toList, sb)
     sb.toSettings
   }
 
@@ -165,7 +163,7 @@ object SearchOptions {
   def getUsageString = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
-    sb.append(" scalasearch [options] <startpath>\n\n")
+    sb.append(" scalasearch [options] -s <searchpattern> <startpath>\n\n")
     sb.append("Options:\n")
     val optStrings =
       (searchOptions.map(o => if (o.shortarg.nonEmpty) "-" + o.shortarg + "," else "")

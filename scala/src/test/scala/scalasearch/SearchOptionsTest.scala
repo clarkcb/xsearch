@@ -9,7 +9,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   val startpath = "."
   val searchString = "Search"
-  val requiredArgs = List("-s", searchString, startpath)
+  //val requiredArgs = List("-s", searchString, startpath)
+  val requiredArgs = Array("-s", searchString, startpath)
 
   def assertDefaultSettings(settings:SearchSettings) {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
@@ -41,60 +42,60 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
   // test requiredArgs only
   test("""test settingsFromArgs with requiredArgs""") {
     val args = requiredArgs
-    println("args: "+args)
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
-    println("settings.startpath: "+settings.startpath)
-    assert(settings.startpath == startpath)
+    println("settings.startpath: "+settings.startPath)
+    assert(settings.startPath == Some(startpath))
     assert(settings.searchPatterns.size == 1)
     assert(settings.searchPatterns.toList.head.toString == searchString)
   }
 
   // test -a / --allmatches
   test("""test settingsFromArgs with args="-a" / "--allmatches" """) {
-    val shortArgs = List("-a") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-a") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(!shortSettings.firstMatch)
 
-    val longArgs = List("--allmatches") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--allmatches") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(!longSettings.firstMatch)
   }
 
   // test --archivesonly
   test("""test settingsFromArgs with args="--archivesonly" """) {
-    val args = List("--archivesonly") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--archivesonly") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     assert(settings.archivesOnly)
   }
 
   // test --debug
   test("""test settingsFromArgs with args="--debug" """) {
-    val args = List("--debug") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--debug") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     assert(settings.debug)
   }
 
   // test -t / --dotiming
   test("""test settingsFromArgs with args="-t" / "--dotiming" """) {
-    val shortArgs = List("-t") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-t") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.doTiming)
 
-    val longArgs = List("--dotiming") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--dotiming") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.doTiming)
   }
 
   // test --excludehidden
   test("""test settingsFromArgs with args="--excludehidden" """) {
-    val args = List("--excludehidden") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--excludehidden") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.excludeHidden: "+settings.excludeHidden)
     assert(settings.excludeHidden)
@@ -102,34 +103,34 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -1 / --firstmatch
   test("""test settingsFromArgs with args="-1" / "--firstmatch" """) {
-    val shortArgs = List("-1") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-1") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.firstMatch)
 
-    val longArgs = List("--firstmatch") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--firstmatch") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.firstMatch)
   }
 
   // test -h / --help
   test("""test settingsFromArgs with args="-h" / "--help" """) {
-    val shortArgs = List("-h") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-h") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.printUsage)
 
-    val longArgs = List("--help") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--help") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.printUsage)
   }
 
   // test --includehidden
   test("""test settingsFromArgs with args="--includehidden" """) {
-    val args = List("--includehidden") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--includehidden") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.excludeHidden: "+settings.excludeHidden)
     assert(!settings.excludeHidden)
@@ -137,8 +138,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test --in-archivefilepattern
   test("""test settingsFromArgs with args="--in-archivefilepattern search" """) {
-    val args = List("--in-archivefilepattern", "search") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--in-archivefilepattern", "search") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inArchiveFilePatterns: "+settings.inArchiveFilePatterns)
     assert(settings.inArchiveFilePatterns.size == 1)
@@ -147,15 +148,15 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -d / --in-dirpattern
   test("""test settingsFromArgs with args="-d search" """) {
-    val shortArgs = List("-d", "search") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-d", "search") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.inDirPatterns: "+shortSettings.inDirPatterns)
     assert(shortSettings.inDirPatterns.size == 1)
     assert(shortSettings.inDirPatterns.map(_.toString()).contains("search"))
 
-    val longArgs = List("--in-dirpattern", "search") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--in-dirpattern", "search") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.inDirPatterns: "+longSettings.inDirPatterns)
     assert(longSettings.inDirPatterns.size == 1)
@@ -164,16 +165,16 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -x / --in-ext
   test("""test settingsFromArgs with args="-x scala" """) {
-    val shortArgs = List("-x", "scala") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-x", "scala") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.inExtensions: "+shortSettings.inExtensions)
     assert(shortSettings.inExtensions.size == 1)
     assert(shortSettings.inExtensions.toList.head == "scala")
     assert(shortSettings.outExtensions.size == 0)
 
-    val longArgs = List("--in-ext", "scala") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--in-ext", "scala") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.inExtensions: "+longSettings.inExtensions)
     assert(longSettings.inExtensions.size == 1)
@@ -183,8 +184,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -x with comma-separated list of exts
   test("""test settingsFromArgs with args="-x java,scala" """) {
-    val args = List("-x", "java,scala") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("-x", "java,scala") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inExtensions: "+settings.inExtensions)
     assert(settings.inExtensions.size == 2)
@@ -195,15 +196,15 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -f / --in-filepattern
   test("""test settingsFromArgs with args="-f Search" """) {
-    val shortArgs = List("-f", "Search") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-f", "Search") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.inFilePatterns: "+shortSettings.inFilePatterns)
     assert(shortSettings.inFilePatterns.size == 1)
     assert(shortSettings.inFilePatterns.map(_.toString()).contains("Search"))
 
-    val longArgs = List("--in-filepattern", "Search") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--in-filepattern", "Search") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.inFilePatterns: "+longSettings.inFilePatterns)
     assert(longSettings.inFilePatterns.size == 1)
@@ -212,8 +213,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test --in-linesafterpattern
   test("""test settingsFromArgs with args="--in-linesafterpattern Search" """) {
-    val args = List("--in-linesafterpattern", "Search") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--in-linesafterpattern", "Search") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inLinesAfterPatterns: "+settings.inLinesAfterPatterns)
     assert(settings.inLinesAfterPatterns.size == 1)
@@ -222,8 +223,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test --in-linesbeforepattern
   test("""test settingsFromArgs with args="--in-linesbeforepattern Search" """) {
-    val args = List("--in-linesbeforepattern", "Search") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--in-linesbeforepattern", "Search") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.inLinesBeforePatterns: "+settings.inLinesBeforePatterns)
     assert(settings.inLinesBeforePatterns.size == 1)
@@ -232,21 +233,21 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -B / --linesafter
   test("""test settingsFromArgs with args="-B 2" / "--linesafter 2" """) {
-    val shortArgs = List("-B", "2") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-B", "2") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.linesAfter == 2)
 
-    val longArgs = List("--linesafter", "2") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--linesafter", "2") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.linesAfter == 2)
   }
 
   // test --linesaftertopattern
   test("""test settingsFromArgs with args="--linesaftertopattern ^\]$" """) {
-    val args = List("--linesaftertopattern", "^\\]$") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--linesaftertopattern", "^\\]$") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.linesAfterToPatterns: "+settings.linesAfterToPatterns)
     assert(settings.linesAfterToPatterns.size == 1)
@@ -255,8 +256,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test --linesafteruntilpattern
   test("""test settingsFromArgs with args="--linesafteruntilpattern ^\]$" """) {
-    val args = List("--linesafteruntilpattern", "^\\]$") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--linesafteruntilpattern", "^\\]$") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.linesAfterUntilPatterns: "+settings.linesAfterUntilPatterns)
     assert(settings.linesAfterUntilPatterns.size == 1)
@@ -265,84 +266,84 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -b / --linesbefore
   test("""test settingsFromArgs with args="-b 2" / "--linesbefore 2" """) {
-    val shortArgs = List("-b", "2") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-b", "2") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.linesBefore == 2)
 
-    val longArgs = List("--linesbefore", "2") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--linesbefore", "2") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.linesBefore == 2)
   }
 
   // test --listdirs
   test("""test settingsFromArgs with args="--listdirs" """) {
-    val args = List("--listdirs") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--listdirs") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     assert(settings.listDirs)
   }
 
   // test --listfiles
   test("""test settingsFromArgs with args="--listfiles" """) {
-    val args = List("--listfiles") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--listfiles") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     assert(settings.listFiles)
   }
 
   // test --listlines
   test("""test settingsFromArgs with args="--listlines" """) {
-    val args = List("--listlines") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--listlines") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     assert(settings.listLines)
   }
 
   // test -m / --multilinesearch
   test("""test settingsFromArgs with args="-m" / "--multilinesearch" """) {
-    val shortArgs = List("-m") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-m") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.multiLineSearch)
 
-    val longArgs = List("--multilinesearch") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--multilinesearch") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.multiLineSearch)
   }
 
   // test -P / --noprintmatches
   test("""test settingsFromArgs with args="-P" / "--noprintmatches" """) {
-    val shortArgs = List("-P") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-P") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(!shortSettings.printResults)
 
-    val longArgs = List("--noprintmatches") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--noprintmatches") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(!longSettings.printResults)
   }
 
   // test -Z / --nosearcharchives
   test("""test settingsFromArgs with args="-Z" / "--nosearcharchives" """) {
-    val shortArgs = List("-Z") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-Z") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(!shortSettings.searchArchives)
 
-    val longArgs = List("--nosearcharchives") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--nosearcharchives") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(!longSettings.searchArchives)
   }
 
   // test --out-archivefilepattern
   test("""test settingsFromArgs with args="--out-archivefilepattern search" """) {
-    val args = List("--out-archivefilepattern", "search") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--out-archivefilepattern", "search") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.outArchiveFilePatterns: "+settings.outArchiveFilePatterns)
     assert(settings.outArchiveFilePatterns.size == 1)
@@ -351,14 +352,14 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -D / --out-dirpattern
   test("""test settingsFromArgs with args="-D search" """) {
-    val shortArgs = List("-D", "search") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-D", "search") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.outDirPatterns: "+shortSettings.outDirPatterns)
     assert(shortSettings.outDirPatterns.map(_.toString()).contains("search"))
 
-    val longArgs = List("--out-dirpattern", "search") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--out-dirpattern", "search") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.outDirPatterns: "+longSettings.outDirPatterns)
     assert(longSettings.outDirPatterns.map(_.toString()).contains("search"))
@@ -366,16 +367,16 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -X / --out-ext
   test("""test settingsFromArgs with args="-X scala" """) {
-    val shortArgs = List("-X", "scala") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-X", "scala") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.outExtensions: "+shortSettings.outExtensions)
     assert(shortSettings.inExtensions.size == 0)
     assert(shortSettings.outExtensions.size == 1)
     assert(shortSettings.outExtensions.map(_.toString).contains("scala"))
 
-    val longArgs = List("--out-ext", "scala") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--out-ext", "scala") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.inExtensions: "+longSettings.inExtensions)
     assert(longSettings.inExtensions.size == 0)
@@ -385,8 +386,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -X with comma-separated list of exts
   test("""test settingsFromArgs with args="-X java,scala" """) {
-    val args = List("-X", "java,scala") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("-X", "java,scala") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.outExtensions: "+settings.outExtensions)
     assert(settings.inExtensions.size == 0)
@@ -397,14 +398,14 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -F / --out-filepattern
   test("""test settingsFromArgs with args="-F Search" """) {
-    val shortArgs = List("-F", "Search") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-F", "Search") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.outFilePatterns: "+shortSettings.outFilePatterns)
     assert(shortSettings.outFilePatterns.map(_.toString()).contains("Search"))
 
-    val longArgs = List("--out-filepattern", "Search") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--out-filepattern", "Search") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.outFilePatterns: "+longSettings.outFilePatterns)
     assert(longSettings.outFilePatterns.map(_.toString()).contains("Search"))
@@ -412,8 +413,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test --out-linesafterpattern
   test("""test settingsFromArgs with args="--out-linesafterpattern Search" """) {
-    val args = List("--out-linesafterpattern", "Search") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--out-linesafterpattern", "Search") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.outLinesAfterPatterns: "+settings.outLinesAfterPatterns)
     assert(settings.outLinesAfterPatterns.size == 1)
@@ -422,8 +423,8 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test --out-linesbeforepattern
   test("""test settingsFromArgs with args="--out-linesbeforepattern Search" """) {
-    val args = List("--out-linesbeforepattern", "Search") ::: requiredArgs
-    println("args: "+args)
+    val args = Array("--out-linesbeforepattern", "Search") ++ requiredArgs
+    println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.outLinesBeforePatterns: "+settings.outLinesBeforePatterns)
     assert(settings.outLinesBeforePatterns.size == 1)
@@ -432,65 +433,65 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // test -p / --printmatches
   test("""test settingsFromArgs with args="-p" / "--printmatches" """) {
-    val shortArgs = List("-p") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-p") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.printResults)
 
-    val longArgs = List("--printmatches") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--printmatches") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.printResults)
   }
 
   // test -z / --searcharchives
   test("""test settingsFromArgs with args="-z" / "--searcharchives" """) {
-    val shortArgs = List("-z") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-z") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.searchArchives)
 
-    val longArgs = List("--searcharchives") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--searcharchives") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.searchArchives)
   }
 
   // test -u / --uniquelines
   test("""test settingsFromArgs with args="-u" / "--uniquelines" """) {
-    val shortArgs = List("-u") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-u") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.uniqueLines)
 
-    val longArgs = List("--uniquelines") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--uniquelines") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.uniqueLines)
   }
 
   // test -v / --verbose
   test("""test settingsFromArgs with args="-v" / "--verbose" """) {
-    val shortArgs = List("-v") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-v") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.verbose)
 
-    val longArgs = List("--verbose") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--verbose") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.verbose)
   }
 
   // test -V / --version
   test("""test settingsFromArgs with args="-V" / "--version" """) {
-    val shortArgs = List("-V") ::: requiredArgs
-    println("shortArgs: "+shortArgs)
+    val shortArgs = Array("-V") ++ requiredArgs
+    println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.printVersion)
 
-    val longArgs = List("--version") ::: requiredArgs
-    println("longArgs: "+longArgs)
+    val longArgs = Array("--version") ++ requiredArgs
+    println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.printVersion)
   }
