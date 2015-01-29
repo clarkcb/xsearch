@@ -16,7 +16,7 @@ use plsearch::common;
 use plsearch::SearchOption;
 use plsearch::SearchSettings;
 
-my $SEARCHOPTIONSPATH = '/Users/cary/src/git/xsearch/shared/searchoptions.xml';
+my $SEARCHOPTIONSPATH = "$ENV{HOME}/src/git/xsearch/shared/searchoptions.xml";
 
 my $arg_action_hash = {
     'in-archiveext' => sub {

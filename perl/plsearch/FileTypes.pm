@@ -16,7 +16,7 @@ use plsearch::common;
 use plsearch::FileType;
 use plsearch::FileUtil;
 
-my $FILETYPESPATH = '/Users/cary/src/git/xsearch/shared/filetypes.xml';
+my $FILETYPESPATH = "$ENV{HOME}/src/git/xsearch/shared/filetypes.xml";
 
 sub get_file_type_hash {
     my $file_type_hash = {};
