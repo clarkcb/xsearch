@@ -74,10 +74,10 @@ class Searcher(object):
         return FileUtil.get_extension(f)
 
     def is_search_dir(self, d):
-        path_elems = [p for p in d.split(os.sep) if p not in ('.', '..')]
+        path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
         if self.settings.excludehidden:
             for p in path_elems:
-                if p.startswith('.'):
+                if FileUtil.is_hidden(p):
                     return False
         if self.settings.in_dirpatterns and \
             not self.any_matches_any_pattern(path_elems, self.settings.in_dirpatterns):
@@ -157,7 +157,7 @@ class Searcher(object):
         return searchfiles
 
     def filter_file(self, sf):
-        if sf.filename.startswith('.') and self.settings.excludehidden:
+        if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
             return False
         if (sf.filetype == FileType.Archive and
             self.settings.searcharchives and 

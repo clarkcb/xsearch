@@ -62,7 +62,10 @@ def main():
         if settings.listlines:
             line_list = searcher.get_matching_lines()
             if line_list:
-                log('\nLines with matches (%d):' % len(line_list))
+                msg = '\nLines with matches (%d):'
+                if settings.uniquelines:
+                    msg = '\nUnique lines with matches (%d):'
+                log(msg % len(line_list))
                 for line in line_list:
                     log(line)
 

@@ -28,9 +28,8 @@ class SearchResultTest(unittest.TestCase):
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, linesbefore=linesbefore,
             linesafter=linesafter)
-        expectedpath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        expectedoutput = "%s: %d: [%d:%d]: %s" % (expectedpath,
-                    linenum, match_start_index, match_end_index, line.strip())
+        expectedoutput = "%s: %d: [%d:%d]: %s" % (filepath, linenum,
+            match_start_index, match_end_index, line.strip())
         self.assertEquals(expectedoutput, str(searchresult))
 
     def test_binaryfile_searchresult(self):
@@ -46,8 +45,7 @@ class SearchResultTest(unittest.TestCase):
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, linesbefore=linesbefore,
             linesafter=linesafter)
-        expectedpath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
-        expectedoutput = "%s matches" % expectedpath
+        expectedoutput = "%s matches" % filepath
         self.assertEquals(expectedoutput, str(searchresult))
 
     def test_multiline_searchresult(self):
@@ -63,7 +61,6 @@ class SearchResultTest(unittest.TestCase):
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, lines_before=linesbefore,
             lines_after=linesafter)
-        expectedpath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
         expectedoutput = """================================================================================
 %s: %d: [%d:%d]
 --------------------------------------------------------------------------------
@@ -72,7 +69,7 @@ class SearchResultTest(unittest.TestCase):
 > 10 | \tpublic class Searcher
   11 | \t{
   12 | \t\tprivate readonly FileTypes _fileTypes;
-""" % (expectedpath, linenum, match_start_index, match_end_index)
+""" % (filepath, linenum, match_start_index, match_end_index)
         self.assertEquals(expectedoutput, str(searchresult))
 
 if __name__ == '__main__':
