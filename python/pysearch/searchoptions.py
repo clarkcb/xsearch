@@ -20,7 +20,8 @@ class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
 
     # TODO: move to a config file
-    SEARCHOPTIONSPATH = '~/src/git/xsearch/shared/searchoptions.xml'
+    HOME = os.environ['HOME']
+    SEARCHOPTIONSPATH = '%s/src/git/xsearch/shared/searchoptions.xml' % HOME
 
     arg_action_dict = {
         'in-archiveext':
@@ -167,7 +168,7 @@ class SearchOptions(object):
         return ''.join(rc)
 
     def set_options_from_xml(self):
-        searchoptionsdom = minidom.parse(os.path.expanduser(self.SEARCHOPTIONSPATH))
+        searchoptionsdom = minidom.parse(self.SEARCHOPTIONSPATH)
         searchoptionnodes = searchoptionsdom.getElementsByTagName('searchoption')
         for searchoptionnode in searchoptionnodes:
             name = searchoptionnode.getAttribute('long')

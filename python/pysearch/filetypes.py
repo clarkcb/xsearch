@@ -22,10 +22,10 @@ class FileTypes(object):
     """a class to provide file type information"""
 
     # TODO: move to a config file
-    FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml'
+    HOME = os.environ['HOME']
+    FILETYPESPATH = '%s/src/git/xsearch/shared/filetypes.xml' % HOME
 
     def __init__(self, **kargs):
-        self.filetypespath = os.path.expanduser(self.FILETYPESPATH)
         self.filetypes = {}
         self.__dict__.update(kargs)
         self.__populate_filetypes()
@@ -65,7 +65,7 @@ class FileTypes(object):
 
     def __populate_filetypes(self):
         types = 'archive binary nosearch text unknown xml'.split()
-        filetypedom = minidom.parse(self.filetypespath)
+        filetypedom = minidom.parse(self.FILETYPESPATH)
         filetypenodes = filetypedom.getElementsByTagName('filetype')
         for filetypenode in filetypenodes:
             name = filetypenode.getAttribute('name')
