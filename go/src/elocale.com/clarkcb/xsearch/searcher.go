@@ -78,7 +78,7 @@ func (s *Searcher) GetSearchResults() *SearchResults {
 
 func (s *Searcher) validSettings() error {
 	if s.Settings.StartPath == "" {
-		return fmt.Errorf("Missing startpath")
+		return fmt.Errorf("Startpath not defined")
 	}
 	if _, err := os.Stat(s.Settings.StartPath); err != nil {
 		return fmt.Errorf("Invalid startpath: \"%s\"", s.Settings.StartPath)
@@ -101,10 +101,8 @@ func filterInBySearchPatterns(s *string, inPatterns *SearchPatterns,
 }
 
 func (s *Searcher) isSearchDir(d *string) bool {
-	if *d != "." && *d != ".." {
-		if strings.HasPrefix(*d, ".") && s.Settings.ExcludeHidden {
-			return false
-		}
+	if isHidden(*d) && s.Settings.ExcludeHidden {
+		return false
 	}
 	return filterInBySearchPatterns(d, s.Settings.InDirPatterns,
 		s.Settings.OutDirPatterns)
@@ -155,8 +153,7 @@ func (s *Searcher) setSearchDirs() error {
 
 func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 	if s.fileTypes.IsArchiveFile(*filename) {
-
-		if strings.HasPrefix(*filename, ".") && s.Settings.ExcludeHidden {
+		if isHidden(*filename) && s.Settings.ExcludeHidden {
 			return false
 		}
 		ext := getExtension(*filename)
@@ -173,7 +170,7 @@ func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 }
 
 func (s *Searcher) isSearchFile(filename *string) bool {
-	if strings.HasPrefix(*filename, ".") && s.Settings.ExcludeHidden {
+	if isHidden(*filename) && s.Settings.ExcludeHidden {
 		return false
 	}
 	ext := getExtension(*filename)

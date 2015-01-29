@@ -2,12 +2,13 @@ package xsearch
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
 
 func getExtension(file string) string {
-	ext := filepath.Ext(file)
+	ext := filepath.Ext(path.Base(file))
 	return strings.ToLower(strings.TrimLeft(ext, "."))
 }
 
@@ -29,6 +30,22 @@ func expandPath(filePath string) string {
 		return home + strings.TrimPrefix(filePath, "~")
 	}
 	return filePath
+}
+
+func isDotDir(file string) bool {
+	dotDirs := []string{".", ".."}
+	if containsV(dotDirs, file) {
+		return true
+	}
+	return false
+}
+
+func isHidden(file string) bool {
+	f := path.Base(file)
+	if len(f) > 1 && strings.HasPrefix(f, ".") && !isDotDir(f) {
+		return true
+	}
+	return false
 }
 
 func normalizePath(path string) string {

@@ -220,11 +220,11 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 		},
 		"archivesonly": func(settings *SearchSettings) {
 			settings.ArchivesOnly = true
-			// makes sense to turn this on as well
 			settings.SearchArchives = true
 		},
 		"debug": func(settings *SearchSettings) {
 			settings.Debug = true
+			settings.Verbose = true
 		},
 		"dotiming": func(settings *SearchSettings) {
 			settings.DoTiming = true
