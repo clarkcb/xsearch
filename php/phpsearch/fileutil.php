@@ -35,12 +35,28 @@ class FileUtil {
         return self::normalize_path($path) . '/' . $file;
     }
 
+    public static function get_separator($path) {
+        $sep = '/';
+        if (strpos($path, $sep) === false) {
+            if (strpos($path, '\\') === false) {
+                return $sep;
+            } else {
+                return '\\';
+            }
+        }
+        return $sep;
+    }
+
     public static function normalize_path($path) {
-        return rtrim($path, '/');
+        $sep = self::get_separator($path);
+        return rtrim($path, $sep);
     }
 
     public static function split_path($path) {
-        return preg_split("/\//", $path);
+        $sep = self::get_separator($path);
+        if ($sep == '/')
+            $sep = '\\/';
+        return preg_split("/$sep/", $path);
     }
 }
 
