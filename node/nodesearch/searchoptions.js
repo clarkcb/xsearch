@@ -69,7 +69,8 @@ function SearchOptions() {
             function(settings) { settings.archivesOnly = true;
                                  settings.searchArchives = true; },
         'debug':
-            function(settings) { settings.debug = true; },
+            function(settings) { settings.debug = true;
+                                 settings.verbose = true; },
         'dotiming':
             function(settings) { settings.doTiming = true; },
         'excludehidden':

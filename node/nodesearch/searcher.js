@@ -58,7 +58,7 @@ function Searcher(settings) {
         if (_settings.excludeHidden) {
             for (var p in pathElems) {
                 if (!matchesAnyElement(pathElems[p], ['.','..']) &&
-                    pathElems[p].startsWith('.')) {
+                    FileUtil.isHidden(pathElems[p])) {
                     return false;
                 }
             }
@@ -77,7 +77,7 @@ function Searcher(settings) {
     validateSettings();
 
     var isSearchFile = function (file) {
-        if (file.startsWith(".") && _settings.excludeHidden) {
+        if (FileUtil.isHidden(file) && _settings.excludeHidden) {
             return false;
         }
         var ext = FileUtil.getExtension(file);
@@ -101,7 +101,7 @@ function Searcher(settings) {
     };
 
     var isArchiveSearchFile = function (file) {
-        if (file.startsWith(".") && _settings.excludeHidden) {
+        if (FileUtil.isHidden(file) && _settings.excludeHidden) {
             return false;
         }
         var ext = FileUtil.getExtension(file);
