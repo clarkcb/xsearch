@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using NUnit.Framework;
 using CsSearch;
 
@@ -9,17 +8,87 @@ namespace CsSearchTests
 	class FileUtilTests
 	{
 		[Test]
-		public void IsHiddenFile_StartsWithDot_IsHidden()
+		public void IsDirectory_IsSingleDot_IsDirectory()
 		{
-			var hiddenFile = new FileInfo(".FileUtilTests.cs");
-			Assert.IsTrue(FileUtil.IsHiddenFile(hiddenFile));
+			const string dotDir = ".";
+			Assert.IsTrue(FileUtil.IsDirectory(dotDir));
 		}
 
 		[Test]
-		public void IsHiddenFile_NotStartsWithDot_NotIsHidden()
+		public void IsDirectory_IsDoubleDot_IsDirectory()
+		{
+			const string dotDir = "..";
+			Assert.IsTrue(FileUtil.IsDirectory(dotDir));
+		}
+
+		[Test]
+		public void IsDirectory_InvalidPath_NotIsDirectory()
+		{
+			const string invalidDir = "/this/path/is/invalid/ZZZ";
+			Assert.IsFalse(FileUtil.IsDirectory(invalidDir));
+		}
+
+		[Test]
+		public void IsDotDir_IsSingleDot_IsDotDir()
+		{
+			const string dotDir = ".";
+			Assert.IsTrue(FileUtil.IsDotDir(dotDir));
+		}
+
+		[Test]
+		public void IsDotDir_IsSingleDotWithTrailingSlash_IsDotDir()
+		{
+			const string dotDir = "./";
+			Assert.IsTrue(FileUtil.IsDotDir(dotDir));
+		}
+
+		[Test]
+		public void IsDotDir_IsDoubleDot_IsDotDir()
+		{
+			const string dotDir = "..";
+			Assert.IsTrue(FileUtil.IsDotDir(dotDir));
+		}
+
+		[Test]
+		public void IsDotDir_IsDoubleDotWithTrailingSlash_IsDotDir()
+		{
+			const string dotDir = "../";
+			Assert.IsTrue(FileUtil.IsDotDir(dotDir));
+		}
+
+		[Test]
+		public void IsDotDir_IsNotDotDir_IsNotDotDir()
+		{
+			const string nonDotDir = "~/path";
+			Assert.IsFalse(FileUtil.IsDotDir(nonDotDir));
+		}
+
+		[Test]
+		public void IsHidden_StartsWithDot_IsHidden()
+		{
+			var hiddenFile = new FileInfo(".FileUtilTests.cs");
+			Assert.IsTrue(FileUtil.IsHidden(hiddenFile));
+		}
+
+		[Test]
+		public void IsHidden_NotStartsWithDot_NotIsHidden()
 		{
 			var hiddenFile = new FileInfo("FileUtilTests.cs");
-			Assert.IsFalse(FileUtil.IsHiddenFile(hiddenFile));
+			Assert.IsFalse(FileUtil.IsHidden(hiddenFile));
+		}
+
+		[Test]
+		public void IsHidden_SingleDot_NotIsHidden()
+		{
+			var dotDir = new DirectoryInfo(".");
+			Assert.IsFalse(FileUtil.IsHidden(dotDir));
+		}
+
+		[Test]
+		public void IsHidden_DoubleDot_NotIsHidden()
+		{
+			var dotDir = new DirectoryInfo("..");
+			Assert.IsFalse(FileUtil.IsHidden(dotDir));
 		}
 
 		[Test]

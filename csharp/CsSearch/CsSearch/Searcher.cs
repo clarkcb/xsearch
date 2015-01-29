@@ -36,13 +36,23 @@ namespace CsSearch
 		{
 			if (string.IsNullOrEmpty(Settings.StartPath))
 				throw new SearchException("Startpath not defined");
+			if (FileUtil.IsDirectory(Settings.StartPath))
+			{
+				if (!(new DirectoryInfo(Settings.StartPath)).Exists)
+					throw new SearchException("Startpath not found");
+			}
+			else
+			{
+				if (!(new FileInfo(Settings.StartPath)).Exists)
+					throw new SearchException("Startpath not found");
+			}
 			if (Settings.SearchPatterns.Count < 1)
 				throw new SearchException("No search patterns specified");
 		}
 
-		private bool IsSearchDirectory(DirectoryInfo d)
+		public bool IsSearchDirectory(DirectoryInfo d)
 		{
-			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(d))
+			if (Settings.ExcludeHidden && FileUtil.IsHidden(d))
 				return false;
 			if (Settings.InDirPatterns.Count > 0 &&
 				!Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
@@ -53,10 +63,8 @@ namespace CsSearch
 			return true;
 		}
 
-		private bool IsSearchFile(FileInfo f)
+		public bool IsSearchFile(FileInfo f)
 		{
-			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(f))
-				return false;
 			if (Settings.InExtensions.Count > 0 &&
 				!Settings.InExtensions.Contains(f.Extension))
 				return false;
@@ -72,10 +80,8 @@ namespace CsSearch
 			return true;
 		}
 
-		private bool IsArchiveSearchFile(FileInfo f)
+		public bool IsArchiveSearchFile(FileInfo f)
 		{
-			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(f))
-				return false;
 			if (Settings.InArchiveExtensions.Count > 0 &&
 				!Settings.InArchiveExtensions.Contains(f.Extension))
 				return false;
@@ -151,12 +157,16 @@ namespace CsSearch
 			}
 			return searchDirs;
 		}
-		private bool FilterFile(FileInfo f)
+
+		public bool FilterFile(FileInfo f)
 		{
-			return
-				(_fileTypes.IsArchiveFile(f) && Settings.SearchArchives && IsArchiveSearchFile(f))
-				||
-				(!Settings.ArchivesOnly && IsSearchFile(f));
+			if (FileUtil.IsHidden(f) && Settings.ExcludeHidden)
+				return false;
+			if (_fileTypes.IsArchiveFile(f))
+			{
+				return (Settings.SearchArchives && IsArchiveSearchFile(f));
+			}
+			return (!Settings.ArchivesOnly && IsSearchFile(f));
 		}
 
 		private SearchFile SearchFileFromFileInfo(FileInfo f)
@@ -199,8 +209,7 @@ namespace CsSearch
 
 		public void Search()
 		{
-			var attr = File.GetAttributes(Settings.StartPath);
-			if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+			if (FileUtil.IsDirectory(Settings.StartPath))
 			{
 				var startDir = new DirectoryInfo(Settings.StartPath);
 				if (IsSearchDirectory(startDir))

@@ -4,19 +4,23 @@ namespace CsSearch
 {
 	class SearchMain
 	{
+		private static void Log(string message)
+		{
+			Console.WriteLine(message);
+		}
+
 		static void Main(string[] args)
 		{
 			var options = new SearchOptions();
-			SearchSettings settings;
 			try
 			{
-				settings = options.SettingsFromArgs(args);
+				var settings = options.SettingsFromArgs(args);
 				var searcher = new Searcher(settings);
 				searcher.Search();
 
 				if (settings.PrintResults)
 				{
-					Console.WriteLine();
+					Log("");
 					searcher.PrintResults();
 				}
 
@@ -37,7 +41,7 @@ namespace CsSearch
 			}
 			catch (SearchException e)
 			{
-				Console.WriteLine("Error: {0}", e.Message);
+				Log(string.Format("\nError: {0}", e.Message));
 				options.Usage(1);
 			}
 		}

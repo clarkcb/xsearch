@@ -18,9 +18,31 @@ namespace CsSearch
 			return filePath;
 		}
 
-		public static bool IsHiddenFile(FileSystemInfo f)
+		public static bool IsDirectory(string filename)
 		{
-			var startsWithDot = f.Name.StartsWith(".") && !dotDirs.Contains(f.Name);
+			try
+			{
+				var attr = File.GetAttributes(filename);
+				return ((attr & FileAttributes.Directory) == FileAttributes.Directory);
+			}
+			catch (DirectoryNotFoundException)
+			{
+				return false;
+			}
+			catch (FileNotFoundException)
+			{
+				return false;
+			}
+		}
+
+		public static bool IsDotDir(string filename)
+		{
+			return dotDirs.Contains(NormalizePath(filename));
+		}
+
+		public static bool IsHidden(FileSystemInfo f)
+		{
+			var startsWithDot = f.Name.StartsWith(".") && !IsDotDir(f.Name);
 			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
 			return (startsWithDot || hasHiddenAttribute);
 		}
