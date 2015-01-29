@@ -24,9 +24,15 @@ class FileUtil(object):
         return ext.lower()
 
     @staticmethod
+    def is_dot_dir(filename):
+        """Returns true if file is dot dir (. or ..)"""
+        f = os.path.basename(filename)
+        return f in FileUtil.DOT_DIRS
+
+    @staticmethod
     def is_hidden(filename):
         """Returns true if file is hidden else false"""
         f = os.path.basename(filename)
-        if len(f) > 1 and f.startswith('.') and not f in FileUtil.DOT_DIRS:
+        if len(f) > 1 and f.startswith('.') and not FileUtil.is_dot_dir(f):
             return True
         return False
