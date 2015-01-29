@@ -28,8 +28,6 @@ public class SearchResultTest {
         String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
         String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
                 lineNum, matchStartIndex, matchEndIndex, line.trim());
-        System.out.println("\nsearchResult.toString():\n"+searchResult.toString());
-        System.out.println("expectedOutput:\n"+expectedOutput);
         assertEquals(searchResult.toString(), expectedOutput);
     }
 
@@ -45,8 +43,6 @@ public class SearchResultTest {
             matchStartIndex, matchEndIndex, null);
         String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
         String expectedOutput = String.format("%s matches", expectedPath);
-        System.out.println("\nsearchResult.toString():\n"+searchResult.toString());
-        System.out.println("expectedOutput:\n"+expectedOutput);
         assertEquals(searchResult.toString(), expectedOutput);
     }
 

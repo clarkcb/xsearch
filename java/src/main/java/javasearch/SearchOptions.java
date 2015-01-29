@@ -149,6 +149,7 @@ public class SearchOptions {
             put("debug", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setDebug(true);
+                    settings.setVerbose(true);
                 }
             });
             put("dotiming", new SearchFlagSetter() {
@@ -318,12 +319,6 @@ public class SearchOptions {
 			} else {
 				settings.setStartPath(arg);
 			}
-		}
-		if (null == settings.getStartPath() || settings.getStartPath().equals("")) {
-			throw new SearchException("Startpath not defined");
-		}
-		if (settings.getSearchPatterns().isEmpty()) {
-			throw new SearchException("No search patterns defined");
 		}
 		return settings;
 	}

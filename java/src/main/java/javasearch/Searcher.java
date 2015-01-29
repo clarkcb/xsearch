@@ -28,7 +28,7 @@ public class Searcher {
 	private Map<String,Long> timers;
 	private long totalElapsedTime;
 
-	public Searcher(SearchSettings settings) {
+	public Searcher(SearchSettings settings) throws SearchException {
 		this.settings = settings;
 		this.results = new ArrayList<SearchResult>();
 		this.fileTypes = new FileTypes();
@@ -42,11 +42,17 @@ public class Searcher {
 		System.out.println(message);
 	}
 
-	private void validateSettings() {
-        if (settings.getStartPath() == null || settings.getStartPath().equals(""))
-            throw new IllegalArgumentException("Missing startpath");
-        if ((settings.getSearchPatterns().size() < 1))
-            throw new IllegalArgumentException("No search patterns defined");
+	private void validateSettings() throws SearchException {
+        if (null == settings.getStartPath() || settings.getStartPath().equals("")) {
+            throw new SearchException("Startpath not defined");
+        }
+        File startPathFile = new File(settings.getStartPath());
+        if (!startPathFile.exists()) {
+            throw new SearchException("Startpath not found");
+        }
+        if (settings.getSearchPatterns().isEmpty()) {
+            throw new SearchException("No search patterns defined");
+        }
     }
 
 	private boolean anyMatchesAnyPattern(List<String> sList, Set<Pattern> patternSet) {
@@ -72,8 +78,7 @@ public class Searcher {
         List<String> pathElems = Arrays.asList(d.toString().split(File.separator));
         if (settings.getExcludeHidden()) {
             for (String p : pathElems) {
-                if (p.equals(".") || p.equals("..")) continue;
-                if (p.startsWith(".")) return false;
+                if (FileUtil.isHidden(p)) return false;
             }
         }
 		return (settings.getInDirPatterns().isEmpty() ||
@@ -125,9 +130,6 @@ public class Searcher {
 	}
 
 	private boolean isSearchFile(File f) {
-        if (f.getName().startsWith(".") && settings.getExcludeHidden()) {
-            return false;
-        }
 		String ext = FileUtil.getExtension(f);
 		return (settings.getInExtensions().isEmpty() ||
                 settings.getInExtensions().contains(ext))
@@ -143,9 +145,6 @@ public class Searcher {
 	}
 
 	private boolean isArchiveSearchFile(File f) {
-        if (f.getName().startsWith(".") && settings.getExcludeHidden()) {
-            return false;
-        }
 		String ext = FileUtil.getExtension(f);
 		return (settings.getInArchiveExtensions().isEmpty() ||
                 settings.getInArchiveExtensions().contains(ext))
@@ -161,13 +160,14 @@ public class Searcher {
 	}
 
 	private boolean filterFile(File f, FileType fileType) {
+        if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
+            return false;
+        }
 		if (fileType == FileType.ARCHIVE && settings.getSearchArchives()
 				&& isArchiveSearchFile(f))
 			return true;
-		if (!settings.getArchivesOnly() && isSearchFile(f))
-			return true;
-		return false;
-	}
+        return !settings.getArchivesOnly() && isSearchFile(f);
+    }
 
 	private List<SearchFile> getSearchFilesForDir(File dir) {
 		if (settings.getDebug()) {

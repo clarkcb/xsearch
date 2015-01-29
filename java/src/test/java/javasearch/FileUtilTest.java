@@ -44,4 +44,70 @@ public class FileUtilTest {
         File file = new File("filename");
         assertEquals(FileUtil.getExtension(file), "");
     }
+
+    @Test
+    public void testIsDotDirSingleDot() {
+        String filename = ".";
+        assert(FileUtil.isDotDir(filename));
+    }
+
+    @Test
+    public void testIsDotDirDoubleDot() {
+        String filename = "..";
+        assert(FileUtil.isDotDir(filename));
+    }
+
+    @Test
+    public void testIsDotDirNotDotDir() {
+        String filename = "~/path";
+        assert(!FileUtil.isDotDir(filename));
+    }
+
+    @Test
+    public void testIsDotDirPathWithDot() {
+        String filename = "./path";
+        assert(!FileUtil.isDotDir(filename));
+    }
+
+    @Test
+    public void testIsDotDirHiddenFile() {
+        String filename = ".gitignore";
+        assert(!FileUtil.isDotDir(filename));
+    }
+
+    @Test
+    public void testIsHiddenSingleDot() {
+        String filename = ".";
+        assert(!FileUtil.isHidden(filename));
+    }
+
+    @Test
+    public void testIsHiddenDoubleDot() {
+        String filename = "..";
+        assert(!FileUtil.isHidden(filename));
+    }
+
+    @Test
+    public void testIsHiddenHiddenFileName() {
+        String filename = ".gitignore";
+        assert(FileUtil.isHidden(filename));
+    }
+
+    @Test
+    public void testIsHiddenNotHiddenFileName() {
+        String filename = "file.txt";
+        assert(!FileUtil.isHidden(filename));
+    }
+
+    @Test
+    public void testIsHiddenHiddenFile() {
+        File file = new File(".gitignore");
+        assert(FileUtil.isHidden(file));
+    }
+
+    @Test
+    public void testIsHiddenNotHiddenFile() {
+        File file = new File("./file.txt");
+        assert(!FileUtil.isHidden(file));
+    }
 }

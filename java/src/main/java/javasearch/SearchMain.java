@@ -12,55 +12,59 @@ package javasearch;
 
 public class SearchMain {
 
-	public static void main(String[] args) {
+    private static void log(String message) {
+        System.out.println(message);
+    }
+
+    private static void logError(String message) {
+        log("Error: " + message);
+    }
+
+    public static void main(String[] args) {
 
 		SearchOptions options = new SearchOptions();
 		SearchSettings settings = new SearchSettings();
 
-		if (args.length < 1) {
-			System.out.println("Error: missing required arguments\n");
-			options.usage(1);
-		}
-
 		try {
 			settings = options.settingsFromArgs(args);
 		} catch (SearchException e) {
-			System.out.println("Error: " + e.getMessage() + "\n");
+            log("");
+			logError(e.getMessage() + "\n");
 			options.usage(1);
 		}
 
 		if (settings.getDebug()) {
-			settings.setVerbose(true);
-			System.out.println("\nsettings:");
-			System.out.println(settings.toString() + "\n");
+			log("\nsettings:");
+			log(settings.toString() + "\n");
 		}
 
 		if (settings.getPrintUsage()) {
 			options.usage(0);
 		}
 
-		Searcher searcher = new Searcher(settings);
-
 		try {
+            Searcher searcher = new Searcher(settings);
 			searcher.search();
+
+            // print the results
+            if (settings.getPrintResults()) {
+                log("");
+                searcher.printSearchResults();
+            }
+            if (settings.getListDirs()) {
+                searcher.printMatchingDirs();
+            }
+            if (settings.getListFiles()) {
+                searcher.printMatchingFiles();
+            }
+            if (settings.getListLines()) {
+                searcher.printMatchingLines();
+            }
+
 		} catch (SearchException e) {
-			System.out.println("Error: " + e.getMessage() + "\n");
+            log("");
+			logError(e.getMessage() + "\n");
 			options.usage(1);
 		}
-
-		// print the results
-        if (settings.getPrintResults()) {
-			System.out.println();
-        	searcher.printSearchResults();
-        }
-        if (settings.getListDirs()) {
-        	searcher.printMatchingDirs();
-        }
-        if (settings.getListFiles()) {
-        	searcher.printMatchingFiles();
-        }
-        if (settings.getListLines()) {
-        	searcher.printMatchingLines();
-        }
     }
 }
