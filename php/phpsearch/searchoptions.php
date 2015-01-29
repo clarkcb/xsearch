@@ -77,7 +77,6 @@ class SearchOptions {
             },
             'archivesonly' => function($settings) {
                 $settings->archivesonly = true;
-                // makes sense to turn this on as well
                 $settings->searcharchives = true;
             },
             'debug' => function($settings) {
@@ -204,7 +203,7 @@ class SearchOptions {
     }
 
     private function get_usage_string() {
-        $usage = "Usage:\n phpsearch.php [options] <startpath>\n\nOptions:\n";
+        $usage = "Usage:\n phpsearch.php [options] -s <searchpattern> <startpath>\n\nOptions:\n";
         $opt_map = array();
         $longest = 0;
         foreach ($this->options as $option) {

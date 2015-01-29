@@ -6,7 +6,7 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
         $this->searchoptions = new SearchOptions();
     }
 
-    public function test_default_settings() {
+    public function test_no_args() {
         $settings = $this->searchoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
         $this->assertFalse($settings->debug);

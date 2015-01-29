@@ -20,6 +20,9 @@ class Searcher {
         if (!file_exists($this->settings->startpath)) {
             throw new SearchException('Startpath not found');
         }
+        if (count($this->settings->searchpatterns) == 0) {
+            throw new SearchException('No search patterns specified');
+        }
     }
 
     private function matches_any_pattern($s, $patterns) {
@@ -345,8 +348,8 @@ class Searcher {
                     $m_line_start_index = 0;
                     $before_line_count = 0;
                     if ($before_start_indices) {
-                        $m_line_start_index = $before_start_indices[count($before_start_indices)-1];
                         $before_line_count = count($before_start_indices) - 1;
+                        $m_line_start_index = $before_start_indices[$before_line_count];
                     }
                     $m_line_end_index = $end_line_indices[array_search($m_line_start_index, $start_line_indices)];
                     $line = substr($s, $m_line_start_index, $m_line_end_index - $m_line_start_index);

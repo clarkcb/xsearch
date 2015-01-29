@@ -12,8 +12,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
         $linesafter = [];
         $searchresult = new SearchResult($pattern, $file, $linenum,
             $match_start_index, $match_end_index, $line, $linesbefore, $linesafter);
-        $expectedpath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
-        $expectedoutput = sprintf("%s: %d: [%d:%d]: %s", $expectedpath,
+        $expectedoutput = sprintf("%s: %d: [%d:%d]: %s", $file,
             $linenum, $match_start_index, $match_end_index, trim($line));
         $this->assertEquals($expectedoutput, "$searchresult");
     }
@@ -29,8 +28,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
         $linesafter = [];
         $searchresult = new SearchResult($pattern, $file, $linenum,
             $match_start_index, $match_end_index, $line, $linesbefore, $linesafter);
-        $expectedpath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
-        $expectedoutput = sprintf("%s matches", $expectedpath);
+        $expectedoutput = sprintf("%s matches", $file);
         $this->assertEquals($expectedoutput, "$searchresult");
     }
 
@@ -45,7 +43,6 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
         $linesafter = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"];
         $searchresult = new SearchResult($pattern, $file, $linenum,
             $match_start_index, $match_end_index, $line, $linesbefore, $linesafter);
-        $expectedpath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
         $outputtemplate = 
             "================================================================================\n" .
             "%s: %d: [%d:%d]\n" .
@@ -55,7 +52,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
             "> 10 | \tpublic class Searcher\n" .
             "  11 | \t{\n" .
             "  12 | \t\tprivate readonly FileTypes _fileTypes;\n";
-        $expectedoutput = sprintf($outputtemplate, $expectedpath, $linenum,
+        $expectedoutput = sprintf($outputtemplate, $file, $linenum,
             $match_start_index, $match_end_index);
         $this->assertEquals($expectedoutput, "$searchresult");
     }

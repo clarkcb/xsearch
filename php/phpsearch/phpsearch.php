@@ -9,7 +9,12 @@ function main($argv) {
     try {
         $settings = $searchoptions->settings_from_args(array_slice($argv, 1));
         if ($settings->debug) {
-            echo "settings: $settings\n";
+            log_msg("settings: $settings");
+        }
+
+        if ($settings->printusage) {
+            $searchoptions->usage();
+            exit;
         }
 
         $searcher = new Searcher($settings);
