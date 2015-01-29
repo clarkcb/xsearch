@@ -18,9 +18,14 @@ class FileUtil
     ext
   end
 
+  def self.is_dot_dir?(filename)
+    f = File.basename(filename)
+    ['.', '..'].include?(f)
+  end
+
   def self.is_hidden?(filename)
     f = File.basename(filename)
-    if f.length > 1 and f[0] == '.' and ! ['.', '..'].include?(f)
+    if f.length > 1 and f[0] == '.' and !['.', '..'].include?(f)
       true
     else
       false
