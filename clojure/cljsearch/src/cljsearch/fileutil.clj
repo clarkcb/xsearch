@@ -44,13 +44,16 @@
 (defn is-dot-dir? [name]
   (contains? #{"." ".."} name))
 
+(defn split-path [f]
+  (split (.getPath f) (re-pattern File/separator)))
+
 (defn hidden? [name]
   (and
     (.startsWith name ".")
     (not (is-dot-dir? name))))
 
 (defn hidden-dir? [d]
-  (let [elems (split (.getPath d) (re-pattern File/separator))]
+  (let [elems (split-path d)]
     (some #(hidden? %) elems)))
 
 (defn hidden-file? [f]
