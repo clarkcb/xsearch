@@ -31,7 +31,7 @@ class Searcher
   def validate_settings
     raise 'Startpath not defined' unless @settings.startpath
     raise 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
-    raise 'No search patterns specified' unless @settings.searchpatterns
+    raise 'No search patterns specified' unless @settings.searchpatterns.count > 0
   end
 
   def matches_any_pattern(s, pattern_set)
@@ -49,7 +49,7 @@ class Searcher
 
   def is_search_dir(d)
     path_elems = d.split(File::SEPARATOR) - ['.', '..']
-    if @settings.excludehidden && path_elems.any? {|p| p.start_with?('.')}
+    if @settings.excludehidden && path_elems.any? {|p| FileUtil::is_hidden?(p)}
       return false
     end
     if @settings.in_dirpatterns.count > 0 &&
@@ -64,7 +64,7 @@ class Searcher
   end
 
   def is_search_file(f)
-    if @settings.excludehidden && f.start_with?('.')
+    if FileUtil::is_hidden?(f) && @settings.excludehidden
       return false
     end
     if @settings.in_extensions.count > 0 &&
@@ -88,7 +88,7 @@ class Searcher
   end
 
   def is_archive_search_file(f)
-    if @settings.excludehidden && f.start_with?('.')
+    if FileUtil::is_hidden?(f) && @settings.excludehidden
       return false
     end
     if @settings.in_archiveextensions.count > 0 &&
