@@ -1,4 +1,5 @@
 (ns cljsearch.fileutil-test
+  (:use [clojure.java.io :only (file)])
   (:require [clojure.test :refer :all])
   (:require [clojure.string :as str :only (join)])
   (:use [cljsearch.fileutil]))
@@ -35,3 +36,14 @@
     (is (not (hidden? ".")))
     (is (not (hidden? "..")))
     (is (hidden? ".filename.txt"))))
+
+(deftest test-is-dot-dir?
+  (testing "test-is-dot-dir?"
+    (is (is-dot-dir? "."))
+    (is (is-dot-dir? ".."))))
+
+(deftest test-split-path
+  (testing "test-split-path"
+    (let [elems (split-path (file "~/path/to/nowhere"))]
+      (is (= (first elems) "~"))
+      (is (= (second elems) "path")))))
