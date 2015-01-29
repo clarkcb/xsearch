@@ -11,7 +11,7 @@
 # Configuration
 ########################################
 
-PROJECT_PATH=~/src/git/xsearch
+PROJECT_PATH=$HOME/src/git/xsearch
 SHARED_PATH=$PROJECT_PATH/shared
 
 SEARCHSTRING="Searcher"

@@ -11,7 +11,7 @@
 # Configuration
 ########################################
 
-PROJECT_PATH=/Users/cary/src/git/xsearch
+PROJECT_PATH=$HOME/src/git/xsearch
 SHARED_PATH=$PROJECT_PATH/shared
 TEST_FILE_PATH=$SHARED_PATH/testFiles
 
