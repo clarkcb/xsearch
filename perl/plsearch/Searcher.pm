@@ -9,7 +9,7 @@
 package plsearch::Searcher;
 
 use strict;
-use File::Spec::Functions;
+use File::Spec;
 use File::Basename;
 
 use plsearch::common;
@@ -70,20 +70,20 @@ sub is_search_dir {
     if (plsearch::FileUtil::is_dot_dir($d)) {
         return 1;
     }
-    my $path_elems = plsearch::FileUtil::split_path($d);
+    my @path_elems = File::Spec->splitdir($d);
     if ($self->{settings}->{excludehidden}) {
-        foreach my $p (@{$path_elems}) {
+        foreach my $p (@path_elems) {
             if (plsearch::FileUtil::is_hidden($p)) {
                 return 0;
             }
         }
     }
     if (scalar @{$self->{settings}->{in_dirpatterns}} &&
-        !$self->any_matches_any_pattern($path_elems, $self->{settings}->{in_dirpatterns})) {
+        !$self->any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dirpatterns})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_dirpatterns}} &&
-        $self->any_matches_any_pattern($path_elems, $self->{settings}->{out_dirpatterns})) {
+        $self->any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dirpatterns})) {
         return 0;
     }
     return 1;
@@ -138,7 +138,7 @@ sub rec_get_search_dirs {
     my $searchdirs = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
-        my $subfile = catfile($d, $f);
+        my $subfile = File::Spec->join($d, $f);
         if (-d $subfile && !plsearch::FileUtil::is_dot_dir($f) && $self->is_search_dir($f)) {
             push(@{$searchdirs}, $subfile);
         }
@@ -196,7 +196,7 @@ sub get_search_files_for_directory {
     my $searchfiles = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
-        my $subfile = catfile($d, $f);
+        my $subfile = File::Spec->join($d, $f);
         if (-f $subfile && $self->filter_file($f)) {
             push(@{$searchfiles}, $subfile);
         }

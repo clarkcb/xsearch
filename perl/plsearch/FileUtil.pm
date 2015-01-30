@@ -69,19 +69,6 @@ sub is_hidden {
     return 0;
 }
 
-sub split_path {
-    my ($filepath) = @_;
-    my @elems;
-    if (index($filepath, '/') > -1) {
-        @elems = split('/', $filepath);
-    } elsif (index($filepath, '\\') > -1) {
-        @elems = split(/\\/, $filepath);
-    } else {
-        @elems = ($filepath);
-    }
-    return \@elems;
-}
-
 1;
 
 __END__

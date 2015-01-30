@@ -6,7 +6,7 @@
 use strict;
 use warnings;
 
-use Test::Simple tests => 25;
+use Test::Simple tests => 13;
 
 use lib '/Users/cary/src/git/xsearch/perl';
 
@@ -100,39 +100,6 @@ sub test_is_hidden_double_dot {
 }
 
 ################################################################################
-# split_path tests
-################################################################################
-sub test_split_path_path_with_forward_slashes {
-    my $filepath = '~/path/to/filename.txt';
-    my $elems = plsearch::FileUtil::split_path($filepath);
-    ok(scalar @{$elems} == 4, "$filepath has 4 path elems");
-    ok($elems->[0] eq '~', "$filepath has '~' as first elem");
-    ok($elems->[1] eq 'path', "$filepath has 'path' as second elem");
-    ok($elems->[2] eq 'to', "$filepath has 'to' as third elem");
-    ok($elems->[3] eq 'filename.txt',
-        "$filepath has 'filename.txt' as last elem");
-}
-
-sub test_split_path_path_with_back_slashes {
-    my $filepath = 'C:\\path\\to\\filename.txt';
-    my $elems = plsearch::FileUtil::split_path($filepath);
-    ok(scalar @{$elems} == 4, "$filepath has 4 path elems");
-    ok($elems->[0] eq 'C:', "$filepath has 'C:' as first elem");
-    ok($elems->[1] eq 'path', "$filepath has 'path' as second elem");
-    ok($elems->[2] eq 'to', "$filepath has 'to' as third elem");
-    ok($elems->[3] eq 'filename.txt',
-        "$filepath has 'filename.txt' as last elem");
-}
-
-sub test_split_path_path_without_slashes {
-    my $filepath = 'filename.txt';
-    my $elems = plsearch::FileUtil::split_path($filepath);
-    ok(scalar @{$elems} == 1, "$filepath has 1 path elem");
-    ok($elems->[0] eq 'filename.txt',
-        "$filepath has 'filename.txt' as first elem");
-}
-
-################################################################################
 # main
 ################################################################################
 sub main {
@@ -149,9 +116,6 @@ sub main {
     test_is_hidden_not_hidden_file();
     test_is_hidden_single_dot();
     test_is_hidden_double_dot();
-    test_split_path_path_with_forward_slashes();
-    test_split_path_path_with_back_slashes();
-    test_split_path_path_without_slashes();
 }
 
 main();

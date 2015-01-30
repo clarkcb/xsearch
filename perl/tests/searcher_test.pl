@@ -284,7 +284,6 @@ sub test_is_archive_search_file_no_match_out_pattern {
 # filter_file tests
 ################################################################################
 
-# TestFilterFile_NoExtensionsNoPatterns_True()
 sub test_filter_file_matches_by_default {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -293,7 +292,6 @@ sub test_filter_file_matches_by_default {
     ok($searcher->filter_file($file), "$file passes filter_file by default");
 }
 
-# TestFilterFile_IsSearchFile_True()
 sub test_filter_file_is_search_file {
     my $settings = get_settings();
     push(@{$settings->{in_extensions}}, 'pm');
@@ -303,7 +301,6 @@ sub test_filter_file_is_search_file {
     ok($searcher->filter_file($file), "$file passes filter_file when is_search_file");
 }
 
-# TestFilterFile_NotIsSearchFile_False()
 sub test_filter_file_not_is_search_file {
     my $settings = get_settings();
     push(@{$settings->{in_extensions}}, 'pl');
@@ -313,7 +310,6 @@ sub test_filter_file_not_is_search_file {
     ok(!$searcher->filter_file($file), "$file does not pass filter_file when !is_search_file");
 }
 
-# TestFilterFile_IsHidden_False()
 sub test_filter_file_is_hidden_file {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -322,7 +318,6 @@ sub test_filter_file_is_hidden_file {
     ok(!$searcher->filter_file($file), "$file does not pass filter_file when hidden");
 }
 
-# TestFilterFile_IsHiddenIncludeHidden_True()
 sub test_filter_file_hidden_includehidden {
     my $settings = get_settings();
     $settings->{excludehidden} = 0;
@@ -332,7 +327,6 @@ sub test_filter_file_hidden_includehidden {
     ok($searcher->filter_file($file), "$file passes filter_file when hidden and excludehidden=0");
 }
 
-# TestFilterFile_ArchiveNoSearchArchives_False()
 sub test_filter_file_archive_no_searcharchives {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -342,7 +336,6 @@ sub test_filter_file_archive_no_searcharchives {
     ok(!$searcher->filter_file($file), "$file does not pass filter_file when searcharchives=0");
 }
 
-# TestFilterFile_ArchiveSearchArchives_True()
 sub test_filter_file_archive_searcharchives {
     my $settings = get_settings();
     $settings->{searcharchives} = 1;
@@ -353,7 +346,6 @@ sub test_filter_file_archive_searcharchives {
     ok($searcher->filter_file($file), "$file passes filter_file when searcharchives=1");
 }
 
-# TestFilterFile_ArchiveFileArchivesOnly_True()
 sub test_filter_file_archive_archivesonly {
     my $settings = get_settings();
     $settings->{archivesonly} = 1;
@@ -365,7 +357,6 @@ sub test_filter_file_archive_archivesonly {
     ok($searcher->filter_file($file), "$file passes filter_file when archivesonly=1");
 }
 
-# TestFilterFile_NonArchiveFileArchivesOnly_False()
 sub test_filter_file_nonarchive_archivesonly {
     my $settings = get_settings();
     $settings->{archivesonly} = 1;
