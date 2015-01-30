@@ -67,12 +67,13 @@ class Searcher
     if FileUtil::is_hidden?(f) && @settings.excludehidden
       return false
     end
+    ext = FileUtil::get_extension(f)
     if @settings.in_extensions.count > 0 &&
-      ! @settings.in_extensions.include?(FileUtil::get_extension(f))
+      ! @settings.in_extensions.include?(ext)
       return false
     end
     if @settings.out_extensions.count > 0 &&
-      @settings.out_extensions.include?(FileUtil::get_extension(f))
+      @settings.out_extensions.include?(ext)
       return false
     end
     filename = Pathname.new(f).basename.to_s
@@ -91,12 +92,13 @@ class Searcher
     if FileUtil::is_hidden?(f) && @settings.excludehidden
       return false
     end
+    ext = FileUtil::get_extension(f)
     if @settings.in_archiveextensions.count > 0 &&
-      ! @settings.in_archiveextensions.include?(FileUtil::get_extension(f))
+      ! @settings.in_archiveextensions.include?(ext)
       return false
     end
     if @settings.out_archiveextensions.count > 0 &&
-      @settings.out_archiveextensions.include?(FileUtil::get_extension(f))
+      @settings.out_archiveextensions.include?(ext)
       return false
     end
     filename = Pathname.new(f).basename.to_s
