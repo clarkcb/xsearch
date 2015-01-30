@@ -70,9 +70,6 @@ class Searcher(object):
                 return True
         return False
 
-    def get_ext(self, f):
-        return FileUtil.get_extension(f)
-
     def is_search_dir(self, d):
         path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
         if self.settings.excludehidden:
@@ -90,11 +87,12 @@ class Searcher(object):
     def is_archive_search_file(self, f):
         if not self.filetypes.is_archive_file(f):
             return False
+        ext = FileUtil.get_extension(f)
         if self.settings.in_archiveextensions and \
-            not self.get_ext(f) in self.settings.in_archiveextensions:
+            not ext in self.settings.in_archiveextensions:
             return False
         if self.settings.out_archiveextensions and \
-            self.get_ext(f) in self.settings.out_archiveextensions:
+            ext in self.settings.out_archiveextensions:
             return False
         if self.settings.in_archivefilepatterns and \
             not self.matches_any_pattern(f, self.settings.in_archivefilepatterns):
@@ -105,11 +103,12 @@ class Searcher(object):
         return True
 
     def is_search_file(self, f):
+        ext = FileUtil.get_extension(f)
         if self.settings.in_extensions and \
-            not self.get_ext(f) in self.settings.in_extensions:
+            not ext in self.settings.in_extensions:
             return False
         if self.settings.out_extensions and \
-            self.get_ext(f) in self.settings.out_extensions:
+            ext in self.settings.out_extensions:
             return False
         if self.settings.in_filepatterns and \
             not self.matches_any_pattern(f, self.settings.in_filepatterns):
