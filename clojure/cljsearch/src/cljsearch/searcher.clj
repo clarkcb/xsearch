@@ -25,7 +25,7 @@
   (dosync
     (alter search-results conj r)))
 
-(defn is-search-dir [d settings]
+(defn is-search-dir? [d settings]
   (let [in-dirpatterns (:in-dirpatterns settings)
         out-dirpatterns (:out-dirpatterns settings)]
     (or
@@ -83,55 +83,61 @@
         startdir (if startpath (file startpath) nil)
         tests [(fn [ss] (if (not startpath) "Startpath not defined" nil))
                (fn [ss] (if (or (not startdir) (not (.exists startdir))) "Startpath not found" nil))
-               ; (fn [ss] (if (not (is-search-dir startdir ss)) "Startpath does not match settings" nil))
+               ; (fn [ss] (if (not (is-search-dir? startdir ss)) "Startpath does not match settings" nil))
                (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns specified" nil))]]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
 (defn get-search-dirs [settings]
   (let [startdir (file (:startpath settings))]
     (if (:recursive settings)
-      (vec (filter #(is-search-dir % settings) (filter #(.isDirectory %) (file-seq startdir))))
+      (vec (filter #(is-search-dir? % settings) (filter #(.isDirectory %) (file-seq startdir))))
       [startdir])))
 
-(defn is-archive-search-file [f settings]
+(defn is-archive-search-file? [f settings]
   (let [in-extensions (:in-archiveextensions settings)
         out-extensions (:out-archiveextensions settings)
         in-filepatterns (:in-archivefilepatterns settings)
-        out-filepatterns (:out-archivefilepatterns settings)]
+        out-filepatterns (:out-archivefilepatterns settings)
+        ext (get-ext f)
+        name (.getName f)
+        ]
     (and
       (or
         (empty? in-extensions)
-        (some #(= % (get-ext f)) in-extensions))
+        (some #(= % ext) in-extensions))
       (or
         (empty? out-extensions)
-        (not-any? #(= % (get-ext f)) out-extensions))
+        (not-any? #(= % ext) out-extensions))
       (or
         (empty? in-filepatterns)
-        (some #(re-find % (.getName f)) in-filepatterns))
+        (some #(re-find % name) in-filepatterns))
       (or
         (empty? out-filepatterns)
-        (not-any? #(re-find % (.getName f)) out-filepatterns)))))
+        (not-any? #(re-find % name) out-filepatterns)))))
 
-(defn is-search-file [f settings]
+(defn is-search-file? [f settings]
   (let [in-extensions (:in-extensions settings)
         out-extensions (:out-extensions settings)
         in-filepatterns (:in-filepatterns settings)
-        out-filepatterns (:out-filepatterns settings)]
+        out-filepatterns (:out-filepatterns settings)
+        ext (get-ext f)
+        name (.getName f)
+        ]
     (and
       (or
         (empty? in-extensions)
-        (some #(= % (get-ext f)) in-extensions))
+        (some #(= % ext) in-extensions))
       (or
         (empty? out-extensions)
-        (not-any? #(= % (get-ext f)) out-extensions))
+        (not-any? #(= % ext) out-extensions))
       (or
         (empty? in-filepatterns)
-        (some #(re-find % (.getName f)) in-filepatterns))
+        (some #(re-find % name) in-filepatterns))
       (or
         (empty? out-filepatterns)
-        (not-any? #(re-find % (.getName f)) out-filepatterns)))))
+        (not-any? #(re-find % name) out-filepatterns)))))
 
-(defn filter-file [f settings]
+(defn filter-file? [f settings]
   (and
     (or
       (not (:excludehidden settings))
@@ -140,13 +146,13 @@
       (and
         (archive-file? f)
         (:searcharchives settings)
-        (is-archive-search-file f settings))
+        (is-archive-search-file? f settings))
       (and
         (not (:archivesonly settings))
-        (is-search-file f settings)))))
+        (is-search-file? f settings)))))
 
 (defn get-search-files-for-directory [d settings]
-  (vec (filter #(filter-file % settings) (get-files-in-directory d))))
+  (vec (filter #(filter-file? % settings) (get-files-in-directory d))))
 
 (defn get-search-files [searchdirs settings]
   (apply concat (map #(get-search-files-for-directory % settings) searchdirs)))
@@ -176,26 +182,26 @@
         with-file-results (map #(assoc-in % [:file] f) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
 
-(defn matches-any-pattern [s pp]
+(defn matches-any-pattern? [s pp]
   (some #(re-find % s) pp))
 
-(defn any-matches-any-pattern [ss pp]
-  (some #(not (= % nil)) (map #(matches-any-pattern % pp) ss)))
+(defn any-matches-any-pattern? [ss pp]
+  (some #(not (= % nil)) (map #(matches-any-pattern? % pp) ss)))
 
-(defn linesmatch [lines inpatterns outpatterns]
+(defn linesmatch? [lines inpatterns outpatterns]
   (and
     (or
       (empty? inpatterns)
-      (any-matches-any-pattern lines inpatterns))
+      (any-matches-any-pattern? lines inpatterns))
     (or
       (empty? outpatterns)
-      (not (any-matches-any-pattern lines outpatterns)))))
+      (not (any-matches-any-pattern? lines outpatterns)))))
 
-(defn linesbefore-match [linesbefore settings]
-  (linesmatch linesbefore (:in-linesbeforepatterns settings) (:out-linesbeforepatterns settings)))
+(defn linesbefore-match? [linesbefore settings]
+  (linesmatch? linesbefore (:in-linesbeforepatterns settings) (:out-linesbeforepatterns settings)))
 
-(defn linesafter-match [linesafter settings]
-  (linesmatch linesafter (:in-linesafterpatterns settings) (:out-linesafterpatterns settings)))
+(defn linesafter-match? [linesafter settings]
+  (linesmatch? linesafter (:in-linesafterpatterns settings) (:out-linesafterpatterns settings)))
 
 (defn get-newline-indices [s]
   (map first 
@@ -261,10 +267,10 @@
             (and
               (or
                 (= (:linesbefore settings) 0)
-                (linesbefore-match linesbefore settings))
+                (linesbefore-match? linesbefore settings))
               (or
                 (= (:linesafter settings) 0)
-                (linesafter-match linesafter settings)))
+                (linesafter-match? linesafter settings)))
             (if (:firstmatch settings)
               [result]
               (concat [result] (search-multiline-string-for-pattern s m
@@ -288,8 +294,8 @@
       (if
         (and
           (.find m 0)
-          (linesbefore-match linesbefore settings)
-          (linesafter-match linesafter settings))
+          (linesbefore-match? linesbefore settings)
+          (linesafter-match? linesafter settings))
         (search-line-for-pattern linenum line linesbefore linesafter m 0 [] settings)
         [])))
   ([linenum line linesbefore linesafter m i results settings]

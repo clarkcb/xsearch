@@ -4,6 +4,14 @@
   (:require [clojure.string :as str :only (join)])
   (:use [cljsearch.fileutil]))
 
+(deftest test-expand-path
+  (let [home (System/getProperty "user.home")]
+    (testing "test-expand-path"
+      (is (= (expand-path "filename.txt") "filename.txt"))
+      (is (= (expand-path "/filename.txt") "/filename.txt"))
+      (is (= (expand-path "~/filename.txt")
+        (str/join "/" [home "filename.txt"]))))))
+
 (deftest test-get-ext
   (testing "test-get-ext"
     (is (= (get-ext "filename.txt") "txt"))
@@ -12,13 +20,6 @@
     (is (= (get-ext ".filename.txt") "txt"))
     (is (= (get-ext ".filename.") ""))
     (is (= (get-ext ".filename") ""))))
-
-(deftest test-expand-path
-  (let [home (System/getProperty "user.home")]
-    (testing "test-expand-path"
-      (is (= (expand-path "filename.txt") "filename.txt"))
-      (is (= (expand-path "/filename.txt") "/filename.txt"))
-      (is (= (expand-path "~/filename.txt") (str/join "/" [home "filename.txt"]))))))
 
 (deftest test-has-ext
   (testing "test-has-ext"
@@ -30,8 +31,8 @@
     (is (has-ext? ".filename." ""))
     (is (has-ext? ".filename" ""))))
 
-(deftest test-hidden
-  (testing "test-hidden"
+(deftest test-hidden?
+  (testing "test-hidden?"
     (is (not (hidden? "filename.txt")))
     (is (not (hidden? ".")))
     (is (not (hidden? "..")))
