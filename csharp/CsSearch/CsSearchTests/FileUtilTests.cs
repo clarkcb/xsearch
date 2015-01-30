@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using NUnit.Framework;
 using CsSearch;
 
@@ -7,6 +8,33 @@ namespace CsSearchTests
 	[TestFixture]
 	class FileUtilTests
 	{
+		/*************************************************************
+		 * GetRelativePath tests
+		*************************************************************/
+		[Test]
+		public void GetRelativePath_PathWithCurrentDirectory_RelativePath()
+		{
+			string path = Environment.CurrentDirectory + "/rest/of/path/";
+			Assert.AreEqual(FileUtil.GetRelativePath(path), "./rest/of/path/");
+		}
+
+		[Test]
+		public void GetRelativePath_PathWithoutCurrentDirectory_FullPath()
+		{
+			string path = "/a/full/path/by/itself/";
+			Assert.AreEqual(FileUtil.GetRelativePath(path), path);
+		}
+
+		[Test]
+		public void GetRelativePath_RelativePath_Unchanged()
+		{
+			string path = "./a/relative/path/";
+			Assert.AreEqual(FileUtil.GetRelativePath(path), path);
+		}
+
+		/*************************************************************
+		 * IsDirectory tests
+		*************************************************************/
 		[Test]
 		public void IsDirectory_IsSingleDot_IsDirectory()
 		{
@@ -28,6 +56,9 @@ namespace CsSearchTests
 			Assert.IsFalse(FileUtil.IsDirectory(invalidDir));
 		}
 
+		/*************************************************************
+		 * IsDotDir tests
+		*************************************************************/
 		[Test]
 		public void IsDotDir_IsSingleDot_IsDotDir()
 		{
@@ -63,6 +94,9 @@ namespace CsSearchTests
 			Assert.IsFalse(FileUtil.IsDotDir(nonDotDir));
 		}
 
+		/*************************************************************
+		 * IsHidden tests
+		*************************************************************/
 		[Test]
 		public void IsHidden_StartsWithDot_IsHidden()
 		{
@@ -91,6 +125,9 @@ namespace CsSearchTests
 			Assert.IsFalse(FileUtil.IsHidden(dotDir));
 		}
 
+		/*************************************************************
+		 * NormalizePath tests
+		*************************************************************/
 		[Test]
 		public void NormalizePath_NoTrailingSlash_UnchangedPath()
 		{
@@ -112,6 +149,9 @@ namespace CsSearchTests
 			Assert.AreEqual(FileUtil.NormalizePath(path), @"C:\src\git\xsearch");
 		}
 
+		/*************************************************************
+		 * JoinPath tests
+		*************************************************************/
 		[Test]
 		public void JoinPath_NoTrailingSlash_EqualsExpected()
 		{

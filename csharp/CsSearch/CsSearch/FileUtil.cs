@@ -47,17 +47,17 @@ namespace CsSearch
 			return (startsWithDot || hasHiddenAttribute);
 		}
 
-		public static string NormalizePath(string path)
-		{
-			return path.TrimEnd(dirSeps);
-		}
-
 		public static string JoinPath(string path1, string path2)
 		{
 			var dirSep = '/';
 			if (path1.IndexOf('\\') > -1)
 				dirSep = '\\';
 			return NormalizePath(path1) + dirSep + path2;
+		}
+
+		public static string NormalizePath(string path)
+		{
+			return path.TrimEnd(dirSeps);
 		}
 	}
 }
