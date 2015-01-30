@@ -47,8 +47,8 @@ class Searcher (settings: SearchSettings) {
     strings exists (matchesAnyPattern(_, patterns))
   }
 
-  def filterInByPatterns(s:String, inPatterns:Set[Regex],
-                         outPatterns:Set[Regex]): Boolean = {
+  def filterByPatterns(s:String, inPatterns:Set[Regex], outPatterns:Set[Regex]):
+    Boolean = {
     ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
      &&
      (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
@@ -58,13 +58,12 @@ class Searcher (settings: SearchSettings) {
     isSearchDir(d.getName)
   }
 
-
   def isSearchDir(dirName: String): Boolean = {
     val pathElems = FileUtil.splitPath(dirName)
     if (pathElems.exists(p => FileUtil.isHidden(p)) && settings.excludeHidden)
       false
     else
-      filterInByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
+      filterByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
   }
 
   private def getSearchSubDirs(dir:File): Iterable[File] = {
@@ -89,14 +88,17 @@ class Searcher (settings: SearchSettings) {
 
   def isSearchFile(fileName: String): Boolean = {
     if (FileUtil.isHidden(fileName) && settings.excludeHidden) false
-    ((settings.inExtensions.isEmpty ||
-      settings.inExtensions.contains(FileUtil.getExtension(fileName)))
-      &&
-      (settings.outExtensions.isEmpty ||
-        !settings.outExtensions.contains(FileUtil.getExtension(fileName)))
-      &&
-      filterInByPatterns(fileName, settings.inFilePatterns,
-        settings.outFilePatterns))
+    else {
+      val ext = FileUtil.getExtension(fileName)
+      ((settings.inExtensions.isEmpty ||
+        settings.inExtensions.contains(ext))
+        &&
+        (settings.outExtensions.isEmpty ||
+          !settings.outExtensions.contains(ext))
+        &&
+        filterByPatterns(fileName, settings.inFilePatterns,
+          settings.outFilePatterns))
+    }
   }
 
   def isArchiveSearchFile(f: File): Boolean = {
@@ -105,14 +107,17 @@ class Searcher (settings: SearchSettings) {
 
   def isArchiveSearchFile(fileName: String): Boolean = {
     if (FileUtil.isHidden(fileName) && settings.excludeHidden) false
-    ((settings.inArchiveExtensions.isEmpty ||
-      settings.inArchiveExtensions.contains(FileUtil.getExtension(fileName)))
-      &&
-      (settings.outArchiveExtensions.isEmpty ||
-        !settings.outArchiveExtensions.contains(FileUtil.getExtension(fileName)))
-      &&
-      filterInByPatterns(fileName, settings.inArchiveFilePatterns,
-        settings.outArchiveFilePatterns))
+    else {
+      val ext = FileUtil.getExtension(fileName)
+      ((settings.inArchiveExtensions.isEmpty ||
+        settings.inArchiveExtensions.contains(ext))
+        &&
+        (settings.outArchiveExtensions.isEmpty ||
+          !settings.outArchiveExtensions.contains(ext))
+        &&
+        filterByPatterns(fileName, settings.inArchiveFilePatterns,
+          settings.outArchiveFilePatterns))
+    }
   }
 
   def filterFile(f:File): Boolean = {
@@ -121,7 +126,7 @@ class Searcher (settings: SearchSettings) {
       case fileType@FileType.Archive =>
         if (settings.searchArchives && isArchiveSearchFile(f)) true
         else false
-      case fileType =>
+      case _ =>
         if (!settings.archivesOnly && isSearchFile(f)) true
         else false
     }

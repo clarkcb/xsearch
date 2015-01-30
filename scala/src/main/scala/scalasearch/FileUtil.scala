@@ -25,6 +25,6 @@ object FileUtil {
   }
 
   def splitPath(path: String): Iterable[String] = {
-    path.split(File.separator).filterNot(isDotDir)
+    path.split(File.separator).filterNot(_.isEmpty).filterNot(isDotDir)
   }
 }

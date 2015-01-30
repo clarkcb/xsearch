@@ -6,6 +6,9 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class FileUtilTest extends FunSuite {
+  /***************************************************************************
+    * getExtension tests
+    **************************************************************************/
   test("test get txt extension") {
     assert(FileUtil.getExtension(".filename.txt").equalsIgnoreCase("txt"))
   }
@@ -22,10 +25,6 @@ class FileUtilTest extends FunSuite {
     assert(FileUtil.getExtension("filename") == "")
   }
 
-  test("test isDotDir hidden file") {
-    assert(!FileUtil.isDotDir(".gitignore"))
-  }
-
   test("test hidden get txt extension") {
     assert(FileUtil.getExtension(".filename.txt").equalsIgnoreCase("txt"))
   }
@@ -38,6 +37,9 @@ class FileUtilTest extends FunSuite {
     assert(FileUtil.getExtension(".filename") == "")
   }
 
+  /***************************************************************************
+    * isDotDir tests
+    **************************************************************************/
   test("test isDotDir single dot") {
     assert(FileUtil.isDotDir("."))
   }
@@ -46,6 +48,13 @@ class FileUtilTest extends FunSuite {
     assert(FileUtil.isDotDir(".."))
   }
 
+  test("test isDotDir hidden file") {
+    assert(!FileUtil.isDotDir(".gitignore"))
+  }
+
+  /***************************************************************************
+    * isHidden tests
+    **************************************************************************/
   test("test isHidden single dot") {
     assert(!FileUtil.isHidden("."))
   }
@@ -64,5 +73,30 @@ class FileUtilTest extends FunSuite {
 
   test("test isHidden non-hidden file path with dot") {
     assert(!FileUtil.isHidden("./filename.txt"))
+  }
+
+  /***************************************************************************
+    * splitPath tests
+    **************************************************************************/
+  test("test splitPath path with dot") {
+    val path = "./path/to/somewhere/"
+    val elems = FileUtil.splitPath(path)
+    assert(elems.size == 3)
+    assert(elems.head == "path")
+  }
+
+  test("test splitPath path with double dot") {
+    val path = "../path/to/somewhere/"
+    val elems = FileUtil.splitPath(path)
+    assert(elems.size == 3)
+    assert(elems.head == "path")
+  }
+
+  test("test splitPath path without dot") {
+    val path = "/path/to/somewhere/"
+    val elems = FileUtil.splitPath(path)
+    println("elems:" + elems)
+    assert(elems.size == 3)
+    assert(elems.head == "path")
   }
 }
