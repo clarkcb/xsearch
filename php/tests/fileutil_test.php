@@ -77,6 +77,30 @@ class FileUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /***************************************************************************
+     * join_path tests
+     **************************************************************************/
+    public function test_join_path_forward_slashes() {
+        $path = '/path/to/nowhere';
+        $file = 'nowhere.txt';
+        $joined = FileUtil::join_path($path, $file);
+        $this->assertEquals($joined, '/path/to/nowhere/nowhere.txt');
+    }
+
+    public function test_join_path_backslashes() {
+        $path = 'C:\\path\\to\\nowhere';
+        $file = 'nowhere.txt';
+        $joined = FileUtil::join_path($path, $file);
+        $this->assertEquals($joined, 'C:\\path\\to\\nowhere\\nowhere.txt');
+    }
+
+    public function test_join_path_no_slashes() {
+        $path = 'nowhere';
+        $file = 'nowhere.txt';
+        $joined = FileUtil::join_path($path, $file);
+        $this->assertEquals($joined, 'nowhere/nowhere.txt');
+    }
+
+    /***************************************************************************
      * normalize_path tests
      **************************************************************************/
     public function test_normalize_path_no_trailing_slash() {

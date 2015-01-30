@@ -32,7 +32,7 @@ class FileUtil {
     }
 
     public static function join_path($path, $file) {
-        return self::normalize_path($path) . '/' . $file;
+        return self::normalize_path($path) . self::get_separator($path) . $file;
     }
 
     public static function get_separator($path) {
