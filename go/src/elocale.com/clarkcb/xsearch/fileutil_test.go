@@ -1,6 +1,27 @@
 package xsearch
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+func TestExpandPath(t *testing.T) {
+	expected := map[string]string{
+		"hello.txt":        "hello.txt",
+		"/a/path/to/where": "/a/path/to/where",
+	}
+	for k, v := range expected {
+		if path := expandPath(k); path != v {
+			t.Errorf("expandPath(\"%s\")=\"%s\", expected=\"%s\"", k, path, v)
+		}
+	}
+	expandable := "~/src/git/xsearch";
+	expanded := expandPath(expandable);
+	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/");
+	if !valid {
+		t.Errorf("expandPath(\"%s\")=\"%s\", expected expanded", expandable, expanded)
+	}
+}
 
 func TestGetExtension(t *testing.T) {
 	expected := map[string]string{
