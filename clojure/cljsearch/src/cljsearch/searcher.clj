@@ -148,6 +148,7 @@
         (:searcharchives settings)
         (is-archive-search-file? f settings))
       (and
+        (not (archive-file? f))
         (not (:archivesonly settings))
         (is-search-file? f settings)))))
 
