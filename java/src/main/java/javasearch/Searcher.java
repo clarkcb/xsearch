@@ -75,7 +75,7 @@ public class Searcher {
 	}
 
 	private boolean isSearchDir(File d) {
-        List<String> pathElems = Arrays.asList(d.toString().split(File.separator));
+        List<String> pathElems = FileUtil.splitPath(d.toString());
         if (settings.getExcludeHidden()) {
             for (String p : pathElems) {
                 if (FileUtil.isHidden(p)) return false;
@@ -163,9 +163,9 @@ public class Searcher {
         if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
             return false;
         }
-		if (fileType == FileType.ARCHIVE && settings.getSearchArchives()
-				&& isArchiveSearchFile(f))
-			return true;
+		if (fileType == FileType.ARCHIVE) {
+            return settings.getSearchArchives() && isArchiveSearchFile(f);
+        }
         return !settings.getArchivesOnly() && isSearchFile(f);
     }
 

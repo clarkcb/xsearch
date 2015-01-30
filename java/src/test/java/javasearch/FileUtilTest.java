@@ -3,12 +3,16 @@ package javasearch;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class FileUtilTest {
     public FileUtilTest() {}
 
+    /***************************************************************************
+     * getExtension tests
+     **************************************************************************/
     @Test
     public void testGetTxtExtension() {
         File file = new File("filename.txt");
@@ -45,6 +49,9 @@ public class FileUtilTest {
         assertEquals(FileUtil.getExtension(file), "");
     }
 
+    /***************************************************************************
+     * isDotDir tests
+     **************************************************************************/
     @Test
     public void testIsDotDirSingleDot() {
         String filename = ".";
@@ -75,6 +82,9 @@ public class FileUtilTest {
         assert(!FileUtil.isDotDir(filename));
     }
 
+    /***************************************************************************
+     * isHidden tests
+     **************************************************************************/
     @Test
     public void testIsHiddenSingleDot() {
         String filename = ".";
@@ -110,4 +120,42 @@ public class FileUtilTest {
         File file = new File("./file.txt");
         assert(!FileUtil.isHidden(file));
     }
+
+    /***************************************************************************
+     * splitPath tests
+     **************************************************************************/
+    @Test
+    public void testSplitPathWithDot() {
+        String path = "./path/to/somewhere/";
+        List<String> elems = FileUtil.splitPath(path);
+        assert(elems.size() == 3);
+        assert(elems.get(0).equals("path"));
+    }
+
+    @Test
+    public void testSplitPathWithDoubleDot() {
+        String path = "../path/to/somewhere/";
+        List<String> elems = FileUtil.splitPath(path);
+        assert(elems.size() == 3);
+        assert(elems.get(0).equals("path"));
+    }
+
+    @Test
+    public void testSplitPathWithoutDot() {
+        String path = "/path/to/somewhere/";
+        List<String> elems = FileUtil.splitPath(path);
+        assert(elems.size() == 3);
+        assert(elems.get(0).equals("path"));
+    }
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -13,11 +13,7 @@ package javasearch;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -39,10 +35,6 @@ public class FileUtil {
         return ext;
     }
 
-    public static boolean isDotDir(File f) {
-        return isDotDir(f.getName());
-    }
-
     public static boolean isDotDir(String f) {
         return dotDirs.contains(f);
     }
@@ -53,5 +45,14 @@ public class FileUtil {
 
     public static boolean isHidden(String f) {
         return f.length() > 1 && f.charAt(0) == '.' && !isDotDir(f);
+    }
+
+    public static List<String> splitPath(String path) {
+        String[] elems = path.split(File.separator);
+        List<String> nonDotDirElems = new ArrayList<String>();
+        for (String elem : elems) {
+            if (!isDotDir(elem) && !elem.equals("")) nonDotDirElems.add(elem);
+        }
+        return nonDotDirElems;
     }
 }
