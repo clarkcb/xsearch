@@ -315,7 +315,7 @@ sub test_filter_file_is_hidden_file {
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok(!$searcher->filter_file($file), "$file does not pass filter_file when hidden");
+    ok(!$searcher->filter_file($file), "$file does not pass filter_file when excludehidden=1");
 }
 
 sub test_filter_file_hidden_includehidden {

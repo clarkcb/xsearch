@@ -70,7 +70,7 @@ sub is_search_dir {
     if (plsearch::FileUtil::is_dot_dir($d)) {
         return 1;
     }
-    my @path_elems = File::Spec->splitdir($d);
+    my @path_elems = grep {$_ ne ''} File::Spec->splitdir($d);
     if ($self->{settings}->{excludehidden}) {
         foreach my $p (@path_elems) {
             if (plsearch::FileUtil::is_hidden($p)) {
