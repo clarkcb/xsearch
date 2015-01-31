@@ -42,7 +42,7 @@ class Searcher {
         return false;
     }
 
-    private function is_search_dir($d) {
+    public function is_search_dir($d) {
         if (FileUtil::is_dot_dir($d))
             return true;
         if ($this->settings->excludehidden && FileUtil::is_hidden($d))
@@ -57,7 +57,7 @@ class Searcher {
         return true;
     }
 
-    private function is_search_file($f) {
+    public function is_search_file($f) {
         $ext = FileUtil::get_extension($f);
         if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions))
             return false;
@@ -72,7 +72,7 @@ class Searcher {
         return true;
     }
 
-    private function is_archive_search_file($f) {
+    public function is_archive_search_file($f) {
         $ext = FileUtil::get_extension($f);
         if ($this->settings->in_archiveextensions &&
             !in_array($ext, $this->settings->in_archiveextensions))
@@ -133,12 +133,12 @@ class Searcher {
         return $searchdirs;
     }
 
-    private function filter_file($f) {
+    public function filter_file($f) {
         if ($this->settings->excludehidden && FileUtil::is_hidden($f))
             return false;
-        if ($this->filetypes->is_archive($f) && $this->settings->searcharchives &&
-            $this->is_archive_search_file($f))
-            return true;
+        if ($this->filetypes->is_archive($f)) {
+            return $this->settings->searcharchives && $this->is_archive_search_file($f);
+        }
         return !$this->settings->archivesonly && $this->is_search_file($f);
     }
 
