@@ -117,6 +117,8 @@ unittest_perl () {
     perl filetypes_test.pl
     log "perl fileutil_test.pl"
     perl fileutil_test.pl
+    log "perl searcher_test.pl"
+    perl searcher_test.pl
     log "perl searchoptions_test.pl"
     perl searchoptions_test.pl
     log "perl searchresult_test.pl"
@@ -140,6 +142,8 @@ unittest_php () {
     $PHPUNIT filetypes_test.php
     log "$PHPUNIT fileutil_test.php"
     $PHPUNIT fileutil_test.php
+    log "$PHPUNIT searcher_test.php"
+    $PHPUNIT searcher_test.php
     log "$PHPUNIT searchoptions_test.php"
     $PHPUNIT searchoptions_test.php
     log "$PHPUNIT searchresult_test.php"
