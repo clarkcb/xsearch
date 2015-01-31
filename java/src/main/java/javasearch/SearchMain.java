@@ -42,8 +42,9 @@ public class SearchMain {
 			options.usage(0);
 		}
 
+        Searcher searcher = new Searcher(settings);
 		try {
-            Searcher searcher = new Searcher(settings);
+            searcher.validateSettings();
 			searcher.search();
 
             // print the results
