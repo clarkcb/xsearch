@@ -18,12 +18,32 @@ xsearch_names = '''cljsearch cssearch gosearch hssearch javasearch
                    nodesearch plsearch.pl phpsearch.php pysearch.py
                    rbsearch.rb scalasearch'''.split()
 
+def print_totals(totals_dict, args):
+    print "Total results for xsearch with args %s" % str(args)
+    longest = max([len(x) for x in xsearch_names])
+    hdr = ['total']
+    hdr_format = ' %%-%ds  %%6s %%6s' % longest
+    hdr_line = hdr_format % tuple(['xsearch'] + hdr + ['rank'])
+    sep_line = '-' * len(hdr_line)
+    print
+    print hdr_line
+    print sep_line
+    totals = totals_dict.values()
+    totals.sort()
+    for x in xsearch_names:
+        line_format = ' %%-%ds  %%6.2f %%6d' % longest
+        nums = []
+        for h in hdr:
+            nums.append(totals_dict[x])
+        line = line_format % tuple([x] + nums + [totals.index(totals_dict[x]) + 1])
+        print line
+    print
+
 def print_run_results(results, args):
-    print "\nResults for xsearch with args %s" % str(args)
+    print "Results for xsearch with args %s" % str(args)
     longest = max([len(x) for x in xsearch_names])
     hdr = ['real', 'sys', 'user', 'total']
     hdr_format = ' %%-%ds  %%6s %%6s %%6s %%6s %%6s' % longest
-    #print "hdr_format: %s" % hdr_format
     hdr_line = hdr_format % tuple(['xsearch'] + hdr + ['rank'])
     sep_line = '-' * len(hdr_line)
     print
@@ -64,31 +84,33 @@ def run(args):
             time = p.stderr.readline()
             if line == '' and time == '':
                 break
-            #print line
             if line != '':
                 output_lines.append(line)
             if time != '':
                 time_lines.append(time.strip())
         cmd = ' '.join(fullargs)
-        #print cmd
         xsearch_output[x] = output_lines
         xsearch_times[x] = times_from_lines(time_lines)
     print
-    #pprint(xsearch_output)
-    #pprint(xsearch_times)
-    print_run_results(xsearch_times, args)
+    return (xsearch_times, args)
 
-def run1():
+def scenario1():
     searchpattern='Searcher'
     startpath='/Users/cary/src/git/xsearch/'    
     args = ['-x', ','.join(exts), '-s', searchpattern, startpath]
-    run(args)
+    return run(args)
 
 def main():
     runs = 10
+    totals_dict = {x: 0 for x in xsearch_names}
     for r in range(runs):
-        print 'run %d' % (r+1)
-        run1()
+        print 'scenario1 run %d' % (r+1)
+        (xsearch_times, args) = scenario1()
+        for x in xsearch_names:
+            totals_dict[x] += xsearch_times[x]['total']
+        print_run_results(xsearch_times, args)
+    print_totals(totals_dict, args)
+
 
 if __name__ == '__main__':
     main()
