@@ -58,7 +58,7 @@ filterFiles = filterM doesFileExist
 isHiddenFilePath :: FilePath -> Bool
 isHiddenFilePath f = any isHidden pathElems
   where isHidden = isPrefixOf "."
-        pathElems = filter (`notElem` ["./", "."]) $ splitPath f
+        pathElems = filter (`notElem` dotDirs) $ splitPath f
 
 getDirectoryFiles :: FilePath -> IO [FilePath]
 getDirectoryFiles dir = do
@@ -69,11 +69,14 @@ getDirectoryFiles dir = do
 getNonDotDirectoryContents :: FilePath -> IO [FilePath]
 getNonDotDirectoryContents dir = do
   names <- getDirectoryContents dir
-  let filteredNames = filter notDotDir names
+  let filteredNames = filter (not . isDotDir) names
   return $ map (dir </>) filteredNames
 
-notDotDir :: FilePath -> Bool
-notDotDir dir = dir `notElem` [".", ".."]
+dotDirs :: [FilePath]
+dotDirs = [".", "./", "..", "../"]
+
+isDotDir :: FilePath -> Bool
+isDotDir dir = dir `elem` dotDirs
 
 isDirectory :: FilePath -> IO Bool
 isDirectory = doesDirectoryExist
