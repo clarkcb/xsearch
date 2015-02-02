@@ -54,17 +54,17 @@ type Searcher struct {
 
 func NewSearcher(settings *SearchSettings) *Searcher {
 	return &Searcher{
-		settings,                 // Settings
-		GetFileTypes(),           // fileTypes
-		[]*string{},              // searchDirs
-		NewSearchItems(),         // searchItems
-		make(chan *SearchItem, 1),// addItemChan
-		make(chan *string, 10),   // doneChan
-		make(chan error, 1),      // errChan
-		NewSearchResults(),       // searchResults
-		make(chan *SearchResult), // resultChan
-		map[string]time.Time{},   // timerMap
-		time.Duration(0),         // totalElapsed
+		settings,                  // Settings
+		GetFileTypes(),            // fileTypes
+		[]*string{},               // searchDirs
+		NewSearchItems(),          // searchItems
+		make(chan *SearchItem, 1), // addItemChan
+		make(chan *string, 10),    // doneChan
+		make(chan error, 1),       // errChan
+		NewSearchResults(),        // searchResults
+		make(chan *SearchResult),  // resultChan
+		map[string]time.Time{},    // timerMap
+		time.Duration(0),          // totalElapsed
 	}
 }
 
@@ -515,7 +515,7 @@ ReadLines:
 						linesAfterUntilMatch = true
 					}
 
-					for ; !linesAfterToMatch && !linesAfterUntilMatch;  {
+					for !linesAfterToMatch && !linesAfterUntilMatch {
 						if len(linesAfter) < linesAfterIdx+1 {
 							if !scanner.Scan() {
 								break
@@ -553,7 +553,7 @@ ReadLines:
 				// iterate through matchIndices
 				for _, m := range matchIndices {
 					// check for FirstMatch setting and stop if file+pattern match exists
-					_,patternMatched := patternMatches[p]
+					_, patternMatched := patternMatches[p]
 					if s.Settings.FirstMatch && patternMatched {
 						continue
 					} else {

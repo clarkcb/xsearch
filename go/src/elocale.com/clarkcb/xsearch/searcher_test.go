@@ -18,15 +18,15 @@ func getSearcher() *Searcher {
 
 func getMultiLineString() string {
 	return "This is line 1\n" +
-           "This is line 2\n" +
-           "This is line 3, it includes the word Searcher\n" +
-           "This is line 4\n" +
-           "This is line 5\n" +
-           "\n" +
-           "Searcher\n" +
-           "This is line 8\n" +
-           "\n" +
-           "The end."
+		"This is line 2\n" +
+		"This is line 3, it includes the word Searcher\n" +
+		"This is line 4\n" +
+		"This is line 5\n" +
+		"\n" +
+		"Searcher\n" +
+		"This is line 8\n" +
+		"\n" +
+		"The end."
 }
 
 func TestSearchTextReaderLines(t *testing.T) {

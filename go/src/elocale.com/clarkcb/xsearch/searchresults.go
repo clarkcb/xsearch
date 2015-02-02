@@ -228,7 +228,7 @@ func (r *SearchResult) multiLineString() string {
 
 func (r *SearchResult) singleLineString() string {
 	if r.LineNum > 0 {
-		return fmt.Sprintf("%s: %d [%d:%d]: %s", r.File.String(), r.LineNum,
+		return fmt.Sprintf("%s: %d: [%d:%d]: %s", r.File.String(), r.LineNum,
 			r.MatchStartIndex, r.MatchEndIndex, r.formatMatchingLine())
 	} else {
 		return fmt.Sprintf("%s matches", r.File.String())
@@ -244,33 +244,33 @@ func (r *SearchResult) formatMatchingLine() string {
 	lineLength := len(formatted)
 	matchLength := r.MatchEndIndex - r.MatchStartIndex
 
-    if lineLength > MAXLINELENGTH {
-        adjustedMaxLength := MAXLINELENGTH - matchLength
-        beforeIndex := r.MatchStartIndex
-        if r.MatchStartIndex > 0 {
-            beforeIndex = beforeIndex - (adjustedMaxLength / 4)
-            if beforeIndex < 0 {
-                beforeIndex = 0
-            }
-        }
-        adjustedMaxLength = adjustedMaxLength - (r.MatchStartIndex - beforeIndex)
-        afterIndex := r.MatchEndIndex + adjustedMaxLength
-        if afterIndex > lineLength {
-            afterIndex = lineLength
-        }
+	if lineLength > MAXLINELENGTH {
+		adjustedMaxLength := MAXLINELENGTH - matchLength
+		beforeIndex := r.MatchStartIndex
+		if r.MatchStartIndex > 0 {
+			beforeIndex = beforeIndex - (adjustedMaxLength / 4)
+			if beforeIndex < 0 {
+				beforeIndex = 0
+			}
+		}
+		adjustedMaxLength = adjustedMaxLength - (r.MatchStartIndex - beforeIndex)
+		afterIndex := r.MatchEndIndex + adjustedMaxLength
+		if afterIndex > lineLength {
+			afterIndex = lineLength
+		}
 
-        before := ""
-        if beforeIndex > 3 {
-            before = "..."
-            beforeIndex += 3
-        }
-        after := ""
-        if afterIndex < lineLength - 3 {
-            after = "..."
-            afterIndex -= 3
-        }
-        formatted = before + formatted[beforeIndex:afterIndex] + after
-    }
+		before := ""
+		if beforeIndex > 3 {
+			before = "..."
+			beforeIndex += 3
+		}
+		after := ""
+		if afterIndex < lineLength-3 {
+			after = "..."
+			afterIndex -= 3
+		}
+		formatted = before + formatted[beforeIndex:afterIndex] + after
+	}
 	return strings.TrimSpace(formatted)
 }
 

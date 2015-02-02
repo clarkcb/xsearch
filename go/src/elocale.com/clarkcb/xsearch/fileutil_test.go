@@ -15,9 +15,9 @@ func TestExpandPath(t *testing.T) {
 			t.Errorf("expandPath(\"%s\")=\"%s\", expected=\"%s\"", k, path, v)
 		}
 	}
-	expandable := "~/src/git/xsearch";
-	expanded := expandPath(expandable);
-	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/");
+	expandable := "~/src/git/xsearch"
+	expanded := expandPath(expandable)
+	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/")
 	if !valid {
 		t.Errorf("expandPath(\"%s\")=\"%s\", expected expanded", expandable, expanded)
 	}
@@ -40,10 +40,10 @@ func TestGetExtension(t *testing.T) {
 
 func TestIsDotDir(t *testing.T) {
 	expected := map[string]bool{
-		".":      true,
-		"..":     true,
-		"lib.a":  false,
-		"noext":  false,
+		".":     true,
+		"..":    true,
+		"lib.a": false,
+		"noext": false,
 	}
 
 	for k, v := range expected {

@@ -1,7 +1,6 @@
 package xsearch
 
-import (
-)
+import ()
 
 type FileType int
 
