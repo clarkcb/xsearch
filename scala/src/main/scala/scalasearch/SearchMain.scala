@@ -30,7 +30,7 @@ object SearchMain {
       searcher.search()
 
       if (settings.printResults) {
-        log("Search results (%d):".format(searcher.searchResults.length))
+        log("\nSearch results (%d):".format(searcher.searchResults.length))
         searcher.printSearchResults()
       }
       if (settings.listDirs) searcher.printMatchingDirs()
