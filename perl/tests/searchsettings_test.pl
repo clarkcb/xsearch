@@ -6,11 +6,11 @@
 use strict;
 use warnings;
 
-use Test::Simple tests => 25;
-
 BEGIN {
   use lib "$ENV{HOME}/src/git/xsearch/perl";
 }
+
+use Test::Simple tests => 25;
 
 use plsearch::SearchSettings;
 
