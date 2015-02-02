@@ -158,14 +158,9 @@ class Searcher(object):
     def filter_file(self, sf):
         if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
             return False
-        if (sf.filetype == FileType.Archive and
-            self.settings.searcharchives and 
-            self.is_archive_search_file(sf.filename)):
-            return True
-        if (not self.settings.archivesonly and
-            self.is_search_file(sf.filename)):
-            return True
-        return False
+        if sf.filetype == FileType.Archive:
+            return (self.settings.searcharchives and self.is_archive_search_file(sf.filename))
+        return (not self.settings.archivesonly and self.is_search_file(sf.filename))
 
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
