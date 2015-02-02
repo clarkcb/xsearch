@@ -171,6 +171,8 @@ unittest_python () {
     $PYTHON tests/filetypes_test.py
     log "python tests/fileutil_test.py"
     $PYTHON tests/fileutil_test.py
+    log "python tests/searcher_test.py"
+    $PYTHON tests/searcher_test.py
     log "python tests/searchoptions_test.py"
     $PYTHON tests/searchoptions_test.py
     log "python tests/searchresult_test.py"
@@ -196,6 +198,8 @@ unittest_ruby () {
     ruby filetypes_test.rb
     log "ruby fileutil_test.rb"
     ruby fileutil_test.rb
+    log "ruby searcher_test.rb"
+    ruby searcher_test.rb
     log "ruby searchoptions_test.rb"
     ruby searchoptions_test.rb
     log "ruby searchresult_test.rb"
