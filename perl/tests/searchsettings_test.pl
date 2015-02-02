@@ -8,7 +8,9 @@ use warnings;
 
 use Test::Simple tests => 25;
 
-use lib '/Users/cary/src/git/xsearch/perl';
+BEGIN {
+  use lib "$ENV{HOME}/src/git/xsearch/perl";
+}
 
 use plsearch::SearchSettings;
 
