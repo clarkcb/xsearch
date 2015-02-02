@@ -136,12 +136,13 @@ class Searcher
   end
 
   def filter_file(f)
-    if @filetypes.is_archive_file(f) && @settings.searcharchives && is_archive_search_file(f)
-      return true
-    elsif ! @settings.archivesonly && is_search_file(f)
-      return true
+    if FileUtil::is_hidden?(f) && @settings.excludehidden
+      return false
     end
-    false
+    if @filetypes.is_archive_file(f)
+      return @settings.searcharchives && is_archive_search_file(f)
+    end
+    return !@settings.archivesonly && is_search_file(f)
   end
 
   def get_search_files(searchdirs)
