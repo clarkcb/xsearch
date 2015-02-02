@@ -27,7 +27,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     var singleLineToString = function () {
         var s = self.filename;
         if (self.linenum && self.line) {
-            s += ': ' + self.linenum + ' [' + self.matchStartIndex + ':' +
+            s += ': ' + self.linenum + ': [' + self.matchStartIndex + ':' +
                 self.matchEndIndex +']: ' + formatMatchingLine();
         } else {
             s += ' matches';
