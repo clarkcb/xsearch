@@ -406,8 +406,8 @@ sub search_lines {
                     $pattern,
                     '',
                     $linenum,
-                    $start_index,
-                    $end_index,
+                    $start_index + 1,
+                    $end_index + 1,
                     $line,
                     \@lb,
                     \@la);
