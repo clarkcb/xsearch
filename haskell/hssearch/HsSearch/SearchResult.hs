@@ -46,7 +46,7 @@ formatSearchResult settings result = if (lineNum result) == 0
 formatSingleLine :: SearchResult -> String
 formatSingleLine result =
   filePath result ++ ": " ++
-  show (lineNum result) ++ " [" ++
+  show (lineNum result) ++ ": [" ++
   show (matchStartIndex result) ++ ":" ++
   show (matchEndIndex result) ++ "]: " ++
   trimLeadingWhitespace (BC.unpack (line result))
