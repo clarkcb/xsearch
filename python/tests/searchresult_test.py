@@ -6,10 +6,11 @@
 # class FileUtilTest: testing of FileUtil
 #
 ################################################################################
+import os
 import sys
 import unittest
 
-sys.path.insert(0, '~/src/git/xsearch/python')
+sys.path.insert(0, '%s/src/git/xsearch/python' % os.environ['HOME'])
 
 from pysearch.searchresult import SearchResult
 

@@ -6,12 +6,13 @@
 # class FileTypesTest: testing of FileTypes
 #
 ################################################################################
+import os
 import sys
 import unittest
 
-from pysearch.filetypes import FileType, FileTypes
+sys.path.insert(0, '%s/src/git/xsearch/python' % os.environ['HOME'])
 
-sys.path.insert(0, '/Users/cary/src/git/xsearch/python')
+from pysearch.filetypes import FileType, FileTypes
 
 class FileTypesTest(unittest.TestCase):
     @classmethod
