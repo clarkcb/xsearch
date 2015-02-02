@@ -18,11 +18,11 @@ xsearch_names = '''cljsearch cssearch gosearch hssearch javasearch
                    nodesearch plsearch.pl phpsearch.php pysearch.py
                    rbsearch.rb scalasearch'''.split()
 
-def print_totals(totals_dict, args):
+def print_totals(totals_dict, args, runs):
     print "Total results for xsearch with args %s" % str(args)
     longest = max([len(x) for x in xsearch_names])
-    hdr = ['total']
-    hdr_format = ' %%-%ds  %%6s %%6s' % longest
+    hdr = ['total', 'avg']
+    hdr_format = ' %%-%ds  %%6s %%6s %%6s' % longest
     hdr_line = hdr_format % tuple(['xsearch'] + hdr + ['rank'])
     sep_line = '-' * len(hdr_line)
     print
@@ -31,11 +31,9 @@ def print_totals(totals_dict, args):
     totals = totals_dict.values()
     totals.sort()
     for x in xsearch_names:
-        line_format = ' %%-%ds  %%6.2f %%6d' % longest
-        nums = []
-        for h in hdr:
-            nums.append(totals_dict[x])
-        line = line_format % tuple([x] + nums + [totals.index(totals_dict[x]) + 1])
+        line_format = ' %%-%ds  %%6.2f %%6.2f %%6d' % longest
+        vals = [x, totals_dict[x], totals_dict[x] / runs, totals.index(totals_dict[x]) + 1]
+        line = line_format % tuple(vals)
         print line
     print
 
@@ -109,7 +107,7 @@ def main():
         for x in xsearch_names:
             totals_dict[x] += xsearch_times[x]['total']
         print_run_results(xsearch_times, args)
-    print_totals(totals_dict, args)
+    print_totals(totals_dict, args, runs)
 
 
 if __name__ == '__main__':
