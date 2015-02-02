@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ################################################################################
 #
-# fileutil_test.py
+# searcher_test.py
 #
-# class FileUtilTest: testing of FileUtil
+# Searcher testing
 #
 ################################################################################
 import os
@@ -83,7 +83,7 @@ class SearcherTest(unittest.TestCase):
 
     def test_is_search_dir_hidden_dir_include_hidden(self):
         settings = self.get_settings()
-        settings.excludehidden = 0
+        settings.excludehidden = False
         searcher = Searcher(settings)
         dir = '.git'
         self.assertTrue(searcher.is_search_dir(dir))
@@ -219,7 +219,6 @@ class SearcherTest(unittest.TestCase):
         searcher = Searcher(settings)
         f = 'archive.zip'
         self.assertTrue(searcher.is_archive_search_file(f))
-
 
 ################################################################################
 # filter_file tests
