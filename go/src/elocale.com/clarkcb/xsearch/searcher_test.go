@@ -1,7 +1,7 @@
 package xsearch
 
 import (
-	"fmt"
+	// "fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -327,8 +327,8 @@ func TestFilterFile_IsHiddenIncludeHidden_True(t *testing.T) {
 	settings.ExcludeHidden = false
 	searcher := NewSearcher(settings)
 	f := ".gitignore"
-	fmt.Printf("isHidden(\"%s\"): %v\n", f, isHidden(f))
-	fmt.Printf("isSearchFile(\"%s\"): %v\n", f, searcher.isSearchFile(&f))
+	// fmt.Printf("isHidden(\"%s\"): %v\n", f, isHidden(f))
+	// fmt.Printf("isSearchFile(\"%s\"): %v\n", f, searcher.isSearchFile(&f))
 	if !searcher.filterFile(&f) {
 		t.Errorf("expected true")
 	}
@@ -475,11 +475,31 @@ func TestSearchMultiLineString(t *testing.T) {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
 	}
+	expectedFirstMatchStartIndex := 3
+	if firstResult.MatchStartIndex != expectedFirstMatchStartIndex {
+		t.Errorf("firstResult=%v, expected MatchStartIndex=%d", *firstResult,
+			expectedFirstMatchStartIndex)
+	}
+	expectedFirstMatchEndIndex := 11
+	if firstResult.MatchEndIndex != expectedFirstMatchEndIndex {
+		t.Errorf("firstResult=%v, expected MatchEndIndex=%d", *firstResult,
+			expectedFirstMatchEndIndex)
+	}
 
 	secondResult := results[1]
 	expectedSecondLineNum := 29
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)
+	}
+	expectedSecondMatchStartIndex := 24
+	if secondResult.MatchStartIndex != expectedSecondMatchStartIndex {
+		t.Errorf("firstResult=%v, expected MatchStartIndex=%d", *secondResult,
+			expectedSecondMatchStartIndex)
+	}
+	expectedSecondMatchEndIndex := 32
+	if secondResult.MatchEndIndex != expectedSecondMatchEndIndex {
+		t.Errorf("secondResult=%v, expected MatchEndIndex=%d", *secondResult,
+			expectedSecondMatchEndIndex)
 	}
 }
