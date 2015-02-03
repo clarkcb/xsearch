@@ -142,15 +142,19 @@
     (or
       (not (:excludehidden settings))
       (not (hidden-file? f)))
-    (or
+    (if
+      (archive-file? f)
       (and
-        (archive-file? f)
         (:searcharchives settings)
-        (is-archive-search-file? f settings))
+        (is-archive-search-file? f settings)
+      )
       (and
-        (not (archive-file? f))
         (not (:archivesonly settings))
-        (is-search-file? f settings)))))
+        (is-search-file? f settings)
+      )
+    )
+  )
+)
 
 (defn get-search-files-for-directory [d settings]
   (vec (filter #(filter-file? % settings) (get-files-in-directory d))))
