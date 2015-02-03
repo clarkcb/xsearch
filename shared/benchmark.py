@@ -10,11 +10,12 @@
 from pprint import pprint
 import subprocess
 import sys
+import time
 
 #exts = '''clj cs go hs java js pl php py rb scala'''.split()
-exts = '''clj hs js py rb scala'''.split()
+exts = '''clj js py rb scala'''.split()
 
-xsearch_names = '''cljsearch cssearch gosearch hssearch javasearch
+xsearch_names = '''cssearch gosearch hssearch javasearch
                    nodesearch plsearch.pl phpsearch.php pysearch.py
                    rbsearch.rb scalasearch'''.split()
 
@@ -68,28 +69,52 @@ def times_from_lines(lines):
     time_dict['total'] = sum(time_dict.values())
     return time_dict
 
+def verify_outputs(xsearch_output):
+    #print 'xsearch_output:'
+    #pprint(xsearch_output)
+    nonmatching = []
+    for x in xsearch_names:
+        for y in [y for y in xsearch_output.keys() if y != x]:
+            x_output = xsearch_output[x]
+            y_output = xsearch_output[y]
+            x_output.sort()
+            y_output.sort()
+            if x_output != y_output:
+                nonmatching.append((x, y))
+        del(xsearch_output[x])
+    if nonmatching:
+        for (x,y) in nonmatching:
+            print '%s output != %s output' % (x, y)
+    else:
+        print 'Output of all versions matches'
+
 def run(args):
     xsearch_output = {}
     xsearch_times = {}
     for x in xsearch_names:
         fullargs = ['time', x] + args
-        p = subprocess.Popen(fullargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print ' '.join(fullargs[1:])
+        p = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
         output_lines = []
         time_lines = []
         times = {}
         while True:
-            line = p.stdout.readline()
-            time = p.stderr.readline()
-            if line == '' and time == '':
+            output_line = p.stdout.readline()
+            time_line = p.stderr.readline()
+            if output_line == '' and time_line == '':
                 break
-            if line != '':
-                output_lines.append(line)
-            if time != '':
-                time_lines.append(time.strip())
+            if output_line != '':
+                #print output_line
+                output_lines.append(output_line)
+            if time_line != '':
+                #print time_line
+                time_lines.append(time_line.strip())
         cmd = ' '.join(fullargs)
         xsearch_output[x] = output_lines
         xsearch_times[x] = times_from_lines(time_lines)
-    print
+        #time.sleep(1)
+    verify_outputs(xsearch_output)
     return (xsearch_times, args)
 
 def scenario1():
