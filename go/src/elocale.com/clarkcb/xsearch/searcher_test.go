@@ -445,12 +445,32 @@ func TestSearchTextReaderLines(t *testing.T) {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
 	}
+	expectedFirstMatchStartIndex := 3
+	if firstResult.MatchStartIndex != expectedFirstMatchStartIndex {
+		t.Errorf("firstResult=%v, expected MatchStartIndex=%d", *firstResult,
+			expectedFirstMatchStartIndex)
+	}
+	expectedFirstMatchEndIndex := 11
+	if firstResult.MatchEndIndex != expectedFirstMatchEndIndex {
+		t.Errorf("firstResult=%v, expected MatchEndIndex=%d", *firstResult,
+			expectedFirstMatchEndIndex)
+	}
 
 	secondResult := results[1]
 	expectedSecondLineNum := 29
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)
+	}
+	expectedSecondMatchStartIndex := 24
+	if secondResult.MatchStartIndex != expectedSecondMatchStartIndex {
+		t.Errorf("firstResult=%v, expected MatchStartIndex=%d", *secondResult,
+			expectedSecondMatchStartIndex)
+	}
+	expectedSecondMatchEndIndex := 32
+	if secondResult.MatchEndIndex != expectedSecondMatchEndIndex {
+		t.Errorf("secondResult=%v, expected MatchEndIndex=%d", *secondResult,
+			expectedSecondMatchEndIndex)
 	}
 }
 
