@@ -3,6 +3,9 @@ package javasearch;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -15,6 +18,10 @@ public class SearcherTest {
         settings.setStartPath(".");
         settings.addSearchPattern("Searcher");
         return settings;
+    }
+
+    private static File getTestFile() {
+        return new File("/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt");
     }
 
 
@@ -362,4 +369,78 @@ public class SearcherTest {
         File file = new File("FileUtil.cs");
         assertFalse(searcher.filterFile(file));
     }
+
+    /*************************************************************
+     * SearchTextReaderLines test
+     *************************************************************/
+    @Test
+    public void TestSearchTextReaderLines() {
+        SearchSettings settings = getSettings();
+        Searcher searcher = new Searcher(settings);
+        File testFile = getTestFile();
+        Iterator<String> lineIterator;
+
+        try {
+            lineIterator = FileUtil.getFileLineIterator(testFile);
+            List<SearchResult> results = searcher.searchStringIterator(lineIterator);
+
+            assert(results.size() == 2);
+
+            SearchResult firstResult = results.get(0);
+            int expectedFirstLineNum = 23;
+            assert(firstResult.getLineNum() == expectedFirstLineNum);
+            int expectedFirstMatchStartIndex = 3;
+            assert(firstResult.getMatchStartIndex() == expectedFirstMatchStartIndex);
+            int expectedFirstMatchEndIndex = 11;
+            assert(firstResult.getMatchEndIndex() == expectedFirstMatchEndIndex);
+
+            SearchResult secondResult = results.get(1);
+            int expectedSecondLineNum = 29;
+            assert(secondResult.getLineNum() == expectedSecondLineNum);
+            int expectedSecondMatchStartIndex = 24;
+            assert(secondResult.getMatchStartIndex() == expectedSecondMatchStartIndex);
+            int expectedSecondMatchEndIndex = 32;
+            assert(secondResult.getMatchEndIndex() == expectedSecondMatchEndIndex);
+
+        } catch (IOException e) {
+            assertTrue(false);
+        }
+    }
+
+    /*************************************************************
+     * SearchMultiLineString test
+     *************************************************************/
+    @Test
+    public void TestSearchMultiLineString() {
+        SearchSettings settings = getSettings();
+        Searcher searcher = new Searcher(settings);
+        File testFile = getTestFile();
+        String contents;
+        try {
+            contents = FileUtil.getFileContents(testFile);
+            List<SearchResult> results = searcher.searchMultiLineString(contents);
+
+            assert(results.size() == 2);
+
+            SearchResult firstResult = results.get(0);
+            int expectedFirstLineNum = 23;
+            assert(firstResult.getLineNum() == expectedFirstLineNum);
+            int expectedFirstMatchStartIndex = 3;
+            assert(firstResult.getMatchStartIndex() == expectedFirstMatchStartIndex);
+            int expectedFirstMatchEndIndex = 11;
+            assert(firstResult.getMatchEndIndex() == expectedFirstMatchEndIndex);
+
+            SearchResult secondResult = results.get(1);
+            int expectedSecondLineNum = 29;
+            assert(secondResult.getLineNum() == expectedSecondLineNum);
+            int expectedSecondMatchStartIndex = 24;
+            assert(secondResult.getMatchStartIndex() == expectedSecondMatchStartIndex);
+            int expectedSecondMatchEndIndex = 32;
+            assert(secondResult.getMatchEndIndex() == expectedSecondMatchEndIndex);
+
+        } catch (IOException e) {
+            assertTrue(false);
+        }
+    }
+
 }
