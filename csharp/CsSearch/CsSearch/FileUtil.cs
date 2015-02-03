@@ -20,6 +20,47 @@ namespace CsSearch
 			return filePath;
 		}
 
+		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
+		{
+			return EnumerableStringFromFile(f.FullName);
+		}
+
+		public static IEnumerable<string> EnumerableStringFromFile(string filepath)
+		{
+			using (var sr = new StreamReader(filepath))
+			{
+				// read each line, ensuring not null (EOF)
+				string line;
+				while ((line = sr.ReadLine()) != null)
+				{
+					// return trimmed line
+					yield return line;
+				}
+			}
+		}
+
+		public static string GetFileContents(SearchFile f)
+		{
+			return GetFileContents(f.FullName);
+		}
+
+		public static string GetFileContents(string filepath)
+		{
+			try
+			{
+				using (var sr = new StreamReader(filepath))
+				{
+					var contents = sr.ReadToEnd();
+					return contents;
+				}
+			}
+			catch (IOException e)
+			{
+				throw e;
+			}
+		}
+
+
 		public static bool IsDirectory(string filename)
 		{
 			try

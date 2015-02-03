@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using CsSearch;
 using NUnit.Framework;
 
@@ -7,6 +8,9 @@ namespace CsSearchTests
 	[TestFixture]
 	class SearcherTests
 	{
+
+		public static FileInfo testFile2 = new FileInfo("/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt");
+
 		private static SearchSettings GetSettings()
 		{
 			var settings = new SearchSettings();
@@ -397,6 +401,37 @@ namespace CsSearchTests
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
 			Assert.False(searcher.FilterFile(file));
+		}
+
+
+		/*************************************************************
+		 * SearchTextReaderLines test
+		 *************************************************************/
+		[Test]
+		public void TestSearchTextReaderLines()
+		{
+			var settings = GetSettings();
+			var searcher = new Searcher(settings);
+			var enumerableLines = FileUtil.EnumerableStringFromFile(testFile2.FullName);
+			var results = searcher.SearchLines(enumerableLines).ToList();
+
+			Assert.True(results.Count == 2);
+
+			var firstResult = results[0];
+			var expectedFirstLineNum = 23;
+			Assert.AreEqual(firstResult.LineNum, expectedFirstLineNum);
+			var expectedFirstMatchStartIndex = 3;
+			Assert.AreEqual(firstResult.MatchStartIndex, expectedFirstMatchStartIndex);
+			var expectedFirstMatchEndIndex = 11;
+			Assert.AreEqual(firstResult.MatchEndIndex, expectedFirstMatchEndIndex);
+
+			var secondResult = results[1];
+			var expectedSecondLineNum = 29;
+			Assert.AreEqual(secondResult.LineNum, expectedSecondLineNum);
+			var expectedSecondMatchStartIndex = 24;
+			Assert.AreEqual(secondResult.MatchStartIndex, expectedSecondMatchStartIndex);
+			var expectedSecondMatchEndIndex = 32;
+			Assert.AreEqual(secondResult.MatchEndIndex, expectedSecondMatchEndIndex);
 		}
 	}
 }

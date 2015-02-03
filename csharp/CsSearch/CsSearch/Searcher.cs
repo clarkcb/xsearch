@@ -336,15 +336,12 @@ namespace CsSearch
 		{
 			try
 			{
-				using (var sr = new StreamReader(f.FullName))
+				var contents = FileUtil.GetFileContents(f);
+				var results = SearchContents(contents);
+				foreach (var r in results)
 				{
-					var contents = sr.ReadToEnd();
-					var results = SearchContents(contents);
-					foreach (SearchResult r in results)
-					{
-						r.File = f;
-						AddSearchResult(r);
-					}
+					r.File = f;
+					AddSearchResult(r);
 				}
 			}
 			catch (IOException e)
@@ -465,7 +462,7 @@ namespace CsSearch
 		{
 			try
 			{
-				var enumerableLines = EnumerableStringFromFile(f);
+				var enumerableLines = FileUtil.EnumerableStringFromFile(f);
 				var results = SearchLines(enumerableLines);
 
 				foreach (var r in results)
@@ -477,20 +474,6 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				Log(e.Message);
-			}
-		}
-
-		private static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
-		{
-			using (var sr = new StreamReader(f.FullName))
-			{
-				// read each line, ensuring not null (EOF)
-				string line;
-				while ((line = sr.ReadLine()) != null)
-				{
-					// return trimmed line
-					yield return line;
-				}
 			}
 		}
 
@@ -524,7 +507,7 @@ namespace CsSearch
 				Settings.OutLinesAfterPatterns);
 		}
 
-		private IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
+		public IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
 			var results = new List<SearchResult>();
