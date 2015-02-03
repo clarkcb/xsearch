@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+func expandPath(filePath string) string {
+	if strings.HasPrefix(filePath, "~") {
+		home := getHome()
+		return home + strings.TrimPrefix(filePath, "~")
+	}
+	return filePath
+}
+
 func getExtension(file string) string {
 	ext := filepath.Ext(filepath.Base(file))
 	return strings.ToLower(strings.TrimLeft(ext, "."))
@@ -21,14 +29,6 @@ func getHome() string {
 		}
 	}
 	return home
-}
-
-func expandPath(filePath string) string {
-	if strings.HasPrefix(filePath, "~") {
-		home := getHome()
-		return home + strings.TrimPrefix(filePath, "~")
-	}
-	return filePath
 }
 
 func isDotDir(file string) bool {

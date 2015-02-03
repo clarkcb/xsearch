@@ -1,76 +1,483 @@
 package xsearch
 
-import "strings"
-import "testing"
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"testing"
+)
 
-func getSearchSettings() *SearchSettings {
+func getTestFileContents() (string, error) {
+	testFile := expandPath("~/src/git/xsearch/shared/testFiles/testFile2.txt")
+	r, err1 := os.Open(testFile)
+	if err1 != nil {
+		return "", err1
+	}
+	bytes, err2 := ioutil.ReadAll(r)
+	if err2 != nil {
+		return "", err2
+	}
+	return string(bytes), err2
+}
+
+func getSettings() *SearchSettings {
 	settings := GetDefaultSearchSettings()
-	settings.AddInExtension("go")
 	settings.AddSearchPattern("Searcher")
 	settings.StartPath = "."
 	return settings
 }
 
 func getSearcher() *Searcher {
-	settings := getSearchSettings()
+	settings := getSettings()
 	return NewSearcher(settings)
 }
 
-func getMultiLineString() string {
-	return "This is line 1\n" +
-		"This is line 2\n" +
-		"This is line 3, it includes the word Searcher\n" +
-		"This is line 4\n" +
-		"This is line 5\n" +
-		"\n" +
-		"Searcher\n" +
-		"This is line 8\n" +
-		"\n" +
-		"The end."
+/*************************************************************
+ * isSearchDir tests
+ *************************************************************/
+
+func TestIsSearchDir_SingleDot_True(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	d := "."
+	if !searcher.isSearchDir(&d) {
+		t.Errorf("expected true")
+	}
 }
 
+func TestIsSearchDir_DoubleDot_True(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	d := ".."
+	if !searcher.isSearchDir(&d) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsSearchDir_IsHidden_False(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	d := ".git"
+	if searcher.isSearchDir(&d) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsSearchDir_IsHiddenIncludeHidden_True(t *testing.T) {
+	settings := getSettings()
+	settings.ExcludeHidden = false
+	searcher := NewSearcher(settings)
+	d := ".git"
+	if !searcher.isSearchDir(&d) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsSearchDir_NoPatterns_True(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	d := "/Users"
+	if !searcher.isSearchDir(&d) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsSearchDir_MatchesInPattern_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddInDirPattern("Search")
+	searcher := NewSearcher(settings)
+	d := "CsSearch"
+	if !searcher.isSearchDir(&d) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsSearchDir_MatchesOutPattern_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutDirPattern("Search")
+	searcher := NewSearcher(settings)
+	d := "CsSearch"
+	if searcher.isSearchDir(&d) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsSearchDir_DoesNotMatchInPattern_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddInDirPattern("SearchFiles")
+	searcher := NewSearcher(settings)
+	d := "CsSearch"
+	if searcher.isSearchDir(&d) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsSearchDir_DoesNotMatchOutPattern_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutDirPattern("SearchFiles")
+	searcher := NewSearcher(settings)
+	var d = "CsSearch"
+	if !searcher.isSearchDir(&d) {
+		t.Errorf("expected true")
+	}
+}
+
+/*************************************************************
+ * isSearchFile tests
+*************************************************************/
+
+func TestisSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if !searcher.isSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestisSearchFile_MatchesInExtension_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddInExtension("cs")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if !searcher.isSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestisSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddInExtension("java")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if searcher.isSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestisSearchFile_MatchesOutExtension_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutExtension("cs")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if searcher.isSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestisSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutExtension("java")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if !searcher.isSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestisSearchFile_MatchesInPattern_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddInFilePattern("Search")
+	searcher := NewSearcher(settings)
+	f := "Searcher.cs"
+	if !searcher.isSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestisSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddInFilePattern("Search")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if searcher.isSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestisSearchFile_MatchesOutPattern_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutFilePattern("Search")
+	searcher := NewSearcher(settings)
+	f := "Searcher.cs"
+	if searcher.isSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestisSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutFilePattern("Search")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if !searcher.isSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+/*************************************************************
+ * isArchiveSearchFile tests
+*************************************************************/
+
+func TestIsArchiveSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsArchiveSearchFile_MatchesInExtension_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddInArchiveExtension("zip")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsArchiveSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddInArchiveExtension("gz")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsArchiveSearchFile_MatchesOutExtension_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutArchiveExtension("zip")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsArchiveSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutArchiveExtension("gz")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsArchiveSearchFile_MatchesInPattern_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddInArchiveFilePattern("arch")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestIsArchiveSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddInArchiveFilePattern("archives")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsArchiveSearchFile_MatchesOutPattern_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutArchiveFilePattern("arch")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestIsArchiveSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutArchiveFilePattern("archives")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.isArchiveSearchFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+/*************************************************************
+ * filterFile tests
+*************************************************************/
+
+func TestFilterFile_IsHidden_False(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	f := ".gitignore"
+	if searcher.filterFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestFilterFile_IsHiddenIncludeHidden_True(t *testing.T) {
+	settings := getSettings()
+	settings.ExcludeHidden = false
+	searcher := NewSearcher(settings)
+	f := ".gitignore"
+	fmt.Printf("isHidden(\"%s\"): %v\n", f, isHidden(f))
+	fmt.Printf("isSearchFile(\"%s\"): %v\n", f, searcher.isSearchFile(&f))
+	if !searcher.filterFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestFilterFile_ArchiveNoSearchArchives_False(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.filterFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestFilterFile_ArchiveSearchArchives_True(t *testing.T) {
+	settings := getSettings()
+	settings.SearchArchives = true
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.filterFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestFilterFile_IsArchiveSearchFile_True(t *testing.T) {
+	settings := getSettings()
+	settings.SearchArchives = true
+	settings.AddInArchiveExtension("zip")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if !searcher.filterFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestFilterFile_NotIsArchiveSearchFile_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutExtension("zip")
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.filterFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestFilterFile_ArchiveFileArchivesOnly_True(t *testing.T) {
+	settings := getSettings()
+	settings.ArchivesOnly = true
+	searcher := NewSearcher(settings)
+	f := "archive.zip"
+	if searcher.filterFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestFilterFile_NoExtensionsNoPatterns_True(t *testing.T) {
+	settings := getSettings()
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if !searcher.filterFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestFilterFile_isSearchFile_True(t *testing.T) {
+	settings := getSettings()
+	settings.AddInExtension("cs")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if !searcher.filterFile(&f) {
+		t.Errorf("expected true")
+	}
+}
+
+func TestFilterFile_NotisSearchFile_False(t *testing.T) {
+	settings := getSettings()
+	settings.AddOutExtension("cs")
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if searcher.filterFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+func TestFilterFile_NonArchiveFileArchivesOnly_False(t *testing.T) {
+	settings := getSettings()
+	settings.ArchivesOnly = true
+	searcher := NewSearcher(settings)
+	f := "FileUtil.cs"
+	if searcher.filterFile(&f) {
+		t.Errorf("expected false")
+	}
+}
+
+/*************************************************************
+ * SearchTextReaderLines test
+ *************************************************************/
 func TestSearchTextReaderLines(t *testing.T) {
-	mls := getMultiLineString()
+	contents, err := getTestFileContents()
+	if err != nil {
+		t.Errorf("error from getTestFileContents()")
+		panic(err)
+	}
 	searcher := getSearcher()
-	results := searcher.SearchTextReaderLines(strings.NewReader(mls))
+	results := searcher.SearchTextReaderLines(strings.NewReader(contents))
 
 	if len(results) != 2 {
 		t.Errorf("len(results)=%d, expected=2", len(results))
 	}
 
 	firstResult := results[0]
-	expectedFirstLineNum := 3
+	expectedFirstLineNum := 23
 	if firstResult.LineNum != expectedFirstLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
 	}
 
 	secondResult := results[1]
-	expectedSecondLineNum := 7
+	expectedSecondLineNum := 29
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)
 	}
 }
 
+/*************************************************************
+ * SearchMultiLineString test
+ *************************************************************/
 func TestSearchMultiLineString(t *testing.T) {
-	mls := getMultiLineString()
+	contents, err := getTestFileContents()
+	if err != nil {
+		t.Errorf("error from getTestFileContents()")
+	}
 	searcher := getSearcher()
-	results := searcher.SearchMultiLineString(mls)
+	results := searcher.SearchMultiLineString(contents)
 
 	if len(results) != 2 {
 		t.Errorf("len(results)=%d, expected=2", len(results))
 	}
 
 	firstResult := results[0]
-	expectedFirstLineNum := 3
+	expectedFirstLineNum := 23
 	if firstResult.LineNum != expectedFirstLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
 	}
 
 	secondResult := results[1]
-	expectedSecondLineNum := 7
+	expectedSecondLineNum := 29
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)
