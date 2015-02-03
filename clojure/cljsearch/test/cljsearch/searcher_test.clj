@@ -1,9 +1,15 @@
 (ns cljsearch.searcher-test
-  (:use [clojure.java.io :only (file)])
+  (:use [clojure.java.io :only (file reader)])
   (:require [clojure.test :refer :all])
   (:require [clojure.string :as str :only (join)])
+  (:use [cljsearch.fileutil :only (expand-path)])
   (:use [cljsearch.searcher])
   (:use [cljsearch.searchsettings]))
+
+(def TESTFILE "~/src/git/xsearch/shared/testFiles/testFile2.txt")
+
+(defn get-settings []
+  (add-pattern DEFAULT-SETTINGS "Searcher" :searchpatterns))
 
 ;; *****************************************************************************
 ;; is-search-dir? tests
@@ -154,4 +160,36 @@
       (is (filter-file? (file "searcher.clj") settings))
       (is (filter-file? (file ".gitignore") settings))
       (is (not (filter-file? (file "archive.zip") settings))))))
+
+;; *****************************************************************************
+;; search-lines tests
+;; *****************************************************************************
+(deftest test-search-lines
+  (testing "test-search-lines"
+    (with-open [rdr (reader (expand-path TESTFILE))]
+      (let [settings (get-settings)
+            results (search-lines (line-seq rdr) settings)]
+        (is (= (count results) 2))
+        (is (= (:linenum (first results)) 23))
+        (is (= (:startmatchindex (first results)) 3))
+        (is (= (:endmatchindex (first results)) 11))
+        (is (= (:linenum (second results)) 29))
+        (is (= (:startmatchindex (second results)) 24))
+        (is (= (:endmatchindex (second results)) 32))))))
+
+;; *****************************************************************************
+;; search-multiline-string tests
+;; *****************************************************************************
+(deftest test-search-multiline-string
+  (testing "test-search-multiline-string"
+    (let [settings (get-settings)
+          contents (slurp (expand-path TESTFILE))
+          results (search-multiline-string contents settings)]
+      (is (= (count results) 2))
+      (is (= (:linenum (first results)) 23))
+      (is (= (:startmatchindex (first results)) 3))
+      (is (= (:endmatchindex (first results)) 11))
+      (is (= (:linenum (second results)) 29))
+      (is (= (:startmatchindex (second results)) 24))
+      (is (= (:endmatchindex (second results)) 32)))))
 
