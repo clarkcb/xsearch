@@ -11,7 +11,11 @@ class SearchResult
   attr_accessor :pattern
   attr_accessor :filename
   attr_accessor :linenum
+  attr_accessor :match_start_index
+  attr_accessor :match_end_index
   attr_accessor :line
+  attr_accessor :lines_before
+  attr_accessor :lines_after
 
   @@SEPARATOR_LEN = 80
 
