@@ -9,10 +9,14 @@ class SearcherTest extends PHPUnit_Framework_TestCase {
         return $settings;
     }
 
+    private function get_test_file() {
+        $HOME = getenv('HOME');
+        return "$HOME/src/git/xsearch/shared/testFiles/testFile2.txt";
+    }
+
 ################################################################################
 # is_search_dir tests
 ################################################################################
-
     public function test_is_search_dir_no_patterns() {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
@@ -84,7 +88,6 @@ class SearcherTest extends PHPUnit_Framework_TestCase {
 ################################################################################
 # is_search_file tests
 ################################################################################
-
     public function test_is_search_file_matches_by_default() {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
@@ -156,11 +159,9 @@ class SearcherTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($searcher->is_search_file($file));
     }
 
-
 ################################################################################
 # is__archive_search_file tests
 ################################################################################
-
     public function test_is_archive_search_file_matches_by_default() {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
@@ -232,11 +233,9 @@ class SearcherTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($searcher->is_archive_search_file($file));
     }
 
-
 ################################################################################
 # filter_file tests
 ################################################################################
-
     public function test_filter_file_matches_by_default() {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
@@ -312,6 +311,49 @@ class SearcherTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($searcher->filter_file($file));
     }
 
+################################################################################
+# search_lines tests
+################################################################################
+    public function test_search_lines() {
+        $settings = $this->get_settings();
+        $searcher = new Searcher($settings);
+        $testfile = $this->get_test_file();
+        $contents = file_get_contents($testfile);
+        $results = $searcher->search_multiline_string($contents);
+        $this->assertEquals(count($results), 2);
+
+        $firstResult = $results[0];
+        $this->assertEquals($firstResult->linenum, 23);
+        $this->assertEquals($firstResult->match_start_index, 3);
+        $this->assertEquals($firstResult->match_end_index, 11);
+
+        $secondResult = $results[1];
+        $this->assertEquals($secondResult->linenum, 29);
+        $this->assertEquals($secondResult->match_start_index, 24);
+        $this->assertEquals($secondResult->match_end_index, 32);
+    }
+
+################################################################################
+# search_multiline_string tests
+################################################################################
+    public function test_search_multiline_string() {
+        $settings = $this->get_settings();
+        $searcher = new Searcher($settings);
+        $testfile = $this->get_test_file();
+        $lines = file($testfile);
+        $results = $searcher->search_lines($lines);
+        $this->assertEquals(count($results), 2);
+
+        $firstResult = $results[0];
+        $this->assertEquals($firstResult->linenum, 23);
+        $this->assertEquals($firstResult->match_start_index, 3);
+        $this->assertEquals($firstResult->match_end_index, 11);
+
+        $secondResult = $results[1];
+        $this->assertEquals($secondResult->linenum, 29);
+        $this->assertEquals($secondResult->match_start_index, 24);
+        $this->assertEquals($secondResult->match_end_index, 32);
+    }
 }
 
 ?>
