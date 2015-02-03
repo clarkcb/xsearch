@@ -20,10 +20,13 @@ class SearcherTest < Test::Unit::TestCase
     settings
   end
 
+  def get_test_file
+    File.expand_path('~/src/git/xsearch/shared/testFiles/testFile2.txt')
+  end
+
 ################################################################################
 # is_search_dir tests
 ################################################################################
-
   def test_is_search_dir_no_patterns
     settings = self.get_settings()
     searcher = Searcher.new(settings)
@@ -95,7 +98,6 @@ class SearcherTest < Test::Unit::TestCase
 ################################################################################
 # is_search_file tests
 ################################################################################
-
   def test_is_search_file_matches_by_default
     settings = self.get_settings()
     searcher = Searcher.new(settings)
@@ -170,7 +172,6 @@ class SearcherTest < Test::Unit::TestCase
 ################################################################################
 # is__archive_search_file tests
 ################################################################################
-
   def test_is_archive_search_file_matches_by_default
     settings = self.get_settings()
     searcher = Searcher.new(settings)
@@ -245,7 +246,6 @@ class SearcherTest < Test::Unit::TestCase
 ################################################################################
 # filter_file tests
 ################################################################################
-
   def test_filter_file_matches_by_default
     settings = self.get_settings()
     searcher = Searcher.new(settings)
@@ -315,5 +315,50 @@ class SearcherTest < Test::Unit::TestCase
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(!searcher.filter_file(f))
+  end
+
+################################################################################
+# search_lines tests
+################################################################################
+  def test_search_lines
+    settings = self.get_settings()
+    searcher = Searcher.new(settings)
+    testfile = self.get_test_file()
+    contents = File.open(testfile, mode: 'r:ISO8859-1').read
+    results = searcher.search_multiline_string(contents)
+    assert_equal(results.count, 2)
+
+    firstResult = results[0]
+    assert_equal(firstResult.linenum, 23)
+    assert_equal(firstResult.match_start_index, 3)
+    assert_equal(firstResult.match_end_index, 11)
+
+    secondResult = results[1]
+    assert_equal(secondResult.linenum, 29)
+    assert_equal(secondResult.match_start_index, 24)
+    assert_equal(secondResult.match_end_index, 32)
+  end
+
+################################################################################
+# search_multiline_string tests
+################################################################################
+  def test_search_multiline_string
+    settings = self.get_settings()
+    searcher = Searcher.new(settings)
+    testfile = self.get_test_file()
+    fo = File.open(testfile, mode: 'r:ISO8859-1')
+    line_iterator = fo.each_line
+    results = searcher.search_line_iterator(line_iterator)
+    assert_equal(results.count, 2)
+
+    firstResult = results[0]
+    assert_equal(firstResult.linenum, 23)
+    assert_equal(firstResult.match_start_index, 3)
+    assert_equal(firstResult.match_end_index, 11)
+
+    secondResult = results[1]
+    assert_equal(secondResult.linenum, 29)
+    assert_equal(secondResult.match_start_index, 24)
+    assert_equal(secondResult.match_end_index, 32)
   end
 end
