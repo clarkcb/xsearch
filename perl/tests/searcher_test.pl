@@ -10,8 +10,9 @@ BEGIN {
   use lib "$ENV{HOME}/src/git/xsearch/perl";
 }
 
-use Test::Simple tests => 73;
+use Test::Simple tests => 89;
 
+use plsearch::FileUtil;
 use plsearch::SearchSettings;
 use plsearch::Searcher;
 
@@ -23,17 +24,19 @@ sub get_settings {
     return $settings;
 }
 
+sub get_test_file {
+  return "$ENV{HOME}/src/git/xsearch/shared/testFiles/testFile2.txt";
+}
+
 sub test_validate_settings {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
 }
 
-
 ################################################################################
 # is_search_dir tests
 ################################################################################
-
 sub test_is_search_dir_no_patterns {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -115,7 +118,6 @@ sub test_is_search_dir_hidden_dir_include_hidden {
 ################################################################################
 # is_search_file tests
 ################################################################################
-
 sub test_is_search_file_matches_by_default {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -196,11 +198,9 @@ sub test_is_search_file_no_match_out_pattern {
     ok($searcher->is_search_file($file), "$file does not match out_filepatterns");
 }
 
-
 ################################################################################
 # is__archive_search_file tests
 ################################################################################
-
 sub test_is_archive_search_file_matches_by_default {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -281,11 +281,9 @@ sub test_is_archive_search_file_no_match_out_pattern {
     ok($searcher->is_archive_search_file($file), "$file does not match out_archivefilepatterns");
 }
 
-
 ################################################################################
 # filter_file tests
 ################################################################################
-
 sub test_filter_file_matches_by_default {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
@@ -370,6 +368,49 @@ sub test_filter_file_nonarchive_archivesonly {
     ok(!$searcher->filter_file($file), "$file does not pass filter_file when archivesonly=1");
 }
 
+################################################################################
+# search_lines tests
+################################################################################
+sub test_search_lines {
+    my $settings = get_settings();
+    my ($searcher, $errs) = new plsearch::Searcher($settings);
+    ok(scalar @{$errs} == 0, 'No errors from valid settings');
+    my $testfile = get_test_file();
+    my $contents = plsearch::FileUtil::get_file_contents($testfile);
+    my $results = $searcher->search_multiline_string($contents);
+    ok(scalar @{$results} == 2, 'Two search results');
+    my $firstResult = $results->[0];
+    ok($firstResult->{linenum} == 23, "First result on line 23");
+    ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
+    ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
+
+    my $secondResult = $results->[1];
+    ok($secondResult->{linenum} == 29, "Second result on line 29");
+    ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
+    ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
+}
+
+################################################################################
+# search_multiline_string tests
+################################################################################
+sub test_search_multiline_string {
+    my $settings = get_settings();
+    my ($searcher, $errs) = new plsearch::Searcher($settings);
+    ok(scalar @{$errs} == 0, 'No errors from valid settings');
+    my $testfile = get_test_file();
+    my $lines = plsearch::FileUtil::get_file_lines($testfile);
+    my $results = $searcher->search_lines($lines);
+    ok(scalar @{$results} == 2, 'Two search results');
+    my $firstResult = $results->[0];
+    ok($firstResult->{linenum} == 23, "First result on line 23");
+    ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
+    ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
+
+    my $secondResult = $results->[1];
+    ok($secondResult->{linenum} == 29, "Second result on line 29");
+    ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
+    ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
+}
 
 ################################################################################
 # main
@@ -422,6 +463,11 @@ sub main {
     test_filter_file_archive_archivesonly();              # 2 tests
     test_filter_file_nonarchive_archivesonly();           # 2 tests
 
+    # search_lines tests
+    test_search_lines();                                  # 8 tests
+
+    # search_multiline_string tests
+    test_search_multiline_string();                       # 8 tests
 }
 
 main();
