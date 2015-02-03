@@ -25,10 +25,13 @@ class SearcherTest(unittest.TestCase):
         settings.add_pattern('Searcher', 'searchpatterns')
         return settings
 
+    def get_test_file(self):
+        HOME = os.environ['HOME']
+        return '%s/src/git/xsearch/shared/testFiles/testFile2.txt' % HOME
+
 ################################################################################
 # is_search_dir tests
 ################################################################################
-
     def test_is_search_dir_no_patterns(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
@@ -91,7 +94,6 @@ class SearcherTest(unittest.TestCase):
 ################################################################################
 # is_search_file tests
 ################################################################################
-
     def test_is_search_file_matches_by_default(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
@@ -157,7 +159,6 @@ class SearcherTest(unittest.TestCase):
 ################################################################################
 # is__archive_search_file tests
 ################################################################################
-
     def test_is_archive_search_file_matches_by_default(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
@@ -223,7 +224,6 @@ class SearcherTest(unittest.TestCase):
 ################################################################################
 # filter_file tests
 ################################################################################
-
     def test_filter_file_matches_by_default(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
@@ -285,6 +285,60 @@ class SearcherTest(unittest.TestCase):
         searcher = Searcher(settings)
         f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.Text)
         self.assertFalse(searcher.filter_file(f))
+
+################################################################################
+# search_lines tests
+################################################################################
+    def test_search_lines(self):
+        settings = self.get_settings()
+        searcher = Searcher(settings)
+        testfile = self.get_test_file()
+        results = []
+        try:
+            fo = open(testfile, 'r')
+            contents = fo.read()
+            results = searcher.search_multiline_string(contents)
+            fo.close()
+        except IOError as e:
+            print('IOError: {0!s}: {1!s}'.format(e, sf))
+        self.assertEqual(len(results), 2)
+
+        firstResult = results[0]
+        self.assertEqual(firstResult.linenum, 23)
+        self.assertEqual(firstResult.match_start_index, 3)
+        self.assertEqual(firstResult.match_end_index, 11)
+
+        secondResult = results[1]
+        self.assertEqual(secondResult.linenum, 29)
+        self.assertEqual(secondResult.match_start_index, 24)
+        self.assertEqual(secondResult.match_end_index, 32)
+
+################################################################################
+# search_multiline_string tests
+################################################################################
+    def test_search_multiline_string(self):
+        settings = self.get_settings()
+        searcher = Searcher(settings)
+        testfile = self.get_test_file()
+        results = []
+        try:
+            fo = open(testfile, 'r')
+            results = searcher.search_line_iterator(fo)
+            fo.close()
+        except IOError as e:
+            print('IOError: {0!s}: {1!s}'.format(e, sf))
+        self.assertEqual(len(results), 2)
+
+        firstResult = results[0]
+        self.assertEqual(firstResult.linenum, 23)
+        self.assertEqual(firstResult.match_start_index, 3)
+        self.assertEqual(firstResult.match_end_index, 11)
+
+        secondResult = results[1]
+        self.assertEqual(secondResult.linenum, 29)
+        self.assertEqual(secondResult.match_start_index, 24)
+        self.assertEqual(secondResult.match_end_index, 32)
+
 
 if __name__ == '__main__':
     unittest.main()
