@@ -19,6 +19,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -54,5 +56,36 @@ public class FileUtil {
             if (!isDotDir(elem) && !elem.equals("")) nonDotDirElems.add(elem);
         }
         return nonDotDirElems;
+    }
+
+    public static String getFileContents(File f) throws IOException {
+        try {
+            Scanner scanner = new Scanner(f, "ISO8859-1").useDelimiter("\\Z");
+            String content;
+            try {
+                content = scanner.next();
+            } catch (NoSuchElementException e) {
+                throw e;
+            } catch (IllegalStateException e) {
+                throw e;
+            } finally {
+                scanner.close();
+            }
+            return content;
+        } catch (IOException e) {
+            throw e;
+        }
+
+    }
+
+    // NOTE: user takes responsibility for closing the LineIterator once done
+    public static LineIterator getFileLineIterator(File f) throws IOException {
+        LineIterator it = null;
+        try {
+            it = FileUtils.lineIterator(f, "ISO8859-1");
+            return it;
+        } catch (IOException e) {
+            throw e;
+        }
     }
 }

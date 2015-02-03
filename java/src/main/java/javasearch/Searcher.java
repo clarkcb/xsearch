@@ -10,7 +10,6 @@ Class to perform the file search
 
 package javasearch;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
 import java.io.File;
@@ -332,21 +331,16 @@ public class Searcher {
 
 	public void searchTextFileContents(SearchFile sf) {
 		try {
-			Scanner scanner = new Scanner(sf.toFile(), "ISO8859-1").useDelimiter("\\Z");
-			try {
-				String content = scanner.next();
-				List<SearchResult> results = searchMultiLineString(content);
-				for (SearchResult r : results) {
-					r.setSearchFile(sf);
-					addSearchResult(r);
-				}
-			} catch (NoSuchElementException e) {
-				log(e.toString());
-			} catch (IllegalStateException e) {
-				log(e.toString());
-			} finally {
-				scanner.close();
-			}
+            String contents = FileUtil.getFileContents(sf.toFile());
+            List<SearchResult> results = searchMultiLineString(contents);
+            for (SearchResult r : results) {
+                r.setSearchFile(sf);
+                addSearchResult(r);
+            }
+        } catch (NoSuchElementException e) {
+            log(e.toString());
+        } catch (IllegalStateException e) {
+            log(e.toString());
 		} catch (IOException e) {
 			log(e.toString());
 		}
@@ -480,21 +474,21 @@ public class Searcher {
 		return results;
 	}
 
-	public void searchTextFileLines(SearchFile sf) {
-		LineIterator it = null;
-		try {
-			it = FileUtils.lineIterator(sf.toFile(), "ISO8859-1");
-			List<SearchResult> results = searchStringIterator(it);
-			for (SearchResult r : results) {
-				r.setSearchFile(sf);
-				addSearchResult(r);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (it != null) it.close();
-		}
-	}
+    public void searchTextFileLines(SearchFile sf) {
+        LineIterator it = null;
+        try {
+            it = FileUtil.getFileLineIterator(sf.toFile());
+            List<SearchResult> results = searchStringIterator(it);
+            for (SearchResult r : results) {
+                r.setSearchFile(sf);
+                addSearchResult(r);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (it != null) it.close();
+        }
+    }
 
 	private boolean linesMatch(List<String> lines, Set<Pattern> inPatterns,
 							   Set<Pattern> outPatterns) {
