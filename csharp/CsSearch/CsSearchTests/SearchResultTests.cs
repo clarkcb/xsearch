@@ -11,6 +11,7 @@ namespace CsSearchTests
 		[Test]
 		public void SearchResultSingleLine_ToString_EqualsExpected()
 		{
+			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
 				"Searcher.cs", FileType.Text);
@@ -24,12 +25,13 @@ namespace CsSearchTests
 			var expectedOutput = string.Format("{0}: {1}: [{2}:{3}]: {4}", expectedPath,
 				lineNum, matchStartIndex, matchEndIndex, line.Trim());
 
-			Assert.AreEqual(searchResult.ToString(), expectedOutput);
+			Assert.AreEqual(searchResult.ToString(settings), expectedOutput);
 		}
 
 		[Test]
 		public void SearchResultMultiLine_ToString_EqualsExpected()
 		{
+			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
 											"Searcher.cs", FileType.Text);
@@ -52,12 +54,13 @@ namespace CsSearchTests
 								 "  11 | 	{{\n" +
 								 "  12 | 		private readonly FileTypes _fileTypes;\n",
 								 expectedPath, lineNum, matchStartIndex, matchEndIndex);
-			Assert.AreEqual(searchResult.ToString(), expectedOutput);
+			Assert.AreEqual(searchResult.ToString(settings), expectedOutput);
 		}
 
 		[Test]
 		public void SearchResultBinaryFile_ToString_EqualsExpected()
 		{
+			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
 				"Searcher.exe", FileType.Binary);
@@ -70,7 +73,7 @@ namespace CsSearchTests
 			var expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
 			var expectedOutput = string.Format("{0} matches", expectedPath);
 
-			Assert.AreEqual(searchResult.ToString(), expectedOutput);
+			Assert.AreEqual(searchResult.ToString(settings), expectedOutput);
 		}
 	}
 }
