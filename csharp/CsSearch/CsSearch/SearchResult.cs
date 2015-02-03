@@ -49,13 +49,13 @@ namespace CsSearch
 			LinesAfter = linesAfter;
 		}
 
-		public override string ToString()
+		public string ToString(SearchSettings settings)
 		{
 			if (LinesBefore.Count > 0 || LinesAfter.Count > 0)
 			{
-				return MultiLineToString();
+				return MultiLineToString(settings);
 			}
-			return SingleLineToString();
+			return SingleLineToString(settings);
 		}
 
 		private int LineNumPadding()
@@ -64,11 +64,11 @@ namespace CsSearch
 			return string.Format("{0}", maxLineNum).Length;
 		}
 
-		private string MultiLineToString()
+		private string MultiLineToString(SearchSettings settings)
 		{
 			var sb = new StringBuilder().
 				Append(new String('=', 80)).Append('\n').
-				Append(FileUtil.GetRelativePath(File.FullName)).Append(": ").
+				Append(FileUtil.GetRelativePath(File.FullName, settings.StartPath)).Append(": ").
 				Append(LineNum).Append(": ").
 				Append('[').Append(MatchStartIndex).Append(':').
 				Append(MatchEndIndex).Append("]\n").
@@ -101,9 +101,9 @@ namespace CsSearch
 			return sb.ToString();
 		}
 
-		private string SingleLineToString()
+		private string SingleLineToString(SearchSettings settings)
 		{
-			var sb = new StringBuilder().Append(FileUtil.GetRelativePath(File.FullName));
+			var sb = new StringBuilder().Append(FileUtil.GetRelativePath(File.FullName, settings.StartPath));
 			if (LineNum == 0)
 			{
 				//sb.Append(" has match for pattern \"" + SearchPattern + "\"");

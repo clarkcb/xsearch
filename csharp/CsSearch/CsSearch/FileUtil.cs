@@ -10,11 +10,13 @@ namespace CsSearch
 
 		private static char[] dirSeps = new char[] { '/', '\\' };
 
-		public static string GetRelativePath(string fullPath)
+		public static string GetRelativePath(string fullPath, string startpath)
 		{
 			var filePath = fullPath;
-			if (filePath.StartsWith(Environment.CurrentDirectory))
+			if (startpath == ".")
+			{
 				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
+			}
 			return filePath;
 		}
 

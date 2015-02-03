@@ -153,7 +153,7 @@ namespace CsSearch
 			{
 				if (Settings.Verbose)
 					Log(String.Format("Error while accessing dir {0}: {1}",
-						FileUtil.GetRelativePath(dir.FullName), e.Message));
+						FileUtil.GetRelativePath(dir.FullName, Settings.StartPath), e.Message));
 			}
 			return searchDirs;
 		}
@@ -179,7 +179,7 @@ namespace CsSearch
 			if (Settings.Debug)
 			{
 				Log(string.Format("Getting search files under {0}",
-					FileUtil.GetRelativePath(dir.FullName)));
+					FileUtil.GetRelativePath(dir.FullName, Settings.StartPath)));
 			}
 			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
 			try
@@ -192,7 +192,7 @@ namespace CsSearch
 			{
 				if (Settings.Verbose)
 					Log(String.Format("Error while accessing dir {0}: {1}",
-						FileUtil.GetRelativePath(dir.FullName), e.Message));
+						FileUtil.GetRelativePath(dir.FullName, Settings.StartPath), e.Message));
 			}
 			return dirSearchFiles;
 		}
@@ -255,7 +255,7 @@ namespace CsSearch
 				Log(string.Format("Directories to be searched ({0}):", searchDirs.Count));
 				foreach (var d in searchDirs)
 				{
-					Log(FileUtil.GetRelativePath(d.FullName));
+					Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
 				}
 				Log("");
 			}
@@ -276,7 +276,7 @@ namespace CsSearch
 				Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Count()));
 				foreach (var f in searchFiles)
 				{
-					Log(FileUtil.GetRelativePath(f.FullName));
+					Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
 				}
 				Log("");
 			}
@@ -312,12 +312,12 @@ namespace CsSearch
 			else if (f.Type == FileType.Archive)
 			{
 				Log(string.Format("Skipping archive file {0}",
-					FileUtil.GetRelativePath(f.FullName)));
+					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			}
 			else if (Settings.Verbose)
 			{
 				Log(string.Format("Skipping file {0}",
-					FileUtil.GetRelativePath(f.FullName)));
+					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			}
 		}
 
@@ -325,7 +325,7 @@ namespace CsSearch
 		{
 			if (Settings.Verbose)
 				Log(string.Format("Searching text file {0}",
-					FileUtil.GetRelativePath(f.FullName)));
+					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else
@@ -590,7 +590,7 @@ namespace CsSearch
 		{
 			if (Settings.Verbose)
 				Log(string.Format("Searching binary file {0}",
-					FileUtil.GetRelativePath(f.FullName)));
+					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			try
 			{
 				using (var sr = new StreamReader(f.FullName))
@@ -617,7 +617,7 @@ namespace CsSearch
 			Log(string.Format("Search results ({0}):", Results.Count));
 			foreach (var searchResult in Results)
 			{
-				Log(searchResult.ToString());
+				Log(searchResult.ToString(Settings));
 			}
 		}
 
@@ -635,7 +635,7 @@ namespace CsSearch
 			Log(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
 			foreach (var d in matchingDirs)
 			{
-				Log(FileUtil.GetRelativePath(d.FullName));
+				Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
 			}
 		}
 
@@ -653,7 +653,7 @@ namespace CsSearch
 			Log(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
 			foreach (var f in matchingFiles)
 			{
-				Log(FileUtil.GetRelativePath(f.FullName));
+				Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
 			}
 		}
 
