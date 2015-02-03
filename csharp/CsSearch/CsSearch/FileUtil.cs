@@ -10,16 +10,6 @@ namespace CsSearch
 
 		private static char[] dirSeps = new char[] { '/', '\\' };
 
-		public static string GetRelativePath(string fullPath, string startpath)
-		{
-			var filePath = fullPath;
-			if (startpath == ".")
-			{
-				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
-			}
-			return filePath;
-		}
-
 		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
 		{
 			return EnumerableStringFromFile(f.FullName);
@@ -37,6 +27,15 @@ namespace CsSearch
 					yield return line;
 				}
 			}
+		}
+
+		public static string ExpandPath(string filepath)
+		{
+			if (filepath[0] == '~')
+			{
+				return JoinPath(GetHomePath(), filepath.Substring(1));
+			}
+			return filepath;
 		}
 
 		public static string GetFileContents(SearchFile f)
@@ -60,6 +59,24 @@ namespace CsSearch
 			}
 		}
 
+		public static string GetHomePath()
+		{
+			Console.WriteLine("Environment.OSVersion: "+Environment.OSVersion);
+			var home = Environment.GetEnvironmentVariable("HOME");
+			if (null == home)
+				return Environment.GetEnvironmentVariable("USERPROFILE");
+			return home;
+		}
+
+		public static string GetRelativePath(string fullPath, string startpath)
+		{
+			var filePath = fullPath;
+			if (startpath == ".")
+			{
+				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
+			}
+			return filePath;
+		}
 
 		public static bool IsDirectory(string filename)
 		{
@@ -95,6 +112,8 @@ namespace CsSearch
 			var dirSep = '/';
 			if (path1.IndexOf('\\') > -1)
 				dirSep = '\\';
+			if (path2[0] == '/' || path2[0] == '\\')
+				path2 = path2.Substring(1);
 			return NormalizePath(path1) + dirSep + path2;
 		}
 

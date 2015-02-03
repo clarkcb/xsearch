@@ -126,6 +126,32 @@ namespace CsSearchTests
 		}
 
 		/*************************************************************
+		 * ExpandPath tests
+		*************************************************************/
+		[Test]
+		public void ExpandPath_WithTilde_ExpandHome()
+		{
+			var path = "~/src/git/xsearch";
+			var expected = FileUtil.JoinPath(FileUtil.GetHomePath(), path.Substring(1));
+			Console.WriteLine("expected: "+expected);
+			Assert.AreEqual(FileUtil.ExpandPath(path), expected);
+		}
+
+		[Test]
+		public void ExpandPath_NoTilde_UnchangedPath()
+		{
+			var path = "/a/full/path/";
+			Assert.AreEqual(FileUtil.ExpandPath(path), path);
+		}
+
+		[Test]
+		public void ExpandPath_WithBackSlashes_UnchangedPath()
+		{
+			var path = @"C:\src\git\xsearch\";
+			Assert.AreEqual(FileUtil.ExpandPath(path), path);
+		}
+
+		/*************************************************************
 		 * NormalizePath tests
 		*************************************************************/
 		[Test]
