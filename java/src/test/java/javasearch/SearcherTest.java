@@ -24,7 +24,6 @@ public class SearcherTest {
         return new File("/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt");
     }
 
-
     /*************************************************************
      * isSearchDir tests
      *************************************************************/
@@ -371,7 +370,7 @@ public class SearcherTest {
     }
 
     /*************************************************************
-     * SearchTextReaderLines test
+     * searchStringIterator test
      *************************************************************/
     @Test
     public void TestSearchTextReaderLines() {
@@ -408,7 +407,7 @@ public class SearcherTest {
     }
 
     /*************************************************************
-     * SearchMultiLineString test
+     * searchMultiLineString test
      *************************************************************/
     @Test
     public void TestSearchMultiLineString() {

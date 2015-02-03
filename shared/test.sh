@@ -15,9 +15,9 @@ PROJECT_PATH=$HOME/src/git/xsearch
 SHARED_PATH=$PROJECT_PATH/shared
 
 SEARCHSTRING="Searcher"
-EXTS="-x py,rb"
+EXTS="-x py"
 DEBUG=""
-DOTIMING="-t"
+DOTIMING=""
 MULTILINE=""
 PRINT="-p"
 SEARCHARCHIVES="-Z"

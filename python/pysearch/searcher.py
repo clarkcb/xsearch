@@ -243,7 +243,7 @@ class Searcher(object):
         self.log('Search results (%d):' % len(self.results))
         for r in self.results:
            self.print_result(r)
-        self.print_res_counts()
+        #self.print_res_counts()
 
     def search_file(self, sf):
         """Search in a file, return number of matches found"""
