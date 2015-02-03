@@ -432,7 +432,8 @@ func TestSearchTextReaderLines(t *testing.T) {
 		t.Errorf("error from getTestFileContents()")
 		panic(err)
 	}
-	searcher := getSearcher()
+	settings := getSettings()
+	searcher := NewSearcher(settings)
 	results := searcher.SearchTextReaderLines(strings.NewReader(contents))
 
 	if len(results) != 2 {
@@ -482,7 +483,8 @@ func TestSearchMultiLineString(t *testing.T) {
 	if err != nil {
 		t.Errorf("error from getTestFileContents()")
 	}
-	searcher := getSearcher()
+	settings := getSettings()
+	searcher := NewSearcher(settings)
 	results := searcher.SearchMultiLineString(contents)
 
 	if len(results) != 2 {
