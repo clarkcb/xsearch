@@ -185,13 +185,10 @@ func (s *Searcher) isSearchFile(filename *string) bool {
 }
 
 func (s *Searcher) filterFile(f *string) bool {
-	if s.Settings.SearchArchives && s.isArchiveSearchFile(f) {
-		return true
+	if s.fileTypes.IsArchiveFile(*f) {
+		return s.Settings.SearchArchives && s.isArchiveSearchFile(f)
 	}
-	if !s.Settings.ArchivesOnly && s.isSearchFile(f) {
-		return true
-	}
-	return false
+	return !s.Settings.ArchivesOnly && s.isSearchFile(f)
 }
 
 func (s *Searcher) setSearchFilesForDirectory(d *string) {
@@ -1005,15 +1002,6 @@ func (s *Searcher) Search() error {
 
 func (s *Searcher) PrintSearchResults() {
 	s.searchResults.PrintSearchResults()
-	log("")
-	patternKeys := []string{}
-
-	spi := s.Settings.SearchPatterns.Iterator()
-	for spi.Next() {
-		p := spi.Value()
-		patternKeys = append(patternKeys, p.String())
-	}
-	s.searchResults.PrintPatternCounts(patternKeys)
 }
 
 func (s *Searcher) PrintDirCounts() {
