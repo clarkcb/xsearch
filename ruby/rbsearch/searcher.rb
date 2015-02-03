@@ -287,11 +287,17 @@ class Searcher
   end
 
   def search_text_file_contents(f, enc = nil)
-    contents = File.open(f, "r").read
-    results = search_multiline_string(contents)
-    results.each do |r|
-      r.filename = f
-      add_search_result(r)
+    begin
+      # using ISO8859-1 instead of UTF-8 because a UTF-8 file won't break
+      # on ISO8859-1 but a non-UTF-8 file will break on UTF-8
+      contents = File.open(f, mode: 'r:ISO8859-1').read
+      results = search_multiline_string(contents)
+      results.each do |r|
+        r.filename = f
+        add_search_result(r)
+      end
+    rescue ArgumentError => e
+      log("\nArgumentError in search_text_file_contents: #{e.message}\n\n")
     end
   end
 
@@ -407,13 +413,19 @@ class Searcher
 
   def search_text_file_lines(f, enc = nil)
     linenum = 0
-    fo = File.open(f, "r")
-    line_iterator = fo.each_line
-    results = search_line_iterator(line_iterator)
-    fo.close
-    results.each do |r|
-      r.filename = f
-      add_search_result(r)
+    begin
+      # using ISO8859-1 instead of UTF-8 because a UTF-8 file won't break
+      # on ISO8859-1 but a non-UTF-8 file will break on UTF-8
+      fo = File.open(f, mode: 'r:ISO8859-1')
+      line_iterator = fo.each_line
+      results = search_line_iterator(line_iterator)
+      fo.close
+      results.each do |r|
+        r.filename = f
+        add_search_result(r)
+      end
+    rescue ArgumentError => e
+      log("\nArgumentError in search_text_file_lines: #{e.message}\n\n")
     end
   end
 
@@ -474,8 +486,7 @@ class Searcher
               search_line = false
             end
           rescue ArgumentError => e
-            # TODO: handle ArgumentError "in `match': invalid byte sequence in US-ASCII"
-            log("\nArgumentError: #{e.message}\n\n")
+            log("\nArgumentError in search_line_iterator: #{e.message}\n\n")
             search_line = false
           end
         end
