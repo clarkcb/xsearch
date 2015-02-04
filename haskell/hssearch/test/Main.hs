@@ -1,5 +1,6 @@
 module Main (main) where
 
+import HsSearch.FileTypesTest
 import HsSearch.FileUtilTest
 import HsSearch.SearcherTest
 import HsSearch.SearchOptionsTest
@@ -12,6 +13,9 @@ import Test.HUnit hiding (Test)
 
 main :: IO ()
 main = do
+  -- FileTypes tests
+  fileTypeTests <- getFileTypeTests
+
   -- FileUtil tests
   fileUtilTests <- getFileUtilTests
 
@@ -38,7 +42,7 @@ main = do
   defaultSearchSettingsTests <- getDefaultSearchSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
-  defaultMain (fileUtilTests ++
+  defaultMain (fileTypeTests ++ fileUtilTests ++
     isSearchDirTests ++ isSearchFileTests ++ isArchiveSearchFileTests ++
     filterFileTests ++ searchLinesTests ++ searchContentsTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
