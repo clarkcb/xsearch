@@ -7,7 +7,7 @@ module HsSearch.FileTypes
 
 import Text.XML.HXT.Core
 
-import HsSearch.FileUtility (getExtension, normalizeExtension)
+import HsSearch.FileUtil (getExtension, normalizeExtension)
 import HsSearch.Paths_hssearch (getDataFileName)
 
 data FileType = Archive

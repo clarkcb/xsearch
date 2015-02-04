@@ -13,7 +13,7 @@ import Data.Maybe (catMaybes)
 import Text.Regex.PCRE
 
 import HsSearch.FileTypes
-import HsSearch.FileUtility
+import HsSearch.FileUtil
 import HsSearch.SearchFile
 import HsSearch.SearchResult
 import HsSearch.SearchSettings

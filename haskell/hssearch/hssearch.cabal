@@ -27,7 +27,7 @@ library
                        HsSearch.SearchOptions
                        HsSearch.SearchResult
                        HsSearch.SearchSettings
-  other-modules:       HsSearch.FileUtility
+  other-modules:       HsSearch.FileUtil
                        HsSearch.Paths_hssearch
   build-depends:       base >= 4.7 && <5,
                        bytestring,

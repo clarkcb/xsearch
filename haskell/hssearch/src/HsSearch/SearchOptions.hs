@@ -12,7 +12,7 @@ import Data.Maybe (isJust)
 import qualified Data.Text as T
 import Text.XML.HXT.Core
 
-import HsSearch.FileUtility (normalizeExtension)
+import HsSearch.FileUtil (normalizeExtension)
 import HsSearch.Paths_hssearch (getDataFileName)
 import HsSearch.SearchSettings
 
