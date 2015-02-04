@@ -42,8 +42,7 @@ formatResults settings results =
   "\nSearch results (" ++ show (length results) ++ "):" ++
     (if length results > 0
        then "\n" ++ unlines (map (formatSearchResult settings) results)
-       else "") ++
-    (concat (map matchString (searchPatterns settings)))
+       else "")
   where matchString p = "\nMatches for "++ show p ++ ": " ++
           show (patternCount p) ++ "\n"
         patternCount :: String -> Int
