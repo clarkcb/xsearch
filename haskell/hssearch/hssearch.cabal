@@ -22,12 +22,12 @@ data-files:          data/*.xml
 
 library
   ghc-options:         -Wall
-  exposed-modules:     HsSearch.Searcher
+  exposed-modules:     HsSearch.FileTypes
+                       HsSearch.Searcher
                        HsSearch.SearchOptions
                        HsSearch.SearchResult
                        HsSearch.SearchSettings
-  other-modules:       HsSearch.FileTypes
-                       HsSearch.FileUtility
+  other-modules:       HsSearch.FileUtility
                        HsSearch.Paths_hssearch
   build-depends:       base >= 4.7 && <5,
                        bytestring,
@@ -41,6 +41,7 @@ library
                        test-framework >=0.8 && <0.9,
                        test-framework-hunit >=0.3 && <0.4,
                        text
+  hs-source-dirs:      src
   default-language:    Haskell2010
 
 executable hssearch
@@ -58,11 +59,12 @@ executable hssearch
                        test-framework-hunit >=0.3 && <0.4,
                        text,
                        timeit
+  hs-source-dirs:      src
   default-language:    Haskell2010
 
 test-suite test
   type:                exitcode-stdio-1.0
-  main-is:             Test.hs
+  main-is:             Main.hs
   build-depends:       hssearch,
                        base >=4.7 && <5,
                        bytestring,
@@ -76,6 +78,6 @@ test-suite test
                        test-framework-hunit >=0.3 && <0.4,
                        text,
                        timeit
-  hs-source-dirs:      test
+  hs-source-dirs:      test, src
   default-language:    Haskell2010
 
