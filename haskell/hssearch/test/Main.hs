@@ -19,6 +19,7 @@ main = do
   isSearchDirTests <- getIsSearchDirTests
   isSearchFileTests <- getIsSearchFileTests
   isArchiveSearchFileTests <- getIsArchiveSearchFileTests
+  filterFileTests <- getFilterFileTests
 
   -- SearchOptions tests
   settingsFromArgsTests <- getSettingsFromArgsTests
@@ -37,7 +38,7 @@ main = do
 
   defaultMain (fileUtilTests ++
     isSearchDirTests ++ isSearchFileTests ++ isArchiveSearchFileTests ++
-    settingsFromArgsTests ++ settingsFromNoArgsTests ++
+    filterFileTests ++ settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
     binaryFileSearchResultTests ++ singleLineSearchResultTests ++
     multiLineSearchResultTests ++ 

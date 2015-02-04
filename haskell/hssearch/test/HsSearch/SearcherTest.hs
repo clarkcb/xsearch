@@ -1,11 +1,14 @@
 module HsSearch.SearcherTest
-  ( getIsArchiveSearchFileTests
+  ( getFilterFileTests
+  , getIsArchiveSearchFileTests
   , getIsSearchDirTests
   , getIsSearchFileTests
   ) where
 
+import HsSearch.FileTypes
 import HsSearch.FileUtil
 import HsSearch.Searcher
+import HsSearch.SearchFile
 import HsSearch.SearchSettings
 
 import Test.Framework
@@ -72,5 +75,27 @@ getIsArchiveSearchFileTests = do
          , testCase "isArchiveSearchFile archive.zip not matching outArchiveFilePatterns" (isArchiveSearchFile settingsOutArchiveFilePattern "archive.zip" @?= True)
          , testCase "isArchiveSearchFile .gitarchive.zip default settings" (isArchiveSearchFile settings ".gitarchive.zip" @?= False)
          , testCase "isArchiveSearchFile .gitarchive.zip includeHidden" (isArchiveSearchFile settingsIncludeHidden ".gitarchive.zip" @?= True)
+         ]
+
+getFilterFileTests :: IO [Test]
+getFilterFileTests = do
+  let settings = defaultSearchSettings
+  let settingsInExtension = settings { inExtensions = [".hs"] }
+  let settingsOutExtension = settings { outExtensions = [".hs"] }
+  let settingsIncludeHidden = settings { excludeHidden = False }
+  let settingsSearchArchives = settings { searchArchives = True }
+  let settingsArchivesOnly = settingsSearchArchives { archivesOnly = True }
+  let hsTestFile = SearchFile { searchFileContainers=[], searchFilePath="Searcher.hs", searchFileType=Text }
+  let hiddenTestFile = SearchFile { searchFileContainers=[], searchFilePath=".gitignore", searchFileType=Text }
+  let archiveTestFile = SearchFile { searchFileContainers=[], searchFilePath="archive.zip", searchFileType=Archive }
+  return [ testCase "filterFile Searcher.hs default settings" (filterFile settings hsTestFile @?= True)
+         , testCase "filterFile Searcher.hs isSearchFile" (filterFile settingsInExtension hsTestFile @?= True)
+         , testCase "filterFile Searcher.hs not isSearchFile" (filterFile settingsOutExtension hsTestFile @?= False)
+         , testCase "filterFile .gitignore default settings" (filterFile settings hiddenTestFile @?= False)
+         , testCase "filterFile .gitignore includeHidden" (filterFile settingsIncludeHidden hiddenTestFile @?= True)
+         , testCase "filterFile archive.zip default settings" (filterFile settings archiveTestFile @?= False)
+         , testCase "filterFile archive.zip searchArchives" (filterFile settingsSearchArchives archiveTestFile @?= True)
+         , testCase "filterFile archive.zip archivesOnly" (filterFile settingsArchivesOnly archiveTestFile @?= True)
+         , testCase "filterFile Searcher.hs archivesOnly" (filterFile settingsArchivesOnly hsTestFile @?= False)
          ]
 

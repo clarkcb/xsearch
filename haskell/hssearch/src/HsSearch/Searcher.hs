@@ -2,6 +2,7 @@ module HsSearch.Searcher
     (
       doSearch
     , doSearchFiles
+    , filterFile
     , getSearchDirs
     , getSearchFiles
     , isArchiveSearchFile
