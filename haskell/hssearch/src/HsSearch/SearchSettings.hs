@@ -1,7 +1,12 @@
 module HsSearch.SearchSettings
   ( SearchSettings(..)
   , defaultSearchSettings
+  , newExtensions
   ) where
+
+import Data.List.Split (splitOn)
+
+import HsSearch.FileUtil (normalizeExtension)
 
 data SearchSettings = SearchSettings {
                                        startPath :: String
@@ -85,3 +90,8 @@ defaultSearchSettings = SearchSettings {
                                        }
 
 
+newExtensions :: String -> [String]
+newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "," x)
+                | otherwise    = [normalizeExtension x]
+  where removeBlank :: [String] -> [String]
+        removeBlank = filter (/="")

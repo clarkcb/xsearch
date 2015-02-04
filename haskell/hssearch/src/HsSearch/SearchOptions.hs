@@ -7,12 +7,10 @@ module HsSearch.SearchOptions (
 
 import Data.Char (toLower)
 import Data.List (isPrefixOf, sortBy)
-import Data.List.Split (splitOn)
 import Data.Maybe (isJust)
 import qualified Data.Text as T
 import Text.XML.HXT.Core
 
-import HsSearch.FileUtil (normalizeExtension)
 import HsSearch.Paths_hssearch (getDataFileName)
 import HsSearch.SearchSettings
 
@@ -113,12 +111,6 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
              , ("search", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
              ]
-
-newExtensions :: String -> [String]
-newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "," x)
-                | otherwise    = [normalizeExtension x]
-  where removeBlank :: [String] -> [String]
-        removeBlank = filter (/="")
 
 flagActions :: [(String, FlagAction)]
 flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
