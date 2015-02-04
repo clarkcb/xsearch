@@ -8,6 +8,8 @@ module HsSearch.Searcher
     , isArchiveSearchFile
     , isSearchDir
     , isSearchFile
+    , searchContents
+    , searchLines
     ) where
 
 import Control.Monad (liftM)
@@ -248,17 +250,17 @@ searchTextFileLines settings f = do
   fileLinesEither <- getFileLines f
   case fileLinesEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right fileLines) -> return $ addFilePath (searchLineList settings fileLines)
+    (Right fileLines) -> return $ addFilePath (searchLines settings fileLines)
   where addFilePath = map (\r -> r {filePath=f})
 
-searchLineList :: SearchSettings -> [B.ByteString] -> [SearchResult]
-searchLineList settings lineList = recSearchLineList settings [] lineList 0 []
+searchLines :: SearchSettings -> [B.ByteString] -> [SearchResult]
+searchLines settings lineList = recSearchLines settings [] lineList 0 []
 
-recSearchLineList :: SearchSettings -> [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
-recSearchLineList settings beforeList lst num results =
+recSearchLines :: SearchSettings -> [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
+recSearchLines settings beforeList lst num results =
   case lst of
     []     -> results
-    (l:ls) -> recSearchLineList settings (newBefore l) ls (num + 1) (updatedResults l)
+    (l:ls) -> recSearchLines settings (newBefore l) ls (num + 1) (updatedResults l)
   where beforeNum = linesBefore settings
         newBefore l | beforeNum == 0 = []
                     | length beforeList == beforeNum = tail beforeList ++ [l]
