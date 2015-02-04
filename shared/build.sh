@@ -112,6 +112,11 @@ build_go () {
     log "gengosearchcode"
     gengosearchcode
 
+    # go fmt the gosearch source (for auto-generated code)
+    log "Auto-formatting gosearch"
+    log "go fmt elocale.com/clarkcb/xsearch"
+    go fmt elocale.com/clarkcb/xsearch
+
     # now build gosearch
     log "Building gosearch"
     log "go install elocale.com/clarkcb/xsearch/gosearch"
