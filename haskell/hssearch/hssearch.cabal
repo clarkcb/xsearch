@@ -23,12 +23,12 @@ data-files:          data/*.xml
 library
   ghc-options:         -Wall
   exposed-modules:     HsSearch.FileTypes
+                       HsSearch.FileUtil
                        HsSearch.Searcher
                        HsSearch.SearchOptions
                        HsSearch.SearchResult
                        HsSearch.SearchSettings
-  other-modules:       HsSearch.FileUtil
-                       HsSearch.Paths_hssearch
+  other-modules:       HsSearch.Paths_hssearch
   build-depends:       base >= 4.7 && <5,
                        bytestring,
                        directory,
