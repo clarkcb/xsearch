@@ -2,6 +2,7 @@ module HsSearch.SearchResult
   ( SearchResult(..)
   , blankSearchResult
   , formatSearchResult
+  , trimLeadingWhitespace
   ) where
 
 import qualified Data.ByteString as B
@@ -55,17 +56,17 @@ formatMultiLine :: SearchResult -> String
 formatMultiLine result =
   ((take 80 . repeat) '=') ++ "\n" ++
   filePath result ++ ": " ++
-  show (lineNum result) ++ " [" ++
+  show (lineNum result) ++ ": [" ++
   show (matchStartIndex result) ++ ":" ++
-  show (matchEndIndex result) ++ "]:" ++ "\n" ++
+  show (matchEndIndex result) ++ "]:\n" ++
   ((take 80 . repeat) '-') ++ "\n" ++
   unlines (map formatLine (zip beforeLineNums resultBeforeLines)) ++
   "> " ++ padNumString (show resultLineNum) ++ " | " ++
-  BC.unpack (line result) ++ "\n" ++
+  (rstrip . BC.unpack) (line result) ++ "\n" ++
   unlines (map formatLine (zip afterLineNums resultAfterLines))
   where resultLineNum = lineNum result
-        resultBeforeLines = (map BC.unpack (beforeLines result))
-        resultAfterLines = (map BC.unpack (afterLines result))
+        resultBeforeLines = (map (rstrip . BC.unpack) (beforeLines result))
+        resultAfterLines = (map (rstrip . BC.unpack) (afterLines result))
         maxNumWidth = numWidth (resultLineNum + length resultAfterLines)
         numWidth :: Int -> Int
         numWidth n = recNumWidth 1 10 n
@@ -78,5 +79,8 @@ formatMultiLine result =
         afterLineNums = [(resultLineNum+1)..(length resultAfterLines + resultLineNum)]
         formatLine (n,l) = "  " ++ padNumString (show n) ++ " | " ++ l
 
+rstrip :: String -> String
+rstrip = reverse . trimLeadingWhitespace . reverse
+
 trimLeadingWhitespace :: String -> String
-trimLeadingWhitespace s = dropWhile isSpace s
+trimLeadingWhitespace = dropWhile isSpace
