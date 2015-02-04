@@ -14,6 +14,7 @@ module HsSearch.FileUtil
     , getRecursiveDirectories
     , hasExtension
     , isDirectory
+    , isDotDir
     , isHiddenFilePath
     , normalizeExtension
     ) where
@@ -29,13 +30,17 @@ import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hClose, hSetNewlineMode, IOMode(..), universalNewlineMode, openFile)
 
 -- preferring this over System.FilePath (takeExtension)
-getExtension :: String -> Maybe String
+getExtension :: FilePath -> Maybe String
 getExtension "" = Nothing
-getExtension fp = case takeFileName fp of
-                  name | "." `isPrefixOf` name -> Nothing
-                  name | '.' `elem` name -> Just $ trimToExt name
-                  _ -> Nothing
-  where trimToExt name = drop (maximum (elemIndices '.' name)) name
+getExtension fp = case maxDotIndex (takeFileName fp) of
+                  0 -> Nothing
+                  i | i == (lastIndex (takeFileName fp)) -> Nothing
+                  _ -> Just $ trimToExt (takeFileName fp)
+  where maxDotIndex name = case (elemIndices '.' name) of
+                           [] -> 0
+                           idxs -> maximum idxs
+        lastIndex name = (length name) - 1
+        trimToExt name = drop (maxDotIndex name) name
 
 normalizeExtension :: String -> String
 normalizeExtension x = case x of
