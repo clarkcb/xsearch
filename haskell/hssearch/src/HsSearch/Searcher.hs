@@ -4,6 +4,9 @@ module HsSearch.Searcher
     , doSearchFiles
     , getSearchDirs
     , getSearchFiles
+    , isArchiveSearchFile
+    , isSearchDir
+    , isSearchFile
     ) where
 
 import Control.Monad (liftM)
