@@ -1,6 +1,7 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
 module HsSearch.FileTypes
   ( FileType(..)
+  , getFileType
   , getFileTypes
   , isSearchableFileType
   ) where
@@ -44,13 +45,20 @@ getXmlFileTypes = do
   fileTypesXmlPath <- getDataFileName fileTypesXmlFile
   runX (readDocument [withValidate no] fileTypesXmlPath >>> getXmlFileType)
 
+getFileType :: FilePath -> IO FileType
+getFileType f = do
+  fileTypes <- getFileTypes [f]
+  case fileTypes of
+    [] -> return Unknown
+    _  -> return $ head fileTypes
+
 getFileTypes :: [FilePath] -> IO [FileType]
 getFileTypes files = do
   xmlFileTypes <- getXmlFileTypes
-  return $ map (getFileType xmlFileTypes) files
+  return $ map (fileTypeFromXmlFileTypes xmlFileTypes) files
 
-getFileType :: [XmlFileType] -> FilePath -> FileType
-getFileType xmlFileTypes f =
+fileTypeFromXmlFileTypes :: [XmlFileType] -> FilePath -> FileType
+fileTypeFromXmlFileTypes xmlFileTypes f =
   case getExtension f of
     Just x -> matchingTypeForExtension xmlFileTypes x
     Nothing -> Unknown
