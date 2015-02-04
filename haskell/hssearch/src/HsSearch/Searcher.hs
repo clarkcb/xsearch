@@ -95,6 +95,14 @@ isArchiveSearchFile settings fp = and $ map ($fp) tests
         outPatterns = outArchiveFilePatterns settings
         includeHidden = not $ excludeHidden settings
 
+filterFile :: SearchSettings -> SearchFile -> Bool
+filterFile settings sf | isArchiveFile sf = includeArchiveFile sf
+                       | otherwise        = includeFile sf
+  where includeArchiveFile f = (searchArchives settings) &&
+                               isArchiveSearchFile settings (searchFilePath f)
+        includeFile f = (not (archivesOnly settings)) &&
+                        isSearchFile settings (searchFilePath f)
+
 getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
   isStartPathDir <- isDirectory $ startPath settings
@@ -109,13 +117,7 @@ getSearchFiles settings dirs = do
                                         , searchFileType=t }
   let filesWithTypes = map makeSearchFile (zip files fileTypes)
   let searchableFiles = filter isSearchableFile filesWithTypes
-  let includeArchiveFile sf = (searchArchives settings) &&
-                              isArchiveSearchFile settings (searchFilePath sf)
-  let includeFile sf = (not (archivesOnly settings)) &&
-                       isSearchFile settings (searchFilePath sf)
-  let filterFile sf | isArchiveFile sf = includeArchiveFile sf
-                    | otherwise        = includeFile sf
-  return $ map searchFilePath (filter filterFile searchableFiles)
+  return $ map searchFilePath (filter (filterFile settings) searchableFiles)
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do
