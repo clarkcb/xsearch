@@ -89,8 +89,8 @@ unittest_haskell () {
 
     # build with cabal
     log "Unit-testing hssearch"
-    #log "cabal build"
-    #cd $HSSEARCH_PATH/; cabal build; cd -
+    log "cabal test"
+    cd $HSSEARCH_PATH/; cabal test; cd -
 }
 
 unittest_java () {
