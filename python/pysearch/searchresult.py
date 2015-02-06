@@ -8,7 +8,22 @@
 ################################################################################
 from cStringIO import StringIO
 
-class SearchResult:
+def __atmost_before_index(s, maxlen, start_index):
+    if start_index >= maxlen:
+        return '...' + s[start_index - maxlen - 3:start_index]
+    else:
+        return s[:start_index]
+
+def __atmost_after_index(s, maxlen, start_index):
+    if len(s[start_index:]) > maxlen:
+        return s[start_index:maxlen - 3] + '...'
+    else:
+        return s[start_index:]
+
+def strip_newlines(s):
+    return s.rstrip("\r\n")
+
+class SearchResult(object):
     """encapsulates a search result"""
     SEPARATOR_LEN = 80
 
@@ -36,25 +51,13 @@ class SearchResult:
         sio.write(self.filename)
         if self.linenum and self.line:
             sio.write(': {0}: [{1}:{2}]'.format(self.linenum,
-                self.match_start_index, self.match_end_index))
+                      self.match_start_index, self.match_end_index))
             sio.write(': {0}'.format(self.__format_matching_line()))
         else:
             sio.write(' matches')
         s = sio.getvalue()
         sio.close()
         return s
-
-    def __atmost_before_index(self, s, maxlen, start_index):
-        if start_index >= maxlen:
-            return '...' + s[start_index - maxlen - 3:start_index]
-        else:
-            return s[:start_index]
-
-    def __atmost_after_index(self, s, maxlen, start_index):
-        if len(s[start_index:]) > maxlen:
-            return s[start_index:maxlen - 3] + '...'
-        else:
-            return s[start_index:]
 
     def __format_line(self, line):
         formatted = self.__atmost_after_index(line, self.maxlinelength, 0).strip()
@@ -90,14 +93,11 @@ class SearchResult:
         max_linenum = self.linenum + len(self.lines_after)
         return len(str(max_linenum))
 
-    def strip_newlines(self, s):
-        return s.rstrip("\r\n")
-
     def __multiline_str(self):
         sio = StringIO()
         sio.write('{0}\n{1}:'.format('=' * self.SEPARATOR_LEN, self.filename))
         sio.write(' {0}: [{1}:{2}]'.format(self.linenum, self.match_start_index,
-            self.match_end_index))
+                                           self.match_end_index))
         if self.contained:
             sio.write(': {0}'.format(self.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
@@ -107,15 +107,15 @@ class SearchResult:
             current_linenum -= len(self.lines_before)
             for line_before in self.lines_before:
                 sio.write(' ' + line_format.format(current_linenum,
-                    self.strip_newlines(line_before)))
+                                                   strip_newlines(line_before)))
                 current_linenum += 1
         sio.write('>' + line_format.format(self.linenum,
-            self.strip_newlines(self.line)))
+                                           strip_newlines(self.line)))
         if self.lines_after:
             current_linenum = self.linenum + 1
             for line_after in self.lines_after:
                 sio.write(' ' + line_format.format(current_linenum,
-                    self.strip_newlines(line_after)))
+                                                   strip_newlines(line_after)))
                 current_linenum += 1
         else:
             sio.write('\n')

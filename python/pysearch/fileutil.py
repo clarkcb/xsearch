@@ -16,7 +16,7 @@ class FileUtil(object):
 
     @staticmethod
     def get_extension(filename):
-        """Returns the extension for a given filename, if any, else empty 
+        """Returns the extension for a given filename, if any, else empty
            string"""
         ext = ''
         if os.path.basename(filename).rfind('.') > 0:

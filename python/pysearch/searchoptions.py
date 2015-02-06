@@ -13,6 +13,7 @@ import os
 import sys
 import xml.dom.minidom as minidom
 
+from common import get_text
 from searchoption import SearchOption
 from searchsettings import SearchSettings
 
@@ -160,20 +161,13 @@ class SearchOptions(object):
         self.set_options_from_xml()
         self.sorted_options = sorted(self.options, key=lambda opt: opt.sortarg)
 
-    def get_text(self, nodelist):
-        rc = []
-        for node in nodelist:
-            if node.nodeType == node.TEXT_NODE:
-                rc.append(node.data)
-        return ''.join(rc)
-
     def set_options_from_xml(self):
         searchoptionsdom = minidom.parse(self.SEARCHOPTIONSPATH)
         searchoptionnodes = searchoptionsdom.getElementsByTagName('searchoption')
         for searchoptionnode in searchoptionnodes:
             name = searchoptionnode.getAttribute('long')
             short = searchoptionnode.getAttribute('short')
-            desc = self.get_text(searchoptionnode.childNodes).strip()
+            desc = get_text(searchoptionnode.childNodes).strip()
             func = None
             if name in self.arg_action_dict:
                 func = self.arg_action_dict[name]
@@ -209,7 +203,7 @@ class SearchOptions(object):
                         self.arg_dict[arg].func(argval, settings)
                     else:
                         raise Exception('Missing value for option {0}'.
-                            format(arg))
+                                        format(arg))
                 elif arg in self.flag_dict:
                     self.flag_dict[arg].func(settings)
                     if arg in ('h', 'help', 'V', 'version'):

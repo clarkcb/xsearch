@@ -11,7 +11,7 @@ import os
 
 from filetypes import FileType
 
-class SearchFile:
+class SearchFile(object):
     """encapsulates a search file"""
     CONTAINER_SEPARATOR = '!'
 

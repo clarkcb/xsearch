@@ -10,9 +10,11 @@
 import os
 import xml.dom.minidom as minidom
 
+from common import get_text
 from fileutil import FileUtil
 
-class FileType:
+class FileType(object):
+    """FileType enum"""
     Archive = 1
     Binary  = 2
     Text    = 3
@@ -42,39 +44,31 @@ class FileTypes(object):
 
     def is_archive_file(self, f):
         """Return true if file is of a (known) archive file type"""
-        return (FileUtil.get_extension(f) in self.filetypes['archive'])
+        return FileUtil.get_extension(f) in self.filetypes['archive']
 
     def is_binary_file(self, f):
         """Return true if file is of a (known) searchable binary file type"""
-        return (FileUtil.get_extension(f) in self.filetypes['binary'])
+        return FileUtil.get_extension(f) in self.filetypes['binary']
 
     def is_searchable_file(self, f):
         """Return true if file is of a (known) searchable type"""
-        return (FileUtil.get_extension(f) in self.filetypes['searchable'])
+        return FileUtil.get_extension(f) in self.filetypes['searchable']
 
     def is_text_file(self, f):
         """Return true if file is of a (known) text file type"""
-        return (FileUtil.get_extension(f) in self.filetypes['text'])
-
-    def __get_text(self, nodelist):
-        rc = []
-        for node in nodelist:
-            if node.nodeType == node.TEXT_NODE:
-                rc.append(node.data)
-        return ''.join(rc)
+        return FileUtil.get_extension(f) in self.filetypes['text']
 
     def __populate_filetypes(self):
-        types = 'archive binary nosearch text unknown xml'.split()
         filetypedom = minidom.parse(self.FILETYPESPATH)
         filetypenodes = filetypedom.getElementsByTagName('filetype')
         for filetypenode in filetypenodes:
             name = filetypenode.getAttribute('name')
             extnode = filetypenode.getElementsByTagName('extensions')[0]
-            exts = set(self.__get_text(extnode.childNodes).split())
+            exts = set(get_text(extnode.childNodes).split())
             self.filetypes[name] = exts
         self.filetypes['text'] = \
             self.filetypes['text'].union(self.filetypes['code'],
-                self.filetypes['xml'])
+                                         self.filetypes['xml'])
         self.filetypes['searchable'] = \
             self.filetypes['binary'].union(self.filetypes['archive'],
-                self.filetypes['text'])
+                                           self.filetypes['text'])

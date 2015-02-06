@@ -9,12 +9,9 @@
 ################################################################################
 import sys
 
+import common
 from searcher import Searcher
 from searchoptions import SearchOptions
-
-def log(message):
-    """log a message (for now just print to stdout)"""
-    print message
 
 def main():
     searchoptions = SearchOptions()
@@ -23,18 +20,18 @@ def main():
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
     except Exception, e:
-        log('\nException: {0!s}\n'.format(e))
+        common.log('\nException: {0!s}\n'.format(e))
         searchoptions.usage()
 
     if settings.printusage:
         searchoptions.usage()
 
     if settings.printversion:
-        log('Version: 0.1')
+        common.log('Version: 0.1')
         sys.exit(1)
 
     if settings.debug:
-        log('settings: {0!s}'.format(settings))
+        common.log('settings: {0!s}'.format(settings))
 
     try:
         searcher = Searcher(settings)
@@ -42,22 +39,22 @@ def main():
 
         # print the results
         if settings.printresults:
-            log('')
+            common.log('')
             searcher.print_results()
 
         if settings.listdirs:
             dir_list = searcher.get_matching_dirs()
             if dir_list:
-                log('\nDirectories with matches (%d):' % len(dir_list))
+                common.log('\nDirectories with matches (%d):' % len(dir_list))
                 for d in dir_list:
-                    log(d)
+                    common.log(d)
 
         if settings.listfiles:
             file_list = searcher.get_matching_files()
             if file_list:
-                log('\nFiles with matches (%d):' % len(file_list))
+                common.log('\nFiles with matches (%d):' % len(file_list))
                 for f in file_list:
-                    log(f)
+                    common.log(f)
 
         if settings.listlines:
             line_list = searcher.get_matching_lines()
@@ -65,15 +62,15 @@ def main():
                 msg = '\nLines with matches (%d):'
                 if settings.uniquelines:
                     msg = '\nUnique lines with matches (%d):'
-                log(msg % len(line_list))
+                common.log(msg % len(line_list))
                 for line in line_list:
-                    log(line)
+                    common.log(line)
 
     except AssertionError as e:
-        log('ERROR: {0!s}\n'.format(e))
+        common.log('ERROR: {0!s}\n'.format(e))
         searchoptions.usage()
     except KeyboardInterrupt:
-        log('')
+        common.log('')
         sys.exit(0)
 
 if __name__ == '__main__':
