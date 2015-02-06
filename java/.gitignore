@@ -4,7 +4,7 @@
 target/
 
 # for now
-src/test/resources/
+javasearch/src/test/resources/
 
 # Package Files #
 *.jar
