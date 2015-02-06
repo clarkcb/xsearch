@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-require_once 'autoload.php';
-require_once 'common.php';
+require_once __DIR__ . '/autoload.php';
+require_once __DIR__ . '/common.php';
 
 function main($argv) {
     $searchoptions = new SearchOptions();
