@@ -25,7 +25,7 @@ function Searcher(settings) {
     var validateSettings = function () {
         assert.ok(_settings.startPath, 'Startpath not defined');
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
-        assert.ok(isSearchDir(_settings.startPath), 'Startpath does not match search settings');
+        assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
         assert.ok(_settings.searchPatterns.length, 'No search patterns specified');
     };
 
@@ -53,7 +53,10 @@ function Searcher(settings) {
         return false;
     };
 
-    var isSearchDir = function (dir) {
+    self.isSearchDir = function (dir) {
+        if (FileUtil.isDotDir(dir)) {
+            return true;
+        }
         var pathElems = dir.split(path.sep);
         if (_settings.excludeHidden) {
             for (var p in pathElems) {
@@ -76,7 +79,7 @@ function Searcher(settings) {
     // can validate now that isSearchDir is defined
     validateSettings();
 
-    var isSearchFile = function (file) {
+    self.isSearchFile = function (file) {
         if (FileUtil.isHidden(file) && _settings.excludeHidden) {
             return false;
         }
@@ -100,7 +103,7 @@ function Searcher(settings) {
         return true;
     };
 
-    var isArchiveSearchFile = function (file) {
+    self.isArchiveSearchFile = function (file) {
         if (FileUtil.isHidden(file) && _settings.excludeHidden) {
             return false;
         }
@@ -174,7 +177,7 @@ function Searcher(settings) {
         var searchDirs = [];
         var subDirs = getSubDirs(currentDir);
         for (var d in subDirs) {
-            if (isSearchDir(subDirs[d])) {
+            if (self.isSearchDir(subDirs[d])) {
                 searchDirs.push(subDirs[d]);
             }
             searchDirs.push.apply(searchDirs, recGetSearchDirs(subDirs[d]));
@@ -199,13 +202,11 @@ function Searcher(settings) {
         return files;
     };
 
-    var filterFile = function (f) {
-        if (_filetypes.isArchiveFile(f) && _settings.searchArchives &&
-            isArchiveSearchFile(f))
-            return true;
-        if (!_settings.archivesOnly && isSearchFile(f))
-            return true;
-        return false;
+    self.filterFile = function (f) {
+        if (_filetypes.isArchiveFile(f)) {
+            return (_settings.searchArchives && self.isArchiveSearchFile(f));
+        }
+        return (!_settings.archivesOnly && self.isSearchFile(f));
     };
 
     var getSearchFilesForDirectory = function (dir) {
@@ -213,7 +214,7 @@ function Searcher(settings) {
         var dirFiles = getFilesForDirectory(dir);
         for (var d in dirFiles) {
             var f = dirFiles[d];
-            if (filterFile(f)) {
+            if (self.filterFile(f)) {
                 searchFiles.push(f);
             }
         }
@@ -336,7 +337,7 @@ function Searcher(settings) {
         if (_settings.verbose) {
             common.log('Searching binary file: "{0}"'.format(filepath));
         }
-        var contents = fs.readFileSync(filepath).toString();
+        var contents = FileUtil.getFileContents(filepath);
         var pattern = '';
         for (var p in _settings.searchPatterns) {
             pattern = _settings.searchPatterns[p];
@@ -368,7 +369,7 @@ function Searcher(settings) {
     };
 
     var searchTextFileContents = function (filepath) {
-        var contents = fs.readFileSync(filepath).toString();
+        var contents = FileUtil.getFileContents(filepath);
         var results = self.searchMultiLineString(contents);
         for (var i in results) {
             var r = results[i];
@@ -410,8 +411,13 @@ function Searcher(settings) {
         return getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
     };
 
-    var lessOrEqual = function(i) { return i <= match.index; };
-    var greaterThan = function(i) { return i > match.index; };
+    var getLessThanOrEqual = function(matchVal) {
+        return function(i) { return i <= matchVal; };
+    }
+
+    var getGreaterThan = function(matchVal) {
+        return function(i) { return i > matchVal; };
+    }
 
     self.searchMultiLineString = function (s) {
         var patternResults = {};
@@ -428,6 +434,8 @@ function Searcher(settings) {
                 continue;
             var match = pattern.exec(s);
             while (match) {
+                var lessOrEqual = getLessThanOrEqual(match.index);
+                var greaterThan = getGreaterThan(match.index);
                 var lineStartIndex = 0;
                 var lineEndIndex = s.length - 1;
                 var beforeLineCount = 0;
@@ -495,9 +503,8 @@ function Searcher(settings) {
     };
 
     var searchTextFileLines = function (filepath) {
-        var contents = fs.readFileSync(filepath).toString();
-        var lines = contents.toString().split(/\r?\n/);
-        var results = searchLines(lines);
+        var lines = FileUtil.getFileLines(filepath);
+        var results = self.searchLines(lines);
         for (var i in results) {
             var r = results[i];
             var resultWithFilepath =
@@ -509,7 +516,7 @@ function Searcher(settings) {
     };
 
     // return results so that filepath can be added to them
-    var searchLines = function (lines) {
+    self.searchLines = function (lines) {
         var linenum = 0;
         var pattern;
         var linesBefore = [];

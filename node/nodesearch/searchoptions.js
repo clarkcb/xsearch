@@ -66,11 +66,9 @@ function SearchOptions() {
         'allmatches':
             function(settings) { settings.firstMatch = false; },
         'archivesonly':
-            function(settings) { settings.archivesOnly = true;
-                                 settings.searchArchives = true; },
+            function(settings) { settings.setArchivesOnly(); },
         'debug':
-            function(settings) { settings.debug = true;
-                                 settings.verbose = true; },
+            function(settings) { settings.setDebug(); },
         'dotiming':
             function(settings) { settings.doTiming = true; },
         'excludehidden':
@@ -152,7 +150,7 @@ function SearchOptions() {
         options.sort(optcmp);
     })();
 
-    self.searchSettingsFromArgs = function (args, callback) {
+    self.settingsFromArgs = function (args, callback) {
         var err = null;
         var settings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
@@ -167,7 +165,7 @@ function SearchOptions() {
                     arg = arg.substring(1);
                 }
                 if (argMap[arg]) {
-                    if (args) {
+                    if (args.length > 0) {
                         argMap[arg].func(args.shift(), settings);
                     } else {
                         err = new Error("Missing argument for option "+arg);

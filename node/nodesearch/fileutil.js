@@ -4,9 +4,19 @@
  * file-related utility functions
  */
 
+var fs = require('fs');
 var path = require('path');
 
 function FileUtil() {}
+
+FileUtil.expandPath = function (filepath) {
+    var idx = filepath.indexOf('~');
+    if (idx === 0) {
+        return process.env.HOME + filepath.substring(1);
+    } else {
+        return filepath;
+    }
+};
 
 FileUtil.getExtension = function (filepath) {
     var f = path.basename(filepath);
@@ -18,13 +28,12 @@ FileUtil.getExtension = function (filepath) {
     }
 };
 
-FileUtil.expandPath = function (filepath) {
-    var idx = filepath.indexOf('~');
-    if (idx === 0) {
-        return process.env.HOME + filepath.substring(1);
-    } else {
-        return filepath;
-    }
+FileUtil.getFileContents = function (filepath) {
+    return fs.readFileSync(filepath).toString();
+};
+
+FileUtil.getFileLines = function (filepath) {
+    return FileUtil.getFileContents(filepath).split(/\r?\n/);
 };
 
 FileUtil.isDotDir = function (filepath) {

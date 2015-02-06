@@ -48,6 +48,11 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
         return p;
     };
 
+    var trimRight = function(s) {
+        var trimmed = s.replace(/[\r\n]+$/, '');
+        return trimmed;
+    }
+
     var multiLineToString = function () {
         var s = Array(81).join("=") + "\n";
         s += "{0}: {1}: ".format(self.filename, self.linenum);
@@ -58,16 +63,17 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
         if (self.linesBefore.length > 0) {
             currentLineNum = currentLineNum - self.linesBefore.length;
             for (var i in self.linesBefore) {
-                var b = self.linesBefore[i];
+                var b = trimRight(self.linesBefore[i]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + b + "\n";
                 currentLineNum++;
             }
         }
-        s += "> " + padLeft(currentLineNum, numPadding) + " | " + self.line + "\n";
+        s += "> " + padLeft(currentLineNum, numPadding) + " | " +
+            trimRight(self.line) + "\n";
         if (self.linesAfter.length > 0) {
             currentLineNum++;
             for (var j in self.linesAfter) {
-                var a = self.linesAfter[j];
+                var a = trimRight(self.linesAfter[j]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;
             }

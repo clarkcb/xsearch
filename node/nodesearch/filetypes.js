@@ -75,6 +75,11 @@ function FileTypes() {
         var ext = FileUtil.getExtension(filename);
         return fileTypeMap.text.indexOf(ext) > -1;
     };
+
+    this.isUnknownFile = function (filename) {
+        var ext = FileUtil.getExtension(filename);
+        return fileTypeMap.searchable.indexOf(ext) === -1;
+    };
 }
 
 exports.FileTypes = FileTypes;

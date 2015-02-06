@@ -18,7 +18,7 @@ function searchMain() {
 
     var args = process.argv.slice(2);
 
-    searchOptions.searchSettingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, function(err, settings) {
         if (err) {
             handleError(err, searchOptions);
         }

@@ -98,12 +98,21 @@ function SearchSettings() {
     self.addOutLinesBeforePattern = function (pattern) {
         addPattern(pattern, self.outLinesBeforePatterns);
     };
-
     self.addLinesAfterToPattern = function (pattern) {
         addPattern(pattern, self.linesAfterToPatterns);
     };
     self.addLinesAfterUntilPattern = function (pattern) {
         addPattern(pattern, self.linesAfterUntilPatterns);
+    };
+
+    self.setArchivesOnly = function () {
+        self.archivesOnly = true;
+        self.searchArchives = true;
+    };
+
+    self.setDebug = function () {
+        self.debug = true;
+        self.verbose = true;
     };
 
     var listToString = function (name, lst) {
