@@ -38,7 +38,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     var lineNumPadding = function() {
         var maxLineNum = self.linenum + self.linesAfter.length;
         return ("" + maxLineNum).length;
-    }
+    };
 
     var padLeft = function(s, i) {
         p = "" + s;
@@ -46,7 +46,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
             p = " " + p;
         }
         return p;
-    }
+    };
 
     var multiLineToString = function () {
         var s = Array(81).join("=") + "\n";
@@ -66,8 +66,8 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
         s += "> " + padLeft(currentLineNum, numPadding) + " | " + self.line + "\n";
         if (self.linesAfter.length > 0) {
             currentLineNum++;
-            for (var i in self.linesAfter) {
-                var a = self.linesAfter[i];
+            for (var j in self.linesAfter) {
+                var a = self.linesAfter[j];
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;
             }
@@ -88,7 +88,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
                     beforeIndex = 0;
             }
             adjustedMaxLength = adjustedMaxLength - (self.matchStartIndex - beforeIndex);
-            var afterIndex = self.matchEndIndex + adjustedMaxLength
+            var afterIndex = self.matchEndIndex + adjustedMaxLength;
             if (afterIndex > lineLength)
                 afterIndex = lineLength;
 

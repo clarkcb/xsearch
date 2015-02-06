@@ -213,13 +213,13 @@ function SearchOptions() {
             if (optString.length > longest)
                 longest = optString.length;
             optStrings.push(optString);
-            optDescs.push(opt.desc)
+            optDescs.push(opt.desc);
         }
-        for (var o in optStrings) {
-            var optString = optStrings[o];
-            while (optString.length < longest)
-                optString += ' ';
-            usage += optString + '  ' + optDescs[o] + '\n';
+        for (var s in optStrings) {
+            var os = optStrings[s];
+            while (os.length < longest)
+                os += ' ';
+            usage += os + '  ' + optDescs[s] + '\n';
         }
         return usage;
     };

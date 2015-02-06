@@ -39,41 +39,41 @@ function FileTypes() {
                     }
                 }
             }
-            fileTypeMap['text'] = [].concat(fileTypeMap['text'], fileTypeMap['code'], fileTypeMap['xml']);
-            fileTypeMap['searchable'] = [].concat(fileTypeMap['text'], fileTypeMap['binary'],
-                fileTypeMap['compressed']);
+            fileTypeMap.text = [].concat(fileTypeMap.text, fileTypeMap.code, fileTypeMap.xml);
+            fileTypeMap.searchable = [].concat(fileTypeMap.text, fileTypeMap.binary,
+                fileTypeMap.archive);
         });
         return fileTypeMap;
     })();
 
     this.getFileType = function (filename) {
-        if (self.isTextFile)
+        if (self.isTextFile(filename))
             return FileType.TEXT;
-        if (self.isBinaryFile)
+        if (self.isBinaryFile(filename))
             return FileType.BINARY;
-        if (self.isArchiveFile)
+        if (self.isArchiveFile(filename))
             return FileType.ARCHIVE;
         return FileType.UNKNOWN;
     };
 
     this.isArchiveFile = function (filename) {
         var ext = FileUtil.getExtension(filename);
-        return fileTypeMap['archive'].indexOf(ext) > -1;
+        return fileTypeMap.archive.indexOf(ext) > -1;
     };
 
     this.isBinaryFile = function (filename) {
         var ext = FileUtil.getExtension(filename);
-        return fileTypeMap['binary'].indexOf(ext) > -1;
+        return fileTypeMap.binary.indexOf(ext) > -1;
     };
 
     this.isSearchableFile = function (filename) {
         var ext = FileUtil.getExtension(filename);
-        return fileTypeMap['searchable'].indexOf(ext) > -1;
+        return fileTypeMap.searchable.indexOf(ext) > -1;
     };
 
     this.isTextFile = function (filename) {
         var ext = FileUtil.getExtension(filename);
-        return fileTypeMap['text'].indexOf(ext) > -1;
+        return fileTypeMap.text.indexOf(ext) > -1;
     };
 }
 

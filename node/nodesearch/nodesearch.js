@@ -55,8 +55,8 @@ function searchMain() {
                 searcher.printMatchingLines();
             }
 
-        } catch (err) {
-            handleError(err, searchOptions);
+        } catch (err2) {
+            handleError(err2, searchOptions);
         }
     });
 }

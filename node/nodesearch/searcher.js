@@ -131,17 +131,17 @@ function Searcher(settings) {
             if (_settings.debug) {
                 common.log("Getting list of directories to search under {0}".format(startPath));
             }
-            searchDirs.push(startPath)
+            searchDirs.push(startPath);
             if (_settings.recursive) {
                 searchDirs.push.apply(searchDirs, recGetSearchDirs(startPath));
             }
         } else if (stats.isFile()) {
-            var d = path.dirname(startPath)
-            if (!d) d = "."
-                searchDirs.push(d)
+            var d = path.dirname(startPath);
+            if (!d) d = ".";
+            searchDirs.push(d);
         }
         return searchDirs;
-    }
+    };
 
     var handleFsError = function (err) {
         if (err.errno === 34 && err.code === "ENOENT") {
@@ -151,7 +151,7 @@ function Searcher(settings) {
             common.log(err);
             process.exit(1);
         }
-    }
+    };
 
     var getSubDirs = function (dir) {
         var subDirs = [];
@@ -177,8 +177,6 @@ function Searcher(settings) {
             if (isSearchDir(subDirs[d])) {
                 searchDirs.push(subDirs[d]);
             }
-        }
-        for (var d in subDirs) {
             searchDirs.push.apply(searchDirs, recGetSearchDirs(subDirs[d]));
         }
         return searchDirs;
@@ -199,7 +197,7 @@ function Searcher(settings) {
             }
         }
         return files;
-    }
+    };
 
     var filterFile = function (f) {
         if (_filetypes.isArchiveFile(f) && _settings.searchArchives &&
@@ -208,7 +206,7 @@ function Searcher(settings) {
         if (!_settings.archivesOnly && isSearchFile(f))
             return true;
         return false;
-    }
+    };
 
     var getSearchFilesForDirectory = function (dir) {
         var searchFiles = [];
@@ -220,7 +218,7 @@ function Searcher(settings) {
             }
         }
         return searchFiles;
-    }
+    };
 
     var getSearchFiles = function (searchDirs) {
         var searchFiles = [];
@@ -340,7 +338,7 @@ function Searcher(settings) {
         }
         var contents = fs.readFileSync(filepath).toString();
         var pattern = '';
-        for (p in _settings.searchPatterns) {
+        for (var p in _settings.searchPatterns) {
             pattern = _settings.searchPatterns[p];
             var match = pattern.exec(contents);
             if (match) {
@@ -380,7 +378,7 @@ function Searcher(settings) {
                         r.linesBefore, r.linesAfter);
             addSearchResult(resultWithFilepath);
         }
-    }
+    };
 
     var getNewLineIndices = function (s) {
         var indices = [];
@@ -393,10 +391,10 @@ function Searcher(settings) {
     };
 
     var getLinesAtIndices = function(s, atIndices, startLineIndices, endLineIndices) {
-        if (atIndices.length == 0)
+        if (atIndices.length === 0)
             return [];
         var lines = [];
-        for (a in atIndices) {
+        for (var a in atIndices) {
             var i = atIndices[a];
             var line = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
             lines.push(line);
@@ -412,16 +410,19 @@ function Searcher(settings) {
         return getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
     };
 
+    var lessOrEqual = function(i) { return i <= match.index; };
+    var greaterThan = function(i) { return i > match.index; };
+
     self.searchMultiLineString = function (s) {
         var patternResults = {};
         var linesBefore = [];
         var linesAfter = [];
         var results = [];
         var newLineIndices = getNewLineIndices(s);
-        var plusOne = function(i) { return i+1; }
+        var plusOne = function(i) { return i+1; };
         var startLineIndices = [0].concat(newLineIndices.map(plusOne));
         var endLineIndices = newLineIndices.concat([s.length - 1]);
-        for (p in _settings.searchPatterns) {
+        for (var p in _settings.searchPatterns) {
             var pattern = new RegExp(_settings.searchPatterns[p].source, "g");
             if (_settings.firstMatch && pattern in patternResults)
                 continue;
@@ -430,7 +431,6 @@ function Searcher(settings) {
                 var lineStartIndex = 0;
                 var lineEndIndex = s.length - 1;
                 var beforeLineCount = 0;
-                var lessOrEqual = function(i) { return i <= match.index; }
                 var beforeStartIndices = startLineIndices.filter(lessOrEqual);
                 if (beforeStartIndices.length > 0) {
                     lineStartIndex = beforeStartIndices.pop();
@@ -440,14 +440,13 @@ function Searcher(settings) {
                             beforeStartIndices.length - _settings.linesBefore);
                     }
                 }
-                var lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
+                lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
                 line = s.substring(lineStartIndex, lineEndIndex);
                 if (_settings.linesBefore && beforeLineCount) {
                     linesBefore = getLinesBefore(s, beforeStartIndices,
                         startLineIndices, endLineIndices);
                 }
                 if (_settings.linesAfter) {
-                    var greaterThan = function(i) { return i > match.index; }
                     var afterStartIndices = startLineIndices.filter(greaterThan);
                     if (afterStartIndices.length > _settings.linesAfter) {
                         afterStartIndices = afterStartIndices.slice(0,
@@ -458,8 +457,8 @@ function Searcher(settings) {
                 }
                 var matchStartIndex = match.index - lineStartIndex + 1;
                 var matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
-                if ((_settings.linesBefore == 0 || linesBeforeMatch(linesBefore)) &&
-                    (_settings.linesAfter == 0 || linesAfterMatch(linesAfter))) {
+                if ((_settings.linesBefore === 0 || linesBeforeMatch(linesBefore)) &&
+                    (_settings.linesAfter === 0 || linesAfterMatch(linesAfter))) {
                     var searchResult = new SearchResult(
                         pattern,
                         '',
@@ -481,25 +480,25 @@ function Searcher(settings) {
     };
 
     var linesMatch = function(lines, inPatterns, outPatterns) {
-        return ((inPatterns.length == 0 || anyMatchesAnyPattern(lines, inPatterns)) &&
-               (outPatterns.length == 0 || ! anyMatchesAnyPattern(lines, outPatterns)));
-    }
+        return ((inPatterns.length === 0 || anyMatchesAnyPattern(lines, inPatterns)) &&
+               (outPatterns.length === 0 || ! anyMatchesAnyPattern(lines, outPatterns)));
+    };
 
     var linesBeforeMatch = function(linesBefore) {
         return linesMatch(linesBefore, _settings.inLinesBeforePatterns,
             _settings.outLinesBeforePatterns);
-    }
+    };
 
     var linesAfterMatch = function(linesAfter) {
         return linesMatch(linesAfter, _settings.inLinesAfterPatterns,
             _settings.outLinesAfterPatterns);
-    }
+    };
 
     var searchTextFileLines = function (filepath) {
         var contents = fs.readFileSync(filepath).toString();
         var lines = contents.toString().split(/\r?\n/);
         var results = searchLines(lines);
-        for (i in results) {
+        for (var i in results) {
             var r = results[i];
             var resultWithFilepath =
                 new SearchResult(r.pattern, filepath, r.linenum,
@@ -531,12 +530,12 @@ function Searcher(settings) {
                     linesAfter.push(lines.shift());
                 }
             }
-            for (p in _settings.searchPatterns) {
+            for (var p in _settings.searchPatterns) {
                 pattern = new RegExp(_settings.searchPatterns[p].source, "g");
                 var match = pattern.exec(line);
                 while (match) {
-                    if ((_settings.linesBefore == 0 || linesBeforeMatch(linesBefore)) &&
-                        (_settings.linesAfter == 0 || linesAfterMatch(linesAfter))) {
+                    if ((_settings.linesBefore === 0 || linesBeforeMatch(linesBefore)) &&
+                        (_settings.linesAfter === 0 || linesAfterMatch(linesAfter))) {
                         results.push(new SearchResult(
                             pattern,
                             '',

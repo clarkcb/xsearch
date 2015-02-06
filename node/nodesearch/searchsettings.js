@@ -45,8 +45,8 @@ function SearchSettings() {
     self.verbose = false;
     var addExtensions = function (exts, arr) {
         var xs = exts.split(/,/);
-        for (i in xs) {
-            if (xs[i] != "")
+        for (var i in xs) {
+            if (xs[i] !== '')
                 arr.push(xs[i]);
         }
     };
@@ -108,7 +108,7 @@ function SearchSettings() {
 
     var listToString = function (name, lst) {
         return name + '=["' + lst.join('","') + '"]';
-    } 
+    };
 
     self.toString = function () {
         var s = 'SearchSettings(startPath="' + self.startPath + '"';

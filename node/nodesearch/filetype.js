@@ -1,14 +1,16 @@
+/*jshint esnext: true */
 /*
  * filetype.js
  *
  * FileType "static" class
+ *
  */
 
-function FileType() {
-    const ARCHIVE = 1;
-    const BINARY  = 2;
-    const TEXT    = 3;
-    const UNKNOWN = 4;
-}
+const FileType = {
+    ARCHIVE: 1,
+    BINARY:  2,
+    TEXT:    3,
+    UNKNOWN: 4
+};
 
 exports.FileType = FileType;
