@@ -49,7 +49,7 @@ func TestSearchSettingsFromValidArgs(t *testing.T) {
 	}
 
 	if len(settings.InExtensions) != 1 {
-		t.Errorf("len(settings.InExtensions) = %i, expected 1",
+		t.Errorf("len(settings.InExtensions) = %d, expected 1",
 			len(settings.InExtensions))
 	}
 	expectedExt := "go"
