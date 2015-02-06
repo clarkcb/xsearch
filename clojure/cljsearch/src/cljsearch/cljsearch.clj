@@ -1,8 +1,10 @@
 (ns cljsearch.cljsearch
   (:gen-class)
-  (:use cljsearch.common)
-  (:use cljsearch.searcher)
-  (:use cljsearch.searchoptions))
+  (:use [cljsearch.common :only (log-msg log-errors)])
+  (:use [cljsearch.searcher :only
+    (search print-search-results print-matching-dirs print-matching-files
+      print-matching-lines)])
+  (:use [cljsearch.searchoptions :only (settings-from-args usage)]))
 
 (defn -main
   "This will be the main function for cljsearch"

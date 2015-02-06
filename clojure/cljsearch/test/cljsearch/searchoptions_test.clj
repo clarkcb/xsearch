@@ -1,7 +1,7 @@
 (ns cljsearch.searchoptions-test
   (:require [clojure.test :refer :all])
-  (:require [clojure.string :as str :only (join)])
-  (:use [cljsearch.searchoptions]))
+  (:use [clojure.string :as str :only (join)])
+  (:use [cljsearch.searchoptions :only (settings-from-args)]))
 
 (deftest test-no-args
   (let [[ss errs] (settings-from-args [])]

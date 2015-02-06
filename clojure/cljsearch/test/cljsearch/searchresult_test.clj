@@ -1,8 +1,8 @@
 (ns cljsearch.searchresult-test
   (:require [clojure.test :refer :all])
-  (:require [clojure.string :as str :only (trim)])
+  (:use [clojure.string :as str :only (trim)])
   (:use [clojure.java.io :only (file)])
-  (:use [cljsearch.searchresult]))
+  (:use [cljsearch.searchresult :only (->SearchResult search-result-to-string)]))
 
 (deftest test-singleline-searchresult
   (testing "test-singleline-searchresult"

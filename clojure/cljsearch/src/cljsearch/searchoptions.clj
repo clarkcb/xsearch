@@ -11,11 +11,13 @@
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
   (:use [clojure.set :only (union)])
-  (:require [clojure.string :as str :only (join replace)])
-  (:use [clojure.xml])
-  (:use [cljsearch.common])
+  (:require [clojure.string :as str])
+  (:use [clojure.xml :only (parse)])
+  (:use [cljsearch.common :only (log-msg)])
   (:use [cljsearch.fileutil :only (expand-path)])
-  (:use [cljsearch.searchsettings]))
+  (:use [cljsearch.searchsettings :only
+    (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
+      set-archivesonly set-debug)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 

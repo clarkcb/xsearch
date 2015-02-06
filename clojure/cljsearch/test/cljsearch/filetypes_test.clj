@@ -1,6 +1,6 @@
 (ns cljsearch.filetypes-test
   (:require [clojure.test :refer :all])
-  (:use [cljsearch.filetypes]))
+  (:use [cljsearch.filetypes :only (get-filetype)]))
 
 (deftest test-get-filetype-archive-file
   (let [f "archive.zip"]

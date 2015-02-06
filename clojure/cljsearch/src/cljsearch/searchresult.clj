@@ -9,7 +9,7 @@
 (ns cljsearch.searchresult
   #^{:author "Cary Clark",
      :doc "Search results record and functions"}
-  (:require [clojure.string :as str :only (trim trim-newline)]))
+  (:use [clojure.string :as str :only (trim trim-newline)]))
 
 ; record to hold a search-result
 (defrecord SearchResult [pattern file linenum startmatchindex endmatchindex line

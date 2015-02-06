@@ -1,7 +1,8 @@
 (ns cljsearch.searchsettings-test
   (:require [clojure.test :refer :all])
-  (:require [clojure.string :as str :only (join)])
-  (:use [cljsearch.searchsettings]))
+  (:use [clojure.string :as str :only (join)])
+  (:use [cljsearch.searchsettings :only
+    (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly set-debug)]))
 
 (deftest test-default-settings
   (let [settings DEFAULT-SETTINGS]

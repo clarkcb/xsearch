@@ -9,7 +9,7 @@
 (ns cljsearch.searchsettings
   #^{:author "Cary Clark",
      :doc "Defines the settings for a given search instance"}
-  (:require [clojure.string :as str :only (split)]))
+  (:use [clojure.string :as str :only (split)]))
 
 (defrecord SearchSettings
   [

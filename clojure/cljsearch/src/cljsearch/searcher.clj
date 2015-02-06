@@ -10,11 +10,14 @@
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
   (:use [clojure.java.io :only (file reader)])
-  (:require [clojure.string :as str :only (join trim)])
-  (:use [cljsearch.common])
-  (:use [cljsearch.filetypes])
-  (:use [cljsearch.fileutil])
-  (:use [cljsearch.searchresult]))
+  (:use [clojure.string :as str :only (join trim)])
+  (:use [cljsearch.common :only (log-msg)])
+  (:use [cljsearch.filetypes :only (archive-file? get-filetype)])
+  (:use [cljsearch.fileutil :only
+    (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
+      is-dot-dir?)])
+  (:use [cljsearch.searchresult :only
+    (->SearchResult search-result-to-string)]))
 
 ; ref to contain the seq of SearchResult records
 (def search-results (ref []))

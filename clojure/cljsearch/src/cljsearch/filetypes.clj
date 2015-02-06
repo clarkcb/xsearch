@@ -12,8 +12,8 @@
   (:import (java.io File))
   (:use [clojure.set :only (union)])
   (:use [clojure.string :only (split)])
-  (:use [clojure.xml])
-  (:use [cljsearch.fileutil])
+  (:use [clojure.xml :only (parse)])
+  (:use [cljsearch.fileutil :only (expand-path get-ext)])
   )
 
 ;;; TODO: move to a config file
@@ -57,49 +57,3 @@
     (binary-file? f) :binary
     (archive-file? f) :archive
     :else :unknown))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn filetypes-test []
-  (let [keyset (set (keys FILETYPEMAP))]
-
-    ;; FILETYPEMAP assertions
-    (println "FILETYPEMAP: " FILETYPEMAP)
-    (assert (contains? keyset "archive"))
-    (assert (contains? keyset "binary"))
-    (assert (contains? keyset "searchable"))
-    (assert (contains? keyset "text"))
-
-    ;; get-name assertions
-    (assert (= "test.exe" (get-name "test.exe")))
-    (assert (= "test.exe" (get-name (File. "test.exe"))))
-
-    ;; get-ext assertions
-    (assert (= "exe" (get-ext "test.exe")))
-    (assert (= "exe" (get-ext (File. "test.exe"))))
-
-    ;; binary-file? assertions
-    (assert (binary-file? "test.exe"))
-    (assert (not (binary-file? "test.txt")))
-    (assert (not (binary-file? "test.zip")))
-
-    ;; archive-file? assertions
-    (assert (not (archive-file? "test.exe")))
-    (assert (not (archive-file? "test.txt")))
-    (assert (archive-file? "test.zip"))
-
-    ;; searchable-file? assertions
-    (assert (searchable-file? "test.exe"))
-    (assert (searchable-file? "test.txt"))
-    (assert (searchable-file? "test.zip"))
-    (assert (not (searchable-file? "test.ZZZ")))
-
-    ;; text-file? assertions
-    (assert (not (text-file? "test.exe")))
-    (assert (text-file? "test.txt"))
-    (assert (not (text-file? "test.zip")))
-    )
-  )
-
-;(filetypes-test)
-
