@@ -9,6 +9,7 @@
 package plsearch::FileUtil;
 
 use strict;
+use warnings;
 
 use XML::Simple;
 use Data::Dumper;

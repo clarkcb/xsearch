@@ -9,6 +9,7 @@
 package plsearch::common;
 
 use strict;
+use warnings;
 
 sub log($) {
     my $msg = shift;

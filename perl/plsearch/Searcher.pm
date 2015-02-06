@@ -9,6 +9,8 @@
 package plsearch::Searcher;
 
 use strict;
+use warnings;
+
 use File::Spec;
 use File::Basename;
 

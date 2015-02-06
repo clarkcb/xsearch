@@ -9,6 +9,7 @@
 package plsearch::SearchSettings;
 
 use strict;
+use warnings;
 
 sub new {
     my $class = shift;

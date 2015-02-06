@@ -9,6 +9,7 @@
 package plsearch::FileType;
 
 use strict;
+use warnings;
 
 use constant {
     ARCHIVE => 'Archive',

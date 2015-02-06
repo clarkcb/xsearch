@@ -9,6 +9,7 @@
 package plsearch::SearchOptions;
 
 use strict;
+use warnings;
 
 use XML::Simple;
 use Data::Dumper;
