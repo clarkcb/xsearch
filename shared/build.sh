@@ -144,8 +144,9 @@ build_java () {
     echo
     log "build_java"
     JAVA_PATH=$PROJECT_PATH/java
-    RESOURCES_PATH=$JAVA_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$JAVA_PATH/src/test/resources
+    JAVASEARCH_PATH=$JAVA_PATH/javasearch
+    RESOURCES_PATH=$JAVASEARCH_PATH/src/main/resources
+    TEST_RESOURCES_PATH=$JAVASEARCH_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
@@ -157,8 +158,8 @@ build_java () {
 
     # run a maven clean build
     log "Building javasearch"
-    log "mvn -f $JAVA_PATH/pom.xml clean install"
-    mvn -f $JAVA_PATH/pom.xml clean install
+    log "mvn -f $JAVASEARCH_PATH/pom.xml clean install"
+    mvn -f $JAVASEARCH_PATH/pom.xml clean install
 }
 
 build_scala () {
