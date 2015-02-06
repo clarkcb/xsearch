@@ -97,11 +97,28 @@ unittest_java () {
     echo
     log "unittest_java"
     JAVA_PATH=$PROJECT_PATH/java
+    JAVASEARCH_PATH=$JAVA_PATH/javasearch
 
     # run tests via maven
     log "Unit-testing javasearch"
-    log "mvn -f $JAVA_PATH/pom.xml test"
-    mvn -f $JAVA_PATH/pom.xml test
+    log "mvn -f $JAVASEARCH_PATH/pom.xml test"
+    mvn -f $JAVASEARCH_PATH/pom.xml test
+}
+
+unittest_node () {
+    echo
+    log "unittest_node"
+    NODE_PATH=$PROJECT_PATH/node
+    TESTS_PATH=$NODE_PATH/tests
+    NODEUNIT=$NODE_PATH/node_modules/nodeunit/bin/nodeunit
+
+    # run tests via maven
+    log "Unit-testing nodesearch"
+    FILES=$(find $TESTS_PATH -name "*.js")
+    for f in ${FILES[*]}; do
+        log "nodeunit $f"
+        $NODEUNIT $f
+    done
 }
 
 unittest_perl () {
@@ -111,21 +128,11 @@ unittest_perl () {
     TESTS_PATH=$PERL_PATH/tests
 
     # run tests using Test::Simple
-    cd $TESTS_PATH
-    log "Unit-testing plsearch"
-    log "perl filetypes_test.pl"
-    perl filetypes_test.pl
-    log "perl fileutil_test.pl"
-    perl fileutil_test.pl
-    log "perl searcher_test.pl"
-    perl searcher_test.pl
-    log "perl searchoptions_test.pl"
-    perl searchoptions_test.pl
-    log "perl searchresult_test.pl"
-    perl searchresult_test.pl
-    log "perl searchsettings_test.pl"
-    perl searchsettings_test.pl
-    cd -
+    FILES=$(find $TESTS_PATH -name "*.pl")
+    for f in ${FILES[*]}; do
+        log "perl $f"
+        perl $f
+    done
 }
 
 unittest_php () {
@@ -136,27 +143,18 @@ unittest_php () {
     PHPUNIT="phpunit --bootstrap $PHP_PATH/phpsearch/autoload.php"
 
     # run tests with phpunit
-    cd $TESTS_PATH
-    log "Unit-testing phpsearch"
-    log "$PHPUNIT filetypes_test.php"
-    $PHPUNIT filetypes_test.php
-    log "$PHPUNIT fileutil_test.php"
-    $PHPUNIT fileutil_test.php
-    log "$PHPUNIT searcher_test.php"
-    $PHPUNIT searcher_test.php
-    log "$PHPUNIT searchoptions_test.php"
-    $PHPUNIT searchoptions_test.php
-    log "$PHPUNIT searchresult_test.php"
-    $PHPUNIT searchresult_test.php
-    log "$PHPUNIT searchsettings_test.php"
-    $PHPUNIT searchsettings_test.php
-    cd -
+    FILES=$(find $TESTS_PATH -name "*.php")
+    for f in ${FILES[*]}; do
+        log "phpunit $f"
+        $PHPUNIT $f
+    done
 }
 
 unittest_python () {
     echo
     log "unittest_python"
     PYTHON_PATH=$PROJECT_PATH/python
+    TESTS_PATH=$PYTHON_PATH/tests
     VENV_PATH=$PYTHON_PATH/.env
     PYTHON=$VENV_PATH/bin/python
     export PYTHONPATH=$PYTHON_PATH:$PYTHONPATH
@@ -165,21 +163,12 @@ unittest_python () {
     source $PYTHON_PATH/.env/bin/activate
 
     # Run the individual tests
-    cd $PYTHON_PATH
     log "Unit-testing pysearch"
-    log "python tests/filetypes_test.py"
-    $PYTHON tests/filetypes_test.py
-    log "python tests/fileutil_test.py"
-    $PYTHON tests/fileutil_test.py
-    log "python tests/searcher_test.py"
-    $PYTHON tests/searcher_test.py
-    log "python tests/searchoptions_test.py"
-    $PYTHON tests/searchoptions_test.py
-    log "python tests/searchresult_test.py"
-    $PYTHON tests/searchresult_test.py
-    log "python tests/searchsettings_test.py"
-    $PYTHON tests/searchsettings_test.py
-    cd -
+    FILES=$(find $TESTS_PATH -name "*.py")
+    for f in ${FILES[*]}; do
+        log "python $f"
+        $PYTHON $f
+    done
 
     # deactivate the virtualenv
     deactivate
@@ -192,21 +181,12 @@ unittest_ruby () {
     TESTS_PATH=$RUBY_PATH/tests
 
     # Run the individual tests
-    cd $TESTS_PATH
-    log "Unit-testing rbsearch"
-    log "ruby filetypes_test.rb"
-    ruby filetypes_test.rb
-    log "ruby fileutil_test.rb"
-    ruby fileutil_test.rb
-    log "ruby searcher_test.rb"
-    ruby searcher_test.rb
-    log "ruby searchoptions_test.rb"
-    ruby searchoptions_test.rb
-    log "ruby searchresult_test.rb"
-    ruby searchresult_test.rb
-    log "ruby searchsettings_test.rb"
-    ruby searchsettings_test.rb
-    cd -
+    log "Unit-testing pysearch"
+    FILES=$(find $TESTS_PATH -name "*.rb")
+    for f in ${FILES[*]}; do
+        log "ruby $f"
+        ruby $f
+    done
 }
 
 unittest_scala () {
@@ -234,6 +214,8 @@ unittest_all () {
     unittest_haskell
 
     unittest_java
+
+    unittest_node
 
     unittest_perl
 
@@ -271,6 +253,8 @@ elif [ "$ARG" == "haskell" ]; then
     unittest_haskell
 elif [ "$ARG" == "java" ]; then
     unittest_java
+elif [ "$ARG" == "node" ]; then
+    unittest_node
 elif [ "$ARG" == "perl" ]; then
     unittest_perl
 elif [ "$ARG" == "php" ]; then
