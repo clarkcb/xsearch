@@ -4,7 +4,7 @@ require_once __DIR__ . '/autoload.php';
 require_once __DIR__ . '/common.php';
 
 class Searcher {
-    function __construct($settings) {
+    function __construct(SearchSettings $settings) {
         $this->settings = $settings;
         $this->filetypes = new FileTypes();
         $this->results = array();
@@ -505,7 +505,7 @@ class Searcher {
         }
     }
 
-    private function add_search_result($r) {
+    private function add_search_result(SearchResult $r) {
         $this->results[] = $r;
     }
 
