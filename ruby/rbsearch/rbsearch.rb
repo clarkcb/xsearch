@@ -12,10 +12,6 @@ require 'searcher.rb'
 require 'searchoptions.rb'
 
 def main
-  if DEBUG
-    log("ARGV(#{ARGV.count}): #{ARGV.join(", ")}")
-  end
-
   searchoptions = SearchOptions.new
 
   settings = nil
@@ -26,7 +22,7 @@ def main
     searchoptions.usage
   end
 
-  settings.debug = settings.debug || DEBUG
+  settings.debug = settings.debug
 
   if settings.debug
     log("settings:\n#{settings.to_s}")
