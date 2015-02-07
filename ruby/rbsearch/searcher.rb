@@ -289,6 +289,7 @@ class Searcher
     begin
       # using ISO8859-1 instead of UTF-8 because a UTF-8 file won't break
       # on ISO8859-1 but a non-UTF-8 file will break on UTF-8
+      enc='ISO8859-1'
       contents = File.open(f, mode: "r:#{enc}").read
       results = search_multiline_string(contents)
       results.each do |r|
