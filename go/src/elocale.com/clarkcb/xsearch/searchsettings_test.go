@@ -23,3 +23,19 @@ func TestDefaultSearchSettings(t *testing.T) {
 		t.Errorf("settings did not match defaults")
 	}
 }
+
+func TestAddPattern(t *testing.T) {
+	settings := GetDefaultSearchSettings()
+	settings.AddSearchPattern("Searcher")
+	if settings.SearchPatterns.IsEmpty() {
+		t.Errorf("SearchPatterns should not be empty")
+	}
+}
+
+func TestAddExtensions(t *testing.T) {
+	settings := GetDefaultSearchSettings()
+	settings.AddInExtension("go,hs")
+	if len(settings.InExtensions) == 0 {
+		t.Errorf("InExtensions should not be empty")
+	}
+}
