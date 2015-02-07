@@ -261,7 +261,7 @@ class Searcher {
         if ($this->settings->multilinesearch) {
             $this->search_text_file_contents($f);
         } else {
-            $this->search_text_file_by_lines($f);
+            $this->search_text_file_lines($f);
         }
     }
 
@@ -394,7 +394,7 @@ class Searcher {
         return $results;
     }
 
-    private function search_text_file_by_lines($f) {
+    private function search_text_file_lines($f) {
         $lines = file($f);
         $results = $this->search_lines($lines);
         foreach ($results as $r) {
