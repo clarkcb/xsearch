@@ -323,6 +323,46 @@ sub firstindex {
     return -1;
 }
 
+sub get_before_indices {
+    my ($self, $indices, $after_index) = @_;
+    my @before_indices = grep { $_ <= $after_index } @{$indices};
+    return \@before_indices;
+}
+
+sub get_after_indices {
+    my ($self, $indices, $before_index) = @_;
+    my @after_indices = grep { $_ > $before_index } @{$indices};
+    return \@after_indices;
+}
+
+sub get_lines_before {
+    my ($self, $s, $before_start_indices, $start_line_indices, $end_line_indices) = @_;
+    my $lines_before = [];
+    my $i = 0;
+    while ($i < scalar @{$before_start_indices} && $i < $self->{settings}->{linesbefore}) {
+        my $start_index = $before_start_indices->[$i];
+        my $end_index = $end_line_indices->[$self->firstindex($start_index, $start_line_indices)];
+        my $line = substr($s, $start_index, $end_index - $start_index);
+        push(@{$lines_before}, $line);
+        $i++;
+    }
+    return $lines_before;
+}
+
+sub get_lines_after {
+    my ($self, $s, $after_start_indices, $start_line_indices, $end_line_indices) = @_;
+    my $lines_after = [];
+    my $i = 0;
+    while ($i < scalar @{$after_start_indices} && $i < $self->{settings}->{linesafter}) {
+        my $start_index = $after_start_indices->[$i];
+        my $end_index = $end_line_indices->[$self->firstindex($start_index, $start_line_indices)];
+        my $line = substr($s, $start_index, $end_index - $start_index);
+        push(@{$lines_after}, $line);
+        $i++;
+    }
+    return $lines_after;
+}
+
 sub search_multiline_string {
     my ($self, $s) = @_;
     my $results = [];
@@ -351,6 +391,34 @@ sub search_multiline_string {
             my $m_line_end_index = $end_line_indices[$self->firstindex($m_line_start_index, \@start_line_indices)];
             #print "m_line_end_index: $m_line_end_index\n";
             my $line = substr($s, $m_line_start_index, $m_line_end_index - $m_line_start_index);
+            my $lines_before = [];
+            if ($self->{settings}->{linesbefore}) {
+                my $before_first_index = ($self->{settings}->{linesbefore} + 1) * -1;
+                my @before_indices = @before_start_indices[$before_first_index .. -1];
+                #$self->print_array('before_indices', \@before_indices);
+                $lines_before = $self->get_lines_before(
+                    $s,
+                    \@before_indices,
+                    \@start_line_indices,
+                    \@end_line_indices);
+            }
+            #print "start_index: $start_index\n";
+            my $lines_after = [];
+            if ($self->{settings}->{linesafter}) {
+                my $after_start_indices = $self->get_after_indices(\@start_line_indices, $start_index);
+                my @after_indices = @{$after_start_indices}[0 .. $self->{settings}->{linesafter}];
+                #$self->print_array('after_indices', \@after_indices);
+                $lines_after = $self->get_lines_after(
+                    $s,
+                    \@after_indices,
+                    \@start_line_indices,
+                    \@end_line_indices);
+            }
+            if (($lines_before && !$self->lines_before_match($lines_before))
+                ||
+                ($lines_after && !$self->lines_after_match($lines_after))) {
+                next;
+            }
             my $r = new plsearch::SearchResult(
                 $pattern,
                 '',
@@ -358,8 +426,8 @@ sub search_multiline_string {
                 $start_index - $m_line_start_index + 1,
                 $end_index - $m_line_start_index + 1,
                 $line,
-                [],
-                []);
+                $lines_before,
+                $lines_after);
             push(@{$results}, $r);
             if ($self->{settings}->{firstmatch}) {
                 last;
@@ -382,6 +450,28 @@ sub search_text_file_lines {
     }
 }
 
+sub lines_match {
+    my ($self, $lines, $in_patterns, $out_patterns) = @_;
+    if ((scalar @{$in_patterns} == 0 || $self->any_matches_any_pattern($lines, $in_patterns))
+        &&
+        (scalar @{$out_patterns} == 0 || !$self->any_matches_any_pattern($lines, $out_patterns))) {
+        return 1;
+    }
+    return 0;
+}
+
+sub lines_before_match {
+    my ($self, $lines_before) = @_;
+    return $self->lines_match($lines_before, $self->{settings}->{in_linesbeforepatterns},
+        $self->{settings}->{out_linesbeforepatterns});
+}
+
+sub lines_after_match {
+    my ($self, $lines_after) = @_;
+    return $self->lines_match($lines_after, $self->{settings}->{in_linesafterpatterns},
+        $self->{settings}->{out_linesafterpatterns});
+}
+
 sub search_lines {
     my ($self, $lines) = @_;
     my $linenum = 0;
@@ -391,32 +481,66 @@ sub search_lines {
     my $pattern_match_hash = {};
     my $results = [];
     my $search = 1;
+    SEARCHLINES:
     while ($search) {
+        if (scalar @{$lines_after} > 0) {
+            $line = shift(@{$lines_after});
+        } else {
+            $line = shift(@{$lines});
+        }
+        if (!$line) {
+            break SEARCHLINES;
+        }
         $linenum++;
-        $line = shift(@{$lines});
+        if ($self->{settings}->{linesafter}) {
+            while(scalar @{$lines_after} < $self->{settings}->{linesafter}) {
+                my $line_after = shift(@{$lines});
+                if (!$line_after) {
+                    break SEARCHLINES;
+                } else {
+                    push(@{$lines_after}, $line_after);
+                }
+            }
+        }
         foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
             if ($self->{settings}->{firstmatch} && $pattern_match_hash->{$pattern}) {
                 next;
             }
-            while ($line =~ /$pattern/g) {
-                my $start_index = $-[0];
-                my $end_index = $+[0];
-                # make copies of lines_before and lines_after
-                my @lb = (@{$lines_before});
-                my @la = (@{$lines_after});
-                my $r = new plsearch::SearchResult(
-                    $pattern,
-                    '',
-                    $linenum,
-                    $start_index + 1,
-                    $end_index + 1,
-                    $line,
-                    \@lb,
-                    \@la);
-                push(@{$results}, $r);
-                $pattern_match_hash->{$pattern} = 1;
+            if ($line =~ /$pattern/) {
+                if ((scalar @{$lines_before} > 0 && !$self->lines_before_match($lines_before))
+                    ||
+                    (scalar @{$lines_after} > 0  && !$self->lines_after_match($lines_after))) {
+                    next;
+                }
+                while ($line =~ /$pattern/g) {
+                    my $start_index = $-[0];
+                    my $end_index = $+[0];
+                    # make copies of lines_before and lines_after
+                    my @lb = (@{$lines_before});
+                    my @la = (@{$lines_after});
+                    my $r = new plsearch::SearchResult(
+                        $pattern,
+                        '',
+                        $linenum,
+                        $start_index + 1,
+                        $end_index + 1,
+                        $line,
+                        \@lb,
+                        \@la);
+                    push(@{$results}, $r);
+                    $pattern_match_hash->{$pattern} = 1;
+                }
             }
         }
+        if ($self->{settings}->{linesbefore}) {
+            if (scalar @{$lines_before} == $self->{settings}->{linesbefore}) {
+                shift(@{$lines_before});
+            }
+            if (scalar @{$lines_before} < $self->{settings}->{linesbefore}) {
+                push(@{$lines_before}, $line);
+            }
+        }
+
         if (scalar @{$lines} == 0) {
             last;
             $search = 0;
