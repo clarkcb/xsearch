@@ -112,6 +112,8 @@ public class SearchSettings {
 
     public final void setArchivesOnly(final boolean archivesOnly) {
         this.archivesOnly = archivesOnly;
+        if (archivesOnly)
+            this.searchArchives = true;
     }
 
     public final boolean getDebug() {
@@ -120,6 +122,8 @@ public class SearchSettings {
 
     public final void setDebug(final boolean debug) {
         this.debug = debug;
+        if (debug)
+            this.verbose = true;
     }
 
     public final boolean getDoTiming() {

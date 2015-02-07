@@ -138,7 +138,6 @@ public class SearchOptions {
             put("archivesonly", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setArchivesOnly(true);
-                    settings.setSearchArchives(true);
                 }
             });
             put("allmatches", new SearchFlagSetter() {
@@ -149,7 +148,6 @@ public class SearchOptions {
             put("debug", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
                     settings.setDebug(true);
-                    settings.setVerbose(true);
                 }
             });
             put("dotiming", new SearchFlagSetter() {
