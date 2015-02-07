@@ -40,7 +40,7 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertFalse(self.settings.searcharchives)
         self.assertFalse(self.settings.uniquelines)
         self.assertFalse(self.settings.verbose)
-        # test the extensino and pattern sets
+        # test the extension and pattern sets
         self.assertFalse(self.settings.in_archiveextensions)
         self.assertFalse(self.settings.in_archivefilepatterns)
         self.assertFalse(self.settings.in_dirpatterns)
