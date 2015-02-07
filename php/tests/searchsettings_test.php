@@ -29,19 +29,6 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($this->settings->verbose);
     }
 
-    public function test_set_properties() {
-        $this->settings->archivesonly = true;
-        $this->settings->debug = true;
-        $this->settings->dotiming = true;
-        $this->settings->linesafter = 5;
-        $this->settings->linesbefore = 5;
-        $this->assertTrue($this->settings->archivesonly);
-        $this->assertTrue($this->settings->debug);
-        $this->assertTrue($this->settings->dotiming);
-        $this->assertEquals($this->settings->linesafter, 5);
-        $this->assertEquals($this->settings->linesbefore, 5);
-    }
-
     public function test_add_single_extension() {
         $this->settings->add_exts('php', $this->settings->in_extensions);
         $this->assertEquals(count($this->settings->in_extensions), 1);
