@@ -6,15 +6,15 @@ import static org.junit.Assert.*;
 
 public class SearchOptionsTest {
 
-    SearchOptions searchOptions = new SearchOptions();
+    private SearchOptions searchOptions = new SearchOptions();
 
     public SearchOptionsTest() {
 
     }
 
     @Test
-    public void testSettingsFromMinimalArgs() {
-        String[] args = new String[]{"-s","Search","."};
+    public final void testSettingsFromMinimalArgs() {
+        String[] args = new String[]{"-s", "Search", "."};
         try {
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
@@ -36,14 +36,14 @@ public class SearchOptionsTest {
             assertFalse(settings.getUniqueLines());
             assertFalse(settings.getVerbose());
         } catch (SearchException e) {
-            System.out.println("SearchException: "+e.getMessage());
+            System.out.println("SearchException: " + e.getMessage());
             assertTrue(false);
         }
     }
 
     @Test
-    public void testSettingsFromValidArgs() {
-        String[] args = new String[]{"-x","java,scala","-s","Search","."};
+    public final void testSettingsFromValidArgs() {
+        String[] args = new String[]{"-x", "java,scala", "-s", "Search", "."};
         try {
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assert(settings.getInExtensions().size() == 2);
@@ -52,7 +52,7 @@ public class SearchOptionsTest {
             assert(settings.getSearchPatterns().size() == 1);
             assert(settings.getSearchPatterns().toArray()[0].toString().equals("Search"));
         } catch (SearchException e) {
-            System.out.println("SearchException: "+e.getMessage());
+            System.out.println("SearchException: " + e.getMessage());
             assertTrue(false);
         }
     }

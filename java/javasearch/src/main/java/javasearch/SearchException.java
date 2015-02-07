@@ -1,11 +1,11 @@
 package javasearch;
 
 public class SearchException extends Exception {
-    String msg;
-    public SearchException(String msg) {
+    private String msg;
+    public SearchException(final String msg) {
         this.msg = msg;
     }
-    public String getMessage() {
+    public final String getMessage() {
         return this.msg;
     }
 }

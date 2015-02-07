@@ -12,11 +12,11 @@ package javasearch;
 
 public interface ISearchOption {
 
-	public String getShortArg();
-	
-	public String getLongArg();
-	
-	public String getDescription();
-	
-	public String getSortArg();
+    String getShortArg();
+    
+    String getLongArg();
+    
+    String getDescription();
+    
+    String getSortArg();
 }

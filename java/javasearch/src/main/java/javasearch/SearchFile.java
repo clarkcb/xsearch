@@ -5,70 +5,71 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchFile {
-    public static String CONTAINER_SEPARATOR = "!";
+    public static final String CONTAINER_SEPARATOR = "!";
     private List<String> containers;
     private String path;
     private String fileName;
     private FileType fileType;
 
-    public SearchFile(String path, String fileName, FileType fileType) {
+    public SearchFile(final String path, final String fileName,
+                      final FileType fileType) {
         this(new ArrayList<String>(), path, fileName, fileType);
     }
 
-    public SearchFile(List<String> containers, String path, String fileName,
-                      FileType fileType) {
+    public SearchFile(final List<String> containers, final String path,
+                      final String fileName, FileType fileType) {
         this.containers = containers;
         this.path = path;
         this.fileName = fileName;
         this.fileType = fileType;
     }
 
-    public void addContainer(String c) {
+    public final void addContainer(final String c) {
         containers.add(c);
     }
 
-    public List<String> getContainers() {
+    public final List<String> getContainers() {
         return this.containers;
     }
 
-    protected void setContainers(List<String> cs) {
+    protected final void setContainers(final List<String> cs) {
         this.containers = cs;
     }
 
-    public String getPath() {
+    public final String getPath() {
         return this.path;
     }
 
-    protected void setPath(String p) {
+    protected final void setPath(final String p) {
         this.path = p;
     }
 
-    public String getFileName() {
+    public final String getFileName() {
         return this.fileName;
     }
 
-    protected void setFileName(String f) {
+    protected final void setFileName(final String f) {
         this.fileName = f;
     }
 
-    public FileType getFileType() {
+    public final FileType getFileType() {
         return this.fileType;
     }
 
-    protected void setFileType(FileType ft) {
+    protected final void setFileType(final FileType ft) {
         this.fileType = ft;
     }
 
-    public File toFile() {
+    public final File toFile() {
         File dir = new File(path);
         return new File(dir, fileName);
     }
 
-    public String toString() {
+    public final String toString() {
         StringBuilder sb = new StringBuilder();
         if (containers.size() > 0) {
-            for (int i=0; i < containers.size(); i++) {
-                if (i >0) sb.append(CONTAINER_SEPARATOR);
+            for (int i = 0; i < containers.size(); i++) {
+                if (i > 0) sb.append(CONTAINER_SEPARATOR);
                 sb.append(containers.get(i));
             }
             sb.append(CONTAINER_SEPARATOR);

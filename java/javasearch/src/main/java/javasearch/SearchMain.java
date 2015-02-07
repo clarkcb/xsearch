@@ -12,40 +12,40 @@ package javasearch;
 
 public class SearchMain {
 
-    private static void log(String message) {
+    private static void log(final String message) {
         System.out.println(message);
     }
 
-    private static void logError(String message) {
+    private static void logError(final String message) {
         log("Error: " + message);
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 
-		SearchOptions options = new SearchOptions();
-		SearchSettings settings = new SearchSettings();
+        SearchOptions options = new SearchOptions();
+        SearchSettings settings = new SearchSettings();
 
-		try {
-			settings = options.settingsFromArgs(args);
-		} catch (SearchException e) {
+        try {
+            settings = options.settingsFromArgs(args);
+        } catch (SearchException e) {
             log("");
-			logError(e.getMessage() + "\n");
-			options.usage(1);
-		}
+            logError(e.getMessage() + "\n");
+            options.usage(1);
+        }
 
-		if (settings.getDebug()) {
-			log("\nsettings:");
-			log(settings.toString() + "\n");
-		}
+        if (settings.getDebug()) {
+            log("\nsettings:");
+            log(settings.toString() + "\n");
+        }
 
-		if (settings.getPrintUsage()) {
-			options.usage(0);
-		}
+        if (settings.getPrintUsage()) {
+            options.usage(0);
+        }
 
         Searcher searcher = new Searcher(settings);
-		try {
+        try {
             searcher.validateSettings();
-			searcher.search();
+            searcher.search();
 
             // print the results
             if (settings.getPrintResults()) {
@@ -62,10 +62,10 @@ public class SearchMain {
                 searcher.printMatchingLines();
             }
 
-		} catch (SearchException e) {
+        } catch (SearchException e) {
             log("");
-			logError(e.getMessage() + "\n");
-			options.usage(1);
-		}
+            logError(e.getMessage() + "\n");
+            options.usage(1);
+        }
     }
 }

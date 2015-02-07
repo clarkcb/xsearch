@@ -22,12 +22,12 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class SearchOptions {
-	private String searchOptionsXmlPath;
-	private List<ISearchOption> options;
-	private Map<String, ISearchOption> argMap;
-	private Map<String, ISearchOption> flagMap;
+    private String searchOptionsXmlPath;
+    private List<ISearchOption> options;
+    private Map<String, ISearchOption> argMap;
+    private Map<String, ISearchOption> flagMap;
 
-    Map<String,SearchArgSetter> argActionMap = new HashMap<String,SearchArgSetter>() {
+    private Map<String, SearchArgSetter> argActionMap = new HashMap<String, SearchArgSetter>() {
         {
             put("in-archiveext", new SearchArgSetter() {
                 @Override public void setArg(String arg, SearchSettings settings) {
@@ -133,7 +133,7 @@ public class SearchOptions {
         }
     };
 
-    Map<String,SearchFlagSetter> flagActionMap = new HashMap<String,SearchFlagSetter>() {
+    private Map<String, SearchFlagSetter> flagActionMap = new HashMap<String, SearchFlagSetter>() {
         {
             put("archivesonly", new SearchFlagSetter() {
                 @Override public void setFlag(SearchSettings settings) {
@@ -285,86 +285,83 @@ public class SearchOptions {
 
     public SearchOptions() {
         searchOptionsXmlPath = "/searchoptions.xml";
-		options = new ArrayList<ISearchOption>();
+        options = new ArrayList<ISearchOption>();
         argMap = new HashMap<String, ISearchOption>();
         flagMap = new HashMap<String, ISearchOption>();
         setOptionsFromXml();
-	}
+    }
 
-	public SearchSettings settingsFromArgs(String[] args) throws SearchException {
-		SearchSettings settings = new SearchSettings();
+    public final SearchSettings settingsFromArgs(final String[] args) throws SearchException {
+        SearchSettings settings = new SearchSettings();
         // default printresults to True since running from command line
         settings.setPrintResults(true);
-		Queue<String> queue = new LinkedList<String>(Arrays.asList(args));
-		while (!queue.isEmpty()) {
-			String arg = queue.remove();
-			if (arg.startsWith("-")) {
-				while (arg.length() > 0 && arg.startsWith("-")) {
-					arg = arg.substring(1);
-				}
-				if (this.argMap.containsKey(arg)) {
-					if (!queue.isEmpty()) {
-						String argVal = queue.remove();
-						SearchArgOption option = (SearchArgOption)this.argMap.get(arg);
-						option.setArg(argVal, settings);
-					} else {
-						throw new SearchException("Missing value for option " + arg);
-					}
-				} else if (this.flagMap.containsKey(arg)) {
-					SearchFlagOption option = (SearchFlagOption)this.flagMap.get(arg);
-					option.setFlag(settings);
-				} else {
-					throw new SearchException("Undefined option: " + arg);
-				}
-			} else {
-				settings.setStartPath(arg);
-			}
-		}
-		return settings;
-	}
+        Queue<String> queue = new LinkedList<String>(Arrays.asList(args));
+        while (!queue.isEmpty()) {
+            String arg = queue.remove();
+            if (arg.startsWith("-")) {
+                while (arg.length() > 0 && arg.startsWith("-")) {
+                    arg = arg.substring(1);
+                }
+                if (this.argMap.containsKey(arg)) {
+                    if (!queue.isEmpty()) {
+                        String argVal = queue.remove();
+                        SearchArgOption option = (SearchArgOption) this.argMap.get(arg);
+                        option.setArg(argVal, settings);
+                    } else {
+                        throw new SearchException("Missing value for option " + arg);
+                    }
+                } else if (this.flagMap.containsKey(arg)) {
+                    SearchFlagOption option = (SearchFlagOption) this.flagMap.get(arg);
+                    option.setFlag(settings);
+                } else {
+                    throw new SearchException("Undefined option: " + arg);
+                }
+            } else {
+                settings.setStartPath(arg);
+            }
+        }
+        return settings;
+    }
 
-	public void usage(int exitStatus) {
-		System.out.println(this.getUsageString());
-		System.exit(exitStatus);
-	}
+    public final void usage(final int exitStatus) {
+        System.out.println(this.getUsageString());
+        System.exit(exitStatus);
+    }
 
-	private static Comparator<ISearchOption> searchOptionComparator = new Comparator<ISearchOption>() {
-		public int compare(ISearchOption s1, ISearchOption s2)
-		{
-		    return s1.getSortArg().toLowerCase().compareTo(s2.getSortArg().toLowerCase());
-		}
-	};
+    private static final Comparator<ISearchOption> searchOptionComparator = new Comparator<ISearchOption>() {
+        public int compare(final ISearchOption s1, final ISearchOption s2) {
+            return s1.getSortArg().toLowerCase().compareTo(s2.getSortArg().toLowerCase());
+        }
+    };
 
-	public String getUsageString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Usage:\n");
-		sb.append(" javasearch [options] <startpath>\n\n");
-		sb.append("Options:\n");
+    public final String getUsageString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Usage:\n");
+        sb.append(" javasearch [options] <startpath>\n\n");
+        sb.append("Options:\n");
 
-		Collections.sort(this.options, searchOptionComparator);
+        Collections.sort(this.options, searchOptionComparator);
 
-		List<String> optStrings = new ArrayList<String>();
-		List<String> optDescs = new ArrayList<String>();
-		int longest = 0;
-		for (ISearchOption opt : this.options) {
-			StringBuilder optString = new StringBuilder();
-			String shortArg = opt.getShortArg();
-			if (null != shortArg && !shortArg.equals("")) {
-				optString.append("-").append(shortArg).append(",");
-			}
-			optString.append("--").append(opt.getLongArg());
-			if (optString.length() > longest) {
-				longest = optString.length();
-			}
-			optStrings.add(optString.toString());
-			optDescs.add(opt.getDescription());
-		}
-		//String format = " {0,-"+longest+"}  {1}";
-		//%[argument_index$][flags][width][.precision]conversion
-		String format = " %1$-"+longest+"s  %2$s\n";
-		for (int i = 0; i < optStrings.size(); i++) {
-			sb.append(String.format(format, optStrings.get(i), optDescs.get(i)));
-		}
-		return sb.toString();
-	}
+        List<String> optStrings = new ArrayList<String>();
+        List<String> optDescs = new ArrayList<String>();
+        int longest = 0;
+        for (ISearchOption opt : this.options) {
+            StringBuilder optString = new StringBuilder();
+            String shortArg = opt.getShortArg();
+            if (null != shortArg && !shortArg.equals("")) {
+                optString.append("-").append(shortArg).append(",");
+            }
+            optString.append("--").append(opt.getLongArg());
+            if (optString.length() > longest) {
+                longest = optString.length();
+            }
+            optStrings.add(optString.toString());
+            optDescs.add(opt.getDescription());
+        }
+        String format = " %1$-" + longest + "s  %2$s\n";
+        for (int i = 0; i < optStrings.size(); i++) {
+            sb.append(String.format(format, optStrings.get(i), optDescs.get(i)));
+        }
+        return sb.toString();
+    }
 }

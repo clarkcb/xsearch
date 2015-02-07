@@ -7,14 +7,14 @@ import java.io.File;
 import org.junit.Test;
 
 public class FileTypesTest {
-    FileTypes fileTypes;
+    private FileTypes fileTypes;
 
     public FileTypesTest() {
         fileTypes = new FileTypes();
     }
 
     @Test
-    public void archiveFileTest() {
+    public final void archiveFileTest() {
         File file = new File("test.zip");
         assertEquals(FileUtil.getExtension(file), "zip");
         assertTrue(fileTypes.isArchiveFile(file));
@@ -25,7 +25,7 @@ public class FileTypesTest {
     }
 
     @Test
-    public void binaryFileTest() {
+    public final void binaryFileTest() {
         File file = new File("test.exe");
         assertEquals(FileUtil.getExtension(file), "exe");
         assertFalse(fileTypes.isArchiveFile(file));
@@ -36,7 +36,7 @@ public class FileTypesTest {
     }
 
     @Test
-    public void javaFileTest() {
+    public final void javaFileTest() {
         File file = new File("Test.java");
         assertEquals(FileUtil.getExtension(file), "java");
         assertFalse(fileTypes.isArchiveFile(file));
@@ -47,7 +47,7 @@ public class FileTypesTest {
     }
 
     @Test
-    public void textFileTest() {
+    public final void textFileTest() {
         File file = new File("test.txt");
         assertEquals(FileUtil.getExtension(file), "txt");
         assertFalse(fileTypes.isArchiveFile(file));

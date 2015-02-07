@@ -2,8 +2,6 @@ package javasearch;
 
 import org.junit.Test;
 
-import java.io.File;
-
 import static org.junit.Assert.*;
 
 public class SearchSettingsTest {
@@ -13,7 +11,7 @@ public class SearchSettingsTest {
     }
 
     @Test
-    public void testDefaultSettings() {
+    public final void testDefaultSettings() {
         SearchSettings settings = new SearchSettings();
         assertFalse(settings.getArchivesOnly());
         assertFalse(settings.getDebug());

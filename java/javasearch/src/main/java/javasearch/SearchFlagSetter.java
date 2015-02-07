@@ -12,10 +12,10 @@ package javasearch;
 
 public class SearchFlagSetter {
 
-	public SearchFlagSetter() {
-	}
+    public SearchFlagSetter() {
+    }
 
-	public void setFlag(SearchSettings settings) {
+    public void setFlag(SearchSettings settings) {
         //this method is overridden to provide the specific setting functionality
-	}
+    }
 }

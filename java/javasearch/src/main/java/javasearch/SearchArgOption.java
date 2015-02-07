@@ -12,14 +12,17 @@ package javasearch;
 
 public class SearchArgOption extends SearchOption {
 
-	private SearchArgSetter searchArgSetter;
+    private SearchArgSetter searchArgSetter;
 
-	public SearchArgOption(String shortArg, String longArg, String description, SearchArgSetter searchArgSetter) {
-		super(shortArg, longArg, description);
-		this.searchArgSetter = searchArgSetter;
-	}
+    public SearchArgOption(final String shortArg,
+                           final String longArg,
+                           final String description,
+                           final SearchArgSetter searchArgSetter) {
+        super(shortArg, longArg, description);
+        this.searchArgSetter = searchArgSetter;
+    }
 
-	public void setArg(String arg, SearchSettings settings) {
-		this.searchArgSetter.setArg(arg, settings);
-	}
+    public final void setArg(final String arg, final SearchSettings settings) {
+        this.searchArgSetter.setArg(arg, settings);
+    }
 }

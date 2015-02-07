@@ -12,10 +12,10 @@ package javasearch;
 
 public class SearchArgSetter {
 
-	public SearchArgSetter() {
-	}
+    public SearchArgSetter() {
+    }
 
-	public void setArg(String arg, SearchSettings settings) {
-		//this method is overridden to provide the specific setting functionality
-	}
+    public void setArg(final String arg, final SearchSettings settings) {
+        //this method is overridden to provide the specific setting functionality
+    }
 }

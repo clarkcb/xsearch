@@ -12,14 +12,17 @@ package javasearch;
 
 public class SearchFlagOption extends SearchOption {
 
-	private SearchFlagSetter searchFlagSetter;
+    private SearchFlagSetter searchFlagSetter;
 
-	public SearchFlagOption(String shortArg, String longArg, String description, SearchFlagSetter searchFlagSetter) {
-		super(shortArg, longArg, description);
-		this.searchFlagSetter = searchFlagSetter;
-	}
+    public SearchFlagOption(final String shortArg,
+                            final String longArg,
+                            final String description,
+                            final SearchFlagSetter searchFlagSetter) {
+        super(shortArg, longArg, description);
+        this.searchFlagSetter = searchFlagSetter;
+    }
 
-	public void setFlag(SearchSettings settings) {
-		this.searchFlagSetter.setFlag(settings);
-	}
+    public final void setFlag(SearchSettings settings) {
+        this.searchFlagSetter.setFlag(settings);
+    }
 }

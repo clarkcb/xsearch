@@ -12,15 +12,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class FileTypes {
-    private static final String fileTypesXmlPath = "/filetypes.xml";
+    private static final String FILETYPESXMLPATH = "/filetypes.xml";
     private Map<String, Set<String>> fileTypeMap;
 
-    private Map<String,Set<String>> getFileTypeMap() {
+    private Map<String, Set<String>> getFileTypeMap() {
         Map<String, Set<String>> fileTypeMap = new HashMap<String, Set<String>>();
-        InputStream fileTypesInputStream = getClass().getResourceAsStream(fileTypesXmlPath);
+        InputStream fileTypesInputStream = getClass().
+                getResourceAsStream(FILETYPESXMLPATH);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         try {
@@ -30,10 +35,14 @@ public class FileTypes {
             NodeList filetypeNodes = doc.getElementsByTagName("filetype");
             for (int i = 0; i < filetypeNodes.getLength(); i++) {
                 Node fileTypeNode = filetypeNodes.item(i);
-                String name = fileTypeNode.getAttributes().getNamedItem("name").getNodeValue();
-                Node extNode = ((Element)fileTypeNode).getElementsByTagName("extensions").item(0);
-                String extensions = extNode.getChildNodes().item(0).getNodeValue();
-                Set<String> extSet = new HashSet<String>(Arrays.asList(extensions.split("\\s+")));
+                String name = fileTypeNode.getAttributes().getNamedItem("name").
+                        getNodeValue();
+                Node extNode = ((Element) fileTypeNode).
+                        getElementsByTagName("extensions").item(0);
+                String extensions = extNode.getChildNodes().item(0).
+                        getNodeValue();
+                Set<String> extSet = new HashSet<String>(Arrays.asList(extensions.
+                        split("\\s+")));
                 fileTypeMap.put(name, extSet);
             }
             Set<String> allText = new HashSet<String>();
@@ -47,11 +56,11 @@ public class FileTypes {
             allSearchable.addAll(fileTypeMap.get("text"));
             fileTypeMap.put("searchable", allSearchable);
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (SAXException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
         return fileTypeMap;
@@ -61,31 +70,32 @@ public class FileTypes {
         fileTypeMap = getFileTypeMap();
     }
 
-    public FileType getFileType(File f) {
+    public final FileType getFileType(final File f) {
         if (isArchiveFile(f)) return FileType.ARCHIVE;
         if (isBinaryFile(f)) return FileType.BINARY;
         if (isTextFile(f)) return FileType.TEXT;
         return FileType.UNKNOWN;
     }
 
-    public boolean isArchiveFile(File f) {
+    public final boolean isArchiveFile(final File f) {
         return fileTypeMap.get("archive").contains(FileUtil.getExtension(f));
     }
 
-    public boolean isBinaryFile(File f) {
+    public final boolean isBinaryFile(final File f) {
         return fileTypeMap.get("binary").contains(FileUtil.getExtension(f));
     }
 
-    public boolean isSearchableFile(File f) {
+    public final boolean isSearchableFile(final File f) {
         return fileTypeMap.get("searchable").contains(FileUtil.getExtension(f));
     }
 
-    public boolean isTextFile(File f) {
+    public final boolean isTextFile(final File f) {
         return fileTypeMap.get("text").contains(FileUtil.getExtension(f));
     }
 
-    public boolean isUnknownFile(File f) {
-        return fileTypeMap.get("unknown").contains(FileUtil.getExtension(f)) ||
+    public final boolean isUnknownFile(final File f) {
+        return fileTypeMap.get("unknown").contains(FileUtil.getExtension(f))
+                ||
                 !fileTypeMap.get("searchable").contains(FileUtil.getExtension(f));
     }
 

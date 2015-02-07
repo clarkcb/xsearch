@@ -15,52 +15,52 @@ public class SearchResultTest {
     }
 
     @Test
-    public void testSingleLineSearchResult() {
-        Pattern pattern = Pattern.compile("Search");
-        SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
+    public final void testSingleLineSearchResult() {
+        final Pattern pattern = Pattern.compile("Search");
+        final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
             "Searcher.cs", FileType.TEXT);
-        int lineNum = 10;
-        int matchStartIndex = 15;
-        int matchEndIndex = 23;
-        String line = "\tpublic class Searcher\n";
-        SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final int lineNum = 10;
+        final int matchStartIndex = 15;
+        final int matchEndIndex = 23;
+        final String line = "\tpublic class Searcher\n";
+        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
             matchStartIndex, matchEndIndex, line);
-        String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
-        String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
+        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+        final String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
                 lineNum, matchStartIndex, matchEndIndex, line.trim());
         assertEquals(searchResult.toString(), expectedOutput);
     }
 
     @Test
-    public void testBinaryFileSearchResult() {
-        Pattern pattern = Pattern.compile("Search");
-        SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
+    public final void testBinaryFileSearchResult() {
+        final Pattern pattern = Pattern.compile("Search");
+        final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
             "Searcher.exe", FileType.BINARY);
-        int lineNum = 0;
-        int matchStartIndex = 0;
-        int matchEndIndex = 0;
-        SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final int lineNum = 0;
+        final int matchStartIndex = 0;
+        final int matchEndIndex = 0;
+        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
             matchStartIndex, matchEndIndex, null);
-        String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
-        String expectedOutput = String.format("%s matches", expectedPath);
+        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
+        final String expectedOutput = String.format("%s matches", expectedPath);
         assertEquals(searchResult.toString(), expectedOutput);
     }
 
     @Test
-    public void testMultiLineSearchResult() {
-        Pattern pattern = Pattern.compile("Search");
-        SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
+    public final void testMultiLineSearchResult() {
+        final Pattern pattern = Pattern.compile("Search");
+        final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
                 "Searcher.cs", FileType.TEXT);
-        int lineNum = 10;
-        int matchStartIndex = 15;
-        int matchEndIndex = 23;
-        String line = "\tpublic class Searcher\n";
-        List<String> linesBefore = Arrays.asList("namespace CsSearch\n", "{\n");
-        List<String> linesAfter = Arrays.asList("\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n");
-        SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final int lineNum = 10;
+        final int matchStartIndex = 15;
+        final int matchEndIndex = 23;
+        final String line = "\tpublic class Searcher\n";
+        final List<String> linesBefore = Arrays.asList("namespace CsSearch\n", "{\n");
+        final List<String> linesAfter = Arrays.asList("\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n");
+        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
                 matchStartIndex, matchEndIndex, line, linesBefore, linesAfter);
-        String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
-        String expectedOutput = String.format(
+        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+        final String expectedOutput = String.format(
                 "================================================================================\n" +
                 "%s: %d: [%d:%d]\n" +
                 "--------------------------------------------------------------------------------\n" +

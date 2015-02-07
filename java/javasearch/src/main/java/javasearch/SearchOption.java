@@ -12,31 +12,32 @@ package javasearch;
 
 public class SearchOption implements ISearchOption {
 
-	private String shortArg;
-	private String longArg;
-	private String description;
+    private String shortArg;
+    private String longArg;
+    private String description;
 
-	public SearchOption(String shortArg, String longArg, String description) {
-		this.shortArg = shortArg;
-		this.longArg = longArg;
-		this.description = description;
-	}
+    public SearchOption(final String shortArg, final String longArg,
+                        final String description) {
+        this.shortArg = shortArg;
+        this.longArg = longArg;
+        this.description = description;
+    }
 
-	public String getShortArg() {
-		return this.shortArg;
-	}
+    public final String getShortArg() {
+        return this.shortArg;
+    }
 
-	public String getLongArg() {
-		return this.longArg;
-	}
+    public final String getLongArg() {
+        return this.longArg;
+    }
 
-	public String getDescription() {
-		return this.description;
-	}
+    public final String getDescription() {
+        return this.description;
+    }
 
-	public String getSortArg() {
-		if (null != this.shortArg && !this.shortArg.equals(""))
-			return this.shortArg.toLowerCase() + "a" + this.longArg;
-		return this.longArg;
-	}
+    public final String getSortArg() {
+        if (null != this.shortArg && !this.shortArg.equals(""))
+            return this.shortArg.toLowerCase() + "a" + this.longArg;
+        return this.longArg;
+    }
 }
