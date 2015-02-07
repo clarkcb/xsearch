@@ -414,6 +414,7 @@ class Searcher
     begin
       # using ISO8859-1 instead of UTF-8 because a UTF-8 file won't break
       # on ISO8859-1 but a non-UTF-8 file will break on UTF-8
+      enc = "ISO8859-1"
       fo = File.open(f, mode: "r:#{enc}")
       line_iterator = fo.each_line
       results = search_line_iterator(line_iterator)
