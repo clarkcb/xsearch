@@ -70,14 +70,16 @@ build_csharp () {
     log "build_csharp"
     CSHARP_PATH=$PROJECT_PATH/csharp
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
+    CONFIGURATION=Debug
+    #CONFIGURATION=Release
 
     # copy the shared xml files to the local resource location
     copy_resources $RESOURCES_PATH
 
     # run a mono xbuild
     log "Building cssearch"
-    log "xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln"
-    xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln
+    log "xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln"
+    xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
 
 }
 
@@ -166,8 +168,9 @@ build_scala () {
     echo
     log "build_scala"
     SCALA_PATH=$PROJECT_PATH/scala
-    RESOURCES_PATH=$SCALA_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$SCALA_PATH/src/test/resources
+    SCALASEARCH_PATH=$SCALA_PATH/scalasearch
+    RESOURCES_PATH=$SCALASEARCH_PATH/src/main/resources
+    TEST_RESOURCES_PATH=$SCALASEARCH_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
@@ -179,9 +182,9 @@ build_scala () {
 
     # run a maven clean build
     log "Building scalasearch"
-    log "mvn -f $SCALA_PATH/pom.xml clean install"
-    mvn -f $SCALA_PATH/pom.xml clean install
-    #mvn -f $SCALA_PATH/pom.xml -DskipTests=true clean install
+    log "mvn -f $SCALASEARCH_PATH/pom.xml clean install"
+    mvn -f $SCALASEARCH_PATH/pom.xml clean install
+    #mvn -f $SCALASEARCH_PATH/pom.xml -DskipTests=true clean install
 }
 
 build_all () {

@@ -193,11 +193,12 @@ unittest_scala () {
     echo
     log "unittest_scala"
     SCALA_PATH=$PROJECT_PATH/scala
+    SCALASEARCH_PATH=$SCALA_PATH/scalasearch
 
     # run tests via maven
     log "Unit-testing scalasearch"
-    log "mvn -f $SCALA_PATH/pom.xml test"
-    mvn -f $SCALA_PATH/pom.xml test
+    log "mvn -f $SCALASEARCH_PATH/pom.xml test"
+    mvn -f $SCALASEARCH_PATH/pom.xml test
 }
 
 unittest_all () {

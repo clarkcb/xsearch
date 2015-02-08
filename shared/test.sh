@@ -119,12 +119,6 @@ test_ruby () {
 test_scala () {
     echo -e "\n################################################################################"
     log "test_scala"
-    SCALA_PATH=$PROJECT_PATH/scala
-    TARGET_PATH=$SCALA_PATH/target
-    JAVASEARCHJAR=$TARGET_PATH/javasearch-1.0-SNAPSHOT.jar
-    SCALASEARCHJAR=$TARGET_PATH/scala-1.0-SNAPSHOT.jar
-
-    # do the test search
     log "scalasearch $SEARCH_PARAMS"
     time scalasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $PROJECT_PATH
 }
