@@ -46,8 +46,7 @@ getUsage searchOptions =
   searchOptionsToString searchOptions
 
 getOptStrings :: [SearchOption] -> [String]
-getOptStrings searchOptions = 
-  map formatOpts searchOptions
+getOptStrings = map formatOpts
   where formatOpts SearchOption {long=l, short=""} = getLong l
         formatOpts SearchOption {long=l, short=s}  = shortAndLong s l
         getLong l = "--" ++ l
@@ -62,13 +61,13 @@ sortSearchOption (SearchOption {long=l1, short=s1}) (SearchOption {long=l2, shor
   compare (shortOrLong s1 l1) (shortOrLong s2 l2)
   where
     shortOrLong "" l = l
-    shortOrLong s l = (map toLower s) ++ "@" ++ l
+    shortOrLong s l = map toLower s ++ "@" ++ l
 
 sortSearchOptions :: [SearchOption] -> [SearchOption]
-sortSearchOptions searchOptions = sortBy sortSearchOption searchOptions
+sortSearchOptions = sortBy sortSearchOption
 
 padString :: String -> Int -> String
-padString s len | length s < len = s ++ take (len - length s) (repeat ' ')
+padString s len | length s < len = s ++ replicate (len - length s) ' '
                 | otherwise      = s
 
 searchOptionsToString :: [SearchOption] -> String
@@ -79,7 +78,7 @@ searchOptionsToString searchOptions =
     optStrings = getOptStrings sorted
     optDescs = map getOptDesc sorted
     longest = maximum $ map length optStrings
-    formatOptLine o d = "  " ++ (padString o longest) ++ "  " ++ d
+    formatOptLine o d = "  " ++ padString o longest ++ "  " ++ d
 
 data ActionType = ArgActionType
                 | FlagActionType
@@ -90,10 +89,10 @@ type ArgAction = SearchSettings -> String -> SearchSettings
 type FlagAction = SearchSettings -> SearchSettings
 
 argActions :: [(String, ArgAction)]
-argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ (newExtensions s)})
+argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ newExtensions s})
              , ("in-archivefilepattern", \ss s -> ss {inArchiveFilePatterns = inArchiveFilePatterns ss ++ [s]})
              , ("in-dirpattern", \ss s -> ss {inDirPatterns = inDirPatterns ss ++ [s]})
-             , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ (newExtensions s)})
+             , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ newExtensions s})
              , ("in-filepattern", \ss s -> ss {inFilePatterns = inFilePatterns ss ++ [s]})
              , ("in-linesafterpattern", \ss s -> ss {inLinesAfterPatterns = inLinesAfterPatterns ss ++ [s]})
              , ("in-linesbeforepattern", \ss s -> ss {inLinesBeforePatterns = inLinesBeforePatterns ss ++ [s]})
@@ -102,10 +101,10 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("linesafteruntilpattern", \ss s -> ss {linesAfterUntilPatterns = linesAfterUntilPatterns ss ++ [s]})
              , ("linesbefore", \ss s -> ss {linesBefore = read s})
              , ("maxlinelength", \ss s -> ss {maxLineLength = read s})
-             , ("out-archiveext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ (newExtensions s)})
+             , ("out-archiveext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ newExtensions s})
              , ("out-archivefilepattern", \ss s -> ss {outArchiveFilePatterns = outArchiveFilePatterns ss ++ [s]})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})
-             , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ (newExtensions s)})
+             , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ newExtensions s})
              , ("out-filepattern", \ss s -> ss {outFilePatterns = outFilePatterns ss ++ [s]})
              , ("out-linesafterpattern", \ss s -> ss {outLinesAfterPatterns = outLinesAfterPatterns ss ++ [s]})
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
@@ -152,18 +151,18 @@ settingsFromArgs opts arguments =
           [] -> settings
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
-            ArgActionType -> recSettingsFromArgs ((getArgAction (argName a)) settings (head as)) (tail as)
-            FlagActionType -> recSettingsFromArgs ((getFlagAction (argName a)) settings) as
-            UnknownActionType -> error ("Unknown option: " ++ (argName a))
+            ArgActionType -> recSettingsFromArgs (getArgAction (argName a) settings (head as)) (tail as)
+            FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
+            UnknownActionType -> error ("Unknown option: " ++ argName a)
           a:as -> recSettingsFromArgs (settings {startPath=a}) as
         getActionType :: String -> ActionType
-        getActionType a = if (isArgAction a)
-                          then ArgActionType
-                          else if (isFlagAction a)
-                               then FlagActionType
-                               else UnknownActionType
+        getActionType a
+          | isArgAction a = ArgActionType
+          | isFlagAction a = FlagActionType
+          | otherwise = UnknownActionType
+
         argName :: String -> String
-        argName a = (dropWhile (=='-') a)
+        argName = dropWhile (=='-')
         getArgAction ::String -> ArgAction
         getArgAction a = snd $ head $ filter (\(x,_) -> a==x) argActions
         getFlagAction ::String -> FlagAction

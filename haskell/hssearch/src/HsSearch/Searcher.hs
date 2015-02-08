@@ -26,13 +26,13 @@ import HsSearch.SearchSettings
 
 
 isSearchDir :: SearchSettings -> FilePath -> Bool
-isSearchDir settings d = and $ map ($d) tests
+isSearchDir settings d = all ($d) tests
   where tests :: [FilePath -> Bool]
-        tests = [ (\x -> length inPatterns == 0
-                         || any (\p -> x =~ p :: Bool) inPatterns)
-                , (\x -> length outPatterns == 0
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns)
-                , (\x -> not (isHiddenFilePath x) || includeHidden)
+        tests = [ \x -> null inPatterns
+                         || any (\p -> x =~ p :: Bool) inPatterns
+                , \x -> null outPatterns
+                         || all (\p -> not $ x =~ p :: Bool) outPatterns
+                , \x -> not (isHiddenFilePath x) || includeHidden
                 ]
         inPatterns = inDirPatterns settings
         outPatterns = outDirPatterns settings
@@ -41,29 +41,26 @@ isSearchDir settings d = and $ map ($d) tests
 getSearchDirs :: SearchSettings -> IO [FilePath]
 getSearchDirs settings = do
   isStartPathDir <- isDirectory $ startPath settings
-  searchDirs <- do if isStartPathDir
-                     then do
-                       ds <- getDirectories
-                       return ds
-                     else return [getParentPath (startPath settings)]
-  return searchDirs
+  if isStartPathDir
+    then getDirectories
+    else return [getParentPath (startPath settings)]
   where getDirectories :: IO [FilePath]
         getDirectories = do
           dirs <- getRecursiveDirectories $ startPath settings
-          return $ filter (isSearchDir settings) $ [startPath settings] ++ dirs
+          return $ filter (isSearchDir settings) $ startPath settings : dirs
 
 isSearchFile :: SearchSettings -> FilePath -> Bool
-isSearchFile settings fp = and $ map ($fp) tests
+isSearchFile settings fp = all ($fp) tests
   where tests :: [FilePath -> Bool]
-        tests = [ (\x -> length inExts == 0
-                         || hasInExt x)
-                , (\x -> length outExts == 0
-                         || not (hasOutExt x))
-                , (\x -> length inPatterns == 0
-                         || any (\p -> x =~ p :: Bool) inPatterns)
-                , (\x -> length outPatterns == 0
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns)
-                , (\x -> not (isHiddenFilePath x) || includeHidden)
+        tests = [ \x -> null inExts
+                         || hasInExt x
+                , \x -> null outExts
+                         || not (hasOutExt x)
+                , \x -> null inPatterns
+                         || any (\p -> x =~ p :: Bool) inPatterns
+                , \x -> null outPatterns
+                         || all (\p -> not $ x =~ p :: Bool) outPatterns
+                , \x -> not (isHiddenFilePath x) || includeHidden
                 ]
         inExts = inExtensions settings
         hasInExt f | null inExts = True
@@ -76,17 +73,17 @@ isSearchFile settings fp = and $ map ($fp) tests
         includeHidden = not $ excludeHidden settings
 
 isArchiveSearchFile :: SearchSettings -> FilePath -> Bool
-isArchiveSearchFile settings fp = and $ map ($fp) tests
+isArchiveSearchFile settings fp = all ($fp) tests
   where tests :: [FilePath -> Bool]
-        tests = [ (\x -> length inExts == 0
-                         || hasInExt x)
-                , (\x -> length outExts == 0
-                         || not (hasOutExt x))
-                , (\x -> length inPatterns == 0
-                         || any (\p -> x =~ p :: Bool) inPatterns)
-                , (\x -> length outPatterns == 0
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns)
-                , (\x -> not (isHiddenFilePath x) || includeHidden)
+        tests = [ \x -> null inExts
+                         || hasInExt x
+                , \x -> null outExts
+                         || not (hasOutExt x)
+                , \x -> null inPatterns
+                         || any (\p -> x =~ p :: Bool) inPatterns
+                , \x -> null outPatterns
+                         || all (\p -> not $ x =~ p :: Bool) outPatterns
+                , \x -> not (isHiddenFilePath x) || includeHidden
                 ]
         inExts = inArchiveExtensions settings
         hasInExt f | null inExts = True
@@ -101,24 +98,22 @@ isArchiveSearchFile settings fp = and $ map ($fp) tests
 filterFile :: SearchSettings -> SearchFile -> Bool
 filterFile settings sf | isArchiveFile sf = includeArchiveFile sf
                        | otherwise        = includeFile sf
-  where includeArchiveFile f = (searchArchives settings) &&
+  where includeArchiveFile f = searchArchives settings &&
                                isArchiveSearchFile settings (searchFilePath f)
-        includeFile f = (not (archivesOnly settings)) &&
+        includeFile f = not (archivesOnly settings) &&
                         isSearchFile settings (searchFilePath f)
 
 getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
 getSearchFiles settings dirs = do
   isStartPathDir <- isDirectory $ startPath settings
-  files <- do if isStartPathDir
-                then do
-                  fs <- concat `liftM` mapM getDirectoryFiles dirs
-                  return fs
-                else return [startPath settings]
+  files <- if isStartPathDir
+             then concat `liftM` mapM getDirectoryFiles dirs
+             else return [startPath settings]
   fileTypes <- getFileTypes files
   let makeSearchFile (f,t) = SearchFile { searchFileContainers=[]
                                         , searchFilePath=f
                                         , searchFileType=t }
-  let filesWithTypes = map makeSearchFile (zip files fileTypes)
+  let filesWithTypes = zipWith (curry makeSearchFile) files fileTypes
   let searchableFiles = filter isSearchableFile filesWithTypes
   return $ map searchFilePath (filter (filterFile settings) searchableFiles)
 
@@ -132,12 +127,10 @@ searchBinaryFile settings f = do
 
 searchBlob :: SearchSettings -> B.ByteString -> [SearchResult]
 searchBlob settings blob =
-  concat $ map (searchBlobForPattern blob) (searchPatterns settings)
+  concatMap (searchBlobForPattern blob) (searchPatterns settings)
 
 searchBlobForPattern :: B.ByteString -> String -> [SearchResult]
-searchBlobForPattern blob pattern = if hasMatch
-                                      then [blobResult pattern]
-                                      else []
+searchBlobForPattern blob pattern = [blobResult pattern | hasMatch]
   where hasMatch = blob =~ pattern :: Bool
         blobResult p = blankSearchResult { searchPattern=p
                                          , lineNum=0
@@ -147,8 +140,8 @@ searchBlobForPattern blob pattern = if hasMatch
                                          }
 
 searchTextFile :: SearchSettings -> FilePath -> IO [SearchResult]
-searchTextFile settings f = do
-  if (multiLineSearch settings)
+searchTextFile settings f =
+  if multiLineSearch settings
     then searchTextFileContents settings f
     else searchTextFileLines settings f
 
@@ -166,14 +159,14 @@ linesMatch ls lsInPatterns lsOutPatterns = inPatternMatches && not outPatternMat
         outPatternMatches = not (null lsOutPatterns) && anyMatchesAnyPattern ls lsOutPatterns
 
 anyMatchesAnyPattern :: [B.ByteString] -> [String] -> Bool
-anyMatchesAnyPattern ls ps = or (map (anyMatchesPattern ls) ps) 
+anyMatchesAnyPattern ls = any (anyMatchesPattern ls)
 
 anyMatchesPattern :: [B.ByteString] -> String -> Bool
 anyMatchesPattern ls p = any matchesPattern ls
   where matchesPattern l = l =~ p :: Bool
 
 matchesAnyPattern :: B.ByteString -> [String] -> Bool
-matchesAnyPattern l ps = any matchesPattern ps
+matchesAnyPattern l = any matchesPattern
   where matchesPattern p = l =~ p :: Bool
 
 searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
@@ -186,24 +179,24 @@ searchTextFileContents settings f = do
 
 searchContents :: SearchSettings -> B.ByteString -> [SearchResult]
 searchContents settings contents =
-  concat $ map (searchContentsForPattern settings contents) (searchPatterns settings)
+  concatMap (searchContentsForPattern settings contents) (searchPatterns settings)
 
 searchContentsForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
-searchContentsForPattern settings contents pattern = patternResults pattern
+searchContentsForPattern settings contents = patternResults
   where patternResults p = catMaybes (maybePatternResults p)
         maybePatternResults p = map (maybeResultFromPatternMatchIndices p) (firstOrAllIndices p)
         firstOrAllIndices p = if firstMatch settings
                               then take 1 (matchIndices contents p)
                               else matchIndices contents p
         newlineIndices =  BC.findIndices (=='\n') contents
-        startLineIndices = [0] ++ map (+1) newlineIndices
+        startLineIndices = 0 : map (+1) newlineIndices
         startLineIndex idx = case takeWhile (<=idx) startLineIndices of
                              [] -> 0
                              x  -> last x
         endLineIndex idx   = case dropWhile (<=idx) startLineIndices of
                              [] -> BC.length contents - 1
                              x  -> head x - 1
-        lineLength i = (endLineIndex i) - (startLineIndex i)
+        lineLength i = endLineIndex i - startLineIndex i
         lineAtIndex i = B.take (lineLength i) $ B.drop (startLineIndex i) contents
         countNewlines s = BC.length $ BC.filter (=='\n') s
         linesBeforeNum = linesBefore settings
@@ -217,17 +210,17 @@ searchContentsForPattern settings contents pattern = patternResults pattern
         getLinesAfter i n = map lineAtIndex (linesAfterIndices i n)
         afterLns i | linesAfterNum == 0 = []
                    | otherwise = getLinesAfter (startLineIndex i) linesAfterNum
-        checkBefore = (linesBefore settings) > 0
+        checkBefore = linesBefore settings > 0
         beforeLinesMatch bs =
           not checkBefore
           || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
-        checkAfter = (linesAfter settings) > 0
+        checkAfter = linesAfter settings > 0
         afterLinesMatch as =
           not checkAfter
           || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
         maybeResultFromPatternMatchIndices :: String -> (Int, Int) -> Maybe SearchResult
         maybeResultFromPatternMatchIndices p ix =
-          if (beforeLinesMatch bs) && (afterLinesMatch as)
+          if beforeLinesMatch bs && afterLinesMatch as
           then
             Just blankSearchResult { searchPattern=p
                                    , lineNum=lineCount
@@ -238,10 +231,10 @@ searchContentsForPattern settings contents pattern = patternResults pattern
                                    , afterLines=as
                                    }
           else Nothing
-          where lineCount = (countNewlines (B.take (fst ix) contents)) + 1
+          where lineCount = countNewlines (B.take (fst ix) contents) + 1
                 sli = startLineIndex (fst ix)
-                msi = (fst ix) - sli + 1
-                mei = (snd ix) - sli + 1
+                msi = fst ix - sli + 1
+                mei = snd ix - sli + 1
                 bs = beforeLns (fst ix)
                 as = afterLns (fst ix)
 
@@ -268,8 +261,8 @@ recSearchLines settings beforeList lst num results =
         afterNum = linesAfter settings
         afterToPatterns = linesAfterToPatterns settings
         afterUntilPatterns = linesAfterUntilPatterns settings
-        checkAfterTo = length afterToPatterns > 0
-        checkAfterUntil = length afterUntilPatterns > 0
+        checkAfterTo = not (null afterToPatterns)
+        checkAfterUntil = not (null afterUntilPatterns)
         notMatchesAnyPattern ps l = not $ matchesAnyPattern l ps
         afterToCount =
           if checkAfterTo
@@ -279,13 +272,12 @@ recSearchLines settings beforeList lst num results =
           if checkAfterUntil
           then length (takeWhile (notMatchesAnyPattern afterUntilPatterns) (tail lst))
           else 0
-        afterList = if checkAfterTo
-                    then take afterToCount (tail lst)
-                    else if checkAfterUntil
-                         then take afterUntilCount (tail lst)
-                         else take afterNum (tail lst)
-        updatedResults l = results ++ (newResults l)
-        newResults l = concat $ map (searchNextPattern l) filteredPatterns
+        afterList
+          | checkAfterTo = take afterToCount (tail lst)
+          | checkAfterUntil = take afterUntilCount (tail lst)
+          | otherwise = take afterNum (tail lst)
+        updatedResults l = results ++ newResults l
+        newResults l = concatMap (searchNextPattern l) filteredPatterns
         searchNextPattern l = searchLineForPattern settings (num + 1) beforeList l afterList
         filteredPatterns = if firstMatch settings
                            then filter firstMatchNotMet patterns
@@ -294,12 +286,12 @@ recSearchLines settings beforeList lst num results =
         patterns = searchPatterns settings
 
 searchLineForPattern :: SearchSettings -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
-searchLineForPattern settings num bs l as pattern = patternResults pattern
-  where checkBefore = (linesBefore settings) > 0
+searchLineForPattern settings num bs l as = patternResults
+  where checkBefore = linesBefore settings > 0
         beforeLinesMatch =
           not checkBefore
           || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
-        checkAfter = (linesAfter settings) > 0
+        checkAfter = linesAfter settings > 0
         afterLinesMatch =
           not checkAfter
           || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
@@ -313,15 +305,15 @@ searchLineForPattern settings num bs l as pattern = patternResults pattern
         resultFromPatternMatchIndices p ix =
           blankSearchResult { searchPattern=p
                             , lineNum=num
-                            , matchStartIndex=(fst ix) + 1
-                            , matchEndIndex=(snd ix) + 1
+                            , matchStartIndex=fst ix + 1
+                            , matchEndIndex=snd ix + 1
                             , line=l
                             , beforeLines=bs
                             , afterLines=as
                             }
 
 doSearchFile :: SearchSettings -> (FilePath,FileType) -> IO [SearchResult]
-doSearchFile settings ft = do
+doSearchFile settings ft =
   case snd ft of
     Text -> searchTextFile settings $ fst ft
     Binary -> searchBinaryFile settings $ fst ft
@@ -337,5 +329,4 @@ doSearch :: SearchSettings -> IO [SearchResult]
 doSearch settings = do
   searchDirs <- getSearchDirs settings
   searchFiles <- getSearchFiles settings searchDirs
-  results <- doSearchFiles settings searchFiles
-  return results
+  doSearchFiles settings searchFiles

@@ -33,7 +33,7 @@ getDefaultSearchSettingsTests = do
          ]
 
 getNewExtensionsTests :: IO [Test]
-getNewExtensionsTests = do
+getNewExtensionsTests =
   return [ testCase "hs" (newExtensions "hs" @?= [".hs"])
          , testCase "hs,py" (newExtensions "hs,py" @?= [".hs", ".py"])
          ]

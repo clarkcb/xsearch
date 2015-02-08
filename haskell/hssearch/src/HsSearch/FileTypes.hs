@@ -65,11 +65,11 @@ fileTypeFromXmlFileTypes xmlFileTypes f =
 
 matchingTypeForExtension :: [XmlFileType] -> String -> FileType
 matchingTypeForExtension xmlFileTypes x =
-  case filter (\f -> x `elem` (extensions f)) xmlFileTypes of
+  case filter (\f -> x `elem` extensions f) xmlFileTypes of
     [] -> Unknown
     fts -> case fileTypeName fts of
            "archive" -> Archive
            "binary" -> Binary
            tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
-  where fileTypeName = (name . head)
+  where fileTypeName = name . head

@@ -19,7 +19,7 @@ module HsSearch.FileUtil
     , normalizeExtension
     ) where
 
-import Control.Exception (IOException, bracket, handle)
+import Control.Exception (IOException, handle)
 import Control.Monad (filterM, forM)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
@@ -27,26 +27,26 @@ import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
 import System.Directory (doesDirectoryExist, doesFileExist, getDirectoryContents)
 import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
-import System.IO (hClose, hSetNewlineMode, IOMode(..), universalNewlineMode, openFile)
+import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 
 -- preferring this over System.FilePath (takeExtension)
 getExtension :: FilePath -> Maybe String
 getExtension "" = Nothing
 getExtension fp = case maxDotIndex (takeFileName fp) of
                   0 -> Nothing
-                  i | i == (lastIndex (takeFileName fp)) -> Nothing
+                  i | i == lastIndex (takeFileName fp) -> Nothing
                   _ -> Just $ trimToExt (takeFileName fp)
-  where maxDotIndex name = case (elemIndices '.' name) of
+  where maxDotIndex name = case elemIndices '.' name of
                            [] -> 0
                            idxs -> maximum idxs
-        lastIndex name = (length name) - 1
+        lastIndex name = length name - 1
         trimToExt name = drop (maxDotIndex name) name
 
 normalizeExtension :: String -> String
 normalizeExtension x = case x of
                        ('.':_) -> lower x
-                       _ -> ['.'] ++ lower x
-  where lower s = map toLower s
+                       _ -> '.' : lower x
+  where lower = map toLower
 
 getParentPath :: FilePath -> FilePath
 getParentPath = dropFileName
@@ -68,8 +68,7 @@ isHiddenFilePath f = any isHidden pathElems
 getDirectoryFiles :: FilePath -> IO [FilePath]
 getDirectoryFiles dir = do
   names <- getNonDotDirectoryContents dir
-  files <- filterFiles names
-  return files
+  filterFiles names
 
 getNonDotDirectoryContents :: FilePath -> IO [FilePath]
 getNonDotDirectoryContents dir = do
@@ -94,7 +93,7 @@ getRecursiveContents dir = do
     if isDir
       then do
         subNames <- getRecursiveContents path
-        return $ [path] ++ subNames
+        return $ path : subNames
     else return [path]
   return (concat paths)
 
@@ -106,13 +105,13 @@ getRecursiveDirectories dir = do
     if isDir
       then do
         subNames <- getRecursiveDirectories path
-        return $ [path] ++ subNames
+        return $ path : subNames
     else return []
   return (concat paths)
 
 getFileByteString :: FilePath -> IO (Either String B.ByteString)
 getFileByteString f = handle (\(e :: IOException) -> return (Left (show e))) $
-  bracket (openFile f ReadMode) hClose $ \h -> do
+  withFile f ReadMode $ \h -> do
     hSetNewlineMode h universalNewlineMode
     contents <- B.hGetContents h
     return (Right contents)

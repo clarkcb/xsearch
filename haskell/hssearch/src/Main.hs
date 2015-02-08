@@ -15,42 +15,38 @@ import HsSearch.SearchSettings
 
 
 validateSettings :: SearchSettings -> [String]
-validateSettings settings = concat $ map ($settings) validators
-  where validators = [ (\s -> if startPath s == ""
-                              then ["Startpath not defined"]
-                              else [])
-                     , (\s -> if length (searchPatterns s) == 0
-                              then ["No search patterns defined"]
-                              else [])
+validateSettings settings = concatMap ($settings) validators
+  where validators = [ \s -> ["Startpath not defined" | startPath s == ""]
+                     , \s -> ["No search patterns defined" | null (searchPatterns s)]
                      ]
 
 errsOrUsage :: [SearchOption] -> SearchSettings -> Maybe String
-errsOrUsage searchOptions settings = do
+errsOrUsage searchOptions settings =
   case usage of
     "" -> Nothing
     _  -> Just usage
   where errs   = validateSettings settings
-        errMsg = if length errs > 0
+        errMsg = if not (null errs)
                  then "\nERROR:\n" ++ unlines errs ++ "\n"
                  else ""
-        usage  = if length errMsg > 0 || printUsage settings
+        usage  = if not (null errMsg) || printUsage settings
                  then errMsg ++ getUsage searchOptions
                  else ""
         
 formatResults :: SearchSettings -> [SearchResult] -> String
 formatResults settings results =
   "\nSearch results (" ++ show (length results) ++ "):" ++
-    (if length results > 0
+    (if not (null results)
        then "\n" ++ unlines (map (formatSearchResult settings) results)
        else "")
   where matchString p = "\nMatches for "++ show p ++ ": " ++
           show (patternCount p) ++ "\n"
         patternCount :: String -> Int
         patternCount p = foldr accMatches 0 results
-          where accMatches x acc = if p == (searchPattern x) then acc + 1 else acc
+          where accMatches x acc = if p == searchPattern x then acc + 1 else acc
 
 getMatchingDirs :: [SearchResult] -> [FilePath]
-getMatchingDirs results = (sort . nub . map getDirectory) results
+getMatchingDirs = sort . nub . map getDirectory
   where getDirectory r = takeDirectory (filePath r)
 
 formatMatchingDirs :: [SearchResult] -> String
@@ -60,7 +56,7 @@ formatMatchingDirs results =
   where matchingDirs = getMatchingDirs results
 
 getMatchingFiles :: [SearchResult] -> [FilePath]
-getMatchingFiles results = (sort . nub . map filePath) results
+getMatchingFiles = sort . nub . map filePath
 
 formatMatchingFiles :: [SearchResult] -> String
 formatMatchingFiles results = 
@@ -93,7 +89,7 @@ formatSearchFiles files =
   unlines files
 
 logMsg :: String -> IO ()
-logMsg message = putStr message
+logMsg = putStr
 
 main :: IO ()
 main = do

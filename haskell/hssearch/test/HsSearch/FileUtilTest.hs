@@ -7,7 +7,7 @@ import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
 getFileUtilTests :: IO [Test]
-getFileUtilTests = do
+getFileUtilTests =
   return [ testCase "getExtension file.txt" (getExtension "file.txt" @?= Just ".txt")
          , testCase "getExtension file." (getExtension "file." @?= Nothing)
          , testCase "getExtension file" (getExtension "file" @?= Nothing)

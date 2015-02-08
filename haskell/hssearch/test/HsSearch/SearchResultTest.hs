@@ -12,6 +12,11 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
+testFilePath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+testFileLineNum = 10
+testFileMatchStartIndex = 15
+testFileMatchEndIndex = 23
+testFileLine = BC.pack "\tpublic class Searcher\n"
 
 getBinaryFileSearchResultTests :: IO [Test]
 getBinaryFileSearchResultTests = do
@@ -26,51 +31,43 @@ getBinaryFileSearchResultTests = do
   let expectedFormat = binaryFilePath ++ " matches"
   return [testCase "binaryFileSearchResult" (formattedResult @?= expectedFormat)]
 
-
 getSingleLineSearchResultTests :: IO [Test]
 getSingleLineSearchResultTests = do
-  let fp = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-  let ln = 10
-  let msi = 15
-  let mei = 23
-  let l = BC.pack "\tpublic class Searcher\n"
-  let singleLineSearchResult = blankSearchResult { filePath=fp
-                                                 , lineNum=ln
-                                                 , matchStartIndex=msi
-                                                 , matchEndIndex=mei
-                                                 , line=l
+  let singleLineSearchResult = blankSearchResult { filePath=testFilePath
+                                                 , lineNum=testFileLineNum
+                                                 , matchStartIndex=testFileMatchStartIndex
+                                                 , matchEndIndex=testFileMatchEndIndex
+                                                 , line=testFileLine
                                                  }
   let settings = defaultSearchSettings
   let formattedResult = formatSearchResult settings singleLineSearchResult
-  let expectedFormat = fp ++ ": " ++ show ln ++ ": [" ++ show msi ++ ":" ++
-                       show mei ++ "]: " ++ trimLeadingWhitespace (BC.unpack l)
+  let expectedFormat = testFilePath ++ ": " ++ show testFileLineNum ++ ": [" ++
+                       show testFileMatchStartIndex ++ ":" ++
+                       show testFileMatchEndIndex ++ "]: " ++
+                       trimLeadingWhitespace (BC.unpack testFileLine)
   return [testCase "singleLineSearchResult" (formattedResult @?= expectedFormat)]
-
 
 getMultiLineSearchResultTests :: IO [Test]
 getMultiLineSearchResultTests = do
-  let fp = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-  let ln = 10
-  let msi = 15
-  let mei = 23
-  let l = BC.pack "\tpublic class Searcher\n"
   let lb = [ BC.pack "namespace CsSearch\n"
            , BC.pack "{\n" ]
   let la = [ BC.pack "\t{\n"
            , BC.pack "\t\tprivate readonly FileTypes _fileTypes;\n" ]
-  let multiLineSearchResult = blankSearchResult { filePath=fp
-                                                , lineNum=ln
-                                                , matchStartIndex=msi
-                                                , matchEndIndex=mei
-                                                , line=l
+  let multiLineSearchResult = blankSearchResult { filePath=testFilePath
+                                                , lineNum=testFileLineNum
+                                                , matchStartIndex=testFileMatchStartIndex
+                                                , matchEndIndex=testFileMatchEndIndex
+                                                , line=testFileLine
                                                 , beforeLines=lb
                                                 , afterLines=la
                                                 }
   let settings = defaultSearchSettings { linesBefore=2, linesAfter=2 }
   let formattedResult = formatSearchResult settings multiLineSearchResult
-  let expectedFormat = ((take 80 . repeat) '=') ++ "\n" ++ fp ++ ": " ++
-                       show ln ++ ": [" ++ show msi ++ ":" ++ show mei ++
-                       "]:\n" ++ ((take 80 . repeat) '-') ++ "\n" ++
+  let expectedFormat = replicate 80 '=' ++ "\n" ++ testFilePath ++ ": " ++
+                       show testFileLineNum ++ ": [" ++
+                       show testFileMatchStartIndex ++ ":" ++
+                       show testFileMatchEndIndex ++ "]:\n" ++
+                       replicate 80 '-' ++ "\n" ++
                        "   8 | namespace CsSearch\n" ++ 
                        "   9 | {\n" ++ 
                        "> 10 | \tpublic class Searcher\n" ++ 

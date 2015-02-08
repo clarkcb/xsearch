@@ -35,7 +35,7 @@ blankSearchResult = SearchResult {
                                  }
 
 formatSearchResult :: SearchSettings -> SearchResult -> String
-formatSearchResult settings result = if (lineNum result) == 0
+formatSearchResult settings result = if lineNum result == 0
                                      then formatBinaryResult
                                      else formatTextResult
   where formatBinaryResult = filePath result ++ " matches"
@@ -54,27 +54,27 @@ formatSingleLine result =
 
 formatMultiLine :: SearchResult -> String
 formatMultiLine result =
-  ((take 80 . repeat) '=') ++ "\n" ++
+  replicate 80 '=' ++ "\n" ++
   filePath result ++ ": " ++
   show (lineNum result) ++ ": [" ++
   show (matchStartIndex result) ++ ":" ++
   show (matchEndIndex result) ++ "]:\n" ++
-  ((take 80 . repeat) '-') ++ "\n" ++
-  unlines (map formatLine (zip beforeLineNums resultBeforeLines)) ++
+  replicate 80 '-' ++ "\n" ++
+  unlines (zipWith (curry formatLine) beforeLineNums resultBeforeLines) ++
   "> " ++ padNumString (show resultLineNum) ++ " | " ++
   (rstrip . BC.unpack) (line result) ++ "\n" ++
-  unlines (map formatLine (zip afterLineNums resultAfterLines))
+  unlines (zipWith (curry formatLine) afterLineNums resultAfterLines)
   where resultLineNum = lineNum result
-        resultBeforeLines = (map (rstrip . BC.unpack) (beforeLines result))
-        resultAfterLines = (map (rstrip . BC.unpack) (afterLines result))
+        resultBeforeLines = map (rstrip . BC.unpack) (beforeLines result)
+        resultAfterLines = map (rstrip . BC.unpack) (afterLines result)
         maxNumWidth = numWidth (resultLineNum + length resultAfterLines)
         numWidth :: Int -> Int
-        numWidth n = recNumWidth 1 10 n
+        numWidth = recNumWidth 1 10
         recNumWidth w m n | n < m = w
                           | otherwise = recNumWidth (w + 1) (m * 10) n
         padNumString ns | length ns < maxNumWidth = padNumString (' ':ns)
                         | otherwise = ns
-        firstLineNum = resultLineNum - (length resultBeforeLines)
+        firstLineNum = resultLineNum - length resultBeforeLines
         beforeLineNums = [firstLineNum..(resultLineNum-1)]
         afterLineNums = [(resultLineNum+1)..(length resultAfterLines + resultLineNum)]
         formatLine (n,l) = "  " ++ padNumString (show n) ++ " | " ++ l
