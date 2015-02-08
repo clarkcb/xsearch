@@ -154,10 +154,8 @@ language. I have three rough functionality groups:
 
 Here's the breakdown of languages for each group.
 
-* __Group I__: all languages except C++ and F#
-* __Group II__: all languages except C++ and F#
-* __Group II.b__: Go, Python, Scala
-* __Group III__: Go, Python, Scala
+* __Groups I and II__: all languages except C++ and F#
+* __Groups II.b and III__: Go, Python, Scala
 
 
 Code Structure / Functionality
@@ -277,8 +275,8 @@ versions to facilitate running that version. I will probably add more of these
 for consistency.
 
 For each language version that you want to compile/run, you will need to install
-the compilers/interpreters for those languages, unless that system already has
-them installed (e.g. php, python and ruby on Linux / OSX).
+the compilers/interpreters for those languages, unless the system already has
+them installed (e.g. Perl, PHP, Python and Ruby on Linux / OSX).
 
 I have a script under the _xsearch/shared_ directory called _build.sh_ that can
 be used to compile any or all of the compiled language versions. For example,
@@ -298,16 +296,16 @@ parameters.
 Below is some additional info for some of the languages.
 
 
-### C# / F# ###
+#### C# / F# ####
 
 For writing the C# and F# code I use MS Visual Studio on a Windows 7 VM. To
 compile/run/test them I use the [Mono](http://www.mono-project.com/)
 environment installed on my OSX system. If you take a look at the
 _shared/build.sh_ script you will see this command to compile the C# version:
 
-    xbuild /p:Configuration=Debug $CSHARP_PATH/CsSearch/CsSearch.sln
+    xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
 
-You can change <code>Configuration</code> to <code>Release</code> if you want to
+You can change <code>CONFIGURATION</code> to <code>Release</code> if you want to
 create a release build.
 
 To run the <code>cssearch</code> version, I created a soft link to a bash script
@@ -319,7 +317,7 @@ under _CsSearch_:
 This information is similarly applicable for the F# version.
 
 
-### Clojure ###
+#### Clojure ####
 
 You can download Clojure from http://clojure.org/, but you won't need to.
 Instead, retrieve the Leiningen build tool script from http://leiningen.org/
@@ -333,14 +331,14 @@ install</code> to install to the local _.m2_ repository. To build a jar with
 dependencies included, use the command <code>lein uberjar</code>.
 
 
-### Go ###
+#### Go ####
 
-You can download Go from this page: http://golang.org/. After you have installed
-it you will have the <code>go</code> command available; run it by itself to get
+You can download Go from http://golang.org/. After you have installed it you
+will have the <code>go</code> command available; run it by itself to get
 basic usage instructions.
 
-If you look in the _build.sh_ script in the <code>build_go()</code> function you
-will see this command to build <code>gosearch</code>:
+If you look in the _build.sh_ script in the <code>build_go()</code> function
+you will see this command to build <code>gosearch</code>:
 
     go install elocale.com/clarkcb/xsearch/gosearch
 
@@ -362,10 +360,10 @@ I then create a soft link to it in my _~/bin_ directory:
 Alternatively, you could add <code>$GOPATH/bin</code> to <code>PATH</code>.
 
 
-### Haskell ###
+#### Haskell ####
 
-You can download Haskell from this page: https://www.haskell.org/. After you
-have run the installer you will have access to these commands:
+You can download Haskell from http://www.haskell.org/. After you have run the
+installer you will have access to these commands:
 
 * <code>ghc</code> - the compiler
 * <code>ghci</code> - the REPL
@@ -399,7 +397,7 @@ executable under _dist/build/HsSearch/hssearch_, to which I then created a soft
 link under _~/bin_.
 
 
-### Java / Scala ###
+#### Java / Scala ####
 
 I use Maven to build and manage dependencies for the Java and Scala versions.
 You will find _pom.xml_ files at the roots of those source trees.
@@ -415,25 +413,65 @@ which I then created soft links under _~/bin_. You will need to edit those
 scripts to change the path to the jar if xsearch is not cloned under
 _~/src/git/xsearch_.
 
+I do plan to switch the Scala version over to SBT but that hasn't happened yet.
 
-### PHP / Python / Ruby ###
 
-Since PHP, Python and ruby are interpreted languages, and since their interpreters
-are automatically installed on most Unix-style systems (e.g. Linux and OSX),
-there's not much you will need to do to run these (on Windows you will need to
-download and install them from http://php.net/, http://www.python.org and
-https://www.ruby-lang.org/).
+#### Perl / PHP / Python / Ruby ####
 
-Unless I'm forgetting a dependency that had to be installed, it should just be
-a matter of running the scripts _phpsearch.php_,  _pysearch.py_ and
-_rbsearch.rb_. I created soft links to each of these in my _~/bin_ to run them
-from anywhere.
+Since Perl, PHP, Python and Ruby are interpreted languages, and since their
+interpreters are installed by default on most Unix-style systems (e.g. Linux
+and OSX), there's not much you will need to do to run these (on Windows you
+will need to download and install them from http://perl.org/, http://php.net/,
+http://www.python.org and http://www.ruby-lang.org/).
+
+I don't recall having to install any dependencies, it should just be a matter
+of running the scripts _plsearch.pl_, _phpsearch.php_,  _pysearch.py_ and
+_rbsearch.rb_. I created soft links to each of these in _~/bin_.
 
 I'm starting to work on creating installable packages of these versions, but I
 still have work to do on that.
 
 Also note: the python code is in 2.x style, I have not converted it to 3.x yet
 but I plan to.
+
+
+Style Checking and Testing
+--------------------------
+
+I have enabled lint-like style checking for some of the languages, as well as
+several types of testing: "basic" (a script that runs each version for output
+comparison), unit testing and basic benchmarking.
+
+
+#### Style Checking ####
+
+I created a script under _shared_ called _lint.sh_ that can be used to perform
+lint-like style checking of some of the language versions. It can be run with a
+language argument to run the linter for that language, or without a language to
+run it for all languages. For languages that don't currently have style checking
+the script will output a message to that effect.
+
+
+#### Testing ####
+
+There is a basic test script under _shared_ called _test.sh_ that runs each
+language version with the same arguments to compare the output. For unit
+testing, there is the _unittest.sh_ script. Each script can be run with a
+language argument to run the tests just for that language, or it can be run
+without the argument to run the tests for all language versions.
+
+There is also a basic benchmarking test script, written in python, called
+_benchmark.py_. In the configuration section of the script you specify the
+language versions you want to run and "scenarios" you want to test, which is 
+a list of argument list that will be passed to each specified language version
+to run a specified number of times (defined in the <code>runs</code> variable).
+The execution of each individual run is timed using the Unix <code>time</code>
+command, and those times are totalled up and printed out in a table at the end
+of the runs, with rankings for each version.
+
+As a brief aside, there were some interesting and somewhat surprising results
+from the runs that I did. I don't want to expand on this yet, because I know
+I should do some optimization work on some of the language versions first.
 
 
 History / Motivation
@@ -443,18 +481,18 @@ This project started as a python implementation of a basic command line-based
 recursive file search utility that I wrote for programming practice but also
 because I needed a file search utility that did something slightly different
 from what I was able to get with other tools or combinations of tools.
-Specifically, I needed something that would show me multiline search results
+Specifically, I needed something that would show me multi-line search results
 if a line matched a regular expression, but only if another regex was or wasn't
 a match in a certain number of lines before or after the matching line.
 
-A number of years after I wrote the initial Python version, I got the idea that
-I could rewrite the tool in other languages that I wanted to learn or practice.
-At the time I had worked as a java developer and was working as a C# developer,
-but was also getting interested in other languages/platforms, such as Clojure,
-node.js, F#. I wrote basic versions of the tool in those, and then also decided
-to try writing versions in Java and Ruby. At this point I have also done versions
-in Go, Haskell and PHP, and have been working to bring everything up to more or
-less the same level of functionality.
+A number of years after I wrote the initial Python version, I got the idea to
+rewrite the tool in other languages that I wanted to learn or practice. At the
+time I had worked as a Java developer and was working as a C# developer, but
+was also getting interested in other languages/platforms, such as Clojure,
+Node.js, and F#. I wrote basic versions of the tool in those, and then also
+decided to try writing versions in Java and Ruby. At this point I have also
+written versions in Go, Haskell, PHP and Perl, and have been working to bring
+everything up to more or less the same level of functionality.
 
 
 Thoughts So Far
@@ -480,24 +518,23 @@ rewarding, for a number of reasons:
 So how do the different language versions compare? Here's my biased list of
 current favorites:
 
-* __hssearch__ - I'm pleasantly surprised by the succintness of the Haskell code
-  even after the first version, and the readability is better than I thought
-  it would be. Also, this version is the fastest. Perhaps that isn't too
-  surprising, since haskell and go are the two natively compiled languages, but
-  I'm a little surprised how fast it is, and especially that is is faster than
-  the go version, even without me having done any performance optimizations
-  (concurrency, etc.).
+* __hssearch__ - I really like the succintness of the Haskell code, and the
+  readability is better than I thought it would be. Also, this version is the
+  fastest. Perhaps that isn't too surprising, since Haskell and Go are the two
+  natively compiled languages, but I'm a little surprised by how fast it is,
+  and especially that is is quite a bit faster than the Go version, even
+  without me having done any performance optimizations (concurrency, etc.).
 
 * __gosearch__ - This is the second fastest version. Frankly, I expected it to
   be the fastest, given the fact that it is natively compiled and also the fact
-  that I added concurrency. In fact, it's the only language version that I added
-  concurrency to, mainly because channels make it easy. Also, the available
-  standard library packages made it fairly easy to implement some of the more
-  advanced features, like archive file searching.
+  that I added concurrency. In fact, it's the only language version that I have
+  added concurrency to (so far), mainly because channels make it easy. Also,
+  the available standard library packages made it fairly easy to implement some
+  of the more advanced features, like archive file searching.
 
 * __scalasearch__ - I first wrote this version when I wanted to learn Scala and
-  was looking at possibly having a Scala development opportunity. I did end up
-  working in it professionally for several years, and in that time my functional
+  was looking at a possible Scala development opportunity. I did end up working
+  in it professionally for several years, and in that time my functional
   language skills improved a fair amount, and it's been interesting for me to
   see how this version has evolved.
 
@@ -515,46 +552,47 @@ for so far:
   has also evolved beyond Java in a number of ways that I appreciate:
   the incorporation of extension methods, lambdas (which java 8 adds) and LINQ.
   I think the .NET libraries are a little stronger than the Java standard ones
-  too. Although it is an imperative/OO language, it does have some nice
-  functional features with lambdas and LINQ.
+  too, at least in some cases. Although it is an imperative/OO language, it
+  does have some nice functional features with lambdas and LINQ.
 
 * [Clojure](http://clojure.org/) -
   Clojure was my first exposure to a language in the Lisp family. It was also my
   first exposure to coding in a predominantly functional language. I found that
   developing in it was very slow for me, especially at first, but I also enjoyed
-  it because it really forced me to think about solving problems very differently
-  than I was used to, and the end solutions felt succinct and elegant. Although
-  I wouldn't call Clojure my new favorite language, I definitely like it and
-  will most likely do more with it.
+  it because it really forced me to think about solving problems very
+  differently than I was used to, and the end solutions felt succinct and
+  elegant. Although I wouldn't go so far as to call Clojure my favorite
+  language, I definitely like it quite a bit and will most likely do more with
+  it.
 
 * [F#](http://fsharp.org/) -
   I haven't done any real work on the F# version in several years, but I
   recall really liking the language. It feels sort of like a cross between
-  python and C# with lots of LINQ. In comparison with scala, I think F# is
+  Python and C# with lots of LINQ. In comparison with Scala, I think F# is
   cleaner syntactically, although object-oriented code seems to be a little
-  clunkier in it. My personal feeling is that F# *should* be the successor to C#
-  on the CLI, but I have my doubts that that will happen. I believe that the
-  larger programming community will eventually swing away from imperative and
+  clunkier in it. My personal feeling is that F# *should* be the successor to
+  C# on the CLI, but I'm not sure that will happen. I believe that the larger
+  programming community will eventually swing away from imperative and
   towards functional, but my impression is that F# doesn't have the same
-  momentum in the CLI world as scala does in the JVM world. Hopefully I'm wrong.
+  momentum in the CLI world as Scala does in the JVM world. Time wil tell.
 
 * [Go](https://golang.org/) -
-  I was really surprised how fast I could write Go code, I reached
-  near Python speeds, which I think is in part due to the tools and conventions
-  (e.g. standard directory structure) but also the straightforwardness of the
+  I was really surprised how fast I could write Go code, I reached near Python
+  speeds, which I think is in part due to the tools and conventions (e.g.
+  standard directory structure) but also the straightforwardness of the
   language; think C/C++ but cleaner and easier to understand. I like the way OO
   is done in Go, it seems like an elegant solution. I also really like channels,
-  they are a surprisingly simple way to add concurrency. On the minus side, lack
-  of generics is a little disappointing, as is the lack of any functional
+  they are a surprisingly simple way to add concurrency. On the minus side,
+  lack of generics is a little disappointing, as is the lack of any functional
   capabilities.
 
 * [Haskell](https://www.haskell.org/) -
-  Haskell was a mind bender to learn (still is), but I'm becoming more and more
-  a fan of functional programming, and Haskell seems to be the king. I love the
-  succinctness of the language and the way it forces you to approach problems
-  very differently. I'm also impressed with its type system. I still need to
-  tackle the harder category theory-related subjects, but I plan to and will
-  definitely do more coding in Haskell.
+  Haskell was (and still is) a mind bender to learn, but I'm becoming more and
+  more a fan of functional programming, and Haskell seems to be the king. I
+  love the succinctness of the language and the way it forces you to approach
+  problems very differently. I'm also impressed with its type system. I still
+  need to tackle the harder category theory-related subjects, but I plan to and
+  will definitely do more coding in Haskell.
 
 * [Java](http://en.wikipedia.org/wiki/Java_%28programming_language%29) -
   I wrote the Java version after the Scala version, and frankly it was a little
@@ -569,65 +607,72 @@ for so far:
   influence the transition.
 
 * [Node.js](http://nodejs.org/) -
-  A platform for running Javascript "in the wild," I think node.js is pretty neat,
-  and quite a bit faster than I expected it to be, even when not going "fully
-  async" (which I currently am not). Node.js and AJAX have helped me hate
-  Javascript less. Also, npm seems like a good package manager. In theory I also
-  like the idea that a developer can use one language for front-end and back-end
-  development of web apps. Still, Javascript just isn't that compelling of a
-  language in my opinion. I will withhold final judgement until I have rewritten
-  the node version with async/non-blocking calls.
+  A platform for running JavaScript "in the wild," I think Node.js is pretty
+  neat, and quite a bit faster than I expected it to be, even while not going
+  "fully async" (which I currently have not). Node.js and AJAX have helped me
+  hate JavaScript less. Also, npm seems like a good package manager. In theory
+  I also like the idea that a developer can use one language for front-end and
+  back-end development of web apps. Still, JavaScript just isn't that
+  compelling of a language in my opinion. It's very quirky in places (e.g. some
+  strange math behaviors) and it is missing some things that I consider
+  standard (e.g. a method for getting sprintf-like functionality). Sure, you
+  can add what you need through prototyping, but that feels a little like
+  reinventing the wheel. I do want to do more work with async/non-blocking
+  calls, though.
 
 * [PHP](http://php.net/) [1] - I have a fair amount of web dev experience with
   PHP, but had never done any non-web/CLI work in it, and I had also never
   worked with PHP 5 classes. Also, I wanted to see how fast I could put a PHP
   version together. The experience was actually not too painful. PHP is not
-  my favorite language for sure, but the class implementation is fine,
-  and I discovered that PHP has some functional aspects to it, such as first-
-  class functions and some functional-style functions (array_filter, array_map,
-  etc.). I got a basic working version (everything except linesafterto/until
-  and archive file searching) done in a little over a day.
+  my favorite language for sure, and I'm not sure I like how namespaces are
+  implemented in it, but the class implementation is fine, and I discovered
+  that PHP has some functional aspects to it, such as first-class functions and
+  some functional-style functions (array_filter, array_map, etc.). I got a
+  basic working version (everything except linesafterto/until and archive file
+  searching) done in a little over a day.
 
 * [Python](https://www.python.org/) -
   This was my 2nd go-to scripting language (after Perl), and the first language
-  that I wrote this tool in. I'm a fan of Python. Python code is naturally very
-  clean/readable, it has a good standard library, and it's super fast to develop
-  in. That makes it a great language for writing utilities that go beyond shell
-  scripting requirements, and it's also great for prototyping. Python does have
-  some limited but nice functional capabilities too, such as lambdas and
-  for-comprehensions. I find it and Ruby to be very similar, with pluses and
+  that I wrote this tool in. I'm a fan of Python. I find Python code to be
+  naturally very clean/readable, it has a good standard library, and it's super
+  fast to develop in. That makes it a great language for writing utilities that
+  go beyond shell scripting requirements, and it's also great for prototyping.
+  Python does have some limited but nice functional capabilities too, such as
+  lambdas and for-comprehensions. I find it and Ruby to be very similar, with pluses and
   minuses on both sides (more on that below), but suffice it to say that I would
-  probably pick Python over Ruby, mostly because I have more experience in it
-  and prefer some of its syntax, but not because I think it's superior.
+  probably pick Python over Ruby, not because I think it's superior, but
+  because I have more experience in it and prefer some of its syntax.
 
 * [Ruby](https://www.ruby-lang.org/) -
-  I first learned some Ruby when I was taking a look at Ruby On Rails (I suspect
-  I'm not the only one). I was already a regular Python user, so a lot
-  of my reactions to it were comparitive in nature. Mostly what I found is that
-  it is a nice language that is quite similar to Python in a lot of respects,
-  with the obvious superficial syntactic differences and different libraries
-  but also with some relative strengths and weaknesses. On the strengths side,
-  Ruby is a pure OO language, whereas Python is not. I haven't found that to be
-  an issue in Python development, but if I had come from Ruby first I might.
-  Also, Ruby's functional capabilities seem to be slightly more robust than
-  Python's. Its code blocks seem to be more flexible than Python's lambdas, and
-  libraries with higher-order function handling seem to be more prevalent. As
-  far as relative weaknesses, Ruby's Unicode support is weaker than Python's
-  (last I checked), which isn't a big deal for most people but it's an important
+  I first learned some Ruby when I was taking a look at Ruby On Rails. I was
+  already a regular Python user, so a lot of my reactions to it were
+  comparitive in nature. Mostly what I found is that it is a nice language that
+  is quite similar to Python in a lot of respects, with the obvious superficial
+  syntactic differences and different libraries but also with some relative
+  strengths and weaknesses. On the strengths side, Ruby is a pure OO language,
+  whereas Python is not. I haven't found that to be an issue in Python
+  development, but if I had come from Ruby first I might. Also, Ruby's
+  functional capabilities seem to be slightly more robust than Python's. Its
+  code blocks seem to be more flexible than Python's lambdas, and libraries
+  with higher-order function handling seem to be more prevalent. As far as
+  relative weaknesses, Ruby's Unicode support is weaker than Python's (last I
+  checked), which isn't a big deal for most people but it's an important
   consideration for me. In terms of personal preference, I prefer Python's
-  indentation-based nesting over the need to use the "end" token to close nested
-  blocks in Ruby.
+  indentation-based nesting over the need to use the "end" token to close
+  nested blocks in Ruby.
 
 * [Scala](http://www.scala-lang.org/) -
   I had been a Java and C# developer before getting a job in Scala, and although
   there was a learning curve, I found the transition to Scala to be fairly
-  painless overall. I was able to start with a more Java-like style (OO +
+  smooth overall. I was able to start with a more Java-like style (OO +
   imperative), but then I could slowly migrate to a more functional style as I
-  started to understand it better. This is how the language was designed - allow
-  imperative but encourage functional - and in my opinion it makes Scala the
-  natural successor to the JVM throne after Java. The tipping point will be when
-  enough developers have understood the benefits of functional programming that
-  the larger industry starts to push for a shift to those languages.
+  started to understand it and appreciate it more. This is how the language was
+  designed - allow imperative but encourage functional - and in my opinion it
+  makes Scala the natural successor to the JVM throne after Java. The tipping
+  point will be when enough developers have understood the benefits of
+  functional programming that the larger industry starts to push for a shift to
+  those languages.
+
 
 As far as what my ideal language looks like, here's my list of optimal features:
 
@@ -643,8 +688,8 @@ As far as what my ideal language looks like, here's my list of optimal features:
 
 * Generics - Unless I'm in a dynamically-typed language, I find generics (or
   something that achieves the same result) to be a near must-have. I shouldn't
-  have to rewrite the same function each time I want to get the same functionality
-  for different input types.
+  have to rewrite the same function each time I want to get the same
+  functionality for different input types.
 
 * Object-oriented - Give me functional over imperative, but I would still like
   to be able to create classes, etc. Yes, you can get a lot of that with structs
@@ -654,19 +699,18 @@ As far as what my ideal language looks like, here's my list of optimal features:
 * Robust library / framework - This is probably an obvious point, but I
   think it's still worth mentioning.
 
-* Quick to develop in - Any language will be quick to develop in for the developer
-  that has a lot of experience with that language, but I think it says a lot
-  about a language when it is quick to develop in with minimal knowledge and
-  experience.
+* Quick to develop in - Any language will be quick to develop in for the
+  developer that has a lot of experience with that language, but I think it
+  says a lot about a language when it is quick to develop in with minimal
+  knowledge and experience.
 
 * Comfortable - This is just the idea of having a level of familiarity with a
   language that makes the developer feel very comfortable with the language.
   This comes with experience, but depending on the language it can start to feel
   comfortable quickly.
 
-* High-performance - This is not actually an absolute requirement for me, but
-  honestly, who wouldn't prefer higher performance?
-
+* High-performance - High performance isn't always needed, but when it is, that
+  is a point where languages really start to differentiate themselves.
 
 
 Based on these features, the "winners" for me so far are:
@@ -702,7 +746,7 @@ My current TODOs:
 
 * Bring the F# version up to speed with the other versions
 * Rewrite the Python version for Python 3.x
-* Rewrite the node.js version using async/non-blocking calls
+* Rewrite the Node.js version using more async/non-blocking calls
 * Switch from Maven to SBT for Scala
 * Implement a C++ version (?)
 
@@ -712,8 +756,8 @@ Some longer-term and/or tentative TODOs:
 * Implement archive file searching in versions that don't currently have it
 * Add new features (ideas pop up periodically but no list exists currently)
 * Internationalize the versions (???) -- this used to be my job, so even though
-  it seems like overkill in some respects it also feels like something I *should*
-  do.
+  it seems like overkill in some respects it also feels like something I
+  *should* do.
 
 
 Other than that, I don't have specific plans for other language rewrites, but
@@ -746,9 +790,6 @@ Languages that I'm currently considering (listed alphabetically):
   have done, such as Haskell, and other functional/OO hybrid languages that I
   have done, such as Scala.
 
-* [Perl](https://www.perl.org/) [1] - Perl was my first go-to scripting language.
-  I would be curious to see how quickly I could implement a Perl version.
-
 * [Rust](http://www.rust-lang.org/) [2,3] - I don't know much about Rust yet,
   but from the little bit I've seen it looks interesting. It seems to be a
   functional language replacement for C/++, so maybe a little like Go +
@@ -756,8 +797,8 @@ Languages that I'm currently considering (listed alphabetically):
 
 * [Squeak](http://en.wikipedia.org/wiki/Squeak) [3] - I have known some
   developers who worked in Smalltalk professionally, and they were huge fans of
-  it. As the most influential OO language I'm pretty interested to see what it's
-  like too.
+  it. As the OO language that influenced the rest I'm pretty interested to see
+  what it's like too.
 
 * [Swift](https://developer.apple.com/swift/) [2] - Another functional/OO hybrid,
   Apple's replacement for Objective C isn't quite ready for primetime from what
