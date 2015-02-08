@@ -413,11 +413,11 @@ function Searcher(settings) {
 
     var getLessThanOrEqual = function(matchVal) {
         return function(i) { return i <= matchVal; };
-    }
+    };
 
     var getGreaterThan = function(matchVal) {
         return function(i) { return i > matchVal; };
-    }
+    };
 
     self.searchMultiLineString = function (s) {
         var patternResults = {};

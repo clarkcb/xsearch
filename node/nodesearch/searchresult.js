@@ -51,7 +51,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     var trimRight = function(s) {
         var trimmed = s.replace(/[\r\n]+$/, '');
         return trimmed;
-    }
+    };
 
     var multiLineToString = function () {
         var s = Array(81).join("=") + "\n";
