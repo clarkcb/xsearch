@@ -6,10 +6,61 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 
-module Arguments =   
+module SearchOptions =   
 
     type SearchArgOption = { shortarg : string; longarg : string; description : string; action : string -> SearchSettings -> unit; }
     type SearchFlagOption = { shortarg : string; longarg : string; description : string; action : SearchSettings -> bool; }
+
+    let argActionMap  =
+        [
+            ("in-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.AddInArchiveExtension(s)));
+            ("in-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInArchiveFilePattern(s)));
+            ("in-dirpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInDirPattern(s)));
+            ("in-ext", (fun (s : string) (settings : SearchSettings) -> settings.AddInExtension(s)));
+            ("in-filepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInFilePattern(s)));
+            ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInLinesAfterPattern(s)));
+            ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInLinesBeforePattern(s)));
+            ("linesafter", (fun (s : string) (settings : SearchSettings) -> settings.LinesAfter = Int32.Parse(s) |> ignore));
+            ("linesaftertopattern", (fun (s : string) (settings : SearchSettings) -> settings.AddLinesAfterToPattern(s)));
+            ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddLinesAfterUntilPattern(s)));
+            ("linesbefore", (fun (s : string) (settings : SearchSettings) -> settings.LinesBefore = Int32.Parse(s) |> ignore));
+            ("maxlinelength", (fun (s : string) (settings : SearchSettings) -> settings.MaxLineLength = Int32.Parse(s) |> ignore));
+            ("out-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.AddOutArchiveExtension(s)));
+            ("out-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutArchiveFilePattern(s)));
+            ("out-dirpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutDirPattern(s)));
+            ("out-ext", (fun (s : string) (settings : SearchSettings) -> settings.AddOutExtension(s)));
+            ("out-filepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutFilePattern(s)));
+            ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutLinesAfterPattern(s)));
+            ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutLinesBeforePattern(s)));
+            ("search", (fun (s : string) (settings : SearchSettings) -> settings.AddSearchPattern(s)));
+        ] |> Map.ofList
+
+
+    let flagActionMap =
+        [
+            ("allmatches", (fun (settings : SearchSettings) -> settings.FirstMatch = false));
+            ("archivesonly", (fun (settings : SearchSettings) -> settings.SetArchivesOnly()));
+            ("debug", (fun (settings : SearchSettings) -> settings.SetDebug()));
+            ("dotiming", (fun (settings : SearchSettings) -> settings.DoTiming = true));
+            ("excludehidden", (fun (settings : SearchSettings) -> settings.ExcludeHidden = true));
+            ("firstmatch", (fun (settings : SearchSettings) -> settings.FirstMatch = true));
+            ("help", (fun (settings : SearchSettings) -> settings.PrintUsage = true));
+            ("includehidden", (fun (settings : SearchSettings) -> settings.ExcludeHidden = false));
+            ("listdirs", (fun (settings : SearchSettings) -> settings.ListDirs = true));
+            ("listfiles", (fun (settings : SearchSettings) -> settings.ListFiles = true));
+            ("listlines", (fun (settings : SearchSettings) -> settings.ListLines = true));
+            ("multilinesearch", (fun (settings : SearchSettings) -> settings.MultiLineSearch = true));
+            ("noprintmatches", (fun (settings : SearchSettings) -> settings.PrintResults = false));
+            ("norecursive", (fun (settings : SearchSettings) -> settings.Recursive = false));
+            ("nosearcharchives", (fun (settings : SearchSettings) -> settings.SearchArchives = false));
+            ("printmatches", (fun (settings : SearchSettings) -> settings.PrintResults = true));
+            ("recursive", (fun (settings : SearchSettings) -> settings.Recursive = true));
+            ("searcharchives", (fun (settings : SearchSettings) -> settings.SearchArchives = true));
+            ("uniquelines", (fun (settings : SearchSettings) -> settings.UniqueLines = true));
+            ("verbose", (fun (settings : SearchSettings) -> settings.Verbose = true));
+            ("version", (fun (settings : SearchSettings) -> settings.PrintVersion = true));
+        ] |> Map.ofList
+
 
     let argOptions =
         [
@@ -161,7 +212,7 @@ module Arguments =
 
         let usageString = 
             usageStrings
-            |> List.append ["\nUsage:"; " FsSearch.exe [options] <startpath>\n"; "Options:"] 
+            |> List.append ["\nUsage:"; " FsSearch.exe [options] -a <searchpattern> <startpath>\n"; "Options:"] 
             |> String.concat "\n"
         usageString
 
