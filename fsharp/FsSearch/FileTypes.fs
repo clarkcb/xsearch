@@ -60,8 +60,8 @@ type FileTypes() =
     //let _fileTypesDictionary = Utils.PopulateFileTypes(fileTypesFileStream)
 
     //let _fileTypesPath = @"Z:\cary\src\git\xsearch\shared\filetypes.xml"
-    let _fileTypesPath = "/Users/cary/src/git/xsearch/shared/filetypes.xml"
-    let _fileTypesFileInfo = new FileInfo(_fileTypesPath)
+    let _fileTypesPath = "~/src/git/xsearch/shared/filetypes.xml"
+    let _fileTypesFileInfo = new FileInfo(FileUtil.ExpandPath(_fileTypesPath))
     let _fileTypesDictionary = PopulateFileTypesFromFileInfo(_fileTypesFileInfo)
 
     // read-only member properties
@@ -69,9 +69,9 @@ type FileTypes() =
     member this.FileTypesDictionary = _fileTypesDictionary
 
     member this.GetFileType (f : FileInfo) : FileType =
-        if this.IsTextFile(f) then FileType.Text
-        else if this.IsBinaryFile(f) then FileType.Binary
-        else if this.IsArchiveFile(f) then FileType.Archive
+        if this.IsTextFile f then FileType.Text
+        else if this.IsBinaryFile f then FileType.Binary
+        else if this.IsArchiveFile f then FileType.Archive
         else FileType.Unknown
 
     member this.IsBinaryFile (f : FileInfo) =
@@ -87,8 +87,6 @@ type FileTypes() =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["text"]
 
     member this.IsUnknownFile (f : FileInfo) =
-        (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _fileTypesDictionary.["unknown"]) ||
-        (not (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _fileTypesDictionary.["searchable"]) &&
-         not (Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) _fileTypesDictionary.["nosearch"]))
+        not (this.IsSearchableFile f)
 
     ;;
