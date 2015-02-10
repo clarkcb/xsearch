@@ -52,6 +52,8 @@ namespace CsSearch
 
 		public bool IsSearchDirectory(DirectoryInfo d)
 		{
+			if (FileUtil.IsDotDir(d.Name))
+				return true;
 			if (Settings.ExcludeHidden && FileUtil.IsHidden(d))
 				return false;
 			if (Settings.InDirPatterns.Count > 0 &&
@@ -127,27 +129,13 @@ namespace CsSearch
 			Log(string.Format("Total elapsed time: {0} ms", TotalElapsedTime.TotalMilliseconds));
 		}
 
-		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo startDir)
-		{
-			var searchDirs = new List<DirectoryInfo>();
-			if (IsSearchDirectory(startDir))
-			{
-				searchDirs.Add(startDir);
-			}
-			if (Settings.Recursive)
-			{
-				searchDirs.AddRange(RecGetSearchDirs(startDir));
-			}
-			return searchDirs;
-		}
-
-		private IEnumerable<DirectoryInfo> RecGetSearchDirs(DirectoryInfo dir)
+		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo dir)
 		{
 			IEnumerable<DirectoryInfo> searchDirs = new List<DirectoryInfo>();
 			try
 			{
 				searchDirs = dir.EnumerateDirectories().Where(IsSearchDirectory);
-				return searchDirs.Aggregate(searchDirs, (current, d) => current.Concat(RecGetSearchDirs(d)));
+				return searchDirs.Aggregate(searchDirs, (current, d) => current.Concat(GetSearchDirs(d)));
 			}
 			catch (IOException e)
 			{
@@ -224,7 +212,7 @@ namespace CsSearch
 			else
 			{
 				var f = new FileInfo(Settings.StartPath);
-				if (f.Exists && FilterFile(f))
+				if (FilterFile(f))
 				{
 					DoSearchFile(new SearchFile(f.DirectoryName, f.Name, _fileTypes.GetFileType(f)));
 				}
@@ -241,9 +229,11 @@ namespace CsSearch
 			{
 				StartTimer("GetSearchDirs");
 			}
-			var startDir = path;
-			var searchDirs = new List<DirectoryInfo>();
-			searchDirs.AddRange(GetSearchDirs(startDir));
+			var searchDirs = new List<DirectoryInfo> { path };
+			if (Settings.Recursive)
+			{
+				searchDirs.AddRange(GetSearchDirs(path));
+			}
 			if (Settings.DoTiming)
 			{
 				StopTimer("GetSearchDirs");
