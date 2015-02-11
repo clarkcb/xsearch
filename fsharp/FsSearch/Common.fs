@@ -6,7 +6,7 @@ open System.IO
 open System.Text
 open System.Xml.Linq
 
-module Utils = 
+module Common = 
     let PrintElapsed (name : string) (ts : TimeSpan) =
         let elapsedTime =
             String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
