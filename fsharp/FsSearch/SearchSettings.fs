@@ -68,12 +68,13 @@ type SearchSettings() =
     member val Verbose = false with get,set
 
     // member methods
-    member this.AddExtension(set : HashSet<string>, ext : string) =
-        let ext =
-            if ext.StartsWith(".") then ext
-            else "." + ext
-        let success = set.Add(ext)
-        ()
+    member this.AddExtension(set : HashSet<string>, exts : string) =
+        let xs = exts.Split(',') |> Seq.filter (fun x -> not (String.IsNullOrEmpty x))
+        for x in xs do
+            let ext =
+                if x.StartsWith(".") then x
+                else "." + x
+            set.Add(ext) |> ignore
 
     member this.AddPattern(set : HashSet<Regex>, pattern : string) =
         let success = set.Add(new Regex(pattern))
