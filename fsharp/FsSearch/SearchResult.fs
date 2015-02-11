@@ -6,28 +6,39 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 
-type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int, line : string) =
-    let _searchPattern = searchPattern
-    let _file = file
-    let _lineNum = lineNum
-    let _line = line
-
-    // read-only member properties
-    member this.SearchPattern = _searchPattern
-    member this.File = _file
-    member this.LineNum = _lineNum
-    member this.Line = _line
-
+type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
+                  matchStartIndex : int, matchEndIndex : int, line : string,
+                  linesBefore : string list, linesAfter : string list) =
+    member val SearchPattern = searchPattern with get,set
+    member val File = file with get,set
+    member val LineNum = lineNum with get,set
+    member val MatchStartIndex = matchStartIndex with get,set
+    member val MatchEndIndex = matchEndIndex with get,set
+    member val Line = line with get,set
+    member val LinesBefore = [] with get,set
+    member val LinesAfter = [] with get,set
 
     override this.ToString() =
+        if this.LinesBefore.Length > 0 || this.LinesAfter.Length > 0 then
+            this.SingleLineToString()
+        else
+            this.SingleLineToString()
+
+    // TODO
+    member this.MultLineToString() =
+        this.SingleLineToString
+
+    member this.SingleLineToString() =
         let matchString =
-            if _lineNum = 0 then
-                sprintf " has match for pattern \"%s\"" (_searchPattern.ToString())
+            if this.LineNum = 0 then
+                sprintf " has match for pattern \"%s\"" (this.SearchPattern.ToString())
             else
-                sprintf ": %d: %s" _lineNum (_line.Trim())
+                sprintf ": %d: [%d:%d]: %s" this.LineNum this.MatchStartIndex this.MatchEndIndex (this.Line.Trim())
         let sb =
             (new StringBuilder()).
-                Append(_file.FullName).
+                Append(this.File.FullName).
                 Append(matchString)
         sb.ToString()
+
+
     ;;
