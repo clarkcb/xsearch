@@ -23,26 +23,6 @@ type SearchSettings() =
     let _outLinesAfterPatterns = new HashSet<Regex>()
     let _outLinesBeforePatterns = new HashSet<Regex>()
     let _searchPatterns = new HashSet<Regex>()
-    let mutable _archivesOnly = false
-    let mutable _debug = false
-    let mutable _doTiming = false
-    let mutable _excludeHidden = true
-    let mutable _firstMatch = false
-    let mutable _linesAfter = 0
-    let mutable _linesBefore = 0
-    let mutable _listDirs = false
-    let mutable _listFiles = false
-    let mutable _listLines = false
-    let mutable _maxLineLength = 150
-    let mutable _multiLineSearch = false
-    let mutable _printResults = false
-    let mutable _printUsage = false
-    let mutable _printVersion = false
-    let mutable _recursive = true
-    let mutable _searchArchives = false
-    let mutable _startPath = ""
-    let mutable _uniqueLines = false
-    let mutable _verbose = false
 
     // read-only member properties
     member this.InArchiveExtensions = _inArchiveExtensions
@@ -65,68 +45,27 @@ type SearchSettings() =
     member this.HasDirPatterns = Seq.length _inDirPatterns > 0 || Seq.length _outDirPatterns > 0
     member this.HasFilePatterns = Seq.length _inFilePatterns > 0 || Seq.length _outFilePatterns > 0
 
-
     // read-write member properties
-    member this.StartPath
-        with get () = _startPath
-        and set startPath = _startPath <- startPath
-    member this.ArchivesOnly
-        with get () = _archivesOnly
-        and set archivesOnly = _archivesOnly <- archivesOnly
-    member this.Debug
-        with get () = _debug
-        and set debug = _debug <- debug
-    member this.DoTiming
-        with get () = _doTiming
-        and set doTiming = _doTiming <- doTiming
-    member this.ExcludeHidden
-        with get () = _excludeHidden
-        and set excludeHidden = _excludeHidden <- excludeHidden
-    member this.FirstMatch
-        with get () = _firstMatch
-        and set firstMatch = _firstMatch <- firstMatch
-    member this.LinesAfter
-        with get () = _linesAfter
-        and set linesAfter = _linesAfter <- linesAfter
-    member this.LinesBefore
-        with get () = _linesBefore
-        and set linesBefore = _linesBefore <- linesBefore
-    member this.ListDirs
-        with get () = _listDirs
-        and set listDirs = _listDirs <- listDirs
-    member this.ListFiles
-        with get () = _listFiles
-        and set listFiles = _listFiles <- listFiles
-    member this.ListLines
-        with get () = _listLines
-        and set listLines = _listLines <- listLines
-    member this.MaxLineLength
-        with get () = _maxLineLength
-        and set maxLineLength = _maxLineLength <- maxLineLength
-    member this.MultiLineSearch
-        with get () = _multiLineSearch
-        and set multiLineSearch = _multiLineSearch <- multiLineSearch
-    member this.PrintResults
-        with get () = _printResults
-        and set printResults = _printResults <- printResults
-    member this.PrintUsage
-        with get () = _printUsage
-        and set printUsage = _printUsage <- printUsage
-    member this.PrintVersion
-        with get () = _printVersion
-        and set printVersion = _printVersion <- printVersion
-    member this.Recursive
-        with get () = _recursive
-        and set recursiv = _recursive <- recursiv
-    member this.SearchArchives
-        with get () = _searchArchives
-        and set searchArchives = _searchArchives <- searchArchives
-    member this.UniqueLines
-        with get() = _uniqueLines
-        and set uniqueLines = _uniqueLines <- uniqueLines
-    member this.Verbose
-        with get() = _verbose
-        and set verbose = _verbose <- verbose
+    member val StartPath = "" with get,set
+    member val ArchivesOnly = false with get,set
+    member val Debug = false with get,set
+    member val DoTiming = false with get,set
+    member val ExcludeHidden = true with get,set
+    member val FirstMatch = false with get,set
+    member val LinesAfter = 0 with get,set
+    member val LinesBefore = 0 with get,set
+    member val ListDirs = false with get,set
+    member val ListFiles = false with get,set
+    member val ListLines = false with get,set
+    member val MaxLineLength = 150 with get,set
+    member val MultiLineSearch = false with get,set
+    member val PrintResults = false with get,set
+    member val PrintUsage = false with get,set
+    member val PrintVersion = false with get,set
+    member val Recursive = true with get,set
+    member val SearchArchives = false with get,set
+    member val UniqueLines = false with get,set
+    member val Verbose = false with get,set
 
     // member methods
     member this.AddExtension(set : HashSet<string>, ext : string) =
@@ -192,40 +131,40 @@ type SearchSettings() =
         this.AddPattern(_searchPatterns, pattern)
 
     member this.SetArchivesOnly() =
-        this.ArchivesOnly = true &&
-        this.SearchArchives = true
+        this.ArchivesOnly <- true
+        this.SearchArchives <- true
 
     member this.SetDebug() =
-        this.Debug = true &&
-        this.Verbose = true
+        this.Debug <- true
+        this.Verbose <- true
 
     override this.ToString() =
         "SearchSettings(" +
-        String.Format("ArchivesOnly: {0}", _archivesOnly) +
-        String.Format(", Debug: {0}", _debug) +
-        String.Format(", DoTiming: {0}", _doTiming) +
-        String.Format(", ExcludeHidden: {0}", _excludeHidden) +
-        String.Format(", FirstMatch: {0}", _firstMatch) +
+        String.Format("ArchivesOnly: {0}", this.ArchivesOnly) +
+        String.Format(", Debug: {0}", this.Debug) +
+        String.Format(", DoTiming: {0}", this.DoTiming) +
+        String.Format(", ExcludeHidden: {0}", this.ExcludeHidden) +
+        String.Format(", FirstMatch: {0}", this.FirstMatch) +
         String.Format(", InDirPatterns: {0}",  "[\"" + String.Join("\", \"", _inDirPatterns) + "\"]") +
         String.Format(", InExtensions: {0}",  "[\"" + String.Join("\", \"", _inExtensions) + "\"]") +
         String.Format(", InFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inFilePatterns) + "\"]") +
-        String.Format(", LinesAfter: {0}", _linesAfter) +
-        String.Format(", LinesBefore: {0}", _linesBefore) +
-        String.Format(", ListDirs: {0}", _listDirs) +
-        String.Format(", ListFiles: {0}", _listFiles) +
-        String.Format(", ListLines: {0}", _listLines) +
-        String.Format(", MaxLineLength: {0}", _maxLineLength) +
-        String.Format(", MultiLineSearch: {0}", _multiLineSearch) +
+        String.Format(", LinesAfter: {0}", this.LinesAfter) +
+        String.Format(", LinesBefore: {0}", this.LinesBefore) +
+        String.Format(", ListDirs: {0}", this.ListDirs) +
+        String.Format(", ListFiles: {0}", this.ListFiles) +
+        String.Format(", ListLines: {0}", this.ListLines) +
+        String.Format(", MaxLineLength: {0}", this.MaxLineLength) +
+        String.Format(", MultiLineSearch: {0}", this.MultiLineSearch) +
         String.Format(", OutDirPatterns: {0}", "[\"" + String.Join("\", \"", _outDirPatterns) + "\"]") +
         String.Format(", OutExtensions: {0}", "[\"" + String.Join("\", \"", _outExtensions) + "\"]") +
         String.Format(", OutFilePatterns: {0}", "[\"" + String.Join("\", \"", _outFilePatterns) + "\"]") +
-        String.Format(", PrintResults: {0}", _printResults) +
-        String.Format(", PrintUsage: {0}", _printUsage) +
-        String.Format(", PrintVersion: {0}", _printVersion) +
-        String.Format(", Recursive: {0}", _recursive) +
-        String.Format(", SearchArchives: {0}", _searchArchives) +
+        String.Format(", PrintResults: {0}", this.PrintResults) +
+        String.Format(", PrintUsage: {0}", this.PrintUsage) +
+        String.Format(", PrintVersion: {0}", this.PrintVersion) +
+        String.Format(", Recursive: {0}", this.Recursive) +
+        String.Format(", SearchArchives: {0}", this.SearchArchives) +
         String.Format(", SearchPatterns: {0}", "[\"" + String.Join("\", \"", _searchPatterns) + "\"]") +
-        String.Format(", StartPath: \"{0}\"", _startPath) +
-        String.Format(", Verbose: {0}", _verbose) +
+        String.Format(", StartPath: \"{0}\"", this.StartPath) +
+        String.Format(", Verbose: {0}", this.Verbose) +
         ")"
     ;;
