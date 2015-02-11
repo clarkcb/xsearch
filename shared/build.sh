@@ -88,14 +88,16 @@ build_fsharp () {
     log "build_fsharp"
     FSHARP_PATH=$PROJECT_PATH/fsharp
     RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
+    CONFIGURATION=Debug
+    #CONFIGURATION=Release
 
     # copy the shared xml files to the local resource location
     copy_resources $RESOURCES_PATH
 
     # run a mono xbuild
     log "Building fssearch"
-    log "xbuild /p:Configuration=Debug $FSHARP_PATH/FsSearch.sln"
-    xbuild /p:Configuration=Debug $FSHARP_PATH/FsSearch.sln
+    log "xbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln"
+    xbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln
 }
 
 build_go () {
