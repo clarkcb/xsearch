@@ -9,10 +9,6 @@
   (:import (java.io File)
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
-  (:require [clojure.core.async
-             :as async
-             :refer [>! <! >!! <!! go chan buffer close! thread
-                     alts! alts!! timeout]])
   (:use [clojure.java.io :only (file reader)]
         [clojure.string :as str :only (join trim)]
         [cljsearch.common :only (log-msg)]
@@ -160,27 +156,6 @@
 
 (defn get-search-files-for-directory [d settings]
   (vec (filter #(filter-file? % settings) (get-files-in-directory d))))
-
-; (defn get-search-files-async [dir-count settings]
-;   (let [in (chan)
-;         out (chan)]
-;     (go (loop [dc dir-count]
-;           (if (> dc 0)
-;             (let [d (<! in)]
-;               (do
-;                 (>! out (get-search-files-for-directory d settings))
-;                 (recur (dec dc))
-;               )
-;             )
-;             (do
-;               ;(println "Closing get-search-files-async channels")
-;               (close! in)
-;               (close! out)))))
-;     [in out]))
-
-; (defn get-search-files [searchdirs settings]
-;   (let [[in out] (get-search-files-async (count searchdirs) settings)]
-;     (apply concat (map #(do (>!! in %) (<!! out)) searchdirs))))
 
 (defn get-search-files [searchdirs settings]
   (apply concat (map #(get-search-files-for-directory % settings) searchdirs)))
@@ -405,30 +380,6 @@
           (if verbose (log-msg (format "Skipping archive file %s" f))))
       :else
         (if verbose (log-msg (format "Skipping file of unknown type: %s" f))))))
-
-; (defn search-files-async [file-count settings]
-;   (let [in (chan)]
-;     (go (loop [fc file-count]
-;           (if (> fc 0)
-;             (let [f (<! in)]
-;               (do
-;                 (search-file f settings)
-;                 (recur (dec fc))
-;               )
-;             )
-;             (do
-;               ;(println "Closing search-files-async channels")
-;               (close! in)))))
-;     in))
-
-; (defn search-files [searchfiles settings]
-;   (if (:verbose settings)
-;     (do
-;       (log-msg (format "\nFiles to be searched (%d):" (count searchfiles)))
-;       (doseq [f searchfiles] (log-msg (.getPath f)))
-;       (log-msg "")))
-;   (let [in (search-files-async (count searchfiles) settings)]
-;     (doseq [f searchfiles] (>!! in f))))
 
 (defn search-files [searchfiles settings]
   (if (:verbose settings)
