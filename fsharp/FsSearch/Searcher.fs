@@ -171,9 +171,6 @@ type Searcher (settings : SearchSettings) =
             this.SearchTextFileLines f
 
     member this.SearchTextFileContents (f : FileInfo) =
-        //if _settings.Debug then
-        if true then
-            Common.Log (sprintf "Searching contents of text file %s" f.FullName)
         try
             let contents = FileUtil.GetFileContents f.FullName
             let results = this.SearchContents(contents)
@@ -189,8 +186,6 @@ type Searcher (settings : SearchSettings) =
             |> Array.filter (fun x -> snd x = '\n')
             |> Array.map (fun x -> fst x)
             |> List.ofArray
-        //Common.Log (sprintf "s.Length: %d" s.Length)
-        //Common.Log (Common.ListToString("newLineIndices", newLineIndices))
         let startLineIndices =
              0 :: List.map (fun i -> i + 1) newLineIndices
              |> Seq.takeWhile (fun i -> i < s.Length)
