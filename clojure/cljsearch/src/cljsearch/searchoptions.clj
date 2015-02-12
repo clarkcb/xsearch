@@ -10,14 +10,14 @@
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
-  (:use [clojure.set :only (union)])
   (:require [clojure.string :as str])
-  (:use [clojure.xml :only (parse)])
-  (:use [cljsearch.common :only (log-msg)])
-  (:use [cljsearch.fileutil :only (expand-path)])
-  (:use [cljsearch.searchsettings :only
-    (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
-      set-archivesonly set-debug)]))
+  (:use [clojure.set :only (union)]
+        [clojure.xml :only (parse)]
+        [cljsearch.common :only (log-msg)]
+        [cljsearch.fileutil :only (expand-path)]
+        [cljsearch.searchsettings :only
+          (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
+            set-archivesonly set-debug)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
