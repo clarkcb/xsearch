@@ -9,16 +9,34 @@ module Main =
 
     [<EntryPoint>]
     let Main(args : string[]) = 
-        if args.Length < 1 then Arguments.Usage(1)
-        let settings = Arguments.SettingsFromArgs(args)
-        if (settings.SearchPatterns.Count < 1) then Arguments.Usage(1)
+        let settings = SearchOptions.SettingsFromArgs(args)
+        if settings.Debug then
+            Common.Log (sprintf "settings: %s" (settings.ToString()))
+
+        if settings.PrintUsage then
+            SearchOptions.Usage(0)
+
         let searcher = new Searcher(settings)
+
+        let errs = searcher.ValidateSettings()
+        if errs.Length > 0 then
+            Common.Log (sprintf "\nERROR: %s" errs.Head)
+            SearchOptions.Usage(1)
+
         searcher.Search()
-        printfn "Matches found: %d" searcher.Results.Count
+
+        if settings.PrintResults then
+            Common.Log (sprintf "\nSearch results (%d):" searcher.Results.Count)
+            Seq.iter (fun r -> Common.Log (sprintf "%s" (r.ToString()))) searcher.Results
+
+        if settings.ListDirs then
+            searcher.PrintMatchingDirs
 
         if settings.ListFiles then
-            printfn "\nFiles with matches:"
-            Seq.iter (fun f -> printfn "%s " (f:FileInfo).FullName) searcher.FileSet
+            searcher.PrintMatchingFiles
+
+        if settings.ListLines then
+            searcher.PrintMatchingLines
 
         // main entry point return
         0;;
