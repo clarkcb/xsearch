@@ -97,7 +97,7 @@ module SearchOptions =
             Seq.append shortargs longargs
             |> Map.ofSeq
 
-        let argRegex = new Regex("^(?:-{1,2}|\/)(?<opt>.*)$")
+        let argRegex = new Regex("^(?:-{1,2})(?<opt>.*)$")
         
         let (|IsOption|_|) (arg:string) =            
             let m = argRegex.Match(arg)
