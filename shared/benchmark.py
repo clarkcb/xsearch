@@ -7,6 +7,7 @@
 # A simple benchmarking tool for the various xsearch language versions
 #
 ################################################################################
+from collections import namedtuple
 from pprint import pprint
 import subprocess
 import sys
@@ -15,7 +16,7 @@ import time
 ########################################
 # Configuration
 ########################################
-xsearch_names = '''cljsearch cssearch gosearch hssearch javasearch
+xsearch_names = '''cljsearch cssearch fssearch gosearch hssearch javasearch
                    nodesearch plsearch.pl phpsearch.php pysearch.py
                    rbsearch.rb scalasearch'''.split()
 
@@ -33,59 +34,91 @@ scenarios = [
 ########################################
 # Functions
 ########################################
+RunResult = namedtuple('RunResult', ['s', 'r', 'time_dict'], verbose=False)
+
 def print_totals(totals_dict, s, r):
     #print 'totals_dict:'
     #pprint(totals_dict)
     print "\nTotal results for %d scenarios with %d runs (%d total runs)" % \
         (s, r, s * r)
     longest = max([len(x) for x in xsearch_names])
-    hdr = ['real', 'r.avg', 'sys', 's.avg', 'user', 'u.avg', 'total', 't.avg', 'rank']
-    hdr_places = ' %6s' * len(hdr)
+    hdr = ['real', 'r.avg', 'r.rank', 'sys', 's.avg', 's.rank', 'user',
+           'u.avg','u.rank',  'total', 't.avg', 't.rank']
+    col_width = max([len(h) for h in hdr]) + 1
+    hdr_place = ' %' + str(col_width) + 's'
+    hdr_places = hdr_place * len(hdr)
     hdr_format = ' %%-%ds %s' % (longest, hdr_places)
     hdr_line = hdr_format % tuple(['xsearch'] + hdr)
     sep_line = '-' * len(hdr_line)
     print
     print hdr_line
     print sep_line
+    reals = [v['real'] for v in totals_dict.values()]
+    syss = [v['sys'] for v in totals_dict.values()]
+    users = [v['user'] for v in totals_dict.values()]
     totals = [v['total'] for v in totals_dict.values()]
+    reals.sort()
+    syss.sort()
+    users.sort()
     totals.sort()
     for x in xsearch_names:
-        val_places = ' %6.2f' * (len(hdr) - 1)
-        line_format = ' %%-%ds %s %%6d' % (longest, val_places)
+        time_place = ' %' + str(col_width) + '.2f'
+        rank_place = ' %' + str(col_width) + 'd'
+        val_places = (time_place + time_place + rank_place) * 4
+        line_format = ' %%-%ds %s' % (longest, val_places)
         xr = totals_dict[x]['real']
         xra = xr / (s * r)
+        xrr = reals.index(xr) + 1
         xs = totals_dict[x]['sys']
         xsa = xs / (s * r)
+        xsr = syss.index(xs) + 1
         xu = totals_dict[x]['user']
         xua = xu / (s * r)
+        xur = users.index(xu) + 1
         xt = totals_dict[x]['total']
         xta = xt / (s * r)
-        vals = [x, xr, xra, xs, xsa, xu, xua, xt, xta, totals.index(xt) + 1]
+        xtr = totals.index(xt) + 1
+        vals = [x, xr, xra, xrr, xs, xsa, xsr, xu, xua, xur, xt, xta, xtr]
         line = line_format % tuple(vals)
         print line
     print
 
-def print_run_results(results, args, s, r):
-    print "\nResults for scenario %d run %d" % (s, r)
+def print_run_results(result):
+    print "\nResults for scenario %d run %d" % (result.s, result.r)
     longest = max([len(x) for x in xsearch_names])
-    hdr = ['real', 'sys', 'user', 'total']
-    hdr_format = ' %%-%ds  %%6s %%6s %%6s %%6s %%6s' % longest
-    hdr_line = hdr_format % tuple(['xsearch'] + hdr + ['rank'])
+    hdr = ['real', 'r.rank', 'sys', 's.rank', 'user', 'u.rank', 'total', 't.rank']
+    col_width = max([len(h) for h in hdr]) + 1
+    hdr_place = ' %' + str(col_width) + 's'
+    hdr_places = hdr_place * len(hdr)
+    hdr_format = ' %%-%ds %s' % (longest, hdr_places)
+    hdr_line = hdr_format % tuple(['xsearch'] + hdr)
     sep_line = '-' * len(hdr_line)
     print
     print hdr_line
     print sep_line
-    totals_dict = {}
-    for x in xsearch_names:
-        totals_dict[x] = results[x]['total']
-    totals = totals_dict.values()
+    reals = [v['real'] for v in result.time_dict.values()]
+    syss = [v['sys'] for v in result.time_dict.values()]
+    users = [v['user'] for v in result.time_dict.values()]
+    totals = [v['total'] for v in result.time_dict.values()]
+    reals.sort()
+    syss.sort()
+    users.sort()
     totals.sort()
     for x in xsearch_names:
-        line_format = ' %%-%ds  %%6.2f %%6.2f %%6.2f %%6.2f %%6d' % longest
-        nums = []
-        for h in hdr:
-            nums.append(results[x][h])
-        line = line_format % tuple([x] + nums + [totals.index(totals_dict[x]) + 1])
+        time_place = ' %' + str(col_width) + '.2f'
+        rank_place = ' %' + str(col_width) + 'd'
+        val_places = (time_place + rank_place) * 4
+        line_format = ' %%-%ds %s' % (longest, val_places)
+        xr = result.time_dict[x]['real']
+        xrr = reals.index(xr) + 1
+        xs = result.time_dict[x]['sys']
+        xsr = syss.index(xs) + 1
+        xu = result.time_dict[x]['user']
+        xur = users.index(xu) + 1
+        xt = result.time_dict[x]['total']
+        xtr = totals.index(xt) + 1
+        vals = [x, xr, xrr, xs, xsr, xu, xur, xt, xtr]
+        line = line_format % tuple(vals)
         print line
     print
 
@@ -120,7 +153,7 @@ def verify_outputs(xsearch_output):
     else:
         print '\nOutput of all versions matches'
 
-def run(args):
+def run(sn, rn, args):
     xsearch_output = {}
     xsearch_times = {}
     for x in xsearch_names:
@@ -142,9 +175,12 @@ def run(args):
                 time_lines.append(time_line.strip())
         cmd = ' '.join(fullargs)
         xsearch_output[x] = output_lines
+        #print 'output_lines (%d):' % len(output_lines)
+        #pprint(output_lines)
         xsearch_times[x] = times_from_lines(time_lines)
     verify_outputs(xsearch_output)
-    return (xsearch_times, args)
+    result = RunResult(s=sn, r=rn, time_dict=xsearch_times)
+    return result
 
 
 ########################################
@@ -153,14 +189,18 @@ def run(args):
 def main():
     keys = ['real', 'sys', 'user', 'total']
     totals_dict = { x: {s: 0 for s in keys} for x in xsearch_names }
+    results = []
     for i,s in enumerate(scenarios):
         for r in range(runs):
-            print '\nscenario %d run %d\n' % (i+1, r+1)
-            (xsearch_times, args) = run(s)
+            sn = i+1
+            rn = r+1
+            print '\nscenario %d run %d\n' % (sn, rn)
+            result = run(sn, rn, s)
+            results.append(result)
             for x in xsearch_names:
                 for k in keys:
-                    totals_dict[x][k] += xsearch_times[x][k]
-            print_run_results(xsearch_times, args, i+1, r+1)
+                    totals_dict[x][k] += result.time_dict[x][k]
+            print_run_results(result)
     print_totals(totals_dict, len(scenarios), runs)
 
 
