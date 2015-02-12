@@ -154,7 +154,8 @@ language. I have three rough functionality groups:
 
 Here's the breakdown of languages for each group.
 
-* __Groups I and II__: all languages except C++ and F#
+* __Group I__: all languages except C++
+* __Group II__: all languages except C++ and F#
 * __Groups II.b and III__: Go, Python, Scala
 
 
@@ -211,7 +212,8 @@ The functionality lifecycle goes something like this:
    file), call the <code>SearchFile</code> function/method.
 1. The <code>SearchFile</code> function/method determines the type of file
    (archive, binary, text, or unknown), and will route to the appropriate
-   file type-specific function/method, or do nothing if the file type is unknown.
+   file type-specific function/method, or do nothing if the file type is
+   unknown.
 1. If the file type is binary, route to the <code>SearchBinaryFile</code>
    function/method. <code>SearchBinaryFile</code> will return a single
    <code>SearchResult</code> for each search pattern that has a match anywhere
@@ -223,21 +225,22 @@ The functionality lifecycle goes something like this:
    otherwise route to the <code>SearchTextFileLines</code>.
 1. <code>SearchTextFileContents</code> slurps the entire contents of the text
    file into a string variable and routes to <code>SearchMultilineString</code>.
-   <code>SearchMultilineString</code> returns a list of <code>SearchResult</code>
-   instances for all search patterns matches in the string.
+   <code>SearchMultilineString</code> returns a list of
+   <code>SearchResult</code> instances for all search patterns matches in the
+   string.
 1. <code>SearchTextFileLines</code> creates a line iterator on the file and
    routes to <code>SearchLines</code>. <code>SearchLines</code> returns a list
    of <code>SearchResult</code> instances for all search patterns matches in
    the lines.
 1. If the file type is archive, and if either <code>archivesonly</code> or
-   <code>searcharchives</code> is <code>true</code> in <code>SearchSettings</code>,
-   and if the specific language version of the tool supports archive file
-   searching, <code>SearchFile</code> routes to <code>SearchArchiveFile</code>.
-   <code>SearchArchiveFile</code> in turn routes to the specific function/method
-   that handles searching for the specific archive file type. We will use
-   <code>SearchZipFile</code> as our example.
-1. <code>SearchZipFile</code> gets the list of directories and files contained in
-   the zip and filters that list based on any provided file extensions and
+   <code>searcharchives</code> is <code>true</code> in
+   <code>SearchSettings</code>, and if the specific language version of the tool
+   supports archive file searching, <code>SearchFile</code> routes to
+   <code>SearchArchiveFile</code>. <code>SearchArchiveFile</code> in turn routes
+   to the specific function/method that handles searching for the specific
+   archive file type. I will use <code>SearchZipFile</code> as the example.
+1. <code>SearchZipFile</code> gets the list of directories and files contained
+   in the zip and filters that list based on any provided file extensions and
    directory/file name pattern arguments. The list of search files is then
    iterated through and individual files in the zip are searched using the steps
    described above based on file type and <code>SearchSettings</code>.
@@ -248,23 +251,27 @@ The functionality lifecycle goes something like this:
    will print out in a single line.
 1. If <code>listdirs</code> is <code>true</code> in <code>SearchSettings</code>,
    print the unique list of directories containing files with matches.
-1. If <code>listfiles</code> is <code>true</code> in <code>SearchSettings</code>,
-   print the unique list of files with matches.
-1. If <code>listlines</code> is <code>true</code> in <code>SearchSettings</code>,
-   and if <code>uniquelines</code> is <code>true</code>, print the unique list
-   of lines with matches. If <code>uniquelines</code> is <code>false</code>,
-   print all lines with matches.
+1. If <code>listfiles</code> is <code>true</code> in
+   <code>SearchSettings</code>, print the unique list of files with matches.
+1. If <code>listlines</code> is <code>true</code> in
+   <code>SearchSettings</code>, and if <code>uniquelines</code> is
+   <code>true</code>, print the unique list of lines with matches. If
+   <code>uniquelines</code> is <code>false</code>, print all lines with matches.
 
 
 
 Installing / Running
 --------------------
 
-I have xsearch cloned to this path: _~/src/git/xsearch_. To run the various
-language versions, I compile them (if necessary) and create a soft link to the
-executable or script under _~/bin_, which I have included in the <code>PATH</code>
-environment variable. For example, to run the Haskell version I compiled it and
-then created the following soft link:
+I have xsearch cloned to this path: _~/src/git/xsearch_. This is important to
+know, because although I've tried to limit them as much as possible, you will
+find places in the code (mostly the test code) that reference this path and that
+you will need to adjust to match your clone location.
+
+To run the various language versions, I compile them (if necessary) and create a
+soft link to the executable or script under _~/bin_, which I have included in
+the <code>PATH</code> environment variable. For example, to run the Haskell
+version I compiled it and then created the following soft link:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/haskell/hssearch/dist/build/hssearch/hssearch
@@ -319,7 +326,7 @@ This information is similarly applicable for the F# version.
 
 #### Clojure ####
 
-You can download Clojure from http://clojure.org/, but you won't need to.
+Although you can download Clojure from http://clojure.org/, you won't need to.
 Instead, retrieve the Leiningen build tool script from http://leiningen.org/
 and run the <code>lein</code> command by itself to have it do a self-install of
 Clojure and Leiningen. After the initial install, running the <code>lein</code>
@@ -351,8 +358,8 @@ Note also that something called <code>gengosearchcode</code> is installed and
 ran before the <code>gosearch</code> install. This executable generates some go
 code files from xml that get used in <code>gosearch</code>.
 
-The compiled executable gets created under _go/bin_. To run <code>gosearch</code>
-I then create a soft link to it in my _~/bin_ directory:
+The compiled executable gets created under _go/bin_. To run
+<code>gosearch</code> I then create a soft link to it in my _~/bin_ directory:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/go/bin/gosearch
@@ -391,10 +398,11 @@ Run this <code>cabal</code> command:
 
     $ cabal install timeit
 
-Once all dependencies satisfied, you should be able to build <code>hssearch</code> 
-successfully with <code>cabal build</code>. This will create the <code>hssearch</code>
-executable under _dist/build/HsSearch/hssearch_, to which I then created a soft
-link under _~/bin_.
+Once all dependencies satisfied, you should be able to build
+<code>hssearch</code> successfully with <code>cabal build</code>. This will
+create the <code>hssearch</code> executable under
+_dist/build/HsSearch/hssearch_, to which I then created a soft link under
+_~/bin_.
 
 
 #### Java / Scala ####
@@ -435,39 +443,39 @@ Also note: the python code is in 2.x style, I have not converted it to 3.x yet
 but I plan to.
 
 
-Style Checking and Testing
---------------------------
+Style Checking
+--------------
 
-I have enabled lint-like style checking for some of the languages, as well as
-several types of testing: "basic" (a script that runs each version for output
-comparison), unit testing and basic benchmarking.
-
-
-#### Style Checking ####
-
-I created a script under _shared_ called _lint.sh_ that can be used to perform
-lint-like style checking of some of the language versions. It can be run with a
-language argument to run the linter for that language, or without a language to
-run it for all languages. For languages that don't currently have style checking
-the script will output a message to that effect.
+I have enabled lint-like style checking for some of the languages, and I
+created a script under _shared_ called _lint.sh_ that can be used to exercise
+the style checking on one or more of the language versions. The script can be
+run with a language argument to run the style checker for that language, or
+without a language to run it for all languages. For languages that don't
+currently have style checking, the script will output a message to that effect.
 
 
-#### Testing ####
+Testing
+--------------
 
-There is a basic test script under _shared_ called _test.sh_ that runs each
-language version with the same arguments to compare the output. For unit
-testing, there is the _unittest.sh_ script. Each script can be run with a
-language argument to run the tests just for that language, or it can be run
-without the argument to run the tests for all language versions.
+I have implemented three different types of testing for almost all language
+versions: basic, unit, and benchmark. These are exercised using the following
+scripts under _shared_:
 
-There is also a basic benchmarking test script, written in python, called
-_benchmark.py_. In the configuration section of the script you specify the
-language versions you want to run and "scenarios" you want to test, which is 
-a list of argument list that will be passed to each specified language version
-to run a specified number of times (defined in the <code>runs</code> variable).
-The execution of each individual run is timed using the Unix <code>time</code>
-command, and those times are totalled up and printed out in a table at the end
-of the runs, with rankings for each version.
+* _test.sh_ - this is a basic test script that runs each language version with
+  the same arguments to compare the output.
+
+* _unittest.sh_ - this script will run all existing unit tests for a given
+  language if the language name is included on the command line, or for all
+  languages if no language argument is given.
+
+* _benchmark.py_ - this script performs basic benchmarking. In the configuration
+  section of the script you specify the language versions you want to run and
+  "scenarios" you want to test, which is a list of argument lists that will be
+  passed to each specified language version to run a specified number of times
+  (defined in the <code>runs</code> variable). The execution of each individual
+  run is timed using the Unix <code>time</code> command, and those times are
+  totalled up and printed out in a table at the end of the runs, with rankings
+  for each version.
 
 As a brief aside, there were some interesting and somewhat surprising results
 from the runs that I did. I don't want to expand on this yet, because I know
@@ -536,7 +544,10 @@ current favorites:
   was looking at a possible Scala development opportunity. I did end up working
   in it professionally for several years, and in that time my functional
   language skills improved a fair amount, and it's been interesting for me to
-  see how this version has evolved.
+  see how this version has evolved. I should mention that this version is one of
+  the slower ones based on what I've seen so far, which is probably partially
+  due to JVM start-up, but I'm also certain that there are a number of
+  optimizations that can be done in the code.
 
 * __pysearch.py__ - When I use this tool, which I still do regularly, I usually
   end up using the Python version. That's mostly out of habit, but also because
@@ -566,15 +577,17 @@ for so far:
   it.
 
 * [F#](http://fsharp.org/) -
-  I haven't done any real work on the F# version in several years, but I
-  recall really liking the language. It feels sort of like a cross between
-  Python and C# with lots of LINQ. In comparison with Scala, I think F# is
-  cleaner syntactically, although object-oriented code seems to be a little
-  clunkier in it. My personal feeling is that F# *should* be the successor to
-  C# on the CLI, but I'm not sure that will happen. I believe that the larger
-  programming community will eventually swing away from imperative and
-  towards functional, but my impression is that F# doesn't have the same
-  momentum in the CLI world as Scala does in the JVM world. Time wil tell.
+  I started looking at F# after working for a while in C#. I liked the syntax
+  right away, but I had a hard time working in it at first, because I couldn't
+  understand the errors that Visual Studio was giving me. The language feels to
+  me sort of like a cross between Python and C# with lots of LINQ. In comparison
+  with Scala, I think F# is cleaner syntactically, although object-oriented code
+  seems to be a little clunkier in it. My personal feeling is that F# *should*
+  be the successor to C# on the CLI, but I'm not sure that will happen. I
+  believe that the larger programming community will eventually swing away from
+  imperative and towards functional, but my impression is that F# doesn't have
+  the same momentum in the CLI world as Scala does in the JVM world. Time will
+  tell.
 
 * [Go](https://golang.org/) -
   I was really surprised how fast I could write Go code, I reached near Python
@@ -590,9 +603,11 @@ for so far:
   Haskell was (and still is) a mind bender to learn, but I'm becoming more and
   more a fan of functional programming, and Haskell seems to be the king. I
   love the succinctness of the language and the way it forces you to approach
-  problems very differently. I'm also impressed with its type system. I still
-  need to tackle the harder category theory-related subjects, but I plan to and
-  will definitely do more coding in Haskell.
+  problems very differently. I'm also impressed with its type system. Although
+  records are nice, I did find myself missing OO sometimes, but not enough to
+  write the language off. I still need to tackle the harder category
+  theory-related subjects, but I plan to and will definitely do more coding in
+  Haskell.
 
 * [Java](http://en.wikipedia.org/wiki/Java_%28programming_language%29) -
   I wrote the Java version after the Scala version, and frankly it was a little
@@ -620,16 +635,30 @@ for so far:
   reinventing the wheel. I do want to do more work with async/non-blocking
   calls, though.
 
-* [PHP](http://php.net/) [1] - I have a fair amount of web dev experience with
+* [Perl](http://perl.org/) - Perl was my first scripting language, and the
+  first language I did any real programming in. It was also the language that
+  caused me to learn regular expressions, and I think it is still the language
+  that sets the bar for regex implementation. I went away from Perl for a while
+  to work in PHP, JavaScript, and later Python and Java. When I came back to it
+  I made a decision to switch to Python as my scripting language of choice
+  because of what I saw as a major increases in readability and speed of
+  development. I still like Perl, and writing the Perl version was pretty quick
+  and relatively painless (it helped that I could reference the PHP version) but
+  I do find the syntax to be pretty awkward and clunky. I will likely give Perl
+  6 a try when it finally arrives, but I have a feeling that I won't be doing
+  too much in Perl down the road.
+
+* [PHP](http://php.net/) - I have a fair amount of web dev experience with
   PHP, but had never done any non-web/CLI work in it, and I had also never
   worked with PHP 5 classes. Also, I wanted to see how fast I could put a PHP
   version together. The experience was actually not too painful. PHP is not
   my favorite language for sure, and I'm not sure I like how namespaces are
   implemented in it, but the class implementation is fine, and I discovered
   that PHP has some functional aspects to it, such as first-class functions and
-  some functional-style functions (array_filter, array_map, etc.). I got a
-  basic working version (everything except linesafterto/until and archive file
-  searching) done in a little over a day.
+  some functional-style functions (<code>array_filter</code>,
+  <code>array_map</code>, etc.). I got a basic working version (everything
+  except linesafterto/until and archive file searching) done in a little over a
+  day.
 
 * [Python](https://www.python.org/) -
   This was my 2nd go-to scripting language (after Perl), and the first language
@@ -638,10 +667,11 @@ for so far:
   fast to develop in. That makes it a great language for writing utilities that
   go beyond shell scripting requirements, and it's also great for prototyping.
   Python does have some limited but nice functional capabilities too, such as
-  lambdas and for-comprehensions. I find it and Ruby to be very similar, with pluses and
-  minuses on both sides (more on that below), but suffice it to say that I would
-  probably pick Python over Ruby, not because I think it's superior, but
-  because I have more experience in it and prefer some of its syntax.
+  lambdas and for-comprehensions. I find it and Ruby to be very similar, with
+  pluses and minuses on both sides (more on that below), but suffice it to say
+  that I would probably pick Python over Ruby, not because I think it's
+  superior, but because I have more experience in it and prefer some of its
+  syntax.
 
 * [Ruby](https://www.ruby-lang.org/) -
   I first learned some Ruby when I was taking a look at Ruby On Rails. I was
@@ -713,7 +743,7 @@ As far as what my ideal language looks like, here's my list of optimal features:
   is a point where languages really start to differentiate themselves.
 
 
-Based on these features, the "winners" for me so far are:
+Based on these features, the overall "winners" for me so far are:
 
 1. Haskell
    - Functional - yes
@@ -744,10 +774,10 @@ Plans / TODOs
 
 My current TODOs:
 
-* Bring the F# version up to speed with the other versions
 * Rewrite the Python version for Python 3.x
 * Rewrite the Node.js version using more async/non-blocking calls
 * Switch from Maven to SBT for Scala
+* Take a look at performance optimizations in the various languages
 * Implement a C++ version (?)
 
 
@@ -776,8 +806,11 @@ Languages that I'm currently considering (listed alphabetically):
 
 * [Common Lisp](http://en.wikipedia.org/wiki/Common_Lisp) [3] - After some
   exposure to Clojure and Scheme/Racket, I've become intrigued with the Lisp
-  family. I'm especially intrigued by the idea of homoiconicity and macros, but
-  also by the language's multiparadigm nature.
+  family. I'm interested in learning about macros, and also interested to see
+  how the language's multiparadigm nature plays out.
+
+* [D](http://dlang.org/) [2] - I know next to nothing about D, other than it is
+  intended as a replacement for C/C++ and it has a small but loyal following.
 
 * [Erlang](http://www.erlang.org/) [3] - I'm most interested in the message
   passing feature of Erlang. I had a small amount of exposure to a similar
@@ -787,13 +820,13 @@ Languages that I'm currently considering (listed alphabetically):
 
 * [OCaml](http://caml.inria.fr/ocaml/) [2] - I'm interested to compare OCaml to
   its close cousin F#, but also compare it to other functional languages that I
-  have done, such as Haskell, and other functional/OO hybrid languages that I
-  have done, such as Scala.
+  have worked in, such as Haskell, and other functional/OO hybrid languages that
+  I have worked in, such as Scala.
 
 * [Rust](http://www.rust-lang.org/) [2,3] - I don't know much about Rust yet,
-  but from the little bit I've seen it looks interesting. It seems to be a
-  functional language replacement for C/++, so maybe a little like Go +
-  functional? I'm not sure but I'm curious.
+  but from the little bit I've seen it looks interesting. It seems to be
+  positioned as replacement for C/++ with functional aspects, so maybe a little
+  like Go + functional? I'm not sure but I'm curious.
 
 * [Squeak](http://en.wikipedia.org/wiki/Squeak) [3] - I have known some
   developers who worked in Smalltalk professionally, and they were huge fans of
@@ -815,7 +848,9 @@ languages that I don't currently see myself ever doing or am quite sure I won't:
 * Delphi/Pascal
 * Forth
 * Fortran
+* Groovy
 * Lua
+* Objective-C
 * PowerShell
 * Rexx
 * Scheme/Racket
