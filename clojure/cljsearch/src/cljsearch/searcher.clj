@@ -9,15 +9,19 @@
   (:import (java.io File)
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
-  (:use [clojure.java.io :only (file reader)])
-  (:use [clojure.string :as str :only (join trim)])
-  (:use [cljsearch.common :only (log-msg)])
-  (:use [cljsearch.filetypes :only (archive-file? get-filetype)])
-  (:use [cljsearch.fileutil :only
-    (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
-      is-dot-dir?)])
-  (:use [cljsearch.searchresult :only
-    (->SearchResult search-result-to-string)]))
+  (:require [clojure.core.async
+             :as async
+             :refer [>! <! >!! <!! go chan buffer close! thread
+                     alts! alts!! timeout]])
+  (:use [clojure.java.io :only (file reader)]
+        [clojure.string :as str :only (join trim)]
+        [cljsearch.common :only (log-msg)]
+        [cljsearch.filetypes :only (archive-file? get-filetype)]
+        [cljsearch.fileutil :only
+          (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
+            is-dot-dir?)]
+        [cljsearch.searchresult :only
+          (->SearchResult search-result-to-string)]))
 
 ; ref to contain the seq of SearchResult records
 (def search-results (ref []))
@@ -156,6 +160,27 @@
 
 (defn get-search-files-for-directory [d settings]
   (vec (filter #(filter-file? % settings) (get-files-in-directory d))))
+
+; (defn get-search-files-async [dir-count settings]
+;   (let [in (chan)
+;         out (chan)]
+;     (go (loop [dc dir-count]
+;           (if (> dc 0)
+;             (let [d (<! in)]
+;               (do
+;                 (>! out (get-search-files-for-directory d settings))
+;                 (recur (dec dc))
+;               )
+;             )
+;             (do
+;               ;(println "Closing get-search-files-async channels")
+;               (close! in)
+;               (close! out)))))
+;     [in out]))
+
+; (defn get-search-files [searchdirs settings]
+;   (let [[in out] (get-search-files-async (count searchdirs) settings)]
+;     (apply concat (map #(do (>!! in %) (<!! out)) searchdirs))))
 
 (defn get-search-files [searchdirs settings]
   (apply concat (map #(get-search-files-for-directory % settings) searchdirs)))
@@ -380,6 +405,30 @@
           (if verbose (log-msg (format "Skipping archive file %s" f))))
       :else
         (if verbose (log-msg (format "Skipping file of unknown type: %s" f))))))
+
+; (defn search-files-async [file-count settings]
+;   (let [in (chan)]
+;     (go (loop [fc file-count]
+;           (if (> fc 0)
+;             (let [f (<! in)]
+;               (do
+;                 (search-file f settings)
+;                 (recur (dec fc))
+;               )
+;             )
+;             (do
+;               ;(println "Closing search-files-async channels")
+;               (close! in)))))
+;     in))
+
+; (defn search-files [searchfiles settings]
+;   (if (:verbose settings)
+;     (do
+;       (log-msg (format "\nFiles to be searched (%d):" (count searchfiles)))
+;       (doseq [f searchfiles] (log-msg (.getPath f)))
+;       (log-msg "")))
+;   (let [in (search-files-async (count searchfiles) settings)]
+;     (doseq [f searchfiles] (>!! in f))))
 
 (defn search-files [searchfiles settings]
   (if (:verbose settings)
