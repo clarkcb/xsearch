@@ -453,6 +453,22 @@ run with a language argument to run the style checker for that language, or
 without a language to run it for all languages. For languages that don't
 currently have style checking, the script will output a message to that effect.
 
+Running style checking requires installing the tools for most of the languages.
+Here's a list of what is currently being used:
+
+* C# - Nothing yet
+* Clojure - [eastwood](https://github.com/jonase/eastwood)
+* F# - Nothing yet
+* Go - The <code>go vet</code> command (included in the distribution)
+* Haskell - [HLint](http://community.haskell.org/~ndm/darcs/hlint/hlint.htm)
+* Java - [Checkstyle](http://checkstyle.sourceforge.net/)
+* Node - [JSHint](http://jshint.com/)
+* Perl - Nothing yet, although warnings are turned on
+* PHP - Nothing yet (PHPLint seemed problematic)
+* Python - [Pylint](http://www.pylint.org/)
+* Ruby - [ruby-lint](https://github.com/YorickPeterse/ruby-lint)
+* Scala - [Scalastyle](http://www.scalastyle.org/)
+
 
 Testing
 --------------
