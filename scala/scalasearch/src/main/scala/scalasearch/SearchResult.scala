@@ -2,17 +2,13 @@ package scalasearch
 
 import scala.util.matching.Regex
 
-case class StringSearchResult(searchPattern: Regex, lineNum:Int,
-                              matchStartIndex:Int, matchEndIndex:Int, line:String,
-                              linesBefore: List[String], linesAfter: List[String])
-
-class SearchResult(val searchPattern: Regex, val file: SearchFile,
-                   val lineNum: Int, val matchStartIndex:Int,
-                   val matchEndIndex:Int, val line: String,
-                   val linesBefore: List[String], val linesAfter: List[String],
+case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
+                        lineNum: Int, matchStartIndex:Int,
+                   matchEndIndex:Int, line: String,
+                   linesBefore: List[String], linesAfter: List[String],
                    maxLineLength:Int=DefaultSettings.maxLineLength) {
 
-  def this(searchPattern:Regex, file:SearchFile, lineNum:Int, matchStartIndex:Int,
+  def this(searchPattern:Regex, file:Option[SearchFile], lineNum:Int, matchStartIndex:Int,
            matchEndIndex:Int, line:String) = {
     this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       List.empty[String], List.empty[String])
@@ -22,19 +18,19 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
 
   override def toString = {
     if (linesBefore.nonEmpty || linesAfter.nonEmpty)
-      multilineToString
+      multiLineToString
     else
       singleLineToString
   }
 
   def singleLineToString = {
-    val matchString = file.fileType match {
-      case FileType.Text =>
+    val filepath = if (file.isDefined) file.get.getPathWithContainers else "<text>"
+    val matchString =
+      if (lineNum > 0)
         ": %d: [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
           formatMatchingLine)
-      case _ => " matches"
-    }
-    file.getPathWithContainers + matchString
+      else " matches"
+    filepath + matchString
   }
 
   private def formatMatchingLine:String = {
@@ -77,20 +73,20 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
 
   def trimNewLines(s:String):String = {
     if (s == "") ""
-    if (newLineChars.contains(s.last)) trimNewLines(s.init)
+    else if (newLineChars.contains(s.last)) trimNewLines(s.init)
     else s
   }
 
-  def multilineToString = {
+  def multiLineToString = {
     val sb = new StringBuilder
-    sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen,
-      file.getPathWithContainers, lineNum, matchStartIndex, matchEndIndex,
-      "-" * sepLen))
+    val filepath = if (file.isDefined) file.get.getPathWithContainers else "<text>"
+    sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
+      lineNum, matchStartIndex, matchEndIndex, "-" * sepLen))
     val lineFormat = " %1$" + lineNumPadding + "d | %2$s\n"
     var currentLineNum = lineNum
     if (linesBefore.length > 0) {
       currentLineNum -= linesBefore.length
-      for (lineBefore <- linesBefore) {
+      linesBefore.foreach { lineBefore =>
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineBefore)))
         currentLineNum += 1
       }
@@ -98,7 +94,7 @@ class SearchResult(val searchPattern: Regex, val file: SearchFile,
     sb.append(">" + lineFormat.format(lineNum, trimNewLines(line)))
     if (linesAfter.length > 0) {
       currentLineNum += 1
-      for (lineAfter <- linesAfter) {
+      linesAfter.foreach { lineAfter =>
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
         currentLineNum += 1
       }

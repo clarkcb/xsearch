@@ -15,7 +15,7 @@ class SearchResultTest extends FunSuite {
     val matchStartIndex = 15
     val matchEndIndex = 23
     val line = "\tpublic class Searcher\n"
-    val searchResult = new SearchResult(pattern, searchFile, lineNum,
+    val searchResult = new SearchResult(pattern, Some(searchFile), lineNum,
       matchStartIndex, matchEndIndex, line)
     val expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
     val expectedOutput = "%s: %d: [%d:%d]: %s".format(expectedPath,
@@ -31,7 +31,7 @@ class SearchResultTest extends FunSuite {
     val matchStartIndex = 0
     val matchEndIndex = 0
     val line:String = null
-    val searchResult = new SearchResult(pattern, searchFile, lineNum,
+    val searchResult = new SearchResult(pattern, Some(searchFile), lineNum,
       matchStartIndex, matchEndIndex, line)
     val expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
     val expectedOutput = "%s matches".format(expectedPath)
@@ -48,7 +48,7 @@ class SearchResultTest extends FunSuite {
     val line = "\tpublic class Searcher\n"
     val linesBefore = List("namespace CsSearch\n", "{\n")
     val linesAfter = List("\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n")
-    val searchResult = new SearchResult(pattern, searchFile, lineNum,
+    val searchResult = new SearchResult(pattern, Some(searchFile), lineNum,
       matchStartIndex, matchEndIndex, line, linesBefore, linesAfter)
     val expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
     val expectedOutput =
