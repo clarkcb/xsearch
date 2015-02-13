@@ -99,11 +99,11 @@ lint_java () {
     CONFIG=$TOOLS_PATH/sun_checks.xml
     #CONFIG=$TOOLS_PATH/google_checks.xml
 
-     GREPVS=("Javadoc"
-             "hides a field"
-             "Line is longer than 80 characters"
-             "Missing package-info.java file"
-             )
+    GREPVS=("Javadoc"
+            "hides a field"
+            "Line is longer than 80 characters"
+            "Missing package-info.java file"
+            )
 
     # Analyze
     log "Analyzing javasearch"
@@ -136,7 +136,7 @@ lint_perl () {
     PERL_PATH=$PROJECT_PATH/perl
 
     # Analyze
-    log "Analyzing plsearch.pl not implemented at this time"
+    log "Analyzing plsearch not implemented at this time"
     #cd $PERL_PATH
     #cd -
 }
@@ -154,7 +154,7 @@ lint_php () {
     #    echo "$PHPLINT $f"
     #    $PHPLINT $f
     #done
-    log "Analyzing phpsearch.php not implemented at this time"
+    log "Analyzing phpsearch not implemented at this time"
 }
 
 lint_python () {
@@ -189,9 +189,15 @@ lint_scala () {
     echo
     log "lint_scala"
     SCALA_PATH=$PROJECT_PATH/scala
+    SCALASEARCH_PATH=$SCALA_PATH/scalasearch
+    TOOLS_PATH=$SCALA_PATH/tools
+    SCALASTYLE=$TOOLS_PATH/scalastyle_2.11-0.6.0-batch.jar
+    CONFIG=$TOOLS_PATH/scalastyle_config.xml
 
-    # Analyze
-    log "Analyzing scalasearch not implemented at this time"
+    # Analyze src/main/scala
+    log "Analyzing scalasearch"
+    # java -jar scalastyle-batch_2.10.jar --config lib/scalastyle_config.xml src/main/scala
+    java -jar $SCALASTYLE --config $CONFIG $SCALASEARCH_PATH/src/main/scala
 }
 
 lint_all () {
