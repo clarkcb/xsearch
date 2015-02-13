@@ -471,31 +471,156 @@ Here's a list of what is currently being used:
 
 
 Testing
---------------
+-------
 
 I have implemented three different types of testing for almost all language
-versions: basic, unit, and benchmark. These are exercised using the following
-scripts under _shared_:
+versions: basic, unit, and benchmark. 
 
-* _test.sh_ - this is a basic test script that runs each language version with
-  the same arguments to compare the output.
 
-* _unittest.sh_ - this script will run all existing unit tests for a given
-  language if the language name is included on the command line, or for all
-  languages if no language argument is given.
+#### Basic Testing ####
 
-* _benchmark.py_ - this script performs basic benchmarking. In the configuration
-  section of the script you specify the language versions you want to run and
-  "scenarios" you want to test, which is a list of argument lists that will be
-  passed to each specified language version to run a specified number of times
-  (defined in the <code>runs</code> variable). The execution of each individual
-  run is timed using the Unix <code>time</code> command, and those times are
-  totalled up and printed out in a table at the end of the runs, with rankings
-  for each version.
+The _shared/test.sh_ test script was the first test I put together. I wanted a
+way to run multiple versions of the tool and compare outputs, and that is what
+this script will do. You can adjust the search settings to compare results for
+different scenarios.
 
-As a brief aside, there were some interesting and somewhat surprising results
-from the runs that I did. I don't want to expand on this yet, because I know
-I should do some optimization work on some of the language versions first.
+
+#### Unit Testing ####
+
+I have added unit tests for almost all of the languages, and I created the
+script _shared/unittest.sh_ to provide a common interface for running the tests
+for the various language implementations, or for running all tests for all
+languages at once.
+
+Here is some language-specific unit test info:
+
+* C# - Tests are in the same solution but different project, called
+  _CsSearchTests_. Running the tests involves running _CsSearchTests.exe_
+  compiled from that project.
+* Clojure - Tests use <code>clojure.test</code> and are run using the Leiningen
+  command <code>lein test</code>.
+* F# - No tests yet
+* Go - Test files follow the standard naming convention: _[name]_test.go_. The
+  tests use the <code>testing</code> package. They are run using the
+  <code>go test</code> command.
+* Haskell - <code>cabal</code> is used to configure testing, and also to run it
+  using the <code>cabal test</code> command.
+* Java - Java tests use <code>JUnit</code> and are run via the Maven command
+  <code>mvn test</code>.
+* Node - [Nodeunit](https://github.com/caolan/nodeunit) was used to create and
+  run tests for Node. The link explains how to install and use it.
+* Perl - Tests in Perl use the <code>Test::Simple</code> module and are run as
+  regular Perl scripts.
+* PHP - [PHPUnit](https://phpunit.de/) was used to create and
+  run tests for Node. The link explains how to install and use it.
+* Python - Python tests use the <code>unittest</code> module and are run as
+  regular Python scripts.
+* Ruby - Ruby tests use <code>test/unit</code> and are run as regular Ruby
+  scripts.
+* Scala - Scala tests use <code>JUnit</code> and <code>scalatest</code> and are
+  run via the Maven command <code>mvn test</code>.
+
+
+#### Benchmark Testing ####
+
+I created the _shared/benchmark.py_ script to compare execution time across
+versions. The script defines a number of "scenarios" (sets of commands to test
+different inputs and outputs) and the number of runs to perform. Each scenario
+is run the defined number of times for each language version, and the Unix
+<code>time</code> command is used to measure execution time. After each run,
+a table of times and ranks for each version is printed out. At the end of all
+runs for a given scenario, a totals and ranks table is printed for that
+scenario, and an aggregate totals and ranks table is printed at the end of all
+runs for all scenarios.
+
+The results that I have seen so far from this testing have been somewhat
+surprising. Here's an example aggregate totals table:
+
+
+     xsearch           real  r.avg  r.rank   sys  s.avg  s.rank   user  u.avg  u.rank   total  t.avg  t.rank
+    --------------------------------------------------------------------------------------------------------
+     cljsearch        47.74   1.59      12  6.95   0.23      12  88.75   2.96      12  143.44   4.78      12
+     cssearch          9.74   0.32       6  2.05   0.07       4   7.25   0.24       5   19.04   0.63       6
+     fssearch         10.02   0.33       7  1.29   0.04       2   8.58   0.29       7   19.89   0.66       7
+     gosearch          7.61   0.25       3  4.39   0.15      11   3.19   0.11       1   15.19   0.51       4
+     hssearch          5.70   0.19       1  1.81   0.06       3   3.64   0.12       3   11.15   0.37       1
+     javasearch       13.51   0.45       9  3.21   0.11      10  20.55   0.69       9   37.27   1.24       9
+     nodesearch       11.59   0.39       8  2.66   0.09       8   8.69   0.29       8   22.94   0.76       8
+     plsearch.pl       8.91   0.30       5  1.03   0.03       1   7.59   0.25       6   17.53   0.58       5
+     phpsearch.php    23.72   0.79      10  2.77   0.09       9  20.56   0.69      10   47.05   1.57      10
+     pysearch.py       5.97   0.20       2  2.12   0.07       5   3.63   0.12       2   11.72   0.39       2
+     rbsearch.rb       7.65   0.26       4  2.57   0.09       7   4.80   0.16       4   15.02   0.50       3
+     scalasearch      24.26   0.81      11  2.31   0.08       6  32.16   1.07      11   58.73   1.96      11
+
+
+I should mention some disclaimers at this point:
+
+* The versions vary in their levels of functionality, and that could certainly
+  affect overall performance. Ideally all versions should have the same level
+  of functionality for this test, and that is a long-term goal.
+* This is a command-line tool, and certain usage patterns and results are to be
+  expected. Some languages are more suited for this particular scenario than
+  others.
+* So far I have only run this script on my MacBook Pro running Yosemite.
+  Different results are likely on other systems.
+
+
+Now some brief comments for each version:
+
+* <code>cljsearch</code> - I was surprised by how much dramatically slower this
+  version runs than the rest. There's an interesting
+  [blog post](https://nicholaskariniemi.github.io/2014/02/25/clojure-bootstrapping.html)
+  that explains what's going on. I actually tried to improve performance by
+  adding some <code>clojure.async</code> usage, but it actually made things
+  worse, so I removed it. I'm still a huge fan of the Clojure language, but I do
+  feel at this point that it is not a language that is well suited for these
+  types of scenarios.
+* <code>cssearch</code> - I find it interesting that the CLI versions are quite
+  a bit faster than the JVM versions. At some point I will need to search
+  for startup time comparisons.
+* <code>fssearch</code> - This version is dramatically faster than its JVM
+  "counterpart" <code>scalasearch</code>. The F# version is behind in
+  functionality, and the Scala version could probably use some optimization, but
+  there is probably also a CLI vs JVM startup time thing going on here.
+* <code>gosearch</code> - This version is certainly fast, but I expected it to
+  be the fastest, or in the top two. I expected this because it is natively
+  compiled, and also because I added some concurrency via channels. I can
+  probably do more to optimize it, but I also wonder if there is some small
+  amount of overhead with using channels.
+* <code>hssearch</code> - Being that it is natively compiled, I expected this
+  version to be one of the fastest, but I did not expect it to be the fastest.
+  I have done nothing to optimize this version. I seem to recall seeing some
+  mention of automatic parallelization, I wonder if that could help explain
+  this.
+* <code>javasearch</code> - JVM startup time can certainly help to explain why
+  the JVM versions are a little slower, but because it is sort-of compiled I
+  expected it to be faster than the interpreted languages. I think it probably
+  goes back to languages being more suited for some scenarios than others.
+* <code>nodesearch</code> - My disclaimer for this version is that I haven't
+  done much to make this version asynchronous, even though that is standard
+  practice in Node. At some point I will do this, and at that point I will pay
+  more attention to its benchmark results.
+* <code>plsearch.pl</code> - Perl might not be the fastest among the scripting
+  languages, but it is faster than all of the CLI and JVM versions! It's clear
+  that scripting languages like Perl are well suited to this usage scenario.
+* <code>phpsearch.php</code> - The slowest of the scripting languages, but to be
+  fair, PHP wasn't designed for this type of use. I can see why Facebook created
+  <code>Hack</code>, though, and I'm actually somewhat interesting in doing a
+  comparison at some point, perhaps by creating a <code>Hack</code> version of
+  the tool.
+* <code>pysearch.py</code> - The fastest of the scripting languages, and second
+  fastest overall! GIL or not, I'm impressed, and this more-or-less cements in
+  my mind the idea that Python is an ideal language for these types of scenarios.
+* <code>rbsearch.rb</code> - The Ruby version very close to the Python version.
+  Yet another way that the two are very similar. I want to bring the Ruby
+  version up to the same level of functionality and run this again, but I
+  expect to see similar results.
+* <code>scalasearch</code> - JVM startup yadda yadda, but I need to look at
+  doing some optimizations. I have a feeling there are some big ones lurking in
+  there, perhaps through forcing laziness in some places and not in others.
+  Regardless, I expect to be able to bring this version closer to the Java
+  version in terms of performance, but I don't expect that this version will
+  ever be one of the fastest.
 
 
 History / Motivation
