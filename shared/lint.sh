@@ -196,7 +196,7 @@ lint_scala () {
 
     # Analyze src/main/scala
     log "Analyzing scalasearch"
-    # java -jar scalastyle-batch_2.10.jar --config lib/scalastyle_config.xml src/main/scala
+    log "java -jar $SCALASTYLE --config $CONFIG $SCALASEARCH_PATH/src/main/scala"
     java -jar $SCALASTYLE --config $CONFIG $SCALASEARCH_PATH/src/main/scala
 }
 
