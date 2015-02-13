@@ -9,10 +9,11 @@ object FileUtil {
 
   def getExtension(name: String): String = {
     val lastIndex = name.lastIndexOf('.')
-    if (lastIndex > 0 && lastIndex < name.length-1)
+    if (lastIndex > 0 && lastIndex < name.length-1) {
       name.split('.').last
-    else
+    } else {
       ""
+    }
   }
 
   def isDotDir(name: String): Boolean = {

@@ -11,22 +11,23 @@ class SearchFile(val containers: List[String], val path: String,
     this(List.empty[String], path, file, fileType)
   }
 
+  // get file as java.io.File
   def toFile: File = {
     val p = new File(path)
     new File(p, fileName)
   }
 
   // get just the path inside the container(s)
-  def getPath = {
+  def getPath : String = {
     toFile.getPath
   }
 
   // get just the path inside the container(s)
-  def getPathWithContainers = {
+  def getPathWithContainers : String = {
     toString
   }
 
-  override def toString = {
+  override def toString : String = {
     val sb = new StringBuilder
     if (containers.nonEmpty) {
       sb.append(containers.mkString(CONTAINER_SEPARATOR)).append(CONTAINER_SEPARATOR)

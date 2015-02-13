@@ -1,14 +1,15 @@
 package scalasearch
 
 import scala.collection.mutable
-import scala.xml._
+import scala.xml.XML
 
 case class SearchOption(shortarg:String, longarg:String, desc:String) {
-  val sortarg = 
-    if (shortarg.nonEmpty)
+  val sortarg =
+    if (shortarg.nonEmpty) {
       shortarg.toLowerCase + "@" + longarg.toLowerCase
-    else
+    } else {
       longarg.toLowerCase
+    }
 }
 
 object SearchOptions {
@@ -155,12 +156,12 @@ object SearchOptions {
     sb.toSettings
   }
 
-  def usage(status: Int) = {
-    println(getUsageString)
+  def usage(status: Int): Unit = {
+    Common.log(getUsageString)
     sys.exit(status)
   }
 
-  def getUsageString = {
+  def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
     sb.append(" scalasearch [options] -s <searchpattern> <startpath>\n\n")
@@ -170,7 +171,7 @@ object SearchOptions {
         zip searchOptions.map("--" + _.longarg)).map(o => o._1 + o._2)
     val optDescs = searchOptions.map(_.desc)
     val longest = optStrings.map(_.length).max
-    val format = " %1$-"+longest+"s  %2$s\n"
+    val format = " %1$-" + longest + "s  %2$s\n"
     for (i <- 0 until optStrings.length) {
       sb.append(format.format(optStrings(i), optDescs(i)))
     }

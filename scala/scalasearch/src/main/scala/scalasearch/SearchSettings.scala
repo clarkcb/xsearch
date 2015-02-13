@@ -259,7 +259,7 @@ class SearchSettings(val startPath:Option[String],
     hasLinesAfterToPatterns || hasLinesAfterUntilPatterns
   }
 
-  override def toString = {
+  override def toString: String = {
     "SearchSettings(" +
       "archivesOnly: " + archivesOnly +
       ", debug: " + debug +

@@ -16,24 +16,27 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
 
   val sepLen = 80
 
-  override def toString = {
-    if (linesBefore.nonEmpty || linesAfter.nonEmpty)
+  override def toString: String = {
+    if (linesBefore.nonEmpty || linesAfter.nonEmpty) {
       multiLineToString
-    else
+    } else {
       singleLineToString
+    }
   }
 
-  def singleLineToString = {
+  def singleLineToString: String = {
     val filepath = if (file.isDefined) file.get.getPathWithContainers else "<text>"
     val matchString =
-      if (lineNum > 0)
+      if (lineNum > 0) {
         ": %d: [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
           formatMatchingLine)
-      else " matches"
+      } else {
+        " matches"
+      }
     filepath + matchString
   }
 
-  private def formatMatchingLine:String = {
+  private def formatMatchingLine: String = {
     val lineLength = line.length
     val matchLength = matchEndIndex - matchStartIndex
     val formatted =
@@ -51,12 +54,16 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
           if (beforeIndex > 3) {
             beforeIndex += 3
             "..."
-          } else ""
+          } else {
+            ""
+          }
         val after =
           if (afterIndex < lineLength - 3) {
             afterIndex -= 3
             "..."
-          } else ""
+          } else {
+            ""
+          }
         before + line.substring(beforeIndex, afterIndex) + after
       } else {
         line
@@ -71,13 +78,17 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
 
   val newLineChars = Set('\n', '\r')
 
-  def trimNewLines(s:String):String = {
-    if (s == "") ""
-    else if (newLineChars.contains(s.last)) trimNewLines(s.init)
-    else s
+  def trimNewLines(s:String): String = {
+    if (s == "") {
+      ""
+    } else if (newLineChars.contains(s.last)) {
+      trimNewLines(s.init)
+    } else {
+      s
+    }
   }
 
-  def multiLineToString = {
+  def multiLineToString: String = {
     val sb = new StringBuilder
     val filepath = if (file.isDefined) file.get.getPathWithContainers else "<text>"
     sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
@@ -98,7 +109,9 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
         currentLineNum += 1
       }
-    } else sb.append('\n')
+    } else {
+      sb.append('\n')
+    }
     sb.toString()
   }
 }

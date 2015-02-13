@@ -2,45 +2,53 @@ package scalasearch
 
 object SearchMain {
 
-  def log(message: String): Unit = {
-    println(message)
+  def printMatchingDirs(searcher:Searcher): Unit = {
+    val dirs = searcher.getMatchingDirs
+    Common.log("\nDirectories with matches (%d):".format(dirs.length))
+    dirs.foreach(f => Common.log(f.toString))
   }
 
-  def logError(message: String): Unit = {
-    log("Error: " + message)
+  def printMatchingFiles(searcher:Searcher): Unit = {
+    val files = searcher.getMatchingFiles
+    Common.log("\nFiles with matches (%d):".format(files.length))
+    files.foreach(f => Common.log(f.toString))
+  }
+
+  def printMatchingLines(searcher:Searcher, settings:SearchSettings): Unit = {
+    val lines = searcher.getMatchingLines
+    val hdr =
+      if (settings.uniqueLines) {
+        "\nUnique lines with matches (%d):"
+      } else {
+        "\nLines with matches (%d):"
+      }
+    Common.log(hdr.format(lines.length))
+    lines.foreach(Common.log)
   }
 
   def main(args: Array[String]) {
-    val settings =
-      try {
-        SearchOptions.settingsFromArgs(args)
-      } catch {
-        case e: SearchException =>
-          log("")
-          logError(e.getMessage + "\n")
-          SearchOptions.usage(1)
+    try {
+      val settings = SearchOptions.settingsFromArgs(args)
+
+      if (settings.printUsage) {
+        SearchOptions.usage(0)
       }
 
-    if (settings.printUsage) {
-      SearchOptions.usage(0)
-    }
-
-    try {
       val searcher = new Searcher(settings)
       searcher.search()
 
       if (settings.printResults) {
-        log("\nSearch results (%d):".format(searcher.searchResults.length))
+        Common.log("\nSearch results (%d):".format(searcher.searchResults.length))
         searcher.printSearchResults()
       }
-      if (settings.listDirs) searcher.printMatchingDirs()
-      if (settings.listFiles) searcher.printMatchingFiles()
-      if (settings.listLines) searcher.printMatchingLines()
+      if (settings.listDirs) { printMatchingDirs(searcher) }
+      if (settings.listFiles) { printMatchingFiles(searcher) }
+      if (settings.listLines) { printMatchingLines(searcher, settings) }
 
     } catch {
       case e: SearchException =>
-        log("")
-        logError(e.getMessage + "\n")
+        Common.log("")
+        Common.logError(e.getMessage + "\n")
         SearchOptions.usage(1)
     }
   }
