@@ -7,8 +7,8 @@ A multilingual file search utility
 Overview
 --------
 
-This is a command line-based recursive file search utility written in a number of
-different languages (for the reason behind this see History / Motivation).
+This is a command line-based recursive file search utility written in a number
+of different languages (for the reason behind this see History / Motivation).
 
 Here's the current usage text for the Haskell version (the same for each
 language except for executable name):
@@ -608,16 +608,16 @@ Now some brief comments for each version:
   scripting languages, but also the second fastest overall! GIL be damned, I'm
   impressed, and this more-or-less cements in my mind the idea that Python is
   an ideal language for these types of scenarios.
-* `rbsearch.rb` - The Ruby version is very nearly as fast to the Python version;
+* `rbsearch.rb` - The Ruby version is very nearly as fast as the Python version;
   yet another way that the two are very similar. I want to bring the Ruby
   version up to the same level of functionality and run this again, but I
   expect to see similar results.
-* `scalasearch` - JVM startup yadda yadda, but I need to look at doing some
+* `scalasearch` - JVM startup yadda yadda, but I also need to look at doing some
   optimizations. I have a feeling there are some big opportunities for
-  optimization lurking in there, perhaps through forcing laziness in some places
-  and not in others. Regardless, I expect to be able to bring this version
-  closer to the Java version in terms of performance, but I don't expect that
-  this version will ever be one of the fastest.
+  optimization lurking in the scala code, perhaps through forcing laziness in
+  some places and not in others. Regardless, I expect to be able to bring this
+  version closer to the Java version in terms of performance, but I don't expect
+  that this version will ever be one of the fastest.
 
 
 History / Motivation
@@ -640,7 +640,7 @@ giving me exactly what I needed, which was a tool that had these features:
 * Filter directories to search by name (regex)
 * Filter files to search by extension and also by name (regex)
 * Allow for capturing a specified number of lines before and/or after each match
-* Filter matches based on "lines-before" and/or "lines-after" patterns
+* Filter matches based on "lines-before" and/or "lines-after" regex patterns
 * Allow for searching archive (zip, tar, gz, etc.) files
 * Present single-line results with filepath, line #, match start and end column
   indices, and the line that matched if no lines before or after are captured
