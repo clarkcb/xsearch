@@ -18,7 +18,7 @@ Usage:
   hssearch [options] &lt;startpath&gt;
 
 Options:
-  -1,--firstmatch           Capture only the first match for a file+search combination
+  -1,--firstmatch           Capture only the first file+pattern match
   -a,--allmatches           Capture all matches*
   --archivesonly            Search only archive files (also turns on searcharchives)
   -B,--linesafter           Number of lines to include after every matched line (default: 0)
@@ -32,29 +32,29 @@ Options:
   -h,--help                 Print this usage and exit
   --in-archiveext           Specify extension for archive files to include in search
   --in-archivefilepattern   Specify name pattern for archive files to include in search
-  --in-linesafterpattern    Specify pattern to search the "lines-after" lines on (used with --linesafter)
-  --in-linesbeforepattern   Specify pattern to search the "lines-before" lines on (used with --linesbefore)
+  --in-linesafterpattern    Specify pattern to search the "lines-after" lines on
+  --in-linesbeforepattern   Specify pattern to search the "lines-before" lines on
   --includehidden           Include hidden files and directories
-  --linesaftertopattern     Specify pattern to collect lines after up to where pattern is matched (or EOF)
-  --linesafteruntilpattern  Specify pattern to collect lines after until pattern is matched (or EOF)
+  --linesaftertopattern     Specify pattern to collect lines after up to where pattern matched
+  --linesafteruntilpattern  Specify pattern to collect lines after until pattern matched
   --listdirs                Generate a list of the matching directories after searching
   --listfiles               Generate a list of the matching files after searching
   --listlines               Generate a list of the matching lines after searching
   -m,--multilinesearch      Search files as single multi-line content block
   --out-archiveext          Specify extension for archive files to exclude from search
   --out-archivefilepattern  Specify name pattern for archive files to exclude from search
-  --out-linesafterpattern   Specify pattern to filter the "lines-after" lines on (used with --linesafter)
-  --out-linesbeforepattern  Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
+  --out-linesafterpattern   Specify pattern to filter the "lines-after" lines on
+  --out-linesbeforepattern  Specify pattern to filter the "lines-before" lines on
   -P,--noprintmatches       Suppress printing of search results to stdout
   -p,--printmatches         Print search results to stdout*
   -R,--norecursive          Do not search recursively
   -r,--recursive            Search recursively through subdirectories*
   -s,--search               Specify search pattern
   -t,--dotiming             Measure search execution duration
-  -u,--uniquelines          Save only search results that have unique lines from previous search results
+  -u,--uniquelines          Save only search results with unique lines from previous results
   -v,--verbose              Set output mode to verbose
   -V,--version              Print version and exit
-  -w,--maxlinelength        Maximum number of characters to print out per line of result (default: 150)
+  -w,--maxlinelength        Max length of line of result to print out (default: 150)
   -x,--in-ext               Specify extension for files to include in search
   -X,--out-ext              Specify extension for files to exclude from search
   -Z,--nosearcharchives     Do not search archive files (bz2, gz, tar, zip)*
@@ -91,10 +91,10 @@ If there were one match, the result output would look something like this:
     ./path/to/CsController.cs
 
 
-The verbosity level can be increased with the <code>-v/--verbose</code> option,
-which will output the lists of directories and files to be searched, and even
-more with the <code>--debug</code> option, which will also output the
-<code>SearchSettings</code> and other debug info.
+The verbosity level can be increased with the `-v/--verbose` option, which will
+output the lists of directories and files to be searched, and even more with
+the `--debug` option, which will also output the `SearchSettings` and other
+debug info.
 
 The completeness of the functionality of the tool varies from language to
 language. I have three rough functionality groups:
@@ -152,7 +152,7 @@ language. I have three rough functionality groups:
   - Print search results with container prefixes in filepath
 
 
-Here's the breakdown of languages for each group.
+Here's the breakdown of languages for each group:
 
 * __Group I__: all languages except C++
 * __Group II__: all languages except C++ and F#
@@ -164,16 +164,15 @@ Code Structure / Functionality
 
 The basic code structure includes these elements:
 
-* <code>FileTypes</code> - helps determine file type (archive, binary or text),
+* `FileTypes` - helps determine file type (archive, binary or text),
   searchability, etc.
-* <code>FileUtil</code> - provides file-related functionality (e.g. get file
-  extension, check whether file is hidden)
-* <code>Searcher</code> - executes the file search based on the
-  <code>SearchSettings</code>
-* <code>SearchOptions</code> - loads option data from XML, generates usage text,
-  builds a <code>SearchSettings</code> instance from command line arguments
-* <code>SearchResult</code> - encapsulates a single search result
-* <code>SearchSettings</code> - encapsulates the search settings, including what
+* `FileUtil` - provides file-related functionality (e.g. get file extension,
+  check whether file is hidden)
+* `Searcher` - executes the file search based on the `SearchSettings`
+* `SearchOptions` - loads option data from XML, generates usage text, builds a
+  `SearchSettings` instance from command line arguments
+* `SearchResult` - encapsulates a single search result
+* `SearchSettings` - encapsulates the search settings, including what
   directories or files to include/exclude, search patterns, lines before or
   after, etc.
 
@@ -182,96 +181,87 @@ The basic code structure includes these elements:
 
 The functionality lifecycle goes something like this:
 
-1. If the command (e.g. <code>hssearch</code>) is run by itself or with the
-   <code>--help</code> argument, print usage text (to STDOUT) and exit.
-1. If the command line does not include a <code>startpath</code> argument, print
-   an error to this effect, followed by the usage text, then exit.
+1. If the command (e.g. `hssearch`) is run by itself or with the `--help`
+   argument, print usage text (to STDOUT) and exit.
+1. If the command line does not include a `startpath` argument, print an error
+   to this effect, followed by the usage text, then exit.
 1. If no search patterns are provide in the arguments, print an error to this
    effect, followed by the usage text, then exit.
 1. If any invalid/unknown arguments are provided, print an error to this effect,
    followed by the usage text, then exit.
-1. If the <code>startpath</code> is not found, print an error to this effect,
-   followed by the usage text, then exit.
-1. If the <code>--debug</code> argument was included, print the
-   <code>SearchSettings</code> instance.
-1. The <code>startpath</code> can be a file or a directory. If it is a file,
-   skip directly to the <code>SearchFile</code> function/method (described
-   further down).
-1. If <code>recursive</code> is <code>true</code> in <code>SearchSettings</code>
-   (the default), then find all directories under <code>startpath</code>,
-   filtering by any directory name patterns that were provided as arguments.
-   These are the "search directories".
-1. If <code>verbose</code> is <code>true</code> in <code>SearchSettings</code>,
-   then print the list of search directories.
+1. If the `startpath` is not found, print an error to this effect, followed by
+   the usage text, then exit.
+1. If the `--debug` argument was included, print the `SearchSettings` instance.
+1. The `startpath` can be a file or a directory. If it is a file, skip directly
+   to the `SearchFile` function/method (described further down).
+1. If `recursive` is `true` in `SearchSettings` (the default), then find all
+   directories under `startpath`, filtering by any directory name patterns that
+   were provided as arguments. These are the "search directories".
+1. If `verbose` is `true` in `SearchSettings`, then print the list of search
+   directories.
 1. Find all files under the search directories, filtering by any file extensions
    and/or file name patterns that were provided as arguments. These are the
    "search files".
-1. If <code>verbose</code> is <code>true</code> in <code>SearchSettings</code>,
-   then print the list of search files.
-1. For all search files (or for the single file if <code>startpath</code> is a
-   file), call the <code>SearchFile</code> function/method.
-1. The <code>SearchFile</code> function/method determines the type of file
-   (archive, binary, text, or unknown), and will route to the appropriate
-   file type-specific function/method, or do nothing if the file type is
-   unknown.
-1. If the file type is binary, route to the <code>SearchBinaryFile</code>
-   function/method. <code>SearchBinaryFile</code> will return a single
-   <code>SearchResult</code> for each search pattern that has a match anywhere
-   in the binary file's bytes. The <code>SearchResult</code> will not  include
-   line number or line text, for obvious reasons.
-1. If the file type is text, route to <code>SearchTextFile</code>.
-1. If <code>multilinesearch</code> is <code>true</code> in
-   <code>SearchSettings</code>, route to <code>SearchTextFileContents</code>,
-   otherwise route to the <code>SearchTextFileLines</code>.
-1. <code>SearchTextFileContents</code> slurps the entire contents of the text
-   file into a string variable and routes to <code>SearchMultilineString</code>.
-   <code>SearchMultilineString</code> returns a list of
-   <code>SearchResult</code> instances for all search patterns matches in the
-   string.
-1. <code>SearchTextFileLines</code> creates a line iterator on the file and
-   routes to <code>SearchLines</code>. <code>SearchLines</code> returns a list
-   of <code>SearchResult</code> instances for all search patterns matches in
-   the lines.
-1. If the file type is archive, and if either <code>archivesonly</code> or
-   <code>searcharchives</code> is <code>true</code> in
-   <code>SearchSettings</code>, and if the specific language version of the tool
-   supports archive file searching, <code>SearchFile</code> routes to
-   <code>SearchArchiveFile</code>. <code>SearchArchiveFile</code> in turn routes
-   to the specific function/method that handles searching for the specific
-   archive file type. I will use <code>SearchZipFile</code> as the example.
-1. <code>SearchZipFile</code> gets the list of directories and files contained
-   in the zip and filters that list based on any provided file extensions and
+1. If `verbose` is `true` in `SearchSettings`, then print the list of search
+   files.
+1. For all search files (or for the single file if `startpath` is a file), call
+   the `SearchFile` function/method.
+1. The `SearchFile` function/method determines the type of file (archive,
+   binary, text, or unknown), and will route to the appropriate file
+   type-specific function/method, or do nothing if the file type is unknown.
+1. If the file type is binary, route to the `SearchBinaryFile` function/method.
+   `SearchBinaryFile` will return a single `SearchResult` for each search
+   pattern that has a match anywhere in the binary file's bytes. The
+   `SearchResult` will not  include line number or line text, for obvious
+   reasons.
+1. If the file type is text, route to `SearchTextFile`.
+1. If `multilinesearch` is `true` in `SearchSettings`, route to
+   `SearchTextFileContents`, otherwise route to the `SearchTextFileLines`.
+1. `SearchTextFileContents` slurps the entire contents of the text file into a
+   string variable and routes to `SearchMultilineString`.
+   `SearchMultilineString` returns a list of `SearchResult` instances for all
+   search patterns matches in the string.
+1. `SearchTextFileLines` creates a line iterator on the file and routes to
+   `SearchLines`. `SearchLines` returns a list of `SearchResult` instances for
+   all search patterns matches in the lines.
+1. If the file type is archive, and if either `archivesonly` or `searcharchives`
+   is `true` in `SearchSettings`, and if the specific language version of the
+   tool supports archive file searching, `SearchFile` routes to
+   `SearchArchiveFile`. `SearchArchiveFile` in turn routes to the specific
+   function/method that handles searching for the specific archive file type.
+   `SearchZipFile` will be the example.
+1. `SearchZipFile` gets the list of directories and files contained in the zip
+   and filters that list based on any provided file extensions and
    directory/file name pattern arguments. The list of search files is then
    iterated through and individual files in the zip are searched using the steps
-   described above based on file type and <code>SearchSettings</code>.
-1. Once searching is complete, if <code>printresults</code> is <code>true</code>
-   (the default), print out the <code>SearchResult</code> instances. If
-   <code>linesbefore</code> or <code>linesafter</code> is greater than zero, the
-   <code>SearchResult</code> will print out in a multiline mode, otherwise it
-   will print out in a single line.
-1. If <code>listdirs</code> is <code>true</code> in <code>SearchSettings</code>,
+   described above based on file type and `SearchSettings`.
+1. Once searching is complete, if `printresults` is `true` (the default), print
+   out the `SearchResult` instances. If `linesbefore` or `linesafter` is greater
+   than zero, the `SearchResult` will print out in a multiline mode, otherwise
+   it will print out in a single line.
+1. If `listdirs` is `true` in `SearchSettings`,
    print the unique list of directories containing files with matches.
-1. If <code>listfiles</code> is <code>true</code> in
-   <code>SearchSettings</code>, print the unique list of files with matches.
-1. If <code>listlines</code> is <code>true</code> in
-   <code>SearchSettings</code>, and if <code>uniquelines</code> is
-   <code>true</code>, print the unique list of lines with matches. If
-   <code>uniquelines</code> is <code>false</code>, print all lines with matches.
+1. If `listfiles` is `true` in `SearchSettings`, print the unique list of files
+   with matches.
+1. If `listlines` is `true` in `SearchSettings`, and if `uniquelines` is `true`,
+   print the unique list of lines with matches. If `uniquelines` is `false`,
+   print all lines with matches.
 
 
 
 Installing / Running
 --------------------
 
-I have xsearch cloned to this path: _~/src/git/xsearch_. This is important to
-know, because although I've tried to limit them as much as possible, you will
-find places in the code (mostly the test code) that reference this path and that
-you will need to adjust to match your clone location.
+I have cloned `xsearch` to this path: _~/src/git/xsearch_. This is important to
+know, because although I've tried to limit them, there are places in the code
+(e.g. in the shell scripts that run the various versions, and also in the test
+code) that reference this path and that will need to be adjusted to match a
+different clone location.
 
 To run the various language versions, I compile them (if necessary) and create a
 soft link to the executable or script under _~/bin_, which I have included in
-the <code>PATH</code> environment variable. For example, to run the Haskell
-version I compiled it and then created the following soft link:
+the `PATH` environment variable. For example, to run the Haskell version I
+compiled it and then created the following soft link:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/haskell/hssearch/dist/build/hssearch/hssearch
@@ -292,15 +282,11 @@ you can build the Haskell version (after installing GHC) by running:
     $ cd ~/src/git/xsearch
     $ ./shared/build.sh haskell
 
-You can also run it without a language name to build all compiled versions in
-one run.
+You can also run it without a language argument to build all compiled versions
+in one run.
 
-I have also included a basic test script - _.shared/test.sh_ - that can be run
-to test an individual language version or test and compare all versions in a
-single run. Edit that script to see how to run it and also to change test
-parameters.
-
-Below is some additional info for some of the languages.
+Below is some additional info on installing/running some of the specific
+language versions.
 
 
 #### C# / F# ####
@@ -312,14 +298,16 @@ _shared/build.sh_ script you will see this command to compile the C# version:
 
     xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
 
-You can change <code>CONFIGURATION</code> to <code>Release</code> if you want to
-create a release build.
+Note that the `CONFIGURATION` variable is currently set to `Debug`, but this can
+be changed to `Release` to create a release build.
 
-To run the <code>cssearch</code> version, I created a soft link to a bash script
-under _CsSearch_:
+To run `cssearch`, I created a soft link to a bash script under _CsSearch_:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/csharp/CsSearch/cssearch.sh cssearch
+
+Note that the defined path in that script will need to be altered if `xsearch`
+is cloned to a different location than _~/src/git/xsearch_.
 
 This information is similarly applicable for the F# version.
 
@@ -328,43 +316,51 @@ This information is similarly applicable for the F# version.
 
 Although you can download Clojure from http://clojure.org/, you won't need to.
 Instead, retrieve the Leiningen build tool script from http://leiningen.org/
-and run the <code>lein</code> command by itself to have it do a self-install of
-Clojure and Leiningen. After the initial install, running the <code>lein</code>
-by itself will show the options.
+and run the `lein` command by itself to have it do a self-install of Clojure
+and Leiningen. After the initial install, running the `lein` by itself will
+show the options.
 
-Leiningen works similarly to Maven. There's <code>lein clean</code> to do clean
-up, <code>lein compile</code> to compile to class files, and <code>lein
-install</code> to install to the local _.m2_ repository. To build a jar with
-dependencies included, use the command <code>lein uberjar</code>.
+Leiningen works similarly to Maven. There's `lein clean` to do clean up,
+`lein compile` to compile to class files, and `lein install` to install to the
+local _.m2_ repository. To build a jar with dependencies included, use the
+command `lein uberjar`.
+
+To run `cljsearch`, I created a soft link to a bash script under _cljsearch_:
+
+    $ cd ~/bin
+    $ ln -s ~/src/git/xsearch/clojure/cljsearch/cljsearch
+
+Note that the defined path in that script will need to be altered if `xsearch`
+is cloned to a different location than _~/src/git/xsearch_.
 
 
 #### Go ####
 
 You can download Go from http://golang.org/. After you have installed it you
-will have the <code>go</code> command available; run it by itself to get
-basic usage instructions.
+will have the `go` command available; run it by itself to get basic usage
+instructions.
 
-If you look in the _build.sh_ script in the <code>build_go()</code> function
-you will see this command to build <code>gosearch</code>:
+If you look in the _build.sh_ script in the `build_go()` function you will see
+this command to build `gosearch`:
 
     go install elocale.com/clarkcb/xsearch/gosearch
 
-Note that I set the <code>GOPATH</code> environment variable. This is important
-for Go because it expects it to be defined and point to a standard directory
-structure that contains a _src_ directory with project-specific source
+Note also that I set the `GOPATH` environment variable in that function. This
+is important for Go because it expects it to be defined and point to a standard
+directory structure containing a _src_ directory with project-specific source
 directories under that.
 
-Note also that something called <code>gengosearchcode</code> is installed and
-ran before the <code>gosearch</code> install. This executable generates some go
-code files from xml that get used in <code>gosearch</code>.
+Note also that something called `gengosearchcode` is installed and ran before
+the `gosearch` install. This executable generates some go code files from xml
+that get used in `gosearch`.
 
-The compiled executable gets created under _go/bin_. To run
-<code>gosearch</code> I then create a soft link to it in my _~/bin_ directory:
+The compiled executable gets created under _go/bin_. To run `gosearch` I then
+create a soft link to it in my _~/bin_ directory:
 
     $ cd ~/bin
     $ ln -s ~/src/git/xsearch/go/bin/gosearch
 
-Alternatively, you could add <code>$GOPATH/bin</code> to <code>PATH</code>.
+Alternatively, you could add `$GOPATH/bin` to `PATH`.
 
 
 #### Haskell ####
@@ -372,13 +368,12 @@ Alternatively, you could add <code>$GOPATH/bin</code> to <code>PATH</code>.
 You can download Haskell from http://www.haskell.org/. After you have run the
 installer you will have access to these commands:
 
-* <code>ghc</code> - the compiler
-* <code>ghci</code> - the REPL
-* <code>cabal</code> - a tool for building, packaging, and managing dependencies
+* `ghc` - the compiler
+* `ghci` - the REPL
+* `cabal` - a tool for building, packaging, and managing dependencies
 
-The <code>hssearch</code> version has a number of dependencies, which you will
-use <code>cabal</code> to download and install. To start, I recommend running
-these commands first:
+The `hssearch` version has a number of dependencies, which you will use `cabal`
+to download and install. To start, I recommend running these commands first:
 
     $ cd ~/src/git/xsearch/haskell/hssearch
     $ cabal sandbox init
@@ -389,19 +384,18 @@ the same directory:
 
     $ cabal build
 
-<code>cabal</code> will complain about missing dependencies. You will need to
-install them. For example, for this specified dependency:
+`cabal` will complain about missing dependencies. You will need to install
+them. For example, for this specified dependency:
 
     --dependency='timeit=timeit-1.0.0.0-b5d83acfe823666e0ea6354a3ae30d03'
 
-Run this <code>cabal</code> command:
+Run this `cabal` command:
 
     $ cabal install timeit
 
-Once all dependencies satisfied, you should be able to build
-<code>hssearch</code> successfully with <code>cabal build</code>. This will
-create the <code>hssearch</code> executable under
-_dist/build/HsSearch/hssearch_, to which I then created a soft link under
+Once all dependencies satisfied, you should be able to build `hssearch`
+successfully with `cabal build`. This will create the `hssearch` executable
+under _dist/build/HsSearch/hssearch_, to which I then created a soft link under
 _~/bin_.
 
 
@@ -410,15 +404,15 @@ _~/bin_.
 I use Maven to build and manage dependencies for the Java and Scala versions.
 You will find _pom.xml_ files at the roots of those source trees.
 
-To build the <code>javasearch</code> and <code>scalasearch</code> versions I run
-this command in those root directories:
+To build the `javasearch` and `scalasearch` versions I run this command in
+those root directories:
 
-    $ mvn clean install
+    $ mvn clean package
 
 This creates the executable jar under the _target_ directory. To run them I
 created bash scripts at their root levels - _javasearch_ and _scalasearch_ - to
 which I then created soft links under _~/bin_. You will need to edit those
-scripts to change the path to the jar if xsearch is not cloned under
+scripts to change the path to the jar if `xsearch` is not cloned under
 _~/src/git/xsearch_.
 
 I do plan to switch the Scala version over to SBT but that hasn't happened yet.
@@ -427,10 +421,10 @@ I do plan to switch the Scala version over to SBT but that hasn't happened yet.
 #### Perl / PHP / Python / Ruby ####
 
 Since Perl, PHP, Python and Ruby are interpreted languages, and since their
-interpreters are installed by default on most Unix-style systems (e.g. Linux
-and OSX), there's not much you will need to do to run these (on Windows you
-will need to download and install them from http://perl.org/, http://php.net/,
-http://www.python.org and http://www.ruby-lang.org/).
+interpreters are installed by default on most Unix-style systems, there's not
+much you will need to do to run these (on Windows you will need to download and
+install them from http://perl.org/, http://php.net/, http://www.python.org and
+http://www.ruby-lang.org/).
 
 I don't recall having to install any dependencies, it should just be a matter
 of running the scripts _plsearch.pl_, _phpsearch.php_,  _pysearch.py_ and
@@ -459,12 +453,14 @@ Here's a list of what is currently being used:
 * C# - Nothing yet
 * Clojure - [eastwood](https://github.com/jonase/eastwood)
 * F# - Nothing yet
-* Go - The <code>go vet</code> command (included in the distribution)
+* Go - The `go vet` command (included in the distribution)
 * Haskell - [HLint](http://community.haskell.org/~ndm/darcs/hlint/hlint.htm)
 * Java - [Checkstyle](http://checkstyle.sourceforge.net/)
 * Node - [JSHint](http://jshint.com/)
-* Perl - Nothing yet, although warnings are turned on
-* PHP - Nothing yet (PHPLint seemed problematic)
+* Perl - Nothing yet, although `use strict` and `use warnings` are in all Perl
+  source files
+* PHP - Nothing yet (I looked at [PHPLint](http://www.icosaedro.it/phplint/)
+  but it seemed problematic)
 * Python - [Pylint](http://www.pylint.org/)
 * Ruby - [ruby-lint](https://github.com/YorickPeterse/ruby-lint)
 * Scala - [Scalastyle](http://www.scalastyle.org/)
@@ -494,63 +490,66 @@ languages at once.
 
 Here is some language-specific unit test info:
 
-* C# - Tests are in the same solution but different project, called
-  _CsSearchTests_. Running the tests involves running _CsSearchTests.exe_
-  compiled from that project.
-* Clojure - Tests use <code>clojure.test</code> and are run using the Leiningen
-  command <code>lein test</code>.
+* C# - Tests use the [`NUnit`](http://www.nunit.org/) framework. The tests are
+  in the same solution but different project, called _CsSearchTests_. They are
+  run by executing the _CsSearchTests.exe_ executable compiled from that
+  project.
+* Clojure - Tests use [`clojure.test`](https://clojure.github.io/clojure/clojure.test-api.html)
+  and are run using the Leiningen command `lein test`.
 * F# - No tests yet
 * Go - Test files follow the standard naming convention: _[name]_test.go_. The
-  tests use the <code>testing</code> package. They are run using the
-  <code>go test</code> command.
-* Haskell - <code>cabal</code> is used to configure testing, and also to run it
-  using the <code>cabal test</code> command.
-* Java - Java tests use <code>JUnit</code> and are run via the Maven command
-  <code>mvn test</code>.
+  tests use the [`testing`](http://golang.org/pkg/testing/) package. They are
+  run using the `go test` command.
+* Haskell - Tests use the [`HUnit`](https://hackage.haskell.org/package/HUnit)
+  framework, which must be installed using the `cabal install` command. Test
+  suite configuration is done in the cabal configuration file. Tests are run
+  via the `cabal test` command.
+* Java - Java tests use [`JUnit`](http://junit.org/) and are run via the Maven
+  command `mvn test`.
 * Node - [Nodeunit](https://github.com/caolan/nodeunit) was used to create and
-  run tests for Node. The link explains how to install and use it.
-* Perl - Tests in Perl use the <code>Test::Simple</code> module and are run as
-  regular Perl scripts.
-* PHP - [PHPUnit](https://phpunit.de/) was used to create and
-  run tests for Node. The link explains how to install and use it.
-* Python - Python tests use the <code>unittest</code> module and are run as
-  regular Python scripts.
-* Ruby - Ruby tests use <code>test/unit</code> and are run as regular Ruby
-  scripts.
-* Scala - Scala tests use <code>JUnit</code> and <code>scalatest</code> and are
-  run via the Maven command <code>mvn test</code>.
+  run tests for Node. You will need to install it.
+* Perl - Tests in Perl use the [`Test::Simple`](http://perldoc.perl.org/Test/Simple.html)
+  module and are run as regular Perl scripts.
+* PHP - [PHPUnit](https://phpunit.de/) was used to create and run tests for PHP.
+  You will need to install it.
+* Python - Python tests use the [`unittest`](https://docs.python.org/2/library/unittest.html)
+  module and are run as regular Python scripts.
+* Ruby - Ruby tests use [`test/unit`](http://ruby-doc.org/stdlib-1.8.7/libdoc/test/unit/rdoc/Test/Unit.html)
+  and are run as regular Ruby scripts.
+* Scala - Scala tests use `JUnit` and [`scalatest`](http://www.scalatest.org/)
+  and are run via the Maven command `mvn test`.
 
 
 #### Benchmark Testing ####
 
 I created the _shared/benchmark.py_ script to compare execution time across
-versions. The script defines a number of "scenarios" (sets of commands to test
+versions. The script defines a number of "scenarios" (sets of arguments to test
 different inputs and outputs) and the number of runs to perform. Each scenario
-is run the defined number of times for each language version, and the Unix
-<code>time</code> command is used to measure execution time. After each run,
-a table of times and ranks for each version is printed out. At the end of all
-runs for a given scenario, a totals and ranks table is printed for that
-scenario, and an aggregate totals and ranks table is printed at the end of all
-runs for all scenarios.
+is run the specified number of times for each language version, and the Unix
+`time` command is used to measure execution time. After each run, a table of
+times and ranks for each version is printed out. At the end of all runs for a
+given scenario, a totals and ranks table is printed for that scenario, and an
+aggregate totals and ranks table is printed at the end of all runs for all
+scenarios.
 
 The results that I have seen so far from this testing have been somewhat
 surprising. Here's an example aggregate totals table:
 
 
-     xsearch           real  r.avg  r.rank   sys  s.avg  s.rank   user  u.avg  u.rank   total  t.avg  t.rank
-    --------------------------------------------------------------------------------------------------------
-     cljsearch        47.74   1.59      12  6.95   0.23      12  88.75   2.96      12  143.44   4.78      12
-     cssearch          9.74   0.32       6  2.05   0.07       4   7.25   0.24       5   19.04   0.63       6
-     fssearch         10.02   0.33       7  1.29   0.04       2   8.58   0.29       7   19.89   0.66       7
-     gosearch          7.61   0.25       3  4.39   0.15      11   3.19   0.11       1   15.19   0.51       4
-     hssearch          5.70   0.19       1  1.81   0.06       3   3.64   0.12       3   11.15   0.37       1
-     javasearch       13.51   0.45       9  3.21   0.11      10  20.55   0.69       9   37.27   1.24       9
-     nodesearch       11.59   0.39       8  2.66   0.09       8   8.69   0.29       8   22.94   0.76       8
-     plsearch.pl       8.91   0.30       5  1.03   0.03       1   7.59   0.25       6   17.53   0.58       5
-     phpsearch.php    23.72   0.79      10  2.77   0.09       9  20.56   0.69      10   47.05   1.57      10
-     pysearch.py       5.97   0.20       2  2.12   0.07       5   3.63   0.12       2   11.72   0.39       2
-     rbsearch.rb       7.65   0.26       4  2.57   0.09       7   4.80   0.16       4   15.02   0.50       3
-     scalasearch      24.26   0.81      11  2.31   0.08       6  32.16   1.07      11   58.73   1.96      11
+     xsearch         real r.avg r.rank   sys s.avg s.rank   user u.avg u.rank   total t.avg t.rank
+    ----------------------------------------------------------------------------------------------
+     cljsearch      47.74  1.59     12  6.95  0.23     12  88.75  2.96     12  143.44  4.78     12
+     cssearch        9.74  0.32      6  2.05  0.07      4   7.25  0.24      5   19.04  0.63      6
+     fssearch       10.02  0.33      7  1.29  0.04      2   8.58  0.29      7   19.89  0.66      7
+     gosearch        7.61  0.25      3  4.39  0.15     11   3.19  0.11      1   15.19  0.51      4
+     hssearch        5.70  0.19      1  1.81  0.06      3   3.64  0.12      3   11.15  0.37      1
+     javasearch     13.51  0.45      9  3.21  0.11     10  20.55  0.69      9   37.27  1.24      9
+     nodesearch     11.59  0.39      8  2.66  0.09      8   8.69  0.29      8   22.94  0.76      8
+     plsearch.pl     8.91  0.30      5  1.03  0.03      1   7.59  0.25      6   17.53  0.58      5
+     phpsearch.php  23.72  0.79     10  2.77  0.09      9  20.56  0.69     10   47.05  1.57     10
+     pysearch.py     5.97  0.20      2  2.12  0.07      5   3.63  0.12      2   11.72  0.39      2
+     rbsearch.rb     7.65  0.26      4  2.57  0.09      7   4.80  0.16      4   15.02  0.50      3
+     scalasearch    24.26  0.81     11  2.31  0.08      6  32.16  1.07     11   58.73  1.96     11
 
 
 I should mention some disclaimers at this point:
@@ -567,72 +566,92 @@ I should mention some disclaimers at this point:
 
 Now some brief comments for each version:
 
-* <code>cljsearch</code> - I was surprised by how much dramatically slower this
-  version runs than the rest. There's an interesting
-  [blog post](https://nicholaskariniemi.github.io/2014/02/25/clojure-bootstrapping.html)
-  that explains what's going on. I actually tried to improve performance by
-  adding some <code>clojure.async</code> usage, but it actually made things
-  worse, so I removed it. I'm still a huge fan of the Clojure language, but I do
-  feel at this point that it is not a language that is well suited for these
-  types of scenarios.
-* <code>cssearch</code> - I find it interesting that the CLI versions are quite
-  a bit faster than the JVM versions. At some point I will need to search
-  for startup time comparisons.
-* <code>fssearch</code> - This version is dramatically faster than its JVM
-  "counterpart" <code>scalasearch</code>. The F# version is behind in
-  functionality, and the Scala version could probably use some optimization, but
-  there is probably also a CLI vs JVM startup time thing going on here.
-* <code>gosearch</code> - This version is certainly fast, but I expected it to
-  be the fastest, or in the top two. I expected this because it is natively
-  compiled, and also because I added some concurrency via channels. I can
-  probably do more to optimize it, but I also wonder if there is some small
-  amount of overhead with using channels.
-* <code>hssearch</code> - Being that it is natively compiled, I expected this
-  version to be one of the fastest, but I did not expect it to be the fastest.
-  I have done nothing to optimize this version. I seem to recall seeing some
-  mention of automatic parallelization, I wonder if that could help explain
-  this.
-* <code>javasearch</code> - JVM startup time can certainly help to explain why
-  the JVM versions are a little slower, but because it is sort-of compiled I
-  expected it to be faster than the interpreted languages. I think it probably
-  goes back to languages being more suited for some scenarios than others.
-* <code>nodesearch</code> - My disclaimer for this version is that I haven't
-  done much to make this version asynchronous, even though that is standard
-  practice in Node. At some point I will do this, and at that point I will pay
-  more attention to its benchmark results.
-* <code>plsearch.pl</code> - Perl might not be the fastest among the scripting
-  languages, but it is faster than all of the CLI and JVM versions! It's clear
-  that scripting languages like Perl are well suited to this usage scenario.
-* <code>phpsearch.php</code> - The slowest of the scripting languages, but to be
+* `cljsearch` - I was surprised by how dramatically slower this version is compared
+  to the rest. There's an interesting [blog post](https://nicholaskariniemi.github.io/2014/02/25/clojure-bootstrapping.html)
+  that seems to give a good explanation of what's going on. I actually tried to
+  improve performance by adding some `clojure.async` usage, but it actually made
+  things worse, so I removed it. I'm still a big fan of the Clojure language,
+  but it would seem that the language is not well suited for these types of
+  scenarios.
+* `cssearch` - I find it interesting that the CLI versions are quite a bit
+  faster than the JVM versions. At some point I will need to search for startup
+  time comparisons.
+* `fssearch` - This version is dramatically faster than its JVM "counterpart"
+  `scalasearch`. The F# version is behind in functionality, and the Scala
+  version could probably use some optimization, but there is probably also a
+  CLI vs JVM startup time thing going on here.
+* `gosearch` - This version is certainly fast, but I expected it to be the
+  fastest, or in the top two. I expected this because it is natively compiled,
+  and also because I added some concurrency via channels. I can probably do
+  more to optimize it, but I also wonder if there is some small amount of
+  overhead with using channels.
+* `hssearch` - Being that it is natively compiled, I expected this version to
+  be one of the fastest, but I did not expect it to be **the** fastest. I have
+  done nothing to optimize this version. I seem to recall seeing some mention
+  of automatic parallelization, I wonder if that could help explain this.
+* `javasearch` - JVM startup time can certainly help to explain why the JVM
+  versions are a little slower, but because it is sort-of compiled I expected
+  it to be faster than the interpreted languages. I think it probably goes back
+  to languages being more or less suited for certain scenarios vs others.
+* `nodesearch` - My disclaimer for this version is that I haven't done much to
+  make this version asynchronous, even though that is standard practice in Node.
+  At some point I will do this, and at that point I will pay more attention to
+  its benchmark results.
+* `plsearch.pl` - Perl might not be the fastest among the scripting languages,
+  but it is faster than all of the CLI and JVM versions! It's clear that
+  scripting languages like Perl are well suited to this usage scenario.
+* `phpsearch.php` - This is the slowest of the scripting languages, but to be
   fair, PHP wasn't designed for this type of use. I can see why Facebook created
-  <code>Hack</code>, though, and I'm actually somewhat interesting in doing a
-  comparison at some point, perhaps by creating a <code>Hack</code> version of
-  the tool.
-* <code>pysearch.py</code> - The fastest of the scripting languages, and second
-  fastest overall! GIL or not, I'm impressed, and this more-or-less cements in
-  my mind the idea that Python is an ideal language for these types of scenarios.
-* <code>rbsearch.rb</code> - The Ruby version very close to the Python version.
-  Yet another way that the two are very similar. I want to bring the Ruby
+  `Hack`, though, and I'm actually somewhat interested in doing a comparison at
+  some point, perhaps by creating a `Hack` version of the tool.
+* `pysearch.py` - It turns out that this is not only the fastest of the
+  scripting languages, but also the second fastest overall! GIL be damned, I'm
+  impressed, and this more-or-less cements in my mind the idea that Python is
+  an ideal language for these types of scenarios.
+* `rbsearch.rb` - The Ruby version is very nearly as fast to the Python version;
+  yet another way that the two are very similar. I want to bring the Ruby
   version up to the same level of functionality and run this again, but I
   expect to see similar results.
-* <code>scalasearch</code> - JVM startup yadda yadda, but I need to look at
-  doing some optimizations. I have a feeling there are some big ones lurking in
-  there, perhaps through forcing laziness in some places and not in others.
-  Regardless, I expect to be able to bring this version closer to the Java
-  version in terms of performance, but I don't expect that this version will
-  ever be one of the fastest.
+* `scalasearch` - JVM startup yadda yadda, but I need to look at doing some
+  optimizations. I have a feeling there are some big opportunities for
+  optimization lurking in there, perhaps through forcing laziness in some places
+  and not in others. Regardless, I expect to be able to bring this version
+  closer to the Java version in terms of performance, but I don't expect that
+  this version will ever be one of the fastest.
 
 
 History / Motivation
 --------------------
 
-This project started as a python implementation of a basic command line-based
-recursive file search utility that I wrote for programming practice but also
-because I needed a file search utility that did something slightly different
-from what I was able to get with other tools or combinations of tools.
-Specifically, I needed something that would show me multi-line search results
-if a line matched a regular expression, but only if another regex was or wasn't
-a match in a certain number of lines before or after the matching line.
+Before becoming a full-time, "regular" programmer in 2010, I worked for many
+years in software localization (L10n) and internationalization (i18n). As an
+i18n consultant, I examined clients' source code and came up with
+recommendations for changes to the source code to allow the software to become
+localizable (translated and built in different language versions). That role
+required being able to get up-to-speed on a client's source code, as well as
+being able to identify the areas of concern in the code, quickly.
+
+Naturally I used a lot of search tools in that job - find, grep, also text
+editor and system search utilities - and was finding that none of those were
+giving me exactly what I needed, which was a tool that had these features:
+
+* Recursively search a given directory for files with lines matching a given
+  (PCRE) regular expression
+* Filter directories to search by name (regex)
+* Filter files to search by extension and also by name (regex)
+* Allow for capturing a specified number of lines before and/or after each match
+* Filter matches based on "lines-before" and/or "lines-after" patterns
+* Allow for searching archive (zip, tar, gz, etc.) files
+* Present single-line results with filepath, line #, match start and end column
+  indices, and the line that matched if no lines before or after are captured
+* Present multi-line results with filepath, line #, match start and end column
+  indices, and all of the lines of the result, including the matching line
+  preceded by any lines before and followed by any lines after
+
+I wrote the initial version of the tool in Python in the early 2000's. The
+features described above came in piecemeal, with the archive file searching
+coming a while later. I found the tool to be very useful for what I did, and I
+have used it frequently ever since.
 
 A number of years after I wrote the initial Python version, I got the idea to
 rewrite the tool in other languages that I wanted to learn or practice. At the
@@ -674,12 +693,12 @@ current favorites:
   and especially that is is quite a bit faster than the Go version, even
   without me having done any performance optimizations (concurrency, etc.).
 
-* __gosearch__ - This is the second fastest version. Frankly, I expected it to
-  be the fastest, given the fact that it is natively compiled and also the fact
-  that I added concurrency. In fact, it's the only language version that I have
-  added concurrency to (so far), mainly because channels make it easy. Also,
-  the available standard library packages made it fairly easy to implement some
-  of the more advanced features, like archive file searching.
+* __gosearch__ - This version is also very fast, but I expected it to be the
+  fastest, given that it is natively compiled but also that I added concurrency.
+  In fact, it's the only language version that I have added concurrency to (so
+  far), mainly because channels make it easy. Also, the available standard
+  library packages made it fairly easy to implement some of the more advanced
+  features, like archive file searching.
 
 * __scalasearch__ - I first wrote this version when I wanted to learn Scala and
   was looking at a possible Scala development opportunity. I did end up working
@@ -687,13 +706,15 @@ current favorites:
   language skills improved a fair amount, and it's been interesting for me to
   see how this version has evolved. I should mention that this version is one of
   the slower ones based on what I've seen so far, which is probably partially
-  due to JVM start-up, but I'm also certain that there are a number of
+  due to JVM startup time, but I'm also certain that there are a number of
   optimizations that can be done in the code.
 
 * __pysearch.py__ - When I use this tool, which I still do regularly, I usually
   end up using the Python version. That's mostly out of habit, but also because
   as the first language version I still sort of treat it as the reference
-  version, and try to keep it up-to-date with new functionality.
+  version, and try to keep it up-to-date with new functionality. Also, I
+  recently discovered that it is apparently the 2nd fastest version! (See the
+  Benchmark Testing section for details.)
 
 
 Also, here are some thoughts on each language that I have done implementations
@@ -713,9 +734,11 @@ for so far:
   developing in it was very slow for me, especially at first, but I also enjoyed
   it because it really forced me to think about solving problems very
   differently than I was used to, and the end solutions felt succinct and
-  elegant. Although I wouldn't go so far as to call Clojure my favorite
-  language, I definitely like it quite a bit and will most likely do more with
-  it.
+  elegant. Although I really like Clojure as a language, I have also discovered
+  that it takes a long time to start up (seeing the Benchmark Testing section
+  for more info), and so I will likely not use it again for this type of project.
+  I do think it's a good language choice for other scenarios though, e.g. a
+  long-running filtering process of some kind.
 
 * [F#](http://fsharp.org/) -
   I started looking at F# after working for a while in C#. I liked the syntax
@@ -744,11 +767,11 @@ for so far:
   Haskell was (and still is) a mind bender to learn, but I'm becoming more and
   more a fan of functional programming, and Haskell seems to be the king. I
   love the succinctness of the language and the way it forces you to approach
-  problems very differently. I'm also impressed with its type system. Although
-  records are nice, I did find myself missing OO sometimes, but not enough to
-  write the language off. I still need to tackle the harder category
-  theory-related subjects, but I plan to and will definitely do more coding in
-  Haskell.
+  problems very differently. I'm also impressed with its type system. When I
+  first started working in Haskell I found myself missing OO sometimes, but this
+  diminished over time as I got more experience in it. I still need to tackle
+  the harder category theory-related subjects, but I plan to and will definitely
+  do more coding in Haskell.
 
 * [Java](http://en.wikipedia.org/wiki/Java_%28programming_language%29) -
   I wrote the Java version after the Scala version, and frankly it was a little
@@ -766,15 +789,14 @@ for so far:
   A platform for running JavaScript "in the wild," I think Node.js is pretty
   neat, and quite a bit faster than I expected it to be, even while not going
   "fully async" (which I currently have not). Node.js and AJAX have helped me
-  hate JavaScript less. Also, npm seems like a good package manager. In theory
-  I also like the idea that a developer can use one language for front-end and
-  back-end development of web apps. Still, JavaScript just isn't that
-  compelling of a language in my opinion. It's very quirky in places (e.g. some
-  strange math behaviors) and it is missing some things that I consider
-  standard (e.g. a method for getting sprintf-like functionality). Sure, you
-  can add what you need through prototyping, but that feels a little like
-  reinventing the wheel. I do want to do more work with async/non-blocking
-  calls, though.
+  hate JavaScript less. Also, `npm` seems like a good package manager. In
+  theory I also like the idea that a developer can use one language for
+  front-end and back-end development of web apps. Still, JavaScript just isn't
+  that compelling of a language in my opinion. It's very quirky in places
+  (e.g. some strange math behaviors) and it is missing some things that I
+  consider standard (e.g. sprintf-like functionality). Sure, you can add what
+  you need through prototyping, but that feels a little like reinventing the
+  wheel. I do want to do more work with async/non-blocking calls, though.
 
 * [Perl](http://perl.org/) - Perl was my first scripting language, and the
   first language I did any real programming in. It was also the language that
@@ -789,17 +811,17 @@ for so far:
   6 a try when it finally arrives, but I have a feeling that I won't be doing
   too much in Perl down the road.
 
-* [PHP](http://php.net/) - I have a fair amount of web dev experience with
-  PHP, but had never done any non-web/CLI work in it, and I had also never
-  worked with PHP 5 classes. Also, I wanted to see how fast I could put a PHP
-  version together. The experience was actually not too painful. PHP is not
-  my favorite language for sure, and I'm not sure I like how namespaces are
-  implemented in it, but the class implementation is fine, and I discovered
-  that PHP has some functional aspects to it, such as first-class functions and
-  some functional-style functions (<code>array_filter</code>,
-  <code>array_map</code>, etc.). I got a basic working version (everything
-  except linesafterto/until and archive file searching) done in a little over a
-  day.
+* [PHP](http://php.net/) - I have a fair amount of web dev experience with PHP,
+  but had never done any non-web/CLI work in it, and I had also never worked
+  with PHP 5 classes. Also, I wanted to see how fast I could put a PHP version
+  together. The experience was actually not too painful. PHP is not my favorite
+  language for sure - it feels haphazardly designed, the syntax is only slightly
+  cleaner than Perl's and the way that namespaces are implemented bugs me - but
+  the class implementation is fine, and I discovered that PHP has some
+  functional aspects to it, such as first-class functions and some
+  functional-style functions (`array_filter`, `array_map`, etc.). I got a basic
+  working version (everything except linesafterto/until and archive file
+  searching) done in a little over a day.
 
 * [Python](https://www.python.org/) -
   This was my 2nd go-to scripting language (after Perl), and the first language
@@ -810,9 +832,9 @@ for so far:
   Python does have some limited but nice functional capabilities too, such as
   lambdas and for-comprehensions. I find it and Ruby to be very similar, with
   pluses and minuses on both sides (more on that below), but suffice it to say
-  that I would probably pick Python over Ruby, not because I think it's
-  superior, but because I have more experience in it and prefer some of its
-  syntax.
+  that I would probably choose to use Python over Ruby for tools like this one,
+  not because I think it's superior, but because I have more experience in it
+  and prefer some of its syntax.
 
 * [Ruby](https://www.ruby-lang.org/) -
   I first learned some Ruby when I was taking a look at Ruby On Rails. I was
@@ -935,8 +957,9 @@ Other than that, I don't have specific plans for other language rewrites, but
 I'm sure they will happen. I'm not entirely sure which languages I would do
 implementations for yet, but I have several different ideas for ones to choose:
 
-1. Choose a language I (used to) know to see how quickly I can implement that
-   version.
+1. ~~Choose a language I (used to) know to see how quickly I can implement that
+   version.~~ I think I have run out of languages that I know or used to know
+   and haven't implemented the tool in.
 2. Choose a language I don't know because it seems to be up-and-coming as well
    as interesting.
 3. Choose a language I don't know because it is different from other languages
