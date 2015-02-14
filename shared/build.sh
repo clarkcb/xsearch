@@ -162,8 +162,8 @@ build_java () {
 
     # run a maven clean build
     log "Building javasearch"
-    log "mvn -f $JAVASEARCH_PATH/pom.xml clean install"
-    mvn -f $JAVASEARCH_PATH/pom.xml clean install
+    log "mvn -f $JAVASEARCH_PATH/pom.xml clean package"
+    mvn -f $JAVASEARCH_PATH/pom.xml clean package
 }
 
 build_scala () {
@@ -184,8 +184,8 @@ build_scala () {
 
     # run a maven clean build
     log "Building scalasearch"
-    log "mvn -f $SCALASEARCH_PATH/pom.xml clean install"
-    mvn -f $SCALASEARCH_PATH/pom.xml clean install
+    log "mvn -f $SCALASEARCH_PATH/pom.xml clean package"
+    mvn -f $SCALASEARCH_PATH/pom.xml clean package
     #mvn -f $SCALASEARCH_PATH/pom.xml -DskipTests=true clean install
 }
 
