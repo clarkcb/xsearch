@@ -217,7 +217,6 @@ def run(s, sn, rn):
 # Main
 ########################################
 def main():
-    totals_dict = { x: {s: 0 for s in time_keys} for x in xsearch_names }
     results = []
     for i,s in enumerate(scenarios):
         sn = i+1
@@ -227,9 +226,6 @@ def main():
             print '\nscenario %d ("%s") run %d\n' % (sn, s.name, rn)
             result = run(s, sn, rn)
             s_results.append(result)
-            for x in xsearch_names:
-                for k in time_keys:
-                    totals_dict[x][k] += result.time_dict[x][k]
             print_run_results(sn, result)
         print_scenario_totals(s, sn, s_results)
         results.extend(s_results)
