@@ -6,9 +6,13 @@ namespace CsSearch
 {
 	public class FileUtil
 	{
-		private static ISet<string> dotDirs = new HashSet<string> { ".", ".." };
+		private const string currentPath = ".";
+		private const string parentPath = "..";
+		private static readonly ISet<string> dotDirs = new HashSet<string> { currentPath, parentPath };
 
-		private static char[] dirSeps = new char[] { '/', '\\' };
+		private const char forwardSlash = '/';
+		private const char backSlash = '\\';
+		private static readonly char[] dirSeps = new char[] { forwardSlash, backSlash };
 
 		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
 		{
@@ -61,7 +65,7 @@ namespace CsSearch
 
 		public static string GetHomePath()
 		{
-			Console.WriteLine("Environment.OSVersion: "+Environment.OSVersion);
+			//Console.WriteLine("Environment.OSVersion: "+Environment.OSVersion);
 			var home = Environment.GetEnvironmentVariable("HOME");
 			if (null == home)
 				return Environment.GetEnvironmentVariable("USERPROFILE");
@@ -71,7 +75,7 @@ namespace CsSearch
 		public static string GetRelativePath(string fullPath, string startpath)
 		{
 			var filePath = fullPath;
-			if (startpath == ".")
+			if (startpath == currentPath)
 			{
 				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
 			}
@@ -102,17 +106,17 @@ namespace CsSearch
 
 		public static bool IsHidden(FileSystemInfo f)
 		{
-			var startsWithDot = f.Name.StartsWith(".") && !IsDotDir(f.Name);
+			var startsWithDot = f.Name.StartsWith(currentPath) && !IsDotDir(f.Name);
 			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
 			return (startsWithDot || hasHiddenAttribute);
 		}
 
 		public static string JoinPath(string path1, string path2)
 		{
-			var dirSep = '/';
-			if (path1.IndexOf('\\') > -1)
-				dirSep = '\\';
-			if (path2[0] == '/' || path2[0] == '\\')
+			var dirSep = forwardSlash;
+			if (path1.IndexOf(backSlash) > -1)
+				dirSep = backSlash;
+			if (path2[0] == forwardSlash || path2[0] == backSlash)
 				path2 = path2.Substring(1);
 			return NormalizePath(path1) + dirSep + path2;
 		}

@@ -48,8 +48,7 @@ namespace CsSearch
 		{
 			if (IsArchiveFile(f)) return FileType.Archive;
 			if (IsBinaryFile(f)) return FileType.Binary;
-			if (IsTextFile(f)) return FileType.Text;
-			return FileType.Unknown;
+			return IsTextFile(f) ? FileType.Text : FileType.Unknown;
 		}
 
 		public bool IsBinaryFile(FileInfo f)
