@@ -4,7 +4,7 @@
     Capture all matches*
   </searchoption>
   <searchoption long="archivesonly" short="">
-    Search only archive files (also turns on searcharchives)
+    Search only archive files
   </searchoption>
   <searchoption long="debug" short="">
     Set output mode to debug
@@ -16,7 +16,7 @@
     Exclude hidden files and directories*
   </searchoption>
   <searchoption long="firstmatch" short="1">
-    Capture only the first match for a file+search combination
+    Capture only the first file+pattern match
   </searchoption>
   <searchoption long="help" short="h">
     Print this usage and exit
@@ -40,19 +40,19 @@
     Specify name pattern for files to include in search
   </searchoption>
   <searchoption long="in-linesafterpattern" short="">
-    Specify pattern to search the "lines-after" lines on (used with --linesafter)
+    Specify pattern to search the "lines-after" lines on
   </searchoption>
   <searchoption long="in-linesbeforepattern" short="">
-    Specify pattern to search the "lines-before" lines on (used with --linesbefore)
+    Specify pattern to search the "lines-before" lines on
   </searchoption>
   <searchoption long="linesafter" short="B">
     Number of lines to include after every matched line (default: 0)
   </searchoption>
   <searchoption long="linesaftertopattern" short="">
-    Specify pattern to collect lines after up to where pattern is matched (or EOF)
+    Specify pattern to collect lines after up to where pattern matched
   </searchoption>
   <searchoption long="linesafteruntilpattern" short="">
-    Specify pattern to collect lines after until pattern is matched (or EOF)
+    Specify pattern to collect lines after until pattern matched
   </searchoption>
   <searchoption long="linesbefore" short="b">
     Number of lines to include before every matched line (default: 0)
@@ -67,7 +67,7 @@
     Generate a list of the matching lines after searching
   </searchoption>
   <searchoption long="maxlinelength" short="w">
-    Maximum number of characters to print out per line of result (default: 150)
+    Max length of line of result to print out (default: 150)
   </searchoption>
   <searchoption long="multilinesearch" short="m">
     Search files as single multi-line content block
@@ -97,10 +97,10 @@
     Specify name pattern for files to exclude from search
   </searchoption>
   <searchoption long="out-linesafterpattern" short="">
-    Specify pattern to filter the "lines-after" lines on (used with --linesafter)
+    Specify pattern to filter the "lines-after" lines on
   </searchoption>
   <searchoption long="out-linesbeforepattern" short="">
-    Specify pattern to filter the "lines-before" lines on (used with --linesbefore)
+    Specify pattern to filter the "lines-before" lines on
   </searchoption>
   <searchoption long="printmatches" short="p">
     Print search results to stdout*
@@ -115,7 +115,7 @@
     Search archive files (bz2, gz, tar, zip)
   </searchoption>
   <searchoption long="uniquelines" short="u">
-    Save only search results that have unique lines from previous search results
+    Save only search results with unique lines from previous results
   </searchoption>
   <searchoption long="verbose" short="v">
     Set output mode to verbose
