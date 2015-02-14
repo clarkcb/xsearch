@@ -532,23 +532,24 @@ aggregate totals and ranks table is printed at the end of all runs for all
 scenarios.
 
 The results that I have seen so far from this testing have been somewhat
-surprising. Here's an example aggregate totals table:
+surprising. Here's an example aggregate totals table resulting from 3 scenarios
+with 10 runs each:
 
 
-     xsearch         real r.avg r.rank   sys s.avg s.rank   user u.avg u.rank   total t.avg t.rank
-    ----------------------------------------------------------------------------------------------
-     cljsearch      47.74  1.59     12  6.95  0.23     12  88.75  2.96     12  143.44  4.78     12
-     cssearch        9.74  0.32      6  2.05  0.07      4   7.25  0.24      5   19.04  0.63      6
-     fssearch       10.02  0.33      7  1.29  0.04      2   8.58  0.29      7   19.89  0.66      7
-     gosearch        7.61  0.25      3  4.39  0.15     11   3.19  0.11      1   15.19  0.51      4
-     hssearch        5.70  0.19      1  1.81  0.06      3   3.64  0.12      3   11.15  0.37      1
-     javasearch     13.51  0.45      9  3.21  0.11     10  20.55  0.69      9   37.27  1.24      9
-     nodesearch     11.59  0.39      8  2.66  0.09      8   8.69  0.29      8   22.94  0.76      8
-     plsearch.pl     8.91  0.30      5  1.03  0.03      1   7.59  0.25      6   17.53  0.58      5
-     phpsearch.php  23.72  0.79     10  2.77  0.09      9  20.56  0.69     10   47.05  1.57     10
-     pysearch.py     5.97  0.20      2  2.12  0.07      5   3.63  0.12      2   11.72  0.39      2
-     rbsearch.rb     7.65  0.26      4  2.57  0.09      7   4.80  0.16      4   15.02  0.50      3
-     scalasearch    24.26  0.81     11  2.31  0.08      6  32.16  1.07     11   58.73  1.96     11
+    xsearch         real r.avg r.rank   sys s.avg s.rank   user u.avg u.rank   total t.avg t.rank
+    ---------------------------------------------------------------------------------------------
+    cljsearch      47.74  1.59     12  6.95  0.23     12  88.75  2.96     12  143.44  4.78     12
+    cssearch        9.74  0.32      6  2.05  0.07      4   7.25  0.24      5   19.04  0.63      6
+    fssearch       10.02  0.33      7  1.29  0.04      2   8.58  0.29      7   19.89  0.66      7
+    gosearch        7.61  0.25      3  4.39  0.15     11   3.19  0.11      1   15.19  0.51      4
+    hssearch        5.70  0.19      1  1.81  0.06      3   3.64  0.12      3   11.15  0.37      1
+    javasearch     13.51  0.45      9  3.21  0.11     10  20.55  0.69      9   37.27  1.24      9
+    nodesearch     11.59  0.39      8  2.66  0.09      8   8.69  0.29      8   22.94  0.76      8
+    plsearch.pl     8.91  0.30      5  1.03  0.03      1   7.59  0.25      6   17.53  0.58      5
+    phpsearch.php  23.72  0.79     10  2.77  0.09      9  20.56  0.69     10   47.05  1.57     10
+    pysearch.py     5.97  0.20      2  2.12  0.07      5   3.63  0.12      2   11.72  0.39      2
+    rbsearch.rb     7.65  0.26      4  2.57  0.09      7   4.80  0.16      4   15.02  0.50      3
+    scalasearch    24.26  0.81     11  2.31  0.08      6  32.16  1.07     11   58.73  1.96     11
 
 
 I should mention some disclaimers at this point:
