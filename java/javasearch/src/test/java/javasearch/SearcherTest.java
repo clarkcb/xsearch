@@ -331,7 +331,7 @@ public class SearcherTest {
         settings.setArchivesOnly(true);
         Searcher searcher = new Searcher(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.filterFile(file));
+        assertTrue(searcher.filterFile(file));
     }
 
     @Test
