@@ -401,19 +401,18 @@ _~/bin_.
 
 #### Java / Scala ####
 
-I use Maven to build and manage dependencies for the Java and Scala versions.
-You will find _pom.xml_ files at the roots of those source trees.
+Maven is the tool used to build and manage dependencies for the Java and Scala
+versions. You will find _pom.xml_ files at the roots of those source trees.
 
-To build the `javasearch` and `scalasearch` versions I run this command in
-those root directories:
+To build the `javasearch` and `scalasearch` versions, it is recommended to use
+the _shared/build.sh_ script, because this script copies needed resource files
+(_filetypes.xml_ and _searchoptions.xml_) before running the `mvn clean package`
+command, which will create the executable jar under the _target_ directory.
 
-    $ mvn clean package
-
-This creates the executable jar under the _target_ directory. To run them I
-created bash scripts at their root levels - _javasearch_ and _scalasearch_ - to
-which I then created soft links under _~/bin_. You will need to edit those
-scripts to change the path to the jar if `xsearch` is not cloned under
-_~/src/git/xsearch_.
+To run these versions I have bash scripts at their project levels - _javasearch_
+and _scalasearch_ - to which I then create soft links under _~/bin_. Note that
+you will need to edit those scripts to change the path if `xsearch` is not
+cloned under _~/src/git/xsearch_.
 
 I do plan to switch the Scala version over to SBT but that hasn't happened yet.
 
