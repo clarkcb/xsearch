@@ -573,13 +573,13 @@ Now some brief comments for each version:
   things worse, so I removed it. I'm still a big fan of the Clojure language,
   but it would seem that the language is not well suited for these types of
   scenarios.
-* `cssearch` - I find it interesting that the CLI versions are quite a bit
+* `cssearch` - I find it interesting that the CLR versions are quite a bit
   faster than the JVM versions. At some point I will need to search for startup
   time comparisons.
 * `fssearch` - This version is dramatically faster than its JVM "counterpart"
   `scalasearch`. The F# version is behind in functionality, and the Scala
   version could probably use some optimization, but there is probably also a
-  CLI vs JVM startup time thing going on here.
+  CLR vs JVM startup time thing going on here.
 * `gosearch` - This version is certainly fast, but I expected it to be the
   fastest, or in the top two. I expected this because it is natively compiled,
   and also because I added some concurrency via channels. I can probably do
@@ -598,7 +598,7 @@ Now some brief comments for each version:
   At some point I will do this, and at that point I will pay more attention to
   its benchmark results.
 * `plsearch.pl` - Perl might not be the fastest among the scripting languages,
-  but it is faster than all of the CLI and JVM versions! It's clear that
+  but it is faster than all of the CLR and JVM versions! It's clear that
   scripting languages like Perl are well suited to this usage scenario.
 * `phpsearch.php` - This is the slowest of the scripting languages, but to be
   fair, PHP wasn't designed for this type of use. I can see why Facebook created
@@ -747,10 +747,10 @@ for so far:
   me sort of like a cross between Python and C# with lots of LINQ. In comparison
   with Scala, I think F# is cleaner syntactically, although object-oriented code
   seems to be a little clunkier in it. My personal feeling is that F# *should*
-  be the successor to C# on the CLI, but I'm not sure that will happen. I
+  be the successor to C# on the CLR, but I'm not sure that will happen. I
   believe that the larger programming community will eventually swing away from
   imperative and towards functional, but my impression is that F# doesn't have
-  the same momentum in the CLI world as Scala does in the JVM world. Time will
+  the same momentum in the CLR world as Scala does in the JVM world. Time will
   tell.
 
 * [Go](https://golang.org/) -
