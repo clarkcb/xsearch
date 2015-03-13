@@ -223,19 +223,17 @@ class Searcher (settings: SearchSettings) {
         searchDirs.mkString("\n")))
     }
     if (settings.doTiming) { startTimer("getSearchFiles") }
-    val searchFiles: Iterable[SearchFile] = getSearchFiles(searchDirs)
+    val files: Iterable[SearchFile] = getSearchFiles(searchDirs)
     if (settings.doTiming) { stopTimer("getSearchFiles") }
     if (settings.verbose) {
-      Common.log("\nFiles to be searched (%d):\n%s".format(searchFiles.size,
-        searchFiles.mkString("\n")))
+      Common.log("\nFiles to be searched (%d):\n%s".format(files.size,
+        files.mkString("\n")))
     }
     if (settings.verbose) {
       Common.log("\nStarting file search...\n")
     }
     if (settings.doTiming) { startTimer("searchFiles") }
-    for (f <- searchFiles) {
-      searchFile(f)
-    }
+    searchFiles(files)
     if (settings.doTiming) {
       stopTimer("searchFiles")
       if (settings.printResults) {
@@ -247,11 +245,17 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
+  def searchFiles(files: Iterable[SearchFile]): Unit = {
+    for (f <- files) {
+      searchFile(f)
+    }
+  }
+
   def searchFile(sf: SearchFile): Unit = {
     searchFileSource(sf, Source.fromFile(sf.toFile))
   }
 
-  def searchFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchFileSource(sf: SearchFile, source: Source): Unit = {
     FileTypes.getFileType(sf) match {
       case FileType.Text =>
         searchTextFileSource(sf, source)
