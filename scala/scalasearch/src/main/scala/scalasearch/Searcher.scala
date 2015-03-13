@@ -264,7 +264,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchTextFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchTextFileSource(sf: SearchFile, source: Source): Unit = {
     if (settings.verbose) {
       Common.log("Searching text file %s".format(sf.getPathWithContainers))
     }
@@ -275,7 +275,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchTextFileSourceContents(sf: SearchFile, source: Source): Unit = {
+  private def searchTextFileSourceContents(sf: SearchFile, source: Source): Unit = {
     val contents = source.mkString
     searchMultiLineString(contents).foreach { r =>
       addSearchResult(r.copy(file=Some(sf)))
@@ -290,7 +290,7 @@ class Searcher (settings: SearchSettings) {
     results
   }
 
-  def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
+  private def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
                                        lineIndices: Seq[(Int, Int)]): List[String] = {
     if (settings.hasLinesAfterToOrUntilPatterns) {
       val matchIndices = (settings.linesAfterToPatterns ++ settings.linesAfterUntilPatterns).map {
@@ -321,7 +321,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchMultiLineStringForPattern(s: String, p: Regex): Seq[SearchResult] = {
+  private def searchMultiLineStringForPattern(s: String, p: Regex): Seq[SearchResult] = {
     val lineIndices: Seq[(Int, Int)] = Searcher.getLineIndices(s)
     val results = mutable.ArrayBuffer.empty[SearchResult]
     val matches = p.findAllIn(s).matchData
@@ -388,11 +388,11 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchTextFileLines(sf: SearchFile): Unit = {
+  private def searchTextFileLines(sf: SearchFile): Unit = {
     searchTextFileSourceLines(sf, Source.fromFile(sf.toFile))
   }
 
-  def searchTextFileSourceLines(sf: SearchFile, source: Source): Unit = {
+  private def searchTextFileSourceLines(sf: SearchFile, source: Source): Unit = {
     searchLineStringIterator(source.getLines()).foreach { r =>
       addSearchResult(r.copy(file=Some(sf)))
     }
@@ -494,7 +494,7 @@ class Searcher (settings: SearchSettings) {
     results
   }
 
-  def searchBinaryFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchBinaryFileSource(sf: SearchFile, source: Source): Unit = {
     if (settings.verbose) {
       Common.log("Searching binary file %s".format(sf.toString))
     }
@@ -505,7 +505,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchArchiveFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchArchiveFileSource(sf: SearchFile, source: Source): Unit = {
     if (settings.verbose) {
       Common.log("Searching archive file %s".format(sf.toString))
     }
@@ -524,7 +524,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchZipFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchZipFileSource(sf: SearchFile, source: Source): Unit = {
     if (settings.verbose) {
       Common.log("Searching zip file %s".format(sf.toString))
     }
@@ -561,7 +561,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchTarFileInputStream(sf: SearchFile, is: InputStream): Unit = {
+  private def searchTarFileInputStream(sf: SearchFile, is: InputStream): Unit = {
     if (settings.verbose) {
       Common.log("Searching tar file %s".format(sf.toString))
     }
@@ -594,7 +594,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchGzFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchGzFileSource(sf: SearchFile, source: Source): Unit = {
     if (settings.verbose) {
       Common.log("Searching gzip file %s".format(sf.toString))
     }
@@ -616,7 +616,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchBz2FileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchBz2FileSource(sf: SearchFile, source: Source): Unit = {
     if (settings.verbose) {
       Common.log("Searching bzip2 file %s".format(sf.toString))
     }
@@ -646,7 +646,7 @@ class Searcher (settings: SearchSettings) {
     _searchResults.foreach(printSearchResult)
  }
 
-  def printSearchResult(r: SearchResult): Unit = {
+  private def printSearchResult(r: SearchResult): Unit = {
     val patternString = if (settings.searchPatterns.size > 1) {
       "\"" + r.searchPattern + "\": "
     } else {
