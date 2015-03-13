@@ -1,11 +1,8 @@
-xsearch
-=======
+# xsearch
 
 A multilingual file search utility
 
-
-Overview
---------
+## Overview
 
 This is a command line-based recursive file search utility written in a number
 of different languages (for the reason behind this see History / Motivation).
@@ -13,9 +10,9 @@ of different languages (for the reason behind this see History / Motivation).
 Here's the current usage text for the Haskell version (the same for each
 language except for executable name):
 
-<pre>
+```
 Usage:
-  hssearch [options] &lt;startpath&gt;
+  hssearch [options] -s <searchpattern> <startpath>
 
 Options:
   -1,--firstmatch           Capture only the first file+pattern match
@@ -59,7 +56,7 @@ Options:
   -X,--out-ext              Specify extension for files to exclude from search
   -Z,--nosearcharchives     Do not search archive files (bz2, gz, tar, zip)*
   -z,--searcharchives       Search archive files (bz2, gz, tar, zip)
-</pre>
+```
 
 For example, say you want to perform a search according to these settings:
 
@@ -74,22 +71,25 @@ For example, say you want to perform a search according to these settings:
 
 You would use a command like this (using the Python version in this example):
 
-    pysearch.py -x cs -f "Controller" -D "temp" -s "\bLogin" -t --listfiles .
+```
+pysearch.py -x cs -f "Controller" -D "temp" -s "\bLogin" -t --listfiles .
+```
 
 If there were one match, the result output would look something like this:
 
-    Elapsed time for get_search_dirs: 87.359 ms
-    Elapsed time for get_search_files: 16.41 ms
-    Elapsed time for search_files: 0.003 ms
-    Total elapsed time: 103.772 ms
+```
+Elapsed time for get_search_dirs: 87.359 ms
+Elapsed time for get_search_files: 16.41 ms
+Elapsed time for search_files: 0.003 ms
+Total elapsed time: 103.772 ms
 
-    Search results (1):
-    ./path/to/CsController.cs: 99 [21:26]: var loginLabel = "Login";
-    1 match for "\bLogin"
+Search results (1):
+./path/to/CsController.cs: 99 [21:26]: var loginLabel = "Login";
+1 match for "\bLogin"
 
-    Files with matches (1):
-    ./path/to/CsController.cs
-
+Files with matches (1):
+./path/to/CsController.cs
+```
 
 The verbosity level can be increased with the `-v/--verbose` option, which will
 output the lists of directories and files to be searched, and even more with
@@ -159,8 +159,7 @@ Here's the breakdown of languages for each group:
 * __Groups II.b and III__: Go, Python, Scala
 
 
-Code Structure / Functionality
-------------------------------
+## Code Structure / Functionality
 
 The basic code structure includes these elements:
 
@@ -177,7 +176,7 @@ The basic code structure includes these elements:
   after, etc.
 
 
-### Functionality Lifecycle ###
+### Functionality Lifecycle
 
 The functionality lifecycle goes something like this:
 
@@ -249,8 +248,7 @@ The functionality lifecycle goes something like this:
 
 
 
-Installing / Running
---------------------
+## Installing / Running
 
 I have cloned `xsearch` to this path: _~/src/git/xsearch_. This is important to
 know, because although I've tried to limit them, there are places in the code
@@ -263,9 +261,10 @@ soft link to the executable or script under _~/bin_, which I have included in
 the `PATH` environment variable. For example, to run the Haskell version I
 compiled it and then created the following soft link:
 
-    $ cd ~/bin
-    $ ln -s ~/src/git/xsearch/haskell/hssearch/dist/build/hssearch/hssearch
-
+```
+$ cd ~/bin
+$ ln -s ~/src/git/xsearch/haskell/hssearch/dist/build/hssearch/hssearch
+```
 
 In some cases I have bash scripts under the root of some of the language
 versions to facilitate running that version. I will probably add more of these
@@ -279,8 +278,10 @@ I have a script under the _xsearch/shared_ directory called _build.sh_ that can
 be used to compile any or all of the compiled language versions. For example,
 you can build the Haskell version (after installing GHC) by running:
 
-    $ cd ~/src/git/xsearch
-    $ ./shared/build.sh haskell
+```
+$ cd ~/src/git/xsearch
+$ ./shared/build.sh haskell
+```
 
 You can also run it without a language argument to build all compiled versions
 in one run.
@@ -296,15 +297,19 @@ compile/run/test them I use the [Mono](http://www.mono-project.com/)
 environment installed on my OSX system. If you take a look at the
 _shared/build.sh_ script you will see this command to compile the C# version:
 
-    xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
+```
+xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
+```
 
 Note that the `CONFIGURATION` variable is currently set to `Debug`, but this can
 be changed to `Release` to create a release build.
 
 To run `cssearch`, I created a soft link to a bash script under _CsSearch_:
 
-    $ cd ~/bin
-    $ ln -s ~/src/git/xsearch/csharp/CsSearch/cssearch.sh cssearch
+```
+$ cd ~/bin
+$ ln -s ~/src/git/xsearch/csharp/CsSearch/cssearch.sh cssearch
+```
 
 Note that the defined path in that script will need to be altered if `xsearch`
 is cloned to a different location than _~/src/git/xsearch_.
@@ -312,7 +317,7 @@ is cloned to a different location than _~/src/git/xsearch_.
 This information is similarly applicable for the F# version.
 
 
-#### Clojure ####
+#### Clojure
 
 Although you can download Clojure from http://clojure.org/, you won't need to.
 Instead, retrieve the Leiningen build tool script from http://leiningen.org/
@@ -327,14 +332,16 @@ command `lein uberjar`.
 
 To run `cljsearch`, I created a soft link to a bash script under _cljsearch_:
 
-    $ cd ~/bin
-    $ ln -s ~/src/git/xsearch/clojure/cljsearch/cljsearch
+```
+$ cd ~/bin
+$ ln -s ~/src/git/xsearch/clojure/cljsearch/cljsearch
+```
 
 Note that the defined path in that script will need to be altered if `xsearch`
 is cloned to a different location than _~/src/git/xsearch_.
 
 
-#### Go ####
+#### Go
 
 You can download Go from http://golang.org/. After you have installed it you
 will have the `go` command available; run it by itself to get basic usage
@@ -343,7 +350,9 @@ instructions.
 If you look in the _build.sh_ script in the `build_go()` function you will see
 this command to build `gosearch`:
 
-    go install elocale.com/clarkcb/xsearch/gosearch
+```
+go install elocale.com/clarkcb/xsearch/gosearch
+```
 
 Note also that I set the `GOPATH` environment variable in that function. This
 is important for Go because it expects it to be defined and point to a standard
@@ -357,13 +366,15 @@ that get used in `gosearch`.
 The compiled executable gets created under _go/bin_. To run `gosearch` I then
 create a soft link to it in my _~/bin_ directory:
 
-    $ cd ~/bin
-    $ ln -s ~/src/git/xsearch/go/bin/gosearch
+```
+$ cd ~/bin
+$ ln -s ~/src/git/xsearch/go/bin/gosearch
+```
 
 Alternatively, you could add `$GOPATH/bin` to `PATH`.
 
 
-#### Haskell ####
+#### Haskell
 
 You can download Haskell from http://www.haskell.org/. After you have run the
 installer you will have access to these commands:
@@ -375,23 +386,31 @@ installer you will have access to these commands:
 The `hssearch` version has a number of dependencies, which you will use `cabal`
 to download and install. To start, I recommend running these commands first:
 
-    $ cd ~/src/git/xsearch/haskell/hssearch
-    $ cabal sandbox init
+```
+$ cd ~/src/git/xsearch/haskell/hssearch
+$ cabal sandbox init
+```
 
 This will create a hidden directory called _.cabal-sandbox_, where the
 dependencies will be downloaded to and built. You can then try compiling from
 the same directory:
 
-    $ cabal build
+```
+$ cabal build
+```
 
 `cabal` will complain about missing dependencies. You will need to install
 them. For example, for this specified dependency:
 
-    --dependency='timeit=timeit-1.0.0.0-b5d83acfe823666e0ea6354a3ae30d03'
+```
+--dependency='timeit=timeit-1.0.0.0-b5d83acfe823666e0ea6354a3ae30d03'
+```
 
 Run this `cabal` command:
 
-    $ cabal install timeit
+```
+$ cabal install timeit
+```
 
 Once all dependencies satisfied, you should be able to build `hssearch`
 successfully with `cabal build`. This will create the `hssearch` executable
@@ -399,7 +418,7 @@ under _dist/build/HsSearch/hssearch_, to which I then created a soft link under
 _~/bin_.
 
 
-#### Java / Scala ####
+#### Java / Scala
 
 Maven is the tool used to build and manage dependencies for the Java and Scala
 versions. You will find _pom.xml_ files at the roots of those source trees.
@@ -417,10 +436,10 @@ cloned under _~/src/git/xsearch_.
 I do plan to switch the Scala version over to SBT but that hasn't happened yet.
 
 
-#### Perl / PHP / Python / Ruby ####
+#### Perl / PHP / Python / Ruby
 
 Since Perl, PHP, Python and Ruby are interpreted languages, and since their
-interpreters are installed by default on most Unix-style systems, there's not
+interpreters are installed by default on most Unix-based systems, there's not
 much you will need to do to run these (on Windows you will need to download and
 install them from http://perl.org/, http://php.net/, http://www.python.org and
 http://www.ruby-lang.org/).
@@ -436,8 +455,7 @@ Also note: the python code is in 2.x style, I have not converted it to 3.x yet
 but I plan to.
 
 
-Style Checking
---------------
+## Style Checking
 
 I have enabled lint-like style checking for some of the languages, and I
 created a script under _shared_ called _lint.sh_ that can be used to exercise
@@ -465,14 +483,13 @@ Here's a list of what is currently being used:
 * Scala - [Scalastyle](http://www.scalastyle.org/)
 
 
-Testing
--------
+## Testing
 
 I have implemented three different types of testing for almost all language
 versions: basic, unit, and benchmark. 
 
 
-#### Basic Testing ####
+#### Basic Testing
 
 The _shared/test.sh_ test script was the first test I put together. I wanted a
 way to run multiple versions of the tool and compare outputs, and that is what
@@ -480,7 +497,7 @@ this script will do. You can adjust the search settings to compare results for
 different scenarios.
 
 
-#### Unit Testing ####
+#### Unit Testing
 
 I have added unit tests for almost all of the languages, and I created the
 script _shared/unittest.sh_ to provide a common interface for running the tests
@@ -519,7 +536,7 @@ Here is some language-specific unit test info:
   and are run via the Maven command `mvn test`.
 
 
-#### Benchmark Testing ####
+#### Benchmark Testing
 
 I created the _shared/benchmark.py_ script to compare execution time across
 versions. The script defines a number of "scenarios" (sets of arguments to test
@@ -535,34 +552,35 @@ The results that I have seen so far from this testing have been somewhat
 surprising. Here's an example aggregate totals table resulting from 3 scenarios
 with 10 runs each:
 
-
-    xsearch         real r.avg r.rank   sys s.avg s.rank   user u.avg u.rank   total t.avg t.rank
-    ---------------------------------------------------------------------------------------------
-    cljsearch      47.74  1.59     12  6.95  0.23     12  88.75  2.96     12  143.44  4.78     12
-    cssearch        9.74  0.32      6  2.05  0.07      4   7.25  0.24      5   19.04  0.63      6
-    fssearch       10.02  0.33      7  1.29  0.04      2   8.58  0.29      7   19.89  0.66      7
-    gosearch        7.61  0.25      3  4.39  0.15     11   3.19  0.11      1   15.19  0.51      4
-    hssearch        5.70  0.19      1  1.81  0.06      3   3.64  0.12      3   11.15  0.37      1
-    javasearch     13.51  0.45      9  3.21  0.11     10  20.55  0.69      9   37.27  1.24      9
-    nodesearch     11.59  0.39      8  2.66  0.09      8   8.69  0.29      8   22.94  0.76      8
-    plsearch.pl     8.91  0.30      5  1.03  0.03      1   7.59  0.25      6   17.53  0.58      5
-    phpsearch.php  23.72  0.79     10  2.77  0.09      9  20.56  0.69     10   47.05  1.57     10
-    pysearch.py     5.97  0.20      2  2.12  0.07      5   3.63  0.12      2   11.72  0.39      2
-    rbsearch.rb     7.65  0.26      4  2.57  0.09      7   4.80  0.16      4   15.02  0.50      3
-    scalasearch    24.26  0.81     11  2.31  0.08      6  32.16  1.07     11   58.73  1.96     11
-
+```
+xsearch         real r.avg r.rank   sys s.avg s.rank   user u.avg u.rank   total t.avg t.rank
+---------------------------------------------------------------------------------------------
+cljsearch      47.74  1.59     12  6.95  0.23     12  88.75  2.96     12  143.44  4.78     12
+cssearch        9.74  0.32      6  2.05  0.07      4   7.25  0.24      5   19.04  0.63      6
+fssearch       10.02  0.33      7  1.29  0.04      2   8.58  0.29      7   19.89  0.66      7
+gosearch        7.61  0.25      3  4.39  0.15     11   3.19  0.11      1   15.19  0.51      4
+hssearch        5.70  0.19      1  1.81  0.06      3   3.64  0.12      3   11.15  0.37      1
+javasearch     13.51  0.45      9  3.21  0.11     10  20.55  0.69      9   37.27  1.24      9
+nodesearch     11.59  0.39      8  2.66  0.09      8   8.69  0.29      8   22.94  0.76      8
+plsearch.pl     8.91  0.30      5  1.03  0.03      1   7.59  0.25      6   17.53  0.58      5
+phpsearch.php  23.72  0.79     10  2.77  0.09      9  20.56  0.69     10   47.05  1.57     10
+pysearch.py     5.97  0.20      2  2.12  0.07      5   3.63  0.12      2   11.72  0.39      2
+rbsearch.rb     7.65  0.26      4  2.57  0.09      7   4.80  0.16      4   15.02  0.50      3
+scalasearch    24.26  0.81     11  2.31  0.08      6  32.16  1.07     11   58.73  1.96     11
+```
 
 I should mention some disclaimers at this point:
 
 * The versions vary in their levels of functionality, and that could certainly
   affect overall performance. Ideally all versions should have the same level
   of functionality for this test, and that is a long-term goal.
-* This is a command-line tool, and certain usage patterns and results are to be
-  expected. Some languages are more suited for this particular scenario than
-  others.
+* This is a command-line tool with a short lifecycle. Some languages are more
+  suited for this particular scenario than others.
+* I can't make any claims about optimal code in any language version, but it
+  is very likely that some versions are (currently) less optimally implemented
+  than others.
 * So far I have only run this script on my MacBook Pro running Yosemite.
   Different results are likely on other systems.
-
 
 Now some brief comments for each version:
 
@@ -620,8 +638,7 @@ Now some brief comments for each version:
   that this version will ever be one of the fastest.
 
 
-History / Motivation
---------------------
+## History / Motivation
 
 Before becoming a full-time, "regular" programmer in 2010, I worked for many
 years in software localization (L10n) and internationalization (i18n). As an
@@ -663,8 +680,7 @@ written versions in Go, Haskell, PHP and Perl, and have been working to bring
 everything up to more or less the same level of functionality.
 
 
-Thoughts So Far
----------------
+## Thoughts So Far
 
 I have found the experience of rewriting the tool in various languages mostly
 rewarding, for a number of reasons:
@@ -932,8 +948,7 @@ Based on these features, the overall "winners" for me so far are:
 to be continued . . . 
 
 
-Plans / TODOs
--------------
+## Plans / TODOs
 
 My current TODOs:
 
@@ -959,7 +974,7 @@ implementations for yet, but I have several different ideas for ones to choose:
 
 1. ~~Choose a language I (used to) know to see how quickly I can implement that
    version.~~ I think I have run out of languages that I know or used to know
-   and haven't implemented the tool in.
+   and haven't implemented the tool in (aside from 80's-era BASIC).
 2. Choose a language I don't know because it seems to be up-and-coming as well
    as interesting.
 3. Choose a language I don't know because it is different from other languages
