@@ -297,7 +297,9 @@ searchLineForPattern settings num bs l as = patternResults
           || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
         lineMatchIndices :: String -> [(Int,Int)]
         lineMatchIndices p = if beforeLinesMatch && afterLinesMatch
-                             then matchIndices l p
+                             then if firstMatch settings
+                                  then take 1 $ matchIndices l p
+                                  else matchIndices l p
                              else []
         patternResults :: String -> [SearchResult]
         patternResults p = map (resultFromPatternMatchIndices p) (lineMatchIndices p)
