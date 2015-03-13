@@ -237,10 +237,7 @@ public class Searcher {
             }
         } else if (startPathFile.isFile()) {
             FileType fileType = fileTypes.getFileType(startPathFile);
-            if ((fileType == FileType.ARCHIVE && settings.getSearchArchives()
-                    && isArchiveSearchFile(startPathFile))
-                    ||
-                    (!settings.getArchivesOnly() && isSearchFile(startPathFile))) {
+            if (filterFile(startPathFile)) {
                 File d = startPathFile.getParentFile();
                 if (null == d)
                     d = new File(".");
