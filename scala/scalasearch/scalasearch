@@ -1,5 +1,9 @@
 #!/bin/sh
-SCALASEARCH_PATH=$HOME/src/git/xsearch/scala/scalasearch
-SCALASEARCHJAR=$SCALASEARCH_PATH/target/scalasearch-1.0-SNAPSHOT.jar
 
-java -Xms1G -Xmx4G -cp $SCALASEARCHJAR scalasearch.SearchMain $@
+#SCALA_VERSION=2.9.2
+#SCALASEARCH_VERSION=1.0
+SCALASEARCH_PATH=$HOME/src/git/xsearch/scala/scalasearch
+SCALASEARCH_JAR=$SCALASEARCH_PATH/target/scalasearch-1.0-SNAPSHOT.jar
+#SCALASEARCH_JAR=$SCALASEARCH_PATH/target/scala-$SCALA_VERSION/scalasearch_$SCALA_VERSION-$SCALASEARCH_VERSION.jar
+
+java -Xms1G -Xmx4G -cp $SCALASEARCH_JAR scalasearch.SearchMain $@
