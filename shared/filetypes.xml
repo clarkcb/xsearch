@@ -13,7 +13,7 @@
     <extensions>applejs as bash bat boo bsh c c++ cc cgi clj coffee cpp cs csh
       cxx d el erl es fs fx go groovy h h++ hh hpp hs java js js2 jsf json jsp
       jspf lhs lua m ml pas php php3 php4 php5 pl pm ps1 pxd pxi py pyw pyx rb
-      rs sbt sc scala sh swift tcl vb</extensions>
+      rs sbt sc scala sh swift tcl ts vb</extensions>
   </filetype>
   <filetype name="nosearch">
     <extensions>aif aifc aiff au avi bmp cab db dmg eps gif icns ico idlk ief
