@@ -8,6 +8,7 @@
 #
 ################################################################################
 from collections import namedtuple
+import os
 from pprint import pprint
 import subprocess
 import sys
@@ -32,10 +33,12 @@ exts = ','.join('py rb'.split())
 
 runs = 10
 
+startpath = os.path.expanduser('~/src/git/xsearch/')
+
 scenarios = [
     Scenario('help', ['-h'], False), # display help/usage, don't compare output
-    Scenario('search lines #1', ['-x', exts, '-s', 'Searcher', '/Users/cary/src/git/xsearch/'], True),
-    Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', '/Users/cary/src/git/xsearch/', '-m'], True)
+    Scenario('search lines #1', ['-x', exts, '-s', 'Searcher', startpath], True),
+    Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', startpath, '-m'], True)
 ]
 
 time_keys = ['real', 'sys', 'user', 'total']
