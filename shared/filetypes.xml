@@ -1,37 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <filetypes>
   <filetype name="archive">
-    <extensions>7z bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx
-      Z</extensions>
+    <extensions>7z arj bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip
+      zipx Z</extensions>
   </filetype>
   <filetype name="binary">
     <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dms doc dot
-      dxr dylib exe hi hlp indd lnk mdb mo nib o obj odt pdb ppt psd pyc pyo
-      qxd so swf sys vsd xls xlt</extensions>
+      dxr dylib epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm
+      odt ott pages pdb pot ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps
+      wpt wri xls xlt</extensions>
   </filetype>
   <filetype name="code">
-    <extensions>applejs as bash bat boo bsh c c++ cc cgi clj coffee cpp cs csh
-      cxx d el erl es fs fx go groovy h h++ hh hpp hs java js js2 jsf json jsp
-      jspf lhs lua m ml pas php php3 php4 php5 pl pm ps1 pxd pxi py pyw pyx rb
-      rs sass sbt sc scss scala sh swift tcl ts vb</extensions>
+    <extensions>ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl
+      cc cfm cgi clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es ex exs
+      frm fs fth fx go groovy h h++ hh hpp hs java js js2 jsf json jsp jspf kt
+      lhs lisp lua m ml pas php php3 php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi
+      py pyw pyx r rb rkt rs s sass sbt sc scm scss scala sh swift tcl ts vb
+      vbs</extensions>
   </filetype>
   <filetype name="nosearch">
-    <extensions>aif aifc aiff au avi bmp cab db dmg eot gif icns ico idlk
-      ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu ogg
-      otf pdf pict png qt ra ram rm rpm snd suo tif tiff tte ttf wav
+    <extensions>aif aifc aiff au avi bmp cab cur db dib dmg eot gif icns ico
+      idlk ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu
+      ogg otf pdf pict png qt ra ram rm rpm snd suo tif tiff tte ttf wav
       woff</extensions>
+    <names>.DS_Store</names>
   </filetype>
   <filetype name="text">
     <extensions>1 10 11 12 13 14 15 16 17 18 19 2 20 3 323 4 5 6 7 8 9 am app
-      asc ascx asm asp aspx bib brf cabal cfg cls cmake cmd cnt conf css csv
-      ctl d dbml dbschema ddl dep dfm diff disco dlg dof dpr drl dsp dsw dtd
-      elt ent env eps etx exp feature fls gcd hql hs htc htm html hxx ics icz
-      iml in inc ini ipr iws jad jam jql layout lhs log ltx mak mako manifest
-      map markdown master md mf mht mml moc mod mxml p patch plist pm po pot
-      properties ps pt rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml sht shtm
-      shtml sln smi smil spec sqc sql st str strings sty suml sxw t tex text tk
-      tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml vssscc vxml
-      wbxml webinfo wml wmls wrl wsc wsd wsdd xlf yaml yml</extensions>
+      asc ascx asm asmx asp aspx bib brf cabal cfg cls cmake cmd cnt conf css
+      csv ctl d dbml dbschema ddl dep dfm diff disco dlg dof dpr drl dsp dsw
+      dtd elt ent env eps etx exp feature fls gcd hql hs htc htm html hxx ics
+      icz iml in inc ini ipr iws jad jam jql layout lhs log ltx mak mako
+      manifest map markdown master md mf mht mml moc mod mxml p patch plist pm
+      po pot properties ps pt rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml sht
+      shtm shtml sln smi smil spec sqc sql st str strings sty suml sxw t tex
+      text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml vssscc
+      vxml wbxml webinfo wml wmls wrl wsc wsd wsdd xlf xsp yaml
+      yml</extensions>
     <names>.gitignore AUTHORS LICENSE Makefile mime.types README</names>
   </filetype>
   <filetype name="unknown">
@@ -40,9 +45,9 @@
   </filetype>
   <filetype name="xml">
     <extensions>atom atomcat atomsrv bdsproj config csproj davmount dbproj docx
-      dotx fsproj fxml jhm jnlp kml pom potx ppsx pptx qrc rdf resx rng rss
-      settings sldx stc std sti stw svg svgz sxc sxd sxg sxi sxm sxw tld vbproj
-      vcproj vdproj wadl wsdd wsdl x3d xaml xhtml xht xjb xlsx xltx xml xsd xsl
-      xslt xspf xul</extensions>
+      dotx fsproj fxml jhm jnlp kml mm pom potx ppsx pptx qrc rdf resx rng rss
+      settings sldx stc std sti stw svg svgz sxc sxd sxg sxi stw sxm sxw tld
+      vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xhtml xht xjb xlsx xltx xml
+      xps xsd xsl xslt xspf xul</extensions>
   </filetype>
 </filetypes>
