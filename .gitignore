@@ -6,3 +6,7 @@ c/
 erlang/
 node_modules/
 objc/
+
+# jekyll-related
+.sass-cache/
+_site/
