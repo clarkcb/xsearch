@@ -53,6 +53,7 @@ build_clojure () {
     RESOURCES_PATH=$CLJSEARCH_PATH/resources
 
     # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
     # Create uberjar with lein
@@ -74,6 +75,7 @@ build_csharp () {
     #CONFIGURATION=Release
 
     # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
     # run a mono xbuild
@@ -92,6 +94,7 @@ build_fsharp () {
     #CONFIGURATION=Release
 
     # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
     # run a mono xbuild
@@ -132,7 +135,19 @@ build_haskell () {
     log "build_haskell"
     HASKELL_PATH=$PROJECT_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
+    SANDBOX_PATH=$HSSEARCH_PATH/.cabal-sandbox
     RESOURCES_PATH=$HSSEARCH_PATH/data
+    DEPS=("hxt" "regex-pcre-builtin" "test-framework" "test-framework-hunit" "timeit")
+
+    if [ ! -d "$SANDBOX_PATH" ]; then
+        echo "$SANDBOX_PATH not found, initializing and installing dependencies"
+        cd $HSSEARCH_PATH
+        cabal init sandbox
+        for d in ${DEPS[*]}; do
+            cabal install "$d"
+        done
+        cd -
+    fi
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
@@ -164,6 +179,19 @@ build_java () {
     log "Building javasearch"
     log "mvn -f $JAVASEARCH_PATH/pom.xml clean package"
     mvn -f $JAVASEARCH_PATH/pom.xml clean package
+}
+
+build_node () {
+    echo
+    log "build_node"
+    NODE_PATH=$PROJECT_PATH/node
+    NODE_MODULES_PATH=$NODE_PATH/node_modules
+
+    if [ ! -d $NODE_MODULES_PATH ]; then
+        cd $NODE_PATH
+        npm install dom-js
+        cd -
+    fi
 }
 
 build_scala () {
@@ -204,6 +232,8 @@ build_all () {
 
     build_java
 
+    build_node
+
     build_scala
 }
 
@@ -232,6 +262,8 @@ elif [ "$ARG" == "haskell" ]; then
     build_haskell
 elif [ "$ARG" == "java" ]; then
     build_java
+elif [ "$ARG" == "node" ]; then
+    build_node
 elif [ "$ARG" == "scala" ]; then
     build_scala
 else
