@@ -7,8 +7,8 @@
   <filetype name="binary">
     <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dms doc dot
       dxr dylib epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm
-      odt ott pages pdb pot ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps
-      wpt wri xls xlt</extensions>
+      odt ott pages pdb ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt
+      wri xls xlt</extensions>
   </filetype>
   <filetype name="code">
     <extensions>ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl
