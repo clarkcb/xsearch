@@ -4,7 +4,7 @@ email: clarkcb@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
   A command line recursive file search utility implemented in multiple
   programming languages
-baseurl: "" # the subpath of your site, e.g. /blog/
+baseurl: "/xsearch" # the subpath of your site, e.g. /blog/
 url: "http://xsearch.org" # the base hostname & protocol for your site
 twitter_username: clarkcb
 github_username:  clarkcb
