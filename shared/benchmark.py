@@ -49,7 +49,9 @@ startpath = os.path.expanduser('~/src/git/xsearch/')
 scenarios = [
     Scenario('help', ['-h'], False), # display help/usage, don't compare output
     Scenario('search lines #1', ['-x', exts, '-s', 'Searcher', startpath], True),
-    Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', startpath, '-m'], True)
+    Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', startpath, '-m'], True),
+    Scenario('search lines #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], True),
+    Scenario('search contents #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], True)
 ]
 
 time_keys = ['real', 'sys', 'user', 'total']
@@ -71,8 +73,8 @@ class Benchmarker(object):
         s = len(self.scenarios)
         total_runs = s * self.runs
         longest = max([len(x) for x in self.xsearch_names])
-        hdr = ['real', 'r.avg', 'r.rank', 'sys', 's.avg', 's.rank', 'user',
-               'u.avg','u.rank',  'total', 't.avg', 't.rank']
+        hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user',
+               'avg','rank',  'total', 'avg', 'rank']
         col_width = max([len(h) for h in hdr]) + 1
         hdr_place = ' %' + str(col_width) + 's'
         hdr_places = hdr_place * len(hdr)
@@ -137,7 +139,7 @@ class Benchmarker(object):
     def print_run_results(self, sn, result):
         print '\nResults for scenario %d ("%s") run %d' % (sn, result.scenario.name, result.run)
         longest = max([len(x) for x in self.xsearch_names])
-        hdr = ['real', 'r.rank', 'sys', 's.rank', 'user', 'u.rank', 'total', 't.rank']
+        hdr = ['real', 'rank', 'sys', 'rank', 'user', 'rank', 'total', 'rank']
         col_width = max([len(h) for h in hdr]) + 1
         hdr_place = ' %' + str(col_width) + 's'
         hdr_places = hdr_place * len(hdr)
