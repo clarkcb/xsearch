@@ -172,8 +172,6 @@ function SearchOptions() {
                     }
                 } else if (flagMap[arg]) {
                     flagMap[arg].func(settings);
-                    if (['h','help','V','version'].indexOf(arg) > -1)
-                        return settings;
                 } else {
                     err = new Error("Unknown option: "+arg);
                 }
@@ -188,7 +186,7 @@ function SearchOptions() {
     };
 
     self.usage = function () {
-        usageWithCode(0);
+        self.usageWithCode(0);
     };
 
     self.usageWithCode = function (exitCode) {
