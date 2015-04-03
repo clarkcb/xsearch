@@ -137,15 +137,16 @@ build_haskell () {
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
     SANDBOX_PATH=$HSSEARCH_PATH/.cabal-sandbox
     RESOURCES_PATH=$HSSEARCH_PATH/data
-    DEPS=("hxt" "regex-pcre-builtin" "test-framework" "test-framework-hunit" "timeit")
 
     if [ ! -d "$SANDBOX_PATH" ]; then
         echo "$SANDBOX_PATH not found, initializing and installing dependencies"
-        cd $HSSEARCH_PATH
-        cabal init sandbox
-        for d in ${DEPS[*]}; do
-            cabal install "$d"
-        done
+        cd $HSSEARCH_PATH/
+        cabal sandbox init --sandbox $SANDBOX_PATH
+        cd -
+    fi
+    if [ -d "$SANDBOX_PATH" ]; then
+        cd $HSSEARCH_PATH/
+        cabal install --only-dependencies
         cd -
     fi
 
