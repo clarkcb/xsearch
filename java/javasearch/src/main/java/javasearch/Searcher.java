@@ -579,6 +579,7 @@ public class Searcher {
 
                         if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
                             stop = true;
+                            found = false;
                         } else if (settings.hasLinesAfterToOrUntilPatterns() &&
                                 !linesAfterToMatch && !linesAfterUntilMatch) {
                             found = false;
