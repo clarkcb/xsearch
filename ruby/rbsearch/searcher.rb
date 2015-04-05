@@ -342,7 +342,8 @@ class Searcher
     end_line_indices = new_line_indices + [s.length - 1]
     @settings.searchpatterns.each do |p|
       m = p.match(s)
-      while m
+      stop = false
+      while m && !stop
         m_line_start_index = 0
         m_line_end_index = s.length - 1
         before_start_indices = start_line_indices.take_while { |i| i <= m.begin(0) }
@@ -377,6 +378,9 @@ class Searcher
             line,
             lines_before,
             lines_after))
+          if @settings.firstmatch
+            stop = true
+          end
         end
         m = p.match(s, m_line_start_index+match_end_index)
       end
