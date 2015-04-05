@@ -430,10 +430,13 @@ function Searcher(settings) {
         var endLineIndices = newLineIndices.concat([s.length - 1]);
         for (var p in _settings.searchPatterns) {
             var pattern = new RegExp(_settings.searchPatterns[p].source, "g");
-            if (_settings.firstMatch && pattern in patternResults)
-                continue;
             var match = pattern.exec(s);
-            while (match) {
+            var stop = false;
+            while (match && !stop) {
+                if (_settings.firstMatch && pattern.source in patternResults) {
+                    stop = true;
+                    continue;
+                }
                 var lessOrEqual = getLessThanOrEqual(match.index);
                 var greaterThan = getGreaterThan(match.index);
                 var lineStartIndex = 0;
@@ -477,9 +480,9 @@ function Searcher(settings) {
                         [].concat(linesBefore),
                         [].concat(linesAfter));
                     results.push(searchResult);
-                    if (!(pattern in patternResults))
-                        patternResults[pattern] = [];
-                    patternResults[pattern].push(searchResult);
+                    if (!(pattern.source in patternResults)) {
+                        patternResults[pattern.source] = 1;
+                    }
                 }
                 match = pattern.exec(s);
             }
@@ -522,14 +525,18 @@ function Searcher(settings) {
         var linesBefore = [];
         var linesAfter = [];
         var results = [];
+        var patternResults = {};
         while (true) {
+            if (Object.keys(patternResults).length === _settings.searchPatterns.length) {
+                break;
+            }
             var line = "";
             if (linesAfter.length > 0) {
                 line = linesAfter.shift();
             } else if (lines.length > 0) {
                 line = lines.shift();
             } else {
-                return results;
+                break;
             }
             linenum += 1;
             if (_settings.linesAfter > 0) {
@@ -553,6 +560,7 @@ function Searcher(settings) {
                             [].concat(linesBefore),
                             [].concat(linesAfter)));
                         if (_settings.firstMatch) {
+                            patternResults[pattern.source] = 1;
                             break;
                         }
                     }
@@ -566,6 +574,7 @@ function Searcher(settings) {
                     linesBefore.push(line);
             }
         }
+        return results;
     };
 
     var addSearchResult = function (result) {
