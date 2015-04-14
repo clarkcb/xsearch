@@ -29,9 +29,10 @@ errsOrUsage searchOptions settings =
         errMsg = if not (null errs)
                  then "\nERROR:\n" ++ unlines errs ++ "\n"
                  else ""
-        usage  = if not (null errMsg) || printUsage settings
-                 then errMsg ++ getUsage searchOptions
-                 else ""
+        usage  = case (printUsage settings, not (null errMsg)) of
+                   (True, _)     -> "\n" ++ getUsage searchOptions
+                   (False, True) -> errMsg ++ getUsage searchOptions
+                   _ -> ""
         
 formatResults :: SearchSettings -> [SearchResult] -> String
 formatResults settings results =
