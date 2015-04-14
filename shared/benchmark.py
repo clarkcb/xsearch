@@ -189,6 +189,32 @@ class Benchmarker(object):
             time_dict = {s: 0 for s in ['real', 'sys', 'user', 'total']}
         return time_dict
 
+    def compare_lens(self, xsearch_output):
+        nonmatching = {}
+        lens = {}
+        for x in self.xsearch_names:
+            for y in [y for y in xsearch_output.keys() if y != x]:
+                x_len = len(xsearch_output[x])
+                y_len = len(xsearch_output[y])
+                if x_len != y_len:
+                    nonmatching.setdefault(x, []).append(y)
+                    nonmatching.setdefault(y, []).append(x)
+                    lens[x] = x_len
+                    lens[y] = y_len
+            del(xsearch_output[x])
+        if nonmatching:
+            xs = []
+            if len(nonmatching) == 2:
+                xs = sorted(nonmatching.keys())
+            else:
+                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
+            print
+            for x in xs:
+                for y in sorted(nonmatching[x]):
+                    print '%s output line length (%d) != %s output line length (%d)' % (x, lens[x], y, lens[y])
+        else:
+            print '\nOutput line lengths of all versions match'
+
     def compare_outputs(self, xsearch_output):
         nonmatching = []
         for x in self.xsearch_names:
@@ -234,6 +260,8 @@ class Benchmarker(object):
             xsearch_times[x] = self.times_from_lines(time_lines)
         if s.compare_output:
             self.compare_outputs(xsearch_output)
+        else:
+            self.compare_lens(xsearch_output)
         return RunResult(scenario=s, run=rn, time_dict=xsearch_times)
 
     def run(self):
