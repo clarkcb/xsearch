@@ -33,6 +33,7 @@ xsearch_dict = {
     'java':    'javasearch',
     'node':    'nodesearch',
     'perl':    'plsearch.pl',
+    'php':     'phpsearch.php',
     'python':  'pysearch.py',
     'ruby':    'rbsearch.rb',
     'scala':   'scalasearch',
