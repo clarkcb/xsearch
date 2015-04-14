@@ -186,7 +186,7 @@ class SearchOptions
   end
 
   def usage
-    puts get_usage_string
+    puts "#{get_usage_string}\n"
     abort
   end
 

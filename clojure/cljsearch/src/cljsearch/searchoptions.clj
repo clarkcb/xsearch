@@ -150,5 +150,5 @@
       (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
 
 (defn usage []
-  (log-msg "" (usage-string))
+  (log-msg "" (usage-string) "")
   (System/exit 0))

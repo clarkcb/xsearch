@@ -25,7 +25,7 @@ func main() {
 	searcher := xsearch.NewSearcher(settings)
 	err = searcher.Search()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("\nERROR: %s\n", err)
 		searchOptions.PrintUsage()
 	}
 

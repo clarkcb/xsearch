@@ -27,7 +27,7 @@ errsOrUsage searchOptions settings =
     _  -> Just usage
   where errs   = validateSettings settings
         errMsg = if not (null errs)
-                 then "\nERROR:\n" ++ unlines errs ++ "\n"
+                 then "\nERROR: " ++ head errs ++ "\n\n"
                  else ""
         usage  = case (printUsage settings, not (null errMsg)) of
                    (True, _)     -> "\n" ++ getUsage searchOptions

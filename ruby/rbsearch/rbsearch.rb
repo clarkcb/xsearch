@@ -79,7 +79,7 @@ def main
     end
 
   rescue RuntimeError => e
-    log("\nRuntimeError: #{e.message}\n\n")
+    log("\nERROR: #{e.message}\n\n")
     searchoptions.usage
   end
 

@@ -165,5 +165,5 @@ module SearchOptions =
 
     let Usage (exitCode : int) =
         let usageString = GetUsageString()
-        printfn "%s" usageString
+        printfn "%s\n" usageString
         Environment.Exit(exitCode)

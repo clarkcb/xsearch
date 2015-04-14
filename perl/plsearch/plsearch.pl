@@ -48,6 +48,7 @@ sub main {
         log_error($errs2->[0]);
         plsearch::common::log('');
         $searchoptions->usage();
+        plsearch::common::log('');
         exit;
     }
 

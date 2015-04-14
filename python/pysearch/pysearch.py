@@ -67,7 +67,7 @@ def main():
                     common.log(line)
 
     except AssertionError as e:
-        common.log('ERROR: {0!s}\n'.format(e))
+        common.log('\nERROR: {0!s}\n'.format(e))
         searchoptions.usage()
     except KeyboardInterrupt:
         common.log('')
