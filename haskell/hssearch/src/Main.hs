@@ -37,9 +37,9 @@ errsOrUsage searchOptions settings =
         
 formatResults :: SearchSettings -> [SearchResult] -> String
 formatResults settings results =
-  "\nSearch results (" ++ show (length results) ++ "):" ++
+  "\nSearch results (" ++ show (length results) ++ "):" ++ "\n" ++
     (if not (null results)
-       then "\n" ++ unlines (map (formatSearchResult settings) results)
+       then unlines (map (formatSearchResult settings) results)
        else "")
   where matchString p = "\nMatches for "++ show p ++ ": " ++
           show (patternCount p) ++ "\n"
