@@ -9,6 +9,7 @@
 ################################################################################
 from collections import namedtuple
 import os
+import re
 
 ########################################
 # Classes
@@ -36,6 +37,9 @@ xsearch_dict = {
 }
 all_xsearch_names = sorted(xsearch_dict.values())
 
+xsearch_name_regex = re.compile(r'\b(%s)(\.exe)?\b' % '|'.join(all_xsearch_names), re.I | re.S)
+print 'xsearch_name_regex: %s' % xsearch_name_regex.pattern
+
 default_runs = 10
 
 default_startpath = os.path.expanduser('~/src/git/xsearch/')
@@ -47,14 +51,15 @@ def nonmatching_lens(xsearch_output):
        output line lengths ({xsearch_name: [non_matching_xsearch_names]})
     """
     nonmatching = {}
-    for x in sorted(xsearch_output.keys()):
-        for y in sorted([y for y in xsearch_output.keys() if y != x]):
+    xs = sorted(xsearch_output.keys())
+    while xs:
+        x = xs.pop(0)
+        for y in xs:
             x_len = len(xsearch_output[x])
             y_len = len(xsearch_output[y])
             if x_len != y_len:
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
-        del(xsearch_output[x])
     return nonmatching
 
 def nonmatching_outputs(xsearch_output):
@@ -63,12 +68,13 @@ def nonmatching_outputs(xsearch_output):
        output ({xsearch_name: [non_matching_xsearch_names]})
     """
     nonmatching = {}
-    for x in sorted(xsearch_output.keys()):
-        for y in sorted([y for y in xsearch_output.keys() if y != x]):
-            x_output = ''.join(sorted(xsearch_output[x]))
-            y_output = ''.join(sorted(xsearch_output[y]))
+    xs = sorted(xsearch_output.keys())
+    while xs:
+        x = xs.pop(0)
+        for y in xs:
+            x_output = ''.join(xsearch_output[x])
+            y_output = ''.join(xsearch_output[y])
             if x_output != y_output:
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
-        del(xsearch_output[x])
     return nonmatching
