@@ -42,7 +42,7 @@ getSearchOptions = do
 
 getUsage :: [SearchOption] -> String
 getUsage searchOptions =
-  "Usage:\n  hssearch [options] <startpath>\n\nOptions:\n" ++
+  "Usage:\n hssearch [options] -s <searchpattern> <startpath>\n\nOptions:\n" ++
   searchOptionsToString searchOptions
 
 getOptStrings :: [SearchOption] -> [String]
@@ -78,7 +78,7 @@ searchOptionsToString searchOptions =
     optStrings = getOptStrings sorted
     optDescs = map getOptDesc sorted
     longest = maximum $ map length optStrings
-    formatOptLine o d = "  " ++ padString o longest ++ "  " ++ d
+    formatOptLine o d = " " ++ padString o longest ++ "  " ++ d
 
 data ActionType = ArgActionType
                 | FlagActionType

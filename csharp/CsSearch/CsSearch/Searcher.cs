@@ -47,7 +47,7 @@ namespace CsSearch
 					throw new SearchException("Startpath not found");
 			}
 			if (Settings.SearchPatterns.Count < 1)
-				throw new SearchException("No search patterns specified");
+				throw new SearchException("No search patterns defined");
 		}
 
 		public bool IsSearchDirectory(DirectoryInfo d)

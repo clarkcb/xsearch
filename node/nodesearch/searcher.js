@@ -26,7 +26,7 @@ function Searcher(settings) {
         assert.ok(_settings.startPath, 'Startpath not defined');
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
         assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
-        assert.ok(_settings.searchPatterns.length, 'No search patterns specified');
+        assert.ok(_settings.searchPatterns.length, 'No search patterns defined');
     };
 
     var matchesAnyElement = function (s, elements) {

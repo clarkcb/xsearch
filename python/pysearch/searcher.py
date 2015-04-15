@@ -50,7 +50,7 @@ class Searcher(object):
         """Assert required settings in SearchSettings instance"""
         assert self.settings.startpath, 'Startpath not defined'
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
-        assert self.settings.searchpatterns, 'No search patterns specified'
+        assert self.settings.searchpatterns, 'No search patterns defined'
 
     def is_search_dir(self, d):
         path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]

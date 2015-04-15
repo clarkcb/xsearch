@@ -177,7 +177,7 @@ namespace CsSearch
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("\nUsage:");
-			sb.AppendLine(" CsSearch.exe [options] <startpath>\n");
+			sb.AppendLine(" CsSearch.exe [options] -s <searchpattern> <startpath>\n");
 			sb.AppendLine("Options:");
 			var optStrings = new List<string>();
 			var optDescs = new List<string>();

@@ -30,7 +30,7 @@ class Searcher
   def validate_settings
     raise 'Startpath not defined' unless @settings.startpath
     raise 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
-    raise 'No search patterns specified' unless @settings.searchpatterns.count > 0
+    raise 'No search patterns defined' unless @settings.searchpatterns.count > 0
   end
 
   def matches_any_pattern(s, pattern_set)

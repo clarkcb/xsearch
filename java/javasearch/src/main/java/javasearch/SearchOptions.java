@@ -335,7 +335,7 @@ public class SearchOptions {
     public final String getUsageString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Usage:\n");
-        sb.append(" javasearch [options] <startpath>\n\n");
+        sb.append(" javasearch [options] -s <searchpattern> <startpath>\n\n");
         sb.append("Options:\n");
 
         Collections.sort(this.options, searchOptionComparator);

@@ -42,7 +42,7 @@ sub validate_settings {
         push(@{$errs}, 'Startpath not found');
     }
     unless (scalar @{$self->{settings}->{searchpatterns}}) {
-        push(@{$errs}, 'No search patterns specified');
+        push(@{$errs}, 'No search patterns defined');
     }
     return $errs;
 }

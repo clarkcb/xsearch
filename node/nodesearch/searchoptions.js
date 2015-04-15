@@ -195,14 +195,14 @@ function SearchOptions() {
     };
 
     var getUsageString = function () {
-        var usage = 'Usage:\nnodesearch [options] <startpath>\n\n';
+        var usage = 'Usage:\n nodesearch [options] -s <searchpattern> <startpath>\n\n';
         usage += 'Options:\n';
         var optStrings = [];
         var optDescs = [];
         var longest = 0;
         for (var o in options) {
             var opt = options[o];
-            var optString = '';
+            var optString = ' ';
             if (opt.shortarg)
                 optString += '-' + opt.shortarg + ',';
             optString += '--' + opt.longarg;

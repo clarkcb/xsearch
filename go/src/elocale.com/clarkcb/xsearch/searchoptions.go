@@ -64,14 +64,14 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 func (so *SearchOptions) getUsageString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("\nUsage:\n")
-	buffer.WriteString("  gosearch [options] <startpath>\n\nOptions:\n")
+	buffer.WriteString(" gosearch [options] -s <searchpattern> <startpath>\n\nOptions:\n")
 	sortKeyMap := so.getSortKeyMap()
 	optStringMap := so.getOptStringMap()
 	optDescMap := so.getOptDescMap()
 	sortedKeys := getSortedKeys(sortKeyMap)
 	optStrings := getMapValues(optStringMap)
 	longestLen := getLongestLen(optStrings)
-	optFormat := fmt.Sprintf("  %%-%ds  %%s\n", longestLen)
+	optFormat := fmt.Sprintf(" %%-%ds  %%s\n", longestLen)
 	for _, k := range sortedKeys {
 		o := optStringMap[sortKeyMap[k]]
 		d := optDescMap[sortKeyMap[k]]

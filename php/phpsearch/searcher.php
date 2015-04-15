@@ -21,7 +21,7 @@ class Searcher {
             throw new SearchException('Startpath not found');
         }
         if (count($this->settings->searchpatterns) == 0) {
-            throw new SearchException('No search patterns specified');
+            throw new SearchException('No search patterns defined');
         }
     }
 

@@ -193,7 +193,7 @@ class SearchOptions
   def get_usage_string
     usage = ""
     usage += ("Usage:\n")
-    usage += (" rbsearch.rb [options] <startpath>\n\nOptions:\n")
+    usage += (" rbsearch.rb [options] -s <searchpattern> <startpath>\n\nOptions:\n")
     opt_strings = []
     opt_descs = []
     longest = 0
