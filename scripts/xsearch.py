@@ -14,7 +14,7 @@ import re
 ########################################
 # Classes
 ########################################
-Scenario = namedtuple('Scenario', ['name', 'args', 'compare_output'], verbose=False)
+Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'], verbose=False)
 RunResult = namedtuple('RunResult', ['scenario', 'run', 'time_dict'], verbose=False)
 
 

@@ -24,21 +24,21 @@ exts = ','.join('py rb'.split())
 startpath = default_startpath
 
 scenarios = [
-    Scenario('no args', [], False),
-    Scenario('no startpath', ['-x', exts, '-s', 'Searcher'], False),
-    Scenario('invalid startpath', ['-x', exts, '-s', 'Searcher', '/invalid/startpath'], False),
-    Scenario('no searchpatterns', ['-x', exts, startpath], False),
-    Scenario('help', ['-h'], False),
-    Scenario('search lines, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath], True),
-    Scenario('search contents, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath, '-m'], True),
-    Scenario('search lines, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath], True),
-    Scenario('search contents, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath, '-m'], True),
-    Scenario('search lines, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], True),
-    Scenario('search contents, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], True),
-    Scenario('listdirs', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs'], True),
-    Scenario('listfiles', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listfiles'], True),
-    Scenario('listlines', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines'], True),
-    Scenario('listlines + unique', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines', '-u'], True),
+    Scenario('no args', [], True),
+    Scenario('no startpath', ['-x', exts, '-s', 'Searcher'], True),
+    Scenario('invalid startpath', ['-x', exts, '-s', 'Searcher', '/invalid/startpath'], True),
+    Scenario('no searchpatterns', ['-x', exts, startpath], True),
+    Scenario('help', ['-h'], True),
+    Scenario('search lines, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath], False),
+    Scenario('search contents, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath, '-m'], False),
+    Scenario('search lines, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath], False),
+    Scenario('search contents, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath, '-m'], False),
+    Scenario('search lines, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], False),
+    Scenario('search contents, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], False),
+    Scenario('listdirs', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs'], False),
+    Scenario('listfiles', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listfiles'], False),
+    Scenario('listlines', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines'], False),
+    Scenario('listlines + unique', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines', '-u'], False),
 ]
 
 
@@ -85,7 +85,7 @@ class Comparator(object):
                     break
                 output_lines.append(output_line)
             output = ''.join(output_lines)
-            if not scenario.compare_output:
+            if scenario.replace_xsearch_name:
                 output = xsearch_name_regex.sub('xsearch', output)
             xsearch_output[x] = output
             if self.debug:

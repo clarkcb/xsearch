@@ -24,12 +24,12 @@ exts = ','.join('py rb'.split())
 startpath = default_startpath
 
 scenarios = [
-    # Scenario('no args', [], False), # no arguments, don't compare output (only line lens)
-    # Scenario('help', ['-h'], False), # display help/usage, don't compare output
-    Scenario('search lines #1', ['-x', exts, '-s', 'Searcher', startpath], True),
-    Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', startpath, '-m'], True),
-    Scenario('search lines #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], True),
-    Scenario('search contents #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], True)
+    # Scenario('no args', [], True),
+    # Scenario('help', ['-h'], True),
+    Scenario('search lines #1', ['-x', exts, '-s', 'Searcher', startpath], False),
+    Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', startpath, '-m'], False),
+    Scenario('search lines #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], False),
+    Scenario('search contents #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], False)
 ]
 
 time_keys = ['real', 'sys', 'user', 'total']
@@ -185,7 +185,9 @@ class Benchmarker(object):
             print
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print '%s output (%d lines) != %s output (%d lines)' % (x, lens[x], y, lens[y])
+                    print '%s output != %s output' % (x, y)
+                    # print '%s output:\n"%s"' % (x, xsearch_output[x])
+                    # print '%s output:\n"%s"' % (y, xsearch_output[y])
         else:
             print '\nOutputs of all versions match'
 
@@ -209,14 +211,14 @@ class Benchmarker(object):
                     output_lines.append(output_line)
                 if time_line != '':
                     time_lines.append(time_line.strip())
-            xsearch_output[x] = output_lines
+            output = ''.join(output_lines)
+            if s.replace_xsearch_name:
+                output = xsearch_name_regex.sub('xsearch', output)
+            xsearch_output[x] = output
             if self.debug:
-                print 'output:\n"%s"' % ''.join(output_lines)
+                print 'output:\n"%s"' % output
             xsearch_times[x] = self.times_from_lines(time_lines)
-        if s.compare_output:
-            self.compare_outputs(xsearch_output)
-        else:
-            self.compare_lens(xsearch_output)
+        self.compare_outputs(xsearch_output)
         return RunResult(scenario=s, run=rn, time_dict=xsearch_times)
 
     def run(self):
