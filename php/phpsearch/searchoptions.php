@@ -165,6 +165,7 @@ class SearchOptions {
                 $option = new SearchOption($short, $long, $desc, $func);
                 $this->options[] = $option;
             }
+            usort($this->options, 'cmp_searchoptions');
 
         } else {
             throw new Exception('File not found: ' . $searchoptionspath);
@@ -224,6 +225,10 @@ class SearchOptions {
         }
         return $usage;
     }
+}
+
+function cmp_searchoptions($o1, $o2) {
+    return strcmp($o1->sortarg, $o2->sortarg);
 }
 
 ?>

@@ -6,6 +6,14 @@ class SearchOption {
         $this->longarg = $longarg;
         $this->desc = $desc;
         $this->func = $func;
+        $this->sortarg = $this->__sortarg();
+    }
+
+    private function __sortarg() {
+        if ($this->shortarg) {
+            return strtolower($this->shortarg) . 'a' . $this->longarg;
+        }
+        return $this->longarg;
     }
 }
 
