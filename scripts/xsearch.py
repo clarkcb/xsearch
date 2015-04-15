@@ -9,10 +9,6 @@
 ################################################################################
 from collections import namedtuple
 import os
-from pprint import pprint
-import subprocess
-import sys
-import time
 
 ########################################
 # Classes
@@ -76,4 +72,3 @@ def nonmatching_outputs(xsearch_output):
                 nonmatching.setdefault(y, []).append(x)
         del(xsearch_output[x])
     return nonmatching
-

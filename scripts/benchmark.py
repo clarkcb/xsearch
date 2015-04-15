@@ -7,10 +7,7 @@
 # A simple benchmarking tool for the various xsearch language versions
 #
 ################################################################################
-from collections import namedtuple
 from cStringIO import StringIO
-import os
-from pprint import pprint
 import subprocess
 import sys
 import time
