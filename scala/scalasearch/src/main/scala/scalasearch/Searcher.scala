@@ -660,17 +660,17 @@ class Searcher (settings: SearchSettings) {
   }
 
   def getMatchingDirs: List[File] = {
-    _searchResults.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
+    _searchResults.view.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
       distinct.sortWith(_.toString < _.toString).toList
   }
 
   def getMatchingFiles: List[File] = {
-    _searchResults.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
+    _searchResults.view.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
       sortWith(_.toString < _.toString).toList
   }
 
   def getMatchingLines: List[String] = {
-    val allLines = _searchResults.map(r => Option(r.line)).flatten
+    val allLines = _searchResults.view.map(r => Option(r.line)).flatten.map(_.trim)
     if (settings.uniqueLines) {
       allLines.toSet.toList.sortWith(_ < _)
     } else {
