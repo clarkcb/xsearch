@@ -15,8 +15,10 @@ module HsSearch.FileUtil
     , hasExtension
     , isDirectory
     , isDotDir
+    , isFile
     , isHiddenFilePath
     , normalizeExtension
+    , pathExists
     ) where
 
 import Control.Exception (IOException, handle)
@@ -84,6 +86,17 @@ isDotDir dir = dir `elem` dotDirs
 
 isDirectory :: FilePath -> IO Bool
 isDirectory = doesDirectoryExist
+
+isFile :: FilePath -> IO Bool
+isFile = doesFileExist
+
+pathExists :: FilePath -> IO Bool
+pathExists fp = do
+  foundDir <- doesDirectoryExist fp
+  foundFile <- doesFileExist fp
+  case (foundDir, foundFile) of
+    (False, False) -> return False
+    (_, _) -> return True
 
 getRecursiveContents :: FilePath -> IO [FilePath]
 getRecursiveContents dir = do
