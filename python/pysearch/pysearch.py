@@ -24,6 +24,7 @@ def main():
         searchoptions.usage()
 
     if settings.printusage:
+        common.log('')
         searchoptions.usage()
 
     if settings.printversion:

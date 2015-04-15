@@ -6,6 +6,6 @@ object Common {
   }
 
   def logError(message: String): Unit = {
-    log("Error: " + message)
+    log("ERROR: " + message)
   }
 }

@@ -15,6 +15,12 @@ namespace CsSearch
 			try
 			{
 				var settings = options.SettingsFromArgs(args);
+
+				if (settings.PrintUsage)
+				{
+					options.Usage();
+				}
+
 				var searcher = new Searcher(settings);
 				searcher.Search();
 
@@ -41,7 +47,7 @@ namespace CsSearch
 			}
 			catch (SearchException e)
 			{
-				Log(string.Format("\nError: {0}", e.Message));
+				Log(string.Format("\nERROR: {0}", e.Message));
 				options.Usage(1);
 			}
 		}

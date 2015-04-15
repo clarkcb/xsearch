@@ -29,6 +29,7 @@ def main
   end
 
   if settings.printusage
+    log("\n")
     searchoptions.usage
   end
 

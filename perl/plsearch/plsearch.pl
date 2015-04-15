@@ -36,6 +36,7 @@ sub main {
     }
 
     if ($settings->{printusage}) {
+        plsearch::common::log('');
         $searchoptions->usage();
         plsearch::common::log('');
         exit;

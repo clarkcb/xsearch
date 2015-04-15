@@ -13,6 +13,7 @@ function main($argv) {
         }
 
         if ($settings->printusage) {
+            log_msg('');
             $searchoptions->usage();
             exit;
         }
@@ -41,7 +42,7 @@ function main($argv) {
         }
 
     } catch (SearchException $e) {
-        log_msg("\nError: " . $e->getMessage() . "\n");
+        log_msg("\nERROR: " . $e->getMessage() . "\n");
         $searchoptions->usage();
     }
 }

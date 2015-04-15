@@ -23,8 +23,10 @@ function searchMain() {
             handleError(err, searchOptions);
         }
 
-        if (settings.printUsage)
+        if (settings.printUsage) {
+            common.log('');
             searchOptions.usage();
+        }
 
         if (settings.printVersion) {
             common.log('Version: 0.1');

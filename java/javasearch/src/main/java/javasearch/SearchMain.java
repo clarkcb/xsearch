@@ -17,7 +17,7 @@ public class SearchMain {
     }
 
     private static void logError(final String message) {
-        log("Error: " + message);
+        log("ERROR: " + message);
     }
 
     public static void main(final String[] args) {
@@ -39,6 +39,7 @@ public class SearchMain {
         }
 
         if (settings.getPrintUsage()) {
+            log("");
             options.usage(0);
         }
 
