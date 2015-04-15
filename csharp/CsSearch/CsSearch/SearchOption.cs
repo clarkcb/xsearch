@@ -10,9 +10,10 @@ namespace CsSearch
 		{
 			get
 			{
+				var longArg = LongArg.Replace("in-", "ina");
 				if (!string.IsNullOrWhiteSpace(ShortArg))
-					return ShortArg.ToLower() + "a" + LongArg;
-				return LongArg;
+					return ShortArg.ToLower() + "a" + longArg;
+				return longArg;
 			}
 		}
 		public string Description { get; private set; }
