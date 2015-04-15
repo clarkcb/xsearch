@@ -645,13 +645,21 @@ public class Searcher {
         }
     }
 
-    private final void addSearchResult(final SearchResult searchResult) {
+    private void addSearchResult(final SearchResult searchResult) {
         results.add(searchResult);
         searchFileSet.add(searchResult.getSearchFile());
     }
 
     public final void printSearchResults() {
+        Comparator<SearchResult> comparator = new Comparator<SearchResult>() {
+            public int compare(SearchResult r1, SearchResult r2) {
+                String p1 = r1.getSearchFile().toFile().getPath();
+                String p2 = r2.getSearchFile().toFile().getPath();
+                return p1.compareTo(p2);
+            }
+        };
         log(String.format("Search results (%d):", results.size()));
+        Collections.sort(results, comparator);
         for (SearchResult r : results) {
             log(r.toString());
         }
@@ -663,7 +671,7 @@ public class Searcher {
             dirSet.add(sf.getPath());
         }
         List<String> dirs = new ArrayList<String>(dirSet);
-          java.util.Collections.sort(dirs);
+        Collections.sort(dirs);
         return dirs;
     }
 
@@ -680,7 +688,7 @@ public class Searcher {
         for (SearchFile sf : searchFileSet) {
             files.add(sf.toString());
         }
-          java.util.Collections.sort(files);
+        Collections.sort(files);
         return files;
     }
 
@@ -701,7 +709,7 @@ public class Searcher {
             Set<String> lineSet = new HashSet<String>(lines);
             lines = new ArrayList<String>(lineSet);
         }
-        java.util.Collections.sort(lines);
+        Collections.sort(lines);
         return lines;
     }
 

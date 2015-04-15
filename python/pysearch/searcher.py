@@ -221,11 +221,6 @@ class Searcher(object):
                 self.print_elapsed('search_files')
                 self.print_total_elapsed()
 
-    def print_results(self):
-        common.log('Search results (%d):' % len(self.results))
-        for r in self.results:
-            self.print_result(r)
-
     def search_file(self, sf):
         """Search in a file, return number of matches found"""
         if not self.filetypes.is_searchable_file(sf.filename):
@@ -607,6 +602,11 @@ class Searcher(object):
         self.patterndict.setdefault(pattern, list()).append(search_result)
         fullfile = os.path.abspath(search_result.filename)
         self.filedict.setdefault(fullfile, list()).append(search_result)
+
+    def print_results(self):
+        common.log('Search results (%d):' % len(self.results))
+        for r in sorted(self.results, key=lambda r: r.filename):
+            self.print_result(r)
 
     def print_result(self, search_result):
         """Print the current search result info to the console"""

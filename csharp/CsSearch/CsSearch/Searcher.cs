@@ -588,7 +588,7 @@ namespace CsSearch
 		public void PrintResults()
 		{
 			Log(string.Format("Search results ({0}):", Results.Count));
-			foreach (var searchResult in Results)
+			foreach (var searchResult in Results.OrderBy(r => r.File.FullName))
 			{
 				Log(searchResult.ToString(Settings));
 			}

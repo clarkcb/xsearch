@@ -647,7 +647,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def printSearchResults(): Unit = {
-    _searchResults.foreach(printSearchResult)
+    _searchResults.sortWith(_.file.get.getPath < _.file.get.getPath).foreach(printSearchResult)
  }
 
   private def printSearchResult(r: SearchResult): Unit = {
