@@ -81,7 +81,7 @@ func (s *Searcher) validSettings() error {
 		return fmt.Errorf("Startpath not defined")
 	}
 	if _, err := os.Stat(s.Settings.StartPath); err != nil {
-		return fmt.Errorf("Invalid startpath: \"%s\"", s.Settings.StartPath)
+		return fmt.Errorf("Startpath not found")
 	}
 	if s.Settings.SearchPatterns.IsEmpty() {
 		return fmt.Errorf("No search patterns defined")
