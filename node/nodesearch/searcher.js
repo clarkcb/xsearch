@@ -624,7 +624,11 @@ function Searcher(settings) {
         }
         if (_settings.uniqueLines)
             lines = common.setFromArray(lines);
-        lines.sort();
+        lines.sort(function (a, b) {
+            if (a.toUpperCase() == b.toUpperCase())
+                return 0;
+            return a.toUpperCase() < b.toUpperCase() ? -1 : 1;
+        });
         return lines;
     };
 

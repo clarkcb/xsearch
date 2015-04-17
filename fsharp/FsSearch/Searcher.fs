@@ -310,13 +310,11 @@ type Searcher (settings : SearchSettings) =
             this.Results
             |> Seq.map (fun r -> r.Line.Trim())
         if _settings.UniqueLines then
-            lines
+            Seq.sortBy (fun (s : string) -> s.ToUpper()) lines
             |> Seq.distinct
-            |> Seq.sort
             |> List.ofSeq
         else
-            lines
-            |> Seq.sort
+            Seq.sortBy (fun (s : string) -> s.ToUpper()) lines
             |> List.ofSeq
 
     member this.PrintMatchingLines = 

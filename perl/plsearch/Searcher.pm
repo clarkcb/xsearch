@@ -651,7 +651,7 @@ sub get_matching_lines {
     if ($self->{settings}->{uniquelines}) {
         @lines = keys %{$line_hash};
     }
-    @lines = sort(@lines);
+    @lines = sort {uc($a) cmp uc($b)} @lines;
     return \@lines;
 }
 

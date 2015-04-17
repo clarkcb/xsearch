@@ -538,8 +538,7 @@ class Searcher
       end
     end
     dirs = dirs.to_a
-    dirs.sort!
-    dirs
+    dirs.sort
   end
 
   def get_matching_files(patterns = [])
@@ -554,8 +553,7 @@ class Searcher
       end
     end
     files = files.to_a
-    files.sort!
-    files
+    files.sort
   end
 
   def get_matching_lines(patterns = [])
@@ -572,7 +570,6 @@ class Searcher
     if @settings.uniquelines
       lines.uniq!
     end
-    lines.sort!
-    lines
+    lines.sort {|s1, s2| s1.upcase <=> s2.upcase}
   end
 end

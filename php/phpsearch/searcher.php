@@ -561,7 +561,7 @@ class Searcher {
             if (!$this->settings->uniquelines || !in_array($l, $lines))
                 $lines[] = $l;
         }
-        sort($lines);
+        usort($lines, 'cmp_ignorecase');
         return $lines;
     }
 
@@ -577,15 +577,9 @@ class Searcher {
     }
 }
 
-
-
-
-
-
-
-
-
-
+function cmp_ignorecase($s1, $s2) {
+    return strcmp(strtoupper($s1), strtoupper($s2));
+}
 
 
 ?>

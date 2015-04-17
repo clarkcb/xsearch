@@ -672,9 +672,9 @@ class Searcher (settings: SearchSettings) {
   def getMatchingLines: List[String] = {
     val allLines = _searchResults.view.map(r => Option(r.line)).flatten.map(_.trim)
     if (settings.uniqueLines) {
-      allLines.toSet.toList.sortWith(_ < _)
+      allLines.toSet.toList.sortWith(_.toUpperCase < _.toUpperCase)
     } else {
-      allLines.toList.sortWith(_ < _)
+      allLines.toList.sortWith(_.toUpperCase < _.toUpperCase)
     }
   }
 }

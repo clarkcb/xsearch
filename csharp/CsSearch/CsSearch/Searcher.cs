@@ -637,7 +637,7 @@ namespace CsSearch
 			{
 				lines = new HashSet<string>(lines).ToList();
 			}
-			lines.Sort();
+			lines.Sort(new CaseInsensitiveComparer());
 			return lines;
 		}
 
@@ -650,6 +650,14 @@ namespace CsSearch
 			{
 				Log(m);
 			}
+		}
+	}
+
+	class CaseInsensitiveComparer : IComparer<string>
+	{
+		public int Compare(string a, string b)
+		{
+			return a.ToUpper().CompareTo(b.ToUpper());
 		}
 	}
 }

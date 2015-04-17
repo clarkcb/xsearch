@@ -248,15 +248,7 @@ func (s *Searcher) setSearchFiles() error {
 }
 
 func (s *Searcher) addSearchResult(r *SearchResult) {
-	if s.Settings.UniqueLines &&
-		s.searchResults.LineCounts[strings.TrimSpace(*r.Line)] > 0 {
-		if s.Settings.Verbose {
-			log(fmt.Sprintf("Skipping search result with non-unique line: %s",
-				strings.TrimSpace(*r.Line)))
-		}
-	} else {
-		s.searchResults.AddSearchResult(r)
-	}
+	s.searchResults.AddSearchResult(r)
 }
 
 func linesMatch(lines []*string, inPatterns *SearchPatterns,
@@ -1014,4 +1006,8 @@ func (s *Searcher) PrintFileCounts() {
 
 func (s *Searcher) PrintLineCounts() {
 	s.searchResults.PrintLineCounts()
+}
+
+func (s *Searcher) PrintUniqueLineCounts() {
+	s.searchResults.PrintUniqueLineCounts()
 }

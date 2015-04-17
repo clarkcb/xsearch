@@ -47,6 +47,10 @@ func main() {
 
 	if settings.ListLines {
 		fmt.Println()
-		searcher.PrintLineCounts()
+		if settings.UniqueLines {
+			searcher.PrintUniqueLineCounts()
+		} else {
+			searcher.PrintLineCounts()
+		}
 	}
 }

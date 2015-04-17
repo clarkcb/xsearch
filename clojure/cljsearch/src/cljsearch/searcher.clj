@@ -10,7 +10,7 @@
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
   (:use [clojure.java.io :only (file reader)]
-        [clojure.string :as str :only (join trim)]
+        [clojure.string :as str :only (join trim upper-case)]
         [cljsearch.common :only (log-msg)]
         [cljsearch.filetypes :only (archive-file? get-filetype)]
         [cljsearch.fileutil :only
@@ -68,7 +68,7 @@
     (doseq [f files] (log-msg f))))
 
 (defn get-matching-lines [settings]
-  (let [lines (sort (map #(str/trim (:line %)) (deref search-results)))]
+  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) (deref search-results)))]
     (if (:uniquelines settings)
       (distinct lines)
       lines)))
@@ -101,8 +101,7 @@
         in-filepatterns (:in-archivefilepatterns settings)
         out-filepatterns (:out-archivefilepatterns settings)
         ext (get-ext f)
-        name (.getName f)
-        ]
+        name (.getName f)]
     (and
       (or
         (empty? in-extensions)
@@ -144,8 +143,7 @@
     (or
       (not (hidden-file? f))
       (not (:excludehidden settings)))
-    (if
-      (archive-file? f)
+    (if (archive-file? f)
       (and
         (:searcharchives settings)
         (is-archive-search-file? f settings))

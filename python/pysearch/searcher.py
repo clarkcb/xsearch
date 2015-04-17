@@ -677,8 +677,7 @@ class Searcher(object):
             line_list.extend([r.line.strip() for r in self.patterndict[p]])
         if self.settings.uniquelines:
             line_list = list(set(line_list))
-        line_list.sort()
-        return line_list
+        return sorted(line_list, key=lambda s: s.upper())
 
 def matches_any_pattern(s, pattern_set):
     """Returns true if string s matches any pattern in pattern_set, else

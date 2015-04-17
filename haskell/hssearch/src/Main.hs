@@ -2,8 +2,8 @@ module Main (main) where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
-import Data.Char (isSpace)
-import Data.List (nub, sort)
+import Data.Char (isSpace, toUpper)
+import Data.List (nub, sort, sortBy)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 import System.TimeIt
@@ -54,7 +54,7 @@ getMatchingDirs = sort . nub . map getDirectory
 formatMatchingDirs :: [SearchResult] -> String
 formatMatchingDirs results = 
   "\nDirectories with matches (" ++ show (length matchingDirs) ++ "):\n" ++
-  unlines matchingDirs ++ "\n"
+  unlines matchingDirs
   where matchingDirs = getMatchingDirs results
 
 getMatchingFiles :: [SearchResult] -> [FilePath]
@@ -66,9 +66,16 @@ formatMatchingFiles results =
   unlines matchingFiles
   where matchingFiles = getMatchingFiles results
 
+byteStringToUpper :: B.ByteString -> B.ByteString
+byteStringToUpper = BC.pack . map toUpper . BC.unpack
+
+sortCaseInsensitive :: [B.ByteString] -> [B.ByteString]
+sortCaseInsensitive = sortBy compareCaseInsensitive
+  where compareCaseInsensitive a b = (byteStringToUpper a) `compare` (byteStringToUpper b)
+
 getMatchingLines :: [SearchResult] -> Bool -> [B.ByteString]
-getMatchingLines results unique | unique = (sort . nub . map trimLine) results
-                                | otherwise = (sort . map trimLine) results
+getMatchingLines results unique | unique = (sortCaseInsensitive . nub . map trimLine) results
+                                | otherwise = (sortCaseInsensitive . map trimLine) results
   where trimLine = BC.dropWhile isSpace . line
 
 formatMatchingLines :: [SearchResult] -> Bool -> String

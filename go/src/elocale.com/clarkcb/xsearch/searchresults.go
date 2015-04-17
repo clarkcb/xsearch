@@ -3,6 +3,7 @@ package xsearch
 import (
 	"bytes"
 	"fmt"
+	"github.com/pmylund/sortutil"
 	"regexp"
 	"sort"
 	"strings"
@@ -95,6 +96,17 @@ func getSortedCountKeys(m map[string]int) []string {
 	return mk
 }
 
+func getCaseInsensitiveSortedCountKeys(m map[string]int) []string {
+	mk := make([]string, len(m))
+	i := 0
+	for k, _ := range m {
+		mk[i] = k
+		i++
+	}
+	sortutil.CiAsc(mk)
+	return mk
+}
+
 func getHighestMapVal(m map[string]int) int {
 	highestVal := 0
 	for _, v := range m {
@@ -124,43 +136,70 @@ func getNumLen2(num int) int {
 	return count
 }
 
-func printCounts(singName string, pluralName string, countKeys []string,
+// func printCounts(singName string, pluralName string, countKeys []string,
+// 	countMap map[string]int) {
+// 	countName := pluralName
+// 	if len(countKeys) == 1 {
+// 		countName = singName
+// 	}
+// 	log(fmt.Sprintf("%s match counts (%d %s):\n", strings.Title(singName),
+// 		len(countKeys), countName))
+// 	longestKeyLen := getLongestLen(countKeys) + 1
+// 	longestNumLen := getNumLen2(getHighestMapVal(countMap))
+// 	lineFormat := fmt.Sprintf("%%-%ds %%%dd", longestKeyLen, longestNumLen)
+// 	for _, k := range countKeys {
+// 		log(fmt.Sprintf(lineFormat, k+":", countMap[k]))
+// 	}
+// }
+
+func printCounts(pluralName string, countKeys []string,
 	countMap map[string]int) {
-	countName := pluralName
-	if len(countKeys) == 1 {
-		countName = singName
-	}
-	log(fmt.Sprintf("%s match counts (%d %s):\n", strings.Title(singName),
-		len(countKeys), countName))
-	longestKeyLen := getLongestLen(countKeys) + 1
-	longestNumLen := getNumLen2(getHighestMapVal(countMap))
-	lineFormat := fmt.Sprintf("%%-%ds %%%dd", longestKeyLen, longestNumLen)
+	log(fmt.Sprintf("%s with matches (%d):", strings.Title(pluralName),
+		len(countKeys)))
 	for _, k := range countKeys {
-		log(fmt.Sprintf(lineFormat, k+":", countMap[k]))
+		log(fmt.Sprintf("%s", k))
 	}
 }
 
 func (rs *SearchResults) PrintDirCounts() {
 	countMap := rs.DirCounts
 	countKeys := getSortedCountKeys(countMap)
-	printCounts("directory", "directories", countKeys, countMap)
+	printCounts("directories", countKeys, countMap)
 }
 
 func (rs *SearchResults) PrintFileCounts() {
 	countMap := rs.FileCounts
 	countKeys := getSortedCountKeys(countMap)
-	printCounts("file", "files", countKeys, countMap)
+	printCounts("files", countKeys, countMap)
 }
 
 func (rs *SearchResults) PrintLineCounts() {
 	countMap := rs.LineCounts
-	countKeys := getSortedCountKeys(countMap)
-	printCounts("line", "lines", countKeys, countMap)
+	totalCount := 0
+	for _, v := range countMap {
+		totalCount += v
+	}
+	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
+	log(fmt.Sprintf("Lines with matches (%d):", totalCount))
+	for _, k := range countKeys {
+		for i := 0; i < countMap[k]; i++ {
+			log(fmt.Sprintf("%s", k))
+		}
+	}
+}
+
+func (rs *SearchResults) PrintUniqueLineCounts() {
+	countMap := rs.LineCounts
+	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
+	log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
+	for _, k := range countKeys {
+		log(fmt.Sprintf("%s", k))
+	}
 }
 
 func (rs *SearchResults) PrintPatternCounts(patterns []string) {
 	countMap := rs.PatternCounts
-	printCounts("pattern", "patterns", patterns, countMap)
+	printCounts("patterns", patterns, countMap)
 }
 
 func (rs *SearchResults) PrintSearchResults() {

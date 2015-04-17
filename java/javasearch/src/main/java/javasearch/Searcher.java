@@ -701,6 +701,11 @@ public class Searcher {
     }
 
     public final List<String> getMatchingLines() {
+        Comparator<String> comparator = new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                return s1.toUpperCase().compareTo(s2.toUpperCase());
+            }
+        };
         List<String> lines = new ArrayList<String>();
         for (SearchResult r : results) {
             lines.add(r.getLine().trim());
@@ -709,7 +714,7 @@ public class Searcher {
             Set<String> lineSet = new HashSet<String>(lines);
             lines = new ArrayList<String>(lineSet);
         }
-        Collections.sort(lines);
+        Collections.sort(lines, comparator);
         return lines;
     }
 
