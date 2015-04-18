@@ -117,8 +117,6 @@ class SearchResult(object):
                 sio.write(' ' + line_format.format(current_linenum,
                                                    strip_newlines(line_after)))
                 current_linenum += 1
-        else:
-            sio.write('\n')
         s = sio.getvalue()
         sio.close()
         return s

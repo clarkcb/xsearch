@@ -443,8 +443,6 @@ class Searcher {
                 $line = array_shift($lines);
             if ($line === NULL)
                 break;
-            else
-                $line = rtrim($line);
             $linenum++;
             if ($this->settings->linesafter) {
                 while(count($lines_after) < $this->settings->linesafter) {
@@ -452,7 +450,7 @@ class Searcher {
                     if ($line_after == NULL)
                         break;
                     else
-                        $lines_after[] = rtrim($line_after);
+                        $lines_after[] = $line_after;
                 }
             }
             foreach ($this->settings->searchpatterns as $pattern) {

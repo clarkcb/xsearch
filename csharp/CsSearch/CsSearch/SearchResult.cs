@@ -82,11 +82,11 @@ namespace CsSearch
 				{
 					sb.Append(' ').
 						Append(string.Format(lineFormat, currentLineNum,
-						lineBefore.TrimEnd()));
+						lineBefore));
 					currentLineNum++;
 				}
 			}
-			sb.Append('>').Append(string.Format(lineFormat, LineNum, Line.TrimEnd()));
+			sb.Append('>').Append(string.Format(lineFormat, LineNum, Line));
 			if (LinesAfter.Count > 0)
 			{
 				currentLineNum++;
@@ -94,7 +94,7 @@ namespace CsSearch
 				{
 					sb.Append(' ').
 						Append(string.Format(lineFormat, currentLineNum,
-						lineAfter.TrimEnd()));
+						lineAfter));
 					currentLineNum++;
 				}
 			}

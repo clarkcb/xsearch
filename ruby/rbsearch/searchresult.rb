@@ -89,6 +89,13 @@ class SearchResult
     max_linenum.to_s.length
   end
 
+  def strip_newlines(s)
+    while s.end_with? "\n", "\r"
+      s = s[0..-2]
+    end
+    s
+  end
+
   def __multiline_s
     s = "=" * @@SEPARATOR_LEN + "\n"
     s += "#{@filename}: #{@linenum}: [#{@match_start_index}:#{@match_end_index}]\n"
@@ -98,15 +105,15 @@ class SearchResult
     if @lines_before.length > 0
       current_linenum -= @lines_before.length
       @lines_before.each {|line_before|
-        s += ' ' + line_format % [current_linenum, line_before.rstrip]
+        s += ' ' + line_format % [current_linenum, strip_newlines(line_before)]
         current_linenum += 1
       }
     end
-    s += '>' + line_format % [current_linenum, @line.rstrip]
+    s += '>' + line_format % [current_linenum, strip_newlines(@line)]
     if @lines_after
       current_linenum += 1
       @lines_after.each {|line_after|
-        s += ' ' + line_format % [current_linenum, line_after.rstrip]
+        s += ' ' + line_format % [current_linenum, strip_newlines(line_after)]
         current_linenum += 1
       }
     end

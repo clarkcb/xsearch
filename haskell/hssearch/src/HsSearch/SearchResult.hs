@@ -58,7 +58,7 @@ formatMultiLine result =
   filePath result ++ ": " ++
   show (lineNum result) ++ ": [" ++
   show (matchStartIndex result) ++ ":" ++
-  show (matchEndIndex result) ++ "]:\n" ++
+  show (matchEndIndex result) ++ "]\n" ++
   replicate 80 '-' ++ "\n" ++
   unlines (zipWith (curry formatLine) beforeLineNums resultBeforeLines) ++
   "> " ++ padNumString (show resultLineNum) ++ " | " ++

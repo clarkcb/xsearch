@@ -242,7 +242,8 @@ func (r *SearchResult) lineNumPadding() int {
 func (r *SearchResult) multiLineString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(strings.Repeat("=", SEPARATOR_LEN))
-	buffer.WriteString(fmt.Sprintf("\n%s\n", r.File.String()))
+	buffer.WriteString(fmt.Sprintf("\n%s: %d: [%d:%d]\n", r.File.String(),
+		r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
 	buffer.WriteString(strings.Repeat("-", SEPARATOR_LEN))
 	buffer.WriteString("\n")
 	lineFormat := fmt.Sprintf(" %%%dd | %%s\n", r.lineNumPadding())

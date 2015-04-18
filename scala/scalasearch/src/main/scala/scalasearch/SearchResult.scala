@@ -109,8 +109,6 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
         currentLineNum += 1
       }
-    } else {
-      sb.append('\n')
     }
     sb.toString()
   }
