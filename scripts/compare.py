@@ -35,10 +35,14 @@ scenarios = [
     Scenario('search contents, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath, '-m'], False),
     Scenario('search lines, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], False),
     Scenario('search contents, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], False),
+    # Scenario('search lines, valid search pattern, 2 lines before', ['-x', exts, '-s', 'Searcher', startpath, '-b', '2'], False),
+    # Scenario('search contents, valid search pattern, 2 lines before', ['-x', exts, '-s', 'Searcher', startpath, '-m',  '-b', '2'], False),
     Scenario('listdirs', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs'], False),
     Scenario('listfiles', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listfiles'], False),
     Scenario('listlines', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines'], False),
     Scenario('listlines + unique', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines', '-u'], False),
+    Scenario('list all', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs', '--listfiles', '--listlines'], False),
+    Scenario('list all + unique', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs', '--listfiles', '--listlines', '-u'], False),
 ]
 
 
@@ -65,8 +69,8 @@ class Comparator(object):
             for x in xs:
                 for y in sorted(nonmatching[x]):
                     print '%s output != %s output' % (x, y)
-                    print '%s output:\n"%s"' % (x, xsearch_output[x])
-                    print '%s output:\n"%s"' % (y, xsearch_output[y])
+                    # print '%s output:\n"%s"' % (x, xsearch_output[x])
+                    # print '%s output:\n"%s"' % (y, xsearch_output[y])
         else:
             print '\nOutputs of all versions match'
         return nonmatching
@@ -155,6 +159,7 @@ def get_args(args):
 def main():
     xsearch_names, debug = get_args(sys.argv[1:])
     print 'xsearch_names: %s' % str(xsearch_names)
+    print 'scenarios: %d' % len(scenarios)
     comparator = Comparator(xsearch_names=xsearch_names,
         scenarios=scenarios, debug=debug)
     comparator.run()

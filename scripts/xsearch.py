@@ -38,7 +38,6 @@ xsearch_dict = {
 all_xsearch_names = sorted(xsearch_dict.values())
 
 xsearch_name_regex = re.compile(r'\b(%s)(\.exe)?\b' % '|'.join(all_xsearch_names), re.I | re.S)
-print 'xsearch_name_regex: %s' % xsearch_name_regex.pattern
 
 default_runs = 10
 

@@ -236,6 +236,7 @@ class Benchmarker(object):
             results.extend(s_results)
         self.print_totals(results)
 
+
 ########################################
 # Main functions
 ########################################
