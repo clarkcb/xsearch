@@ -27,100 +27,69 @@ class SearchOptions
 
   def set_actions
     @arg_action_dict = {
-      'in-archiveext' =>
-        proc { |x, settings| settings.add_comma_delimited_exts(x,
+      'in-archiveext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
           settings.in_archiveextensions) },
-      'in-archivefilepattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.in_archivefilepatterns) },
-      'in-dirpattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.in_dirpatterns) },
-      'in-ext' =>
-        proc { |x, settings| settings.add_comma_delimited_exts(x,
+      'in-archivefilepattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.in_archivefilepatterns) },
+      'in-dirpattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.in_dirpatterns) },
+      'in-ext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
           settings.in_extensions) },
-      'in-filepattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.in_filepatterns) },
-      'in-linesafterpattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.in_linesafterpatterns) },
-      'in-linesbeforepattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.in_linesbeforepatterns) },
-      'linesafter' =>
-        proc { |x, settings| settings.linesafter = x.to_i },
-      'linesaftertopattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.linesaftertopatterns) },
-      'linesafteruntilpattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.linesafteruntilpatterns) },
-      'linesbefore' =>
-        proc { |x, settings| settings.linesbefore = x.to_i },
-      'maxlinelength' =>
-        proc { |x, settings| settings.maxlinelength = x.to_i },
-      'out-archiveext' =>
-        proc { |x, settings| settings.add_comma_delimited_exts(x,
+      'in-filepattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.in_filepatterns) },
+      'in-linesafterpattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.in_linesafterpatterns) },
+      'in-linesbeforepattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.in_linesbeforepatterns) },
+      'linesafter' => ->(x, settings){ settings.linesafter = x.to_i },
+      'linesaftertopattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.linesaftertopatterns) },
+      'linesafteruntilpattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.linesafteruntilpatterns) },
+      'linesbefore' => ->(x, settings){ settings.linesbefore = x.to_i },
+      'maxlinelength' => ->(x, settings){ settings.maxlinelength = x.to_i },
+      'out-archiveext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
           settings.out_archiveextensions) },
-      'out-archivefilepattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.out_archivefilepatterns) },
-      'out-dirpattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.out_dirpatterns) },
-      'out-ext' =>
-        proc { |x, settings| settings.add_comma_delimited_exts(x,
+      'out-archivefilepattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.out_archivefilepatterns) },
+      'out-dirpattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.out_dirpatterns) },
+      'out-ext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
           settings.out_extensions) },
-      'out-filepattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.out_filepatterns) },
-      'out-linesafterpattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.out_linesafterpatterns) },
-      'out-linesbeforepattern' =>
-        proc { |x, settings| settings.add_pattern(x, settings.out_linesbeforepatterns) },
-      'search' =>
-        proc { |x, settings| settings.add_pattern(x, settings.searchpatterns) }
+      'out-filepattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.out_filepatterns) },
+      'out-linesafterpattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.out_linesafterpatterns) },
+      'out-linesbeforepattern' => ->(x, settings){ settings.add_pattern(x,
+        settings.out_linesbeforepatterns) },
+      'search' => ->(x, settings){ settings.add_pattern(x,
+        settings.searchpatterns) }
     }
     @flag_action_dict = {
-      'allmatches' =>
-        proc { |settings| settings.firstmatch = false },
-      'archivesonly' =>
-        proc { |settings| settings.archivesonly = true;
-                          settings.searcharchives = true },
-      'caseinsensitive' =>
-        proc { |settings| settings.casesensitive = false },
-      'casesensitive' =>
-        proc { |settings| settings.casesensitive = true },
-      'debug' =>
-        proc { |settings| settings.debug = true;
-                          settings.verbose = true },
-      'dotiming' =>
-        proc { |settings| settings.dotiming = true },
-      'excludehidden' =>
-        proc { |settings| settings.excludehidden = true },
-      'firstmatch' =>
-        proc { |settings| settings.firstmatch = true },
-      'help' =>
-        proc { |settings| settings.printusage = true },
-      'includehidden' =>
-        proc { |settings| settings.excludehidden = false },
-      'listdirs' =>
-        proc { |settings| settings.listdirs = true },
-      'listfiles' =>
-        proc { |settings| settings.listfiles = true },
-      'listlines' =>
-        proc { |settings| settings.listlines = true },
-      'multilinesearch' =>
-        proc { |settings| settings.multilinesearch = true },
-      'noprintmatches' =>
-        proc { |settings| settings.printresults = false },
-      'norecursive' =>
-        proc { |settings| settings.recursive = false },
-      'nosearcharchives' =>
-        proc { |settings| settings.searcharchives = false },
-      'printmatches' =>
-        proc { |settings| settings.printresults = true },
-      'recursive' =>
-        proc { |settings| settings.recursive = true },
-      'searcharchives' =>
-        proc { |settings| settings.searcharchives = true },
-      'uniquelines' =>
-        proc { |settings| settings.uniquelines = true },
-      'verbose' =>
-        proc { |settings| settings.verbose = true },
-      'version' =>
-        proc { |settings| settings.printversion = true }
+      'allmatches' => ->(settings){ settings.firstmatch = false },
+      'archivesonly' => ->(settings){ settings.archivesonly = true;
+        settings.searcharchives = true },
+      'caseinsensitive' => ->(settings){ settings.casesensitive = false },
+      'casesensitive' => ->(settings){ settings.casesensitive = true },
+      'debug' => ->(settings){ settings.debug = true; settings.verbose = true },
+      'dotiming' => ->(settings){ settings.dotiming = true },
+      'excludehidden' => ->(settings){ settings.excludehidden = true },
+      'firstmatch' => ->(settings){ settings.firstmatch = true },
+      'help' => ->(settings){ settings.printusage = true },
+      'includehidden' => ->(settings){ settings.excludehidden = false },
+      'listdirs' => ->(settings){ settings.listdirs = true },
+      'listfiles' => ->(settings){ settings.listfiles = true },
+      'listlines' => ->(settings){ settings.listlines = true },
+      'multilinesearch' => ->(settings){ settings.multilinesearch = true },
+      'noprintmatches' => ->(settings){ settings.printresults = false },
+      'norecursive' => ->(settings){ settings.recursive = false },
+      'nosearcharchives' => ->(settings){ settings.searcharchives = false },
+      'printmatches' => ->(settings){ settings.printresults = true },
+      'recursive' => ->(settings){ settings.recursive = true },
+      'searcharchives' => ->(settings){ settings.searcharchives = true },
+      'uniquelines' => ->(settings){ settings.uniquelines = true },
+      'verbose' => ->(settings){ settings.verbose = true },
+      'version' => ->(settings){ settings.printversion = true }
     }
   end
 
