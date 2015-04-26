@@ -23,6 +23,9 @@ def main():
         common.log('\nException: {0!s}\n'.format(e))
         searchoptions.usage()
 
+    if settings.debug:
+        common.log('settings: {0!s}'.format(settings))
+
     if settings.printusage:
         common.log('')
         searchoptions.usage()
@@ -30,9 +33,6 @@ def main():
     if settings.printversion:
         common.log('Version: 0.1')
         sys.exit(1)
-
-    if settings.debug:
-        common.log('settings: {0!s}'.format(settings))
 
     try:
         searcher = Searcher(settings)
