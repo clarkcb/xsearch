@@ -8,6 +8,7 @@
 #
 ################################################################################
 import os
+import platform
 import xml.dom.minidom as minidom
 
 from common import get_text
@@ -24,7 +25,10 @@ class FileTypes(object):
     """a class to provide file type information"""
 
     # TODO: move to a config file
-    HOME = os.environ['HOME']
+    HOME_NAME = 'HOME'
+    if platform.system() == 'Windows':
+        HOME_NAME = 'USERPROFILE'
+    HOME = os.environ[HOME_NAME]
     FILETYPESPATH = '%s/src/git/xsearch/shared/filetypes.xml' % HOME
 
     def __init__(self, **kargs):
