@@ -14,6 +14,9 @@ func getHome() string {
 		if strings.HasPrefix(x, "HOME=") {
 			home = strings.TrimPrefix(x, "HOME=")
 			break
+		} else if strings.HasPrefix(x, "USERPROFILE=") {
+			home = strings.TrimPrefix(x, "USERPROFILE=")
+			break
 		}
 	}
 	return home
