@@ -10,6 +10,7 @@
 from collections import deque
 from cStringIO import StringIO
 import os
+import platform
 import sys
 import xml.dom.minidom as minidom
 
@@ -21,7 +22,10 @@ class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
 
     # TODO: move to a config file
-    HOME = os.environ['HOME']
+    HOME_NAME = 'HOME'
+    if platform.system() == 'Windows':
+        HOME_NAME = 'USERPROFILE'
+    HOME = os.environ[HOME_NAME]
     SEARCHOPTIONSPATH = '%s/src/git/xsearch/shared/searchoptions.xml' % HOME
 
     arg_action_dict = {
@@ -159,7 +163,6 @@ class SearchOptions(object):
         self.arg_dict = {}
         self.flag_dict = {}
         self.set_options_from_xml()
-        self.sorted_options = sorted(self.options, key=lambda opt: opt.sortarg)
 
     def set_options_from_xml(self):
         searchoptionsdom = minidom.parse(self.SEARCHOPTIONSPATH)
@@ -225,7 +228,7 @@ class SearchOptions(object):
         opt_strings = []
         opt_descs = []
         longest = 0
-        for opt in self.sorted_options:
+        for opt in sorted(self.options, key=lambda opt: opt.sortarg):
             opt_string = ''
             if opt.shortarg:
                 opt_string += '-{0},'.format(opt.shortarg)
