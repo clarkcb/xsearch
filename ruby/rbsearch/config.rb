@@ -8,11 +8,11 @@
 
 require 'rbconfig'
 
-HOME_NAME = 'HOME'
-if RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/
-  HOME_NAME = 'USERPROFILE'
+def windows?
+  RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/
 end
 
+HOME_NAME = windows? ? 'USERPROFILE' : 'HOME'
 HOME = ENV[HOME_NAME]
 XSEARCHPATH = "#{HOME}/src/git/xsearch"
 SHAREDPATH = "#{XSEARCHPATH}/shared"
