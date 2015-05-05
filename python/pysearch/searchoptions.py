@@ -15,18 +15,12 @@ import sys
 import xml.dom.minidom as minidom
 
 from common import get_text
+from config import SEARCHOPTIONSPATH
 from searchoption import SearchOption
 from searchsettings import SearchSettings
 
 class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
-
-    # TODO: move to a config file
-    HOME_NAME = 'HOME'
-    if platform.system() == 'Windows':
-        HOME_NAME = 'USERPROFILE'
-    HOME = os.environ[HOME_NAME]
-    SEARCHOPTIONSPATH = '%s/src/git/xsearch/shared/searchoptions.xml' % HOME
 
     arg_action_dict = {
         'in-archiveext':
@@ -165,7 +159,7 @@ class SearchOptions(object):
         self.set_options_from_xml()
 
     def set_options_from_xml(self):
-        searchoptionsdom = minidom.parse(self.SEARCHOPTIONSPATH)
+        searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
         searchoptionnodes = searchoptionsdom.getElementsByTagName('searchoption')
         for searchoptionnode in searchoptionnodes:
             name = searchoptionnode.getAttribute('long')

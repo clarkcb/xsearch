@@ -8,10 +8,10 @@
 #
 ################################################################################
 import os
-import platform
 import xml.dom.minidom as minidom
 
 from common import get_text
+from config import FILETYPESPATH
 from fileutil import FileUtil
 
 class FileType(object):
@@ -23,13 +23,6 @@ class FileType(object):
 
 class FileTypes(object):
     """a class to provide file type information"""
-
-    # TODO: move to a config file
-    HOME_NAME = 'HOME'
-    if platform.system() == 'Windows':
-        HOME_NAME = 'USERPROFILE'
-    HOME = os.environ[HOME_NAME]
-    FILETYPESPATH = '%s/src/git/xsearch/shared/filetypes.xml' % HOME
 
     def __init__(self, **kargs):
         self.filetypes = {}
@@ -63,7 +56,7 @@ class FileTypes(object):
         return FileUtil.get_extension(f) in self.filetypes['text']
 
     def __populate_filetypes(self):
-        filetypedom = minidom.parse(self.FILETYPESPATH)
+        filetypedom = minidom.parse(FILETYPESPATH)
         filetypenodes = filetypedom.getElementsByTagName('filetype')
         for filetypenode in filetypenodes:
             name = filetypenode.getAttribute('name')
