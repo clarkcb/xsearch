@@ -7,6 +7,7 @@
 var fs = require('fs');
 
 var common = require('./common.js');
+var config = require('./config.js');
 var FileType = require('./filetype.js').FileType;
 var FileUtil = require('./fileutil.js').FileUtil;
 
@@ -15,13 +16,12 @@ function FileTypes() {
 
     var fileTypeMap = (function () {
         //TODO: move to config file
-        var fileTypePath = "~/src/git/xsearch/shared/filetypes.xml";
         var fileTypeMap = {};
 
         var DomJS = require("dom-js").DomJS;
         var domjs = new DomJS();
 
-        var xml = fs.readFileSync(FileUtil.expandPath(fileTypePath)).toString();
+        var xml = fs.readFileSync(FileUtil.expandPath(config.FILETYPESPATH)).toString();
         domjs.parse(xml, function(err, dom) {
             if (err) {
                 throw err;

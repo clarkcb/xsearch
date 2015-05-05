@@ -4,15 +4,13 @@
  * defines the set of search options and provides functionality to define search settings from them
  */
 
+var config = require('./config.js');
 var FileUtil = require('./fileutil.js').FileUtil;
 var SearchOption = require('./searchoption.js').SearchOption;
 var SearchSettings = require('./searchsettings.js').SearchSettings;
 
 function SearchOptions() {
     var self = this;
-
-    //TODO: move to config file
-    var searchOptionsPath = '~/src/git/xsearch/shared/searchoptions.xml';
 
     // the list of SearchOption objects (populated by setOptionsFromXml)
     var options = [];
@@ -119,8 +117,7 @@ function SearchOptions() {
         var DomJS = require('dom-js').DomJS;
 
         var domjs = new DomJS();
-
-        var xml = fs.readFileSync(FileUtil.expandPath(searchOptionsPath)).toString();
+        var xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
         domjs.parse(xml, function(err, dom) {
             if (err) {
                 throw err;
