@@ -9,10 +9,10 @@
 require 'find'
 require 'pathname'
 require 'set'
-require 'common.rb'
-require 'filetypes.rb'
-require 'fileutil.rb'
-require 'searchresult.rb'
+require_relative 'common.rb'
+require_relative 'filetypes.rb'
+require_relative 'fileutil.rb'
+require_relative 'searchresult.rb'
 
 class Searcher
   attr_accessor :results

@@ -9,14 +9,13 @@
 
 require 'rexml/document'
 include REXML
-require 'searchoption.rb'
-require 'searchsettings.rb'
+require_relative 'config.rb'
+require_relative 'searchoption.rb'
+require_relative 'searchsettings.rb'
 
 class SearchOptions
   
   def initialize
-    # TODO: move to a config file
-    @searchoptionspath = '~/src/git/xsearch/shared/searchoptions.xml'
     @options = []
     @arg_dict = {}
     @flag_dict = {}
@@ -94,7 +93,7 @@ class SearchOptions
   end
 
   def set_options_from_xml
-    doc = Document.new(File.new(File.expand_path(@searchoptionspath)))
+    doc = Document.new(File.new(File.expand_path(SEARCHOPTIONSPATH)))
     doc.elements.each('searchoptions/searchoption') { |searchoption|
       long = searchoption.attributes['long']
       short = searchoption.attributes['short']

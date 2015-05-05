@@ -7,9 +7,9 @@
 #
 ################################################################################
 
-require 'common.rb'
-require 'searcher.rb'
-require 'searchoptions.rb'
+require_relative 'common.rb'
+require_relative 'searcher.rb'
+require_relative 'searchoptions.rb'
 
 def main
   searchoptions = SearchOptions.new

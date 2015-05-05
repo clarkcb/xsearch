@@ -6,7 +6,8 @@
 #
 ################################################################################
 require 'rexml/document'
-require 'fileutil.rb'
+require_relative 'config.rb'
+require_relative 'fileutil.rb'
 include REXML
 
 module FileType
@@ -18,14 +19,12 @@ end
 
 class FileTypes
   def initialize
-    # TODO: move to config
-    @file_types_path = '~/src/git/xsearch/shared/filetypes.xml'
     set_file_type_map
   end
 
   def set_file_type_map
     @file_type_map = {}
-    doc = Document.new(File.new(File.expand_path(@file_types_path)))
+    doc = Document.new(File.new(File.expand_path(FILETYPESPATH)))
     doc.elements.each('filetypes/filetype') { |filetype|
       name = filetype.attributes['name']
       filetype.elements.each('extensions') { |extensions|
