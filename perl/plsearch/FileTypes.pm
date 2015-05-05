@@ -14,10 +14,9 @@ use warnings;
 use XML::Simple;
 use Data::Dumper;
 use plsearch::common;
+use plsearch::config;
 use plsearch::FileType;
 use plsearch::FileUtil;
-
-my $FILETYPESPATH = "$ENV{HOME}/src/git/xsearch/shared/filetypes.xml";
 
 sub get_file_type_hash {
     my $file_type_hash = {};

@@ -14,10 +14,9 @@ use warnings;
 use XML::Simple;
 use Data::Dumper;
 use plsearch::common;
+use plsearch::config;
 use plsearch::SearchOption;
 use plsearch::SearchSettings;
-
-my $SEARCHOPTIONSPATH = "$ENV{HOME}/src/git/xsearch/shared/searchoptions.xml";
 
 my $arg_action_hash = {
     'in-archiveext' => sub {
