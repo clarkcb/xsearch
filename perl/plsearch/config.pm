@@ -18,8 +18,10 @@ if ($^O eq 'MSWin32') {
 	$HOME = $ENV{USERPROFILE};
 }
 
-our $FILETYPESPATH = "$HOME/src/git/xsearch/shared/filetypes.xml";
-our $SEARCHOPTIONSPATH = "$HOME/src/git/xsearch/shared/searchoptions.xml";
+my $XSEARCHPATH = "$HOME/src/git/xsearch";
+my $SHAREDPATH = "$XSEARCHPATH/shared";
+our $FILETYPESPATH = "$SHAREDPATH/filetypes.xml";
+our $SEARCHOPTIONSPATH = "$SHAREDPATH/searchoptions.xml";
 
 our @EXPORT = qw($HOME $FILETYPESPATH $SEARCHOPTIONSPATH);
 
