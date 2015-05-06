@@ -9,10 +9,7 @@
 import os
 import platform
 
-HOME_NAME = 'HOME'
-if platform.system() == 'Windows':
-    HOME_NAME = 'USERPROFILE'
-
+HOME_NAME = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
 HOME = os.environ[HOME_NAME]
 XSEARCHPATH = '%s/src/git/xsearch' % HOME
 SHAREDPATH = '%s/shared' % XSEARCHPATH
