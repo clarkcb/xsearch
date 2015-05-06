@@ -11,7 +11,7 @@ import platform
 
 HOME_NAME = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
 HOME = os.environ[HOME_NAME]
-XSEARCHPATH = '%s/src/git/xsearch' % HOME
-SHAREDPATH = '%s/shared' % XSEARCHPATH
-FILETYPESPATH = '%s/filetypes.xml' % SHAREDPATH
-SEARCHOPTIONSPATH = '%s/searchoptions.xml' % SHAREDPATH
+XSEARCHPATH = os.path.join(HOME, 'src', 'git', 'xsearch')
+SHAREDPATH = os.path.join(XSEARCHPATH, 'shared')
+FILETYPESPATH = os.path.join(SHAREDPATH, 'filetypes.xml')
+SEARCHOPTIONSPATH = os.path.join(SHAREDPATH, 'searchoptions.xml')
