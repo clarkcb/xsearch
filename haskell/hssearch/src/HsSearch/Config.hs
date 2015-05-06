@@ -10,7 +10,7 @@ isWin = os == "mingw32"
 
 getHome :: IO FilePath
 getHome = getEnv homeName
-  where homeName = if isWin then "USERPROFILE" else "HOME"
+  where homeName = if isWin then "HOMEPATH" else "HOME"
 
 getDataPath :: IO FilePath
 getDataPath = do
