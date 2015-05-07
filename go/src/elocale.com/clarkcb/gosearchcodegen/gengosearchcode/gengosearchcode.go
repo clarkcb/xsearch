@@ -6,13 +6,13 @@ import (
 )
 
 func main() {
-	targetPath := gosearchcodegen.NormalizePath("~/src/git/xsearch/go/src/elocale.com/clarkcb/xsearch")
+	gosearchcodegen.SetConfigValues()
 
 	// generate the filetypes file
-	fileTypesFilePath := filepath.Join(targetPath, "filetypesgen.go")
+	fileTypesFilePath := filepath.Join(gosearchcodegen.XSEARCHSRCPATH, "filetypesgen.go")
 	gosearchcodegen.GenFileTypesFile(fileTypesFilePath)
 
 	// generate the searchoptions file
-	searchOptionsFilePath := filepath.Join(targetPath, "searchoptionsgen.go")
+	searchOptionsFilePath := filepath.Join(gosearchcodegen.XSEARCHSRCPATH, "searchoptionsgen.go")
 	gosearchcodegen.GenSearchOptionsFile(searchOptionsFilePath)
 }
