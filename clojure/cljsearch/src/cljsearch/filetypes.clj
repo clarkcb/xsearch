@@ -13,10 +13,8 @@
   (:use [clojure.set :only (union)]
         [clojure.string :only (split)]
         [clojure.xml :only (parse)]
+        [cljsearch.config :only (FILETYPESPATH)]
         [cljsearch.fileutil :only (expand-path get-ext)]))
-
-;;; TODO: move to a config file
-(def FILETYPESPATH "~/src/git/xsearch/shared/filetypes.xml")
 
 (defn get-filetypemap [f]
   (let [ftfile (File. (expand-path FILETYPESPATH))

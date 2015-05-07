@@ -15,6 +15,7 @@
         [clojure.string :as str :only (lower-case)]
         [clojure.xml :only (parse)]
         [cljsearch.common :only (log-msg)]
+        [cljsearch.config :only (SEARCHOPTIONSPATH)]
         [cljsearch.fileutil :only (expand-path)]
         [cljsearch.searchsettings :only
           (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
@@ -22,15 +23,13 @@
 
 (defrecord SearchOption [short-arg long-arg desc])
 
-(def SEARCHOPTIONSFILE "~/src/git/xsearch/shared/searchoptions.xml")
-
 (defn get-sortarg [so]
   (if (= "" (:short-arg so))
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
 
 (defn get-searchoptions-from-xml [f]
-  (let [sofile (File. (expand-path SEARCHOPTIONSFILE))
+  (let [sofile (File. (expand-path SEARCHOPTIONSPATH))
         searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse sofile)))
         longnames (map :long (map :attrs searchoptions))
         shortnames (map :short (map :attrs searchoptions))
@@ -41,7 +40,7 @@
         get-desc (fn [l] (get longdescmap l))]
     (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
 
-(def OPTIONS (get-searchoptions-from-xml SEARCHOPTIONSFILE))
+(def OPTIONS (get-searchoptions-from-xml SEARCHOPTIONSPATH))
 
 (defn print-option [opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
