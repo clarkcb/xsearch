@@ -3,11 +3,12 @@ package javasearch;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SearcherTest {
 
@@ -20,9 +21,7 @@ public class SearcherTest {
         return settings;
     }
 
-    private static File getTestFile() {
-        return new File("/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt");
-    }
+    private static String testFilePath = "/testFile2.txt";
 
     /*************************************************************
      * isSearchDir tests
@@ -376,11 +375,11 @@ public class SearcherTest {
     public final void TestSearchTextReaderLines() {
         SearchSettings settings = getSettings();
         Searcher searcher = new Searcher(settings);
-        File testFile = getTestFile();
         Iterator<String> lineIterator;
-
         try {
-            lineIterator = FileUtil.getFileLineIterator(testFile);
+            InputStream is = getClass().getResourceAsStream(testFilePath);
+            List<String> lines = FileUtil.getStreamLines(is);
+            lineIterator = lines.iterator();
             List<SearchResult> results = searcher.searchStringIterator(lineIterator);
 
             assert(results.size() == 2);
@@ -401,7 +400,7 @@ public class SearcherTest {
             int expectedSecondMatchEndIndex = 32;
             assert(secondResult.getMatchEndIndex() == expectedSecondMatchEndIndex);
 
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             assertTrue(false);
         }
     }
@@ -413,10 +412,11 @@ public class SearcherTest {
     public final void TestSearchMultiLineString() {
         SearchSettings settings = getSettings();
         Searcher searcher = new Searcher(settings);
-        File testFile = getTestFile();
         String contents;
         try {
-            contents = FileUtil.getFileContents(testFile);
+            InputStream is = getClass().getResourceAsStream(testFilePath);
+            contents = FileUtil.getStreamContents(is);
+            //System.out.println("contents: " + contents);
             List<SearchResult> results = searcher.searchMultiLineString(contents);
 
             assert(results.size() == 2);
@@ -437,7 +437,7 @@ public class SearcherTest {
             int expectedSecondMatchEndIndex = 32;
             assert(secondResult.getMatchEndIndex() == expectedSecondMatchEndIndex);
 
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             assertTrue(false);
         }
     }

@@ -15,6 +15,7 @@ import org.apache.commons.io.LineIterator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.Scanner;
 public class FileUtil {
 
     private static Set<String> dotDirs = new HashSet<String>(Arrays.asList(".", ".."));
+    public static String DEFAULT_ENCODING = "UTF-8";
 
     public static String getExtension(final File f) {
         String ext = "";
@@ -58,33 +60,68 @@ public class FileUtil {
     }
 
     public static String getFileContents(final File f) throws IOException {
-        try {
-            Scanner scanner = new Scanner(f, "ISO8859-1").useDelimiter("\\Z");
-            String content;
-            try {
-                content = scanner.next();
-            } catch (NoSuchElementException e) {
-                throw e;
-            } catch (IllegalStateException e) {
-                throw e;
-            } finally {
-                scanner.close();
-            }
-            return content;
-        } catch (IOException e) {
-            throw e;
-        }
+        return getFileContents(f, DEFAULT_ENCODING);
+    }
 
+    public static String getFileContents(final File f, final String enc) throws IOException {
+        Scanner scanner = new Scanner(f, enc).useDelimiter("\\Z");
+        String content;
+        try {
+            content = scanner.next();
+        } catch (NoSuchElementException e) {
+            throw e;
+        } catch (IllegalStateException e) {
+            throw e;
+        } finally {
+            scanner.close();
+        }
+        return content;
+    }
+
+    public static String getStreamContents(final InputStream is) throws IllegalArgumentException {
+        return getStreamContents(is, DEFAULT_ENCODING);
+    }
+
+    public static String getStreamContents(final InputStream is, final String enc) throws IllegalArgumentException {
+        Scanner scanner = new Scanner(is, enc).useDelimiter("\\Z");
+        String content;
+        try {
+            content = scanner.next();
+        } catch (NoSuchElementException e) {
+            throw e;
+        } catch (IllegalStateException e) {
+            throw e;
+        } finally {
+            scanner.close();
+        }
+        return content;
     }
 
     // NOTE: user takes responsibility for closing the LineIterator once done
     public static LineIterator getFileLineIterator(final File f) throws IOException {
-        LineIterator it = null;
-        try {
-            it = FileUtils.lineIterator(f, "ISO8859-1");
-            return it;
-        } catch (IOException e) {
-            throw e;
+        return getFileLineIterator(f, DEFAULT_ENCODING);
+    }
+
+    // NOTE: user takes responsibility for closing the LineIterator once done
+    public static LineIterator getFileLineIterator(final File f, final String enc) throws IOException {
+        return FileUtils.lineIterator(f, enc);
+    }
+
+    public static List<String> getStreamLines(final InputStream is) throws IllegalArgumentException {
+        return getStreamLines(is, DEFAULT_ENCODING);
+    }
+
+    public static List<String> getStreamLines(final InputStream is, final String enc) throws IllegalArgumentException {
+        List<String> lines = new ArrayList<String>();
+        Scanner scanner = new Scanner(is, enc).useDelimiter("\r?\n");
+        while (scanner.hasNext()) {
+            try {
+                lines.add(scanner.next());
+            } catch (NoSuchElementException e) {
+                break;
+            }
         }
+        scanner.close();
+        return lines;
     }
 }
