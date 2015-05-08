@@ -6,12 +6,19 @@
 use strict;
 use warnings;
 
+use Cwd 'abs_path';
+use File::Basename;
+
+my $curpath;
+
 BEGIN {
-  use lib "$ENV{HOME}/src/git/xsearch/perl";
+    $curpath = dirname(dirname(abs_path($0)));
+    unshift @INC, $curpath;
 }
 
 use Test::Simple tests => 89;
 
+use plsearch::config;
 use plsearch::FileUtil;
 use plsearch::SearchSettings;
 use plsearch::Searcher;
@@ -25,7 +32,7 @@ sub get_settings {
 }
 
 sub get_test_file {
-  return "$ENV{HOME}/src/git/xsearch/shared/testFiles/testFile2.txt";
+  return "$SHAREDPATH/testFiles/testFile2.txt";
 }
 
 sub test_validate_settings {

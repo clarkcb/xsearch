@@ -6,8 +6,14 @@
 use strict;
 use warnings;
 
+use Cwd 'abs_path';
+use File::Basename;
+
+my $curpath;
+
 BEGIN {
-  use lib "$ENV{HOME}/src/git/xsearch/perl";
+    $curpath = dirname(dirname(abs_path($0)));
+    unshift @INC, $curpath;
 }
 
 use Test::Simple tests => 38;
