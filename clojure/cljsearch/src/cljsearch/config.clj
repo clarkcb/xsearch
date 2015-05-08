@@ -1,7 +1,7 @@
 (ns cljsearch.config
   #^{:author "Cary Clark",
      :doc "Configuration values"}
-  (:use [clojure.string :only (join)]))
+  (:use [clojure.string :as str :only (join)]))
 
 (def HOME-NAME
   (if (.startsWith (System/getProperty "os.name") "Windows")
@@ -11,10 +11,10 @@
 (def HOME (System/getenv HOME-NAME))
 
 (def SHAREDPATH
-  (clojure.string/join java.io.File/separator [HOME "src" "git" "xsearch" "shared"]))
+  (str/join java.io.File/separator [HOME "src" "xsearch" "shared"]))
 
 (def FILETYPESPATH
-  (clojure.string/join java.io.File/separator [SHAREDPATH "filetypes.xml"]))
+  (str/join java.io.File/separator [SHAREDPATH "filetypes.xml"]))
 
 (def SEARCHOPTIONSPATH
-  (clojure.string/join java.io.File/separator [SHAREDPATH "searchoptions.xml"]))
+  (str/join java.io.File/separator [SHAREDPATH "searchoptions.xml"]))

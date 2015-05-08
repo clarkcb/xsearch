@@ -1,15 +1,17 @@
 (ns cljsearch.searcher-test
   (:use [clojure.java.io :only (file reader)])
   (:require [clojure.test :refer :all])
-  (:use [clojure.string :as str :only (join)])
-  (:use [cljsearch.fileutil :only (expand-path)])
-  (:use [cljsearch.searcher :only
-    (filter-file? is-archive-search-file? is-search-dir? is-search-file?
-      search-lines search-multiline-string)])
-  (:use [cljsearch.searchsettings :only
-    (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly)]))
+  (:use [clojure.string :as str :only (join)]
+        [cljsearch.config :only (SHAREDPATH)]
+        [cljsearch.fileutil :only (expand-path)]
+        [cljsearch.searcher :only
+          (filter-file? is-archive-search-file? is-search-dir? is-search-file?
+           search-lines search-multiline-string)]
+        [cljsearch.searchsettings :only
+          (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly)]))
 
-(def TESTFILE "~/src/git/xsearch/shared/testFiles/testFile2.txt")
+(def TESTFILE
+  (str/join java.io.File/separator [SHAREDPATH "testFiles" "testFile2.txt"]))
 
 (defn get-settings []
   (add-pattern DEFAULT-SETTINGS "Searcher" :searchpatterns))
