@@ -3,15 +3,13 @@
 require_once __DIR__ . '/autoload.php';
 
 class FileTypes {
-    const FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml';
-
     function __construct() {
         $this->file_type_map = $this->get_file_type_map();
     }
 
     private function get_file_type_map() {
         $file_type_map = array();
-        $filetypespath = FileUtil::expand_user_home_path(self::FILETYPESPATH);
+        $filetypespath = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
         if (file_exists($filetypespath)) {
             $filetypes = simplexml_load_file($filetypespath);
             foreach ($filetypes->filetype as $filetype) {

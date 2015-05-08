@@ -3,8 +3,6 @@
 require_once __DIR__ . '/autoload.php';
 
 class SearchOptions {
-    const SEARCHOPTIONSPATH = '~/src/git/xsearch/shared/searchoptions.xml';
-
     function __construct() {
         $this->options = array();
 
@@ -142,7 +140,7 @@ class SearchOptions {
     }
 
     private function set_options_from_xml() {
-        $searchoptionspath = FileUtil::expand_user_home_path(SearchOptions::SEARCHOPTIONSPATH);
+        $searchoptionspath = FileUtil::expand_user_home_path(Config::SEARCHOPTIONSPATH);
         if (file_exists($searchoptionspath)) {
             $searchoptions = simplexml_load_file($searchoptionspath);
             foreach ($searchoptions->searchoption as $searchoption) {
