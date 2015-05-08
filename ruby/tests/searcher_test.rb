@@ -6,6 +6,7 @@
 #
 ################################################################################
 
+require_relative "../rbsearch/config.rb"
 require_relative "../rbsearch/filetypes.rb"
 require_relative "../rbsearch/searcher.rb"
 require_relative "../rbsearch/searchsettings.rb"
@@ -21,7 +22,7 @@ class SearcherTest < Test::Unit::TestCase
   end
 
   def get_test_file
-    File.expand_path('~/src/git/xsearch/shared/testFiles/testFile2.txt')
+    File.expand_path("#{SHAREDPATH}/testFiles/testFile2.txt")
   end
 
 ################################################################################

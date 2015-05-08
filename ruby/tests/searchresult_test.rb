@@ -6,13 +6,15 @@
 #
 ################################################################################
 
+require_relative "../rbsearch/config.rb"
 require_relative "../rbsearch/searchresult.rb"
 require "test/unit"
  
 class SearchResultTest < Test::Unit::TestCase
+  @cssearch_path = "#{XSEARCHPATH}/csharp/CsSearch/CsSearch"
   def test_singleline_searchresult
     pattern = "Search"
-    filepath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+    filepath = "#{@cssearch_path}/Searcher.cs"
     linenum = 10
     match_start_index = 15
     match_end_index = 23
@@ -28,7 +30,7 @@ class SearchResultTest < Test::Unit::TestCase
 
   def test_binaryfile_searchresult
     pattern = "Search"
-    filepath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
+    filepath = "#{@cssearch_path}/Searcher.exe"
     linenum = 0
     match_start_index = 0
     match_end_index = 0
@@ -43,7 +45,7 @@ class SearchResultTest < Test::Unit::TestCase
 
   def test_multiline_searchresult
     pattern = "Search"
-    filepath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+    filepath = "#{@cssearch_path}/Searcher.cs"
     linenum = 10
     match_start_index = 15
     match_end_index = 23
