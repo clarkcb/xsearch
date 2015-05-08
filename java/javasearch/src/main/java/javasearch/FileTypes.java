@@ -23,7 +23,7 @@ public class FileTypes {
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String, Set<String>> getFileTypeMap() {
-        Map<String, Set<String>> fileTypeMap = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> ftMap = new HashMap<String, Set<String>>();
         InputStream fileTypesInputStream = getClass().
                 getResourceAsStream(FILETYPESXMLPATH);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -43,18 +43,18 @@ public class FileTypes {
                         getNodeValue();
                 Set<String> extSet = new HashSet<String>(Arrays.asList(extensions.
                         split("\\s+")));
-                fileTypeMap.put(name, extSet);
+                ftMap.put(name, extSet);
             }
             Set<String> allText = new HashSet<String>();
-            allText.addAll(fileTypeMap.get("code"));
-            allText.addAll(fileTypeMap.get("text"));
-            allText.addAll(fileTypeMap.get("xml"));
-            fileTypeMap.put("text", allText);
+            allText.addAll(ftMap.get("code"));
+            allText.addAll(ftMap.get("text"));
+            allText.addAll(ftMap.get("xml"));
+            ftMap.put("text", allText);
             Set<String> allSearchable = new HashSet<String>();
-            allSearchable.addAll(fileTypeMap.get("archive"));
-            allSearchable.addAll(fileTypeMap.get("binary"));
-            allSearchable.addAll(fileTypeMap.get("text"));
-            fileTypeMap.put("searchable", allSearchable);
+            allSearchable.addAll(ftMap.get("archive"));
+            allSearchable.addAll(ftMap.get("binary"));
+            allSearchable.addAll(ftMap.get("text"));
+            ftMap.put("searchable", allSearchable);
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
@@ -63,7 +63,7 @@ public class FileTypes {
             e.printStackTrace();
         }
 
-        return fileTypeMap;
+        return ftMap;
     }
 
     public FileTypes() {
@@ -71,9 +71,9 @@ public class FileTypes {
     }
 
     public final FileType getFileType(final File f) {
-        if (isArchiveFile(f)) return FileType.ARCHIVE;
-        if (isBinaryFile(f)) return FileType.BINARY;
-        if (isTextFile(f)) return FileType.TEXT;
+        if (isArchiveFile(f)) { return FileType.ARCHIVE; }
+        if (isBinaryFile(f)) { return FileType.BINARY; }
+        if (isTextFile(f)) { return FileType.TEXT; }
         return FileType.UNKNOWN;
     }
 

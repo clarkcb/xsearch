@@ -14,9 +14,18 @@ import org.apache.commons.io.LineIterator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Set;
 
 public class Searcher {
 
@@ -56,15 +65,18 @@ public class Searcher {
     private boolean anyMatchesAnyPattern(final List<String> sList,
                                          final Set<Pattern> patternSet) {
         for (String s : sList) {
-            if (matchesAnyPattern(s, patternSet)) return true;
+            if (matchesAnyPattern(s, patternSet)) {
+                return true;
+            }
         }
         return false;
     }
 
     private boolean matchesAnyPattern(final String s,
                                       final Set<Pattern> patternSet) {
-        if (null == s)
+        if (null == s) {
             return false;
+        }
         for (Pattern p : patternSet) {
             Matcher m = p.matcher(s);
             if (m.find()) {
@@ -78,13 +90,17 @@ public class Searcher {
         List<String> pathElems = FileUtil.splitPath(d.toString());
         if (settings.getExcludeHidden()) {
             for (String p : pathElems) {
-                if (FileUtil.isHidden(p)) return false;
+                if (FileUtil.isHidden(p)) {
+                    return false;
+                }
             }
         }
-        return (settings.getInDirPatterns().isEmpty() ||
+        return (settings.getInDirPatterns().isEmpty()
+                ||
                 anyMatchesAnyPattern(pathElems, settings.getInDirPatterns()))
                 &&
-                (settings.getOutDirPatterns().isEmpty() ||
+                (settings.getOutDirPatterns().isEmpty()
+                 ||
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
@@ -103,7 +119,7 @@ public class Searcher {
 
     private List<File> getSubDirs(final File dir) {
         List<File> subDirs = new ArrayList<File>();
-        File dirFiles[] = dir.listFiles();
+        File[] dirFiles = dir.listFiles();
         if (dirFiles != null) {
             for (File f : dirFiles) {
                 if (f.isDirectory()) {
@@ -131,31 +147,39 @@ public class Searcher {
 
     public final boolean isSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
-        return (settings.getInExtensions().isEmpty() ||
+        return (settings.getInExtensions().isEmpty()
+                ||
                 settings.getInExtensions().contains(ext))
                &&
-               (settings.getOutExtensions().isEmpty() ||
+               (settings.getOutExtensions().isEmpty()
+                ||
                 !settings.getOutExtensions().contains(ext))
                &&
-               (settings.getInFilePatterns().isEmpty() ||
+               (settings.getInFilePatterns().isEmpty()
+                ||
                 matchesAnyPattern(f.getName(), settings.getInFilePatterns()))
                &&
-               (settings.getOutFilePatterns().isEmpty() ||
+               (settings.getOutFilePatterns().isEmpty()
+                ||
                 !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
     }
 
     public final boolean isArchiveSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
-        return (settings.getInArchiveExtensions().isEmpty() ||
+        return (settings.getInArchiveExtensions().isEmpty()
+                ||
                 settings.getInArchiveExtensions().contains(ext))
                &&
-               (settings.getOutArchiveExtensions().isEmpty() ||
+               (settings.getOutArchiveExtensions().isEmpty()
+                ||
                 !settings.getOutArchiveExtensions().contains(ext))
                &&
-               (settings.getInArchiveFilePatterns().isEmpty() ||
+               (settings.getInArchiveFilePatterns().isEmpty()
+                ||
                 matchesAnyPattern(f.getName(), settings.getInArchiveFilePatterns()))
                &&
-               (settings.getOutArchiveFilePatterns().isEmpty() ||
+               (settings.getOutArchiveFilePatterns().isEmpty()
+                ||
                 !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
     }
 
@@ -174,7 +198,7 @@ public class Searcher {
             log(String.format("Getting files to search under %s", dir));
         }
         List<SearchFile> searchFiles = new ArrayList<SearchFile>();
-        File currentFiles[] = dir.listFiles();
+        File[] currentFiles = dir.listFiles();
         if (currentFiles != null) {
             for (File f : currentFiles) {
                 if (f.isFile()) {
@@ -190,7 +214,6 @@ public class Searcher {
     }
 
     public final List<SearchFile> getSearchFiles(final List<File> searchDirs) {
-        File f = new File(settings.getStartPath());
         List<SearchFile> searchFiles = new ArrayList<SearchFile>();
         for (File d : searchDirs) {
             searchFiles.addAll(getSearchFilesForDir(d));
@@ -239,8 +262,9 @@ public class Searcher {
             FileType fileType = fileTypes.getFileType(startPathFile);
             if (filterFile(startPathFile)) {
                 File d = startPathFile.getParentFile();
-                if (null == d)
+                if (null == d) {
                     d = new File(".");
+                }
                 searchFile(new SearchFile(d.getPath(), startPathFile.getName(),
                         fileType));
             } else {
@@ -256,8 +280,9 @@ public class Searcher {
 
     public final void searchPath(final File filePath) {
         // get the search directories
-        if (settings.getDoTiming())
+        if (settings.getDoTiming()) {
             startTimer("getSearchDirs");
+        }
         List<File> searchDirs = getSearchDirs(filePath);
         if (settings.getDoTiming()) {
             stopTimer("getSearchDirs");
@@ -275,8 +300,9 @@ public class Searcher {
         }
 
         // get the search files in the search directories
-        if (settings.getDoTiming())
+        if (settings.getDoTiming()) {
             startTimer("getSearchFiles");
+        }
         List<SearchFile> searchFiles = getSearchFiles(searchDirs);
         if (settings.getDoTiming()) {
             stopTimer("getSearchFiles");
@@ -294,8 +320,9 @@ public class Searcher {
         }
 
         // search the files
-        if (settings.getDoTiming())
+        if (settings.getDoTiming()) {
             startTimer("searchFiles");
+        }
         for (SearchFile sf : searchFiles) {
             searchFile(sf);
         }
@@ -348,8 +375,9 @@ public class Searcher {
     private List<Number> getNewLineIndices(final String s) {
         List<Number> newlineIndices = new ArrayList<Number>();
         for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '\n')
+            if (s.charAt(i) == '\n') {
                 newlineIndices.add(i);
+            }
         }
         return newlineIndices;
     }
@@ -436,10 +464,11 @@ public class Searcher {
                 List<Number> beforeEndIndices = ListUtil.lessThan(m.start(),
                         endLineIndices);
                 // add another end line index if it exists or the tail index of the string
-                if (endLineIndices.size() > beforeEndIndices.size())
+                if (endLineIndices.size() > beforeEndIndices.size()) {
                     beforeEndIndices.add(endLineIndices.get(beforeEndIndices.size()));
-                else
+                } else {
                     beforeEndIndices.add(s.length() - 1);
+                }
                 List<Number> afterStartIndices = ListUtil.greaterThan(m.start(),
                         startLineIndices);
                 List<Number> afterEndIndices = ListUtil.greaterThan(m.start(),
@@ -493,7 +522,9 @@ public class Searcher {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (it != null) it.close();
+            if (it != null) {
+                it.close();
+            }
         }
     }
 
@@ -525,13 +556,15 @@ public class Searcher {
         List<SearchResult> results = new ArrayList<SearchResult>();
         while ((it.hasNext() || linesAfter.size() > 0) && !stop) {
             lineNum++;
-            if (!linesAfter.isEmpty())
+            if (!linesAfter.isEmpty()) {
                 line = linesAfter.remove(0);
-            else
+            } else {
                 line = it.next();
+            }
             if (settings.getLinesAfter() > 0) {
-                while (linesAfter.size() < settings.getLinesAfter() && it.hasNext())
+                while (linesAfter.size() < settings.getLinesAfter() && it.hasNext()) {
                     linesAfter.add(it.next());
+                }
             }
 
             if ((settings.getLinesBefore() == 0 || linesBefore.isEmpty() ||
@@ -585,10 +618,11 @@ public class Searcher {
                             found = false;
                         } else {
                             List<String> resLinesAfter;
-                            if (linesAfterUntilMatch)
+                            if (linesAfterUntilMatch) {
                                 resLinesAfter = ListUtil.init(linesAfter);
-                            else
+                            } else {
                                 resLinesAfter = linesAfter;
+                            }
                             SearchResult searchResult = new SearchResult(
                                     p,
                                     null,
@@ -607,10 +641,12 @@ public class Searcher {
             }
 
             if (settings.getLinesBefore() > 0) {
-                if (linesBefore.size() == settings.getLinesBefore())
+                if (linesBefore.size() == settings.getLinesBefore()) {
                     linesBefore.remove(0);
-                if (linesBefore.size() < settings.getLinesBefore())
+                }
+                if (linesBefore.size() < settings.getLinesBefore()) {
                     linesBefore.add(line);
+                }
             }
         }
         return results;
@@ -621,26 +657,20 @@ public class Searcher {
             log(String.format("Searching binary file %s", sf.getPath()));
         }
         try {
-            Scanner scanner = new Scanner(sf.toFile(), "ISO8859-1").useDelimiter("\\Z");
-            try {
-                String content = scanner.next();
-
-                for (Pattern p : settings.getSearchPatterns()) {
-                    Matcher m = p.matcher(content);
-                    if (m.find()) {
-                        SearchResult searchResult =
+            String content = FileUtil.getFileContents(sf.toFile(), "ISO8859-1");
+            for (Pattern p : settings.getSearchPatterns()) {
+                Matcher m = p.matcher(content);
+                if (m.find()) {
+                    SearchResult searchResult =
                             new SearchResult(p, sf, 0, 0, 0, "");
-                        addSearchResult(searchResult);
-                    }
+                    addSearchResult(searchResult);
                 }
-            } catch (NoSuchElementException e) {
-                log(e.toString());
-            } catch (IllegalStateException e) {
-                log(e.toString());
-            } finally {
-                scanner.close();
             }
         } catch (IOException e) {
+            log(e.toString());
+        } catch (NoSuchElementException e) {
+            log(e.toString());
+        } catch (IllegalStateException e) {
             log(e.toString());
         }
     }
@@ -652,7 +682,7 @@ public class Searcher {
 
     public final void printSearchResults() {
         Comparator<SearchResult> comparator = new Comparator<SearchResult>() {
-            public int compare(SearchResult r1, SearchResult r2) {
+            public int compare(final SearchResult r1, final SearchResult r2) {
                 String p1 = r1.getSearchFile().toFile().getPath();
                 String p2 = r2.getSearchFile().toFile().getPath();
                 return p1.compareTo(p2);
@@ -702,7 +732,7 @@ public class Searcher {
 
     public final List<String> getMatchingLines() {
         Comparator<String> comparator = new Comparator<String>() {
-            public int compare(String s1, String s2) {
+            public int compare(final String s1, final String s2) {
                 return s1.toUpperCase().compareTo(s2.toUpperCase());
             }
         };
@@ -721,10 +751,11 @@ public class Searcher {
     public final void printMatchingLines() {
         List<String> lines = getMatchingLines();
         String hdr;
-        if (settings.getUniqueLines())
+        if (settings.getUniqueLines()) {
             hdr = "\nUnique lines with matches (%d):";
-        else
+        } else {
             hdr = "\nLines with matches (%d):";
+        }
         log(String.format(hdr, lines.size()));
         for (String line : lines) {
             log(line);

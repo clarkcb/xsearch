@@ -9,13 +9,16 @@ public class ListUtil {
         StringBuilder sb = new StringBuilder("[");
         int elemCount = 0;
         for (T s : list) {
-            if (elemCount > 0)
+            if (elemCount > 0) {
                 sb.append(", ");
-            if (s instanceof String)
+            }
+            if (s instanceof String) {
                 sb.append("\"");
+            }
             sb.append(s);
-            if (s instanceof String)
+            if (s instanceof String) {
                 sb.append("\"");
+            }
             elemCount++;
         }
         sb.append("]");
@@ -37,8 +40,9 @@ public class ListUtil {
     // return a new list with only the first count number of elements,
     // or a shorter list if the list is shorter than count
     public static <T> List<T> take(final List<T> list, final int count) {
-        if (list.size() <= count)
+        if (list.size() <= count) {
             return list;
+        }
         List<T> left = new ArrayList<T>();
         int lastIndex = 0;
         int dropCount = count;
@@ -52,10 +56,11 @@ public class ListUtil {
 
     // return a new list with all but the last element in it
     public static <T> List<T> init(final List<T> list) {
-        if (list.size() == 0)
+        if (list.size() == 0) {
             throw new IllegalArgumentException("init of empty list");
-        else
+        } else {
             return take(list, list.size() - 1);
+        }
     }
 
     // return a new list with all but the first element in it
@@ -64,8 +69,9 @@ public class ListUtil {
     }
 
     public static <T> List<T> takeRight(final List<T> list, final int count) {
-        if (list.size() <= count)
+        if (list.size() <= count) {
             return list;
+        }
         List<T> right = new ArrayList<T>();
         int lastIndex = list.size() - 1;
         int takeCount = count;
@@ -80,8 +86,9 @@ public class ListUtil {
     public static List<Number> lessThan(final Number val, final List<Number> vals) {
         List<Number> lessThan = new ArrayList<Number>();
         for (Number v : vals) {
-            if (v.longValue() < val.longValue())
+            if (v.longValue() < val.longValue()) {
                 lessThan.add(v);
+            }
         }
         return lessThan;
     }
@@ -89,8 +96,9 @@ public class ListUtil {
     public static List<Number> lessThanOrEqualTo(final Number val, final List<Number> vals) {
         List<Number> lessOrEq = new ArrayList<Number>();
         for (Number v : vals) {
-            if (v.longValue() <= val.longValue())
+            if (v.longValue() <= val.longValue()) {
                 lessOrEq.add(v);
+            }
         }
         return lessOrEq;
     }
@@ -98,8 +106,9 @@ public class ListUtil {
     public static Number max(final List<Number> vals) {
         long maxVal = 0L;
         for (Number v : vals) {
-            if (v.longValue() > maxVal)
+            if (v.longValue() > maxVal) {
                 maxVal = v.longValue();
+            }
         }
         return maxVal;
     }
@@ -107,8 +116,9 @@ public class ListUtil {
     public static List<Number> greaterThan(final Number val, final List<Number> vals) {
         List<Number> greaterThans = new ArrayList<Number>();
         for (Number v : vals) {
-            if (v.intValue() > val.intValue())
+            if (v.intValue() > val.intValue()) {
                 greaterThans.add(v);
+            }
         }
         return greaterThans;
     }
@@ -118,8 +128,9 @@ public class ListUtil {
         if (!vals.isEmpty()) {
             minVal = vals.get(0).longValue();
             for (Number v : vals) {
-                if (v.longValue() < minVal)
+                if (v.longValue() < minVal) {
                     minVal = v.longValue();
+                }
             }
         }
         return minVal;

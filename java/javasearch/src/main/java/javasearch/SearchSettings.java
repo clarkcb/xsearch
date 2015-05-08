@@ -112,8 +112,9 @@ public class SearchSettings {
 
     public final void setArchivesOnly(final boolean archivesOnly) {
         this.archivesOnly = archivesOnly;
-        if (archivesOnly)
+        if (archivesOnly) {
             this.searchArchives = true;
+        }
     }
 
     public final boolean getDebug() {
@@ -122,8 +123,9 @@ public class SearchSettings {
 
     public final void setDebug(final boolean debug) {
         this.debug = debug;
-        if (debug)
+        if (debug) {
             this.verbose = true;
+        }
     }
 
     public final boolean getDoTiming() {
@@ -265,8 +267,9 @@ public class SearchSettings {
     // could be a comma-separated list
     private static void addExtensions(Set<String> set, final String exts) {
         for (String x : exts.split(",")) {
-            if (!x.equals(""))
+            if (!x.equals("")) {
                 set.add(x.toLowerCase());
+            }
         }
     }
 
@@ -403,7 +406,7 @@ public class SearchSettings {
         addPattern(this.linesAfterUntilPatterns, pattern);
     }
 
-    public final void addSearchPattern(String pattern) {
+    public final void addSearchPattern(final String pattern) {
         addPattern(this.searchPatterns, pattern);
     }
 
@@ -428,8 +431,9 @@ public class SearchSettings {
         StringBuilder sb = new StringBuilder("[");
         int elemCount = 0;
         for (String s : set) {
-            if (elemCount > 0)
+            if (elemCount > 0) {
                 sb.append(", ");
+            }
             sb.append("\"").append(s).append("\"");
             elemCount++;
         }
@@ -441,8 +445,9 @@ public class SearchSettings {
         StringBuilder sb = new StringBuilder("[");
         int elemCount = 0;
         for (Pattern p : set) {
-            if (elemCount > 0)
+            if (elemCount > 0) {
                 sb.append(", ");
+            }
             sb.append("\"").append(p.toString()).append("\"");
             elemCount++;
         }

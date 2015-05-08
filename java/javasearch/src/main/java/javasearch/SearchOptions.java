@@ -12,7 +12,15 @@ package javasearch;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,103 +38,103 @@ public class SearchOptions {
     private Map<String, SearchArgSetter> argActionMap = new HashMap<String, SearchArgSetter>() {
         {
             put("in-archiveext", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addInArchiveExtension(arg);
                 }
             });
             put("out-archiveext", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutArchiveExtension(arg);
                 }
             });
             put("in-archivefilepattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addInArchiveFilePattern(arg);
                 }
             });
             put("out-archivefilepattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutArchiveFilePattern(arg);
                 }
             });
             put("in-dirpattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addInDirPattern(arg);
                 }
             });
             put("out-dirpattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutDirPattern(arg);
                 }
             });
             put("in-ext", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addInExtension(arg);
                 }
             });
             put("out-ext", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutExtension(arg);
                 }
             });
             put("in-filepattern", new SearchArgSetter() {
                 @Override
-                public void setArg(String arg, SearchSettings settings) {
+                public void setArg(final String arg, SearchSettings settings) {
                     settings.addInFilePattern(arg);
                 }
             });
             put("out-filepattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutFilePattern(arg);
                 }
             });
             put("in-linesafterpattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addInLinesAfterPattern(arg);
                 }
             });
             put("out-linesafterpattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutLinesAfterPattern(arg);
                 }
             });
             put("in-linesbeforepattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addInLinesBeforePattern(arg);
                 }
             });
             put("out-linesbeforepattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addOutLinesBeforePattern(arg);
                 }
             });
             put("linesafter", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.setLinesAfter(Integer.parseInt(arg));
                 }
             });
             put("linesaftertopattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addLinesAfterToPattern(arg);
                 }
             });
             put("linesafteruntilpattern", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addLinesAfterUntilPattern(arg);
                 }
             });
             put("linesbefore", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.setLinesBefore(Integer.parseInt(arg));
                 }
             });
             put("maxlinelength", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.setMaxLineLength(Integer.parseInt(arg));
                 }
             });
             put("search", new SearchArgSetter() {
-                @Override public void setArg(String arg, SearchSettings settings) {
+                @Override public void setArg(final String arg, SearchSettings settings) {
                     settings.addSearchPattern(arg);
                 }
             });
@@ -326,7 +334,7 @@ public class SearchOptions {
         System.exit(exitStatus);
     }
 
-    private static final Comparator<ISearchOption> searchOptionComparator = new Comparator<ISearchOption>() {
+    private static final Comparator<ISearchOption> SEARCHOPTION_COMPARATOR = new Comparator<ISearchOption>() {
         public int compare(final ISearchOption s1, final ISearchOption s2) {
             return s1.getSortArg().toLowerCase().compareTo(s2.getSortArg().toLowerCase());
         }
@@ -338,7 +346,7 @@ public class SearchOptions {
         sb.append(" javasearch [options] -s <searchpattern> <startpath>\n\n");
         sb.append("Options:\n");
 
-        Collections.sort(this.options, searchOptionComparator);
+        Collections.sort(this.options, SEARCHOPTION_COMPARATOR);
 
         List<String> optStrings = new ArrayList<String>();
         List<String> optDescs = new ArrayList<String>();

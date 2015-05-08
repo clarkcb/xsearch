@@ -90,10 +90,11 @@ public class SearchResult {
     }
 
     public final String toString() {
-        if (linesBefore.size() > 0 || linesAfter.size() > 0)
+        if (linesBefore.size() > 0 || linesAfter.size() > 0) {
             return multiLineToString();
-        else
+        } else {
             return singleLineToString();
+        }
     }
 
     private String repeatString(final String s, final int times) {
@@ -174,13 +175,15 @@ public class SearchResult {
             int beforeIndex = this.matchStartIndex;
             if (this.matchStartIndex > 0) {
                 beforeIndex = beforeIndex - (adjustedMaxLength / 4);
-                if (beforeIndex < 0)
+                if (beforeIndex < 0) {
                     beforeIndex = 0;
+                }
             }
             adjustedMaxLength = adjustedMaxLength - (this.matchStartIndex - beforeIndex);
             int afterIndex = this.matchEndIndex + adjustedMaxLength;
-            if (afterIndex > lineLength)
+            if (afterIndex > lineLength) {
                 afterIndex = lineLength;
+            }
 
             final String ellipses = "...";
             String before = "";

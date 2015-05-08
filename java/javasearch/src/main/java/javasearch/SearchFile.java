@@ -17,7 +17,7 @@ public class SearchFile {
     }
 
     public SearchFile(final List<String> containers, final String path,
-                      final String fileName, FileType fileType) {
+                      final String fileName, final FileType fileType) {
         this.containers = containers;
         this.path = path;
         this.fileName = fileName;
@@ -69,7 +69,9 @@ public class SearchFile {
         StringBuilder sb = new StringBuilder();
         if (containers.size() > 0) {
             for (int i = 0; i < containers.size(); i++) {
-                if (i > 0) sb.append(CONTAINER_SEPARATOR);
+                if (i > 0) {
+                    sb.append(CONTAINER_SEPARATOR);
+                }
                 sb.append(containers.get(i));
             }
             sb.append(CONTAINER_SEPARATOR);

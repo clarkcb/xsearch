@@ -27,14 +27,15 @@ import java.util.Scanner;
 public class FileUtil {
 
     private static Set<String> dotDirs = new HashSet<String>(Arrays.asList(".", ".."));
-    public static String DEFAULT_ENCODING = "UTF-8";
+    private static final String DEFAULT_ENCODING = "UTF-8";
 
     public static String getExtension(final File f) {
         String ext = "";
         String fileName = f.getName();
         int lastIndex = fileName.lastIndexOf(".");
-        if (lastIndex > 0 && lastIndex < fileName.length() - 1)
+        if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
             ext = fileName.substring(lastIndex + 1);
+        }
         return ext;
     }
 
@@ -54,7 +55,7 @@ public class FileUtil {
         String[] elems = path.split(File.separator);
         List<String> nonDotDirElems = new ArrayList<String>();
         for (String elem : elems) {
-            if (!isDotDir(elem) && !elem.equals("")) nonDotDirElems.add(elem);
+            if (!isDotDir(elem) && !elem.equals("")) { nonDotDirElems.add(elem); }
         }
         return nonDotDirElems;
     }
