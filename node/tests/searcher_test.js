@@ -4,12 +4,12 @@
  * Some nodeunit tests of searcher.js
  */
 
-//var FileType = require('../nodesearch/filetype.js').FileType;
+var config = require('../nodesearch/config.js');
 var FileUtil = require('../nodesearch/fileutil.js').FileUtil;
 var Searcher = require('../nodesearch/searcher.js').Searcher;
 var SearchSettings = require('../nodesearch/searchsettings.js').SearchSettings;
 
-var testFile = FileUtil.expandPath("~/src/git/xsearch/shared/testFiles/testFile2.txt");
+var testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 
 var getSettings = function() {
     var settings = new SearchSettings();

@@ -110,7 +110,14 @@ unittest_node () {
     log "unittest_node"
     NODE_PATH=$PROJECT_PATH/node
     TESTS_PATH=$NODE_PATH/tests
-    NODEUNIT=$NODE_PATH/node_modules/nodeunit/bin/nodeunit
+    NODEUNIT_PATH=$NODE_PATH/node_modules/nodeunit
+    NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
+
+    if [ ! -d $NODEUNIT_PATH ]; then
+        cd $NODE_PATH
+        npm install nodeunit
+        cd -
+    fi
 
     # run tests via maven
     log "Unit-testing nodesearch"
