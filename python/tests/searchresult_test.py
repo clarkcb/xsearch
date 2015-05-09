@@ -6,19 +6,21 @@
 # class FileUtilTest: testing of FileUtil
 #
 ################################################################################
-import os
 import sys
 import unittest
 
-sys.path.insert(0, '%s/src/git/xsearch/python' % os.environ['HOME'])
+sys.path.insert(0, '..')
 
+from pysearch.config import XSEARCHPATH
 from pysearch.searchresult import SearchResult
 
 class SearchResultTest(unittest.TestCase):
 
+    cssearch_path = "%s/csharp/CsSearch/CsSearch" % XSEARCHPATH
+
     def test_singleline_searchresult(self):
         pattern = "Search"
-        filepath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+        filepath = "%s/Searcher.cs" % self.cssearch_path
         linenum = 10
         match_start_index = 15
         match_end_index = 23
@@ -35,7 +37,7 @@ class SearchResultTest(unittest.TestCase):
 
     def test_binaryfile_searchresult(self):
         pattern = "Search"
-        filepath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
+        filepath = "%s/Searcher.exe" % self.cssearch_path
         linenum = 0
         match_start_index = 0
         match_end_index = 0
@@ -51,7 +53,7 @@ class SearchResultTest(unittest.TestCase):
 
     def test_multiline_searchresult(self):
         pattern = "Search"
-        filepath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+        filepath = "%s/Searcher.cs" % self.cssearch_path
         linenum = 10
         match_start_index = 15
         match_end_index = 23

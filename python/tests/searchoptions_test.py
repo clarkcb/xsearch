@@ -6,12 +6,11 @@
 # class SearchOptionsTest: testing of SearchOptions class
 #
 ################################################################################
-import os
 import re
 import sys
 import unittest
 
-sys.path.insert(0, '%s/src/git/xsearch/python' % os.environ['HOME'])
+sys.path.insert(0, '..')
 
 from pysearch.searchoptions import SearchOptions
 

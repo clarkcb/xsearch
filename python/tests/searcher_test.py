@@ -6,12 +6,12 @@
 # Searcher testing
 #
 ################################################################################
-import os
 import sys
 import unittest
 
-sys.path.insert(0, '%s/src/git/xsearch/python' % os.environ['HOME'])
+sys.path.insert(0, '..')
 
+from pysearch.config import SHAREDPATH
 from pysearch.filetypes import FileType
 from pysearch.searcher import Searcher
 from pysearch.searchfile import SearchFile
@@ -26,8 +26,7 @@ class SearcherTest(unittest.TestCase):
         return settings
 
     def get_test_file(self):
-        HOME = os.environ['HOME']
-        return '%s/src/git/xsearch/shared/testFiles/testFile2.txt' % HOME
+        return '%s/testFiles/testFile2.txt' % SHAREDPATH
 
 ################################################################################
 # is_search_dir tests
@@ -300,7 +299,7 @@ class SearcherTest(unittest.TestCase):
             results = searcher.search_multiline_string(contents)
             fo.close()
         except IOError as e:
-            print('IOError: {0!s}: {1!s}'.format(e, sf))
+            print('IOError: {0!s}'.format(e))
         self.assertEqual(len(results), 2)
 
         firstResult = results[0]
@@ -326,7 +325,7 @@ class SearcherTest(unittest.TestCase):
             results = searcher.search_line_iterator(fo)
             fo.close()
         except IOError as e:
-            print('IOError: {0!s}: {1!s}'.format(e, sf))
+            print('IOError: {0!s}'.format(e))
         self.assertEqual(len(results), 2)
 
         firstResult = results[0]
