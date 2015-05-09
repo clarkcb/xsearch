@@ -18,7 +18,7 @@ if ($^O eq 'MSWin32') {
 	$HOME = $ENV{USERPROFILE};
 }
 
-my $XSEARCHPATH = "$HOME/src/git/xsearch";
+my $XSEARCHPATH = "$HOME/src/xsearch";
 our $SHAREDPATH = "$XSEARCHPATH/shared";
 our $FILETYPESPATH = "$SHAREDPATH/filetypes.xml";
 our $SEARCHOPTIONSPATH = "$SHAREDPATH/searchoptions.xml";

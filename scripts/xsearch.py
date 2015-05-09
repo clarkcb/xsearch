@@ -9,6 +9,7 @@
 ################################################################################
 from collections import namedtuple
 import os
+import platform
 import re
 
 ########################################
@@ -41,8 +42,11 @@ xsearch_name_regex = re.compile(r'\b(%s)(\.exe)?\b' % '|'.join(all_xsearch_names
 
 default_runs = 10
 
-default_startpath = os.path.expanduser('~/src/git/xsearch/')
+HOME_NAME = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
+HOME = os.environ[HOME_NAME]
+XSEARCHPATH = os.path.join(HOME, 'src', 'git', 'xsearch')
 
+default_startpath = XSEARCHPATH
 
 def nonmatching_lens(xsearch_output):
     """Examines xsearch_output (a dict of xsearch_name : lines)
