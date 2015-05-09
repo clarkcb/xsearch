@@ -1,2 +1,2 @@
 @echo off
-python %USERPROFILE%\src\git\xsearch\python\pysearch\pysearch.py %*
+python %USERPROFILE%\src\xsearch\python\pysearch\pysearch.py %*

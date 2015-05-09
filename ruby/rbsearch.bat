@@ -1,2 +1,2 @@
 @echo off
-ruby %USERPROFILE%\src\git\xsearch\ruby\rbsearch\rbsearch.rb %*
+ruby %USERPROFILE%\src\xsearch\ruby\rbsearch\rbsearch.rb %*

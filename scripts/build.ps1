@@ -11,7 +11,7 @@ param([string]$lang="all")
 # Configuration
 ########################################
 
-$projectPath = "$Env:USERPROFILE\src\git\xsearch"
+$projectPath = "$Env:USERPROFILE\src\xsearch"
 $sharedPath = "$projectPath\shared"
 $testFilePath = "$sharedPath\testFiles"
 

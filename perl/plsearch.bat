@@ -1,2 +1,2 @@
 @echo off
-perl %USERPROFILE%\src\git\xsearch\perl\plsearch\plsearch.pl %*
+perl %USERPROFILE%\src\xsearch\perl\plsearch\plsearch.pl %*

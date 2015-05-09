@@ -1,2 +1,2 @@
 @echo off
-%USERPROFILE%\src\git\xsearch\fsharp\fssearch\bin\Debug\FsSearch.exe %*
+%USERPROFILE%\src\xsearch\fsharp\fssearch\bin\Debug\FsSearch.exe %*
