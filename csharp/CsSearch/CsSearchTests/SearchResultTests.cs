@@ -9,20 +9,21 @@ namespace CsSearchTests
 	[TestFixture]
 	class SearchResultTests
 	{
+		string CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch";
+
 		[Test]
 		public void SearchResultSingleLine_ToString_EqualsExpected()
 		{
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-				"Searcher.cs", FileType.Text);
+			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
 			var lineNum = 10;
 			var matchStartIndex = 15;
 			var matchEndIndex = 23;
 			var line = "\tpublic class Searcher\n";
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
-			var expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+			var expectedPath = CsSearchPath + "/Searcher.cs";
 			var expectedOutput = string.Format("{0}: {1}: [{2}:{3}]: {4}", expectedPath,
 				lineNum, matchStartIndex, matchEndIndex, line.Trim());
 
@@ -34,8 +35,7 @@ namespace CsSearchTests
 		{
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile("~/src/xsearch/csharp/CsSearch/CsSearch",
-											"Searcher.cs", FileType.Text);
+			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
 			var lineNum = 10;
 			var matchStartIndex = 15;
 			var matchEndIndex = 23;
@@ -45,7 +45,7 @@ namespace CsSearchTests
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 												matchStartIndex, matchEndIndex,
 												line, linesBefore, linesAfter);
-			var expectedPath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+			var expectedPath = CsSearchPath + "/Searcher.cs";
 			var expectedOutput = string.Format(new string('=', 80) + "\n" +
 								 "{0}: {1}: [{2}:{3}]\n" +
 								 new string('-', 80) + "\n" +
@@ -63,15 +63,14 @@ namespace CsSearchTests
 		{
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-				"Searcher.exe", FileType.Binary);
+			var searchFile = new SearchFile(CsSearchPath, "Searcher.exe", FileType.Binary);
 			var lineNum = 0;
 			var matchStartIndex = 0;
 			var matchEndIndex = 0;
 			string line = null;
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
-			var expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
+			var expectedPath = CsSearchPath + "/Searcher.exe";
 			var expectedOutput = string.Format("{0} matches", expectedPath);
 
 			Assert.AreEqual(searchResult.ToString(settings), expectedOutput);

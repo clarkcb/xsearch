@@ -13,7 +13,7 @@ namespace CsSearchTests
 		{
 			if (Environment.OSVersion.ToString().StartsWith("Microsoft"))
 				return new FileInfo(@"C:\Users\Administrator\src\git\xsearch\shared\testFiles\testFile2.txt");
-			return new FileInfo("/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt");
+			return new FileInfo("/Users/cary/src/xsearch/shared/testFiles/testFile2.txt");
 		}
 
 		private static SearchSettings GetSettings()
