@@ -15,6 +15,6 @@ getHome = getEnv homeName
 getDataPath :: IO FilePath
 getDataPath = do
   home <- getHome
-  let elems = ["src", "git", "xsearch", "haskell", "hssearch", "data"]
+  let elems = ["src", "xsearch", "haskell", "hssearch", "data"]
   return $ foldl concatPath home elems
   where concatPath path p = path </> p  

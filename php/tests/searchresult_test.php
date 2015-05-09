@@ -1,7 +1,7 @@
 <?php
 
 class SearchResultTest extends PHPUnit_Framework_TestCase {
-    const CSSEARCHPATH = '~/src/git/xsearch/csharp/CsSearch/CsSearch';
+    const CSSEARCHPATH = '~/src/xsearch/csharp/CsSearch/CsSearch';
     public function test_singleline_searchresult() {
         $pattern = "Search";
         $file = self::CSSEARCHPATH . "/Searcher.cs";

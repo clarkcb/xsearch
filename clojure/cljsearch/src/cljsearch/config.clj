@@ -10,8 +10,11 @@
 
 (def HOME (System/getenv HOME-NAME))
 
+(def XSEARCHPATH
+  (str/join java.io.File/separator [HOME "src" "xsearch"]))
+
 (def SHAREDPATH
-  (str/join java.io.File/separator [HOME "src" "xsearch" "shared"]))
+  (str/join java.io.File/separator [XSEARCHPATH "shared"]))
 
 (def FILETYPESPATH
   (str/join java.io.File/separator [SHAREDPATH "filetypes.xml"]))

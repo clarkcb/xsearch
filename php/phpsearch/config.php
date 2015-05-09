@@ -1,9 +1,10 @@
 <?php
 
 class Config {
-    const SHAREDPATH = '~/src/git/xsearch/shared';
-    const FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml';
-    const SEARCHOPTIONSPATH = '~/src/git/xsearch/shared/searchoptions.xml';
+    const XSEARCHPATH = '~/src/xsearch';
+    const SHAREDPATH = '~/src/xsearch/shared';
+    const FILETYPESPATH = '~/src/xsearch/shared/filetypes.xml';
+    const SEARCHOPTIONSPATH = '~/src/xsearch/shared/searchoptions.xml';
 }
 
 ?>

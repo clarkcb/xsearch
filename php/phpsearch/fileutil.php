@@ -2,8 +2,6 @@
 
 class FileUtil {
 
-    const FILETYPESPATH = '~/src/git/xsearch/shared/filetypes.xml';
-
     public static $DOT_PATHS = array('.', '..');
 
     public static function expand_user_home_path($path) {

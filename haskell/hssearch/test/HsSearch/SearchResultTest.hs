@@ -12,7 +12,7 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
-testFilePath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+testFilePath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
 testFileLineNum = 10
 testFileMatchStartIndex = 15
 testFileMatchEndIndex = 23
@@ -20,7 +20,7 @@ testFileLine = BC.pack "\tpublic class Searcher\n"
 
 getBinaryFileSearchResultTests :: IO [Test]
 getBinaryFileSearchResultTests = do
-  let binaryFilePath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
+  let binaryFilePath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
   let binaryFileSearchResult = blankSearchResult { filePath=binaryFilePath
                                                  , lineNum=0
                                                  , matchStartIndex=0
@@ -66,7 +66,7 @@ getMultiLineSearchResultTests = do
   let expectedFormat = replicate 80 '=' ++ "\n" ++ testFilePath ++ ": " ++
                        show testFileLineNum ++ ": [" ++
                        show testFileMatchStartIndex ++ ":" ++
-                       show testFileMatchEndIndex ++ "]:\n" ++
+                       show testFileMatchEndIndex ++ "]\n" ++
                        replicate 80 '-' ++ "\n" ++
                        "   8 | namespace CsSearch\n" ++ 
                        "   9 | {\n" ++ 

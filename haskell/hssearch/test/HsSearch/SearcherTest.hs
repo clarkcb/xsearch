@@ -20,7 +20,7 @@ import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
 testFile :: FilePath
-testFile = "/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt"
+testFile = "/Users/cary/src/xsearch/shared/testFiles/testFile2.txt"
 
 getIsSearchDirTests :: IO [Test]
 getIsSearchDirTests = do

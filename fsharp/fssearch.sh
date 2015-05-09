@@ -1,5 +1,5 @@
 #!/bin/sh
-XSEARCH_PATH=~/src/git/xsearch
+XSEARCH_PATH=~/src/xsearch
 FSSEARCH_PATH=$XSEARCH_PATH/fsharp
 CONFIGURATION=Debug
 #CONFIGURATION=Release

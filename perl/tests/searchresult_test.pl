@@ -19,11 +19,14 @@ BEGIN {
 use Test::Simple tests => 3;
 
 use plsearch::common;
+use plsearch::config;
 use plsearch::SearchResult;
+
+my $cssearch_path = $XSEARCHPATH . '/csharp/CsSearch/CsSearch';
 
 sub test_singleline_searchresult {
     my $pattern = 'Search';
-    my $file = '~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs';
+    my $file = $cssearch_path . '/Searcher.cs';
     my $linenum = 10;
     my $match_start_index = 15;
     my $match_end_index = 23;
@@ -42,7 +45,7 @@ sub test_singleline_searchresult {
 
 sub test_binaryfile_searchresult {
     my $pattern = 'Search';
-    my $file = '~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe';
+    my $file = $cssearch_path . '/Searcher.exe';
     my $linenum = 0;
     my $match_start_index = 0;
     my $match_end_index = 0;
@@ -60,7 +63,7 @@ sub test_binaryfile_searchresult {
 
 sub test_multiline_searchresult {
     my $pattern = 'Search';
-    my $file = '~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs';
+    my $file = $cssearch_path . '/Searcher.cs';
     my $linenum = 10;
     my $match_start_index = 15;
     my $match_end_index = 23;

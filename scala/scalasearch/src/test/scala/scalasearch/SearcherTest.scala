@@ -18,7 +18,7 @@ class SearcherTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterA
   def getSettingsBuilder: SettingsBuilder = {
     val settingsBuilder = new SettingsBuilder()
     settingsBuilder.startPath =
-      Some(System.getProperty("user.home") + "/src/git/xsearch/scala/scalasearch/src/test/resources")
+      Some(System.getProperty("user.home") + "/src/xsearch/scala/scalasearch/src/test/resources")
     settingsBuilder.addSearchPattern("\\bSearcher\\b")
     settingsBuilder
   }

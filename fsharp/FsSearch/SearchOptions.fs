@@ -74,7 +74,7 @@ module SearchOptions =
         ] |> Map.ofList;
 
     let OptionsFromXml () =
-        let _searchOptionsPath = "~/src/git/xsearch/shared/searchoptions.xml"
+        let _searchOptionsPath = "~/src/xsearch/shared/searchoptions.xml"
         let _fileStream = new FileStream(FileUtil.ExpandPath(_searchOptionsPath), FileMode.Open)
         let options = new List<SearchOption>()
         let optNodes = XDocument.Load(_fileStream).Descendants(XName.Get("searchoption"))

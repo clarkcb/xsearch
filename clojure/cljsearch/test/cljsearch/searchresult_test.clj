@@ -2,11 +2,15 @@
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (trim)])
   (:use [clojure.java.io :only (file)])
+  (:use [cljsearch.config :only (XSEARCHPATH)])
   (:use [cljsearch.searchresult :only (->SearchResult search-result-to-string)]))
+
+(def CSSEARCHPATH
+  (str XSEARCHPATH "/csharp/CsSearch/CsSearch"))
 
 (deftest test-singleline-searchresult
   (testing "test-singleline-searchresult"
-    (let [searchfile (file "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs")
+    (let [searchfile (file (str CSSEARCHPATH "/Searcher.cs"))
           linenum 10
           matchstartindex 15
           matchendindex 23
@@ -28,7 +32,7 @@
 
 (deftest test-binaryfile-searchresult
   (testing "test-binaryfile-searchresult"
-    (let [searchfile (file "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe")
+    (let [searchfile (file (str CSSEARCHPATH "/Searcher.exe"))
           linenum 0
           matchstartindex 0
           matchendindex 0
@@ -49,7 +53,7 @@
 
 (deftest test-multiline-searchresult
   (testing "test-multiline-searchresult"
-    (let [searchfile (file "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs")
+    (let [searchfile (file (str CSSEARCHPATH "/Searcher.cs"))
           linenum 10
           matchstartindex 15
           matchendindex 23

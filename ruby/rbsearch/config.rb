@@ -14,7 +14,7 @@ end
 
 HOME_NAME = windows? ? 'USERPROFILE' : 'HOME'
 HOME = ENV[HOME_NAME]
-XSEARCHPATH = "#{HOME}/src/git/xsearch"
+XSEARCHPATH = "#{HOME}/src/xsearch"
 SHAREDPATH = "#{XSEARCHPATH}/shared"
 FILETYPESPATH = "#{SHAREDPATH}/filetypes.xml"
 SEARCHOPTIONSPATH = "#{SHAREDPATH}/searchoptions.xml"

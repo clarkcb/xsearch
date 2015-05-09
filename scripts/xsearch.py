@@ -44,7 +44,7 @@ default_runs = 10
 
 HOME_NAME = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
 HOME = os.environ[HOME_NAME]
-XSEARCHPATH = os.path.join(HOME, 'src', 'git', 'xsearch')
+XSEARCHPATH = os.path.join(HOME, 'src', 'xsearch')
 
 default_startpath = XSEARCHPATH
 

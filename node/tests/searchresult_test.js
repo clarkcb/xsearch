@@ -5,11 +5,14 @@
  */
 
 var common = require('../nodesearch/common.js');
+var config = require('../nodesearch/config.js');
 var SearchResult = require('../nodesearch/searchresult.js').SearchResult;
+
+var cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
 
 exports.testSingleLineResult = function(test) {
     var pattern = 'Search';
-    var file = '~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs';
+    var file = cssearch_path + '/Searcher.cs';
     var linenum = 10;
     var matchStartIndex = 15;
     var matchEndIndex = 23;
@@ -27,7 +30,7 @@ exports.testSingleLineResult = function(test) {
 
 exports.testBinaryFileResult = function(test) {
     var pattern = 'Search';
-    var file = '~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe';
+    var file = cssearch_path + '/Searcher.exe';
     var linenum = 0;
     var matchStartIndex = 0;
     var matchEndIndex = 0;
@@ -44,7 +47,7 @@ exports.testBinaryFileResult = function(test) {
 
 exports.testMultiLineResult = function(test) {
     var pattern = 'Search';
-    var file = '~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs';
+    var file = cssearch_path + '/Searcher.cs';
     var linenum = 10;
     var matchStartIndex = 15;
     var matchEndIndex = 23;

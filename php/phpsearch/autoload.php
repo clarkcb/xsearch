@@ -7,7 +7,7 @@ spl_autoload_register(function ($class) {
 	if ($HOME === false) {
 		$HOME = getenv('USERPROFILE');
 	}
-    $include_path = "$HOME/src/git/xsearch/php/phpsearch/";
+    $include_path = "$HOME/src/xsearch/php/phpsearch/";
     include $include_path . str_replace("\\", "/", strtolower($class)) . '.php';
 });
 

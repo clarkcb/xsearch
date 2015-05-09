@@ -9,7 +9,7 @@ import (
 )
 
 func getTestFileContents() (string, error) {
-	testFile := expandPath("~/src/git/xsearch/shared/testFiles/testFile2.txt")
+	testFile := expandPath("~/src/xsearch/shared/testFiles/testFile2.txt")
 	r, err1 := os.Open(testFile)
 	if err1 != nil {
 		return "", err1

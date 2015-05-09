@@ -60,7 +60,7 @@ type FileTypes() =
     //let _fileTypesDictionary = Utils.PopulateFileTypes(fileTypesFileStream)
 
     //let _fileTypesPath = @"Z:\cary\src\git\xsearch\shared\filetypes.xml"
-    let _fileTypesPath = "~/src/git/xsearch/shared/filetypes.xml"
+    let _fileTypesPath = "~/src/xsearch/shared/filetypes.xml"
     let _fileTypesFileInfo = new FileInfo(FileUtil.ExpandPath(_fileTypesPath))
     let _fileTypesDictionary = PopulateFileTypesFromFileInfo(_fileTypesFileInfo)
 
