@@ -12,7 +12,7 @@ namespace CsSearchTests
 		private static FileInfo GetTestFile()
 		{
 			if (Environment.OSVersion.ToString().StartsWith("Microsoft"))
-				return new FileInfo(@"Z:\cary\src\git\xsearch\shared\testFiles\testFile2.txt");
+				return new FileInfo(@"C:\Users\Administrator\src\git\xsearch\shared\testFiles\testFile2.txt");
 			return new FileInfo("/Users/cary/src/git/xsearch/shared/testFiles/testFile2.txt");
 		}
 

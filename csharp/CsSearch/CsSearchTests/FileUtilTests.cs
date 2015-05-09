@@ -133,7 +133,6 @@ namespace CsSearchTests
 		{
 			var path = "~/src/git/xsearch";
 			var expected = FileUtil.JoinPath(FileUtil.GetHomePath(), path.Substring(1));
-			Console.WriteLine("expected: "+expected);
 			Assert.AreEqual(FileUtil.ExpandPath(path), expected);
 		}
 

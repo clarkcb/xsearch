@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using CsSearch;
 using NUnit.Framework;
@@ -33,18 +34,18 @@ namespace CsSearchTests
 		{
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
+			var searchFile = new SearchFile("~/src/xsearch/csharp/CsSearch/CsSearch",
 											"Searcher.cs", FileType.Text);
 			var lineNum = 10;
 			var matchStartIndex = 15;
 			var matchEndIndex = 23;
-			var line = "\tpublic class Searcher\n";
-			var linesBefore = new List<string> { "namespace CsSearch\n", "{\n" };
-			var linesAfter = new List<string> {"\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"};
+			var line = "\tpublic class Searcher";
+			var linesBefore = new List<string> { "namespace CsSearch", "{" };
+			var linesAfter = new List<string> {"\t{", "\t\tprivate readonly FileTypes _fileTypes;"};
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 												matchStartIndex, matchEndIndex,
 												line, linesBefore, linesAfter);
-			var expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+			var expectedPath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
 			var expectedOutput = string.Format(new string('=', 80) + "\n" +
 								 "{0}: {1}: [{2}:{3}]\n" +
 								 new string('-', 80) + "\n" +

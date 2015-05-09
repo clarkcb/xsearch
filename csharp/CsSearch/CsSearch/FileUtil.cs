@@ -65,7 +65,6 @@ namespace CsSearch
 
 		public static string GetHomePath()
 		{
-			//Console.WriteLine("Environment.OSVersion: "+Environment.OSVersion);
 			var home = Environment.GetEnvironmentVariable("HOME");
 			if (null == home)
 				return Environment.GetEnvironmentVariable("USERPROFILE");
