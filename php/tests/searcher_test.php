@@ -11,7 +11,7 @@ class SearcherTest extends PHPUnit_Framework_TestCase {
 
     private function get_test_file() {
         $HOME = getenv('HOME');
-        return "$HOME/src/git/xsearch/shared/testFiles/testFile2.txt";
+        return FileUtil::expand_user_home_path(Config::SHAREDPATH . '/testFiles/testFile2.txt');
     }
 
 ################################################################################

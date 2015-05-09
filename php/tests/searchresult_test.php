@@ -1,9 +1,10 @@
 <?php
 
 class SearchResultTest extends PHPUnit_Framework_TestCase {
+    const CSSEARCHPATH = '~/src/git/xsearch/csharp/CsSearch/CsSearch';
     public function test_singleline_searchresult() {
         $pattern = "Search";
-        $file = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+        $file = self::CSSEARCHPATH . "/Searcher.cs";
         $linenum = 10;
         $match_start_index = 15;
         $match_end_index = 23;
@@ -19,7 +20,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
 
     public function test_binaryfile_searchresult() {
         $pattern = "Search";
-        $file = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
+        $file = self::CSSEARCHPATH . "/Searcher.exe";
         $linenum = 0;
         $match_start_index = 0;
         $match_end_index = 0;
@@ -34,7 +35,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
 
     public function test_multiline_searchresult() {
         $pattern = "Search";
-        $file = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+        $file = self::CSSEARCHPATH . "/Searcher.cs";
         $linenum = 10;
         $match_start_index = 15;
         $match_end_index = 23;
