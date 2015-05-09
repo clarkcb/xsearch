@@ -11,7 +11,9 @@
 # Configuration
 ########################################
 
-source config.sh
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source "$DIR/config.sh"
+source "$DIR/common.sh"
 
 SEARCHSTRING="Searcher"
 EXTS="-x py"
@@ -22,17 +24,6 @@ PRINT="-p"
 SEARCHARCHIVES="-Z"
 
 SEARCH_PARAMS="-s \"$SEARCHSTRING\" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH"
-
-
-########################################
-# Utility Functions
-########################################
-
-# log(msg)
-log () {
-    local msg="$1" dt=$(date +"%Y-%m-%d %H:%M:%S")
-    echo "[$dt] $msg"
-}
 
 
 ########################################

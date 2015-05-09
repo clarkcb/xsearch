@@ -11,18 +11,14 @@
 # Configuration
 ########################################
 
-source config.sh
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source "$DIR/config.sh"
+source "$DIR/common.sh"
 
 
 ########################################
 # Utility Functions
 ########################################
-
-# log(msg)
-log () {
-    local msg="$1" dt=$(date +"%Y-%m-%d %H:%M:%S")
-    echo "[$dt] $msg"
-}
 
 # copy_resources
 copy_resources () {
