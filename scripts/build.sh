@@ -11,9 +11,7 @@
 # Configuration
 ########################################
 
-PROJECT_PATH=$HOME/src/git/xsearch
-SHARED_PATH=$PROJECT_PATH/shared
-TEST_FILE_PATH=$SHARED_PATH/testFiles
+source config.sh
 
 
 ########################################
@@ -49,7 +47,7 @@ copy_test_resources () {
 build_clojure () {
     echo
     log "build_clojure"
-    CLJSEARCH_PATH=$PROJECT_PATH/clojure/cljsearch
+    CLJSEARCH_PATH=$XSEARCH_PATH/clojure/cljsearch
     RESOURCES_PATH=$CLJSEARCH_PATH/resources
 
     # copy the shared xml files to the local resource location
@@ -69,7 +67,7 @@ build_clojure () {
 build_csharp () {
     echo
     log "build_csharp"
-    CSHARP_PATH=$PROJECT_PATH/csharp
+    CSHARP_PATH=$XSEARCH_PATH/csharp
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
     CONFIGURATION=Debug
     #CONFIGURATION=Release
@@ -88,7 +86,7 @@ build_csharp () {
 build_fsharp () {
     echo
     log "build_fsharp"
-    FSHARP_PATH=$PROJECT_PATH/fsharp
+    FSHARP_PATH=$XSEARCH_PATH/fsharp
     RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
     CONFIGURATION=Debug
     #CONFIGURATION=Release
@@ -106,7 +104,7 @@ build_fsharp () {
 build_go () {
     echo
     log "build_go"
-    export GOPATH=$PROJECT_PATH/go
+    export GOPATH=$XSEARCH_PATH/go
     export PATH=$GOPATH/bin:$PATH
 
     # build the code to generate the dynamic code for gosearch
@@ -133,7 +131,7 @@ build_go () {
 build_haskell () {
     echo
     log "build_haskell"
-    HASKELL_PATH=$PROJECT_PATH/haskell
+    HASKELL_PATH=$XSEARCH_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
     SANDBOX_PATH=$HSSEARCH_PATH/.cabal-sandbox
     RESOURCES_PATH=$HSSEARCH_PATH/data
@@ -163,7 +161,7 @@ build_haskell () {
 build_java () {
     echo
     log "build_java"
-    JAVA_PATH=$PROJECT_PATH/java
+    JAVA_PATH=$XSEARCH_PATH/java
     JAVASEARCH_PATH=$JAVA_PATH/javasearch
     RESOURCES_PATH=$JAVASEARCH_PATH/src/main/resources
     TEST_RESOURCES_PATH=$JAVASEARCH_PATH/src/test/resources
@@ -185,10 +183,10 @@ build_java () {
 build_node () {
     echo
     log "build_node"
-    NODE_PATH=$PROJECT_PATH/node
-    NODE_MODULES_PATH=$NODE_PATH/node_modules
+    NODE_PATH=$XSEARCH_PATH/node
+    DOM_JS_PATH=$NODE_PATH/node_modules/dom-js
 
-    if [ ! -d $NODE_MODULES_PATH ]; then
+    if [ ! -d $DOM_JS_PATH ]; then
         cd $NODE_PATH
         npm install dom-js
         cd -
@@ -198,7 +196,7 @@ build_node () {
 build_scala () {
     echo
     log "build_scala"
-    SCALA_PATH=$PROJECT_PATH/scala
+    SCALA_PATH=$XSEARCH_PATH/scala
     SCALASEARCH_PATH=$SCALA_PATH/scalasearch
     RESOURCES_PATH=$SCALASEARCH_PATH/src/main/resources
     TEST_RESOURCES_PATH=$SCALASEARCH_PATH/src/test/resources

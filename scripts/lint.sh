@@ -11,8 +11,7 @@
 # Configuration
 ########################################
 
-PROJECT_PATH=$HOME/src/git/xsearch
-SHARED_PATH=$PROJECT_PATH/shared
+source config.sh
 
 
 ########################################
@@ -25,6 +24,7 @@ log () {
     echo "[$dt] $msg"
 }
 
+
 ########################################
 # Lint Functions
 ########################################
@@ -32,7 +32,7 @@ log () {
 lint_clojure () {
     echo
     log "lint_clojure"
-    CLJSEARCH_PATH=$PROJECT_PATH/clojure/cljsearch
+    CLJSEARCH_PATH=$XSEARCH_PATH/clojure/cljsearch
 
     # Analyze
     log "Analyzing cljsearch"
@@ -45,25 +45,25 @@ lint_clojure () {
 lint_csharp () {
     echo
     log "lint_csharp"
-    CSHARP_PATH=$PROJECT_PATH/csharp
+    CSHARP_PATH=$XSEARCH_PATH/csharp
 
     # Analyze
-    log "Analyzing cssearch not implemented at this time"
+    log "not implemented at this time"
 }
 
 lint_fsharp () {
     echo
     log "lint_fsharp"
-    FSHARP_PATH=$PROJECT_PATH/fsharp
+    FSHARP_PATH=$XSEARCH_PATH/fsharp
 
     # Analyze
-    log "Analyzing fssearch not implemented at this time"
+    log "not implemented at this time"
 }
 
 lint_go () {
     echo
     log "lint_go"
-    export GOPATH=$PROJECT_PATH/go
+    export GOPATH=$XSEARCH_PATH/go
     SRC_PATH=$GOPATH/src
     PACKAGE=elocale.com/clarkcb/xsearch
 
@@ -78,7 +78,7 @@ lint_go () {
 lint_haskell () {
     echo
     log "lint_haskell"
-    HASKELL_PATH=$PROJECT_PATH/haskell
+    HASKELL_PATH=$XSEARCH_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
     HLINT=$HSSEARCH_PATH/.cabal-sandbox/bin/hlint
 
@@ -91,11 +91,10 @@ lint_haskell () {
 lint_java () {
     echo
     log "lint_java"
-    JAVA_PATH=$PROJECT_PATH/java
+    JAVA_PATH=$XSEARCH_PATH/java
     JAVASEARCH_PATH=$JAVA_PATH/javasearch
     JAVA7=/Library/Java/JavaVirtualMachines/jdk1.7.0_60.jdk/Contents/Home/bin/java
     TOOLS_PATH=$JAVA_PATH/tools
-    CHECKSTYLE=$TOOLS_PATH/checkstyle-6.3-all.jar
     CONFIG=$TOOLS_PATH/sun_checks.xml
     #CONFIG=$TOOLS_PATH/google_checks.xml
 
@@ -105,19 +104,30 @@ lint_java () {
             "Missing package-info.java file"
             )
 
+    CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "*.jar" | head -n1)
+    if [ -z "$CHECKSTYLE_JAR" ]; then
+        log "Checkstyle jar not found, downloading"
+        URL="http://sourceforge.net/projects/checkstyle/files/latest/download?source=files"
+        cd $TOOLS_PATH
+        curl -J -L -O $URL
+        cd -
+        CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "checkstyle*.jar" | head -n1)
+    fi
+
     # Analyze
     log "Analyzing javasearch"
     FILES=$(find $JAVASEARCH_PATH/src -name "*.java")
     for f in ${FILES[*]}; do
-        log "java -jar $CHECKSTYLE -c $CONFIG $f"
-        $JAVA7 -jar $CHECKSTYLE -c $CONFIG $f | grep -v -e "Javadoc" -e "hides a field" -e "Line is longer than 80 characters" -e "Missing package-info.java file"
+        log "java -jar $CHECKSTYLE_JAR -c $CONFIG $f"
+        $JAVA7 -jar $CHECKSTYLE_JAR -c $CONFIG $f | grep -v -e "Javadoc" -e "hides a field" -e "Line is longer than 80 characters" -e "Missing package-info.java file"
+        #$JAVA7 -jar $CHECKSTYLE -c $CONFIG $f
     done
 }
 
 lint_node () {
     echo
     log "lint_node"
-    NODE_PATH=$PROJECT_PATH/node
+    NODE_PATH=$XSEARCH_PATH/node
     NODESEARCH_PATH=$NODE_PATH/nodesearch
     JSHINT=$NODE_PATH/node_modules/jshint/bin/jshint
 
@@ -133,10 +143,10 @@ lint_node () {
 lint_perl () {
     echo
     log "lint_perl"
-    PERL_PATH=$PROJECT_PATH/perl
+    PERL_PATH=$XSEARCH_PATH/perl
 
     # Analyze
-    log "Analyzing plsearch not implemented at this time"
+    log "not implemented at this time"
     #cd $PERL_PATH
     #cd -
 }
@@ -144,7 +154,7 @@ lint_perl () {
 lint_php () {
     echo
     log "lint_php"
-    #PHP_PATH=$PROJECT_PATH/php
+    #PHP_PATH=$XSEARCH_PATH/php
     #PHPSEARCH_PATH=$PHP_PATH/phpsearch
     #PHPLINT=$PHP_PATH/tools/phplint-2.0_20141127/phpl
     ## Analyze
@@ -154,13 +164,13 @@ lint_php () {
     #    echo "$PHPLINT $f"
     #    $PHPLINT $f
     #done
-    log "Analyzing phpsearch not implemented at this time"
+    log "not implemented at this time"
 }
 
 lint_python () {
     echo
     log "lint_python"
-    PYTHON_PATH=$PROJECT_PATH/python
+    PYTHON_PATH=$XSEARCH_PATH/python
 
     # Analyze
     log "Analyzing pysearch.py"
@@ -173,7 +183,7 @@ lint_python () {
 lint_ruby () {
     echo
     log "lint_ruby"
-    RUBY_PATH=$PROJECT_PATH/ruby
+    RUBY_PATH=$XSEARCH_PATH/ruby
     RBSEARCH_PATH=$RUBY_PATH/rbsearch
 
     # Analyze
@@ -188,16 +198,27 @@ lint_ruby () {
 lint_scala () {
     echo
     log "lint_scala"
-    SCALA_PATH=$PROJECT_PATH/scala
+    SCALA_PATH=$XSEARCH_PATH/scala
     SCALASEARCH_PATH=$SCALA_PATH/scalasearch
     TOOLS_PATH=$SCALA_PATH/tools
-    SCALASTYLE=$TOOLS_PATH/scalastyle_2.11-0.6.0-batch.jar
+    #SCALASTYLE=$TOOLS_PATH/scalastyle_2.11-0.6.0-batch.jar
     CONFIG=$TOOLS_PATH/scalastyle_config.xml
+
+    SCALASTYLE_JAR=$(find $TOOLS_PATH -name "*.jar" | head -n1)
+    if [ -z "$SCALASTYLE_JAR" ]; then
+        log "Scalastyle jar not found, downloading"
+        URL="https://oss.sonatype.org/content/repositories/releases/org/scalastyle/scalastyle_2.11/0.7.0/scalastyle_2.11-0.7.0-batch.jar"
+        cd $TOOLS_PATH
+        curl -O $URL
+        cd -
+        SCALASTYLE_JAR=$(find $TOOLS_PATH -name "scalastyle*.jar" | head -n1)
+    fi
+
 
     # Analyze src/main/scala
     log "Analyzing scalasearch"
-    log "java -jar $SCALASTYLE --config $CONFIG $SCALASEARCH_PATH/src/main/scala"
-    java -jar $SCALASTYLE --config $CONFIG $SCALASEARCH_PATH/src/main/scala
+    log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALASEARCH_PATH/src/main/scala"
+    java -jar $SCALASTYLE_JAR --config $CONFIG $SCALASEARCH_PATH/src/main/scala
 }
 
 lint_all () {
