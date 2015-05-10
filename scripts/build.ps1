@@ -11,46 +11,13 @@ param([string]$lang="all")
 # Configuration
 ########################################
 
-$projectPath = "$Env:USERPROFILE\src\xsearch"
-$sharedPath = "$projectPath\shared"
-$testFilePath = "$sharedPath\testFiles"
+. $PSScriptRoot\config.ps1
+. $PSScriptRoot\common.ps1
 
 
 ########################################
 # Utility Functions
 ########################################
-
-# Generate a log string
-function GetLogString
-{
-	param([string]$msg)
-	$ds = '{0:yyyy-MM-dd hh:mm:ss tt}' -f (Get-Date)
-	'[{0}] {1}' -f $ds, $msg
-}
-
-# Write a log string to the console
-function Log
-{
-	param([string]$msg)
-	$s = (GetLogString $msg)
-	Write-Host $s
-}
-
-# Write an error to the console (colorized)
-function PrintError
-{
-	param([string]$msg)
-	$s = (GetLogString ('ERROR: ' + $msg))
-	Write-Host $s -BackgroundColor Black -ForegroundColor Red
-}
-
-# Write an error to the console and exit
-function ExitWithError
-{
-	param([string]$errmsg)
-	PrintError "$errmsg`n"
-	exit
-}
 
 function CopyResources
 {
@@ -68,9 +35,11 @@ function CopyTestResources
     Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath
 }
 
+
 ################################################################################
 # Build functions
 ################################################################################
+
 function BuildClojure
 {
     Write-Host
@@ -82,7 +51,7 @@ function BuildCsharp
     Write-Host
     Log("BuildCsharp")
 
-    $csharpPath = Join-Path -Path $projectPath -ChildPath "csharp"
+    $csharpPath = Join-Path -Path $xsearchPath -ChildPath "csharp"
     $cssearchPath = Join-Path -Path $csharpPath -ChildPath "CsSearch"
 
     $oldPwd = Get-Location
@@ -100,7 +69,7 @@ function BuildFsharp
     Write-Host
     Log("BuildFsharp - currently unsupported")
 
-    #$fsharpPath = Join-Path -Path $projectPath -ChildPath "fsharp"
+    #$fsharpPath = Join-Path -Path $xsearchPath -ChildPath "fsharp"
 
     #$oldPwd = Get-Location
     #Set-Location $fsharpPath
@@ -143,7 +112,7 @@ function BuildHaskell
 {
     Write-Host
     Log("BuildHaskell")
-    $haskellPath = Join-Path -Path $projectPath -ChildPath "haskell"
+    $haskellPath = Join-Path -Path $xsearchPath -ChildPath "haskell"
     $hssearchPath = Join-Path -Path $haskellPath -ChildPath "hssearch"
     $sandboxPath = Join-Path -Path $hssearchPath -ChildPath ".cabal-sandbox"
     $resourcesPath = Join-Path -Path $hssearchPath -ChildPath "data"
