@@ -1,9 +1,9 @@
 #!/bin/bash
 ################################################################################
 #
-# build.sh
+# unittest.sh
 #
-# Builds specified language version of xsearch, or all versions
+# Runs unit tests for specified language version of xsearch, or all versions
 #
 ################################################################################
 
@@ -17,7 +17,7 @@ source "$DIR/common.sh"
 
 
 ########################################
-# Build Functions
+# Unit Test Functions
 ########################################
 
 unittest_clojure () {
@@ -103,6 +103,7 @@ unittest_node () {
     NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
 
     if [ ! -d $NODEUNIT_PATH ]; then
+        log "nodeunit not installed, installing"
         cd $NODE_PATH
         npm install nodeunit
         cd -
@@ -124,6 +125,7 @@ unittest_perl () {
     TESTS_PATH=$PERL_PATH/tests
 
     # run tests using Test::Simple
+    log "Unit-testing plsearch"
     FILES=$(find $TESTS_PATH -name "*.pl")
     for f in ${FILES[*]}; do
         log "perl $f"
@@ -139,6 +141,7 @@ unittest_php () {
     PHPUNIT="phpunit --bootstrap $PHP_PATH/phpsearch/autoload.php"
 
     # run tests with phpunit
+    log "Unit-testing phpsearch"
     FILES=$(find $TESTS_PATH -name "*.php")
     for f in ${FILES[*]}; do
         log "phpunit $f"
@@ -177,7 +180,7 @@ unittest_ruby () {
     TESTS_PATH=$RUBY_PATH/tests
 
     # Run the individual tests
-    log "Unit-testing pysearch"
+    log "Unit-testing rbsearch"
     FILES=$(find $TESTS_PATH -name "*.rb")
     for f in ${FILES[*]}; do
         log "ruby $f"
