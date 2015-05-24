@@ -95,7 +95,7 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
       lineNum, matchStartIndex, matchEndIndex, "-" * sepLen))
     val lineFormat = " %1$" + lineNumPadding + "d | %2$s\n"
     var currentLineNum = lineNum
-    if (linesBefore.length > 0) {
+    if (linesBefore.nonEmpty) {
       currentLineNum -= linesBefore.length
       linesBefore.foreach { lineBefore =>
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineBefore)))
@@ -103,7 +103,7 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
       }
     }
     sb.append(">" + lineFormat.format(lineNum, trimNewLines(line)))
-    if (linesAfter.length > 0) {
+    if (linesAfter.nonEmpty) {
       currentLineNum += 1
       linesAfter.foreach { lineAfter =>
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))

@@ -19,15 +19,11 @@ class Searcher (settings: SearchSettings) {
       case _ =>
         throw new SearchException("Startpath not defined")
     }
-    if (settings.searchPatterns.size == 0) {
+    if (settings.searchPatterns.isEmpty) {
       throw new SearchException("No search patterns defined")
     }
   }
   validateSettings()
-
-  if (settings.debug) {
-    Common.log("settings: " + settings)
-  }
 
   private val currentPath = "."
   private val tarExtension = "tar"
@@ -332,7 +328,7 @@ class Searcher (settings: SearchSettings) {
     var stop = false
     while (matches.hasNext && !stop) {
       val m = matches.next()
-      val thisLineIndices = lineIndices.filter(_._1 <= m.start).last
+      val thisLineIndices: (Int, Int) = lineIndices.filter(_._1 <= m.start).last
       val beforeLineCount = lineIndices.count(_._1 < thisLineIndices._1)
       val line = s.substring(thisLineIndices._1, thisLineIndices._2)
       val linesBefore: List[String] =
@@ -392,9 +388,9 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  private def searchTextFileLines(sf: SearchFile): Unit = {
-    searchTextFileSourceLines(sf, Source.fromFile(sf.toFile))
-  }
+//  private def searchTextFileLines(sf: SearchFile): Unit = {
+//    searchTextFileSourceLines(sf, Source.fromFile(sf.toFile))
+//  }
 
   private def searchTextFileSourceLines(sf: SearchFile, source: Source): Unit = {
     searchLineStringIterator(source.getLines()).foreach { r =>
@@ -504,7 +500,7 @@ class Searcher (settings: SearchSettings) {
     }
     val contents = source.mkString
     source.close()
-    for (p <- settings.searchPatterns if p.findFirstIn(contents) != None) {
+    for (p <- settings.searchPatterns if p.findFirstIn(contents).isDefined) {
       addSearchResult(new SearchResult(p, Some(sf), 0, 0, 0, null))
     }
   }
@@ -578,7 +574,7 @@ class Searcher (settings: SearchSettings) {
           val file = new File(entry.getName)
           val fileType = FileTypes.getFileType(file)
           if (fileType != FileType.Unknown) {
-            var bytes = new Array[Byte](entry.getSize.toInt)
+            val bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
             if (count > 0) {
               val tzsf = new SearchFile(sf.containers, dirName, file.getName,
@@ -670,7 +666,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   def getMatchingLines: List[String] = {
-    val allLines = _searchResults.view.map(r => Option(r.line)).flatten.map(_.trim)
+    val allLines = _searchResults.view.flatMap(r => Option(r.line)).map(_.trim)
     if (settings.uniqueLines) {
       allLines.toSet.toList.sortWith(_.toUpperCase < _.toUpperCase)
     } else {
@@ -683,8 +679,8 @@ class Searcher (settings: SearchSettings) {
 object Searcher {
   def getLineIndices(contents:String): Seq[(Int,Int)] = {
     val newLineIndices = contents.zipWithIndex.collect { case ('\n',i) => i }
-    if (newLineIndices.length > 0) {
-      val lineIndices = mutable.ArrayBuffer[(Int,Int)]((0,newLineIndices(0)))
+    if (newLineIndices.nonEmpty) {
+      val lineIndices = mutable.ArrayBuffer[(Int,Int)]((0,newLineIndices.head))
       lineIndices ++= newLineIndices.map(_ + 1).zip(newLineIndices.tail :+ contents.length)
       lineIndices
     } else {

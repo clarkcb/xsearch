@@ -30,6 +30,10 @@ object SearchMain {
     try {
       val settings = SearchOptions.settingsFromArgs(args)
 
+      if (settings.debug) {
+        Common.log("settings: " + settings)
+      }
+
       if (settings.printUsage) {
         Common.log("")
         SearchOptions.usage(0)

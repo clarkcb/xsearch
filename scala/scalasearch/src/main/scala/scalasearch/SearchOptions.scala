@@ -120,7 +120,7 @@ object SearchOptions {
       ((sb: SettingsBuilder) => sb.printVersion = true)
   )
 
-  def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
+  private def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
     (options.map(o => (o.longarg, o)) ++
       options.filter(o => o.shortarg.length > 0).map(o => (o.shortarg, o))).toMap
   }
@@ -135,7 +135,7 @@ object SearchOptions {
         case Nil =>
         case switchPattern(arg) :: tail =>
           if (argMap.contains(arg)) {
-            if (tail.length > 0) {
+            if (tail.nonEmpty) {
               argActionMap(argMap(arg).longarg)(tail.head, sb)
               nextArg(tail.tail, sb)
             } else {
@@ -172,7 +172,7 @@ object SearchOptions {
     val optDescs = searchOptions.map(_.desc)
     val longest = optStrings.map(_.length).max
     val format = " %1$-" + longest + "s  %2$s\n"
-    for (i <- 0 until optStrings.length) {
+    for (i <- optStrings.indices) {
       sb.append(format.format(optStrings(i), optDescs(i)))
     }
     sb.toString()
