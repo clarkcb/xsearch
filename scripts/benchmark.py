@@ -23,9 +23,11 @@ exts = ','.join('py rb'.split())
 
 startpath = default_startpath
 
+default_runs = 10
+
 scenarios = [
-    # Scenario('no args', [], True),
-    # Scenario('help', ['-h'], True),
+    Scenario('no args', [], True),
+    Scenario('help', ['-h'], True),
     Scenario('search lines #1', ['-x', exts, '-s', 'Searcher', startpath], False),
     Scenario('search contents #1', ['-x', exts, '-s', 'Searcher', startpath, '-m'], False),
     Scenario('search lines #2 - first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], False),
@@ -42,14 +44,12 @@ class Benchmarker(object):
     def __init__(self, **kargs):
         self.xsearch_names = all_xsearch_names
         self.scenarios = []
-        self.runs = 0
+        self.runs = default_runs
         self.debug = False
         self.__dict__.update(kargs)
 
-    def print_totals_dict(self, totals_dict):
+    def print_totals_dict(self, totals_dict, total_runs=default_runs):
         sio = StringIO()
-        s = len(self.scenarios)
-        total_runs = s * self.runs
         longest = max([len(x) for x in self.xsearch_names])
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user',
                'avg','rank',  'total', 'avg', 'rank']
@@ -98,7 +98,7 @@ class Benchmarker(object):
             for x in self.xsearch_names:
                 for k in time_keys:
                     totals_dict[x][k] += r.time_dict[x][k]
-        self.print_totals_dict(totals_dict)
+        self.print_totals_dict(totals_dict, total_runs)
 
     def print_scenario_totals(self, s, sn, results):
         print '\nTotal results for scenario %d ("%s") with %d runs' % \
