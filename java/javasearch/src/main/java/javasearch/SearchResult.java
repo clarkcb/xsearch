@@ -153,14 +153,14 @@ public class SearchResult {
         if (this.lineNum == 0) {
             sb.append(" matches");
         } else {
-            sb.append(": ");
-            sb.append(this.lineNum);
-            sb.append(": [");
-            sb.append(this.matchStartIndex);
-            sb.append(":");
-            sb.append(this.matchEndIndex);
-            sb.append("]: ");
-            sb.append(formatMatchingLine());
+            sb.append(": ")
+                    .append(lineNum)
+                    .append(": [")
+                    .append(matchStartIndex)
+                    .append(":")
+                    .append(matchEndIndex)
+                    .append("]: ")
+                    .append(formatMatchingLine());
         }
         return sb.toString();
     }
