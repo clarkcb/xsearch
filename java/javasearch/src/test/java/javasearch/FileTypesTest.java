@@ -56,4 +56,16 @@ public class FileTypesTest {
         assertTrue(fileTypes.isTextFile(file));
         assertEquals(fileTypes.getFileType(file), FileType.TEXT);
     }
+
+    @Test
+    public final void unknownFileTest() {
+        File file = new File("unknown.ZZZ");
+        assertEquals(FileUtil.getExtension(file), "zzz");
+        assertFalse(fileTypes.isArchiveFile(file));
+        assertFalse(fileTypes.isBinaryFile(file));
+        assertFalse(fileTypes.isSearchableFile(file));
+        assertFalse(fileTypes.isTextFile(file));
+        assertTrue(fileTypes.isUnknownFile(file));
+        assertEquals(fileTypes.getFileType(file), FileType.UNKNOWN);
+    }
 }
