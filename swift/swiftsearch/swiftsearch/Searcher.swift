@@ -33,8 +33,7 @@ public class Searcher {
     }
 
     private func matchesAnyPattern(s: String, _ patterns: [Regex]) -> Bool {
-        let matches = patterns.filter({$0.test(s)})
-        return matches.count > 0
+        return patterns.filter({$0.test(s)}).count > 0
     }
 
     private func anyMatchesAnyPattern(ss: [String], _ patterns: [Regex]) -> Bool {
