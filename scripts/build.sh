@@ -212,6 +212,22 @@ build_scala () {
     #mvn -f $SCALASEARCH_PATH/pom.xml -DskipTests=true clean install
 }
 
+build_swift () {
+    echo
+    log "build_swift"
+    SWIFT_PATH=$XSEARCH_PATH/swift
+    SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
+
+    # TODO: copy resource files locally?
+
+    # run xcodebuild
+    log "Building swiftsearch"
+    cd $SWIFTSEARCH_PATH
+    log "xcodebuild -project swiftsearch.xcodeproj"
+    xcodebuild -project swiftsearch.xcodeproj
+    cd -
+}
+
 build_all () {
     log "build_all"
     
@@ -230,6 +246,8 @@ build_all () {
     build_node
 
     build_scala
+
+    build_swift
 }
 
 
@@ -261,6 +279,8 @@ elif [ "$ARG" == "node" ]; then
     build_node
 elif [ "$ARG" == "scala" ]; then
     build_scala
+elif [ "$ARG" == "swift" ]; then
+    build_swift
 else
     echo "ERROR: unknown build argument: $ARG"
 fi

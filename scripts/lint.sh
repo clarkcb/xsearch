@@ -205,11 +205,24 @@ lint_scala () {
         SCALASTYLE_JAR=$(find $TOOLS_PATH -name "scalastyle*.jar" | head -n1)
     fi
 
-
     # Analyze src/main/scala
     log "Analyzing scalasearch"
     log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALASEARCH_PATH/src/main/scala"
     java -jar $SCALASTYLE_JAR --config $CONFIG $SCALASEARCH_PATH/src/main/scala
+}
+
+lint_swift () {
+    # Assumes that swiftlint has been installed, do this on OSX:
+    # $ sudo brew install swiftlint
+    echo
+    log "lint_swift"
+    SWIFT_PATH=$XSEARCH_PATH/swift
+    SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
+
+    # Analyze the swift files
+    log "Analyzing swiftsearch"
+    log "cd $SWIFTSEARCH_PATH; swiftlint; cd -"
+    cd $SWIFTSEARCH_PATH; swiftlint; cd -
 }
 
 lint_all () {
@@ -238,6 +251,8 @@ lint_all () {
     lint_ruby
 
     lint_scala
+
+    lint_swift
 }
 
 
@@ -277,6 +292,8 @@ elif [ "$ARG" == "ruby" ]; then
     lint_ruby
 elif [ "$ARG" == "scala" ]; then
     lint_scala
+elif [ "$ARG" == "swift" ]; then
+    lint_swift
 else
     echo "ERROR: unknown lint argument: $ARG"
 fi

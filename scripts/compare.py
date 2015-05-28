@@ -25,10 +25,12 @@ startpath = default_startpath
 
 scenarios = [
     Scenario('no args', [], True),
+    # Scenario('debug only', ['--debug'], True),
     Scenario('no startpath', ['-x', exts, '-s', 'Searcher'], True),
     Scenario('invalid startpath', ['-x', exts, '-s', 'Searcher', '/invalid/startpath'], True),
     Scenario('no searchpatterns', ['-x', exts, startpath], True),
     Scenario('help', ['-h'], True),
+    # Scenario('help with debug', ['-h', '--debug'], True),
     Scenario('search lines, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath], False),
     Scenario('search contents, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath, '-m'], False),
     Scenario('search lines, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath], False),

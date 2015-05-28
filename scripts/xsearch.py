@@ -35,6 +35,7 @@ xsearch_dict = {
     'python':  'pysearch.py',
     'ruby':    'rbsearch.rb',
     'scala':   'scalasearch',
+    'swift':   'swiftsearch',
 }
 all_xsearch_names = sorted(xsearch_dict.values())
 
