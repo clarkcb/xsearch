@@ -25,6 +25,8 @@ public class SearchResult {
     private List<String> linesBefore;
     private List<String> linesAfter;
 
+    private static String noSearchFileText = "<text>";
+
     public SearchResult(final Pattern searchPattern,
                         final SearchFile file,
                         final int lineNum,
@@ -112,9 +114,10 @@ public class SearchResult {
 
     public final String multiLineToString() {
         int lineSepLength = 80;
+        String fileString = searchFile == null ? noSearchFileText : searchFile.toString();
         StringBuilder sb = new StringBuilder()
                 .append(repeatString("=", lineSepLength)).append("\n")
-                .append(searchFile).append(": ").append(lineNum).append(": ")
+                .append(fileString).append(": ").append(lineNum).append(": ")
                 .append("[").append(matchStartIndex).append(":")
                 .append(matchEndIndex).append("]\n")
                 .append(repeatString("-", lineSepLength)).append("\n");
@@ -148,7 +151,7 @@ public class SearchResult {
         try {
             sb.append(this.searchFile.toString());
         } catch (NullPointerException e) {
-            sb.append("");
+            sb.append(noSearchFileText);
         }
         if (this.lineNum == 0) {
             sb.append(" matches");
