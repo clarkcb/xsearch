@@ -32,7 +32,7 @@ public class SearchResult {
                         final int matchEndIndex,
                         final String line) {
         this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
-             new ArrayList<String>(), new ArrayList<String>());
+             new ArrayList<>(), new ArrayList<>());
     }
 
     public SearchResult(final Pattern searchPattern,

@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Searcher {
 
@@ -38,10 +38,10 @@ public class Searcher {
 
     public Searcher(final SearchSettings settings) {
         this.settings = settings;
-        this.results = new ArrayList<SearchResult>();
+        this.results = new ArrayList<>();
         this.fileTypes = new FileTypes();
-        this.searchFileSet = new HashSet<SearchFile>();
-        this.timers = new HashMap<String, Long>();
+        this.searchFileSet = new HashSet<>();
+        this.timers = new HashMap<>();
         this.totalElapsedTime = 0L;
     }
 
@@ -105,7 +105,7 @@ public class Searcher {
     }
 
     public final List<File> getSearchDirs(final File startPath) {
-        List<File> searchDirs = new ArrayList<File>();
+        List<File> searchDirs = new ArrayList<>();
         if (settings.getDebug()) {
             log(String.format("Getting files to search under %s",
                     startPath.getPath()));
@@ -118,7 +118,7 @@ public class Searcher {
     }
 
     private List<File> getSubDirs(final File dir) {
-        List<File> subDirs = new ArrayList<File>();
+        List<File> subDirs = new ArrayList<>();
         File[] dirFiles = dir.listFiles();
         if (dirFiles != null) {
             for (File f : dirFiles) {
@@ -131,14 +131,9 @@ public class Searcher {
     }
 
     private List<File> recGetSearchDirs(final File dir) {
-        List<File> searchDirs = new ArrayList<File>();
         List<File> subDirs = getSubDirs(dir);
-
-        for (File f : subDirs) {
-            if (isSearchDir(f)) {
-                searchDirs.add(f);
-            }
-        }
+        List<File> searchDirs = subDirs.stream().filter(this::isSearchDir)
+                .collect(Collectors.toList());
         for (File d : subDirs) {
             searchDirs.addAll(recGetSearchDirs(d));
         }
@@ -197,7 +192,7 @@ public class Searcher {
         if (settings.getDebug()) {
             log(String.format("Getting files to search under %s", dir));
         }
-        List<SearchFile> searchFiles = new ArrayList<SearchFile>();
+        List<SearchFile> searchFiles = new ArrayList<>();
         File[] currentFiles = dir.listFiles();
         if (currentFiles != null) {
             for (File f : currentFiles) {
@@ -214,7 +209,7 @@ public class Searcher {
     }
 
     public final List<SearchFile> getSearchFiles(final List<File> searchDirs) {
-        List<SearchFile> searchFiles = new ArrayList<SearchFile>();
+        List<SearchFile> searchFiles = new ArrayList<>();
         for (File d : searchDirs) {
             searchFiles.addAll(getSearchFilesForDir(d));
         }
@@ -323,9 +318,7 @@ public class Searcher {
         if (settings.getDoTiming()) {
             startTimer("searchFiles");
         }
-        for (SearchFile sf : searchFiles) {
-            searchFile(sf);
-        }
+        searchFiles.forEach(this::searchFile);
         if (settings.getDoTiming()) {
             stopTimer("searchFiles");
             if (settings.getPrintResults()) {
@@ -365,15 +358,13 @@ public class Searcher {
             }
         } catch (NoSuchElementException e) {
             log(e.toString() + ": " + sf.getPath());
-        } catch (IllegalStateException e) {
-            log(e.toString());
-        } catch (IOException e) {
+        } catch (IllegalStateException | IOException e) {
             log(e.toString());
         }
     }
 
     private List<Number> getNewLineIndices(final String s) {
-        List<Number> newlineIndices = new ArrayList<Number>();
+        List<Number> newlineIndices = new ArrayList<>();
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '\n') {
                 newlineIndices.add(i);
@@ -383,26 +374,22 @@ public class Searcher {
     }
 
     private List<Number> getStartLineIndicesFromNewLineIndices(final List<Number> newLineIndices) {
-        List<Number> startLineIndices = new ArrayList<Number>();
+        List<Number> startLineIndices = new ArrayList<>();
         startLineIndices.add(0);
-        for (Number newLineIndex : newLineIndices) {
-            startLineIndices.add(newLineIndex.longValue() + 1);
-        }
+        startLineIndices.addAll(newLineIndices.stream()
+                .map(i -> i.longValue() + 1).collect(Collectors.toList()));
         return startLineIndices;
     }
 
     private List<Number> getEndLineIndicesFromNewLineIndices(final String s,
                                                              final List<Number> newLineIndices) {
-        List<Number> endLineIndices = new ArrayList<Number>();
-        for (Number newLineIndex : newLineIndices) {
-            endLineIndices.add(newLineIndex.longValue());
-        }
+        List<Number> endLineIndices = new ArrayList<>(newLineIndices);
         endLineIndices.add(s.length() - 1);
         return endLineIndices;
     }
 
     public final List<SearchResult> searchMultiLineString(final String s) {
-        List<SearchResult> results = new ArrayList<SearchResult>();
+        List<SearchResult> results = new ArrayList<>();
         for (Pattern p : settings.getSearchPatterns()) {
             for (SearchResult r : searchMultiLineStringForPattern(s, p)) {
                 results.add(r);
@@ -411,84 +398,74 @@ public class Searcher {
         return results;
     }
 
-    private List<String> getLinesBeforeFromMultiLineString(final String s,
-                                                           final List<Number> beforeStartIndices,
-                                                           final List<Number> beforeEndIndices) {
-        List<String> linesBefore = new ArrayList<String>();
-        if (settings.getLinesBefore() > 0) {
-            List<Number> starts = ListUtil.takeRight(beforeStartIndices,
-                    settings.getLinesBefore());
-            List<Number> ends = ListUtil.tail(ListUtil.takeRight(beforeEndIndices,
-                    settings.getLinesBefore() + 1));
-            for (int i = 0; i < starts.size(); i++) {
-                linesBefore.add(s.substring(starts.get(i).intValue(),
-                        ends.get(i).intValue() - 1));
-            }
+    private List<String> getLinesFromMultiLineString(final String s,
+                                                     final List<Number> startIndices,
+                                                     final List<Number> endIndices) {
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < startIndices.size(); i++) {
+            lines.add(s.substring(startIndices.get(i).intValue(),
+                    endIndices.get(i).intValue()));
         }
-        return linesBefore;
-    }
-
-    private List<String> getLinesAfterFromMultiLineString(final String s,
-                                                          final List<Number> afterStartIndices,
-                                                          final List<Number> afterEndIndices) {
-        List<String> linesAfter = new ArrayList<String>();
-        if (settings.getLinesAfter() > 0) {
-            List<Number> starts = ListUtil.take(afterStartIndices, settings.getLinesAfter());
-            List<Number> ends = ListUtil.tail(ListUtil.take(afterEndIndices,
-                    settings.getLinesAfter() + 1));
-            for (int i = 0; i < starts.size(); i++) {
-                linesAfter.add(s.substring(starts.get(i).intValue(),
-                        ends.get(i).intValue() - 1));
-            }
-        }
-        return linesAfter;
+        return lines;
     }
 
     private List<SearchResult> searchMultiLineStringForPattern(final String s,
                                                                final Pattern p) {
-        Map<Pattern, Integer> patternMatches = new HashMap<Pattern, Integer>();
-        List<SearchResult> results = new ArrayList<SearchResult>();
+        Map<Pattern, Integer> patternMatches = new HashMap<>();
+        List<SearchResult> results = new ArrayList<>();
         List<Number> newLineIndices = getNewLineIndices(s);
         List<Number> startLineIndices = getStartLineIndicesFromNewLineIndices(newLineIndices);
         List<Number> endLineIndices = getEndLineIndicesFromNewLineIndices(s,
                 newLineIndices);
+        final int linesBeforeCount = settings.getLinesBefore();
+        final int linesAfterCount = settings.getLinesAfter();
         Matcher m = p.matcher(s);
         boolean found = m.find();
         while (found) {
             if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
                 found = false;
             } else {
-                // get the start and end indices before the match index
-                List<Number> beforeStartIndices = ListUtil.lessThanOrEqualTo(m.start(),
-                        startLineIndices);
-                List<Number> beforeEndIndices = ListUtil.lessThan(m.start(),
-                        endLineIndices);
-                // add another end line index if it exists or the tail index of the string
-                if (endLineIndices.size() > beforeEndIndices.size()) {
-                    beforeEndIndices.add(endLineIndices.get(beforeEndIndices.size()));
-                } else {
-                    beforeEndIndices.add(s.length() - 1);
-                }
-                List<Number> afterStartIndices = ListUtil.greaterThan(m.start(),
-                        startLineIndices);
-                List<Number> afterEndIndices = ListUtil.greaterThan(m.start(),
-                        endLineIndices);
+                // get the start line indices before the match index to get the current line number
+                List<Number> beforeStartIndices = startLineIndices.stream()
+                        .filter(i -> i.intValue() <= m.start())
+                        .collect(Collectors.toList());
                 int lineNum = beforeStartIndices.size();
-                int startLineIndex = ListUtil.max(beforeStartIndices).intValue();
-                int endLineIndex = ListUtil.min(afterStartIndices).intValue() - 1;
-                //log(String.format("startLineIndex: %d", startLineIndex));
-                //log(String.format("endLineIndex: %d", endLineIndex));
-                String line;
-                if (endLineIndex > -1) {
-                    line = s.substring(startLineIndex, endLineIndex);
+                int endLineIndex = endLineIndices.get(beforeStartIndices.size() - 1).intValue();
+                int startLineIndex = beforeStartIndices
+                        .remove(beforeStartIndices.size() - 1).intValue();
+                String line = s.substring(startLineIndex, endLineIndex);
+
+                List<String> linesBefore;
+                if (linesBeforeCount > 0) {
+                    List<Number> beforeEndIndices = endLineIndices.stream()
+                            .filter(i -> i.intValue() < m.start())
+                            .collect(Collectors.toList());
+                    List<Number> linesBeforeStartIndices = ListUtil
+                            .takeRight(beforeStartIndices, linesBeforeCount);
+                    List<Number> linesBeforeEndIndices = ListUtil
+                            .takeRight(beforeEndIndices, linesBeforeCount);
+                    linesBefore = getLinesFromMultiLineString(s,
+                            linesBeforeStartIndices, linesBeforeEndIndices);
                 } else {
-                    line = s.substring(startLineIndex);
+                    linesBefore = new ArrayList<>();
                 }
-                List<String> linesBefore = getLinesBeforeFromMultiLineString(s,
-                        ListUtil.init(beforeStartIndices),
-                        ListUtil.init(beforeEndIndices));
-                List<String> linesAfter = getLinesAfterFromMultiLineString(s,
-                        afterStartIndices, afterEndIndices);
+
+                List<String> linesAfter;
+                if (linesAfterCount > 0) {
+                    List<Number> afterStartIndices = startLineIndices.stream()
+                            .filter(i -> i.intValue() > m.start())
+                            .limit(linesAfterCount)
+                            .collect(Collectors.toList());
+                    List<Number> afterEndIndices = endLineIndices.stream()
+                            .filter(i -> i.intValue() > endLineIndex)
+                            .limit(linesAfterCount)
+                            .collect(Collectors.toList());
+                    linesAfter = getLinesFromMultiLineString(s,
+                            afterStartIndices, afterEndIndices);
+                } else {
+                    linesAfter = new ArrayList<>();
+                }
+
                 if ((linesBefore.isEmpty() || linesBeforeMatch(linesBefore))
                         &&
                         (linesAfter.isEmpty() || linesAfterMatch(linesAfter))) {
@@ -546,107 +523,101 @@ public class Searcher {
                 settings.getOutLinesAfterPatterns());
     }
 
+    private boolean linesAfterToOrUntilMatch(final Iterator<String> it, List<String> linesAfter) {
+        Set<Pattern> linesAfterPatterns;
+        if (settings.hasLinesAfterToPatterns()) {
+            linesAfterPatterns = settings.getLinesAfterToPatterns();
+        } else if (settings.hasLinesAfterUntilPatterns()) {
+            linesAfterPatterns = settings.getLinesAfterUntilPatterns();
+        } else { // should never get here
+            linesAfterPatterns = new HashSet<>();
+        }
+        boolean linesAfterMatch = anyMatchesAnyPattern(linesAfter, linesAfterPatterns);
+        while (!linesAfterMatch && it.hasNext()) {
+            String nextLine = it.next();
+            linesAfter.add(nextLine);
+            linesAfterMatch = matchesAnyPattern(nextLine, linesAfterPatterns);
+        }
+        if (linesAfterMatch) {
+            if (settings.hasLinesAfterUntilPatterns()) {
+                linesAfter.remove(linesAfter.size() - 1);
+            }
+        }
+        return linesAfterMatch;
+    }
+
     public final List<SearchResult> searchStringIterator(final Iterator<String> it) {
-        boolean stop = false;
         int lineNum = 0;
         String line;
-        List<String> linesBefore = new ArrayList<String>();
-        List<String> linesAfter = new ArrayList<String>();
-        Map<Pattern, Integer> patternMatches = new HashMap<Pattern, Integer>();
-        List<SearchResult> results = new ArrayList<SearchResult>();
-        while ((it.hasNext() || linesAfter.size() > 0) && !stop) {
+        final int linesBeforeCount = settings.getLinesBefore();
+        final int linesAfterCount = settings.getLinesAfter();
+        List<String> linesBefore = new ArrayList<>();
+        List<String> linesAfter = new ArrayList<>();
+        Set<Pattern> matchedPatterns = new HashSet<>();
+        List<SearchResult> results = new ArrayList<>();
+        while (true) {
             lineNum++;
             if (!linesAfter.isEmpty()) {
                 line = linesAfter.remove(0);
-            } else {
+            } else if (it.hasNext()) {
                 line = it.next();
+            } else {
+                break;
             }
-            if (settings.getLinesAfter() > 0) {
-                while (linesAfter.size() < settings.getLinesAfter() && it.hasNext()) {
+            if (linesAfterCount > 0) {
+                while (linesAfter.size() < linesAfterCount && it.hasNext()) {
                     linesAfter.add(it.next());
                 }
             }
 
-            if ((settings.getLinesBefore() == 0 || linesBefore.isEmpty() ||
-                    linesBeforeMatch(linesBefore))
-                    &&
-                    (settings.getLinesAfter() == 0 || linesAfter.isEmpty() ||
-                            linesAfterMatch(linesAfter))) {
-
-                for (Pattern p : settings.getSearchPatterns()) {
-                    Matcher m = p.matcher(line);
-                    boolean found = m.find();
-                    while (found) {
-                        // take care of linesAfterToPatterns or linesAfterUntilPatterns
-                        boolean linesAfterToMatch = false;
-                        boolean linesAfterUntilMatch = false;
-                        if (settings.hasLinesAfterToOrUntilPatterns()) {
-                            if (settings.hasLinesAfterToPatterns()) {
-                                Set<Pattern> linesAfterToPatterns = settings.getLinesAfterToPatterns();
-                                if (anyMatchesAnyPattern(linesAfter, linesAfterToPatterns)) {
-                                    linesAfterToMatch = true;
-                                } else {
-                                    while (it.hasNext() && !linesAfterToMatch) {
-                                        String nextLine = it.next();
-                                        linesAfter.add(nextLine);
-                                        if (matchesAnyPattern(nextLine, linesAfterToPatterns)) {
-                                            linesAfterToMatch = true;
-                                        }
-                                    }
-                                }
-                            } else if (settings.hasLinesAfterUntilPatterns()) {
-                                Set<Pattern> linesAfterUntilPatterns = settings.getLinesAfterUntilPatterns();
-                                if (anyMatchesAnyPattern(linesAfter, linesAfterUntilPatterns)) {
-                                    linesAfterUntilMatch = true;
-                                } else {
-                                    while (it.hasNext() && !linesAfterUntilMatch) {
-                                        String nextLine = it.next();
-                                        linesAfter.add(nextLine);
-                                        if (matchesAnyPattern(nextLine, linesAfterUntilPatterns)) {
-                                            linesAfterUntilMatch = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (settings.getFirstMatch() && patternMatches.containsKey(p)) {
-                            stop = true;
-                            found = false;
-                        } else if (settings.hasLinesAfterToOrUntilPatterns() &&
-                                !linesAfterToMatch && !linesAfterUntilMatch) {
+            Set<Pattern> searchPatterns = settings.getSearchPatterns()
+                    .stream().filter(p -> !matchedPatterns.contains(p))
+                    .collect(Collectors.toSet());
+            for (Pattern p : searchPatterns) {
+                Matcher m = p.matcher(line);
+                boolean found = m.find();
+                while (found) {
+                    if ((linesBefore.isEmpty() || linesBeforeMatch(linesBefore))
+                            &&
+                            (linesAfter.isEmpty() || linesAfterMatch(linesAfter))
+                            &&
+                            (!settings.hasLinesAfterToOrUntilPatterns() ||
+                                    linesAfterToOrUntilMatch(it, linesAfter))
+                            )
+                    {
+                        SearchResult searchResult = new SearchResult(
+                                p,
+                                null,
+                                lineNum,
+                                m.start() + 1,
+                                m.end() + 1,
+                                line,
+                                new ArrayList<>(linesBefore),
+                                new ArrayList<>(linesAfter));
+                        results.add(searchResult);
+                        if (settings.getFirstMatch()) {
+                            matchedPatterns.add(p);
                             found = false;
                         } else {
-                            List<String> resLinesAfter;
-                            if (linesAfterUntilMatch) {
-                                resLinesAfter = ListUtil.init(linesAfter);
-                            } else {
-                                resLinesAfter = linesAfter;
-                            }
-                            SearchResult searchResult = new SearchResult(
-                                    p,
-                                    null,
-                                    lineNum,
-                                    m.start() + 1,
-                                    m.end() + 1,
-                                    line,
-                                    new ArrayList<String>(linesBefore),
-                                    new ArrayList<String>(resLinesAfter));
-                            results.add(searchResult);
-                            patternMatches.put(p, 1);
                             found = m.find(m.end());
                         }
+                    } else {
+                        found = false;
                     }
                 }
             }
 
-            if (settings.getLinesBefore() > 0) {
-                if (linesBefore.size() == settings.getLinesBefore()) {
+            if (linesBeforeCount > 0) {
+                if (linesBefore.size() == linesBeforeCount) {
                     linesBefore.remove(0);
                 }
-                if (linesBefore.size() < settings.getLinesBefore()) {
+                if (linesBefore.size() < linesBeforeCount) {
                     linesBefore.add(line);
                 }
+            }
+            if (settings.getFirstMatch() &&
+                    matchedPatterns.size() == settings.getSearchPatterns().size()) {
+                break;
             }
         }
         return results;
@@ -660,17 +631,12 @@ public class Searcher {
             String content = FileUtil.getFileContents(sf.toFile(), "ISO8859-1");
             for (Pattern p : settings.getSearchPatterns()) {
                 Matcher m = p.matcher(content);
+                // TODO: find all matches and include start and end indices
                 if (m.find()) {
-                    SearchResult searchResult =
-                            new SearchResult(p, sf, 0, 0, 0, "");
-                    addSearchResult(searchResult);
+                    addSearchResult(new SearchResult(p, sf, 0, 0, 0, ""));
                 }
             }
-        } catch (IOException e) {
-            log(e.toString());
-        } catch (NoSuchElementException e) {
-            log(e.toString());
-        } catch (IllegalStateException e) {
+        } catch (IOException | NoSuchElementException | IllegalStateException e) {
             log(e.toString());
         }
     }
@@ -681,28 +647,17 @@ public class Searcher {
     }
 
     public final void printSearchResults() {
-        Comparator<SearchResult> comparator = new Comparator<SearchResult>() {
-            public int compare(final SearchResult r1, final SearchResult r2) {
-                String p1 = r1.getSearchFile().toFile().getPath();
-                String p2 = r2.getSearchFile().toFile().getPath();
-                return p1.compareTo(p2);
-            }
-        };
         log(String.format("Search results (%d):", results.size()));
-        Collections.sort(results, comparator);
+        Collections.sort(results, (r1, r2) -> r1.getSearchFile().toFile()
+                .getPath().compareTo(r2.getSearchFile().toFile().getPath()));
         for (SearchResult r : results) {
             log(r.toString());
         }
     }
 
     public final List<String> getMatchingDirs() {
-        Set<String> dirSet = new HashSet<String>();
-        for (SearchFile sf : searchFileSet) {
-            dirSet.add(sf.getPath());
-        }
-        List<String> dirs = new ArrayList<String>(dirSet);
-        Collections.sort(dirs);
-        return dirs;
+        return searchFileSet.stream().map(SearchFile::getPath).sorted()
+                .collect(Collectors.toList());
     }
 
     public final void printMatchingDirs() {
@@ -714,12 +669,8 @@ public class Searcher {
     }
 
     public final List<String> getMatchingFiles() {
-        List<String> files = new ArrayList<String>();
-        for (SearchFile sf : searchFileSet) {
-            files.add(sf.toString());
-        }
-        Collections.sort(files);
-        return files;
+        return searchFileSet.stream().map(SearchFile::toString).sorted()
+                .collect(Collectors.toList());
     }
 
     public final void printMatchingFiles() {
@@ -731,20 +682,16 @@ public class Searcher {
     }
 
     public final List<String> getMatchingLines() {
-        Comparator<String> comparator = new Comparator<String>() {
-            public int compare(final String s1, final String s2) {
-                return s1.toUpperCase().compareTo(s2.toUpperCase());
-            }
-        };
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         for (SearchResult r : results) {
             lines.add(r.getLine().trim());
         }
         if (settings.getUniqueLines()) {
-            Set<String> lineSet = new HashSet<String>(lines);
-            lines = new ArrayList<String>(lineSet);
+            Set<String> lineSet = new HashSet<>(lines);
+            lines = new ArrayList<>(lineSet);
         }
-        Collections.sort(lines, comparator);
+        Collections.sort(lines, (s1, s2) -> s1.toUpperCase()
+                .compareTo(s2.toUpperCase()));
         return lines;
     }
 

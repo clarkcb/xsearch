@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,228 +29,76 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class SearchOptions {
-    private String searchOptionsXmlPath;
-    private List<ISearchOption> options;
-    private Map<String, ISearchOption> argMap;
-    private Map<String, ISearchOption> flagMap;
+    private List<SearchOption> options;
 
-    private Map<String, SearchArgSetter> argActionMap = new HashMap<String, SearchArgSetter>() {
+    public SearchOptions() {
+        options = new ArrayList<>();
+        setOptionsFromXml();
+    }
+
+    @FunctionalInterface
+    private interface ArgSetter {
+        void set(String s, SearchSettings settings);
+    }
+
+    private Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>() {
         {
-            put("in-archiveext", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInArchiveExtension(arg);
-                }
-            });
-            put("out-archiveext", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutArchiveExtension(arg);
-                }
-            });
-            put("in-archivefilepattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInArchiveFilePattern(arg);
-                }
-            });
-            put("out-archivefilepattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutArchiveFilePattern(arg);
-                }
-            });
-            put("in-dirpattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInDirPattern(arg);
-                }
-            });
-            put("out-dirpattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutDirPattern(arg);
-                }
-            });
-            put("in-ext", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInExtension(arg);
-                }
-            });
-            put("out-ext", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutExtension(arg);
-                }
-            });
-            put("in-filepattern", new SearchArgSetter() {
-                @Override
-                public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInFilePattern(arg);
-                }
-            });
-            put("out-filepattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutFilePattern(arg);
-                }
-            });
-            put("in-linesafterpattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInLinesAfterPattern(arg);
-                }
-            });
-            put("out-linesafterpattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutLinesAfterPattern(arg);
-                }
-            });
-            put("in-linesbeforepattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addInLinesBeforePattern(arg);
-                }
-            });
-            put("out-linesbeforepattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addOutLinesBeforePattern(arg);
-                }
-            });
-            put("linesafter", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.setLinesAfter(Integer.parseInt(arg));
-                }
-            });
-            put("linesaftertopattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addLinesAfterToPattern(arg);
-                }
-            });
-            put("linesafteruntilpattern", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addLinesAfterUntilPattern(arg);
-                }
-            });
-            put("linesbefore", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.setLinesBefore(Integer.parseInt(arg));
-                }
-            });
-            put("maxlinelength", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.setMaxLineLength(Integer.parseInt(arg));
-                }
-            });
-            put("search", new SearchArgSetter() {
-                @Override public void setArg(final String arg, SearchSettings settings) {
-                    settings.addSearchPattern(arg);
-                }
-            });
+            put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
+            put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
+            put("in-dirpattern", (s, settings) -> settings.addInDirPattern(s));
+            put("in-ext", (s, settings) -> settings.addInExtension(s));
+            put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
+            put("in-linesafterpattern", (s, settings) -> settings.addInLinesAfterPattern(s));
+            put("in-linesbeforepattern", (s, settings) -> settings.addInLinesBeforePattern(s));
+            put("linesafter", (s, settings) -> settings.setLinesAfter(Integer.parseInt(s)));
+            put("linesaftertopattern", (s, settings) -> settings.addLinesAfterToPattern(s));
+            put("linesafteruntilpattern", (s, settings) -> settings.addLinesAfterUntilPattern(s));
+            put("linesbefore", (s, settings) -> settings.setLinesBefore(Integer.parseInt(s)));
+            put("maxlinelength", (s, settings) -> settings.setMaxLineLength(Integer.parseInt(s)));
+            put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
+            put("out-archivefilepattern", (s, settings) -> settings.addOutArchiveFilePattern(s));
+            put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));
+            put("out-ext", (s, settings) -> settings.addOutExtension(s));
+            put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
+            put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
+            put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
+            put("search", (s, settings) -> settings.addSearchPattern(s));
         }
     };
 
-    private Map<String, SearchFlagSetter> flagActionMap = new HashMap<String, SearchFlagSetter>() {
+    @FunctionalInterface
+    private interface FlagSetter {
+        void set(SearchSettings settings);
+    }
+
+    private Map<String, FlagSetter> flagActionMap = new HashMap<String, FlagSetter>() {
         {
-            put("archivesonly", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setArchivesOnly(true);
-                }
-            });
-            put("allmatches", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setFirstMatch(false);
-                }
-            });
-            put("debug", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setDebug(true);
-                }
-            });
-            put("dotiming", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setDoTiming(true);
-                }
-            });
-            put("excludehidden", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setExcludeHidden(true);
-                }
-            });
-            put("firstmatch", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setFirstMatch(true);
-                }
-            });
-            put("help", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setPrintUsage(true);
-                }
-            });
-            put("includehidden", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setExcludeHidden(false);
-                }
-            });
-            put("listdirs", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setListDirs(true);
-                }
-            });
-            put("listfiles", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setListFiles(true);
-                }
-            });
-            put("listlines", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setListLines(true);
-                }
-            });
-            put("multilinesearch", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setMultiLineSearch(true);
-                }
-            });
-            put("noprintmatches", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setPrintResults(false);
-                }
-            });
-            put("norecursive", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setRecursive(false);
-                }
-            });
-            put("nosearcharchives", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setSearchArchives(false);
-                }
-            });
-            put("printmatches", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setPrintResults(true);
-                }
-            });
-            put("recursive", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setRecursive(true);
-                }
-            });
-            put("searcharchives", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setSearchArchives(true);
-                }
-            });
-            put("uniquelines", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setUniqueLines(true);
-                }
-            });
-            put("verbose", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setVerbose(true);
-                }
-            });
-            put("version", new SearchFlagSetter() {
-                @Override public void setFlag(SearchSettings settings) {
-                    settings.setPrintVersion(true);
-                }
-            });
+            put("archivesonly", (settings) -> settings.setArchivesOnly(true));
+            put("allmatches", (settings) -> settings.setFirstMatch(false));
+            put("debug", (settings) -> settings.setDebug(true));
+            put("dotiming", (settings) -> settings.setDoTiming(true));
+            put("excludehidden", (settings) -> settings.setExcludeHidden(true));
+            put("firstmatch", (settings) -> settings.setFirstMatch(true));
+            put("help", (settings) -> settings.setPrintUsage(true));
+            put("includehidden", (settings) -> settings.setExcludeHidden(false));
+            put("listdirs", (settings) -> settings.setListDirs(true));
+            put("listfiles", (settings) -> settings.setListFiles(true));
+            put("listlines", (settings) -> settings.setListLines(true));
+            put("multilinesearch", (settings) -> settings.setMultiLineSearch(true));
+            put("noprintmatches", (settings) -> settings.setPrintResults(false));
+            put("norecursive", (settings) -> settings.setRecursive(false));
+            put("nosearcharchives", (settings) -> settings.setSearchArchives(false));
+            put("printmatches", (settings) -> settings.setPrintResults(true));
+            put("recursive", (settings) -> settings.setRecursive(true));
+            put("searcharchives", (settings) -> settings.setSearchArchives(true));
+            put("uniquelines", (settings) -> settings.setUniqueLines(true));
+            put("verbose", (settings) -> settings.setVerbose(true));
+            put("version", (settings) -> settings.setPrintVersion(true));
         }
     };
 
     private void setOptionsFromXml() {
+        final String searchOptionsXmlPath = "/searchoptions.xml";
         InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsXmlPath);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
@@ -264,61 +111,43 @@ public class SearchOptions {
                 String longArg = searchOptionNode.getAttributes().getNamedItem("long").getNodeValue();
                 String shortArg = searchOptionNode.getAttributes().getNamedItem("short").getNodeValue();
                 String desc = searchOptionNode.getTextContent().trim();
-                if (argActionMap.containsKey(longArg)) {
-                    ISearchOption option = new SearchArgOption(shortArg, longArg, desc, argActionMap.get(longArg));
-                    options.add(option);
-                    argMap.put(longArg, option);
-                    if (null != shortArg && !shortArg.equals("")) {
-                        argMap.put(shortArg, option);
-                    }
-                } else if (flagActionMap.containsKey(longArg)) {
-                    ISearchOption option = new SearchFlagOption(shortArg, longArg, desc, flagActionMap.get(longArg));
-                    options.add(option);
-                    flagMap.put(longArg, option);
-                    if (null != shortArg && !shortArg.equals("")) {
-                        flagMap.put(shortArg, option);
-                    }
-                }
+                options.add(new SearchOption(shortArg, longArg, desc));
             }
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (SAXException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IOException e) {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-    }
-
-    public SearchOptions() {
-        searchOptionsXmlPath = "/searchoptions.xml";
-        options = new ArrayList<ISearchOption>();
-        argMap = new HashMap<String, ISearchOption>();
-        flagMap = new HashMap<String, ISearchOption>();
-        setOptionsFromXml();
     }
 
     public final SearchSettings settingsFromArgs(final String[] args) throws SearchException {
         SearchSettings settings = new SearchSettings();
         // default printresults to True since running from command line
         settings.setPrintResults(true);
-        Queue<String> queue = new LinkedList<String>(Arrays.asList(args));
+
+        // add short arg mappings
+        options.stream().filter(o -> !o.getShortArg().equals("")).forEach(o -> {
+            if (argActionMap.containsKey(o.getLongArg())) {
+                argActionMap.put(o.getShortArg(), argActionMap.get(o.getLongArg()));
+            } else if (flagActionMap.containsKey(o.getLongArg())) {
+                flagActionMap.put(o.getShortArg(), flagActionMap.get(o.getLongArg()));
+            }
+        });
+
+        Queue<String> queue = new LinkedList<>(Arrays.asList(args));
         while (!queue.isEmpty()) {
             String arg = queue.remove();
             if (arg.startsWith("-")) {
                 while (arg.length() > 0 && arg.startsWith("-")) {
                     arg = arg.substring(1);
                 }
-                if (this.argMap.containsKey(arg)) {
+                if (this.argActionMap.containsKey(arg)) {
                     if (!queue.isEmpty()) {
                         String argVal = queue.remove();
-                        SearchArgOption option = (SearchArgOption) this.argMap.get(arg);
-                        option.setArg(argVal, settings);
+                        this.argActionMap.get(arg).set(argVal, settings);
                     } else {
                         throw new SearchException("Missing value for option " + arg);
                     }
-                } else if (this.flagMap.containsKey(arg)) {
-                    SearchFlagOption option = (SearchFlagOption) this.flagMap.get(arg);
-                    option.setFlag(settings);
+                } else if (this.flagActionMap.containsKey(arg)) {
+                    this.flagActionMap.get(arg).set(settings);
                 } else {
                     throw new SearchException("Undefined option: " + arg);
                 }
@@ -334,24 +163,18 @@ public class SearchOptions {
         System.exit(exitStatus);
     }
 
-    private static final Comparator<ISearchOption> SEARCHOPTION_COMPARATOR = new Comparator<ISearchOption>() {
-        public int compare(final ISearchOption s1, final ISearchOption s2) {
-            return s1.getSortArg().toLowerCase().compareTo(s2.getSortArg().toLowerCase());
-        }
-    };
-
     public final String getUsageString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Usage:\n");
         sb.append(" javasearch [options] -s <searchpattern> <startpath>\n\n");
         sb.append("Options:\n");
 
-        Collections.sort(this.options, SEARCHOPTION_COMPARATOR);
+        Collections.sort(this.options, (o1, o2) -> o1.getSortArg().compareTo(o2.getSortArg()));
 
-        List<String> optStrings = new ArrayList<String>();
-        List<String> optDescs = new ArrayList<String>();
+        List<String> optStrings = new ArrayList<>();
+        List<String> optDescs = new ArrayList<>();
         int longest = 0;
-        for (ISearchOption opt : this.options) {
+        for (SearchOption opt : this.options) {
             StringBuilder optString = new StringBuilder();
             String shortArg = opt.getShortArg();
             if (null != shortArg && !shortArg.equals("")) {
@@ -364,7 +187,7 @@ public class SearchOptions {
             optStrings.add(optString.toString());
             optDescs.add(opt.getDescription());
         }
-        String format = " %1$-" + longest + "s  %2$s\n";
+        final String format = " %1$-" + longest + "s  %2$s\n";
         for (int i = 0; i < optStrings.size(); i++) {
             sb.append(String.format(format, optStrings.get(i), optDescs.get(i)));
         }

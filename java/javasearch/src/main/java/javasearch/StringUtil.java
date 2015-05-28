@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StringUtil {
-    private static final Set<Character> NEWLINECHARS = new HashSet<Character>(Arrays.asList('\n', '\r'));
+    private static final Set<Character> NEWLINECHARS = new HashSet<>(Arrays.asList('\n', '\r'));
     public static String trimNewLine(final String s) {
         String trimmed = s;
         while (trimmed.length() > 0 && NEWLINECHARS.contains(trimmed.charAt(trimmed.length() - 1))) {

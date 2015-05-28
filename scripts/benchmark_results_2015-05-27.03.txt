@@ -1,0 +1,2295 @@
+xsearch_names: ['cljsearch', 'cssearch', 'fssearch', 'gosearch', 'hssearch', 'javasearch', 'nodesearch', 'phpsearch.php', 'plsearch.pl', 'pysearch.py', 'rbsearch.rb', 'scalasearch', 'swiftsearch']
+runs: 10
+
+scenario 1 ("no args") run 1
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 1
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.97     13   0.10     13   1.80     13   2.87     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.15      9   0.01      7   0.13      8   0.29      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.23     10   0.04     10   0.27     10   0.54     10
+ nodesearch       0.13      8   0.01      7   0.14      9   0.28      8
+ phpsearch.php    0.68     12   0.06     12   0.61     12   1.35     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 2
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 2
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.09     13   0.13     13   1.98     13   3.20     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.15      9   0.01      7   0.13      8   0.29      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.04     10   0.27     10   0.53     10
+ nodesearch       0.14      8   0.01      7   0.14      9   0.29      8
+ phpsearch.php    0.74     12   0.07     12   0.66     12   1.47     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 3
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 3
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.11     13   1.88     13   2.98     13
+ cssearch         0.08      5   0.00      1   0.06      5   0.14      5
+ fssearch         0.14      8   0.01      6   0.13      8   0.28      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.23     10   0.03     10   0.28     10   0.54     10
+ nodesearch       0.15      9   0.01      6   0.15      9   0.31      9
+ phpsearch.php    0.73     12   0.07     12   0.65     12   1.45     12
+ plsearch.pl      0.08      5   0.00      1   0.06      5   0.14      5
+ pysearch.py      0.05      4   0.01      6   0.02      4   0.08      4
+ rbsearch.rb      0.08      5   0.01      6   0.06      5   0.15      7
+ scalasearch      0.37     11   0.06     11   0.54     11   0.97     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 4
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 4
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.11     13   1.79     13   2.89     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.14      8   0.01      6   0.13      8   0.28      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.23     10   0.03     10   0.28     10   0.54     10
+ nodesearch       0.14      8   0.01      6   0.15      9   0.30      9
+ phpsearch.php    0.71     12   0.07     12   0.64     12   1.42     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.05      4   0.01      6   0.03      4   0.09      4
+ rbsearch.rb      0.08      7   0.01      6   0.06      5   0.15      7
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 5
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 5
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.98     13   0.11     13   1.83     13   2.92     13
+ cssearch         0.07      5   0.01      5   0.06      5   0.14      6
+ fssearch         0.15      9   0.01      5   0.13      8   0.29      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.03     10   0.27     10   0.52     10
+ nodesearch       0.14      8   0.01      5   0.14      9   0.29      8
+ phpsearch.php    0.70     12   0.06     12   0.63     12   1.39     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      5   0.03      4   0.08      4
+ rbsearch.rb      0.07      5   0.01      5   0.06      5   0.14      6
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 6
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 6
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.10     13   1.85     13   2.94     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.15      9   0.01      7   0.13      8   0.29      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.03     10   0.27     10   0.52     10
+ nodesearch       0.13      8   0.01      7   0.14      9   0.28      8
+ phpsearch.php    0.69     12   0.06     12   0.62     12   1.37     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.05      4   0.01      7   0.03      4   0.09      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 7
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 7
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.98     13   0.10     13   1.81     13   2.89     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.14      9   0.01      7   0.13      8   0.28      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.03     10   0.27     10   0.52     10
+ nodesearch       0.13      8   0.01      7   0.14      9   0.28      8
+ phpsearch.php    0.68     12   0.06     12   0.61     12   1.35     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 8
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 8
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.11     13   1.86     13   2.96     13
+ cssearch         0.07      5   0.01      5   0.06      5   0.14      6
+ fssearch         0.14      9   0.01      5   0.13      8   0.28      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.23     10   0.03     10   0.27     10   0.53     10
+ nodesearch       0.13      8   0.01      5   0.14      9   0.28      8
+ phpsearch.php    0.68     12   0.06     12   0.61     12   1.35     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      5   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.01      5   0.06      5   0.14      6
+ scalasearch      0.37     11   0.05     11   0.55     11   0.97     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 9
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 9
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.98     13   0.11     13   1.86     13   2.95     13
+ cssearch         0.08      7   0.00      1   0.06      5   0.14      7
+ fssearch         0.14      8   0.01      7   0.13      8   0.28      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.03     10   0.27     10   0.52     10
+ nodesearch       0.14      8   0.01      7   0.14      9   0.29      9
+ phpsearch.php    0.68     12   0.06     12   0.61     12   1.35     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.05      4   0.01      7   0.03      4   0.09      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 1 ("no args") run 10
+
+cljsearch
+cssearch
+fssearch
+gosearch
+hssearch
+javasearch
+nodesearch
+phpsearch.php
+plsearch.pl
+pysearch.py
+rbsearch.rb
+scalasearch
+swiftsearch
+
+Outputs of all versions match
+
+Results for scenario 1 ("no args") run 10
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.11     13   1.82     13   2.92     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.14      8   0.01      7   0.13      8   0.28      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.03     10   0.27     10   0.52     10
+ nodesearch       0.14      8   0.01      7   0.14      9   0.29      9
+ phpsearch.php    0.70     12   0.06     12   0.62     12   1.38     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+Total results for scenario 1 ("no args") with 10 runs
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch        9.95   1.00     13   1.09   0.11     13  18.48   1.85     13  29.52   2.95     13
+ cssearch         0.72   0.07      6   0.02   0.00      5   0.60   0.06      5   1.34   0.13      6
+ fssearch         1.44   0.14      9   0.10   0.01      7   1.30   0.13      8   2.84   0.28      8
+ gosearch         0.00   0.00      1   0.00   0.00      1   0.00   0.00      1   0.00   0.00      1
+ hssearch         0.00   0.00      1   0.00   0.00      1   0.00   0.00      1   0.00   0.00      1
+ javasearch       2.24   0.22     10   0.32   0.03     10   2.72   0.27     10   5.28   0.53     10
+ nodesearch       1.37   0.14      8   0.10   0.01      7   1.42   0.14      9   2.89   0.29      9
+ phpsearch.php    6.99   0.70     12   0.63   0.06     12   6.26   0.63     12  13.88   1.39     12
+ plsearch.pl      0.71   0.07      5   0.00   0.00      1   0.60   0.06      5   1.31   0.13      5
+ pysearch.py      0.44   0.04      4   0.10   0.01      7   0.24   0.02      4   0.78   0.08      4
+ rbsearch.rb      0.72   0.07      7   0.04   0.00      6   0.60   0.06      5   1.36   0.14      7
+ scalasearch      3.62   0.36     11   0.51   0.05     11   5.38   0.54     11   9.51   0.95     11
+ swiftsearch      0.10   0.01      3   0.00   0.00      1   0.10   0.01      3   0.20   0.02      3
+
+
+scenario 2 ("help") run 1
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 1
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.00     13   0.11     13   1.88     13   2.99     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.14      9   0.01      7   0.12      8   0.27      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.01      2   0.00      1   0.00      1   0.01      2
+ javasearch       0.20     10   0.03     10   0.25     10   0.48     10
+ nodesearch       0.13      8   0.01      7   0.13      9   0.27      8
+ phpsearch.php    0.67     12   0.06     12   0.60     12   1.33     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      2   0.00      1   0.00      1   0.01      2
+
+
+scenario 2 ("help") run 2
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 2
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.98     13   0.10     13   1.90     13   2.98     13
+ cssearch         0.07      5   0.00      1   0.06      5   0.13      5
+ fssearch         0.14      9   0.01      6   0.13      8   0.28      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.21     10   0.03     10   0.26     10   0.50     10
+ nodesearch       0.13      8   0.01      6   0.13      8   0.27      8
+ phpsearch.php    0.76     12   0.07     12   0.69     12   1.52     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      6   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.01      6   0.06      5   0.14      7
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.00      1   0.01      3
+
+
+scenario 2 ("help") run 3
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 3
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.10     13   1.87     13   2.96     13
+ cssearch         0.07      6   0.00      1   0.06      6   0.13      6
+ fssearch         0.14      9   0.01      6   0.12      8   0.27      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.20     10   0.03     10   0.25     10   0.48     10
+ nodesearch       0.12      8   0.01      6   0.12      8   0.25      8
+ phpsearch.php    0.67     12   0.06     12   0.60     12   1.33     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.04      4   0.01      6   0.02      4   0.07      4
+ rbsearch.rb      0.07      6   0.01      6   0.06      6   0.14      7
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 2 ("help") run 4
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 4
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.00     13   0.11     13   1.87     13   2.98     13
+ cssearch         0.08      7   0.01      6   0.06      6   0.15      7
+ fssearch         0.14      9   0.01      6   0.13      8   0.28      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.21     10   0.03     10   0.26     10   0.50     10
+ nodesearch       0.13      8   0.01      6   0.13      8   0.27      8
+ phpsearch.php    0.68     12   0.06     12   0.61     12   1.35     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.05      4   0.01      6   0.03      4   0.09      4
+ rbsearch.rb      0.07      6   0.00      1   0.06      6   0.13      6
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.00      1   0.01      3
+
+
+scenario 2 ("help") run 5
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 5
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.96     13   0.10     13   1.72     13   2.78     13
+ cssearch         0.07      6   0.00      1   0.06      6   0.13      6
+ fssearch         0.14      9   0.01      6   0.12      8   0.27      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.22     10   0.04     10   0.25     10   0.51     10
+ nodesearch       0.13      8   0.01      6   0.13      9   0.27      8
+ phpsearch.php    0.67     12   0.06     11   0.60     12   1.33     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.05      4   0.01      6   0.03      4   0.09      4
+ rbsearch.rb      0.07      6   0.01      6   0.06      6   0.14      7
+ scalasearch      0.37     11   0.06     11   0.54     11   0.97     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 2 ("help") run 6
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 6
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.00     13   0.11     13   1.85     13   2.96     13
+ cssearch         0.08      7   0.00      1   0.06      5   0.14      7
+ fssearch         0.14      9   0.01      7   0.13      9   0.28      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.20     10   0.03     10   0.25     10   0.48     10
+ nodesearch       0.12      8   0.01      7   0.12      8   0.25      8
+ phpsearch.php    0.67     12   0.06     12   0.60     12   1.33     12
+ plsearch.pl      0.07      5   0.00      1   0.06      5   0.13      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      5   0.00      1   0.06      5   0.13      5
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.00      1   0.01      3
+
+
+scenario 2 ("help") run 7
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 7
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.11     13   1.86     13   2.96     13
+ cssearch         0.07      6   0.01      6   0.06      6   0.14      7
+ fssearch         0.14      9   0.01      6   0.12      8   0.27      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.20     10   0.03     10   0.26     10   0.49     10
+ nodesearch       0.13      8   0.01      6   0.13      9   0.27      8
+ phpsearch.php    0.68     12   0.06     11   0.61     12   1.35     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.04      4   0.01      6   0.02      4   0.07      4
+ rbsearch.rb      0.07      6   0.00      1   0.06      6   0.13      6
+ scalasearch      0.37     11   0.06     11   0.55     11   0.98     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 2 ("help") run 8
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 8
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.97     13   0.10     13   1.87     13   2.94     13
+ cssearch         0.08      7   0.00      1   0.06      6   0.14      7
+ fssearch         0.13      8   0.01      7   0.12      8   0.26      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.21     10   0.03     10   0.26     10   0.50     10
+ nodesearch       0.13      8   0.01      7   0.13      9   0.27      9
+ phpsearch.php    0.67     12   0.06     12   0.60     12   1.33     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.05      4   0.01      7   0.03      4   0.09      4
+ rbsearch.rb      0.07      6   0.00      1   0.06      6   0.13      6
+ scalasearch      0.36     11   0.05     11   0.53     11   0.94     11
+ swiftsearch      0.01      3   0.00      1   0.00      1   0.01      3
+
+
+scenario 2 ("help") run 9
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 9
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.11     13   1.84     13   2.94     13
+ cssearch         0.07      6   0.00      1   0.06      6   0.13      6
+ fssearch         0.14      9   0.01      7   0.12      8   0.27      8
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.21     10   0.03     10   0.26     10   0.50     10
+ nodesearch       0.13      8   0.01      7   0.13      9   0.27      8
+ phpsearch.php    0.67     12   0.06     12   0.60     12   1.33     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.04      4   0.01      7   0.02      4   0.07      4
+ rbsearch.rb      0.07      6   0.00      1   0.06      6   0.13      6
+ scalasearch      0.36     11   0.05     11   0.52     11   0.93     11
+ swiftsearch      0.01      3   0.00      1   0.01      3   0.02      3
+
+
+scenario 2 ("help") run 10
+
+cljsearch -h
+cssearch -h
+fssearch -h
+gosearch -h
+hssearch -h
+javasearch -h
+nodesearch -h
+phpsearch.php -h
+plsearch.pl -h
+pysearch.py -h
+rbsearch.rb -h
+scalasearch -h
+swiftsearch -h
+
+Outputs of all versions match
+
+Results for scenario 2 ("help") run 10
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        0.99     13   0.10     13   1.82     13   2.91     13
+ cssearch         0.07      6   0.00      1   0.06      6   0.13      6
+ fssearch         0.14      9   0.01      6   0.13      9   0.28      9
+ gosearch         0.00      1   0.00      1   0.00      1   0.00      1
+ hssearch         0.00      1   0.00      1   0.00      1   0.00      1
+ javasearch       0.21     10   0.03     10   0.26     10   0.50     10
+ nodesearch       0.12      8   0.01      6   0.12      8   0.25      8
+ phpsearch.php    0.67     12   0.06     12   0.60     12   1.33     12
+ plsearch.pl      0.06      5   0.00      1   0.05      5   0.11      5
+ pysearch.py      0.04      4   0.01      6   0.02      4   0.07      4
+ rbsearch.rb      0.07      6   0.01      6   0.06      6   0.14      7
+ scalasearch      0.36     11   0.05     11   0.54     11   0.95     11
+ swiftsearch      0.01      3   0.00      1   0.00      1   0.01      3
+
+
+Total results for scenario 2 ("help") with 10 runs
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch        9.87   0.99     13   1.05   0.11     13  18.48   1.85     13  29.40   2.94     13
+ cssearch         0.73   0.07      7   0.02   0.00      5   0.60   0.06      6   1.35   0.14      7
+ fssearch         1.39   0.14      9   0.10   0.01      7   1.24   0.12      8   2.73   0.27      9
+ gosearch         0.00   0.00      1   0.00   0.00      1   0.00   0.00      1   0.00   0.00      1
+ hssearch         0.01   0.00      2   0.00   0.00      1   0.00   0.00      1   0.01   0.00      2
+ javasearch       2.07   0.21     10   0.31   0.03     10   2.56   0.26     10   4.94   0.49     10
+ nodesearch       1.27   0.13      8   0.10   0.01      7   1.27   0.13      9   2.64   0.26      8
+ phpsearch.php    6.81   0.68     12   0.61   0.06     12   6.11   0.61     12  13.53   1.35     12
+ plsearch.pl      0.63   0.06      5   0.00   0.00      1   0.53   0.05      5   1.16   0.12      5
+ pysearch.py      0.43   0.04      4   0.10   0.01      7   0.23   0.02      4   0.76   0.08      4
+ rbsearch.rb      0.70   0.07      6   0.04   0.00      6   0.60   0.06      6   1.34   0.13      6
+ scalasearch      3.62   0.36     11   0.52   0.05     11   5.35   0.54     11   9.49   0.95     11
+ swiftsearch      0.10   0.01      3   0.00   0.00      1   0.04   0.00      3   0.14   0.01      3
+
+
+scenario 3 ("search lines #1") run 1
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 1
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.48     13   0.26     13   3.06     13   4.80     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      7   0.04      2   0.24      7   0.56      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.40      9   0.11     10   0.64     10   1.15     10
+ nodesearch       0.33      8   0.07      6   0.29      8   0.69      8
+ phpsearch.php    0.75     12   0.09      8   0.66     11   1.50     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.12      2   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.63     11   0.12     11   1.21     12   1.96     12
+ swiftsearch      0.51     10   0.10      9   0.40      9   1.01      9
+
+
+scenario 3 ("search lines #1") run 2
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 2
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.02     13   4.70     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      6   0.04      2   0.23      6   0.55      6
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.40      9   0.11     10   0.63     10   1.14     10
+ nodesearch       0.34      8   0.07      6   0.30      8   0.71      8
+ phpsearch.php    0.76     12   0.09      8   0.66     11   1.51     11
+ plsearch.pl      0.29      7   0.03      1   0.25      7   0.57      7
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.63     11   0.12     11   1.17     12   1.92     12
+ swiftsearch      0.52     10   0.10      9   0.42      9   1.04      9
+
+
+scenario 3 ("search lines #1") run 3
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 3
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.47     13   0.29     13   3.03     13   4.79     13
+ cssearch         0.43      9   0.10      8   0.31      8   0.84      8
+ fssearch         0.29      5   0.04      2   0.24      5   0.57      6
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.40      8   0.11     10   0.62     10   1.13     10
+ nodesearch       0.34      7   0.07      6   0.30      7   0.71      7
+ phpsearch.php    0.80     12   0.09      7   0.70     11   1.59     11
+ plsearch.pl      0.29      5   0.03      1   0.24      5   0.56      5
+ pysearch.py      0.19      2   0.06      4   0.12      2   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.64     11   0.12     11   1.27     12   2.03     12
+ swiftsearch      0.51     10   0.10      8   0.41      9   1.02      9
+
+
+scenario 3 ("search lines #1") run 4
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 4
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.42     13   0.24     13   3.08     13   4.74     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.32      7   0.04      2   0.26      7   0.62      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.04      2   0.11      2   0.31      1
+ javasearch       0.39      9   0.10      9   0.63     10   1.12     10
+ nodesearch       0.35      8   0.08      7   0.30      8   0.73      8
+ phpsearch.php    0.77     12   0.09      8   0.67     11   1.53     11
+ plsearch.pl      0.28      6   0.03      1   0.23      6   0.54      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.62     11   0.12     11   1.21     12   1.95     12
+ swiftsearch      0.51     10   0.10      9   0.41      9   1.02      9
+
+
+scenario 3 ("search lines #1") run 5
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 5
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.42     13   0.24     13   3.02     13   4.68     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      6   0.04      2   0.23      6   0.55      6
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.04      2   0.11      2   0.31      1
+ javasearch       0.40      9   0.10      9   0.63     10   1.13     10
+ nodesearch       0.34      8   0.07      6   0.30      8   0.71      8
+ phpsearch.php    0.77     12   0.09      8   0.68     11   1.54     11
+ plsearch.pl      0.28      6   0.03      1   0.24      7   0.55      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.61     11   0.11     11   1.23     12   1.95     12
+ swiftsearch      0.53     10   0.10      9   0.42      9   1.05      9
+
+
+scenario 3 ("search lines #1") run 6
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 6
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.43     13   0.24     13   3.21     13   4.88     13
+ cssearch         0.25      5   0.07      6   0.18      5   0.50      5
+ fssearch         0.28      6   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.40      9   0.11     10   0.63     10   1.14     10
+ nodesearch       0.34      8   0.07      6   0.29      8   0.70      8
+ phpsearch.php    0.76     12   0.09      8   0.66     11   1.51     11
+ plsearch.pl      0.28      6   0.03      1   0.23      6   0.54      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.63     11   0.12     11   1.27     12   2.02     12
+ swiftsearch      0.52     10   0.10      9   0.42      9   1.04      9
+
+
+scenario 3 ("search lines #1") run 7
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 7
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.43     13   0.24     13   3.12     13   4.79     13
+ cssearch         0.29      7   0.08      7   0.20      5   0.57      7
+ fssearch         0.28      5   0.04      2   0.23      6   0.55      6
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.40      9   0.11     10   0.63     10   1.14     10
+ nodesearch       0.34      8   0.07      6   0.30      8   0.71      8
+ phpsearch.php    0.76     12   0.09      8   0.66     11   1.51     11
+ plsearch.pl      0.28      5   0.03      1   0.23      6   0.54      5
+ pysearch.py      0.19      2   0.06      4   0.12      2   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.63     11   0.11     10   1.21     12   1.95     12
+ swiftsearch      0.52     10   0.10      9   0.41      9   1.03      9
+
+
+scenario 3 ("search lines #1") run 8
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 8
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.43     13   0.24     13   3.17     13   4.84     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      7   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.40      9   0.11     10   0.63     10   1.14     10
+ nodesearch       0.34      8   0.07      6   0.30      8   0.71      8
+ phpsearch.php    0.76     12   0.09      8   0.67     11   1.52     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.13      3   0.38      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.63     11   0.12     11   1.20     12   1.95     12
+ swiftsearch      0.51     10   0.10      9   0.40      9   1.01      9
+
+
+scenario 3 ("search lines #1") run 9
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 9
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.41     13   0.23     13   2.94     13   4.58     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      7   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.40      9   0.11     10   0.63     10   1.14     10
+ nodesearch       0.34      8   0.07      6   0.30      8   0.71      8
+ phpsearch.php    0.77     12   0.09      8   0.67     11   1.53     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.12      2   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.62     11   0.11     10   1.23     12   1.96     12
+ swiftsearch      0.51     10   0.10      9   0.41      9   1.02      9
+
+
+scenario 3 ("search lines #1") run 10
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch
+
+Outputs of all versions match
+
+Results for scenario 3 ("search lines #1") run 10
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.22     13   3.07     13   4.73     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      7   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.17      1   0.04      2   0.12      2   0.33      1
+ javasearch       0.40      9   0.10      9   0.62     10   1.12     10
+ nodesearch       0.34      8   0.07      6   0.30      8   0.71      8
+ phpsearch.php    0.77     12   0.09      8   0.67     11   1.53     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.12      2   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.63     11   0.12     11   1.23     12   1.98     12
+ swiftsearch      0.52     10   0.10      9   0.41      9   1.03      9
+
+
+Total results for scenario 3 ("search lines #1") with 10 runs
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch       14.37   1.44     13   2.44   0.24     13  30.72   3.07     13  47.53   4.75     13
+ cssearch         2.79   0.28      6   0.74   0.07      7   1.95   0.19      5   5.48   0.55      6
+ fssearch         2.85   0.29      7   0.40   0.04      2   2.35   0.24      7   5.60   0.56      7
+ gosearch         2.10   0.21      3   1.34   0.13     12   0.80   0.08      1   4.24   0.42      3
+ hssearch         1.68   0.17      1   0.47   0.05      3   1.17   0.12      2   3.32   0.33      1
+ javasearch       3.99   0.40      9   1.07   0.11     10   6.29   0.63     10  11.35   1.14     10
+ nodesearch       3.40   0.34      8   0.71   0.07      6   2.98   0.30      8   7.09   0.71      8
+ phpsearch.php    7.67   0.77     12   0.90   0.09      8   6.70   0.67     11  15.27   1.53     11
+ plsearch.pl      2.78   0.28      5   0.30   0.03      1   2.34   0.23      6   5.42   0.54      5
+ pysearch.py      1.91   0.19      2   0.60   0.06      4   1.22   0.12      3   3.73   0.37      2
+ rbsearch.rb      2.20   0.22      4   0.60   0.06      4   1.50   0.15      4   4.30   0.43      4
+ scalasearch      6.27   0.63     11   1.17   0.12     11  12.23   1.22     12  19.67   1.97     12
+ swiftsearch      5.16   0.52     10   1.00   0.10      9   4.11   0.41      9  10.27   1.03      9
+
+
+scenario 4 ("search contents #1") run 1
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 1
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.52     12   0.25     13   3.24     13   5.01     13
+ cssearch         0.26      4   0.07      5   0.19      4   0.52      4
+ fssearch         0.31      6   0.04      1   0.26      6   0.61      6
+ gosearch         0.21      3   0.13     10   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.41      9   0.11      9   0.69      9   1.21      9
+ nodesearch       0.34      7   0.07      5   0.30      7   0.71      8
+ phpsearch.php    0.84     11   0.10      8   0.74     10   1.68     10
+ plsearch.pl      0.35      8   0.04      1   0.30      7   0.69      7
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.26      4   0.07      5   0.19      4   0.52      4
+ scalasearch      0.66     10   0.13     10   1.30     11   2.09     11
+ swiftsearch      1.73     13   0.13     10   1.59     12   3.45     12
+
+
+scenario 4 ("search contents #1") run 2
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 2
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.50     12   0.24     13   3.25     13   4.99     13
+ cssearch         0.26      5   0.07      6   0.18      4   0.51      5
+ fssearch         0.31      6   0.04      1   0.26      6   0.61      6
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.69      9   1.21      9
+ nodesearch       0.34      7   0.07      6   0.29      7   0.70      7
+ phpsearch.php    0.80     11   0.09      8   0.70     10   1.59     10
+ plsearch.pl      0.36      8   0.04      1   0.31      8   0.71      8
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.66     10   0.12     11   1.30     11   2.08     11
+ swiftsearch      1.59     13   0.10      9   1.48     12   3.17     12
+
+
+scenario 4 ("search contents #1") run 3
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 3
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.47     12   0.24     13   3.06     13   4.77     13
+ cssearch         0.26      5   0.07      5   0.18      4   0.51      5
+ fssearch         0.31      6   0.04      2   0.26      6   0.61      6
+ gosearch         0.21      2   0.14     12   0.07      1   0.42      3
+ hssearch         0.16      1   0.04      2   0.10      2   0.30      1
+ javasearch       0.41      9   0.11     10   0.70     10   1.22      9
+ nodesearch       0.34      7   0.07      5   0.30      7   0.71      7
+ phpsearch.php    0.79     11   0.09      8   0.69      9   1.57     10
+ plsearch.pl      0.37      8   0.03      1   0.32      8   0.72      8
+ pysearch.py      0.21      2   0.07      5   0.13      3   0.41      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.65     10   0.12     11   1.34     11   2.11     11
+ swiftsearch      1.61     13   0.10      9   1.50     12   3.21     12
+
+
+scenario 4 ("search contents #1") run 4
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 4
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.48     12   0.24     13   3.18     13   4.90     13
+ cssearch         0.26      5   0.07      5   0.18      4   0.51      5
+ fssearch         0.30      6   0.04      2   0.25      6   0.59      6
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.04      2   0.11      2   0.31      1
+ javasearch       0.41      9   0.11     10   0.68      9   1.20      9
+ nodesearch       0.34      7   0.07      5   0.29      7   0.70      8
+ phpsearch.php    0.78     11   0.09      8   0.68      9   1.55     10
+ plsearch.pl      0.35      8   0.03      1   0.30      8   0.68      7
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.25      4   0.07      5   0.18      4   0.50      4
+ scalasearch      0.64     10   0.12     11   1.28     11   2.04     11
+ swiftsearch      1.58     13   0.10      9   1.47     12   3.15     12
+
+
+scenario 4 ("search contents #1") run 5
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 5
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.53     12   0.25     13   3.15     13   4.93     13
+ cssearch         0.26      5   0.07      6   0.18      4   0.51      5
+ fssearch         0.31      6   0.04      1   0.26      6   0.61      6
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.42      9   0.11     10   0.71     10   1.24      9
+ nodesearch       0.34      7   0.08      7   0.30      7   0.72      8
+ phpsearch.php    0.79     11   0.09      8   0.69      9   1.57     10
+ plsearch.pl      0.35      8   0.04      1   0.31      8   0.70      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.66     10   0.12     11   1.31     11   2.09     11
+ swiftsearch      1.58     13   0.10      9   1.47     12   3.15     12
+
+
+scenario 4 ("search contents #1") run 6
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 6
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.49     12   0.24     13   3.19     13   4.92     13
+ cssearch         0.26      5   0.07      6   0.18      4   0.51      5
+ fssearch         0.31      6   0.04      2   0.26      6   0.61      6
+ gosearch         0.21      3   0.13     12   0.07      1   0.41      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.69      9   1.21      9
+ nodesearch       0.33      7   0.07      6   0.29      7   0.69      7
+ phpsearch.php    0.80     11   0.09      8   0.70     10   1.59     10
+ plsearch.pl      0.35      8   0.03      1   0.31      8   0.69      7
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.66     10   0.12     11   1.30     11   2.08     11
+ swiftsearch      1.56     13   0.10      9   1.46     12   3.12     12
+
+
+scenario 4 ("search contents #1") run 7
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 7
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.47     12   0.24     13   3.11     13   4.82     13
+ cssearch         0.26      4   0.07      5   0.18      4   0.51      4
+ fssearch         0.31      6   0.04      1   0.26      6   0.61      6
+ gosearch         0.21      3   0.13     11   0.08      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.42      9   0.11     10   0.73     10   1.26      9
+ nodesearch       0.33      7   0.07      5   0.29      7   0.69      7
+ phpsearch.php    0.79     11   0.09      8   0.69      9   1.57     10
+ plsearch.pl      0.35      8   0.04      1   0.31      8   0.70      8
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.26      4   0.07      5   0.19      5   0.52      5
+ scalasearch      0.67     10   0.13     11   1.34     11   2.14     11
+ swiftsearch      1.56     13   0.10      9   1.46     12   3.12     12
+
+
+scenario 4 ("search contents #1") run 8
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 8
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.52     12   0.24     13   3.26     13   5.02     13
+ cssearch         0.27      5   0.07      6   0.19      5   0.53      5
+ fssearch         0.31      6   0.04      2   0.26      6   0.61      6
+ gosearch         0.21      3   0.14     12   0.07      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.42      9   0.11     10   0.69      9   1.22      9
+ nodesearch       0.33      7   0.07      6   0.29      7   0.69      8
+ phpsearch.php    0.78     11   0.09      8   0.69      9   1.56     10
+ plsearch.pl      0.34      8   0.03      1   0.30      8   0.67      7
+ pysearch.py      0.19      2   0.06      4   0.13      3   0.38      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.66     10   0.13     11   1.38     11   2.17     11
+ swiftsearch      1.74     13   0.10      9   1.63     12   3.47     12
+
+
+scenario 4 ("search contents #1") run 9
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 9
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.50     12   0.24     13   3.25     13   4.99     13
+ cssearch         0.26      4   0.07      5   0.18      4   0.51      4
+ fssearch         0.31      6   0.04      1   0.26      6   0.61      6
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.42      9   0.11     10   0.71      9   1.24      9
+ nodesearch       0.34      7   0.07      5   0.30      7   0.71      8
+ phpsearch.php    0.81     11   0.09      8   0.71      9   1.61     10
+ plsearch.pl      0.35      8   0.04      1   0.31      8   0.70      7
+ pysearch.py      0.20      2   0.06      4   0.13      3   0.39      2
+ rbsearch.rb      0.26      4   0.07      5   0.18      4   0.51      4
+ scalasearch      0.67     10   0.13     11   1.36     11   2.16     11
+ swiftsearch      1.66     13   0.10      9   1.56     12   3.32     12
+
+
+scenario 4 ("search contents #1") run 10
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m
+
+Outputs of all versions match
+
+Results for scenario 4 ("search contents #1") run 10
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.50     12   0.24     13   3.16     13   4.90     13
+ cssearch         0.27      5   0.07      6   0.19      5   0.53      5
+ fssearch         0.31      6   0.04      2   0.26      6   0.61      6
+ gosearch         0.21      3   0.13     12   0.07      1   0.41      3
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.42      9   0.11     10   0.70     10   1.23      9
+ nodesearch       0.34      7   0.07      6   0.30      7   0.71      8
+ phpsearch.php    0.79     11   0.09      8   0.69      9   1.57     10
+ plsearch.pl      0.34      7   0.03      1   0.30      7   0.67      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.65     10   0.12     11   1.31     11   2.08     11
+ swiftsearch      1.60     13   0.10      9   1.49     12   3.19     12
+
+
+Total results for scenario 4 ("search contents #1") with 10 runs
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch       14.98   1.50     12   2.42   0.24     13  31.85   3.18     13  49.25   4.92     13
+ cssearch         2.62   0.26      5   0.70   0.07      6   1.83   0.18      5   5.15   0.51      5
+ fssearch         3.09   0.31      6   0.40   0.04      2   2.59   0.26      6   6.08   0.61      6
+ gosearch         2.10   0.21      3   1.34   0.13     12   0.76   0.08      1   4.20   0.42      3
+ hssearch         1.63   0.16      1   0.48   0.05      3   1.09   0.11      2   3.20   0.32      1
+ javasearch       4.15   0.42      9   1.10   0.11     10   6.99   0.70     10  12.24   1.22      9
+ nodesearch       3.37   0.34      7   0.71   0.07      7   2.95   0.29      7   7.03   0.70      8
+ phpsearch.php    7.97   0.80     11   0.91   0.09      8   6.98   0.70      9  15.86   1.59     10
+ plsearch.pl      3.51   0.35      8   0.35   0.03      1   3.07   0.31      8   6.93   0.69      7
+ pysearch.py      1.98   0.20      2   0.61   0.06      4   1.28   0.13      3   3.87   0.39      2
+ rbsearch.rb      2.53   0.25      4   0.64   0.06      5   1.82   0.18      4   4.99   0.50      4
+ scalasearch      6.58   0.66     10   1.24   0.12     11  13.22   1.32     11  21.04   2.10     11
+ swiftsearch     16.21   1.62     13   1.03   0.10      9  15.11   1.51     12  32.35   3.24     12
+
+
+scenario 5 ("search lines #2 - first match") run 1
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 1
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.42     13   0.24     13   2.84     13   4.50     13
+ cssearch         0.25      5   0.07      6   0.18      5   0.50      5
+ fssearch         0.28      7   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.37      9   0.10      9   0.56     10   1.03     10
+ nodesearch       0.33      8   0.07      6   0.29      8   0.69      8
+ phpsearch.php    0.76     12   0.09      8   0.67     11   1.52     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.61     11   0.11     11   1.09     12   1.81     12
+ swiftsearch      0.47     10   0.10      9   0.37      9   0.94      9
+
+
+scenario 5 ("search lines #2 - first match") run 2
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 2
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.42     13   0.24     13   3.06     13   4.72     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.29      7   0.04      2   0.24      7   0.57      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.37      9   0.10      9   0.57     10   1.04     10
+ nodesearch       0.34      8   0.07      6   0.29      8   0.70      8
+ phpsearch.php    0.77     12   0.09      8   0.67     11   1.53     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.60     11   0.11     11   1.08     12   1.79     12
+ swiftsearch      0.45     10   0.10      9   0.34      9   0.89      9
+
+
+scenario 5 ("search lines #2 - first match") run 3
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 3
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.41     13   0.24     13   2.96     13   4.61     13
+ cssearch         0.25      5   0.07      5   0.18      5   0.50      5
+ fssearch         0.28      7   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.37      9   0.10      9   0.56     10   1.03     10
+ nodesearch       0.33      8   0.07      5   0.28      8   0.68      8
+ phpsearch.php    0.75     12   0.09      8   0.66     11   1.50     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.18      2   0.06      4   0.12      3   0.36      2
+ rbsearch.rb      0.23      4   0.07      5   0.16      4   0.46      4
+ scalasearch      0.60     11   0.12     11   1.15     12   1.87     12
+ swiftsearch      0.46     10   0.10      9   0.36      9   0.92      9
+
+
+scenario 5 ("search lines #2 - first match") run 4
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 4
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.02     13   4.70     13
+ cssearch         0.25      5   0.07      6   0.18      5   0.50      5
+ fssearch         0.28      6   0.04      2   0.23      6   0.55      6
+ gosearch         0.21      3   0.13     12   0.07      1   0.41      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.37      9   0.10      9   0.57     10   1.04     10
+ nodesearch       0.34      8   0.07      6   0.29      8   0.70      8
+ phpsearch.php    0.76     12   0.09      8   0.67     11   1.52     11
+ plsearch.pl      0.28      6   0.03      1   0.24      7   0.55      6
+ pysearch.py      0.18      2   0.06      4   0.12      3   0.36      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.60     11   0.12     11   1.09     12   1.81     12
+ swiftsearch      0.46     10   0.10      9   0.36      9   0.92      9
+
+
+scenario 5 ("search lines #2 - first match") run 5
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 5
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.42     13   0.24     13   3.00     13   4.66     13
+ cssearch         0.25      5   0.07      6   0.18      5   0.50      5
+ fssearch         0.28      6   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.37      9   0.10     10   0.57     10   1.04     10
+ nodesearch       0.33      8   0.07      6   0.29      8   0.69      8
+ phpsearch.php    0.76     12   0.09      8   0.66     11   1.51     11
+ plsearch.pl      0.28      6   0.03      1   0.23      6   0.54      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.61     11   0.12     11   1.13     12   1.86     12
+ swiftsearch      0.44     10   0.09      8   0.34      9   0.87      9
+
+
+scenario 5 ("search lines #2 - first match") run 6
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 6
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.02     13   4.70     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      7   0.04      2   0.24      7   0.56      7
+ gosearch         0.21      3   0.14     12   0.07      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.37      9   0.10      9   0.57     10   1.04     10
+ nodesearch       0.33      8   0.07      6   0.29      8   0.69      8
+ phpsearch.php    0.75     12   0.09      8   0.66     11   1.50     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.18      2   0.06      4   0.11      2   0.35      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.60     11   0.11     11   1.12     12   1.83     12
+ swiftsearch      0.45     10   0.10      9   0.34      9   0.89      9
+
+
+scenario 5 ("search lines #2 - first match") run 7
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 7
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.06     13   4.74     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.28      7   0.04      2   0.23      6   0.55      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.17      1   0.05      3   0.12      2   0.34      1
+ javasearch       0.37      9   0.10      9   0.57     10   1.04     10
+ nodesearch       0.33      8   0.07      6   0.29      8   0.69      8
+ phpsearch.php    0.76     12   0.09      8   0.66     11   1.51     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.18      2   0.06      4   0.12      2   0.36      2
+ rbsearch.rb      0.22      4   0.06      4   0.15      4   0.43      4
+ scalasearch      0.60     11   0.11     11   1.12     12   1.83     12
+ swiftsearch      0.46     10   0.10      9   0.36      9   0.92      9
+
+
+scenario 5 ("search lines #2 - first match") run 8
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 8
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.03     13   4.71     13
+ cssearch         0.26      5   0.07      5   0.18      5   0.51      5
+ fssearch         0.27      6   0.04      2   0.22      6   0.53      6
+ gosearch         0.21      3   0.14     12   0.08      1   0.43      3
+ hssearch         0.16      1   0.04      2   0.11      2   0.31      1
+ javasearch       0.38      9   0.10      9   0.58     10   1.06     10
+ nodesearch       0.33      8   0.07      5   0.29      8   0.69      8
+ phpsearch.php    0.75     12   0.09      8   0.66     11   1.50     11
+ plsearch.pl      0.28      7   0.03      1   0.23      7   0.54      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      4   0.07      5   0.15      4   0.44      4
+ scalasearch      0.61     11   0.11     11   1.13     12   1.85     12
+ swiftsearch      0.47     10   0.10      9   0.36      9   0.93      9
+
+
+scenario 5 ("search lines #2 - first match") run 9
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 9
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.49     13   0.28     13   3.05     13   4.82     13
+ cssearch         0.43      9   0.10      8   0.31      8   0.84      8
+ fssearch         0.27      5   0.04      2   0.22      5   0.53      5
+ gosearch         0.22      3   0.14     12   0.08      1   0.44      4
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.37      8   0.10      8   0.56     10   1.03     10
+ nodesearch       0.34      7   0.07      6   0.29      7   0.70      7
+ phpsearch.php    0.77     12   0.09      7   0.68     11   1.54     11
+ plsearch.pl      0.27      5   0.03      1   0.23      6   0.53      5
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.22      3   0.06      4   0.15      4   0.43      3
+ scalasearch      0.61     11   0.11     11   1.09     12   1.81     12
+ swiftsearch      0.45     10   0.10      8   0.35      9   0.90      9
+
+
+scenario 5 ("search lines #2 - first match") run 10
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -1
+
+Outputs of all versions match
+
+Results for scenario 5 ("search lines #2 - first match") run 10
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.42     13   0.23     13   3.01     13   4.66     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.27      6   0.04      2   0.23      6   0.54      7
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.04      2   0.11      2   0.31      1
+ javasearch       0.37      9   0.10      9   0.57     10   1.04     10
+ nodesearch       0.33      8   0.07      6   0.29      8   0.69      8
+ phpsearch.php    0.75     12   0.09      8   0.66     11   1.50     11
+ plsearch.pl      0.27      6   0.03      1   0.23      6   0.53      6
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.21      3   0.06      4   0.15      4   0.42      4
+ scalasearch      0.60     11   0.11     11   1.09     12   1.80     12
+ swiftsearch      0.47     10   0.10      9   0.36      9   0.93      9
+
+
+Total results for scenario 5 ("search lines #2 - first match") with 10 runs
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch       14.34   1.43     13   2.43   0.24     13  30.05   3.00     13  46.82   4.68     13
+ cssearch         2.73   0.27      5   0.73   0.07      7   1.93   0.19      5   5.39   0.54      6
+ fssearch         2.78   0.28      7   0.40   0.04      2   2.30   0.23      6   5.48   0.55      7
+ gosearch         2.11   0.21      3   1.34   0.13     12   0.78   0.08      1   4.23   0.42      3
+ hssearch         1.63   0.16      1   0.48   0.05      3   1.11   0.11      2   3.22   0.32      1
+ javasearch       3.71   0.37      9   1.00   0.10     10   5.68   0.57     10  10.39   1.04     10
+ nodesearch       3.33   0.33      8   0.70   0.07      6   2.89   0.29      8   6.92   0.69      8
+ phpsearch.php    7.58   0.76     12   0.90   0.09      8   6.65   0.67     11  15.13   1.51     11
+ plsearch.pl      2.73   0.27      5   0.30   0.03      1   2.31   0.23      7   5.34   0.53      5
+ pysearch.py      1.86   0.19      2   0.60   0.06      4   1.19   0.12      3   3.65   0.37      2
+ rbsearch.rb      2.20   0.22      4   0.62   0.06      5   1.51   0.15      4   4.33   0.43      4
+ scalasearch      6.04   0.60     11   1.13   0.11     11  11.09   1.11     12  18.26   1.83     12
+ swiftsearch      4.58   0.46     10   0.99   0.10      9   3.54   0.35      9   9.11   0.91      9
+
+
+scenario 6 ("search contents #2 - first match") run 1
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 1
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.43     13   0.23     13   2.89     13   4.55     13
+ cssearch         0.25      4   0.07      5   0.18      4   0.50      4
+ fssearch         0.30      6   0.04      1   0.25      6   0.59      6
+ gosearch         0.21      3   0.13     12   0.07      1   0.41      3
+ hssearch         0.16      1   0.05      3   0.10      2   0.31      1
+ javasearch       0.40      9   0.11     10   0.64      9   1.15      9
+ nodesearch       0.33      7   0.07      5   0.29      7   0.69      8
+ phpsearch.php    0.78     11   0.09      8   0.69     10   1.56     10
+ plsearch.pl      0.34      8   0.04      1   0.30      8   0.68      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.07      5   0.18      4   0.50      4
+ scalasearch      0.64     10   0.12     11   1.24     12   2.00     12
+ swiftsearch      0.92     12   0.10      9   0.81     11   1.83     11
+
+
+scenario 6 ("search contents #2 - first match") run 2
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 2
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.03     13   4.71     13
+ cssearch         0.26      5   0.07      6   0.18      4   0.51      5
+ fssearch         0.30      6   0.04      1   0.25      6   0.59      6
+ gosearch         0.22      3   0.14     12   0.08      1   0.44      3
+ hssearch         0.16      1   0.04      1   0.10      2   0.30      1
+ javasearch       0.41      9   0.11     10   0.65      9   1.17      9
+ nodesearch       0.33      7   0.07      6   0.29      7   0.69      8
+ phpsearch.php    0.83     11   0.09      8   0.73     10   1.65     10
+ plsearch.pl      0.34      8   0.04      1   0.30      8   0.68      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.63     10   0.12     11   1.19     12   1.94     12
+ swiftsearch      0.95     12   0.10      9   0.84     11   1.89     11
+
+
+scenario 6 ("search contents #2 - first match") run 3
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 3
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.23     13   2.95     13   4.62     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.30      6   0.04      2   0.25      6   0.59      6
+ gosearch         0.21      3   0.13     12   0.08      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.67      9   1.19      9
+ nodesearch       0.34      8   0.07      6   0.29      7   0.70      8
+ phpsearch.php    0.79     11   0.09      8   0.69     10   1.57     10
+ plsearch.pl      0.33      7   0.03      1   0.29      7   0.65      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.24      4   0.06      4   0.17      4   0.47      4
+ scalasearch      0.64     10   0.12     11   1.26     12   2.02     12
+ swiftsearch      0.90     12   0.10      9   0.79     11   1.79     11
+
+
+scenario 6 ("search contents #2 - first match") run 4
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 4
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.23     13   3.07     13   4.74     13
+ cssearch         0.26      5   0.07      6   0.18      4   0.51      5
+ fssearch         0.30      6   0.04      2   0.25      6   0.59      6
+ gosearch         0.20      3   0.13     12   0.07      1   0.40      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.67      9   1.19      9
+ nodesearch       0.34      7   0.07      6   0.29      7   0.70      8
+ phpsearch.php    0.77     11   0.09      8   0.68     10   1.54     10
+ plsearch.pl      0.34      7   0.03      1   0.29      7   0.66      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.06      4   0.18      4   0.49      4
+ scalasearch      0.63     10   0.12     11   1.17     12   1.92     12
+ swiftsearch      0.91     12   0.10      9   0.81     11   1.82     11
+
+
+scenario 6 ("search contents #2 - first match") run 5
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 5
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.04     13   4.72     13
+ cssearch         0.27      5   0.07      5   0.19      5   0.53      5
+ fssearch         0.30      6   0.04      1   0.25      6   0.59      6
+ gosearch         0.20      3   0.13     12   0.07      1   0.40      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.65      9   1.17      9
+ nodesearch       0.33      7   0.07      5   0.29      7   0.69      8
+ phpsearch.php    0.79     11   0.09      8   0.69     10   1.57     10
+ plsearch.pl      0.34      8   0.04      1   0.29      7   0.67      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.07      5   0.18      4   0.50      4
+ scalasearch      0.63     10   0.12     11   1.19     12   1.94     12
+ swiftsearch      0.89     12   0.10      9   0.79     11   1.78     11
+
+
+scenario 6 ("search contents #2 - first match") run 6
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 6
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.45     13   0.24     13   2.95     13   4.64     13
+ cssearch         0.25      5   0.07      6   0.18      5   0.50      5
+ fssearch         0.31      6   0.04      2   0.26      6   0.61      6
+ gosearch         0.20      3   0.14     12   0.07      1   0.41      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.65      9   1.17      9
+ nodesearch       0.33      7   0.07      6   0.29      7   0.69      8
+ phpsearch.php    0.77     11   0.09      8   0.67     10   1.53     10
+ plsearch.pl      0.34      8   0.03      1   0.29      7   0.66      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.24      4   0.06      4   0.17      4   0.47      4
+ scalasearch      0.64     10   0.12     11   1.27     12   2.03     12
+ swiftsearch      0.89     12   0.09      8   0.79     11   1.77     11
+
+
+scenario 6 ("search contents #2 - first match") run 7
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 7
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.44     13   0.24     13   3.13     13   4.81     13
+ cssearch         0.25      4   0.07      5   0.18      4   0.50      4
+ fssearch         0.30      6   0.04      2   0.25      6   0.59      6
+ gosearch         0.20      3   0.13     12   0.07      1   0.40      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.41      9   0.11     10   0.65      9   1.17      9
+ nodesearch       0.34      7   0.07      5   0.29      7   0.70      8
+ phpsearch.php    0.76     11   0.09      8   0.67     10   1.52     10
+ plsearch.pl      0.34      7   0.03      1   0.29      7   0.66      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.07      5   0.18      4   0.50      4
+ scalasearch      0.63     10   0.12     11   1.19     12   1.94     12
+ swiftsearch      0.91     12   0.10      9   0.80     11   1.81     11
+
+
+scenario 6 ("search contents #2 - first match") run 8
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 8
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.46     13   0.24     13   3.05     13   4.75     13
+ cssearch         0.26      4   0.07      5   0.18      4   0.51      4
+ fssearch         0.30      6   0.04      2   0.25      6   0.59      6
+ gosearch         0.21      3   0.14     12   0.07      1   0.42      3
+ hssearch         0.16      1   0.05      3   0.11      2   0.32      1
+ javasearch       0.42      9   0.11     10   0.69      9   1.22      9
+ nodesearch       0.34      8   0.07      5   0.29      7   0.70      8
+ phpsearch.php    0.78     11   0.09      8   0.69      9   1.56     10
+ plsearch.pl      0.33      7   0.03      1   0.29      7   0.65      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.26      4   0.07      5   0.18      4   0.51      4
+ scalasearch      0.64     10   0.12     11   1.22     12   1.98     12
+ swiftsearch      0.89     12   0.10      9   0.79     11   1.78     11
+
+
+scenario 6 ("search contents #2 - first match") run 9
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 9
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.43     13   0.23     13   3.01     13   4.67     13
+ cssearch         0.26      5   0.07      6   0.18      5   0.51      5
+ fssearch         0.30      6   0.04      2   0.25      6   0.59      6
+ gosearch         0.20      3   0.14     12   0.07      1   0.41      3
+ hssearch         0.17      1   0.05      3   0.11      2   0.33      1
+ javasearch       0.42      9   0.11     10   0.67      9   1.20      9
+ nodesearch       0.33      7   0.07      6   0.28      7   0.68      8
+ phpsearch.php    0.77     11   0.09      8   0.67      9   1.53     10
+ plsearch.pl      0.34      8   0.03      1   0.29      8   0.66      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.24      4   0.06      4   0.17      4   0.47      4
+ scalasearch      0.64     10   0.12     11   1.26     12   2.02     12
+ swiftsearch      0.91     12   0.10      9   0.80     11   1.81     11
+
+
+scenario 6 ("search contents #2 - first match") run 10
+
+cljsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+cssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+fssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+gosearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+hssearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+javasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+nodesearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+phpsearch.php -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+plsearch.pl -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+pysearch.py -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+rbsearch.rb -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+scalasearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+swiftsearch -x py,rb -s Searcher /Users/cary/src/xsearch -m -1
+
+Outputs of all versions match
+
+Results for scenario 6 ("search contents #2 - first match") run 10
+ xsearch          real   rank    sys   rank   user   rank  total   rank
+-----------------------------------------------------------------------
+ cljsearch        1.43     13   0.23     13   3.02     13   4.68     13
+ cssearch         0.25      4   0.07      5   0.18      4   0.50      4
+ fssearch         0.31      6   0.04      1   0.26      6   0.61      6
+ gosearch         0.20      3   0.13     12   0.07      1   0.40      3
+ hssearch         0.15      1   0.04      1   0.10      2   0.29      1
+ javasearch       0.41      9   0.11     10   0.65      9   1.17      9
+ nodesearch       0.34      7   0.08      7   0.29      7   0.71      8
+ phpsearch.php    0.77     11   0.09      8   0.68     10   1.54     10
+ plsearch.pl      0.34      7   0.04      1   0.30      8   0.68      7
+ pysearch.py      0.19      2   0.06      4   0.12      3   0.37      2
+ rbsearch.rb      0.25      4   0.07      5   0.18      4   0.50      4
+ scalasearch      0.63     10   0.12     11   1.18     12   1.93     11
+ swiftsearch      0.97     12   0.10      9   0.86     11   1.93     12
+
+
+Total results for scenario 6 ("search contents #2 - first match") with 10 runs
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch       14.40   1.44     13   2.35   0.24     13  30.14   3.01     13  46.89   4.69     13
+ cssearch         2.57   0.26      5   0.70   0.07      6   1.81   0.18      5   5.08   0.51      5
+ fssearch         3.02   0.30      6   0.40   0.04      2   2.52   0.25      6   5.94   0.59      6
+ gosearch         2.05   0.20      3   1.34   0.13     12   0.72   0.07      1   4.11   0.41      3
+ hssearch         1.60   0.16      1   0.48   0.05      3   1.07   0.11      2   3.15   0.32      1
+ javasearch       4.11   0.41      9   1.10   0.11     10   6.59   0.66      9  11.80   1.18      9
+ nodesearch       3.35   0.33      7   0.71   0.07      7   2.89   0.29      7   6.95   0.70      8
+ phpsearch.php    7.81   0.78     11   0.90   0.09      8   6.86   0.69     10  15.57   1.56     10
+ plsearch.pl      3.38   0.34      8   0.34   0.03      1   2.93   0.29      8   6.65   0.67      7
+ pysearch.py      1.90   0.19      2   0.60   0.06      4   1.20   0.12      3   3.70   0.37      2
+ rbsearch.rb      2.48   0.25      4   0.65   0.07      5   1.77   0.18      4   4.90   0.49      4
+ scalasearch      6.35   0.64     10   1.20   0.12     11  12.17   1.22     12  19.72   1.97     12
+ swiftsearch      9.14   0.91     12   0.99   0.10      9   8.08   0.81     11  18.21   1.82     11
+
+
+Total results for 6 scenarios with 10 runs (60 total runs)
+
+ xsearch          real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
+---------------------------------------------------------------------------------------------------
+ cljsearch       77.91   1.30     13  11.78   0.20     13 159.72   2.66     13 249.41   4.16     13
+ cssearch        12.16   0.20      5   2.91   0.05      6   8.72   0.15      5  23.79   0.40      5
+ fssearch        14.57   0.24      7   1.80   0.03      2  12.30   0.21      7  28.67   0.48      7
+ gosearch         8.36   0.14      2   5.36   0.09     11   3.06   0.05      1  16.78   0.28      3
+ hssearch         6.55   0.11      1   1.91   0.03      3   4.44   0.07      2  12.90   0.22      1
+ javasearch      20.27   0.34      9   4.90   0.08     10  30.83   0.51      9  56.00   0.93      9
+ nodesearch      16.09   0.27      8   3.03   0.05      7  14.40   0.24      8  33.52   0.56      8
+ phpsearch.php   44.83   0.75     12   4.85   0.08      9  39.56   0.66     11  89.24   1.49     11
+ plsearch.pl     13.74   0.23      6   1.29   0.02      1  11.78   0.20      6  26.81   0.45      6
+ pysearch.py      8.52   0.14      3   2.61   0.04      5   5.36   0.09      3  16.49   0.27      2
+ rbsearch.rb     10.83   0.18      4   2.59   0.04      4   7.80   0.13      4  21.22   0.35      4
+ scalasearch     32.48   0.54     10   5.77   0.10     12  59.44   0.99     12  97.69   1.63     12
+ swiftsearch     35.29   0.59     11   4.01   0.07      8  30.98   0.52     10  70.28   1.17     10
+

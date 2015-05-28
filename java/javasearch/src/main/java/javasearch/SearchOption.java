@@ -10,7 +10,7 @@ Class to encapsulate a command line search option
 
 package javasearch;
 
-public class SearchOption implements ISearchOption {
+public class SearchOption {
 
     private String shortArg;
     private String longArg;
@@ -37,7 +37,7 @@ public class SearchOption implements ISearchOption {
 
     public final String getSortArg() {
         if (null != this.shortArg && !this.shortArg.equals("")) {
-            return this.shortArg.toLowerCase() + "a" + this.longArg;
+            return this.shortArg.toLowerCase() + "@" + this.longArg;
         }
         return this.longArg;
     }

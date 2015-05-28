@@ -23,7 +23,7 @@ public class FileTypes {
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String, Set<String>> getFileTypeMap() {
-        Map<String, Set<String>> ftMap = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> ftMap = new HashMap<>();
         InputStream fileTypesInputStream = getClass().
                 getResourceAsStream(FILETYPESXMLPATH);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -41,25 +41,21 @@ public class FileTypes {
                         getElementsByTagName("extensions").item(0);
                 String extensions = extNode.getChildNodes().item(0).
                         getNodeValue();
-                Set<String> extSet = new HashSet<String>(Arrays.asList(extensions.
+                Set<String> extSet = new HashSet<>(Arrays.asList(extensions.
                         split("\\s+")));
                 ftMap.put(name, extSet);
             }
-            Set<String> allText = new HashSet<String>();
+            Set<String> allText = new HashSet<>();
             allText.addAll(ftMap.get("code"));
             allText.addAll(ftMap.get("text"));
             allText.addAll(ftMap.get("xml"));
             ftMap.put("text", allText);
-            Set<String> allSearchable = new HashSet<String>();
+            Set<String> allSearchable = new HashSet<>();
             allSearchable.addAll(ftMap.get("archive"));
             allSearchable.addAll(ftMap.get("binary"));
             allSearchable.addAll(ftMap.get("text"));
             ftMap.put("searchable", allSearchable);
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
 

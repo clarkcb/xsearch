@@ -57,24 +57,24 @@ public class SearchSettings {
     private boolean verbose;
 
     public SearchSettings() {
-        this.inExtensions = new HashSet<String>();
-        this.outExtensions = new HashSet<String>();
-        this.inDirPatterns = new HashSet<Pattern>();
-        this.outDirPatterns = new HashSet<Pattern>();
-        this.inFilePatterns = new HashSet<Pattern>();
-        this.outFilePatterns = new HashSet<Pattern>();
-        this.inArchiveExtensions = new HashSet<String>();
-        this.outArchiveExtensions = new HashSet<String>();
-        this.inArchiveFilePatterns = new HashSet<Pattern>();
-        this.outArchiveFilePatterns = new HashSet<Pattern>();
-        this.inLinesAfterPatterns = new HashSet<Pattern>();
-        this.outLinesAfterPatterns = new HashSet<Pattern>();
-        this.inLinesBeforePatterns = new HashSet<Pattern>();
-        this.outLinesBeforePatterns = new HashSet<Pattern>();
-        this.linesAfterToPatterns = new HashSet<Pattern>();
-        this.linesAfterUntilPatterns = new HashSet<Pattern>();
+        this.inExtensions = new HashSet<>();
+        this.outExtensions = new HashSet<>();
+        this.inDirPatterns = new HashSet<>();
+        this.outDirPatterns = new HashSet<>();
+        this.inFilePatterns = new HashSet<>();
+        this.outFilePatterns = new HashSet<>();
+        this.inArchiveExtensions = new HashSet<>();
+        this.outArchiveExtensions = new HashSet<>();
+        this.inArchiveFilePatterns = new HashSet<>();
+        this.outArchiveFilePatterns = new HashSet<>();
+        this.inLinesAfterPatterns = new HashSet<>();
+        this.outLinesAfterPatterns = new HashSet<>();
+        this.inLinesBeforePatterns = new HashSet<>();
+        this.outLinesBeforePatterns = new HashSet<>();
+        this.linesAfterToPatterns = new HashSet<>();
+        this.linesAfterUntilPatterns = new HashSet<>();
 
-        this.searchPatterns = new HashSet<Pattern>();
+        this.searchPatterns = new HashSet<>();
 
         // set the defaults
         this.archivesOnly = false;

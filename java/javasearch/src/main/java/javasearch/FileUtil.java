@@ -26,7 +26,7 @@ import java.util.Scanner;
 
 public class FileUtil {
 
-    private static Set<String> dotDirs = new HashSet<String>(Arrays.asList(".", ".."));
+    private static Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
     private static final String DEFAULT_ENCODING = "UTF-8";
 
     public static String getExtension(final File f) {
@@ -35,6 +35,9 @@ public class FileUtil {
         int lastIndex = fileName.lastIndexOf(".");
         if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
             ext = fileName.substring(lastIndex + 1);
+            if (!ext.equals("Z")) { // the only always-uppercase ext
+                ext = ext.toLowerCase();
+            }
         }
         return ext;
     }
@@ -53,7 +56,7 @@ public class FileUtil {
 
     public static List<String> splitPath(final String path) {
         String[] elems = path.split(File.separator);
-        List<String> nonDotDirElems = new ArrayList<String>();
+        List<String> nonDotDirElems = new ArrayList<>();
         for (String elem : elems) {
             if (!isDotDir(elem) && !elem.equals("")) { nonDotDirElems.add(elem); }
         }
@@ -65,16 +68,11 @@ public class FileUtil {
     }
 
     public static String getFileContents(final File f, final String enc) throws IOException {
-        Scanner scanner = new Scanner(f, enc).useDelimiter("\\Z");
         String content;
-        try {
+        try (Scanner scanner = new Scanner(f, enc).useDelimiter("\\Z")) {
             content = scanner.next();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException | IllegalStateException e) {
             throw e;
-        } catch (IllegalStateException e) {
-            throw e;
-        } finally {
-            scanner.close();
         }
         return content;
     }
@@ -84,16 +82,11 @@ public class FileUtil {
     }
 
     public static String getStreamContents(final InputStream is, final String enc) throws IllegalArgumentException {
-        Scanner scanner = new Scanner(is, enc).useDelimiter("\\Z");
         String content;
-        try {
+        try (Scanner scanner = new Scanner(is, enc).useDelimiter("\\Z")) {
             content = scanner.next();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException | IllegalStateException e) {
             throw e;
-        } catch (IllegalStateException e) {
-            throw e;
-        } finally {
-            scanner.close();
         }
         return content;
     }
@@ -113,7 +106,7 @@ public class FileUtil {
     }
 
     public static List<String> getStreamLines(final InputStream is, final String enc) throws IllegalArgumentException {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         Scanner scanner = new Scanner(is, enc).useDelimiter("\r?\n");
         while (scanner.hasNext()) {
             try {
