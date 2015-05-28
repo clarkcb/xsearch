@@ -21,17 +21,19 @@ class FileUtil {
     }
 
     static func hasExtension(fileName: String, ext: String) -> Bool {
-        return (getExtension(fileName) == ext)
+        return getExtension(fileName) == ext
     }
 
     private static func getFileManager() -> NSFileManager {
         return NSFileManager.defaultManager()
     }
 
+    // gets files only directly under given path
     static func contentsForPath(filePath: String) -> [String] {
         return getFileManager().contentsOfDirectoryAtPath(filePath, error: nil) as! [String]
     }
 
+    // gets files recursively under given path
     static func enumeratorForPath(filePath: String) -> NSDirectoryEnumerator? {
         return getFileManager().enumeratorAtPath(filePath)
     }
@@ -60,8 +62,7 @@ class FileUtil {
 
     static func isHidden(filePath: String) -> Bool {
         let pathElems = splitPath(filePath)
-        let hidden = pathElems.filter({self.isHiddenFile($0)})
-        return hidden.count > 0
+        return pathElems.filter({self.isHiddenFile($0)}).count > 0
     }
 
     static func isHiddenFile(fileName: String) -> Bool {

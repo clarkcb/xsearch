@@ -239,14 +239,6 @@ public class SearchOptions {
         },
     ]
 
-    private func longFromArg(arg: String) -> String {
-        if count(arg) > 1 {
-            return arg
-        }
-        // TODO: get long from short
-        return arg
-    }
-
     private func dictFromOptions(options: [SearchOption]) -> [String:SearchOption] {
         var dict = toDictionary(options) {($0.long, $0)}
         for (k, v) in (toDictionary(options.filter {!$0.short.isEmpty}) {($0.short, $0)}) {
@@ -260,19 +252,15 @@ public class SearchOptions {
         let settings = SearchSettings()
         let argDict = dictFromOptions(searchOptions.filter
             {self.argActionDict.indexForKey($0.long) != nil})
-        //println("argDict: \(argDict)")
         let flagDict = dictFromOptions(searchOptions.filter
             {self.flagActionDict.indexForKey($0.long) != nil})
-        //println("flagDict: \(flagDict)")
         while i < args.count {
-            //println("args[\(i)] = \"\(args[i])\"")
             var arg = args[i]
             if arg.hasPrefix("-") {
                 while arg.hasPrefix("-") && count(arg) > 1 {
                     arg = arg.substringFromIndex(advance(arg.startIndex, 1))
                 }
                 if argDict.indexForKey(arg) != nil {
-                    //println("\(arg) is action arg")
                     if args.count > i {
                         argActionDict[argDict[arg]!.long]!(args[i+1], settings)
                         i++
@@ -280,7 +268,6 @@ public class SearchOptions {
                         println("ERROR: missing argument for option \(arg)")
                     }
                 } else if flagDict.indexForKey(arg) != nil {
-                    //println("\(arg) is flag arg")
                     flagActionDict[flagDict[arg]!.long]!(settings)
                 } else {
                     println("ERROR: unknown arg: \(args[i])")

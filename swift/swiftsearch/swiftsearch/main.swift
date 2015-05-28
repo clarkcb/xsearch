@@ -60,8 +60,14 @@ func main() {
         options.usage()
     }
 
-    searcher.search()
+    searcher.search(&error)
 
+    if error != nil {
+        logMsg("")
+        logError(error!.domain)
+        options.usage()
+    }
+    
     let results = searcher.getSearchResults()
 
     if settings.printResults {

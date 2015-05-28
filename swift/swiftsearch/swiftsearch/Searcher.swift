@@ -84,22 +84,22 @@ public class Searcher {
                 outPatterns: settings.outArchiveFilePatterns))
     }
 
-    public func search() {
+    public func search(error: NSErrorPointer) {
         let startPath = settings.startPath!
         if FileUtil.isDirectory(startPath) {
             if isSearchDir(startPath) {
                 searchPath(startPath)
             } else {
-                exitWithError("Startpath does not match search settings")
+                setError(error, msg: "Startpath does not match search settings")
             }
         } else if FileUtil.isReadableFile(startPath) {
             if isSearchFile(startPath) {
                 searchFile(startPath)
             } else {
-                exitWithError("Startpath does not match search settings")
+                setError(error, msg: "Startpath does not match search settings")
             }
         } else {
-            exitWithError("Startpath not readable")
+            setError(error, msg: "Startpath not readable")
         }
     }
 
@@ -432,7 +432,6 @@ public class Searcher {
     }
 
     public func getSearchResults() -> [SearchResult] {
-//        return results.sorted({$0.sortString() < $1.sortString()})
         return results
     }
 }

@@ -2,7 +2,7 @@
 //  StreamReader.swift
 //  swiftsearch
 //
-//  taken from http://stackoverflow.com/questions/24581517/read-a-file-url-line-by-line-in-swift
+//  from http://stackoverflow.com/questions/24581517/read-a-file-url-line-by-line-in-swift
 //
 
 import Foundation
@@ -94,13 +94,3 @@ public class StreamReader  {
         fileHandle = nil
     }
 }
-
-// allows StreamReader to be used as a Sequence / Generator
-// i.e. for x in streamReader {}
-//extension StreamReader : SequenceType {
-//    func generate() -> GeneratorOf<String> {
-//        return GeneratorOf<String> {
-//            return self.nextLine()
-//        }
-//    }
-//}

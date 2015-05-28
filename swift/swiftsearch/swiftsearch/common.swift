@@ -18,11 +18,6 @@ func logError(s: String) {
     logMsg("ERROR: \(s)")
 }
 
-func exitWithError(s: String) {
-    logError(s)
-    exit(1 as Int32)
-}
-
 // from http://ijoshsmith.com/2014/06/18/create-a-swift-dictionary-from-an-array/
 func toDictionary<E, K, V>(
     array: [E],
@@ -54,30 +49,11 @@ func arrayToString(arr: [String]) -> String {
 }
 
 func arrayToString(arr: [Regex]) -> String {
-    var str: String = "["
-    var count: Int = 0
-    for r in arr {
-        if count > 0 {
-            str += ", "
-        }
-        str += "\"\(r.pattern)\""
-        count++
-    }
-    str += "]"
-    return str
+    return arrayToString(arr.map({$0.pattern}))
 }
 
 func setToString(set:Set<String>) -> String {
     return arrayToString(Array(sorted(set)))
-}
-
-func dropRight<T>(seq: [T], num: Int) -> [T] {
-    let newCount = seq.count - num
-    var newSeq: [T] = []
-    for var i=0; i < newCount; ++i {
-        newSeq.append(seq[i])
-    }
-    return newSeq
 }
 
 func take<T>(seq: [T], num: Int) -> [T] {

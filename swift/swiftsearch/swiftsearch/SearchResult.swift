@@ -39,21 +39,6 @@ public class SearchResult: Printable {
         }
     }
 
-    // a string to sort the result by
-    func sortString() -> String {
-        var s = ""
-        if file != nil {
-            var pathCount: Int = FileUtil.splitPath(file!).count
-            s += String(format: "%02d:", pathCount)
-            s += file!.lowercaseString
-        } else {
-            s += "<text>"
-        }
-        s += String(format: ":%05d", lineNum)
-        s += String(format: ":[%05d:%05d]", matchStartIndex, matchEndIndex)
-        return s
-    }
-
     private func singleLineToString() -> String {
         var s = file ?? "<text>"
         if lineNum > 0 {
