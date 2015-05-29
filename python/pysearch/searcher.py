@@ -605,7 +605,7 @@ class Searcher(object):
 
     def print_results(self):
         common.log('Search results (%d):' % len(self.results))
-        for r in sorted(self.results, key=lambda r: r.filename):
+        for r in self.results:
             self.print_result(r)
 
     def print_result(self, search_result):
