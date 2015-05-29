@@ -64,36 +64,19 @@ public class Searcher {
 
     private boolean anyMatchesAnyPattern(final List<String> sList,
                                          final Set<Pattern> patternSet) {
-        for (String s : sList) {
-            if (matchesAnyPattern(s, patternSet)) {
-                return true;
-            }
-        }
-        return false;
+        return sList.stream().anyMatch(s -> matchesAnyPattern(s, patternSet));
     }
 
     private boolean matchesAnyPattern(final String s,
                                       final Set<Pattern> patternSet) {
-        if (null == s) {
-            return false;
-        }
-        for (Pattern p : patternSet) {
-            Matcher m = p.matcher(s);
-            if (m.find()) {
-                return true;
-            }
-        }
-        return false;
+        return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
     public final boolean isSearchDir(final File d) {
         List<String> pathElems = FileUtil.splitPath(d.toString());
-        if (settings.getExcludeHidden()) {
-            for (String p : pathElems) {
-                if (FileUtil.isHidden(p)) {
-                    return false;
-                }
-            }
+        if (settings.getExcludeHidden()
+                && pathElems.stream().anyMatch(FileUtil::isHidden)) {
+            return false;
         }
         return (settings.getInDirPatterns().isEmpty()
                 ||
