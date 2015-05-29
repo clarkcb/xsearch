@@ -629,11 +629,57 @@ public class Searcher {
         searchFileSet.add(searchResult.getSearchFile());
     }
 
-    public final void printSearchResults() {
-        log(String.format("Search results (%d):", results.size()));
-        Collections.sort(results, (r1, r2) -> r1.getSearchFile().toFile()
-                .getPath().compareTo(r2.getSearchFile().toFile().getPath()));
+    private int signum(int num) {
+        if (num > 0) {
+            return 1;
+        }
+        if (num < 0) {
+            return -1;
+        }
+        return 0;
+    }
+
+    private int compareResultsInPath(SearchResult r1, SearchResult r2) {
+        int fileCmp = r1.getSearchFile().getFileName().toLowerCase()
+                .compareTo(r2.getSearchFile().getFileName().toLowerCase());
+        if (fileCmp == 0) {
+            int lineNumCmp = signum(r1.getLineNum() - r2.getLineNum());
+            if (lineNumCmp == 0) {
+                return signum(r1.getMatchStartIndex() - r2.getMatchStartIndex());
+            }
+            return lineNumCmp;
+        }
+        return fileCmp;
+    }
+
+    private List<SearchResult> getSortedSearchResults() {
+        List<SearchResult> sorted = new ArrayList<>();
+        Map<String,List<SearchResult>> pathMap = new HashMap<>();
         for (SearchResult r : results) {
+            String path = r.getSearchFile().getPath().toLowerCase();
+            List<SearchResult> pathResults;
+            if (pathMap.containsKey(path)) {
+                pathResults = pathMap.get(path);
+            } else {
+                pathResults = new ArrayList<>();
+            }
+            pathResults.add(r);
+            pathMap.put(path, pathResults);
+        }
+        List<String> paths = pathMap.keySet().stream().sorted()
+                .collect(Collectors.toList());
+        for (String path : paths) {
+            sorted.addAll(pathMap.get(path).stream()
+                    .sorted(this::compareResultsInPath)
+                    .collect(Collectors.toList()));
+        }
+        return sorted;
+    }
+
+    public final void printSearchResults() {
+        List<SearchResult> sortedResults = getSortedSearchResults();
+        log(String.format("Search results (%d):", sortedResults.size()));
+        for (SearchResult r : sortedResults) {
             log(r.toString());
         }
     }
