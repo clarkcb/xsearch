@@ -507,9 +507,30 @@ class Searcher {
         $this->results[] = $r;
     }
 
+    private function get_sorted_results() {
+        $sorted = array();
+        $path_results_map = array();
+        foreach($this->results as $r) {
+            $d = strtoupper(dirname($r->file));
+            if (!array_key_exists($d, $path_results_map)) {
+                $path_results_map[$d] = array();
+            }
+            $path_results_map[$d][] = $r;
+        }
+        $paths = array_keys($path_results_map);
+        sort($paths);
+        foreach($paths as $p) {
+            $path_results = $path_results_map[$p];
+            usort($path_results, 'cmp_searchresults');
+            $sorted = array_merge($sorted, $path_results);
+        }
+        return $sorted;
+    }
+
     public function printresults() {
-        log_msg(sprintf("\nSearch results (%d):", count($this->results)));
-        foreach ($this->results as $r) {
+        $sorted_results = $this->get_sorted_results();
+        log_msg(sprintf("\nSearch results (%d):", count($sorted_results)));
+        foreach ($sorted_results as $r) {
             log_msg($r);
         }
     }
@@ -574,10 +595,4 @@ class Searcher {
         }
     }
 }
-
-function cmp_ignorecase($s1, $s2) {
-    return strcmp(strtoupper($s1), strtoupper($s2));
-}
-
-
 ?>
