@@ -6,5 +6,4 @@ class Config {
     const FILETYPESPATH = '~/src/xsearch/shared/filetypes.xml';
     const SEARCHOPTIONSPATH = '~/src/xsearch/shared/searchoptions.xml';
 }
-
 ?>

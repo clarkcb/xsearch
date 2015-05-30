@@ -507,28 +507,9 @@ class Searcher {
         $this->results[] = $r;
     }
 
-    private function get_sorted_results() {
-        $sorted = array();
-        $path_results_map = array();
-        foreach($this->results as $r) {
-            $d = strtoupper(dirname($r->file));
-            if (!array_key_exists($d, $path_results_map)) {
-                $path_results_map[$d] = array();
-            }
-            $path_results_map[$d][] = $r;
-        }
-        $paths = array_keys($path_results_map);
-        sort($paths);
-        foreach($paths as $p) {
-            $path_results = $path_results_map[$p];
-            usort($path_results, 'cmp_searchresults');
-            $sorted = array_merge($sorted, $path_results);
-        }
-        return $sorted;
-    }
-
     public function printresults() {
-        $sorted_results = $this->get_sorted_results();
+        $sorted_results = $this->results;
+        usort($sorted_results, 'cmp_searchresults');
         log_msg(sprintf("\nSearch results (%d):", count($sorted_results)));
         foreach ($sorted_results as $r) {
             log_msg($r);
