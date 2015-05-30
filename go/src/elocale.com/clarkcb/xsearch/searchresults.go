@@ -67,18 +67,26 @@ func (rs *SearchResults) Len() int {
 
 func (srs *SearchResults) Less(i, j int) bool {
 	sr1, sr2 := srs.SearchResults[i], srs.SearchResults[j]
-	fileCmp := bytes.Compare([]byte(sr1.File.String()), []byte(sr2.File.String()))
-	if fileCmp == 0 {
-		if sr1.LineNum == sr2.LineNum {
-			return sr1.MatchStartIndex <= sr2.MatchStartIndex
-		} else {
-			return sr1.LineNum < sr2.LineNum
-		}
-	} else if fileCmp == -1 {
-		return true
-	} else {
+	path1, path2 := strings.ToLower(*sr1.File.Path), strings.ToLower(*sr2.File.Path)
+	pathCmp := bytes.Compare([]byte(path1), []byte(path2))
+	if pathCmp > 0 {
 		return false
 	}
+	if pathCmp == 0 {
+		file1, file2 := strings.ToLower(*sr1.File.Name), strings.ToLower(*sr2.File.Name)
+		fileCmp := bytes.Compare([]byte(file1), []byte(file2))
+		if fileCmp > 0 {
+			return false
+		}
+		if fileCmp == 0 {
+			if sr1.LineNum == sr2.LineNum {
+				return sr1.MatchStartIndex < sr2.MatchStartIndex
+			}
+			return sr1.LineNum < sr2.LineNum
+		}
+		return true
+	}
+	return true
 }
 
 func (srs *SearchResults) Swap(i, j int) {
