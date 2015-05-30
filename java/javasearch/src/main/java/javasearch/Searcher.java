@@ -639,41 +639,27 @@ public class Searcher {
         return 0;
     }
 
-    private int compareResultsInPath(SearchResult r1, SearchResult r2) {
-        int fileCmp = r1.getSearchFile().getFileName().toLowerCase()
-                .compareTo(r2.getSearchFile().getFileName().toLowerCase());
-        if (fileCmp == 0) {
-            int lineNumCmp = signum(r1.getLineNum() - r2.getLineNum());
-            if (lineNumCmp == 0) {
-                return signum(r1.getMatchStartIndex() - r2.getMatchStartIndex());
+    private int compareResults(SearchResult r1, SearchResult r2) {
+        int pathCmp = r1.getSearchFile().getPath().toLowerCase()
+                .compareTo(r2.getSearchFile().getPath().toLowerCase());
+        if (pathCmp == 0) {
+            int fileCmp = r1.getSearchFile().getFileName().toLowerCase()
+                    .compareTo(r2.getSearchFile().getFileName().toLowerCase());
+            if (fileCmp == 0) {
+                int lineNumCmp = signum(r1.getLineNum() - r2.getLineNum());
+                if (lineNumCmp == 0) {
+                    return signum(r1.getMatchStartIndex() - r2.getMatchStartIndex());
+                }
+                return lineNumCmp;
             }
-            return lineNumCmp;
+            return fileCmp;
         }
-        return fileCmp;
+        return pathCmp;
     }
 
     private List<SearchResult> getSortedSearchResults() {
-        List<SearchResult> sorted = new ArrayList<>();
-        Map<String,List<SearchResult>> pathMap = new HashMap<>();
-        for (SearchResult r : results) {
-            String path = r.getSearchFile().getPath().toLowerCase();
-            List<SearchResult> pathResults;
-            if (pathMap.containsKey(path)) {
-                pathResults = pathMap.get(path);
-            } else {
-                pathResults = new ArrayList<>();
-            }
-            pathResults.add(r);
-            pathMap.put(path, pathResults);
-        }
-        List<String> paths = pathMap.keySet().stream().sorted()
+        return results.stream().sorted(this::compareResults)
                 .collect(Collectors.toList());
-        for (String path : paths) {
-            sorted.addAll(pathMap.get(path).stream()
-                    .sorted(this::compareResultsInPath)
-                    .collect(Collectors.toList()));
-        }
-        return sorted;
     }
 
     public final void printSearchResults() {
