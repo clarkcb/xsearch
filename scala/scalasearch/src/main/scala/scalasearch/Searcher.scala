@@ -399,10 +399,6 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-//  private def searchTextFileLines(sf: SearchFile): Unit = {
-//    searchTextFileSourceLines(sf, Source.fromFile(sf.toFile))
-//  }
-
   private def searchTextFileSourceLines(sf: SearchFile, source: Source): Unit = {
     searchLineStringIterator(source.getLines()).foreach { r =>
       addSearchResult(r.copy(file=Some(sf)))
@@ -653,8 +649,35 @@ class Searcher (settings: SearchSettings) {
     _searchResults.append(r)
   }
 
+  private def cmpSearchResults(r1: SearchResult, r2: SearchResult): Boolean = {
+    var (path1, fileName1, path2, fileName2) = ("", "", "", "")
+    if (r1.file.isDefined) {
+      val file1 = r1.file.get.toFile
+      path1 = file1.getParent.toLowerCase
+      fileName1 = file1.getName.toLowerCase
+    }
+    if (r2.file.isDefined) {
+      val file2 = r2.file.get.toFile
+      path2 = file2.getParent.toLowerCase
+      fileName2 = file2.getName.toLowerCase
+    }
+    if (path1 == path2) {
+      if (fileName1 == fileName2) {
+        if (r1.lineNum == r2.lineNum) {
+          r1.matchStartIndex < r2.matchStartIndex
+        } else {
+          r1.lineNum < r2.lineNum
+        }
+      } else {
+        fileName1 < fileName2
+      }
+    } else {
+      path1 < path2
+    }
+  }
+
   def printSearchResults(): Unit = {
-    _searchResults.sortWith(_.file.get.getPath < _.file.get.getPath).foreach(printSearchResult)
+    _searchResults.sortWith(cmpSearchResults).foreach(printSearchResult)
  }
 
   private def printSearchResult(r: SearchResult): Unit = {
