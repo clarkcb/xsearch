@@ -248,7 +248,18 @@ class Searcher (settings: SearchSettings) {
   }
 
   def searchFile(sf: SearchFile): Unit = {
-    searchFileSource(sf, Source.fromFile(sf.toFile))
+    FileTypes.getFileType(sf) match {
+      case FileType.Text =>
+        // TODO: some very basic encoding detection, for now using arbitrary
+        // single-byte encoding
+        searchTextFileSource(sf, Source.fromFile(sf.toFile, "ISO-8859-1"))
+      case FileType.Binary =>
+        searchBinaryFileSource(sf, Source.fromFile(sf.toFile))
+      case FileType.Archive =>
+        searchArchiveFileSource(sf, Source.fromFile(sf.toFile))
+      case _ =>
+        Common.log("Skipping unknown file type: %s".format(sf))
+    }
   }
 
   private def searchFileSource(sf: SearchFile, source: Source): Unit = {
