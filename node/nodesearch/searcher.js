@@ -581,6 +581,30 @@ function Searcher(settings) {
         self.results.push(result);
     };
 
+    function cmpSearchResults(r1, r2) {
+        var pathCmp = path.dirname(r1.filename).localeCompare(path.dirname(r2.filename));
+        if (pathCmp === 0) {
+            var fileCmp = path.basename(r1.filename).localeCompare(path.basename(r2.filename));
+            if (fileCmp === 0) {
+                if (r1.linenum === r2.linenum) {
+                    return r1.matchStartIndex - r2.matchStartIndex;
+                }
+                return r1.linenum - r2.linenum;
+            }
+            return fileCmp;
+        }
+        return pathCmp;
+    }
+
+    self.printSearchResults = function () {
+        // first sort the results
+        self.results.sort(cmpSearchResults);
+        common.log("\nSearch results ({0}):".format(self.results.length));
+        for (var r in self.results) {
+            common.log(self.results[r].toString());
+        }
+    };
+
     self.getMatchingDirs = function () {
         var dirs = [];
         for (var r in self.results) {

@@ -42,10 +42,7 @@ function searchMain() {
             searcher.search();
 
             if (settings.printResults) {
-                common.log("\nSearch results ({0}):".format(searcher.results.length));
-                for (var r in searcher.results) {
-                    common.log(searcher.results[r].toString());
-                }
+                searcher.printSearchResults();
             }
 
             if (settings.listDirs) {
