@@ -37,13 +37,17 @@ xsearch_dict = {
     'scala':   'scalasearch',
     'swift':   'swiftsearch',
 }
+win_supported = ['csharp', 'fsharp', 'go', 'haskell', 'node', 'perl', 'python', 'ruby']
 all_xsearch_names = sorted(xsearch_dict.values())
+HOME_NAME = 'HOME'
+if platform.system() == 'Windows':
+    HOME_NAME = 'USERPROFILE'
+    all_xsearch_names = sorted([xsearch_dict[l] for l in win_supported])
 
 xsearch_name_regex = re.compile(r'\b(%s)(\.exe)?\b' % '|'.join(all_xsearch_names), re.I | re.S)
 
 default_runs = 10
 
-HOME_NAME = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
 HOME = os.environ[HOME_NAME]
 XSEARCHPATH = os.path.join(HOME, 'src', 'xsearch')
 
