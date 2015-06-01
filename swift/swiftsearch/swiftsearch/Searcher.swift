@@ -431,31 +431,27 @@ public class Searcher {
     }
     
     private func cmpResultsInDir(r1: SearchResult, _ r2: SearchResult) -> Bool {
-        return r1.file!.lastPathComponent.lowercaseString < r2.file!.lastPathComponent.lowercaseString
-            &&
-            r1.lineNum < r2.lineNum
-            &&
-            r1.matchStartIndex < r2.matchStartIndex
+        let path1 = r1.file!.stringByDeletingLastPathComponent
+        let path2 = r2.file!.stringByDeletingLastPathComponent
+        if path1 == path2 {
+            let file1 = r1.file!.lastPathComponent.lowercaseString
+            let file2 = r2.file!.lastPathComponent.lowercaseString
+            if file1 == file2 {
+                if r1.lineNum == r2.lineNum {
+                    return r1.matchStartIndex < r2.matchStartIndex
+                }
+                return r1.lineNum < r2.lineNum
+            }
+            return file1 < file2
+        }
+        return path1 < path2
     }
 
     // results in swift are already sorted the way I want (case-insensitive by path, then filename,
     // then lineNum, then matchStartIndex). This method is an example to reference for languages
     // that require sorting (go, etc.)
     private func getSortedSearchResults() -> [SearchResult] {
-        var pathDict: [String:[SearchResult]] = [:]
-        var sorted: [SearchResult] = []
-        for r in results {
-            let path = r.file!.stringByDeletingLastPathComponent.lowercaseString
-            if pathDict.indexForKey(path) != nil {
-                pathDict[path]!.append(r)
-            } else {
-                pathDict[path] = [r]
-            }
-        }
-        for p in Array(pathDict.keys).sorted({$0 < $1}) {
-            sorted += pathDict[p]!.sorted({self.cmpResultsInDir($0, $1)})
-        }
-        return sorted
+        return results.sorted({self.cmpResultsInDir($0, $1)})
     }
     
     public func getSearchResults() -> [SearchResult] {
