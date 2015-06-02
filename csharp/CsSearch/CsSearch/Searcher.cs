@@ -587,8 +587,10 @@ namespace CsSearch
 
 		public void PrintResults()
 		{
+			IComparer<SearchResult> comparer = new SearchResultsComparer();
+			Results.ToList().Sort(comparer);
 			Log(string.Format("Search results ({0}):", Results.Count));
-			foreach (var searchResult in Results.OrderBy(r => r.File.FullName))
+			foreach (var searchResult in Results)
 			{
 				Log(searchResult.ToString(Settings));
 			}
