@@ -264,8 +264,22 @@ class Searcher
   def search_binary_file(f)
     contents = File.open(f, "rb").read
     @settings.searchpatterns.each do |p|
-      if p.match(contents)
-        add_search_result(SearchResult.new(p, f, 0, nil))
+      pos = 0
+      m = p.match(contents, pos)
+      stop = false
+      while m && !stop
+        results.push(SearchResult.new(
+          p,
+          f,
+          0,
+          m.begin(0) + 1,
+          m.end(0) + 1,
+          nil))
+        pos = m.end(0) + 1
+        m = p.match(contents, pos)
+        if @settings.firstmatch
+          stop = true
+        end
       end
     end
   end

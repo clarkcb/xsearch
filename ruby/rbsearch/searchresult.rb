@@ -46,7 +46,7 @@ class SearchResult
       s += ": #{@linenum}: [#{@match_start_index}:#{@match_end_index}]:"
       s += " #{__format_matching_line}"
     else
-      s += " matches"
+      s += " matches at [#{@match_start_index}:#{@match_end_index}]"
     end
     s
   end
