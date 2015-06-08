@@ -597,22 +597,28 @@ func (s *Searcher) searchBinaryFileReader(r io.Reader, si *SearchItem) {
 		s.errChan <- err
 		return
 	}
+	findLimit := -1
+	if s.Settings.FirstMatch {
+		findLimit = 1
+	}
 	spi := s.Settings.SearchPatterns.Iterator()
 	for spi.Next() {
 		p := spi.Value()
-		if p.Match(bytes) {
-			emptyStr := ""
-			sr := &SearchResult{
-				p,
-				si,
-				0,
-				0,
-				0,
-				&emptyStr,
-				[]*string{},
-				[]*string{},
+		if matchIndices := p.FindAllIndex(bytes, findLimit); matchIndices != nil {
+			for _, m := range matchIndices {
+				emptyStr := ""
+				sr := &SearchResult{
+					p,
+					si,
+					0,
+					m[0] + 1,
+					m[1] + 1,
+					&emptyStr,
+					[]*string{},
+					[]*string{},
+				}
+				s.resultChan <- sr
 			}
-			s.resultChan <- sr
 		}
 	}
 }
