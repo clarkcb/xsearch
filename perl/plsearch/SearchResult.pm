@@ -43,7 +43,8 @@ sub singleline_tostring {
         $s .= '[' . $self->{match_start_index} . ':' . $self->{match_end_index};
         $s .= ']: ' . plsearch::common::trim($self->{line});
     } else {
-        $s .= ' matches';
+        $s .= ' matches at ';
+        $s .= '[' . $self->{match_start_index} . ':' . $self->{match_end_index} . ']';
     }
     return $s;
 }

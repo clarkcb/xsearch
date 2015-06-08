@@ -567,16 +567,23 @@ sub search_binary_string {
     my $results = [];
     foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
         if ($s =~ /$pattern/s) {
-            my $r = new plsearch::SearchResult(
-                $pattern,
-                '',
-                0,
-                0,
-                0,
-                '',
-                [],
-                []);
-            push(@{$results}, $r);
+            while ($s =~ /$pattern/g) {
+                my $start_index = $-[0];
+                my $end_index = $+[0];
+                my $r = new plsearch::SearchResult(
+                    $pattern,
+                    '',
+                    0,
+                    $start_index + 1,
+                    $end_index + 1,
+                    '',
+                    [],
+                    []);
+                push(@{$results}, $r);
+                if ($self->{settings}->{firstmatch}) {
+                    last;
+                }
+            }
         }
     }
     return $results;
