@@ -29,7 +29,8 @@ class SearchResult {
             $s .= "[{$this->match_start_index}:{$this->match_end_index}]: ";
             $s .= trim($this->line);
         } else {
-            $s .= ' matches';
+            $s .= ' matches at ';
+            $s .= "[{$this->match_start_index}:{$this->match_end_index}]";
         }
         return $s;
     }

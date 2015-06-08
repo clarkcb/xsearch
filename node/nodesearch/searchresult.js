@@ -30,7 +30,8 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
             s += ': ' + self.linenum + ': [' + self.matchStartIndex + ':' +
                 self.matchEndIndex +']: ' + formatMatchingLine();
         } else {
-            s += ' matches';
+            s += ' matches at [' + self.matchStartIndex + ':' +
+                self.matchEndIndex + ']';
         }
         return s;
     };

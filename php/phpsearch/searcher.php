@@ -339,8 +339,7 @@ class Searcher {
         $end_line_indices = array_merge($new_line_indices, array(strlen($s) - 1));
         foreach ($this->settings->searchpatterns as $pattern) {
             $p = '/' . $pattern . '/';
-            $has_matches = preg_match_all($p, $s, $matches, PREG_OFFSET_CAPTURE);
-            if ($has_matches) {
+            if (preg_match_all($p, $s, $matches, PREG_OFFSET_CAPTURE)) {
                 foreach ($matches[0] as $m) {
                     $start_index = $m[1];
                     $end_index = $start_index + strlen($m[0]);
@@ -457,8 +456,7 @@ class Searcher {
                 if ($this->settings->firstmatch && array_key_exists($pattern, $pattern_match_map))
                     continue;
                 $p = '/' . $pattern . '/';
-                $has_matches = preg_match_all($p, $line, $matches, PREG_OFFSET_CAPTURE);
-                if ($has_matches) {
+                if (preg_match_all($p, $line, $matches, PREG_OFFSET_CAPTURE)) {
                     if (($lines_before && !$this->lines_before_match($lines_before))
                         ||
                         ($lines_after && !$this->lines_after_match($lines_after)))
@@ -496,9 +494,23 @@ class Searcher {
         $contents = file_get_contents($f);
         foreach ($this->settings->searchpatterns as $pattern) {
             $p = '/' . $pattern . '/';
-            if (preg_match_all($p, $contents)) {
-                $r = new SearchResult($pattern, $f, 0, 0, 0, '', [], []);
-                $this->add_search_result($r);
+            if (preg_match_all($p, $contents, $matches, PREG_OFFSET_CAPTURE)) {
+                foreach ($matches[0] as $m) {
+                    $start_index = $m[1] + 1;
+                    $end_index = $start_index + strlen($m[0]);
+                    $r = new SearchResult(
+                        $pattern,
+                        $f,
+                        0,
+                        $start_index,
+                        $end_index,
+                        '',
+                        [],
+                        []);
+                    $this->add_search_result($r);
+                    if ($this->settings->firstmatch)
+                        break;
+                }
             }
         }
     }

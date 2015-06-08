@@ -279,7 +279,8 @@ func (r *SearchResult) singleLineString() string {
 		return fmt.Sprintf("%s: %d: [%d:%d]: %s", r.File.String(), r.LineNum,
 			r.MatchStartIndex, r.MatchEndIndex, r.formatMatchingLine())
 	} else {
-		return fmt.Sprintf("%s matches", r.File.String())
+		return fmt.Sprintf("%s matches at [%d:%d]", r.File.String(),
+			r.MatchStartIndex, r.MatchEndIndex)
 	}
 }
 

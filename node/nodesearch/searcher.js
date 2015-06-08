@@ -339,12 +339,28 @@ function Searcher(settings) {
         }
         var contents = FileUtil.getFileContents(filepath);
         var pattern = '';
+        var patternResults = {};
         for (var p in _settings.searchPatterns) {
-            pattern = _settings.searchPatterns[p];
+            pattern = new RegExp(_settings.searchPatterns[p].source, "g");
+            if (_settings.firstMatch && (pattern.source in patternResults)) {
+                break;
+            }
             var match = pattern.exec(contents);
-            if (match) {
-                addSearchResult(new SearchResult(pattern, filepath, 0, 0, 0,
-                    null, [], []));
+            while (match) {
+                addSearchResult(new SearchResult(
+                    pattern,
+                    filepath,
+                    0,
+                    match.index+1,
+                    pattern.lastIndex+1,
+                    null,
+                    [],
+                    []));
+                if (_settings.firstMatch) {
+                    patternResults[pattern.source] = 1;
+                    break;
+                }
+                match = pattern.exec(contents);
             }
         }
     };
