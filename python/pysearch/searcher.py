@@ -251,14 +251,21 @@ class Searcher(object):
     def search_binary_file_obj(self, sf, fo):
         """Search a binary file file object"""
         contents = fo.read()
-        for s in self.settings.searchpatterns:
-            if s.search(contents):
-                search_result = SearchResult(pattern=s.pattern,
+        for p in self.settings.searchpatterns:
+            matches = p.finditer(contents)
+            for m in matches:
+                search_result = SearchResult(pattern=p.pattern,
                                              # TODO: switch to SearchFile instance
                                              filename=str(sf),
                                              linenum=0,
-                                             line=None)
+                                             line=None,
+                                             match_start_index=m.start() + 1,
+                                             match_end_index=m.end() + 1,
+                                             lines_before=[],
+                                             lines_after=[])
                 self.add_search_result(search_result)
+                if self.settings.firstmatch:
+                    break
 
     def search_text_file(self, sf):
         """Search a text file"""

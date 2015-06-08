@@ -54,7 +54,7 @@ class SearchResult(object):
                       self.match_start_index, self.match_end_index))
             sio.write(': {0}'.format(self.__format_matching_line()))
         else:
-            sio.write(' matches')
+            sio.write(' matches at [{0}:{1}]'.format(self.match_start_index, self.match_end_index))
         s = sio.getvalue()
         sio.close()
         return s
