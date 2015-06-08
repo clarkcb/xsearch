@@ -254,7 +254,7 @@ class Searcher (settings: SearchSettings) {
         // single-byte encoding
         searchTextFileSource(sf, Source.fromFile(sf.toFile, "ISO-8859-1"))
       case FileType.Binary =>
-        searchBinaryFileSource(sf, Source.fromFile(sf.toFile))
+        searchBinaryFileSource(sf, Source.fromFile(sf.toFile, "ISO-8859-1"))
       case FileType.Archive =>
         searchArchiveFileSource(sf, Source.fromFile(sf.toFile))
       case _ =>
@@ -507,8 +507,19 @@ class Searcher (settings: SearchSettings) {
     }
     val contents = source.mkString
     source.close()
-    for (p <- settings.searchPatterns if p.findFirstIn(contents).isDefined) {
-      addSearchResult(new SearchResult(p, Some(sf), 0, 0, 0, null))
+    for (p <- settings.searchPatterns) {
+      val matchIterator =
+        if (settings.firstMatch) p.findAllIn(contents).matchData.take(1)
+        else p.findAllIn(contents).matchData
+      for (m <- matchIterator) {
+        addSearchResult(new SearchResult(
+          p,
+          Some(sf),
+          0,
+          m.start + 1,
+          m.end + 1,
+          null))
+      }
     }
   }
 

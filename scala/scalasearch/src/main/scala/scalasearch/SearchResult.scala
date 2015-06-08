@@ -31,7 +31,7 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
         ": %d: [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
           formatMatchingLine)
       } else {
-        " matches"
+        " matches at [%d:%d]".format(matchStartIndex, matchEndIndex)
       }
     filepath + matchString
   }
