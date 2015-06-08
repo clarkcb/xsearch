@@ -614,9 +614,20 @@ public class Searcher {
             String content = FileUtil.getFileContents(sf.toFile(), "ISO8859-1");
             for (Pattern p : settings.getSearchPatterns()) {
                 Matcher m = p.matcher(content);
-                // TODO: find all matches and include start and end indices
-                if (m.find()) {
-                    addSearchResult(new SearchResult(p, sf, 0, 0, 0, ""));
+                boolean found = m.find();
+                while (found) {
+                    addSearchResult(new SearchResult(
+                            p,
+                            sf,
+                            0,
+                            m.start() + 1,
+                            m.end() + 1,
+                            ""));
+                    if (settings.getFirstMatch()) {
+                        found = false;
+                    } else {
+                        found = m.find(m.end());
+                    }
                 }
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {

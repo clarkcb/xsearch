@@ -154,7 +154,11 @@ public class SearchResult {
             sb.append(noSearchFileText);
         }
         if (this.lineNum == 0) {
-            sb.append(" matches");
+            sb.append(" matches at [")
+                    .append(matchStartIndex)
+                    .append(":")
+                    .append(matchEndIndex)
+                    .append("]");
         } else {
             sb.append(": ")
                     .append(lineNum)
