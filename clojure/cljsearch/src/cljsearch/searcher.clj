@@ -161,7 +161,33 @@
   (if (:verbose settings)
     (log-msg (format "Searching archive file %s" f))))
 
-(defn search-binary-string-for-pattern [b p settings]
+(defn search-binary-string-for-pattern
+  ([b p settings]
+    (let [m (re-matcher p b)]
+      (if (.find m 0)
+        (search-binary-string-for-pattern b m 0 settings)
+        [])))
+  ([b m i settings]
+    (if (.find m i)
+      (do
+        (let [startmatchindex (.start m)
+              endmatchindex (.end m)
+              result (->SearchResult
+                       (.pattern m)
+                       nil
+                       0
+                       (+ startmatchindex 1)
+                       (+ endmatchindex 1)
+                       ""
+                       []
+                       [])]
+          (if (:firstmatch settings)
+            [result]
+            (concat [result] (search-binary-string-for-pattern b m
+              endmatchindex settings)))))
+      [])))
+
+(defn search-binary-string-for-pattern-old [b p settings]
   (if (:debug settings)
     (log-msg (format "Searching binary string for pattern %s" p)))
   (if (re-find p b)

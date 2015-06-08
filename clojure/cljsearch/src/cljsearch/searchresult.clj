@@ -42,7 +42,8 @@
     (str
       (:file r) ": " (:linenum r) ": [" (:startmatchindex r) ":"
       (:endmatchindex r) "]: " (str/trim (:line r)))
-    (str (:file r) " matches")))
+    (str (:file r) " matches at [" (:startmatchindex r) ":"
+      (:endmatchindex r) "]")))
 
 (defn search-result-to-string [r]
   (if
