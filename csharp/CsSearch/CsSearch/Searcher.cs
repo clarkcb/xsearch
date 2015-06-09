@@ -601,12 +601,19 @@ namespace CsSearch
 			Results.Add(searchResult);
 		}
 
-		public void PrintResults()
+		private IList<SearchResult> GetSortedSearchResults()
 		{
 			IComparer<SearchResult> comparer = new SearchResultsComparer();
-			Results.ToList().Sort(comparer);
-			Log(string.Format("Search results ({0}):", Results.Count));
-			foreach (var searchResult in Results)
+			var sorted = Results.ToList();
+			sorted.Sort(comparer);
+			return sorted;
+		}
+
+		public void PrintResults()
+		{
+			var sortedResults = GetSortedSearchResults();
+			Log(string.Format("Search results ({0}):", sortedResults.Count));
+			foreach (var searchResult in sortedResults)
 			{
 				Log(searchResult.ToString(Settings));
 			}
