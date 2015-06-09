@@ -5,7 +5,7 @@ function log_msg($msg) {
 }
 
 function cmp_ignorecase($s1, $s2) {
-    return strcmp(strtoupper($s1), strtoupper($s2));
+    return strcmp(strtolower($s1), strtolower($s2));
 }
 
 function cmp_searchresults($r1, $r2) {
