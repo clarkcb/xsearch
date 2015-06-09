@@ -9,6 +9,7 @@
 from collections import deque
 from cStringIO import StringIO
 from datetime import datetime, timedelta
+from functools import cmp_to_key
 import os
 
 TARFILE_MODULE_AVAILABLE = True
@@ -29,7 +30,7 @@ import common
 from filetypes import FileType, FileTypes
 from fileutil import FileUtil
 from searchfile import SearchFile
-from searchresult import SearchResult
+from searchresult import SearchResult, cmp_searchresults
 
 class Searcher(object):
     """a class to search files"""
@@ -610,9 +611,14 @@ class Searcher(object):
         fullfile = os.path.abspath(search_result.filename)
         self.filedict.setdefault(fullfile, list()).append(search_result)
 
+    def get_sorted_results(self):
+        return sorted(self.results, key=cmp_to_key(cmp_searchresults))
+
+
     def print_results(self):
-        common.log('Search results (%d):' % len(self.results))
-        for r in self.results:
+        sorted_results = self.get_sorted_results()
+        common.log('Search results (%d):' % len(sorted_results))
+        for r in sorted_results:
             self.print_result(r)
 
     def print_result(self, search_result):
@@ -627,17 +633,6 @@ class Searcher(object):
             common.log(s)
         except UnicodeEncodeError:
             common.log(repr(s))
-
-    def print_res_counts(self):
-        """Print result counts"""
-        for p in self.patterndict:
-            if p in self.rescounts:
-                match = 'match'
-                if self.rescounts[p] > 1:
-                    match += 'es'
-                common.log('{0} {1} for "{2}"'.format(self.rescounts[p], match, p))
-            else:
-                common.log('0 matches for "{0}"'.format(p))
 
     def get_matching_dirs(self, pattern=None):
         """Get list of dirs with matches for a given pattern
