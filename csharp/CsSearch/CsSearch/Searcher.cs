@@ -505,8 +505,9 @@ namespace CsSearch
 			var linesBefore = new Queue<string>();
 			var linesAfter = new Queue<string>();
 			var lineEnumerator = lines.GetEnumerator();
+			var stop = false;
 
-			while (lineEnumerator.MoveNext() || linesAfter.Count > 0)
+			while ((lineEnumerator.MoveNext() || linesAfter.Count > 0) && !stop)
 			{
 				lineNum++;
 				var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
@@ -529,7 +530,8 @@ namespace CsSearch
 						{
 							if (Settings.FirstMatch && patternMatches.ContainsKey(p))
 							{
-								continue;
+								stop = true;
+								break;
 							}
 							results.Add(new SearchResult(p,
 								null,
@@ -558,7 +560,6 @@ namespace CsSearch
 			return results;
 		}
 
-		// TODO: switch to use SearchLines with buffering
 		private void SearchBinaryFile(SearchFile f)
 		{
 			if (Settings.Verbose)
@@ -569,8 +570,23 @@ namespace CsSearch
 				using (var sr = new StreamReader(f.FullName))
 				{
 					var contents = sr.ReadToEnd();
-					foreach (var p in Settings.SearchPatterns.Where(p => p.Match(contents).Success)) {
-						AddSearchResult(new SearchResult(p, f, 0, 0, 0, null));
+					foreach (var p in Settings.SearchPatterns)
+					{
+						var matches = p.Matches(contents).Cast<Match>();
+						if (Settings.FirstMatch)
+						{
+							matches = matches.Take(1);
+						}
+						foreach (var m in matches)
+						{
+							AddSearchResult(new SearchResult(
+								p,
+								f,
+								0,
+								m.Index + 1,
+								m.Index + m.Length + 1,
+								null));
+						}
 					}
 				}
 			}

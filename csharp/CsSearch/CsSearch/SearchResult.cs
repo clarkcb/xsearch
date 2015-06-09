@@ -106,8 +106,7 @@ namespace CsSearch
 			var sb = new StringBuilder().Append(FileUtil.GetRelativePath(File.FullName, settings.StartPath));
 			if (LineNum == 0)
 			{
-				//sb.Append(" has match for pattern \"" + SearchPattern + "\"");
-				sb.Append(" matches");
+				sb.Append(string.Format(" matches at [{0}:{1}]", MatchStartIndex, MatchEndIndex));
 			}
 			else
 			{
