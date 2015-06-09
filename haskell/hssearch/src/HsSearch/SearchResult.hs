@@ -38,7 +38,9 @@ formatSearchResult :: SearchSettings -> SearchResult -> String
 formatSearchResult settings result = if lineNum result == 0
                                      then formatBinaryResult
                                      else formatTextResult
-  where formatBinaryResult = filePath result ++ " matches"
+  where formatBinaryResult = filePath result ++ " matches at [" ++
+                             show (matchStartIndex result) ++ ":" ++
+                             show (matchEndIndex result) ++ "]"
         beforeOrAfter = any (>0) [linesBefore settings, linesAfter settings]
         formatTextResult = if beforeOrAfter
                            then formatMultiLine result

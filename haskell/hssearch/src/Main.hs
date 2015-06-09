@@ -10,7 +10,7 @@ import System.TimeIt
 
 import HsSearch.FileUtil (pathExists)
 import HsSearch.SearchOptions
-import HsSearch.Searcher
+import HsSearch.Searcher (getSearchDirs, getSearchFiles, doSearchFiles)
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
@@ -71,7 +71,7 @@ byteStringToUpper = BC.pack . map toUpper . BC.unpack
 
 sortCaseInsensitive :: [B.ByteString] -> [B.ByteString]
 sortCaseInsensitive = sortBy compareCaseInsensitive
-  where compareCaseInsensitive a b = (byteStringToUpper a) `compare` (byteStringToUpper b)
+  where compareCaseInsensitive a b = byteStringToUpper a `compare` byteStringToUpper b
 
 getMatchingLines :: [SearchResult] -> Bool -> [B.ByteString]
 getMatchingLines results unique | unique = (sortCaseInsensitive . nub . map trimLine) results

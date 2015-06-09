@@ -127,17 +127,24 @@ searchBinaryFile settings f = do
 
 searchBlob :: SearchSettings -> B.ByteString -> [SearchResult]
 searchBlob settings blob =
-  concatMap (searchBlobForPattern blob) (searchPatterns settings)
+  concatMap (searchBlobForPattern settings blob) (searchPatterns settings)
 
-searchBlobForPattern :: B.ByteString -> String -> [SearchResult]
-searchBlobForPattern blob pattern = [blobResult pattern | hasMatch]
-  where hasMatch = blob =~ pattern :: Bool
-        blobResult p = blankSearchResult { searchPattern=p
-                                         , lineNum=0
-                                         , matchStartIndex=0
-                                         , matchEndIndex=0
-                                         , line=B.empty
-                                         }
+searchBlobForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
+searchBlobForPattern settings blob = patternResults
+  where lineMatchIndices :: String -> [(Int,Int)]
+        lineMatchIndices p = if firstMatch settings
+                               then take 1 $ matchIndices blob p
+                               else matchIndices blob p
+        patternResults :: String -> [SearchResult]
+        patternResults p = map (resultFromPatternMatchIndices p) (lineMatchIndices p)
+        resultFromPatternMatchIndices :: String -> (Int, Int) -> SearchResult
+        resultFromPatternMatchIndices p ix =
+          blankSearchResult { searchPattern=p
+                            , lineNum=0
+                            , matchStartIndex=fst ix + 1
+                            , matchEndIndex=snd ix + 1
+                            , line=B.empty
+                            }
 
 searchTextFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFile settings f =
