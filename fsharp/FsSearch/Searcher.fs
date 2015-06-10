@@ -279,6 +279,17 @@ type Searcher (settings : SearchSettings) =
         let fileadd = _fileSet.Add(searchResult.File)
         _results.Add(searchResult)
 
+    member this.GetSortedResults : SearchResult list = 
+        this.Results
+        |> Seq.sortBy (fun r -> r.SortKey)
+        |> List.ofSeq
+
+    member this.PrintResults = 
+        let sortedResults = this.GetSortedResults
+        Common.Log (sprintf "\nSearch results (%d):" this.Results.Count)
+        sortedResults
+        |> Seq.iter (fun r -> Common.Log (sprintf "%s" (r.ToString())))
+
     member this.GetMatchingDirs : DirectoryInfo list = 
         this.Results
         |> Seq.map (fun r -> r.File.Directory)

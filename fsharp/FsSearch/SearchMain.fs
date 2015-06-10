@@ -26,10 +26,7 @@ module Main =
         searcher.Search()
 
         if settings.PrintResults then
-            Common.Log (sprintf "\nSearch results (%d):" searcher.Results.Count)
-            searcher.Results
-            |> Seq.sortBy (fun r -> r.File.FullName)
-            |> Seq.iter (fun r -> Common.Log (sprintf "%s" (r.ToString())))
+            searcher.PrintResults
 
         if settings.ListDirs then
             searcher.PrintMatchingDirs
