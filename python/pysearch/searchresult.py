@@ -7,6 +7,25 @@
 #
 ################################################################################
 from cStringIO import StringIO
+import os
+
+def cmp_strings(s1, s2):
+    if s1 == s2:
+        return 0
+    if s1 < s2:
+        return -1
+    return 1
+
+def cmp_searchresults(r1, r2):
+    pathcmp = cmp_strings(os.path.dirname(r1.filename), os.path.dirname(r2.filename))
+    if pathcmp != 0:
+        return pathcmp
+    filecmp = cmp_strings(os.path.basename(r1.filename), os.path.basename(r2.filename))
+    if filecmp != 0:
+        return filecmp
+    if r1.linenum == r2.linenum:
+        return r1.match_start_index - r2.match_start_index
+    return r1.linenum - r2.linenum
 
 def __atmost_before_index(s, maxlen, start_index):
     if start_index >= maxlen:

@@ -682,8 +682,8 @@ public class Searcher {
     }
 
     public final List<String> getMatchingDirs() {
-        return searchFileSet.stream().map(SearchFile::getPath).sorted()
-                .collect(Collectors.toList());
+        return searchFileSet.stream().map(SearchFile::getPath).distinct()
+                .sorted().collect(Collectors.toList());
     }
 
     public final void printMatchingDirs() {
