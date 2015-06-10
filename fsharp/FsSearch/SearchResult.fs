@@ -40,5 +40,7 @@ type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
                 Append(matchString)
         sb.ToString()
 
+    member this.SortKey = 
+        (this.File.DirectoryName.ToUpper(), this.File.Name.ToUpper(), this.LineNum, this.MatchStartIndex)
 
     ;;
