@@ -31,7 +31,7 @@ type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
     member this.SingleLineToString() =
         let matchString =
             if this.LineNum = 0 then
-                sprintf " has match for pattern \"%s\"" (this.SearchPattern.ToString())
+                sprintf " matches at [%d:%d]" this.MatchStartIndex this.MatchEndIndex
             else
                 sprintf ": %d: [%d:%d]: %s" this.LineNum this.MatchStartIndex this.MatchEndIndex (this.Line.Trim())
         let sb =
@@ -41,6 +41,6 @@ type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
         sb.ToString()
 
     member this.SortKey = 
-        (this.File.DirectoryName.ToUpper(), this.File.Name.ToUpper(), this.LineNum, this.MatchStartIndex)
+        (this.File.DirectoryName.ToLower(), this.File.Name.ToLower(), this.LineNum, this.MatchStartIndex)
 
     ;;

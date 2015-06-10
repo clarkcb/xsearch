@@ -271,7 +271,22 @@ type Searcher (settings : SearchSettings) =
             use sr = new StreamReader (f.FullName)
             let contents = sr.ReadToEnd()
             for p in Seq.filter (fun p -> (p:Regex).Match(contents).Success) _settings.SearchPatterns do
-                this.AddSearchResult (new SearchResult(p, f, 0, 0, 0, null, [], []))
+                let mutable m = p.Match contents
+                let mutable stop = false
+                while m.Success && not stop do
+                    let matchStartIndex = m.Index + 1
+                    let matchEndIndex = m.Index + m.Length + 1
+                    this.AddSearchResult (new SearchResult(p,
+                                                           f,
+                                                           0,
+                                                           matchStartIndex,
+                                                           matchEndIndex,
+                                                           null,
+                                                           [],
+                                                           []))
+                    if _settings.FirstMatch then
+                        stop <- true
+                    m <- m.NextMatch()
         with
         | :? IOException as ex -> printfn "%s" (ex.Message)
 
