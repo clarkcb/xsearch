@@ -9,24 +9,6 @@
 from cStringIO import StringIO
 import os
 
-def cmp_strings(s1, s2):
-    if s1 == s2:
-        return 0
-    if s1 < s2:
-        return -1
-    return 1
-
-def cmp_searchresults(r1, r2):
-    pathcmp = cmp_strings(os.path.dirname(r1.filename), os.path.dirname(r2.filename))
-    if pathcmp != 0:
-        return pathcmp
-    filecmp = cmp_strings(os.path.basename(r1.filename), os.path.basename(r2.filename))
-    if filecmp != 0:
-        return filecmp
-    if r1.linenum == r2.linenum:
-        return r1.match_start_index - r2.match_start_index
-    return r1.linenum - r2.linenum
-
 def __atmost_before_index(s, maxlen, start_index):
     if start_index >= maxlen:
         return '...' + s[start_index - maxlen - 3:start_index]
@@ -58,6 +40,12 @@ class SearchResult(object):
         self.match_end_index = 0
         self.maxlinelength = 150
         self.__dict__.update(kargs)
+
+    def sortkey(self):
+        path = os.path.dirname(self.filename).lower()
+        filename = os.path.basename(self.filename).lower()
+        return (path, filename, self.linenum, self.match_start_index)
+
 
     def __str__(self):
         if self.lines_before or self.lines_after:

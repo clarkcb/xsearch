@@ -9,7 +9,6 @@
 from collections import deque
 from cStringIO import StringIO
 from datetime import datetime, timedelta
-from functools import cmp_to_key
 import os
 
 TARFILE_MODULE_AVAILABLE = True
@@ -30,7 +29,7 @@ import common
 from filetypes import FileType, FileTypes
 from fileutil import FileUtil
 from searchfile import SearchFile
-from searchresult import SearchResult, cmp_searchresults
+from searchresult import SearchResult
 
 class Searcher(object):
     """a class to search files"""
@@ -612,7 +611,7 @@ class Searcher(object):
         self.filedict.setdefault(fullfile, list()).append(search_result)
 
     def get_sorted_results(self):
-        return sorted(self.results, key=cmp_to_key(cmp_searchresults))
+        return sorted(self.results, key=lambda r: r.sortkey())
 
 
     def print_results(self):
