@@ -15,18 +15,43 @@ type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
     member val MatchStartIndex = matchStartIndex with get,set
     member val MatchEndIndex = matchEndIndex with get,set
     member val Line = line with get,set
-    member val LinesBefore = [] with get,set
-    member val LinesAfter = [] with get,set
+    member val LinesBefore = linesBefore with get,set
+    member val LinesAfter = linesAfter with get,set
 
     override this.ToString() =
         if this.LinesBefore.Length > 0 || this.LinesAfter.Length > 0 then
-            this.SingleLineToString()
+            this.MultLineToString()
         else
             this.SingleLineToString()
 
-    // TODO
+    member this.LineNumPadding() =
+        let maxLineNum = this.LineNum + this.LinesAfter.Length
+        (sprintf "%d" maxLineNum).Length
+
     member this.MultLineToString() =
-        this.SingleLineToString
+        let lines = new List<String>()
+        lines.Add(sprintf "%s\n%s: %d: [%d:%d]\n%s"
+                      (new String('=', 80))
+                      this.File.FullName
+                      this.LineNum
+                      this.MatchStartIndex
+                      this.MatchEndIndex
+                      (new String('-', 80)))
+        let mutable currentLineNum = this.LineNum
+        let lineFormat = sprintf " {0,%d} | {1}" (this.LineNumPadding())
+        if this.LinesBefore.Length > 0 then
+            currentLineNum <- this.LineNum - this.LinesBefore.Length
+            for lineBefore in this.LinesBefore do
+                lines.Add(String.Format(" "+lineFormat, currentLineNum, lineBefore))
+                currentLineNum <- currentLineNum + 1
+        lines.Add(String.Format(">" + lineFormat, this.LineNum, this.Line))
+        if this.LinesAfter.Length > 0 then
+            currentLineNum <- this.LineNum + 1
+            for lineAfter in this.LinesAfter do
+                lines.Add(String.Format(" "+lineFormat, currentLineNum, lineAfter))
+                currentLineNum <- currentLineNum + 1
+        lines.Add("")
+        lines |> List.ofSeq |> String.concat "\n" 
 
     member this.SingleLineToString() =
         let matchString =

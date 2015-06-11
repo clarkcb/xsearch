@@ -149,6 +149,8 @@ type SearchSettings() =
         String.Format(", InDirPatterns: {0}",  "[\"" + String.Join("\", \"", _inDirPatterns) + "\"]") +
         String.Format(", InExtensions: {0}",  "[\"" + String.Join("\", \"", _inExtensions) + "\"]") +
         String.Format(", InFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inFilePatterns) + "\"]") +
+        String.Format(", InLinesAfterPatterns: {0}",  "[\"" + String.Join("\", \"", _inLinesAfterPatterns) + "\"]") +
+        String.Format(", InLinesBeforePatterns: {0}",  "[\"" + String.Join("\", \"", _inLinesBeforePatterns) + "\"]") +
         String.Format(", LinesAfter: {0}", this.LinesAfter) +
         String.Format(", LinesBefore: {0}", this.LinesBefore) +
         String.Format(", ListDirs: {0}", this.ListDirs) +
@@ -159,6 +161,8 @@ type SearchSettings() =
         String.Format(", OutDirPatterns: {0}", "[\"" + String.Join("\", \"", _outDirPatterns) + "\"]") +
         String.Format(", OutExtensions: {0}", "[\"" + String.Join("\", \"", _outExtensions) + "\"]") +
         String.Format(", OutFilePatterns: {0}", "[\"" + String.Join("\", \"", _outFilePatterns) + "\"]") +
+        String.Format(", OutLinesAfterPatterns: {0}",  "[\"" + String.Join("\", \"", _outLinesAfterPatterns) + "\"]") +
+        String.Format(", OutLinesBeforePatterns: {0}",  "[\"" + String.Join("\", \"", _outLinesBeforePatterns) + "\"]") +
         String.Format(", PrintResults: {0}", this.PrintResults) +
         String.Format(", PrintUsage: {0}", this.PrintUsage) +
         String.Format(", PrintVersion: {0}", this.PrintVersion) +

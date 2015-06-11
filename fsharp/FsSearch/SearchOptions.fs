@@ -33,11 +33,11 @@ module SearchOptions =
             ("in-filepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInFilePattern(s)));
             ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInLinesAfterPattern(s)));
             ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInLinesBeforePattern(s)));
-            ("linesafter", (fun (s : string) (settings : SearchSettings) -> settings.LinesAfter = Int32.Parse(s) |> ignore));
+            ("linesafter", (fun (s : string) (settings : SearchSettings) -> settings.LinesAfter <- Int32.Parse(s)));
             ("linesaftertopattern", (fun (s : string) (settings : SearchSettings) -> settings.AddLinesAfterToPattern(s)));
             ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddLinesAfterUntilPattern(s)));
-            ("linesbefore", (fun (s : string) (settings : SearchSettings) -> settings.LinesBefore = Int32.Parse(s) |> ignore));
-            ("maxlinelength", (fun (s : string) (settings : SearchSettings) -> settings.MaxLineLength = Int32.Parse(s) |> ignore));
+            ("linesbefore", (fun (s : string) (settings : SearchSettings) -> settings.LinesBefore <- Int32.Parse(s)));
+            ("maxlinelength", (fun (s : string) (settings : SearchSettings) -> settings.MaxLineLength <- Int32.Parse(s)));
             ("out-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.AddOutArchiveExtension(s)));
             ("out-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutArchiveFilePattern(s)));
             ("out-dirpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutDirPattern(s)));

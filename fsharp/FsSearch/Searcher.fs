@@ -158,7 +158,7 @@ type Searcher (settings : SearchSettings) =
         | FileType.Binary -> this.SearchBinaryFile f
         | FileType.Text -> this.SearchTextFile f
         | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
-        | _ -> ()
+        | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.FullName)
         if _settings.DoTiming then
             this.StopTimer f.FullName
 
@@ -193,40 +193,83 @@ type Searcher (settings : SearchSettings) =
         let endLineIndices = newLineIndices
         List.zip startLineIndices endLineIndices
 
+    member this.LinesMatch (lines : string seq, inPatterns : ISet<Regex>,
+                            outPatterns : ISet<Regex>) =
+        (inPatterns.Count = 0 || (this.AnyMatchesAnyPattern lines inPatterns))
+        &&
+        (outPatterns.Count = 0  || (not (this.AnyMatchesAnyPattern lines outPatterns)))
+
+    member this.LinesBeforeMatch (linesBefore : string seq) =
+        this.LinesMatch (linesBefore, settings.InLinesBeforePatterns,
+                         settings.OutLinesBeforePatterns)
+
+    member this.LinesAfterMatch (linesAfter : string seq) =
+        this.LinesMatch(linesAfter, settings.InLinesAfterPatterns,
+                        settings.OutLinesAfterPatterns)
+
+    member this.TakeRight (ss : 'T list) (num : int) =
+        if ss.Length < num then
+            ss
+        else
+            ss
+            |> List.ofSeq
+            |> List.rev
+            |> Seq.take num
+            |> List.ofSeq
+            |> List.rev
+
     member this.SearchContents (s : string) =
         let patternMatches = new Dictionary<Regex, int>()
         let results = new List<SearchResult>()
         let lineIndices = this.GetLineIndices s
-        //Common.Log (Common.ListToString("lineIndices", lineIndices))
         for p in _settings.SearchPatterns do
             let mutable m = p.Match s
             let mutable stop = false
             while m.Success && not stop do
                 let matchStartIndex = m.Index
-                //Common.Log (sprintf "matchStartIndex: %d" matchStartIndex)
                 let matchEndIndex = m.Index + m.Length
-                //Common.Log (sprintf "matchEndIndex: %d" matchEndIndex)
-                let beforeIndices = Seq.takeWhile (fun i -> fst i <= matchStartIndex) lineIndices |> List.ofSeq
+                let startLineIndex = Seq.filter (fun i -> fst i < matchStartIndex) lineIndices |> Seq.max |> fst
+                //Common.Log (sprintf "startLineIndex: %d" startLineIndex)
+                let endLineIndex = Seq.filter (fun i -> snd i > matchStartIndex) lineIndices |> Seq.min |> snd
+                //Common.Log (sprintf "endLineIndex: %d" endLineIndex)
+                let beforeIndices = Seq.takeWhile (fun i -> fst i < startLineIndex) lineIndices |> List.ofSeq
                 //Common.Log (Common.ListToString("beforeIndices", beforeIndices))
                 let afterIndices = Seq.skipWhile (fun i -> fst i <= matchStartIndex) lineIndices |> List.ofSeq
-                //Common.Log (Common.ListToString("afterIndices", afterIndices))
-                let lineNum = beforeIndices.Length
-                //Common.Log (sprintf "lineNum: %d" lineNum)
-                let startLineIndex = Seq.last beforeIndices |> fst
-                //Common.Log (sprintf "startLineIndex: %d" startLineIndex)
-                let endLineIndex = Seq.last beforeIndices |> snd
-                //Common.Log (sprintf "endLineIndex: %d" endLineIndex)
+                let lineNum = beforeIndices.Length + 1
                 let line = s.Substring(startLineIndex, endLineIndex - startLineIndex)
-                results.Add(new SearchResult(p,
-                                             null,
-                                             lineNum,
-                                             matchStartIndex - startLineIndex + 1,
-                                             matchEndIndex - startLineIndex + 1,
-                                             line,
-                                             [],
-                                             []))
-                if _settings.FirstMatch then
-                    stop <- true
+                let beforeLineIndices = this.TakeRight beforeIndices settings.LinesBefore
+                //Common.Log (Common.ListToString("beforeLineIndices", beforeLineIndices))
+                let linesBefore =
+                    if settings.LinesBefore > 0 then
+                        beforeLineIndices
+                        |> List.map (fun (x,y) -> s.Substring(x, y - x))
+                    else
+                        []
+                let linesAfter =
+                    if settings.LinesAfter > 0 then
+                        if afterIndices.Length < settings.LinesAfter then
+                            afterIndices
+                            |> List.ofSeq
+                            |> List.map (fun (x,y) -> s.Substring(x, y - x))
+                        else
+                            afterIndices
+                            |> Seq.take(settings.LinesAfter)
+                            |> List.ofSeq
+                            |> List.map (fun (x,y) -> s.Substring(x, y - x))
+                    else
+                        []
+                if (linesBefore.Length = 0 || this.LinesBeforeMatch linesBefore) &&
+                   (linesAfter.Length = 0 || this.LinesAfterMatch linesAfter) then
+                    results.Add(new SearchResult(p,
+                                                 null,
+                                                 lineNum,
+                                                 matchStartIndex - startLineIndex + 1,
+                                                 matchEndIndex - startLineIndex + 1,
+                                                 line,
+                                                 linesBefore,
+                                                 linesAfter))
+                    if _settings.FirstMatch then
+                        stop <- true
                 m <- m.NextMatch()
         results
 
