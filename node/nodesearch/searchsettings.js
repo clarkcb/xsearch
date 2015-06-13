@@ -120,74 +120,41 @@ function SearchSettings() {
     };
 
     self.toString = function () {
-        var s = 'SearchSettings(startPath="' + self.startPath + '"';
-        if (self.inExtensions.length) {
-            s = s + ', ' + listToString('inExtensions', self.inExtensions);
-        }
-        if (self.outExtensions.length) {
-            s = s + ', ' + listToString('outExtensions', self.outExtensions);
-        }
-        if (self.inDirPatterns.length) {
-            s = s + ', ' + listToString('inDirPatterns', self.inDirPatterns);
-        }
-        if (self.outDirPatterns.length) {
-            s = s + ', ' + listToString('outDirPatterns', self.outDirPatterns);
-        }
-        if (self.inFilePatterns.length) {
-            s = s + ', ' + listToString('inFilePatterns', self.inFilePatterns);
-        }
-        if (self.outFilePatterns.length) {
-            s = s + ', ' + listToString('outFilePatterns', self.outFilePatterns);
-        }
-        if (self.inArchiveExtensions.length) {
-            s = s + ', ' + listToString('inArchiveExtensions', self.inArchiveExtensions);
-        }
-        if (self.outArchiveExtensions.length) {
-            s = s + ', ' + listToString('outArchiveExtensions', self.outArchiveExtensions);
-        }
-        if (self.inArchiveFilePatterns.length) {
-            s = s + ', ' + listToString('inArchiveFilePatterns', self.inArchiveFilePatterns);
-        }
-        if (self.outArchiveFilePatterns.length) {
-            s = s + ', ' + listToString('outArchiveFilePatterns', self.outArchiveFilePatterns);
-        }
-        if (self.inLinesAfterPatterns.length) {
-            s = s + ', ' + listToString('inLinesAfterPatterns', self.inLinesAfterPatterns);
-        }
-        if (self.outLinesAfterPatterns.length) {
-            s = s + ', ' + listToString('outLinesAfterPatterns', self.outLinesAfterPatterns);
-        }
-        if (self.inLinesBeforePatterns.length) {
-            s = s + ', ' + listToString('inLinesBeforePatterns', self.inLinesBeforePatterns);
-        }
-        if (self.outLinesBeforePatterns.length) {
-            s = s + ', ' + listToString('outLinesBeforePatterns', self.outLinesBeforePatterns);
-        }
-        if (self.linesAfterToPatterns.length) {
-            s = s + ', ' + listToString('linesAfterToPatterns', self.linesAfterToPatterns);
-        }
-        if (self.linesAfterUntilPatterns.length) {
-            s = s + ', ' + listToString('linesAfterUntilPatterns', self.linesAfterUntilPatterns);
-        }
-        if (self.searchPatterns.length) {
-            s = s + ', ' + listToString('searchPatterns', self.searchPatterns);
-        }
-        s = s + ', archivesOnly=' + self.archivesOnly;
+        var s = 'SearchSettings(';
+        s = s + 'archivesOnly=' + self.archivesOnly;
         s = s + ', debug=' + self.debug;
         s = s + ', doTiming=' + self.doTiming;
         s = s + ', excludeHidden=' + self.excludeHidden;
         s = s + ', firstMatch=' + self.firstMatch;
+        s = s + ', ' + listToString('inArchiveExtensions', self.inArchiveExtensions);
+        s = s + ', ' + listToString('inArchiveFilePatterns', self.inArchiveFilePatterns);
+        s = s + ', ' + listToString('inDirPatterns', self.inDirPatterns);
+        s = s + ', ' + listToString('inExtensions', self.inExtensions);
+        s = s + ', ' + listToString('inFilePatterns', self.inFilePatterns);
+        s = s + ', ' + listToString('inLinesAfterPatterns', self.inLinesAfterPatterns);
+        s = s + ', ' + listToString('inLinesBeforePatterns', self.inLinesBeforePatterns);
         s = s + ', linesAfter=' + self.linesAfter;
+        s = s + ', ' + listToString('linesAfterToPatterns', self.linesAfterToPatterns);
+        s = s + ', ' + listToString('linesAfterUntilPatterns', self.linesAfterUntilPatterns);
         s = s + ', linesBefore=' + self.linesBefore;
         s = s + ', listDirs=' + self.listDirs;
         s = s + ', listFiles=' + self.listFiles;
         s = s + ', listLines=' + self.listLines;
         s = s + ', maxLineLength=' + self.maxLineLength;
         s = s + ', multilineSearch=' + self.multilineSearch;
+        s = s + ', ' + listToString('outArchiveExtensions', self.outArchiveExtensions);
+        s = s + ', ' + listToString('outArchiveFilePatterns', self.outArchiveFilePatterns);
+        s = s + ', ' + listToString('outDirPatterns', self.outDirPatterns);
+        s = s + ', ' + listToString('outExtensions', self.outExtensions);
+        s = s + ', ' + listToString('outFilePatterns', self.outFilePatterns);
+        s = s + ', ' + listToString('outLinesAfterPatterns', self.outLinesAfterPatterns);
+        s = s + ', ' + listToString('outLinesBeforePatterns', self.outLinesBeforePatterns);
         s = s + ', printResults=' + self.printResults;
         s = s + ', printVersion=' + self.printVersion;
         s = s + ', recursive=' + self.recursive;
         s = s + ', searchArchives=' + self.searchArchives;
+        s = s + ', ' + listToString('searchPatterns', self.searchPatterns);
+        s = s + ',  startPath="' + self.startPath + '"';
         s = s + ', uniqueLines=' + self.uniqueLines;
         s = s + ', verbose=' + self.verbose;
         s = s + ')';

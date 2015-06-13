@@ -9,8 +9,7 @@ import Data.List.Split (splitOn)
 import HsSearch.FileUtil (normalizeExtension)
 
 data SearchSettings = SearchSettings {
-                                       startPath :: String
-                                     , archivesOnly :: Bool
+                                       archivesOnly :: Bool
                                      , debug :: Bool
                                      , doTiming :: Bool
                                      , excludeHidden :: Bool
@@ -44,14 +43,14 @@ data SearchSettings = SearchSettings {
                                      , recursive :: Bool
                                      , searchArchives :: Bool
                                      , searchPatterns :: [String]
+                                     , startPath :: String
                                      , uniqueLines :: Bool
                                      , verbose :: Bool
                                      } deriving (Show, Eq)
 
 defaultSearchSettings :: SearchSettings
 defaultSearchSettings = SearchSettings {
-                                         startPath=""
-                                       , archivesOnly=False
+                                         archivesOnly=False
                                        , debug=False
                                        , doTiming=False
                                        , excludeHidden=True
@@ -85,6 +84,7 @@ defaultSearchSettings = SearchSettings {
                                        , recursive=True
                                        , searchArchives=False
                                        , searchPatterns=[]
+                                       , startPath=""
                                        , uniqueLines=False
                                        , verbose=False
                                        }

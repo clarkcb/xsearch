@@ -456,35 +456,48 @@ public class SearchSettings {
     }
 
     public final String toString() {
-        return "SearchSettings(" + "startPath: \"" + this.startPath + "\"" +
-                ", inExtensions: " + stringSetToString(this.inExtensions) +
-                ", outExtensions: " + stringSetToString(this.outExtensions) +
-                ", inDirPatterns: " + patternSetToString(this.inDirPatterns) +
-                ", outDirPatterns: " + patternSetToString(this.outDirPatterns) +
-                ", inFilePatterns: " + patternSetToString(this.inFilePatterns) +
-                ", outFilePatterns: " + patternSetToString(this.outFilePatterns) +
-                ", searchPatterns: " + patternSetToString(this.searchPatterns) +
-                ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions) +
-                ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions) +
-                ", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns) +
-                ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns) +
-                ", archivesOnly: " + this.archivesOnly +
+        String startPath;
+        if (null==this.startPath) {
+            startPath = "\"\"";
+        } else {
+            startPath = "\"" + this.startPath + "\"";
+        }
+        return "SearchSettings(" +
+                "archivesOnly: " + this.archivesOnly +
                 ", debug: " + this.debug +
                 ", doTiming: " + this.doTiming +
                 ", excludeHidden: " + this.excludeHidden +
                 ", firstMatch: " + this.firstMatch +
+                ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions) +
+                ", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns) +
+                ", inDirPatterns: " + patternSetToString(this.inDirPatterns) +
+                ", inExtensions: " + stringSetToString(this.inExtensions) +
+                ", inFilePatterns: " + patternSetToString(this.inFilePatterns) +
+                ", inLinesAfterPatterns: " + patternSetToString(this.inLinesAfterPatterns) +
+                ", inLinesBeforePatterns: " + patternSetToString(this.inLinesBeforePatterns) +
                 ", linesAfter: " + this.linesAfter +
+                ", linesAfterToPatterns: " + patternSetToString(this.linesAfterToPatterns) +
+                ", linesAfterUntilPatterns: " + patternSetToString(this.linesAfterUntilPatterns) +
                 ", linesBefore: " + this.linesBefore +
                 ", listDirs: " + this.listDirs +
                 ", listFiles: " + this.listFiles +
                 ", listLines: " + this.listLines +
                 ", maxLineLength: " + this.maxLineLength +
                 ", multiLineSearch: " + this.multiLineSearch +
+                ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions) +
+                ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns) +
+                ", outDirPatterns: " + patternSetToString(this.outDirPatterns) +
+                ", outExtensions: " + stringSetToString(this.outExtensions) +
+                ", outFilePatterns: " + patternSetToString(this.outFilePatterns) +
+                ", outLinesAfterPatterns: " + patternSetToString(this.outLinesAfterPatterns) +
+                ", outLinesBeforePatterns: " + patternSetToString(this.outLinesBeforePatterns) +
                 ", printResults: " + this.printResults +
                 ", printUsage: " + this.printUsage +
                 ", printVersion: " + this.printVersion +
                 ", recursive: " + this.recursive +
                 ", searchArchives: " + this.searchArchives +
+                ", searchPatterns: " + patternSetToString(this.searchPatterns) +
+                ", startPath: " + startPath +
                 ", uniqueLines: " + this.uniqueLines +
                 ", verbose: " + this.verbose +
                 ")";

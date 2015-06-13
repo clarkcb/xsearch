@@ -63,7 +63,7 @@ sub bool_to_string {
 
 sub aref_to_string {
     my ($self, $aref) = @_;
-    my $s = '(';
+    my $s = '[';
     if (@$aref) {
         foreach my $i (0..$#{$aref}) {
             if ($i > 0) {
@@ -72,7 +72,7 @@ sub aref_to_string {
             $s .= '"' . $aref->[$i] . '"';
         }
     }
-    $s .= ')';
+    $s .= ']';
     return $s;
 }
 
@@ -92,16 +92,29 @@ sub to_string {
     $s .= ', dotiming=' . $self->bool_to_string($self->{dotiming});
     $s .= ', excludehidden=' . $self->bool_to_string($self->{excludehidden});
     $s .= ', firstmatch=' . $self->bool_to_string($self->{firstmatch});
+    $s .= ', in_archiveextensions=' . $self->aref_to_string($self->{in_archiveextensions});
+    $s .= ', in_archivefilepatterns=' . $self->aref_to_string($self->{in_archivefilepatterns});
     $s .= ', in_dirpatterns=' . $self->aref_to_string($self->{in_dirpatterns});
     $s .= ', in_extensions=' . $self->aref_to_string($self->{in_extensions});
     $s .= ', in_filepatterns=' . $self->aref_to_string($self->{in_filepatterns});
+    $s .= ', in_linesafterpatterns=' . $self->aref_to_string($self->{in_linesafterpatterns});
+    $s .= ', in_linesbeforepatterns=' . $self->aref_to_string($self->{in_linesbeforepatterns});
     $s .= ', linesafter=' . $self->{linesafter};
+    $s .= ', linesaftertopatterns=' . $self->aref_to_string($self->{linesaftertopatterns});
+    $s .= ', linesafteruntilpatterns=' . $self->aref_to_string($self->{linesafteruntilpatterns});
     $s .= ', linesbefore=' . $self->{linesbefore};
     $s .= ', listdirs=' . $self->bool_to_string($self->{listdirs});
     $s .= ', listfiles=' . $self->bool_to_string($self->{listfiles});
     $s .= ', listlines=' . $self->bool_to_string($self->{listlines});
     $s .= ', maxlinelength=' . $self->{maxlinelength};
     $s .= ', multilinesearch=' . $self->bool_to_string($self->{multilinesearch});
+    $s .= ', out_archiveextensions=' . $self->aref_to_string($self->{out_archiveextensions});
+    $s .= ', out_archivefilepatterns=' . $self->aref_to_string($self->{out_archivefilepatterns});
+    $s .= ', out_dirpatterns=' . $self->aref_to_string($self->{out_dirpatterns});
+    $s .= ', out_extensions=' . $self->aref_to_string($self->{out_extensions});
+    $s .= ', out_filepatterns=' . $self->aref_to_string($self->{out_filepatterns});
+    $s .= ', out_linesafterpatterns=' . $self->aref_to_string($self->{out_linesafterpatterns});
+    $s .= ', out_linesbeforepatterns=' . $self->aref_to_string($self->{out_linesbeforepatterns});
     $s .= ', printresults=' . $self->bool_to_string($self->{printresults});
     $s .= ', printusage=' . $self->bool_to_string($self->{printusage});
     $s .= ', printversion=' . $self->bool_to_string($self->{printversion});

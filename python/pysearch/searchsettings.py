@@ -11,15 +11,15 @@ import re
 class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
-    _extension_set_names = '''in_extensions out_extensions
-                              in_archiveextensions out_archiveextensions'''.split()
-    _pattern_set_names = '''in_dirpatterns out_dirpatterns
-                            in_filepatterns out_filepatterns
-                            in_archivefilepatterns out_archivefilepatterns
-                            in_linesafterpatterns out_linesafterpatterns
-                            in_linesbeforepatterns out_linesbeforepatterns
-                            linesaftertopatterns linesafteruntilpatterns
-                            searchpatterns'''.split()
+    _extension_set_names = set('''in_extensions out_extensions
+                                  in_archiveextensions out_archiveextensions'''.split())
+    _pattern_set_names = set('''in_dirpatterns out_dirpatterns
+                                in_filepatterns out_filepatterns
+                                in_archivefilepatterns out_archivefilepatterns
+                                in_linesafterpatterns out_linesafterpatterns
+                                in_linesbeforepatterns out_linesbeforepatterns
+                                linesaftertopatterns linesafteruntilpatterns
+                                searchpatterns'''.split())
     _props_with_defaults = {
         'archivesonly': False,
         'debug': False,
@@ -43,7 +43,7 @@ class SearchSettings(object):
     }
 
     def __init__(self):
-        self.startpath = None
+        self.startpath = ''
         for name in self._extension_set_names:
             self.__dict__[name] = set()
         for name in self._pattern_set_names:
@@ -67,17 +67,29 @@ class SearchSettings(object):
             self.set_property(p, propdict[p])
 
     def __str__(self):
-        s = '{0}(startpath: "{1}"'.format(self.__class__.__name__, self.startpath)
-        for name in self._extension_set_names:
-            if self.__dict__[name]:
-                s += ', {0}: {1!s}'.format(name, self.__dict__[name])
-        for name in self._pattern_set_names:
-            if self.__dict__[name]:
-                pattern_strings = [p.pattern for p in self.__dict__[name]]
-                s += ', {0}: {1!s}'.format(name, pattern_strings)
-        prop_names = self._props_with_defaults.keys()
-        prop_names.sort()
-        for name in prop_names:
-            s += ', {0}: {1!s}'.format(name, self.__dict__[name])
+        all_props = set(['startpath']) | self._extension_set_names | \
+            self._pattern_set_names | set(self._props_with_defaults.keys())
+        print_dict = {}
+        s = '{0}('.format(self.__class__.__name__)
+        for p in sorted(all_props):
+            val = self.__dict__[p]
+            if type(val) == set:
+                if p in self._pattern_set_names:
+                    print_dict[p] = str([x.pattern for x in val])
+                else:
+                    print_dict[p] = str(list(val))
+            elif type(val) in set([str, unicode]):
+                if val:
+                    print_dict[p] = '"{0}"'.format(val)
+                else:
+                    print_dict[p] = '""'
+            else:
+                print_dict[p] = '{0!s}'.format(val)
+        next_elem = 0
+        for p in sorted(print_dict.keys()):
+            if next_elem:
+                s += ', '
+            s += '{0}: {1}'.format(p, print_dict[p])
+            next_elem += 1
         s += ')'
         return s

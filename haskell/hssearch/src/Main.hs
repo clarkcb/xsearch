@@ -106,8 +106,7 @@ main = do
   searchOptions <- getSearchOptions
   let settings = settingsFromArgs searchOptions args
   logMsg $ if debug settings
-           then "\nsettingsFromArgs " ++ show args ++ ": " ++ show settings ++
-                "\n"
+           then "\nsettings: " ++ show settings ++ "\n"
            else ""
   case errsOrUsage searchOptions settings of
     Just usage -> logMsg $ usage ++ "\n"

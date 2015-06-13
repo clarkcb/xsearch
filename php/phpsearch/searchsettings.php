@@ -57,12 +57,12 @@ class SearchSettings {
     }
 
     public function __toString() {
-        $s = "SearchSettings(startpath: \"{$this->startpath}\"";
-        $s .= ', archivesonly: ' . $this->bool_to_string($this->archivesonly);
+        $s = 'SearchSettings(';
+        $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);
         $s .= ', dotiming: ' . $this->bool_to_string($this->dotiming);
-        $s .= ', firstmatch: ' . $this->bool_to_string($this->firstmatch);
         $s .= ', excludehidden: ' . $this->bool_to_string($this->excludehidden);
+        $s .= ', firstmatch: ' . $this->bool_to_string($this->firstmatch);
         $s .= ', in_archiveextensions: ' . $this->arr_to_string($this->in_archiveextensions);
         $s .= ', in_archivefilepatterns: ' . $this->arr_to_string($this->in_archivefilepatterns);
         $s .= ', in_dirpatterns: ' . $this->arr_to_string($this->in_dirpatterns);
@@ -71,6 +71,8 @@ class SearchSettings {
         $s .= ', in_linesafterpatterns: ' . $this->arr_to_string($this->in_linesafterpatterns);
         $s .= ', in_linesbeforepatterns: ' . $this->arr_to_string($this->in_linesbeforepatterns);
         $s .= ', linesafter: ' . $this->linesafter;
+        $s .= ', linesaftertopatterns: ' . $this->arr_to_string($this->linesaftertopatterns);
+        $s .= ', linesafteruntilpatterns: ' . $this->arr_to_string($this->linesafteruntilpatterns);
         $s .= ', linesbefore: ' . $this->linesbefore;
         $s .= ', listdirs: ' . $this->bool_to_string($this->listdirs);
         $s .= ', listfiles: ' . $this->bool_to_string($this->listfiles);
@@ -82,12 +84,15 @@ class SearchSettings {
         $s .= ', out_dirpatterns: ' . $this->arr_to_string($this->out_dirpatterns);
         $s .= ', out_extensions: ' . $this->arr_to_string($this->out_extensions);
         $s .= ', out_filepatterns: ' . $this->arr_to_string($this->out_filepatterns);
+        $s .= ', out_linesafterpatterns: ' . $this->arr_to_string($this->out_linesafterpatterns);
+        $s .= ', out_linesbeforepatterns: ' . $this->arr_to_string($this->out_linesbeforepatterns);
         $s .= ', printresults: ' . $this->bool_to_string($this->printresults);
         $s .= ', printusage: ' . $this->bool_to_string($this->printusage);
         $s .= ', printversion: ' . $this->bool_to_string($this->printversion);
         $s .= ', recursive: ' . $this->bool_to_string($this->recursive);
         $s .= ', searcharchives: ' . $this->bool_to_string($this->searcharchives);
         $s .= ', searchpatterns: ' . $this->arr_to_string($this->searchpatterns);
+        $s .= ', startpath: "' . $this->startpath . '"';
         $s .= ', uniquelines: ' . $this->bool_to_string($this->uniquelines);
         $s .= ', verbose: ' . $this->bool_to_string($this->verbose);
         $s .= ')';
