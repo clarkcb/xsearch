@@ -78,7 +78,7 @@ type SearchSettings() =
                 else "." + x
             set.Add(ext) |> ignore
 
-    member this.AddPattern(set : HashSet<Regex>, pattern : string) =
+    member this.AddPattern(set : ISet<Regex>, pattern : string) =
         let success = set.Add(new Regex(pattern))
         ()
 
@@ -141,6 +141,12 @@ type SearchSettings() =
         this.Debug <- true
         this.Verbose <- true
 
+    member this.SetToString<'T>(set : ISet<'T>) =
+        if set.Count > 0 then
+            "[\"" + String.Join("\", \"", set) + "\"]"
+        else
+            "[]"
+
     override this.ToString() =
         "SearchSettings(" +
         String.Format("ArchivesOnly: {0}", this.ArchivesOnly) +
@@ -150,7 +156,7 @@ type SearchSettings() =
         String.Format(", FirstMatch: {0}", this.FirstMatch) +
         String.Format(", InArchiveExtensions: {0}",  "[\"" + String.Join("\", \"", _inArchiveExtensions) + "\"]") +
         String.Format(", InArchiveFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inArchiveFilePatterns) + "\"]") +
-        String.Format(", InDirPatterns: {0}",  "[\"" + String.Join("\", \"", _inDirPatterns) + "\"]") +
+        String.Format(", InDirPatterns: {0}", this.SetToString( _inDirPatterns)) +
         String.Format(", InExtensions: {0}",  "[\"" + String.Join("\", \"", _inExtensions) + "\"]") +
         String.Format(", InFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inFilePatterns) + "\"]") +
         String.Format(", InLinesAfterPatterns: {0}",  "[\"" + String.Join("\", \"", _inLinesAfterPatterns) + "\"]") +
