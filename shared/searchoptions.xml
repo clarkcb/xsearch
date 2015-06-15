@@ -45,7 +45,7 @@
   <searchoption long="in-linesbeforepattern" short="">
     Specify pattern to search the "lines-before" lines on
   </searchoption>
-  <searchoption long="linesafter" short="B">
+  <searchoption long="linesafter" short="L">
     Number of lines to include after every matched line (default: 0)
   </searchoption>
   <searchoption long="linesaftertopattern" short="">
@@ -54,7 +54,7 @@
   <searchoption long="linesafteruntilpattern" short="">
     Specify pattern to collect lines after until pattern matched
   </searchoption>
-  <searchoption long="linesbefore" short="b">
+  <searchoption long="linesbefore" short="l">
     Number of lines to include before every matched line (default: 0)
   </searchoption>
   <searchoption long="listdirs" short="">
