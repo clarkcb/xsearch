@@ -267,7 +267,7 @@ public class SearchSettings {
     // could be a comma-separated list
     private static void addExtensions(Set<String> set, final String exts) {
         for (String x : exts.split(",")) {
-            if (!x.equals("")) {
+            if (!x.isEmpty()) {
                 set.add(x.toLowerCase());
             }
         }

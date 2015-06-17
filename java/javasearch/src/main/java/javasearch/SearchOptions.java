@@ -124,7 +124,7 @@ public class SearchOptions {
         settings.setPrintResults(true);
 
         // add short arg mappings
-        options.stream().filter(o -> !o.getShortArg().equals("")).forEach(o -> {
+        options.stream().filter(o -> !o.getShortArg().isEmpty()).forEach(o -> {
             if (argActionMap.containsKey(o.getLongArg())) {
                 argActionMap.put(o.getShortArg(), argActionMap.get(o.getLongArg()));
             } else if (flagActionMap.containsKey(o.getLongArg())) {
@@ -177,7 +177,7 @@ public class SearchOptions {
         for (SearchOption opt : this.options) {
             StringBuilder optString = new StringBuilder();
             String shortArg = opt.getShortArg();
-            if (null != shortArg && !shortArg.equals("")) {
+            if (null != shortArg && !shortArg.isEmpty()) {
                 optString.append("-").append(shortArg).append(",");
             }
             optString.append("--").append(opt.getLongArg());

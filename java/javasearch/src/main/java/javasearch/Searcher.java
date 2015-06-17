@@ -50,11 +50,11 @@ public class Searcher {
     }
 
     public final void validateSettings() throws SearchException {
-        if (null == settings.getStartPath() || settings.getStartPath().equals("")) {
+        String startPath = settings.getStartPath();
+        if (null == startPath || startPath.isEmpty()) {
             throw new SearchException("Startpath not defined");
         }
-        File startPathFile = new File(settings.getStartPath());
-        if (!startPathFile.exists()) {
+        if (!(new File(startPath)).exists()) {
             throw new SearchException("Startpath not found");
         }
         if (settings.getSearchPatterns().isEmpty()) {

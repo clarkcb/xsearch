@@ -58,7 +58,7 @@ public class FileUtil {
         String[] elems = path.split(File.separator);
         List<String> nonDotDirElems = new ArrayList<>();
         for (String elem : elems) {
-            if (!isDotDir(elem) && !elem.equals("")) { nonDotDirElems.add(elem); }
+            if (!isDotDir(elem) && !elem.isEmpty()) { nonDotDirElems.add(elem); }
         }
         return nonDotDirElems;
     }

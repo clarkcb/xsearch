@@ -36,7 +36,7 @@ public class SearchOption {
     }
 
     public final String getSortArg() {
-        if (null != this.shortArg && !this.shortArg.equals("")) {
+        if (null != this.shortArg && !this.shortArg.isEmpty()) {
             return this.shortArg.toLowerCase() + "@" + this.longArg;
         }
         return this.longArg;

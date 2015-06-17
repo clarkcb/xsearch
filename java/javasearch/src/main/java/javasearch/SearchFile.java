@@ -76,7 +76,7 @@ public class SearchFile {
             }
             sb.append(CONTAINER_SEPARATOR);
         }
-        if (path != null && !path.equals("")) {
+        if (path != null && !path.isEmpty()) {
             sb.append(path).append(File.separator);
         }
         sb.append(fileName);
