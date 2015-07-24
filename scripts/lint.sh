@@ -23,7 +23,7 @@ source "$DIR/common.sh"
 lint_clojure () {
     echo
     log "lint_clojure"
-    CLJSEARCH_PATH=$XSEARCH_PATH/clojure/cljsearch
+    CLJSEARCH_PATH=$CLOJURE_PATH/cljsearch
 
     # Analyze
     log "Analyzing cljsearch"
@@ -36,7 +36,6 @@ lint_clojure () {
 lint_csharp () {
     echo
     log "lint_csharp"
-    CSHARP_PATH=$XSEARCH_PATH/csharp
 
     # Analyze
     log "not implemented at this time"
@@ -45,7 +44,6 @@ lint_csharp () {
 lint_fsharp () {
     echo
     log "lint_fsharp"
-    FSHARP_PATH=$XSEARCH_PATH/fsharp
 
     # Analyze
     log "not implemented at this time"
@@ -54,8 +52,8 @@ lint_fsharp () {
 lint_go () {
     echo
     log "lint_go"
-    export GOPATH=$XSEARCH_PATH/go
-    SRC_PATH=$GOPATH/src
+    export GOPATH=$GO_PATH
+    SRC_PATH=$GO_PATH/src
     PACKAGE=elocale.com/clarkcb/xsearch
 
     # Analyze
@@ -69,7 +67,6 @@ lint_go () {
 lint_haskell () {
     echo
     log "lint_haskell"
-    HASKELL_PATH=$XSEARCH_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
     HLINT=$HSSEARCH_PATH/.cabal-sandbox/bin/hlint
 
@@ -82,7 +79,6 @@ lint_haskell () {
 lint_java () {
     echo
     log "lint_java"
-    JAVA_PATH=$XSEARCH_PATH/java
     JAVASEARCH_PATH=$JAVA_PATH/javasearch
     JAVA7=/Library/Java/JavaVirtualMachines/jdk1.7.0_60.jdk/Contents/Home/bin/java
     TOOLS_PATH=$JAVA_PATH/tools
@@ -118,9 +114,14 @@ lint_java () {
 lint_node () {
     echo
     log "lint_node"
-    NODE_PATH=$XSEARCH_PATH/node
     NODESEARCH_PATH=$NODE_PATH/nodesearch
     JSHINT=$NODE_PATH/node_modules/jshint/bin/jshint
+
+    if [ ! -f $JSHINT ]; then
+        cd $NODE_PATH
+        npm install jshint
+        cd -
+    fi
 
     # Analyze
     log "Analyzing nodesearch"
@@ -134,7 +135,6 @@ lint_node () {
 lint_perl () {
     echo
     log "lint_perl"
-    PERL_PATH=$XSEARCH_PATH/perl
 
     # Analyze
     log "not implemented at this time"
@@ -161,7 +161,6 @@ lint_php () {
 lint_python () {
     echo
     log "lint_python"
-    PYTHON_PATH=$XSEARCH_PATH/python
 
     # Analyze
     log "Analyzing pysearch.py"
@@ -174,7 +173,6 @@ lint_python () {
 lint_ruby () {
     echo
     log "lint_ruby"
-    RUBY_PATH=$XSEARCH_PATH/ruby
     RBSEARCH_PATH=$RUBY_PATH/rbsearch
 
     # Analyze
@@ -189,7 +187,6 @@ lint_ruby () {
 lint_scala () {
     echo
     log "lint_scala"
-    SCALA_PATH=$XSEARCH_PATH/scala
     SCALASEARCH_PATH=$SCALA_PATH/scalasearch
     TOOLS_PATH=$SCALA_PATH/tools
     #SCALASTYLE=$TOOLS_PATH/scalastyle_2.11-0.6.0-batch.jar
@@ -216,7 +213,6 @@ lint_swift () {
     # $ sudo brew install swiftlint
     echo
     log "lint_swift"
-    SWIFT_PATH=$XSEARCH_PATH/swift
     SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
 
     # Analyze the swift files

@@ -43,7 +43,7 @@ copy_test_resources () {
 build_clojure () {
     echo
     log "build_clojure"
-    CLJSEARCH_PATH=$XSEARCH_PATH/clojure/cljsearch
+    CLJSEARCH_PATH=$CLOJURE_PATH/cljsearch
     RESOURCES_PATH=$CLJSEARCH_PATH/resources
 
     # copy the shared xml files to the local resource location
@@ -63,7 +63,6 @@ build_clojure () {
 build_csharp () {
     echo
     log "build_csharp"
-    CSHARP_PATH=$XSEARCH_PATH/csharp
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
     CONFIGURATION=Debug
     #CONFIGURATION=Release
@@ -82,7 +81,6 @@ build_csharp () {
 build_fsharp () {
     echo
     log "build_fsharp"
-    FSHARP_PATH=$XSEARCH_PATH/fsharp
     RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
     CONFIGURATION=Debug
     #CONFIGURATION=Release
@@ -100,7 +98,7 @@ build_fsharp () {
 build_go () {
     echo
     log "build_go"
-    export GOPATH=$XSEARCH_PATH/go
+    export GOPATH=$GO_PATH
     export PATH=$GOPATH/bin:$PATH
 
     # build the code to generate the dynamic code for gosearch
@@ -127,7 +125,6 @@ build_go () {
 build_haskell () {
     echo
     log "build_haskell"
-    HASKELL_PATH=$XSEARCH_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
     SANDBOX_PATH=$HSSEARCH_PATH/.cabal-sandbox
     RESOURCES_PATH=$HSSEARCH_PATH/data
@@ -157,7 +154,6 @@ build_haskell () {
 build_java () {
     echo
     log "build_java"
-    JAVA_PATH=$XSEARCH_PATH/java
     JAVASEARCH_PATH=$JAVA_PATH/javasearch
     RESOURCES_PATH=$JAVASEARCH_PATH/src/main/resources
     TEST_RESOURCES_PATH=$JAVASEARCH_PATH/src/test/resources
@@ -179,7 +175,6 @@ build_java () {
 build_node () {
     echo
     log "build_node"
-    NODE_PATH=$XSEARCH_PATH/node
     DOM_JS_PATH=$NODE_PATH/node_modules/dom-js
 
     if [ ! -d $DOM_JS_PATH ]; then
@@ -192,7 +187,6 @@ build_node () {
 build_scala () {
     echo
     log "build_scala"
-    SCALA_PATH=$XSEARCH_PATH/scala
     SCALASEARCH_PATH=$SCALA_PATH/scalasearch
     RESOURCES_PATH=$SCALASEARCH_PATH/src/main/resources
     TEST_RESOURCES_PATH=$SCALASEARCH_PATH/src/test/resources
@@ -215,7 +209,6 @@ build_scala () {
 build_swift () {
     echo
     log "build_swift"
-    SWIFT_PATH=$XSEARCH_PATH/swift
     SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
 
     # TODO: copy resource files locally?
