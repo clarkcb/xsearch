@@ -489,14 +489,14 @@ sub search_lines {
             $line = shift(@{$lines});
         }
         if (!$line) {
-            break SEARCHLINES;
+            last SEARCHLINES;
         }
         $linenum++;
         if ($self->{settings}->{linesafter}) {
             while(scalar @{$lines_after} < $self->{settings}->{linesafter}) {
                 my $line_after = shift(@{$lines});
                 if (!$line_after) {
-                    break SEARCHLINES;
+                    last SEARCHLINES;
                 } else {
                     push(@{$lines_after}, $line_after);
                 }
