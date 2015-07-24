@@ -46,6 +46,15 @@ exports.testGetHiddenNoExtension = function(test) {
 }
 
 /***************************************************************************
+ * getRelativePath tests
+ **************************************************************************/
+exports.testGetRelativePath = function(test) {
+    var filepath = "/Users/cary/filename.txt";
+    test.ok(FileUtil.getRelativePath(filepath, '.') === "./filename.txt", "relativepath === ./filenametxt");
+    test.done();
+}
+
+/***************************************************************************
  * isDotDir tests
  **************************************************************************/
 exports.testIsDotDirSingleDot = function(test) {

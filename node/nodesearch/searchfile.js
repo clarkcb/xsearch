@@ -16,7 +16,7 @@ function SearchFile(path, filename, filetype) {
 
     self.toString = function () {
         var s = '';
-        if (self.containers.length > {
+        if (self.containers.length > 0) {
             s = self.containers.join(self.containerSeparator) + self.containerSeparator;
         }
         s += path.join(self.path, self.filename);

@@ -7,6 +7,8 @@
 var fs = require('fs');
 var path = require('path');
 
+var common = require('./common.js');
+
 function FileUtil() {}
 
 FileUtil.expandPath = function (filepath) {
@@ -34,6 +36,12 @@ FileUtil.getFileContents = function (filepath) {
 
 FileUtil.getFileLines = function (filepath) {
     return FileUtil.getFileContents(filepath).split(/\r?\n/);
+};
+
+FileUtil.getRelativePath = function (filepath, startpath) {
+    if (startpath === '.' && filepath.startsWith(process.env.HOME)) {
+        return '.' + filepath.substring(process.env.HOME.length);
+    }
 };
 
 FileUtil.isDotDir = function (filepath) {
