@@ -687,8 +687,12 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
+  def getSearchResults: List[SearchResult] = {
+    _searchResults.sortWith(cmpSearchResults).toList
+  }
+
   def printSearchResults(): Unit = {
-    _searchResults.sortWith(cmpSearchResults).foreach(printSearchResult)
+    getSearchResults.foreach(printSearchResult)
  }
 
   private def printSearchResult(r: SearchResult): Unit = {
@@ -701,13 +705,13 @@ class Searcher (settings: SearchSettings) {
   }
 
   def getMatchingDirs: List[File] = {
-    _searchResults.view.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
-      distinct.sortWith(_.toString < _.toString).toList
+    getSearchResults.view.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
+      distinct.toList
   }
 
   def getMatchingFiles: List[File] = {
-    _searchResults.view.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
-      sortWith(_.toString < _.toString).toList
+    getSearchResults.view.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
+      toList
   }
 
   def getMatchingLines: List[String] = {
