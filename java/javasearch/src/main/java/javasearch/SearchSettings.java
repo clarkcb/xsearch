@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 
 public class SearchSettings {
 
+    private static final int INITIAL_SET_CAPACITY = 4;
+
     private String startPath;
 
     private Set<String> inExtensions;
@@ -57,24 +59,24 @@ public class SearchSettings {
     private boolean verbose;
 
     public SearchSettings() {
-        this.inExtensions = new HashSet<>();
-        this.outExtensions = new HashSet<>();
-        this.inDirPatterns = new HashSet<>();
-        this.outDirPatterns = new HashSet<>();
-        this.inFilePatterns = new HashSet<>();
-        this.outFilePatterns = new HashSet<>();
-        this.inArchiveExtensions = new HashSet<>();
-        this.outArchiveExtensions = new HashSet<>();
-        this.inArchiveFilePatterns = new HashSet<>();
-        this.outArchiveFilePatterns = new HashSet<>();
-        this.inLinesAfterPatterns = new HashSet<>();
-        this.outLinesAfterPatterns = new HashSet<>();
-        this.inLinesBeforePatterns = new HashSet<>();
-        this.outLinesBeforePatterns = new HashSet<>();
-        this.linesAfterToPatterns = new HashSet<>();
-        this.linesAfterUntilPatterns = new HashSet<>();
+        this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.linesAfterToPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.linesAfterUntilPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
 
-        this.searchPatterns = new HashSet<>();
+        this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
 
         // set the defaults
         this.archivesOnly = false;

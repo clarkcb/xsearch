@@ -41,7 +41,7 @@ public class SearchOptions {
         void set(String s, SearchSettings settings);
     }
 
-    private Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>() {
+    private Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(24) {
         {
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
             put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
@@ -71,7 +71,7 @@ public class SearchOptions {
         void set(SearchSettings settings);
     }
 
-    private Map<String, FlagSetter> flagActionMap = new HashMap<String, FlagSetter>() {
+    private Map<String, FlagSetter> flagActionMap = new HashMap<String, FlagSetter>(24) {
         {
             put("archivesonly", (settings) -> settings.setArchivesOnly(true));
             put("allmatches", (settings) -> settings.setFirstMatch(false));

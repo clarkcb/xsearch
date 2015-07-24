@@ -23,7 +23,7 @@ public class FileTypes {
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String, Set<String>> getFileTypeMap() {
-        Map<String, Set<String>> ftMap = new HashMap<>();
+        Map<String, Set<String>> ftMap = new HashMap<>(8);
         InputStream fileTypesInputStream = getClass().
                 getResourceAsStream(FILETYPESXMLPATH);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
