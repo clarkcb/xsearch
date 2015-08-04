@@ -1,8 +1,10 @@
 package xsearch
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -21,10 +23,14 @@ func getExtension(file string) string {
 
 func getHome() string {
 	home := ""
+	homeName := "HOME"
+	if runtime.GOOS == "windows" {
+		homeName = "USERPROFILE"
+	}
 	env := os.Environ()
 	for _, x := range env {
-		if strings.HasPrefix(x, "HOME=") {
-			home = strings.TrimPrefix(x, "HOME=")
+		if strings.HasPrefix(x, homeName+"=") {
+			home = strings.TrimPrefix(x, homeName+"=")
 			break
 		}
 	}
@@ -49,4 +55,15 @@ func isHidden(file string) bool {
 
 func normalizePath(path string) string {
 	return strings.TrimRight(path, "/\\")
+}
+
+func relativePath(path string, startPath string) string {
+	homePath := getHome()
+	log(fmt.Sprintf("homePath:%s", homePath))
+	relativePath := path
+	if startPath == "." && strings.HasPrefix(path, homePath) {
+		log("path starts with homePath")
+		relativePath = "." + strings.TrimPrefix(path, homePath)
+	}
+	return relativePath
 }
