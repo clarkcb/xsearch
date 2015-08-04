@@ -4,8 +4,8 @@
  * Some nodeunit tests of filetypes.js
  */
 
-var FileType = require('../nodesearch/filetype.js').FileType;
-var FileTypes = require('../nodesearch/filetypes.js').FileTypes;
+var FileType = require('../src/filetype.js').FileType;
+var FileTypes = require('../src/filetypes.js').FileTypes;
 
 exports.testFileTypesArchiveFile = function(test) {
     var fileTypes = new FileTypes();

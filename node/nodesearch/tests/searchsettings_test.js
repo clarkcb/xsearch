@@ -4,7 +4,7 @@
  * Some nodeunit tests of searchsettings.js
  */
 
-var SearchSettings = require('../nodesearch/searchsettings.js').SearchSettings;
+var SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
 exports.testDefaultSettings = function(test) {
     var settings = new SearchSettings();

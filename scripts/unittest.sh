@@ -98,24 +98,22 @@ unittest_node () {
     echo
     log "unittest_node"
     NODE_PATH=$XSEARCH_PATH/node
-    TESTS_PATH=$NODE_PATH/tests
-    NODEUNIT_PATH=$NODE_PATH/node_modules/nodeunit
+    NODESEARCH_PATH=$NODE_PATH/nodesearch
+    TESTS_PATH=$NODESEARCH_PATH/tests
+    NODEUNIT_PATH=$NODESEARCH_PATH/node_modules/nodeunit
     NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
 
     if [ ! -d $NODEUNIT_PATH ]; then
         log "nodeunit not installed, installing"
-        cd $NODE_PATH
+        cd $NODESEARCH_PATH
         npm install nodeunit
         cd -
     fi
 
     # run tests via maven
     log "Unit-testing nodesearch"
-    FILES=$(find $TESTS_PATH -name "*.js")
-    for f in ${FILES[*]}; do
-        log "nodeunit $f"
-        $NODEUNIT $f
-    done
+    log "nodeunit $TESTS_PATH"
+    $NODEUNIT $TESTS_PATH
 }
 
 unittest_perl () {

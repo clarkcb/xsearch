@@ -4,7 +4,7 @@
  * Some nodeunit tests of fileutil.js
  */
 
-var FileUtil = require('../nodesearch/fileutil.js').FileUtil;
+var FileUtil = require('../src/fileutil.js').FileUtil;
 
 /***************************************************************************
  * getExtension tests

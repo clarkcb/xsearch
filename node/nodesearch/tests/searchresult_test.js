@@ -4,9 +4,9 @@
  * Some nodeunit tests of searchresult.js
  */
 
-var common = require('../nodesearch/common.js');
-var config = require('../nodesearch/config.js');
-var SearchResult = require('../nodesearch/searchresult.js').SearchResult;
+var common = require('../src/common.js');
+var config = require('../src/config.js');
+var SearchResult = require('../src/searchresult.js').SearchResult;
 
 var cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
 
@@ -30,17 +30,17 @@ exports.testSingleLineResult = function(test) {
 
 exports.testBinaryFileResult = function(test) {
     var pattern = 'Search';
-    var file = cssearch_path + '/Searcher.exe';
+    var file = cssearch_path + '/bin/Debug/CsSearch.exe';
     var linenum = 0;
-    var matchStartIndex = 0;
-    var matchEndIndex = 0;
+    var matchStartIndex = 5;
+    var matchEndIndex = 10;
     var line = "";
     var linesBefore = [];
     var linesAfter = [];
     var result = new SearchResult(pattern, file, linenum, matchStartIndex,
         matchEndIndex, line, linesBefore, linesAfter);
     var resultString = result.toString();
-    var expectedOutput = file + " matches";
+    var expectedOutput = file + " matches at [5:10]";
     test.ok(resultString === expectedOutput, "single-line result matches expected");
     test.done();
 }

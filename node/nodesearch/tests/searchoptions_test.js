@@ -4,7 +4,7 @@
  * Some nodeunit tests of searchoptions.js
  */
 
-var SearchOptions = require('../nodesearch/searchoptions.js').SearchOptions;
+var SearchOptions = require('../src/searchoptions.js').SearchOptions;
 
 exports.testNoArgs = function(test) {
     var searchOptions = new SearchOptions();
