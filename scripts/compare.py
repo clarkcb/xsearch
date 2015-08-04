@@ -19,9 +19,11 @@ from xsearch import *
 # Configuration
 ########################################
 #exts = ','.join('clj cs go hs java js pl php py rb scala'.split())
-exts = ','.join('py rb'.split())
-
+exts = 'cs,rb'
 startpath = default_startpath
+invalid_searchpattern = '"ZZYZZYZZY"'
+valid_searchpattern = '"Searcher"'
+utf8bom_searchpattern = r'"\xef\xbb\xbf"'
 
 scenarios = [
     Scenario('no args', [], True),

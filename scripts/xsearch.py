@@ -54,7 +54,7 @@ XSEARCHPATH = os.path.join(HOME, 'src', 'xsearch')
 default_startpath = XSEARCHPATH
 
 def nonmatching_lens(xsearch_output):
-    """Examines xsearch_output (a dict of xsearch_name : lines)
+    """Examines xsearch_output (a dict of {xsearch_name : [lines]})
        and returns a dict of xsearch instances with non-matching
        output line lengths ({xsearch_name: [non_matching_xsearch_names]})
     """
@@ -71,7 +71,7 @@ def nonmatching_lens(xsearch_output):
     return nonmatching
 
 def nonmatching_outputs(xsearch_output):
-    """Examines xsearch_output (a dict of xsearch_name : lines)
+    """Examines xsearch_output (a dict of {xsearch_name : [lines]})
        and returns a dict of xsearch instances with non-matching
        output ({xsearch_name: [non_matching_xsearch_names]})
     """
