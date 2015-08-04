@@ -1,6 +1,7 @@
 package xsearch
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -35,6 +36,14 @@ func TestGetExtension(t *testing.T) {
 		if ext := getExtension(k); ext != v {
 			t.Errorf("getExtension(\"%s\")=\"%s\", expected=\"%s\"", k, ext, v)
 		}
+	}
+}
+
+func TestGetHome(t *testing.T) {
+	homePath := getHome()
+	log(fmt.Sprintf("homePath: %s\n", homePath))
+	if homePath := getHome(); homePath == "" {
+		t.Errorf("getHome()=\"%s\", expected non-blank", homePath)
 	}
 }
 
@@ -85,6 +94,29 @@ func TestNormalizePath(t *testing.T) {
 	for k, v := range expected {
 		if p := normalizePath(k); p != v {
 			t.Errorf("normalizePath(\"%s\")=\"%s\", expected=\"%s\"", k, p, v)
+		}
+	}
+}
+
+func TestRelativePath(t *testing.T) {
+	homePath := getHome()
+	startPath := "."
+	expected := map[string]string{
+		".":                       ".",
+		"./":                      "./",
+		"..":                      "..",
+		"../":                     "../",
+		"path":                    "path",
+		"path/":                   "path/",
+		"long/path":               "long/path",
+		"long/path/":              "long/path/",
+		homePath:                  ".",
+		homePath + "/src/xsearch": "./src/xsearch",
+	}
+
+	for k, v := range expected {
+		if p := relativePath(k, startPath); p != v {
+			t.Errorf("relativePath(\"%s\")=\"%s\", expected=\"%s\"", k, p, v)
 		}
 	}
 }
