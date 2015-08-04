@@ -2,7 +2,14 @@
   "name": "nodesearch",
   "version": "1.0.0",
   "description": "An implementation of xsearch in JavaScript + Node.js",
-  "main": "nodesearch.js",
+  "author": {
+    "name": "Cary Clark",
+    "email": "clarkcb@gmail.com"
+  },
+  "main": "./src/nodesearch.js",
+  "bin": {
+    "nodesearch": "./bin/nodesearch"
+  },
   "scripts": {
     "test": "nodeunit ./tests"
   },
@@ -11,10 +18,11 @@
     "javascript",
     "node.js"
   ],
-  "author": "Cary Clark",
   "license": "MIT",
   "dependencies": {
     "dom-js": "0.0.9",
+  },
+  "devDependencies": {
     "jshint": "^2.8.0",
     "nodeunit": "^0.9.1"
   }
