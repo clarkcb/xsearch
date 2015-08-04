@@ -16,6 +16,11 @@ namespace CsSearch
 			{
 				var settings = options.SettingsFromArgs(args);
 
+				if (settings.Debug)
+				{
+					Log("settings: " + settings + "\n");
+				}
+
 				if (settings.PrintUsage)
 				{
 					options.Usage();

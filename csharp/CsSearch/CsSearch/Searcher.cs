@@ -18,8 +18,6 @@ namespace CsSearch
 		public Searcher(SearchSettings settings)
 		{
 			Settings = settings;
-			if (Settings.Verbose)
-				Log(Settings + "\n");
 			ValidateSettings();
 			_fileTypes = new FileTypes();
 			Results = new List<SearchResult>();
