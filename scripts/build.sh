@@ -175,7 +175,8 @@ build_java () {
 build_node () {
     echo
     log "build_node"
-    DOM_JS_PATH=$NODE_PATH/node_modules/dom-js
+    NODESEARCH_PATH=$NODE_PATH/nodesearch
+    DOM_JS_PATH=$NODESEARCH_PATH/node_modules/dom-js
 
     if [ ! -d $DOM_JS_PATH ]; then
         cd $NODE_PATH
