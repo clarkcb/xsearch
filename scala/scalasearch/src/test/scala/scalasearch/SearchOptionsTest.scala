@@ -231,9 +231,9 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     assert(settings.inLinesBeforePatterns.map(_.toString()).contains("Search"))
   }
 
-  // test -B / --linesafter
-  test("""test settingsFromArgs with args="-B 2" / "--linesafter 2" """) {
-    val shortArgs = Array("-B", "2") ++ requiredArgs
+  // test -L / --linesafter
+  test("""test settingsFromArgs with args="-L 2" / "--linesafter 2" """) {
+    val shortArgs = Array("-L", "2") ++ requiredArgs
     println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.linesAfter == 2)
@@ -264,9 +264,9 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     assert(settings.linesAfterUntilPatterns.toList.head.toString == "^\\]$")
   }
 
-  // test -b / --linesbefore
-  test("""test settingsFromArgs with args="-b 2" / "--linesbefore 2" """) {
-    val shortArgs = Array("-b", "2") ++ requiredArgs
+  // test -l / --linesbefore
+  test("""test settingsFromArgs with args="-l 2" / "--linesbefore 2" """) {
+    val shortArgs = Array("-l", "2") ++ requiredArgs
     println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.linesBefore == 2)
