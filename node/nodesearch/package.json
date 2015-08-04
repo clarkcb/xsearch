@@ -1,0 +1,21 @@
+{
+  "name": "nodesearch",
+  "version": "1.0.0",
+  "description": "An implementation of xsearch in JavaScript + Node.js",
+  "main": "nodesearch.js",
+  "scripts": {
+    "test": "nodeunit ./tests"
+  },
+  "keywords": [
+    "xsearch",
+    "javascript",
+    "node.js"
+  ],
+  "author": "Cary Clark",
+  "license": "MIT",
+  "dependencies": {
+    "dom-js": "0.0.9",
+    "jshint": "^2.8.0",
+    "nodeunit": "^0.9.1"
+  }
+}
