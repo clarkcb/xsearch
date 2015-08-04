@@ -406,7 +406,7 @@ public class SearcherTest {
     }
 
     /*************************************************************
-     * searchMultiLineString test
+     * searchMultiLineString tests
      *************************************************************/
     @Test
     public final void TestSearchMultiLineString() {
@@ -430,6 +430,43 @@ public class SearcherTest {
             assert(firstResult.getMatchEndIndex() == expectedFirstMatchEndIndex);
 
             SearchResult secondResult = results.get(1);
+            int expectedSecondLineNum = 29;
+            assert(secondResult.getLineNum() == expectedSecondLineNum);
+            int expectedSecondMatchStartIndex = 24;
+            assert(secondResult.getMatchStartIndex() == expectedSecondMatchStartIndex);
+            int expectedSecondMatchEndIndex = 32;
+            assert(secondResult.getMatchEndIndex() == expectedSecondMatchEndIndex);
+
+        } catch (IllegalArgumentException e) {
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public final void TestSearchMultiLineStringWithLinesBefore() {
+        SearchSettings settings = getSettings();
+        settings.setLinesBefore(2);
+        Searcher searcher = new Searcher(settings);
+        String contents;
+        try {
+            InputStream is = getClass().getResourceAsStream(testFilePath);
+            contents = FileUtil.getStreamContents(is);
+            //System.out.println("contents: " + contents);
+            List<SearchResult> results = searcher.searchMultiLineString(contents);
+
+            assert(results.size() == 2);
+
+            SearchResult firstResult = results.get(0);
+            System.out.println("firstResult:\n" + firstResult);
+            int expectedFirstLineNum = 23;
+            assert(firstResult.getLineNum() == expectedFirstLineNum);
+            int expectedFirstMatchStartIndex = 3;
+            assert(firstResult.getMatchStartIndex() == expectedFirstMatchStartIndex);
+            int expectedFirstMatchEndIndex = 11;
+            assert(firstResult.getMatchEndIndex() == expectedFirstMatchEndIndex);
+
+            SearchResult secondResult = results.get(1);
+            System.out.println("secondResult:\n" + secondResult);
             int expectedSecondLineNum = 29;
             assert(secondResult.getLineNum() == expectedSecondLineNum);
             int expectedSecondMatchStartIndex = 24;
