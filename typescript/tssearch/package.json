@@ -1,0 +1,35 @@
+{
+  "name": "tssearch",
+  "version": "0.1.0",
+  "description": "An implementation of xsearch in TypeScript + Node.js",
+  "author": {
+    "name": "Cary Clark",
+    "email": "clarkcb@gmail.com"
+  },
+  "main": "./src/tssearch.ts",
+  "bin": {
+    "nodesearch": "./bin/tssearch"
+  },
+  "scripts": {
+    "test": "nodeunit ./tests"
+  },
+  "keywords": [
+    "xsearch",
+    "typescript",
+    "node.js"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dom-js": "0.0.9"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-clean": "^0.3.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
+    "gulp-uglify": "^1.2.0",
+    "jshint": "^2.8.0",
+    "nodeunit": "^0.9.1"
+  }
+}

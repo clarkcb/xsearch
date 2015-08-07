@@ -1,0 +1,2 @@
+#!/bin/sh
+node ~/src/xsearch/typescript/tssearch/build/tssearch.js $@
