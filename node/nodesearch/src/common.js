@@ -5,7 +5,7 @@
  */
 
 // add a startsWith method to String type
-if (typeof String.prototype.startsWith != 'function') {
+if (typeof String.prototype.startsWith !== 'function') {
     String.prototype.startsWith = function (str) {
         return this.slice(0, str.length) == str;
     };
@@ -16,8 +16,8 @@ if (typeof String.prototype.startsWith != 'function') {
 if (!String.prototype.format) {
   String.prototype.format = function() {
     var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) { 
-      return typeof args[number] != 'undefined' ? args[number] : match;
+    return this.replace(/{(\d+)}/g, function(match, n) { 
+      return typeof args[n] !== 'undefined' ? args[n] : match;
     });
   };
 }
@@ -27,10 +27,18 @@ var log = function (message) {
 };
 exports.log = log;
 
+var logArray = function (message, arr) {
+    log(message);
+    for (var i = 0; i < arr.length; i++) {
+        log(arr[i]);
+    }
+};
+exports.logArray = logArray;
+
 var boolHashFromArray = function (arr) {
     var hash = {};
-    for (var a in arr) {
-        hash[arr[a]] = true;
+    for (var i = 0; i < arr.length; i++) {
+        hash[arr[i]] = true;
     }
     return hash;
 };
@@ -39,8 +47,10 @@ exports.boolHashFromArray = boolHashFromArray;
 var setFromArray = function (arr) {
     var hash = boolHashFromArray(arr);
     var set = [];
-    for (var h in hash) {
-        set.push(h);
+    for (var k in hash) {
+        if (hash.hasOwnProperty(k)) {
+            set.push(k);
+        }
     }
     return set;
 };

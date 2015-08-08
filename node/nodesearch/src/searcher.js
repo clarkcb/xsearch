@@ -34,8 +34,8 @@ function Searcher(settings) {
     };
 
     var matchesAnyPattern = function (s, patterns) {
-        for (var p in patterns) {
-            var pattern = patterns[p];
+        for (var i = 0; i < patterns.length; i++) {
+            var pattern = patterns[i];
             var match = pattern.exec(s);
             if (match) {
                 return true;
@@ -45,7 +45,7 @@ function Searcher(settings) {
     };
 
     var anyMatchesAnyPattern = function (ss, patterns) {
-        for (var i in ss) {
+        for (var i = 0; i < ss.length; i++) {
             if (matchesAnyPattern(ss[i], patterns)) {
                 return true;
             }
@@ -59,9 +59,9 @@ function Searcher(settings) {
         }
         var pathElems = dir.split(path.sep);
         if (_settings.excludeHidden) {
-            for (var p in pathElems) {
-                if (!matchesAnyElement(pathElems[p], ['.','..']) &&
-                    FileUtil.isHidden(pathElems[p])) {
+            for (var i = 0; i < pathElems.length; i++) {
+                if (!matchesAnyElement(pathElems[i], ['.','..']) &&
+                    FileUtil.isHidden(pathElems[i])) {
                     return false;
                 }
             }
@@ -159,8 +159,8 @@ function Searcher(settings) {
     var getSubDirs = function (dir) {
         var subDirs = [];
         var childItems = fs.readdirSync(dir);
-        for (var c in childItems) {
-            var filepath = path.join(dir, childItems[c]);
+        for (var i=0; i < childItems.length; i++) {
+            var filepath = path.join(dir, childItems[i]);
             try {
                 var stats = fs.statSync(filepath);
                 if (stats.isDirectory()) {
@@ -176,9 +176,9 @@ function Searcher(settings) {
     var recGetSearchDirs = function (currentDir) {
         var searchDirs = [];
         var subDirs = getSubDirs(currentDir);
-        for (var d in subDirs) {
-            if (self.isSearchDir(subDirs[d])) {
-                searchDirs.push(subDirs[d]);
+        for (var i=0; i < subDirs.length; i++) {
+            if (self.isSearchDir(subDirs[i])) {
+                searchDirs.push(subDirs[i]);
             }
             searchDirs.push.apply(searchDirs, recGetSearchDirs(subDirs[d]));
         }
@@ -188,8 +188,8 @@ function Searcher(settings) {
     var getFilesForDirectory = function (dir) {
         var files = [];
         var childItems = fs.readdirSync(dir);
-        for (var c in childItems) {
-            var filepath = path.join(dir, childItems[c]);
+        for (var i=0; i < childItems.length; i++) {
+            var filepath = path.join(dir, childItems[i]);
             try {
                 var stats = fs.statSync(filepath);
                 if (stats.isFile()) {
@@ -212,8 +212,8 @@ function Searcher(settings) {
     var getSearchFilesForDirectory = function (dir) {
         var searchFiles = [];
         var dirFiles = getFilesForDirectory(dir);
-        for (var d in dirFiles) {
-            var f = dirFiles[d];
+        for (var i=0; i < dirFiles.length; i++) {
+            var f = dirFiles[i];
             if (self.filterFile(f)) {
                 searchFiles.push(f);
             }
@@ -225,8 +225,8 @@ function Searcher(settings) {
         var searchFiles = [];
         var stats = fs.statSync(_settings.startPath);
         if (stats.isDirectory()) {
-            for (var d in searchDirs) {
-                searchFiles.push.apply(searchFiles, getSearchFilesForDirectory(searchDirs[d]));
+            for (var i=0; i < searchDirs.length; i++) {
+                searchFiles.push.apply(searchFiles, getSearchFilesForDirectory(searchDirs[i]));
             }
         } else if (stats.isFile()) {
             searchFiles.push(_settings.startPath);
@@ -285,8 +285,8 @@ function Searcher(settings) {
         }
         if (_settings.verbose) {
             common.log("\nDirectories to be searched ({0}):".format(dirs.length));
-            for (var d in dirs) {
-                common.log(dirs[d]);
+            for (var i=0; i < dirs.length; i++) {
+                common.log(dirs[i]);
             }
         }
 
@@ -301,15 +301,15 @@ function Searcher(settings) {
         }
         if (_settings.verbose) {
             common.log("\nFiles to be searched ({0}):".format(files.length));
-            for (var f in files) {
-                common.log(files[f]);
+            for (var i=0; i < files.length; i++) {
+                common.log(files[i]);
             }
             common.log("");
         }
 
         if (_settings.doTiming)
             startTimer("SearchFiles");
-        for (var i in files) {
+        for (var i=0; i < files.length; i++) {
             searchFile(files[i]);
         }
         if (_settings.doTiming) {
@@ -340,8 +340,8 @@ function Searcher(settings) {
         var contents = FileUtil.getFileContents(filepath);
         var pattern = '';
         var patternResults = {};
-        for (var p in _settings.searchPatterns) {
-            pattern = new RegExp(_settings.searchPatterns[p].source, "g");
+        for (var i=0; i < _settings.searchPatterns.length; i++) {
+            pattern = new RegExp(_settings.searchPatterns[i].source, "g");
             if (_settings.firstMatch && (pattern.source in patternResults)) {
                 break;
             }
@@ -387,7 +387,7 @@ function Searcher(settings) {
     var searchTextFileContents = function (filepath) {
         var contents = FileUtil.getFileContents(filepath);
         var results = self.searchMultiLineString(contents);
-        for (var i in results) {
+        for (var i=0; i < results.length; i++) {
             var r = results[i];
             var resultWithFilepath =
                 new SearchResult(r.pattern, filepath, r.linenum,
@@ -411,9 +411,9 @@ function Searcher(settings) {
         if (atIndices.length === 0)
             return [];
         var lines = [];
-        for (var a in atIndices) {
-            var i = atIndices[a];
-            var line = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
+        for (var i=0; i < atIndices.length; i++) {
+            var a = atIndices[i];
+            var line = s.substring(a, endLineIndices[startLineIndices.indexOf(a)]);
             lines.push(line);
         }
         return lines;
@@ -444,8 +444,8 @@ function Searcher(settings) {
         var plusOne = function(i) { return i+1; };
         var startLineIndices = [0].concat(newLineIndices.map(plusOne));
         var endLineIndices = newLineIndices.concat([s.length - 1]);
-        for (var p in _settings.searchPatterns) {
-            var pattern = new RegExp(_settings.searchPatterns[p].source, "g");
+        for (var i=0; i < _settings.searchPatterns.length; i++) {
+            var pattern = new RegExp(_settings.searchPatterns[i].source, "g");
             var match = pattern.exec(s);
             var stop = false;
             while (match && !stop) {
@@ -524,7 +524,7 @@ function Searcher(settings) {
     var searchTextFileLines = function (filepath) {
         var lines = FileUtil.getFileLines(filepath);
         var results = self.searchLines(lines);
-        for (var i in results) {
+        for (var i=0; i < results.length; i++) {
             var r = results[i];
             var resultWithFilepath =
                 new SearchResult(r.pattern, filepath, r.linenum,
@@ -560,8 +560,8 @@ function Searcher(settings) {
                     linesAfter.push(lines.shift());
                 }
             }
-            for (var p in _settings.searchPatterns) {
-                pattern = new RegExp(_settings.searchPatterns[p].source, "g");
+            for (var i=0; i < _settings.searchPatterns.length; i++) {
+                pattern = new RegExp(_settings.searchPatterns[i].source, "g");
                 var match = pattern.exec(line);
                 while (match) {
                     if ((_settings.linesBefore === 0 || linesBeforeMatch(linesBefore)) &&
@@ -616,15 +616,15 @@ function Searcher(settings) {
         // first sort the results
         self.results.sort(cmpSearchResults);
         common.log("\nSearch results ({0}):".format(self.results.length));
-        for (var r in self.results) {
-            common.log(self.results[r].toString());
+        for (var i=0; i < self.results.length; i++) {
+            common.log(self.results[i].toString());
         }
     };
 
     self.getMatchingDirs = function () {
         var dirs = [];
-        for (var r in self.results) {
-            var result = self.results[r];
+        for (var i=0; i < self.results.length; i++) {
+            var result = self.results[i];
             dirs.push(path.dirname(result.filename));
         }
         return common.setFromArray(dirs);
@@ -632,16 +632,13 @@ function Searcher(settings) {
 
     self.printMatchingDirs = function () {
         var dirs = self.getMatchingDirs();
-        common.log("\nDirectories with matches ({0}):".format(dirs.length));
-        for (var d in dirs) {
-            common.log(dirs[d]);
-        }
+        common.logArray("\nDirectories with matches ({0}):".format(dirs.length), dirs);
     };
 
     self.getMatchingFiles = function () {
         var files = [];
-        for (var r in self.results) {
-            var result = self.results[r];
+        for (var i=0; i < self.results.length; i++) {
+            var result = self.results[i];
             files.push(result.filename);
         }
         return common.setFromArray(files);
@@ -649,16 +646,13 @@ function Searcher(settings) {
 
     self.printMatchingFiles = function () {
         var files = self.getMatchingFiles();
-        common.log("\nFiles with matches ({0}):".format(files.length));
-        for (var f in files) {
-            common.log(files[f]);
-        }
+        common.logArray("\nFiles with matches ({0}):".format(files.length), files);
     };
 
     self.getMatchingLines = function () {
         var lines = [];
-        for (var r in self.results) {
-            var result = self.results[r];
+        for (var i=0; i < self.results.length; i++) {
+            var result = self.results[i];
             if (result.linenum)
                 lines.push(result.line.trim());
         }
@@ -680,8 +674,8 @@ function Searcher(settings) {
         else
             hdrText = "\nLines with matches ({0}):";
         common.log(hdrText.format(lines.length));
-        for (var l in lines) {
-            common.log(lines[l]);
+        for (var i=0; i < lines.length; i++) {
+            common.log(lines[i]);
         }
     };
 }

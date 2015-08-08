@@ -35,9 +35,9 @@ function SearchOptions() {
         'linesafter':
             function(x, settings) { settings.linesAfter = parseInt(x); },
         'linesaftertopattern':
-            function(x, settings) { settings.addInLinesAfterToPattern(x); },
+            function(x, settings) { settings.addLinesAfterToPattern(x); },
         'linesafteruntilpattern':
-            function(x, settings) { settings.addInLinesAfterUntilPattern(x); },
+            function(x, settings) { settings.addLinesAfterUntilPattern(x); },
         'linesbefore':
             function(x, settings) { settings.linesBefore = parseInt(x); },
         'maxlinelength':

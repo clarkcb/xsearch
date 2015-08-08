@@ -45,7 +45,7 @@ function SearchSettings() {
     self.verbose = false;
     var addExtensions = function (exts, arr) {
         var xs = exts.split(/,/);
-        for (var i in xs) {
+        for (var i = 0; i < xs.length; i++) {
             if (xs[i] !== '')
                 arr.push(xs[i]);
         }
@@ -120,45 +120,44 @@ function SearchSettings() {
     };
 
     self.toString = function () {
-        var s = 'SearchSettings(';
-        s = s + 'archivesOnly=' + self.archivesOnly;
-        s = s + ', debug=' + self.debug;
-        s = s + ', doTiming=' + self.doTiming;
-        s = s + ', excludeHidden=' + self.excludeHidden;
-        s = s + ', firstMatch=' + self.firstMatch;
-        s = s + ', ' + listToString('inArchiveExtensions', self.inArchiveExtensions);
-        s = s + ', ' + listToString('inArchiveFilePatterns', self.inArchiveFilePatterns);
-        s = s + ', ' + listToString('inDirPatterns', self.inDirPatterns);
-        s = s + ', ' + listToString('inExtensions', self.inExtensions);
-        s = s + ', ' + listToString('inFilePatterns', self.inFilePatterns);
-        s = s + ', ' + listToString('inLinesAfterPatterns', self.inLinesAfterPatterns);
-        s = s + ', ' + listToString('inLinesBeforePatterns', self.inLinesBeforePatterns);
-        s = s + ', linesAfter=' + self.linesAfter;
-        s = s + ', ' + listToString('linesAfterToPatterns', self.linesAfterToPatterns);
-        s = s + ', ' + listToString('linesAfterUntilPatterns', self.linesAfterUntilPatterns);
-        s = s + ', linesBefore=' + self.linesBefore;
-        s = s + ', listDirs=' + self.listDirs;
-        s = s + ', listFiles=' + self.listFiles;
-        s = s + ', listLines=' + self.listLines;
-        s = s + ', maxLineLength=' + self.maxLineLength;
-        s = s + ', multilineSearch=' + self.multilineSearch;
-        s = s + ', ' + listToString('outArchiveExtensions', self.outArchiveExtensions);
-        s = s + ', ' + listToString('outArchiveFilePatterns', self.outArchiveFilePatterns);
-        s = s + ', ' + listToString('outDirPatterns', self.outDirPatterns);
-        s = s + ', ' + listToString('outExtensions', self.outExtensions);
-        s = s + ', ' + listToString('outFilePatterns', self.outFilePatterns);
-        s = s + ', ' + listToString('outLinesAfterPatterns', self.outLinesAfterPatterns);
-        s = s + ', ' + listToString('outLinesBeforePatterns', self.outLinesBeforePatterns);
-        s = s + ', printResults=' + self.printResults;
-        s = s + ', printVersion=' + self.printVersion;
-        s = s + ', recursive=' + self.recursive;
-        s = s + ', searchArchives=' + self.searchArchives;
-        s = s + ', ' + listToString('searchPatterns', self.searchPatterns);
-        s = s + ',  startPath="' + self.startPath + '"';
-        s = s + ', uniqueLines=' + self.uniqueLines;
-        s = s + ', verbose=' + self.verbose;
-        s = s + ')';
-        return s;
+        return 'SearchSettings('
+            + 'archivesOnly=' + this.archivesOnly
+            + ', debug=' + this.debug
+            + ', doTiming=' + this.doTiming
+            + ', excludeHidden=' + this.excludeHidden
+            + ', firstMatch=' + this.firstMatch
+            + ', ' + listToString('inArchiveExtensions', this.inArchiveExtensions)
+            + ', ' + listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', ' + listToString('inDirPatterns', this.inDirPatterns)
+            + ', ' + listToString('inExtensions', this.inExtensions)
+            + ', ' + listToString('inFilePatterns', this.inFilePatterns)
+            + ', ' + listToString('inLinesAfterPatterns', this.inLinesAfterPatterns)
+            + ', ' + listToString('inLinesBeforePatterns', this.inLinesBeforePatterns)
+            + ', linesAfter=' + this.linesAfter
+            + ', ' + listToString('linesAfterToPatterns', this.linesAfterToPatterns)
+            + ', ' + listToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns)
+            + ', linesBefore=' + this.linesBefore
+            + ', listDirs=' + this.listDirs
+            + ', listFiles=' + this.listFiles
+            + ', listLines=' + this.listLines
+            + ', maxLineLength=' + this.maxLineLength
+            + ', multilineSearch=' + this.multilineSearch
+            + ', ' + listToString('outArchiveExtensions', this.outArchiveExtensions)
+            + ', ' + listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
+            + ', ' + listToString('outDirPatterns', this.outDirPatterns)
+            + ', ' + listToString('outExtensions', this.outExtensions)
+            + ', ' + listToString('outFilePatterns', this.outFilePatterns)
+            + ', ' + listToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
+            + ', ' + listToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
+            + ', printResults=' + this.printResults
+            + ', printVersion=' + this.printVersion
+            + ', recursive=' + this.recursive
+            + ', searchArchives=' + this.searchArchives
+            + ', ' + listToString('searchPatterns', this.searchPatterns)
+            + ',  startPath="' + this.startPath + '"'
+            + ', uniqueLines=' + this.uniqueLines
+            + ', verbose=' + this.verbose
+            + ')';
     };
 }
 

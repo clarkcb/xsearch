@@ -18,10 +18,8 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     self.maxLineLength = 150;
 
     self.toString = function () {
-        if (self.linesBefore.length > 0 || self.linesAfter.length > 0) {
-            return multiLineToString();
-        }
-        return singleLineToString();
+        return self.linesBefore.length + self.linesAfter.length > 0 ?
+            multiLineToString() : singleLineToString();
     };
 
     var singleLineToString = function () {
@@ -63,7 +61,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
         var numPadding = lineNumPadding();
         if (self.linesBefore.length > 0) {
             currentLineNum = currentLineNum - self.linesBefore.length;
-            for (var i in self.linesBefore) {
+            for (var i = 0; i < self.linesBefore.length; i++) {
                 var b = trimRight(self.linesBefore[i]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + b + "\n";
                 currentLineNum++;
@@ -73,8 +71,8 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
             trimRight(self.line) + "\n";
         if (self.linesAfter.length > 0) {
             currentLineNum++;
-            for (var j in self.linesAfter) {
-                var a = trimRight(self.linesAfter[j]);
+            for (var i = 0; i < self.linesAfter.length; i++) {
+                var a = trimRight(self.linesAfter[i]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;
             }
@@ -99,12 +97,12 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
             if (afterIndex > lineLength)
                 afterIndex = lineLength;
 
-            before = '';
+            var before = '';
             if (beforeIndex > 3) {
                 before = '...';
                 beforeIndex += 3;
             }
-            after = '';
+            var after = '';
             if (afterIndex < lineLength - 3) {
                 after = '...';
                 afterIndex -= 3;

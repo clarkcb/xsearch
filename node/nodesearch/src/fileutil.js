@@ -50,11 +50,7 @@ FileUtil.isDotDir = function (filepath) {
 
 FileUtil.isHidden = function (filepath) {
     var f = path.basename(filepath);
-    if (f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f)) {
-        return true;
-    } else {
-        return false;
-    }
+    return f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f);
 };
 
 exports.FileUtil = FileUtil;

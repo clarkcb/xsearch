@@ -1,2 +1,2 @@
 #!/bin/sh
-node ~/src/xsearch/node/nodesearch/src/nodesearch.js $@
+node ~/src/xsearch/node/nodesearch/build/nodesearch.min.js $@

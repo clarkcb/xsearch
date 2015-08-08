@@ -6,11 +6,11 @@
 
 var path = require('path');
 
-function SearchFile(path, filename, filetype) {
+function SearchFile(pathname, filename, filetype) {
     var self = this;
     self.containerSeparator = '!';
     self.containers = [];
-    self.path = path;
+    self.pathname = pathname;
     self.filename = filename;
     self.filetype = filetype;
 
@@ -19,7 +19,7 @@ function SearchFile(path, filename, filetype) {
         if (self.containers.length > 0) {
             s = self.containers.join(self.containerSeparator) + self.containerSeparator;
         }
-        s += path.join(self.path, self.filename);
+        s += path.join(self.pathname, self.filename);
 
         return s;
     };
