@@ -1,14 +1,14 @@
 {
-  "name": "nodesearch",
+  "name": "jssearch",
   "version": "1.0.0",
   "description": "An implementation of xsearch in JavaScript + Node.js",
   "author": {
     "name": "Cary Clark",
     "email": "clarkcb@gmail.com"
   },
-  "main": "./src/nodesearch.js",
+  "main": "./src/jssearch.js",
   "bin": {
-    "nodesearch": "./bin/nodesearch"
+    "jssearch": "./bin/jssearch"
   },
   "scripts": {
     "test": "nodeunit ./tests"

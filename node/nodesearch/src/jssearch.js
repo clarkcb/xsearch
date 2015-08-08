@@ -1,7 +1,7 @@
 /*
- * nodesearch.js
+ * jssearch.js
  *
- * file search utility written in node.js
+ * file search utility written in JavaScript + Node.js
  */
 
 var common = require('./common.js');

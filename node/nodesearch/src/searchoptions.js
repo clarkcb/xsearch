@@ -192,7 +192,7 @@ function SearchOptions() {
     };
 
     var getUsageString = function () {
-        var usage = 'Usage:\n nodesearch [options] -s <searchpattern> <startpath>\n\n';
+        var usage = 'Usage:\n jssearch [options] -s <searchpattern> <startpath>\n\n';
         usage += 'Options:\n';
         var optStrings = [];
         var optDescs = [];

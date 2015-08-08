@@ -1,2 +1,2 @@
 @echo off
-node %USERPROFILE%\src\xsearch\node\nodesearch\build\nodesearch.min.js %*
+node %USERPROFILE%\src\xsearch\node\jssearch\build\jssearch.min.js %*
