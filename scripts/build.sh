@@ -172,17 +172,14 @@ build_java () {
     mvn -f $JAVASEARCH_PATH/pom.xml clean package
 }
 
-build_node () {
+build_javascript () {
     echo
-    log "build_node"
-    NODESEARCH_PATH=$NODE_PATH/nodesearch
-    DOM_JS_PATH=$NODESEARCH_PATH/node_modules/dom-js
-
-    if [ ! -d $DOM_JS_PATH ]; then
-        cd $NODE_PATH
-        npm install dom-js
-        cd -
-    fi
+    log "build_javascript"
+    JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
+    cd $JSSEARCH_PATH
+    npm install
+    gulp clean build
+    cd -
 }
 
 build_scala () {
@@ -222,6 +219,16 @@ build_swift () {
     cd -
 }
 
+build_typescript () {
+    echo
+    log "build_typescript"
+    TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
+    cd $TSSEARCH_PATH
+    npm install
+    gulp clean build
+    cd -
+}
+
 build_all () {
     log "build_all"
     
@@ -237,11 +244,13 @@ build_all () {
 
     build_java
 
-    build_node
+    build_javascript
 
     build_scala
 
     build_swift
+
+    build_typescript
 }
 
 
@@ -269,12 +278,14 @@ elif [ "$ARG" == "haskell" ]; then
     build_haskell
 elif [ "$ARG" == "java" ]; then
     build_java
-elif [ "$ARG" == "node" ]; then
-    build_node
+elif [ "$ARG" == "javascript" ]; then
+    build_javascript
 elif [ "$ARG" == "scala" ]; then
     build_scala
 elif [ "$ARG" == "swift" ]; then
     build_swift
+elif [ "$ARG" == "typescript" ]; then
+    build_typescript
 else
     echo "ERROR: unknown build argument: $ARG"
 fi
