@@ -12,6 +12,7 @@ var FileType = require('./filetype.js').FileType;
 var FileUtil = require('./fileutil.js').FileUtil;
 
 function FileTypes() {
+    "use strict";
     var self = this;
 
     var fileTypeMap = (function () {

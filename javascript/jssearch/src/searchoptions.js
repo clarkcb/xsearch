@@ -10,6 +10,7 @@ var SearchOption = require('./searchoption.js').SearchOption;
 var SearchSettings = require('./searchsettings.js').SearchSettings;
 
 function SearchOptions() {
+    "use strict";
     var self = this;
 
     // the list of SearchOption objects (populated by setOptionsFromXml)

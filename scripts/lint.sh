@@ -111,21 +111,22 @@ lint_java () {
     done
 }
 
-lint_node () {
+lint_javascript () {
     echo
-    log "lint_node"
-    NODESEARCH_PATH=$NODE_PATH/nodesearch
-    JSHINT=$NODE_PATH/node_modules/jshint/bin/jshint
+    log "lint_javascript"
+    JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
+    JSSRC_PATH=$JSSEARCH_PATH/src
+    JSHINT=$JSSEARCH_PATH/node_modules/jshint/bin/jshint
 
     if [ ! -f $JSHINT ]; then
-        cd $NODE_PATH
+        cd $JSSEARCH_PATH
         npm install jshint
         cd -
     fi
 
     # Analyze
-    log "Analyzing nodesearch"
-    FILES=$(find $NODESEARCH_PATH -name "*.js")
+    log "Analyzing jssearch"
+    FILES=$(find $JSSRC_PATH -name "*.js")
     for f in ${FILES[*]}; do
         log "$JSHINT $f"
         $JSHINT $f
@@ -221,6 +222,12 @@ lint_swift () {
     cd $SWIFTSEARCH_PATH; swiftlint; cd -
 }
 
+lint_typescript () {
+    echo
+    log "lint_typescript"
+    log "Not supported at this time"
+}
+
 lint_all () {
     log "lint_all"
     
@@ -236,7 +243,7 @@ lint_all () {
 
     lint_java
 
-    lint_node
+    lint_javascript
 
     lint_perl
 
@@ -276,8 +283,8 @@ elif [ "$ARG" == "haskell" ]; then
     lint_haskell
 elif [ "$ARG" == "java" ]; then
     lint_java
-elif [ "$ARG" == "node" ]; then
-    lint_node
+elif [ "$ARG" == "javascript" ]; then
+    lint_javascript
 elif [ "$ARG" == "perl" ]; then
     lint_perl
 elif [ "$ARG" == "php" ]; then
@@ -290,6 +297,8 @@ elif [ "$ARG" == "scala" ]; then
     lint_scala
 elif [ "$ARG" == "swift" ]; then
     lint_swift
+elif [ "$ARG" == "typescript" ]; then
+    lint_typescript
 else
     echo "ERROR: unknown lint argument: $ARG"
 fi

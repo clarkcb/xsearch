@@ -6,6 +6,7 @@
 
 function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex,
     line, linesBefore, linesAfter) {
+    "use strict";
     var self = this;
     self.pattern = pattern;
     self.filename = filename;
@@ -53,15 +54,16 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     };
 
     var multiLineToString = function () {
-        var s = Array(81).join("=") + "\n";
+        var s = new Array(81).join("=") + "\n";
         s += "{0}: {1}: ".format(self.filename, self.linenum);
         s += "[{0}:{1}]\n".format(self.matchStartIndex, self.matchEndIndex);
-        s += Array(81).join("-") + "\n";
+        s += new Array(81).join("-") + "\n";
         var currentLineNum = self.linenum;
         var numPadding = lineNumPadding();
+        var i = 0;
         if (self.linesBefore.length > 0) {
             currentLineNum = currentLineNum - self.linesBefore.length;
-            for (var i = 0; i < self.linesBefore.length; i++) {
+            for (i = 0; i < self.linesBefore.length; i++) {
                 var b = trimRight(self.linesBefore[i]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + b + "\n";
                 currentLineNum++;
@@ -71,7 +73,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
             trimRight(self.line) + "\n";
         if (self.linesAfter.length > 0) {
             currentLineNum++;
-            for (var i = 0; i < self.linesAfter.length; i++) {
+            for (i = 0; i < self.linesAfter.length; i++) {
                 var a = trimRight(self.linesAfter[i]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;

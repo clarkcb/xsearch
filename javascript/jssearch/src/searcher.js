@@ -15,6 +15,7 @@ var FileUtil = require('./fileutil.js').FileUtil;
 var SearchResult = require('./searchresult.js').SearchResult;
 
 function Searcher(settings) {
+    "use strict";
     var self = this;
     var _settings = settings;
     var _filetypes = new FileTypes();
@@ -273,6 +274,8 @@ function Searcher(settings) {
         if (_settings.verbose)
             common.log("Search initiated");
 
+        // initialize reusable counter
+        var i = 0;
         // get the search dirs
         if (_settings.doTiming)
             startTimer("GetSearchDirs");
@@ -285,7 +288,7 @@ function Searcher(settings) {
         }
         if (_settings.verbose) {
             common.log("\nDirectories to be searched ({0}):".format(dirs.length));
-            for (var i=0; i < dirs.length; i++) {
+            for (i=0; i < dirs.length; i++) {
                 common.log(dirs[i]);
             }
         }
@@ -301,7 +304,7 @@ function Searcher(settings) {
         }
         if (_settings.verbose) {
             common.log("\nFiles to be searched ({0}):".format(files.length));
-            for (var i=0; i < files.length; i++) {
+            for (i=0; i < files.length; i++) {
                 common.log(files[i]);
             }
             common.log("");
@@ -309,7 +312,7 @@ function Searcher(settings) {
 
         if (_settings.doTiming)
             startTimer("SearchFiles");
-        for (var i=0; i < files.length; i++) {
+        for (i=0; i < files.length; i++) {
             searchFile(files[i]);
         }
         if (_settings.doTiming) {

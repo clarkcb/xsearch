@@ -7,6 +7,7 @@
 var path = require('path');
 
 function SearchFile(pathname, filename, filetype) {
+    "use strict";
     var self = this;
     self.containerSeparator = '!';
     self.containers = [];
