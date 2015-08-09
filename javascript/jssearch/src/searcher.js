@@ -372,10 +372,11 @@ function Searcher(settings) {
         if (_settings.verbose) {
             common.log('Searching text file {0}'.format(filepath));
         }
-        if (_settings.multilineSearch)
+        if (_settings.multilineSearch) {
             searchTextFileContents(filepath);
-        else
+        } else {
             searchTextFileLines(filepath);
+        }
     };
 
     var getLineCount = function (contents) {
@@ -471,7 +472,7 @@ function Searcher(settings) {
                     }
                 }
                 lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
-                line = s.substring(lineStartIndex, lineEndIndex);
+                var line = s.substring(lineStartIndex, lineEndIndex);
                 if (_settings.linesBefore && beforeLineCount) {
                     linesBefore = getLinesBefore(s, beforeStartIndices,
                         startLineIndices, endLineIndices);
