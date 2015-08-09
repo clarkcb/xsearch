@@ -87,34 +87,35 @@ function UnitTestJava
     Log("UnitTestJava - currently unsupported")
 }
 
-function UnitTestNode
+function UnitTestJavaScript
 {
     Write-Host
-    Log("UnitTestNode")
-    $nodePath = Join-Path -Path $xsearchPath -ChildPath "node"
-    $nodeTestsPath = Join-Path -Path $nodePath -ChildPath "tests"
-    $nodeUnitPath = "$nodePath\node_modules\nodeunit"
-    $nodeUnit = "$nodeUnitPath\bin\nodeunit"
+    Log("UnitTestJavaScript")
+    $javascriptPath = Join-Path -Path $xsearchPath -ChildPath "javascript"
+    $jssearchPath = Join-Path -Path $javascriptPath -ChildPath "jssearch"
+    $testsPath = Join-Path -Path $jssearchPath -ChildPath "tests"
+    $nodeUnitPath = "$jssearchPath\node_modules\nodeunit"
+    $nodeUnit = "$javascriptUnitPath\bin\nodeunit"
 
     $oldPwd = Get-Location
 
     if (!(Test-Path $nodeUnitPath))
     {
         Log("nodeunit not installed, installing")
-        Set-Location $nodePath
+        Set-Location $jssearchPath
         Write-Host "npm install nodeunit"
         npm install nodeunit
     }
 
-    Set-Location $nodeTestsPath
+    Set-Location $testsPath
 
     Log("Unit-testing nodesearch")
-    $nodetests = @(Get-ChildItem $nodeTestsPath |
+    $tests = @(Get-ChildItem $testsPath |
         ?{ !$_.PSIsContainer -and $_.Extension -eq '.js' })
-    ForEach ($nodetest in $nodetests)
+    ForEach ($test in $tests)
     {
-        Write-Host "`nnodeunit $nodetest"
-        node $nodeUnit $nodetest
+        Write-Host "`nnodeunit $test"
+        node $nodeUnit $test
     }
 
     Set-Location $oldPwd
@@ -198,6 +199,12 @@ function UnitTestScala
     Log("UnitTestScala - currently unsupported")
 }
 
+function UnitTestTypeScript
+{
+    Write-Host
+    Log("UnitTestTypeScript - currently unsupported")
+}
+
 function UnitTestAll
 {
     Write-Host
@@ -215,7 +222,7 @@ function UnitTestAll
 
     UnitTestJava
 
-    UnitTestNode
+    UnitTestJavaScript
 
     UnitTestPerl
 
@@ -226,6 +233,8 @@ function UnitTestAll
     UnitTestRuby
 
     UnitTestScala
+
+    UnitTestTypeScript
 }
 
 ################################################################################
@@ -238,20 +247,21 @@ function UnitTestMain
 
     switch ($lang)
     {
-        "all"     { UnitTestAll }
-        "clojure" { UnitTestClojure }
-        "csharp"  { UnitTestCsharp }
-        "fsharp"  { UnitTestFsharp }
-        "go"      { UnitTestGo }
-        "haskell" { UnitTestHaskell }
-        "java"    { UnitTestJava }
-        "node"    { UnitTestNode }
-        "perl"    { UnitTestPerl }
-        "php"     { UnitTestPhp }
-        "python"  { UnitTestPython }
-        "ruby"    { UnitTestRuby }
-        "scala"   { UnitTestScala }
-        default   { ExitWithError("Unknown option: $lang") }
+        "all"        { UnitTestAll }
+        "clojure"    { UnitTestClojure }
+        "csharp"     { UnitTestCsharp }
+        "fsharp"     { UnitTestFsharp }
+        "go"         { UnitTestGo }
+        "haskell"    { UnitTestHaskell }
+        "java"       { UnitTestJava }
+        "javascript" { UnitTestJavaScript }
+        "perl"       { UnitTestPerl }
+        "php"        { UnitTestPhp }
+        "python"     { UnitTestPython }
+        "ruby"       { UnitTestRuby }
+        "scala"      { UnitTestScala }
+        "typescript" { UnitTestTypeScript }
+        default      { ExitWithError("Unknown option: $lang") }
     }
 }
 

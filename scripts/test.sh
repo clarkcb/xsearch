@@ -71,11 +71,11 @@ test_java () {
     time javasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
 }
 
-test_node () {
+test_javascript () {
     echo -e "\n################################################################################"
-    log "test_node"
-    log "nodesearch $SEARCH_PARAMS"
-    time nodesearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    log "test_javascript"
+    log "jssearch $SEARCH_PARAMS"
+    time jssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
 }
 
 test_perl () {
@@ -113,6 +113,20 @@ test_scala () {
     time scalasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
 }
 
+test_swift () {
+    echo -e "\n################################################################################"
+    log "test_swift"
+    log "swiftsearch $SEARCH_PARAMS"
+    time swiftsearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+}
+
+test_typescript () {
+    echo -e "\n################################################################################"
+    log "test_typescript"
+    log "tssearch $SEARCH_PARAMS"
+    time tssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+}
+
 test_all () {
     log "test_all"
 
@@ -128,7 +142,7 @@ test_all () {
 
     test_java
 
-    test_node
+    test_javascript
 
     test_perl
 
@@ -139,6 +153,10 @@ test_all () {
     test_ruby
 
     test_scala
+
+    test_swift
+
+    test_typescript
 }
 
 
@@ -166,8 +184,8 @@ elif [ "$ARG" == "haskell" ]; then
     test_haskell
 elif [ "$ARG" == "java" ]; then
     test_java
-elif [ "$ARG" == "node" ]; then
-    test_node
+elif [ "$ARG" == "javascript" ]; then
+    test_javascript
 elif [ "$ARG" == "perl" ]; then
     test_perl
 elif [ "$ARG" == "php" ]; then
@@ -178,6 +196,10 @@ elif [ "$ARG" == "ruby" ]; then
     test_ruby
 elif [ "$ARG" == "scala" ]; then
     test_scala
+elif [ "$ARG" == "swift" ]; then
+    test_swift
+elif [ "$ARG" == "typescript" ]; then
+    test_typescript
 else
     echo "ERROR: unknown test argument: $ARG"
 fi

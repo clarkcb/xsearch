@@ -23,21 +23,22 @@ RunResult = namedtuple('RunResult', ['scenario', 'run', 'time_dict'], verbose=Fa
 # Configuration
 ########################################
 xsearch_dict = {
-    'clojure': 'cljsearch',
-    'csharp':  'cssearch',
-    'fsharp':  'fssearch',
-    'go':      'gosearch',
-    'haskell': 'hssearch',
-    'java':    'javasearch',
-    'node':    'nodesearch',
-    'perl':    'plsearch.pl',
-    'php':     'phpsearch.php',
-    'python':  'pysearch.py',
-    'ruby':    'rbsearch.rb',
-    'scala':   'scalasearch',
-    'swift':   'swiftsearch',
+    'clojure':    'cljsearch',
+    'csharp':     'cssearch',
+    'fsharp':     'fssearch',
+    'go':         'gosearch',
+    'haskell':    'hssearch',
+    'java':       'javasearch',
+    'javascript': 'jssearch',
+    'perl':       'plsearch.pl',
+    'php':        'phpsearch.php',
+    'python':     'pysearch.py',
+    'ruby':       'rbsearch.rb',
+    'scala':      'scalasearch',
+    'swift':      'swiftsearch',
+    'typescript': 'tssearch',
 }
-win_supported = ['csharp', 'fsharp', 'go', 'haskell', 'node', 'perl', 'python', 'ruby']
+win_supported = ['csharp', 'fsharp', 'go', 'haskell', 'javascript', 'perl', 'python', 'ruby']
 all_xsearch_names = sorted(xsearch_dict.values())
 HOME_NAME = 'HOME'
 if platform.system() == 'Windows':

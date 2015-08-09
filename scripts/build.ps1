@@ -157,10 +157,10 @@ function BuildJava
     Log("BuildJava - currently unsupported")
 }
 
-function BuildNode
+function BuildJavaScript
 {
     Write-Host
-    Log("BuildNode - currently unsupported")
+    Log("BuildJavaScript - currently unsupported")
 }
 
 function BuildScala
@@ -186,7 +186,7 @@ function BuildAll
 
     BuildJava
 
-    BuildNode
+    BuildJavaScript
 
     BuildScala
 }
@@ -201,16 +201,16 @@ function BuildMain
 
     switch ($lang)
     {
-        "all"     { BuildAll }
-        "clojure" { BuildClojure }
-        "csharp"  { BuildCsharp }
-        "fsharp"  { BuildFsharp }
-        "go"      { BuildGo }
-        "haskell" { BuildHaskell }
-        "java"    { BuildJava }
-        "node"    { BuildNode }
-        "scala"   { BuildScala }
-        default   { ExitWithError("Unknown option: $lang") }
+        "all"        { BuildAll }
+        "clojure"    { BuildClojure }
+        "csharp"     { BuildCsharp }
+        "fsharp"     { BuildFsharp }
+        "go"         { BuildGo }
+        "haskell"    { BuildHaskell }
+        "java"       { BuildJava }
+        "javascript" { BuildJavaScript }
+        "scala"      { BuildScala }
+        default      { ExitWithError("Unknown option: $lang") }
     }
 }
 

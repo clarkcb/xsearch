@@ -94,13 +94,13 @@ unittest_java () {
     mvn -f $JAVASEARCH_PATH/pom.xml test
 }
 
-unittest_node () {
+unittest_javascript () {
     echo
-    log "unittest_node"
-    NODE_PATH=$XSEARCH_PATH/node
-    NODESEARCH_PATH=$NODE_PATH/nodesearch
-    TESTS_PATH=$NODESEARCH_PATH/tests
-    NODEUNIT_PATH=$NODESEARCH_PATH/node_modules/nodeunit
+    log "unittest_javascript"
+    JAVASCRIPT_PATH=$XSEARCH_PATH/javascript
+    JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
+    TESTS_PATH=$JSSEARCH_PATH/tests
+    NODEUNIT_PATH=$JSSEARCH_PATH/node_modules/nodeunit
     NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
 
     if [ ! -d $NODEUNIT_PATH ]; then
@@ -111,7 +111,7 @@ unittest_node () {
     fi
 
     # run tests via maven
-    log "Unit-testing nodesearch"
+    log "Unit-testing jssearch"
     log "nodeunit $TESTS_PATH"
     $NODEUNIT $TESTS_PATH
 }
@@ -198,6 +198,16 @@ unittest_scala () {
     mvn -f $SCALASEARCH_PATH/pom.xml test
 }
 
+unittest_swift () {
+    echo
+    log "unittest_swift - currently unsupported"
+}
+
+unittest_typescript () {
+    echo
+    log "unittest_typescript - currently unsupported"
+}
+
 unittest_all () {
     log "unittest_all"
     
@@ -213,7 +223,7 @@ unittest_all () {
 
     unittest_java
 
-    unittest_node
+    unittest_javascript
 
     unittest_perl
 
@@ -224,6 +234,10 @@ unittest_all () {
     unittest_ruby
 
     unittest_scala
+
+    unittest_swift
+
+    unittest_typescript
 }
 
 
@@ -251,8 +265,8 @@ elif [ "$ARG" == "haskell" ]; then
     unittest_haskell
 elif [ "$ARG" == "java" ]; then
     unittest_java
-elif [ "$ARG" == "node" ]; then
-    unittest_node
+elif [ "$ARG" == "javascript" ]; then
+    unittest_javascript
 elif [ "$ARG" == "perl" ]; then
     unittest_perl
 elif [ "$ARG" == "php" ]; then
@@ -263,7 +277,10 @@ elif [ "$ARG" == "ruby" ]; then
     unittest_ruby
 elif [ "$ARG" == "scala" ]; then
     unittest_scala
+elif [ "$ARG" == "swift" ]; then
+    unittest_swift
+elif [ "$ARG" == "typescript" ]; then
+    unittest_typescript
 else
     echo "ERROR: unknown unittest argument: $ARG"
 fi
-

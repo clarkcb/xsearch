@@ -115,14 +115,15 @@ stats_java () {
     word_counts $JAVATESTFILES
 }
 
-stats_node () {
+stats_javascript () {
     echo
-    log "stats_node"
-    NODESEARCH_PATH=$NODE_PATH/nodesearch
-    JSFILES=$(find $NODESEARCH_PATH -name "*.js")
+    log "stats_javascript"
+    JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
+    SRC_PATH=$JSSEARCH_PATH/src
+    JSFILES=$(find $SRC_PATH -name "*.js")
     log "Main source counts"
     word_counts $JSFILES
-    TEST_PATH=$NODE_PATH/tests
+    TEST_PATH=$JSSEARCH_PATH/tests
     JSTESTFILES=$(find $TEST_PATH -name "*.js")
     log "Test source counts"
     word_counts $JSTESTFILES
@@ -207,6 +208,20 @@ stats_swift () {
     word_counts $SWIFTTESTFILES
 }
 
+stats_typescript () {
+    echo
+    log "stats_typescript"
+    TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
+    SRC_PATH=$TSSEARCH_PATH/src
+    TSFILES=$(find $SRC_PATH -name "*.ts")
+    log "Main source counts"
+    word_counts $TSFILES
+    TEST_PATH=$TSSEARCH_PATH/tests
+    TSTESTFILES=$(find $TEST_PATH -name "*.ts")
+    log "Test source counts"
+    word_counts $TSTESTFILES
+}
+
 stats_all () {
     log "stats_all"
     
@@ -222,7 +237,7 @@ stats_all () {
 
     stats_java
 
-    stats_node
+    stats_javascript
 
     stats_perl
 
@@ -235,6 +250,8 @@ stats_all () {
     stats_scala
 
     stats_swift
+
+    stats_typescript
 }
 
 
@@ -262,8 +279,8 @@ elif [ "$ARG" == "haskell" ]; then
     stats_haskell
 elif [ "$ARG" == "java" ]; then
     stats_java
-elif [ "$ARG" == "node" ]; then
-    stats_node
+elif [ "$ARG" == "javascript" ]; then
+    stats_javascript
 elif [ "$ARG" == "perl" ]; then
     stats_perl
 elif [ "$ARG" == "php" ]; then
@@ -276,7 +293,8 @@ elif [ "$ARG" == "scala" ]; then
     stats_scala
 elif [ "$ARG" == "swift" ]; then
     stats_swift
+elif [ "$ARG" == "typescript" ]; then
+    stats_typescript
 else
     echo "ERROR: unknown stats argument: $ARG"
 fi
-
