@@ -7,7 +7,7 @@
  */
 
 var path = require('path');
-//var FileType = require('./filetype.js').FileType;
+var FileType = require('./filetype.js').FileType;
 
 class SearchFile {
     containerSeparator: string = '!';

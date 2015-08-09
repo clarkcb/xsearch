@@ -9,9 +9,9 @@
  */
 
 var config = require('./config.js');
-//var FileUtil = require('./fileutil.js').FileUtil;
-//var SearchOption = require('./searchoption.js').SearchOption;
-//var SearchSettings = require('./searchsettings.js').SearchSettings;
+var FileUtil = require('./fileutil.js').FileUtil;
+var SearchOption = require('./searchoption.js').SearchOption;
+var SearchSettings = require('./searchsettings.js').SearchSettings;
 
 interface StringOptionMap {
     [key: string]: SearchOption

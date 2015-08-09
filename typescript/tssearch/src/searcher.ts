@@ -16,11 +16,11 @@ var fs = require('fs');
 var path = require('path');
 
 var common = require('./common.js');
-//var FileType = require('./filetype.js').FileType;
-//var FileTypes = require('./filetypes.js').FileTypes;
-//var FileUtil = require('./fileutil.js').FileUtil;
-//var SearchResult = require('./searchresult.js').SearchResult;
-//var SearchSettings = require('./searchresult.js').SearchSettings;
+var FileType = require('./filetype.js').FileType;
+var FileTypes = require('./filetypes.js').FileTypes;
+var FileUtil = require('./fileutil.js').FileUtil;
+var SearchResult = require('./searchresult.js').SearchResult;
+var SearchSettings = require('./searchresult.js').SearchSettings;
 
 class Searcher {
     _settings: SearchSettings;

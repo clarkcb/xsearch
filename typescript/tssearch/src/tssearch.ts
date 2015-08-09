@@ -8,8 +8,8 @@
  */
 
 var common = require('./common.js');
-//var Searcher = require('./searcher.js').Searcher;
-//var SearchOptions = require('./searchoptions.js').SearchOptions;
+var Searcher = require('./searcher.js').Searcher;
+var SearchOptions = require('./searchoptions.js').SearchOptions;
 
 function handleError(err: Error, searchOptions: SearchOptions) {
     var errMsg: string = err.toString().replace(/\w+Error/, "ERROR");

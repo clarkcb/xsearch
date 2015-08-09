@@ -11,8 +11,8 @@ var fs = require('fs');
 
 var common = require('./common.js');
 var config = require('./config.js');
-//var FileType = require('./filetype.js').FileType;
-//var FileUtil = require('./fileutil.js').FileUtil;
+var FileType = require('./filetype.js').FileType;
+var FileUtil = require('./fileutil.js').FileUtil;
 
 interface FileTypeMap {
     [key: string]: string[]
