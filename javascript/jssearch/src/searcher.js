@@ -181,7 +181,7 @@ function Searcher(settings) {
             if (self.isSearchDir(subDirs[i])) {
                 searchDirs.push(subDirs[i]);
             }
-            searchDirs.push.apply(searchDirs, recGetSearchDirs(subDirs[d]));
+            searchDirs.push.apply(searchDirs, recGetSearchDirs(subDirs[i]));
         }
         return searchDirs;
     };
