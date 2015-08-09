@@ -68,7 +68,7 @@ class Searcher {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
-        var pathElems = dir.split(path.sep);
+        var pathElems: string[] = dir.split(path.sep);
         if (this._settings.excludeHidden) {
             for (var i: number = 0; i < pathElems.length; i++) {
                 if (!Searcher.matchesAnyElement(pathElems[i], ['.','..']) &&
@@ -141,7 +141,7 @@ class Searcher {
                 searchDirs.push.apply(searchDirs, this.recGetSearchDirs(startPath));
             }
         } else if (stats.isFile()) {
-            var d = path.dirname(startPath);
+            var d: string = path.dirname(startPath);
             if (!d) d = ".";
             searchDirs.push(d);
         }
@@ -213,7 +213,7 @@ class Searcher {
 
     private getSearchFilesForDirectory(dir: string): string[] {
         var searchFiles: string[] = [];
-        var dirFiles = Searcher.getFilesForDirectory(dir);
+        var dirFiles: string[] = Searcher.getFilesForDirectory(dir);
         for (var i: number = 0; i < dirFiles.length; i++) {
             var f = dirFiles[i];
             if (this.filterFile(f)) {
@@ -275,7 +275,7 @@ class Searcher {
         if (this._settings.verbose) {
             common.log('Searching binary file: "{0}"'.format(filepath));
         }
-        var contents = FileUtil.getFileContents(filepath);
+        var contents: string = FileUtil.getFileContents(filepath);
         var pattern: RegExp;
         var patternResults = {};
         for (var i: number = 0; i < this._settings.searchPatterns.length; i++) {
@@ -317,7 +317,7 @@ class Searcher {
         var contents: string = FileUtil.getFileContents(filepath);
         var results: SearchResult[] = this.searchMultiLineString(contents);
         for (var i: number = 0; i < results.length; i++) {
-            var r = results[i];
+            var r: SearchResult = results[i];
             var resultWithFilepath =
                 new SearchResult(r.pattern, filepath, r.linenum,
                         r.matchStartIndex, r.matchEndIndex, r.line,
@@ -342,9 +342,9 @@ class Searcher {
         if (atIndices.length === 0)
             return [];
         var lines: string[] = [];
-        for (var a = 0; a < atIndices.length; a++) {
-            var i = atIndices[a];
-            var line = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
+        for (var a: number = 0; a < atIndices.length; a++) {
+            var i: number = atIndices[a];
+            var line: string = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
             lines.push(line);
         }
         return lines;
@@ -365,11 +365,11 @@ class Searcher {
     }
 
     private getLessThanOrEqual(matchIdx: number) {
-        return function(i: number) { return i <= matchIdx; };
+        return function(i: number): boolean { return i <= matchIdx; };
     }
 
     private getGreaterThan(matchIdx: number) {
-        return function(i: number) { return i > matchIdx; };
+        return function(i: number): boolean { return i > matchIdx; };
     }
 
     public searchMultiLineString(s: string): SearchResult[] {
@@ -379,8 +379,8 @@ class Searcher {
         var results: SearchResult[] = [];
         var newLineIndices: number[] = Searcher.getNewLineIndices(s);
         var plusOne = function(i: number) { return i+1; };
-        var startLineIndices = [0].concat(newLineIndices.map(plusOne));
-        var endLineIndices = newLineIndices.concat([s.length - 1]);
+        var startLineIndices: number[] = [0].concat(newLineIndices.map(plusOne));
+        var endLineIndices: number[] = newLineIndices.concat([s.length - 1]);
         for (var i: number = 0; i < this._settings.searchPatterns.length; i++) {
             var pattern: RegExp = new RegExp(this._settings.searchPatterns[i].source, "g");
             var match = pattern.exec(s);
@@ -392,10 +392,10 @@ class Searcher {
                 }
                 var lessOrEqual = this.getLessThanOrEqual(match.index);
                 var greaterThan = this.getGreaterThan(match.index);
-                var lineStartIndex = 0;
-                var lineEndIndex = s.length - 1;
-                var beforeLineCount = 0;
-                var beforeStartIndices = startLineIndices.filter(lessOrEqual);
+                var lineStartIndex: number = 0;
+                var lineEndIndex: number = s.length - 1;
+                var beforeLineCount: number = 0;
+                var beforeStartIndices: number[] = startLineIndices.filter(lessOrEqual);
                 if (beforeStartIndices.length > 0) {
                     lineStartIndex = beforeStartIndices.pop();
                     beforeLineCount = beforeStartIndices.length;
@@ -411,7 +411,7 @@ class Searcher {
                         startLineIndices, endLineIndices);
                 }
                 if (this._settings.linesAfter) {
-                    var afterStartIndices = startLineIndices.filter(greaterThan);
+                    var afterStartIndices: number[] = startLineIndices.filter(greaterThan);
                     if (afterStartIndices.length > this._settings.linesAfter) {
                         afterStartIndices = afterStartIndices.slice(0,
                             this._settings.linesAfter);
@@ -419,11 +419,11 @@ class Searcher {
                     linesAfter = Searcher.getLinesAfter(s, afterStartIndices,
                         startLineIndices, endLineIndices);
                 }
-                var matchStartIndex = match.index - lineStartIndex + 1;
-                var matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
+                var matchStartIndex: number = match.index - lineStartIndex + 1;
+                var matchEndIndex: number = pattern.lastIndex - lineStartIndex + 1;
                 if ((this._settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
                     (this._settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
-                    var searchResult = new SearchResult(
+                    var searchResult: SearchResult = new SearchResult(
                         pattern,
                         '',
                         beforeLineCount+1,
@@ -459,10 +459,10 @@ class Searcher {
     }
 
     private searchTextFileLines(filepath: string): void {
-        var lines = FileUtil.getFileLines(filepath);
+        var lines: string[] = FileUtil.getFileLines(filepath);
         var rs: SearchResult[] = this.searchLines(lines);
         for (var i: number = 0; i < rs.length; i++) {
-            var r = rs[i];
+            var r: SearchResult = rs[i];
             var resultWithFilepath =
                 new SearchResult(r.pattern, filepath, r.linenum,
                         r.matchStartIndex, r.matchEndIndex, r.line,
@@ -473,7 +473,7 @@ class Searcher {
 
     // return results so that filepath can be added to them
     public searchLines(lines: string[]): SearchResult[] {
-        var linenum = 0;
+        var linenum: number = 0;
         var pattern: RegExp;
         var linesBefore: string[] = [];
         var linesAfter: string[] = [];
@@ -483,7 +483,7 @@ class Searcher {
             if (Object.keys(patternResults).length === this._settings.searchPatterns.length) {
                 break;
             }
-            var line = "";
+            var line: string = "";
             if (linesAfter.length > 0) {
                 line = linesAfter.shift();
             } else if (lines.length > 0) {
@@ -535,9 +535,9 @@ class Searcher {
     }
 
     private cmpSearchResults(r1: SearchResult, r2: SearchResult): number {
-        var pathCmp = path.dirname(r1.filename).localeCompare(path.dirname(r2.filename));
+        var pathCmp: number = path.dirname(r1.filename).localeCompare(path.dirname(r2.filename));
         if (pathCmp === 0) {
-            var fileCmp = path.basename(r1.filename).localeCompare(path.basename(r2.filename));
+            var fileCmp: number = path.basename(r1.filename).localeCompare(path.basename(r2.filename));
             if (fileCmp === 0) {
                 if (r1.linenum === r2.linenum) {
                     return r1.matchStartIndex - r2.matchStartIndex;
@@ -561,7 +561,7 @@ class Searcher {
     public getMatchingDirs(): string[] {
         var dirs: string[] = [];
         for (var i: number = 0; i < this.results.length; i++) {
-            var result = this.results[i];
+            var result: SearchResult = this.results[i];
             dirs.push(path.dirname(result.filename));
         }
         return common.setFromArray(dirs);
@@ -575,7 +575,7 @@ class Searcher {
     public getMatchingFiles(): string[] {
         var files: string[] = [];
         for (var i: number = 0; i < this.results.length; i++) {
-            var result = this.results[i];
+            var result: SearchResult = this.results[i];
             files.push(result.filename);
         }
         return common.setFromArray(files);
@@ -589,7 +589,7 @@ class Searcher {
     public getMatchingLines(): string[] {
         var lines: string[] = [];
         for (var i: number = 0; i < this.results.length; i++) {
-            var result = this.results[i];
+            var result: SearchResult = this.results[i];
             if (result.linenum)
                 lines.push(result.line.trim());
         }
