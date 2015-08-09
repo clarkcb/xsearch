@@ -226,7 +226,7 @@ class SearchOptions {
     }
 
     private getUsageString(): string {
-        var usage: string = 'Usage:\n nodesearch [options] -s <searchpattern>' +
+        var usage: string = 'Usage:\n tssearch [options] -s <searchpattern>' +
             ' <startpath>\n\nOptions:\n';
         var optStrings: string[] = [];
         var optDescs: string[] = [];
