@@ -7,6 +7,8 @@
  * identifies file types (archive, binary, text, unknown)
  */
 
+"use strict";
+
 var fs = require('fs');
 
 var common = require('./common.js');

@@ -5,6 +5,8 @@
  * Configuration values
  */
 
+"use strict";
+
 var isWin: boolean = /^win/.test(process.platform);
 
 var HOME_NAME: string = isWin ? 'USERPROFILE' : 'HOME';

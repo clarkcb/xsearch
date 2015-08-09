@@ -5,6 +5,8 @@
  * represents the settings to use when performing the search
  */
 
+"use strict";
+
 class SearchSettings {
     startPath: string = "";
     inExtensions: string[] = [];

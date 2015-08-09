@@ -6,6 +6,8 @@
  * file-related utility functions
  */
 
+"use strict";
+
 var fs = require('fs');
 var path = require('path');
 

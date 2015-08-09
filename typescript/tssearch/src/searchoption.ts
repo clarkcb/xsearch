@@ -5,6 +5,8 @@
  * encapsulates a search option
  */
 
+"use strict";
+
 interface SettingsFunc {
     (): void;
 }

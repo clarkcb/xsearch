@@ -8,6 +8,8 @@
  * defines the set of search options and provides functionality to define search settings from them
  */
 
+"use strict";
+
 var config = require('./config.js');
 var FileUtil = require('./fileutil.js').FileUtil;
 var SearchOption = require('./searchoption.js').SearchOption;

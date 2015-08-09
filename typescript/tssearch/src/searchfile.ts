@@ -6,6 +6,8 @@
  * encapsulates a file to be searched
  */
 
+"use strict";
+
 var path = require('path');
 var FileType = require('./filetype.js').FileType;
 

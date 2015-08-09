@@ -11,6 +11,8 @@
  * performs the searching based on the given SearchSettings instance
  */
 
+"use strict";
+
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');

@@ -5,6 +5,8 @@
  * SearchResult class represents a search result
  */
 
+"use strict";
+
 class SearchResult {
    pattern: RegExp;
    filename: string;

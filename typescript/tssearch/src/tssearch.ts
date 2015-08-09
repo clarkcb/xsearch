@@ -7,6 +7,8 @@
  * file search utility written in typescript
  */
 
+"use strict";
+
 var common = require('./common.js');
 var Searcher = require('./searcher.js').Searcher;
 var SearchOptions = require('./searchoptions.js').SearchOptions;

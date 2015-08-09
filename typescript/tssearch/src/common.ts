@@ -5,6 +5,8 @@
  * Some common functions, etc.
  */
 
+"use strict";
+
 interface String {
     format(): string;
     startsWith(str: string): boolean;
