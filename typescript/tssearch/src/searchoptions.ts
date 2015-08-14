@@ -40,82 +40,82 @@ class SearchOptions {
             'in-dirpattern':
                 function(x: string, settings: SearchSettings): void { settings.addInDirPattern(x); },
             'in-ext':
-                function(x: string, settings: SearchSettings) { settings.addInExtension(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInExtension(x); },
             'in-filepattern':
-                function(x: string, settings: SearchSettings) { settings.addInFilePattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInFilePattern(x); },
             'in-linesafterpattern':
-                function(x: string, settings: SearchSettings) { settings.addInLinesAfterPattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInLinesAfterPattern(x); },
             'in-linesbeforepattern':
-                function(x: string, settings: SearchSettings) { settings.addInLinesBeforePattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInLinesBeforePattern(x); },
             'linesafter':
-                function(x: string, settings: SearchSettings) { settings.linesAfter = parseInt(x); },
+                function(x: string, settings: SearchSettings): void { settings.linesAfter = parseInt(x); },
             'linesaftertopattern':
-                function(x: string, settings: SearchSettings) { settings.addLinesAfterToPattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addLinesAfterToPattern(x); },
             'linesafteruntilpattern':
-                function(x: string, settings: SearchSettings) { settings.addLinesAfterUntilPattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addLinesAfterUntilPattern(x); },
             'linesbefore':
-                function(x: string, settings: SearchSettings) { settings.linesBefore = parseInt(x); },
+                function(x: string, settings: SearchSettings): void { settings.linesBefore = parseInt(x); },
             'maxlinelength':
-                function(x: string, settings: SearchSettings) { settings.maxLineLength = parseInt(x); },
+                function(x: string, settings: SearchSettings): void { settings.maxLineLength = parseInt(x); },
             'out-dirpattern':
-                function(x: string, settings: SearchSettings) { settings.addOutDirPattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutDirPattern(x); },
             'out-archiveext':
-                function(x: string, settings: SearchSettings) { settings.addOutArchiveExtension(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutArchiveExtension(x); },
             'out-archivefilepattern':
-                function(x: string, settings: SearchSettings) { settings.addOutArchiveFilePattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutArchiveFilePattern(x); },
             'out-ext':
-                function(x: string, settings: SearchSettings) { settings.addOutExtension(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutExtension(x); },
             'out-filepattern':
-                function(x: string, settings: SearchSettings) { settings.addOutFilePattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutFilePattern(x); },
             'out-linesafterpattern':
-                function(x: string, settings: SearchSettings) { settings.addOutLinesAfterPattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutLinesAfterPattern(x); },
             'out-linesbeforepattern':
-                function(x: string, settings: SearchSettings) { settings.addOutLinesBeforePattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addOutLinesBeforePattern(x); },
             'search':
-                function(x: string, settings: SearchSettings) { settings.addSearchPattern(x); }
+                function(x: string, settings: SearchSettings): void { settings.addSearchPattern(x); }
         };
 
         this.flagActionMap = {
             'allmatches':
-                function(settings: SearchSettings) { settings.firstMatch = false; },
+                function(settings: SearchSettings): void { settings.firstMatch = false; },
             'archivesonly':
-                function(settings: SearchSettings) { settings.setArchivesOnly(); },
+                function(settings: SearchSettings): void { settings.setArchivesOnly(); },
             'debug':
                 function(settings: SearchSettings): void { settings.setDebug(); },
             'excludehidden':
-                function(settings: SearchSettings) { settings.excludeHidden = true; },
+                function(settings: SearchSettings): void { settings.excludeHidden = true; },
             'firstmatch':
-                function(settings: SearchSettings) { settings.firstMatch = true; },
+                function(settings: SearchSettings): void { settings.firstMatch = true; },
             'includehidden':
-                function(settings: SearchSettings) { settings.excludeHidden = false; },
+                function(settings: SearchSettings): void { settings.excludeHidden = false; },
             'help':
-                function(settings: SearchSettings) { settings.printUsage = true; },
+                function(settings: SearchSettings): void { settings.printUsage = true; },
             'listdirs':
-                function(settings: SearchSettings) { settings.listDirs = true; },
+                function(settings: SearchSettings): void { settings.listDirs = true; },
             'listfiles':
-                function(settings: SearchSettings) { settings.listFiles = true; },
+                function(settings: SearchSettings): void { settings.listFiles = true; },
             'listlines':
-                function(settings: SearchSettings) { settings.listLines = true; },
+                function(settings: SearchSettings): void { settings.listLines = true; },
             'multilinesearch':
-                function(settings: SearchSettings) { settings.multilineSearch = true; },
+                function(settings: SearchSettings): void { settings.multilineSearch = true; },
             'noprintmatches':
-                function(settings: SearchSettings) { settings.printResults = false; },
+                function(settings: SearchSettings): void { settings.printResults = false; },
             'norecursive':
-                function(settings: SearchSettings) { settings.recursive = false; },
+                function(settings: SearchSettings): void { settings.recursive = false; },
             'nosearcharchives':
-                function(settings: SearchSettings) { settings.searchArchives = false; },
+                function(settings: SearchSettings): void { settings.searchArchives = false; },
             'printmatches':
-                function(settings: SearchSettings) { settings.printResults = true; },
+                function(settings: SearchSettings): void { settings.printResults = true; },
             'recursive':
-                function(settings: SearchSettings) { settings.recursive = true; },
+                function(settings: SearchSettings): void { settings.recursive = true; },
             'searcharchives':
-                function(settings: SearchSettings) { settings.searchArchives = true; },
+                function(settings: SearchSettings): void { settings.searchArchives = true; },
             'uniquelines':
-                function(settings: SearchSettings) { settings.uniqueLines = true; },
+                function(settings: SearchSettings): void { settings.uniqueLines = true; },
             'verbose':
-                function(settings: SearchSettings) { settings.verbose = true; },
+                function(settings: SearchSettings): void { settings.verbose = true; },
             'version':
-                function(settings: SearchSettings) { settings.printVersion = true; }
+                function(settings: SearchSettings): void { settings.printVersion = true; }
         };
 
         this.setOptionsFromXml();
@@ -183,7 +183,7 @@ class SearchOptions {
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
         while(args) {
-            var arg = args.shift();
+            var arg: string = args.shift();
             if (!arg) {
                 break;
             }
@@ -231,7 +231,7 @@ class SearchOptions {
         var longest: number = 0;
         for (var i: number = 0; i < this.options.length; i++) {
             var opt: SearchOption = this.options[i];
-            var optString = ' ';
+            var optString: string = ' ';
             if (opt.shortarg)
                 optString += '-' + opt.shortarg + ',';
             optString += '--' + opt.longarg;
@@ -241,7 +241,7 @@ class SearchOptions {
             optDescs.push(opt.desc);
         }
         for (var i: number = 0; i < optStrings.length; i++) {
-            var os = optStrings[i];
+            var os: string = optStrings[i];
             while (os.length < longest)
                 os += ' ';
             usage += os + '  ' + optDescs[i] + '\n';

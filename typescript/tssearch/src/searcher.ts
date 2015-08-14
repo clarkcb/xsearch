@@ -83,14 +83,13 @@ class Searcher {
         }
         return !(this._settings.outDirPatterns.length && Searcher.matchesAnyPattern(dir,
             this._settings.outDirPatterns));
-
     }
 
     public isSearchFile(file: string): boolean {
         if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
             return false;
         }
-        var ext = FileUtil.getExtension(file);
+        var ext: string = FileUtil.getExtension(file);
         if (this._settings.inExtensions.length &&
             !Searcher.matchesAnyElement(ext, this._settings.inExtensions)) {
             return false;
@@ -105,14 +104,13 @@ class Searcher {
         }
         return !(this._settings.outFilePatterns.length &&
         Searcher.matchesAnyPattern(file, this._settings.outFilePatterns));
-
     }
 
     public isArchiveSearchFile(file: string): boolean {
         if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
             return false;
         }
-        var ext = FileUtil.getExtension(file);
+        var ext: string = FileUtil.getExtension(file);
         if (this._settings.inArchiveExtensions.length &&
             !Searcher.matchesAnyElement(ext, this._settings.inArchiveExtensions)) {
             return false;
@@ -162,7 +160,7 @@ class Searcher {
         var subDirs: string[] = [];
         var childItems = fs.readdirSync(dir);
         for (var i: number = 0; i < childItems.length; i++) {
-            var filepath = path.join(dir, childItems[i]);
+            var filepath: string = path.join(dir, childItems[i]);
             try {
                 var stats = fs.statSync(filepath);
                 if (stats.isDirectory()) {
@@ -191,7 +189,7 @@ class Searcher {
         var files: string[] = [];
         var childItems = fs.readdirSync(dir);
         for (var i: number = 0; i < childItems.length; i++) {
-            var filepath = path.join(dir, childItems[i]);
+            var filepath: string = path.join(dir, childItems[i]);
             try {
                 var stats = fs.statSync(filepath);
                 if (stats.isFile()) {
