@@ -20,7 +20,6 @@ public class SearchSettingsTest {
         SearchSettings settings = new SearchSettings();
         assertFalse(settings.getArchivesOnly());
         assertFalse(settings.getDebug());
-        assertFalse(settings.getDoTiming());
         assertTrue(settings.getExcludeHidden());
         assertFalse(settings.getFirstMatch());
         assertEquals(settings.getLinesAfter(), 0);

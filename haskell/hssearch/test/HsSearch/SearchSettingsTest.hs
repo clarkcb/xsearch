@@ -14,7 +14,6 @@ getDefaultSearchSettingsTests = do
   let settings = defaultSearchSettings
   return [ testCase "archivesOnly" (archivesOnly settings @?= False)
          , testCase "debug" (debug settings @?= False)
-         , testCase "doTiming" (doTiming settings @?= False)
          , testCase "excludeHidden" (excludeHidden settings @?= True)
          , testCase "firstMatch" (firstMatch settings @?= False)
          , testCase "linesAfter" (linesAfter settings @?= 0)

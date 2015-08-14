@@ -23,8 +23,6 @@ class Searcher
     validate_settings
     @filetypes = FileTypes.new
     @results = []
-    @timers = {}
-    @totalElapsed = 0
   end
 
   def validate_settings
@@ -163,50 +161,9 @@ class Searcher
     searchfiles
   end
 
-  def add_timer(name, action)
-    @timers[name+':'+action] = Time.new
-  end
-
-  def start_timer(name)
-    add_timer(name, 'start')
-  end
-
-  def stop_timer(name)
-    add_timer(name, 'stop')
-    add_elapsed(name)
-  end
-
-  def get_elapsed(name)
-    start = @timers[name+':start']
-    stop = @timers[name+':stop']
-    stop - start
-  end
-
-  def add_elapsed(name)
-    @totalElapsed += get_elapsed(name)
-  end
-
-  def print_elapsed(name)
-    elapsed = get_elapsed(name) * 1000
-    log("Elapsed time for #{name}: #{elapsed} ms")
-  end
-
-  def print_total_elapsed
-    log("Total elapsed time: #{@totalElapsed * 1000} ms")
-  end
-
   def search
     # get the searchdirs
-    if @settings.dotiming
-      start_timer('get_search_dirs')
-    end
     searchdirs = get_search_dirs
-    if @settings.dotiming
-      stop_timer('get_search_dirs')
-      if @settings.printresults
-        print_elapsed('get_search_dirs')
-      end
-    end
     if @settings.verbose
       log("\nDirectories to be searched (#{searchdirs.count}):")
       searchdirs.each do |d|
@@ -214,16 +171,7 @@ class Searcher
       end
     end
     # get the searchfiles
-    if @settings.dotiming
-      start_timer('get_search_files')
-    end
     searchfiles = get_search_files(searchdirs)
-    if @settings.dotiming
-      stop_timer('get_search_files')
-      if @settings.printresults
-        print_elapsed('get_search_files')
-      end
-    end
     if @settings.verbose
       log("\nFiles to be searched (#{searchfiles.count}):")
       searchfiles.each do |f|
@@ -231,18 +179,8 @@ class Searcher
       end
       log("\n")
     end
-    if @settings.dotiming
-      start_timer('search_files')
-    end
     searchfiles.each do |f|
       search_file(f)
-    end
-    if @settings.dotiming
-      stop_timer('search_files')
-      if @settings.printresults
-        print_elapsed('search_files')
-        print_total_elapsed
-      end
     end
   end
 

@@ -183,9 +183,6 @@ public class SearchOptions {
             ss.debug = true
             ss.verbose = true
         },
-        "dotiming": { (ss: SearchSettings) -> () in
-            ss.doTiming = true
-        },
         "excludehidden": { (ss: SearchSettings) -> () in
             ss.excludeHidden = true
         },

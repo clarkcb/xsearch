@@ -226,9 +226,6 @@ func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
 			settings.Debug = true
 			settings.Verbose = true
 		},
-		"dotiming": func(settings *SearchSettings) {
-			settings.DoTiming = true
-		},
 		"excludehidden": func(settings *SearchSettings) {
 			settings.ExcludeHidden = true
 		},

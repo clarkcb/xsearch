@@ -40,7 +40,6 @@ public class SearchSettings {
 
     private boolean archivesOnly;
     private boolean debug;
-    private boolean doTiming;
     private boolean excludeHidden;
     private boolean firstMatch;
     private int linesAfter;
@@ -81,7 +80,6 @@ public class SearchSettings {
         // set the defaults
         this.archivesOnly = false;
         this.debug = false;
-        this.doTiming = false;
         this.firstMatch = false;
         this.excludeHidden = true;
         this.linesAfter = 0;
@@ -128,14 +126,6 @@ public class SearchSettings {
         if (debug) {
             this.verbose = true;
         }
-    }
-
-    public final boolean getDoTiming() {
-        return this.doTiming;
-    }
-
-    public final void setDoTiming(final boolean doTiming) {
-        this.doTiming = doTiming;
     }
 
     public final boolean getFirstMatch() {
@@ -467,7 +457,6 @@ public class SearchSettings {
         return "SearchSettings(" +
                 "archivesOnly: " + this.archivesOnly +
                 ", debug: " + this.debug +
-                ", doTiming: " + this.doTiming +
                 ", excludeHidden: " + this.excludeHidden +
                 ", firstMatch: " + this.firstMatch +
                 ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions) +

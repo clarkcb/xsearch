@@ -29,7 +29,6 @@ class SearchOptionsTests: XCTestCase {
         let settings: SearchSettings = options.settingsFromArgs(requiredArgs)
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
-        XCTAssert(settings.doTiming == DefaultSettings.doTiming, "doTiming == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
         XCTAssert(settings.firstMatch == DefaultSettings.firstMatch, "firstMatch == false")
         XCTAssert(settings.listDirs == DefaultSettings.listDirs, "listDirs == false")

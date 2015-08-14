@@ -116,10 +116,6 @@ my $flag_action_hash = {
         $settings->{debug} = 1;
         $settings->{verbose} = 1;
     },
-    'dotiming' => sub {
-        my ($settings) = @_;
-        $settings->{dotiming} = 1;
-    },
     'excludehidden' => sub {
         my ($settings) = @_;
         $settings->{excludehidden} = 1;

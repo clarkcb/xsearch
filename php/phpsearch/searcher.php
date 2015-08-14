@@ -8,8 +8,6 @@ class Searcher {
         $this->settings = $settings;
         $this->filetypes = new FileTypes();
         $this->results = array();
-        $this->timers = array();
-        $this->totalElapsed = 0;
         $this->validate_settings();
     }
 
@@ -171,46 +169,8 @@ class Searcher {
         return $searchfiles;
     }
 
-    private function add_timer($name, $action) {
-        $this->timers["$name:$action"] = microtime(true);
-    }
-
-    private function start_timer($name) {
-        $this->add_timer($name, 'start');
-    }
-
-    private function stop_timer($name) {
-        $this->add_timer($name, 'stop');
-        $this->add_elapsed($name);
-    }
-
-    private function get_elapsed($name) {
-        $start = $this->timers["$name:start"];
-        $stop = $this->timers["$name:stop"];
-        return $stop - $start;
-    }
-
-    private function add_elapsed($name) {
-        $this->totalElapsed += $this->get_elapsed($name);
-    }
-
-    private function print_elapsed($name) {
-        log_msg(sprintf("\nElapsed time for %s: %d", $name, $this->get_elapsed($name)));
-    }
-
-    private function print_total_elapsed($name) {
-        log_msg(sprintf("\nTotal elapsed time: %d", $this->totalElapsed));
-    }
-
     public function search() {
-        if ($this->settings->dotiming)
-            $this->start_timer('get_search_dirs');
         $searchdirs = $this->get_search_dirs();
-        if ($this->settings->dotiming) {
-            $this->stop_timer('get_search_dirs');
-            if ($this->settings->printresults)
-                $this->print_elapsed('get_search_dirs');
-        }
         if ($this->settings->verbose) {
             log_msg(sprintf("\nDirectories to be searched (%d):", count($searchdirs)));
             foreach ($searchdirs as $d) {
@@ -218,14 +178,7 @@ class Searcher {
             }
         }
 
-        if ($this->settings->dotiming)
-            $this->start_timer('get_search_files');
         $searchfiles = $this->get_search_files($searchdirs);
-        if ($this->settings->dotiming) {
-            $this->stop_timer('get_search_files');
-            if ($this->settings->printresults)
-                $this->print_elapsed('get_search_files');
-        }
         if ($this->settings->verbose) {
             log_msg(sprintf("\nFiles to be searched (%d):", count($searchfiles)));
             foreach ($searchfiles as $f) {
@@ -234,15 +187,8 @@ class Searcher {
         }
 
         // search the files
-        if ($this->settings->dotiming)
-            $this->start_timer('search_files');
         foreach ($searchfiles as $f) {
             $this->search_file($f);
-        }
-        if ($this->settings->dotiming) {
-            $this->stop_timer('search_files');
-            if ($this->settings->printresults)
-                $this->print_elapsed('search_files');
         }
     }
 

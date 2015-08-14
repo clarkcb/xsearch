@@ -9,7 +9,6 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase {
     public function test_default_settings() {
         $this->assertFalse($this->settings->archivesonly);
         $this->assertFalse($this->settings->debug);
-        $this->assertFalse($this->settings->dotiming);
         $this->assertTrue($this->settings->excludehidden);
         $this->assertFalse($this->settings->firstmatch);
         $this->assertEquals($this->settings->linesafter, 0);

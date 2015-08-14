@@ -17,7 +17,6 @@ namespace CsSearchTests
 			var settings = searchOptions.SettingsFromArgs(new List<string>());
 			Assert.IsFalse(settings.ArchivesOnly);
 			Assert.IsFalse(settings.Debug);
-			Assert.IsFalse(settings.DoTiming);
 			Assert.IsTrue(settings.ExcludeHidden);
 			Assert.IsFalse(settings.FirstMatch);
 			Assert.AreEqual(settings.LinesAfter, 0);

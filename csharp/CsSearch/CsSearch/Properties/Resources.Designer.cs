@@ -89,9 +89,6 @@ namespace CsSearch.Properties {
         ///  &lt;searchoption long=&quot;debug&quot; short=&quot;&quot;&gt;
         ///    Set output mode to debug
         ///  &lt;/searchoption&gt;
-        ///  &lt;searchoption long=&quot;dotiming&quot; short=&quot;t&quot;&gt;
-        ///    Time search execution
-        ///  &lt;/searchoption&gt;
         ///  &lt;searchoption long=&quot;firstmatch&quot; short=&quot;1&quot;&gt;
         ///    Capture only the first match for a file+search combination
         ///  &lt;/searchoption&gt;

@@ -53,7 +53,6 @@ module SearchOptions =
             ("allmatches", (fun (settings : SearchSettings) -> settings.FirstMatch <- false));
             ("archivesonly", (fun (settings : SearchSettings) -> settings.SetArchivesOnly()));
             ("debug", (fun (settings : SearchSettings) -> settings.SetDebug()));
-            ("dotiming", (fun (settings : SearchSettings) -> settings.DoTiming <- true));
             ("excludehidden", (fun (settings : SearchSettings) -> settings.ExcludeHidden <- true));
             ("firstmatch", (fun (settings : SearchSettings) -> settings.FirstMatch <- true));
             ("help", (fun (settings : SearchSettings) -> settings.PrintUsage <- true));

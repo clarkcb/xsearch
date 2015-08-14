@@ -37,7 +37,6 @@ namespace CsSearch
 
 		public bool ArchivesOnly { get; set; }
 		public bool Debug { get; set; }
-		public bool DoTiming { get; set; }
 		public bool ExcludeHidden { get; set; }
 		public bool FirstMatch { get; set; }
 		public int LinesAfter { get; set; }
@@ -76,7 +75,6 @@ namespace CsSearch
 			SearchPatterns = new HashSet<Regex>();
 			ArchivesOnly = false;
 			Debug = false;
-			DoTiming = false;
 			ExcludeHidden = true;
 			FirstMatch = false;
 			LinesAfter = 0;
@@ -234,7 +232,6 @@ namespace CsSearch
 			var sb = new StringBuilder("SearchSettings(");
 			sb.Append("ArchivesOnly: " + ArchivesOnly);
 			sb.Append(", Debug: " + Debug);
-			sb.Append(", DoTiming: " + DoTiming);
 			sb.Append(", ExcludeHidden: " + ExcludeHidden);
 			sb.Append(", FirstMatch: " + FirstMatch);
 			sb.Append(", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions));

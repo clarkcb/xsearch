@@ -15,7 +15,6 @@ exports.testNoArgs = function(test) {
         }
         test.ok(!settings.archivesOnly, "archivesOnly is false by default");
         test.ok(!settings.debug, "debug is false by default");
-        test.ok(!settings.doTiming, "doTiming is false by default");
         test.ok(settings.excludeHidden, "excludeHidden is true by default");
         test.ok(!settings.firstMatch, "firstmatch is false by default");
         test.ok(settings.linesAfter === 0, "linesAfter == 0 by default");

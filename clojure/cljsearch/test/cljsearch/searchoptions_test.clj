@@ -8,7 +8,6 @@
     (testing "test-no-args"
       (is (not (:archivesonly ss)))
       (is (not (:debug ss)))
-      (is (not (:dotiming ss)))
       (is (:excludehidden ss))
       (is (not (:firstmatch ss)))
       (is (= (:linesafter ss) 0))

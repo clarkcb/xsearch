@@ -116,7 +116,6 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("archivesonly", \ss -> ss {archivesOnly=True,
                                             searchArchives=True})
               , ("debug", \ss -> ss {debug=True, verbose=True})
-              , ("dotiming", \ss -> ss {doTiming=True})
               , ("excludehidden", \ss -> ss {excludeHidden=True})
               , ("firstmatch", \ss -> ss {firstMatch=True})
               , ("help", \ss -> ss {printUsage=True})

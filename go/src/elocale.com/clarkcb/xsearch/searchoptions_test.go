@@ -14,7 +14,6 @@ func TestSearchSettingsFromNoArgs(t *testing.T) {
 
 	if settings.ArchivesOnly ||
 		settings.Debug ||
-		settings.DoTiming ||
 		!settings.ExcludeHidden ||
 		settings.FirstMatch ||
 		settings.ListDirs ||

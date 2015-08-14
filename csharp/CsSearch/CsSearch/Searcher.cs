@@ -12,8 +12,6 @@ namespace CsSearch
 		private readonly FileTypes _fileTypes;
 		public SearchSettings Settings { get; private set; }
 		public IList<SearchResult> Results { get; private set; }
-		public IDictionary<string, Stopwatch> Timers { get; private set; }
-		private TimeSpan TotalElapsedTime { get; set; }
 
 		public Searcher(SearchSettings settings)
 		{
@@ -21,8 +19,6 @@ namespace CsSearch
 			ValidateSettings();
 			_fileTypes = new FileTypes();
 			Results = new List<SearchResult>();
-			Timers = new Dictionary<string, Stopwatch>();
-			TotalElapsedTime = new TimeSpan();
 		}
 
 		private static void Log(string message)
@@ -95,36 +91,6 @@ namespace CsSearch
 				Settings.OutArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
 				return false;
 			return true;
-		}
-
-		public void StartTimer(string name)
-		{
-			var timer = new Stopwatch();
-			timer.Start();
-			Timers.Add(name, timer);
-		}
-
-		public void StopTimer(string name) {
-			var timer = Timers[name];
-			timer.Stop();
-			TotalElapsedTime = TotalElapsedTime.Add(timer.Elapsed);
-		}
-
-		public TimeSpan GetElapsed(string name)
-		{
-			var timer = Timers[name];
-			return timer.Elapsed;
-		}
-
-		public void PrintElapsed(string name)
-		{
-			var ts = GetElapsed(name);
-			Log(string.Format("Elapsed time for {0}: {1} ms", name, ts.TotalMilliseconds));
-		}
-
-		public void PrintTotalElapsed()
-		{
-			Log(string.Format("Total elapsed time: {0} ms", TotalElapsedTime.TotalMilliseconds));
 		}
 
 		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo dir)
@@ -223,20 +189,10 @@ namespace CsSearch
 
 		public void SearchPath(DirectoryInfo path)
 		{
-			if (Settings.DoTiming)
-			{
-				StartTimer("GetSearchDirs");
-			}
 			var searchDirs = new List<DirectoryInfo> { path };
 			if (Settings.Recursive)
 			{
 				searchDirs.AddRange(GetSearchDirs(path));
-			}
-			if (Settings.DoTiming)
-			{
-				StopTimer("GetSearchDirs");
-				if (Settings.PrintResults)
-					PrintElapsed("GetSearchDirs");
 			}
 			if (Settings.Verbose)
 			{
@@ -248,17 +204,7 @@ namespace CsSearch
 				Log("");
 			}
 
-			if (Settings.DoTiming)
-			{
-				StartTimer("GetSearchFiles");
-			}
 			var searchFiles = GetSearchFiles(searchDirs);
-			if (Settings.DoTiming)
-			{
-				StopTimer("GetSearchFiles");
-				if (Settings.PrintResults)
-					PrintElapsed("GetSearchFiles");
-			}
 			if (Settings.Verbose)
 			{
 				Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Count()));
@@ -269,21 +215,9 @@ namespace CsSearch
 				Log("");
 			}
 
-			if (Settings.DoTiming) {
-				StartTimer("SearchFiles");
-			}
 			foreach (var f in searchFiles)
 			{
 				DoSearchFile(f);
-			}
-			if (Settings.DoTiming)
-			{
-				StopTimer("SearchFiles");
-				if (Settings.PrintResults)
-				{
-					PrintElapsed("SearchFiles");
-					PrintTotalElapsed();
-				}
 			}
 		}
 

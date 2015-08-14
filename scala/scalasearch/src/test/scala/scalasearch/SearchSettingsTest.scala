@@ -10,7 +10,6 @@ class SearchSettingsTest extends FunSuite with BeforeAndAfterAll {
   def assertDefaultSettings(settings:SearchSettings) {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
-    assert(settings.doTiming == DefaultSettings.doTiming)
     assert(settings.excludeHidden == DefaultSettings.excludeHidden)
     assert(settings.firstMatch == DefaultSettings.firstMatch)
     assert(settings.linesAfter == DefaultSettings.linesAfter)

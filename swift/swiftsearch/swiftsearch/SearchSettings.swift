@@ -11,7 +11,6 @@
 class DefaultSettings {
     static let archivesOnly = false
     static let debug = false
-    static let doTiming = false
     static let excludeHidden = true
     static let firstMatch = false
     static let linesAfter = 0
@@ -34,7 +33,6 @@ class DefaultSettings {
 public class SearchSettings: Printable {
     var archivesOnly = DefaultSettings.archivesOnly
     var debug = DefaultSettings.debug
-    var doTiming = DefaultSettings.doTiming
     var excludeHidden = DefaultSettings.excludeHidden
     var firstMatch = DefaultSettings.firstMatch
     var linesAfter = DefaultSettings.linesAfter
@@ -103,7 +101,6 @@ public class SearchSettings: Printable {
         var s = "SearchSettings("
         s += "archivesOnly=\(archivesOnly)"
         s += ", debug=\(debug)"
-        s += ", doTiming=\(doTiming)"
         s += ", excludeHidden=\(excludeHidden)"
         s += ", firstMatch=\(firstMatch)"
         s += ", inArchiveExtensions=\(setToString(inArchiveExtensions))"

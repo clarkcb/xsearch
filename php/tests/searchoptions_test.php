@@ -10,7 +10,6 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
         $settings = $this->searchoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
         $this->assertFalse($settings->debug);
-        $this->assertFalse($settings->dotiming);
         $this->assertTrue($settings->excludehidden);
         $this->assertFalse($settings->firstmatch);
         $this->assertEquals($settings->linesafter, 0);

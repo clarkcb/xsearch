@@ -19,8 +19,6 @@ function Searcher(settings) {
     var self = this;
     var _settings = settings;
     var _filetypes = new FileTypes();
-    var _timers = {};
-    var _totalElapsed = 0;
     self.results = [];
 
     var validateSettings = function () {
@@ -235,41 +233,6 @@ function Searcher(settings) {
         return searchFiles;
     };
 
-    var addTimer = function (name, action) {
-        _timers[name + ":" + action] = new Date();
-    };
-
-    var startTimer = function (name) {
-        addTimer(name, "start");
-    };
-
-    var stopTimer = function (name) {
-        addTimer(name, "stop");
-        addElapsed(name);
-    };
-
-    var addElapsed = function (name) {
-        _totalElapsed += getElapsed(name);
-    };
-
-    var getElapsed = function (name) {
-        var start = _timers[name+":start"];
-        var stop = _timers[name+":stop"];
-        var elapsed = stop - start;
-        return elapsed;
-    };
-
-    var printElapsed = function (name) {
-        var elapsed = getElapsed(name);
-        var msg = "Elapsed time for {0}: {1} ms";
-        common.log(msg.format(name, elapsed));
-    };
-
-    var printTotalElapsed = function () {
-        var msg = "Total elapsed time: {0} ms";
-        common.log(msg.format(_totalElapsed));
-    };
-
     self.search = function () {
         if (_settings.verbose)
             common.log("Search initiated");
@@ -277,15 +240,8 @@ function Searcher(settings) {
         // initialize reusable counter
         var i = 0;
         // get the search dirs
-        if (_settings.doTiming)
-            startTimer("GetSearchDirs");
         var dirs = [];
         dirs.push.apply(dirs, getSearchDirs(_settings.startPath));
-        if (_settings.doTiming) {
-            stopTimer("GetSearchDirs");
-            if (_settings.printResults)
-                printElapsed("GetSearchDirs");
-        }
         if (_settings.verbose) {
             common.log("\nDirectories to be searched ({0}):".format(dirs.length));
             for (i=0; i < dirs.length; i++) {
@@ -294,14 +250,7 @@ function Searcher(settings) {
         }
 
         // get the search files
-        if (_settings.doTiming)
-            startTimer("GetSearchFiles");
         var files = getSearchFiles(dirs);
-        if (_settings.doTiming) {
-            stopTimer("GetSearchFiles");
-            if (_settings.printResults)
-                printElapsed("GetSearchFiles");
-        }
         if (_settings.verbose) {
             common.log("\nFiles to be searched ({0}):".format(files.length));
             for (i=0; i < files.length; i++) {
@@ -310,17 +259,8 @@ function Searcher(settings) {
             common.log("");
         }
 
-        if (_settings.doTiming)
-            startTimer("SearchFiles");
         for (i=0; i < files.length; i++) {
             searchFile(files[i]);
-        }
-        if (_settings.doTiming) {
-            stopTimer("SearchFiles");
-            if (_settings.printResults) {
-                printElapsed("SearchFiles");
-                printTotalElapsed();
-            }
         }
 
         if (_settings.verbose)

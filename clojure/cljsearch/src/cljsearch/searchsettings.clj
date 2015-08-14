@@ -15,7 +15,6 @@
   [
     archivesonly
     debug
-    dotiming
     excludehidden
     firstmatch
     in-archiveextensions
@@ -55,7 +54,6 @@
 (def DEFAULT-SETTINGS (->SearchSettings
     false ; archivesonly
     false ; debug
-    false ; dotiming
     true  ; excludehidden
     false ; firstmatch
     #{}   ; in-archiveextensions

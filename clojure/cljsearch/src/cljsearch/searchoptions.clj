@@ -77,7 +77,6 @@
   { :allmatches (fn [settings] (assoc settings :firstmatch false))
     :archivesonly (fn [settings] (set-archivesonly settings))
     :debug (fn [settings] (set-debug settings))
-    :dotiming (fn [settings] (assoc settings :dotiming true))
     :excludehidden (fn [settings] (assoc settings :excludehidden true))
     :firstmatch (fn [settings] (assoc settings :firstmatch true))
     :help (fn [settings] (assoc settings :printusage true))

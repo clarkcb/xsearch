@@ -22,7 +22,6 @@ class SearchSettingsTests: XCTestCase {
     func testDefaultSettings() {
         XCTAssert(DefaultSettings.archivesOnly == false, "archivesOnly == false")
         XCTAssert(DefaultSettings.debug == false, "debug == false")
-        XCTAssert(DefaultSettings.doTiming == false, "doTiming == false")
         XCTAssert(DefaultSettings.excludeHidden == true, "excludeHidden == true")
         XCTAssert(DefaultSettings.firstMatch == false, "firstMatch == false")
         XCTAssert(DefaultSettings.listDirs == false, "listDirs == false")
@@ -41,7 +40,6 @@ class SearchSettingsTests: XCTestCase {
         let settings = SearchSettings()
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
-        XCTAssert(settings.doTiming == DefaultSettings.doTiming, "doTiming == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
         XCTAssert(settings.firstMatch == DefaultSettings.firstMatch, "firstMatch == false")
         XCTAssert(settings.listDirs == DefaultSettings.listDirs, "listDirs == false")

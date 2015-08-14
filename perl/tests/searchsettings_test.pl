@@ -24,7 +24,6 @@ sub test_default_settings {
     my $settings = new plsearch::SearchSettings();
     ok(!$settings->{archivesonly}, "archivesonly is false by default");
     ok(!$settings->{debug}, "debug is false by default");
-    ok(!$settings->{dotiming}, "dotiming is false by default");
     ok($settings->{excludehidden}, "excludehidden is true by default");
     ok(!$settings->{firstmatch}, "firstmatch is false by default");
     ok($settings->{linesafter} == 0, "linesafter == 0 by default");

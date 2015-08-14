@@ -24,7 +24,6 @@ class SearchOptionsTest(unittest.TestCase):
         settings = self.searchoptions.search_settings_from_args([])
         self.assertFalse(settings.archivesonly)
         self.assertFalse(settings.debug)
-        self.assertFalse(settings.dotiming)
         self.assertFalse(settings.firstmatch)
         self.assertTrue(settings.excludehidden)
         self.assertEqual(settings.linesafter, 0)

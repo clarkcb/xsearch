@@ -40,8 +40,6 @@ class Searcher(object):
         self.filetypes = FileTypes()
         self.results = []
         self.patterndict = {}
-        self.timers = {}
-        self.total_elapsed = timedelta()
         self.filedict = {}
         self.rescounts = {}
         self.__dict__.update(kargs)
@@ -153,45 +151,11 @@ class Searcher(object):
                        for f in files]
         return [sf for sf in searchfiles if self.filter_file(sf)]
 
-    def add_timer(self, name, action):
-        self.timers[name+':'+action] = datetime.now()
-
-    def start_timer(self, name):
-        self.add_timer(name, 'start')
-
-    def stop_timer(self, name):
-        self.add_timer(name, 'stop')
-        self.add_elapsed(name)
-
-    def add_elapsed(self, name):
-        self.total_elapsed += self.get_elapsed(name)
-
-    def get_elapsed(self, name):
-        start = self.timers[name+':start']
-        stop = self.timers[name+':stop']
-        elapsed = stop - start
-        return elapsed
-
-    def print_elapsed(self, name):
-        ms = self.get_elapsed(name).total_seconds() * 1000
-        common.log('Elapsed time for {0}: {1} ms'.format(name, ms))
-
-    def print_total_elapsed(self):
-        msg = 'Total elapsed time: {0} ms'
-        ms = self.total_elapsed.total_seconds() * 1000
-        common.log(msg.format(ms))
-
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
         # get the searchdirs
-        if self.settings.dotiming:
-            self.start_timer('get_search_dirs')
         searchdirs = self.get_search_dirs()
-        if self.settings.dotiming:
-            self.stop_timer('get_search_dirs')
-            if self.settings.printresults:
-                self.print_elapsed('get_search_dirs')
         if self.settings.verbose:
             common.log('\nDirectories to be searched ({0}):'.format(len(searchdirs)))
             for d in searchdirs:
@@ -199,27 +163,14 @@ class Searcher(object):
             common.log("")
 
         # get the searchfiles
-        if self.settings.dotiming:
-            self.start_timer('get_search_files')
         searchfiles = self.get_search_files(searchdirs)
-        if self.settings.dotiming:
-            self.stop_timer('get_search_files')
-            if self.settings.printresults:
-                self.print_elapsed('get_search_files')
         if self.settings.verbose:
             common.log('\nFiles to be searched ({0}):'.format(len(searchfiles)))
             for f in searchfiles:
                 common.log(f)
             common.log("")
-        if self.settings.dotiming:
-            self.start_timer('search_files')
         for sf in searchfiles:
             self.search_file(sf)
-        if self.settings.dotiming:
-            self.stop_timer('search_files')
-            if self.settings.printresults:
-                self.print_elapsed('search_files')
-                self.print_total_elapsed()
 
     def search_file(self, sf):
         """Search in a file, return number of matches found"""

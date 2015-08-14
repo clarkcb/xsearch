@@ -23,7 +23,6 @@ class SearchSettings(object):
     _props_with_defaults = {
         'archivesonly': False,
         'debug': False,
-        'dotiming': False,
         'firstmatch': False,
         'excludehidden': True,
         'linesafter': 0,

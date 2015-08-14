@@ -16,7 +16,6 @@ sub new {
     my $self = {
         archivesonly => 0,
         debug => 0,
-        dotiming => 0,
         excludehidden => 1,
         firstmatch => 0,
         in_archiveextensions => [],
@@ -89,7 +88,6 @@ sub to_string {
     my $s = "SearchSettings(";
     $s .= 'archivesonly=' . $self->bool_to_string($self->{archivesonly});
     $s .= ', debug=' . $self->bool_to_string($self->{debug});
-    $s .= ', dotiming=' . $self->bool_to_string($self->{dotiming});
     $s .= ', excludehidden=' . $self->bool_to_string($self->{excludehidden});
     $s .= ', firstmatch=' . $self->bool_to_string($self->{firstmatch});
     $s .= ', in_archiveextensions=' . $self->aref_to_string($self->{in_archiveextensions});

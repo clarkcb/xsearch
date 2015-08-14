@@ -9,7 +9,6 @@
     (testing "test-default-settings"
       (is (not (:archivesonly settings)))
       (is (not (:debug settings)))
-      (is (not (:dotiming settings)))
       (is (:excludehidden settings))
       (is (not (:firstmatch settings)))
       (is (= (:linesafter settings) 0))

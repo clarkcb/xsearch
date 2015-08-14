@@ -81,9 +81,6 @@ class SearchOptions {
                 $settings->debug = true;
                 $settings->verbose = true;
             },
-            'dotiming' => function(SearchSettings $settings) {
-                $settings->dotiming = true;
-            },
             'excludehidden' => function(SearchSettings $settings) {
                 $settings->excludehidden = true;
             },

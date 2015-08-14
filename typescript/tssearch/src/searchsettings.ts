@@ -28,7 +28,6 @@ class SearchSettings {
     searchPatterns: RegExp[] = [];
     archivesOnly: boolean = false;
     debug: boolean = false;
-    doTiming: boolean = false;
     excludeHidden: boolean = true;
     firstMatch: boolean = false;
     linesAfter: number = 0;
@@ -147,7 +146,6 @@ class SearchSettings {
         var s: string = 'SearchSettings('
             + 'archivesOnly=' + this.archivesOnly
             + ', debug=' + this.debug
-            + ', doTiming=' + this.doTiming
             + ', excludeHidden=' + this.excludeHidden
             + ', firstMatch=' + this.firstMatch
             + ', ' + SearchSettings.sListToString('inArchiveExtensions', this.inArchiveExtensions)

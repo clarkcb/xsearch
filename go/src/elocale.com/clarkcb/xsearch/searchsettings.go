@@ -27,7 +27,6 @@ type SearchSettings struct {
 	SearchPatterns          *SearchPatterns
 	ArchivesOnly            bool
 	Debug                   bool
-	DoTiming                bool
 	ExcludeHidden           bool
 	FirstMatch              bool
 	LinesAfter              int
@@ -68,7 +67,6 @@ func GetDefaultSearchSettings() *SearchSettings {
 		NewSearchPatterns(), // SearchPatterns
 		false,               // ArchivesOnly
 		false,               // Debug
-		false,               // DoTiming
 		true,                // ExcludeHidden
 		false,               // FirstMatch
 		0,                   // LinesAfter
@@ -198,7 +196,6 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString("SearchSettings{")
 	buffer.WriteString(fmt.Sprintf("ArchivesOnly: %t", s.ArchivesOnly))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
-	buffer.WriteString(fmt.Sprintf(", DoTiming: %t", s.DoTiming))
 	buffer.WriteString(fmt.Sprintf(", ExcludeHidden: %t", s.ExcludeHidden))
 	buffer.WriteString(fmt.Sprintf(", FirstMatch: %t", s.FirstMatch))
 	buffer.WriteString(", ")

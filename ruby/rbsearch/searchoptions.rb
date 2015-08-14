@@ -71,7 +71,6 @@ class SearchOptions
       :'caseinsensitive' => ->(settings){ settings.casesensitive = false },
       :'casesensitive' => ->(settings){ settings.casesensitive = true },
       :'debug' => ->(settings){ settings.debug = true; settings.verbose = true },
-      :'dotiming' => ->(settings){ settings.dotiming = true },
       :'excludehidden' => ->(settings){ settings.excludehidden = true },
       :'firstmatch' => ->(settings){ settings.firstmatch = true },
       :'help' => ->(settings){ settings.printusage = true },

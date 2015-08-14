@@ -51,7 +51,6 @@ type SearchSettings() =
     member val StartPath = "" with get,set
     member val ArchivesOnly = false with get,set
     member val Debug = false with get,set
-    member val DoTiming = false with get,set
     member val ExcludeHidden = true with get,set
     member val FirstMatch = false with get,set
     member val LinesAfter = 0 with get,set
@@ -151,7 +150,6 @@ type SearchSettings() =
         "SearchSettings(" +
         String.Format("ArchivesOnly: {0}", this.ArchivesOnly) +
         String.Format(", Debug: {0}", this.Debug) +
-        String.Format(", DoTiming: {0}", this.DoTiming) +
         String.Format(", ExcludeHidden: {0}", this.ExcludeHidden) +
         String.Format(", FirstMatch: {0}", this.FirstMatch) +
         String.Format(", InArchiveExtensions: {0}",  "[\"" + String.Join("\", \"", _inArchiveExtensions) + "\"]") +

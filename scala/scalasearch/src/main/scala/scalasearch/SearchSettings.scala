@@ -6,7 +6,6 @@ import scala.util.matching.Regex
 object DefaultSettings {
   val archivesOnly = false
   val debug = false
-  val doTiming = false
   val excludeHidden = true
   val firstMatch = false
   val linesAfter = 0
@@ -48,7 +47,6 @@ class SettingsBuilder {
 
   var archivesOnly = DefaultSettings.archivesOnly
   var debug = DefaultSettings.debug
-  var doTiming = DefaultSettings.doTiming
   var excludeHidden = DefaultSettings.excludeHidden
   var firstMatch = DefaultSettings.firstMatch
   var linesAfter = DefaultSettings.linesAfter
@@ -170,7 +168,6 @@ class SettingsBuilder {
       Set.empty[Regex] ++ searchPatterns,
       archivesOnly,
       debug,
-      doTiming,
       excludeHidden,
       firstMatch,
       linesAfter,
@@ -217,7 +214,6 @@ class SearchSettings(val startPath:Option[String],
                      val searchPatterns:Set[Regex],
                      val archivesOnly:Boolean,
                      val debug:Boolean,
-                     val doTiming:Boolean,
                      val excludeHidden:Boolean,
                      val firstMatch:Boolean,
                      val linesAfter:Int,
@@ -263,7 +259,6 @@ class SearchSettings(val startPath:Option[String],
     "SearchSettings(" +
       "archivesOnly: " + archivesOnly +
       ", debug: " + debug +
-      ", doTiming: " + doTiming +
       ", excludeHidden: " + excludeHidden +
       ", firstMatch: " + firstMatch +
       ", inArchiveExtensions: " + inArchiveExtensions +

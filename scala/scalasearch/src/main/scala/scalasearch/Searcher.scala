@@ -29,8 +29,6 @@ class Searcher (settings: SearchSettings) {
   private val tarExtension = "tar"
 
   private val _searchResults = mutable.ListBuffer[SearchResult]()
-  private val _timers = mutable.Map[String,Long]()
-  private var _totalElapsedTime: Long = 0L
 
   def searchResults: List[SearchResult] = _searchResults.toList
 
@@ -158,38 +156,6 @@ class Searcher (settings: SearchSettings) {
     stringList.mkString("[\"", "\", \"", "\"]")
   }
 
-  private def addTimer(name:String, action:String): Unit = {
-    _timers.put(name + ":" + action, System.currentTimeMillis)
-  }
-
-  private def startTimer(name:String): Unit = {
-    addTimer(name, "start")
-  }
-
-  private def getElapsed(name:String): Long = {
-    val startTime = _timers(name + ":start")
-    val stopTime = _timers(name + ":stop")
-    val elapsed = stopTime - startTime
-    _totalElapsedTime += elapsed
-    elapsed
-  }
-
-  def printElapsed(name:String): Unit = {
-    val elapsed = getElapsed(name)
-    Common.log("Elapsed time for \"%s\": %d ms".format(name, elapsed))
-  }
-
-  def printTotalElapsed(): Unit = {
-    Common.log("Total elapsed time: %d ms".format(_totalElapsedTime))
-  }
-
-  private def stopTimer(name:String): Unit = {
-    addTimer(name, "stop")
-    if (settings.printResults) {
-      printElapsed(name)
-    }
-  }
-
   def search(): Unit = {
     val startPathFile = new File(settings.startPath.get)
     if (startPathFile.isDirectory) {
@@ -211,16 +177,12 @@ class Searcher (settings: SearchSettings) {
   }
 
   def searchPath(filePath:File): Unit = {
-    if (settings.doTiming) { startTimer("getSearchDirs") }
     val searchDirs = getSearchDirs(new File(settings.startPath.get))
-    if (settings.doTiming) { stopTimer("getSearchDirs") }
     if (settings.verbose) {
       Common.log("\nDirectories to be searched (%d):\n%s".format(searchDirs.size,
         searchDirs.mkString("\n")))
     }
-    if (settings.doTiming) { startTimer("getSearchFiles") }
     val files: Iterable[SearchFile] = getSearchFiles(searchDirs)
-    if (settings.doTiming) { stopTimer("getSearchFiles") }
     if (settings.verbose) {
       Common.log("\nFiles to be searched (%d):\n%s".format(files.size,
         files.mkString("\n")))
@@ -228,14 +190,7 @@ class Searcher (settings: SearchSettings) {
     if (settings.verbose) {
       Common.log("\nStarting file search...\n")
     }
-    if (settings.doTiming) { startTimer("searchFiles") }
     searchFiles(files)
-    if (settings.doTiming) {
-      stopTimer("searchFiles")
-      if (settings.printResults) {
-        printTotalElapsed()
-      }
-    }
     if (settings.verbose) {
       Common.log("\nFile search complete.\n")
     }

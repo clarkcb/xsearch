@@ -68,8 +68,6 @@ function SearchOptions() {
             function(settings) { settings.setArchivesOnly(); },
         'debug':
             function(settings) { settings.setDebug(); },
-        'dotiming':
-            function(settings) { settings.doTiming = true; },
         'excludehidden':
             function(settings) { settings.excludeHidden = true; },
         'firstmatch':

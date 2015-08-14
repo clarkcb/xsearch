@@ -18,7 +18,6 @@ class SearchOptionsTest < Test::Unit::TestCase
     settings = @searchoptions.search_settings_from_args([])
     assert_equal(settings.archivesonly, false)
     assert_equal(settings.debug, false)
-    assert_equal(settings.dotiming, false)
     assert_equal(settings.excludehidden, true)
     assert_equal(settings.firstmatch, false)
     assert_equal(settings.linesafter, 0)

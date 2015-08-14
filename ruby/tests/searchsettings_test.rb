@@ -17,7 +17,6 @@ class SearchSettingsTest < Test::Unit::TestCase
   def test_default_settings
     assert_equal(@settings.archivesonly, false)
     assert_equal(@settings.debug, false)
-    assert_equal(@settings.dotiming, false)
     assert_equal(@settings.excludehidden, true)
     assert_equal(@settings.firstmatch, false)
     assert_equal(@settings.linesafter, 0)
@@ -55,12 +54,10 @@ class SearchSettingsTest < Test::Unit::TestCase
   def test_set_properties
     @settings.archivesonly = true
     @settings.debug = true
-    @settings.dotiming = true
     @settings.linesafter = 5
     @settings.linesbefore = 5
     assert_equal(@settings.archivesonly, true)
     assert_equal(@settings.debug, true)
-    assert_equal(@settings.dotiming, true)
     assert_equal(@settings.linesafter, 5)
     assert_equal(@settings.linesbefore, 5)
   end

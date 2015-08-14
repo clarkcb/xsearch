@@ -9,9 +9,6 @@
   <searchoption long="debug" short="">
     Set output mode to debug
   </searchoption>
-  <searchoption long="dotiming" short="t">
-    Measure search execution duration
-  </searchoption>
   <searchoption long="excludehidden" short="">
     Exclude hidden files and directories*
   </searchoption>

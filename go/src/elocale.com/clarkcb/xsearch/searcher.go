@@ -48,8 +48,6 @@ type Searcher struct {
 	errChan       chan error
 	searchResults *SearchResults
 	resultChan    chan *SearchResult
-	timerMap      map[string]time.Time
-	totalElapsed  time.Duration
 }
 
 func NewSearcher(settings *SearchSettings) *Searcher {
@@ -63,8 +61,6 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 		make(chan error, 1),       // errChan
 		NewSearchResults(),        // searchResults
 		make(chan *SearchResult),  // resultChan
-		map[string]time.Time{},    // timerMap
-		time.Duration(0),          // totalElapsed
 	}
 }
 
@@ -828,39 +824,6 @@ func (s *Searcher) searchSearchItem(si *SearchItem) {
 	}
 }
 
-func (s *Searcher) addTimer(name string, action string) {
-	timerName := fmt.Sprintf("%s:%s", name, action)
-	s.timerMap[timerName] = time.Now()
-}
-
-func (s *Searcher) startTimer(name string) {
-	s.addTimer(name, "start")
-}
-
-func (s *Searcher) stopTimer(name string) {
-	s.addTimer(name, "stop")
-	if s.Settings.PrintResults || s.Settings.Debug {
-		s.printElapsed(name)
-	}
-}
-
-func (s *Searcher) getElapsed(name string) time.Duration {
-	start := s.timerMap[name+":start"]
-	stop := s.timerMap[name+":stop"]
-	elapsed := stop.Sub(start)
-	s.totalElapsed += elapsed
-	return elapsed
-}
-
-func (s *Searcher) printElapsed(name string) {
-	elapsed := s.getElapsed(name)
-	log(fmt.Sprintf("Elapsed time for %s: %v", name, elapsed))
-}
-
-func (s *Searcher) printTotalElapsed() {
-	log(fmt.Sprintf("Total elapsed time: %v", s.totalElapsed))
-}
-
 // initiates goroutines to search each file in the batch, waiting for all
 // to finish before returning
 func (s *Searcher) doBatchFileSearch(searchItems []*SearchItem) {
@@ -937,13 +900,7 @@ func (s *Searcher) Search() error {
 	}
 
 	// get search directory list
-	if s.Settings.DoTiming {
-		s.startTimer("setSearchDirs")
-	}
 	err := s.setSearchDirs()
-	if s.Settings.DoTiming {
-		s.stopTimer("setSearchDirs")
-	}
 	if err != nil {
 		return err
 	}
@@ -956,14 +913,8 @@ func (s *Searcher) Search() error {
 	}
 
 	// get search file list
-	if s.Settings.DoTiming {
-		s.startTimer("setSearchFiles")
-	}
 	err = s.setSearchFiles()
 	s.getSearchItems()
-	if s.Settings.DoTiming {
-		s.stopTimer("setSearchFiles")
-	}
 	if err != nil {
 		return err
 	}
@@ -980,17 +931,8 @@ func (s *Searcher) Search() error {
 	if s.Settings.Verbose {
 		log("\nStarting file search...\n")
 	}
-	if s.Settings.DoTiming {
-		s.startTimer("searchFiles")
-	}
 	s.doFileSearch()
 
-	if s.Settings.DoTiming {
-		s.stopTimer("searchFiles")
-		if s.Settings.PrintResults {
-			s.printTotalElapsed()
-		}
-	}
 	if s.Settings.Verbose {
 		log("\nFile search complete.\n")
 	}

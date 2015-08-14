@@ -82,8 +82,6 @@ object SearchOptions {
       ((sb: SettingsBuilder) => sb.firstMatch = false),
     "debug" ->
       ((sb: SettingsBuilder) => sb.setDebug()),
-    "dotiming" ->
-      ((sb: SettingsBuilder) => sb.doTiming = true),
     "excludehidden" ->
       ((sb: SettingsBuilder) => sb.excludeHidden = true),
     "firstmatch" ->

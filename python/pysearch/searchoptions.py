@@ -96,9 +96,6 @@ class SearchOptions(object):
             lambda settings:
                 settings.set_properties({'debug': True,
                                          'verbose': True}),
-        'dotiming':
-            lambda settings:
-                settings.set_property('dotiming', True),
         'excludehidden':
             lambda settings:
                 settings.set_property('excludehidden', True),

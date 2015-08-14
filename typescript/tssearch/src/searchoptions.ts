@@ -34,11 +34,11 @@ class SearchOptions {
 
         this.argActionMap = {
             'in-archiveext':
-                function(x: string, settings: SearchSettings) { settings.addInArchiveExtension(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInArchiveExtension(x); },
             'in-archivefilepattern':
-                function(x: string, settings: SearchSettings) { settings.addInArchiveFilePattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInArchiveFilePattern(x); },
             'in-dirpattern':
-                function(x: string, settings: SearchSettings) { settings.addInDirPattern(x); },
+                function(x: string, settings: SearchSettings): void { settings.addInDirPattern(x); },
             'in-ext':
                 function(x: string, settings: SearchSettings) { settings.addInExtension(x); },
             'in-filepattern':
@@ -81,9 +81,7 @@ class SearchOptions {
             'archivesonly':
                 function(settings: SearchSettings) { settings.setArchivesOnly(); },
             'debug':
-                function(settings: SearchSettings) { settings.setDebug(); },
-            'dotiming':
-                function(settings: SearchSettings) { settings.doTiming = true; },
+                function(settings: SearchSettings): void { settings.setDebug(); },
             'excludehidden':
                 function(settings: SearchSettings) { settings.excludeHidden = true; },
             'firstmatch':

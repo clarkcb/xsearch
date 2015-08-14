@@ -11,13 +11,11 @@ type Searcher (settings : SearchSettings) =
     let _fileTypes = new FileTypes()
     let _results = new List<SearchResult>()
     let _fileSet = new HashSet<FileInfo>()
-    let _timers = new Dictionary<string,Stopwatch>()
 
     // read-only member properties
     member this.Settings = _settings
     member this.Results = _results
     member this.FileSet = _fileSet
-    member this.Timers = _timers
 
     // member methods
     member this.ValidateSettings () : string list =
@@ -70,16 +68,6 @@ type Searcher (settings : SearchSettings) =
         else
             not _settings.ArchivesOnly && this.IsSearchFile f
 
-    member this.StartTimer (name : string) =
-        let timer = new Stopwatch()
-        timer.Start()
-        _timers.Add(name, timer)
-
-    member this.StopTimer (name : string) =
-        let timer = _timers.[name]
-        timer.Stop()
-        Common.PrintElapsed name timer.Elapsed
-
     member this.GetSearchDirs (dir : DirectoryInfo) : DirectoryInfo list =
         try
             let dirs = 
@@ -120,47 +108,31 @@ type Searcher (settings : SearchSettings) =
             this.SearchFile (new FileInfo(_settings.StartPath))
 
     member this.SearchPath (startDir : DirectoryInfo) =
-        if _settings.DoTiming then
-            this.StartTimer "GetSearchDirs"
         let dirs =
             if _settings.Recursive then
                 startDir :: this.GetSearchDirs(startDir)
             else
                 [startDir]
-        if _settings.DoTiming then
-            this.StopTimer "GetSearchDirs"
         if _settings.Verbose then
             printfn "\nDirectories to be searched (%d):" dirs.Length
             List.iter (fun d -> Common.Log (sprintf "%s " (d:DirectoryInfo).FullName)) dirs
         
-        if _settings.DoTiming then
-            this.StartTimer "GetSearchFiles"
         let files = this.GetSearchFiles(dirs)
-        if _settings.DoTiming then
-            this.StopTimer "GetSearchFiles"
         if _settings.Verbose then
             Common.Log (sprintf "\nFiles to be searched (%d):" files.Length)
             Seq.iter (fun f -> Common.Log (sprintf "%s " (f:FileInfo).FullName)) files
             printfn ""
 
-        if _settings.DoTiming then
-            this.StartTimer "SearchFiles"
         for f in files do
             this.SearchFile f
-        if _settings.DoTiming then
-            this.StopTimer "SearchFiles"
 
     member this.SearchFile (f : FileInfo) =
-        if _settings.DoTiming then
-            this.StartTimer f.FullName
         match _fileTypes.GetFileType f with
         | FileType.Archive -> Common.Log (sprintf "Archive file searching not currently supported")
         | FileType.Binary -> this.SearchBinaryFile f
         | FileType.Text -> this.SearchTextFile f
         | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
         | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.FullName)
-        if _settings.DoTiming then
-            this.StopTimer f.FullName
 
     member this.SearchTextFile (f : FileInfo) =
         if _settings.Verbose then

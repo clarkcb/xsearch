@@ -22,7 +22,6 @@ class SearchSettingsTest(unittest.TestCase):
         # test the props
         self.assertFalse(self.settings.archivesonly)
         self.assertFalse(self.settings.debug)
-        self.assertFalse(self.settings.dotiming)
         self.assertFalse(self.settings.firstmatch)
         self.assertTrue(self.settings.excludehidden)
         self.assertEqual(self.settings.linesafter, 0)
@@ -60,7 +59,6 @@ class SearchSettingsTest(unittest.TestCase):
         props = {
             'archivesonly': True,
             'debug': True,
-            'dotiming': True,
             'firstmatch': True,
             'excludehidden': False,
             'linesafter': 5,
@@ -81,7 +79,6 @@ class SearchSettingsTest(unittest.TestCase):
         self.settings.set_properties(props)
         self.assertEqual(self.settings.archivesonly, True)
         self.assertEqual(self.settings.debug, True)
-        self.assertEqual(self.settings.dotiming, True)
         self.assertEqual(self.settings.firstmatch, True)
         self.assertEqual(self.settings.excludehidden, False)
         self.assertEqual(self.settings.linesafter, 5)

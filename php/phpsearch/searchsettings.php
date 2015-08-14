@@ -3,7 +3,6 @@
 class SearchSettings {
     public $archivesonly = false;
     public $debug = false;
-    public $dotiming = false;
     public $excludehidden = true;
     public $firstmatch = false;
     public $linesafter = 0;
@@ -60,7 +59,6 @@ class SearchSettings {
         $s = 'SearchSettings(';
         $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);
-        $s .= ', dotiming: ' . $this->bool_to_string($this->dotiming);
         $s .= ', excludehidden: ' . $this->bool_to_string($this->excludehidden);
         $s .= ', firstmatch: ' . $this->bool_to_string($this->firstmatch);
         $s .= ', in_archiveextensions: ' . $this->arr_to_string($this->in_archiveextensions);

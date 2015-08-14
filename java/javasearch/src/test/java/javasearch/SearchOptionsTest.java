@@ -19,7 +19,6 @@ public class SearchOptionsTest {
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
-            assertFalse(settings.getDoTiming());
             assertTrue(settings.getExcludeHidden());
             assertFalse(settings.getFirstMatch());
             assertEquals(settings.getLinesAfter(), 0);

@@ -15,7 +15,6 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
   def assertDefaultSettings(settings:SearchSettings) {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
-    assert(settings.doTiming == DefaultSettings.doTiming)
     assert(settings.excludeHidden == DefaultSettings.excludeHidden)
     assert(settings.firstMatch == DefaultSettings.firstMatch)
     assert(settings.linesAfter == DefaultSettings.linesAfter)
@@ -77,19 +76,6 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     assert(settings.debug)
-  }
-
-  // test -t / --dotiming
-  test("""test settingsFromArgs with args="-t" / "--dotiming" """) {
-    val shortArgs = Array("-t") ++ requiredArgs
-    println("shortArgs: "+shortArgs.toList)
-    val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
-    assert(shortSettings.doTiming)
-
-    val longArgs = Array("--dotiming") ++ requiredArgs
-    println("longArgs: "+longArgs.toList)
-    val longSettings = SearchOptions.settingsFromArgs(longArgs)
-    assert(longSettings.doTiming)
   }
 
   // test --excludehidden

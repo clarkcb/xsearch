@@ -76,7 +76,6 @@ public class SearchOptions {
             put("archivesonly", (settings) -> settings.setArchivesOnly(true));
             put("allmatches", (settings) -> settings.setFirstMatch(false));
             put("debug", (settings) -> settings.setDebug(true));
-            put("dotiming", (settings) -> settings.setDoTiming(true));
             put("excludehidden", (settings) -> settings.setExcludeHidden(true));
             put("firstmatch", (settings) -> settings.setFirstMatch(true));
             put("help", (settings) -> settings.setPrintUsage(true));

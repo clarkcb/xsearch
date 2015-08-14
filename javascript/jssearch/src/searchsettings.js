@@ -27,7 +27,6 @@ function SearchSettings() {
     self.searchPatterns = [];
     self.archivesOnly = false;
     self.debug = false;
-    self.doTiming = false;
     self.excludeHidden = true;
     self.firstMatch = false;
     self.linesAfter = 0;
@@ -124,7 +123,6 @@ function SearchSettings() {
         return 'SearchSettings(' +
             'archivesOnly=' + this.archivesOnly +
             ', debug=' + this.debug +
-            ', doTiming=' + this.doTiming +
             ', excludeHidden=' + this.excludeHidden +
             ', firstMatch=' + this.firstMatch +
             ', ' + listToString('inArchiveExtensions', this.inArchiveExtensions) +
