@@ -41,8 +41,15 @@ func main() {
 
     let args: [String] = [] + dropFirst(Process.arguments)
 
-    let settings = options.settingsFromArgs(args)
+    var error: NSError?
+    let settings = options.settingsFromArgs(args, error: &error)
 
+    if error != nil {
+        logMsg("")
+        logError(error!.domain)
+        options.usage()
+    }
+    
     if settings.debug {
         logMsg("\nsettings: \(settings)")
     }
@@ -51,7 +58,6 @@ func main() {
         options.usage()
     }
 
-    var error: NSError?
     let searcher = Searcher(settings: settings, error: &error)
 
     if error != nil {

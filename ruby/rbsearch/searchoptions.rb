@@ -143,7 +143,7 @@ class SearchOptions
             return settings
           end
         else
-          raise ArgumentError, "Unknown option: #{arg}"
+          raise ArgumentError, "Invalid option: #{arg}"
         end
       else
         settings.startpath = arg

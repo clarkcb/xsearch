@@ -10,7 +10,7 @@ func main() {
 	searchOptions := xsearch.NewSearchOptions()
 	settings, err := searchOptions.SearchSettingsFromArgs(os.Args[1:])
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("\nERROR: %s\n", err)
 		searchOptions.PrintUsage()
 	}
 

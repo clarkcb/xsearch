@@ -148,7 +148,7 @@ public class SearchOptions {
                 } else if (this.flagActionMap.containsKey(arg)) {
                     this.flagActionMap.get(arg).set(settings);
                 } else {
-                    throw new SearchException("Undefined option: " + arg);
+                    throw new SearchException("Invalid option: " + arg);
                 }
             } else {
                 settings.setStartPath(arg);

@@ -143,7 +143,7 @@ object SearchOptions {
             flagActionMap(flagMap(arg).longarg)(sb)
             nextArg(tail, sb)
           } else {
-            throw new SearchException("Unknown option: %s".format(arg))
+            throw new SearchException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
           sb.startPath = Some(arg)

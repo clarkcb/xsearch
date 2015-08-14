@@ -18,6 +18,10 @@ func logError(s: String) {
     logMsg("ERROR: \(s)")
 }
 
+func setError(error: NSErrorPointer, msg: String) {
+    error.memory = NSError(domain: msg, code: 1, userInfo: [:])
+}
+
 // from http://ijoshsmith.com/2014/06/18/create-a-swift-dictionary-from-an-array/
 func toDictionary<E, K, V>(
     array: [E],

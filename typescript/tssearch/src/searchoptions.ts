@@ -202,7 +202,7 @@ class SearchOptions {
                     //this.flagMap[arg].func(settings);
                     this.flagActionMap[arg](settings);
                 } else {
-                    err = new Error("Unknown option: "+arg);
+                    err = new Error("Invalid option: "+arg);
                 }
             } else {
                 settings.startPath = arg;

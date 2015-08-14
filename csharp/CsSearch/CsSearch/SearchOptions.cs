@@ -129,7 +129,7 @@ namespace CsSearch
 					}
 					if (string.IsNullOrWhiteSpace(s))
 					{
-						throw new SearchException("Invalid option encountered");
+						throw new SearchException("Invalid option: -");
 					}
 					if (ArgDictionary.ContainsKey(s))
 					{
@@ -155,7 +155,7 @@ namespace CsSearch
 					}
 					else
 					{
-						throw new SearchException("Unknown option: " + s);
+						throw new SearchException("Invalid option: " + s);
 					}
 				}
 				else

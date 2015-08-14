@@ -9,7 +9,7 @@ var Searcher = require('./searcher.js').Searcher;
 var SearchOptions = require('./searchoptions.js').SearchOptions;
 
 function handleError(err, searchOptions) {
-    var errMsg = err.toString().replace(/\w+Error/, "ERROR");
+    var errMsg = err.toString().replace(/\w*Error/, "ERROR");
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
 }

@@ -244,7 +244,7 @@ sub settings_from_args {
 
 
             } else {
-                push(@errs, "Unknown option: $arg");
+                push(@errs, "Invalid option: $arg");
             }
         } else {
             $settings->{startpath} = $arg;

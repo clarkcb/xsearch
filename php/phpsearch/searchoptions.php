@@ -184,7 +184,7 @@ class SearchOptions {
                     $this->flag_action_map[$arg]($settings);
                     $i++;
                 } else {
-                    throw new SearchException("Unknown option: $arg");
+                    throw new SearchException("Invalid option: $arg");
                 }
             } else {
                 $settings->startpath = $arg;

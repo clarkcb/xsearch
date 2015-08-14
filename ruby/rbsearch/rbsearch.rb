@@ -18,7 +18,7 @@ def main
   begin
     settings = searchoptions.search_settings_from_args(ARGV)
   rescue ArgumentError => e
-    log("\nArgumentError: #{e.message}\n\n")
+    log("\nERROR: #{e.message}\n\n")
     searchoptions.usage
   end
 

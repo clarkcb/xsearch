@@ -203,7 +203,7 @@ class SearchOptions(object):
                     if arg in ('h', 'help', 'V', 'version'):
                         return settings
                 else:
-                    raise Exception('Unknown option: {0}'.format(arg))
+                    raise Exception('Invalid option: {0}'.format(arg))
             else:
                 settings.startpath = arg
         return settings

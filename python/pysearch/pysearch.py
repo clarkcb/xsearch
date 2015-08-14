@@ -20,7 +20,7 @@ def main():
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
     except Exception, e:
-        common.log('\nException: {0!s}\n'.format(e))
+        common.log('\nERROR: {0!s}\n'.format(e))
         searchoptions.usage()
 
     if settings.debug:

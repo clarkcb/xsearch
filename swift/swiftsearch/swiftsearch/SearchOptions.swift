@@ -244,7 +244,8 @@ public class SearchOptions {
         return dict
     }
 
-    func settingsFromArgs(args: [String]) -> SearchSettings {
+//    init(settings: SearchSettings, error: NSErrorPointer) {
+    func settingsFromArgs(args: [String], error: NSErrorPointer) -> SearchSettings {
         var i = 0
         let settings = SearchSettings()
         let argDict = dictFromOptions(searchOptions.filter
@@ -262,12 +263,12 @@ public class SearchOptions {
                         argActionDict[argDict[arg]!.long]!(args[i+1], settings)
                         i++
                     } else {
-                        println("ERROR: missing argument for option \(arg)")
+                        setError(error, "Missing argument for option \(arg)")
                     }
                 } else if flagDict.indexForKey(arg) != nil {
                     flagActionDict[flagDict[arg]!.long]!(settings)
                 } else {
-                    println("ERROR: unknown arg: \(args[i])")
+                    setError(error, "Invalid option: \(arg)")
                 }
             } else {
                 settings.startPath = args[i]

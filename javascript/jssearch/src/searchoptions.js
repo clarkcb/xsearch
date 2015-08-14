@@ -169,7 +169,7 @@ function SearchOptions() {
                 } else if (flagMap[arg]) {
                     flagMap[arg].func(settings);
                 } else {
-                    err = new Error("Unknown option: "+arg);
+                    err = new Error("Invalid option: "+arg);
                 }
             } else {
                 settings.startPath = arg;

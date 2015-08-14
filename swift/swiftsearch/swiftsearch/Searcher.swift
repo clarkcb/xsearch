@@ -18,17 +18,13 @@ public class Searcher {
         validateSettings(error)
     }
 
-    private func setError(error: NSErrorPointer, msg: String) {
-        error.memory = NSError(domain: msg, code: 1, userInfo: [:])
-    }
-
     private func validateSettings(error: NSErrorPointer) {
         if settings.startPath == nil || settings.startPath!.isEmpty {
-            setError(error, msg: "Startpath not defined")
+            setError(error, "Startpath not defined")
         } else if (!FileUtil.exists(settings.startPath!)) {
-            setError(error, msg: "Startpath not found")
+            setError(error, "Startpath not found")
         } else if settings.searchPatterns.isEmpty {
-            setError(error, msg: "No search patterns defined")
+            setError(error, "No search patterns defined")
         }
     }
 
@@ -89,16 +85,16 @@ public class Searcher {
             if isSearchDir(startPath) {
                 searchPath(startPath)
             } else {
-                setError(error, msg: "Startpath does not match search settings")
+                setError(error, "Startpath does not match search settings")
             }
         } else if FileUtil.isReadableFile(startPath) {
             if isSearchFile(startPath) {
                 searchFile(startPath)
             } else {
-                setError(error, msg: "Startpath does not match search settings")
+                setError(error, "Startpath does not match search settings")
             }
         } else {
-            setError(error, msg: "Startpath not readable")
+            setError(error, "Startpath not readable")
         }
     }
 
