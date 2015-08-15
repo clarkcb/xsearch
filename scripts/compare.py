@@ -19,34 +19,43 @@ from xsearch import *
 # Configuration
 ########################################
 #exts = ','.join('clj cs go hs java js pl php py rb scala'.split())
-exts = 'cs,rb'
+exts = 'cs,swift'
 startpath = default_startpath
 invalid_searchpattern = '"ZZYZZYZZY"'
 valid_searchpattern = '"Searcher"'
 utf8bom_searchpattern = r'"\xef\xbb\xbf"'
 
 scenarios = [
+    # Invalid / help scenarios
     Scenario('no args', [], True),
-    # Scenario('debug only', ['--debug'], True),
-    Scenario('no startpath', ['-x', exts, '-s', 'Searcher'], True),
-    Scenario('invalid startpath', ['-x', exts, '-s', 'Searcher', '/invalid/startpath'], True),
+    # NON-MATCHING Scenario('debug only', ['--debug'], True),
+    Scenario('no startpath', ['-x', exts, '-s', valid_searchpattern], True),
+    Scenario('invalid startpath', ['-x', exts, '-s', valid_searchpattern, '/invalid/startpath'], True),
     Scenario('no searchpatterns', ['-x', exts, startpath], True),
+    Scenario('invalid argument', ['-x', exts, startpath, '-Q'], True),
     Scenario('help', ['-h'], True),
-    # Scenario('help with debug', ['-h', '--debug'], True),
-    Scenario('search lines, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath], False),
-    Scenario('search contents, invalid search pattern', ['-x', exts, '-s', 'ZZYZZYZZY', '-F', 'compare', startpath, '-m'], False),
-    Scenario('search lines, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath], False),
-    Scenario('search contents, valid search pattern', ['-x', exts, '-s', 'Searcher', startpath, '-m'], False),
-    Scenario('search lines, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-1'], False),
-    Scenario('search contents, valid search pattern, first match', ['-x', exts, '-s', 'Searcher', startpath, '-m', '-1'], False),
-    # Scenario('search lines, valid search pattern, 2 lines before', ['-x', exts, '-s', 'Searcher', startpath, '-b', '2'], False),
-    # Scenario('search contents, valid search pattern, 2 lines before', ['-x', exts, '-s', 'Searcher', startpath, '-m',  '-b', '2'], False),
-    Scenario('listdirs', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs'], False),
-    Scenario('listfiles', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listfiles'], False),
-    Scenario('listlines', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines'], False),
-    Scenario('listlines + unique', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listlines', '-u'], False),
-    Scenario('list all', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs', '--listfiles', '--listlines'], False),
-    Scenario('list all + unique', ['-x', exts, '-s', 'Searcher', startpath, '-P', '--listdirs', '--listfiles', '--listlines', '-u'], False),
+    # NON-MATCHING Scenario('help with debug', ['-h', '--debug'], True),
+    Scenario('search lines, invalid search pattern', ['-x', exts, '-s', invalid_searchpattern, '-F', 'compare', startpath], False),
+    Scenario('search contents, invalid search pattern', ['-x', exts, '-s', invalid_searchpattern, '-F', 'compare', startpath, '-m'], False),
+
+    # Valid search patterns
+    Scenario('search lines, valid search pattern', ['-x', exts, '-s', valid_searchpattern, startpath], False),
+    Scenario('search contents, valid search pattern', ['-x', exts, '-s', valid_searchpattern, startpath, '-m'], False),
+    Scenario('search lines, valid search pattern, first match', ['-x', exts, '-s', valid_searchpattern, startpath, '-1'], False),
+    Scenario('search contents, valid search pattern, first match', ['-x', exts, '-s', valid_searchpattern, startpath, '-m', '-1'], False),
+    # NON-MATCHING Scenario('search lines, valid search pattern, 2 lines before', ['-x', exts, '-s', valid_searchpattern, startpath, '-l', '2'], False),
+    # NON-MATCHING Scenario('search contents, valid search pattern, 2 lines before', ['-x', exts, '-s', valid_searchpattern, startpath, '-m',  '-l', '2'], False),
+
+    # List dirs, files, lines
+    Scenario('listdirs', ['-x', exts, '-s', valid_searchpattern, startpath, '-P', '--listdirs'], False),
+    Scenario('listfiles', ['-x', exts, '-s', valid_searchpattern, startpath, '-P', '--listfiles'], False),
+    Scenario('listlines', ['-x', exts, '-s', valid_searchpattern, startpath, '-P', '--listlines'], False),
+    Scenario('listlines + unique', ['-x', exts, '-s', valid_searchpattern, startpath, '-P', '--listlines', '-u'], False),
+    Scenario('list all', ['-x', exts, '-s', valid_searchpattern, startpath, '-P', '--listdirs', '--listfiles', '--listlines'], False),
+    Scenario('list all + unique', ['-x', exts, '-s', valid_searchpattern, startpath, '-P', '--listdirs', '--listfiles', '--listlines', '-u'], False),
+
+    # Some special cases
+    Scenario('search contents, UTF-8 BOM search pattern', ['-x', 'cs,fs', '-s', utf8bom_searchpattern, startpath], False),
 ]
 
 
