@@ -105,7 +105,7 @@ unittest_javascript () {
 
     if [ ! -d $NODEUNIT_PATH ]; then
         log "nodeunit not installed, installing"
-        cd $NODESEARCH_PATH
+        cd $JSSEARCH_PATH
         npm install nodeunit
         cd -
     fi
@@ -205,7 +205,25 @@ unittest_swift () {
 
 unittest_typescript () {
     echo
-    log "unittest_typescript - currently unsupported"
+    log "unittest_typescript"
+    TYPESCRIPT_PATH=$XSEARCH_PATH/typescript
+    TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
+    TESTS_PATH=$TSSEARCH_PATH/tests
+    NODEUNIT_PATH=$TSSEARCH_PATH/node_modules/nodeunit
+    NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
+
+    cd $TSSEARCH_PATH
+
+    # clean and build the test files
+    log "gulp clean build clean-tests build-tests"
+    gulp clean build clean-tests build-tests
+
+    # run tests via maven
+    log "Unit-testing jssearch"
+    log "nodeunit $TESTS_PATH"
+    $NODEUNIT $TESTS_PATH
+
+    cd -
 }
 
 unittest_all () {

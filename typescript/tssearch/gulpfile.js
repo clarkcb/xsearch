@@ -8,29 +8,31 @@ var replace = require('gulp-replace');
 var ts = require('gulp-typescript');
 var uglify = require('gulp-uglify');
 
-var DEST = './build/';
+var BUILD = './build/';
+var SRC   = './src/';
+var TESTS = './tests/';
 
 gulp.task('clean', function () {  
-  return del([DEST]);
+  return del([BUILD]);
 });
 
 gulp.task('build', function () {
-  del([DEST], function(err) {
+  del([BUILD], function(err) {
     if (err) return;
-    var tsResult = gulp.src('./src/*.ts')
+    var tsResult = gulp.src(SRC + '*.ts')
       .pipe(ts({
           noImplicitAny: true
           // out: 'output.js'
         }));
     return tsResult.js
-      .pipe(gulp.dest(DEST));
+      .pipe(gulp.dest(BUILD));
   });
 });
 
 gulp.task('build-min', function () {
-  del([DEST], function(err) {
+  del([BUILD], function(err) {
     if (err) return;
-    var tsResult = gulp.src('./src/*.ts')
+    var tsResult = gulp.src(SRC + '*.ts')
       .pipe(replace(/require\('\.\/(\w+)\.js'\)/g, "require('./$1.min.js')"))
       .pipe(ts({
           noImplicitAny: true
@@ -39,7 +41,24 @@ gulp.task('build-min', function () {
     return tsResult.js
       .pipe(uglify())
       .pipe(rename({ extname: '.min.js' }))
-      .pipe(gulp.dest(DEST));
+      .pipe(gulp.dest(BUILD));
+  });
+});
+
+gulp.task('clean-tests', function () {  
+  return del([TESTS + '*.js']);
+});
+
+gulp.task('build-tests', function () {
+  del([TESTS + '*.js'], function(err) {
+    if (err) return;
+    var tsResult = gulp.src(TESTS + '*.ts')
+      .pipe(ts({
+          noImplicitAny: true
+          // out: 'output.js'
+        }));
+    return tsResult.js
+      .pipe(gulp.dest(TESTS));
   });
 });
 

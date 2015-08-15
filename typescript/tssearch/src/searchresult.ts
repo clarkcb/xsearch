@@ -68,7 +68,7 @@ class SearchResult {
 
     private multiLineToString(): string {
         var s: string = Array(81).join("=") + "\n" + this.filename + ": " +
-            this.linenum + "[" + this.matchStartIndex + ":" +
+            this.linenum + ": [" + this.matchStartIndex + ":" +
             this.matchEndIndex + "]\n" + Array(81).join("-") + "\n";
         var currentLineNum: number = this.linenum;
         var numPadding = this.lineNumPadding();
