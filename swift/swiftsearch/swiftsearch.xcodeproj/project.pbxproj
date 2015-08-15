@@ -12,7 +12,10 @@
 		4A0A45B11B0D70F7004DB035 /* Searcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0A45B01B0D70F7004DB035 /* Searcher.swift */; };
 		4A0A45B31B0D7350004DB035 /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0A45B21B0D7350004DB035 /* SearchResult.swift */; };
 		4A0A45B51B0E9EB7004DB035 /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0A45B41B0E9EB7004DB035 /* StreamReader.swift */; };
+		4A4C8FA41B435C8A00BBA1B0 /* SearchSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF21E11B113E41001E466D /* SearchSettingsTests.swift */; };
+		4A4C8FA51B435C9200BBA1B0 /* FileTypesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF21DF1B113E41001E466D /* FileTypesTests.swift */; };
 		4A98EED01B0957DC0033AD3F /* SearchOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A98EECF1B0957DC0033AD3F /* SearchOptions.swift */; };
+		4AA533E61B1E42A7003FC064 /* SearchFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA533E51B1E42A7003FC064 /* SearchFile.swift */; };
 		4AC0E1E91B0AA27200E300FC /* FileTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFD6B701B02D81600514CF7 /* FileTypes.swift */; };
 		4AC0E1EA1B0AA28F00E300FC /* SearchOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A98EECF1B0957DC0033AD3F /* SearchOptions.swift */; };
 		4AC0E1EB1B0AA29200E300FC /* SearchSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFD6B6E1B02D75E00514CF7 /* SearchSettings.swift */; };
@@ -23,9 +26,7 @@
 		4AFD6B711B02D81600514CF7 /* FileTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFD6B701B02D81600514CF7 /* FileTypes.swift */; };
 		4AFD6B731B02DA8A00514CF7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFD6B721B02DA8A00514CF7 /* Config.swift */; };
 		4AFF21DE1B0FF854001E466D /* Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF21DD1B0FF854001E466D /* Regex.swift */; };
-		4AFF21E21B113E41001E466D /* FileTypesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF21DF1B113E41001E466D /* FileTypesTests.swift */; };
 		4AFF21E31B113E41001E466D /* SearchOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF21E01B113E41001E466D /* SearchOptionsTests.swift */; };
-		4AFF21E41B113E41001E466D /* SearchSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFF21E11B113E41001E466D /* SearchSettingsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,7 +47,9 @@
 		4A0A45B01B0D70F7004DB035 /* Searcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Searcher.swift; sourceTree = "<group>"; };
 		4A0A45B21B0D7350004DB035 /* SearchResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
 		4A0A45B41B0E9EB7004DB035 /* StreamReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamReader.swift; sourceTree = "<group>"; };
+		4A4C8F971B435B7D00BBA1B0 /* test2.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = test2.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A98EECF1B0957DC0033AD3F /* SearchOptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchOptions.swift; sourceTree = "<group>"; };
+		4AA533E51B1E42A7003FC064 /* SearchFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchFile.swift; sourceTree = "<group>"; };
 		4AC0E1E01B0A9D4200E300FC /* swiftsearchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = swiftsearchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AC0E1E31B0A9D4200E300FC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4AC0E1EC1B0AA46500E300FC /* FileUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileUtil.swift; sourceTree = "<group>"; };
@@ -62,6 +65,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4A4C8F941B435B7D00BBA1B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AC0E1DD1B0A9D4200E300FC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -113,6 +123,7 @@
 			children = (
 				4AFD6B621B02CD2900514CF7 /* swiftsearch */,
 				4AC0E1E01B0A9D4200E300FC /* swiftsearchTests.xctest */,
+				4A4C8F971B435B7D00BBA1B0 /* test2.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,6 +142,7 @@
 				4AFD6B6E1B02D75E00514CF7 /* SearchSettings.swift */,
 				4A0A45B41B0E9EB7004DB035 /* StreamReader.swift */,
 				4AFD6B651B02CD2900514CF7 /* main.swift */,
+				4AA533E51B1E42A7003FC064 /* SearchFile.swift */,
 			);
 			path = swiftsearch;
 			sourceTree = "<group>";
@@ -138,6 +150,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4A4C8F961B435B7D00BBA1B0 /* test2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A4C8F9D1B435B7D00BBA1B0 /* Build configuration list for PBXNativeTarget "test2" */;
+			buildPhases = (
+				4A4C8F931B435B7D00BBA1B0 /* Sources */,
+				4A4C8F941B435B7D00BBA1B0 /* Frameworks */,
+				4A4C8F951B435B7D00BBA1B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = test2;
+			productName = test2;
+			productReference = 4A4C8F971B435B7D00BBA1B0 /* test2.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		4AC0E1DF1B0A9D4200E300FC /* swiftsearchTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4AC0E1E81B0A9D4200E300FC /* Build configuration list for PBXNativeTarget "swiftsearchTests" */;
@@ -181,6 +210,9 @@
 				LastUpgradeCheck = 0630;
 				ORGANIZATIONNAME = "Cary Clark";
 				TargetAttributes = {
+					4A4C8F961B435B7D00BBA1B0 = {
+						CreatedOnToolsVersion = 6.4;
+					};
 					4AC0E1DF1B0A9D4200E300FC = {
 						CreatedOnToolsVersion = 6.3.1;
 					};
@@ -203,11 +235,19 @@
 			targets = (
 				4AFD6B611B02CD2900514CF7 /* swiftsearch */,
 				4AC0E1DF1B0A9D4200E300FC /* swiftsearchTests */,
+				4A4C8F961B435B7D00BBA1B0 /* test2 */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		4A4C8F951B435B7D00BBA1B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AC0E1DE1B0A9D4200E300FC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -218,18 +258,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4A4C8F931B435B7D00BBA1B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AC0E1DC1B0A9D4200E300FC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				4AC0E1EA1B0AA28F00E300FC /* SearchOptions.swift in Sources */,
-				4AFF21E21B113E41001E466D /* FileTypesTests.swift in Sources */,
 				4AC0E1EB1B0AA29200E300FC /* SearchSettings.swift in Sources */,
 				4AC0E1E91B0AA27200E300FC /* FileTypes.swift in Sources */,
 				4A0A45AB1B0D18FE004DB035 /* FileUtilTests.swift in Sources */,
 				4AFF21E31B113E41001E466D /* SearchOptionsTests.swift in Sources */,
-				4AFF21E41B113E41001E466D /* SearchSettingsTests.swift in Sources */,
 				4AC0E1EE1B0AA8B300E300FC /* FileUtil.swift in Sources */,
+				4A4C8FA41B435C8A00BBA1B0 /* SearchSettingsTests.swift in Sources */,
+				4A4C8FA51B435C9200BBA1B0 /* FileTypesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,6 +285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A0A45B51B0E9EB7004DB035 /* StreamReader.swift in Sources */,
+				4AA533E61B1E42A7003FC064 /* SearchFile.swift in Sources */,
 				4A0A45AF1B0D5FE2004DB035 /* common.swift in Sources */,
 				4A0A45B31B0D7350004DB035 /* SearchResult.swift in Sources */,
 				4A98EED01B0957DC0033AD3F /* SearchOptions.swift in Sources */,
@@ -254,6 +302,38 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		4A4C8F9E1B435B7D00BBA1B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = test2/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		4A4C8F9F1B435B7D00BBA1B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = test2/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		4AC0E1E61B0A9D4200E300FC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -381,6 +461,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4A4C8F9D1B435B7D00BBA1B0 /* Build configuration list for PBXNativeTarget "test2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A4C8F9E1B435B7D00BBA1B0 /* Debug */,
+				4A4C8F9F1B435B7D00BBA1B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4AC0E1E81B0A9D4200E300FC /* Build configuration list for PBXNativeTarget "swiftsearchTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
