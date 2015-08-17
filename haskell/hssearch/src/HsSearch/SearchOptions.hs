@@ -6,6 +6,7 @@ module HsSearch.SearchOptions (
   , settingsFromArgs) where
 
 import Data.Char (toLower)
+import Data.Either (isLeft, lefts, rights)
 import Data.List (isPrefixOf, sortBy)
 import Data.Maybe (isJust)
 import qualified Data.Text as T
@@ -135,31 +136,43 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("version", \ss -> ss {printVersion=True})
               ]
 
-shortToLong :: [SearchOption] -> String -> String
-shortToLong _ "" = ""
-shortToLong opts s | length s == 2 && head s == '-' = "--" ++ getLongForShort s
-                   | otherwise = s
+shortToLong :: [SearchOption] -> String -> Either String String
+shortToLong _ "" = Left "Missing argument"
+shortToLong opts s | length s == 2 && head s == '-' =
+                      if any (\so -> short so == tail s) opts
+                      then Right $ "--" ++ getLongForShort s
+                      else Left $ "Invalid option: " ++ tail s ++ "\n"
+                   | otherwise = Right s
   where getLongForShort x = (long . head . filter (\so -> short so == tail x)) opts
 
-settingsFromArgs :: [SearchOption] -> [String] -> SearchSettings
+settingsFromArgs :: [SearchOption] -> [String] -> Either String SearchSettings
 settingsFromArgs opts arguments =
-  recSettingsFromArgs defaultSearchSettings $ map (shortToLong opts) arguments
-  where recSettingsFromArgs :: SearchSettings -> [String] -> SearchSettings
+  if any isLeft longArgs
+  then (Left . head . lefts) $ longArgs
+  else
+    recSettingsFromArgs defaultSearchSettings $ rights longArgs
+  where recSettingsFromArgs :: SearchSettings -> [String] -> Either String SearchSettings
         recSettingsFromArgs settings args =
           case args of
-          [] -> settings
+          [] -> Right settings
+          a:[] | "-" `isPrefixOf` a ->
+            case getActionType (argName a) of
+              ArgActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
+              FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) []
+              UnknownActionType -> Left $ "Invalid option: " ++ a ++ "\n"
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
-            ArgActionType -> recSettingsFromArgs (getArgAction (argName a) settings (head as)) (tail as)
-            FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
-            UnknownActionType -> error ("Unknown option: " ++ argName a)
+              ArgActionType -> recSettingsFromArgs (getArgAction (argName a) settings (head as)) (tail as)
+              FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
+              UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
           a:as -> recSettingsFromArgs (settings {startPath=a}) as
+        longArgs :: [Either String String]
+        longArgs = map (shortToLong opts) arguments
         getActionType :: String -> ActionType
         getActionType a
           | isArgAction a = ArgActionType
           | isFlagAction a = FlagActionType
           | otherwise = UnknownActionType
-
         argName :: String -> String
         argName = dropWhile (=='-')
         getArgAction ::String -> ArgAction

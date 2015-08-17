@@ -104,35 +104,37 @@ main :: IO ()
 main = do
   args <- getArgs
   searchOptions <- getSearchOptions
-  let settings = settingsFromArgs searchOptions args
-  logMsg $ if debug settings
-           then "\nsettings: " ++ show settings ++ "\n"
-           else ""
-  case errsOrUsage searchOptions settings of
-    Just usage -> logMsg $ usage ++ "\n"
-    Nothing -> do
-      foundPath <- pathExists (startPath settings)
-      if foundPath then do
-        searchDirs <- getSearchDirs settings
-        logMsg $ if verbose settings
-                 then formatSearchDirs searchDirs
-                 else ""
-        searchFiles <- getSearchFiles settings searchDirs
-        logMsg $ if verbose settings
-                 then formatSearchFiles searchFiles
-                 else ""
-        results <- doSearchFiles settings searchFiles
-        logMsg $ if printResults settings
-                 then formatResults settings results
-                 else ""
-        logMsg $ if listDirs settings
-                 then formatMatchingDirs results
-                 else ""
-        logMsg $ if listFiles settings
-                 then formatMatchingFiles results
-                 else ""
-        logMsg $ if listLines settings
-                 then formatMatchingLines results (uniqueLines settings)
-                 else ""
-        logMsg ""
-      else logMsg $ "\nERROR: Startpath not found\n\n" ++ getUsage searchOptions ++ "\n"
+  case settingsFromArgs searchOptions args of
+    Left errMsg -> logMsg $ "\nERROR: " ++ errMsg ++ "\n" ++ getUsage searchOptions ++ "\n"
+    Right settings -> do
+      logMsg $ if debug settings
+               then "\nsettings: " ++ show settings ++ "\n"
+               else ""
+      case errsOrUsage searchOptions settings of
+        Just usage -> logMsg $ usage ++ "\n"
+        Nothing -> do
+          foundPath <- pathExists (startPath settings)
+          if foundPath then do
+            searchDirs <- getSearchDirs settings
+            logMsg $ if verbose settings
+                     then formatSearchDirs searchDirs
+                     else ""
+            searchFiles <- getSearchFiles settings searchDirs
+            logMsg $ if verbose settings
+                     then formatSearchFiles searchFiles
+                     else ""
+            results <- doSearchFiles settings searchFiles
+            logMsg $ if printResults settings
+                     then formatResults settings results
+                     else ""
+            logMsg $ if listDirs settings
+                     then formatMatchingDirs results
+                     else ""
+            logMsg $ if listFiles settings
+                     then formatMatchingFiles results
+                     else ""
+            logMsg $ if listLines settings
+                     then formatMatchingLines results (uniqueLines settings)
+                     else ""
+            logMsg ""
+          else logMsg $ "\nERROR: Startpath not found\n\n" ++ getUsage searchOptions ++ "\n"
