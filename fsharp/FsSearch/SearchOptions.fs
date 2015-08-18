@@ -24,7 +24,7 @@ module SearchOptions =
             else
                 longarg
 
-    let argActionMap =
+    let argActionMap : Map<string, string -> SearchSettings -> unit> =
         [
             ("in-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.AddInArchiveExtension(s)));
             ("in-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInArchiveFilePattern(s)));
@@ -72,7 +72,7 @@ module SearchOptions =
             ("version", (fun (settings : SearchSettings) -> settings.PrintVersion <- true));
         ] |> Map.ofList;
 
-    let OptionsFromXml () =
+    let OptionsFromXml () : SearchOption list =
         let _searchOptionsPath = "~/src/xsearch/shared/searchoptions.xml"
         let _fileStream = new FileStream(FileUtil.ExpandPath(_searchOptionsPath), FileMode.Open)
         let options = new List<SearchOption>()
@@ -86,7 +86,7 @@ module SearchOptions =
 
     let options = OptionsFromXml()
 
-    let SettingsFromArgs (args : string[]) =
+    let SettingsFromArgs (args : string[]) : SearchSettings * string =
         let settings = new SearchSettings()
         settings.PrintResults <- true
 
@@ -102,30 +102,33 @@ module SearchOptions =
             let m = argRegex.Match(arg)
             if m.Success then Some(m.Groups.["opt"].Value) else None
 
-        let rec loopArgs (argList : string list) =
+        let rec loopArgs (argList : string list) (settings : SearchSettings) : SearchSettings * string =
             match argList with
-            | [] -> ()
+            | [] -> settings, ""
             | head :: tail ->
                 match head with
                 | IsOption opt ->
-                    let long = optionNameMap.[opt]
-                    if (argActionMap.ContainsKey(long)) then
-                        match tail with
-                        | [] -> printf "Error: missing value for %s arg" opt
-                        | aHead :: aTail -> 
-                            argActionMap.[long] aHead settings
-                            loopArgs aTail
-                    elif (flagActionMap.ContainsKey(long)) then
-                        flagActionMap.[long] settings
-                        loopArgs tail
+                    if (optionNameMap.ContainsKey(opt)) then
+                        let long = optionNameMap.[opt]
+                        if (argActionMap.ContainsKey(long)) then
+                            match tail with
+                            | [] ->
+                                settings, sprintf "Missing value for arg: %s" opt
+                            | aHead :: aTail -> 
+                                argActionMap.[long] aHead settings
+                                loopArgs aTail settings
+                        elif (flagActionMap.ContainsKey(long)) then
+                            flagActionMap.[long] settings
+                            loopArgs tail settings
+                        else
+                            settings, sprintf "Invalid arg: %s" opt
                     else
-                        printfn "Error: invalid arg: %s" opt
+                        settings, sprintf "Invalid arg: %s" opt
                 | _ -> settings.StartPath <- head
-                       loopArgs tail
-        loopArgs (Array.toList args)
-        settings
+                       loopArgs tail settings
+        loopArgs (Array.toList args) settings
 
-    let GetUsageString () =
+    let GetUsageString () : string =
         let optStringMap =
             [ for opt in options do
                 let shortstring : string = 
@@ -162,7 +165,7 @@ module SearchOptions =
             |> String.concat "\n"
         usageString
 
-    let Usage (exitCode : int) =
+    let Usage (exitCode : int) : unit =
         let usageString = GetUsageString()
         printfn "%s\n" usageString
         Environment.Exit(exitCode)

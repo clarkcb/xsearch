@@ -7,9 +7,17 @@ open System.Text.RegularExpressions
 
 module Main =
 
+    let HandleError (err : string) : unit =
+        Common.Log (sprintf "\nERROR: %s" err)
+        SearchOptions.Usage(1)
+
     [<EntryPoint>]
     let Main(args : string[]) = 
-        let settings = SearchOptions.SettingsFromArgs(args)
+        let settings, err = SearchOptions.SettingsFromArgs(args)
+
+        if err.Length > 0 then
+            HandleError err
+
         if settings.Debug then
             Common.Log (sprintf "settings: %s" (settings.ToString()))
 
@@ -20,8 +28,7 @@ module Main =
 
         let errs = searcher.ValidateSettings()
         if errs.Length > 0 then
-            Common.Log (sprintf "\nERROR: %s" errs.Head)
-            SearchOptions.Usage(1)
+            HandleError errs.Head
 
         searcher.Search()
 

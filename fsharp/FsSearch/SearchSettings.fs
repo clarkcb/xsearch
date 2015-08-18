@@ -152,16 +152,16 @@ type SearchSettings() =
         String.Format(", Debug: {0}", this.Debug) +
         String.Format(", ExcludeHidden: {0}", this.ExcludeHidden) +
         String.Format(", FirstMatch: {0}", this.FirstMatch) +
-        String.Format(", InArchiveExtensions: {0}",  "[\"" + String.Join("\", \"", _inArchiveExtensions) + "\"]") +
-        String.Format(", InArchiveFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inArchiveFilePatterns) + "\"]") +
+        String.Format(", InArchiveExtensions: {0}", this.SetToString(_inArchiveExtensions)) +
+        String.Format(", InArchiveFilePatterns: {0}", this.SetToString(_inArchiveFilePatterns)) +
         String.Format(", InDirPatterns: {0}", this.SetToString( _inDirPatterns)) +
-        String.Format(", InExtensions: {0}",  "[\"" + String.Join("\", \"", _inExtensions) + "\"]") +
-        String.Format(", InFilePatterns: {0}",  "[\"" + String.Join("\", \"", _inFilePatterns) + "\"]") +
-        String.Format(", InLinesAfterPatterns: {0}",  "[\"" + String.Join("\", \"", _inLinesAfterPatterns) + "\"]") +
-        String.Format(", InLinesBeforePatterns: {0}",  "[\"" + String.Join("\", \"", _inLinesBeforePatterns) + "\"]") +
+        String.Format(", InExtensions: {0}", this.SetToString(_inExtensions)) +
+        String.Format(", InFilePatterns: {0}", this.SetToString(_inFilePatterns)) +
+        String.Format(", InLinesAfterPatterns: {0}", this.SetToString(_inLinesAfterPatterns)) +
+        String.Format(", InLinesBeforePatterns: {0}", this.SetToString(_inLinesBeforePatterns)) +
         String.Format(", LinesAfter: {0}", this.LinesAfter) +
-        String.Format(", LinesAfterToPatterns: {0}",  "[\"" + String.Join("\", \"", _linesAfterToPatterns) + "\"]") +
-        String.Format(", LinesAfterUntilPatterns: {0}",  "[\"" + String.Join("\", \"", _linesAfterUntilPatterns) + "\"]") +
+        String.Format(", LinesAfterToPatterns: {0}", this.SetToString(_linesAfterToPatterns)) +
+        String.Format(", LinesAfterUntilPatterns: {0}", this.SetToString(_linesAfterUntilPatterns)) +
         String.Format(", LinesBefore: {0}", this.LinesBefore) +
         String.Format(", ListDirs: {0}", this.ListDirs) +
         String.Format(", ListFiles: {0}", this.ListFiles) +
