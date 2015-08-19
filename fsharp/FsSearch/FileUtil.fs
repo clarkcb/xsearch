@@ -12,7 +12,7 @@ module FileUtil =
         | home when home <> null -> home
         | _ -> Environment.GetEnvironmentVariable("USERPROFILE")
 
-    let GetFileContents (filepath : string) =
+    let GetFileContents (filepath : string) : string =
         let contents =
             try
                 use sr = new StreamReader (filepath)
@@ -21,13 +21,13 @@ module FileUtil =
             | :? IOException as e -> printfn "%s" e.Message; ""
         contents
 
-    let ExpandPath (filepath : string) =
+    let ExpandPath (filepath : string) : string =
         if filepath.[0] = '~' then GetHomePath() + filepath.Substring(1)
         else filepath
 
-    let IsDotDir (filepath : string) = dotDirs.Contains(filepath)
+    let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
 
-    let IsDirectory (filepath : string) =
+    let IsDirectory (filepath : string) : bool =
         if IsDotDir filepath then true
         else
             try

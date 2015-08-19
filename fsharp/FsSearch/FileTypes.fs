@@ -74,19 +74,19 @@ type FileTypes() =
         else if this.IsArchiveFile f then FileType.Archive
         else FileType.Unknown
 
-    member this.IsBinaryFile (f : FileInfo) =
+    member this.IsBinaryFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["binary"]
 
-    member this.IsArchiveFile (f : FileInfo) =
+    member this.IsArchiveFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["archive"]
 
-    member this.IsSearchableFile (f : FileInfo) =
+    member this.IsSearchableFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["searchable"]
 
-    member this.IsTextFile (f : FileInfo) =
+    member this.IsTextFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["text"]
 
-    member this.IsUnknownFile (f : FileInfo) =
+    member this.IsUnknownFile (f : FileInfo) : bool =
         not (this.IsSearchableFile f)
 
     ;;

@@ -18,17 +18,17 @@ type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
     member val LinesBefore = linesBefore with get,set
     member val LinesAfter = linesAfter with get,set
 
-    override this.ToString() =
+    override this.ToString() : string =
         if this.LinesBefore.Length > 0 || this.LinesAfter.Length > 0 then
             this.MultLineToString()
         else
             this.SingleLineToString()
 
-    member this.LineNumPadding() =
+    member this.LineNumPadding() : int =
         let maxLineNum = this.LineNum + this.LinesAfter.Length
         (sprintf "%d" maxLineNum).Length
 
-    member this.MultLineToString() =
+    member this.MultLineToString() : string =
         let lines = new List<String>()
         lines.Add(sprintf "%s\n%s: %d: [%d:%d]\n%s"
                       (new String('=', 80))
@@ -53,7 +53,7 @@ type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
         lines.Add("")
         lines |> List.ofSeq |> String.concat "\n" 
 
-    member this.SingleLineToString() =
+    member this.SingleLineToString() : string =
         let matchString =
             if this.LineNum = 0 then
                 sprintf " matches at [%d:%d]" this.MatchStartIndex this.MatchEndIndex

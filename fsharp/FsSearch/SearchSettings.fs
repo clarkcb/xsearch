@@ -69,7 +69,7 @@ type SearchSettings() =
     member val Verbose = false with get,set
 
     // member methods
-    member this.AddExtension(set : HashSet<string>, exts : string) =
+    member this.AddExtension(set : HashSet<string>, exts : string) : unit =
         let xs = exts.Split(',') |> Seq.filter (fun x -> not (String.IsNullOrEmpty x))
         for x in xs do
             let ext =
@@ -77,76 +77,76 @@ type SearchSettings() =
                 else "." + x
             set.Add(ext) |> ignore
 
-    member this.AddPattern(set : ISet<Regex>, pattern : string) =
+    member this.AddPattern(set : ISet<Regex>, pattern : string) : unit =
         let success = set.Add(new Regex(pattern))
         ()
 
-    member this.AddInArchiveExtension(ext : string) =
+    member this.AddInArchiveExtension(ext : string) : unit =
         this.AddExtension(_inArchiveExtensions, ext)
 
-    member this.AddInArchiveFilePattern(pattern : string) =
+    member this.AddInArchiveFilePattern(pattern : string) : unit =
         this.AddPattern(_inArchiveFilePatterns, pattern)
 
-    member this.AddInDirPattern(pattern : string) =
+    member this.AddInDirPattern(pattern : string) : unit =
         this.AddPattern(_inDirPatterns, pattern)
 
-    member this.AddInExtension(ext : string) =
+    member this.AddInExtension(ext : string) : unit =
         this.AddExtension(_inExtensions, ext)
 
-    member this.AddInFilePattern(pattern : string) =
+    member this.AddInFilePattern(pattern : string) : unit =
         this.AddPattern(_inFilePatterns, pattern)
 
-    member this.AddInLinesAfterPattern(pattern : string) =
+    member this.AddInLinesAfterPattern(pattern : string) : unit =
         this.AddPattern(_inLinesAfterPatterns, pattern)
 
-    member this.AddInLinesBeforePattern(pattern : string) =
+    member this.AddInLinesBeforePattern(pattern : string) : unit =
         this.AddPattern(_inLinesBeforePatterns, pattern)
 
-    member this.AddLinesAfterToPattern(pattern : string) =
+    member this.AddLinesAfterToPattern(pattern : string) : unit =
         this.AddPattern(_linesAfterToPatterns, pattern)
 
-    member this.AddLinesAfterUntilPattern(pattern : string) =
+    member this.AddLinesAfterUntilPattern(pattern : string) : unit =
         this.AddPattern(_linesAfterUntilPatterns, pattern)
 
-    member this.AddOutArchiveExtension(ext : string) =
+    member this.AddOutArchiveExtension(ext : string) : unit =
         this.AddExtension(_outArchiveExtensions, ext)
 
-    member this.AddOutArchiveFilePattern(pattern : string) =
+    member this.AddOutArchiveFilePattern(pattern : string) : unit =
         this.AddPattern(_outArchiveFilePatterns, pattern)
 
-    member this.AddOutDirPattern(pattern : string) =
+    member this.AddOutDirPattern(pattern : string) : unit =
         this.AddPattern(_outDirPatterns, pattern)
 
-    member this.AddOutExtension(ext : string) =
+    member this.AddOutExtension(ext : string) : unit =
         this.AddExtension(_outExtensions, ext)
 
-    member this.AddOutFilePattern(pattern : string) =
+    member this.AddOutFilePattern(pattern : string) : unit =
         this.AddPattern(_outFilePatterns, pattern)
 
-    member this.AddOutLinesAfterPattern(pattern : string) =
+    member this.AddOutLinesAfterPattern(pattern : string) : unit =
         this.AddPattern(_outLinesAfterPatterns, pattern)
 
-    member this.AddOutLinesBeforePattern(pattern : string) =
+    member this.AddOutLinesBeforePattern(pattern : string) : unit =
         this.AddPattern(_outLinesBeforePatterns, pattern)
 
-    member this.AddSearchPattern(pattern : string) =
+    member this.AddSearchPattern(pattern : string) : unit =
         this.AddPattern(_searchPatterns, pattern)
 
-    member this.SetArchivesOnly() =
+    member this.SetArchivesOnly() : unit =
         this.ArchivesOnly <- true
         this.SearchArchives <- true
 
-    member this.SetDebug() =
+    member this.SetDebug() : unit =
         this.Debug <- true
         this.Verbose <- true
 
-    member this.SetToString<'T>(set : ISet<'T>) =
+    member this.SetToString<'T>(set : ISet<'T>) : string =
         if set.Count > 0 then
             "[\"" + String.Join("\", \"", set) + "\"]"
         else
             "[]"
 
-    override this.ToString() =
+    override this.ToString() : string =
         "SearchSettings(" +
         String.Format("ArchivesOnly: {0}", this.ArchivesOnly) +
         String.Format(", Debug: {0}", this.Debug) +
