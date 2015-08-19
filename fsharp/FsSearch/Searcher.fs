@@ -162,8 +162,13 @@ type Searcher (settings : SearchSettings) =
              0 :: List.map (fun i -> i + 1) newLineIndices
              |> Seq.takeWhile (fun i -> i < s.Length)
              |> List.ofSeq
-        let endLineIndices = newLineIndices @ [s.Length - 1]
-        List.zip startLineIndices endLineIndices
+        //Common.Log (sprintf "startLineIndices (%d): [%s]" startLineIndices.Length (String.Join(",", startLineIndices)))
+        let endLineIndices = newLineIndices
+        //Common.Log (sprintf "endLineIndices (%d): [%s]" endLineIndices.Length (String.Join(",", endLineIndices)))
+        if endLineIndices.Length < startLineIndices.Length then
+            List.zip startLineIndices (endLineIndices @ [s.Length - 1])
+        else
+            List.zip startLineIndices endLineIndices
 
     member this.LinesMatch (lines : string seq, inPatterns : ISet<Regex>,
                             outPatterns : ISet<Regex>) : bool =
