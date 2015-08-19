@@ -113,7 +113,7 @@ module SearchOptions =
                         if (argActionMap.ContainsKey(long)) then
                             match tail with
                             | [] ->
-                                settings, sprintf "Missing value for arg: %s" opt
+                                settings, sprintf "Missing value for option: %s" opt
                             | aHead :: aTail -> 
                                 argActionMap.[long] aHead settings
                                 loopArgs aTail settings
@@ -121,9 +121,9 @@ module SearchOptions =
                             flagActionMap.[long] settings
                             loopArgs tail settings
                         else
-                            settings, sprintf "Invalid arg: %s" opt
+                            settings, sprintf "Invalid option: %s" opt
                     else
-                        settings, sprintf "Invalid arg: %s" opt
+                        settings, sprintf "Invalid option: %s" opt
                 | _ -> settings.StartPath <- head
                        loopArgs tail settings
         loopArgs (Array.toList args) settings
