@@ -48,7 +48,7 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 			} else if ff, isFlag := flagActionMap[k]; isFlag {
 				ff(settings)
 			} else {
-				return nil, fmt.Errorf("Unknown option: %s", k)
+				return nil, fmt.Errorf("Invalid option: %s", k)
 			}
 		} else {
 			settings.StartPath = args[i]
