@@ -10,6 +10,11 @@ Main class for initiating javasearch from command line
 
 package javasearch;
 
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+
 public class SearchMain {
 
     private static void log(final String message) {
@@ -20,53 +25,61 @@ public class SearchMain {
         log("ERROR: " + message);
     }
 
+    private static void handleError(final String message) {
+        log("");
+        logError(message);
+    }
+
+    private static void handleError(final String message, SearchOptions options) {
+        log("");
+        logError(message + "\n");
+        options.usage(1);
+    }
+
     public static void main(final String[] args) {
 
-        SearchOptions options = new SearchOptions();
-        SearchSettings settings = new SearchSettings();
-
         try {
-            settings = options.settingsFromArgs(args);
-        } catch (SearchException e) {
-            log("");
-            logError(e.getMessage() + "\n");
-            options.usage(1);
-        }
+            SearchOptions options = new SearchOptions();
 
-        if (settings.getDebug()) {
-            log("\nsettings:");
-            log(settings.toString() + "\n");
-        }
+            try {
+                SearchSettings settings = options.settingsFromArgs(args);
 
-        if (settings.getPrintUsage()) {
-            log("");
-            options.usage(0);
-        }
+                if (settings.getDebug()) {
+                    log("\nsettings:");
+                    log(settings.toString() + "\n");
+                }
 
-        Searcher searcher = new Searcher(settings);
-        try {
-            searcher.validateSettings();
-            searcher.search();
+                if (settings.getPrintUsage()) {
+                    log("");
+                    options.usage(0);
+                }
 
-            // print the results
-            if (settings.getPrintResults()) {
-                log("");
-                searcher.printSearchResults();
+                Searcher searcher = new Searcher(settings);
+
+                searcher.validateSettings();
+                searcher.search();
+
+                // print the results
+                if (settings.getPrintResults()) {
+                    log("");
+                    searcher.printSearchResults();
+                }
+                if (settings.getListDirs()) {
+                    searcher.printMatchingDirs();
+                }
+                if (settings.getListFiles()) {
+                    searcher.printMatchingFiles();
+                }
+                if (settings.getListLines()) {
+                    searcher.printMatchingLines();
+                }
+
+            } catch (SearchException e) {
+                handleError(e.getMessage(), options);
             }
-            if (settings.getListDirs()) {
-                searcher.printMatchingDirs();
-            }
-            if (settings.getListFiles()) {
-                searcher.printMatchingFiles();
-            }
-            if (settings.getListLines()) {
-                searcher.printMatchingLines();
-            }
 
-        } catch (SearchException e) {
-            log("");
-            logError(e.getMessage() + "\n");
-            options.usage(1);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            handleError(e.getMessage());
         }
     }
 }

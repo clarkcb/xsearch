@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 public class SearchOptions {
     private List<SearchOption> options;
 
-    public SearchOptions() {
+    public SearchOptions() throws ParserConfigurationException, SAXException, IOException {
         options = new ArrayList<>();
         setOptionsFromXml();
     }
@@ -96,24 +96,20 @@ public class SearchOptions {
         }
     };
 
-    private void setOptionsFromXml() {
+    private void setOptionsFromXml() throws ParserConfigurationException, SAXException, IOException {
         final String searchOptionsXmlPath = "/searchoptions.xml";
         InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsXmlPath);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        try {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(searchOptionsInputStream);
-            doc.getDocumentElement().normalize();
-            NodeList searchOptionNodes = doc.getElementsByTagName("searchoption");
-            for (int i = 0; i < searchOptionNodes.getLength(); i++) {
-                Node searchOptionNode = searchOptionNodes.item(i);
-                String longArg = searchOptionNode.getAttributes().getNamedItem("long").getNodeValue();
-                String shortArg = searchOptionNode.getAttributes().getNamedItem("short").getNodeValue();
-                String desc = searchOptionNode.getTextContent().trim();
-                options.add(new SearchOption(shortArg, longArg, desc));
-            }
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(searchOptionsInputStream);
+        doc.getDocumentElement().normalize();
+        NodeList searchOptionNodes = doc.getElementsByTagName("searchoption");
+        for (int i = 0; i < searchOptionNodes.getLength(); i++) {
+            Node searchOptionNode = searchOptionNodes.item(i);
+            String longArg = searchOptionNode.getAttributes().getNamedItem("long").getNodeValue();
+            String shortArg = searchOptionNode.getAttributes().getNamedItem("short").getNodeValue();
+            String desc = searchOptionNode.getTextContent().trim();
+            options.add(new SearchOption(shortArg, longArg, desc));
         }
     }
 

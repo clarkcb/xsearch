@@ -1,12 +1,15 @@
 package javasearch;
 
 import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
 public class SearchOptionsTest {
-
-    private SearchOptions searchOptions = new SearchOptions();
 
     public SearchOptionsTest() {
 
@@ -16,6 +19,7 @@ public class SearchOptionsTest {
     public final void testSettingsFromMinimalArgs() {
         String[] args = new String[]{"-s", "Search", "."};
         try {
+            SearchOptions searchOptions = new SearchOptions();
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
@@ -37,6 +41,9 @@ public class SearchOptionsTest {
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
             assertTrue(false);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            System.out.println("Exception: " + e.getMessage());
+            assertTrue(false);
         }
     }
 
@@ -44,6 +51,7 @@ public class SearchOptionsTest {
     public final void testSettingsFromValidArgs() {
         String[] args = new String[]{"-x", "java,scala", "-s", "Search", "."};
         try {
+            SearchOptions searchOptions = new SearchOptions();
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assert(settings.getInExtensions().size() == 2);
             assert(settings.getInExtensions().contains("java"));
@@ -52,6 +60,9 @@ public class SearchOptionsTest {
             assert(settings.getSearchPatterns().toArray()[0].toString().equals("Search"));
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
+            assertTrue(false);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            System.out.println("Exception: " + e.getMessage());
             assertTrue(false);
         }
     }
