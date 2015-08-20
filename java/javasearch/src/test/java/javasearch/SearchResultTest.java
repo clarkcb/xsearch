@@ -42,7 +42,7 @@ public class SearchResultTest {
         final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
             matchStartIndex, matchEndIndex, null);
         final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
-        final String expectedOutput = String.format("%s matches", expectedPath);
+        final String expectedOutput = String.format("%s matches at [0:0]", expectedPath);
         assertEquals(searchResult.toString(), expectedOutput);
     }
 
