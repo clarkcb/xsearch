@@ -18,23 +18,23 @@ public class SearchSettingsTest {
     @Test
     public final void testDefaultSettings() {
         SearchSettings settings = new SearchSettings();
-        assertFalse(settings.getArchivesOnly());
-        assertFalse(settings.getDebug());
-        assertTrue(settings.getExcludeHidden());
-        assertFalse(settings.getFirstMatch());
-        assertEquals(settings.getLinesAfter(), 0);
-        assertEquals(settings.getLinesBefore(), 0);
-        assertFalse(settings.getListDirs());
-        assertFalse(settings.getListFiles());
-        assertFalse(settings.getListLines());
-        assertEquals(settings.getMaxLineLength(), 150);
-        assertFalse(settings.getMultiLineSearch());
-        assertTrue(settings.getPrintResults());
-        assertFalse(settings.getPrintUsage());
-        assertFalse(settings.getPrintVersion());
-        assertFalse(settings.getSearchArchives());
-        assertFalse(settings.getUniqueLines());
-        assertFalse(settings.getVerbose());
+        assertEquals(settings.getArchivesOnly(), DefaultSettings.ARCHIVESONLY);
+        assertEquals(settings.getDebug(), DefaultSettings.DEBUG);
+        assertEquals(settings.getExcludeHidden(), DefaultSettings.EXCLUDEHIDDEN);
+        assertEquals(settings.getFirstMatch(), DefaultSettings.FIRSTMATCH);
+        assertEquals(settings.getLinesAfter(), DefaultSettings.LINESAFTER);
+        assertEquals(settings.getLinesBefore(), DefaultSettings.LINESBEFORE);
+        assertEquals(settings.getListDirs(), DefaultSettings.LISTDIRS);
+        assertEquals(settings.getListFiles(), DefaultSettings.LISTFILES);
+        assertEquals(settings.getListLines(), DefaultSettings.LISTLINES);
+        assertEquals(settings.getMaxLineLength(), DefaultSettings.MAXLINELENGTH);
+        assertEquals(settings.getMultiLineSearch(), DefaultSettings.MULTILINESEARCH);
+        assertEquals(settings.getPrintResults(), DefaultSettings.PRINTRESULTS);
+        assertEquals(settings.getPrintUsage(), DefaultSettings.PRINTUSAGE);
+        assertEquals(settings.getPrintVersion(), DefaultSettings.PRINTVERSION);
+        assertEquals(settings.getSearchArchives(), DefaultSettings.SEARCHARCHIVES);
+        assertEquals(settings.getUniqueLines(), DefaultSettings.UNIQUELINES);
+        assertEquals(settings.getVerbose(), DefaultSettings.VERBOSE);
     }
 
     @Test

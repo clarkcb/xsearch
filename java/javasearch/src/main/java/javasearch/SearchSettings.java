@@ -78,24 +78,24 @@ public class SearchSettings {
         this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
 
         // set the defaults
-        this.archivesOnly = false;
-        this.debug = false;
-        this.firstMatch = false;
-        this.excludeHidden = true;
-        this.linesAfter = 0;
-        this.linesBefore = 0;
-        this.listDirs = false;
-        this.listFiles = false;
-        this.listLines = false;
-        this.maxLineLength = 150;
-        this.multiLineSearch = false;
-        this.printResults = true;
-        this.printUsage = false;
-        this.printVersion = false;
-        this.recursive = true;
-        this.searchArchives = false;
-        this.uniqueLines = false;
-        this.verbose = false;
+        this.archivesOnly = DefaultSettings.ARCHIVESONLY;
+        this.debug = DefaultSettings.DEBUG;
+        this.firstMatch = DefaultSettings.FIRSTMATCH;
+        this.excludeHidden = DefaultSettings.EXCLUDEHIDDEN;
+        this.linesAfter = DefaultSettings.LINESAFTER;
+        this.linesBefore = DefaultSettings.LINESBEFORE;
+        this.listDirs = DefaultSettings.LISTDIRS;
+        this.listFiles = DefaultSettings.LISTFILES;
+        this.listLines = DefaultSettings.LISTLINES;
+        this.maxLineLength = DefaultSettings.MAXLINELENGTH;
+        this.multiLineSearch = DefaultSettings.MULTILINESEARCH;
+        this.printResults = DefaultSettings.PRINTRESULTS;
+        this.printUsage = DefaultSettings.PRINTUSAGE;
+        this.printVersion = DefaultSettings.PRINTVERSION;
+        this.recursive = DefaultSettings.RECURSIVE;
+        this.searchArchives = DefaultSettings.SEARCHARCHIVES;
+        this.uniqueLines = DefaultSettings.UNIQUELINES;
+        this.verbose = DefaultSettings.VERBOSE;
     }
 
     public final String getStartPath() {
