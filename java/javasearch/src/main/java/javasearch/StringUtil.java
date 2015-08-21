@@ -14,7 +14,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class StringUtil {
+public final class StringUtil {
+    private StringUtil() {
+        // inaccessible constructor for utility class
+    }
+
     private static final Set<Character> NEWLINECHARS = new HashSet<>(Arrays.asList('\n', '\r'));
     public static String trimNewLine(final String s) {
         String trimmed = s;

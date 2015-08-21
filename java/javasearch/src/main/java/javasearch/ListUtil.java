@@ -3,7 +3,11 @@ package javasearch;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListUtil {
+public final class ListUtil {
+
+    private ListUtil() {
+        // inaccessible constructor for utility class
+    }
 
     // return a new list with count number of elements dropped from the beginning,
     // or an empty list if the list is shorter than count
@@ -52,6 +56,6 @@ public class ListUtil {
         if (list.size() <= count) {
             return list;
         }
-        return list.subList(list.size()-count, list.size());
+        return list.subList(list.size() - count, list.size());
     }
 }

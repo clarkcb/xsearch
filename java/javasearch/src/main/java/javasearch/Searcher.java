@@ -563,11 +563,7 @@ public class Searcher {
                             m.start() + 1,
                             m.end() + 1,
                             ""));
-                    if (settings.getFirstMatch()) {
-                        found = false;
-                    } else {
-                        found = m.find(m.end());
-                    }
+                    found = !settings.getFirstMatch() && m.find(m.end());
                 }
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
@@ -580,7 +576,7 @@ public class Searcher {
         searchFileSet.add(searchResult.getSearchFile());
     }
 
-    private int signum(int num) {
+    private int signum(final int num) {
         if (num > 0) {
             return 1;
         }
@@ -590,7 +586,7 @@ public class Searcher {
         return 0;
     }
 
-    private int compareResults(SearchResult r1, SearchResult r2) {
+    private int compareResults(final SearchResult r1, final SearchResult r2) {
         int pathCmp = r1.getSearchFile().getPath().toLowerCase()
                 .compareTo(r2.getSearchFile().getPath().toLowerCase());
         if (pathCmp == 0) {

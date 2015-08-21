@@ -24,7 +24,11 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Scanner;
 
-public class FileUtil {
+public final class FileUtil {
+
+    private FileUtil() {
+        // inaccessible constructor for utility class
+    }
 
     private static Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
     private static final String DEFAULT_ENCODING = "UTF-8";

@@ -23,7 +23,8 @@ public class FileTypes {
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String, Set<String>> getFileTypeMap() {
-        Map<String, Set<String>> ftMap = new HashMap<>(8);
+        int fileTypeKeys = 8;
+        Map<String, Set<String>> ftMap = new HashMap<>(fileTypeKeys);
         InputStream fileTypesInputStream = getClass().
                 getResourceAsStream(FILETYPESXMLPATH);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -67,9 +68,9 @@ public class FileTypes {
     }
 
     public final FileType getFileType(final File f) {
-        if (isArchiveFile(f)) { return FileType.ARCHIVE; }
-        if (isBinaryFile(f)) { return FileType.BINARY; }
-        if (isTextFile(f)) { return FileType.TEXT; }
+        if (isTextFile(f)) return FileType.TEXT;
+        if (isBinaryFile(f)) return FileType.BINARY;
+        if (isArchiveFile(f)) return FileType.ARCHIVE;
         return FileType.UNKNOWN;
     }
 

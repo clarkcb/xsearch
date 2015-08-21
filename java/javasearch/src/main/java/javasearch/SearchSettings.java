@@ -449,48 +449,48 @@ public class SearchSettings {
 
     public final String toString() {
         String startPath;
-        if (null==this.startPath) {
+        if (null == this.startPath) {
             startPath = "\"\"";
         } else {
             startPath = "\"" + this.startPath + "\"";
         }
-        return "SearchSettings(" +
-                "archivesOnly: " + this.archivesOnly +
-                ", debug: " + this.debug +
-                ", excludeHidden: " + this.excludeHidden +
-                ", firstMatch: " + this.firstMatch +
-                ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions) +
-                ", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns) +
-                ", inDirPatterns: " + patternSetToString(this.inDirPatterns) +
-                ", inExtensions: " + stringSetToString(this.inExtensions) +
-                ", inFilePatterns: " + patternSetToString(this.inFilePatterns) +
-                ", inLinesAfterPatterns: " + patternSetToString(this.inLinesAfterPatterns) +
-                ", inLinesBeforePatterns: " + patternSetToString(this.inLinesBeforePatterns) +
-                ", linesAfter: " + this.linesAfter +
-                ", linesAfterToPatterns: " + patternSetToString(this.linesAfterToPatterns) +
-                ", linesAfterUntilPatterns: " + patternSetToString(this.linesAfterUntilPatterns) +
-                ", linesBefore: " + this.linesBefore +
-                ", listDirs: " + this.listDirs +
-                ", listFiles: " + this.listFiles +
-                ", listLines: " + this.listLines +
-                ", maxLineLength: " + this.maxLineLength +
-                ", multiLineSearch: " + this.multiLineSearch +
-                ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions) +
-                ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns) +
-                ", outDirPatterns: " + patternSetToString(this.outDirPatterns) +
-                ", outExtensions: " + stringSetToString(this.outExtensions) +
-                ", outFilePatterns: " + patternSetToString(this.outFilePatterns) +
-                ", outLinesAfterPatterns: " + patternSetToString(this.outLinesAfterPatterns) +
-                ", outLinesBeforePatterns: " + patternSetToString(this.outLinesBeforePatterns) +
-                ", printResults: " + this.printResults +
-                ", printUsage: " + this.printUsage +
-                ", printVersion: " + this.printVersion +
-                ", recursive: " + this.recursive +
-                ", searchArchives: " + this.searchArchives +
-                ", searchPatterns: " + patternSetToString(this.searchPatterns) +
-                ", startPath: " + startPath +
-                ", uniqueLines: " + this.uniqueLines +
-                ", verbose: " + this.verbose +
-                ")";
+        return "SearchSettings("
+                + "archivesOnly: " + this.archivesOnly
+                + ", debug: " + this.debug
+                + ", excludeHidden: " + this.excludeHidden
+                + ", firstMatch: " + this.firstMatch
+                + ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions)
+                + ", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns)
+                + ", inDirPatterns: " + patternSetToString(this.inDirPatterns)
+                + ", inExtensions: " + stringSetToString(this.inExtensions)
+                + ", inFilePatterns: " + patternSetToString(this.inFilePatterns)
+                + ", inLinesAfterPatterns: " + patternSetToString(this.inLinesAfterPatterns)
+                + ", inLinesBeforePatterns: " + patternSetToString(this.inLinesBeforePatterns)
+                + ", linesAfter: " + this.linesAfter
+                + ", linesAfterToPatterns: " + patternSetToString(this.linesAfterToPatterns)
+                + ", linesAfterUntilPatterns: " + patternSetToString(this.linesAfterUntilPatterns)
+                + ", linesBefore: " + this.linesBefore
+                + ", listDirs: " + this.listDirs
+                + ", listFiles: " + this.listFiles
+                + ", listLines: " + this.listLines
+                + ", maxLineLength: " + this.maxLineLength
+                + ", multiLineSearch: " + this.multiLineSearch
+                + ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions)
+                + ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns)
+                + ", outDirPatterns: " + patternSetToString(this.outDirPatterns)
+                + ", outExtensions: " + stringSetToString(this.outExtensions)
+                + ", outFilePatterns: " + patternSetToString(this.outFilePatterns)
+                + ", outLinesAfterPatterns: " + patternSetToString(this.outLinesAfterPatterns)
+                + ", outLinesBeforePatterns: " + patternSetToString(this.outLinesBeforePatterns)
+                + ", printResults: " + this.printResults
+                + ", printUsage: " + this.printUsage
+                + ", printVersion: " + this.printVersion
+                + ", recursive: " + this.recursive
+                + ", searchArchives: " + this.searchArchives
+                + ", searchPatterns: " + patternSetToString(this.searchPatterns)
+                + ", startPath: " + startPath
+                + ", uniqueLines: " + this.uniqueLines
+                + ", verbose: " + this.verbose
+                + ")";
     }
 }

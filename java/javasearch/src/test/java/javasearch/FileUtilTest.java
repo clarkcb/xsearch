@@ -55,31 +55,31 @@ public class FileUtilTest {
     @Test
     public final void testIsDotDirSingleDot() {
         String filename = ".";
-        assert(FileUtil.isDotDir(filename));
+        assertTrue(FileUtil.isDotDir(filename));
     }
 
     @Test
     public final void testIsDotDirDoubleDot() {
         String filename = "..";
-        assert(FileUtil.isDotDir(filename));
+        assertTrue(FileUtil.isDotDir(filename));
     }
 
     @Test
     public final void testIsDotDirNotDotDir() {
         String filename = "~/path";
-        assert(!FileUtil.isDotDir(filename));
+        assertFalse(FileUtil.isDotDir(filename));
     }
 
     @Test
     public final void testIsDotDirPathWithDot() {
         String filename = "./path";
-        assert(!FileUtil.isDotDir(filename));
+        assertFalse(FileUtil.isDotDir(filename));
     }
 
     @Test
     public final void testIsDotDirHiddenFile() {
         String filename = ".gitignore";
-        assert(!FileUtil.isDotDir(filename));
+        assertFalse(FileUtil.isDotDir(filename));
     }
 
     /***************************************************************************
@@ -88,37 +88,37 @@ public class FileUtilTest {
     @Test
     public final void testIsHiddenSingleDot() {
         String filename = ".";
-        assert(!FileUtil.isHidden(filename));
+        assertFalse(FileUtil.isHidden(filename));
     }
 
     @Test
     public final void testIsHiddenDoubleDot() {
         String filename = "..";
-        assert(!FileUtil.isHidden(filename));
+        assertFalse(FileUtil.isHidden(filename));
     }
 
     @Test
     public final void testIsHiddenHiddenFileName() {
         String filename = ".gitignore";
-        assert(FileUtil.isHidden(filename));
+        assertTrue(FileUtil.isHidden(filename));
     }
 
     @Test
     public final void testIsHiddenNotHiddenFileName() {
         String filename = "file.txt";
-        assert(!FileUtil.isHidden(filename));
+        assertFalse(FileUtil.isHidden(filename));
     }
 
     @Test
     public final void testIsHiddenHiddenFile() {
         File file = new File(".gitignore");
-        assert(FileUtil.isHidden(file));
+        assertTrue(FileUtil.isHidden(file));
     }
 
     @Test
     public final void testIsHiddenNotHiddenFile() {
         File file = new File("./file.txt");
-        assert(!FileUtil.isHidden(file));
+        assertFalse(FileUtil.isHidden(file));
     }
 
     /***************************************************************************
@@ -128,23 +128,23 @@ public class FileUtilTest {
     public final void testSplitPathWithDot() {
         String path = "./path/to/somewhere/";
         List<String> elems = FileUtil.splitPath(path);
-        assert(elems.size() == 3);
-        assert(elems.get(0).equals("path"));
+        assertEquals(elems.size(), 3);
+        assertTrue(elems.get(0).equals("path"));
     }
 
     @Test
     public final void testSplitPathWithDoubleDot() {
         String path = "../path/to/somewhere/";
         List<String> elems = FileUtil.splitPath(path);
-        assert(elems.size() == 3);
-        assert(elems.get(0).equals("path"));
+        assertEquals(elems.size(), 3);
+        assertTrue(elems.get(0).equals("path"));
     }
 
     @Test
     public final void testSplitPathWithoutDot() {
         String path = "/path/to/somewhere/";
         List<String> elems = FileUtil.splitPath(path);
-        assert(elems.size() == 3);
-        assert(elems.get(0).equals("path"));
+        assertEquals(elems.size(), 3);
+        assertTrue(elems.get(0).equals("path"));
     }
 }

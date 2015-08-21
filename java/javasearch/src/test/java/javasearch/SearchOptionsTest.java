@@ -2,11 +2,8 @@ package javasearch;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
-
 import javax.xml.parsers.ParserConfigurationException;
-
 import java.io.IOException;
-
 import static org.junit.Assert.*;
 
 public class SearchOptionsTest {
@@ -53,11 +50,11 @@ public class SearchOptionsTest {
         try {
             SearchOptions searchOptions = new SearchOptions();
             SearchSettings settings = searchOptions.settingsFromArgs(args);
-            assert(settings.getInExtensions().size() == 2);
-            assert(settings.getInExtensions().contains("java"));
-            assert(settings.getInExtensions().contains("scala"));
-            assert(settings.getSearchPatterns().size() == 1);
-            assert(settings.getSearchPatterns().toArray()[0].toString().equals("Search"));
+            assertEquals(settings.getInExtensions().size(), 2);
+            assertTrue(settings.getInExtensions().contains("java"));
+            assertTrue(settings.getInExtensions().contains("scala"));
+            assertEquals(settings.getSearchPatterns().size(), 1);
+            assertTrue(settings.getSearchPatterns().toArray()[0].toString().equals("Search"));
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
             assertTrue(false);
