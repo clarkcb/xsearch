@@ -19,7 +19,7 @@ getSettingsFromNoArgsTests = do
   --let settings = settingsFromArgs searchOptions []
   case settingsFromArgs searchOptions [] of
     Left errMsg -> return []
-    Right settings -> do
+    Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= False)
              , testCase "debug" (debug settings @?= False)
              , testCase "excludeHidden" (excludeHidden settings @?= True)
@@ -46,7 +46,7 @@ getSettingsFromArgsTests = do
   --let settings = settingsFromArgs searchOptions args
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
-    Right settings -> do
+    Right settings ->
       return [ testCase "startpath ." (startPath settings @?= ".")
              , testCase "-s Searcher" (searchPatterns settings @?= ["Searcher"])
              , testCase "-x hs" (inExtensions settings @?= [".hs"])
@@ -62,7 +62,7 @@ getArchivesOnlyTests = do
   --let settings = settingsFromArgs searchOptions args
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
-    Right settings -> do
+    Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= True)
              , testCase "searchArchives" (searchArchives settings @?= True)
              ]
@@ -74,7 +74,7 @@ getDebugTests = do
   --let settings = settingsFromArgs searchOptions args
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
-    Right settings -> do
+    Right settings ->
       return [ testCase "debug" (debug settings @?= True)
              , testCase "verbose" (verbose settings @?= True)
              ]

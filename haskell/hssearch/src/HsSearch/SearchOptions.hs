@@ -148,14 +148,14 @@ shortToLong opts s | length s == 2 && head s == '-' =
 settingsFromArgs :: [SearchOption] -> [String] -> Either String SearchSettings
 settingsFromArgs opts arguments =
   if any isLeft longArgs
-  then (Left . head . lefts) $ longArgs
+  then (Left . head . lefts) longArgs
   else
     recSettingsFromArgs defaultSearchSettings $ rights longArgs
   where recSettingsFromArgs :: SearchSettings -> [String] -> Either String SearchSettings
         recSettingsFromArgs settings args =
           case args of
           [] -> Right settings
-          a:[] | "-" `isPrefixOf` a ->
+          [a] | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               ArgActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
               FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) []
