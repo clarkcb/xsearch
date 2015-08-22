@@ -82,9 +82,7 @@ namespace CsSearch
 				}
 				else if (NormalizePath(startpath) == parentPath)
 				{
-// ReSharper disable PossibleNullReferenceException
-					var parentDirectory = new DirectoryInfo(startpath).FullName;
-// ReSharper restore PossibleNullReferenceException
+					var parentDirectory = NormalizePath(new DirectoryInfo(startpath).FullName);
 					filePath = filePath.Replace(parentDirectory, "..");
 				}
 			}
