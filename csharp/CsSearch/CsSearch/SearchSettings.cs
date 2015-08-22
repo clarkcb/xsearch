@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -27,13 +26,7 @@ namespace CsSearch
 
 		public ISet<Regex> SearchPatterns { get; private set; }
 
-		private string _startPath;
-
-		public string StartPath
-		{
-			get { return _startPath; }
-			set { _startPath = Path.GetFullPath(value); }
-		}
+		public string StartPath { get; set; }
 
 		public bool ArchivesOnly { get; set; }
 		public bool Debug { get; set; }

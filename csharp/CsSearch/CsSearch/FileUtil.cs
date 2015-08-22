@@ -74,9 +74,19 @@ namespace CsSearch
 		public static string GetRelativePath(string fullPath, string startpath)
 		{
 			var filePath = fullPath;
-			if (startpath == currentPath)
+			if (IsDotDir(startpath))
 			{
-				filePath = filePath.Replace(Environment.CurrentDirectory, ".");
+				if (NormalizePath(startpath) == currentPath)
+				{
+					filePath = filePath.Replace(Environment.CurrentDirectory, ".");
+				}
+				else if (NormalizePath(startpath) == parentPath)
+				{
+// ReSharper disable PossibleNullReferenceException
+					var parentDirectory = new DirectoryInfo(startpath).FullName;
+// ReSharper restore PossibleNullReferenceException
+					filePath = filePath.Replace(parentDirectory, "..");
+				}
 			}
 			return filePath;
 		}
