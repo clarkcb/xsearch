@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class SearchResult: Printable {
+public class SearchResult: CustomStringConvertible {
     let searchPattern: String
     var file: String?
     let lineNum: Int
@@ -68,12 +68,12 @@ public class SearchResult: Printable {
         let filepath = file ?? "<text>"
         let eq = "="
         let dash = "-"
-        s += "\(eq.repeat(sepLen))\n"
+        s += "\(eq.`repeat`(sepLen))\n"
         s += "\(filepath): \(lineNum): [\(matchStartIndex):\(matchEndIndex)]\n"
-        s += "\(dash.repeat(sepLen))\n"
+        s += "\(dash.`repeat`(sepLen))\n"
 
         let maxLineNum = lineNum + linesAfter.count
-        let maxNumLen = count("\(maxLineNum)")
+        let maxNumLen = "\(maxLineNum)".characters.count
         let format = "%\(maxNumLen)d"
         if linesBefore.count > 0 {
             s += linesToString(linesBefore, startNum: lineNum - linesBefore.count, format: format)

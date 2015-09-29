@@ -8,7 +8,7 @@
 
 import Foundation
 
-class SearchFile: Printable {
+class SearchFile: CustomStringConvertible {
     let containerSeparator = "!"
     let containers: [String] = []
     let path: String
@@ -24,7 +24,7 @@ class SearchFile: Printable {
     var description: String {
         var s = ""
         if !containers.isEmpty {
-            s += containerSeparator.join(containers) + containerSeparator
+            s += containers.joinWithSeparator(containerSeparator) + containerSeparator
         }
         s += path.stringByAppendingPathComponent(fileName)
         return s

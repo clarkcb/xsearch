@@ -20,11 +20,11 @@ public class Searcher {
 
     private func validateSettings(error: NSErrorPointer) {
         if settings.startPath == nil || settings.startPath!.isEmpty {
-            setError(error, "Startpath not defined")
+            setError(error, msg: "Startpath not defined")
         } else if (!FileUtil.exists(settings.startPath!)) {
-            setError(error, "Startpath not found")
+            setError(error, msg: "Startpath not found")
         } else if settings.searchPatterns.isEmpty {
-            setError(error, "No search patterns defined")
+            setError(error, msg: "No search patterns defined")
         }
     }
 
@@ -50,7 +50,7 @@ public class Searcher {
 
     func isSearchDir(dirPath: String) -> Bool {
         let hidden = FileUtil.splitPath(dirPath).filter {FileUtil.isHidden($0)}
-        if count(hidden) > 0 && settings.excludeHidden {
+        if hidden.count > 0 && settings.excludeHidden {
             return false
         }
         return filterByPatterns(dirPath, inPatterns: settings.inDirPatterns,
@@ -85,16 +85,16 @@ public class Searcher {
             if isSearchDir(startPath) {
                 searchPath(startPath)
             } else {
-                setError(error, "Startpath does not match search settings")
+                setError(error, msg: "Startpath does not match search settings")
             }
         } else if FileUtil.isReadableFile(startPath) {
             if isSearchFile(startPath) {
                 searchFile(startPath)
             } else {
-                setError(error, "Startpath does not match search settings")
+                setError(error, msg: "Startpath does not match search settings")
             }
         } else {
-            setError(error, "Startpath not readable")
+            setError(error, msg: "Startpath not readable")
         }
     }
 
@@ -187,8 +187,8 @@ public class Searcher {
     }
 
     private func searchTextFileContents(filePath: String) {
-        let contents = String(contentsOfFile: filePath,
-            encoding: NSUTF8StringEncoding, error: nil)
+        let contents = try? String(contentsOfFile: filePath,
+            encoding: NSUTF8StringEncoding)
         if contents != nil {
             let results = searchMultiLineString(contents!)
             // add filePath
@@ -219,7 +219,7 @@ public class Searcher {
         var spResults = [SearchResult]()
         let newLineIndices = getNewLineIndices(s)
         let startLineIndices = [0] + newLineIndices.map {$0+1}
-        let endLineIndices = newLineIndices + [count(s) - 1]
+        let endLineIndices = newLineIndices + [s.characters.count - 1]
         var matches = pattern.matches(s)
         if matches.count > 0 && settings.firstMatch {
             matches = [matches[0]]
@@ -232,9 +232,9 @@ public class Searcher {
             var linesBefore: [String] = []
             if settings.linesBefore > 0 {
                 var linesBeforeStartIndices = takeRight(beforeStartLineIndices
-                    .filter({$0 < startLineIndex}), settings.linesBefore)
+                    .filter({$0 < startLineIndex}), num: settings.linesBefore)
                 var linesBeforeEndIndices = takeRight(endLineIndices.filter({$0 < endLineIndex}),
-                    settings.linesBefore)
+                    num: settings.linesBefore)
                 for var i=0; i < linesBeforeStartIndices.count; ++i {
                     linesBefore.append(lineFromIndices(s, startLineIndex: linesBeforeStartIndices[i],
                         endLineIndex: linesBeforeEndIndices[i]))
@@ -243,9 +243,9 @@ public class Searcher {
             var linesAfter: [String] = []
             if settings.linesAfter > 0 {
                 let linesAfterStartIndices = take(startLineIndices.filter({$0 > startLineIndex}),
-                    settings.linesAfter)
+                    num: settings.linesAfter)
                 let linesAfterEndIndices = take(endLineIndices.filter({$0 > endLineIndex}),
-                    settings.linesAfter)
+                    num: settings.linesAfter)
                 for var i=0; i < linesAfterStartIndices.count; ++i {
                     linesAfter.append(lineFromIndices(s, startLineIndex: linesAfterStartIndices[i],
                         endLineIndex: linesAfterEndIndices[i]))
@@ -285,8 +285,8 @@ public class Searcher {
     }
 
     private func lineFromIndices(s: String, startLineIndex: Int, endLineIndex: Int) -> String {
-        let startLineStringIndex = advance(s.startIndex, startLineIndex)
-        let endLineStringIndex = advance(s.startIndex, endLineIndex)
+        let startLineStringIndex = s.startIndex.advancedBy(startLineIndex)
+        let endLineStringIndex = s.startIndex.advancedBy(endLineIndex)
         let lineRange = Range<String.Index>(start: startLineStringIndex, end: endLineStringIndex)
         return s.substringWithRange(lineRange)
     }
@@ -294,7 +294,7 @@ public class Searcher {
     private func getNewLineIndices(s: String) -> [Int] {
         var indices = [Int]()
         var currentIndex = 0
-        for c in s {
+        for c in s.characters {
             if c == "\n" {
                 indices.append(currentIndex)
             }
@@ -447,7 +447,7 @@ public class Searcher {
     // then lineNum, then matchStartIndex). This method is an example to reference for languages
     // that require sorting (go, etc.)
     private func getSortedSearchResults() -> [SearchResult] {
-        return results.sorted({self.cmpResultsInDir($0, $1)})
+        return results.sort({self.cmpResultsInDir($0, $1)})
     }
     
     public func getSearchResults() -> [SearchResult] {

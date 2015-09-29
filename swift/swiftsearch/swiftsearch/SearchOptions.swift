@@ -8,7 +8,7 @@
 
 import Foundation
 
-class SearchOption: Printable {
+class SearchOption: CustomStringConvertible {
     let short: String
     let long: String
     let desc: String
@@ -56,14 +56,14 @@ class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
                 parser!.parse()
             }
         } else {
-            println("ERROR: filepath not found: \(filepath)")
+            print("ERROR: filepath not found: \(filepath)")
         }
         return searchOptions
     }
 
     func parser(parser: NSXMLParser, didStartElement elementName: String,
         namespaceURI: String?, qualifiedName qName: String?,
-        attributes attributeDict: [NSObject : AnyObject]) {
+        attributes attributeDict: [String : String]) {
         element = elementName
         if (elementName as NSString).isEqualToString(searchOptionNodeName) {
             if attributeDict.indexForKey(longAttributeName) != nil {
@@ -103,9 +103,9 @@ public class SearchOptions {
     }
 
     private func setSearchOptions() {
-        var parser = SearchOptionsXmlParser()
+        let parser = SearchOptionsXmlParser()
         searchOptions = parser.parseFile(Config.searchOptionsPath)
-        searchOptions.sort({ $0.sortArg() < $1.sortArg() })
+        searchOptions.sortInPlace({ $0.sortArg() < $1.sortArg() })
     }
 
     private let argActionDict: [String: (String, SearchSettings) -> ()] = [
@@ -131,7 +131,7 @@ public class SearchOptions {
             ss.inLinesBeforePatterns.append(Regex(s))
         },
         "linesafter": { (s: String, ss: SearchSettings) -> () in
-            ss.linesAfter = s.toInt()!
+            ss.linesAfter = Int(s)!
         },
         "linesaftertopattern": { (s: String, ss: SearchSettings) -> () in
             ss.linesAfterToPatterns.append(Regex(s))
@@ -140,10 +140,10 @@ public class SearchOptions {
             ss.linesAfterUntilPatterns.append(Regex(s))
         },
         "linesbefore": { (s: String, ss: SearchSettings) -> () in
-            ss.linesBefore = s.toInt()!
+            ss.linesBefore = Int(s)!
         },
         "maxlinelength": { (s: String, ss: SearchSettings) -> () in
-            ss.maxLineLength = s.toInt()!
+            ss.maxLineLength = Int(s)!
         },
         "out-archiveext": { (s: String, ss: SearchSettings) -> () in
             ss.addOutArchiveExtension(s)
@@ -255,20 +255,20 @@ public class SearchOptions {
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
-                while arg.hasPrefix("-") && count(arg) > 1 {
-                    arg = arg.substringFromIndex(advance(arg.startIndex, 1))
+                while arg.hasPrefix("-") && arg.characters.count > 1 {
+                    arg = arg.substringFromIndex(arg.startIndex.advancedBy(1))
                 }
                 if argDict.indexForKey(arg) != nil {
                     if args.count > i {
                         argActionDict[argDict[arg]!.long]!(args[i+1], settings)
                         i++
                     } else {
-                        setError(error, "Missing argument for option \(arg)")
+                        setError(error, msg: "Missing argument for option \(arg)")
                     }
                 } else if flagDict.indexForKey(arg) != nil {
                     flagActionDict[flagDict[arg]!.long]!(settings)
                 } else {
-                    setError(error, "Invalid option: \(arg)")
+                    setError(error, msg: "Invalid option: \(arg)")
                 }
             } else {
                 settings.startPath = args[i]
@@ -289,10 +289,10 @@ public class SearchOptions {
         let optStrings = searchOptions.map
             { $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)" }
         let optDescs = searchOptions.map { $0.desc }
-        let longest = maxElement(optStrings.map({ count($0) }))
-        for var i=0; i < count(optStrings); ++i {
+        let longest = optStrings.map({ $0.characters.count }).maxElement()!
+        for var i=0; i < optStrings.count; ++i {
             var optLine = " \(optStrings[i])"
-            while count(optLine) <= longest {
+            while optLine.characters.count <= longest {
                 optLine += " "
             }
             optLine += "  \(optDescs[i])\n"

@@ -32,7 +32,7 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
                 parser!.parse()
             }
         } else {
-            println("ERROR: filepath not found: \(filepath)")
+            print("ERROR: filepath not found: \(filepath)")
         }
 
         return fileTypeDict
@@ -40,7 +40,7 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
 
     func parser(parser: NSXMLParser, didStartElement elementName: String,
         namespaceURI: String?, qualifiedName qName: String?,
-        attributes attributeDict: [NSObject : AnyObject]) {
+        attributes attributeDict: [String : String]) {
         element = elementName
         if (elementName as NSString).isEqualToString(fileTypeNodeName) {
             if attributeDict.indexForKey(nameAttributeName) != nil {
@@ -61,8 +61,8 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
         namespaceURI: String?, qualifiedName qName: String?) {
         if (elementName as NSString).isEqualToString(fileTypeNodeName) {
             if !extensions.isEqual(nil) {
-                var xs = extensions.componentsSeparatedByCharactersInSet(whitespace)
-                fileTypeDict[fileTypeName] = Set(xs as! [String])
+                let xs = extensions.componentsSeparatedByCharactersInSet(whitespace)
+                fileTypeDict[fileTypeName] = Set(xs )
             }
         }
     }
@@ -81,7 +81,7 @@ public class FileTypes {
     }
 
     private func setFileTypeDict() {
-        var parser = FileTypesXmlParser()
+        let parser = FileTypesXmlParser()
         fileTypesDict = parser.parseFile(Config.fileTypesPath)
         fileTypesDict[text] = fileTypesDict[text]!.union(fileTypesDict["code"]!)
             .union(fileTypesDict["xml"]!)

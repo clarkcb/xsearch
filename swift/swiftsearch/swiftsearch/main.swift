@@ -14,17 +14,17 @@ func getMatchingFiles(results: [SearchResult]) -> [String] {
         let f = r.file!
         files.insert(f)
     }
-    return Array(files).sorted({$0 < $1})
+    return Array(files).sort({$0 < $1})
 }
 
 func getMatchingDirs(results: [SearchResult]) -> [String] {
-    var files = getMatchingFiles(results)
+    let files = getMatchingFiles(results)
     var dirs = Set<String>()
     for f in files {
         let dir = f.stringByDeletingLastPathComponent
         dirs.insert(dir)
     }
-    return Array(dirs).sorted({$0 < $1})
+    return Array(dirs).sort({$0 < $1})
 }
 
 func getMatchingLines(results: [SearchResult], settings: SearchSettings) -> [String] {
@@ -33,13 +33,13 @@ func getMatchingLines(results: [SearchResult], settings: SearchSettings) -> [Str
         let lineSet = Set<String>(lines)
         lines = Array(lineSet)
     }
-    return lines.sorted({$0.lowercaseString < $1.lowercaseString})
+    return lines.sort({$0.lowercaseString < $1.lowercaseString})
 }
 
 func main() {
     let options = SearchOptions()
 
-    let args: [String] = [] + dropFirst(Process.arguments)
+    let args: [String] = [] + Process.arguments.dropFirst()
 
     var error: NSError?
     let settings = options.settingsFromArgs(args, error: &error)
@@ -100,7 +100,7 @@ func main() {
     }
 
     if settings.listLines {
-        let lines = getMatchingLines(results, settings)
+        let lines = getMatchingLines(results, settings: settings)
         let hdr = settings.uniqueLines ? "\nUnique lines with matches (\(lines.count)):"
             : "\nLines with matches (\(lines.count)):"
         logMsg(hdr)

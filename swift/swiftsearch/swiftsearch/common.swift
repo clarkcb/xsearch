@@ -11,7 +11,7 @@ import Foundation
 let whitespace = NSCharacterSet(charactersInString: " \t\r\n")
 
 func logMsg(s: String) {
-    println(s)
+    print(s)
 }
 
 func logError(s: String) {
@@ -57,7 +57,7 @@ func arrayToString(arr: [Regex]) -> String {
 }
 
 func setToString(set:Set<String>) -> String {
-    return arrayToString(Array(sorted(set)))
+    return arrayToString(Array(set.sort()))
 }
 
 func take<T>(seq: [T], num: Int) -> [T] {
@@ -77,12 +77,12 @@ func takeRight<T>(seq: [T], num: Int) -> [T] {
         right.append(seq[seq.count - sub])
         ++sub
     }
-    return right.reverse()
+    return Array(right.reverse())
 }
 
 // for printing the borders in multiline search results
 extension String {
-    func repeat(n: Int) -> String {
+    func `repeat`(n: Int) -> String {
         var result = self
         for _ in 1 ..< n {
             result.extend(self)

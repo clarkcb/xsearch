@@ -30,7 +30,7 @@ class DefaultSettings {
     static let verbose = false
 }
 
-public class SearchSettings: Printable {
+public class SearchSettings: CustomStringConvertible {
     var archivesOnly = DefaultSettings.archivesOnly
     var debug = DefaultSettings.debug
     var excludeHidden = DefaultSettings.excludeHidden
@@ -70,7 +70,7 @@ public class SearchSettings: Printable {
     var searchPatterns = Array<Regex>()
 
     private func splitExtensions(exts: String) -> [String] {
-        return split(exts) {$0 == ","}
+        return exts.characters.split {$0 == ","}.map { String($0) }
     }
 
     func addInArchiveExtension(ext: String) {

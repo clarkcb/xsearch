@@ -30,7 +30,7 @@ class FileUtil {
 
     // gets files only directly under given path
     static func contentsForPath(filePath: String) -> [String] {
-        return getFileManager().contentsOfDirectoryAtPath(filePath, error: nil) as! [String]
+        return (try! getFileManager().contentsOfDirectoryAtPath(filePath)) 
     }
 
     // gets files recursively under given path
@@ -70,6 +70,6 @@ class FileUtil {
     }
 
     static func splitPath(filePath: String) -> [String] {
-        return split(filePath) {$0 == "/"}
+        return filePath.characters.split {$0 == "/"}.map { String($0) }
     }
 }
