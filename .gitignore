@@ -1,12 +1,22 @@
 .DS_Store
 *.tmproj
 *.iml
+*.zip
+
 .idea/
+.vagrant/
+ansible/
 c/
+chef/
+elixir/
 erlang/
-node_modules/
+groovy/
 objc/
 
 # jekyll-related
+about.md
 .sass-cache/
+_posts/
 _site/
+
+Vagrantfile*

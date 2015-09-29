@@ -3,3 +3,6 @@ bin/
 pkg/
 cloudnimble.com/
 unicharlister/
+
+# Hide go 3rd-party projects
+pmylund/

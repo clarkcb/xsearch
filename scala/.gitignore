@@ -2,7 +2,8 @@
 *.log
 
 # for now
-src/test/resources/
+scalasearch/src/test/resources/
+tools/
 
 # sbt specific
 dist/*
