@@ -91,14 +91,14 @@ lint_java () {
             "Missing package-info.java file"
             )
 
-    CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "*.jar" | head -n1)
+    CHECKSTYLE_JAR=$TOOLS_PATH/$(ls -t $TOOLS_PATH | grep "jar$" | head -n1)
     if [ -z "$CHECKSTYLE_JAR" ]; then
         log "Checkstyle jar not found, downloading"
         URL="http://sourceforge.net/projects/checkstyle/files/latest/download?source=files"
         cd $TOOLS_PATH
         curl -J -L -O $URL
         cd -
-        CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "checkstyle*.jar" | head -n1)
+        CHECKSTYLE_JAR=$TOOLS_PATH/$(ls -t $TOOLS_PATH | grep "jar$" | head -n1)
     fi
 
     # Analyze
