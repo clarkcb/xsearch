@@ -26,7 +26,7 @@ exports.testSingleLineResult = function(test) {
         matchEndIndex + "]: " + line.trim();
     test.ok(resultString === expectedOutput, "single-line result matches expected");
     test.done();
-}
+};
 
 exports.testBinaryFileResult = function(test) {
     var pattern = 'Search';
@@ -43,7 +43,7 @@ exports.testBinaryFileResult = function(test) {
     var expectedOutput = file + " matches at [5:10]";
     test.ok(resultString === expectedOutput, "single-line result matches expected");
     test.done();
-}
+};
 
 exports.testMultiLineResult = function(test) {
     var pattern = 'Search';
@@ -71,4 +71,4 @@ exports.testMultiLineResult = function(test) {
         matchStartIndex, matchEndIndex);
     test.ok(resultString === expectedOutput, "multi-line result matches expected");
     test.done();
-}
+};

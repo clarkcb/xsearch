@@ -34,7 +34,7 @@ exports.testNoArgs = function(test) {
         test.ok(!settings.verbose, "verbose is false by default");
         test.done();
     });
-}
+};
 
 exports.testValidArgs = function(test) {
     var searchOptions = new SearchOptions();
@@ -52,7 +52,7 @@ exports.testValidArgs = function(test) {
         test.ok(settings.searchPatterns[0].source === 'Searcher', "pattern === Searcher");
         test.done();
     });
-}
+};
 
 exports.testArchivesOnly = function(test) {
     var searchOptions = new SearchOptions();
@@ -66,7 +66,7 @@ exports.testArchivesOnly = function(test) {
         test.ok(settings.searchArchives === true, "searchArchives is true");
         test.done();
     });
-}
+};
 
 exports.testDebug = function(test) {
     var searchOptions = new SearchOptions();
@@ -80,12 +80,12 @@ exports.testDebug = function(test) {
         test.ok(settings.verbose === true, "verbose is true");
         test.done();
     });
-}
+};
 
 exports.testMissingArg = function(test) {
     var searchOptions = new SearchOptions();
     var args = ['-x'];
-    searchOptions.settingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, function(err) {
         if (err) {
             var expected = "Error: Missing argument for option x";
             test.ok(err == expected, "Got missing argument err");
@@ -95,12 +95,12 @@ exports.testMissingArg = function(test) {
             test.done();
         }
     });
-}
+};
 
 exports.testUnknownArg = function(test) {
     var searchOptions = new SearchOptions();
     var args = ['-Q'];
-    searchOptions.settingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, function(err) {
         if (err) {
             var expected = "Error: Unknown option: Q";
             test.ok(err == expected, "Got unknown option err");
@@ -110,4 +110,4 @@ exports.testUnknownArg = function(test) {
             test.done();
         }
     });
-}
+};
