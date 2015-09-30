@@ -42,7 +42,7 @@ function searchMain() {
         if (settings.debug)
             common.log("settings: " + settings.toString());
 
-         try {
+        try {
             var searcher: Searcher = new Searcher(settings);
             searcher.search();
 

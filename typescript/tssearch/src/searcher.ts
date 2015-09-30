@@ -45,36 +45,32 @@ class Searcher {
     }
 
     private static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
-        for (var i: number = 0; i < patterns.length; i++) {
-            var pattern = patterns[i];
-            var match = pattern.exec(s);
-            if (match) {
-                return true;
-            }
-        }
-        return false;
+        return patterns.some(function(p: RegExp, i, arr) {
+            return s.search(p) > -1;
+        });
     }
 
     private static anyMatchesAnyPattern(ss: string[], patterns: RegExp[]) {
-        for (var i: number = 0; i < ss.length; i++) {
-            if (Searcher.matchesAnyPattern(ss[i], patterns)) {
-                return true;
-            }
-        }
-        return false;
+        return ss.some(function(s: string, i, arr) {
+            return this.matchesAnyPattern(s, patterns);
+        });
     }
 
     public isSearchDir(dir: string): boolean {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
-        var pathElems: string[] = dir.split(path.sep);
         if (this._settings.excludeHidden) {
-            for (var i: number = 0; i < pathElems.length; i++) {
-                if (!Searcher.matchesAnyElement(pathElems[i], ['.','..']) &&
-                    FileUtil.isHidden(pathElems[i])) {
-                    return false;
-                }
+            var nonDotElems = dir.split(path.sep).filter(function(p: string) {
+                return !this.matchesAnyElement(p, ['.','..']);
+            });
+            if (nonDotElems.length === 0) {
+                return true;
+            }
+            if (nonDotElems.some(function(p: string, i, arr) {
+                    return FileUtil.isHidden(p);
+                })) {
+                return false;
             }
         }
         if (this._settings.inDirPatterns.length && !Searcher.matchesAnyPattern(dir,
@@ -131,18 +127,39 @@ class Searcher {
         var searchDirs: string[] = [];
         var stats = fs.statSync(startPath);
         if (stats.isDirectory()) {
-            if (this._settings.debug) {
-                common.log("Getting list of directories to search under " + startPath);
-            }
-            searchDirs.push(startPath);
-            if (this._settings.recursive) {
-                searchDirs.push.apply(searchDirs, this.recGetSearchDirs(startPath));
+            if (this.isSearchDir(startPath)) {
+                searchDirs.push(startPath);
+                if (this._settings.recursive) {
+                    if (this._settings.debug) {
+                        common.log("Getting list of directories to search under " + startPath);
+                    }
+                    [].push.apply(searchDirs, this.recGetSearchDirs(startPath));
+                }
+            } else {
+                common.log("Warning: startPath does not match search criteria");
             }
         } else if (stats.isFile()) {
             var d: string = path.dirname(startPath);
             if (!d) d = ".";
-            searchDirs.push(d);
+            if (this.isSearchDir(d)) {
+                searchDirs.push(d);
+            } else {
+                common.log("Warning: startPath's path does not match search criteria");
+            }
         }
+        return searchDirs;
+    }
+
+    private recGetSearchDirs(currentDir: string): string[] {
+        var searchDirs: string[] = [];
+        fs.readdirSync(currentDir).map(function (f) {
+            return path.join(currentDir, f);
+        }).filter(function (f) {
+            return fs.statSync(f).isDirectory() && this.isSearchDir(f);
+        }).forEach(function (f) {
+            searchDirs.push(f);
+            [].push.apply(searchDirs, this.recGetSearchDirs(f));
+        });
         return searchDirs;
     }
 
@@ -156,52 +173,6 @@ class Searcher {
         }
     }
 
-    private static getSubDirs(dir: string): string[] {
-        var subDirs: string[] = [];
-        var childItems = fs.readdirSync(dir);
-        for (var i: number = 0; i < childItems.length; i++) {
-            var filepath: string = path.join(dir, childItems[i]);
-            try {
-                var stats = fs.statSync(filepath);
-                if (stats.isDirectory()) {
-                    subDirs.push(filepath);
-                }
-            } catch (err) {
-                Searcher.handleFsError(err);
-            }
-        }
-        return subDirs;
-    }
-
-    private recGetSearchDirs(currentDir: string): string[] {
-        var searchDirs: string[] = [];
-        var subDirs: string[] = Searcher.getSubDirs(currentDir);
-        for (var i: number = 0; i < subDirs.length; i++) {
-            if (this.isSearchDir(subDirs[i])) {
-                searchDirs.push(subDirs[i]);
-            }
-            searchDirs.push.apply(searchDirs, this.recGetSearchDirs(subDirs[i]));
-        }
-        return searchDirs;
-    }
-
-    private static getFilesForDirectory(dir: string): string[] {
-        var files: string[] = [];
-        var childItems = fs.readdirSync(dir);
-        for (var i: number = 0; i < childItems.length; i++) {
-            var filepath: string = path.join(dir, childItems[i]);
-            try {
-                var stats = fs.statSync(filepath);
-                if (stats.isFile()) {
-                    files.push(filepath);
-                }
-            } catch (err) {
-                Searcher.handleFsError(err);
-            }
-        }
-        return files;
-    }
-
     public filterFile(f: string): boolean {
         if (FileTypes.isArchiveFile(f)) {
             return (this._settings.searchArchives && this.isArchiveSearchFile(f));
@@ -210,24 +181,20 @@ class Searcher {
     }
 
     private getSearchFilesForDirectory(dir: string): string[] {
-        var searchFiles: string[] = [];
-        var dirFiles: string[] = Searcher.getFilesForDirectory(dir);
-        for (var i: number = 0; i < dirFiles.length; i++) {
-            var f = dirFiles[i];
-            if (this.filterFile(f)) {
-                searchFiles.push(f);
-            }
-        }
-        return searchFiles;
+        return fs.readdirSync(dir).map(function (f) {
+            return path.join(dir, f);
+        }).filter(function (f) {
+            return fs.statSync(f).isFile() && this.filterFile(f);
+        });
     }
 
     private getSearchFiles(searchDirs: string[]): string[] {
         var searchFiles: string[] = [];
         var stats = fs.statSync(this._settings.startPath);
         if (stats.isDirectory()) {
-            for (var i: number = 0; i < searchDirs.length; i++) {
-                searchFiles.push.apply(searchFiles, this.getSearchFilesForDirectory(searchDirs[i]));
-            }
+            searchDirs.forEach(function(d) {
+                searchFiles.push.apply(searchFiles, this.getSearchFilesForDirectory(d));
+            });
         } else if (stats.isFile()) {
             searchFiles.push(this._settings.startPath);
         }
@@ -252,9 +219,10 @@ class Searcher {
             common.log("");
         }
 
-        for (var i: number = 0; i < files.length; i++) {
-            this.searchFile(files[i]);
-        }
+        // search the files
+        files.forEach(function(f) {
+            this.searchFile(f);
+        });
 
         if (this._settings.verbose)
             common.log("Search complete.");
@@ -276,10 +244,10 @@ class Searcher {
         var contents: string = FileUtil.getFileContents(filepath);
         var pattern: RegExp;
         var patternResults = {};
-        for (var i: number = 0; i < this._settings.searchPatterns.length; i++) {
-            pattern = new RegExp(this._settings.searchPatterns[i].source, "g");
+        this._settings.searchPatterns.forEach(function(p: RegExp) {
+            pattern = new RegExp(p.source, "g");
             if (this._settings.firstMatch && (pattern.source in patternResults)) {
-                break;
+                return;
             }
             var match = pattern.exec(contents);
             while (match) {
@@ -298,7 +266,7 @@ class Searcher {
                 }
                 match = pattern.exec(contents);
             }
-        }
+        });
     }
 
     private searchTextFile(filepath: string): void {
@@ -314,14 +282,13 @@ class Searcher {
     private searchTextFileContents(filepath: string): void {
         var contents: string = FileUtil.getFileContents(filepath);
         var results: SearchResult[] = this.searchMultiLineString(contents);
-        for (var i: number = 0; i < results.length; i++) {
-            var r: SearchResult = results[i];
-            var resultWithFilepath =
+        results.forEach(function(r: SearchResult) {
+            var resultWithFilepath: SearchResult =
                 new SearchResult(r.pattern, filepath, r.linenum,
-                        r.matchStartIndex, r.matchEndIndex, r.line,
-                        r.linesBefore, r.linesAfter);
+                    r.matchStartIndex, r.matchEndIndex, r.line,
+                    r.linesBefore, r.linesAfter);
             this.addSearchResult(resultWithFilepath);
-        }
+        });
     }
 
     private static getNewLineIndices(s: string): number[] {
@@ -340,11 +307,10 @@ class Searcher {
         if (atIndices.length === 0)
             return [];
         var lines: string[] = [];
-        for (var a: number = 0; a < atIndices.length; a++) {
-            var i: number = atIndices[a];
+        atIndices.forEach(function(i: number): void {
             var line: string = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
             lines.push(line);
-        }
+        });
         return lines;
     }
 
@@ -376,11 +342,12 @@ class Searcher {
         var linesAfter: string[] = [];
         var results: SearchResult[] = [];
         var newLineIndices: number[] = Searcher.getNewLineIndices(s);
-        var plusOne = function(i: number) { return i+1; };
+        var plusOne = function(i: number): number { return i+1; };
         var startLineIndices: number[] = [0].concat(newLineIndices.map(plusOne));
         var endLineIndices: number[] = newLineIndices.concat([s.length - 1]);
-        for (var i: number = 0; i < this._settings.searchPatterns.length; i++) {
-            var pattern: RegExp = new RegExp(this._settings.searchPatterns[i].source, "g");
+
+        this._settings.searchPatterns.forEach(function(p: RegExp) {
+            var pattern: RegExp = new RegExp(p.source, "g");
             var match = pattern.exec(s);
             var stop: boolean = false;
             while (match && !stop) {
@@ -437,7 +404,7 @@ class Searcher {
                 }
                 match = pattern.exec(s);
             }
-        }
+        });
         return results;
     }
 
@@ -458,15 +425,14 @@ class Searcher {
 
     private searchTextFileLines(filepath: string): void {
         var lines: string[] = FileUtil.getFileLines(filepath);
-        var rs: SearchResult[] = this.searchLines(lines);
-        for (var i: number = 0; i < rs.length; i++) {
-            var r: SearchResult = rs[i];
-            var resultWithFilepath =
+        var results: SearchResult[] = this.searchLines(lines);
+        results.forEach(function(r: SearchResult) {
+            var resultWithFilepath: SearchResult =
                 new SearchResult(r.pattern, filepath, r.linenum,
-                        r.matchStartIndex, r.matchEndIndex, r.line,
-                        r.linesBefore, r.linesAfter);
+                    r.matchStartIndex, r.matchEndIndex, r.line,
+                    r.linesBefore, r.linesAfter);
             this.addSearchResult(resultWithFilepath);
-        }
+        });
     }
 
     // return results so that filepath can be added to them
@@ -495,8 +461,8 @@ class Searcher {
                     linesAfter.push(lines.shift());
                 }
             }
-            for (var i: number = 0; i < this._settings.searchPatterns.length; i++) {
-                pattern = new RegExp(this._settings.searchPatterns[i].source, "g");
+            this._settings.searchPatterns.forEach(function(p: RegExp) {
+                pattern = new RegExp(p.source, "g");
                 var match = pattern.exec(line);
                 while (match) {
                     if ((this._settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
@@ -517,7 +483,7 @@ class Searcher {
                     }
                     match = pattern.exec(line);
                 }
-            }
+            });
             if (this._settings.linesBefore > 0) {
                 if (linesBefore.length == this._settings.linesBefore)
                     linesBefore.shift();
@@ -547,21 +513,19 @@ class Searcher {
         return pathCmp;
     }
 
-    public printSearchResults() {
+    public printSearchResults(): void {
         // first sort the results
         this.results.sort(this.cmpSearchResults);
         common.log("\nSearch results ({0}):".format(this.results.length));
-        for (var i: number = 0; i < this.results.length; i++) {
-            common.log(this.results[i].toString());
-        }
+        this.results.forEach(function(r: SearchResult) {
+            common.log(r.toString());
+        });
     }
 
     public getMatchingDirs(): string[] {
-        var dirs: string[] = [];
-        for (var i: number = 0; i < this.results.length; i++) {
-            var result: SearchResult = this.results[i];
-            dirs.push(path.dirname(result.filename));
-        }
+        var dirs: string[] = this.results.map(function(r) {
+            return path.dirname(r.filename);
+        });
         return common.setFromArray(dirs);
     }
 
@@ -571,11 +535,9 @@ class Searcher {
     }
 
     public getMatchingFiles(): string[] {
-        var files: string[] = [];
-        for (var i: number = 0; i < this.results.length; i++) {
-            var result: SearchResult = this.results[i];
-            files.push(result.filename);
-        }
+        var files: string[] = this.results.map(function(r) {
+           return r.filename;
+        });
         return common.setFromArray(files);
     }
 
@@ -585,23 +547,23 @@ class Searcher {
     }
 
     public getMatchingLines(): string[] {
-        var lines: string[] = [];
-        for (var i: number = 0; i < this.results.length; i++) {
-            var result: SearchResult = this.results[i];
-            if (result.linenum)
-                lines.push(result.line.trim());
-        }
-        if (this._settings.uniqueLines)
+        var lines: string[] = this.results.filter(function(r) {
+            return r.linenum > 0;
+        }).map(function(r) {
+            return r.line.trim();
+        });
+        if (this._settings.uniqueLines) {
             lines = common.setFromArray(lines);
+        }
         lines.sort(function (a, b) {
-            if (a.toUpperCase() == b.toUpperCase())
+            if (a.toUpperCase() === b.toUpperCase())
                 return 0;
             return a.toUpperCase() < b.toUpperCase() ? -1 : 1;
         });
         return lines;
     }
 
-    public printMatchingLines() {
+    public printMatchingLines(): void {
         var lines: string[] = this.getMatchingLines();
         var hdrText: string;
         if (this._settings.uniqueLines)
