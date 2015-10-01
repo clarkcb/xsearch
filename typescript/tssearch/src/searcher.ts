@@ -62,7 +62,7 @@ class Searcher {
         }
         if (this._settings.excludeHidden) {
             var nonDotElems = dir.split(path.sep).filter(function(p: string) {
-                return !this.matchesAnyElement(p, ['.','..']);
+                return !Searcher.matchesAnyElement(p, ['.','..']);
             });
             if (nonDotElems.length === 0) {
                 return true;
@@ -151,14 +151,15 @@ class Searcher {
     }
 
     private recGetSearchDirs(currentDir: string): string[] {
+        var self = this;
         var searchDirs: string[] = [];
         fs.readdirSync(currentDir).map(function (f) {
             return path.join(currentDir, f);
         }).filter(function (f) {
-            return fs.statSync(f).isDirectory() && this.isSearchDir(f);
+            return fs.statSync(f).isDirectory() && self.isSearchDir(f);
         }).forEach(function (f) {
             searchDirs.push(f);
-            [].push.apply(searchDirs, this.recGetSearchDirs(f));
+            [].push.apply(searchDirs, self.recGetSearchDirs(f));
         });
         return searchDirs;
     }
@@ -181,10 +182,11 @@ class Searcher {
     }
 
     private getSearchFilesForDirectory(dir: string): string[] {
+        var self = this;
         return fs.readdirSync(dir).map(function (f) {
             return path.join(dir, f);
         }).filter(function (f) {
-            return fs.statSync(f).isFile() && this.filterFile(f);
+            return fs.statSync(f).isFile() && self.filterFile(f);
         });
     }
 
@@ -192,8 +194,9 @@ class Searcher {
         var searchFiles: string[] = [];
         var stats = fs.statSync(this._settings.startPath);
         if (stats.isDirectory()) {
+            var self = this;
             searchDirs.forEach(function(d) {
-                searchFiles.push.apply(searchFiles, this.getSearchFilesForDirectory(d));
+                searchFiles.push.apply(searchFiles, self.getSearchFilesForDirectory(d));
             });
         } else if (stats.isFile()) {
             searchFiles.push(this._settings.startPath);
@@ -202,8 +205,10 @@ class Searcher {
     }
 
     public search() {
-        if (this._settings.verbose)
+        var self = this;
+        if (this._settings.verbose) {
             common.log("Search initiated");
+        }
 
         // get the search dirs
         var dirs: string[] = [];
@@ -221,7 +226,7 @@ class Searcher {
 
         // search the files
         files.forEach(function(f) {
-            this.searchFile(f);
+            self.searchFile(f);
         });
 
         if (this._settings.verbose)
@@ -238,6 +243,7 @@ class Searcher {
     }
 
     private searchBinaryFile(filepath: string): void {
+        var self = this;
         if (this._settings.verbose) {
             common.log('Searching binary file: "{0}"'.format(filepath));
         }
@@ -246,12 +252,12 @@ class Searcher {
         var patternResults = {};
         this._settings.searchPatterns.forEach(function(p: RegExp) {
             pattern = new RegExp(p.source, "g");
-            if (this._settings.firstMatch && (pattern.source in patternResults)) {
+            if (self._settings.firstMatch && (pattern.source in patternResults)) {
                 return;
             }
             var match = pattern.exec(contents);
             while (match) {
-                this.addSearchResult(new SearchResult(
+                self.addSearchResult(new SearchResult(
                     pattern,
                     filepath,
                     0,
@@ -260,7 +266,7 @@ class Searcher {
                     null,
                     [],
                     []));
-                if (this._settings.firstMatch) {
+                if (self._settings.firstMatch) {
                     patternResults[pattern.source] = 1;
                     break;
                 }
@@ -280,6 +286,7 @@ class Searcher {
     }
 
     private searchTextFileContents(filepath: string): void {
+        var self = this;
         var contents: string = FileUtil.getFileContents(filepath);
         var results: SearchResult[] = this.searchMultiLineString(contents);
         results.forEach(function(r: SearchResult) {
@@ -287,7 +294,7 @@ class Searcher {
                 new SearchResult(r.pattern, filepath, r.linenum,
                     r.matchStartIndex, r.matchEndIndex, r.line,
                     r.linesBefore, r.linesAfter);
-            this.addSearchResult(resultWithFilepath);
+            self.addSearchResult(resultWithFilepath);
         });
     }
 
@@ -337,6 +344,7 @@ class Searcher {
     }
 
     public searchMultiLineString(s: string): SearchResult[] {
+        var self = this;
         var patternResults = {};
         var linesBefore: string[] = [];
         var linesAfter: string[] = [];
@@ -351,12 +359,12 @@ class Searcher {
             var match = pattern.exec(s);
             var stop: boolean = false;
             while (match && !stop) {
-                if (this._settings.firstMatch && pattern.source in patternResults) {
+                if (self._settings.firstMatch && pattern.source in patternResults) {
                     stop = true;
                     continue;
                 }
-                var lessOrEqual = this.getLessThanOrEqual(match.index);
-                var greaterThan = this.getGreaterThan(match.index);
+                var lessOrEqual = self.getLessThanOrEqual(match.index);
+                var greaterThan = self.getGreaterThan(match.index);
                 var lineStartIndex: number = 0;
                 var lineEndIndex: number = s.length - 1;
                 var beforeLineCount: number = 0;
@@ -364,30 +372,30 @@ class Searcher {
                 if (beforeStartIndices.length > 0) {
                     lineStartIndex = beforeStartIndices.pop();
                     beforeLineCount = beforeStartIndices.length;
-                    if (beforeStartIndices.length > this._settings.linesBefore) {
+                    if (beforeStartIndices.length > self._settings.linesBefore) {
                         beforeStartIndices = beforeStartIndices.slice(
-                            beforeStartIndices.length - this._settings.linesBefore);
+                            beforeStartIndices.length - self._settings.linesBefore);
                     }
                 }
                 lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
                 var line: string = s.substring(lineStartIndex, lineEndIndex);
-                if (this._settings.linesBefore && beforeLineCount) {
+                if (self._settings.linesBefore && beforeLineCount) {
                     linesBefore = Searcher.getLinesBefore(s, beforeStartIndices,
                         startLineIndices, endLineIndices);
                 }
-                if (this._settings.linesAfter) {
+                if (self._settings.linesAfter) {
                     var afterStartIndices: number[] = startLineIndices.filter(greaterThan);
-                    if (afterStartIndices.length > this._settings.linesAfter) {
+                    if (afterStartIndices.length > self._settings.linesAfter) {
                         afterStartIndices = afterStartIndices.slice(0,
-                            this._settings.linesAfter);
+                            self._settings.linesAfter);
                     }
                     linesAfter = Searcher.getLinesAfter(s, afterStartIndices,
                         startLineIndices, endLineIndices);
                 }
                 var matchStartIndex: number = match.index - lineStartIndex + 1;
                 var matchEndIndex: number = pattern.lastIndex - lineStartIndex + 1;
-                if ((this._settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
-                    (this._settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
+                if ((self._settings.linesBefore === 0 || self.linesBeforeMatch(linesBefore)) &&
+                    (self._settings.linesAfter === 0 || self.linesAfterMatch(linesAfter))) {
                     var searchResult: SearchResult = new SearchResult(
                         pattern,
                         '',
@@ -424,6 +432,7 @@ class Searcher {
     }
 
     private searchTextFileLines(filepath: string): void {
+        var self = this;
         var lines: string[] = FileUtil.getFileLines(filepath);
         var results: SearchResult[] = this.searchLines(lines);
         results.forEach(function(r: SearchResult) {
@@ -431,12 +440,13 @@ class Searcher {
                 new SearchResult(r.pattern, filepath, r.linenum,
                     r.matchStartIndex, r.matchEndIndex, r.line,
                     r.linesBefore, r.linesAfter);
-            this.addSearchResult(resultWithFilepath);
+            self.addSearchResult(resultWithFilepath);
         });
     }
 
     // return results so that filepath can be added to them
     public searchLines(lines: string[]): SearchResult[] {
+        var self = this;
         var linenum: number = 0;
         var pattern: RegExp;
         var linesBefore: string[] = [];
@@ -465,8 +475,8 @@ class Searcher {
                 pattern = new RegExp(p.source, "g");
                 var match = pattern.exec(line);
                 while (match) {
-                    if ((this._settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
-                        (this._settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
+                    if ((self._settings.linesBefore === 0 || self.linesBeforeMatch(linesBefore)) &&
+                        (self._settings.linesAfter === 0 || self.linesAfterMatch(linesAfter))) {
                         results.push(new SearchResult(
                             pattern,
                             '',
@@ -476,7 +486,7 @@ class Searcher {
                             line,
                             [].concat(linesBefore),
                             [].concat(linesAfter)));
-                        if (this._settings.firstMatch) {
+                        if (self._settings.firstMatch) {
                             patternResults[pattern.source] = 1;
                             break;
                         }
