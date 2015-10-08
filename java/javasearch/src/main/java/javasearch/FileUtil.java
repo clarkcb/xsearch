@@ -74,9 +74,19 @@ public final class FileUtil {
     public static String getFileContents(final File f, final String enc) throws IOException {
         String content;
         try (Scanner scanner = new Scanner(f, enc).useDelimiter("\\Z")) {
-            content = scanner.next();
+            content = getScannerContents(scanner);
         } catch (NoSuchElementException | IllegalStateException e) {
             throw e;
+        }
+        return content;
+    }
+
+    public static String getScannerContents(final Scanner scanner) throws IllegalArgumentException {
+        String content;
+        if (scanner.hasNext()) { // will be false if file size == 0
+            content = scanner.next();
+        } else {
+            content = "";
         }
         return content;
     }
@@ -88,7 +98,7 @@ public final class FileUtil {
     public static String getStreamContents(final InputStream is, final String enc) throws IllegalArgumentException {
         String content;
         try (Scanner scanner = new Scanner(is, enc).useDelimiter("\\Z")) {
-            content = scanner.next();
+            content = getScannerContents(scanner);
         } catch (NoSuchElementException | IllegalStateException e) {
             throw e;
         }

@@ -280,7 +280,7 @@ public class Searcher {
                 addSearchResult(r);
             }
         } catch (NoSuchElementException e) {
-            log(e.toString() + ": " + sf.getPath());
+            log(e.toString() + ": " + sf.toString());
         } catch (IllegalStateException | IOException e) {
             log(e.toString());
         }
