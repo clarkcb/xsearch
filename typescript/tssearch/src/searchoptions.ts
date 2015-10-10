@@ -19,13 +19,17 @@ interface StringOptionMap {
     [key: string]: SearchOption
 }
 
+interface StringActionMap {
+    [key: string]: any
+}
+
 class SearchOptions {
     // the list of SearchOption objects (populated by setOptionsFromXml)
     options: SearchOption[];
     argMap: StringOptionMap;
     flagMap: StringOptionMap;
-    argActionMap: {};
-    flagActionMap: {};
+    argActionMap: StringActionMap;
+    flagActionMap: StringActionMap;
 
     constructor() {
         this.options = [];
@@ -177,7 +181,7 @@ class SearchOptions {
         this.options.sort(this.optcmp);
     }
 
-    public settingsFromArgs(args: string[], callback) {
+    public settingsFromArgs(args: string[], cb) {
         var err: Error = null;
         var settings: SearchSettings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
@@ -211,7 +215,7 @@ class SearchOptions {
         if (settings.debug) {
             settings.verbose = true;
         }
-        callback(err, settings);
+        cb(err, settings);
     }
 
     public usage(): void {

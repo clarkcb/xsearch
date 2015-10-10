@@ -11,10 +11,10 @@
 
 var fs = require('fs');
 
-var common = require('./common.js');
-var config = require('./config.js');
-var FileType = require('./filetype.js').FileType;
-var FileUtil = require('./fileutil.js').FileUtil;
+var common = require('./common.ts');
+var config = require('./config.ts');
+var FileType = require('./filetype.ts').FileType;
+var FileUtil = require('./fileutil.ts').FileUtil;
 
 interface FileTypeMap {
     [key: string]: string[]
