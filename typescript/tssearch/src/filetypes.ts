@@ -65,6 +65,16 @@ class FileTypes {
         return FileType.Unknown;
     }
 
+    public static getFileTypeAsync(filename: string, cb): void {
+        if (FileTypes.isTextFile(filename))
+            return cb(FileType.Text);
+        if (FileTypes.isBinaryFile(filename))
+            return cb(FileType.Binary);
+        if (FileTypes.isArchiveFile(filename))
+            return cb(FileType.Archive);
+        cb(FileType.Unknown);
+    }
+
     public static isArchiveFile(filename: string): boolean {
         var ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['archive'].indexOf(ext) > -1;

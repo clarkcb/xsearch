@@ -34,8 +34,24 @@ FileUtil.getFileContents = function (filepath) {
     return fs.readFileSync(filepath).toString();
 };
 
+FileUtil.getFileContentsAsync = function (filepath, cb) {
+    fs.readFile(filepath, function(err, data) {
+        if (err) {
+            common.log("An error occurred trying to read file: " + filepath);
+            throw err;
+        }
+        cb(data.toString());
+    });
+};
+
 FileUtil.getFileLines = function (filepath) {
     return FileUtil.getFileContents(filepath).split(/\r?\n/);
+};
+
+FileUtil.getFileLinesAsync = function (filepath, cb) {
+    FileUtil.getFileContentsAsync(filepath, function(contents) {
+        cb(contents.split(/\r?\n/));
+    });
 };
 
 FileUtil.getRelativePath = function (filepath, startpath) {

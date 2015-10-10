@@ -57,6 +57,16 @@ function FileTypes() {
         return FileType.UNKNOWN;
     };
 
+    this.getFileTypeAsync = function (filename, cb) {
+        if (self.isTextFile(filename))
+            return cb(FileType.TEXT);
+        if (self.isBinaryFile(filename))
+            return cb(FileType.BINARY);
+        if (self.isArchiveFile(filename))
+            return cb(FileType.ARCHIVE);
+        cb(FileType.UNKNOWN);
+    };
+
     this.isArchiveFile = function (filename) {
         var ext = FileUtil.getExtension(filename);
         return fileTypeMap.archive.indexOf(ext) > -1;

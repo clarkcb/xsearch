@@ -33,8 +33,16 @@ class FileUtil {
         return fs.readFileSync(filepath).toString();
     }
 
+    public static getFileContentsAsync(filepath: string, cb): void {
+        cb(fs.readFileSync(filepath).toString());
+    }
+
     public static getFileLines(filepath: string): string[] {
         return FileUtil.getFileContents(filepath).split(/\r?\n/);
+    }
+
+    public static getFileLinesAsync(filepath: string, cb): void {
+        cb(FileUtil.getFileContents(filepath).split(/\r?\n/));
     }
 
     public static getRelativePath(filepath: string, startpath: string): string {
