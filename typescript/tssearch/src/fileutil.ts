@@ -11,18 +11,18 @@
 var fs = require('fs');
 var path = require('path');
 
-var common = require('./common.js');
+var common = require('./common.ts');
 
 class FileUtil {
 
     public static expandPath(filepath: string): string {
-        var idx: number = filepath.indexOf('~');
+        let idx: number = filepath.indexOf('~');
         return idx === 0 ? process.env.HOME + filepath.substring(1) : filepath;
     }
 
     public static getExtension(filepath: string): string {
-        var f: string = path.basename(filepath);
-        var idx: number = f.lastIndexOf('.');
+        let f: string = path.basename(filepath);
+        let idx: number = f.lastIndexOf('.');
         if (idx > 0 && idx < f.length - 1) {
             return f.substring(idx + 1);
         }
@@ -56,7 +56,7 @@ class FileUtil {
     }
 
     public static isHidden(filepath: string): boolean {
-        var f: string = path.basename(filepath);
+        let f: string = path.basename(filepath);
         return f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f);
     }
 }

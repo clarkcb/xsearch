@@ -9,7 +9,6 @@
 "use strict";
 
 var path = require('path');
-var FileType = require('./filetype.js').FileType;
 
 class SearchFile {
     containerSeparator: string = '!';
@@ -25,7 +24,7 @@ class SearchFile {
     }
 
     public toString(): string {
-        var s: string = '';
+        let s: string = '';
         if (this.containers.length > 0) {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }

@@ -8,7 +8,7 @@ var path = require('path');
 
 function SearchFile(pathname, filename, filetype) {
     "use strict";
-    var self = this;
+    let self = this;
     self.containerSeparator = '!';
     self.containers = [];
     self.pathname = pathname;
@@ -16,7 +16,7 @@ function SearchFile(pathname, filename, filetype) {
     self.filetype = filetype;
 
     self.toString = function () {
-        var s = '';
+        let s = '';
         if (self.containers.length > 0) {
             s = self.containers.join(self.containerSeparator) + self.containerSeparator;
         }

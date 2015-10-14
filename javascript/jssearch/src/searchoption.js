@@ -6,7 +6,7 @@
 
 function SearchOption(shortarg, longarg, desc, func) {
     "use strict";
-    var self = this;
+    let self = this;
     self.shortarg = shortarg;
     self.longarg = longarg;
     self.desc = desc;

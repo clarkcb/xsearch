@@ -1,5 +1,4 @@
 /// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="fileutil.ts"/>
 /// <reference path="searchoption.ts"/>
 /// <reference path="searchsettings.ts"/>
 /*
@@ -10,10 +9,10 @@
 
 "use strict";
 
-var config = require('./config.js');
-var FileUtil = require('./fileutil.js').FileUtil;
-var SearchOption = require('./searchoption.js').SearchOption;
-var SearchSettings = require('./searchsettings.js').SearchSettings;
+var config = require('./config.ts');
+var FileUtil = require('./fileutil.ts').FileUtil;
+var SearchOption = require('./searchoption.ts').SearchOption;
+var SearchSettings = require('./searchsettings.ts').SearchSettings;
 
 interface StringOptionMap {
     [key: string]: SearchOption
@@ -126,68 +125,67 @@ class SearchOptions {
     }
 
     private optcmp(o1: SearchOption, o2: SearchOption) {
-        var a: string = o1.sortarg;
-        var b: string = o2.sortarg;
+        const a: string = o1.sortarg;
+        const b: string = o2.sortarg;
         return a.localeCompare(b);
     }
 
     // setOptionsFromXml
     private setOptionsFromXml(): void {
-        var me = this;
-        var fs = require('fs');
-        var DomJS = require('dom-js').DomJS;
+        const self = this;
+        const fs = require('fs');
+        const DomJS = require('dom-js').DomJS;
 
-        var domjs = new DomJS();
-        var xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
+        const domjs = new DomJS();
+        const xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
         domjs.parse(xml, function(err: Error, dom) {
             if (err) {
                 throw err;
             }
-            for (var i: number = 0; i < dom.children.length; i++) {
-                var child = dom.children[i];
+            dom.children.forEach(child => {
                 if (child.name && child.name === 'searchoption') {
-                    var longArg: string = child.attributes.long;
-                    var shortArg: string = child.attributes.short;
-                    var desc: string = child.text().trim();
-                    var func: any;
-                    if (longArg in me.argActionMap) {
-                        func = me.argActionMap[longArg];
+                    const longArg: string = child.attributes.long;
+                    const shortArg: string = child.attributes.short;
+                    const desc: string = child.text().trim();
+                    let func: any;
+                    if (longArg in self.argActionMap) {
+                        func = self.argActionMap[longArg];
                     }
-                    else if (longArg in me.flagActionMap) {
-                        func = me.flagActionMap[longArg];
+                    else if (longArg in self.flagActionMap) {
+                        func = self.flagActionMap[longArg];
                     }
                     else throw new Error("Unknown option: "+longArg);
-                    var option = new SearchOption(shortArg, longArg, desc, func);
-                    me.options.push(option);
-                    if (longArg in me.argActionMap) {
-                        me.argMap[longArg] = option;
+                    const option = new SearchOption(shortArg, longArg, desc, func);
+                    self.options.push(option);
+                    if (longArg in self.argActionMap) {
+                        self.argMap[longArg] = option;
                         if (shortArg) {
-                            me.argMap[shortArg] = option;
-                            me.argActionMap[shortArg] = me.argActionMap[longArg];
+                            self.argMap[shortArg] = option;
+                            self.argActionMap[shortArg] = self.argActionMap[longArg];
                         }
-                    } else if (longArg in me.flagActionMap) {
-                        me.flagMap[longArg] = option;
+                    } else if (longArg in self.flagActionMap) {
+                        self.flagMap[longArg] = option;
                         if (shortArg) {
-                            me.flagMap[shortArg] = option;
-                            me.flagActionMap[shortArg] = me.flagActionMap[longArg];
+                            self.flagMap[shortArg] = option;
+                            self.flagActionMap[shortArg] = self.flagActionMap[longArg];
                         }
                     } else { // shouldn't get here
                         console.log("ERROR: " + longArg + " not found in either map");
-                        me.usageWithCode(1);
+                        self.usageWithCode(1);
                     }
                 }
-            }
+            });
         });
         this.options.sort(this.optcmp);
     }
 
     public settingsFromArgs(args: string[], cb) {
-        var err: Error = null;
-        var settings: SearchSettings = new SearchSettings();
+        let err: Error = null;
+        let settings: SearchSettings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
         while(args) {
-            var arg: string = args.shift();
+            let arg: string = args.shift();
             if (!arg) {
                 break;
             }
@@ -228,14 +226,13 @@ class SearchOptions {
     }
 
     private getUsageString(): string {
-        var usage: string = 'Usage:\n tssearch [options] -s <searchpattern>' +
+        let usage: string = 'Usage:\n tssearch [options] -s <searchpattern>' +
             ' <startpath>\n\nOptions:\n';
-        var optStrings: string[] = [];
-        var optDescs: string[] = [];
-        var longest: number = 0;
-        for (var i: number = 0; i < this.options.length; i++) {
-            var opt: SearchOption = this.options[i];
-            var optString: string = ' ';
+        let optStrings: string[] = [];
+        let optDescs: string[] = [];
+        let longest: number = 0;
+        this.options.forEach((opt: SearchOption) => {
+            let optString: string = ' ';
             if (opt.shortarg)
                 optString += '-' + opt.shortarg + ',';
             optString += '--' + opt.longarg;
@@ -243,9 +240,9 @@ class SearchOptions {
                 longest = optString.length;
             optStrings.push(optString);
             optDescs.push(opt.desc);
-        }
-        for (var i: number = 0; i < optStrings.length; i++) {
-            var os: string = optStrings[i];
+        });
+        for (let i: number = 0; i < optStrings.length; i++) {
+            let os: string = optStrings[i];
             while (os.length < longest)
                 os += ' ';
             usage += os + '  ' + optDescs[i] + '\n';

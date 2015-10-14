@@ -4,6 +4,8 @@
  * file-related utility functions
  */
 
+"use strict";
+
 var fs = require('fs');
 var path = require('path');
 
@@ -12,17 +14,13 @@ var common = require('./common.js');
 function FileUtil() {}
 
 FileUtil.expandPath = function (filepath) {
-    var idx = filepath.indexOf('~');
-    if (idx === 0) {
-        return process.env.HOME + filepath.substring(1);
-    } else {
-        return filepath;
-    }
+    let idx = filepath.indexOf('~');
+    return idx === 0 ? process.env.HOME + filepath.substring(1) : filepath;
 };
 
 FileUtil.getExtension = function (filepath) {
-    var f = path.basename(filepath);
-    var idx = f.lastIndexOf('.');
+    let f = path.basename(filepath);
+    let idx = f.lastIndexOf('.');
     if (idx > 0 && idx < f.length-1) {
         return f.substring(idx+1);
     } else {
@@ -35,7 +33,7 @@ FileUtil.getFileContents = function (filepath) {
 };
 
 FileUtil.getFileContentsAsync = function (filepath, cb) {
-    fs.readFile(filepath, function(err, data) {
+    fs.readFile(filepath, (err, data) => {
         if (err) {
             common.log("An error occurred trying to read file: " + filepath);
             throw err;
@@ -49,9 +47,7 @@ FileUtil.getFileLines = function (filepath) {
 };
 
 FileUtil.getFileLinesAsync = function (filepath, cb) {
-    FileUtil.getFileContentsAsync(filepath, function(contents) {
-        cb(contents.split(/\r?\n/));
-    });
+    FileUtil.getFileContentsAsync(filepath, contents => cb(contents.split(/\r?\n/)));
 };
 
 FileUtil.getRelativePath = function (filepath, startpath) {
@@ -65,8 +61,8 @@ FileUtil.isDotDir = function (filepath) {
 };
 
 FileUtil.isHidden = function (filepath) {
-    var f = path.basename(filepath);
-    return f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f);
+    let f = path.basename(filepath);
+    return f.length > 1 && f.charAt(0) === '.' && !FileUtil.isDotDir(f);
 };
 
 exports.FileUtil = FileUtil;

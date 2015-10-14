@@ -11,14 +11,14 @@ var SearchSettings = require('./searchsettings.js').SearchSettings;
 
 function SearchOptions() {
     "use strict";
-    var self = this;
+    let self = this;
 
     // the list of SearchOption objects (populated by setOptionsFromXml)
-    var options = [];
-    var argMap = {};
-    var flagMap = {};
+    let options = [];
+    let argMap = {};
+    let flagMap = {};
 
-    var argActionMap = {
+    const argActionMap = {
         'in-archiveext':
             function(x, settings) { settings.addInArchiveExtension(x); },
         'in-archivefilepattern':
@@ -61,7 +61,7 @@ function SearchOptions() {
             function(x, settings) { settings.addSearchPattern(x); }
     };
 
-    var flagActionMap = {
+    const flagActionMap = {
         'allmatches':
             function(settings) { settings.firstMatch = false; },
         'archivesonly':
@@ -105,33 +105,32 @@ function SearchOptions() {
     };
 
     function optcmp(o1, o2) {
-        var a = o1.sortarg;
-        var b = o2.sortarg;
+        const a = o1.sortarg;
+        const b = o2.sortarg;
         return a.localeCompare(b);
     }
 
     // setOptionsFromXml
     (function () {
-        var fs = require('fs');
-        var DomJS = require('dom-js').DomJS;
+        const fs = require('fs');
+        const DomJS = require('dom-js').DomJS;
 
-        var domjs = new DomJS();
-        var xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
+        const domjs = new DomJS();
+        const xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
         domjs.parse(xml, function(err, dom) {
             if (err) {
                 throw err;
             }
-            for (var i in dom.children) {
-                var child = dom.children[i];
+            dom.children.forEach(child => {
                 if (child.name && child.name === 'searchoption') {
-                    var longArg = child.attributes.long;
-                    var shortArg = child.attributes.short;
-                    var desc = child.text().trim();
-                    var func = null;
+                    const longArg = child.attributes.long;
+                    const shortArg = child.attributes.short;
+                    const desc = child.text().trim();
+                    let func = null;
                     if (argActionMap[longArg]) func = argActionMap[longArg];
                     else if (flagActionMap[longArg]) func = flagActionMap[longArg];
                     else throw new Error("Unknown option: "+longArg);
-                    var option = new SearchOption(shortArg, longArg, desc, func);
+                    const option = new SearchOption(shortArg, longArg, desc, func);
                     options.push(option);
                     if (argActionMap[longArg]) {
                         argMap[longArg] = option;
@@ -141,18 +140,18 @@ function SearchOptions() {
                         if (shortArg) flagMap[shortArg] = option;
                     }
                 }
-            }
+            });
         });
         options.sort(optcmp);
     })();
 
-    self.settingsFromArgs = function (args, callback) {
-        var err = null;
-        var settings = new SearchSettings();
+    self.settingsFromArgs = function (args, cb) {
+        let err = null;
+        let settings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
         while(args) {
-            var arg = args.shift();
+            let arg = args.shift();
             if (!arg) {
                 break;
             }
@@ -178,7 +177,7 @@ function SearchOptions() {
         if (settings.debug) {
             settings.verbose = true;
         }
-        callback(err, settings);
+        cb(err, settings);
     };
 
     self.usage = function () {
@@ -190,15 +189,14 @@ function SearchOptions() {
         process.exit(exitCode);
     };
 
-    var getUsageString = function () {
-        var usage = 'Usage:\n jssearch [options] -s <searchpattern> <startpath>\n\n';
+    const getUsageString = function () {
+        let usage = 'Usage:\n jssearch [options] -s <searchpattern> <startpath>\n\n';
         usage += 'Options:\n';
-        var optStrings = [];
-        var optDescs = [];
-        var longest = 0;
-        for (var o in options) {
-            var opt = options[o];
-            var optString = ' ';
+        let optStrings = [];
+        let optDescs = [];
+        let longest = 0;
+        options.forEach(opt => {
+            let optString = ' ';
             if (opt.shortarg)
                 optString += '-' + opt.shortarg + ',';
             optString += '--' + opt.longarg;
@@ -206,12 +204,12 @@ function SearchOptions() {
                 longest = optString.length;
             optStrings.push(optString);
             optDescs.push(opt.desc);
-        }
-        for (var s in optStrings) {
-            var os = optStrings[s];
+        });
+        for (let i=0; i < optStrings.length; i++) {
+            let os = optStrings[i];
             while (os.length < longest)
                 os += ' ';
-            usage += os + '  ' + optDescs[s] + '\n';
+            usage += os + '  ' + optDescs[i] + '\n';
         }
         return usage;
     };

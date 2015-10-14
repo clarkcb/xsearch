@@ -4,22 +4,23 @@
  * file search utility written in JavaScript + Node.js
  */
 
+"use strict";
+
 var common = require('./common.js');
 var Searcher = require('./searcher.js').Searcher;
 var SearchOptions = require('./searchoptions.js').SearchOptions;
 
 function handleError(err, searchOptions) {
-    var errMsg = err.toString().replace(/\w*Error/, "ERROR");
+    const errMsg = err.toString().replace(/\w*Error/, "ERROR");
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
 }
 
 function searchMain() {
-    var searchOptions = new SearchOptions();
+    const searchOptions = new SearchOptions();
+    const args = process.argv.slice(2);
 
-    var args = process.argv.slice(2);
-
-    searchOptions.settingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, (err, settings) => {
         if (err) {
             handleError(err, searchOptions);
         }
@@ -38,7 +39,7 @@ function searchMain() {
             common.log("settings: " + settings.toString());
 
         try {
-            var searcher = new Searcher(settings);
+            let searcher = new Searcher(settings);
             searcher.search();
 
             if (settings.printResults) {

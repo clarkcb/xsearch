@@ -20,8 +20,9 @@ gulp.task('build', function () {
   del([BUILD], function(err) {
     if (err) return;
     var tsResult = gulp.src(SRC + '*.ts')
+      .pipe(replace(/require\('\.\/(\w+)\.ts'\)/g, "require('./$1.js')"))
       .pipe(ts({
-          noImplicitAny: true
+          //noImplicitAny: true
           // out: 'output.js'
         }));
     return tsResult.js
@@ -33,7 +34,7 @@ gulp.task('build-min', function () {
   del([BUILD], function(err) {
     if (err) return;
     var tsResult = gulp.src(SRC + '*.ts')
-      .pipe(replace(/require\('\.\/(\w+)\.js'\)/g, "require('./$1.min.js')"))
+      .pipe(replace(/require\('\.\/(\w+)\.ts'\)/g, "require('./$1.min.js')"))
       .pipe(ts({
           noImplicitAny: true
           // out: 'output.js'

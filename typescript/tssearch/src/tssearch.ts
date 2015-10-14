@@ -9,22 +9,21 @@
 
 "use strict";
 
-var common = require('./common.js');
-var Searcher = require('./searcher.js').Searcher;
-var SearchOptions = require('./searchoptions.js').SearchOptions;
+var common = require('./common.ts');
+var Searcher = require('./searcher.ts').Searcher;
+var SearchOptions = require('./searchoptions.ts').SearchOptions;
 
 function handleError(err: Error, searchOptions: SearchOptions) {
-    var errMsg: string = err.toString().replace(/\w*Error/, "ERROR");
+    const errMsg: string = err.toString().replace(/\w*Error/, "ERROR");
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
 }
 
 function searchMain() {
-    var searchOptions = new SearchOptions();
+    const searchOptions = new SearchOptions();
+    const args = process.argv.slice(2);
 
-    var args = process.argv.slice(2);
-
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+    searchOptions.settingsFromArgs(args, (err: Error, settings: SearchSettings) => {
         if (err) {
             handleError(err, searchOptions);
         }
@@ -43,7 +42,7 @@ function searchMain() {
             common.log("settings: " + settings.toString());
 
         try {
-            var searcher: Searcher = new Searcher(settings);
+            let searcher: Searcher = new Searcher(settings);
             searcher.search();
 
             if (settings.printResults) {

@@ -7,7 +7,7 @@
 function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex,
     line, linesBefore, linesAfter) {
     "use strict";
-    var self = this;
+    let self = this;
     self.pattern = pattern;
     self.filename = filename;
     self.linenum = linenum;
@@ -23,58 +23,61 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
             multiLineToString() : singleLineToString();
     };
 
-    var singleLineToString = function () {
-        var s = self.filename;
+    const singleLineToString = function () {
+        let s = self.filename;
         if (self.linenum && self.line) {
-            s += ': ' + self.linenum + ': [' + self.matchStartIndex + ':' +
-                self.matchEndIndex +']: ' + formatMatchingLine();
+            s += `: ${self.linenum}: [${self.matchStartIndex}:` +
+                `${self.matchEndIndex}]: ` + formatMatchingLine();
         } else {
-            s += ' matches at [' + self.matchStartIndex + ':' +
-                self.matchEndIndex + ']';
+            s += ` matches at [${self.matchStartIndex}:${self.matchEndIndex}]`;
         }
         return s;
     };
 
-    var lineNumPadding = function() {
-        var maxLineNum = self.linenum + self.linesAfter.length;
+    const lineNumPadding = function() {
+        let maxLineNum = self.linenum + self.linesAfter.length;
         return ("" + maxLineNum).length;
     };
 
-    var padLeft = function(s, i) {
-        p = "" + s;
+    const padLeft = function(s, i) {
+        let p = "" + s;
         while (p.length < i) {
-            p = " " + p;
+            p = ' '.concat(p);
         }
         return p;
     };
 
-    var trimRight = function(s) {
-        var trimmed = s.replace(/[\r\n]+$/, '');
-        return trimmed;
+    const trimRight = function(s) {
+        return s.replace(/[\r\n]+$/, '');
     };
 
-    var multiLineToString = function () {
-        var s = new Array(81).join("=") + "\n";
-        s += "{0}: {1}: ".format(self.filename, self.linenum);
-        s += "[{0}:{1}]\n".format(self.matchStartIndex, self.matchEndIndex);
-        s += new Array(81).join("-") + "\n";
-        var currentLineNum = self.linenum;
-        var numPadding = lineNumPadding();
-        var i = 0;
+    const multiLineToString = function () {
+        let s = new Array(81).join("=") + "\n" + `${self.filename}: ` +
+            `${self.linenum}: [${self.matchStartIndex}:${self.matchEndIndex}]` +
+            "\n" + new Array(81).join("-") + "\n";
+        let currentLineNum = self.linenum;
+        let numPadding = lineNumPadding();
         if (self.linesBefore.length > 0) {
             currentLineNum = currentLineNum - self.linesBefore.length;
-            for (i = 0; i < self.linesBefore.length; i++) {
-                var b = trimRight(self.linesBefore[i]);
+            self.linesBefore.forEach(lineBefore => {
+                let b = trimRight(lineBefore);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + b + "\n";
                 currentLineNum++;
-            }
+            });
         }
         s += "> " + padLeft(currentLineNum, numPadding) + " | " +
             trimRight(self.line) + "\n";
         if (self.linesAfter.length > 0) {
             currentLineNum++;
-            for (i = 0; i < self.linesAfter.length; i++) {
-                var a = trimRight(self.linesAfter[i]);
+            self.linesAfter.forEach(lineAfter => {
+                let a = trimRight(lineAfter);
+                s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
+                currentLineNum++;
+            });
+
+
+            for (let i = 0; i < self.linesAfter.length; i++) {
+                let a = trimRight(self.linesAfter[i]);
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;
             }
@@ -82,36 +85,36 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
         return s;
     };
 
-    var formatMatchingLine = function () {
-        var formatted = self.line;
-        var lineLength = self.line.length;
-        var matchLength = self.matchEndIndex - self.matchStartIndex;
+    const formatMatchingLine = function () {
+        let formatted = self.line.trim().slice(0);
+        let lineLength = self.line.length;
+        let matchLength = self.matchEndIndex - self.matchStartIndex;
         if (lineLength > self.maxLineLength) {
-            var adjustedMaxLength = self.maxLineLength - matchLength;
-            var beforeIndex = self.matchStartIndex;
+            let adjustedMaxLength = self.maxLineLength - matchLength;
+            let beforeIndex = self.matchStartIndex;
             if (self.matchStartIndex > 0) {
                 beforeIndex = beforeIndex - (adjustedMaxLength / 4);
                 if (beforeIndex < 0)
                     beforeIndex = 0;
             }
             adjustedMaxLength = adjustedMaxLength - (self.matchStartIndex - beforeIndex);
-            var afterIndex = self.matchEndIndex + adjustedMaxLength;
+            let afterIndex = self.matchEndIndex + adjustedMaxLength;
             if (afterIndex > lineLength)
                 afterIndex = lineLength;
 
-            var before = '';
+            let before = '';
             if (beforeIndex > 3) {
                 before = '...';
                 beforeIndex += 3;
             }
-            var after = '';
+            let after = '';
             if (afterIndex < lineLength - 3) {
                 after = '...';
                 afterIndex -= 3;
             }
             formatted = before + self.line.substring(beforeIndex, afterIndex) + after;
         }
-        return formatted.trim();
+        return formatted;
     };
 }
 
