@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CsSearch
 {
@@ -11,14 +13,16 @@ namespace CsSearch
 	{
 		private readonly FileTypes _fileTypes;
 		public SearchSettings Settings { get; private set; }
-		public IList<SearchResult> Results { get; private set; }
+		public ConcurrentBag<SearchResult> Results { get; private set; }
+
+		private static int _fileBatchSize = 255;
 
 		public Searcher(SearchSettings settings)
 		{
 			Settings = settings;
 			ValidateSettings();
 			_fileTypes = new FileTypes();
-			Results = new List<SearchResult>();
+			Results = new ConcurrentBag<SearchResult>();
 		}
 
 		private static void Log(string message)
@@ -215,10 +219,26 @@ namespace CsSearch
 				Log("");
 			}
 
-			foreach (var f in searchFiles)
+			while (searchFiles.Count() > _fileBatchSize)
 			{
-				DoSearchFile(f);
+				SearchBatch(searchFiles.Take(_fileBatchSize).ToArray());
+				searchFiles = searchFiles.Skip((_fileBatchSize));
 			}
+			if (searchFiles.Count() > 0)
+			{
+				SearchBatch(searchFiles.Take(_fileBatchSize).ToArray());
+			}
+		}
+
+		private void SearchBatch(SearchFile[] searchFiles)
+		{
+			var searchTasks = new Task[searchFiles.Count()];
+			for (var i = 0; i < searchFiles.Count(); i++)
+			{
+				var searchFile = searchFiles[i];
+				searchTasks[i] = Task.Factory.StartNew(() => DoSearchFile(searchFile));
+			}
+			Task.WaitAll(searchTasks);
 		}
 
 		public void DoSearchFile(SearchFile f)
