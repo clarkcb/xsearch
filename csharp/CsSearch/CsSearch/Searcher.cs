@@ -208,10 +208,10 @@ namespace CsSearch
 				Log("");
 			}
 
-			var searchFiles = GetSearchFiles(searchDirs);
+			var searchFiles = GetSearchFiles(searchDirs).ToArray();
 			if (Settings.Verbose)
 			{
-				Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Count()));
+				Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Length));
 				foreach (var f in searchFiles)
 				{
 					Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
@@ -219,12 +219,12 @@ namespace CsSearch
 				Log("");
 			}
 
-			while (searchFiles.Count() > _fileBatchSize)
+			while (searchFiles.Length > _fileBatchSize)
 			{
 				SearchBatch(searchFiles.Take(_fileBatchSize).ToArray());
-				searchFiles = searchFiles.Skip((_fileBatchSize));
+				searchFiles = searchFiles.Skip(_fileBatchSize).ToArray();
 			}
-			if (searchFiles.Count() > 0)
+			if (searchFiles.Length > 0)
 			{
 				SearchBatch(searchFiles.Take(_fileBatchSize).ToArray());
 			}
@@ -232,8 +232,8 @@ namespace CsSearch
 
 		private void SearchBatch(SearchFile[] searchFiles)
 		{
-			var searchTasks = new Task[searchFiles.Count()];
-			for (var i = 0; i < searchFiles.Count(); i++)
+			var searchTasks = new Task[searchFiles.Length];
+			for (var i = 0; i < searchFiles.Length; i++)
 			{
 				var searchFile = searchFiles[i];
 				searchTasks[i] = Task.Factory.StartNew(() => DoSearchFile(searchFile));
