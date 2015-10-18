@@ -219,14 +219,15 @@ namespace CsSearch
 				Log("");
 			}
 
-			while (searchFiles.Length > _fileBatchSize)
+			var searched = 0;
+			while (searchFiles.Length - searched > _fileBatchSize)
 			{
-				SearchBatch(searchFiles.Take(_fileBatchSize).ToArray());
-				searchFiles = searchFiles.Skip(_fileBatchSize).ToArray();
+				SearchBatch(searchFiles.Skip(searched).Take(_fileBatchSize).ToArray());
+				searched += _fileBatchSize;
 			}
-			if (searchFiles.Length > 0)
+			if (searchFiles.Length > searched)
 			{
-				SearchBatch(searchFiles.Take(_fileBatchSize).ToArray());
+				SearchBatch(searchFiles.Skip(searched).ToArray());
 			}
 		}
 
