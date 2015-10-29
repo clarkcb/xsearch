@@ -34,7 +34,7 @@ class SearchResultTest extends FunSuite {
     val searchResult = new SearchResult(pattern, Some(searchFile), lineNum,
       matchStartIndex, matchEndIndex, line)
     val expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
-    val expectedOutput = "%s matches".format(expectedPath)
+    val expectedOutput = "%s matches at [%d:%d]".format(expectedPath, matchStartIndex, matchEndIndex)
     assertEquals(searchResult.toString, expectedOutput)
   }
 
