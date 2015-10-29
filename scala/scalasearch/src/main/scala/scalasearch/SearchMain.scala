@@ -2,19 +2,19 @@ package scalasearch
 
 object SearchMain {
 
-  def printMatchingDirs(searcher:Searcher): Unit = {
+  def printMatchingDirs(searcher: Searcher): Unit = {
     val dirs = searcher.getMatchingDirs
     Common.log("\nDirectories with matches (%d):".format(dirs.length))
     dirs.foreach(f => Common.log(f.toString))
   }
 
-  def printMatchingFiles(searcher:Searcher): Unit = {
+  def printMatchingFiles(searcher: Searcher): Unit = {
     val files = searcher.getMatchingFiles
     Common.log("\nFiles with matches (%d):".format(files.length))
     files.foreach(f => Common.log(f.toString))
   }
 
-  def printMatchingLines(searcher:Searcher, settings:SearchSettings): Unit = {
+  def printMatchingLines(searcher: Searcher, settings: SearchSettings): Unit = {
     val lines = searcher.getMatchingLines
     val hdr =
       if (settings.uniqueLines) {

@@ -30,18 +30,16 @@ class Searcher (settings: SearchSettings) {
 
   private val _searchResults = mutable.ListBuffer[SearchResult]()
 
-  def searchResults: List[SearchResult] = _searchResults.toList
-
-  def matchesAnyPattern(s: String, patterns: Iterable[Regex]): Boolean = {
+  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
     patterns exists (_.findFirstMatchIn(s).isDefined)
   }
 
-  def anyMatchesAnyPattern(strings: Iterable[String], patterns: Iterable[Regex]):
+  def anyMatchesAnyPattern(strings: Seq[String], patterns: Set[Regex]):
     Boolean = {
     strings exists (matchesAnyPattern(_, patterns))
   }
 
-  def filterByPatterns(s:String, inPatterns:Set[Regex], outPatterns:Set[Regex]):
+  def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]):
     Boolean = {
     ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
      &&
@@ -61,12 +59,12 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  private def getSearchSubDirs(dir:File): Iterable[File] = {
+  private def getSearchSubDirs(dir: File): Seq[File] = {
     val searchSubDirs = dir.listFiles.filter(_.isDirectory).filter(isSearchDir)
     searchSubDirs ++ searchSubDirs.flatMap(getSearchSubDirs)
   }
 
-  def getSearchDirs(startDir:File): Iterable[File] = {
+  def getSearchDirs(startDir: File): Seq[File] = {
     if (settings.verbose) {
       Common.log("getSearchDirs(%s)".format(startDir.toString))
     }
@@ -125,7 +123,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def filterFile(f:File): Boolean = {
+  def filterFile(f: File): Boolean = {
     FileTypes.getFileType(f) match {
       case FileType.Unknown => false
       case fileType@FileType.Archive =>
@@ -135,14 +133,14 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def getSearchFilesForDirectory(dir:File): Iterable[SearchFile] = {
+  def getSearchFilesForDirectory(dir: File): Seq[SearchFile] = {
     dir.listFiles().filterNot(_.isDirectory).filter(filterFile).map { f =>
         new SearchFile(f.getParent, f.getName, FileTypes.getFileType(f))
     }
   }
 
-  def getSearchFiles(searchDirs:Iterable[File]): Iterable[SearchFile] = {
-    def getFilteredFiles(dirs:Iterable[File]): Iterable[SearchFile] = {
+  def getSearchFiles(searchDirs: Seq[File]): Seq[SearchFile] = {
+    def getFilteredFiles(dirs: Seq[File]): Seq[SearchFile] = {
       dirs.size match {
         case 0 => Nil
         case _ =>
@@ -152,7 +150,7 @@ class Searcher (settings: SearchSettings) {
     getFilteredFiles(searchDirs)
   }
 
-  def listToString(stringList:Iterable[Any]): String = {
+  def listToString(stringList: Iterable[Any]): String = {
     stringList.mkString("[\"", "\", \"", "\"]")
   }
 
@@ -176,7 +174,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchPath(filePath:File): Unit = {
+  def searchPath(filePath: File): Unit = {
     val searchDirs = getSearchDirs(new File(settings.startPath.get))
     if (settings.verbose) {
       Common.log("\nDirectories to be searched (%d):\n%s".format(searchDirs.size,
@@ -196,7 +194,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def searchFiles(files: Iterable[SearchFile]): Unit = {
+  def searchFiles(files: Traversable[SearchFile]): Unit = {
     for (f <- files) {
       searchFile(f)
     }
@@ -257,7 +255,7 @@ class Searcher (settings: SearchSettings) {
   }
 
   private def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
-                                       lineIndices: Seq[(Int, Int)]): List[String] = {
+                                               lineIndices: Seq[(Int, Int)]): Seq[String] = {
     if (settings.hasLinesAfterToOrUntilPatterns) {
       val matchIndices = (settings.linesAfterToPatterns ++ settings.linesAfterUntilPatterns).map {
         p =>
@@ -269,21 +267,21 @@ class Searcher (settings: SearchSettings) {
       if (matchIndices.nonEmpty) {
         val lines = lineIndices.
           filter(_._1 < matchIndices.min).
-          map(li => s.substring(li._1, li._2)).toList
+          map(li => s.substring(li._1, li._2))
         if (settings.hasLinesAfterUntilPatterns && lines.nonEmpty) {
           lines.init
         } else {
           lines
         }
       } else {
-        List.empty[String]
+        Seq.empty[String]
       }
     } else if (settings.linesAfter > 0) {
       lineIndices.
         take(settings.linesAfter).
-        map(li => s.substring(li._1, li._2)).toList
+        map(li => s.substring(li._1, li._2))
     } else {
-      List.empty[String]
+      Seq.empty[String]
     }
   }
 
@@ -297,13 +295,13 @@ class Searcher (settings: SearchSettings) {
       val thisLineIndices: (Int, Int) = lineIndices.filter(_._1 <= m.start).last
       val beforeLineCount = lineIndices.count(_._1 < thisLineIndices._1)
       val line = s.substring(thisLineIndices._1, thisLineIndices._2)
-      val linesBefore: List[String] =
+      val linesBefore =
         if (settings.linesBefore > 0) {
           lineIndices.filter(_._1 < thisLineIndices._1).
             takeRight(settings.linesBefore).
-            map(li => s.substring(li._1, li._2)).toList
+            map(li => s.substring(li._1, li._2))
         } else {
-          List.empty[String]
+          Seq.empty[String]
         }
       val linesAfter = getLinesAfterFromMultiLineString(s, thisLineIndices._2,
         lineIndices.filter(_._1 > thisLineIndices._2))
@@ -325,13 +323,13 @@ class Searcher (settings: SearchSettings) {
     results
   }
 
-  private def linesMatch(lines: Iterable[String], inPatterns: Iterable[Regex],
-      outPatterns: Iterable[Regex]): Boolean = {
+  private def linesMatch(lines: Seq[String], inPatterns: Set[Regex],
+      outPatterns: Set[Regex]): Boolean = {
     (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
     (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
   }
 
-  private def linesBeforeMatch(linesBefore: Iterable[String]): Boolean = {
+  private def linesBeforeMatch(linesBefore: Seq[String]): Boolean = {
     if (settings.hasLinesBeforePatterns) {
       linesMatch(linesBefore, settings.inLinesBeforePatterns,
         settings.outLinesBeforePatterns)
@@ -340,7 +338,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  private def linesAfterMatch(linesAfter: Iterable[String]): Boolean = {
+  private def linesAfterMatch(linesAfter: Seq[String]): Boolean = {
     if (settings.hasLinesAfterToPatterns) {
       linesAfter.nonEmpty &&
         anyMatchesAnyPattern(linesAfter, settings.linesAfterToPatterns)
@@ -642,7 +640,7 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  def getSearchResults: List[SearchResult] = {
+  def getSearchResults: Seq[SearchResult] = {
     _searchResults.sortWith(cmpSearchResults).toList
   }
 
@@ -659,22 +657,25 @@ class Searcher (settings: SearchSettings) {
     Common.log(patternString + r.toString)
   }
 
-  def getMatchingDirs: List[File] = {
-    getSearchResults.view.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
-      distinct.toList
+  // retrieve only AFTER search
+  lazy val searchResults: Seq[SearchResult] = _searchResults.sortWith(cmpSearchResults).toVector
+
+  def getMatchingDirs: Seq[File] = {
+    searchResults.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
+      distinct.toVector
   }
 
-  def getMatchingFiles: List[File] = {
-    getSearchResults.view.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
-      toList
+  def getMatchingFiles: Seq[File] = {
+    searchResults.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
+      toVector
   }
 
-  def getMatchingLines: List[String] = {
-    val allLines = _searchResults.view.flatMap(r => Option(r.line)).map(_.trim)
+  def getMatchingLines: Seq[String] = {
+    val allLines = searchResults.flatMap(r => Option(r.line)).map(_.trim)
     if (settings.uniqueLines) {
-      allLines.toSet.toList.sortWith(_.toUpperCase < _.toUpperCase)
+      allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
     } else {
-      allLines.toList.sortWith(_.toUpperCase < _.toUpperCase)
+      allLines.sortWith(_.toUpperCase < _.toUpperCase)
     }
   }
 }

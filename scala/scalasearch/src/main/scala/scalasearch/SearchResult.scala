@@ -5,13 +5,13 @@ import scala.util.matching.Regex
 case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
                         lineNum: Int, matchStartIndex:Int,
                    matchEndIndex:Int, line: String,
-                   linesBefore: List[String], linesAfter: List[String],
+                   linesBefore: Seq[String], linesAfter: Seq[String],
                    maxLineLength:Int=DefaultSettings.maxLineLength) {
 
-  def this(searchPattern:Regex, file:Option[SearchFile], lineNum:Int, matchStartIndex:Int,
-           matchEndIndex:Int, line:String) = {
+  def this(searchPattern: Regex, file: Option[SearchFile], lineNum: Int,
+           matchStartIndex: Int, matchEndIndex: Int, line: String) = {
     this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
-      List.empty[String], List.empty[String])
+      Seq.empty[String], Seq.empty[String])
   }
 
   val sepLen = 80
