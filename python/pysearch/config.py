@@ -6,12 +6,14 @@
 # Configuration values
 #
 ################################################################################
+import json
 import os
-import platform
 
-HOME_NAME = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
-HOME = os.environ[HOME_NAME]
-XSEARCHPATH = os.path.join(HOME, 'src', 'xsearch')
+cwd = os.path.dirname(os.path.realpath(__file__))
+config_json_path =  os.path.join(cwd, '../../shared/config.json')
+config = json.load(open(config_json_path))
+
+XSEARCHPATH = config['xsearchpath']
 SHAREDPATH = os.path.join(XSEARCHPATH, 'shared')
 FILETYPESPATH = os.path.join(SHAREDPATH, 'filetypes.xml')
 SEARCHOPTIONSPATH = os.path.join(SHAREDPATH, 'searchoptions.xml')
