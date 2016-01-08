@@ -20,88 +20,88 @@ function SearchOptions() {
 
     const argActionMap = {
         'in-archiveext':
-            function(x, settings) { settings.addInArchiveExtension(x); },
+            (x, settings) => { settings.addInArchiveExtension(x); },
         'in-archivefilepattern':
-            function(x, settings) { settings.addInArchiveFilePattern(x); },
+            (x, settings) => { settings.addInArchiveFilePattern(x); },
         'in-dirpattern':
-            function(x, settings) { settings.addInDirPattern(x); },
+            (x, settings) => { settings.addInDirPattern(x); },
         'in-ext':
-            function(x, settings) { settings.addInExtension(x); },
+            (x, settings) => { settings.addInExtension(x); },
         'in-filepattern':
-            function(x, settings) { settings.addInFilePattern(x); },
+            (x, settings) => { settings.addInFilePattern(x); },
         'in-linesafterpattern':
-            function(x, settings) { settings.addInLinesAfterPattern(x); },
+            (x, settings) => { settings.addInLinesAfterPattern(x); },
         'in-linesbeforepattern':
-            function(x, settings) { settings.addInLinesBeforePattern(x); },
+            (x, settings) => { settings.addInLinesBeforePattern(x); },
         'linesafter':
-            function(x, settings) { settings.linesAfter = parseInt(x); },
+            (x, settings) => { settings.linesAfter = parseInt(x); },
         'linesaftertopattern':
-            function(x, settings) { settings.addLinesAfterToPattern(x); },
+            (x, settings) => { settings.addLinesAfterToPattern(x); },
         'linesafteruntilpattern':
-            function(x, settings) { settings.addLinesAfterUntilPattern(x); },
+            (x, settings) => { settings.addLinesAfterUntilPattern(x); },
         'linesbefore':
-            function(x, settings) { settings.linesBefore = parseInt(x); },
+            (x, settings) => { settings.linesBefore = parseInt(x); },
         'maxlinelength':
-            function(x, settings) { settings.maxLineLength = parseInt(x); },
+            (x, settings) => { settings.maxLineLength = parseInt(x); },
         'out-dirpattern':
-            function(x, settings) { settings.addOutDirPattern(x); },
+            (x, settings) => { settings.addOutDirPattern(x); },
         'out-archiveext':
-            function(x, settings) { settings.addOutArchiveExtension(x); },
+            (x, settings) => { settings.addOutArchiveExtension(x); },
         'out-archivefilepattern':
-            function(x, settings) { settings.addOutArchiveFilePattern(x); },
+            (x, settings) => { settings.addOutArchiveFilePattern(x); },
         'out-ext':
-            function(x, settings) { settings.addOutExtension(x); },
+            (x, settings) => { settings.addOutExtension(x); },
         'out-filepattern':
-            function(x, settings) { settings.addOutFilePattern(x); },
+            (x, settings) => { settings.addOutFilePattern(x); },
         'out-linesafterpattern':
-            function(x, settings) { settings.addOutLinesAfterPattern(x); },
+            (x, settings) => { settings.addOutLinesAfterPattern(x); },
         'out-linesbeforepattern':
-            function(x, settings) { settings.addOutLinesBeforePattern(x); },
+            (x, settings) => { settings.addOutLinesBeforePattern(x); },
         'search':
-            function(x, settings) { settings.addSearchPattern(x); }
+            (x, settings) => { settings.addSearchPattern(x); }
     };
 
     const flagActionMap = {
         'allmatches':
-            function(settings) { settings.firstMatch = false; },
+            settings => { settings.firstMatch = false; },
         'archivesonly':
-            function(settings) { settings.setArchivesOnly(); },
+            settings => { settings.setArchivesOnly(); },
         'debug':
-            function(settings) { settings.setDebug(); },
+            settings => { settings.setDebug(); },
         'excludehidden':
-            function(settings) { settings.excludeHidden = true; },
+            settings => { settings.excludeHidden = true; },
         'firstmatch':
-            function(settings) { settings.firstMatch = true; },
+            settings => { settings.firstMatch = true; },
         'includehidden':
-            function(settings) { settings.excludeHidden = false; },
+            settings => { settings.excludeHidden = false; },
         'help':
-            function(settings) { settings.printUsage = true; },
+            settings => { settings.printUsage = true; },
         'listdirs':
-            function(settings) { settings.listDirs = true; },
+            settings => { settings.listDirs = true; },
         'listfiles':
-            function(settings) { settings.listFiles = true; },
+            settings => { settings.listFiles = true; },
         'listlines':
-            function(settings) { settings.listLines = true; },
+            settings => { settings.listLines = true; },
         'multilinesearch':
-            function(settings) { settings.multilineSearch = true; },
+            settings => { settings.multilineSearch = true; },
         'noprintmatches':
-            function(settings) { settings.printResults = false; },
+            settings => { settings.printResults = false; },
         'norecursive':
-            function(settings) { settings.recursive = false; },
+            settings => { settings.recursive = false; },
         'nosearcharchives':
-            function(settings) { settings.searchArchives = false; },
+            settings => { settings.searchArchives = false; },
         'printmatches':
-            function(settings) { settings.printResults = true; },
+            settings => { settings.printResults = true; },
         'recursive':
-            function(settings) { settings.recursive = true; },
+            settings => { settings.recursive = true; },
         'searcharchives':
-            function(settings) { settings.searchArchives = true; },
+            settings => { settings.searchArchives = true; },
         'uniquelines':
-            function(settings) { settings.uniqueLines = true; },
+            settings => { settings.uniqueLines = true; },
         'verbose':
-            function(settings) { settings.verbose = true; },
+            settings => { settings.verbose = true; },
         'version':
-            function(settings) { settings.printVersion = true; }
+            settings => { settings.printVersion = true; }
     };
 
     function optcmp(o1, o2) {

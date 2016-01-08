@@ -37,45 +37,45 @@ class SearchOptions {
 
         this.argActionMap = {
             'in-archiveext':
-                function(x: string, settings: SearchSettings): void { settings.addInArchiveExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addInArchiveExtension(x); },
             'in-archivefilepattern':
-                function(x: string, settings: SearchSettings): void { settings.addInArchiveFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInArchiveFilePattern(x); },
             'in-dirpattern':
-                function(x: string, settings: SearchSettings): void { settings.addInDirPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInDirPattern(x); },
             'in-ext':
-                function(x: string, settings: SearchSettings): void { settings.addInExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addInExtension(x); },
             'in-filepattern':
-                function(x: string, settings: SearchSettings): void { settings.addInFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInFilePattern(x); },
             'in-linesafterpattern':
-                function(x: string, settings: SearchSettings): void { settings.addInLinesAfterPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInLinesAfterPattern(x); },
             'in-linesbeforepattern':
-                function(x: string, settings: SearchSettings): void { settings.addInLinesBeforePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInLinesBeforePattern(x); },
             'linesafter':
-                function(x: string, settings: SearchSettings): void { settings.linesAfter = parseInt(x); },
+                (x: string, settings: SearchSettings) => { settings.linesAfter = parseInt(x); },
             'linesaftertopattern':
-                function(x: string, settings: SearchSettings): void { settings.addLinesAfterToPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addLinesAfterToPattern(x); },
             'linesafteruntilpattern':
-                function(x: string, settings: SearchSettings): void { settings.addLinesAfterUntilPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addLinesAfterUntilPattern(x); },
             'linesbefore':
-                function(x: string, settings: SearchSettings): void { settings.linesBefore = parseInt(x); },
+                (x: string, settings: SearchSettings) => { settings.linesBefore = parseInt(x); },
             'maxlinelength':
-                function(x: string, settings: SearchSettings): void { settings.maxLineLength = parseInt(x); },
+                (x: string, settings: SearchSettings) => { settings.maxLineLength = parseInt(x); },
             'out-dirpattern':
-                function(x: string, settings: SearchSettings): void { settings.addOutDirPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutDirPattern(x); },
             'out-archiveext':
-                function(x: string, settings: SearchSettings): void { settings.addOutArchiveExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutArchiveExtension(x); },
             'out-archivefilepattern':
-                function(x: string, settings: SearchSettings): void { settings.addOutArchiveFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutArchiveFilePattern(x); },
             'out-ext':
-                function(x: string, settings: SearchSettings): void { settings.addOutExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutExtension(x); },
             'out-filepattern':
-                function(x: string, settings: SearchSettings): void { settings.addOutFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutFilePattern(x); },
             'out-linesafterpattern':
-                function(x: string, settings: SearchSettings): void { settings.addOutLinesAfterPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutLinesAfterPattern(x); },
             'out-linesbeforepattern':
-                function(x: string, settings: SearchSettings): void { settings.addOutLinesBeforePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutLinesBeforePattern(x); },
             'search':
-                function(x: string, settings: SearchSettings): void { settings.addSearchPattern(x); }
+                (x: string, settings: SearchSettings) => { settings.addSearchPattern(x); }
         };
 
         this.flagActionMap = {
