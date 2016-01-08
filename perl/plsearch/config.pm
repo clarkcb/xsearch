@@ -13,17 +13,23 @@ use warnings;
 
 use parent 'Exporter';
 
-our $HOME = $ENV{HOME};
-if ($^O eq 'MSWin32') {
-	$HOME = $ENV{USERPROFILE};
-}
+use Cwd qw(abs_path);
+use File::Basename;
+use File::Spec;
+use JSON::PP;
 
-our $XSEARCHPATH = "$HOME/src/xsearch";
+use plsearch::FileUtil;
+
+my $absdir = dirname(abs_path(__FILE__));
+my $config_json_path = File::Spec->join($absdir, '../../shared/config.json');
+my $config = decode_json plsearch::FileUtil::get_file_contents($config_json_path);
+
+our $XSEARCHPATH = $config->{xsearchpath};
 our $SHAREDPATH = "$XSEARCHPATH/shared";
 our $FILETYPESPATH = "$SHAREDPATH/filetypes.xml";
 our $SEARCHOPTIONSPATH = "$SHAREDPATH/searchoptions.xml";
 
-our @EXPORT = qw($HOME $XSEARCHPATH $SHAREDPATH $FILETYPESPATH $SEARCHOPTIONSPATH);
+our @EXPORT = qw($XSEARCHPATH $SHAREDPATH $FILETYPESPATH $SEARCHOPTIONSPATH);
 
 1;
 
