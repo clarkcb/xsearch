@@ -6,15 +6,17 @@
 #
 ################################################################################
 
+require 'json'
+require 'pathname'
 require 'rbconfig'
 
-def windows?
-  RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/
-end
+currdir = File.absolute_path(File.dirname(__FILE__))
+config_rel_path = '../../shared/config.json'
+config_json_path = Pathname.new(currdir).join(config_rel_path).to_s
+file = File.read(config_json_path)
+config = JSON.parse(file)
 
-HOME_NAME = windows? ? 'USERPROFILE' : 'HOME'
-HOME = ENV[HOME_NAME]
-XSEARCHPATH = "#{HOME}/src/xsearch"
+XSEARCHPATH = config['xsearchpath']
 SHAREDPATH = "#{XSEARCHPATH}/shared"
 FILETYPESPATH = "#{SHAREDPATH}/filetypes.xml"
 SEARCHOPTIONSPATH = "#{SHAREDPATH}/searchoptions.xml"
