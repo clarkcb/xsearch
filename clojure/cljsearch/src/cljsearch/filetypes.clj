@@ -10,15 +10,16 @@
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
+  (:require [clojure.java.io :as io])
   (:use [clojure.set :only (union)]
         [clojure.string :only (split)]
         [clojure.xml :only (parse)]
-        [cljsearch.config :only (FILETYPESPATH)]
         [cljsearch.fileutil :only (expand-path get-ext)]))
 
-(defn get-filetypemap [f]
-  (let [ftfile (File. (expand-path FILETYPESPATH))
-        filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse ftfile)))
+(defn get-filetypemap []
+  (let [ftcontents (slurp (io/resource "filetypes.xml"))
+        ftstream (java.io.ByteArrayInputStream. (.getBytes ftcontents))
+        filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse ftstream)))
         typenames (map :name (map :attrs filetypes))
         extension-nodes (map first (map :content (map first (map :content filetypes))))
         extension-sets (map #(set %) (map #(split % #"\s+") extension-nodes))
@@ -34,7 +35,7 @@
         ]
   (merge filetypemap textmap searchablemap)))
 
-(def FILETYPEMAP (get-filetypemap FILETYPESPATH))
+(def FILETYPEMAP (get-filetypemap))
 
 (defn binary-file? [f]
   (contains? (get FILETYPEMAP "binary") (get-ext f)))

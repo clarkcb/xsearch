@@ -10,12 +10,12 @@
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
+  (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [clojure.xml :only (parse)]
         [cljsearch.common :only (log-msg)]
-        [cljsearch.config :only (SEARCHOPTIONSPATH)]
         [cljsearch.fileutil :only (expand-path)]
         [cljsearch.searchsettings :only
           (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
@@ -28,9 +28,10 @@
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
 
-(defn get-searchoptions-from-xml [f]
-  (let [sofile (File. (expand-path SEARCHOPTIONSPATH))
-        searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse sofile)))
+(defn get-searchoptions-from-xml []
+  (let [socontents (slurp (io/resource "searchoptions.xml"))
+        sostream (java.io.ByteArrayInputStream. (.getBytes socontents))
+        searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse sostream)))
         longnames (map :long (map :attrs searchoptions))
         shortnames (map :short (map :attrs searchoptions))
         longshortmap (zipmap longnames shortnames)
@@ -40,7 +41,7 @@
         get-desc (fn [l] (get longdescmap l))]
     (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
 
-(def OPTIONS (get-searchoptions-from-xml SEARCHOPTIONSPATH))
+(def OPTIONS (get-searchoptions-from-xml))
 
 (defn print-option [opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
