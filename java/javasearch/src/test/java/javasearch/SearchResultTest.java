@@ -2,6 +2,7 @@ package javasearch;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -25,7 +26,7 @@ public class SearchResultTest {
         final String line = "\tpublic class Searcher\n";
         final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
             matchStartIndex, matchEndIndex, line);
-        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.cs";
         final String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
                 lineNum, matchStartIndex, matchEndIndex, line.trim());
         assertEquals(searchResult.toString(), expectedOutput);
@@ -41,7 +42,7 @@ public class SearchResultTest {
         final int matchEndIndex = 0;
         final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
             matchStartIndex, matchEndIndex, null);
-        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe";
+        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.exe";
         final String expectedOutput = String.format("%s matches at [0:0]", expectedPath);
         assertEquals(searchResult.toString(), expectedOutput);
     }
@@ -59,7 +60,7 @@ public class SearchResultTest {
         final List<String> linesAfter = Arrays.asList("\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n");
         final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
                 matchStartIndex, matchEndIndex, line, linesBefore, linesAfter);
-        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+        final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.cs";
         final String expectedOutput = String.format(
                 "================================================================================\n" +
                 "%s: %d: [%d:%d]\n" +
