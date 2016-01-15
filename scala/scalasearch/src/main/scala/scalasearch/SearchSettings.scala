@@ -65,13 +65,21 @@ class SettingsBuilder {
   var verbose = DefaultSettings.verbose
 
   def setArchivesOnly() {
-    archivesOnly = true
-    searchArchives = true
+    setArchivesOnly(true)
+  }
+
+  def setArchivesOnly(b: Boolean) {
+    archivesOnly = b
+    searchArchives = b
   }
 
   def setDebug() {
-    debug = true
-    verbose = true
+    setDebug(true)
+  }
+
+  def setDebug(b: Boolean) {
+    debug = b
+    verbose = b
   }
 
   def addCommaSeparatedExtensions(x:String, extensions:mutable.Set[String]) {

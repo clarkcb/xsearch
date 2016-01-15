@@ -1,7 +1,11 @@
 package scalasearch
 
+import java.io.File
+import java.util
+import org.json.simple.{JSONArray, JSONObject, JSONValue}
 import scala.collection.mutable
 import scala.xml.XML
+import scala.collection.JavaConversions._
 
 case class SearchOption(shortarg:String, longarg:String, desc:String) {
   val sortarg =
@@ -72,7 +76,52 @@ object SearchOptions {
     "out-linesbeforepattern" ->
       ((x: String, sb: SettingsBuilder) => sb.addOutLinesBeforePattern(x)),
     "search" ->
-      ((x: String, sb: SettingsBuilder) => sb.addSearchPattern(x))
+      ((x: String, sb: SettingsBuilder) => sb.addSearchPattern(x)),
+    "settings-file" ->
+      ((x: String, sb: SettingsBuilder) => settingsFromFile(x, sb))
+  )
+
+  val boolFlagActionMap = Map[String, ((Boolean, SettingsBuilder) => Unit)](
+    "archivesonly" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.setArchivesOnly(b)),
+    "allmatches" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.firstMatch = b),
+    "debug" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.setDebug(b)),
+    "excludehidden" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.excludeHidden = b),
+    "firstmatch" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.firstMatch = b),
+    "help" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.printUsage = b),
+    "includehidden" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.excludeHidden = b),
+    "listdirs" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.listDirs = b),
+    "listfiles" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.listFiles = b),
+    "listlines" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.listLines = b),
+    "multilinesearch" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.multiLineSearch = b),
+    "noprintmatches" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.printResults = b),
+    "norecursive" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.recursive = b),
+    "nosearcharchives" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.searchArchives = b),
+    "printmatches" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.printResults = b),
+    "recursive" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.recursive = b),
+    "searcharchives" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.searchArchives = b),
+    "uniquelines" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.uniqueLines = b),
+    "verbose" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.verbose = b),
+    "version" ->
+      ((b: Boolean, sb: SettingsBuilder) => sb.printVersion = b)
   )
 
   val flagActionMap = Map[String, (SettingsBuilder => Unit)](
@@ -117,6 +166,47 @@ object SearchOptions {
     "version" ->
       ((sb: SettingsBuilder) => sb.printVersion = true)
   )
+
+  private def settingsFromFile(filePath: String, sb: SettingsBuilder): Unit = {
+    val file: File = new File(filePath)
+    if (!file.exists()) {
+      throw new SearchException("Settings file not found: %s".format(filePath))
+    }
+    val contents: String = FileUtil.getFileContents(file)
+    val obj: AnyRef = JSONValue.parse(contents)
+    val jsonObject: JSONObject = obj.asInstanceOf[JSONObject]
+    jsonObject.keySet().foreach { ko =>
+      val vo: Any = jsonObject.get(ko)
+      applySetting(ko.toString, vo, sb)
+    }
+  }
+
+  def applySetting(arg: String, obj: Any, sb: SettingsBuilder): Unit = {
+    obj match {
+      case s: String =>
+        if (this.argActionMap.contains(arg)) {
+          argActionMap(arg)(s, sb)
+        } else if (arg == "startpath") {
+          sb.startPath = Some(obj.toString)
+        } else {
+          throw new SearchException("Invalid option: " + arg)
+        }
+      case b: Boolean =>
+        if (this.boolFlagActionMap.contains(arg)) {
+          boolFlagActionMap(arg)(b, sb)
+        } else {
+          throw new SearchException("Invalid option: " + arg)
+        }
+      case l: Long =>
+        applySetting(arg, l.toString, sb)
+      case _: JSONArray =>
+        val lst: util.ArrayList[Any] = obj.asInstanceOf[util.ArrayList[Any]]
+        lst.foreach { s =>
+          applySetting(arg, s, sb)
+        }
+      case _ =>
+    }
+  }
 
   private def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
     (options.map(o => (o.longarg, o)) ++

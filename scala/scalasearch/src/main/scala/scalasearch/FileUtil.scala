@@ -2,6 +2,8 @@ package scalasearch
 
 import java.io.File
 
+import scala.io.Source
+
 object FileUtil {
   def getExtension(f: SearchFile): String = {
     getExtension(f.fileName)
@@ -14,6 +16,10 @@ object FileUtil {
     } else {
       ""
     }
+  }
+
+  def getFileContents(f: File): String = {
+    Source.fromFile(f).mkString
   }
 
   def isDotDir(name: String): Boolean = {
