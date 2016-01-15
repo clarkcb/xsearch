@@ -10,7 +10,9 @@ Class to encapsulate search settings
 
 package javasearch;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -258,7 +260,11 @@ public class SearchSettings {
 
     // could be a comma-separated list
     private static void addExtensions(Set<String> set, final String exts) {
-        for (String x : exts.split(",")) {
+        addExtensions(set, Arrays.asList(exts.split(",")));
+    }
+
+    private static void addExtensions(Set<String> set, final List<String> exts) {
+        for (String x : exts) {
             if (!x.isEmpty()) {
                 set.add(x.toLowerCase());
             }
