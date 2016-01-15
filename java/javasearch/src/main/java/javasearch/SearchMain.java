@@ -17,22 +17,14 @@ import java.io.IOException;
 
 public class SearchMain {
 
-    private static void log(final String message) {
-        System.out.println(message);
-    }
-
-    private static void logError(final String message) {
-        log("ERROR: " + message);
-    }
-
     private static void handleError(final String message) {
-        log("");
-        logError(message);
+        Logger.log("");
+        Logger.logError(message);
     }
 
     private static void handleError(final String message, SearchOptions options) {
-        log("");
-        logError(message + "\n");
+        Logger.log("");
+        Logger.logError(message + "\n");
         options.usage(1);
     }
 
@@ -45,12 +37,12 @@ public class SearchMain {
                 SearchSettings settings = options.settingsFromArgs(args);
 
                 if (settings.getDebug()) {
-                    log("\nsettings:");
-                    log(settings.toString() + "\n");
+                    Logger.log("\nsettings:");
+                    Logger.log(settings.toString() + "\n");
                 }
 
                 if (settings.getPrintUsage()) {
-                    log("");
+                    Logger.log("");
                     options.usage(0);
                 }
 
@@ -61,7 +53,7 @@ public class SearchMain {
 
                 // print the results
                 if (settings.getPrintResults()) {
-                    log("");
+                    Logger.log("");
                     searcher.printSearchResults();
                 }
                 if (settings.getListDirs()) {
