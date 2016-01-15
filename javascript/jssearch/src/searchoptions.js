@@ -58,7 +58,10 @@ function SearchOptions() {
         'out-linesbeforepattern':
             (x, settings) => { settings.addOutLinesBeforePattern(x); },
         'search':
-            (x, settings) => { settings.addSearchPattern(x); }
+            (x, settings) => { settings.addSearchPattern(x); },
+        'settings-file':
+             (x, settings) => { return settingsFromFile(x, settings); }
+
     };
 
     const flagActionMap = {
@@ -145,12 +148,43 @@ function SearchOptions() {
         options.sort(optcmp);
     })();
 
+    var settingsFromFile = function (filepath, settings) {
+        let err = null;
+        let fileSettings = {};
+        const fs = require('fs');
+        if (fs.existsSync(filepath)) {
+            fileSettings = require(filepath);
+        } else {
+            return new Error('Settings file not found');
+        }
+        for (let k in fileSettings) {
+            if (err) break;
+            if (fileSettings.hasOwnProperty(k)) {
+                if (argMap[k]) {
+                    if (fileSettings[k]) {
+                        argMap[k].func(fileSettings[k], settings);
+                    } else {
+                        err = new Error("Missing argument for option "+k);
+                    }
+                } else if (flagMap[k]) {
+                    flagMap[k].func(settings);
+                } else if (k == 'startpath') {
+                    settings.startPath = fileSettings[k];
+                } else {
+                    err = new Error("Invalid option: "+k);
+                }
+            }
+        }
+        return err;
+    };
+
     self.settingsFromArgs = function (args, cb) {
         let err = null;
         let settings = new SearchSettings();
+
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
-        while(args) {
+        while(args && !err) {
             let arg = args.shift();
             if (!arg) {
                 break;
@@ -161,7 +195,7 @@ function SearchOptions() {
                 }
                 if (argMap[arg]) {
                     if (args.length > 0) {
-                        argMap[arg].func(args.shift(), settings);
+                        err = argMap[arg].func(args.shift(), settings);
                     } else {
                         err = new Error("Missing argument for option "+arg);
                     }

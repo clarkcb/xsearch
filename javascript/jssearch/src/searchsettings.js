@@ -44,7 +44,11 @@ function SearchSettings() {
     self.uniqueLines = false;
     self.verbose = false;
     const addExtensions = function (exts, arr) {
-        exts.split(/,/).filter(x => x !== '').forEach(x => arr.push(x));
+        let xs = exts;
+        if (typeof(exts) === 'string') {
+            xs = exts.split(/,/);
+        }
+        xs.filter(x => x !== '').forEach(x => arr.push(x));
     };
     self.addInExtension = function (ext) {
         addExtensions(ext, self.inExtensions);
