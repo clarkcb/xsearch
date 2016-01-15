@@ -111,6 +111,9 @@
   <searchoption long="searcharchives" short="z">
     Search archive files (bz2, gz, tar, zip)
   </searchoption>
+  <searchoption long="settings-file" short="">
+    A path to a JSON file with specified search settings
+  </searchoption>
   <searchoption long="uniquelines" short="u">
     Save only search results with unique lines from previous results
   </searchoption>
