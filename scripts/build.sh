@@ -23,6 +23,8 @@ source "$DIR/common.sh"
 # copy_resources
 copy_resources () {
     local resources_path="$1"
+    log "cp $SHARED_PATH/config.json $resources_path/"
+    cp $SHARED_PATH/config.json $resources_path/
     log "cp $SHARED_PATH/filetypes.xml $resources_path/"
     cp $SHARED_PATH/filetypes.xml $resources_path/
     log "cp $SHARED_PATH/searchoptions.xml $resources_path/"
