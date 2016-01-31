@@ -19,5 +19,6 @@ javasearch/src/test/resources/
 dependency-reduced-pom.xml
 
 # resource files
+config.json
 filetypes.xml
 searchoptions.xml
