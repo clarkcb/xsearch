@@ -221,35 +221,30 @@ sub new {
 sub settings_from_args {
     my ($self, $args) = @_;
     my $settings = new plsearch::SearchSettings();
-    my $i = 0;
     my @errs;
-    while ($i <= $#{$args}) {
-        my $arg = $args->[$i];
+    while (scalar @{$args}) {
+        my $arg = shift @{$args};
         if ($arg =~ /^\-+/) {
             $arg =~ s/^\-+//;
             if (exists $self->{options}->{$arg}) {
                 my $opt = $self->{options}->{$arg};
                 my $long = $opt->{longarg};
                 if (exists $arg_action_hash->{$long}) {
-                    if (exists $args->[$i+1]) {
-                        my $val = $args->[$i+1];
+                    if (scalar @{$args}) {
+                        my $val = shift @{$args};
                         &{$arg_action_hash->{$long}}($val, $settings);
-                        $i++;
                     } else {
                         push(@errs, "Missing value for $arg");
                     }
                 } elsif (exists $flag_action_hash->{$long}) {
                     &{$flag_action_hash->{$long}}($settings);
                 }
-
-
             } else {
                 push(@errs, "Invalid option: $arg");
             }
         } else {
             $settings->{startpath} = $arg;
         }
-        $i++;
     }
     return ($settings, \@errs);
 }

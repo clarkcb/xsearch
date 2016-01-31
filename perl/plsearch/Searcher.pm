@@ -374,7 +374,7 @@ sub search_multiline_string {
     my @end_line_indices = (@{$new_line_indices}, (length($s)-1));
     #$self->print_array('end_line_indices', \@end_line_indices);
     foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
-        while ($s =~ /$pattern/g) {
+        while ($s =~ /$pattern/go) {
             my $start_index = $-[0];
             my $end_index = $+[0];
             #print "match from $start_index to $end_index\n";
@@ -512,7 +512,7 @@ sub search_lines {
                     (scalar @{$lines_after} > 0  && !$self->lines_after_match($lines_after))) {
                     next;
                 }
-                while ($line =~ /$pattern/g) {
+                while ($line =~ /$pattern/go) {
                     my $start_index = $-[0];
                     my $end_index = $+[0];
                     # make copies of lines_before and lines_after
@@ -567,7 +567,7 @@ sub search_binary_string {
     my $results = [];
     foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
         if ($s =~ /$pattern/s) {
-            while ($s =~ /$pattern/g) {
+            while ($s =~ /$pattern/go) {
                 my $start_index = $-[0];
                 my $end_index = $+[0];
                 my $r = new plsearch::SearchResult(
