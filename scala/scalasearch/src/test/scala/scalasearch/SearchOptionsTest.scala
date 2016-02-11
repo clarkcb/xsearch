@@ -481,4 +481,35 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.printVersion)
   }
+
+  // testing settings from JSON
+  test("""test settingsFromJson""") {
+    val sb = new SettingsBuilder
+    val json = """{
+                 |  "startpath": "/Users/cary/src/xsearch/",
+                 |  "in-ext": ["js","ts"],
+                 |  "out-dirpattern": ["build", "node_module", "tests", "typings"],
+                 |  "out-filepattern": ["gulpfile", "\\.min\\."],
+                 |  "search": "Searcher",
+                 |  "linesbefore": 2,
+                 |  "linesafter": 2,
+                 |  "debug": true,
+                 |  "allmatches": false,
+                 |  "includehidden": false
+                 |}"""
+    SearchOptions.settingsFromJson(json.stripMargin, sb)
+    val settings = sb.toSettings
+    assert(settings.startPath.contains("/Users/cary/src/xsearch/"))
+    assert(settings.inExtensions.size == 2)
+    assert(settings.inExtensions.contains("js"))
+    assert(settings.inExtensions.contains("ts"))
+    assert(settings.outDirPatterns.size == 4)
+    assert(settings.outFilePatterns.size == 2)
+    assert(settings.searchPatterns.size == 1)
+    assert(settings.linesBefore == 2)
+    assert(settings.linesAfter == 2)
+    assert(settings.debug)
+    assert(settings.firstMatch)
+    assert(settings.excludeHidden)
+  }
 }

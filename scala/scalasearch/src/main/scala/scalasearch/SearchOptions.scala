@@ -85,7 +85,7 @@ object SearchOptions {
     "archivesonly" ->
       ((b: Boolean, sb: SettingsBuilder) => sb.setArchivesOnly(b)),
     "allmatches" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.firstMatch = b),
+      ((b: Boolean, sb: SettingsBuilder) => sb.firstMatch = !b),
     "debug" ->
       ((b: Boolean, sb: SettingsBuilder) => sb.setDebug(b)),
     "excludehidden" ->
@@ -95,7 +95,7 @@ object SearchOptions {
     "help" ->
       ((b: Boolean, sb: SettingsBuilder) => sb.printUsage = b),
     "includehidden" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.excludeHidden = b),
+      ((b: Boolean, sb: SettingsBuilder) => sb.excludeHidden = !b),
     "listdirs" ->
       ((b: Boolean, sb: SettingsBuilder) => sb.listDirs = b),
     "listfiles" ->
@@ -105,11 +105,11 @@ object SearchOptions {
     "multilinesearch" ->
       ((b: Boolean, sb: SettingsBuilder) => sb.multiLineSearch = b),
     "noprintmatches" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.printResults = b),
+      ((b: Boolean, sb: SettingsBuilder) => sb.printResults = !b),
     "norecursive" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.recursive = b),
+      ((b: Boolean, sb: SettingsBuilder) => sb.recursive = !b),
     "nosearcharchives" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.searchArchives = b),
+      ((b: Boolean, sb: SettingsBuilder) => sb.searchArchives = !b),
     "printmatches" ->
       ((b: Boolean, sb: SettingsBuilder) => sb.printResults = b),
     "recursive" ->
@@ -172,8 +172,12 @@ object SearchOptions {
     if (!file.exists()) {
       throw new SearchException("Settings file not found: %s".format(filePath))
     }
-    val contents: String = FileUtil.getFileContents(file)
-    val obj: AnyRef = JSONValue.parse(contents)
+    val json: String = FileUtil.getFileContents(file)
+    settingsFromJson(json, sb)
+  }
+
+  def settingsFromJson(json: String, sb: SettingsBuilder): Unit = {
+    val obj: AnyRef = JSONValue.parseWithException(json)
     val jsonObject: JSONObject = obj.asInstanceOf[JSONObject]
     jsonObject.keySet().foreach { ko =>
       val vo: Any = jsonObject.get(ko)

@@ -70,7 +70,9 @@ class SettingsBuilder {
 
   def setArchivesOnly(b: Boolean) {
     archivesOnly = b
-    searchArchives = b
+    if (b) {
+      searchArchives = true
+    }
   }
 
   def setDebug() {
@@ -79,7 +81,9 @@ class SettingsBuilder {
 
   def setDebug(b: Boolean) {
     debug = b
-    verbose = b
+    if (b) {
+      verbose = true
+    }
   }
 
   def addCommaSeparatedExtensions(x:String, extensions:mutable.Set[String]) {
