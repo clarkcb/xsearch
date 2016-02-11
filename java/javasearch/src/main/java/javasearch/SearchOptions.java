@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -82,19 +83,19 @@ public class SearchOptions {
     private Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(actionMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
-            put("allmatches", (b, settings) -> settings.setFirstMatch(b));
+            put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
             put("debug", (b, settings) -> settings.setDebug(b));
             put("excludehidden", (b, settings) -> settings.setExcludeHidden(b));
             put("firstmatch", (b, settings) -> settings.setFirstMatch(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
-            put("includehidden", (b, settings) -> settings.setExcludeHidden(b));
+            put("includehidden", (b, settings) -> settings.setExcludeHidden(!b));
             put("listdirs", (b, settings) -> settings.setListDirs(b));
             put("listfiles", (b, settings) -> settings.setListFiles(b));
             put("listlines", (b, settings) -> settings.setListLines(b));
             put("multilinesearch", (b, settings) -> settings.setMultiLineSearch(b));
-            put("noprintmatches", (b, settings) -> settings.setPrintResults(b));
-            put("norecursive", (b, settings) -> settings.setRecursive(b));
-            put("nosearcharchives", (b, settings) -> settings.setSearchArchives(b));
+            put("noprintmatches", (b, settings) -> settings.setPrintResults(!b));
+            put("norecursive", (b, settings) -> settings.setRecursive(!b));
+            put("nosearcharchives", (b, settings) -> settings.setSearchArchives(!b));
             put("printmatches", (b, settings) -> settings.setPrintResults(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("searcharchives", (b, settings) -> settings.setSearchArchives(b));
@@ -166,20 +167,27 @@ public class SearchOptions {
                 Logger.log("Settings file not found: " + filePath);
                 System.exit(1);
             }
-            String contents = FileUtil.getFileContents(file);
-            Object obj = JSONValue.parse(contents);
-            JSONObject jsonObject=(JSONObject)obj;
-            for (Object ko : jsonObject.keySet()) {
-                String k = (String)ko;
-                Object vo =jsonObject.get(ko);
-                applySetting(k, vo, settings);
-            }
+            String json = FileUtil.getFileContents(file);
+            settingsFromJson(json, settings);
         } catch (FileNotFoundException e) {
             Logger.log("Settings file not found: " + filePath);
             System.exit(1);
         } catch (IOException e) {
             Logger.log("IOException reading settings file: " + filePath);
             System.exit(1);
+        } catch (ParseException e) {
+            Logger.log("ParseException trying to parse the JSON in " + filePath);
+            System.exit(1);
+        }
+    }
+
+    public void settingsFromJson(String json, SearchSettings settings) throws ParseException {
+        Object obj = JSONValue.parseWithException(json);
+        JSONObject jsonObject=(JSONObject)obj;
+        for (Object ko : jsonObject.keySet()) {
+            String k = (String)ko;
+            Object vo =jsonObject.get(ko);
+            applySetting(k, vo, settings);
         }
     }
 

@@ -85,10 +85,6 @@ public class Searcher {
 
     public final List<File> getSearchDirs(final File startPath) {
         List<File> searchDirs = new ArrayList<>();
-        if (settings.getDebug()) {
-            log(String.format("Getting files to search under %s",
-                    startPath.getPath()));
-        }
         searchDirs.add(startPath);
         if (settings.getRecursive()) {
             searchDirs.addAll(recGetSearchDirs(startPath));
@@ -168,9 +164,6 @@ public class Searcher {
     }
 
     private List<SearchFile> getSearchFilesForDir(final File dir) {
-        if (settings.getDebug()) {
-            log(String.format("Getting files to search under %s", dir));
-        }
         List<SearchFile> searchFiles = new ArrayList<>();
         File[] currentFiles = dir.listFiles();
         if (currentFiles != null) {
