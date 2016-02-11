@@ -900,8 +900,7 @@ func (s *Searcher) Search() error {
 	}
 
 	// get search directory list
-	err := s.setSearchDirs()
-	if err != nil {
+	if err := s.setSearchDirs(); err != nil {
 		return err
 	}
 
@@ -913,11 +912,10 @@ func (s *Searcher) Search() error {
 	}
 
 	// get search file list
-	err = s.setSearchFiles()
-	s.getSearchItems()
-	if err != nil {
+	if err = s.setSearchFiles(); err != nil {
 		return err
 	}
+	s.getSearchItems()
 
 	if s.Settings.Verbose {
 		log(fmt.Sprintf("\nFiles to be searched (%d):", s.searchItems.Count()))
