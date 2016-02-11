@@ -75,11 +75,40 @@ sub aref_to_string {
     return $s;
 }
 
+sub set_property {
+    my ($self, $name, $val) = @_;
+    $self->{$name} = $val;
+    if ($val == 1) {
+        if ($name eq 'archivesonly') {
+            $self->{searcharchives} = 1;
+        } elsif ($name eq 'debug') {
+            $self->{verbose} = 1;
+        }
+    }
+}
+
 sub add_exts {
     my ($self, $exts, $extaref) = @_;
-    my @xs = split(',', $exts);
-    foreach my $x (@xs) {
+    my $xs = [];
+    if (ref($exts) eq 'ARRAY') {
+        $xs = $exts;
+    } else { # treat as a string
+        my @split = split(',', $exts);
+        $xs = \@split;
+    }
+    foreach my $x (@{$xs}) {
         push (@{$extaref}, $x);
+    }
+}
+
+sub add_patterns {
+    my ($self, $pats, $pataref) = @_;
+    if (ref($pats) eq 'ARRAY') {
+        foreach my $p (@{$pats}) {
+            push (@{$pataref}, $p);
+        }
+    } else { # treat as a string
+        push (@{$pataref}, $pats);
     }
 }
 

@@ -16,7 +16,7 @@ use parent 'Exporter';
 use Cwd qw(abs_path);
 use File::Basename;
 use File::Spec;
-use JSON::PP;
+use JSON::PP qw(decode_json);
 
 use plsearch::FileUtil;
 

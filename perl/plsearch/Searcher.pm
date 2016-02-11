@@ -141,7 +141,7 @@ sub rec_get_search_dirs {
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
         my $subfile = File::Spec->join($d, $f);
-        if (-d $subfile && !plsearch::FileUtil::is_dot_dir($f) && $self->is_search_dir($f)) {
+        if (-d $subfile && !plsearch::FileUtil::is_dot_dir($f) && $self->is_search_dir($subfile)) {
             push(@{$searchdirs}, $subfile);
         }
     }
@@ -277,9 +277,6 @@ sub search_text_file {
 
 sub search_text_file_contents {
     my ($self, $f) = @_;
-    if ($self->{settings}->{debug}) {
-        plsearch::common::log("Searching contents of text file $f");
-    }
     my $contents = plsearch::FileUtil::get_file_contents($f);
     my $results = $self->search_multiline_string($contents);
     foreach my $r (@{$results}) {
@@ -439,9 +436,6 @@ sub search_multiline_string {
 
 sub search_text_file_lines {
     my ($self, $f) = @_;
-    if ($self->{settings}->{debug}) {
-        plsearch::common::log("Searching lines of text file $f");
-    }
     my $lines = plsearch::FileUtil::get_file_lines($f);
     my $results = $self->search_lines($lines);
     foreach my $r (@{$results}) {
