@@ -37,18 +37,23 @@ func getHome() string {
 	return home
 }
 
+func getPathSeparator() string {
+	if runtime.GOOS == "windows" {
+		return "\\"
+	}
+	return "/"
+}
+
 func isDotDir(file string) bool {
 	dotDirs := []string{".", ".."}
-	if containsV(dotDirs, file) {
-		return true
-	}
-	return false
+	return containsV(dotDirs, file)
 }
 
 func isHidden(file string) bool {
-	f := filepath.Base(file)
-	if len(f) > 1 && strings.HasPrefix(f, ".") && !isDotDir(f) {
-		return true
+	for _, d := range strings.Split(file, getPathSeparator()) {
+		if len(d) > 1 && strings.HasPrefix(d, ".") && !isDotDir(d) {
+			return true
+		}
 	}
 	return false
 }

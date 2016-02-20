@@ -912,7 +912,7 @@ func (s *Searcher) Search() error {
 	}
 
 	// get search file list
-	if err = s.setSearchFiles(); err != nil {
+	if err := s.setSearchFiles(); err != nil {
 		return err
 	}
 	s.getSearchItems()
