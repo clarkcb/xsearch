@@ -40,6 +40,7 @@ func GetSearchOptions() *SearchOptions {
 			&SearchOption{"r", "recursive", "Search recursively through subdirectories*"},
 			&SearchOption{"s", "search", "Specify search pattern"},
 			&SearchOption{"z", "searcharchives", "Search archive files (bz2, gz, tar, zip)"},
+			&SearchOption{"", "settings-file", "A path to a JSON file with specified search settings"},
 			&SearchOption{"u", "uniquelines", "Save only search results with unique lines from previous results"},
 			&SearchOption{"v", "verbose", "Set output mode to verbose"},
 			&SearchOption{"V", "version", "Print version and exit"},

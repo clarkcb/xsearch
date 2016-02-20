@@ -2,8 +2,11 @@ package xsearch
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -20,6 +23,68 @@ type SearchOptions struct {
 
 func NewSearchOptions() *SearchOptions {
 	return GetSearchOptions()
+}
+
+func (so *SearchOptions) SettingsFromFile(filepath string, settings *SearchSettings) error {
+	if data, err := ioutil.ReadFile(filepath); err != nil {
+		return err
+	} else {
+		return so.SettingsFromJson(data, settings)
+	}
+}
+
+func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings) error {
+	argActionMap := so.getArgActionMap()
+	boolFlagActionMap := so.getBoolFlagActionMap()
+	type FileSettings map[string]interface{}
+	var fileSettings FileSettings
+	if err := json.Unmarshal(data, &fileSettings); err != nil {
+		return err
+	}
+	for k, _ := range fileSettings {
+		if af, isAction := argActionMap[k]; isAction {
+			if v, hasVal := fileSettings[k]; hasVal {
+				switch reflect.TypeOf(v).Kind() {
+				case reflect.String:
+					af(v.(string), settings)
+				case reflect.Int32, reflect.Int64:
+					s := strconv.Itoa(v.(int))
+					af(s, settings)
+				case reflect.Float32, reflect.Float64:
+					s := fmt.Sprintf("%v", v.(float64))
+					af(s, settings)
+				case reflect.Slice:
+					for i := range v.([]interface{}) {
+						af(v.([]interface{})[i].(string), settings)
+					}
+				default:
+					log(fmt.Sprintf("k: %v", k))
+					log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					log(errMsg)
+					return fmt.Errorf(errMsg)
+				}
+			} else {
+				log(fmt.Sprintf("value for %v is invalid", k))
+			}
+		} else if ff, isFlag := boolFlagActionMap[k]; isFlag {
+			if v, hasVal := fileSettings[k]; hasVal {
+				ff(v.(bool), settings)
+			} else {
+				log(fmt.Sprintf("value for %v is invalid", k))
+			}
+		} else if k == "startpath" {
+			if sp, hasStartPath := fileSettings[k]; hasStartPath {
+				settings.StartPath = sp.(string)
+			} else {
+				log("startpath value is invalid")
+			}
+		} else {
+			return fmt.Errorf("Invalid option: %s", k)
+		}
+
+	}
+	return nil
 }
 
 func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings, error) {
@@ -199,6 +264,90 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		},
 		"search": func(s string, settings *SearchSettings) {
 			settings.AddSearchPattern(s)
+		},
+		"settings-file": func(s string, settings *SearchSettings) {
+			so.SettingsFromFile(s, settings)
+		},
+	}
+	for _, o := range so.SearchOptions {
+		if o.Short != "" {
+			if f, ok := m[o.Long]; ok {
+				m[o.Short] = f
+			}
+		}
+	}
+	return m
+}
+
+type boolFlagAction func(b bool, settings *SearchSettings)
+
+func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
+	m := map[string]boolFlagAction{
+		"allmatches": func(b bool, settings *SearchSettings) {
+			settings.FirstMatch = !b
+		},
+		"archivesonly": func(b bool, settings *SearchSettings) {
+			settings.ArchivesOnly = b
+			if b {
+				settings.SearchArchives = b
+			}
+		},
+		"debug": func(b bool, settings *SearchSettings) {
+			settings.Debug = b
+			if b {
+				settings.Verbose = b
+			}
+		},
+		"excludehidden": func(b bool, settings *SearchSettings) {
+			settings.ExcludeHidden = b
+		},
+		"firstmatch": func(b bool, settings *SearchSettings) {
+			settings.FirstMatch = b
+		},
+		"help": func(b bool, settings *SearchSettings) {
+			settings.PrintUsage = b
+		},
+		"includehidden": func(b bool, settings *SearchSettings) {
+			settings.ExcludeHidden = !b
+		},
+		"listdirs": func(b bool, settings *SearchSettings) {
+			settings.ListDirs = b
+		},
+		"listfiles": func(b bool, settings *SearchSettings) {
+			settings.ListFiles = b
+		},
+		"listlines": func(b bool, settings *SearchSettings) {
+			settings.ListLines = b
+		},
+		"multilinesearch": func(b bool, settings *SearchSettings) {
+			settings.MultiLineSearch = b
+		},
+		"noprintmatches": func(b bool, settings *SearchSettings) {
+			settings.PrintResults = !b
+		},
+		"norecursive": func(b bool, settings *SearchSettings) {
+			settings.Recursive = !b
+		},
+		"nosearcharchives": func(b bool, settings *SearchSettings) {
+			settings.SearchArchives = !b
+		},
+		"printmatches": func(b bool, settings *SearchSettings) {
+			settings.PrintResults = b
+		},
+		"recursive": func(b bool, settings *SearchSettings) {
+			settings.Recursive = b
+		},
+		"searcharchives": func(b bool, settings *SearchSettings) {
+			settings.SearchArchives = b
+		},
+		"uniquelines": func(b bool, settings *SearchSettings) {
+			settings.UniqueLines = b
+		},
+		"verbose": func(b bool, settings *SearchSettings) {
+			settings.Verbose = b
+		},
+		"version": func(b bool, settings *SearchSettings) {
+			settings.PrintVersion = b
 		},
 	}
 	for _, o := range so.SearchOptions {
