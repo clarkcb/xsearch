@@ -100,15 +100,44 @@
       (update-in settings [extname] #(add-element (first exts) %)) (rest exts) extname)))
 
 (defn add-extension [settings ext extname]
-  (add-extensions settings (str/split ext #",") extname))
+  (let [t (type ext)]
+    (cond
+      (= t (type []))
+        (add-extensions settings ext extname)
+      :else
+        (add-extensions settings (str/split ext #",") extname))))
+
+
+(defn add-patterns [settings pats patname]
+  (if (empty? pats)
+    settings
+    (add-patterns
+      (update-in settings [patname] #(add-element (re-pattern (first pats)) %)) (rest pats) patname)))
 
 (defn add-pattern [settings p patname]
-  (update-in settings [patname] #(add-element (re-pattern p) %)))
+  (let [t (type p)]
+    (cond
+      (= t (type []))
+        (add-patterns settings p patname)
+      :else
+        (add-patterns settings [p] patname))))
 
-(defn set-archivesonly [settings]
-  (let [with-searcharchives (assoc settings :searcharchives true)]
-    (assoc with-searcharchives :archivesonly true)))
+(defn set-num [settings n numname]
+  (let [t (type n)]
+    (cond
+      (= t java.lang.Long)
+        (assoc settings numname n)
+      :else
+        (assoc settings numname (read-string n)))))
 
-(defn set-debug [settings]
-  (let [with-verbose (assoc settings :verbose true)]
-    (assoc with-verbose :debug true)))
+(defn set-archivesonly [settings b]
+  (let [with-searcharchives (assoc settings :searcharchives b)]
+    (if b
+      (assoc with-searcharchives :archivesonly true)
+      with-searcharchives)))
+
+(defn set-debug [settings b]
+  (let [with-debug (assoc settings :debug true)]
+    (if b
+      (assoc with-debug :verbose true)
+      with-debug)))

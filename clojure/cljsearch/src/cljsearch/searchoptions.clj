@@ -12,6 +12,7 @@
   (:import (java.io File))
   (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
+  (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [clojure.xml :only (parse)]
@@ -19,7 +20,7 @@
         [cljsearch.fileutil :only (expand-path)]
         [cljsearch.searchsettings :only
           (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
-            set-archivesonly set-debug)]))
+            set-archivesonly set-debug set-num)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
@@ -59,10 +60,10 @@
     :in-filepattern (fn [settings s] (add-pattern settings s :in-filepatterns))
     :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-linesafterpatterns))
     :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-linesbeforepatterns))
-    :linesafter (fn [settings s] (assoc settings :linesafter (read-string s)))
+    :linesafter (fn [settings s] (set-num settings s :linesafter))
     :linesaftertopattern (fn [settings s] (add-pattern settings s :linesaftertopatterns))
     :linesafteruntilpattern (fn [settings s] (add-pattern settings s :linesafteruntilpatterns))
-    :linesbefore (fn [settings s] (assoc settings :linesbefore (read-string s)))
+    :linesbefore (fn [settings s] (set-num settings s :linesbefore))
     :maxlinelength (fn [settings s] (assoc settings :maxlinelength (read-string s)))
     :out-archiveext (fn [settings s] (add-extension settings s :out-archiveextensions))
     :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archivefilepattern))
@@ -74,10 +75,33 @@
     :search (fn [settings s] (add-pattern settings s :searchpatterns))
   })
 
+(def bool-flag-action-map
+  { :allmatches (fn [settings b] (assoc settings :firstmatch (not b)))
+    :archivesonly (fn [settings b] (set-archivesonly settings b))
+    :debug (fn [settings b] (set-debug settings b))
+    :excludehidden (fn [settings b] (assoc settings :excludehidden b))
+    :firstmatch (fn [settings b] (assoc settings :firstmatch b))
+    :help (fn [settings b] (assoc settings :printusage b))
+    :includehidden (fn [settings b] (assoc settings :excludehidden (not b)))
+    :listdirs (fn [settings b] (assoc settings :listdirs b))
+    :listfiles (fn [settings b] (assoc settings :listfiles b))
+    :listlines (fn [settings b] (assoc settings :listlines b))
+    :multilinesearch (fn [settings b] (assoc settings :multilinesearch b))
+    :noprintmatches (fn [settings b] (assoc settings :printresults (not b)))
+    :norecursive (fn [settings b] (assoc settings :recursive (not b)))
+    :nosearcharchives (fn [settings b] (assoc settings :searcharchives (not b)))
+    :printmatches (fn [settings b] (assoc settings :printresults b))
+    :recursive (fn [settings b] (assoc settings :recursive b))
+    :searcharchives (fn [settings b] (assoc settings :searcharchives b))
+    :uniquelines (fn [settings b] (assoc settings :uniquelines b))
+    :verbose (fn [settings b] (assoc settings :verbose b))
+    :version (fn [settings b] (assoc settings :version b))
+  })
+
 (def flag-action-map
   { :allmatches (fn [settings] (assoc settings :firstmatch false))
-    :archivesonly (fn [settings] (set-archivesonly settings))
-    :debug (fn [settings] (set-debug settings))
+    :archivesonly (fn [settings] (set-archivesonly settings true))
+    :debug (fn [settings] (set-debug settings true))
     :excludehidden (fn [settings] (assoc settings :excludehidden true))
     :firstmatch (fn [settings] (assoc settings :firstmatch true))
     :help (fn [settings] (assoc settings :printusage true))
@@ -107,31 +131,54 @@
       (contains? shortlongmap arg) (keyword (get shortlongmap arg))
       :else nil)))
 
-;(println (str "firstmatch: " (get-long-arg "firstmatch") "\n"))
-;(println (str "1: " (get-long-arg "1") "\n"))
-;(println (str "blarg: " (get-long-arg "blarg") "\n"))
+(defn settings-from-map [settings ks m errs]
+  (if (empty? ks)
+    [settings errs]
+    (let [k (keyword (first ks))
+          v (k m)]
+      (cond
+        (contains? arg-action-map k)
+          (settings-from-map ((k arg-action-map) settings v) (rest ks) m errs)
+        (contains? flag-action-map k)
+          (settings-from-map ((k bool-flag-action-map) settings v) (rest ks) m errs)
+        (= k :startpath)
+          (do
+            (settings-from-map (assoc settings :startpath v) (rest ks) m errs))
+        :else
+          (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
+
+(defn settings-from-json [settings js]
+  (let [obj (json/read-str js :key-fn keyword)
+        ks (keys obj)]
+    (settings-from-map settings ks obj [])))
+
+(defn settings-from-file [settings f]
+  (let [contents (slurp f)]
+    (settings-from-json settings contents)))
 
 (defn settings-from-args
   ([args]
     (settings-from-args DEFAULT-SETTINGS args []))
   ([settings args errs]
-    (if (empty? args)
+    (if (or (empty? args) (not (empty? errs)))
       [settings errs]
       (let [arg (first args)
             a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
             k (if a (get-long-arg a))
             a2 (second args)]
         (if a
-          (do
-            (cond
-              (contains? arg-action-map k)
-                (if a2
-                  (settings-from-args ((k arg-action-map) settings a2) (rest (rest args)) errs)
-                  (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
-              (contains? flag-action-map k)
-                (settings-from-args ((k flag-action-map) settings) (rest args) errs)
-              :else
-                (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a)))))
+          (cond
+            (contains? arg-action-map k)
+              (if a2
+                (settings-from-args ((k arg-action-map) settings a2) (drop 2 args) errs)
+                (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
+            (contains? flag-action-map k)
+              (settings-from-args ((k flag-action-map) settings) (rest args) errs)
+            (= k :settings-file)
+              (let [[file-settings file-errs] (settings-from-file settings a2)]
+                (settings-from-args file-settings (drop 2 args) (concat errs file-errs)))
+            :else
+              (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a))))
           (settings-from-args (assoc settings :startpath arg) (rest args) errs))))))
 
 (defn longest-length [options]
