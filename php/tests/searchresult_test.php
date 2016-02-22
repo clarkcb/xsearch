@@ -29,7 +29,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase {
         $linesafter = [];
         $searchresult = new SearchResult($pattern, $file, $linenum,
             $match_start_index, $match_end_index, $line, $linesbefore, $linesafter);
-        $expectedoutput = sprintf("%s matches", $file);
+        $expectedoutput = sprintf("%s matches at [%d:%d]", $file, $match_start_index, $match_end_index);
         $this->assertEquals($expectedoutput, "$searchresult");
     }
 

@@ -48,7 +48,8 @@ class SearchResultTest(unittest.TestCase):
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, linesbefore=linesbefore,
             linesafter=linesafter)
-        expectedoutput = "%s matches" % filepath
+        expectedoutput = "%s matches at [%d:%d]" % (filepath, match_start_index,
+            match_end_index)
         self.assertEquals(expectedoutput, str(searchresult))
 
     def test_multiline_searchresult(self):

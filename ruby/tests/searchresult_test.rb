@@ -39,7 +39,7 @@ class SearchResultTest < Test::Unit::TestCase
     linesafter = []
     searchresult = SearchResult.new(pattern, filepath, linenum, match_start_index,
       match_end_index, line, linesbefore, linesafter)
-    expectedoutput = "#{filepath} matches"
+    expectedoutput = "#{filepath} matches at [0:0]"
     assert_equal(searchresult.to_s, expectedoutput)
   end
 
