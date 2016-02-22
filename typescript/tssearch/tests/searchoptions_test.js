@@ -6,15 +6,13 @@
  *
  * Some nodeunit tests of searchoptions.js
  */
-
 var SearchOptions = require('../build/searchoptions.js').SearchOptions;
 var SearchSettings = require('../build/searchsettings.js').SearchSettings;
-
-exports.testNoArgs = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    searchOptions.settingsFromArgs([], function(err: Error, settings: SearchSettings) {
+exports.testNoArgs = function (test) {
+    var searchOptions = new SearchOptions();
+    searchOptions.settingsFromArgs([], function (err, settings) {
         if (err) {
-            test.ok(false, "There was an error calling settingsFromArgs: "+ err);
+            test.ok(false, "There was an error calling settingsFromArgs: " + err);
             test.done();
         }
         test.ok(!settings.archivesOnly, "archivesOnly is false by default");
@@ -39,13 +37,12 @@ exports.testNoArgs = function(test) {
         test.done();
     });
 };
-
-exports.testValidArgs = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['-x', 'js,java', '-s', 'Searcher', '.'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+exports.testValidArgs = function (test) {
+    var searchOptions = new SearchOptions();
+    var args = ['-x', 'js,java', '-s', 'Searcher', '.'];
+    searchOptions.settingsFromArgs(args, function (err, settings) {
         if (err) {
-            test.ok(false, "There was an error calling settingsFromArgs: "+ err);
+            test.ok(false, "There was an error calling settingsFromArgs: " + err);
             test.done();
             return;
         }
@@ -57,13 +54,12 @@ exports.testValidArgs = function(test) {
         test.done();
     });
 };
-
-exports.testArchivesOnly = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['--archivesonly'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+exports.testArchivesOnly = function (test) {
+    var searchOptions = new SearchOptions();
+    var args = ['--archivesonly'];
+    searchOptions.settingsFromArgs(args, function (err, settings) {
         if (err) {
-            test.ok(false, "There was an error calling settingsFromArgs: "+ err);
+            test.ok(false, "There was an error calling settingsFromArgs: " + err);
             test.done();
         }
         test.ok(settings.archivesOnly === true, "archivesOnly is true");
@@ -71,13 +67,12 @@ exports.testArchivesOnly = function(test) {
         test.done();
     });
 };
-
-exports.testDebug = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['--debug'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+exports.testDebug = function (test) {
+    var searchOptions = new SearchOptions();
+    var args = ['--debug'];
+    searchOptions.settingsFromArgs(args, function (err, settings) {
         if (err) {
-            test.ok(false, "There was an error calling settingsFromArgs: "+ err);
+            test.ok(false, "There was an error calling settingsFromArgs: " + err);
             test.done();
         }
         test.ok(settings.debug === true, "debug is true");
@@ -85,41 +80,40 @@ exports.testDebug = function(test) {
         test.done();
     });
 };
-
-exports.testMissingArg = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['-x'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+exports.testMissingArg = function (test) {
+    var searchOptions = new SearchOptions();
+    var args = ['-x'];
+    searchOptions.settingsFromArgs(args, function (err, settings) {
         if (err) {
             var expected = "Missing argument for option x";
             test.ok(err.message === expected, "Got missing argument err");
             test.done();
-        } else {
+        }
+        else {
             test.ok(false, "Did not get expected missing argument error");
             test.done();
         }
     });
 };
-
-exports.testInvalidArg = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['-Q'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+exports.testInvalidArg = function (test) {
+    var searchOptions = new SearchOptions();
+    var args = ['-Q'];
+    searchOptions.settingsFromArgs(args, function (err, settings) {
         if (err) {
             var expected = "Invalid option: Q";
             test.ok(err.message === expected, "Got invalid option err");
             test.done();
-        } else {
+        }
+        else {
             test.ok(false, "Did not get expected invalid option error");
             test.done();
         }
     });
 };
-
-exports.testSettingsFromJson = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var settings: SearchSettings = new SearchSettings();
-    var json: string = '{\n' +
+exports.testSettingsFromJson = function (test) {
+    var searchOptions = new SearchOptions();
+    var settings = new SearchSettings();
+    var json = '{\n' +
         '  "startpath": "~/src/xsearch/",\n' +
         '  "in-ext": ["js","ts"],\n' +
         '  "out-dirpattern": "node_module",\n' +
@@ -131,19 +125,16 @@ exports.testSettingsFromJson = function(test) {
         '  "allmatches": false,\n' +
         '  "includehidden": true\n' +
         '}';
-    var err: Error = searchOptions.settingsFromJson(json, settings);
+    var err = searchOptions.settingsFromJson(json, settings);
     test.ok(err == null, "Null err");
     test.ok(settings.startPath === '~/src/xsearch/', "Startpath === ~/src/xsearch/");
     test.ok(settings.inExtensions.length === 2, "settings.inExtensions.length === 2");
     test.ok(settings.outDirPatterns.length === 1, "settings.outDirPatterns.length === 1");
-    test.ok(settings.outDirPatterns[0].source === 'node_module',
-        "settings.outDirPatterns[0].source === 'node_module'");
+    test.ok(settings.outDirPatterns[0].source === 'node_module', "settings.outDirPatterns[0].source === 'node_module'");
     test.ok(settings.outFilePatterns.length === 1, "settings.outFilePatterns.length === 1");
-    test.ok(settings.outFilePatterns[0].source === 'temp',
-        "settings.outFilePatterns[0].source === 'temp'");
+    test.ok(settings.outFilePatterns[0].source === 'temp', "settings.outFilePatterns[0].source === 'temp'");
     test.ok(settings.searchPatterns.length === 1, "settings.searchPatterns.length === 1");
-    test.ok(settings.searchPatterns[0].source === 'Searcher',
-        "settings.searchPatterns[0].source === 'Searcher'");
+    test.ok(settings.searchPatterns[0].source === 'Searcher', "settings.searchPatterns[0].source === 'Searcher'");
     test.ok(settings.linesBefore === 2, "settings.linesBefore === 2");
     test.ok(settings.linesAfter === 2, "settings.linesAfter === 2");
     test.ok(settings.debug, "settings.debug === true");
