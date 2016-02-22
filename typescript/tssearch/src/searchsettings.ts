@@ -45,8 +45,12 @@ class SearchSettings {
     uniqueLines: boolean = false;
     verbose: boolean = false;
 
-    private static addExtensions(exts: string, arr: string[]): void {
-        exts.split(/,/).filter(x => x !== '').forEach(x => arr.push(x));
+    private static addExtensions(exts: any, arr: string[]): void {
+        if (typeof(exts) === 'string') {
+            exts.split(/,/).filter(x => x !== '').forEach(x => arr.push(x));
+        } else if (exts.constructor === Array) {
+            exts.forEach(x => arr.push(x));
+        }
     }
 
     public addInExtension(ext: string): void {
@@ -57,28 +61,32 @@ class SearchSettings {
         SearchSettings.addExtensions(ext, this.outExtensions);
     }
 
-    private static addPattern(pattern: string, arr: RegExp[]): void {
-        arr.push(new RegExp(pattern));
+    private static addPatterns(patterns: any, arr: RegExp[]): void {
+        if (typeof(patterns) === 'string') {
+            arr.push(new RegExp(patterns));
+        } else if (patterns.constructor === Array) {
+            patterns.forEach(p => arr.push(new RegExp(p)));
+        }
     }
 
     public addInDirPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.inDirPatterns);
+        SearchSettings.addPatterns(pattern, this.inDirPatterns);
     }
 
     public addOutDirPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.outDirPatterns);
+        SearchSettings.addPatterns(pattern, this.outDirPatterns);
     }
 
     public addInFilePattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.inFilePatterns);
+        SearchSettings.addPatterns(pattern, this.inFilePatterns);
     }
 
     public addOutFilePattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.outFilePatterns);
+        SearchSettings.addPatterns(pattern, this.outFilePatterns);
     }
 
     public addSearchPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.searchPatterns);
+        SearchSettings.addPatterns(pattern, this.searchPatterns);
     }
 
     public addInArchiveExtension(ext: string): void {
@@ -90,44 +98,52 @@ class SearchSettings {
     }
 
     public addInArchiveFilePattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.inArchiveFilePatterns);
+        SearchSettings.addPatterns(pattern, this.inArchiveFilePatterns);
     }
     public addOutArchiveFilePattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.outArchiveFilePatterns);
+        SearchSettings.addPatterns(pattern, this.outArchiveFilePatterns);
     }
 
     public addInLinesAfterPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.inLinesAfterPatterns);
+        SearchSettings.addPatterns(pattern, this.inLinesAfterPatterns);
     }
 
     public addOutLinesAfterPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.outLinesAfterPatterns);
+        SearchSettings.addPatterns(pattern, this.outLinesAfterPatterns);
     }
 
     public addInLinesBeforePattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.inLinesBeforePatterns);
+        SearchSettings.addPatterns(pattern, this.inLinesBeforePatterns);
     }
 
     public addOutLinesBeforePattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.outLinesBeforePatterns);
+        SearchSettings.addPatterns(pattern, this.outLinesBeforePatterns);
     }
 
     public addLinesAfterToPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.linesAfterToPatterns);
+        SearchSettings.addPatterns(pattern, this.linesAfterToPatterns);
     }
 
     public addLinesAfterUntilPattern(pattern: string): void {
-        SearchSettings.addPattern(pattern, this.linesAfterUntilPatterns);
+        SearchSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
     public setArchivesOnly(): void {
-        this.archivesOnly = true;
-        this.searchArchives = true;
+        this.setArchivesOnlyBool(true);
+    }
+
+    public setArchivesOnlyBool(b: boolean): void {
+        this.archivesOnly = b;
+        if (b) this.searchArchives = b;
     }
 
     public setDebug(): void {
-        this.debug = true;
-        this.verbose = true;
+        this.setDebugBool(true);
+    }
+
+    public setDebugBool(b: boolean): void {
+        this.debug = b;
+        if (b) this.verbose = b;
     }
 
     private static listToString(name: string, lst: string[]|RegExp[]): string {

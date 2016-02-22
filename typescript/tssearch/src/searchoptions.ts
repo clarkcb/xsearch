@@ -28,6 +28,7 @@ class SearchOptions {
     argMap: StringOptionMap;
     flagMap: StringOptionMap;
     argActionMap: StringActionMap;
+    boolFlagActionMap: StringActionMap;
     flagActionMap: StringActionMap;
 
     constructor() {
@@ -75,50 +76,96 @@ class SearchOptions {
             'out-linesbeforepattern':
                 (x: string, settings: SearchSettings) => { settings.addOutLinesBeforePattern(x); },
             'search':
-                (x: string, settings: SearchSettings) => { settings.addSearchPattern(x); }
+                (x: string, settings: SearchSettings) => { settings.addSearchPattern(x); },
+            'settings-file':
+                (x: string, settings: SearchSettings) => { this.settingsFromFile(x, settings); }
         };
+
+        this.boolFlagActionMap = {
+            'allmatches':
+                (b: boolean, settings: SearchSettings) => { settings.firstMatch = !b; },
+            'archivesonly':
+                (b: boolean, settings: SearchSettings) => { settings.setArchivesOnlyBool(b); },
+            'debug':
+                (b: boolean, settings: SearchSettings) => { settings.setDebugBool(b); },
+            'excludehidden':
+                (b: boolean, settings: SearchSettings) => { settings.excludeHidden = b; },
+            'firstmatch':
+                (b: boolean, settings: SearchSettings) => { settings.firstMatch = b; },
+            'includehidden':
+                (b: boolean, settings: SearchSettings) => { settings.excludeHidden = !b; },
+            'help':
+                (b: boolean, settings: SearchSettings) => { settings.printUsage = b; },
+            'listdirs':
+                (b: boolean, settings: SearchSettings) => { settings.listDirs = b; },
+            'listfiles':
+                (b: boolean, settings: SearchSettings) => { settings.listFiles = b; },
+            'listlines':
+                (b: boolean, settings: SearchSettings) => { settings.listLines = b; },
+            'multilinesearch':
+                (b: boolean, settings: SearchSettings) => { settings.multilineSearch = b; },
+            'noprintmatches':
+                (b: boolean, settings: SearchSettings) => { settings.printResults = !b; },
+            'norecursive':
+                (b: boolean, settings: SearchSettings) => { settings.recursive = !b; },
+            'nosearcharchives':
+                (b: boolean, settings: SearchSettings) => { settings.searchArchives = !b; },
+            'printmatches':
+                (b: boolean, settings: SearchSettings) => { settings.printResults = b; },
+            'recursive':
+                (b: boolean, settings: SearchSettings) => { settings.recursive = b; },
+            'searcharchives':
+                (b: boolean, settings: SearchSettings) => { settings.searchArchives = b; },
+            'uniquelines':
+                (b: boolean, settings: SearchSettings) => { settings.uniqueLines = b; },
+            'verbose':
+                (b: boolean, settings: SearchSettings) => { settings.verbose = b; },
+            'version':
+                (b: boolean, settings: SearchSettings) => { settings.printVersion = b; }
+        };
+
 
         this.flagActionMap = {
             'allmatches':
-                function(settings: SearchSettings): void { settings.firstMatch = false; },
+                (settings: SearchSettings) => { settings.firstMatch = false; },
             'archivesonly':
-                function(settings: SearchSettings): void { settings.setArchivesOnly(); },
+                (settings: SearchSettings) => { settings.setArchivesOnly(); },
             'debug':
-                function(settings: SearchSettings): void { settings.setDebug(); },
+                (settings: SearchSettings) => { settings.setDebug(); },
             'excludehidden':
-                function(settings: SearchSettings): void { settings.excludeHidden = true; },
+                (settings: SearchSettings) => { settings.excludeHidden = true; },
             'firstmatch':
-                function(settings: SearchSettings): void { settings.firstMatch = true; },
+                (settings: SearchSettings) => { settings.firstMatch = true; },
             'includehidden':
-                function(settings: SearchSettings): void { settings.excludeHidden = false; },
+                (settings: SearchSettings) => { settings.excludeHidden = false; },
             'help':
-                function(settings: SearchSettings): void { settings.printUsage = true; },
+                (settings: SearchSettings) => { settings.printUsage = true; },
             'listdirs':
-                function(settings: SearchSettings): void { settings.listDirs = true; },
+                (settings: SearchSettings) => { settings.listDirs = true; },
             'listfiles':
-                function(settings: SearchSettings): void { settings.listFiles = true; },
+                (settings: SearchSettings) => { settings.listFiles = true; },
             'listlines':
-                function(settings: SearchSettings): void { settings.listLines = true; },
+                (settings: SearchSettings) => { settings.listLines = true; },
             'multilinesearch':
-                function(settings: SearchSettings): void { settings.multilineSearch = true; },
+                (settings: SearchSettings) => { settings.multilineSearch = true; },
             'noprintmatches':
-                function(settings: SearchSettings): void { settings.printResults = false; },
+                (settings: SearchSettings) => { settings.printResults = false; },
             'norecursive':
-                function(settings: SearchSettings): void { settings.recursive = false; },
+                (settings: SearchSettings) => { settings.recursive = false; },
             'nosearcharchives':
-                function(settings: SearchSettings): void { settings.searchArchives = false; },
+                (settings: SearchSettings) => { settings.searchArchives = false; },
             'printmatches':
-                function(settings: SearchSettings): void { settings.printResults = true; },
+                (settings: SearchSettings) => { settings.printResults = true; },
             'recursive':
-                function(settings: SearchSettings): void { settings.recursive = true; },
+                (settings: SearchSettings) => { settings.recursive = true; },
             'searcharchives':
-                function(settings: SearchSettings): void { settings.searchArchives = true; },
+                (settings: SearchSettings) => { settings.searchArchives = true; },
             'uniquelines':
-                function(settings: SearchSettings): void { settings.uniqueLines = true; },
+                (settings: SearchSettings) => { settings.uniqueLines = true; },
             'verbose':
-                function(settings: SearchSettings): void { settings.verbose = true; },
+                (settings: SearchSettings) => { settings.verbose = true; },
             'version':
-                function(settings: SearchSettings): void { settings.printVersion = true; }
+                (settings: SearchSettings) => { settings.printVersion = true; }
         };
 
         this.setOptionsFromXml();
@@ -179,12 +226,46 @@ class SearchOptions {
         this.options.sort(this.optcmp);
     }
 
+    private settingsFromFile(filepath: string, settings: SearchSettings): Error {
+        const fs = require('fs');
+        if (fs.existsSync(filepath)) {
+            let json: string = FileUtil.getFileContents(filepath);
+            return this.settingsFromJson(json, settings);
+        } else {
+            return new Error('Settings file not found');
+        }
+    }
+
+    public settingsFromJson(json: string, settings: SearchSettings): Error {
+        let err: Error = null;
+        let obj = JSON.parse(json);
+        for (let k in obj) {
+            if (err) break;
+            if (obj.hasOwnProperty(k)) {
+                if (this.argMap[k]) {
+                    if (obj[k]) {
+                        err = this.argActionMap[k](obj[k], settings);
+                    } else {
+                        err = new Error("Missing argument for option "+k);
+                    }
+                } else if (this.boolFlagActionMap[k]) {
+                    this.boolFlagActionMap[k](obj[k], settings);
+                } else if (k == 'startpath') {
+                    settings.startPath = obj[k];
+                } else {
+                    err = new Error("Invalid option: "+k);
+                }
+            }
+        }
+        return err;
+    }
+
     public settingsFromArgs(args: string[], cb) {
         let err: Error = null;
         let settings: SearchSettings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
-        while(args) {
+        while(args && !err) {
             let arg: string = args.shift();
             if (!arg) {
                 break;
@@ -196,7 +277,7 @@ class SearchOptions {
                 if (this.argMap[arg]) {
                     if (args.length > 0) {
                         //this.argMap[arg].func(args.shift(), settings);
-                        this.argActionMap[arg](args.shift(), settings);
+                        err = this.argActionMap[arg](args.shift(), settings);
                     } else {
                         err = new Error("Missing argument for option "+arg);
                     }
