@@ -58,17 +58,15 @@ exports.testMultiLineResult = function(test) {
     var result = new SearchResult(pattern, file, linenum, matchStartIndex,
         matchEndIndex, line, linesBefore, linesAfter);
     var resultString = result.toString();
-    var outputTemplate = "" +
+    var expectedOutput = "" +
         "================================================================================\n" +
-        "{0}: {1}: [{2}:{3}]\n" +
+        `${file}: ${linenum}: [${matchStartIndex}:${matchEndIndex}]\n` +
         "--------------------------------------------------------------------------------\n" +
         "   8 | namespace CsSearch\n" +
         "   9 | {\n" +
         "> 10 | \tpublic class Searcher\n" +
         "  11 | \t{\n" +
         "  12 | \t\tprivate readonly FileTypes _fileTypes;\n";
-    var expectedOutput = outputTemplate.format(file, linenum,
-        matchStartIndex, matchEndIndex);
     test.ok(resultString === expectedOutput, "multi-line result matches expected");
     test.done();
 };
