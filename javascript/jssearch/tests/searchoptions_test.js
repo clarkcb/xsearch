@@ -5,6 +5,7 @@
  */
 
 var SearchOptions = require('../src/searchoptions.js').SearchOptions;
+var SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
 exports.testNoArgs = function(test) {
     var searchOptions = new SearchOptions();
@@ -97,17 +98,54 @@ exports.testMissingArg = function(test) {
     });
 };
 
-exports.testUnknownArg = function(test) {
+exports.testIvalidArg = function(test) {
     var searchOptions = new SearchOptions();
     var args = ['-Q'];
     searchOptions.settingsFromArgs(args, function(err) {
         if (err) {
-            var expected = "Error: Unknown option: Q";
-            test.ok(err == expected, "Got unknown option err");
+            var expected = "Error: Invalid option: Q";
+            test.ok(err == expected, "Got invalid option err");
             test.done();
         } else {
             test.ok(false, "Did not get expected unknown option error");
             test.done();
         }
     });
+};
+
+exports.testSettingsFromJson = function(test) {
+    var searchOptions = new SearchOptions();
+    var settings = new SearchSettings();
+    var json = '{\n' +
+               '  "startpath": "~/src/xsearch/",\n' +
+               '  "in-ext": ["js","ts"],\n' +
+               '  "out-dirpattern": "node_module",\n' +
+               '  "out-filepattern": ["temp"],\n' +
+               '  "search": "Searcher",\n' +
+               '  "linesbefore": 2,\n' +
+               '  "linesafter": 2,\n' +
+               '  "debug": true,\n' +
+               '  "allmatches": false,\n' +
+               '  "includehidden": true\n' +
+               '}';
+    var err = searchOptions.settingsFromJson(json, settings);
+    test.ok(err == null, "Null err");
+    test.ok(settings.startPath === '~/src/xsearch/', "Startpath === ~/src/xsearch/");
+    test.ok(settings.inExtensions.length === 2, "settings.inExtensions.length === 2");
+    test.ok(settings.outDirPatterns.length === 1, "settings.outDirPatterns.length === 1");
+    test.ok(settings.outDirPatterns[0].source === 'node_module',
+        "settings.outDirPatterns[0].source === 'node_module'");
+    test.ok(settings.outFilePatterns.length === 1, "settings.outFilePatterns.length === 1");
+    test.ok(settings.outFilePatterns[0].source === 'temp',
+        "settings.outFilePatterns[0].source === 'temp'");
+    test.ok(settings.searchPatterns.length === 1, "settings.searchPatterns.length === 1");
+    test.ok(settings.searchPatterns[0].source === 'Searcher',
+        "settings.searchPatterns[0].source === 'Searcher'");
+    test.ok(settings.linesBefore === 2, "settings.linesBefore === 2");
+    test.ok(settings.linesAfter === 2, "settings.linesAfter === 2");
+    test.ok(settings.debug, "settings.debug === true");
+    test.ok(settings.verbose, "settings.verbose === true");
+    test.ok(settings.firstMatch, "settings.firstMatch === true");
+    test.ok(settings.excludeHidden === false, "settings.excludeHidden === false");
+    test.done();
 };

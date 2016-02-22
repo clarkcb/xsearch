@@ -43,6 +43,7 @@ function SearchSettings() {
     self.searchArchives = false;
     self.uniqueLines = false;
     self.verbose = false;
+
     const addExtensions = function (exts, arr) {
         let xs = exts;
         if (typeof(exts) === 'string') {
@@ -56,23 +57,27 @@ function SearchSettings() {
     self.addOutExtension = function (ext) {
         addExtensions(ext, self.outExtensions);
     };
-    const addPattern = function (pattern, arr) {
-        arr.push(new RegExp(pattern));
+    const addPatterns = function (patterns, arr) {
+        if (typeof(patterns) === 'string') {
+            arr.push(new RegExp(patterns));
+        } else if (patterns.constructor === Array) {
+            patterns.forEach(p => arr.push(new RegExp(p)));
+        }
     };
     self.addInDirPattern = function (pattern) {
-        addPattern(pattern, self.inDirPatterns);
+        addPatterns(pattern, self.inDirPatterns);
     };
     self.addOutDirPattern = function (pattern) {
-        addPattern(pattern, self.outDirPatterns);
+        addPatterns(pattern, self.outDirPatterns);
     };
     self.addInFilePattern = function (pattern) {
-        addPattern(pattern, self.inFilePatterns);
+        addPatterns(pattern, self.inFilePatterns);
     };
     self.addOutFilePattern = function (pattern) {
-        addPattern(pattern, self.outFilePatterns);
+        addPatterns(pattern, self.outFilePatterns);
     };
     self.addSearchPattern = function (pattern) {
-        addPattern(pattern, self.searchPatterns);
+        addPatterns(pattern, self.searchPatterns);
     };
     self.addInArchiveExtension = function (ext) {
         addExtensions(ext, self.inArchiveExtensions);
@@ -81,38 +86,46 @@ function SearchSettings() {
         addExtensions(ext, self.outArchiveExtensions);
     };
     self.addInArchiveFilePattern = function (pattern) {
-        addPattern(pattern, self.inArchiveFilePatterns);
+        addPatterns(pattern, self.inArchiveFilePatterns);
     };
     self.addOutArchiveFilePattern = function (pattern) {
-        addPattern(pattern, self.outArchiveFilePatterns);
+        addPatterns(pattern, self.outArchiveFilePatterns);
     };
     self.addInLinesAfterPattern = function (pattern) {
-        addPattern(pattern, self.inLinesAfterPatterns);
+        addPatterns(pattern, self.inLinesAfterPatterns);
     };
     self.addOutLinesAfterPattern = function (pattern) {
-        addPattern(pattern, self.outLinesAfterPatterns);
+        addPatterns(pattern, self.outLinesAfterPatterns);
     };
     self.addInLinesBeforePattern = function (pattern) {
-        addPattern(pattern, self.inLinesBeforePatterns);
+        addPatterns(pattern, self.inLinesBeforePatterns);
     };
     self.addOutLinesBeforePattern = function (pattern) {
-        addPattern(pattern, self.outLinesBeforePatterns);
+        addPatterns(pattern, self.outLinesBeforePatterns);
     };
     self.addLinesAfterToPattern = function (pattern) {
-        addPattern(pattern, self.linesAfterToPatterns);
+        addPatterns(pattern, self.linesAfterToPatterns);
     };
     self.addLinesAfterUntilPattern = function (pattern) {
-        addPattern(pattern, self.linesAfterUntilPatterns);
+        addPatterns(pattern, self.linesAfterUntilPatterns);
     };
 
     self.setArchivesOnly = function () {
-        self.archivesOnly = true;
-        self.searchArchives = true;
+        self.setArchivesOnlyBool(true);
+    };
+
+    self.setArchivesOnlyBool = function (b) {
+        self.archivesOnly = b;
+        if (b) self.searchArchives = b;
     };
 
     self.setDebug = function () {
-        self.debug = true;
-        self.verbose = true;
+        self.setDebugBool(true);
+    };
+
+    self.setDebugBool = function (b) {
+        self.debug = b;
+        if (b) self.verbose = b;
     };
 
     const listToString = function (name, lst) {

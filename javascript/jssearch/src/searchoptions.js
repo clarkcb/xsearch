@@ -15,6 +15,7 @@ function SearchOptions() {
 
     // the list of SearchOption objects (populated by setOptionsFromXml)
     let options = [];
+    let argNameMap = {};
     let argMap = {};
     let flagMap = {};
 
@@ -62,6 +63,49 @@ function SearchOptions() {
         'settings-file':
              (x, settings) => { return settingsFromFile(x, settings); }
 
+    };
+
+    const boolFlagActionMap = {
+        'allmatches':
+            (b, settings) => { settings.firstMatch = !b; },
+        'archivesonly':
+            (b, settings) => { settings.setArchivesOnlyBool(b); },
+        'debug':
+            (b, settings) => { settings.setDebugBool(b); },
+        'excludehidden':
+            (b, settings) => { settings.excludeHidden = b; },
+        'firstmatch':
+            (b, settings) => { settings.firstMatch = b; },
+        'includehidden':
+            (b, settings) => { settings.excludeHidden = !b; },
+        'help':
+            (b, settings) => { settings.printUsage = b; },
+        'listdirs':
+            (b, settings) => { settings.listDirs = b; },
+        'listfiles':
+            (b, settings) => { settings.listFiles = b; },
+        'listlines':
+            (b, settings) => { settings.listLines = b; },
+        'multilinesearch':
+            (b, settings) => { settings.multilineSearch = b; },
+        'noprintmatches':
+            (b, settings) => { settings.printResults = !b; },
+        'norecursive':
+            (b, settings) => { settings.recursive = !b; },
+        'nosearcharchives':
+            (b, settings) => { settings.searchArchives = !b; },
+        'printmatches':
+            (b, settings) => { settings.printResults = b; },
+        'recursive':
+            (b, settings) => { settings.recursive = b; },
+        'searcharchives':
+            (b, settings) => { settings.searchArchives = b; },
+        'uniquelines':
+            (b, settings) => { settings.uniqueLines = b; },
+        'verbose':
+            (b, settings) => { settings.verbose = b; },
+        'version':
+            (b, settings) => { settings.printVersion = b; }
     };
 
     const flagActionMap = {
@@ -130,6 +174,8 @@ function SearchOptions() {
                     const shortArg = child.attributes.short;
                     const desc = child.text().trim();
                     let func = null;
+                    argNameMap[longArg] = longArg;
+                    if (shortArg) argNameMap[shortArg] = longArg;
                     if (argActionMap[longArg]) func = argActionMap[longArg];
                     else if (flagActionMap[longArg]) func = flagActionMap[longArg];
                     else throw new Error("Unknown option: "+longArg);
@@ -149,27 +195,32 @@ function SearchOptions() {
     })();
 
     var settingsFromFile = function (filepath, settings) {
-        let err = null;
-        let fileSettings = {};
         const fs = require('fs');
         if (fs.existsSync(filepath)) {
-            fileSettings = require(filepath);
+            let json = FileUtil.getFileContents(filepath);
+            return settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');
         }
-        for (let k in fileSettings) {
+    };
+
+    self.settingsFromJson = function (json, settings) {
+        let err = null;
+        let obj = JSON.parse(json);
+        for (let k in obj) {
             if (err) break;
-            if (fileSettings.hasOwnProperty(k)) {
+            if (obj.hasOwnProperty(k)) {
+                let longKey = argNameMap[k];
                 if (argMap[k]) {
-                    if (fileSettings[k]) {
-                        argMap[k].func(fileSettings[k], settings);
+                    if (obj[k]) {
+                        argMap[k].func(obj[k], settings);
                     } else {
                         err = new Error("Missing argument for option "+k);
                     }
-                } else if (flagMap[k]) {
-                    flagMap[k].func(settings);
+                } else if (boolFlagActionMap[longKey]) {
+                    boolFlagActionMap[longKey](obj[k], settings);
                 } else if (k == 'startpath') {
-                    settings.startPath = fileSettings[k];
+                    settings.startPath = obj[k];
                 } else {
                     err = new Error("Invalid option: "+k);
                 }
@@ -207,9 +258,6 @@ function SearchOptions() {
             } else {
                 settings.startPath = arg;
             }
-        }
-        if (settings.debug) {
-            settings.verbose = true;
         }
         cb(err, settings);
     };
