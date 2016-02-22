@@ -43,14 +43,14 @@
 
 (deftest test-set-archivesonly
   (let [settings DEFAULT-SETTINGS
-        with-archivesonly (set-archivesonly settings)]
+        with-archivesonly (set-archivesonly settings true)]
     (testing "test-set-archivesonly"
       (is (:archivesonly with-archivesonly))
       (is (:searcharchives with-archivesonly)))))
 
 (deftest test-set-debug
   (let [settings DEFAULT-SETTINGS
-        with-debug (set-debug settings)]
+        with-debug (set-debug settings true)]
     (testing "test-set-debug"
       (is (:debug with-debug))
       (is (:verbose with-debug)))))

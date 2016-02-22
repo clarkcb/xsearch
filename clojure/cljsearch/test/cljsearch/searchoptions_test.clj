@@ -27,11 +27,12 @@
       (is (not (:verbose ss))))))
 
 (deftest test-valid-args
-  (let [[ss errs] (settings-from-args ["-x" "clj" "-s" "Search" "."])]
+  (let [[ss errs] (settings-from-args ["-x" "clj,scala" "-s" "Search" "."])]
     (testing "test-valid-args"
       (is (empty? errs))
-      (is (= (count (:in-extensions ss)) 1))
+      (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "clj"))
+      (is (contains? (:in-extensions ss) "scala"))
       (is (= (count (:searchpatterns ss)) 1))
       (is (= (.pattern (first (:searchpatterns ss))) "Search"))
       (is (= (:startpath ss) ".")))))
@@ -41,3 +42,16 @@
     (testing "test-invalid-args"
       (is (= (count errs) 1))
       (is (= (first errs) "Invalid option: Q")))))
+
+(deftest test-archivesonly
+  (let [[ss errs] (settings-from-args ["--archivesonly"])]
+    (testing "test-archivesonly"
+      (is (= (:archivesonly ss) true))
+      (is (= (:searcharchives ss) true)))))
+
+(deftest test-debug
+  (let [[ss errs] (settings-from-args ["--debug"])]
+    (testing "test-debug"
+      (is (= (:debug ss) true))
+      (is (= (:verbose ss) true)))))
+

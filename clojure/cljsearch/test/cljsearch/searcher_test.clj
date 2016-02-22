@@ -151,7 +151,7 @@
       (is (not (filter-file? (file ".gitignore") settings))))))
 
 (deftest test-filter-file?-with-archivesonly
-  (let [settings (set-archivesonly DEFAULT-SETTINGS)]
+  (let [settings (set-archivesonly DEFAULT-SETTINGS true)]
     (testing "test-filter-file?-with-archivesonly"
       (is (filter-file? (file "archive.zip") settings))
       (is (filter-file? (file "archive.bz2") settings))

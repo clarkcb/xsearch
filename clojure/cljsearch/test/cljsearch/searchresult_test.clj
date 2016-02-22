@@ -48,7 +48,8 @@
               line
               linesbefore
               linesafter)
-          expected (format "%s matches" searchfile)]
+          expected (format "%s matches at [%d:%d]" searchfile matchstartindex
+            matchendindex)]
       (is (= (search-result-to-string r) expected)))))
 
 (deftest test-multiline-searchresult
