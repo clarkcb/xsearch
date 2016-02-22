@@ -82,7 +82,7 @@ sub test_missing_arg {
     ok($errs->[0] eq 'Missing value for x', 'Correct missing value error message');
 }
 
-sub test_unknown_arg {
+sub test_invalid_arg {
     my $args = ['-Q'];
     my ($settings, $errs) = $searchoptions->settings_from_args($args);
     ok(scalar @{$errs} == 1, 'Error from unknown arg');
@@ -130,7 +130,7 @@ sub main {
     test_archivesonly_arg();
     test_debug_arg();
     test_missing_arg();
-    test_unknown_arg();
+    test_invalid_arg();
     test_settings_from_json();
 }
 

@@ -16,7 +16,7 @@ BEGIN {
     unshift @INC, $curpath;
 }
 
-use Test::Simple tests => 25;
+use Test::Simple tests => 28;
 
 use plsearch::SearchSettings;
 
@@ -58,10 +58,19 @@ sub test_add_comma_delimited_extensions {
     ok($settings->{in_extensions}->[1] eq 'py', "in_extensions contains py extension");
 }
 
+sub test_add_array_extensions {
+    my $settings = new plsearch::SearchSettings();
+    $settings->add_exts(['pl','py'], $settings->{in_extensions});
+    ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
+    ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
+    ok($settings->{in_extensions}->[1] eq 'py', "in_extensions contains py extension");
+}
+
 sub main {
     test_default_settings();
     test_add_single_extension();
     test_add_comma_delimited_extensions();
+    test_add_array_extensions();
 }
 
 main();

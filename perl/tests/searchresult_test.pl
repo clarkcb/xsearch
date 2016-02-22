@@ -54,7 +54,8 @@ sub test_binaryfile_searchresult {
     my $linesafter = [];
     my $searchresult = new plsearch::SearchResult($pattern, $file, $linenum,
         $match_start_index, $match_end_index, $line, $linesbefore, $linesafter);
-    my $expectedoutput = sprintf("%s matches", $file);
+    my $expectedoutput = sprintf("%s matches at [%d:%d]", $file,
+        $match_start_index, $match_end_index);
     # print "searchresult->to_string():\n".$searchresult->to_string()."\n";
     # print "expectedoutput:\n$expectedoutput\n";
     ok($expectedoutput eq $searchresult->to_string(),
