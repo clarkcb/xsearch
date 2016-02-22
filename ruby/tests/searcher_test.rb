@@ -108,7 +108,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_search_file_matches_in_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('rb', settings.in_extensions)
+    settings.add_exts('rb', settings.in_extensions)
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(searcher.is_search_file(f))
@@ -116,7 +116,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_search_file_no_match_in_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('py', settings.in_extensions)
+    settings.add_exts('py', settings.in_extensions)
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(!searcher.is_search_file(f))
@@ -124,7 +124,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_search_file_matches_out_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('rb', settings.out_extensions)
+    settings.add_exts('rb', settings.out_extensions)
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(!searcher.is_search_file(f))
@@ -132,7 +132,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_search_file_no_match_out_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('py', settings.out_extensions)
+    settings.add_exts('py', settings.out_extensions)
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(searcher.is_search_file(f))
@@ -182,7 +182,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_archive_search_file_matches_in_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('zip', settings.in_archiveextensions)
+    settings.add_exts('zip', settings.in_archiveextensions)
     searcher = Searcher.new(settings)
     f = 'archive.zip'
     assert(searcher.is_archive_search_file(f))
@@ -190,7 +190,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_archive_search_file_no_match_in_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('gz', settings.in_archiveextensions)
+    settings.add_exts('gz', settings.in_archiveextensions)
     searcher = Searcher.new(settings)
     f = 'archive.zip'
     assert(!searcher.is_archive_search_file(f))
@@ -198,7 +198,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_archive_search_file_matches_out_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('zip', settings.out_archiveextensions)
+    settings.add_exts('zip', settings.out_archiveextensions)
     searcher = Searcher.new(settings)
     f = 'archive.zip'
     assert(!searcher.is_archive_search_file(f))
@@ -206,7 +206,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_is_archive_search_file_no_match_out_extension
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('gz', settings.out_archiveextensions)
+    settings.add_exts('gz', settings.out_archiveextensions)
     searcher = Searcher.new(settings)
     f = 'archive.zip'
     assert(searcher.is_archive_search_file(f))
@@ -256,7 +256,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_filter_file_is_search_file
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('rb', settings.in_extensions)
+    settings.add_exts('rb', settings.in_extensions)
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(searcher.filter_file(f))
@@ -264,7 +264,7 @@ class SearcherTest < Test::Unit::TestCase
 
   def test_filter_file_not_is_search_file
     settings = self.get_settings()
-    settings.add_comma_delimited_exts('pl', settings.in_extensions)
+    settings.add_exts('pl', settings.in_extensions)
     searcher = Searcher.new(settings)
     f = 'fileutil.rb'
     assert(!searcher.filter_file(f))

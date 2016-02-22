@@ -7,6 +7,7 @@
 ################################################################################
 
 require_relative "../rbsearch/searchoptions.rb"
+require_relative "../rbsearch/searchsettings.rb"
 require "test/unit"
  
 class SearchOptionsTest < Test::Unit::TestCase
@@ -77,8 +78,35 @@ class SearchOptionsTest < Test::Unit::TestCase
     assert(settings.verbose)
   end
 
-  def test_with_invalid_arg
+  def test_missing_arg
+    args = ['-x', 'py,rb', '-s', 'Search', '.', '-D']
+    assert_raise(ArgumentError) {settings = @searchoptions.search_settings_from_args(args)}
+  end
+
+  def test_invalid_arg
     args = ['-x', 'py,rb', '-s', 'Search', '.', '-Q']
     assert_raise(ArgumentError) {settings = @searchoptions.search_settings_from_args(args)}
   end
+
+  def test_settings_from_json
+    settings = SearchSettings.new
+    json = <<-JSON
+{
+  "startpath": "~/src/xsearch/",
+  "in-ext": ["js","ts"],
+  "out-dirpattern": "node_module",
+  "out-filepattern": ["temp"],
+  "search": "Searcher",
+  "linesbefore": 2,
+  "linesafter": 2,
+  "debug": true,
+  "allmatches": false,
+  "includehidden": true
+}
+    JSON
+    @searchoptions.settings_from_json(json, settings)
+    assert(settings.debug)
+    assert(settings.verbose)
+  end
+
 end

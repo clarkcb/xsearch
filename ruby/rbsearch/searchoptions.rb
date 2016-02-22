@@ -7,6 +7,7 @@
 #
 ################################################################################
 
+require 'json'
 require 'rexml/document'
 include REXML
 require_relative 'config.rb'
@@ -26,51 +27,75 @@ class SearchOptions
 
   def set_actions
     @arg_action_dict = {
-      :'in-archiveext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
+      :'in-archiveext' => ->(x, settings){ settings.add_exts(x,
           settings.in_archiveextensions) },
-      :'in-archivefilepattern' => ->(x, settings){ settings.add_pattern(x,
+      :'in-archivefilepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_archivefilepatterns) },
-      :'in-dirpattern' => ->(x, settings){ settings.add_pattern(x,
+      :'in-dirpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_dirpatterns) },
-      :'in-ext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
+      :'in-ext' => ->(x, settings){ settings.add_exts(x,
           settings.in_extensions) },
-      :'in-filepattern' => ->(x, settings){ settings.add_pattern(x,
+      :'in-filepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_filepatterns) },
-      :'in-linesafterpattern' => ->(x, settings){ settings.add_pattern(x,
+      :'in-linesafterpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_linesafterpatterns) },
-      :'in-linesbeforepattern' => ->(x, settings){ settings.add_pattern(x,
+      :'in-linesbeforepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_linesbeforepatterns) },
       :'linesafter' => ->(x, settings){ settings.linesafter = x.to_i },
-      :'linesaftertopattern' => ->(x, settings){ settings.add_pattern(x,
+      :'linesaftertopattern' => ->(x, settings){ settings.add_patterns(x,
         settings.linesaftertopatterns) },
-      :'linesafteruntilpattern' => ->(x, settings){ settings.add_pattern(x,
+      :'linesafteruntilpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.linesafteruntilpatterns) },
       :'linesbefore' => ->(x, settings){ settings.linesbefore = x.to_i },
       :'maxlinelength' => ->(x, settings){ settings.maxlinelength = x.to_i },
-      :'out-archiveext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
+      :'out-archiveext' => ->(x, settings){ settings.add_exts(x,
           settings.out_archiveextensions) },
-      :'out-archivefilepattern' => ->(x, settings){ settings.add_pattern(x,
+      :'out-archivefilepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_archivefilepatterns) },
-      :'out-dirpattern' => ->(x, settings){ settings.add_pattern(x,
+      :'out-dirpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_dirpatterns) },
-      :'out-ext' => ->(x, settings){ settings.add_comma_delimited_exts(x,
+      :'out-ext' => ->(x, settings){ settings.add_exts(x,
           settings.out_extensions) },
-      :'out-filepattern' => ->(x, settings){ settings.add_pattern(x,
+      :'out-filepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_filepatterns) },
-      :'out-linesafterpattern' => ->(x, settings){ settings.add_pattern(x,
+      :'out-linesafterpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_linesafterpatterns) },
-      :'out-linesbeforepattern' => ->(x, settings){ settings.add_pattern(x,
+      :'out-linesbeforepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_linesbeforepatterns) },
-      :'search' => ->(x, settings){ settings.add_pattern(x,
-        settings.searchpatterns) }
+      :'search' => ->(x, settings){ settings.add_patterns(x,
+        settings.searchpatterns) },
+      :'settings-file' => ->(x, settings){ settings_from_file(x, settings) }
+    }
+    @bool_flag_action_dict = {
+      :'allmatches' => ->(b, settings){ settings.firstmatch = not(b) },
+      :'archivesonly' => ->(b, settings){ settings.set_archivesonly(b) },
+      :'caseinsensitive' => ->(b, settings){ settings.casesensitive = not(b) },
+      :'casesensitive' => ->(b, settings){ settings.casesensitive = b },
+      :'debug' => ->(b, settings){ settings.set_debug(b) },
+      :'excludehidden' => ->(b, settings){ settings.excludehidden = b },
+      :'firstmatch' => ->(b, settings){ settings.firstmatch = b },
+      :'help' => ->(b, settings){ settings.printusage = b },
+      :'includehidden' => ->(b, settings){ settings.excludehidden = not(b) },
+      :'listdirs' => ->(b, settings){ settings.listdirs = b },
+      :'listfiles' => ->(b, settings){ settings.listfiles = b },
+      :'listlines' => ->(b, settings){ settings.listlines = b },
+      :'multilinesearch' => ->(b, settings){ settings.multilinesearch = b },
+      :'noprintmatches' => ->(b, settings){ settings.printresults = not(b) },
+      :'norecursive' => ->(b, settings){ settings.recursive = not(b) },
+      :'nosearcharchives' => ->(b, settings){ settings.searcharchives = not(b) },
+      :'printmatches' => ->(b, settings){ settings.printresults = b },
+      :'recursive' => ->(b, settings){ settings.recursive = b },
+      :'searcharchives' => ->(b, settings){ settings.searcharchives = b },
+      :'uniquelines' => ->(b, settings){ settings.uniquelines = b },
+      :'verbose' => ->(b, settings){ settings.verbose = b },
+      :'version' => ->(b, settings){ settings.printversion = b }
     }
     @flag_action_dict = {
       :'allmatches' => ->(settings){ settings.firstmatch = false },
-      :'archivesonly' => ->(settings){ settings.archivesonly = true;
-        settings.searcharchives = true },
+      :'archivesonly' => ->(settings){ settings.set_archivesonly(true) },
       :'caseinsensitive' => ->(settings){ settings.casesensitive = false },
       :'casesensitive' => ->(settings){ settings.casesensitive = true },
-      :'debug' => ->(settings){ settings.debug = true; settings.verbose = true },
+      :'debug' => ->(settings){ settings.set_debug(true) },
       :'excludehidden' => ->(settings){ settings.excludehidden = true },
       :'firstmatch' => ->(settings){ settings.firstmatch = true },
       :'help' => ->(settings){ settings.printusage = true },
@@ -121,6 +146,30 @@ class SearchOptions
     }
   end
 
+  def settings_from_file(filepath, settings)
+    # TODO: verify file exists
+    json = File.read(filepath)
+    settings_from_json(json, settings)
+  end
+
+  def settings_from_json(json, settings)
+    json_hash = JSON.parse(json)
+    json_hash.each do |arg, elem|
+      if @arg_action_dict.has_key?(arg.to_sym)
+        @arg_action_dict[arg.to_sym].call(json_hash[arg], settings)
+      elsif @bool_flag_action_dict.has_key?(arg.to_sym)
+        @bool_flag_action_dict[arg.to_sym].call(json_hash[arg], settings)
+        if ['h', 'help', 'V', 'version'].include?(arg)
+          return
+        end
+      elsif arg == 'startpath'
+        settings.startpath = json_hash[arg]
+      else
+        raise ArgumentError, "Invalid option: #{arg}"
+      end
+    end
+  end
+
   def search_settings_from_args(args)
     settings = SearchSettings.new()
     settings.printresults = true
@@ -131,13 +180,14 @@ class SearchOptions
           arg = arg[1..arg.length]
         end
         if @arg_dict.has_key?(arg)
-          if args
+          if args.count > 0
             argval = args.shift
             @arg_dict[arg].func.call(argval, settings)
           else
             raise ArgumentError, "Missing value for option #{arg}"
           end
         elsif @flag_dict.has_key?(arg)
+          puts "arg in @flag_dict\n"
           @flag_dict[arg].func.call(settings)
           if ['h', 'help', 'V', 'version'].include?(arg)
             return settings

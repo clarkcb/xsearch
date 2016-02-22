@@ -63,13 +63,13 @@ class SearchSettingsTest < Test::Unit::TestCase
   end
 
   def test_add_single_extension
-    @settings.add_comma_delimited_exts('rb', @settings.in_extensions)
+    @settings.add_exts('rb', @settings.in_extensions)
     self.assert_equal(@settings.in_extensions.length, 1)
     self.assert(@settings.in_extensions.include?('rb'))
   end
 
   def test_add_comma_delimited_extensions
-    @settings.add_comma_delimited_exts('py,rb', @settings.in_extensions)
+    @settings.add_exts('py,rb', @settings.in_extensions)
     assert_equal(@settings.in_extensions.length, 2)
     assert(@settings.in_extensions.include?('py'))
     assert(@settings.in_extensions.include?('rb'))

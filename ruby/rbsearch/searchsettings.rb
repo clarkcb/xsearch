@@ -85,14 +85,44 @@ class SearchSettings
     @searchpatterns = []
   end
 
-  def add_comma_delimited_exts(exts, ext_set)
-    exts.split(",").each do |x|
-        ext_set.push(x)
+  def add_exts(exts, ext_set)
+    if exts.instance_of? String
+      exts.split(",").each do |x|
+          ext_set.push(x)
+      end
+    elsif exts.instance_of? Array
+      exts.each do |x|
+          ext_set.push(x)
+      end
+    end
+  end
+
+  def add_patterns(patterns, pattern_set)
+    if patterns.instance_of? String
+      pattern_set.push(Regexp.new(patterns))
+    elsif patterns.instance_of? Array
+      patterns.each do |p|
+        pattern_set.push(Regexp.new(p))
+      end
     end
   end
 
   def add_pattern(pattern, pattern_set)
     pattern_set.push(Regexp.new(pattern))
+  end
+
+  def set_archivesonly(b)
+    @archivesonly = b
+    if b
+      @searcharchives = b
+    end
+  end
+
+  def set_debug(b)
+    @debug = b
+    if b
+      @verbose = b
+    end
   end
 
   def list_to_s(name, lst)
