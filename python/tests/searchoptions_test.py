@@ -13,6 +13,7 @@ import unittest
 sys.path.insert(0, '..')
 
 from pysearch.searchoptions import SearchOptions
+from pysearch.searchsettings import SearchSettings
 
 class SearchOptionsTest(unittest.TestCase):
     @classmethod
@@ -77,11 +78,47 @@ class SearchOptionsTest(unittest.TestCase):
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
 
-    def test_with_invalid_arg(self):
+    def test_missing_arg(self):
+        args = ['-x', 'py,rb', '-s', 'Search', '.', '-D']
+        with self.assertRaises(Exception) as cm:
+            settings = self.searchoptions.search_settings_from_args(args)
+        self.assertEqual(cm.exception.message, 'Missing value for option D')
+
+    def test_invalid_arg(self):
         args = ['-x', 'py,rb', '-s', 'Search', '.', '-Q']
         with self.assertRaises(Exception) as cm:
             settings = self.searchoptions.search_settings_from_args(args)
-        self.assertEqual(cm.exception.message, 'Unknown option: Q')
+        self.assertEqual(cm.exception.message, 'Invalid option: Q')
+
+
+    def test_settings_from_json(self):
+        settings = SearchSettings()
+        json = '''{
+  "startpath": "~/src/xsearch/",
+  "in-ext": ["js","ts"],
+  "out-dirpattern": "node_module",
+  "out-filepattern": ["temp"],
+  "search": "Searcher",
+  "linesbefore": 2,
+  "linesafter": 2,
+  "debug": true,
+  "allmatches": false,
+  "includehidden": true
+}'''
+        self.searchoptions.settings_from_json(json, settings)
+        self.assertEqual(settings.startpath, '~/src/xsearch/')
+        for x in set(['js', 'ts']):
+            self.assertIn(x, settings.in_extensions)
+        self.assertEquals(list(settings.searchpatterns)[0].pattern, 'Searcher')
+        self.assertEquals(list(settings.out_dirpatterns)[0].pattern, 'node_module')
+        self.assertEquals(list(settings.out_filepatterns)[0].pattern, 'temp')
+        self.assertEqual(settings.linesbefore, 2)
+        self.assertEqual(settings.linesafter, 2)
+        self.assertTrue(settings.debug)
+        self.assertTrue(settings.verbose)
+        self.assertTrue(settings.firstmatch)
+        self.assertFalse(settings.excludehidden)
+
 
 if __name__ == '__main__':
     unittest.main()

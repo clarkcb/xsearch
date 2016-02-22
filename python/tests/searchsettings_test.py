@@ -97,18 +97,18 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertEqual(self.settings.verbose, True)
 
     def test_add_single_extension(self):
-        self.settings.add_comma_delimited_exts('py', 'in_extensions')
+        self.settings.add_exts('py', 'in_extensions')
         self.assertIn('py', self.settings.in_extensions)
 
     def test_add_comma_delimited_extensions(self):
-        self.settings.add_comma_delimited_exts('py,rb,scala', 'in_extensions')
+        self.settings.add_exts('py,rb,scala', 'in_extensions')
         self.assertEqual(len(self.settings.in_extensions), 3)
         for x in set(['py', 'rb', 'scala']):
             self.assertIn(x, self.settings.in_extensions)
 
-    def test_add_pattern(self):
+    def test_add_patterns(self):
         p = 'Search'
-        self.settings.add_pattern(p, 'searchpatterns')
+        self.settings.add_patterns(p, 'searchpatterns')
         self.assertEquals(list(self.settings.searchpatterns)[0].pattern, p)
 
 if __name__ == '__main__':

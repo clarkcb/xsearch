@@ -9,6 +9,7 @@
 ################################################################################
 from collections import deque
 from cStringIO import StringIO
+import json
 import os
 import platform
 import sys
@@ -22,138 +23,224 @@ from searchsettings import SearchSettings
 class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
 
-    arg_action_dict = {
-        'in-archiveext':
-            lambda x, settings:
-                settings.add_comma_delimited_exts(x, 'in_archiveextensions'),
-        'in-archivefilepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_archivefilepatterns'),
-        'in-dirpattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_dirpatterns'),
-        'in-ext':
-            lambda x, settings:
-                settings.add_comma_delimited_exts(x, 'in_extensions'),
-        'in-filepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_filepatterns'),
-        'in-linesafterpattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_linesafterpatterns'),
-        'in-linesbeforepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'in_linesbeforepatterns'),
-        'linesafter':
-            lambda x, settings:
-                settings.set_property('linesafter', int(x)),
-        'linesaftertopattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'linesaftertopatterns'),
-        'linesafteruntilpattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'linesafteruntilpatterns'),
-        'linesbefore':
-            lambda x, settings:
-                settings.set_property('linesbefore', int(x)),
-        'maxlinelength':
-            lambda x, settings:
-                settings.set_property('maxlinelength', int(x)),
-        'out-archiveext':
-            lambda x, settings:
-                settings.add_comma_delimited_exts(x, 'out_archiveextensions'),
-        'out-archivefilepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'out_archivefilepatterns'),
-        'out-dirpattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'out_dirpatterns'),
-        'out-ext':
-            lambda x, settings:
-                settings.add_comma_delimited_exts(x, 'out_extensions'),
-        'out-filepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'out_filepatterns'),
-        'out-linesafterpattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'out_linesafterpatterns'),
-        'out-linesbeforepattern':
-            lambda x, settings:
-                settings.add_pattern(x, 'out_linesbeforepatterns'),
-        'search':
-            lambda x, settings:
-                settings.add_pattern(x, 'searchpatterns')
-    }
-    flag_action_dict = {
-        'allmatches':
-            lambda settings:
-                settings.set_property('firstmatch', False),
-        'archivesonly':
-            lambda settings:
-                settings.set_properties({'archivesonly': True,
-                                         'searcharchives': True}),
-        'debug':
-            lambda settings:
-                settings.set_properties({'debug': True,
-                                         'verbose': True}),
-        'excludehidden':
-            lambda settings:
-                settings.set_property('excludehidden', True),
-        'firstmatch':
-            lambda settings:
-                settings.set_property('firstmatch', True),
-        'help':
-            lambda settings:
-                settings.set_property('printusage', True),
-        'includehidden':
-            lambda settings:
-                settings.set_property('excludehidden', False),
-        'listdirs':
-            lambda settings:
-                settings.set_property('listdirs', True),
-        'listfiles':
-            lambda settings:
-                settings.set_property('listfiles', True),
-        'listlines':
-            lambda settings:
-                settings.set_property('listlines', True),
-        'multilinesearch':
-            lambda settings:
-                settings.set_property('multilinesearch', True),
-        'noprintmatches':
-            lambda settings:
-                settings.set_property('printresults', False),
-        'norecursive':
-            lambda settings:
-                settings.set_property('recursive', False),
-        'nosearcharchives':
-            lambda settings:
-                settings.set_property('searcharchives', False),
-        'printmatches':
-            lambda settings:
-                settings.set_property('printresults', True),
-        'recursive':
-            lambda settings:
-                settings.set_property('recursive', True),
-        'searcharchives':
-            lambda settings:
-                settings.set_property('searcharchives', True),
-        'uniquelines':
-            lambda settings:
-                settings.set_property('uniquelines', True),
-        'verbose':
-            lambda settings:
-                settings.set_property('verbose', True),
-        'version':
-            lambda settings:
-                settings.set_property('printversion', True)
-    }
+    def set_dicts(self):
+        self.arg_action_dict = {
+            'in-archiveext':
+                lambda x, settings:
+                    settings.add_exts(x, 'in_archiveextensions'),
+            'in-archivefilepattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'in_archivefilepatterns'),
+            'in-dirpattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'in_dirpatterns'),
+            'in-ext':
+                lambda x, settings:
+                    settings.add_exts(x, 'in_extensions'),
+            'in-filepattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'in_filepatterns'),
+            'in-linesafterpattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'in_linesafterpatterns'),
+            'in-linesbeforepattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'in_linesbeforepatterns'),
+            'linesafter':
+                lambda x, settings:
+                    settings.set_property('linesafter', int(x)),
+            'linesaftertopattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'linesaftertopatterns'),
+            'linesafteruntilpattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'linesafteruntilpatterns'),
+            'linesbefore':
+                lambda x, settings:
+                    settings.set_property('linesbefore', int(x)),
+            'maxlinelength':
+                lambda x, settings:
+                    settings.set_property('maxlinelength', int(x)),
+            'out-archiveext':
+                lambda x, settings:
+                    settings.add_exts(x, 'out_archiveextensions'),
+            'out-archivefilepattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'out_archivefilepatterns'),
+            'out-dirpattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'out_dirpatterns'),
+            'out-ext':
+                lambda x, settings:
+                    settings.add_exts(x, 'out_extensions'),
+            'out-filepattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'out_filepatterns'),
+            'out-linesafterpattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'out_linesafterpatterns'),
+            'out-linesbeforepattern':
+                lambda x, settings:
+                    settings.add_patterns(x, 'out_linesbeforepatterns'),
+            'search':
+                lambda x, settings:
+                    settings.add_patterns(x, 'searchpatterns'),
+            'settings-file':
+                lambda x, settings:
+                    self.settings_from_file(x, settings)
+        }
+
+        self.bool_flag_action_dict = {
+            'allmatches':
+                lambda b, settings:
+                    settings.set_property('firstmatch', not b),
+            'archivesonly':
+                lambda b, settings:
+                    settings.set_property('archivesonly', b),
+            'debug':
+                lambda b, settings:
+                    settings.set_property('debug', b),
+            'excludehidden':
+                lambda b, settings:
+                    settings.set_property('excludehidden', b),
+            'firstmatch':
+                lambda b, settings:
+                    settings.set_property('firstmatch', b),
+            'help':
+                lambda b, settings:
+                    settings.set_property('printusage', b),
+            'includehidden':
+                lambda b, settings:
+                    settings.set_property('excludehidden', not b),
+            'listdirs':
+                lambda b, settings:
+                    settings.set_property('listdirs', b),
+            'listfiles':
+                lambda b, settings:
+                    settings.set_property('listfiles', b),
+            'listlines':
+                lambda b, settings:
+                    settings.set_property('listlines', b),
+            'multilinesearch':
+                lambda b, settings:
+                    settings.set_property('multilinesearch', b),
+            'noprintmatches':
+                lambda b, settings:
+                    settings.set_property('printresults', not b),
+            'norecursive':
+                lambda b, settings:
+                    settings.set_property('recursive', not b),
+            'nosearcharchives':
+                lambda b, settings:
+                    settings.set_property('searcharchives', not b),
+            'printmatches':
+                lambda b, settings:
+                    settings.set_property('printresults', b),
+            'recursive':
+                lambda b, settings:
+                    settings.set_property('recursive', b),
+            'searcharchives':
+                lambda b, settings:
+                    settings.set_property('searcharchives', b),
+            'uniquelines':
+                lambda b, settings:
+                    settings.set_property('uniquelines', b),
+            'verbose':
+                lambda b, settings:
+                    settings.set_property('verbose', b),
+            'version':
+                lambda b, settings:
+                    settings.set_property('printversion', b)
+        }
+
+        self.flag_action_dict = {
+            'allmatches':
+                lambda settings:
+                    settings.set_property('firstmatch', False),
+            'archivesonly':
+                lambda settings:
+                    settings.set_property('archivesonly', True),
+            'debug':
+                lambda settings:
+                    settings.set_property('debug', True),
+            'excludehidden':
+                lambda settings:
+                    settings.set_property('excludehidden', True),
+            'firstmatch':
+                lambda settings:
+                    settings.set_property('firstmatch', True),
+            'help':
+                lambda settings:
+                    settings.set_property('printusage', True),
+            'includehidden':
+                lambda settings:
+                    settings.set_property('excludehidden', False),
+            'listdirs':
+                lambda settings:
+                    settings.set_property('listdirs', True),
+            'listfiles':
+                lambda settings:
+                    settings.set_property('listfiles', True),
+            'listlines':
+                lambda settings:
+                    settings.set_property('listlines', True),
+            'multilinesearch':
+                lambda settings:
+                    settings.set_property('multilinesearch', True),
+            'noprintmatches':
+                lambda settings:
+                    settings.set_property('printresults', False),
+            'norecursive':
+                lambda settings:
+                    settings.set_property('recursive', False),
+            'nosearcharchives':
+                lambda settings:
+                    settings.set_property('searcharchives', False),
+            'printmatches':
+                lambda settings:
+                    settings.set_property('printresults', True),
+            'recursive':
+                lambda settings:
+                    settings.set_property('recursive', True),
+            'searcharchives':
+                lambda settings:
+                    settings.set_property('searcharchives', True),
+            'uniquelines':
+                lambda settings:
+                    settings.set_property('uniquelines', True),
+            'verbose':
+                lambda settings:
+                    settings.set_property('verbose', True),
+            'version':
+                lambda settings:
+                    settings.set_property('printversion', True)
+        }
+        self.arg_dict = {}
+        self.flag_dict = {}
 
     def __init__(self):
         self.options = []
-        self.arg_dict = {}
-        self.flag_dict = {}
+        self.set_dicts()
         self.set_options_from_xml()
+
+    def settings_from_file(self, filepath, settings):
+        assert os.path.exists(filepath), 'Settings file not found: %s' % filepath
+        with open(filepath) as f:
+            jsonstr = f.read()
+            # print "jsonstr: '%s'" % jsonstr
+            self.settings_from_json(jsonstr, settings)
+
+    def settings_from_json(self, jsonstr, settings):
+        json_dict = json.loads(jsonstr)
+        for arg in json_dict:
+            if arg in self.arg_action_dict:
+                self.arg_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.bool_flag_action_dict:
+                self.bool_flag_action_dict[arg](json_dict[arg], settings)
+            elif arg == 'startpath':
+                settings.startpath = json_dict[arg]
+            else:
+                raise Exception('Invalid option: {0}'.format(arg))
 
     def set_options_from_xml(self):
         searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)

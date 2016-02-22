@@ -49,17 +49,32 @@ class SearchSettings(object):
             self.__dict__[name] = set()
         self.__dict__.update(self._props_with_defaults)
 
-    def add_comma_delimited_exts(self, exts, ext_set_name):
-        for x in [ext for ext in exts.split(',') if ext]:
-            self.__dict__[ext_set_name].add(x)
+    def add_exts(self, exts, ext_set_name):
+        if type(exts) is list:
+            self.__dict__[ext_set_name] = self.__dict__[ext_set_name].union(exts)
+        elif type(exts) in set([str, unicode]):
+            ext_set = set([ext for ext in exts.split(',') if ext])
+            self.__dict__[ext_set_name] = self.__dict__[ext_set_name].union(ext_set)
 
-    def add_pattern(self, pattern, pattern_set_name):
+    def add_patterns(self, patterns, pattern_set_name):
         assert pattern_set_name in self._pattern_set_names
         compile_flag = re.S | re.U
-        self.__dict__[pattern_set_name].add(re.compile(pattern, compile_flag))
+        if type(patterns) is list:
+            pattern_set = set([re.compile(p, compile_flag) for p in patterns])
+            self.__dict__[pattern_set_name] = self.__dict__[pattern_set_name].union(pattern_set)
+        elif type(patterns) in set([str, unicode]):
+            self.__dict__[pattern_set_name].add(re.compile(patterns, compile_flag))
+        else:
+            print 'ERROR: patterns is an unknown type'
 
     def set_property(self, name, val):
         self.__dict__[name] = val
+        # some trues trigger others
+        if type(val) is bool and val:
+            if name == 'archivesonly':
+                self.searcharchives = True
+            elif name == 'debug':
+                self.verbose = True
 
     def set_properties(self, propdict):
         for p in propdict:
