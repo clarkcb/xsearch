@@ -40,6 +40,25 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(in_array('php', $this->settings->in_extensions));
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
+
+    public function test_add_extensions_array() {
+        $this->settings->add_exts(['php','py'], $this->settings->in_extensions);
+        $this->assertEquals(count($this->settings->in_extensions), 2);
+        $this->assertTrue(in_array('php', $this->settings->in_extensions));
+        $this->assertTrue(in_array('py', $this->settings->in_extensions));
+    }
+
+    public function test_add_patterns_string() {
+        $this->settings->add_patterns('Searcher', $this->settings->searchpatterns);
+        $this->assertEquals(count($this->settings->searchpatterns), 1);
+        $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
+    }
+
+    public function test_add_patterns_array() {
+        $this->settings->add_patterns(['Searcher'], $this->settings->searchpatterns);
+        $this->assertEquals(count($this->settings->searchpatterns), 1);
+        $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
+    }
 }
 
 ?>

@@ -57,9 +57,54 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
     /**
     * @expectedException SearchException
     */
-    public function test_with_invalid_arg() {
+    public function test_missing_arg() {
+        $args = ['-x', 'php,py', '-s', 'Search', '.', '-D'];
+        $settings = $this->searchoptions->settings_from_args($args);
+    }
+
+    /**
+    * @expectedException SearchException
+    */
+    public function test_invalid_arg() {
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-Q'];
         $settings = $this->searchoptions->settings_from_args($args);
+    }
+
+
+
+    public function test_settings_from_json() {
+        $settings = new SearchSettings();
+        $json = <<<"END_JSON"
+{
+  "startpath": "~/src/xsearch/",
+  "in-ext": ["js","ts"],
+  "out-dirpattern": "node_module",
+  "out-filepattern": ["temp"],
+  "search": "Searcher",
+  "linesbefore": 2,
+  "linesafter": 2,
+  "debug": true,
+  "allmatches": false,
+  "includehidden": true
+}
+END_JSON;
+        $this->searchoptions->settings_from_json($json, $settings);
+        $this->assertEquals($settings->startpath, '~/src/xsearch/');
+        $this->assertEquals(count($settings->in_extensions), 2);
+        $this->assertTrue(in_array('js', $settings->in_extensions));
+        $this->assertTrue(in_array('ts', $settings->in_extensions));
+        $this->assertEquals(count($settings->out_dirpatterns), 1);
+        $this->assertEquals($settings->out_dirpatterns[0], 'node_module');
+        $this->assertEquals(count($settings->out_filepatterns), 1);
+        $this->assertEquals($settings->out_filepatterns[0], 'temp');
+        $this->assertEquals(count($settings->searchpatterns), 1);
+        $this->assertEquals($settings->searchpatterns[0], 'Searcher');
+        $this->assertEquals($settings->linesbefore, 2);
+        $this->assertEquals($settings->linesafter, 2);
+        $this->assertTrue($settings->debug);
+        $this->assertTrue($settings->verbose);
+        $this->assertTrue($settings->firstmatch);
+        $this->assertTrue(!$settings->excludehidden);
     }
 }
 

@@ -40,9 +40,39 @@ class SearchSettings {
     public $searchpatterns = array();
 
     public function add_exts($ext, &$exts) {
-        $xs = explode(',', $ext);
-        foreach ($xs as $x) {
-            $exts[] = $x;
+        if (gettype($ext) == 'string') {
+            $xs = explode(',', $ext);
+            foreach ($xs as $x) {
+                $exts[] = $x;
+            }
+        } elseif (gettype($ext) == 'array') {
+            foreach ($ext as $x) {
+                $exts[] = $x;
+            }
+        }
+    }
+
+    public function add_patterns($pattern, &$patterns) {
+        if (gettype($pattern) == 'string') {
+            $patterns[] = $pattern;
+        } elseif (gettype($pattern) == 'array') {
+            foreach ($pattern as $p) {
+                $patterns[] = $p;
+            }
+        }
+    }
+
+    public function set_archivesonly($b) {
+        $this->archivesonly = $b;
+        if ($b) {
+            $this->searcharchives = $b;
+        }
+    }
+
+    public function set_debug($b) {
+        $this->debug = $b;
+        if ($b) {
+            $this->verbose = $b;
         }
     }
 

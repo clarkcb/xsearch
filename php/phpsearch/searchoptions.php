@@ -11,31 +11,31 @@ class SearchOptions {
                 $settings->add_exts($s, $settings->in_archiveextensions);
             },
             'in-archivefilepattern' => function($s, SearchSettings $settings) {
-                $settings->in_archivefilepatterns[] = $s;
+                $settings->add_patterns($s, $settings->in_archivefilepatterns);
             },
             'in-dirpattern' => function($s, SearchSettings $settings) {
-                $settings->in_dirpatterns[] = $s;
+                $settings->add_patterns($s, $settings->in_dirpatterns);
             },
             'in-ext' => function($s, SearchSettings $settings) {
                 $settings->add_exts($s, $settings->in_extensions);
             },
             'in-filepattern' => function($s, SearchSettings $settings) {
-                $settings->in_filepatterns[] = $s;
+                $settings->add_patterns($s, $settings->in_filepatterns);
             },
             'in-linesafterpattern' => function($s, SearchSettings $settings) {
-                $settings->in_linesafterpatterns[] = $s;
+                $settings->add_patterns($s, $settings->in_linesafterpatterns);
             },
             'in-linesbeforepattern' => function($s, SearchSettings $settings) {
-                $settings->in_linesbeforepatterns[] = $s;
+                $settings->add_patterns($s, $settings->in_linesbeforepatterns);
             },
             'linesafter' => function($s, SearchSettings $settings) {
                 $settings->linesafter = intval($s);
             },
             'linesaftertopattern' => function($s, SearchSettings $settings) {
-                $settings->linesaftertopatterns[] = $s;
+                $settings->add_patterns($s, $settings->linesaftertopatterns);
             },
             'linesafteruntilpattern' => function($s, SearchSettings $settings) {
-                $settings->linesafteruntilpatterns[] = $s;
+                $settings->add_patterns($s, $settings->linesafteruntilpatterns);
             },
             'linesbefore' => function($s, SearchSettings $settings) {
                 $settings->linesbefore = intval($s);
@@ -47,25 +47,91 @@ class SearchOptions {
                 $settings->add_exts($s, $settings->out_archiveextensions);
             },
             'out-archivefilepattern' => function($s, SearchSettings $settings) {
-                $settings->out_archivefilepatterns[] = $s;
+                $settings->add_patterns($s, $settings->out_archivefilepatterns);
             },
             'out-dirpattern' => function($s, SearchSettings $settings) {
-                $settings->out_dirpatterns[] = $s;
+                $settings->add_patterns($s, $settings->out_dirpatterns);
             },
             'out-ext' => function($s, SearchSettings $settings) {
                 $settings->add_exts($s, $settings->out_extensions);
             },
             'out-filepattern' => function($s, SearchSettings $settings) {
-                $settings->out_filepatterns[] = $s;
+                $settings->add_patterns($s, $settings->out_filepatterns);
             },
             'out-linesafterpattern' => function($s, SearchSettings $settings) {
-                $settings->out_linesafterpatterns[] = $s;
+                $settings->add_patterns($s, $settings->out_linesafterpatterns);
             },
             'out-linesbeforepattern' => function($s, SearchSettings $settings) {
-                $settings->out_linesbeforepatterns[] = $s;
+                $settings->add_patterns($s, $settings->out_linesbeforepatterns);
             },
             'search' => function($s, SearchSettings $settings) {
-                $settings->searchpatterns[] = $s;
+                $settings->add_patterns($s, $settings->searchpatterns);
+            },
+            'settings-file' => function($s, SearchSettings $settings) {
+                $this->settings_from_file($s, $settings);
+            }
+        ];
+
+        $this->bool_flag_action_map = [
+            'allmatches' => function($b, SearchSettings $settings) {
+                $settings->firstmatch = !$b;
+            },
+            'archivesonly' => function($b, SearchSettings $settings) {
+                $settings->set_archivesonly($b);
+            },
+            'debug' => function($b, SearchSettings $settings) {
+                $settings->set_debug($b);
+            },
+            'excludehidden' => function($b, SearchSettings $settings) {
+                $settings->excludehidden = $b;
+            },
+            'firstmatch' => function($b, SearchSettings $settings) {
+                $settings->firstmatch = $b;
+            },
+            'help' => function($b, SearchSettings $settings) {
+                $settings->printusage = $b;
+            },
+            'includehidden' => function($b, SearchSettings $settings) {
+                $settings->excludehidden = !$b;
+            },
+            'listdirs' => function($b, SearchSettings $settings) {
+                $settings->listdirs = $b;
+            },
+            'listfiles' => function($b, SearchSettings $settings) {
+                $settings->listfiles = $b;
+            },
+            'listlines' => function($b, SearchSettings $settings) {
+                $settings->listlines = $b;
+            },
+            'multilinesearch' => function($b, SearchSettings $settings) {
+                $settings->multilinesearch = $b;
+            },
+            'noprintmatches' => function($b, SearchSettings $settings) {
+                $settings->printresults = !$b;
+            },
+            'norecursive' => function($b, SearchSettings $settings) {
+                $settings->recursive = !$b;
+            },
+            'nosearcharchives' => function($b, SearchSettings $settings) {
+                $settings->searcharchives = !$b;
+            },
+            'printmatches' => function($b, SearchSettings $settings) {
+                $settings->printresults = $b;
+            },
+            'recursive' => function($b, SearchSettings $settings) {
+                $settings->recursive = $b;
+            },
+            'searcharchives' => function($b, SearchSettings $settings) {
+                $settings->searcharchives = $b;
+            },
+            'uniquelines' => function($b, SearchSettings $settings) {
+                $settings->uniquelines = $b;
+            },
+            'verbose' => function($b, SearchSettings $settings) {
+                $settings->verbose = $b;
+            },
+            'version' => function($b, SearchSettings $settings) {
+                $settings->printversion = $b;
             }
         ];
 
@@ -74,12 +140,10 @@ class SearchOptions {
                 $settings->firstmatch = false;
             },
             'archivesonly' => function(SearchSettings $settings) {
-                $settings->archivesonly = true;
-                $settings->searcharchives = true;
+                $settings->set_archivesonly(true);
             },
             'debug' => function(SearchSettings $settings) {
-                $settings->debug = true;
-                $settings->verbose = true;
+                $settings->set_debug(true);
             },
             'excludehidden' => function(SearchSettings $settings) {
                 $settings->excludehidden = true;
@@ -167,28 +231,51 @@ class SearchOptions {
         }
     }
 
+    private function settings_from_file($filepath, SearchSettings $settings) {
+        if (!file_exists($filepath)) {
+            throw new SearchException('Settings file not found');
+        }
+        $json = file_get_contents($filepath);
+        $this->settings_from_json($json, $settings);
+    }
+
+    public function settings_from_json($json, SearchSettings $settings) {
+        $json_obj = json_decode($json, true);
+        foreach (array_keys($json_obj) as $k) {
+            if (array_key_exists($k, $this->arg_action_map)) {
+                $this->arg_action_map[$k]($json_obj[$k], $settings);
+            } else if (array_key_exists($k, $this->bool_flag_action_map)) {
+                $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
+            } else if ($k == 'startpath') {
+                $settings->startpath = $json_obj[$k];
+            } else {
+                throw new SearchException("Invalid option: $k");
+            }
+        }
+    }
+
     public function settings_from_args($args) {
         $settings = new SearchSettings();
-        $i = 0;
-        while ($i < count($args)) {
-            $arg = $args[$i];
+        while (count($args) > 0) {
+            $arg = array_shift($args);
             if ($arg{0} == '-') {
                 while($arg{0} == '-') {
                     $arg = substr($arg, 1);
                 }
                 if (array_key_exists($arg, $this->arg_action_map)) {
-                    $val = $args[$i+1];
-                    $this->arg_action_map[$arg]($val, $settings);
-                    $i += 2;
+                    if (count($args) > 0) {
+                        $val = array_shift($args);
+                        $this->arg_action_map[$arg]($val, $settings);
+                    } else {
+                        throw new SearchException("Missing value for $arg");
+                    }
                 } else if (array_key_exists($arg, $this->flag_action_map)) {
                     $this->flag_action_map[$arg]($settings);
-                    $i++;
                 } else {
                     throw new SearchException("Invalid option: $arg");
                 }
             } else {
                 $settings->startpath = $arg;
-                $i++;
             }
         }
         return $settings;
