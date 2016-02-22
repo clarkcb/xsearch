@@ -30,7 +30,7 @@ exports.testSingleLineResult = function(test) {
         matchEndIndex + "]: " + line.trim();
     test.ok(resultString === expectedOutput, "single-line result matches expected");
     test.done();
-}
+};
 
 exports.testBinaryFileResult = function(test) {
     var pattern: RegExp = /Search/;
@@ -47,7 +47,7 @@ exports.testBinaryFileResult = function(test) {
     var expectedOutput: string = file + " matches at [5:10]";
     test.ok(resultString === expectedOutput, "single-line result matches expected");
     test.done();
-}
+};
 
 exports.testMultiLineResult = function(test) {
     var pattern: RegExp = /Search/;
@@ -62,17 +62,15 @@ exports.testMultiLineResult = function(test) {
     var result: SearchResult = new SearchResult(pattern, file, linenum, matchStartIndex,
         matchEndIndex, line, linesBefore, linesAfter);
     var resultString: string = result.toString();
-    var outputTemplate: string = "" +
+    var expectedOutput = "" +
         "================================================================================\n" +
-        "{0}: {1}: [{2}:{3}]\n" +
+        `${file}: ${linenum}: [${matchStartIndex}:${matchEndIndex}]\n` +
         "--------------------------------------------------------------------------------\n" +
         "   8 | namespace CsSearch\n" +
         "   9 | {\n" +
         "> 10 | \tpublic class Searcher\n" +
         "  11 | \t{\n" +
         "  12 | \t\tprivate readonly FileTypes _fileTypes;\n";
-    var expectedOutput: string = outputTemplate.format(file, linenum,
-        matchStartIndex, matchEndIndex);
     test.ok(resultString === expectedOutput, "multi-line result matches expected");
     test.done();
-}
+};

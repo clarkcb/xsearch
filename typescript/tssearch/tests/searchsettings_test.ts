@@ -30,7 +30,7 @@ exports.testDefaultSettings = function(test) {
     test.ok(!settings.uniqueLines, "uniqueLines is false by default");
     test.ok(!settings.verbose, "verbose is false by default");
     test.done();
-}
+};
 
 exports.testAddExtensions = function(test) {
     var settings: SearchSettings = new SearchSettings();
@@ -39,7 +39,7 @@ exports.testAddExtensions = function(test) {
     test.ok(settings.inExtensions[0] === 'js', "first extension is js");
     test.ok(settings.inExtensions[1] === 'java', "first extension is java");
     test.done();
-}
+};
 
 exports.testAddSearchPattern = function(test) {
     var settings: SearchSettings = new SearchSettings();
@@ -47,7 +47,7 @@ exports.testAddSearchPattern = function(test) {
     test.ok(settings.searchPatterns.length === 1, "searchPatterns has one pattern");
     test.ok(settings.searchPatterns[0].source === 'Searcher', "pattern is /Searcher/");
     test.done();
-}
+};
 
 exports.testSetArchivesOnly = function(test) {
     var settings: SearchSettings = new SearchSettings();
@@ -57,7 +57,7 @@ exports.testSetArchivesOnly = function(test) {
     test.ok(settings.archivesOnly === true, "archivesOnly is now true");
     test.ok(settings.searchArchives === true, "searchArchives is now true");
     test.done();
-}
+};
 
 exports.testSetDebug = function(test) {
     var settings: SearchSettings = new SearchSettings();
@@ -67,5 +67,4 @@ exports.testSetDebug = function(test) {
     test.ok(settings.debug === true, "debug is now true");
     test.ok(settings.verbose === true, "verbose is now true");
     test.done();
-}
-
+};
