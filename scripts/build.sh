@@ -184,6 +184,30 @@ build_javascript () {
     cd -
 }
 
+build_perl () {
+    echo
+    log "build_perl"
+    log "Nothing to do for perl"
+}
+
+build_php () {
+    echo
+    log "build_php"
+    log "Nothing to do for php"
+}
+
+build_python () {
+    echo
+    log "build_python"
+    log "Nothing to do for python"
+}
+
+build_ruby () {
+    echo
+    log "build_ruby"
+    log "Nothing to do for ruby"
+}
+
 build_scala () {
     echo
     log "build_scala"
@@ -248,6 +272,14 @@ build_all () {
 
     build_javascript
 
+    build_perl
+
+    build_php
+
+    build_python
+
+    build_ruby
+
     build_scala
 
     build_swift
@@ -282,6 +314,14 @@ elif [ "$ARG" == "java" ]; then
     build_java
 elif [ "$ARG" == "javascript" ]; then
     build_javascript
+elif [ "$ARG" == "perl" ]; then
+    build_perl
+elif [ "$ARG" == "php" ]; then
+    build_php
+elif [ "$ARG" == "python" ]; then
+    build_python
+elif [ "$ARG" == "ruby" ]; then
+    build_ruby
 elif [ "$ARG" == "scala" ]; then
     build_scala
 elif [ "$ARG" == "swift" ]; then
@@ -291,4 +331,3 @@ elif [ "$ARG" == "typescript" ]; then
 else
     echo "ERROR: unknown build argument: $ARG"
 fi
-
