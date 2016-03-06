@@ -185,31 +185,28 @@ object SearchOptions {
     }
   }
 
-  def applySetting(arg: String, obj: Any, sb: SettingsBuilder): Unit = {
-    obj match {
-      case s: String =>
-        if (this.argActionMap.contains(arg)) {
-          argActionMap(arg)(s, sb)
-        } else if (arg == "startpath") {
-          sb.startPath = Some(obj.toString)
-        } else {
-          throw new SearchException("Invalid option: " + arg)
-        }
-      case b: Boolean =>
-        if (this.boolFlagActionMap.contains(arg)) {
-          boolFlagActionMap(arg)(b, sb)
-        } else {
-          throw new SearchException("Invalid option: " + arg)
-        }
-      case l: Long =>
-        applySetting(arg, l.toString, sb)
-      case _: JSONArray =>
-        val lst: util.ArrayList[Any] = obj.asInstanceOf[util.ArrayList[Any]]
-        lst.foreach { s =>
-          applySetting(arg, s, sb)
-        }
-      case _ =>
-    }
+  def applySetting(arg: String, obj: Any, sb: SettingsBuilder): Unit = obj match {
+    case s: String =>
+      if (this.argActionMap.contains(arg)) {
+        argActionMap(arg)(s, sb)
+      } else if (arg == "startpath") {
+        sb.startPath = Some(obj.toString)
+      } else {
+        throw new SearchException("Invalid option: " + arg)
+      }
+    case b: Boolean =>
+      if (this.boolFlagActionMap.contains(arg)) {
+        boolFlagActionMap(arg)(b, sb)
+      } else {
+        throw new SearchException("Invalid option: " + arg)
+      }
+    case l: Long =>
+      applySetting(arg, l.toString, sb)
+    case _: JSONArray =>
+      val lst: util.ArrayList[Any] = obj.asInstanceOf[util.ArrayList[Any]]
+      lst.foreach(s => applySetting(arg, s, sb))
+    case _ =>
+      throw new SearchException("Unsupported data type")
   }
 
   private def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
