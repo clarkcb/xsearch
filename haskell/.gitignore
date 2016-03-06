@@ -15,5 +15,6 @@ cabal.config
 *.aux
 
 # resource files
+config.json
 filetypes.xml
 searchoptions.xml
