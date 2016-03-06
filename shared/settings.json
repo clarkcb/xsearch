@@ -1,0 +1,12 @@
+{
+  "startpath": "/Users/cary/src/xsearch/",
+  "in-ext": ["js", "ts"],
+  "out-dirpattern": ["build", "node_module", "tests", "typings"],
+  "out-filepattern": ["gulpfile", "\\.min\\."],
+  "search": "Searcher",
+  "linesbefore": 2,
+  "linesafter": 2,
+  "debug": true,
+  "allmatches": false,
+  "includehidden": false
+}
