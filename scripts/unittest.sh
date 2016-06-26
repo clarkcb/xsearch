@@ -116,6 +116,16 @@ unittest_javascript () {
     $NODEUNIT $TESTS_PATH
 }
 
+unittest_ocaml () {
+    echo
+    log "unittest_ocaml"
+    MLSEARCH_PATH=$OCAML_PATH/mlsearch
+    cd $MLSEARCH_PATH
+    log "Unit-testing mlsearch"
+    ./unittest.sh
+    cd -
+}
+
 unittest_perl () {
     echo
     log "unittest_perl"
@@ -243,6 +253,8 @@ unittest_all () {
 
     unittest_javascript
 
+    unittest_ocaml
+
     unittest_perl
 
     unittest_php
@@ -285,6 +297,8 @@ elif [ "$ARG" == "java" ]; then
     unittest_java
 elif [ "$ARG" == "javascript" ]; then
     unittest_javascript
+elif [ "$ARG" == "ocaml" ]; then
+    unittest_ocaml
 elif [ "$ARG" == "perl" ]; then
     unittest_perl
 elif [ "$ARG" == "php" ]; then

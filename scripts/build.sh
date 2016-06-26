@@ -184,6 +184,19 @@ build_javascript () {
     cd -
 }
 
+build_ocaml () {
+    echo
+    log "build_ocaml"
+    MLSEARCH_PATH=$OCAML_PATH/mlsearch
+    cd $MLSEARCH_PATH
+    ./build.sh
+    if [ -L ~/bin/mlsearch ]; then
+        rm ~/bin/mlsearch
+    fi
+    ln -s $MLSEARCH_PATH/_build/src/mlsearch.native ~/bin/mlsearch
+    cd -
+}
+
 build_perl () {
     echo
     log "build_perl"
@@ -272,6 +285,8 @@ build_all () {
 
     build_javascript
 
+    build_ocaml
+
     build_perl
 
     build_php
@@ -314,6 +329,8 @@ elif [ "$ARG" == "java" ]; then
     build_java
 elif [ "$ARG" == "javascript" ]; then
     build_javascript
+elif [ "$ARG" == "ocaml" ]; then
+    build_ocaml
 elif [ "$ARG" == "perl" ]; then
     build_perl
 elif [ "$ARG" == "php" ]; then

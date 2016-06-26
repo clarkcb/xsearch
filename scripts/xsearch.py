@@ -30,6 +30,7 @@ xsearch_dict = {
     'haskell':    'hssearch',
     'java':       'javasearch',
     'javascript': 'jssearch',
+    'ocaml':       'mlsearch',
     'perl':       'plsearch.pl',
     'php':        'phpsearch.php',
     'python':     'pysearch.py',
@@ -81,9 +82,11 @@ def nonmatching_outputs(xsearch_output):
     while xs:
         x = xs.pop(0)
         for y in xs:
-            x_output = ''.join(xsearch_output[x])
-            y_output = ''.join(xsearch_output[y])
+            x_output = xsearch_output[x]
+            y_output = xsearch_output[y]
             if x_output != y_output:
+                # print "\n%s:\n\"%s\"" % (x, x_output)
+                # print "\n%s:\n\"%s\"" % (y, y_output)
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
     return nonmatching
