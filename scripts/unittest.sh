@@ -23,7 +23,7 @@ source "$DIR/common.sh"
 unittest_clojure () {
     echo
     log "unittest_clojure"
-    CLJSEARCH_PATH=$XSEARCH_PATH/clojure/cljsearch
+    CLJSEARCH_PATH=$CLOJURE_PATH/cljsearch
     RESOURCES_PATH=$CLJSEARCH_PATH/resources
 
     # Test with lein
@@ -37,7 +37,6 @@ unittest_clojure () {
 unittest_csharp () {
     echo
     log "unittest_csharp"
-    CSHARP_PATH=$XSEARCH_PATH/csharp
     CSSEARCHTESTS_PATH=$CSHARP_PATH/CsSearch/CsSearchTests
     CONFIGURATION=Debug
     #CONFIGURATION=Release
@@ -51,7 +50,6 @@ unittest_csharp () {
 unittest_fsharp () {
     echo
     log "unittest_fsharp"
-    FSHARP_PATH=$XSEARCH_PATH/fsharp
     RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
 
     # run a mono xbuild
@@ -61,8 +59,7 @@ unittest_fsharp () {
 unittest_go () {
     echo
     log "unittest_go"
-    export GOPATH=$XSEARCH_PATH/go
-    export GOSRC_PATH=$GOPATH/src/elocale.com/clarkcb/xsearch
+    export GOSRC_PATH=$GO_PATH/src/elocale.com/clarkcb/xsearch
 
     # now build gosearch
     log "Unit-testing gosearch"
@@ -73,7 +70,6 @@ unittest_go () {
 unittest_haskell () {
     echo
     log "unittest_haskell"
-    HASKELL_PATH=$XSEARCH_PATH/haskell
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
 
     # build with cabal
@@ -85,7 +81,6 @@ unittest_haskell () {
 unittest_java () {
     echo
     log "unittest_java"
-    JAVA_PATH=$XSEARCH_PATH/java
     JAVASEARCH_PATH=$JAVA_PATH/javasearch
 
     # run tests via maven
@@ -97,7 +92,6 @@ unittest_java () {
 unittest_javascript () {
     echo
     log "unittest_javascript"
-    JAVASCRIPT_PATH=$XSEARCH_PATH/javascript
     JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
     TESTS_PATH=$JSSEARCH_PATH/tests
     NODEUNIT_PATH=$JSSEARCH_PATH/node_modules/nodeunit
@@ -129,7 +123,6 @@ unittest_ocaml () {
 unittest_perl () {
     echo
     log "unittest_perl"
-    PERL_PATH=$XSEARCH_PATH/perl
     TESTS_PATH=$PERL_PATH/tests
 
     # run tests using Test::Simple
@@ -144,7 +137,6 @@ unittest_perl () {
 unittest_php () {
     echo
     log "unittest_php"
-    PHP_PATH=$XSEARCH_PATH/php
     TESTS_PATH=$PHP_PATH/tests
     PHPUNIT="phpunit --bootstrap $PHP_PATH/phpsearch/autoload.php"
 
@@ -160,7 +152,6 @@ unittest_php () {
 unittest_python () {
     echo
     log "unittest_python"
-    PYTHON_PATH=$XSEARCH_PATH/python
     TESTS_PATH=$PYTHON_PATH/tests
     VENV_PATH=$PYTHON_PATH/.env
     PYTHON=$VENV_PATH/bin/python
@@ -184,7 +175,6 @@ unittest_python () {
 unittest_ruby () {
     echo
     log "unittest_ruby"
-    RUBY_PATH=$XSEARCH_PATH/ruby
     TESTS_PATH=$RUBY_PATH/tests
 
     # Run the individual tests
@@ -199,7 +189,6 @@ unittest_ruby () {
 unittest_scala () {
     echo
     log "unittest_scala"
-    SCALA_PATH=$XSEARCH_PATH/scala
     SCALASEARCH_PATH=$SCALA_PATH/scalasearch
 
     # run tests via maven
@@ -216,7 +205,6 @@ unittest_swift () {
 unittest_typescript () {
     echo
     log "unittest_typescript"
-    TYPESCRIPT_PATH=$XSEARCH_PATH/typescript
     TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
     TESTS_PATH=$TSSEARCH_PATH/tests
     NODEUNIT_PATH=$TSSEARCH_PATH/node_modules/nodeunit
@@ -229,7 +217,7 @@ unittest_typescript () {
     gulp clean build clean-tests build-tests
 
     # run tests via maven
-    log "Unit-testing jssearch"
+    log "Unit-testing tssearch"
     log "nodeunit $TESTS_PATH"
     $NODEUNIT $TESTS_PATH
 
