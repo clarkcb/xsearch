@@ -14,7 +14,9 @@ let test_fixture = "Fileutil" >:::
   );
   "get_extension" >:: (fun () ->
     assert_equal "py" (Fileutil.get_extension "/Users/cary/src/xsearch/python/pysearch/pysearch.py");
-    assert_equal "" (Fileutil.get_extension "fnamewithoutextension")
+    assert_equal "" (Fileutil.get_extension "filename");
+    assert_equal "" (Fileutil.get_extension ".filename");
+    assert_equal "" (Fileutil.get_extension "filename.")
   )
 ]
 
