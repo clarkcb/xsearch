@@ -28,7 +28,7 @@ getBinaryFileSearchResultTests = do
                                                  }
   let settings = defaultSearchSettings
   let formattedResult = formatSearchResult settings binaryFileSearchResult
-  let expectedFormat = binaryFilePath ++ " matches"
+  let expectedFormat = binaryFilePath ++ " matches at [0:0]"
   return [testCase "binaryFileSearchResult" (formattedResult @?= expectedFormat)]
 
 getSingleLineSearchResultTests :: IO [Test]

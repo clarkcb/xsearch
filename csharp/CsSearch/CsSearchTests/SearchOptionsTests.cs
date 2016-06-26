@@ -54,7 +54,7 @@ namespace CsSearchTests
 		{
 			var args = new List<string>() { "-x", "cs", "-s", "Search", ".", "-Q" };
 			var ex = Assert.Throws<SearchException>(() => searchOptions.SettingsFromArgs(args));
-			Assert.AreEqual(ex.Message, "Unknown option: Q");
+			Assert.AreEqual(ex.Message, "Invalid option: Q");
 		}
 	}
 }
