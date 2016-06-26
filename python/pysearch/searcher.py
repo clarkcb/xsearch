@@ -175,7 +175,7 @@ class Searcher(object):
     def search_file(self, sf):
         """Search in a file, return number of matches found"""
         if not self.filetypes.is_searchable_file(sf.filename):
-            if self.settings.verbose or self.settings.debug:
+            if self.settings.verbose:
                 common.log('Skipping unsearchable file: {0}'.format(sf))
             return
         if sf.filetype == FileType.Text:
