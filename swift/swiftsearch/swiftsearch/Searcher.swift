@@ -58,7 +58,7 @@ public class Searcher {
     }
 
     func isSearchFile(filePath: String) -> Bool {
-        if FileUtil.isHiddenFile(filePath.lastPathComponent) && settings.excludeHidden {
+        if FileUtil.isHiddenFile(NSURL(fileURLWithPath: filePath).lastPathComponent!) && settings.excludeHidden {
             return false
         }
         return (filterByExtensions(FileUtil.getExtension(filePath),
@@ -69,7 +69,7 @@ public class Searcher {
     }
 
     func isArchiveSearchFile(filePath: String) -> Bool {
-        if FileUtil.isHidden(filePath.lastPathComponent) && settings.excludeHidden {
+        if FileUtil.isHidden(NSURL(fileURLWithPath: filePath).lastPathComponent!) && settings.excludeHidden {
             return false
         }
         return (filterByExtensions(FileUtil.getExtension(filePath),
@@ -131,7 +131,7 @@ public class Searcher {
         var searchDirs = [String]()
         let enumerator: NSDirectoryEnumerator? = FileUtil.enumeratorForPath(filePath)
         while let element = enumerator!.nextObject() as? String {
-            let fullPath = filePath.stringByAppendingPathComponent(element)
+            let fullPath = NSURL(fileURLWithPath: filePath).URLByAppendingPathComponent(element).absoluteString
             if FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
                 && isSearchDir(element) {
                     searchDirs.append(fullPath)
@@ -145,7 +145,7 @@ public class Searcher {
         var searchFiles = [String]()
         let pathFiles = FileUtil.contentsForPath(filePath)
         for f in pathFiles {
-            let fullPath = filePath.stringByAppendingPathComponent(f)
+            let fullPath = NSURL(fileURLWithPath: filePath).URLByAppendingPathComponent(f).absoluteString
             if !FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
                 && filterFile(f) {
                     searchFiles.append(fullPath)
@@ -235,7 +235,7 @@ public class Searcher {
                     .filter({$0 < startLineIndex}), num: settings.linesBefore)
                 var linesBeforeEndIndices = takeRight(endLineIndices.filter({$0 < endLineIndex}),
                     num: settings.linesBefore)
-                for var i=0; i < linesBeforeStartIndices.count; ++i {
+                for i in 0 ..< linesBeforeStartIndices.count {
                     linesBefore.append(lineFromIndices(s, startLineIndex: linesBeforeStartIndices[i],
                         endLineIndex: linesBeforeEndIndices[i]))
                 }
@@ -246,7 +246,7 @@ public class Searcher {
                     num: settings.linesAfter)
                 let linesAfterEndIndices = take(endLineIndices.filter({$0 > endLineIndex}),
                     num: settings.linesAfter)
-                for var i=0; i < linesAfterStartIndices.count; ++i {
+                for i in 0 ..< linesAfterStartIndices.count {
                     linesAfter.append(lineFromIndices(s, startLineIndex: linesAfterStartIndices[i],
                         endLineIndex: linesAfterEndIndices[i]))
                 }
@@ -287,7 +287,7 @@ public class Searcher {
     private func lineFromIndices(s: String, startLineIndex: Int, endLineIndex: Int) -> String {
         let startLineStringIndex = s.startIndex.advancedBy(startLineIndex)
         let endLineStringIndex = s.startIndex.advancedBy(endLineIndex)
-        let lineRange = Range<String.Index>(start: startLineStringIndex, end: endLineStringIndex)
+        let lineRange = Range<String.Index>(startLineStringIndex ..< endLineStringIndex)
         return s.substringWithRange(lineRange)
     }
 
@@ -298,7 +298,7 @@ public class Searcher {
             if c == "\n" {
                 indices.append(currentIndex)
             }
-            ++currentIndex
+            currentIndex += 1
         }
         return indices
     }
@@ -331,7 +331,7 @@ public class Searcher {
         var linesBefore: [String] = []
         var linesAfter: [String] = []
         while !stop {
-            ++lineNum
+            lineNum += 1
             var line: String?
             if linesAfter.count > 0 {
                 line = linesAfter.removeAtIndex(0) as String?
@@ -341,7 +341,7 @@ public class Searcher {
             if line == nil {
                 stop = true
             } else if settings.firstMatch && settings.searchPatterns.count == matchedPatterns.count {
-                stop == true
+                stop = true
             } else {
                 if settings.linesAfter > 0 {
                     while linesAfter.count < settings.linesAfter {
@@ -427,11 +427,11 @@ public class Searcher {
     }
     
     private func cmpResultsInDir(r1: SearchResult, _ r2: SearchResult) -> Bool {
-        let path1 = r1.file!.stringByDeletingLastPathComponent
-        let path2 = r2.file!.stringByDeletingLastPathComponent
+        let path1 = NSURL(fileURLWithPath: r1.file!).URLByDeletingLastPathComponent?.absoluteString
+        let path2 = NSURL(fileURLWithPath: r2.file!).URLByDeletingLastPathComponent?.absoluteString
         if path1 == path2 {
-            let file1 = r1.file!.lastPathComponent.lowercaseString
-            let file2 = r2.file!.lastPathComponent.lowercaseString
+            let file1 = NSURL(fileURLWithPath: r1.file!).lastPathComponent!.lowercaseString
+            let file2 = NSURL(fileURLWithPath: r2.file!).lastPathComponent!.lowercaseString
             if file1 == file2 {
                 if r1.lineNum == r2.lineNum {
                     return r1.matchStartIndex < r2.matchStartIndex

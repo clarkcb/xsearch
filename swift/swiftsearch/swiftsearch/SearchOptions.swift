@@ -67,19 +67,19 @@ class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
         element = elementName
         if (elementName as NSString).isEqualToString(searchOptionNodeName) {
             if attributeDict.indexForKey(longAttributeName) != nil {
-                longName = (attributeDict[longAttributeName] as! String)
+                longName = (attributeDict[longAttributeName]!)
             }
             if attributeDict.indexForKey(shortAttributeName) != nil {
-                shortName = (attributeDict[shortAttributeName] as! String)
+                shortName = (attributeDict[shortAttributeName]!)
             }
-            desc = NSMutableString.alloc()
+            desc = NSMutableString()
             desc = ""
         }
     }
 
-    func parser(parser: NSXMLParser, foundCharacters string: String?) {
+    func parser(parser: NSXMLParser, foundCharacters string: String) {
         if element == searchOptionNodeName {
-            desc.appendString(string!)
+            desc.appendString(string)
         }
     }
 
@@ -261,7 +261,7 @@ public class SearchOptions {
                 if argDict.indexForKey(arg) != nil {
                     if args.count > i {
                         argActionDict[argDict[arg]!.long]!(args[i+1], settings)
-                        i++
+                        i += 1
                     } else {
                         setError(error, msg: "Missing argument for option \(arg)")
                     }
@@ -273,7 +273,7 @@ public class SearchOptions {
             } else {
                 settings.startPath = args[i]
             }
-            i++
+            i += 1
         }
         return settings
     }
@@ -290,7 +290,7 @@ public class SearchOptions {
             { $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)" }
         let optDescs = searchOptions.map { $0.desc }
         let longest = optStrings.map({ $0.characters.count }).maxElement()!
-        for var i=0; i < optStrings.count; ++i {
+        for i in 0 ..< optStrings.count {
             var optLine = " \(optStrings[i])"
             while optLine.characters.count <= longest {
                 optLine += " "

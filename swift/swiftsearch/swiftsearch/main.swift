@@ -21,8 +21,8 @@ func getMatchingDirs(results: [SearchResult]) -> [String] {
     let files = getMatchingFiles(results)
     var dirs = Set<String>()
     for f in files {
-        let dir = f.stringByDeletingLastPathComponent
-        dirs.insert(dir)
+        let dir = NSURL(fileURLWithPath: f).URLByDeletingLastPathComponent?.absoluteString
+        dirs.insert(dir!)
     }
     return Array(dirs).sort({$0 < $1})
 }

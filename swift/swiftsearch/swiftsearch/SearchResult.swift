@@ -57,7 +57,7 @@ public class SearchResult: CustomStringConvertible {
             var currentLine = "  " + String(format: format, currentLineNum)
             currentLine += " | \(line)\n"
             s += currentLine
-            ++currentLineNum
+            currentLineNum += 1
         }
         return s
     }

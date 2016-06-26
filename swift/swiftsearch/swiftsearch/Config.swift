@@ -9,7 +9,7 @@
 import Foundation
 
 class Config {
-    static let xsearchPath = "~/src/xsearch".stringByExpandingTildeInPath
+    static let xsearchPath = NSString(string: "~/src/xsearch").stringByExpandingTildeInPath
     static let sharedPath = "\(xsearchPath)/shared"
     static let fileTypesPath = "\(sharedPath)/filetypes.xml"
     static let searchOptionsPath = "\(sharedPath)/searchoptions.xml"

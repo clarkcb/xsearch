@@ -23,10 +23,11 @@ class SearchFile: CustomStringConvertible {
 
     var description: String {
         var s = ""
+        let url = NSURL(fileURLWithPath: path)
         if !containers.isEmpty {
             s += containers.joinWithSeparator(containerSeparator) + containerSeparator
         }
-        s += path.stringByAppendingPathComponent(fileName)
+        s += url.URLByAppendingPathComponent(fileName).absoluteString
         return s
     }
 }

@@ -29,12 +29,13 @@ func toDictionary<E, K, V>(
     -> Dictionary<K, V>
 {
     return array.reduce([:]) {
-        (var dict, e) in
+        (dict, e) in
+        var d = dict
         if let (key, value) = transformer(element: e)
         {
-            dict[key] = value
+            d[key] = value
         }
-        return dict
+        return d
     }
 }
 
@@ -46,7 +47,7 @@ func arrayToString(arr: [String]) -> String {
             str += ", "
         }
         str += "\"\(s)\""
-        count++
+        count += 1
     }
     str += "]"
     return str
@@ -65,7 +66,7 @@ func take<T>(seq: [T], num: Int) -> [T] {
     var taken = 0
     while taken < num && taken < seq.count {
         newSeq.append(seq[taken])
-        ++taken
+        taken += 1
     }
     return newSeq
 }
@@ -75,7 +76,7 @@ func takeRight<T>(seq: [T], num: Int) -> [T] {
     var sub = 1
     while sub <= num && sub <= seq.count {
         right.append(seq[seq.count - sub])
-        ++sub
+        sub += 1
     }
     return Array(right.reverse())
 }
@@ -85,7 +86,7 @@ extension String {
     func `repeat`(n: Int) -> String {
         var result = self
         for _ in 1 ..< n {
-            result.extend(self)
+            result += self
         }
         return result
     }

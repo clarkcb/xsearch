@@ -13,7 +13,7 @@ class Regex {
 
     init(_ pattern: String) {
         self.pattern = pattern
-        var error: NSError?
+        //var error: NSError?
         self.expression = try! NSRegularExpression(pattern: pattern,
             options: .DotMatchesLineSeparators)
     }

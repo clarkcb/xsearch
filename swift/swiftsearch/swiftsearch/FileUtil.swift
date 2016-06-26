@@ -13,11 +13,11 @@ class FileUtil {
     private static let separator = "/"
 
     static func getExtension(fileName: String) -> String {
-        let ext = fileName.pathExtension
+        let ext = NSURL(fileURLWithPath: fileName).pathExtension?.uppercaseString
         if ext == "Z" {
-            return ext
+            return ext!
         }
-        return ext.lowercaseString
+        return ext!.lowercaseString
     }
 
     static func hasExtension(fileName: String, ext: String) -> Bool {

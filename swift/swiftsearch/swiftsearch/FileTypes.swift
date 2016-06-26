@@ -44,16 +44,16 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
         element = elementName
         if (elementName as NSString).isEqualToString(fileTypeNodeName) {
             if attributeDict.indexForKey(nameAttributeName) != nil {
-                fileTypeName = (attributeDict[nameAttributeName] as! String)
+                fileTypeName = (attributeDict[nameAttributeName]!)
             }
-            extensions = NSMutableString.alloc()
+            extensions = NSMutableString()
             extensions = ""
         }
     }
 
-    func parser(parser: NSXMLParser, foundCharacters string: String?) {
+    func parser(parser: NSXMLParser, foundCharacters string: String) {
         if element == extensionsNodeName {
-            extensions.appendString(string!)
+            extensions.appendString(string)
         }
     }
 
