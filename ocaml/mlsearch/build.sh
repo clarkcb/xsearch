@@ -1,9 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 # the mlsearch executable
+echo 'corebuild -package ounit -package re2 -package xml-light -I src mlsearch.native'
 corebuild -package ounit -package re2 -package xml-light -I src mlsearch.native
 
 # unit tests
-corebuild -package ounit -I src -I tests fileutiltest.native
-corebuild -package ounit -package re2 -package xml-light -I src -I tests filetypestest.native
-corebuild -package ounit -package re2 -package xml-light -I src -I tests searchresulttest.native
+cd tests
+TESTFILES=$(ls *test.ml)
+cd -
+
+for f in $TESTFILES; do
+	echo
+	filename="${f%.*}"
+    echo 'corebuild -package ounit -package re2 -package xml-light -I src -I tests '"$filename"'.native'
+    corebuild -package ounit -package re2 -package xml-light -I src -I tests "$filename".native
+done
