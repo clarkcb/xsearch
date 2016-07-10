@@ -40,9 +40,22 @@ let get_search_dirs (settings : Searchsettings.t) (path : string) =
         else rec_get_search_dirs alldirs searchdirs in
   rec_get_search_dirs [path] [];;
 
+let is_archive_search_file (settings : Searchsettings.t) (file : string) = 
+  let tests : (string -> bool) list = [
+    (* (fun f -> not (Fileutil.is_hidden f) || not settings.excludehidden); *)
+    (fun f -> List.is_empty settings.in_archiveextensions ||
+              List.mem settings.in_archiveextensions (Fileutil.get_extension f));
+    (fun f -> List.is_empty settings.out_archiveextensions ||
+              not (List.mem settings.out_archiveextensions (Fileutil.get_extension f)));
+    (fun f -> List.is_empty settings.in_archivefilepatterns ||
+              List.exists settings.in_archivefilepatterns ~f:(fun p -> Regex.matches p f));
+    (fun f -> List.is_empty settings.out_archivefilepatterns ||
+              not (List.exists settings.out_archivefilepatterns ~f:(fun p -> Regex.matches p f)));
+  ] in
+  List.for_all tests ~f:(fun t -> t file);;
+
 let is_search_file (settings : Searchsettings.t) (file : string) = 
   let tests : (string -> bool) list = [
-    (fun f -> not (Fileutil.is_hidden f) || not settings.excludehidden);
     (fun f -> List.is_empty settings.in_extensions ||
               List.mem settings.in_extensions (Fileutil.get_extension f));
     (fun f -> List.is_empty settings.out_extensions ||
@@ -54,7 +67,15 @@ let is_search_file (settings : Searchsettings.t) (file : string) =
   ] in
   List.for_all tests ~f:(fun t -> t file);;
 
-(* let filter_file (settings : Searchsettings.t) (file : string) =  *)
+let filter_file (settings : Searchsettings.t) (sf : Searchfile.t) = 
+  let filename = (Searchfile.to_string sf) in
+  if not (Fileutil.is_hidden filename) || not settings.excludehidden
+  then match sf.filetype with
+       | Filetypes.Text -> is_search_file settings filename
+       | Filetypes.Binary -> is_search_file settings filename
+       | Filetypes.Archive -> settings.searcharchives && is_archive_search_file settings filename
+       | _ -> false
+  else false
 
 let get_search_files (settings : Searchsettings.t) (filetypes : Filetypes.t) (searchdirs : string list) : (Searchfile.t list) = 
   let rec rec_get_search_files dirs (searchfiles : Searchfile.t list) = 
@@ -64,8 +85,8 @@ let get_search_files (settings : Searchsettings.t) (filetypes : Filetypes.t) (se
       let newsearchfiles = Sys.ls_dir d
         |> List.map ~f:(fun f -> Filename.concat d f)
         |> List.filter ~f:(fun f -> Sys.is_file_exn f)
-        |> List.filter ~f:(fun f -> is_search_file settings (Filename.basename f))
         |> List.map ~f:(fun f -> Searchfile.create f (Filetypes.get_filetype filetypes f))
+        |> List.filter ~f:(fun sf -> filter_file settings sf)
       in
       rec_get_search_files ds (List.append searchfiles newsearchfiles) in
   rec_get_search_files searchdirs [];;
@@ -134,24 +155,24 @@ let search_multilinestring (settings : Searchsettings.t) (s : string) : (Searchr
   results;;
 
 (* search_text_file :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_text_file_contents (settings : Searchsettings.t) (sf : Searchfile.t) : (Searchresult.t list) = 
+let search_text_file_contents (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
   (* if settings.debug then log_msg (sprintf "Searching text file contents: %s" (Searchfile.to_string sf)); *)
   search_multilinestring settings (In_channel.read_all (Searchfile.to_string sf))
   |> List.map ~f:(fun r -> { r with file=sf });;
 
 (* search_string :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_string (settings : Searchsettings.t) (s : string) : (Searchresult.t list) = 
+let search_string (settings : Searchsettings.t) (s : string) (linesbefore : string list) (linesafter : string list) : Searchresult.t list = 
   let to_searchresult (p : Regex.t) (m : Regex.Match.t) = 
     let pattern = Re2.Regex.pattern p in
     let (start_index, len) = Regex.Match.get_pos_exn (`Index 0) m in
     let end_index = start_index + len in
-    Searchresult.create pattern 0 (start_index + 1) (end_index + 1) s [] [] in
+    Searchresult.create pattern 0 (start_index + 1) (end_index + 1) s linesbefore linesafter in
   rec_get_pattern_matches settings settings.searchpatterns s []
   |> List.map ~f:(fun (p, m) -> to_searchresult p m);;
 
 (* search_lines :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_lines (settings : Searchsettings.t) (lines : string list) : (Searchresult.t list) = 
-  let rec rec_search_lines linenum lines results = 
+let search_lines (settings : Searchsettings.t) (lines : string list) : Searchresult.t list = 
+  let rec rec_search_lines linenum linesbefore lines results = 
     let next_lines =
       if settings.firstmatch && not (List.is_empty results)
       then []
@@ -159,23 +180,35 @@ let search_lines (settings : Searchsettings.t) (lines : string list) : (Searchre
     match next_lines with
     | [] -> results
     | l :: ls ->
-      let res = search_string settings l
+      let linesafter =
+        if settings.linesafter > 0
+        then (List.take ls settings.linesafter)
+        else [] in
+      let res = search_string settings l linesbefore linesafter
       |> List.map ~f:(fun r -> { r with linenum=linenum }) in
-      rec_search_lines (linenum + 1) ls (List.append results res) in
-  rec_search_lines 1 lines [];;
+      let lb =
+        if settings.linesbefore > 0
+        then
+          if (List.length linesbefore) = settings.linesbefore
+          then (List.append (List.drop linesbefore 1) [l])
+          else (List.append linesbefore [l])
+        else [] in
+      rec_search_lines (linenum + 1) lb ls (List.append results res) in
+  rec_search_lines 1 [] lines [];;
 
-let search_text_file_lines (settings : Searchsettings.t) (sf : Searchfile.t) : (Searchresult.t list) = 
+let search_text_file_lines (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
+  (* if settings.debug then log_msg (sprintf "Searching text file lines: %s" (Searchfile.to_string sf)); *)
   search_lines settings (In_channel.read_lines (Searchfile.to_string sf))
   |> List.map ~f:(fun r -> { r with file=sf });;
 
 (* search_text_file :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_text_file (settings : Searchsettings.t) (sf : Searchfile.t) : (Searchresult.t list) = 
+let search_text_file (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
   if settings.debug then log_msg (sprintf "Searching text file %s" (Searchfile.to_string sf));
   if settings.multilinesearch
   then search_text_file_contents settings sf
   else search_text_file_lines settings sf;;
 
-let search_binary_channel (settings : Searchsettings.t) (channel : In_channel.t) : (Searchresult.t list) = 
+let search_binary_channel (settings : Searchsettings.t) (channel : In_channel.t) : Searchresult.t list = 
   let contents = In_channel.input_all channel in
   let p_matches = rec_get_pattern_matches settings settings.searchpatterns contents [] in
   (* if settings.debug then log_msg (sprintf "p_matches: %d" (List.length p_matches)); *)
@@ -186,7 +219,7 @@ let search_binary_channel (settings : Searchsettings.t) (channel : In_channel.t)
   let results : Searchresult.t list = List.map p_matches ~f:(fun (p, m) -> to_searchresult p m) in
   results;;
 
-let search_blob (settings : Searchsettings.t) (blob : string) : (Searchresult.t list) = 
+let search_blob (settings : Searchsettings.t) (blob : string) : Searchresult.t list = 
   let p_matches = rec_get_pattern_matches settings settings.searchpatterns blob [] in
   (* if settings.debug then log_msg (sprintf "p_matches: %d" (List.length p_matches)); *)
   let to_searchresult (p : Regex.t) (m : Regex.Match.t) = 
@@ -197,7 +230,7 @@ let search_blob (settings : Searchsettings.t) (blob : string) : (Searchresult.t 
   results;;
 
 (* search_binary_file :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_binary_file (settings : Searchsettings.t) (sf : Searchfile.t) : (Searchresult.t list) = 
+let search_binary_file (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
   if settings.debug then log_msg (sprintf "Searching binary file %s" (Searchfile.to_string sf));
   (* let binary_channel : In_channel.t = In_channel.create ~binary:true (Searchfile.to_string sf) in
   search_binary_channel settings binary_channel;; *)
@@ -205,13 +238,13 @@ let search_binary_file (settings : Searchsettings.t) (sf : Searchfile.t) : (Sear
   search_blob settings blob;;
 
 (* search_archive_file :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_archive_file (settings : Searchsettings.t) (sf : Searchfile.t) : (Searchresult.t list) = 
+let search_archive_file (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
   if settings.debug then log_msg (sprintf "Searching archive file %s" (Searchfile.to_string sf));
   let results : Searchresult.t list = [] in
   results;;
 
 (* search_file :: Searchsettings.t -> Filetypes.t -> Searchresult.t list *)
-let search_file (settings : Searchsettings.t) (filetypes : Filetypes.t) (sf : Searchfile.t) : (Searchresult.t list) = 
+let search_file (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
   (* if settings.debug then log_msg (sprintf "Searching file %s" (Searchfile.to_string sf)); *)
   let results : Searchresult.t list =
     match sf.filetype with
@@ -222,31 +255,30 @@ let search_file (settings : Searchsettings.t) (filetypes : Filetypes.t) (sf : Se
   results;;
 
 (* search_path :: Searchsettings.t -> Searchresult.t list *)
-let search_path (settings : Searchsettings.t) (filetypes : Filetypes.t) (path : string) = 
-  let searchdirs = get_search_dirs settings settings.startpath in
+let search_path (settings : Searchsettings.t) (filetypes : Filetypes.t) (path : string) : Searchresult.t list = 
+  let searchdirs = get_search_dirs settings path in
   if settings.verbose 
   then log_msg (sprintf "\nDirectories to be searched (%d):\n%s" (List.length searchdirs) (String.concat searchdirs ~sep:"\n"));
   let searchfiles = get_search_files settings filetypes searchdirs in
   let rec rec_search_files files results : (Searchresult.t list) = 
     match files with
     | [] -> results
-    | f :: fs -> rec_search_files fs (List.append results (search_file settings filetypes f)) in
+    | f :: fs -> rec_search_files fs (List.append results (search_file settings f)) in
   rec_search_files searchfiles [];;
 
 (* do_search :: Searchsettings.t -> Searchresult.t list *)
-let do_search (settings : Searchsettings.t) = 
+let do_search (settings : Searchsettings.t) : Searchresult.t list = 
   let filetypes = Filetypes.get_filetypes in
   if Sys.is_directory_exn settings.startpath
   then (search_path settings filetypes settings.startpath)
   else
     let start_filetype = Filetypes.get_filetype filetypes settings.startpath in
     let start_searchfile = Searchfile.create settings.startpath start_filetype in
-    search_file settings filetypes start_searchfile;;
+    search_file settings start_searchfile;;
 
 (* search :: Searchsettings.t -> Result (Searchresult.t list) *)
 let search (settings : Searchsettings.t) = 
-  let results : Searchresult.t list = [] in
   match (validate_settings settings) with
   | [] -> Ok (do_search settings)
-  | err :: errs -> Error err;;
+  | err :: _ -> Error err;;
 
