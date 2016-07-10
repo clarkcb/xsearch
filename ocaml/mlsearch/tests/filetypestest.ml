@@ -10,7 +10,7 @@ let test_fixture = "Filetypes" >:::
     assert_equal Filetypes.Binary (Filetypes.get_filetype filetypes "binary.exe");
     assert_equal Filetypes.Archive (Filetypes.get_filetype filetypes "archive.zip")
   );
-  "is_text" >:: (fun () ->
+  "is_type" >:: (fun () ->
     assert_equal true (Filetypes.is_text filetypes "text.txt");
     assert_equal true (Filetypes.is_binary filetypes "binary.exe");
     assert_equal true (Filetypes.is_archive filetypes "archive.zip")

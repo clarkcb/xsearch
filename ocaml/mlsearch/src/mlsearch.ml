@@ -84,7 +84,7 @@ let () =
   let searchoptions = Searchoptions.get_searchoptions in
   match (Array.to_list Sys.argv) with
   | []      -> print_error_with_usage "Startpath not defined" searchoptions
-  | [a]     -> print_error_with_usage "Startpath not defined" searchoptions
+  | [_]     -> print_error_with_usage "Startpath not defined" searchoptions
   | _ :: tl -> (
       match (Searchoptions.settings_from_args searchoptions tl) with
       | Ok settings ->
