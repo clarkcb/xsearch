@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CsSearch;
@@ -9,17 +10,22 @@ namespace CsSearchTests
 	[TestFixture]
 	class SearcherTests
 	{
-		private static FileInfo GetTestFile()
+		private static string GetTestFileContent()
 		{
-			if (Environment.OSVersion.ToString().StartsWith("Microsoft"))
-				return new FileInfo(@"C:\Users\Administrator\src\xsearch\shared\testFiles\testFile2.txt");
-			return new FileInfo("/Users/cary/src/xsearch/shared/testFiles/testFile2.txt");
+			return Properties.Resources.testFile2;
+		}
+
+		public static IEnumerable<string> GetTestFileLines()
+		{
+			foreach (var line in Properties.Resources.testFile2.Split(new[] { "\n", "\r" }, StringSplitOptions.None))
+			{
+				yield return line;
+			}
 		}
 
 		private static SearchSettings GetSettings()
 		{
-			var settings = new SearchSettings();
-			settings.StartPath = ".";
+			var settings = new SearchSettings {StartPath = "."};
 			settings.AddSearchPattern("Searcher");
 			return settings;
 		}
@@ -417,8 +423,7 @@ namespace CsSearchTests
 		{
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
-			var testFile = GetTestFile();
-			var enumerableLines = FileUtil.EnumerableStringFromFile(testFile.FullName);
+			var enumerableLines = GetTestFileLines();
 			var results = searcher.SearchLines(enumerableLines).ToList();
 
 			Assert.True(results.Count == 2);
@@ -448,8 +453,9 @@ namespace CsSearchTests
 		{
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
-			var testFile = GetTestFile();
-			var contents = FileUtil.GetFileContents(testFile.FullName);
+			//var testFile = GetTestFile();
+			//var contents = FileUtil.GetFileContents(testFile.FullName);
+			var contents = GetTestFileContent();
 			var results = searcher.SearchContents(contents).ToList();
 
 			Assert.True(results.Count == 2);

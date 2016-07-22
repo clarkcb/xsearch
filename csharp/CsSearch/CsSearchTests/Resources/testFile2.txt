@@ -1,0 +1,39 @@
+Test file
+
+This is a file to test xsearch, which currently has the following 9 implementations:
+
+1. cljsearch for Clojure
+2. cssearch for C#
+3. fssearch for F#
+4. gosearch for Go
+5. hssearch for Haskell
+6. javasearch for Java
+7. nodesearch for Node.js (JavaScript)
+8. pysearch.py for Python
+9. rbsearch.rb for Ruby
+10. scalasearch for Scala
+
+
+The basic code structure includes these elements:
+
+* FileTypes - helps determine file type (archive, binary or text),
+  searchability, etc.
+* FileUtil - provides file-related functionality (e.g. get file extension,
+  check whether file is hidden)
+* Searcher - executes the file search based on the SearchSettings
+* SearchOptions - loads option data from XML, generates usage text, builds a
+  SearchSettings instance from command line arguments
+* SearchResult - encapsulates a single search result
+* SearchSettings - encapsulates the search settings, including what
+  directories or files to include/exclude, search patterns, lines before or
+  after, etc., used by Searcher
+
+
+Other possible implementations:
+
+* erlsearch for Erlang
+* mlsearch for OCaml
+* rssearch for Rust
+
+
+This is the second-to-last line of the test file. The final line is blank.
