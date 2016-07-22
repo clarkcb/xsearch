@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -23,11 +22,6 @@ namespace CsSearch
 			ValidateSettings();
 			_fileTypes = new FileTypes();
 			Results = new ConcurrentBag<SearchResult>();
-		}
-
-		private static void Log(string message)
-		{
-			Console.WriteLine(message);
 		}
 
 		private void ValidateSettings()
@@ -108,7 +102,7 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Log(String.Format("Error while accessing dir {0}: {1}",
+					Common.Log(String.Format("Error while accessing dir {0}: {1}",
 						FileUtil.GetRelativePath(dir.FullName, Settings.StartPath), e.Message));
 			}
 			return searchDirs;
@@ -134,7 +128,7 @@ namespace CsSearch
 		{
 			if (Settings.Debug)
 			{
-				Log(string.Format("Getting search files under {0}",
+				Common.Log(string.Format("Getting search files under {0}",
 					FileUtil.GetRelativePath(dir.FullName, Settings.StartPath)));
 			}
 			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
@@ -147,7 +141,7 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Log(String.Format("Error while accessing dir {0}: {1}",
+					Common.Log(String.Format("Error while accessing dir {0}: {1}",
 						FileUtil.GetRelativePath(dir.FullName, Settings.StartPath), e.Message));
 			}
 			return dirSearchFiles;
@@ -200,23 +194,23 @@ namespace CsSearch
 			}
 			if (Settings.Verbose)
 			{
-				Log(string.Format("Directories to be searched ({0}):", searchDirs.Count));
+				Common.Log(string.Format("Directories to be searched ({0}):", searchDirs.Count));
 				foreach (var d in searchDirs)
 				{
-					Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
+					Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
 				}
-				Log("");
+				Common.Log("");
 			}
 
 			var searchFiles = GetSearchFiles(searchDirs).ToArray();
 			if (Settings.Verbose)
 			{
-				Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Length));
+				Common.Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Length));
 				foreach (var f in searchFiles)
 				{
-					Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
+					Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
 				}
-				Log("");
+				Common.Log("");
 			}
 
 			var searched = 0;
@@ -254,12 +248,12 @@ namespace CsSearch
 			}
 			else if (f.Type == FileType.Archive)
 			{
-				Log(string.Format("Skipping archive file {0}",
+				Common.Log(string.Format("Skipping archive file {0}",
 					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			}
 			else if (Settings.Verbose)
 			{
-				Log(string.Format("Skipping file {0}",
+				Common.Log(string.Format("Skipping file {0}",
 					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			}
 		}
@@ -267,7 +261,7 @@ namespace CsSearch
 		private void SearchTextFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Log(string.Format("Searching text file {0}",
+				Common.Log(string.Format("Searching text file {0}",
 					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
@@ -289,7 +283,7 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				Log(e.Message);
+				Common.Log(e.Message);
 			}
 		}
 
@@ -416,7 +410,7 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				Log(e.Message);
+				Common.Log(e.Message);
 			}
 		}
 
@@ -516,7 +510,7 @@ namespace CsSearch
 		private void SearchBinaryFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Log(string.Format("Searching binary file {0}",
+				Common.Log(string.Format("Searching binary file {0}",
 					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			try
 			{
@@ -545,7 +539,7 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				Log(e.Message);
+				Common.Log(e.Message);
 			}
 		}
 
@@ -565,10 +559,10 @@ namespace CsSearch
 		public void PrintResults()
 		{
 			var sortedResults = GetSortedSearchResults();
-			Log(string.Format("Search results ({0}):", sortedResults.Count));
+			Common.Log(string.Format("Search results ({0}):", sortedResults.Count));
 			foreach (var searchResult in sortedResults)
 			{
-				Log(searchResult.ToString(Settings));
+				Common.Log(searchResult.ToString(Settings));
 			}
 		}
 
@@ -583,10 +577,10 @@ namespace CsSearch
 		public void PrintMatchingDirs()
 		{
 			var matchingDirs = GetMatchingDirs();
-			Log(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
+			Common.Log(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
 			foreach (var d in matchingDirs)
 			{
-				Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
+				Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
 			}
 		}
 
@@ -601,10 +595,10 @@ namespace CsSearch
 		public void PrintMatchingFiles()
 		{
 			var matchingFiles = GetMatchingFiles();
-			Log(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
+			Common.Log(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
 			foreach (var f in matchingFiles)
 			{
-				Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
+				Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
 			}
 		}
 
@@ -623,10 +617,10 @@ namespace CsSearch
 		{
 			var matchingLines = GetMatchingLines();
 			var hdrText = Settings.UniqueLines ? "Unique lines with matches" : "Lines with matches";
-			Log(string.Format("\n{0} ({1}):", hdrText, matchingLines.Count()));
+			Common.Log(string.Format("\n{0} ({1}):", hdrText, matchingLines.Count()));
 			foreach (var m in matchingLines)
 			{
-				Log(m);
+				Common.Log(m);
 			}
 		}
 	}
