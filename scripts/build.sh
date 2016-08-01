@@ -66,8 +66,8 @@ build_csharp () {
     echo
     log "build_csharp"
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
-    CONFIGURATION=Debug
-    #CONFIGURATION=Release
+    #CONFIGURATION=Debug
+    CONFIGURATION=Release
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
@@ -184,6 +184,30 @@ build_javascript () {
     cd -
 }
 
+build_kotlin () {
+    echo
+    log "build_kotlin"
+    KTSEARCH_PATH=$KOTLIN_PATH/ktsearch
+    RESOURCES_PATH=$KTSEARCH_PATH/src/main/resources
+    TEST_RESOURCES_PATH=$KTSEARCH_PATH/src/test/resources
+
+    # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
+    copy_resources $RESOURCES_PATH
+
+    # copy the test files to the local test resource location
+    #mkdir -p $TEST_RESOURCES_PATH
+    #copy_test_resources $TEST_RESOURCES_PATH
+
+    # run a maven clean build
+    log "Building ktsearch"
+
+    cd $KTSEARCH_PATH/
+    log "gradle -b build.gradle clean jar"
+    gradle -b build.gradle clean jar
+    cd -
+}
+
 build_ocaml () {
     echo
     log "build_ocaml"
@@ -285,6 +309,8 @@ build_all () {
 
     build_javascript
 
+    build_kotlin
+
     build_ocaml
 
     build_perl
@@ -329,6 +355,8 @@ elif [ "$ARG" == "java" ]; then
     build_java
 elif [ "$ARG" == "javascript" ]; then
     build_javascript
+elif [ "$ARG" == "kotlin" ]; then
+    build_kotlin
 elif [ "$ARG" == "ocaml" ]; then
     build_ocaml
 elif [ "$ARG" == "perl" ]; then

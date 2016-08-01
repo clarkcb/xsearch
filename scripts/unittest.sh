@@ -38,8 +38,8 @@ unittest_csharp () {
     echo
     log "unittest_csharp"
     CSSEARCHTESTS_PATH=$CSHARP_PATH/CsSearch/CsSearchTests
-    CONFIGURATION=Debug
-    #CONFIGURATION=Release
+    # CONFIGURATION=Debug
+    CONFIGURATION=Release
 
     # run a mono xbuild
     log "Unit-testing cssearch"
@@ -108,6 +108,17 @@ unittest_javascript () {
     log "Unit-testing jssearch"
     log "nodeunit $TESTS_PATH"
     $NODEUNIT $TESTS_PATH
+}
+
+unittest_kotlin () {
+    echo
+    log "unittest_kotlin"
+    KTSEARCH_PATH=$KOTLIN_PATH/ktsearch
+
+    # run tests via gradle
+    log "Unit-testing ktsearch"
+    log "gradle -b $KTSEARCH_PATH/build.gradle test"
+    gradle -b $KTSEARCH_PATH/build.gradle test
 }
 
 unittest_ocaml () {
@@ -241,6 +252,8 @@ unittest_all () {
 
     unittest_javascript
 
+    unittest_kotlin
+
     unittest_ocaml
 
     unittest_perl
@@ -285,6 +298,8 @@ elif [ "$ARG" == "java" ]; then
     unittest_java
 elif [ "$ARG" == "javascript" ]; then
     unittest_javascript
+elif [ "$ARG" == "kotlin" ]; then
+    unittest_kotlin
 elif [ "$ARG" == "ocaml" ]; then
     unittest_ocaml
 elif [ "$ARG" == "perl" ]; then

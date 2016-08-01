@@ -133,6 +133,18 @@ lint_javascript () {
     done
 }
 
+lint_kotlin () {
+    echo
+    log "lint_kotlin"
+
+    # Analyze
+    log "Analyzing ktsearch"
+    cd $KOTLIN_PATH
+    log "ktlint"
+    ktlint
+    cd -
+}
+
 lint_perl () {
     echo
     log "lint_perl"
@@ -245,6 +257,8 @@ lint_all () {
 
     lint_javascript
 
+    lint_kotlin
+
     lint_perl
 
     lint_php
@@ -285,6 +299,8 @@ elif [ "$ARG" == "java" ]; then
     lint_java
 elif [ "$ARG" == "javascript" ]; then
     lint_javascript
+elif [ "$ARG" == "kotlin" ]; then
+    lint_kotlin
 elif [ "$ARG" == "perl" ]; then
     lint_perl
 elif [ "$ARG" == "php" ]; then
