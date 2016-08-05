@@ -12,7 +12,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
   //val requiredArgs = List("-s", searchString, startpath)
   val requiredArgs = Array("-s", searchString, startpath)
 
-  def assertDefaultSettings(settings:SearchSettings) {
+  def assertDefaultSettings(settings: SearchSettings) {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
     assert(settings.excludeHidden == DefaultSettings.excludeHidden)
@@ -23,7 +23,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     assert(settings.listFiles == DefaultSettings.listFiles)
     assert(settings.listLines == DefaultSettings.listLines)
     assert(settings.multiLineSearch == DefaultSettings.multiLineSearch)
-    assert(settings.printResults == DefaultSettings.printResults)
+    //assert(settings.printResults == DefaultSettings.printResults)
     assert(settings.printUsage == DefaultSettings.printUsage)
     assert(settings.printVersion == DefaultSettings.printVersion)
     assert(settings.searchArchives == DefaultSettings.searchArchives)
@@ -44,7 +44,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.startpath: "+settings.startPath)
-    assert(settings.startPath == Some(startpath))
+    assert(settings.startPath.contains(startpath))
     assert(settings.searchPatterns.size == 1)
     assert(settings.searchPatterns.toList.head.toString == searchString)
   }
@@ -157,7 +157,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("shortSettings.inExtensions: "+shortSettings.inExtensions)
     assert(shortSettings.inExtensions.size == 1)
     assert(shortSettings.inExtensions.toList.head == "scala")
-    assert(shortSettings.outExtensions.size == 0)
+    assert(shortSettings.outExtensions.isEmpty)
 
     val longArgs = Array("--in-ext", "scala") ++ requiredArgs
     println("longArgs: "+longArgs.toList)
@@ -165,7 +165,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("longSettings.inExtensions: "+longSettings.inExtensions)
     assert(longSettings.inExtensions.size == 1)
     assert(longSettings.inExtensions.toList.head == "scala")
-    assert(longSettings.outExtensions.size == 0)
+    assert(longSettings.outExtensions.isEmpty)
   }
 
   // test -x with comma-separated list of exts
@@ -177,7 +177,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     assert(settings.inExtensions.size == 2)
     assert(settings.inExtensions.toList.head == "java")
     assert(settings.inExtensions.toList.last == "scala")
-    assert(settings.outExtensions.size == 0)
+    assert(settings.outExtensions.isEmpty)
   }
 
   // test -f / --in-filepattern
@@ -357,7 +357,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("shortArgs: "+shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     println("shortSettings.outExtensions: "+shortSettings.outExtensions)
-    assert(shortSettings.inExtensions.size == 0)
+    assert(shortSettings.inExtensions.isEmpty)
     assert(shortSettings.outExtensions.size == 1)
     assert(shortSettings.outExtensions.map(_.toString).contains("scala"))
 
@@ -365,7 +365,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("longArgs: "+longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     println("longSettings.inExtensions: "+longSettings.inExtensions)
-    assert(longSettings.inExtensions.size == 0)
+    assert(longSettings.inExtensions.isEmpty)
     assert(longSettings.outExtensions.size == 1)
     assert(longSettings.outExtensions.map(_.toString).contains("scala"))
   }
@@ -376,7 +376,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
     println("args: "+args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
     println("settings.outExtensions: "+settings.outExtensions)
-    assert(settings.inExtensions.size == 0)
+    assert(settings.inExtensions.isEmpty)
     assert(settings.outExtensions.size == 2)
     assert(settings.outExtensions.contains("java"))
     assert(settings.outExtensions.contains("scala"))
@@ -484,7 +484,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
 
   // testing settings from JSON
   test("""test settingsFromJson""") {
-    val sb = new SettingsBuilder
+    val ss = SearchSettings()
     val json = """{
                  |  "startpath": "/Users/cary/src/xsearch/",
                  |  "in-ext": ["js","ts"],
@@ -497,8 +497,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
                  |  "allmatches": false,
                  |  "includehidden": false
                  |}"""
-    SearchOptions.settingsFromJson(json.stripMargin, sb)
-    val settings = sb.toSettings
+    val settings = SearchOptions.settingsFromJson(json.stripMargin, ss)
     assert(settings.startPath.contains("/Users/cary/src/xsearch/"))
     assert(settings.inExtensions.size == 2)
     assert(settings.inExtensions.contains("js"))

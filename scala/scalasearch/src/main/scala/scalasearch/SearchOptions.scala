@@ -3,6 +3,7 @@ package scalasearch
 import java.io.File
 import java.util
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.xml.XML
 import scala.collection.JavaConversions._
@@ -36,213 +37,166 @@ object SearchOptions {
     List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
   }
 
-  val argActionMap = Map[String, ((String, SettingsBuilder) => Unit)](
+  private def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
+    extensions ++ exts.split(",").filterNot(_.isEmpty)
+  }
+
+  type ArgAction = (String, SearchSettings) => SearchSettings
+
+  private val argActionMap = Map[String, ArgAction](
     "in-archiveext" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInArchiveExtensions(x)),
+      ((s, ss) => ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions))),
     "in-archivefilepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInArchiveFilePattern(x)),
+      ((s, ss) => ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns + s.r)),
     "in-dirpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInDirPattern(x)),
+      ((s, ss) => ss.copy(inDirPatterns = ss.inDirPatterns + s.r)),
     "in-ext" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInExtensions(x)),
+      ((s, ss) => ss.copy(inExtensions = addExtensions(s, ss.inExtensions))),
     "in-filepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInFilePattern(x)),
+      ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-linesafterpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInLinesAfterPattern(x)),
+      ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
     "in-linesbeforepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addInLinesBeforePattern(x)),
+      ((s, ss) => ss.copy(inLinesBeforePatterns = ss.inLinesBeforePatterns + s.r)),
     "linesafter" ->
-      ((x: String, sb: SettingsBuilder) => sb.linesAfter = x.toInt),
+      ((s, ss) => ss.copy(linesAfter = s.toInt)),
     "linesaftertopattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addLinesAfterToPattern(x)),
+      ((s, ss) => ss.copy(linesAfterToPatterns  = ss.linesAfterToPatterns + s.r)),
     "linesafteruntilpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addLinesAfterUntilPattern(x)),
+      ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
     "linesbefore" ->
-      ((x: String, sb: SettingsBuilder) => sb.linesBefore = x.toInt),
+      ((s, ss) => ss.copy(linesBefore = s.toInt)),
     "maxlinelength" ->
-      ((x: String, sb: SettingsBuilder) => sb.maxLineLength = x.toInt),
+      ((s, ss) => ss.copy(maxLineLength = s.toInt)),
     "out-archiveext" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutArchiveExtensions(x)),
+      ((s, ss) => ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions))),
     "out-archivefilepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutArchiveFilePattern(x)),
+      ((s, ss) => ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns + s.r)),
     "out-dirpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutDirPattern(x)),
+      ((s, ss) => ss.copy(outDirPatterns = ss.outDirPatterns + s.r)),
     "out-ext" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutExtensions(x)),
+      ((s, ss) => ss.copy(outExtensions = addExtensions(s, ss.outExtensions))),
     "out-filepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutFilePattern(x)),
+      ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
     "out-linesafterpattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutLinesAfterPattern(x)),
+      ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
     "out-linesbeforepattern" ->
-      ((x: String, sb: SettingsBuilder) => sb.addOutLinesBeforePattern(x)),
+      ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
     "search" ->
-      ((x: String, sb: SettingsBuilder) => sb.addSearchPattern(x)),
+      ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
     "settings-file" ->
-      ((x: String, sb: SettingsBuilder) => settingsFromFile(x, sb))
+      ((s, ss) => settingsFromFile(s, ss))
   )
 
-  val boolFlagActionMap = Map[String, ((Boolean, SettingsBuilder) => Unit)](
-    "archivesonly" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.setArchivesOnly(b)),
-    "allmatches" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.firstMatch = !b),
-    "debug" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.setDebug(b)),
-    "excludehidden" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.excludeHidden = b),
-    "firstmatch" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.firstMatch = b),
-    "help" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.printUsage = b),
-    "includehidden" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.excludeHidden = !b),
-    "listdirs" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.listDirs = b),
-    "listfiles" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.listFiles = b),
-    "listlines" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.listLines = b),
-    "multilinesearch" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.multiLineSearch = b),
-    "noprintmatches" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.printResults = !b),
-    "norecursive" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.recursive = !b),
-    "nosearcharchives" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.searchArchives = !b),
-    "printmatches" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.printResults = b),
-    "recursive" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.recursive = b),
-    "searcharchives" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.searchArchives = b),
-    "uniquelines" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.uniqueLines = b),
-    "verbose" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.verbose = b),
-    "version" ->
-      ((b: Boolean, sb: SettingsBuilder) => sb.printVersion = b)
+  type FlagAction = (Boolean, SearchSettings) => SearchSettings
+
+  private val boolFlagActionMap = Map[String, FlagAction](
+    "archivesonly" -> ((b, ss) =>
+      if (b) ss.copy(archivesOnly = b, searchArchives = b) else ss.copy(archivesOnly = b)),
+    "allmatches" -> ((b, ss) => ss.copy(firstMatch = !b)),
+    "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
+    "excludehidden" -> ((b, ss) => ss.copy(excludeHidden = b)),
+    "firstmatch" -> ((b, ss) => ss.copy(firstMatch = b)),
+    "help" -> ((b, ss) => ss.copy(printUsage = b)),
+    "includehidden" -> ((b, ss) => ss.copy(excludeHidden = !b)),
+    "listdirs" -> ((b, ss) => ss.copy(listDirs = b)),
+    "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
+    "listlines" -> ((b, ss) => ss.copy(listLines = b)),
+    "multilinesearch" -> ((b, ss) => ss.copy(multiLineSearch = b)),
+    "noprintmatches" -> ((b, ss) => ss.copy(printResults = !b)),
+    "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
+    "nosearcharchives" -> ((b, ss) => ss.copy(searchArchives = !b)),
+    "printmatches" -> ((b, ss) => ss.copy(printResults = b)),
+    "recursive" -> ((b, ss) => ss.copy(recursive = b)),
+    "searcharchives" -> ((b, ss) => ss.copy(searchArchives = b)),
+    "uniquelines" -> ((b, ss) => ss.copy(uniqueLines = b)),
+    "verbose" -> ((b, ss) => ss.copy(verbose = b)),
+    "version" -> ((b, ss) => ss.copy(printVersion = b))
   )
 
-  val flagActionMap = Map[String, (SettingsBuilder => Unit)](
-    "archivesonly" ->
-      ((sb: SettingsBuilder) => sb.setArchivesOnly()),
-    "allmatches" ->
-      ((sb: SettingsBuilder) => sb.firstMatch = false),
-    "debug" ->
-      ((sb: SettingsBuilder) => sb.setDebug()),
-    "excludehidden" ->
-      ((sb: SettingsBuilder) => sb.excludeHidden = true),
-    "firstmatch" ->
-      ((sb: SettingsBuilder) => sb.firstMatch = true),
-    "help" ->
-      ((sb: SettingsBuilder) => sb.printUsage = true),
-    "includehidden" ->
-      ((sb: SettingsBuilder) => sb.excludeHidden = false),
-    "listdirs" ->
-      ((sb: SettingsBuilder) => sb.listDirs = true),
-    "listfiles" ->
-      ((sb: SettingsBuilder) => sb.listFiles = true),
-    "listlines" ->
-      ((sb: SettingsBuilder) => sb.listLines = true),
-    "multilinesearch" ->
-      ((sb: SettingsBuilder) => sb.multiLineSearch = true),
-    "noprintmatches" ->
-      ((sb: SettingsBuilder) => sb.printResults = false),
-    "norecursive" ->
-      ((sb: SettingsBuilder) => sb.recursive = false),
-    "nosearcharchives" ->
-      ((sb: SettingsBuilder) => sb.searchArchives = false),
-    "printmatches" ->
-      ((sb: SettingsBuilder) => sb.printResults = true),
-    "recursive" ->
-      ((sb: SettingsBuilder) => sb.recursive = true),
-    "searcharchives" ->
-      ((sb: SettingsBuilder) => sb.searchArchives = true),
-    "uniquelines" ->
-      ((sb: SettingsBuilder) => sb.uniqueLines = true),
-    "verbose" ->
-      ((sb: SettingsBuilder) => sb.verbose = true),
-    "version" ->
-      ((sb: SettingsBuilder) => sb.printVersion = true)
-  )
-
-  private def settingsFromFile(filePath: String, sb: SettingsBuilder): Unit = {
+  private def settingsFromFile(filePath: String, ss: SearchSettings): SearchSettings = {
     val file: File = new File(filePath)
     if (!file.exists()) {
       throw new SearchException("Settings file not found: %s".format(filePath))
     }
     val json: String = FileUtil.getFileContents(file)
-    settingsFromJson(json, sb)
+    settingsFromJson(json, ss)
   }
 
-  def settingsFromJson(json: String, sb: SettingsBuilder): Unit = {
+  def settingsFromJson(json: String, ss: SearchSettings): SearchSettings = {
     val obj: AnyRef = JSONValue.parseWithException(json)
     val jsonObject: JSONObject = obj.asInstanceOf[JSONObject]
-    jsonObject.keySet().foreach { ko =>
-      val vo: Any = jsonObject.get(ko)
-      applySetting(ko.toString, vo, sb)
+    @tailrec
+    def recSettingsFromJson(keys: List[String], settings: SearchSettings): SearchSettings = keys match {
+      case Nil => settings
+      case k :: ks =>
+        val v = jsonObject.get(k)
+        recSettingsFromJson(ks, applySetting(k, v, settings))
     }
+    recSettingsFromJson(jsonObject.keySet().map(_.toString).toList, ss)
   }
 
-  def applySetting(arg: String, obj: Any, sb: SettingsBuilder): Unit = obj match {
+  @tailrec
+  def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = obj match {
     case s: String =>
       if (this.argActionMap.contains(arg)) {
-        argActionMap(arg)(s, sb)
+        argActionMap(arg)(s, ss)
       } else if (arg == "startpath") {
-        sb.startPath = Some(obj.toString)
+        ss.copy(startPath = Some(s))
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
     case b: Boolean =>
       if (this.boolFlagActionMap.contains(arg)) {
-        boolFlagActionMap(arg)(b, sb)
+        boolFlagActionMap(arg)(b, ss)
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
     case l: Long =>
-      applySetting(arg, l.toString, sb)
-    case _: JSONArray =>
-      val lst: util.ArrayList[Any] = obj.asInstanceOf[util.ArrayList[Any]]
-      lst.foreach(s => applySetting(arg, s, sb))
+      applySetting(arg, l.toString, ss)
+    case a: JSONArray =>
+      applySettings(arg, a.toArray.toList.map(_.toString), ss)
     case _ =>
       throw new SearchException("Unsupported data type")
   }
 
-  private def mapFromOptions(options: List[SearchOption]): Map[String,SearchOption] = {
-    (options.map(o => (o.longarg, o)) ++
-      options.filter(o => o.shortarg.length > 0).map(o => (o.shortarg, o))).toMap
+  @tailrec
+  def applySettings(arg: String, lst: List[String], ss: SearchSettings): SearchSettings = lst match {
+    case Nil => ss
+    case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
+  }
+
+  private def getArgMap: Map[String, String] = {
+    val longOpts = searchOptions.map {o => (o.longarg, o.longarg)}.toMap
+    val shortOpts = searchOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg, o.longarg)}.toMap
+    longOpts ++ shortOpts
   }
 
   def settingsFromArgs(args: Array[String]): SearchSettings = {
-    val sb = new SettingsBuilder
-    val argMap = mapFromOptions(searchOptions.filter(o => argActionMap.contains(o.longarg)))
-    val flagMap = mapFromOptions(searchOptions.filter(o => flagActionMap.contains(o.longarg)))
+    val argMap = getArgMap
     val switchPattern = """^\-+(\w[\w\-]*)$""".r
-    def nextArg(arglist:List[String], sb:SettingsBuilder) {
+    @tailrec
+    def nextArg(arglist: List[String], ss: SearchSettings): SearchSettings = {
       arglist match {
-        case Nil =>
+        case Nil => ss
         case switchPattern(arg) :: tail =>
-          if (argMap.contains(arg)) {
+          val longArg = argMap.getOrElse(arg, "")
+          if (argActionMap.contains(longArg)) {
             if (tail.nonEmpty) {
-              argActionMap(argMap(arg).longarg)(tail.head, sb)
-              nextArg(tail.tail, sb)
+              nextArg(tail.tail, argActionMap(longArg)(tail.head, ss))
             } else {
               throw new SearchException("Missing value for arg %s".format(arg))
             }
-          } else if (flagMap.contains(arg)) {
-            flagActionMap(flagMap(arg).longarg)(sb)
-            nextArg(tail, sb)
+          } else if (boolFlagActionMap.contains(longArg)) {
+            nextArg(tail, boolFlagActionMap(longArg)(true, ss))
           } else {
             throw new SearchException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
-          sb.startPath = Some(arg)
-          nextArg(tail, sb)
+          nextArg(tail, ss.copy(startPath = Some(arg)))
       }
     }
-    nextArg(args.toList, sb)
-    sb.toSettings
+    nextArg(args.toList, SearchSettings(printResults = true))
   }
 
   def usage(status: Int): Unit = {
