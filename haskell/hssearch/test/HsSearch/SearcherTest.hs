@@ -7,6 +7,7 @@ module HsSearch.SearcherTest
   , getSearchLinesTests
   ) where
 
+import HsSearch.Config
 import HsSearch.FileTypes
 import HsSearch.FileUtil
 import HsSearch.Searcher
@@ -18,9 +19,6 @@ import qualified Data.ByteString as B
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
-
-testFile :: FilePath
-testFile = "/Users/cary/src/xsearch/shared/testFiles/testFile2.txt"
 
 getIsSearchDirTests :: IO [Test]
 getIsSearchDirTests = do
@@ -110,9 +108,14 @@ getLines f = do
     Left e -> return []
     Right fileLines -> return fileLines
 
+sharedTestFile :: FilePath
+sharedTestFile = "/shared/testFiles/testFile2.txt"
+
 getSearchLinesTests :: IO [Test]
 getSearchLinesTests = do
   let settings = defaultSearchSettings { searchPatterns = ["Searcher"] }
+  xsearchPath <- getXsearchPath
+  let testFile = xsearchPath ++ sharedTestFile
   fileLines <- getLines testFile
   let results = searchLines settings fileLines
   return [ testCase "length results == 2" (length results @?= 2)
@@ -134,6 +137,8 @@ getFileContents f = do
 getSearchContentsTests :: IO [Test]
 getSearchContentsTests = do
   let settings = defaultSearchSettings { searchPatterns = ["Searcher"] }
+  xsearchPath <- getXsearchPath
+  let testFile = xsearchPath ++ sharedTestFile
   contents <- getFileContents testFile
   let results = searchContents settings contents
   return [ testCase "length results == 2" (length results @?= 2)

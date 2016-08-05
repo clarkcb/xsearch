@@ -5,6 +5,7 @@ module HsSearch.SearchResultTest
   ) where
 
 import qualified Data.ByteString.Char8 as BC
+import HsSearch.Config
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
@@ -12,7 +13,6 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
-testFilePath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
 testFileLineNum = 10
 testFileMatchStartIndex = 15
 testFileMatchEndIndex = 23
@@ -20,7 +20,8 @@ testFileLine = BC.pack "\tpublic class Searcher\n"
 
 getBinaryFileSearchResultTests :: IO [Test]
 getBinaryFileSearchResultTests = do
-  let binaryFilePath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
+  xsearchPath <- getXsearchPath
+  let binaryFilePath = xsearchPath ++ "/csharp/CsSearch/CsSearch/Searcher.exe"
   let binaryFileSearchResult = blankSearchResult { filePath=binaryFilePath
                                                  , lineNum=0
                                                  , matchStartIndex=0
@@ -33,6 +34,8 @@ getBinaryFileSearchResultTests = do
 
 getSingleLineSearchResultTests :: IO [Test]
 getSingleLineSearchResultTests = do
+  xsearchPath <- getXsearchPath
+  let testFilePath = xsearchPath ++ "/csharp/CsSearch/CsSearch/Searcher.cs"
   let singleLineSearchResult = blankSearchResult { filePath=testFilePath
                                                  , lineNum=testFileLineNum
                                                  , matchStartIndex=testFileMatchStartIndex
@@ -49,6 +52,8 @@ getSingleLineSearchResultTests = do
 
 getMultiLineSearchResultTests :: IO [Test]
 getMultiLineSearchResultTests = do
+  xsearchPath <- getXsearchPath
+  let testFilePath = xsearchPath ++ "/csharp/CsSearch/CsSearch/Searcher.cs"
   let lb = [ BC.pack "namespace CsSearch\n"
            , BC.pack "{\n" ]
   let la = [ BC.pack "\t{\n"
