@@ -17,9 +17,9 @@ function cmp_searchresults($r1, $r2) {
     if ($filecmp !== 0) {
         return $filecmp;
     }
-	if ($r1->linenum === $r2->linenum) {
-		return $r1->match_start_index - $r2->match_start_index;
+    if ($r1->linenum === $r2->linenum) {
+        return $r1->match_start_index - $r2->match_start_index;
     }
-	return $r1->linenum - $r2->linenum;
+    return $r1->linenum - $r2->linenum;
 }
 ?>
