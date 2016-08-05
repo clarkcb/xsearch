@@ -208,7 +208,7 @@ let test_fixture = "Searcher" >:::
 
   "test_filter_file_archive_no_searcharchives" >:: (fun () ->
     let file = "archive.zip" in
-    let ss = { settings with excludehidden=false } in
+    let sf = Searchfile.create file Filetypes.Archive in
     assert_equal (Searcher.filter_file settings sf) false;
   );
 
@@ -228,9 +228,55 @@ let test_fixture = "Searcher" >:::
 
   "test_filter_file_nonarchive_archivesonly" >:: (fun () ->
     let file = "fileutil.ml" in
-    let ss = { settings with searcharchives=true } in
-    let sf = Searchfile.create file Filetypes.Archive in
+    let ss = { settings with searcharchives=true; archivesonly=true } in
+    let sf = Searchfile.create file Filetypes.Text in
     assert_equal (Searcher.filter_file ss sf) false;
+  );
+
+  (*****************************************************************************
+   * search_lines tests
+   *****************************************************************************)
+  "test_search_lines" >:: (fun () ->
+    let testfile = (Config.xsearchpath ^ "/shared/testFiles/testFile2.txt") in
+    let searchpatterns = [Re2.Regex.create_exn "Searcher"] in
+    let ss = { settings with startpath=testfile; searchpatterns=searchpatterns } in
+    match Searcher.search ss with
+    | Ok (results : Searchresult.t list) ->
+        assert_equal (List.length results) 2;
+        let res1 = List.hd_exn results in
+        assert_equal res1.linenum 23;
+        assert_equal res1.match_start_index 3;
+        assert_equal res1.match_end_index 11;
+        let res2 = List.hd_exn (List.tl_exn results) in
+        assert_equal res2.linenum 29;
+        assert_equal res2.match_start_index 24;
+        assert_equal res2.match_end_index 32
+    | Error msg ->
+        printf "Error msg: %s\n" msg;
+        assert_equal false true
+  );
+
+  (*****************************************************************************
+   * search_contents tests
+   *****************************************************************************)
+  "test_search_contents" >:: (fun () ->
+    let testfile = (Config.xsearchpath ^ "/shared/testFiles/testFile2.txt") in
+    let searchpatterns = [Re2.Regex.create_exn "Searcher"] in
+    let ss = { settings with multilinesearch=true; startpath=testfile; searchpatterns=searchpatterns } in
+    match Searcher.search ss with
+    | Ok (results : Searchresult.t list) ->
+        assert_equal (List.length results) 2;
+        let res1 = List.hd_exn results in
+        assert_equal res1.linenum 23;
+        assert_equal res1.match_start_index 3;
+        assert_equal res1.match_end_index 11;
+        let res2 = List.hd_exn (List.tl_exn results) in
+        assert_equal res2.linenum 29;
+        assert_equal res2.match_start_index 24;
+        assert_equal res2.match_end_index 32
+    | Error msg ->
+        printf "Error msg: %s\n" msg;
+        assert_equal false true
   );
 
 ]
