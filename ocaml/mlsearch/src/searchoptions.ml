@@ -17,7 +17,7 @@ let get_desc option_node =
   | None    -> "";;
 
 let get_searchoptions : searchOption list = 
-  let x = Xml.parse_file "/Users/cary/src/xsearch/shared/searchoptions.xml" in
+  let x = Xml.parse_file (Config.xsearchpath ^ "/shared/searchoptions.xml") in
   let option_nodes = Xml.children x in
   List.map option_nodes
     ~f:(fun o -> { short=(Xml.attrib o "short"); long=(Xml.attrib o "long"); desc=(get_desc o) });;
@@ -118,7 +118,7 @@ let flag_actions : (string * flagAction) list = [
 ];;
 
 let rec arg_name arg = 
-  if arg.[0] = '-' && (String.length arg) > 1 then arg_name (String.sub arg 1 ((String.length arg) - 1))
+  if arg.[0] = '-' && (String.length arg) > 1 then arg_name (String.sub arg ~pos:1 ~len:((String.length arg) - 1))
   else arg
 
 let get_long_arg searchoptions arg = 
@@ -134,10 +134,10 @@ let settings_from_args searchoptions args =
         (let arg = arg_name hd in
          match get_long_arg searchoptions arg with
          | Some long_arg ->
-             (match List.find flag_actions ~f:(fun (s, f) -> s = long_arg) with
+             (match List.find flag_actions ~f:(fun (s, _) -> s = long_arg) with
               | Some (_, f) -> rec_settings_from_args searchoptions (f settings) tl
               | None ->
-                (match List.find arg_actions ~f:(fun (s, f) -> s = long_arg) with
+                (match List.find arg_actions ~f:(fun (s, _) -> s = long_arg) with
                  | Some (_, f) ->
                     (match tl with
                      | [] -> Error (sprintf "Missing value for option: %s" arg)

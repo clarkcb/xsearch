@@ -8,7 +8,7 @@ let is_dotdir f : bool =
 let is_hidden f : bool = 
   let name = (Filename.basename f) in
   String.length name > 1 &&
-  String.sub name 0 1 = "." &&
+  String.sub name ~pos:0 ~len:1 = "." &&
   not (List.mem dotdirs name);;
 
 let get_extension f : string =
