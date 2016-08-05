@@ -196,8 +196,8 @@ build_kotlin () {
     copy_resources $RESOURCES_PATH
 
     # copy the test files to the local test resource location
-    #mkdir -p $TEST_RESOURCES_PATH
-    #copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p $TEST_RESOURCES_PATH
+    copy_test_resources $TEST_RESOURCES_PATH
 
     # run a maven clean build
     log "Building ktsearch"
