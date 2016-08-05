@@ -447,9 +447,8 @@ type XmlSearchOption struct {
 	Desc  string `xml:",chardata"`
 }
 
-const searchOptionsXmlPath = "~/src/git/xsearch/shared/searchoptions.xml"
-
 func searchOptionsFromXml() (*SearchOptions, error) {
+	searchOptionsXmlPath := fmt.Sprintf("%s/shared/searchoptions.xml", XSEARCHPATH)
 	var searchOptions []*SearchOption
 	xmlSearchOptions := &XmlSearchOptions{}
 

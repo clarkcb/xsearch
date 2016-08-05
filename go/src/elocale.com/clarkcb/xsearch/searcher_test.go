@@ -1,7 +1,7 @@
 package xsearch
 
 import (
-	// "fmt"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -9,7 +9,7 @@ import (
 )
 
 func getTestFileContents() (string, error) {
-	testFile := expandPath("~/src/xsearch/shared/testFiles/testFile2.txt")
+	testFile := fmt.Sprintf("%s/shared/testFiles/testFile2.txt", XSEARCHPATH)
 	r, err1 := os.Open(testFile)
 	if err1 != nil {
 		return "", err1

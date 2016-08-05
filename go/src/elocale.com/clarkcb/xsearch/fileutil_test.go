@@ -111,7 +111,7 @@ func TestRelativePath(t *testing.T) {
 		"long/path":               "long/path",
 		"long/path/":              "long/path/",
 		homePath:                  ".",
-		homePath + "/src/xsearch": "./src/xsearch",
+		homePath + "/long/path": "./long/path",
 	}
 
 	for k, v := range expected {

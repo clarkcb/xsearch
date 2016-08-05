@@ -1,12 +1,13 @@
 package xsearch
 
+import "fmt"
 import "regexp"
 import "testing"
 
 func TestAddSearchResult(t *testing.T) {
 	searchResults := NewSearchResults()
 
-	path := "~/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
+	path := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
 	name := "searchresults_test.go"
 	searchItem := NewSearchItem(&path, &name)
 
@@ -34,7 +35,7 @@ func TestAddSearchResult(t *testing.T) {
 			len(searchResults.SearchResults))
 	}
 
-	expectedDir := "~/src/git/xsearch/go/src/github.com/clarkcb/gosearch"
+	expectedDir := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
 	c, b := searchResults.DirCounts[expectedDir]
 	if !b {
 		t.Errorf("searchResults.DirCounts does not contain expected dir key: %s",
@@ -45,7 +46,7 @@ func TestAddSearchResult(t *testing.T) {
 			expectedDir, searchResults.DirCounts[expectedDir])
 	}
 
-	expectedFile := "~/src/git/xsearch/go/src/github.com/clarkcb/gosearch/searchresults_test.go"
+	expectedFile := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch/searchresults_test.go", XSEARCHPATH)
 	c, b = searchResults.FileCounts[expectedFile]
 	if !b {
 		t.Errorf("searchResults.FileCounts does not contain expected file key: %s",
@@ -55,5 +56,4 @@ func TestAddSearchResult(t *testing.T) {
 		t.Errorf("searchResults.FileCounts[\"%s\"]=%d, expected=1",
 			expectedFile, searchResults.FileCounts[expectedFile])
 	}
-
 }
