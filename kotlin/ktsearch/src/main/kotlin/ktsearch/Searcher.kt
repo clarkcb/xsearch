@@ -325,7 +325,11 @@ class Searcher(val settings: SearchSettings) {
 
     private fun matchLinesAfterToOrUntil(linesAfter: MutableList<String>,
                                          lines: Iterator<String>): Boolean {
-        for (i: Int in 0 .. linesAfter.size - 1) {
+        if (settings.linesAfterToPatterns.isEmpty()
+                && settings.linesAfterUntilPatterns.isEmpty())
+            return true
+
+        for (i: Int in linesAfter.indices) {
             if (matchesAnyPattern(linesAfter.get(i), settings.linesAfterToPatterns)) {
                 while (i + 1 < linesAfter.size) linesAfter.removeAt(i + 1)
                 return true
@@ -375,9 +379,11 @@ class Searcher(val settings: SearchSettings) {
                     if (settings.firstMatch)
                         settings.searchPatterns.filterNot { matchedPatterns.contains(it) }
                     else settings.searchPatterns
+
             if (searchPatterns.isEmpty()) {
                 break
             }
+
             for (p in searchPatterns) {
                 val matches: Sequence<MatchResult> =
                         if (settings.firstMatch) {
@@ -389,14 +395,10 @@ class Searcher(val settings: SearchSettings) {
                             }
                         }
                         else p.findAll(line)
-                if (matches.count() == 0 || !linesBeforeMatch(linesBefore)
-                        || !linesAfterMatch(linesAfter)) {
-                    continue
-                }
-                // linesAfterTo/Until matching
-                if ((settings.linesAfterToPatterns.isNotEmpty()
-                        || settings.linesAfterUntilPatterns.isNotEmpty())
-                        && !matchLinesAfterToOrUntil(linesAfter, lines.iterator())) {
+                if (matches.count() == 0
+                        || !linesBeforeMatch(linesBefore)
+                        || !linesAfterMatch(linesAfter)
+                        || !matchLinesAfterToOrUntil(linesAfter, lines.iterator())) {
                     continue
                 }
 

@@ -138,7 +138,6 @@ class SearchOptions() {
         }
     }
 
-    //@Throws(ParseException::class)
     fun settingsFromJson(json: String, settings: SearchSettings): SearchSettings {
         val obj = JSONValue.parseWithException(json)
         val jsonObject = obj as JSONObject
@@ -208,18 +207,17 @@ class SearchOptions() {
                     if (argActionMap.containsKey(longArg)) {
                         if (args.size > 1) {
                             val argVal = args.drop(1).first()
-                            val ss = argActionMap.get(longArg)?.invoke(argVal, settings)
-                            return recSettingsFromArgs(args.drop(2), ss ?: settings)
+                            val ss = argActionMap.get(longArg)!!.invoke(argVal, settings)
+                            return recSettingsFromArgs(args.drop(2), ss)
                         } else {
                             throw SearchException("Missing value for option " + arg)
                         }
                     } else if (boolFlagActionMap.containsKey(longArg)) {
-                        val ss = boolFlagActionMap.get(longArg)?.invoke(true, settings)
-                        return recSettingsFromArgs(args.drop(1), ss ?: settings)
+                        val ss = boolFlagActionMap.get(longArg)!!.invoke(true, settings)
+                        return recSettingsFromArgs(args.drop(1), ss)
                     } else {
                         throw SearchException("Invalid option: " + arg)
                     }
-
                 } else {
                     throw SearchException("Invalid option: " + arg)
                 }
