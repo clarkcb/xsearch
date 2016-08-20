@@ -5,184 +5,124 @@ open System.Collections.Generic
 open System.IO
 open System.Text.RegularExpressions
 
-type SearchSettings() =
-    let _inArchiveExtensions = new HashSet<string>()
-    let _inArchiveFilePatterns = new HashSet<Regex>()
-    let _inDirPatterns = new HashSet<Regex>()
-    let _inExtensions = new HashSet<string>()
-    let _inFilePatterns = new HashSet<Regex>()
-    let _inLinesAfterPatterns = new HashSet<Regex>()
-    let _inLinesBeforePatterns = new HashSet<Regex>()
-    let _linesAfterToPatterns = new HashSet<Regex>()
-    let _linesAfterUntilPatterns = new HashSet<Regex>()
-    let _outArchiveExtensions = new HashSet<string>()
-    let _outArchiveFilePatterns = new HashSet<Regex>()
-    let _outDirPatterns = new HashSet<Regex>()
-    let _outExtensions = new HashSet<string>()
-    let _outFilePatterns = new HashSet<Regex>()
-    let _outLinesAfterPatterns = new HashSet<Regex>()
-    let _outLinesBeforePatterns = new HashSet<Regex>()
-    let _searchPatterns = new HashSet<Regex>()
+module Settings =
+    type SearchSettings = {
+        ArchivesOnly : bool;
+        Debug : bool;
+        ExcludeHidden : bool;
+        FirstMatch : bool;
+        InArchiveExtensions : string list;
+        InArchiveFilePatterns : Regex list;
+        InDirPatterns : Regex list;
+        InExtensions : string list;
+        InFilePatterns : Regex list;
+        InLinesAfterPatterns : Regex list;
+        InLinesBeforePatterns : Regex list;
+        LinesAfter : int;
+        LinesAfterToPatterns : Regex list;
+        LinesAfterUntilPatterns : Regex list;
+        LinesBefore : int;
+        ListDirs : bool;
+        ListFiles : bool;
+        ListLines : bool;
+        MaxLineLength : int;
+        MultiLineSearch : bool;
+        OutArchiveExtensions : string list;
+        OutArchiveFilePatterns : Regex list;
+        OutDirPatterns : Regex list;
+        OutExtensions : string list;
+        OutFilePatterns : Regex list;
+        OutLinesAfterPatterns : Regex list;
+        OutLinesBeforePatterns : Regex list;
+        PrintResults : bool;
+        PrintUsage : bool;
+        PrintVersion : bool;
+        Recursive : bool;
+        SearchArchives : bool;
+        SearchPatterns : Regex list;
+        StartPath : string;
+        UniqueLines : bool;
+        Verbose : bool
+    }
 
-    // read-only member properties
-    member this.InArchiveExtensions = _inArchiveExtensions
-    member this.InArchiveFilePatterns = _inArchiveFilePatterns
-    member this.InDirPatterns = _inDirPatterns
-    member this.InExtensions = _inExtensions
-    member this.InFilePatterns = _inFilePatterns
-    member this.InLinesAfterPatterns = _inLinesAfterPatterns
-    member this.InLinesBeforePatterns = _inLinesBeforePatterns
-    member this.LinesAfterToPatterns = _linesAfterToPatterns
-    member this.LinesAfterUntilPatterns = _linesAfterUntilPatterns
-    member this.OutArchiveExtensions = _outArchiveExtensions
-    member this.OutArchiveFilePatterns = _outArchiveFilePatterns
-    member this.OutDirPatterns = _outDirPatterns
-    member this.OutExtensions = _outExtensions
-    member this.OutFilePatterns = _outFilePatterns
-    member this.OutLinesAfterPatterns = _outLinesAfterPatterns
-    member this.OutLinesBeforePatterns = _outLinesBeforePatterns
-    member this.SearchPatterns = _searchPatterns
+    let DefaultSettings = {
+        ArchivesOnly = false;
+        Debug = false;
+        ExcludeHidden = true;
+        FirstMatch = false;
+        InArchiveExtensions = [];
+        InArchiveFilePatterns = [];
+        InDirPatterns = [];
+        InExtensions = [];
+        InFilePatterns = [];
+        InLinesAfterPatterns = [];
+        InLinesBeforePatterns = [];
+        LinesAfter = 0;
+        LinesAfterToPatterns = [];
+        LinesAfterUntilPatterns = [];
+        LinesBefore = 0;
+        ListDirs = false;
+        ListFiles = false;
+        ListLines = false;
+        MaxLineLength = 0;
+        MultiLineSearch = false;
+        OutArchiveExtensions = [];
+        OutArchiveFilePatterns = [];
+        OutDirPatterns = [];
+        OutExtensions = [];
+        OutFilePatterns = [];
+        OutLinesAfterPatterns = [];
+        OutLinesBeforePatterns = [];
+        PrintResults = false;
+        PrintUsage = false;
+        PrintVersion = false;
+        Recursive = true;
+        SearchArchives = false;
+        SearchPatterns = [];
+        StartPath = "";
+        UniqueLines = false;
+        Verbose = false
+    }
 
-    member this.HasExtensions = Seq.length _inExtensions > 0 || Seq.length _outExtensions > 0
-    member this.HasDirPatterns = Seq.length _inDirPatterns > 0 || Seq.length _outDirPatterns > 0
-    member this.HasFilePatterns = Seq.length _inFilePatterns > 0 || Seq.length _outFilePatterns > 0
-
-    // read-write member properties
-    member val StartPath = "" with get,set
-    member val ArchivesOnly = false with get,set
-    member val Debug = false with get,set
-    member val ExcludeHidden = true with get,set
-    member val FirstMatch = false with get,set
-    member val LinesAfter = 0 with get,set
-    member val LinesBefore = 0 with get,set
-    member val ListDirs = false with get,set
-    member val ListFiles = false with get,set
-    member val ListLines = false with get,set
-    member val MaxLineLength = 150 with get,set
-    member val MultiLineSearch = false with get,set
-    member val PrintResults = false with get,set
-    member val PrintUsage = false with get,set
-    member val PrintVersion = false with get,set
-    member val Recursive = true with get,set
-    member val SearchArchives = false with get,set
-    member val UniqueLines = false with get,set
-    member val Verbose = false with get,set
-
-    // member methods
-    member this.AddExtension(set : HashSet<string>, exts : string) : unit =
-        let xs = exts.Split(',') |> Seq.filter (fun x -> not (String.IsNullOrEmpty x))
-        for x in xs do
-            let ext =
-                if x.StartsWith(".") then x
-                else "." + x
-            set.Add(ext) |> ignore
-
-    member this.AddPattern(set : ISet<Regex>, pattern : string) : unit =
-        let success = set.Add(new Regex(pattern))
-        ()
-
-    member this.AddInArchiveExtension(ext : string) : unit =
-        this.AddExtension(_inArchiveExtensions, ext)
-
-    member this.AddInArchiveFilePattern(pattern : string) : unit =
-        this.AddPattern(_inArchiveFilePatterns, pattern)
-
-    member this.AddInDirPattern(pattern : string) : unit =
-        this.AddPattern(_inDirPatterns, pattern)
-
-    member this.AddInExtension(ext : string) : unit =
-        this.AddExtension(_inExtensions, ext)
-
-    member this.AddInFilePattern(pattern : string) : unit =
-        this.AddPattern(_inFilePatterns, pattern)
-
-    member this.AddInLinesAfterPattern(pattern : string) : unit =
-        this.AddPattern(_inLinesAfterPatterns, pattern)
-
-    member this.AddInLinesBeforePattern(pattern : string) : unit =
-        this.AddPattern(_inLinesBeforePatterns, pattern)
-
-    member this.AddLinesAfterToPattern(pattern : string) : unit =
-        this.AddPattern(_linesAfterToPatterns, pattern)
-
-    member this.AddLinesAfterUntilPattern(pattern : string) : unit =
-        this.AddPattern(_linesAfterUntilPatterns, pattern)
-
-    member this.AddOutArchiveExtension(ext : string) : unit =
-        this.AddExtension(_outArchiveExtensions, ext)
-
-    member this.AddOutArchiveFilePattern(pattern : string) : unit =
-        this.AddPattern(_outArchiveFilePatterns, pattern)
-
-    member this.AddOutDirPattern(pattern : string) : unit =
-        this.AddPattern(_outDirPatterns, pattern)
-
-    member this.AddOutExtension(ext : string) : unit =
-        this.AddExtension(_outExtensions, ext)
-
-    member this.AddOutFilePattern(pattern : string) : unit =
-        this.AddPattern(_outFilePatterns, pattern)
-
-    member this.AddOutLinesAfterPattern(pattern : string) : unit =
-        this.AddPattern(_outLinesAfterPatterns, pattern)
-
-    member this.AddOutLinesBeforePattern(pattern : string) : unit =
-        this.AddPattern(_outLinesBeforePatterns, pattern)
-
-    member this.AddSearchPattern(pattern : string) : unit =
-        this.AddPattern(_searchPatterns, pattern)
-
-    member this.SetArchivesOnly() : unit =
-        this.ArchivesOnly <- true
-        this.SearchArchives <- true
-
-    member this.SetDebug() : unit =
-        this.Debug <- true
-        this.Verbose <- true
-
-    member this.SetToString<'T>(set : ISet<'T>) : string =
-        if set.Count > 0 then
-            "[\"" + String.Join("\", \"", set) + "\"]"
-        else
-            "[]"
-
-    override this.ToString() : string =
-        "SearchSettings(" +
-        String.Format("ArchivesOnly: {0}", this.ArchivesOnly) +
-        String.Format(", Debug: {0}", this.Debug) +
-        String.Format(", ExcludeHidden: {0}", this.ExcludeHidden) +
-        String.Format(", FirstMatch: {0}", this.FirstMatch) +
-        String.Format(", InArchiveExtensions: {0}", this.SetToString(_inArchiveExtensions)) +
-        String.Format(", InArchiveFilePatterns: {0}", this.SetToString(_inArchiveFilePatterns)) +
-        String.Format(", InDirPatterns: {0}", this.SetToString( _inDirPatterns)) +
-        String.Format(", InExtensions: {0}", this.SetToString(_inExtensions)) +
-        String.Format(", InFilePatterns: {0}", this.SetToString(_inFilePatterns)) +
-        String.Format(", InLinesAfterPatterns: {0}", this.SetToString(_inLinesAfterPatterns)) +
-        String.Format(", InLinesBeforePatterns: {0}", this.SetToString(_inLinesBeforePatterns)) +
-        String.Format(", LinesAfter: {0}", this.LinesAfter) +
-        String.Format(", LinesAfterToPatterns: {0}", this.SetToString(_linesAfterToPatterns)) +
-        String.Format(", LinesAfterUntilPatterns: {0}", this.SetToString(_linesAfterUntilPatterns)) +
-        String.Format(", LinesBefore: {0}", this.LinesBefore) +
-        String.Format(", ListDirs: {0}", this.ListDirs) +
-        String.Format(", ListFiles: {0}", this.ListFiles) +
-        String.Format(", ListLines: {0}", this.ListLines) +
-        String.Format(", MaxLineLength: {0}", this.MaxLineLength) +
-        String.Format(", MultiLineSearch: {0}", this.MultiLineSearch) +
-        String.Format(", OutArchiveExtensions: {0}",  "[\"" + String.Join("\", \"", _outArchiveExtensions) + "\"]") +
-        String.Format(", OutArchiveFilePatterns: {0}",  "[\"" + String.Join("\", \"", _outArchiveFilePatterns) + "\"]") +
-        String.Format(", OutDirPatterns: {0}", "[\"" + String.Join("\", \"", _outDirPatterns) + "\"]") +
-        String.Format(", OutExtensions: {0}", "[\"" + String.Join("\", \"", _outExtensions) + "\"]") +
-        String.Format(", OutFilePatterns: {0}", "[\"" + String.Join("\", \"", _outFilePatterns) + "\"]") +
-        String.Format(", OutLinesAfterPatterns: {0}",  "[\"" + String.Join("\", \"", _outLinesAfterPatterns) + "\"]") +
-        String.Format(", OutLinesBeforePatterns: {0}",  "[\"" + String.Join("\", \"", _outLinesBeforePatterns) + "\"]") +
-        String.Format(", PrintResults: {0}", this.PrintResults) +
-        String.Format(", PrintUsage: {0}", this.PrintUsage) +
-        String.Format(", PrintVersion: {0}", this.PrintVersion) +
-        String.Format(", Recursive: {0}", this.Recursive) +
-        String.Format(", SearchArchives: {0}", this.SearchArchives) +
-        String.Format(", SearchPatterns: {0}", "[\"" + String.Join("\", \"", _searchPatterns) + "\"]") +
-        String.Format(", StartPath: \"{0}\"", this.StartPath) +
-        String.Format(", UniqueLines: {0}", this.UniqueLines) +
-        String.Format(", Verbose: {0}", this.Verbose) +
-        ")"
-    ;;
+    let ToString settings =
+        String.concat "" [
+            "SearchSettings(";
+            sprintf "ArchivesOnly: %b" settings.ArchivesOnly;
+            sprintf ", Debug: %b" settings.Debug;
+            sprintf ", ExcludeHidden: %b" settings.ExcludeHidden;
+            sprintf ", FirstMatch: %b" settings.FirstMatch;
+            sprintf ", InArchiveExtensions: %s" (Common.list_to_string(settings.InArchiveExtensions));
+            sprintf ", InArchiveFilePatterns: %s" (Common.list_to_string(settings.InArchiveFilePatterns));
+            sprintf ", InDirPatterns: %s" (Common.list_to_string(settings.InDirPatterns));
+            sprintf ", InExtensions: %s" (Common.list_to_string(settings.InExtensions));
+            sprintf ", InFilePatterns: %s" (Common.list_to_string(settings.InFilePatterns));
+            sprintf ", InLinesAfterPatterns: %s" (Common.list_to_string(settings.InLinesAfterPatterns));
+            sprintf ", InLinesBeforePatterns: %s" (Common.list_to_string(settings.InLinesBeforePatterns));
+            sprintf ", LinesAfter: %d" settings.LinesAfter;
+            sprintf ", LinesAfterToPatterns: %s" (Common.list_to_string(settings.LinesAfterToPatterns));
+            sprintf ", LinesAfterUntilPatterns: %s" (Common.list_to_string(settings.LinesAfterUntilPatterns));
+            sprintf ", LinesBefore: %d" settings.LinesBefore;
+            sprintf ", ListDirs: %b" settings.ListDirs;
+            sprintf ", ListFiles: %b" settings.ListFiles;
+            sprintf ", ListLines: %b" settings.ListLines;
+            sprintf ", MaxLineLength: %d" settings.MaxLineLength;
+            sprintf ", MultiLineSearch: %b" settings.MultiLineSearch;
+            sprintf ", OutArchiveExtensions: %s" (Common.list_to_string(settings.OutArchiveExtensions));
+            sprintf ", OutArchiveFilePatterns: %s" (Common.list_to_string(settings.OutArchiveFilePatterns));
+            sprintf ", OutDirPatterns: %s" (Common.list_to_string(settings.OutDirPatterns));
+            sprintf ", OutExtensions: %s" (Common.list_to_string(settings.OutExtensions));
+            sprintf ", OutFilePatterns: %s" (Common.list_to_string(settings.OutFilePatterns));
+            sprintf ", OutLinesAfterPatterns: %s" (Common.list_to_string(settings.OutLinesAfterPatterns));
+            sprintf ", OutLinesBeforePatterns: %s" (Common.list_to_string(settings.OutLinesBeforePatterns));
+            sprintf ", PrintResults: %b" settings.PrintResults;
+            sprintf ", PrintUsage: %b" settings.PrintUsage;
+            sprintf ", PrintVersion: %b" settings.PrintVersion;
+            sprintf ", Recursive: %b" settings.Recursive;
+            sprintf ", SearchArchives: %b" settings.SearchArchives;
+            sprintf ", SearchPatterns: %s" (Common.list_to_string(settings.SearchPatterns));
+            sprintf ", StartPath: \"%s\"" settings.StartPath;
+            sprintf ", UniqueLines: %b" settings.UniqueLines;
+            sprintf ", Verbose: %b" settings.Verbose;
+            ")"
+        ]
+;;

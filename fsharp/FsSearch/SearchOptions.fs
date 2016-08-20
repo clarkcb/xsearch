@@ -7,89 +7,85 @@ open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
+type SearchSettings = Settings.SearchSettings
+
 module SearchOptions =   
 
-    type SearchOption (shortarg : string, longarg : string, desc : string) =
-        let _shortarg = shortarg
-        let _longarg = longarg
-        let _desc = desc
+    type SearchOption = {
+        ShortArg : string;
+        LongArg : string;
+        Description : string
+    }
 
-        // read-only member properties
-        member this.ShortArg = _shortarg
-        member this.LongArg = _longarg
-        member this.Description = _desc
-        member this.SortArg =
-            if not (String.IsNullOrWhiteSpace _shortarg) then
-                sprintf "%sa%s" (_shortarg.ToLower()) (_longarg)
-            else
-                longarg
+    let addExtensions (exts : string) (extList : string list) : string list =
+        List.append extList (FileUtil.ExtensionsListFromString exts)
 
-    let argActionMap : Map<string, string -> SearchSettings -> unit> =
+    let argActionMap : Map<string, string -> SearchSettings -> SearchSettings> =
         [
-            ("in-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.AddInArchiveExtension(s)));
-            ("in-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInArchiveFilePattern(s)));
-            ("in-dirpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInDirPattern(s)));
-            ("in-ext", (fun (s : string) (settings : SearchSettings) -> settings.AddInExtension(s)));
-            ("in-filepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInFilePattern(s)));
-            ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInLinesAfterPattern(s)));
-            ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddInLinesBeforePattern(s)));
-            ("linesafter", (fun (s : string) (settings : SearchSettings) -> settings.LinesAfter <- Int32.Parse(s)));
-            ("linesaftertopattern", (fun (s : string) (settings : SearchSettings) -> settings.AddLinesAfterToPattern(s)));
-            ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddLinesAfterUntilPattern(s)));
-            ("linesbefore", (fun (s : string) (settings : SearchSettings) -> settings.LinesBefore <- Int32.Parse(s)));
-            ("maxlinelength", (fun (s : string) (settings : SearchSettings) -> settings.MaxLineLength <- Int32.Parse(s)));
-            ("out-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.AddOutArchiveExtension(s)));
-            ("out-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutArchiveFilePattern(s)));
-            ("out-dirpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutDirPattern(s)));
-            ("out-ext", (fun (s : string) (settings : SearchSettings) -> settings.AddOutExtension(s)));
-            ("out-filepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutFilePattern(s)));
-            ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutLinesAfterPattern(s)));
-            ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> settings.AddOutLinesBeforePattern(s)));
-            ("search", (fun (s : string) (settings : SearchSettings) -> settings.AddSearchPattern(s)));
+            ("in-archiveext", (fun (s : string) (settings : SearchSettings) -> { settings with InArchiveExtensions = addExtensions s settings.InArchiveExtensions }));
+            ("in-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> { settings with InArchiveFilePatterns = List.append settings.InArchiveFilePatterns [new Regex(s)] }));
+            ("in-dirpattern", (fun (s : string) (settings : SearchSettings) -> { settings with InDirPatterns = List.append settings.InDirPatterns [new Regex(s)] }));
+            ("in-ext", (fun (s : string) (settings : SearchSettings) -> { settings with InExtensions = addExtensions s settings.InExtensions }));
+            ("in-filepattern", (fun (s : string) (settings : SearchSettings) -> { settings with InFilePatterns = List.append settings.InFilePatterns [new Regex(s)] }));
+            ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> { settings with InLinesAfterPatterns = List.append settings.InLinesAfterPatterns [new Regex(s)] }));
+            ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> { settings with InLinesBeforePatterns = List.append settings.InLinesBeforePatterns [new Regex(s)] }));
+            ("linesafter", (fun (s : string) (settings : SearchSettings) -> { settings with LinesAfter = Int32.Parse(s) }));
+            ("linesaftertopattern", (fun (s : string) (settings : SearchSettings) -> { settings with LinesAfterToPatterns = List.append settings.LinesAfterToPatterns [new Regex(s)] }));
+            ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings) -> { settings with LinesAfterUntilPatterns = List.append settings.LinesAfterUntilPatterns [new Regex(s)] }));
+            ("linesbefore", (fun (s : string) (settings : SearchSettings) -> { settings with LinesBefore = Int32.Parse(s) }));
+            ("maxlinelength", (fun (s : string) (settings : SearchSettings) -> { settings with MaxLineLength = Int32.Parse(s) }));
+            ("out-archiveext", (fun (s : string) (settings : SearchSettings) -> { settings with OutArchiveExtensions = addExtensions s settings.OutArchiveExtensions }));
+            ("out-archivefilepattern", (fun (s : string) (settings : SearchSettings) -> { settings with OutArchiveFilePatterns = List.append settings.OutArchiveFilePatterns [new Regex(s)] }));
+            ("out-dirpattern", (fun (s : string) (settings : SearchSettings) -> { settings with OutDirPatterns = List.append settings.OutDirPatterns [new Regex(s)] }));
+            ("out-ext", (fun (s : string) (settings : SearchSettings) -> { settings with OutExtensions = addExtensions s settings.OutExtensions }));
+            ("out-filepattern", (fun (s : string) (settings : SearchSettings) -> { settings with OutFilePatterns = List.append settings.OutFilePatterns [new Regex(s)] }));
+            ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings) -> { settings with OutLinesAfterPatterns = List.append settings.OutLinesAfterPatterns [new Regex(s)] }));
+            ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings) -> { settings with OutLinesBeforePatterns = List.append settings.OutLinesBeforePatterns [new Regex(s)] }));
+            ("search", (fun (s : string) (settings : SearchSettings) -> { settings with SearchPatterns = List.append settings.SearchPatterns [new Regex(s)] }));
         ] |> Map.ofList
 
-    let flagActionMap : Map<string, SearchSettings -> unit> =
+    let flagActionMap : Map<string, bool -> SearchSettings -> SearchSettings> =
         [
-            ("allmatches", (fun (settings : SearchSettings) -> settings.FirstMatch <- false));
-            ("archivesonly", (fun (settings : SearchSettings) -> settings.SetArchivesOnly()));
-            ("debug", (fun (settings : SearchSettings) -> settings.SetDebug()));
-            ("excludehidden", (fun (settings : SearchSettings) -> settings.ExcludeHidden <- true));
-            ("firstmatch", (fun (settings : SearchSettings) -> settings.FirstMatch <- true));
-            ("help", (fun (settings : SearchSettings) -> settings.PrintUsage <- true));
-            ("includehidden", (fun (settings : SearchSettings) -> settings.ExcludeHidden <- false));
-            ("listdirs", (fun (settings : SearchSettings) -> settings.ListDirs <- true));
-            ("listfiles", (fun (settings : SearchSettings) -> settings.ListFiles <- true));
-            ("listlines", (fun (settings : SearchSettings) -> settings.ListLines <- true));
-            ("multilinesearch", (fun (settings : SearchSettings) -> settings.MultiLineSearch <- true));
-            ("noprintmatches", (fun (settings : SearchSettings) -> settings.PrintResults <- false));
-            ("norecursive", (fun (settings : SearchSettings) -> settings.Recursive <- false));
-            ("nosearcharchives", (fun (settings : SearchSettings) -> settings.SearchArchives <- false));
-            ("printmatches", (fun (settings : SearchSettings) -> settings.PrintResults <- true));
-            ("recursive", (fun (settings : SearchSettings) -> settings.Recursive <- true));
-            ("searcharchives", (fun (settings : SearchSettings) -> settings.SearchArchives <- true));
-            ("uniquelines", (fun (settings : SearchSettings) -> settings.UniqueLines <- true));
-            ("verbose", (fun (settings : SearchSettings) -> settings.Verbose <- true));
-            ("version", (fun (settings : SearchSettings) -> settings.PrintVersion <- true));
+            ("allmatches", (fun (b : bool) (settings : SearchSettings) -> { settings with FirstMatch = not b }));
+            ("archivesonly", (fun (b : bool) (settings : SearchSettings) -> { settings with ArchivesOnly = b }));
+            ("debug", (fun (b : bool) (settings : SearchSettings) -> { settings with Debug = true; Verbose = b }));
+            ("excludehidden", (fun (b : bool) (settings : SearchSettings) -> { settings with ExcludeHidden = b }));
+            ("firstmatch", (fun (b : bool) (settings : SearchSettings) -> { settings with FirstMatch = b }));
+            ("help", (fun (b : bool) (settings : SearchSettings) -> { settings with PrintUsage = b }));
+            ("includehidden", (fun (b : bool) (settings : SearchSettings) -> { settings with ExcludeHidden = not b }));
+            ("listdirs", (fun (b : bool) (settings : SearchSettings) -> { settings with ListDirs = b }));
+            ("listfiles", (fun (b : bool) (settings : SearchSettings) -> { settings with ListFiles = b }));
+            ("listlines", (fun (b : bool) (settings : SearchSettings) -> { settings with ListLines = b }));
+            ("multilinesearch", (fun (b : bool) (settings : SearchSettings) -> { settings with MultiLineSearch = b }));
+            ("noprintmatches", (fun (b : bool) (settings : SearchSettings) -> { settings with PrintResults = not b }));
+            ("norecursive", (fun (b : bool) (settings : SearchSettings) -> { settings with Recursive = not b }));
+            ("nosearcharchives", (fun (b : bool) (settings : SearchSettings) -> { settings with SearchArchives = not b }));
+            ("printmatches", (fun (b : bool) (settings : SearchSettings) -> { settings with PrintResults = b }));
+            ("recursive", (fun (b : bool) (settings : SearchSettings) -> { settings with Recursive = b }));
+            ("searcharchives", (fun (b : bool) (settings : SearchSettings) -> { settings with SearchArchives = b }));
+            ("uniquelines", (fun (b : bool) (settings : SearchSettings) -> { settings with UniqueLines = b }));
+            ("verbose", (fun (b : bool) (settings : SearchSettings) -> { settings with Verbose = b }));
+            ("version", (fun (b : bool) (settings : SearchSettings) -> { settings with PrintVersion = b }));
         ] |> Map.ofList;
 
     let OptionsFromXml () : SearchOption list =
-        let _searchOptionsPath = "~/src/xsearch/shared/searchoptions.xml"
+        let rec recOptionsFromXml (nodeList : XElement list) (options : SearchOption list) : SearchOption list =
+            match nodeList with
+            | [] -> options
+            | n :: ns ->
+                let short = [for a in n.Attributes(XName.Get("short")) do yield a.Value].Head
+                let long = [for a in n.Attributes(XName.Get("long")) do yield a.Value].Head
+                let desc = n.Value.Trim()
+                recOptionsFromXml ns (List.append options [{ ShortArg=short; LongArg=long; Description=desc }])
+        let _searchOptionsPath = Path.Combine(Config.XSEARCHPATH, "shared/searchoptions.xml")
         let _fileStream = new FileStream(FileUtil.ExpandPath(_searchOptionsPath), FileMode.Open)
-        let options = new List<SearchOption>()
         let optNodes = XDocument.Load(_fileStream).Descendants(XName.Get("searchoption"))
-        for o in optNodes do
-            let short = [for a in o.Attributes(XName.Get("short")) do yield a.Value].Head
-            let long = [for a in o.Attributes(XName.Get("long")) do yield a.Value].Head
-            let desc = o.Value.Trim()
-            options.Add(new SearchOption(short, long, desc))
-        options |> List.ofSeq |> List.sortBy (fun o -> o.SortArg)
+        recOptionsFromXml (List.ofSeq optNodes) []
+        |> List.sortBy (fun o -> if (o.ShortArg <> "") then (o.ShortArg.ToLower() + "@" + o.LongArg) else o.LongArg)
 
     let options = OptionsFromXml()
 
     let SettingsFromArgs (args : string[]) : SearchSettings * string =
-        let settings = new SearchSettings()
-        settings.PrintResults <- true
-
         let optionNameMap =
             let shortargs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
             let longargs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
@@ -102,7 +98,7 @@ module SearchOptions =
             let m = argRegex.Match(arg)
             if m.Success then Some(m.Groups.["opt"].Value) else None
 
-        let rec loopArgs (argList : string list) (settings : SearchSettings) : SearchSettings * string =
+        let rec recSettingsFromArgs (argList : string list) (settings : SearchSettings) : SearchSettings * string =
             match argList with
             | [] -> settings, ""
             | head :: tail ->
@@ -115,18 +111,17 @@ module SearchOptions =
                             | [] ->
                                 settings, sprintf "Missing value for option: %s" opt
                             | aHead :: aTail -> 
-                                argActionMap.[long] aHead settings
-                                loopArgs aTail settings
+                                //argActionMap.[long] aHead settings
+                                recSettingsFromArgs aTail (argActionMap.[long] aHead settings)
                         elif (flagActionMap.ContainsKey(long)) then
-                            flagActionMap.[long] settings
-                            loopArgs tail settings
+                            //flagActionMap.[long] settings
+                            recSettingsFromArgs tail (flagActionMap.[long] true settings)
                         else
                             settings, sprintf "Invalid option: %s" opt
                     else
                         settings, sprintf "Invalid option: %s" opt
-                | _ -> settings.StartPath <- head
-                       loopArgs tail settings
-        loopArgs (Array.toList args) settings
+                | _ -> recSettingsFromArgs tail { settings with StartPath = head }
+        recSettingsFromArgs (Array.toList args) { Settings.DefaultSettings with PrintResults = true }
 
     let GetUsageString () : string =
         let optStringMap =
