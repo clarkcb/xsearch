@@ -1,7 +1,7 @@
 {
   "startpath": "/Users/cary/src/xsearch/",
   "in-ext": ["js", "ts"],
-  "out-dirpattern": ["build", "node_module", "tests", "typings"],
+  "out-dirpattern": ["_", "ansible", "build", "chef", "node_module", "target", "test", "typings"],
   "out-filepattern": ["gulpfile", "\\.min\\."],
   "search": "Searcher",
   "linesbefore": 2,
