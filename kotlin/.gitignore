@@ -33,3 +33,9 @@ proguard/
 .gradle/
 build/
 bin/
+
+# Project-specific
+config.json
+filetypes.xml
+searchoptions.xml
+test*.txt
