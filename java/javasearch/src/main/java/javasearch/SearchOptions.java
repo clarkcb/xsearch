@@ -105,36 +105,6 @@ public class SearchOptions {
         }
     };
 
-    @FunctionalInterface
-    private interface FlagSetter {
-        void set(SearchSettings settings);
-    }
-
-    private Map<String, FlagSetter> flagActionMap = new HashMap<String, FlagSetter>(actionMapSize) {
-        {
-            put("archivesonly", (settings) -> settings.setArchivesOnly(true));
-            put("allmatches", (settings) -> settings.setFirstMatch(false));
-            put("debug", (settings) -> settings.setDebug(true));
-            put("excludehidden", (settings) -> settings.setExcludeHidden(true));
-            put("firstmatch", (settings) -> settings.setFirstMatch(true));
-            put("help", (settings) -> settings.setPrintUsage(true));
-            put("includehidden", (settings) -> settings.setExcludeHidden(false));
-            put("listdirs", (settings) -> settings.setListDirs(true));
-            put("listfiles", (settings) -> settings.setListFiles(true));
-            put("listlines", (settings) -> settings.setListLines(true));
-            put("multilinesearch", (settings) -> settings.setMultiLineSearch(true));
-            put("noprintmatches", (settings) -> settings.setPrintResults(false));
-            put("norecursive", (settings) -> settings.setRecursive(false));
-            put("nosearcharchives", (settings) -> settings.setSearchArchives(false));
-            put("printmatches", (settings) -> settings.setPrintResults(true));
-            put("recursive", (settings) -> settings.setRecursive(true));
-            put("searcharchives", (settings) -> settings.setSearchArchives(true));
-            put("uniquelines", (settings) -> settings.setUniqueLines(true));
-            put("verbose", (settings) -> settings.setVerbose(true));
-            put("version", (settings) -> settings.setPrintVersion(true));
-        }
-    };
-
     private void setOptionsFromXml() throws ParserConfigurationException, SAXException, IOException {
         final String searchOptionsXmlPath = "/searchoptions.xml";
         InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsXmlPath);
@@ -252,8 +222,8 @@ public class SearchOptions {
         options.stream().filter(o -> !o.getShortArg().isEmpty()).forEach(o -> {
             if (argActionMap.containsKey(o.getLongArg())) {
                 argActionMap.put(o.getShortArg(), argActionMap.get(o.getLongArg()));
-            } else if (flagActionMap.containsKey(o.getLongArg())) {
-                flagActionMap.put(o.getShortArg(), flagActionMap.get(o.getLongArg()));
+            } else if (boolflagActionMap.containsKey(o.getLongArg())) {
+                boolflagActionMap.put(o.getShortArg(), boolflagActionMap.get(o.getLongArg()));
             }
         });
 
@@ -271,8 +241,8 @@ public class SearchOptions {
                     } else {
                         throw new SearchException("Missing value for option " + arg);
                     }
-                } else if (this.flagActionMap.containsKey(arg)) {
-                    this.flagActionMap.get(arg).set(settings);
+                } else if (this.boolflagActionMap.containsKey(arg)) {
+                    this.boolflagActionMap.get(arg).set(true, settings);
                 } else {
                     throw new SearchException("Invalid option: " + arg);
                 }
