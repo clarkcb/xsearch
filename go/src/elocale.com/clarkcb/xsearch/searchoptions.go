@@ -90,7 +90,7 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings, error) {
 	settings := GetDefaultSearchSettings()
 	argActionMap := so.getArgActionMap()
-	flagActionMap := so.getFlagActionMap()
+	flagActionMap := so.getBoolFlagActionMap()
 
 	if false {
 		log(fmt.Sprintf("argActionMap: %v", argActionMap))
@@ -111,7 +111,7 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 				val := args[i]
 				af(val, settings)
 			} else if ff, isFlag := flagActionMap[k]; isFlag {
-				ff(settings)
+				ff(true, settings)
 			} else {
 				return nil, fmt.Errorf("Invalid option: %s", k)
 			}
@@ -348,83 +348,6 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"version": func(b bool, settings *SearchSettings) {
 			settings.PrintVersion = b
-		},
-	}
-	for _, o := range so.SearchOptions {
-		if o.Short != "" {
-			if f, ok := m[o.Long]; ok {
-				m[o.Short] = f
-			}
-		}
-	}
-	return m
-}
-
-type flagAction func(settings *SearchSettings)
-
-func (so *SearchOptions) getFlagActionMap() map[string]flagAction {
-	m := map[string]flagAction{
-		"allmatches": func(settings *SearchSettings) {
-			settings.FirstMatch = false
-		},
-		"archivesonly": func(settings *SearchSettings) {
-			settings.ArchivesOnly = true
-			settings.SearchArchives = true
-		},
-		"debug": func(settings *SearchSettings) {
-			settings.Debug = true
-			settings.Verbose = true
-		},
-		"excludehidden": func(settings *SearchSettings) {
-			settings.ExcludeHidden = true
-		},
-		"firstmatch": func(settings *SearchSettings) {
-			settings.FirstMatch = true
-		},
-		"help": func(settings *SearchSettings) {
-			settings.PrintUsage = true
-		},
-		"includehidden": func(settings *SearchSettings) {
-			settings.ExcludeHidden = false
-		},
-		"listdirs": func(settings *SearchSettings) {
-			settings.ListDirs = true
-		},
-		"listfiles": func(settings *SearchSettings) {
-			settings.ListFiles = true
-		},
-		"listlines": func(settings *SearchSettings) {
-			settings.ListLines = true
-		},
-		"multilinesearch": func(settings *SearchSettings) {
-			settings.MultiLineSearch = true
-		},
-		"noprintmatches": func(settings *SearchSettings) {
-			settings.PrintResults = false
-		},
-		"norecursive": func(settings *SearchSettings) {
-			settings.Recursive = false
-		},
-		"nosearcharchives": func(settings *SearchSettings) {
-			settings.SearchArchives = false
-		},
-		"printmatches": func(settings *SearchSettings) {
-			settings.PrintResults = true
-		},
-		"recursive": func(settings *SearchSettings) {
-			settings.Recursive = true
-		},
-		"searcharchives": func(settings *SearchSettings) {
-			settings.SearchArchives = true
-		},
-		"uniquelines": func(settings *SearchSettings) {
-			settings.UniqueLines = true
-		},
-		"verbose": func(settings *SearchSettings) {
-			settings.Verbose = true
-		},
-		"version": func(settings *SearchSettings) {
-			settings.PrintVersion = true
 		},
 	}
 	for _, o := range so.SearchOptions {
