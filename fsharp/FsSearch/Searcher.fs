@@ -19,36 +19,38 @@ type Searcher (settings : SearchSettings) =
 
     // member methods
     member this.ValidateSettings () : string list =
-        let errs = new List<string>()
-        if String.IsNullOrEmpty _settings.StartPath then
-            errs.Add("Startpath not defined")
-        else if not (FileUtil.IsDirectory _settings.StartPath) && not (new FileInfo(_settings.StartPath)).Exists then
-            errs.Add("Startpath not found")
-        if _settings.SearchPatterns.Count = 0 then errs.Add("No search patterns defined")
-        errs |> List.ofSeq
+        [
+            (if String.IsNullOrEmpty _settings.StartPath then (Some "Startpath not defined") else None);
+            (if Directory.Exists(_settings.StartPath) || File.Exists(_settings.StartPath) then None else (Some "Startpath not found"));
+            (if List.isEmpty _settings.SearchPatterns then (Some "No search patterns defined") else None);
+        ]
+        |> List.filter (fun e -> e.IsSome)
+        |> List.map (fun e -> e.Value)
 
-    member this.MatchesAnyPattern (s : string) (patterns : ISet<Regex>) : bool =
+    member this.MatchesAnyPattern (s : string) (patterns : Regex list) : bool =
         Seq.exists (fun p -> (p:Regex).Match(s).Success) patterns
 
-    member this.AnyMatchesAnyPattern (slist : string seq) (patterns : ISet<Regex>) : bool =
+    member this.AnyMatchesAnyPattern (slist : string seq) (patterns : Regex list) : bool =
         Seq.exists (fun s -> this.MatchesAnyPattern s patterns) slist
 
     member this.IsSearchDir (d : DirectoryInfo) : bool =
         let elems = d.FullName.Split('/', '\\') |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
-        let hiddenOk = not _settings.ExcludeHidden || not (Seq.exists (fun e -> FileUtil.IsHidden e) elems)
-        let matchesIn = (Seq.isEmpty _settings.InDirPatterns || this.AnyMatchesAnyPattern elems _settings.InDirPatterns)
-        let notMatchesOut = (Seq.isEmpty _settings.OutDirPatterns || not (this.AnyMatchesAnyPattern elems _settings.OutDirPatterns))
-        hiddenOk && matchesIn && notMatchesOut
+        (not _settings.ExcludeHidden ||
+         not (Seq.exists (fun e -> FileUtil.IsHidden e) elems)) &&
+        (Seq.isEmpty _settings.InDirPatterns ||
+         this.AnyMatchesAnyPattern elems _settings.InDirPatterns) &&
+        (Seq.isEmpty _settings.OutDirPatterns ||
+         not (this.AnyMatchesAnyPattern elems _settings.OutDirPatterns))
 
     member this.IsSearchFile (f : FileInfo) : bool =
-        (Seq.isEmpty _settings.InExtensions ||
-         Seq.exists (fun x -> x = f.Extension) _settings.InExtensions) &&
-        (Seq.isEmpty _settings.OutExtensions ||
-         not (Seq.exists (fun x -> x = f.Extension) _settings.OutExtensions)) &&
-        (Seq.isEmpty _settings.InFilePatterns ||
-         Seq.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.InFilePatterns) &&
-        (Seq.isEmpty _settings.OutFilePatterns ||
-         not (Seq.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.OutFilePatterns))
+        (List.isEmpty _settings.InExtensions ||
+         List.exists (fun x -> x = f.Extension) _settings.InExtensions) &&
+        (List.isEmpty _settings.OutExtensions ||
+         not (List.exists (fun x -> x = f.Extension) _settings.OutExtensions)) &&
+        (List.isEmpty _settings.InFilePatterns ||
+         List.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.InFilePatterns) &&
+        (List.isEmpty _settings.OutFilePatterns ||
+         not (List.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.OutFilePatterns))
 
     member this.IsArchiveSearchFile (f : FileInfo) : bool =
         (Seq.isEmpty _settings.InArchiveExtensions ||
@@ -170,11 +172,11 @@ type Searcher (settings : SearchSettings) =
         else
             List.zip startLineIndices endLineIndices
 
-    member this.LinesMatch (lines : string seq, inPatterns : ISet<Regex>,
-                            outPatterns : ISet<Regex>) : bool =
-        (inPatterns.Count = 0 || (this.AnyMatchesAnyPattern lines inPatterns))
+    member this.LinesMatch (lines : string seq, inPatterns : Regex list,
+                            outPatterns : Regex list) : bool =
+        (List.isEmpty inPatterns || (this.AnyMatchesAnyPattern lines inPatterns))
         &&
-        (outPatterns.Count = 0  || (not (this.AnyMatchesAnyPattern lines outPatterns)))
+        (List.isEmpty outPatterns || (not (this.AnyMatchesAnyPattern lines outPatterns)))
 
     member this.LinesBeforeMatch (linesBefore : string seq) : bool =
         this.LinesMatch (linesBefore, settings.InLinesBeforePatterns,
@@ -224,15 +226,10 @@ type Searcher (settings : SearchSettings) =
                         []
                 let linesAfter =
                     if settings.LinesAfter > 0 then
-                        if afterIndices.Length < settings.LinesAfter then
-                            afterIndices
-                            |> List.ofSeq
-                            |> List.map (fun (x,y) -> s.Substring(x, y - x))
-                        else
-                            afterIndices
-                            |> Seq.take(settings.LinesAfter)
-                            |> List.ofSeq
-                            |> List.map (fun (x,y) -> s.Substring(x, y - x))
+                        afterIndices
+                        |> Seq.take(settings.LinesAfter)
+                        |> List.ofSeq
+                        |> List.map (fun (x,y) -> s.Substring(x, y - x))
                     else
                         []
                 if (linesBefore.Length = 0 || this.LinesBeforeMatch linesBefore) &&

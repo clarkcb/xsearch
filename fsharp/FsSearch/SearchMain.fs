@@ -13,36 +13,39 @@ module Main =
 
     [<EntryPoint>]
     let Main(args : string[]) = 
-        let settings, err = SearchOptions.SettingsFromArgs(args)
+        match (Array.toList args) with
+        | [] -> HandleError "Startpath not defined"
+        | _ ->
+            let settings, err = SearchOptions.SettingsFromArgs(args)
 
-        if err.Length > 0 then
-            HandleError err
+            if err.Length > 0 then
+                HandleError err
 
-        if settings.Debug then
-            Common.Log (sprintf "settings: %s" (settings.ToString()))
+            if settings.Debug then
+                Common.Log (sprintf "settings: %s" (Settings.ToString settings))
 
-        if settings.PrintUsage then
-            SearchOptions.Usage(0)
+            if settings.PrintUsage then
+                SearchOptions.Usage(0)
 
-        let searcher = new Searcher(settings)
+            let searcher = new Searcher(settings)
 
-        let errs = searcher.ValidateSettings()
-        if errs.Length > 0 then
-            HandleError errs.Head
+            let errs = searcher.ValidateSettings()
+            if errs.Length > 0 then
+                HandleError errs.Head
 
-        searcher.Search()
+            searcher.Search()
 
-        if settings.PrintResults then
-            searcher.PrintResults
+            if settings.PrintResults then
+                searcher.PrintResults
 
-        if settings.ListDirs then
-            searcher.PrintMatchingDirs
+            if settings.ListDirs then
+                searcher.PrintMatchingDirs
 
-        if settings.ListFiles then
-            searcher.PrintMatchingFiles
+            if settings.ListFiles then
+                searcher.PrintMatchingFiles
 
-        if settings.ListLines then
-            searcher.PrintMatchingLines
+            if settings.ListLines then
+                searcher.PrintMatchingLines
 
         // main entry point return
         0;;
