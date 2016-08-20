@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Text.RegularExpressions
 
 module FileUtil = 
 
@@ -47,4 +48,12 @@ module FileUtil =
         while not sr.EndOfStream do
             yield sr.ReadLine ()
     }
-    ;;
+
+    let ExtensionsListFromString (exts : string) : string list =
+        let nonWord = new Regex(@"\W+")
+        nonWord.Split(exts)
+        |> Array.toList
+        |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
+        |> List.map (fun (x : string) -> if (x.StartsWith(".")) then x else "." + x)
+
+;;
