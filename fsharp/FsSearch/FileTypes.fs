@@ -16,17 +16,10 @@ type FileType =
 
 type FileTypes() =
     let ExtensionSet (s : string) =
-        let exts =
-            s.Split()
-            |> Array.map (fun x -> "." + x)
-
-        let extensionSet = 
-            Array.fold
-                (fun (acc: Set<string>) (ext : string) -> Set.add ext acc)
-                Set.empty
-                exts
-
-        extensionSet
+        List.fold
+            (fun (acc: Set<string>) (ext : string) -> Set.add ext acc)
+            Set.empty
+            (FileUtil.ExtensionsListFromString s)
 
     let PopulateFileTypes (fileStream : FileStream) =
         let fileTypesDictionary = new Dictionary<string, ISet<string>>()
@@ -50,22 +43,11 @@ type FileTypes() =
         PopulateFileTypes(new FileStream(fileTypesPath.FullName, FileMode.Open))
 
 
-    //let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    //let fileNames = [for f in executingAssembly.GetFiles() do yield f.Name]
-    //let fileNada = Utils.PrintNames fileNames
-    //let moduleNames = [for m in executingAssembly.GetModules() do yield m.Name]
-    //let moduleNada = Utils.PrintNames moduleNames
-
-    //let fileTypesFileStream = executingAssembly.GetFile(@"Resources\filestypes.xml")
-    //let _fileTypesDictionary = Utils.PopulateFileTypes(fileTypesFileStream)
-
-    //let _fileTypesPath = @"Z:\cary\src\git\xsearch\shared\filetypes.xml"
-    let _fileTypesPath = "~/src/xsearch/shared/filetypes.xml"
-    let _fileTypesFileInfo = new FileInfo(FileUtil.ExpandPath(_fileTypesPath))
+    let _fileTypesPath = Path.Combine(Config.XSEARCHPATH, "shared/filetypes.xml")
+    let _fileTypesFileInfo = new FileInfo(_fileTypesPath)
     let _fileTypesDictionary = PopulateFileTypesFromFileInfo(_fileTypesFileInfo)
 
     // read-only member properties
-    //member this.FileTypesPath = _fileTypesPath
     member this.FileTypesDictionary = _fileTypesDictionary
 
     member this.GetFileType (f : FileInfo) : FileType =
