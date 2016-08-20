@@ -38,8 +38,8 @@ namespace CsSearch
 
 	class SearchFlagOption : SearchOption
 	{
-		public Action<SearchSettings> Action { get; private set; }
-		public SearchFlagOption(string shortArg, string longArg, Action<SearchSettings> action, string description) :
+		public Action<bool, SearchSettings> Action { get; private set; }
+		public SearchFlagOption(string shortArg, string longArg, Action<bool, SearchSettings> action, string description) :
 			base(shortArg, longArg, description)
 		{
 			Action = action;

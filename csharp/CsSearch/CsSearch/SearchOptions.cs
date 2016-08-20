@@ -35,34 +35,43 @@ namespace CsSearch
 					{ "search", (s, settings) => settings.AddSearchPattern(s) },
 				};
 
-		public static Dictionary<string, Action<SearchSettings>> FlagActionDictionary =
-			new Dictionary<string,Action<SearchSettings>>
+		public static Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
+			new Dictionary<string, Action<bool, SearchSettings>>
 				{
-					{ "allmatches", settings => settings.FirstMatch = false },
-					{ "archivesonly", settings => settings.SetArchivesOnly() },
-					{ "debug", settings => settings.SetDebug() },
-					{ "excludehidden", settings => settings.ExcludeHidden = true },
-					{ "firstmatch", settings => settings.FirstMatch = true },
-					{ "help", settings => settings.PrintUsage = true },
-					{ "includehidden", settings => settings.ExcludeHidden = false },
-					{ "listdirs", settings => settings.ListDirs = true },
-					{ "listfiles", settings => settings.ListFiles = true },
-					{ "listlines", settings => settings.ListLines = true },
-					{ "multilinesearch", settings => settings.MultiLineSearch = true },
-					{ "noprintmatches", settings => settings.PrintResults = false },
-					{ "norecursive", settings => settings.Recursive = false },
-					{ "nosearcharchives", settings => settings.SearchArchives = false },
-					{ "printmatches", settings => settings.PrintResults = true },
-					{ "recursive", settings => settings.Recursive = true },
-					{ "searcharchives", settings => settings.SearchArchives = true },
-					{ "uniquelines", settings => settings.UniqueLines = true },
-					{ "verbose", settings => settings.Verbose = true },
-					{ "version", settings => settings.PrintVersion = true },
+					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
+					{ "archivesonly", (b, settings) => { if (b) settings.SetArchivesOnly(); else settings.ArchivesOnly = b; } },
+					{ "debug", (b, settings) => { if (b) settings.SetDebug(); else settings.Debug = b; } },
+					{ "excludehidden", (b, settings) => settings.ExcludeHidden = b },
+					{ "firstmatch", (b, settings) => settings.FirstMatch = b },
+					{ "help", (b, settings) => settings.PrintUsage = b },
+					{ "includehidden", (b, settings) => settings.ExcludeHidden = !b },
+					{ "listdirs", (b, settings) => settings.ListDirs = b },
+					{ "listfiles", (b, settings) => settings.ListFiles = b },
+					{ "listlines", (b, settings) => settings.ListLines = b },
+					{ "multilinesearch", (b, settings) => settings.MultiLineSearch = b },
+					{ "noprintmatches", (b, settings) => settings.PrintResults = !b },
+					{ "norecursive", (b, settings) => settings.Recursive = !b },
+					{ "nosearcharchives", (b, settings) => settings.SearchArchives = !b },
+					{ "printmatches", (b, settings) => settings.PrintResults = b },
+					{ "recursive", (b, settings) => settings.Recursive = b },
+					{ "searcharchives", (b, settings) => settings.SearchArchives = b },
+					{ "uniquelines", (b, settings) => settings.UniqueLines = b },
+					{ "verbose", (b, settings) => settings.Verbose = b },
+					{ "version", (b, settings) => settings.PrintVersion = b },
 				};
 
 		public List<SearchOption> Options { get; private set; }
 		public Dictionary<string, SearchOption> ArgDictionary { get; private set; }
 		public Dictionary<string, SearchOption> FlagDictionary { get; private set; }
+
+		public SearchOptions()
+		{
+			_searchOptionsResource = Properties.Resources.searchoptions;
+			Options = new List<SearchOption>();
+			ArgDictionary = new Dictionary<string, SearchOption>();
+			FlagDictionary = new Dictionary<string, SearchOption>();
+			SetOptionsFromXml();
+		}
 
 		private void SetOptionsFromXml()
 		{
@@ -82,9 +91,9 @@ namespace CsSearch
 						ArgDictionary.Add(shortArg, option);
 					}
 				}
-				else if (FlagActionDictionary.ContainsKey(longArg))
+				else if (BoolFlagActionDictionary.ContainsKey(longArg))
 				{
-					var option = new SearchFlagOption(shortArg, longArg, FlagActionDictionary[longArg], desc);
+					var option = new SearchFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
 					Options.Add(option);
 					FlagDictionary.Add(longArg, option);
 					if (!string.IsNullOrWhiteSpace(shortArg))
@@ -93,15 +102,6 @@ namespace CsSearch
 					}
 				}
 			}
-		}
-
-		public SearchOptions()
-		{
-			_searchOptionsResource = Properties.Resources.searchoptions;
-			Options = new List<SearchOption>();
-			ArgDictionary = new Dictionary<string, SearchOption>();
-			FlagDictionary = new Dictionary<string, SearchOption>();
-			SetOptionsFromXml();
 		}
 
 		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
@@ -146,7 +146,7 @@ namespace CsSearch
 					{
 						try
 						{
-							((SearchFlagOption)FlagDictionary[s]).Action(settings);
+							((SearchFlagOption)FlagDictionary[s]).Action(true, settings);
 						}
 						catch (InvalidOperationException e)
 						{
