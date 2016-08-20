@@ -1,10 +1,6 @@
 ﻿namespace FsSearch
 
 open System
-open System.Collections.Generic
-open System.IO
-open System.Text
-open System.Xml.Linq
 
 module Common = 
     let Log (msg : string) : unit =
@@ -21,6 +17,15 @@ module Common =
         for name in names do
             printfn "Name: %s" name
 
-    let ListToString<'a> (name : string, ls : list<'a>) : string = 
-        sprintf "%s (%d): [%s]" name ls.Length (List.fold (fun acc s -> acc + ", " + s.ToString()) (ls.Head.ToString()) ls.Tail)
+    let list_to_string (lst : 'a list) : string = 
+        let rec rec_list_to_string (acc : string) (lst : 'a list) =
+            match lst with
+            | []     -> acc.Trim()
+            | [a]    -> (rec_list_to_string (acc + " \"" + a.ToString() + "\"") [])
+            | h :: t -> (rec_list_to_string (acc + " \"" + h.ToString() + "\";") t) in
+        sprintf "[%s]" (rec_list_to_string "" lst)
+
+    let ListToString<'a> (name : string, ls : string list) : string = 
+        sprintf "%s (%d): %s" name ls.Length (list_to_string ls)
+
 ;;
