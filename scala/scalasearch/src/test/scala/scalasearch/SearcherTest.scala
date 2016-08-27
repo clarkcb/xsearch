@@ -314,7 +314,7 @@ class SearcherTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterA
   test("test searchLineStringIterator #1 - simple") {
     val settings = getSearchSettings
     val searcher = new Searcher(settings)
-    val results = searcher.searchLineStringIterator(lines1)
+    val results = searcher.searchStringIterator(lines1)
     println("results (%d):\n%s".format(results.length, results.mkString("\n")))
     assert(results.length == 2)
     assert(results.forall(r => r.linesBefore.isEmpty && r.linesAfter.isEmpty))
@@ -327,7 +327,7 @@ class SearcherTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterA
   test("test searchLineStringIterator #2 - linesBefore+linesAfter") {
     val settings = getSearchSettings.copy(linesBefore = 2, linesAfter = 2)
     val searcher = new Searcher(settings)
-    val results = searcher.searchLineStringIterator(lines1)
+    val results = searcher.searchStringIterator(lines1)
     println("results (%d):\n%s".format(results.length, results.mkString("\n")))
     assert(results.length == 2)
     assert(results.forall(r => r.linesBefore.length == 2 && r.linesAfter.length == 2))
@@ -338,7 +338,7 @@ class SearcherTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterA
       inLinesBeforePatterns = Set("line".r), inLinesAfterPatterns = Set("line".r))
     val searcher = new Searcher(settings)
     val lines1 = Source.fromFile(testFile1).getLines()
-    val results = searcher.searchLineStringIterator(lines1)
+    val results = searcher.searchStringIterator(lines1)
     println("results (%d):\n%s".format(results.length, results.mkString("\n")))
     assert(results.length == 1)
     assert(results.forall(r =>
