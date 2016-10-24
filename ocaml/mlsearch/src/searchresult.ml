@@ -49,7 +49,7 @@ let multi_line_to_string (sr : t) =
     | l :: ls ->
       rec_lines ls (linenum + 1) (line_string ^ (sprintf "  %s | %s\n" (padded_linenum linenum) l)) in
   let linesbefore_string = rec_lines sr.linesbefore (sr.linenum - (List.length sr.linesbefore)) "" in
-  let linesafter_string = rec_lines sr.linesafter (sr.linenum +1) "" in
+  let linesafter_string = rec_lines sr.linesafter (sr.linenum + 1) "" in
   String.concat [
     hdr;
     linesbefore_string;

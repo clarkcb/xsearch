@@ -92,29 +92,29 @@ let arg_actions : (string * argAction) list = [
   ("search", fun s ss -> { ss with searchpatterns=List.append ss.searchpatterns [Re2.Regex.create_exn s] })
 ];;
 
-type flagAction = Searchsettings.t -> Searchsettings.t;;
+type boolFlagAction = bool -> Searchsettings.t -> Searchsettings.t;;
 
-let flag_actions : (string * flagAction) list = [
-  ("allmatches", fun ss -> { ss with firstmatch=false });
-  ("archivesonly", fun ss -> { ss with archivesonly=true; searcharchives=true });
-  ("debug", fun ss -> { ss with debug=true; verbose=true });
-  ("excludehidden", fun ss -> { ss with excludehidden=true });
-  ("firstmatch", fun ss -> { ss with firstmatch=true });
-  ("help", fun ss -> { ss with printusage=true });
-  ("includehidden", fun ss -> { ss with excludehidden=false });
-  ("listdirs", fun ss -> { ss with listdirs=true });
-  ("listfiles", fun ss -> { ss with listfiles=true });
-  ("listlines", fun ss -> { ss with listlines=true });
-  ("multilinesearch", fun ss -> { ss with multilinesearch=true });
-  ("noprintmatches", fun ss -> { ss with printresults=false });
-  ("norecursive", fun ss -> { ss with recursive=false });
-  ("nosearcharchives", fun ss -> { ss with searcharchives=false });
-  ("printmatches", fun ss -> { ss with printresults=true });
-  ("recursive", fun ss -> { ss with recursive=true });
-  ("searcharchives", fun ss -> { ss with searcharchives=true });
-  ("uniquelines", fun ss -> { ss with uniquelines=true });
-  ("verbose", fun ss -> { ss with verbose=true });
-  ("version", fun ss -> { ss with printversion=true })
+let bool_flag_actions : (string * boolFlagAction) list = [
+  ("allmatches", fun b ss -> { ss with firstmatch=(not b) });
+  ("archivesonly", fun b ss -> { ss with archivesonly=b });
+  ("debug", fun b ss -> { ss with debug=b });
+  ("excludehidden", fun b ss -> { ss with excludehidden=b });
+  ("firstmatch", fun b ss -> { ss with firstmatch=b });
+  ("help", fun b ss -> { ss with printusage=b });
+  ("includehidden", fun b ss -> { ss with excludehidden=(not b) });
+  ("listdirs", fun b ss -> { ss with listdirs=b });
+  ("listfiles", fun b ss -> { ss with listfiles=b });
+  ("listlines", fun b ss -> { ss with listlines=b });
+  ("multilinesearch", fun b ss -> { ss with multilinesearch=b });
+  ("noprintmatches", fun b ss -> { ss with printresults=(not b) });
+  ("norecursive", fun b ss -> { ss with recursive=(not b) });
+  ("nosearcharchives", fun b ss -> { ss with searcharchives=(not b) });
+  ("printmatches", fun b ss -> { ss with printresults=b });
+  ("recursive", fun b ss -> { ss with recursive=b });
+  ("searcharchives", fun b ss -> { ss with searcharchives=b });
+  ("uniquelines", fun b ss -> { ss with uniquelines=b });
+  ("verbose", fun b ss -> { ss with verbose=b });
+  ("version", fun b ss -> { ss with printversion=b })
 ];;
 
 let rec arg_name arg = 
@@ -127,23 +127,24 @@ let get_long_arg searchoptions arg =
   | None     -> None
 
 let settings_from_args searchoptions args = 
-  let rec rec_settings_from_args searchoptions settings args =
+  let rec rec_settings_from_args (settings : Searchsettings.t) (args : string list) =
     match args with
     | [] -> Ok settings
     | hd :: tl when hd.[0] = '-' ->
         (let arg = arg_name hd in
          match get_long_arg searchoptions arg with
+         | Some "help" -> rec_settings_from_args { settings with printusage=true } []
          | Some long_arg ->
-             (match List.find flag_actions ~f:(fun (s, _) -> s = long_arg) with
-              | Some (_, f) -> rec_settings_from_args searchoptions (f settings) tl
+             (match List.find bool_flag_actions ~f:(fun (s, _) -> s = long_arg) with
+              | Some (_, f) -> rec_settings_from_args (f true settings) tl
               | None ->
                 (match List.find arg_actions ~f:(fun (s, _) -> s = long_arg) with
                  | Some (_, f) ->
                     (match tl with
                      | [] -> Error (sprintf "Missing value for option: %s" arg)
-                     | h :: t  -> rec_settings_from_args searchoptions (f h settings) t)
+                     | h :: t  -> rec_settings_from_args (f h settings) t)
                  | None -> Error (sprintf "Invalid option: %s" arg)))
          | None -> Error (sprintf "Invalid option: %s" arg))
-    | hd :: tl -> rec_settings_from_args searchoptions { settings with Searchsettings.startpath=hd } tl in
-  rec_settings_from_args searchoptions Searchsettings.default_settings args;;
+    | hd :: tl -> rec_settings_from_args { settings with Searchsettings.startpath=hd } tl in
+  rec_settings_from_args { Searchsettings.default_settings with printresults=true } args;;
 
