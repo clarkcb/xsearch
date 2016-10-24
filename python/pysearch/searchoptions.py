@@ -152,71 +152,7 @@ class SearchOptions(object):
                 lambda b, settings:
                     settings.set_property('printversion', b)
         }
-
-        self.flag_action_dict = {
-            'allmatches':
-                lambda settings:
-                    settings.set_property('firstmatch', False),
-            'archivesonly':
-                lambda settings:
-                    settings.set_property('archivesonly', True),
-            'debug':
-                lambda settings:
-                    settings.set_property('debug', True),
-            'excludehidden':
-                lambda settings:
-                    settings.set_property('excludehidden', True),
-            'firstmatch':
-                lambda settings:
-                    settings.set_property('firstmatch', True),
-            'help':
-                lambda settings:
-                    settings.set_property('printusage', True),
-            'includehidden':
-                lambda settings:
-                    settings.set_property('excludehidden', False),
-            'listdirs':
-                lambda settings:
-                    settings.set_property('listdirs', True),
-            'listfiles':
-                lambda settings:
-                    settings.set_property('listfiles', True),
-            'listlines':
-                lambda settings:
-                    settings.set_property('listlines', True),
-            'multilinesearch':
-                lambda settings:
-                    settings.set_property('multilinesearch', True),
-            'noprintmatches':
-                lambda settings:
-                    settings.set_property('printresults', False),
-            'norecursive':
-                lambda settings:
-                    settings.set_property('recursive', False),
-            'nosearcharchives':
-                lambda settings:
-                    settings.set_property('searcharchives', False),
-            'printmatches':
-                lambda settings:
-                    settings.set_property('printresults', True),
-            'recursive':
-                lambda settings:
-                    settings.set_property('recursive', True),
-            'searcharchives':
-                lambda settings:
-                    settings.set_property('searcharchives', True),
-            'uniquelines':
-                lambda settings:
-                    settings.set_property('uniquelines', True),
-            'verbose':
-                lambda settings:
-                    settings.set_property('verbose', True),
-            'version':
-                lambda settings:
-                    settings.set_property('printversion', True)
-        }
-        self.arg_dict = {}
-        self.flag_dict = {}
+        self.longarg_dict = {}
 
     def __init__(self):
         self.options = []
@@ -252,20 +188,15 @@ class SearchOptions(object):
             func = None
             if name in self.arg_action_dict:
                 func = self.arg_action_dict[name]
-            elif name in self.flag_action_dict:
-                func = self.flag_action_dict[name]
+            elif name in self.bool_flag_action_dict:
+                func = self.bool_flag_action_dict[name]
             else:
                 raise ValueError('Unknown search option: %s' % name)
             option = SearchOption(short, name, desc, func)
+            self.longarg_dict[name] = name
+            if short:
+                self.longarg_dict[short] = name
             self.options.append(option)
-            if name in self.arg_action_dict:
-                self.arg_dict[name] = option
-                if short:
-                    self.arg_dict[short] = option
-            elif name in self.flag_action_dict:
-                self.flag_dict[name] = option
-                if short:
-                    self.flag_dict[short] = option
 
     def search_settings_from_args(self, args):
         """Returns a SearchSettings instance for a given list of args"""
@@ -278,15 +209,16 @@ class SearchOptions(object):
             if arg.startswith('-'):
                 while arg and arg.startswith('-'):
                     arg = arg[1:]
-                if arg in self.arg_dict:
+                longarg = self.longarg_dict[arg]
+                if longarg in self.arg_action_dict:
                     if argdeque:
                         argval = argdeque.popleft()
-                        self.arg_dict[arg].func(argval, settings)
+                        self.arg_action_dict[longarg](argval, settings)
                     else:
                         raise Exception('Missing value for option {0}'.
                                         format(arg))
-                elif arg in self.flag_dict:
-                    self.flag_dict[arg].func(settings)
+                elif longarg in self.bool_flag_action_dict:
+                    self.bool_flag_action_dict[arg](True, settings)
                     if arg in ('h', 'help', 'V', 'version'):
                         return settings
                 else:
