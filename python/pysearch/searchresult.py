@@ -30,7 +30,7 @@ class SearchResult(object):
 
     def __init__(self, **kargs):
         self.pattern = ''
-        self.filename = ''
+        self.file = None
         self.linenum = 0
         self.line = ''
         self.contained = ''
@@ -42,8 +42,8 @@ class SearchResult(object):
         self.__dict__.update(kargs)
 
     def sortkey(self):
-        path = os.path.dirname(self.filename).lower()
-        filename = os.path.basename(self.filename).lower()
+        path = os.path.dirname(self.file.filename).lower()
+        filename = os.path.basename(self.file.filename).lower()
         return (path, filename, self.linenum, self.match_start_index)
 
 
@@ -55,7 +55,7 @@ class SearchResult(object):
 
     def __singleline_str(self):
         sio = StringIO()
-        sio.write(self.filename)
+        sio.write(str(self.file))
         if self.linenum and self.line:
             sio.write(': {0}: [{1}:{2}]'.format(self.linenum,
                       self.match_start_index, self.match_end_index))
@@ -102,7 +102,7 @@ class SearchResult(object):
 
     def __multiline_str(self):
         sio = StringIO()
-        sio.write('{0}\n{1}:'.format('=' * self.SEPARATOR_LEN, self.filename))
+        sio.write('{0}\n{1}:'.format('=' * self.SEPARATOR_LEN, str(self.file)))
         sio.write(' {0}: [{1}:{2}]'.format(self.linenum, self.match_start_index,
                                            self.match_end_index))
         if self.contained:
