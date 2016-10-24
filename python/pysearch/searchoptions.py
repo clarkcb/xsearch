@@ -40,6 +40,9 @@ class SearchOptions(object):
             'in-filepattern':
                 lambda x, settings:
                     settings.add_patterns(x, 'in_filepatterns'),
+            'in-filetype':
+                lambda x, settings:
+                    settings.add_filetypes(x, 'in_filetypes'),
             'in-linesafterpattern':
                 lambda x, settings:
                     settings.add_patterns(x, 'in_linesafterpatterns'),
@@ -76,6 +79,9 @@ class SearchOptions(object):
             'out-filepattern':
                 lambda x, settings:
                     settings.add_patterns(x, 'out_filepatterns'),
+            'out-filetype':
+                lambda x, settings:
+                    settings.add_filetypes(x, 'out_filetypes'),
             'out-linesafterpattern':
                 lambda x, settings:
                     settings.add_patterns(x, 'out_linesafterpatterns'),

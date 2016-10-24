@@ -65,8 +65,6 @@ class Searcher(object):
         return True
 
     def is_archive_search_file(self, f):
-        if not self.filetypes.is_archive_file(f):
-            return False
         ext = FileUtil.get_extension(f)
         if self.settings.in_archiveextensions and \
             not ext in self.settings.in_archiveextensions:
@@ -82,8 +80,14 @@ class Searcher(object):
             return False
         return True
 
-    def is_search_file(self, f):
-        ext = FileUtil.get_extension(f)
+    def is_search_file(self, sf):
+        if self.settings.in_filetypes and \
+            not sf.filetype in self.settings.in_filetypes:
+            return False
+        if self.settings.out_filetypes and \
+           sf.filetype in self.settings.out_filetypes:
+            return False
+        ext = FileUtil.get_extension(sf.filename)
         if self.settings.in_extensions and \
             not ext in self.settings.in_extensions:
             return False
@@ -91,10 +95,10 @@ class Searcher(object):
             ext in self.settings.out_extensions:
             return False
         if self.settings.in_filepatterns and \
-            not matches_any_pattern(f, self.settings.in_filepatterns):
+            not matches_any_pattern(sf.filename, self.settings.in_filepatterns):
             return False
         if self.settings.out_filepatterns and \
-            matches_any_pattern(f, self.settings.out_filepatterns):
+            matches_any_pattern(sf.filename, self.settings.out_filepatterns):
             return False
         return True
 
@@ -140,7 +144,7 @@ class Searcher(object):
             return False
         if sf.filetype == FileType.Archive:
             return self.settings.searcharchives and self.is_archive_search_file(sf.filename)
-        return not self.settings.archivesonly and self.is_search_file(sf.filename)
+        return not self.settings.archivesonly and self.is_search_file(sf)
 
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
@@ -206,8 +210,7 @@ class Searcher(object):
             matches = p.finditer(contents)
             for m in matches:
                 search_result = SearchResult(pattern=p.pattern,
-                                             # TODO: switch to SearchFile instance
-                                             filename=str(sf),
+                                             file=sf,
                                              linenum=0,
                                              line=None,
                                              match_start_index=m.start() + 1,
@@ -242,7 +245,7 @@ class Searcher(object):
         contents = fo.read()
         search_results = self.search_multiline_string(contents)
         for search_result in search_results:
-            search_result.filename = str(sf)
+            search_result.file = sf
             self.add_search_result(search_result)
 
     def search_multiline_string(self, s):
@@ -368,7 +371,7 @@ class Searcher(object):
         """Search in a given text file object by line and return the results"""
         search_results = self.search_line_iterator(fo)
         for search_result in search_results:
-            search_result.filename = str(sf)
+            search_result.file = sf
             self.add_search_result(search_result)
 
     def search_line_iterator(self, lines):
@@ -558,7 +561,7 @@ class Searcher(object):
         pattern = search_result.pattern
         self.rescounts[pattern] = self.rescounts.setdefault(pattern, 0) + 1
         self.patterndict.setdefault(pattern, list()).append(search_result)
-        fullfile = os.path.abspath(search_result.filename)
+        fullfile = os.path.abspath(search_result.file.filename)
         self.filedict.setdefault(fullfile, list()).append(search_result)
 
     def get_sorted_results(self):
@@ -595,7 +598,7 @@ class Searcher(object):
         dir_list = set()
         for p in patterns:
             dir_list.update([
-                os.path.dirname(r.filename) for r in self.patterndict[p]])
+                os.path.dirname(r.file.filename) for r in self.patterndict[p]])
         dir_list = list(dir_list)
         dir_list.sort()
         return dir_list
@@ -611,7 +614,7 @@ class Searcher(object):
         file_list = set()
         for p in patterns:
             file_list.update([
-                os.path.abspath(r.filename) for r in self.patterndict[p]])
+                os.path.abspath(r.file.filename) for r in self.patterndict[p]])
         file_list = list(file_list)
         file_list.sort()
         return file_list
