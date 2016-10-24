@@ -16,10 +16,20 @@ from fileutil import FileUtil
 
 class FileType(object):
     """FileType enum"""
+    Unknown = 0
     Archive = 1
     Binary  = 2
     Text    = 3
-    Unknown = 4
+
+    @classmethod
+    def from_name(self, name):
+        if name.upper() == 'TEXT':
+            return FileType.Text
+        if name.upper() == 'BINARY':
+            return FileType.Binary
+        if name.upper() == 'ARCHIVE':
+            return FileType.Archive
+        raise Exception('Invalid file type: {0!s}\n'.format(name))
 
 class FileTypes(object):
     """a class to provide file type information"""
