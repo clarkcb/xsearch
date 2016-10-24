@@ -7,14 +7,17 @@
 #
 ################################################################################
 import re
+from filetypes import FileType
 
 class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
     _extension_set_names = set('''in_extensions out_extensions
                                   in_archiveextensions out_archiveextensions'''.split())
+# TODO: move filetypes to own group
     _pattern_set_names = set('''in_dirpatterns out_dirpatterns
                                 in_filepatterns out_filepatterns
+                                in_filetypes out_filetypes
                                 in_archivefilepatterns out_archivefilepatterns
                                 in_linesafterpatterns out_linesafterpatterns
                                 in_linesbeforepatterns out_linesbeforepatterns
@@ -66,6 +69,16 @@ class SearchSettings(object):
             self.__dict__[pattern_set_name].add(re.compile(patterns, compile_flag))
         else:
             print 'ERROR: patterns is an unknown type'
+
+    def add_filetypes(self, filetypes, filetype_set_name):
+        filetype_set = set()
+        if type(filetypes) is list:
+            filetype_set = set([FileType.from_name(ft) for tf in filetypes])
+        elif type(filetypes) in set([str, unicode]):
+            filetype_set = set([FileType.from_name(ft) for ft in filetypes.split(',') if ft])
+        else:
+            raise Exception('ERROR: patterns is an unknown type')
+        self.__dict__[filetype_set_name] = self.__dict__[filetype_set_name].union(filetype_set)
 
     def set_property(self, name, val):
         self.__dict__[name] = val
