@@ -109,10 +109,12 @@ public class Searcher {
         List<File> subDirs = getSubDirs(dir);
         List<File> searchDirs = subDirs.stream().filter(this::isSearchDir)
                 .collect(Collectors.toList());
-        for (File d : subDirs) {
-            searchDirs.addAll(recGetSearchDirs(d));
+        List<File> subSearchDirs = new ArrayList<>();
+        subSearchDirs.addAll(searchDirs);
+        for (File d : searchDirs) {
+            subSearchDirs.addAll(recGetSearchDirs(d));
         }
-        return searchDirs;
+        return subSearchDirs;
     }
 
     public final boolean isSearchFile(final File f) {
