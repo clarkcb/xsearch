@@ -36,6 +36,9 @@
   <searchoption long="in-filepattern" short="f">
     Specify name pattern for files to include in search
   </searchoption>
+  <searchoption long="in-filetype" short="t">
+    File type to search (text, binary)
+  </searchoption>
   <searchoption long="in-linesafterpattern" short="">
     Specify pattern to search the "lines-after" lines on
   </searchoption>
@@ -92,6 +95,9 @@
   </searchoption>
   <searchoption long="out-filepattern" short="F">
     Specify name pattern for files to exclude from search
+  </searchoption>
+  <searchoption long="out-filetype" short="T">
+    File type not to search (text, binary)
   </searchoption>
   <searchoption long="out-linesafterpattern" short="">
     Specify pattern to filter the "lines-after" lines on
