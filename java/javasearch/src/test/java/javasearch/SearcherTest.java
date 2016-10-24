@@ -373,7 +373,7 @@ public class SearcherTest {
      * searchStringIterator test
      *************************************************************/
     @Test
-    public final void TestSearchTextReaderLines() {
+    public final void TestSearchStringIterator() {
         SearchSettings settings = getSettings();
         Searcher searcher = new Searcher(settings);
         Iterator<String> lineIterator;
