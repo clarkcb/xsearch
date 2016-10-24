@@ -67,6 +67,8 @@ exports.testMultiLineResult = function(test) {
         "> 10 | \tpublic class Searcher\n" +
         "  11 | \t{\n" +
         "  12 | \t\tprivate readonly FileTypes _fileTypes;\n";
+    common.log("\nexpectedOutput:\n\"" + expectedOutput + "\"");
+    common.log("\nresultString:\n\"" + resultString + "\"");
     test.ok(resultString === expectedOutput, "multi-line result matches expected");
     test.done();
 };
