@@ -98,29 +98,6 @@
     :version (fn [settings b] (assoc settings :version b))
   })
 
-(def flag-action-map
-  { :allmatches (fn [settings] (assoc settings :firstmatch false))
-    :archivesonly (fn [settings] (set-archivesonly settings true))
-    :debug (fn [settings] (set-debug settings true))
-    :excludehidden (fn [settings] (assoc settings :excludehidden true))
-    :firstmatch (fn [settings] (assoc settings :firstmatch true))
-    :help (fn [settings] (assoc settings :printusage true))
-    :includehidden (fn [settings] (assoc settings :excludehidden false))
-    :listdirs (fn [settings] (assoc settings :listdirs true))
-    :listfiles (fn [settings] (assoc settings :listfiles true))
-    :listlines (fn [settings] (assoc settings :listlines true))
-    :multilinesearch (fn [settings] (assoc settings :multilinesearch true))
-    :noprintmatches (fn [settings] (assoc settings :printresults false))
-    :norecursive (fn [settings] (assoc settings :recursive false))
-    :nosearcharchives (fn [settings] (assoc settings :searcharchives false))
-    :printmatches (fn [settings] (assoc settings :printresults true))
-    :recursive (fn [settings] (assoc settings :recursive true))
-    :searcharchives (fn [settings] (assoc settings :searcharchives true))
-    :uniquelines (fn [settings] (assoc settings :uniquelines true))
-    :verbose (fn [settings] (assoc settings :verbose true))
-    :version (fn [settings] (assoc settings :version true))
-  })
-
 (defn get-long-arg [arg]
   (let [longnames (map :long-arg OPTIONS)
         longmap (zipmap longnames (repeat 1))
@@ -139,7 +116,7 @@
       (cond
         (contains? arg-action-map k)
           (settings-from-map ((k arg-action-map) settings v) (rest ks) m errs)
-        (contains? flag-action-map k)
+        (contains? bool-flag-action-map k)
           (settings-from-map ((k bool-flag-action-map) settings v) (rest ks) m errs)
         (= k :startpath)
           (do
@@ -172,8 +149,8 @@
               (if a2
                 (settings-from-args ((k arg-action-map) settings a2) (drop 2 args) errs)
                 (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
-            (contains? flag-action-map k)
-              (settings-from-args ((k flag-action-map) settings) (rest args) errs)
+            (contains? bool-flag-action-map k)
+              (settings-from-args ((k bool-flag-action-map) settings true) (rest args) errs)
             (= k :settings-file)
               (let [[file-settings file-errs] (settings-from-file settings a2)]
                 (settings-from-args file-settings (drop 2 args) (concat errs file-errs)))
