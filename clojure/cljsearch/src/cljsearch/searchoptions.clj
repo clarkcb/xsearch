@@ -19,7 +19,7 @@
         [cljsearch.common :only (log-msg)]
         [cljsearch.fileutil :only (expand-path)]
         [cljsearch.searchsettings :only
-          (->SearchSettings DEFAULT-SETTINGS add-extension add-pattern
+         (->SearchSettings DEFAULT-SETTINGS add-extension add-filetype add-pattern
             set-archivesonly set-debug set-num)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
@@ -58,6 +58,7 @@
     :in-dirpattern (fn [settings s] (add-pattern settings s :in-dirpatterns))
     :in-ext (fn [settings s] (add-extension settings s :in-extensions))
     :in-filepattern (fn [settings s] (add-pattern settings s :in-filepatterns))
+    :in-filetype (fn [settings s] (add-filetype settings s :in-filetypes))
     :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-linesafterpatterns))
     :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-linesbeforepatterns))
     :linesafter (fn [settings s] (set-num settings s :linesafter))
@@ -70,6 +71,7 @@
     :out-dirpattern (fn [settings s] (add-pattern settings s :out-dirpatterns))
     :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
     :out-filepattern (fn [settings s] (add-pattern settings s :out-filepatterns))
+    :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
     :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-linesafterpatterns))
     :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-linesbeforepatterns))
     :search (fn [settings s] (add-pattern settings s :searchpatterns))
