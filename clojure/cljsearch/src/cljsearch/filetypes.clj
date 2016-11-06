@@ -1,6 +1,6 @@
 ;;; ############################################################################
 ;;;
-;;; fileutil.clj
+;;; filetypes.clj
 ;;;
 ;;; Utility functions for getting file extension and determining file type
 ;;;
@@ -12,7 +12,7 @@
   (:import (java.io File))
   (:require [clojure.java.io :as io])
   (:use [clojure.set :only (union)]
-        [clojure.string :only (split)]
+        [clojure.string :only (split upper-case)]
         [clojure.xml :only (parse)]
         [cljsearch.fileutil :only (expand-path get-ext)]))
 
@@ -54,4 +54,11 @@
     (text-file? f) :text
     (binary-file? f) :binary
     (archive-file? f) :archive
+    :else :unknown))
+
+(defn from-name [name]
+  (cond
+    (= "TEXT" (upper-case name)) :text
+    (= "BINARY" (upper-case name)) :binary
+    (= "ARCHIVE" (upper-case name)) :archive
     :else :unknown))
