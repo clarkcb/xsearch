@@ -9,7 +9,9 @@
 (ns cljsearch.searchsettings
   #^{:author "Cary Clark",
      :doc "Defines the settings for a given search instance"}
-  (:use [clojure.string :as str :only (split)]))
+  (:use [clojure.set :only (union)]
+        [clojure.string :as str :only (split)]
+        [cljsearch.filetypes :only (from-name)]))
 
 (defrecord SearchSettings
   [
@@ -22,6 +24,7 @@
     in-dirpatterns
     in-extensions
     in-filepatterns
+    in-filetypes
     in-linesafterpatterns
     in-linesbeforepatterns
     linesafter
@@ -38,6 +41,7 @@
     out-dirpatterns
     out-extensions
     out-filepatterns
+    out-filetypes
     out-linesafterpatterns
     out-linesbeforepatterns
     printresults
@@ -61,6 +65,7 @@
     #{}   ; in-dirpatterns
     #{}   ; in-extensions
     #{}   ; in-filepatterns
+    #{}   ; in-filetypes
     #{}   ; in-linesafterpatterns
     #{}   ; in-linesbeforepatterns
     0     ; linesafter
@@ -77,6 +82,7 @@
     #{}   ; out-dirpatterns
     #{}   ; out-extensions
     #{}   ; out-filepatterns
+    #{}   ; out-filetypes
     #{}   ; out-linesafterpatterns
     #{}   ; out-linesbeforepatterns
     true  ; printresults
@@ -107,6 +113,19 @@
       :else
         (add-extensions settings (str/split ext #",") extname))))
 
+(defn add-filetypes [settings types typesname]
+  (if (empty? types)
+    settings
+    (add-filetypes
+     (update-in settings [typesname] #(add-element (from-name (first types)) %)) (rest types) typesname)))
+
+(defn add-filetype [settings typ typesname]
+  (let [t (type typ)]
+    (cond
+      (= t (type []))
+      (add-filetypes settings typ typesname)
+      :else
+      (add-filetypes settings (str/split typ #",") typesname))))
 
 (defn add-patterns [settings pats patname]
   (if (empty? pats)
