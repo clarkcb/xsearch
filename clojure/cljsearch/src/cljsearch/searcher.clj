@@ -29,20 +29,18 @@
     (alter search-results conj r)))
 
 (defn is-search-dir? [d settings]
-  (let [in-dirpatterns (:in-dirpatterns settings)
-        out-dirpatterns (:out-dirpatterns settings)]
-    (or
-      (is-dot-dir? (get-name d))
-      (and
-        (or
-          (not (:excludehidden settings))
-          (not (hidden-dir? d)))
-        (or
-          (empty? in-dirpatterns)
-          (some #(re-find % (.getPath d)) in-dirpatterns))
-        (or
-          (empty? out-dirpatterns)
-          (not-any? #(re-find % (.getPath d)) out-dirpatterns))))))
+  (or
+    (is-dot-dir? (get-name d))
+    (and
+      (or
+        (not (:excludehidden settings))
+        (not (hidden-dir? d)))
+      (or
+       (empty? (:in-dirpatterns settings))
+        (some #(re-find % (.getPath d)) (:in-dirpatterns settings)))
+      (or
+       (empty? (:out-dirpatterns settings))
+        (not-any? #(re-find % (.getPath d)) (:out-dirpatterns settings))))))
 
 (defn print-search-result [r]
   (log-msg (search-result-to-string r)))
@@ -96,47 +94,40 @@
       [startdir])))
 
 (defn is-archive-search-file? [f settings]
-  (let [in-extensions (:in-archiveextensions settings)
-        out-extensions (:out-archiveextensions settings)
-        in-filepatterns (:in-archivefilepatterns settings)
-        out-filepatterns (:out-archivefilepatterns settings)
-        ext (get-ext f)
-        name (.getName f)]
-    (and
-      (or
-        (empty? in-extensions)
-        (some #(= % ext) in-extensions))
-      (or
-        (empty? out-extensions)
-        (not-any? #(= % ext) out-extensions))
-      (or
-        (empty? in-filepatterns)
-        (some #(re-find % name) in-filepatterns))
-      (or
-        (empty? out-filepatterns)
-        (not-any? #(re-find % name) out-filepatterns)))))
+  (and
+    (or
+     (empty? (:in-archiveextensions settings))
+     (some #(= % (get-ext f)) (:in-archiveextensions settings)))
+    (or
+     (empty? (:out-archiveextensions settings))
+     (not-any? #(= % (get-ext f)) (:out-archiveextensions settings)))
+    (or
+     (empty? (:in-archivefilepatterns settings))
+     (some #(re-find % (.getName f)) (:in-archivefilepatterns settings)))
+    (or
+     (empty? (:out-archivefilepatterns settings))
+     (not-any? #(re-find % (.getName f)) (:out-archivefilepatterns settings)))))
 
 (defn is-search-file? [f settings]
-  (let [in-extensions (:in-extensions settings)
-        out-extensions (:out-extensions settings)
-        in-filepatterns (:in-filepatterns settings)
-        out-filepatterns (:out-filepatterns settings)
-        ext (get-ext f)
-        name (.getName f)
-        ]
-    (and
-      (or
-        (empty? in-extensions)
-        (some #(= % ext) in-extensions))
-      (or
-        (empty? out-extensions)
-        (not-any? #(= % ext) out-extensions))
-      (or
-        (empty? in-filepatterns)
-        (some #(re-find % name) in-filepatterns))
-      (or
-        (empty? out-filepatterns)
-        (not-any? #(re-find % name) out-filepatterns)))))
+  (and
+    (or
+     (empty? (:in-extensions settings))
+     (some #(= % (get-ext f)) (:in-extensions settings)))
+    (or
+     (empty? (:out-extensions settings))
+     (not-any? #(= % (get-ext f)) (:out-extensions settings)))
+    (or
+     (empty? (:in-filepatterns settings))
+     (some #(re-find % (.getName f)) (:in-filepatterns settings)))
+    (or
+     (empty? (:out-filepatterns settings))
+     (not-any? #(re-find % (.getName f)) (:out-filepatterns settings)))
+    (or
+     (empty? (:in-filetypes settings))
+     (contains? (:in-filetypes settings) (get-filetype f)))
+    (or
+     (empty? (:out-filetypes settings))
+     (not (contains? (:out-filetypes settings) (get-filetype f))))))
 
 (defn filter-file? [f settings]
   (and
