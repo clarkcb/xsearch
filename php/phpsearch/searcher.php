@@ -67,6 +67,11 @@ class Searcher {
         if ($this->settings->out_filepatterns &&
             $this->matches_any_pattern($f, $this->settings->out_filepatterns))
             return false;
+        $type = $this->filetypes->get_filetype($f);
+        if ($this->settings->in_filetypes && !in_array($type, $this->settings->in_filetypes))
+            return false;
+        if ($this->settings->out_filetypes && in_array($type, $this->settings->out_filetypes))
+            return false;
         return true;
     }
 

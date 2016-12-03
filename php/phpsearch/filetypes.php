@@ -27,6 +27,19 @@ class FileTypes {
         return $file_type_map;
     }
 
+    public static function from_name($name) {
+        if (strtoupper($name) == 'TEXT') {
+            return FileType::Text;
+        }
+        if (strtoupper($name) == 'BINARY') {
+            return FileType::Binary;
+        }
+        if (strtoupper($name) == 'ARCHIVE') {
+            return FileType::Archive;
+        }
+        return FileType::Unknown;
+    }
+
     public function get_filetype($file) {
         if ($this->is_text($file)) {
             return FileType::Text;

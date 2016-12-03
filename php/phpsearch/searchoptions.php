@@ -22,6 +22,9 @@ class SearchOptions {
             'in-filepattern' => function($s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->in_filepatterns);
             },
+            'in-filetype' => function($s, SearchSettings $settings) {
+                $settings->add_filetypes($s, $settings->in_filetypes);
+            },
             'in-linesafterpattern' => function($s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->in_linesafterpatterns);
             },
@@ -57,6 +60,9 @@ class SearchOptions {
             },
             'out-filepattern' => function($s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->out_filepatterns);
+            },
+            'out-filetype' => function($s, SearchSettings $settings) {
+                $settings->add_filetype($s, $settings->out_filetypes);
             },
             'out-linesafterpattern' => function($s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->out_linesafterpatterns);
@@ -134,69 +140,6 @@ class SearchOptions {
                 $settings->printversion = $b;
             }
         ];
-
-        $this->flag_action_map = [
-            'allmatches' => function(SearchSettings $settings) {
-                $settings->firstmatch = false;
-            },
-            'archivesonly' => function(SearchSettings $settings) {
-                $settings->set_archivesonly(true);
-            },
-            'debug' => function(SearchSettings $settings) {
-                $settings->set_debug(true);
-            },
-            'excludehidden' => function(SearchSettings $settings) {
-                $settings->excludehidden = true;
-            },
-            'firstmatch' => function(SearchSettings $settings) {
-                $settings->firstmatch = true;
-            },
-            'help' => function(SearchSettings $settings) {
-                $settings->printusage = true;
-            },
-            'includehidden' => function(SearchSettings $settings) {
-                $settings->excludehidden = false;
-            },
-            'listdirs' => function(SearchSettings $settings) {
-                $settings->listdirs = true;
-            },
-            'listfiles' => function(SearchSettings $settings) {
-                $settings->listfiles = true;
-            },
-            'listlines' => function(SearchSettings $settings) {
-                $settings->listlines = true;
-            },
-            'multilinesearch' => function(SearchSettings $settings) {
-                $settings->multilinesearch = true;
-            },
-            'noprintmatches' => function(SearchSettings $settings) {
-                $settings->printresults = false;
-            },
-            'norecursive' => function(SearchSettings $settings) {
-                $settings->recursive = false;
-            },
-            'nosearcharchives' => function(SearchSettings $settings) {
-                $settings->searcharchives = false;
-            },
-            'printmatches' => function(SearchSettings $settings) {
-                $settings->printresults = true;
-            },
-            'recursive' => function(SearchSettings $settings) {
-                $settings->recursive = true;
-            },
-            'searcharchives' => function(SearchSettings $settings) {
-                $settings->searcharchives = true;
-            },
-            'uniquelines' => function(SearchSettings $settings) {
-                $settings->uniquelines = true;
-            },
-            'verbose' => function(SearchSettings $settings) {
-                $settings->verbose = true;
-            },
-            'version' => function(SearchSettings $settings) {
-                $settings->printversion = true;
-            }
-        ];
         $this->set_options_from_xml();
     }
 
@@ -215,8 +158,8 @@ class SearchOptions {
                         $this->arg_action_map[$short] = $func;
                     }
                 }
-                else if (array_key_exists($long, $this->flag_action_map)) {
-                    $func = $this->flag_action_map[$long];
+                else if (array_key_exists($long, $this->bool_flag_action_map)) {
+                    $func = $this->bool_flag_action_map[$long];
                     if ($short) {
                         $this->flag_action_map[$short] = $func;
                     }
@@ -269,8 +212,8 @@ class SearchOptions {
                     } else {
                         throw new SearchException("Missing value for $arg");
                     }
-                } else if (array_key_exists($arg, $this->flag_action_map)) {
-                    $this->flag_action_map[$arg]($settings);
+                } else if (array_key_exists($arg, $this->bool_flag_action_map)) {
+                    $this->bool_flag_action_map[$arg](true, $settings);
                 } else {
                     throw new SearchException("Invalid option: $arg");
                 }

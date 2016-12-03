@@ -26,6 +26,7 @@ class SearchSettings {
     public $in_dirpatterns = array();
     public $in_extensions = array();
     public $in_filepatterns = array();
+    public $in_filetypes = array();
     public $in_linesafterpatterns = array();
     public $in_linesbeforepatterns = array();
     public $linesaftertopatterns = array();
@@ -35,6 +36,7 @@ class SearchSettings {
     public $out_dirpatterns = array();
     public $out_extensions = array();
     public $out_filepatterns = array();
+    public $out_filetypes = array();
     public $out_linesafterpatterns = array();
     public $out_linesbeforepatterns = array();
     public $searchpatterns = array();
@@ -48,6 +50,19 @@ class SearchSettings {
         } elseif (gettype($ext) == 'array') {
             foreach ($ext as $x) {
                 $exts[] = $x;
+            }
+        }
+    }
+
+    public function add_filetypes($filetype, &$filetypes) {
+        if (gettype($filetype) == 'string') {
+            $fts = explode(',', $filetype);
+            foreach ($fts as $ft) {
+                $filetypes[] = FileTypes::from_name($ft);
+            }
+        } elseif (gettype($filetype) == 'array') {
+            foreach ($filetype as $ft) {
+                $filetypes[] = FileTypes::from_name($ft);
             }
         }
     }
@@ -96,6 +111,7 @@ class SearchSettings {
         $s .= ', in_dirpatterns: ' . $this->arr_to_string($this->in_dirpatterns);
         $s .= ', in_extensions: ' . $this->arr_to_string($this->in_extensions);
         $s .= ', in_filepatterns: ' . $this->arr_to_string($this->in_filepatterns);
+        $s .= ', in_filetypes: ' . $this->arr_to_string($this->in_filetypes);
         $s .= ', in_linesafterpatterns: ' . $this->arr_to_string($this->in_linesafterpatterns);
         $s .= ', in_linesbeforepatterns: ' . $this->arr_to_string($this->in_linesbeforepatterns);
         $s .= ', linesafter: ' . $this->linesafter;
@@ -112,6 +128,7 @@ class SearchSettings {
         $s .= ', out_dirpatterns: ' . $this->arr_to_string($this->out_dirpatterns);
         $s .= ', out_extensions: ' . $this->arr_to_string($this->out_extensions);
         $s .= ', out_filepatterns: ' . $this->arr_to_string($this->out_filepatterns);
+        $s .= ', out_filetypes: ' . $this->arr_to_string($this->out_filetypes);
         $s .= ', out_linesafterpatterns: ' . $this->arr_to_string($this->out_linesafterpatterns);
         $s .= ', out_linesbeforepatterns: ' . $this->arr_to_string($this->out_linesbeforepatterns);
         $s .= ', printresults: ' . $this->bool_to_string($this->printresults);
