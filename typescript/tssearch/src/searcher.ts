@@ -87,8 +87,20 @@ class Searcher {
             !Searcher.matchesAnyPattern(file, this._settings.inFilePatterns)) {
             return false;
         }
-        return !(this._settings.outFilePatterns.length &&
-        Searcher.matchesAnyPattern(file, this._settings.outFilePatterns));
+        if (this._settings.outFilePatterns.length &&
+            Searcher.matchesAnyPattern(file, this._settings.outFilePatterns)) {
+            return false;
+        }
+        let filetype: FileType = FileTypes.getFileType(file);
+        if (this._settings.inFileTypes.length &&
+            !Searcher.matchesAnyElement(filetype, this._settings.inFileTypes)) {
+            return false;
+        }
+        if (this._settings.outFileTypes.length &&
+            Searcher.matchesAnyElement(filetype, this._settings.outFileTypes)) {
+            return false;
+        }
+        return true;
     }
 
     public isArchiveSearchFile(file: string): boolean {

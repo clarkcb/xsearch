@@ -47,6 +47,8 @@ class SearchOptions {
                 (x: string, settings: SearchSettings) => { settings.addInExtension(x); },
             'in-filepattern':
                 (x: string, settings: SearchSettings) => { settings.addInFilePattern(x); },
+            'in-filetype':
+                (x: string, settings: SearchSettings) => { settings.addInFileType(x); },
             'in-linesafterpattern':
                 (x: string, settings: SearchSettings) => { settings.addInLinesAfterPattern(x); },
             'in-linesbeforepattern':
@@ -71,6 +73,8 @@ class SearchOptions {
                 (x: string, settings: SearchSettings) => { settings.addOutExtension(x); },
             'out-filepattern':
                 (x: string, settings: SearchSettings) => { settings.addOutFilePattern(x); },
+            'out-filetype':
+                (x: string, settings: SearchSettings) => { settings.addOutFileType(x); },
             'out-linesafterpattern':
                 (x: string, settings: SearchSettings) => { settings.addOutLinesAfterPattern(x); },
             'out-linesbeforepattern':
@@ -125,49 +129,6 @@ class SearchOptions {
         };
 
 
-        this.flagActionMap = {
-            'allmatches':
-                (settings: SearchSettings) => { settings.firstMatch = false; },
-            'archivesonly':
-                (settings: SearchSettings) => { settings.setArchivesOnly(); },
-            'debug':
-                (settings: SearchSettings) => { settings.setDebug(); },
-            'excludehidden':
-                (settings: SearchSettings) => { settings.excludeHidden = true; },
-            'firstmatch':
-                (settings: SearchSettings) => { settings.firstMatch = true; },
-            'includehidden':
-                (settings: SearchSettings) => { settings.excludeHidden = false; },
-            'help':
-                (settings: SearchSettings) => { settings.printUsage = true; },
-            'listdirs':
-                (settings: SearchSettings) => { settings.listDirs = true; },
-            'listfiles':
-                (settings: SearchSettings) => { settings.listFiles = true; },
-            'listlines':
-                (settings: SearchSettings) => { settings.listLines = true; },
-            'multilinesearch':
-                (settings: SearchSettings) => { settings.multilineSearch = true; },
-            'noprintmatches':
-                (settings: SearchSettings) => { settings.printResults = false; },
-            'norecursive':
-                (settings: SearchSettings) => { settings.recursive = false; },
-            'nosearcharchives':
-                (settings: SearchSettings) => { settings.searchArchives = false; },
-            'printmatches':
-                (settings: SearchSettings) => { settings.printResults = true; },
-            'recursive':
-                (settings: SearchSettings) => { settings.recursive = true; },
-            'searcharchives':
-                (settings: SearchSettings) => { settings.searchArchives = true; },
-            'uniquelines':
-                (settings: SearchSettings) => { settings.uniqueLines = true; },
-            'verbose':
-                (settings: SearchSettings) => { settings.verbose = true; },
-            'version':
-                (settings: SearchSettings) => { settings.printVersion = true; }
-        };
-
         this.setOptionsFromXml();
     }
 
@@ -198,8 +159,8 @@ class SearchOptions {
                     if (longArg in self.argActionMap) {
                         func = self.argActionMap[longArg];
                     }
-                    else if (longArg in self.flagActionMap) {
-                        func = self.flagActionMap[longArg];
+                    else if (longArg in self.boolFlagActionMap) {
+                        func = self.boolFlagActionMap[longArg];
                     }
                     else throw new Error("Unknown option: "+longArg);
                     const option = new SearchOption(shortArg, longArg, desc, func);
@@ -210,11 +171,11 @@ class SearchOptions {
                             self.argMap[shortArg] = option;
                             self.argActionMap[shortArg] = self.argActionMap[longArg];
                         }
-                    } else if (longArg in self.flagActionMap) {
+                    } else if (longArg in self.boolFlagActionMap) {
                         self.flagMap[longArg] = option;
                         if (shortArg) {
                             self.flagMap[shortArg] = option;
-                            self.flagActionMap[shortArg] = self.flagActionMap[longArg];
+                            self.boolFlagActionMap[shortArg] = self.boolFlagActionMap[longArg];
                         }
                     } else { // shouldn't get here
                         console.log("ERROR: " + longArg + " not found in either map");
@@ -283,7 +244,7 @@ class SearchOptions {
                     }
                 } else if (this.flagMap[arg]) {
                     //this.flagMap[arg].func(settings);
-                    this.flagActionMap[arg](settings);
+                    this.boolFlagActionMap[arg](true, settings);
                 } else {
                     err = new Error("Invalid option: "+arg);
                 }

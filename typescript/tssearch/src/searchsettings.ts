@@ -7,41 +7,45 @@
 
 "use strict";
 
+var FileTypes = require('./filetypes.ts').FileTypes;
+
 class SearchSettings {
-    startPath: string = "";
-    inExtensions: string[] = [];
-    outExtensions: string[] = [];
-    inDirPatterns: RegExp[] = [];
-    outDirPatterns: RegExp[] = [];
-    inFilePatterns: RegExp[] = [];
-    outFilePatterns: RegExp[] = [];
-    inArchiveExtensions: string[] = [];
-    outArchiveExtensions: string[] = [];
-    inArchiveFilePatterns: RegExp[] = [];
-    outArchiveFilePatterns: RegExp[] = [];
-    inLinesAfterPatterns: RegExp[] = [];
-    outLinesAfterPatterns: RegExp[] = [];
-    inLinesBeforePatterns: RegExp[] = [];
-    outLinesBeforePatterns: RegExp[] = [];
-    linesAfterToPatterns: RegExp[] = [];
-    linesAfterUntilPatterns: RegExp[] = [];
-    searchPatterns: RegExp[] = [];
     archivesOnly: boolean = false;
     debug: boolean = false;
     excludeHidden: boolean = true;
     firstMatch: boolean = false;
+    inArchiveExtensions: string[] = [];
+    inArchiveFilePatterns: RegExp[] = [];
+    inDirPatterns: RegExp[] = [];
+    inExtensions: string[] = [];
+    inFilePatterns: RegExp[] = [];
+    inFileTypes: FileType[] = [];
+    inLinesAfterPatterns: RegExp[] = [];
+    inLinesBeforePatterns: RegExp[] = [];
     linesAfter: number = 0;
+    linesAfterToPatterns: RegExp[] = [];
+    linesAfterUntilPatterns: RegExp[] = [];
     linesBefore: number = 0;
     listDirs: boolean = false;
     listFiles: boolean = false;
     listLines: boolean = false;
     maxLineLength: number = 150;
     multilineSearch: boolean = false;
+    outArchiveExtensions: string[] = [];
+    outArchiveFilePatterns: RegExp[] = [];
+    outDirPatterns: RegExp[] = [];
+    outExtensions: string[] = [];
+    outFilePatterns: RegExp[] = [];
+    outFileTypes: FileType[] = [];
+    outLinesAfterPatterns: RegExp[] = [];
+    outLinesBeforePatterns: RegExp[] = [];
     printResults: boolean = false;
     printUsage: boolean = false;
     printVersion: boolean = false;
     recursive: boolean = true;
     searchArchives: boolean = false;
+    searchPatterns: RegExp[] = [];
+    startPath: string = "";
     uniqueLines: boolean = false;
     verbose: boolean = false;
 
@@ -59,6 +63,23 @@ class SearchSettings {
 
     public addOutExtension(ext: string): void {
         SearchSettings.addExtensions(ext, this.outExtensions);
+    }
+
+    private static addFileTypes(filetypes: any, arr: FileType[]): void {
+        if (typeof(filetypes) === 'string') {
+            filetypes.split(/,/).filter(ft => ft !== '').
+                forEach(ft => arr.push(FileTypes.fromName(ft)));
+        } else if (filetypes.constructor === Array) {
+            filetypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
+        }
+    }
+
+    public addInFileType(filetype: string): void {
+        SearchSettings.addFileTypes(filetype, this.inFileTypes);
+    }
+
+    public addOutFileType(filetype: string): void {
+        SearchSettings.addFileTypes(filetype, this.outFileTypes);
     }
 
     private static addPatterns(patterns: any, arr: RegExp[]): void {
@@ -161,6 +182,7 @@ class SearchSettings {
             + ', ' + SearchSettings.listToString('inDirPatterns', this.inDirPatterns)
             + ', ' + SearchSettings.listToString('inExtensions', this.inExtensions)
             + ', ' + SearchSettings.listToString('inFilePatterns', this.inFilePatterns)
+            + ', ' + SearchSettings.listToString('inFileTypes', this.inFileTypes)
             + ', ' + SearchSettings.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns)
             + ', ' + SearchSettings.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns)
             + ', linesAfter=' + this.linesAfter
@@ -177,6 +199,7 @@ class SearchSettings {
             + ', ' + SearchSettings.listToString('outDirPatterns', this.outDirPatterns)
             + ', ' + SearchSettings.listToString('outExtensions', this.outExtensions)
             + ', ' + SearchSettings.listToString('outFilePatterns', this.outFilePatterns)
+            + ', ' + SearchSettings.listToString('outFileTypes', this.outFileTypes)
             + ', ' + SearchSettings.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
             + ', ' + SearchSettings.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
             + ', printResults=' + this.printResults

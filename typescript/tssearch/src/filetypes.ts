@@ -52,6 +52,16 @@ class FileTypes {
         return fileTypeMap;
     }
 
+    public static fromName(name: string): FileType {
+        if (name.toUpperCase() === 'TEXT')
+            return FileType.Text;
+        if (name.toUpperCase() === 'BINARY')
+            return FileType.Binary;
+        if (name.toUpperCase() === 'ARCHIVE')
+            return FileType.Archive;
+        return FileType.Unknown;
+    }
+
     public static getFileType(filename: string): FileType {
         if (FileTypes.isTextFile(filename))
             return FileType.Text;
