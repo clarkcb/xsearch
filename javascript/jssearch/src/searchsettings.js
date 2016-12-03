@@ -4,43 +4,47 @@
  * represents the settings to use when performing the search
  */
 
+var FileTypes = require('./filetypes.js').FileTypes;
+
 function SearchSettings() {
     "use strict";
     let self = this;
-    self.startPath = "";
-    self.inExtensions = [];
-    self.outExtensions = [];
-    self.inDirPatterns = [];
-    self.outDirPatterns = [];
-    self.inFilePatterns = [];
-    self.outFilePatterns = [];
-    self.inArchiveExtensions = [];
-    self.outArchiveExtensions = [];
-    self.inArchiveFilePatterns = [];
-    self.outArchiveFilePatterns = [];
-    self.inLinesAfterPatterns = [];
-    self.outLinesAfterPatterns = [];
-    self.inLinesBeforePatterns = [];
-    self.outLinesBeforePatterns = [];
-    self.linesAfterToPatterns = [];
-    self.linesAfterUntilPatterns = [];
-    self.searchPatterns = [];
     self.archivesOnly = false;
     self.debug = false;
     self.excludeHidden = true;
     self.firstMatch = false;
+    self.inArchiveExtensions = [];
+    self.inArchiveFilePatterns = [];
+    self.inDirPatterns = [];
+    self.inExtensions = [];
+    self.inFilePatterns = [];
+    self.inFileTypes = [];
+    self.inLinesAfterPatterns = [];
+    self.inLinesBeforePatterns = [];
     self.linesAfter = 0;
+    self.linesAfterToPatterns = [];
+    self.linesAfterUntilPatterns = [];
     self.linesBefore = 0;
     self.listDirs = false;
     self.listFiles = false;
     self.listLines = false;
     self.maxLineLength = 150;
     self.multilineSearch = false;
+    self.outArchiveExtensions = [];
+    self.outArchiveFilePatterns = [];
+    self.outDirPatterns = [];
+    self.outExtensions = [];
+    self.outFilePatterns = [];
+    self.outFileTypes = [];
+    self.outLinesAfterPatterns = [];
+    self.outLinesBeforePatterns = [];
     self.printResults = false;
     self.printUsage = false;
     self.printVersion = false;
     self.recursive = true;
     self.searchArchives = false;
+    self.searchPatterns = [];
+    self.startPath = "";
     self.uniqueLines = false;
     self.verbose = false;
 
@@ -110,6 +114,21 @@ function SearchSettings() {
         addPatterns(pattern, self.linesAfterUntilPatterns);
     };
 
+    const addFileTypes = function (filetypes, arr) {
+        if (typeof(filetypes) === 'string') {
+            filetypes.split(/,/).filter(ft => ft !== '').
+                forEach(ft => arr.push(FileTypes.fromName(ft)));
+        } else if (filetypes.constructor === Array) {
+            filetypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
+        }
+    };
+    self.addInFileType = function (filetype) {
+        addFileTypes(filetype, self.inFileTypes);
+    };
+    self.addOutFileType = function (filetype) {
+        addFileTypes(filetype, self.outFileTypes);
+    };
+
     self.setArchivesOnly = function () {
         self.setArchivesOnlyBool(true);
     };
@@ -143,6 +162,7 @@ function SearchSettings() {
             ', ' + listToString('inDirPatterns', self.inDirPatterns) +
             ', ' + listToString('inExtensions', self.inExtensions) +
             ', ' + listToString('inFilePatterns', self.inFilePatterns) +
+            ', ' + listToString('inFileTypes', self.inFileTypes) +
             ', ' + listToString('inLinesAfterPatterns', self.inLinesAfterPatterns) +
             ', ' + listToString('inLinesBeforePatterns', self.inLinesBeforePatterns) +
             ', linesAfter=' + self.linesAfter +
@@ -159,6 +179,7 @@ function SearchSettings() {
             ', ' + listToString('outDirPatterns', self.outDirPatterns) +
             ', ' + listToString('outExtensions', self.outExtensions) +
             ', ' + listToString('outFilePatterns', self.outFilePatterns) +
+            ', ' + listToString('outFileTypes', self.outFileTypes) +
             ', ' + listToString('outLinesAfterPatterns', self.outLinesAfterPatterns) +
             ', ' + listToString('outLinesBeforePatterns', self.outLinesBeforePatterns) +
             ', printResults=' + self.printResults +
