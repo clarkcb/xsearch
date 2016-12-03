@@ -13,10 +13,10 @@
   <filetype name="code">
     <extensions>ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl
       cc cfm cgi clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es ex exs
-      frm fs fth fx go groovy h h++ hh hpp hs java js js2 jsf json jsp jspf kt
-      lhs lisp lua m ml pas pbxproj php php3 php4 php5 pl pm ps1 psc1 psd1 psm1
-      pxd pxi py pyw pyx r rb rkt rs s sass sbt sc scm scss scala sh swift tcl
-      ts vb vbs</extensions>
+      frm fs fth fx go groovy h h++ hh hpp hs hxx java js js2 jsf json jsp jspf
+      kt lhs lisp lua m ml p pas pbxproj php php3 php4 php5 pl pm ps1 psc1 psd1
+      psm1 pxd pxi py pyw pyx r rb rexx rkt rs s sass sbt sc scm scss scala sh
+      swift tcl tk ts vb vbs</extensions>
   </filetype>
   <filetype name="nosearch">
     <extensions>aif aifc aiff au avi bmp cab cur db dib dmg eot gif icns ico
