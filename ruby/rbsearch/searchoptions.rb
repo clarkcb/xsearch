@@ -15,11 +15,12 @@ require_relative 'searchoption.rb'
 require_relative 'searchsettings.rb'
 
 class SearchOptions
-  
+
   def initialize
     @options = []
-    @arg_dict = {}
-    @flag_dict = {}
+    @arg_action_dict = {}
+    @bool_flag_action_dict = {}
+    @longarg_dict = {}
     set_actions
     set_options_from_xml
     @options.sort! { |a, b| a.sortarg <=> b.sortarg }
@@ -28,13 +29,15 @@ class SearchOptions
   def set_actions
     @arg_action_dict = {
       :'in-archiveext' => ->(x, settings){ settings.add_exts(x,
-          settings.in_archiveextensions) },
+        settings.in_archiveextensions) },
       :'in-archivefilepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_archivefilepatterns) },
       :'in-dirpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_dirpatterns) },
       :'in-ext' => ->(x, settings){ settings.add_exts(x,
-          settings.in_extensions) },
+        settings.in_extensions) },
+      :'in-filetype' => ->(x, settings){ settings.add_filetypes(x,
+        settings.in_filetypes) },
       :'in-filepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.in_filepatterns) },
       :'in-linesafterpattern' => ->(x, settings){ settings.add_patterns(x,
@@ -49,15 +52,17 @@ class SearchOptions
       :'linesbefore' => ->(x, settings){ settings.linesbefore = x.to_i },
       :'maxlinelength' => ->(x, settings){ settings.maxlinelength = x.to_i },
       :'out-archiveext' => ->(x, settings){ settings.add_exts(x,
-          settings.out_archiveextensions) },
+        settings.out_archiveextensions) },
       :'out-archivefilepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_archivefilepatterns) },
       :'out-dirpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_dirpatterns) },
       :'out-ext' => ->(x, settings){ settings.add_exts(x,
-          settings.out_extensions) },
+        settings.out_extensions) },
       :'out-filepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_filepatterns) },
+      :'out-filetype' => ->(x, settings){ settings.add_filetypes(x,
+        settings.out_filetypes) },
       :'out-linesafterpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_linesafterpatterns) },
       :'out-linesbeforepattern' => ->(x, settings){ settings.add_patterns(x,
@@ -90,60 +95,7 @@ class SearchOptions
       :'verbose' => ->(b, settings){ settings.verbose = b },
       :'version' => ->(b, settings){ settings.printversion = b }
     }
-    @flag_action_dict = {
-      :'allmatches' => ->(settings){ settings.firstmatch = false },
-      :'archivesonly' => ->(settings){ settings.set_archivesonly(true) },
-      :'caseinsensitive' => ->(settings){ settings.casesensitive = false },
-      :'casesensitive' => ->(settings){ settings.casesensitive = true },
-      :'debug' => ->(settings){ settings.set_debug(true) },
-      :'excludehidden' => ->(settings){ settings.excludehidden = true },
-      :'firstmatch' => ->(settings){ settings.firstmatch = true },
-      :'help' => ->(settings){ settings.printusage = true },
-      :'includehidden' => ->(settings){ settings.excludehidden = false },
-      :'listdirs' => ->(settings){ settings.listdirs = true },
-      :'listfiles' => ->(settings){ settings.listfiles = true },
-      :'listlines' => ->(settings){ settings.listlines = true },
-      :'multilinesearch' => ->(settings){ settings.multilinesearch = true },
-      :'noprintmatches' => ->(settings){ settings.printresults = false },
-      :'norecursive' => ->(settings){ settings.recursive = false },
-      :'nosearcharchives' => ->(settings){ settings.searcharchives = false },
-      :'printmatches' => ->(settings){ settings.printresults = true },
-      :'recursive' => ->(settings){ settings.recursive = true },
-      :'searcharchives' => ->(settings){ settings.searcharchives = true },
-      :'uniquelines' => ->(settings){ settings.uniquelines = true },
-      :'verbose' => ->(settings){ settings.verbose = true },
-      :'version' => ->(settings){ settings.printversion = true }
-    }
-  end
-
-  def set_options_from_xml
-    doc = Document.new(File.new(File.expand_path(SEARCHOPTIONSPATH)))
-    doc.elements.each('searchoptions/searchoption') { |searchoption|
-      long = searchoption.attributes['long']
-      short = searchoption.attributes['short']
-      desc = searchoption.text.strip
-      func = nil
-      if @arg_action_dict.has_key?(long.to_sym)
-        func = @arg_action_dict[long.to_sym]
-      elsif @flag_action_dict.has_key?(long.to_sym)
-        func = @flag_action_dict[long.to_sym]
-      else
-        raise ArgumentError, "Unknown search option: #{long}"
-      end
-      option = SearchOption.new(short, long, desc, func)
-      @options.push(option)
-      if @arg_action_dict.has_key?(long.to_sym)
-        @arg_dict[long] = option
-        if short
-          @arg_dict[short] = option
-        end
-      elsif @flag_action_dict.has_key?(long.to_sym)
-        @flag_dict[long] = option
-        if short
-          @flag_dict[short] = option
-        end
-      end
-    }
+    @longarg_dict = {}
   end
 
   def settings_from_file(filepath, settings)
@@ -155,10 +107,11 @@ class SearchOptions
   def settings_from_json(json, settings)
     json_hash = JSON.parse(json)
     json_hash.each do |arg, elem|
-      if @arg_action_dict.has_key?(arg.to_sym)
-        @arg_action_dict[arg.to_sym].call(json_hash[arg], settings)
-      elsif @bool_flag_action_dict.has_key?(arg.to_sym)
-        @bool_flag_action_dict[arg.to_sym].call(json_hash[arg], settings)
+      argsym = arg.to_sym
+      if @arg_action_dict.has_key?(argsym)
+        @arg_action_dict[argsym].call(json_hash[arg], settings)
+      elsif @bool_flag_action_dict.has_key?(argsym)
+        @bool_flag_action_dict[argsym].call(json_hash[arg], settings)
         if ['h', 'help', 'V', 'version'].include?(arg)
           return
         end
@@ -170,6 +123,29 @@ class SearchOptions
     end
   end
 
+  def set_options_from_xml
+    doc = Document.new(File.new(File.expand_path(SEARCHOPTIONSPATH)))
+    doc.elements.each('searchoptions/searchoption') { |searchoption|
+      long = searchoption.attributes['long']
+      longsym = long.to_sym
+      short = searchoption.attributes['short']
+      desc = searchoption.text.strip
+      func = nil
+      if @arg_action_dict.has_key?(longsym)
+        func = @arg_action_dict[longsym]
+      elsif @bool_flag_action_dict.has_key?(longsym)
+        func = @bool_flag_action_dict[longsym]
+      else
+        raise ArgumentError, "Unknown search option: #{long}"
+      end
+      @options.push(SearchOption.new(short, long, desc, func))
+      @longarg_dict[long] = longsym
+      if short
+        @longarg_dict[short] = longsym
+      end
+    }
+  end
+
   def search_settings_from_args(args)
     settings = SearchSettings.new()
     settings.printresults = true
@@ -179,16 +155,17 @@ class SearchOptions
         while arg and arg.start_with?('-')
           arg = arg[1..arg.length]
         end
-        if @arg_dict.has_key?(arg)
+        longarg = @longarg_dict[arg]
+        if @arg_action_dict.has_key?(longarg)
           if args.count > 0
             argval = args.shift
-            @arg_dict[arg].func.call(argval, settings)
+            @arg_action_dict[longarg].call(argval, settings)
           else
             raise ArgumentError, "Missing value for option #{arg}"
           end
-        elsif @flag_dict.has_key?(arg)
-          puts "arg in @flag_dict\n"
-          @flag_dict[arg].func.call(settings)
+        elsif @bool_flag_action_dict.has_key?(longarg)
+          # pushts "arg in @flag_dict\n"
+          @bool_flag_action_dict[longarg].call(true, settings)
           if ['h', 'help', 'V', 'version'].include?(arg)
             return settings
           end

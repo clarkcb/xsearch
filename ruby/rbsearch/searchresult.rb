@@ -9,7 +9,7 @@
 class SearchResult
 
   attr_accessor :pattern
-  attr_accessor :filename
+  attr_accessor :file
   attr_accessor :linenum
   attr_accessor :match_start_index
   attr_accessor :match_end_index
@@ -19,10 +19,10 @@ class SearchResult
 
   @@SEPARATOR_LEN = 80
 
-  def initialize(pattern, filename, linenum=0, match_start_index=0,
+  def initialize(pattern, file, linenum=0, match_start_index=0,
      match_end_index=0, line='', lines_before=[], lines_after=[])
     @pattern = pattern
-    @filename = filename
+    @file= file
     @linenum = linenum
     @match_start_index = match_start_index
     @match_end_index = match_end_index
@@ -41,7 +41,7 @@ class SearchResult
   end
 
   def __singleline_s
-    s = "#{@filename}"
+    s = "#{@file.to_s}"
     if @linenum > 0 and not @line.empty?
       s += ": #{@linenum}: [#{@match_start_index}:#{@match_end_index}]:"
       s += " #{__format_matching_line}"
@@ -98,7 +98,7 @@ class SearchResult
 
   def __multiline_s
     s = "=" * @@SEPARATOR_LEN + "\n"
-    s += "#{@filename}: #{@linenum}: [#{@match_start_index}:#{@match_end_index}]\n"
+    s += "#{@file.to_s}: #{@linenum}: [#{@match_start_index}:#{@match_end_index}]\n"
     s += "-" * @@SEPARATOR_LEN + "\n"
     line_format = " %%%dd | %%s\n" % [linenum_padding]
     current_linenum = @linenum

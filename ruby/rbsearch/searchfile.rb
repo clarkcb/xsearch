@@ -19,7 +19,11 @@ class SearchFile
     @containers = []
     @path = path
     @filename = filename
-    @filetype = filetype
+    @filetype = filetype # FileType
+  end
+
+  def relativepath
+    Pathname.new(@path).join(@filename).to_s
   end
 
   def to_s
@@ -27,7 +31,7 @@ class SearchFile
     if @containers.length > 0
       @containers.join(@CONTAINER_SEPARATOR) + @CONTAINER_SEPARATOR
     end
-    s += Pathname.new(@path).join(@filename).to_s
+    s += relativepath
     s
   end
 

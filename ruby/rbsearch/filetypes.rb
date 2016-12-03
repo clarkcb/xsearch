@@ -11,15 +11,27 @@ require_relative 'fileutil.rb'
 include REXML
 
 module FileType
+  Unknown = 0
   Archive = 1
   Binary  = 2
   Text    = 3
-  Unknown = 4
 end
 
 class FileTypes
   def initialize
     set_file_type_map
+  end
+
+  def self.from_name(name)
+    filetype = FileType::Unknown
+    if name.upcase() == "TEXT"
+      filetype = FileType::Text
+    elsif name.upcase() == "BINARY"
+      filetype = FileType::Binary
+    elsif name.upcase() == "ARCHIVE"
+      filetype = FileType::Archive
+    end
+    filetype
   end
 
   def set_file_type_map

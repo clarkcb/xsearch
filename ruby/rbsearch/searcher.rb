@@ -12,6 +12,7 @@ require 'set'
 require_relative 'common.rb'
 require_relative 'filetypes.rb'
 require_relative 'fileutil.rb'
+require_relative 'searchfile.rb'
 require_relative 'searchresult.rb'
 
 class Searcher
@@ -61,9 +62,6 @@ class Searcher
   end
 
   def is_search_file(f)
-    if FileUtil::is_hidden?(f) && @settings.excludehidden
-      return false
-    end
     ext = FileUtil::get_extension(f)
     if @settings.in_extensions.count > 0 &&
       ! @settings.in_extensions.include?(ext)
@@ -75,20 +73,25 @@ class Searcher
     end
     filename = Pathname.new(f).basename.to_s
     if @settings.in_filepatterns.count > 0 &&
-      ! matches_any_pattern(filename, @settings.in_filepatterns)
+       ! matches_any_pattern(filename, @settings.in_filepatterns)
       return false
     end
     if @settings.out_filepatterns.count > 0 &&
-      matches_any_pattern(filename, @settings.out_filepatterns)
+       matches_any_pattern(filename, @settings.out_filepatterns)
+      return false
+    end
+    if @settings.in_filetypes.count > 0 &&
+       ! @settings.in_filetypes.include?(@filetypes.get_filetype(filename))
+      return false
+    end
+   if @settings.out_filetypes.count > 0 &&
+      @settings.out_filetypes.include?(@filetypes.get_filetype(filename))
       return false
     end
     true
   end
 
   def is_archive_search_file(f)
-    if FileUtil::is_hidden?(f) && @settings.excludehidden
-      return false
-    end
     ext = FileUtil::get_extension(f)
     if @settings.in_archiveextensions.count > 0 &&
       ! @settings.in_archiveextensions.include?(ext)
@@ -150,13 +153,21 @@ class Searcher
         all_dirs.each do |f|
           unless FileTest.directory?(f)
             if filter_file(f)
-              searchfiles.push(Pathname.new(d).join(f).to_s)
+              filetype = @filetypes.get_filetype(f)
+              searchfile = SearchFile.new(d, f, filetype)
+              searchfiles.push(searchfile)
             end
           end
         end
       end
     elsif FileTest.file?(@settings.startpath)
-      searchfiles.push(@settings.startpath) if is_search_file(@settings.startpath)
+      d = File.dirname(@settings.startpath)
+      if ! d
+        d = '.'
+      end
+      filename = File.basename(@settings.startpath)
+      filetype = @filetypes.get_filetype(filename)
+      searchfiles.push(SearchFile.new(d, filename, filetype))
     end
     searchfiles
   end
@@ -184,23 +195,22 @@ class Searcher
     end
   end
 
-  def search_file(f)
-    unless @filetypes.is_searchable_file(f)
+  def search_file(sf)
+    unless @filetypes.is_searchable_file(sf.filename)
       if @settings.verbose || @settings.debug
-        log("Skipping unsearchable file: #{f}")
+        log("Skipping unsearchable file: #{sf}")
         return 0
       end
     end
-    filetype = @filetypes.get_filetype(f)
-    if filetype == FileType::Text
-      search_text_file(f)
-    elsif filetype == FileType::Binary
-      search_binary_file(f)
+    if sf.filetype == FileType::Text
+      search_text_file(sf)
+    elsif sf.filetype == FileType::Binary
+      search_binary_file(sf)
     end
   end
 
-  def search_binary_file(f)
-    contents = File.open(f, "rb").read
+  def search_binary_file(sf)
+    contents = File.open(sf.relativepath, "rb").read
     @settings.searchpatterns.each do |p|
       pos = 0
       m = p.match(contents, pos)
@@ -208,7 +218,7 @@ class Searcher
       while m && !stop
         results.push(SearchResult.new(
           p,
-          f,
+          sf,
           0,
           m.begin(0) + 1,
           m.end(0) + 1,
@@ -222,14 +232,14 @@ class Searcher
     end
   end
 
-  def search_text_file(f, enc = nil)
+  def search_text_file(sf, enc = nil)
     if @settings.debug
-      log("Searching text file #{f}")
+      log("Searching text file #{sf}")
     end
     if @settings.multilinesearch
-      search_text_file_contents(f, enc)
+      search_text_file_contents(sf, enc)
     else
-      search_text_file_lines(f, enc)
+      search_text_file_lines(sf, enc)
     end
   end
 
@@ -237,15 +247,15 @@ class Searcher
     s.scan(/(\r\n|\n)/m).size
   end
 
-  def search_text_file_contents(f, enc='ISO8859-1')
+  def search_text_file_contents(sf, enc='ISO8859-1')
     begin
       # using ISO8859-1 instead of UTF-8 because a UTF-8 file won't break
       # on ISO8859-1 but a non-UTF-8 file will break on UTF-8
       enc='ISO8859-1'
-      contents = File.open(f, mode: "r:#{enc}").read
+      contents = File.open(sf.relativepath, mode: "r:#{enc}").read
       results = search_multiline_string(contents)
       results.each do |r|
-        r.filename = f
+        r.file= sf
         add_search_result(r)
       end
     rescue ArgumentError => e
@@ -367,17 +377,17 @@ class Searcher
       @settings.out_linesafterpatterns)
   end
 
-  def search_text_file_lines(f, enc='ISO8859-1')
+  def search_text_file_lines(sf, enc='ISO8859-1')
     begin
       # using ISO8859-1 instead of UTF-8 because a UTF-8 file won't break
       # on ISO8859-1 but a non-UTF-8 file will break on UTF-8
       enc = "ISO8859-1"
-      fo = File.open(f, mode: "r:#{enc}")
+      fo = File.open(sf.relativepath, mode: "r:#{enc}")
       line_iterator = fo.each_line
       results = search_line_iterator(line_iterator)
       fo.close
       results.each do |r|
-        r.filename = f
+        r.file = sf
         add_search_result(r)
       end
     rescue ArgumentError => e

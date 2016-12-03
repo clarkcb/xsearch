@@ -17,6 +17,7 @@ class SearchSettings
   attr_accessor :in_dirpatterns
   attr_accessor :in_extensions
   attr_accessor :in_filepatterns
+  attr_accessor :in_filetypes
   attr_accessor :in_linesafterpatterns
   attr_accessor :in_linesbeforepatterns
   attr_accessor :linesafter
@@ -33,6 +34,7 @@ class SearchSettings
   attr_accessor :out_dirpatterns
   attr_accessor :out_extensions
   attr_accessor :out_filepatterns
+  attr_accessor :out_filetypes
   attr_accessor :out_linesafterpatterns
   attr_accessor :out_linesbeforepatterns
   attr_accessor :printresults
@@ -71,6 +73,7 @@ class SearchSettings
     @in_dirpatterns = []
     @in_extensions = []
     @in_filepatterns = []
+    @in_filetypes = []
     @in_linesafterpatterns = []
     @in_linesbeforepatterns = []
     @linesaftertopatterns = []
@@ -80,6 +83,7 @@ class SearchSettings
     @out_dirpatterns = []
     @out_extensions = []
     @out_filepatterns = []
+    @out_filetypes = []
     @out_linesafterpatterns = []
     @out_linesbeforepatterns = []
     @searchpatterns = []
@@ -111,6 +115,18 @@ class SearchSettings
     pattern_set.push(Regexp.new(pattern))
   end
 
+  def add_filetypes(filetypes, filetypes_set)
+    if filetypes.instance_of? String
+      filetypes.split(",").each do |t|
+        filetypes_set.push(FileTypes::from_name(t))
+      end
+    elsif exts.instance_of? Array
+      filetypes.each do |t|
+        filetypes_set.push(FileTypes::from_name(t))
+      end
+    end
+  end
+
   def set_archivesonly(b)
     @archivesonly = b
     if b
@@ -140,6 +156,7 @@ class SearchSettings
     s += ", " + list_to_s("in_dirpatterns", @in_dirpatterns)
     s += ", " + list_to_s("in_extensions", @in_extensions)
     s += ", " + list_to_s("in_filepatterns", @in_filepatterns)
+    s += ", " + list_to_s("in_filetypes", @in_filetypes)
     s += ", " + list_to_s("in_linesafterpatterns", @in_linesafterpatterns)
     s += ", " + list_to_s("in_linesbeforepatterns", @in_linesbeforepatterns)
     s += ", linesafter: #{@linesafter}"
@@ -156,6 +173,7 @@ class SearchSettings
     s += ", " + list_to_s("out_dirpatterns", @out_dirpatterns)
     s += ", " + list_to_s("out_extensions", @out_extensions)
     s += ", " + list_to_s("out_filepatterns", @out_filepatterns)
+    s += ", " + list_to_s("out_filetypes", @out_filetypes)
     s += ", " + list_to_s("out_linesafterpatterns", @out_linesafterpatterns)
     s += ", " + list_to_s("out_linesbeforepatterns", @out_linesbeforepatterns)
     s += ", printresults: #{@printresults}"
