@@ -78,8 +78,20 @@ function Searcher(settings) {
             !matchesAnyPattern(file, _settings.inFilePatterns)) {
             return false;
         }
-        return !(_settings.outFilePatterns.length &&
-        matchesAnyPattern(file, _settings.outFilePatterns));
+        if (_settings.outFilePatterns.length &&
+            matchesAnyPattern(file, _settings.outFilePatterns)) {
+            return false;
+        }
+        let filetype = _filetypes.getFileType(file);
+        if (_settings.inFileTypes.length &&
+            !matchesAnyElement(filetype, _settings.inFileTypes)) {
+            return false;
+        }
+        if (_settings.outFileTypes.length &&
+            matchesAnyElement(filetype, _settings.outFileTypes)) {
+            return false;
+        }
+        return true;
     };
 
     self.isArchiveSearchFile = function (file) {
