@@ -5,6 +5,7 @@
  */
 
 var config = require('./config.js');
+var FileTypes = require('./filetypes.js').FileTypes;
 var FileUtil = require('./fileutil.js').FileUtil;
 var SearchOption = require('./searchoption.js').SearchOption;
 var SearchSettings = require('./searchsettings.js').SearchSettings;
@@ -30,6 +31,8 @@ function SearchOptions() {
             (x, settings) => { settings.addInExtension(x); },
         'in-filepattern':
             (x, settings) => { settings.addInFilePattern(x); },
+        'in-filetype':
+            (x, settings) => { settings.addInFileType(x); },
         'in-linesafterpattern':
             (x, settings) => { settings.addInLinesAfterPattern(x); },
         'in-linesbeforepattern':
@@ -54,6 +57,8 @@ function SearchOptions() {
             (x, settings) => { settings.addOutExtension(x); },
         'out-filepattern':
             (x, settings) => { settings.addOutFilePattern(x); },
+        'out-filetype':
+            (x, settings) => { settings.addOutFileType(x); },
         'out-linesafterpattern':
             (x, settings) => { settings.addOutLinesAfterPattern(x); },
         'out-linesbeforepattern':
@@ -61,7 +66,7 @@ function SearchOptions() {
         'search':
             (x, settings) => { settings.addSearchPattern(x); },
         'settings-file':
-             (x, settings) => { return settingsFromFile(x, settings); }
+            (x, settings) => { return settingsFromFile(x, settings); }
 
     };
 
@@ -108,49 +113,6 @@ function SearchOptions() {
             (b, settings) => { settings.printVersion = b; }
     };
 
-    const flagActionMap = {
-        'allmatches':
-            settings => { settings.firstMatch = false; },
-        'archivesonly':
-            settings => { settings.setArchivesOnly(); },
-        'debug':
-            settings => { settings.setDebug(); },
-        'excludehidden':
-            settings => { settings.excludeHidden = true; },
-        'firstmatch':
-            settings => { settings.firstMatch = true; },
-        'includehidden':
-            settings => { settings.excludeHidden = false; },
-        'help':
-            settings => { settings.printUsage = true; },
-        'listdirs':
-            settings => { settings.listDirs = true; },
-        'listfiles':
-            settings => { settings.listFiles = true; },
-        'listlines':
-            settings => { settings.listLines = true; },
-        'multilinesearch':
-            settings => { settings.multilineSearch = true; },
-        'noprintmatches':
-            settings => { settings.printResults = false; },
-        'norecursive':
-            settings => { settings.recursive = false; },
-        'nosearcharchives':
-            settings => { settings.searchArchives = false; },
-        'printmatches':
-            settings => { settings.printResults = true; },
-        'recursive':
-            settings => { settings.recursive = true; },
-        'searcharchives':
-            settings => { settings.searchArchives = true; },
-        'uniquelines':
-            settings => { settings.uniqueLines = true; },
-        'verbose':
-            settings => { settings.verbose = true; },
-        'version':
-            settings => { settings.printVersion = true; }
-    };
-
     function optcmp(o1, o2) {
         const a = o1.sortarg;
         const b = o2.sortarg;
@@ -177,14 +139,14 @@ function SearchOptions() {
                     argNameMap[longArg] = longArg;
                     if (shortArg) argNameMap[shortArg] = longArg;
                     if (argActionMap[longArg]) func = argActionMap[longArg];
-                    else if (flagActionMap[longArg]) func = flagActionMap[longArg];
+                    else if (boolFlagActionMap[longArg]) func = boolFlagActionMap[longArg];
                     else throw new Error("Unknown option: "+longArg);
                     const option = new SearchOption(shortArg, longArg, desc, func);
                     options.push(option);
                     if (argActionMap[longArg]) {
                         argMap[longArg] = option;
                         if (shortArg) argMap[shortArg] = option;
-                    } else if (flagActionMap[longArg]) {
+                    } else if (boolFlagActionMap[longArg]) {
                         flagMap[longArg] = option;
                         if (shortArg) flagMap[shortArg] = option;
                     }
@@ -248,12 +210,12 @@ function SearchOptions() {
                     if (args.length > 0) {
                         err = argMap[arg].func(args.shift(), settings);
                     } else {
-                        err = new Error("Missing argument for option "+arg);
+                        err = new Error("Missing argument for option " + arg);
                     }
                 } else if (flagMap[arg]) {
-                    flagMap[arg].func(settings);
+                    flagMap[arg].func(true, settings);
                 } else {
-                    err = new Error("Invalid option: "+arg);
+                    err = new Error("Invalid option: " + arg);
                 }
             } else {
                 settings.startPath = arg;
