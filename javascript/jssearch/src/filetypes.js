@@ -91,4 +91,14 @@ function FileTypes() {
     };
 }
 
+FileTypes.fromName = function (name) {
+    if (name.toUpperCase() === 'TEXT')
+        return FileType.TEXT;
+    if (name.toUpperCase() === 'BINARY')
+        return FileType.BINARY;
+    if (name.toUpperCase() === 'ARCHIVE')
+        return FileType.ARCHIVE;
+    return FileType.UNKNOWN;
+};
+
 exports.FileTypes = FileTypes;
