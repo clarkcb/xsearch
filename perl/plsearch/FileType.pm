@@ -12,10 +12,10 @@ use strict;
 use warnings;
 
 use constant {
+    UNKNOWN => 'Unknown',
     ARCHIVE => 'Archive',
     BINARY  => 'Binary',
     TEXT    => 'Text',
-    UNKNOWN => 'Unknown',
 };
 
 1;

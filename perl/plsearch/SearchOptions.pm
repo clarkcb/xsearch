@@ -42,6 +42,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{in_filepatterns});
     },
+    'in-filetype' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_filetypes($s, $settings->{in_filetypes});
+    },
     'in-linesafterpattern' => sub {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{in_linesafterpatterns});
@@ -89,6 +93,10 @@ my $arg_action_hash = {
     'out-filepattern' => sub {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{out_filepatterns});
+    },
+    'out-filetype' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_filetypes($s, $settings->{out_filetypes});
     },
     'out-linesafterpattern' => sub {
         my ($s, $settings) = @_;
@@ -191,91 +199,6 @@ my $bool_flag_action_hash = {
     }
 };
 
-my $flag_action_hash = {
-    'allmatches' => sub {
-        my ($settings) = @_;
-        $settings->{firstmatch} = 0;
-    },
-    'archivesonly' => sub {
-        my ($settings) = @_;
-        $settings->{archivesonly} = 1;
-        $settings->{searcharchives} = 1;
-    },
-    'debug' => sub {
-        my ($settings) = @_;
-        $settings->{debug} = 1;
-        $settings->{verbose} = 1;
-    },
-    'excludehidden' => sub {
-        my ($settings) = @_;
-        $settings->{excludehidden} = 1;
-    },
-    'firstmatch' => sub {
-        my ($settings) = @_;
-        $settings->{firstmatch} = 1;
-    },
-    'help' => sub {
-        my ($settings) = @_;
-        $settings->{printusage} = 1;
-    },
-    'includehidden' => sub {
-        my ($settings) = @_;
-        $settings->{excludehidden} = 0;
-    },
-    'listdirs' => sub {
-        my ($settings) = @_;
-        $settings->{listdirs} = 1;
-    },
-    'listfiles' => sub {
-        my ($settings) = @_;
-        $settings->{listfiles} = 1;
-    },
-    'listlines' => sub {
-        my ($settings) = @_;
-        $settings->{listlines} = 1;
-    },
-    'multilinesearch' => sub {
-        my ($settings) = @_;
-        $settings->{multilinesearch} = 1;
-    },
-    'noprintmatches' => sub {
-        my ($settings) = @_;
-        $settings->{printresults} = 0;
-    },
-    'norecursive' => sub {
-        my ($settings) = @_;
-        $settings->{recursive} = 0;
-    },
-    'nosearcharchives' => sub {
-        my ($settings) = @_;
-        $settings->{searcharchives} = 0;
-    },
-    'printmatches' => sub {
-        my ($settings) = @_;
-        $settings->{printresults} = 1;
-    },
-    'recursive' => sub {
-        my ($settings) = @_;
-        $settings->{recursive} = 1;
-    },
-    'searcharchives' => sub {
-        my ($settings) = @_;
-        $settings->{searcharchives} = 1;
-    },
-    'uniquelines' => sub {
-        my ($settings) = @_;
-        $settings->{uniquelines} = 1;
-    },
-    'verbose' => sub {
-        my ($settings) = @_;
-        $settings->{verbose} = 1;
-    },
-    'version' => sub {
-        my ($settings) = @_;
-        $settings->{printversion} = 1;
-    }
-};
-
 sub new {
     my $class = shift;
     my $self = {
@@ -296,8 +219,8 @@ sub set_options_from_xml {
         my $func = sub {};
         if (exists $arg_action_hash->{$long}) {
             $func = $arg_action_hash->{$long};
-        } elsif (exists $flag_action_hash->{$long}) {
-            $func = $flag_action_hash->{$long};
+        } elsif (exists $bool_flag_action_hash->{$long}) {
+            $func = $bool_flag_action_hash->{$long};
         }
         my $opt = new plsearch::SearchOption($short, $long, $desc, $func);
         $options_hash->{$long} = $opt;
@@ -365,8 +288,8 @@ sub settings_from_args {
                     } else {
                         push(@errs, "Missing value for $arg");
                     }
-                } elsif (exists $flag_action_hash->{$long}) {
-                    &{$flag_action_hash->{$long}}($settings);
+                } elsif (exists $bool_flag_action_hash->{$long}) {
+                    &{$bool_flag_action_hash->{$long}}(1, $settings);
                 }
             } else {
                 push(@errs, "Invalid option: $arg");

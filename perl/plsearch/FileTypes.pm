@@ -45,6 +45,20 @@ sub new {
     return $self;
 }
 
+sub from_name {
+    my ($name) = @_;
+    if (uc($name) eq 'TEXT') {
+        return plsearch::FileType->TEXT;
+    }
+    if (uc($name) eq 'BINARY') {
+        return plsearch::FileType->BINARY;
+    }
+    if (uc($name) eq 'ARCHIVE') {
+        return plsearch::FileType->ARCHIVE;
+    }
+    return plsearch::FileType->UNKNOWN;
+}
+
 sub get_filetype {
     my ($self, $file) = @_;
     if ($self->is_text($file)) {

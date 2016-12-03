@@ -8,6 +8,8 @@
 
 package plsearch::SearchSettings;
 
+use plsearch::FileTypes;
+
 use strict;
 use warnings;
 
@@ -23,6 +25,7 @@ sub new {
         in_dirpatterns => [],
         in_extensions => [],
         in_filepatterns => [],
+        in_filetypes => [],
         in_linesafterpatterns => [],
         in_linesbeforepatterns => [],
         linesafter => 0,
@@ -39,6 +42,7 @@ sub new {
         out_dirpatterns => [],
         out_extensions => [],
         out_filepatterns => [],
+        out_filetypes => [],
         out_linesafterpatterns => [],
         out_linesbeforepatterns => [],
         printresults => 1,
@@ -101,6 +105,20 @@ sub add_exts {
     }
 }
 
+sub add_filetypes {
+    my ($self, $filetypes, $ftaref) = @_;
+    my $fts = [];
+    if (ref($filetypes) eq 'ARRAY') {
+        $fts = $filetypes;
+    } else { # treat as a string
+        my @split = split(',', $filetypes);
+        $fts = \@split;
+    }
+    foreach my $ft (@{$fts}) {
+        push (@{$ftaref}, plsearch::FileTypes::from_name($ft));
+    }
+}
+
 sub add_patterns {
     my ($self, $pats, $pataref) = @_;
     if (ref($pats) eq 'ARRAY') {
@@ -124,6 +142,7 @@ sub to_string {
     $s .= ', in_dirpatterns=' . $self->aref_to_string($self->{in_dirpatterns});
     $s .= ', in_extensions=' . $self->aref_to_string($self->{in_extensions});
     $s .= ', in_filepatterns=' . $self->aref_to_string($self->{in_filepatterns});
+    $s .= ', in_filetypes=' . $self->aref_to_string($self->{in_filetypes});
     $s .= ', in_linesafterpatterns=' . $self->aref_to_string($self->{in_linesafterpatterns});
     $s .= ', in_linesbeforepatterns=' . $self->aref_to_string($self->{in_linesbeforepatterns});
     $s .= ', linesafter=' . $self->{linesafter};
@@ -140,6 +159,7 @@ sub to_string {
     $s .= ', out_dirpatterns=' . $self->aref_to_string($self->{out_dirpatterns});
     $s .= ', out_extensions=' . $self->aref_to_string($self->{out_extensions});
     $s .= ', out_filepatterns=' . $self->aref_to_string($self->{out_filepatterns});
+    $s .= ', out_filetypes=' . $self->aref_to_string($self->{out_filetypes});
     $s .= ', out_linesafterpatterns=' . $self->aref_to_string($self->{out_linesafterpatterns});
     $s .= ', out_linesbeforepatterns=' . $self->aref_to_string($self->{out_linesbeforepatterns});
     $s .= ', printresults=' . $self->bool_to_string($self->{printresults});

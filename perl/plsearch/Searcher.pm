@@ -110,6 +110,15 @@ sub is_search_file {
         $self->matches_any_pattern($f, $self->{settings}->{out_filepatterns})) {
         return 0;
     }
+    my $type = $self->{filetypes}->get_filetype($f);
+    if (scalar @{$self->{settings}->{in_filetypes}} &&
+        !(grep {$_ eq $type} @{$self->{settings}->{in_filetypes}})) {
+        return 0;
+    }
+    if (scalar @{$self->{settings}->{out_filetypes}} &&
+        (grep {$_ eq $type} @{$self->{settings}->{out_filetypes}})) {
+        return 0;
+    }
     return 1;
 }
 
