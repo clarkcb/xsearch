@@ -15,15 +15,15 @@ class Regex {
         self.pattern = pattern
         //var error: NSError?
         self.expression = try! NSRegularExpression(pattern: pattern,
-            options: .DotMatchesLineSeparators)
+            options: .dotMatchesLineSeparators)
     }
 
-    func matches(s: String) -> [NSTextCheckingResult] {
-        return self.expression.matchesInString(s, options: [],
+    func matches(_ s: String) -> [NSTextCheckingResult] {
+        return self.expression.matches(in: s, options: [],
             range: NSMakeRange(0, s.characters.count)) 
     }
 
-    func test(s: String) -> Bool {
+    func test(_ s: String) -> Bool {
         return matches(s).count > 0
     }
 }

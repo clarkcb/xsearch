@@ -8,38 +8,38 @@
 
 import Foundation
 
-func getMatchingFiles(results: [SearchResult]) -> [String] {
+func getMatchingFiles(_ results: [SearchResult]) -> [String] {
     var files = Set<String>()
     for r in results.filter({$0.file != nil}) {
         let f = r.file!
         files.insert(f)
     }
-    return Array(files).sort({$0 < $1})
+    return Array(files).sorted(by: {$0 < $1})
 }
 
-func getMatchingDirs(results: [SearchResult]) -> [String] {
+func getMatchingDirs(_ results: [SearchResult]) -> [String] {
     let files = getMatchingFiles(results)
     var dirs = Set<String>()
     for f in files {
-        let dir = NSURL(fileURLWithPath: f).URLByDeletingLastPathComponent?.absoluteString
+        let dir = NSURL(fileURLWithPath: f).deletingLastPathComponent?.absoluteString
         dirs.insert(dir!)
     }
-    return Array(dirs).sort({$0 < $1})
+    return Array(dirs).sorted(by: {$0 < $1})
 }
 
-func getMatchingLines(results: [SearchResult], settings: SearchSettings) -> [String] {
-    var lines = results.map {$0.line.stringByTrimmingCharactersInSet(whitespace)}
+func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [String] {
+    var lines = results.map {$0.line.trimmingCharacters(in: whitespace as CharacterSet)}
     if settings.uniqueLines {
         let lineSet = Set<String>(lines)
         lines = Array(lineSet)
     }
-    return lines.sort({$0.lowercaseString < $1.lowercaseString})
+    return lines.sorted(by: {$0.lowercased() < $1.lowercased()})
 }
 
 func main() {
     let options = SearchOptions()
 
-    let args: [String] = [] + Process.arguments.dropFirst()
+    let args: [String] = [] + CommandLine.arguments.dropFirst()
 
     var error: NSError?
     let settings = options.settingsFromArgs(args, error: &error)

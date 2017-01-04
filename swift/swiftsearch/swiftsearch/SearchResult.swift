@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class SearchResult: CustomStringConvertible {
+open class SearchResult: CustomStringConvertible {
     let searchPattern: String
     var file: String?
     let lineNum: Int
@@ -31,7 +31,7 @@ public class SearchResult: CustomStringConvertible {
             self.linesAfter = linesAfter
     }
 
-    public var description: String {
+    open var description: String {
         if !linesBefore.isEmpty || !linesAfter.isEmpty {
             return multiLineToString()
         } else {
@@ -39,18 +39,18 @@ public class SearchResult: CustomStringConvertible {
         }
     }
 
-    private func singleLineToString() -> String {
+    fileprivate func singleLineToString() -> String {
         var s = file ?? "<text>"
         if lineNum > 0 {
             s += ": \(lineNum): [\(matchStartIndex):\(matchEndIndex)]: "
-            s += line.stringByTrimmingCharactersInSet(whitespace)
+            s += line.trimmingCharacters(in: whitespace as CharacterSet)
         } else {
             s += " matches at [\(matchStartIndex):\(matchEndIndex)]"
         }
         return s
     }
 
-    private func linesToString(lines: [String], startNum: Int, format: String) -> String {
+    fileprivate func linesToString(_ lines: [String], startNum: Int, format: String) -> String {
         var s = ""
         var currentLineNum = startNum
         for line in lines {
@@ -62,7 +62,7 @@ public class SearchResult: CustomStringConvertible {
         return s
     }
 
-    private func multiLineToString() -> String {
+    fileprivate func multiLineToString() -> String {
         let sepLen = 80
         var s = ""
         let filepath = file ?? "<text>"

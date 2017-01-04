@@ -21,7 +21,7 @@ class SearchOption: CustomStringConvertible {
 
     func sortArg() -> String {
         if !short.isEmpty {
-            return short.lowercaseString + "@" + long
+            return short.lowercased() + "@" + long
         }
         return long
     }
@@ -36,7 +36,7 @@ class SearchOption: CustomStringConvertible {
     }
 }
 
-class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
+class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     var searchOptions = [SearchOption]()
     let searchOptionNodeName = "searchoption"
     let longAttributeName = "long"
@@ -46,11 +46,11 @@ class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
     var shortName = ""
     var desc = NSMutableString()
 
-    func parseFile(filepath: String) -> [SearchOption] {
-        if (NSFileManager.defaultManager().fileExistsAtPath(filepath)) {
-            let data: NSData? = NSData(contentsOfFile: filepath)
-            let inputStream: NSInputStream? = NSInputStream(data: data!)
-            let parser: NSXMLParser? = NSXMLParser(stream: inputStream!)
+    func parseFile(_ filepath: String) -> [SearchOption] {
+        if (FileManager.default.fileExists(atPath: filepath)) {
+            let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
+            let inputStream: InputStream? = InputStream(data: data!)
+            let parser: XMLParser? = XMLParser(stream: inputStream!)
             if parser != nil {
                 parser!.delegate = self
                 parser!.parse()
@@ -61,15 +61,15 @@ class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
         return searchOptions
     }
 
-    func parser(parser: NSXMLParser, didStartElement elementName: String,
+    func parser(_ parser: XMLParser, didStartElement elementName: String,
         namespaceURI: String?, qualifiedName qName: String?,
         attributes attributeDict: [String : String]) {
         element = elementName
-        if (elementName as NSString).isEqualToString(searchOptionNodeName) {
-            if attributeDict.indexForKey(longAttributeName) != nil {
+        if (elementName as NSString).isEqual(to: searchOptionNodeName) {
+            if attributeDict.index(forKey: longAttributeName) != nil {
                 longName = (attributeDict[longAttributeName]!)
             }
-            if attributeDict.indexForKey(shortAttributeName) != nil {
+            if attributeDict.index(forKey: shortAttributeName) != nil {
                 shortName = (attributeDict[shortAttributeName]!)
             }
             desc = NSMutableString()
@@ -77,17 +77,17 @@ class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
         }
     }
 
-    func parser(parser: NSXMLParser, foundCharacters string: String) {
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
         if element == searchOptionNodeName {
-            desc.appendString(string)
+            desc.append(string)
         }
     }
 
-    func parser(parser: NSXMLParser, didEndElement elementName: String,
+    func parser(_ parser: XMLParser, didEndElement elementName: String,
         namespaceURI: String?, qualifiedName qName: String?) {
-        if (elementName as NSString).isEqualToString(searchOptionNodeName) {
+        if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if !desc.isEqual(nil) {
-                let trimmedDesc = desc.stringByTrimmingCharactersInSet(whitespace)
+                let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
                 searchOptions.append(SearchOption(short: shortName,
                     long: longName, desc: trimmedDesc))
             }
@@ -95,20 +95,20 @@ class SearchOptionsXmlParser: NSObject, NSXMLParserDelegate {
     }
 }
 
-public class SearchOptions {
-    private var searchOptions = [SearchOption]()
+open class SearchOptions {
+    fileprivate var searchOptions = [SearchOption]()
 
     init() {
         setSearchOptions()
     }
 
-    private func setSearchOptions() {
+    fileprivate func setSearchOptions() {
         let parser = SearchOptionsXmlParser()
         searchOptions = parser.parseFile(Config.searchOptionsPath)
-        searchOptions.sortInPlace({ $0.sortArg() < $1.sortArg() })
+        searchOptions.sort(by: { $0.sortArg() < $1.sortArg() })
     }
 
-    private let argActionDict: [String: (String, SearchSettings) -> ()] = [
+    fileprivate let argActionDict: [String: (String, SearchSettings) -> ()] = [
         "in-archiveext": { (s: String, ss: SearchSettings) -> () in
             ss.addInArchiveExtension(s)
         },
@@ -171,7 +171,7 @@ public class SearchOptions {
         },
     ]
 
-    private let flagActionDict: [String: SearchSettings -> ()] = [
+    fileprivate let flagActionDict: [String: (SearchSettings) -> ()] = [
         "allmatches": { (ss: SearchSettings) -> () in
             ss.firstMatch = false
         },
@@ -236,7 +236,7 @@ public class SearchOptions {
         },
     ]
 
-    private func dictFromOptions(options: [SearchOption]) -> [String:SearchOption] {
+    fileprivate func dictFromOptions(_ options: [SearchOption]) -> [String:SearchOption] {
         var dict = toDictionary(options) {($0.long, $0)}
         for (k, v) in (toDictionary(options.filter {!$0.short.isEmpty}) {($0.short, $0)}) {
             dict[k] = v
@@ -245,27 +245,27 @@ public class SearchOptions {
     }
 
 //    init(settings: SearchSettings, error: NSErrorPointer) {
-    func settingsFromArgs(args: [String], error: NSErrorPointer) -> SearchSettings {
+    func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
         var i = 0
         let settings = SearchSettings()
         let argDict = dictFromOptions(searchOptions.filter
-            {self.argActionDict.indexForKey($0.long) != nil})
+            {self.argActionDict.index(forKey: $0.long) != nil})
         let flagDict = dictFromOptions(searchOptions.filter
-            {self.flagActionDict.indexForKey($0.long) != nil})
+            {self.flagActionDict.index(forKey: $0.long) != nil})
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
                 while arg.hasPrefix("-") && arg.characters.count > 1 {
-                    arg = arg.substringFromIndex(arg.startIndex.advancedBy(1))
+                    arg = arg.substring(from: arg.characters.index(arg.startIndex, offsetBy: 1))
                 }
-                if argDict.indexForKey(arg) != nil {
+                if argDict.index(forKey: arg) != nil {
                     if args.count > i {
                         argActionDict[argDict[arg]!.long]!(args[i+1], settings)
                         i += 1
                     } else {
                         setError(error, msg: "Missing argument for option \(arg)")
                     }
-                } else if flagDict.indexForKey(arg) != nil {
+                } else if flagDict.index(forKey: arg) != nil {
                     flagActionDict[flagDict[arg]!.long]!(settings)
                 } else {
                     setError(error, msg: "Invalid option: \(arg)")
@@ -278,7 +278,7 @@ public class SearchOptions {
         return settings
     }
 
-    func usage(code: Int32 = 0) {
+    func usage(_ code: Int32 = 0) {
         logMsg(getUsageString())
         exit(code)
     }
@@ -289,7 +289,7 @@ public class SearchOptions {
         let optStrings = searchOptions.map
             { $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)" }
         let optDescs = searchOptions.map { $0.desc }
-        let longest = optStrings.map({ $0.characters.count }).maxElement()!
+        let longest = optStrings.map({ $0.characters.count }).max()!
         for i in 0 ..< optStrings.count {
             var optLine = " \(optStrings[i])"
             while optLine.characters.count <= longest {

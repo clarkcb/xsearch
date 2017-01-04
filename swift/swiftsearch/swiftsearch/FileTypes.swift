@@ -9,10 +9,10 @@
 import Foundation
 
 public enum FileType {
-    case Unknown, Archive, Binary, Text
+    case unknown, archive, binary, text
 }
 
-class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
+class FileTypesXmlParser: NSObject, XMLParserDelegate {
     var fileTypeDict: [String:Set<String>] = [:]
     let fileTypeNodeName = "filetype"
     let extensionsNodeName = "extensions"
@@ -21,12 +21,12 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
     var fileTypeName = ""
     var extensions = NSMutableString()
 
-    func parseFile(filepath: String) -> [String: Set<String>] {
-        if (NSFileManager.defaultManager().fileExistsAtPath(filepath)) {
-            let data: NSData? = NSData(contentsOfFile: filepath)
-            let inputStream: NSInputStream? = NSInputStream(data: data!)
+    func parseFile(_ filepath: String) -> [String: Set<String>] {
+        if (FileManager.default.fileExists(atPath: filepath)) {
+            let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
+            let inputStream: InputStream? = InputStream(data: data!)
 
-            let parser: NSXMLParser? = NSXMLParser(stream: inputStream!)
+            let parser: XMLParser? = XMLParser(stream: inputStream!)
             if parser != nil {
                 parser!.delegate = self
                 parser!.parse()
@@ -38,12 +38,12 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
         return fileTypeDict
     }
 
-    func parser(parser: NSXMLParser, didStartElement elementName: String,
+    func parser(_ parser: XMLParser, didStartElement elementName: String,
         namespaceURI: String?, qualifiedName qName: String?,
         attributes attributeDict: [String : String]) {
         element = elementName
-        if (elementName as NSString).isEqualToString(fileTypeNodeName) {
-            if attributeDict.indexForKey(nameAttributeName) != nil {
+        if (elementName as NSString).isEqual(to: fileTypeNodeName) {
+            if attributeDict.index(forKey: nameAttributeName) != nil {
                 fileTypeName = (attributeDict[nameAttributeName]!)
             }
             extensions = NSMutableString()
@@ -51,81 +51,84 @@ class FileTypesXmlParser: NSObject, NSXMLParserDelegate {
         }
     }
 
-    func parser(parser: NSXMLParser, foundCharacters string: String) {
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
         if element == extensionsNodeName {
-            extensions.appendString(string)
+            extensions.append(string)
         }
     }
 
-    func parser(parser: NSXMLParser, didEndElement elementName: String,
+    func parser(_ parser: XMLParser, didEndElement elementName: String,
         namespaceURI: String?, qualifiedName qName: String?) {
-        if (elementName as NSString).isEqualToString(fileTypeNodeName) {
+        if (elementName as NSString).isEqual(to: fileTypeNodeName) {
             if !extensions.isEqual(nil) {
-                let xs = extensions.componentsSeparatedByCharactersInSet(whitespace)
+                let xs = extensions.components(separatedBy: whitespace)
                 fileTypeDict[fileTypeName] = Set(xs )
             }
         }
     }
 }
 
-public class FileTypes {
-    private var fileTypesDict = [String: Set<String>]()
-    private let archive = "archive"
-    private let binary = "binary"
-    private let searchable = "searchable"
-    private let text = "text"
-    private let unknown = "unknown"
+open class FileTypes {
+    static fileprivate let archive = "archive"
+    static fileprivate let binary = "binary"
+    static fileprivate let code = "code"
+    static fileprivate let searchable = "searchable"
+    static fileprivate let text = "text"
+    static fileprivate let unknown = "unknown"
+    static fileprivate let xml = "xml"
+
+    fileprivate var fileTypesDict = [String: Set<String>]()
 
     init() {
         setFileTypeDict()
     }
 
-    private func setFileTypeDict() {
+    fileprivate func setFileTypeDict() {
         let parser = FileTypesXmlParser()
         fileTypesDict = parser.parseFile(Config.fileTypesPath)
-        fileTypesDict[text] = fileTypesDict[text]!.union(fileTypesDict["code"]!)
-            .union(fileTypesDict["xml"]!)
-        fileTypesDict[searchable] =
-            fileTypesDict[text]!.union(fileTypesDict[binary]!)
-                .union(fileTypesDict[archive]!)
+        fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
+            .union(fileTypesDict[FileTypes.xml]!)
+        fileTypesDict[FileTypes.searchable] =
+            fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
+                .union(fileTypesDict[FileTypes.archive]!)
     }
-
-    public func getFileType(fileName: String) -> FileType {
+    
+    open func getFileType(_ fileName: String) -> FileType {
         if isTextFile(fileName) {
-            return FileType.Text
+            return FileType.text
         }
         if isBinaryFile(fileName) {
-            return FileType.Binary
+            return FileType.binary
         }
         if isArchiveFile(fileName) {
-            return FileType.Archive
+            return FileType.archive
         }
-        return FileType.Unknown
+        return FileType.unknown
     }
 
-    public func isArchiveFile(fileName: String) -> Bool {
-        return fileTypesDict.indexForKey(archive) != nil &&
-            fileTypesDict[archive]!.contains(FileUtil.getExtension(fileName))
+    open func isArchiveFile(_ fileName: String) -> Bool {
+        return fileTypesDict.index(forKey: FileTypes.archive) != nil &&
+            fileTypesDict[FileTypes.archive]!.contains(FileUtil.getExtension(fileName))
     }
 
-    public func isBinaryFile(fileName: String) -> Bool {
-        return fileTypesDict.indexForKey(binary) != nil &&
-            fileTypesDict[binary]!.contains(FileUtil.getExtension(fileName))
+    open func isBinaryFile(_ fileName: String) -> Bool {
+        return fileTypesDict.index(forKey: FileTypes.binary) != nil &&
+            fileTypesDict[FileTypes.binary]!.contains(FileUtil.getExtension(fileName))
+    }
+    
+    open func isSearchableFile(_ fileName: String) -> Bool {
+        return fileTypesDict.index(forKey: FileTypes.searchable) != nil &&
+            fileTypesDict[FileTypes.searchable]!.contains(FileUtil.getExtension(fileName))
     }
 
-    public func isSearchableFile(fileName: String) -> Bool {
-        return fileTypesDict.indexForKey(searchable) != nil &&
-            fileTypesDict[searchable]!.contains(FileUtil.getExtension(fileName))
+    open func isTextFile(_ fileName: String) -> Bool {
+        return fileTypesDict.index(forKey: FileTypes.text) != nil &&
+            fileTypesDict[FileTypes.text]!.contains(FileUtil.getExtension(fileName))
     }
 
-    public func isTextFile(fileName: String) -> Bool {
-        return fileTypesDict.indexForKey(text) != nil &&
-            fileTypesDict[text]!.contains(FileUtil.getExtension(fileName))
-    }
-
-    public func isUnknownFile(fileName: String) -> Bool {
-        return (fileTypesDict.indexForKey(unknown) != nil &&
-            fileTypesDict[unknown]!.contains(FileUtil.getExtension(fileName)))
+    open func isUnknownFile(_ fileName: String) -> Bool {
+        return (fileTypesDict.index(forKey: FileTypes.unknown) != nil &&
+            fileTypesDict[FileTypes.unknown]!.contains(FileUtil.getExtension(fileName)))
             || !isSearchableFile(fileName)
     }
 }

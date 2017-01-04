@@ -30,7 +30,7 @@ class DefaultSettings {
     static let verbose = false
 }
 
-public class SearchSettings: CustomStringConvertible {
+open class SearchSettings: CustomStringConvertible {
     var archivesOnly = DefaultSettings.archivesOnly
     var debug = DefaultSettings.debug
     var excludeHidden = DefaultSettings.excludeHidden
@@ -69,35 +69,35 @@ public class SearchSettings: CustomStringConvertible {
     var outLinesBeforePatterns = Array<Regex>()
     var searchPatterns = Array<Regex>()
 
-    private func splitExtensions(exts: String) -> [String] {
+    fileprivate func splitExtensions(_ exts: String) -> [String] {
         return exts.characters.split {$0 == ","}.map { String($0) }
     }
 
-    func addInArchiveExtension(ext: String) {
+    func addInArchiveExtension(_ ext: String) {
         for x in splitExtensions(ext) {
             inArchiveExtensions.insert(x)
         }
     }
 
-    func addInExtension(ext: String) {
+    func addInExtension(_ ext: String) {
         for x in splitExtensions(ext) {
             inExtensions.insert(x)
         }
     }
 
-    func addOutArchiveExtension(ext: String) {
+    func addOutArchiveExtension(_ ext: String) {
         for x in splitExtensions(ext) {
             outArchiveExtensions.insert(x)
         }
     }
 
-    func addOutExtension(ext: String) {
+    func addOutExtension(_ ext: String) {
         for x in splitExtensions(ext) {
             outExtensions.insert(x)
         }
     }
 
-    public var description: String {
+    open var description: String {
         var s = "SearchSettings("
         s += "archivesOnly=\(archivesOnly)"
         s += ", debug=\(debug)"

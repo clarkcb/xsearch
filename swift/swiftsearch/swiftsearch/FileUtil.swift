@@ -9,42 +9,42 @@
 import Foundation
 
 class FileUtil {
-    private static let dotDirs = Set<String>([".", ".."])
-    private static let separator = "/"
+    fileprivate static let dotDirs = Set<String>([".", ".."])
+    fileprivate static let separator = "/"
 
-    static func getExtension(fileName: String) -> String {
-        let ext = NSURL(fileURLWithPath: fileName).pathExtension?.uppercaseString
+    static func getExtension(_ fileName: String) -> String {
+        let ext = NSURL(fileURLWithPath: fileName).pathExtension?.uppercased()
         if ext == "Z" {
             return ext!
         }
-        return ext!.lowercaseString
+        return ext!.lowercased()
     }
 
-    static func hasExtension(fileName: String, ext: String) -> Bool {
+    static func hasExtension(_ fileName: String, ext: String) -> Bool {
         return getExtension(fileName) == ext
     }
 
-    private static func getFileManager() -> NSFileManager {
-        return NSFileManager.defaultManager()
+    fileprivate static func getFileManager() -> FileManager {
+        return FileManager.default
     }
 
     // gets files only directly under given path
-    static func contentsForPath(filePath: String) -> [String] {
-        return (try! getFileManager().contentsOfDirectoryAtPath(filePath)) 
+    static func contentsForPath(_ filePath: String) -> [String] {
+        return (try! getFileManager().contentsOfDirectory(atPath: filePath)) 
     }
 
     // gets files recursively under given path
-    static func enumeratorForPath(filePath: String) -> NSDirectoryEnumerator? {
-        return getFileManager().enumeratorAtPath(filePath)
+    static func enumeratorForPath(_ filePath: String) -> FileManager.DirectoryEnumerator? {
+        return getFileManager().enumerator(atPath: filePath)
     }
 
-    static func exists(filePath: String) -> Bool {
-        return getFileManager().fileExistsAtPath(filePath)
+    static func exists(_ filePath: String) -> Bool {
+        return getFileManager().fileExists(atPath: filePath)
     }
 
-    static func isDirectory(filePath: String) -> Bool {
+    static func isDirectory(_ filePath: String) -> Bool {
         var isDir: ObjCBool = false
-        if getFileManager().fileExistsAtPath(filePath, isDirectory:&isDir) {
+        if getFileManager().fileExists(atPath: filePath, isDirectory:&isDir) {
             return isDir.boolValue
         } else {
             logMsg("ERROR: filepath not found: \(filePath)")
@@ -52,24 +52,24 @@ class FileUtil {
         }
     }
 
-    static func isReadableFile(filePath: String) -> Bool {
-        return getFileManager().isReadableFileAtPath(filePath)
+    static func isReadableFile(_ filePath: String) -> Bool {
+        return getFileManager().isReadableFile(atPath: filePath)
     }
 
-    static func isDotDir(filePath: String) -> Bool {
+    static func isDotDir(_ filePath: String) -> Bool {
         return dotDirs.contains(filePath)
     }
 
-    static func isHidden(filePath: String) -> Bool {
+    static func isHidden(_ filePath: String) -> Bool {
         let pathElems = splitPath(filePath)
         return pathElems.filter({self.isHiddenFile($0)}).count > 0
     }
 
-    static func isHiddenFile(fileName: String) -> Bool {
+    static func isHiddenFile(_ fileName: String) -> Bool {
         return fileName.hasPrefix(".") && !isDotDir(fileName)
     }
 
-    static func splitPath(filePath: String) -> [String] {
+    static func splitPath(_ filePath: String) -> [String] {
         return filePath.characters.split {$0 == "/"}.map { String($0) }
     }
 }
