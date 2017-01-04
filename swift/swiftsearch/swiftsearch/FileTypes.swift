@@ -9,7 +9,7 @@
 import Foundation
 
 public enum FileType {
-    case unknown, archive, binary, text
+    case unknown, archive, binary, code, text, xml
 }
 
 class FileTypesXmlParser: NSObject, XMLParserDelegate {
@@ -93,6 +93,26 @@ open class FileTypes {
                 .union(fileTypesDict[FileTypes.archive]!)
     }
     
+    static open func fromName(_ typeName: String) -> FileType {
+        let lname = typeName.lowercased()
+        if lname == text {
+            return FileType.text
+        }
+        if lname == binary {
+            return FileType.binary
+        }
+        if lname == archive {
+            return FileType.archive
+        }
+        if lname == code {
+            return FileType.code
+        }
+        if lname == xml {
+            return FileType.xml
+        }
+        return FileType.unknown
+    }
+    
     open func getFileType(_ fileName: String) -> FileType {
         if isTextFile(fileName) {
             return FileType.text
@@ -102,6 +122,12 @@ open class FileTypes {
         }
         if isArchiveFile(fileName) {
             return FileType.archive
+        }
+        if isCodeFile(fileName) {
+            return FileType.code
+        }
+        if isXmlFile(fileName) {
+            return FileType.xml
         }
         return FileType.unknown
     }
@@ -114,6 +140,11 @@ open class FileTypes {
     open func isBinaryFile(_ fileName: String) -> Bool {
         return fileTypesDict.index(forKey: FileTypes.binary) != nil &&
             fileTypesDict[FileTypes.binary]!.contains(FileUtil.getExtension(fileName))
+    }
+    
+    open func isCodeFile(_ fileName: String) -> Bool {
+        return fileTypesDict.index(forKey: FileTypes.code) != nil &&
+            fileTypesDict[FileTypes.code]!.contains(FileUtil.getExtension(fileName))
     }
     
     open func isSearchableFile(_ fileName: String) -> Bool {
@@ -130,5 +161,10 @@ open class FileTypes {
         return (fileTypesDict.index(forKey: FileTypes.unknown) != nil &&
             fileTypesDict[FileTypes.unknown]!.contains(FileUtil.getExtension(fileName)))
             || !isSearchableFile(fileName)
+    }
+    
+    open func isXmlFile(_ fileName: String) -> Bool {
+        return fileTypesDict.index(forKey: FileTypes.xml) != nil &&
+            fileTypesDict[FileTypes.xml]!.contains(FileUtil.getExtension(fileName))
     }
 }

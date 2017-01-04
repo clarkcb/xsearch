@@ -124,6 +124,9 @@ open class SearchOptions {
         "in-filepattern": { (s: String, ss: SearchSettings) -> () in
             ss.inFilePatterns.append(Regex(s))
         },
+        "in-filetype": { (s: String, ss: SearchSettings) -> () in
+            ss.inFilePatterns.append(Regex(s))
+        },
         "in-linesafterpattern": { (s: String, ss: SearchSettings) -> () in
             ss.inLinesAfterPatterns.append(Regex(s))
         },
@@ -158,6 +161,9 @@ open class SearchOptions {
             ss.addOutExtension(s)
         },
         "out-filepattern": { (s: String, ss: SearchSettings) -> () in
+            ss.outFilePatterns.append(Regex(s))
+        },
+        "out-filetype": { (s: String, ss: SearchSettings) -> () in
             ss.outFilePatterns.append(Regex(s))
         },
         "out-linesafterpattern": { (s: String, ss: SearchSettings) -> () in
