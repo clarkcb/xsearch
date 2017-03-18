@@ -28,14 +28,21 @@ class FileTypes {
     }
 
     public static function from_name($name) {
-        if (strtoupper($name) == 'TEXT') {
+        $uname = strtoupper($name);
+        if ($uname == 'TEXT') {
             return FileType::Text;
         }
-        if (strtoupper($name) == 'BINARY') {
+        if ($uname == 'BINARY') {
             return FileType::Binary;
         }
-        if (strtoupper($name) == 'ARCHIVE') {
+        if ($uname == 'ARCHIVE') {
             return FileType::Archive;
+        }
+        if ($uname == 'CODE') {
+            return FileType::Code;
+        }
+        if ($uname == 'XML') {
+            return FileType::Xml;
         }
         return FileType::Unknown;
     }
@@ -50,6 +57,12 @@ class FileTypes {
         if ($this->is_archive($file)) {
             return FileType::Archive;
         }
+        if ($this->is_code($file)) {
+            return FileType::Code;
+        }
+        if ($this->is_xml($file)) {
+            return FileType::Xml;
+        }
         return FileType::Unknown;
     }
 
@@ -61,8 +74,16 @@ class FileTypes {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['binary']);
     }
 
+    public function is_code($f) {
+        return in_array(FileUtil::get_extension($f), $this->file_type_map['code']);
+    }
+
     public function is_text($f) {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['text']);
+    }
+
+    public function is_xml($f) {
+        return in_array(FileUtil::get_extension($f), $this->file_type_map['xml']);
     }
 
     public function is_searchable($f) {
