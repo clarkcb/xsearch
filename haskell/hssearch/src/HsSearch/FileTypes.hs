@@ -11,10 +11,12 @@ import Text.XML.HXT.Core
 import HsSearch.FileUtil (getExtension, normalizeExtension)
 import HsSearch.Paths_hssearch (getDataFileName)
 
-data FileType = Archive
+data FileType = Unknown
+              | Archive
               | Binary
+              | Code
               | Text
-              | Unknown
+              | Xml
   deriving (Show, Eq)
 
 searchableFileTypes :: [FileType]
