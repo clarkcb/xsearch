@@ -20,6 +20,13 @@ import java.util.Set;
 
 public class FileTypes {
     private static final String FILETYPESXMLPATH = "/filetypes.xml";
+    private static final String archive = "archive";
+    private static final String binary = "binary";
+    private static final String code = "code";
+    private static final String searchable = "searchable";
+    private static final String text = "text";
+    private static final String unknown = "unknown";
+    private static final String xml = "xml";
     private Map<String, Set<String>> fileTypeMap;
 
     private Map<String, Set<String>> getFileTypeMap() {
@@ -47,15 +54,15 @@ public class FileTypes {
                 ftMap.put(name, extSet);
             }
             Set<String> allText = new HashSet<>();
-            allText.addAll(ftMap.get("code"));
-            allText.addAll(ftMap.get("text"));
-            allText.addAll(ftMap.get("xml"));
-            ftMap.put("text", allText);
+            allText.addAll(ftMap.get(code));
+            allText.addAll(ftMap.get(text));
+            allText.addAll(ftMap.get(xml));
+            ftMap.put(text, allText);
             Set<String> allSearchable = new HashSet<>();
-            allSearchable.addAll(ftMap.get("archive"));
-            allSearchable.addAll(ftMap.get("binary"));
-            allSearchable.addAll(ftMap.get("text"));
-            ftMap.put("searchable", allSearchable);
+            allSearchable.addAll(ftMap.get(archive));
+            allSearchable.addAll(ftMap.get(binary));
+            allSearchable.addAll(ftMap.get(text));
+            ftMap.put(searchable, allSearchable);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
@@ -67,33 +74,52 @@ public class FileTypes {
         fileTypeMap = getFileTypeMap();
     }
 
+    public static FileType fromName(final String name) {
+        String lname = name.toLowerCase();
+        if (lname.equals(text)) return FileType.TEXT;
+        if (lname.equals(binary)) return FileType.BINARY;
+        if (lname.equals(archive)) return FileType.ARCHIVE;
+        if (lname.equals(code)) return FileType.CODE;
+        if (lname.equals(xml)) return FileType.XML;
+        return FileType.UNKNOWN;
+    }
+
     public final FileType getFileType(final File f) {
         if (isTextFile(f)) return FileType.TEXT;
         if (isBinaryFile(f)) return FileType.BINARY;
         if (isArchiveFile(f)) return FileType.ARCHIVE;
+        if (isCodeFile(f)) return FileType.CODE;
+        if (isXmlFile(f)) return FileType.XML;
         return FileType.UNKNOWN;
     }
 
     public final boolean isArchiveFile(final File f) {
-        return fileTypeMap.get("archive").contains(FileUtil.getExtension(f));
+        return fileTypeMap.get(archive).contains(FileUtil.getExtension(f));
     }
 
     public final boolean isBinaryFile(final File f) {
-        return fileTypeMap.get("binary").contains(FileUtil.getExtension(f));
+        return fileTypeMap.get(binary).contains(FileUtil.getExtension(f));
+    }
+
+    public final boolean isCodeFile(final File f) {
+        return fileTypeMap.get(code).contains(FileUtil.getExtension(f));
     }
 
     public final boolean isSearchableFile(final File f) {
-        return fileTypeMap.get("searchable").contains(FileUtil.getExtension(f));
+        return fileTypeMap.get(searchable).contains(FileUtil.getExtension(f));
     }
 
     public final boolean isTextFile(final File f) {
-        return fileTypeMap.get("text").contains(FileUtil.getExtension(f));
+        return fileTypeMap.get(text).contains(FileUtil.getExtension(f));
     }
 
     public final boolean isUnknownFile(final File f) {
-        return fileTypeMap.get("unknown").contains(FileUtil.getExtension(f))
+        return fileTypeMap.get(unknown).contains(FileUtil.getExtension(f))
                 ||
-                !fileTypeMap.get("searchable").contains(FileUtil.getExtension(f));
+                !fileTypeMap.get(searchable).contains(FileUtil.getExtension(f));
     }
 
+    public final boolean isXmlFile(final File f) {
+        return fileTypeMap.get(xml).contains(FileUtil.getExtension(f));
+    }
 }
