@@ -16,6 +16,7 @@
         [cljsearch.fileutil :only
           (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
             is-dot-dir?)]
+        ;; [cljsearch.searchfile :only (new-search-file search-file-path)]
         [cljsearch.searchresult :only
           (->SearchResult search-result-to-string)]))
 
@@ -386,7 +387,10 @@
   (let [filetype (get-filetype f)
         verbose (:verbose settings)]
     (cond
-      (= filetype :text) (search-text-file f settings)
+      (or
+        (= filetype :code)
+        (= filetype :text)
+        (= filetype :xml)) (search-text-file f settings)
       (= filetype :binary) (search-binary-file f settings)
       (= filetype :archive)
         (if (:searcharchives settings)

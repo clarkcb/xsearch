@@ -10,7 +10,8 @@
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
-  (:use [clojure.string :only (split)]))
+  (:use [clojure.string :only (split)]
+        [cljsearch.searchfile :only (new-search-file)]))
 
 ; needs string argumet and returns string
 (defn expand-path [f]
