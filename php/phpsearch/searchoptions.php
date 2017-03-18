@@ -140,6 +140,7 @@ class SearchOptions {
                 $settings->printversion = $b;
             }
         ];
+        $this->longarg_map = array();
         $this->set_options_from_xml();
     }
 
@@ -154,18 +155,16 @@ class SearchOptions {
                 $func = NULL;
                 if (array_key_exists($long, $this->arg_action_map)) {
                     $func = $this->arg_action_map[$long];
-                    if ($short) {
-                        $this->arg_action_map[$short] = $func;
-                    }
                 }
                 else if (array_key_exists($long, $this->bool_flag_action_map)) {
                     $func = $this->bool_flag_action_map[$long];
-                    if ($short) {
-                        $this->flag_action_map[$short] = $func;
-                    }
                 }
                 $option = new SearchOption($short, $long, $desc, $func);
                 $this->options[] = $option;
+                $this->longarg_map[$long] = $long;
+                if ($short) {
+                    $this->longarg_map[$short] = $long;
+                }
             }
             usort($this->options, 'cmp_searchoptions');
 
@@ -205,15 +204,19 @@ class SearchOptions {
                 while($arg{0} == '-') {
                     $arg = substr($arg, 1);
                 }
-                if (array_key_exists($arg, $this->arg_action_map)) {
+                $longarg = $this->longarg_map[$arg];
+                if (array_key_exists($longarg, $this->arg_action_map)) {
                     if (count($args) > 0) {
                         $val = array_shift($args);
-                        $this->arg_action_map[$arg]($val, $settings);
+                        $this->arg_action_map[$longarg]($val, $settings);
                     } else {
                         throw new SearchException("Missing value for $arg");
                     }
-                } else if (array_key_exists($arg, $this->bool_flag_action_map)) {
-                    $this->bool_flag_action_map[$arg](true, $settings);
+                } else if (array_key_exists($longarg, $this->bool_flag_action_map)) {
+                    $this->bool_flag_action_map[$longarg](true, $settings);
+                    if (in_array($longarg, array("help", "version"))) {
+                        break;
+                    }
                 } else {
                     throw new SearchException("Invalid option: $arg");
                 }
