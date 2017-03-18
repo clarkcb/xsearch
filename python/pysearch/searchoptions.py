@@ -23,6 +23,11 @@ from searchsettings import SearchSettings
 class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
 
+    def __init__(self):
+        self.options = []
+        self.set_dicts()
+        self.set_options_from_xml()
+
     def set_dicts(self):
         self.arg_action_dict = {
             'in-archiveext':
@@ -160,11 +165,6 @@ class SearchOptions(object):
         }
         self.longarg_dict = {}
 
-    def __init__(self):
-        self.options = []
-        self.set_dicts()
-        self.set_options_from_xml()
-
     def settings_from_file(self, filepath, settings):
         assert os.path.exists(filepath), 'Settings file not found: %s' % filepath
         with open(filepath) as f:
@@ -188,21 +188,20 @@ class SearchOptions(object):
         searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
         searchoptionnodes = searchoptionsdom.getElementsByTagName('searchoption')
         for searchoptionnode in searchoptionnodes:
-            name = searchoptionnode.getAttribute('long')
+            long = searchoptionnode.getAttribute('long')
             short = searchoptionnode.getAttribute('short')
             desc = get_text(searchoptionnode.childNodes).strip()
             func = None
-            if name in self.arg_action_dict:
-                func = self.arg_action_dict[name]
-            elif name in self.bool_flag_action_dict:
-                func = self.bool_flag_action_dict[name]
+            if long in self.arg_action_dict:
+                func = self.arg_action_dict[long]
+            elif long in self.bool_flag_action_dict:
+                func = self.bool_flag_action_dict[long]
             else:
-                raise ValueError('Unknown search option: %s' % name)
-            option = SearchOption(short, name, desc, func)
-            self.longarg_dict[name] = name
+                raise ValueError('Unknown search option: %s' % long)
+            self.options.append(SearchOption(short, long, desc, func))
+            self.longarg_dict[long] = long
             if short:
-                self.longarg_dict[short] = name
-            self.options.append(option)
+                self.longarg_dict[short] = long
 
     def search_settings_from_args(self, args):
         """Returns a SearchSettings instance for a given list of args"""
@@ -224,8 +223,8 @@ class SearchOptions(object):
                         raise Exception('Missing value for option {0}'.
                                         format(arg))
                 elif longarg in self.bool_flag_action_dict:
-                    self.bool_flag_action_dict[arg](True, settings)
-                    if arg in ('h', 'help', 'V', 'version'):
+                    self.bool_flag_action_dict[longarg](True, settings)
+                    if longarg in ('help', 'version'):
                         return settings
                 else:
                     raise Exception('Invalid option: {0}'.format(arg))
