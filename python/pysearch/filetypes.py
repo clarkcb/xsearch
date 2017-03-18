@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 ################################################################################
 #
-# fileutil.py
+# filetypes.py
 #
-# class FileUtil: provides utility functions for getting file extension and
-#                 determining file type
+# class FileTypes
 #
 ################################################################################
 import os
@@ -19,16 +18,23 @@ class FileType(object):
     Unknown = 0
     Archive = 1
     Binary  = 2
-    Text    = 3
+    Code    = 3
+    Text    = 4
+    Xml     = 5
 
     @classmethod
     def from_name(self, name):
-        if name.upper() == 'TEXT':
+        uname = name.upper()
+        if uname == 'TEXT':
             return FileType.Text
-        if name.upper() == 'BINARY':
+        if uname == 'BINARY':
             return FileType.Binary
-        if name.upper() == 'ARCHIVE':
+        if uname == 'ARCHIVE':
             return FileType.Archive
+        if uname == 'CODE':
+            return FileType.Code
+        if uname == 'XML':
+            return FileType.Xml
         raise Exception('Invalid file type: {0!s}\n'.format(name))
 
 class FileTypes(object):
@@ -42,12 +48,15 @@ class FileTypes(object):
     def get_filetype(self, filename):
         if self.is_text_file(filename):
             return FileType.Text
-        elif self.is_binary_file(filename):
+        if self.is_binary_file(filename):
             return FileType.Binary
-        elif self.is_archive_file(filename):
+        if self.is_archive_file(filename):
             return FileType.Archive
-        else:
-            return FileType.Unknown
+        if self.is_code_file(filename):
+            return FileType.Code
+        if self.is_xml_file(filename):
+            return FileType.Xml
+        return FileType.Unknown
 
     def is_archive_file(self, f):
         """Return true if file is of a (known) archive file type"""
@@ -57,6 +66,10 @@ class FileTypes(object):
         """Return true if file is of a (known) searchable binary file type"""
         return FileUtil.get_extension(f) in self.filetypes['binary']
 
+    def is_code_file(self, f):
+        """Return true if file is of a (known) code file type"""
+        return FileUtil.get_extension(f) in self.filetypes['code']
+
     def is_searchable_file(self, f):
         """Return true if file is of a (known) searchable type"""
         return FileUtil.get_extension(f) in self.filetypes['searchable']
@@ -64,6 +77,10 @@ class FileTypes(object):
     def is_text_file(self, f):
         """Return true if file is of a (known) text file type"""
         return FileUtil.get_extension(f) in self.filetypes['text']
+
+    def is_xml_file(self, f):
+        """Return true if file is of a (known) xml file type"""
+        return FileUtil.get_extension(f) in self.filetypes['xml']
 
     def __populate_filetypes(self):
         filetypedom = minidom.parse(FILETYPESPATH)
