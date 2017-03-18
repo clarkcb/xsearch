@@ -10,7 +10,9 @@ object FileType extends Enumeration {
   val Unknown = Value
   val Archive = Value
   val Binary  = Value
+  val Code    = Value
   val Text    = Value
+  val Xml     = Value
 }
 
 object FileTypes {
@@ -19,9 +21,11 @@ object FileTypes {
 
   private val archive = "archive"
   private val binary = "binary"
+  private val code = "code"
   private val searchable = "searchable"
   private val text = "text"
   private val unknown = "unknown"
+  private val xml = "xml"
 
   private def fileTypeMap: Map[String, Set[String]] = {
     if (_fileTypeMap.isEmpty) {
@@ -33,13 +37,30 @@ object FileTypes {
         val exts = (fileType \ "extensions").text.split("""\s+""").toSet
         fileTypeMap(name) = exts
       }
-      fileTypeMap(text) = fileTypeMap(text) ++ fileTypeMap("code") ++
-        fileTypeMap("xml")
+      fileTypeMap(text) = fileTypeMap(text) ++ fileTypeMap(code) ++
+        fileTypeMap(xml)
       fileTypeMap(searchable) = fileTypeMap(text) ++ fileTypeMap(binary) ++
         fileTypeMap(archive)
       _fileTypeMap ++= fileTypeMap
     }
     Map.empty[String, Set[String]] ++ _fileTypeMap
+  }
+
+  def fromName(name: String): FileType.Value = {
+    val lname = name.toLowerCase
+    if (lname == text) {
+      FileType.Text
+    } else if (lname == binary) {
+      FileType.Binary
+    } else if (lname == archive) {
+      FileType.Archive
+    } else if (lname == code) {
+      FileType.Code
+    } else if (lname == xml) {
+      FileType.Xml
+    } else {
+      FileType.Unknown
+    }
   }
 
   def getFileType(f: File): FileType.Value = {
@@ -82,6 +103,18 @@ object FileTypes {
     fileTypeMap(binary).contains(FileUtil.getExtension(fileName))
   }
 
+  def isCodeFile(f: File): Boolean = {
+    isCodeFile(f.getName)
+  }
+
+  def isCodeFile(sf: SearchFile): Boolean = {
+    isCodeFile(sf.fileName)
+  }
+
+  def isCodeFile(fileName: String): Boolean = {
+    fileTypeMap(code).contains(FileUtil.getExtension(fileName))
+  }
+
   def isSearchableFile(f: File): Boolean = {
     isSearchableFile(f.getName)
   }
@@ -117,6 +150,18 @@ object FileTypes {
   def isUnknownFile(fileName: String): Boolean = {
     fileTypeMap(unknown).contains(FileUtil.getExtension(fileName)) ||
       !fileTypeMap(searchable).contains(FileUtil.getExtension(fileName))
+  }
+
+  def isXmlFile(f: File): Boolean = {
+    isXmlFile(f.getName)
+  }
+
+  def isXmlFile(sf: SearchFile): Boolean = {
+    isXmlFile(sf.fileName)
+  }
+
+  def isXmlFile(fileName: String): Boolean = {
+    fileTypeMap(xml).contains(FileUtil.getExtension(fileName))
   }
 
   def isZipArchiveFile(sf: SearchFile): Boolean = {
