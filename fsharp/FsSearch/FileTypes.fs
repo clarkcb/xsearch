@@ -8,13 +8,21 @@ open System.Text.RegularExpressions
 open System.Xml.Linq
 
 type FileType = 
-    | Archive = 0
-    | Binary = 1
-    | Text = 2
-    | Unknown = 3
-
+    | Unknown = 0
+    | Archive = 1
+    | Binary  = 2
+    | Code    = 3
+    | Text    = 4
+    | Xml     = 5
 
 type FileTypes() =
+    static let archive = "archive"
+    static let binary = "binary"
+    static let code = "code"
+    static let searchable = "searchable"
+    static let text = "text"
+    static let xml = "xml"
+
     let ExtensionSet (s : string) =
         List.fold
             (fun (acc: Set<string>) (ext : string) -> Set.add ext acc)
@@ -28,15 +36,15 @@ type FileTypes() =
             let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
             let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
             fileTypesDictionary.Add(name, new HashSet<String>(extSet))
-        let allText = new HashSet<String>(fileTypesDictionary.["text"])
-        allText.UnionWith(fileTypesDictionary.["code"])
-        allText.UnionWith(fileTypesDictionary.["xml"])
-        if fileTypesDictionary.Remove("text") then
-            fileTypesDictionary.Add("text", allText)
-        let searchable = new HashSet<String>(fileTypesDictionary.["text"])
-        searchable.UnionWith(fileTypesDictionary.["binary"])
-        searchable.UnionWith(fileTypesDictionary.["archive"])
-        fileTypesDictionary.Add("searchable", searchable)
+        let allText = new HashSet<String>(fileTypesDictionary.[text])
+        allText.UnionWith(fileTypesDictionary.[code])
+        allText.UnionWith(fileTypesDictionary.[xml])
+        if fileTypesDictionary.Remove(text) then
+            fileTypesDictionary.Add(text, allText)
+        let searchableSet = new HashSet<String>(fileTypesDictionary.[text])
+        searchableSet.UnionWith(fileTypesDictionary.[binary])
+        searchableSet.UnionWith(fileTypesDictionary.[archive])
+        fileTypesDictionary.Add(searchable, searchableSet)
         fileTypesDictionary
 
     let PopulateFileTypesFromFileInfo (fileTypesPath : FileInfo) =
@@ -50,25 +58,41 @@ type FileTypes() =
     // read-only member properties
     member this.FileTypesDictionary = _fileTypesDictionary
 
+    static member FromName (name : string) : FileType =
+        let lname = name.ToLowerInvariant()
+        if lname.Equals(text) then FileType.Text
+        else if lname.Equals(binary) then FileType.Binary
+        else if lname.Equals(archive) then FileType.Archive
+        else if lname.Equals(code) then FileType.Code
+        else if lname.Equals(xml) then FileType.Xml
+        else FileType.Unknown
+
     member this.GetFileType (f : FileInfo) : FileType =
         if this.IsTextFile f then FileType.Text
         else if this.IsBinaryFile f then FileType.Binary
         else if this.IsArchiveFile f then FileType.Archive
+        else if this.IsCodeFile f then FileType.Code
+        else if this.IsXmlFile f then FileType.Xml
         else FileType.Unknown
 
-    member this.IsBinaryFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["binary"]
-
     member this.IsArchiveFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["archive"]
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[archive]
+
+    member this.IsBinaryFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[binary]
+
+    member this.IsCodeFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[code]
 
     member this.IsSearchableFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["searchable"]
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[searchable]
 
     member this.IsTextFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.["text"]
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[text]
 
     member this.IsUnknownFile (f : FileInfo) : bool =
         not (this.IsSearchableFile f)
 
+    member this.IsXmlFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[xml]
     ;;
