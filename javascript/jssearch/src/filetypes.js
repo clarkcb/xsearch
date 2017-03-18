@@ -52,6 +52,10 @@ function FileTypes() {
             return FileType.BINARY;
         if (self.isArchiveFile(filename))
             return FileType.ARCHIVE;
+        if (self.isCodeFile(filename))
+            return FileType.CODE;
+        if (self.isXmlFile(filename))
+            return FileType.XML;
         return FileType.UNKNOWN;
     };
 
@@ -75,6 +79,11 @@ function FileTypes() {
         return fileTypeMap.binary.indexOf(ext) > -1;
     };
 
+    this.isCodeFile = function (filename) {
+        let ext = FileUtil.getExtension(filename);
+        return fileTypeMap.code.indexOf(ext) > -1;
+    };
+
     this.isSearchableFile = function (filename) {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.searchable.indexOf(ext) > -1;
@@ -83,6 +92,11 @@ function FileTypes() {
     this.isTextFile = function (filename) {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.text.indexOf(ext) > -1;
+    };
+
+    this.isXmlFile = function (filename) {
+        let ext = FileUtil.getExtension(filename);
+        return fileTypeMap.xml.indexOf(ext) > -1;
     };
 
     this.isUnknownFile = function (filename) {
@@ -98,6 +112,10 @@ FileTypes.fromName = function (name) {
         return FileType.BINARY;
     if (name.toUpperCase() === 'ARCHIVE')
         return FileType.ARCHIVE;
+    if (name.toUpperCase() === 'CODE')
+        return FileType.CODE;
+    if (name.toUpperCase() === 'XML')
+        return FileType.XML;
     return FileType.UNKNOWN;
 };
 

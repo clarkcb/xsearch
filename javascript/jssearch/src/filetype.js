@@ -7,10 +7,12 @@
  */
 
 const FileType = {
-    ARCHIVE: 1,
-    BINARY:  2,
-    TEXT:    3,
-    UNKNOWN: 4
+    UNKNOWN: 1,
+    ARCHIVE: 2,
+    BINARY:  3,
+    CODE:    4,
+    TEXT:    5,
+    XML:     6
 };
 
 exports.FileType = FileType;
