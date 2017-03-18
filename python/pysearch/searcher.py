@@ -10,6 +10,7 @@ from collections import deque
 from cStringIO import StringIO
 from datetime import datetime, timedelta
 import os
+from scandir import scandir
 
 TARFILE_MODULE_AVAILABLE = True
 ZIPFILE_MODULE_AVAILABLE = True
@@ -122,6 +123,23 @@ class Searcher(object):
             searchdirs.append(d)
         return searchdirs
 
+    def filter_file(self, sf):
+        if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
+            return False
+        if sf.filetype == FileType.Archive:
+            return self.settings.searcharchives and self.is_archive_search_file(sf.filename)
+        return not self.settings.archivesonly and self.is_search_file(sf)
+
+    def get_search_files_for_directory(self, d):
+        """Get the list of files to search in a given directory"""
+        # files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
+        files = [e.name for e in scandir(d) if e.is_file()]
+        searchfiles = [SearchFile(path=d,
+                                  filename=f,
+                                  filetype=self.filetypes.get_filetype(f))
+                       for f in files]
+        return [sf for sf in searchfiles if self.filter_file(sf)]
+
     def get_search_files(self, searchdirs):
         """Get the list of files to search"""
         if self.settings.debug:
@@ -138,22 +156,6 @@ class Searcher(object):
                                           filename=f,
                                           filetype=self.filetypes.get_filetype(f)))
         return searchfiles
-
-    def filter_file(self, sf):
-        if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
-            return False
-        if sf.filetype == FileType.Archive:
-            return self.settings.searcharchives and self.is_archive_search_file(sf.filename)
-        return not self.settings.archivesonly and self.is_search_file(sf)
-
-    def get_search_files_for_directory(self, d):
-        """Get the list of files to search in a given directory"""
-        files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
-        searchfiles = [SearchFile(path=d,
-                                  filename=f,
-                                  filetype=self.filetypes.get_filetype(f))
-                       for f in files]
-        return [sf for sf in searchfiles if self.filter_file(sf)]
 
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
