@@ -11,6 +11,7 @@ type t = {
   in_dirpatterns : Re2.Regex.t list;
   in_extensions : string list;
   in_filepatterns : Re2.Regex.t list;
+  in_filetypes : string list;
   in_linesafterpatterns : Re2.Regex.t list;
   in_linesbeforepatterns : Re2.Regex.t list;
   linesafter : int;
@@ -27,6 +28,7 @@ type t = {
   out_dirpatterns : Re2.Regex.t list;
   out_extensions : string list;
   out_filepatterns : Re2.Regex.t list;
+  out_filetypes : string list;
   out_linesafterpatterns : Re2.Regex.t list;
   out_linesbeforepatterns : Re2.Regex.t list;
   printresults : bool;
@@ -43,5 +45,7 @@ type t = {
 val default_settings : t
 
 val add_extensions : string -> string list -> string list
+
+val add_filetypes : string -> string list -> string list
 
 val to_string : t -> string

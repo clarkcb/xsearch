@@ -144,7 +144,7 @@ let lines_match (lines : string list) (in_patterns : Regex.t list) (out_patterns
      (((List.is_empty in_patterns) || any_matches_any_pattern lines in_patterns) &&
       (List.is_empty out_patterns) || not (any_matches_any_pattern lines out_patterns))
 
-(* search_string :: Searchsettings.t -> string -> Searchresult.t list *)
+(* search_multilinestring :: Searchsettings.t -> string -> Searchresult.t list *)
 let search_multilinestring (settings : Searchsettings.t) (s : string) : (Searchresult.t list) = 
   let charlist = String.to_list s in
   let rec rec_get_newline_indices chars curr_index newline_indices = 
@@ -204,13 +204,13 @@ let search_text_file_contents (settings : Searchsettings.t) (sf : Searchfile.t) 
   search_multilinestring settings (In_channel.read_all (Searchfile.to_string sf))
   |> List.map ~f:(fun r -> { r with file=sf });;
 
-(* search_string :: Searchsettings.t -> string -> Searchresult.t list *)
-let search_string (settings : Searchsettings.t) (s : string) (linesbefore : string list) (linesafter : string list) : Searchresult.t list = 
+(* search_line :: Searchsettings.t -> string -> int -> Searchresult.t list *)
+let search_line (settings : Searchsettings.t) (s : string) (linenum : int) (linesbefore : string list) (linesafter : string list) : Searchresult.t list = 
   let to_searchresult (p : Regex.t) (m : Regex.Match.t) = 
     let pattern = Re2.Regex.pattern p in
     let (start_index, len) = Regex.Match.get_pos_exn ~sub:(`Index 0) m in
     let end_index = start_index + len in
-    Searchresult.create pattern 0 (start_index + 1) (end_index + 1) s linesbefore linesafter in
+    Searchresult.create pattern linenum (start_index + 1) (end_index + 1) s linesbefore linesafter in
   rec_get_pattern_matches settings settings.searchpatterns s []
   |> List.map ~f:(fun (p, m) -> to_searchresult p m);;
 
@@ -218,7 +218,8 @@ let search_string (settings : Searchsettings.t) (s : string) (linesbefore : stri
 let search_lines (settings : Searchsettings.t) (lines : string list) : Searchresult.t list = 
   let rec rec_search_lines linenum linesbefore lines results = 
     let next_lines =
-      if settings.firstmatch && not (List.is_empty results)
+      (* if settings.firstmatch && not (List.is_empty results) *)
+      if settings.firstmatch && (List.length results) = (List.length settings.searchpatterns)
       then []
       else lines in
     match next_lines with
@@ -228,16 +229,15 @@ let search_lines (settings : Searchsettings.t) (lines : string list) : Searchres
         if settings.linesafter > 0
         then (List.take ls settings.linesafter)
         else [] in
-      let res = search_string settings l linesbefore linesafter
-      |> List.map ~f:(fun r -> { r with linenum=linenum }) in
-      let lb =
+      let rs = search_line settings l linenum linesbefore linesafter in
+      let lbs =
         if settings.linesbefore > 0
         then
           if (List.length linesbefore) = settings.linesbefore
           then (List.append (List.drop linesbefore 1) [l])
           else (List.append linesbefore [l])
         else [] in
-      rec_search_lines (linenum + 1) lb ls (List.append results res) in
+      rec_search_lines (linenum + 1) lbs ls (List.append results rs) in
   rec_search_lines 1 [] lines [];;
 
 let search_text_file_lines (settings : Searchsettings.t) (sf : Searchfile.t) : Searchresult.t list = 
@@ -252,7 +252,7 @@ let search_text_file (settings : Searchsettings.t) (sf : Searchfile.t) : Searchr
   then search_text_file_contents settings sf
   else search_text_file_lines settings sf;;
 
-let search_binary_channel (settings : Searchsettings.t) (channel : In_channel.t) : Searchresult.t list = 
+(* let search_binary_channel (settings : Searchsettings.t) (channel : In_channel.t) : Searchresult.t list = 
   let contents = In_channel.input_all channel in
   let p_matches = rec_get_pattern_matches settings settings.searchpatterns contents [] in
   (* if settings.debug then log_msg (sprintf "p_matches: %d" (List.length p_matches)); *)
@@ -261,7 +261,7 @@ let search_binary_channel (settings : Searchsettings.t) (channel : In_channel.t)
     let (abs_start_index, len) = Regex.Match.get_pos_exn ~sub:(`Index 0) m in
     Searchresult.create pattern 0 (abs_start_index + 1) (abs_start_index + 1 + len) "" [] [] in
   let results : Searchresult.t list = List.map p_matches ~f:(fun (p, m) -> to_searchresult p m) in
-  results;;
+  results;; *)
 
 let search_blob (settings : Searchsettings.t) (blob : string) : Searchresult.t list = 
   let p_matches = rec_get_pattern_matches settings settings.searchpatterns blob [] in

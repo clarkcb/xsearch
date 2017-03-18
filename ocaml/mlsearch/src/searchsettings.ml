@@ -11,6 +11,7 @@ type t = {
   in_dirpatterns : Re2.Regex.t list;
   in_extensions : string list;
   in_filepatterns : Re2.Regex.t list;
+  in_filetypes : string list;
   in_linesafterpatterns : Re2.Regex.t list;
   in_linesbeforepatterns : Re2.Regex.t list;
   linesafter : int;
@@ -27,6 +28,7 @@ type t = {
   out_dirpatterns : Re2.Regex.t list;
   out_extensions : string list;
   out_filepatterns : Re2.Regex.t list;
+  out_filetypes : string list;
   out_linesafterpatterns : Re2.Regex.t list;
   out_linesbeforepatterns : Re2.Regex.t list;
   printresults : bool;
@@ -50,6 +52,7 @@ let default_settings = {
   in_dirpatterns = [];
   in_extensions = [];
   in_filepatterns = [];
+  in_filetypes = [];
   in_linesafterpatterns = [];
   in_linesbeforepatterns = [];
   linesafter = 0;
@@ -66,6 +69,7 @@ let default_settings = {
   out_dirpatterns = [];
   out_extensions = [];
   out_filepatterns = [];
+  out_filetypes = [];
   out_linesafterpatterns = [];
   out_linesbeforepatterns = [];
   printresults = true;
@@ -83,6 +87,10 @@ let add_extensions (ext_string : string) (extensions : string list) =
   let exts = String.split ext_string ~on:(char_of_int 44) in
   List.append extensions exts
 
+let add_filetypes (ft_string : string) (filetypes : string list) = 
+  let fts = String.split ft_string ~on:(char_of_int 44) in
+  List.append filetypes fts
+
 let to_string s = 
   String.concat [
     sprintf "{archivesonly=%b" s.archivesonly;
@@ -94,6 +102,7 @@ let to_string s =
     sprintf "; in_dirpatterns=%s" (regexp_list_to_string s.in_dirpatterns);
     sprintf "; in_extensions=%s" (list_to_string s.in_extensions);
     sprintf "; in_filepatterns=%s" (regexp_list_to_string s.in_filepatterns);
+    sprintf "; in_filetypes=%s" (list_to_string s.in_filetypes);
     sprintf "; in_linesafterpatterns=%s" (regexp_list_to_string s.in_linesafterpatterns);
     sprintf "; in_linesbeforepatterns=%s" (regexp_list_to_string s.in_linesbeforepatterns);
     sprintf "; linesafter=%d" s.linesafter;
@@ -110,6 +119,7 @@ let to_string s =
     sprintf "; out_dirpatterns=%s" (regexp_list_to_string s.out_dirpatterns);
     sprintf "; out_extensions=%s" (list_to_string s.out_extensions);
     sprintf "; out_filepatterns=%s" (regexp_list_to_string s.out_filepatterns);
+    sprintf "; out_filetypes=%s" (list_to_string s.out_filetypes);
     sprintf "; out_linesafterpatterns=%s" (regexp_list_to_string s.out_linesafterpatterns);
     sprintf "; out_linesbeforepatterns=%s" (regexp_list_to_string s.out_linesbeforepatterns);
     sprintf "; printresults=%b" s.printresults;
