@@ -20,82 +20,81 @@ public class SearchSettings {
 
     private static final int INITIAL_SET_CAPACITY = 4;
 
-    private String startPath;
-
-    private Set<String> inExtensions;
-    private Set<String> outExtensions;
-    private Set<Pattern> inDirPatterns;
-    private Set<Pattern> outDirPatterns;
-    private Set<Pattern> inFilePatterns;
-    private Set<Pattern> outFilePatterns;
-    private Set<String> inArchiveExtensions;
-    private Set<String> outArchiveExtensions;
-    private Set<Pattern> inArchiveFilePatterns;
-    private Set<Pattern> outArchiveFilePatterns;
-    private Set<Pattern> inLinesAfterPatterns;
-    private Set<Pattern> outLinesAfterPatterns;
-    private Set<Pattern> inLinesBeforePatterns;
-    private Set<Pattern> outLinesBeforePatterns;
-    private Set<Pattern> linesAfterToPatterns;
-    private Set<Pattern> linesAfterUntilPatterns;
-    private Set<Pattern> searchPatterns;
-
     private boolean archivesOnly;
     private boolean debug;
     private boolean excludeHidden;
     private boolean firstMatch;
+    private Set<String> inArchiveExtensions;
+    private Set<Pattern> inArchiveFilePatterns;
+    private Set<Pattern> inDirPatterns;
+    private Set<String> inExtensions;
+    private Set<Pattern> inFilePatterns;
+    private Set<FileType> inFileTypes;
+    private Set<Pattern> inLinesAfterPatterns;
+    private Set<Pattern> inLinesBeforePatterns;
     private int linesAfter;
+    private Set<Pattern> linesAfterToPatterns;
+    private Set<Pattern> linesAfterUntilPatterns;
     private int linesBefore;
     private boolean listDirs;
     private boolean listFiles;
     private boolean listLines;
     private int maxLineLength;
     private boolean multiLineSearch;
+    private Set<String> outArchiveExtensions;
+    private Set<Pattern> outArchiveFilePatterns;
+    private Set<Pattern> outDirPatterns;
+    private Set<String> outExtensions;
+    private Set<Pattern> outFilePatterns;
+    private Set<FileType> outFileTypes;
+    private Set<Pattern> outLinesAfterPatterns;
+    private Set<Pattern> outLinesBeforePatterns;
     private boolean printResults;
     private boolean printUsage;
     private boolean printVersion;
     private boolean recursive;
     private boolean searchArchives;
+    private Set<Pattern> searchPatterns;
+    private String startPath;
     private boolean uniqueLines;
     private boolean verbose;
 
     public SearchSettings() {
-        this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesAfterToPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesAfterUntilPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-
-        this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-
-        // set the defaults
         this.archivesOnly = DefaultSettings.ARCHIVESONLY;
         this.debug = DefaultSettings.DEBUG;
         this.firstMatch = DefaultSettings.FIRSTMATCH;
         this.excludeHidden = DefaultSettings.EXCLUDEHIDDEN;
+        this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.linesAfter = DefaultSettings.LINESAFTER;
+        this.linesAfterToPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.linesAfterUntilPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.linesBefore = DefaultSettings.LINESBEFORE;
         this.listDirs = DefaultSettings.LISTDIRS;
         this.listFiles = DefaultSettings.LISTFILES;
         this.listLines = DefaultSettings.LISTLINES;
         this.maxLineLength = DefaultSettings.MAXLINELENGTH;
         this.multiLineSearch = DefaultSettings.MULTILINESEARCH;
+        this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.printResults = DefaultSettings.PRINTRESULTS;
         this.printUsage = DefaultSettings.PRINTUSAGE;
         this.printVersion = DefaultSettings.PRINTVERSION;
         this.recursive = DefaultSettings.RECURSIVE;
         this.searchArchives = DefaultSettings.SEARCHARCHIVES;
+        this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.uniqueLines = DefaultSettings.UNIQUELINES;
         this.verbose = DefaultSettings.VERBOSE;
     }
@@ -412,7 +411,6 @@ public class SearchSettings {
         return this.searchPatterns;
     }
 
-
     public final boolean hasLinesAfterToPatterns() {
         return linesAfterToPatterns.size() > 0;
     }
@@ -423,6 +421,27 @@ public class SearchSettings {
 
     public final boolean hasLinesAfterToOrUntilPatterns() {
         return hasLinesAfterToPatterns() || hasLinesAfterUntilPatterns();
+    }
+
+    // could be a comma-separated list
+    private static void addEFileTypes(Set<FileType> set, final String fts) {
+        addEFileTypes(set, Arrays.asList(fts.split(",")));
+    }
+
+    private static void addEFileTypes(Set<FileType> set, final List<String> fts) {
+        for (String ft : fts) {
+            if (!ft.isEmpty()) {
+                set.add(FileTypes.fromName(ft));
+            }
+        }
+    }
+
+    public final void addInFileType(final String ft) {
+        addEFileTypes(this.inFileTypes, ft);
+    }
+
+    public final void addOutFileType(final String ft) {
+        addEFileTypes(this.outFileTypes, ft);
     }
 
     private static String stringSetToString(final Set<String> set) {

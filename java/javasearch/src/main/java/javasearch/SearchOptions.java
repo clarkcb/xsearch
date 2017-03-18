@@ -56,6 +56,7 @@ public class SearchOptions {
             put("in-dirpattern", (s, settings) -> settings.addInDirPattern(s));
             put("in-ext", (s, settings) -> settings.addInExtension(s));
             put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
+            put("in-filetype", (s, settings) -> settings.addInFileType(s));
             put("in-linesafterpattern", (s, settings) -> settings.addInLinesAfterPattern(s));
             put("in-linesbeforepattern", (s, settings) -> settings.addInLinesBeforePattern(s));
             put("linesafter", (s, settings) -> settings.setLinesAfter(Integer.parseInt(s)));
@@ -68,6 +69,7 @@ public class SearchOptions {
             put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));
             put("out-ext", (s, settings) -> settings.addOutExtension(s));
             put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
+            put("out-filetype", (s, settings) -> settings.addOutFileType(s));
             put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
             put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
             put("search", (s, settings) -> settings.addSearchPattern(s));
