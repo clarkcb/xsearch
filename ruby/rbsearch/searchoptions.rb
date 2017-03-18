@@ -166,7 +166,7 @@ class SearchOptions
         elsif @bool_flag_action_dict.has_key?(longarg)
           # pushts "arg in @flag_dict\n"
           @bool_flag_action_dict[longarg].call(true, settings)
-          if ['h', 'help', 'V', 'version'].include?(arg)
+          if ['help', 'version'].include?(longarg)
             return settings
           end
         else
