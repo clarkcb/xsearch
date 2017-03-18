@@ -42,8 +42,8 @@ class SearchResult(object):
         self.__dict__.update(kargs)
 
     def sortkey(self):
-        path = os.path.dirname(self.file.filename).lower()
-        filename = os.path.basename(self.file.filename).lower()
+        path = self.file.path.lower()
+        filename = self.file.filename.lower()
         return (path, filename, self.linenum, self.match_start_index)
 
 
