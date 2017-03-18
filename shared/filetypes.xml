@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <filetypes>
   <filetype name="archive">
-    <extensions>7z arj bz2 cpio ear gz hqx jar pax pyz pyzw rar sit sitx tar
-      tgz war zip zipx Z</extensions>
+    <extensions>7z ane apk arj bz2 cpio ear egg gz hqx jar pax pyz pyzw rar sit
+      sitx swc tar tgz war zip zipx Z</extensions>
   </filetype>
   <filetype name="binary">
     <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dms doc dot
@@ -12,9 +12,9 @@
   </filetype>
   <filetype name="code">
     <extensions>ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl
-      cc cfm cgi clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es ex exs
-      frm fs fth fx go groovy h h++ hh hpp hs hxx java js js2 jsf json jsp jspf
-      kt lhs lisp lua m ml p pas pbxproj php php3 php4 php5 pl pm ps1 psc1 psd1
+      cc cfm cgi clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es es6 ex
+      exs frm fs fth fx go groovy h h++ hh hpp hs hxx java js js2 jsf json jsp jspf jsx
+      kt kts lhs lisp lua m ml p pas pbxproj php php3 php4 php5 pl pm ps1 psc1 psd1
       psm1 pxd pxi py pyw pyx r rb rexx rkt rs s sass sbt sc scm scss scala sh
       swift tcl tk ts vb vbs</extensions>
   </filetype>
@@ -29,22 +29,22 @@
     <extensions>1 10 11 12 13 14 15 16 17 18 19 2 20 3 323 4 5 6 7 8 9 am app
       asc ascx asm asmx asp aspx bib brf cabal cfg cls cmake cmd cnt conf css
       csv ctl d dbml dbschema ddl dep dfm diff disco dlg dof dpr drl dsp dsw
-      dtd elt ent env eps etx exp feature fls gcd hql hs htc htm html hxx ics
+      dtd elt ent env eps etx exp feature fls gcd hql hs htaccess htc htm html hxx ics
       icz iml in inc ini ipr iws jad jam jql layout lhs log ltx mak mako
       manifest map markdown master md mf mht mml moc mod mxml org p patch pm po
-      pod pot properties ps pt rc rc2 rdf rex rst rtf rtx scc sct sfv sgm sgml
+      pod policy pot properties ps pt rc rc2 rdf rex rst rtf rtx scc sct sfv sgm sgml
       sht shtm shtml sln smi smil spec sqc sql st str strings sty suml sxw t
       tex text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml
       vssscc vxml wbxml webinfo wml wmls wrl wsc wsd wsdd xlf xsp yaml
       yml</extensions>
-    <names>.gitignore AUTHORS LICENSE Makefile mime.types README</names>
+    <names>.bzrignore .gitignore AUTHORS LICENSE Makefile mime.types README</names>
   </filetype>
   <filetype name="unknown">
     <extensions>adm aps cli clw def df2 ncb nt nt2 orig pc plg roff sun
       texinfo tr xwd</extensions>
   </filetype>
   <filetype name="xml">
-    <extensions>atom atomcat atomsrv bdsproj config csproj davmount dbproj docx
+    <extensions>ant atom atomcat atomsrv bdsproj config csproj davmount dbproj docx
       dotx fsproj fxml jhm jnlp kml mm plist pom potx ppsx pptx qrc rdf resx rng
       rss settings sldx stc std sti stw svg svgz sxc sxd sxg sxi stw sxm sxw tld
       vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xcbkptlist xcscheme
