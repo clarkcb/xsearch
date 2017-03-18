@@ -15,17 +15,37 @@ enum class FileType {
     UNKNOWN,
     ARCHIVE,
     BINARY,
-    TEXT
+    CODE,
+    TEXT,
+    XML
+}
+
+private val archive = "archive"
+private val code = "code"
+private val binary = "binary"
+private val searchable = "searchable"
+private val text = "text"
+private val xml = "xml"
+private val unknown = "unknown"
+
+fun fromName(name: String) : FileType {
+    val lname = name.toLowerCase()
+    if (lname == text) {
+        return FileType.TEXT
+    } else if (lname == binary) {
+        return FileType.BINARY
+    } else if (lname == archive) {
+        return FileType.ARCHIVE
+    } else if (lname == code) {
+        return FileType.CODE
+    } else if (lname == xml) {
+        return FileType.XML
+    } else {
+        return FileType.UNKNOWN
+    }
 }
 
 class FileTypes {
-    private val archive = "archive"
-    private val code = "code"
-    private val binary = "binary"
-    private val searchable = "searchable"
-    private val text = "text"
-    private val xml = "xml"
-    private val unknown = "unknown"
 
     private val FILETYPESXMLPATH = "/filetypes.xml"
     private val fileTypeMap: Map<String, Set<String>>
@@ -78,17 +98,25 @@ class FileTypes {
             return FileType.BINARY
         } else if (isArchiveFile(file)) {
             return FileType.ARCHIVE
+        } else if (isCodeFile(file)) {
+            return FileType.CODE
+        } else if (isXmlFile(file)) {
+            return FileType.XML
         } else {
             return FileType.UNKNOWN
         }
+    }
+
+    fun isArchiveFile(file: File): Boolean {
+        return (fileTypeMap.get(archive) ?: setOf()).contains(file.extension.toLowerCase())
     }
 
     fun isBinaryFile(file: File): Boolean {
         return (fileTypeMap.get(binary) ?: setOf()).contains(file.extension.toLowerCase())
     }
 
-    fun isArchiveFile(file: File): Boolean {
-        return (fileTypeMap.get(archive) ?: setOf()).contains(file.extension.toLowerCase())
+    fun isCodeFile(file: File): Boolean {
+        return (fileTypeMap.get(code) ?: setOf()).contains(file.extension.toLowerCase())
     }
 
     fun isSearchableFile(file: File): Boolean {
@@ -102,5 +130,9 @@ class FileTypes {
     fun isUnknownFile(file: File): Boolean {
         return (fileTypeMap.get(unknown) ?: setOf()).contains(file.extension.toLowerCase())
                 || !isSearchableFile(file)
+    }
+
+    fun isXmlFile(file: File): Boolean {
+        return (fileTypeMap.get(xml) ?: setOf()).contains(file.extension.toLowerCase())
     }
 }
