@@ -9,6 +9,6 @@
 
 "use strict";
 
-enum FileType {Unknown, Archive, Binary, Text}
+enum FileType {Unknown, Archive, Binary, Code, Text, Xml}
 
 exports.FileType = FileType;
