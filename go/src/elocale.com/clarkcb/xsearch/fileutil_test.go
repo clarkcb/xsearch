@@ -102,15 +102,15 @@ func TestRelativePath(t *testing.T) {
 	homePath := getHome()
 	startPath := "."
 	expected := map[string]string{
-		".":                       ".",
-		"./":                      "./",
-		"..":                      "..",
-		"../":                     "../",
-		"path":                    "path",
-		"path/":                   "path/",
-		"long/path":               "long/path",
-		"long/path/":              "long/path/",
-		homePath:                  ".",
+		".":                     ".",
+		"./":                    "./",
+		"..":                    "..",
+		"../":                   "../",
+		"path":                  "path",
+		"path/":                 "path/",
+		"long/path":             "long/path",
+		"long/path/":            "long/path/",
+		homePath:                ".",
 		homePath + "/long/path": "./long/path",
 	}
 

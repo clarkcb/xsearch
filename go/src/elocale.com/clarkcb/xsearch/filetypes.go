@@ -8,7 +8,9 @@ const (
 	FILETYPE_UNKNOWN FileType = iota
 	FILETYPE_ARCHIVE FileType = iota
 	FILETYPE_BINARY  FileType = iota
+	FILETYPE_CODE    FileType = iota
 	FILETYPE_TEXT    FileType = iota
+	FILETYPE_XML     FileType = iota
 )
 
 type FileTypes struct {
@@ -41,6 +43,10 @@ func (f *FileTypes) IsBinaryFile(file string) bool {
 	return f.isFileType("binary", file) || getExtension(file) == ""
 }
 
+func (f *FileTypes) IsCodeFile(file string) bool {
+	return f.isFileType("code", file)
+}
+
 func (f *FileTypes) IsTextFile(file string) bool {
 	textTypes := []string{"code", "text", "xml"}
 	for _, t := range textTypes {
@@ -49,6 +55,10 @@ func (f *FileTypes) IsTextFile(file string) bool {
 		}
 	}
 	return false
+}
+
+func (f *FileTypes) IsXmlFile(file string) bool {
+	return f.isFileType("xml", file)
 }
 
 func (f *FileTypes) IsSearchableFile(file string) bool {
