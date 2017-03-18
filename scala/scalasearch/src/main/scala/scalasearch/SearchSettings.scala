@@ -1,6 +1,7 @@
 package scalasearch
 
 import scala.util.matching.Regex
+import scalasearch.FileType.FileType
 
 object DefaultSettings {
   val archivesOnly = false
@@ -19,45 +20,47 @@ object DefaultSettings {
   var printVersion = false
   var recursive = true
   var searchArchives = false
-  var startPath:Option[String] = None
+  var startPath: Option[String] = None
   var uniqueLines = false
   var verbose = false
 }
 
-case class SearchSettings(startPath: Option[String] = None,
-                          inExtensions: Set[String] = Set.empty[String],
-                          outExtensions: Set[String] = Set.empty[String],
-                          inDirPatterns: Set[Regex] = Set.empty[Regex],
-                          outDirPatterns: Set[Regex] = Set.empty[Regex],
-                          inFilePatterns: Set[Regex] = Set.empty[Regex],
-                          outFilePatterns: Set[Regex] = Set.empty[Regex],
-                          inArchiveExtensions: Set[String] = Set.empty[String],
-                          outArchiveExtensions: Set[String] = Set.empty[String],
-                          inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
-                          outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
-                          inLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
-                          outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
-                          inLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
-                          outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
-                          linesAfterToPatterns: Set[Regex] = Set.empty[Regex],
-                          linesAfterUntilPatterns: Set[Regex] = Set.empty[Regex],
-                          searchPatterns: Set[Regex] = Set.empty[Regex],
-                          archivesOnly: Boolean = DefaultSettings.archivesOnly,
+case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           debug: Boolean = DefaultSettings.debug,
                           excludeHidden: Boolean = DefaultSettings.excludeHidden,
                           firstMatch: Boolean = DefaultSettings.firstMatch,
+                          inArchiveExtensions: Set[String] = Set.empty[String],
+                          inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
+                          inDirPatterns: Set[Regex] = Set.empty[Regex],
+                          inExtensions: Set[String] = Set.empty[String],
+                          inFilePatterns: Set[Regex] = Set.empty[Regex],
+                          inFileTypes: Set[FileType] = Set.empty[FileType],
+                          inLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
+                          inLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
                           linesAfter: Int = DefaultSettings.linesAfter,
+                          linesAfterToPatterns: Set[Regex] = Set.empty[Regex],
+                          linesAfterUntilPatterns: Set[Regex] = Set.empty[Regex],
                           linesBefore: Int = DefaultSettings.linesBefore,
                           listDirs: Boolean = DefaultSettings.listDirs,
                           listFiles: Boolean = DefaultSettings.listFiles,
                           listLines: Boolean = DefaultSettings.listLines,
                           maxLineLength: Int = DefaultSettings.maxLineLength,
                           multiLineSearch: Boolean = DefaultSettings.multiLineSearch,
+                          outArchiveExtensions: Set[String] = Set.empty[String],
+                          outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
+                          outDirPatterns: Set[Regex] = Set.empty[Regex],
+                          outExtensions: Set[String] = Set.empty[String],
+                          outFilePatterns: Set[Regex] = Set.empty[Regex],
+                          outFileTypes: Set[FileType] = Set.empty[FileType],
+                          outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
+                          outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
                           printResults: Boolean = DefaultSettings.printResults,
                           printUsage: Boolean = DefaultSettings.printUsage,
                           printVersion: Boolean = DefaultSettings.printVersion,
                           recursive: Boolean = DefaultSettings.recursive,
                           searchArchives: Boolean = DefaultSettings.searchArchives,
+                          searchPatterns: Set[Regex] = Set.empty[Regex],
+                          startPath: Option[String] = DefaultSettings.startPath,
                           uniqueLines: Boolean = DefaultSettings.uniqueLines,
                           verbose: Boolean = DefaultSettings.verbose) {
 
@@ -96,6 +99,7 @@ case class SearchSettings(startPath: Option[String] = None,
       ", inDirPatterns: " + inDirPatterns +
       ", inExtensions: " + inExtensions +
       ", inFilePatterns: " + inFilePatterns +
+      ", inFileTypes: " + inFileTypes +
       ", linesAfter: " + linesAfter +
       ", linesBefore: " + linesBefore +
       ", listDirs: " + listDirs +
@@ -108,6 +112,7 @@ case class SearchSettings(startPath: Option[String] = None,
       ", outDirPatterns: " + outDirPatterns +
       ", outExtensions: " + outExtensions +
       ", outFilePatterns: " + outFilePatterns +
+      ", outFileTypes: " + outFileTypes +
       ", printResults: " + printResults +
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +

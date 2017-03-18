@@ -54,6 +54,8 @@ object SearchOptions {
       ((s, ss) => ss.copy(inExtensions = addExtensions(s, ss.inExtensions))),
     "in-filepattern" ->
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
+    "in-filetype" ->
+      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileTypes.fromName(s))),
     "in-linesafterpattern" ->
       ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
     "in-linesbeforepattern" ->
@@ -78,6 +80,8 @@ object SearchOptions {
       ((s, ss) => ss.copy(outExtensions = addExtensions(s, ss.outExtensions))),
     "out-filepattern" ->
       ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
+    "out-filetype" ->
+      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileTypes.fromName(s))),
     "out-linesafterpattern" ->
       ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
     "out-linesbeforepattern" ->
