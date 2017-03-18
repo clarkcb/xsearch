@@ -15,7 +15,9 @@ use constant {
     UNKNOWN => 'Unknown',
     ARCHIVE => 'Archive',
     BINARY  => 'Binary',
+    CODE    => 'Code',
     TEXT    => 'Text',
+    XML     => 'Xml',
 };
 
 1;

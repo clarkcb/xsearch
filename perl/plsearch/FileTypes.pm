@@ -47,14 +47,21 @@ sub new {
 
 sub from_name {
     my ($name) = @_;
-    if (uc($name) eq 'TEXT') {
+    my $uname = uc($name);
+    if ($uname eq 'TEXT') {
         return plsearch::FileType->TEXT;
     }
-    if (uc($name) eq 'BINARY') {
+    if ($uname eq 'BINARY') {
         return plsearch::FileType->BINARY;
     }
-    if (uc($name) eq 'ARCHIVE') {
+    if ($uname eq 'ARCHIVE') {
         return plsearch::FileType->ARCHIVE;
+    }
+    if ($uname eq 'CODE') {
+        return plsearch::FileType->CODE;
+    }
+    if ($uname eq 'XML') {
+        return plsearch::FileType->XML;
     }
     return plsearch::FileType->UNKNOWN;
 }
@@ -69,6 +76,12 @@ sub get_filetype {
     }
     if ($self->is_archive($file)) {
         return plsearch::FileType->ARCHIVE;
+    }
+    if ($self->is_code($file)) {
+        return plsearch::FileType->CODE;
+    }
+    if ($self->is_xml($file)) {
+        return plsearch::FileType->XML;
     }
     return plsearch::FileType->UNKNOWN;
 }
@@ -91,6 +104,15 @@ sub is_binary {
     return 0;
 }
 
+sub is_code {
+    my ($self, $file) = @_;
+    my $ext = plsearch::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_types}->{code}}) {
+        return 1;
+    }
+    return 0;
+}
+
 sub is_text {
     my ($self, $file) = @_;
     my $ext = plsearch::FileUtil::get_extension($file);
@@ -104,6 +126,15 @@ sub is_searchable {
     my ($self, $file) = @_;
     my $ext = plsearch::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_types}->{searchable}}) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_xml {
+    my ($self, $file) = @_;
+    my $ext = plsearch::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_types}->{xml}}) {
         return 1;
     }
     return 0;
