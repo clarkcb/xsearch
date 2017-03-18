@@ -6,23 +6,21 @@ open System.Diagnostics
 open System.IO
 open System.Text.RegularExpressions
 
-type Searcher (settings : SearchSettings) =
-    let _settings = settings
+type Searcher (settings : SearchSettings.t) =
     let _fileTypes = new FileTypes()
-    let _results = new List<SearchResult>()
+    let _results = new List<SearchResult.t>()
     let _fileSet = new HashSet<FileInfo>()
 
     // read-only member properties
-    member this.Settings = _settings
     member this.Results = _results
     member this.FileSet = _fileSet
 
     // member methods
     member this.ValidateSettings () : string list =
         [
-            (if String.IsNullOrEmpty _settings.StartPath then (Some "Startpath not defined") else None);
-            (if Directory.Exists(_settings.StartPath) || File.Exists(_settings.StartPath) then None else (Some "Startpath not found"));
-            (if List.isEmpty _settings.SearchPatterns then (Some "No search patterns defined") else None);
+            (if String.IsNullOrEmpty settings.StartPath then (Some "Startpath not defined") else None);
+            (if Directory.Exists(settings.StartPath) || File.Exists(settings.StartPath) then None else (Some "Startpath not found"));
+            (if List.isEmpty settings.SearchPatterns then (Some "No search patterns defined") else None);
         ]
         |> List.filter (fun e -> e.IsSome)
         |> List.map (fun e -> e.Value)
@@ -35,40 +33,40 @@ type Searcher (settings : SearchSettings) =
 
     member this.IsSearchDir (d : DirectoryInfo) : bool =
         let elems = d.FullName.Split('/', '\\') |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
-        (not _settings.ExcludeHidden ||
+        (not settings.ExcludeHidden ||
          not (Seq.exists (fun e -> FileUtil.IsHidden e) elems)) &&
-        (Seq.isEmpty _settings.InDirPatterns ||
-         this.AnyMatchesAnyPattern elems _settings.InDirPatterns) &&
-        (Seq.isEmpty _settings.OutDirPatterns ||
-         not (this.AnyMatchesAnyPattern elems _settings.OutDirPatterns))
+        (Seq.isEmpty settings.InDirPatterns ||
+         this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
+        (Seq.isEmpty settings.OutDirPatterns ||
+         not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
 
-    member this.IsSearchFile (f : FileInfo) : bool =
-        (List.isEmpty _settings.InExtensions ||
-         List.exists (fun x -> x = f.Extension) _settings.InExtensions) &&
-        (List.isEmpty _settings.OutExtensions ||
-         not (List.exists (fun x -> x = f.Extension) _settings.OutExtensions)) &&
-        (List.isEmpty _settings.InFilePatterns ||
-         List.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.InFilePatterns) &&
-        (List.isEmpty _settings.OutFilePatterns ||
-         not (List.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.OutFilePatterns))
+    member this.IsSearchFile (f : SearchFile.t) : bool =
+        (List.isEmpty settings.InExtensions ||
+         List.exists (fun x -> x = f.File.Extension) settings.InExtensions) &&
+        (List.isEmpty settings.OutExtensions ||
+         not (List.exists (fun x -> x = f.File.Extension) settings.OutExtensions)) &&
+        (List.isEmpty settings.InFilePatterns ||
+         List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.InFilePatterns) &&
+        (List.isEmpty settings.OutFilePatterns ||
+         not (List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutFilePatterns))
 
-    member this.IsArchiveSearchFile (f : FileInfo) : bool =
-        (Seq.isEmpty _settings.InArchiveExtensions ||
-         Seq.exists (fun x -> x = f.Extension) _settings.InArchiveExtensions) &&
-        (Seq.isEmpty _settings.OutArchiveExtensions ||
-         not (Seq.exists (fun x -> x = f.Extension) _settings.OutArchiveExtensions)) &&
-        (Seq.isEmpty _settings.InArchiveFilePatterns ||
-         Seq.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.InArchiveFilePatterns) &&
-        (Seq.isEmpty _settings.OutArchiveFilePatterns ||
-         not (Seq.exists (fun p -> (p:Regex).Match(f.Name).Success) _settings.OutArchiveFilePatterns))
+    member this.IsArchiveSearchFile (f : SearchFile.t) : bool =
+        (Seq.isEmpty settings.InArchiveExtensions ||
+         Seq.exists (fun x -> x = f.File.Extension) settings.InArchiveExtensions) &&
+        (Seq.isEmpty settings.OutArchiveExtensions ||
+         not (Seq.exists (fun x -> x = f.File.Extension) settings.OutArchiveExtensions)) &&
+        (Seq.isEmpty settings.InArchiveFilePatterns ||
+         Seq.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.InArchiveFilePatterns) &&
+        (Seq.isEmpty settings.OutArchiveFilePatterns ||
+         not (Seq.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutArchiveFilePatterns))
 
-    member this.FilterFile (f: FileInfo) : bool = 
-        if FileUtil.IsHidden f.Name && _settings.ExcludeHidden then
+    member this.FilterFile (f: SearchFile.t) : bool = 
+        if FileUtil.IsHidden f.File.Name && settings.ExcludeHidden then
             false
-        else if _fileTypes.IsArchiveFile f then
-            _settings.SearchArchives && this.IsArchiveSearchFile f
+        else if f.FileType = FileType.Archive then
+            settings.SearchArchives && this.IsArchiveSearchFile f
         else
-            not _settings.ArchivesOnly && this.IsSearchFile f
+            not settings.ArchivesOnly && this.IsSearchFile f
 
     member this.GetSearchDirs (dir : DirectoryInfo) : DirectoryInfo list =
         try
@@ -82,77 +80,37 @@ type Searcher (settings : SearchSettings) =
             Common.Log (sprintf "Error while accessing dir %s: %s" dir.FullName e.Message)
             List.empty<DirectoryInfo>
 
-    member this.GetSearchFilesForDir (dir : DirectoryInfo) : FileInfo list =
-        try
-            dir.EnumerateFiles()
-            |> Seq.filter (fun f -> this.FilterFile (f:FileInfo))
-            |> List.ofSeq
-        with
-        | :? IOException as e ->
-            Common.Log (sprintf "Error while accessing dir %s: %s" dir.FullName e.Message)
-            List.empty<FileInfo>
-
-    member this.GetSearchFiles (dirs : DirectoryInfo list) : FileInfo list =
-        let rec getSearchFiles (files : FileInfo list, dirs : DirectoryInfo list) =
+    member this.GetSearchFiles (dirs : DirectoryInfo list) : SearchFile.t list =
+        let rec recGetSearchFiles (dirs : DirectoryInfo list) (searchfiles : SearchFile.t list): SearchFile.t list = 
             match dirs with
-            | [] -> files
-            | d :: ds -> getSearchFiles(files @ (this.GetSearchFilesForDir d), ds)
-        getSearchFiles([], dirs)
+            | [] -> searchfiles
+            | d :: ds -> 
+                let newsearchfiles =
+                    try
+                        d.EnumerateFiles()
+                        |> Seq.map (fun f -> SearchFile.Create f (_fileTypes.GetFileType f))
+                        |> Seq.filter (fun sf -> this.FilterFile sf)
+                        |> List.ofSeq
+                    with
+                    | :? IOException as e ->
+                        Common.Log (sprintf "Error while accessing dir %s: %s" d.FullName e.Message)
+                        []
+                recGetSearchFiles ds (List.append searchfiles newsearchfiles)
+        recGetSearchFiles dirs []
 
-    member this.Search () : unit =
-        if FileUtil.IsDirectory(_settings.StartPath) then
-            let startDir = new DirectoryInfo(_settings.StartPath)
-            if this.IsSearchDir startDir then
-                this.SearchPath startDir
-            else
-                raise <| Exception ("Startpath does not match search settings")
-        else
-            this.SearchFile (new FileInfo(_settings.StartPath))
+    member this.AddSearchResult (searchResult : SearchResult.t) : unit =
+        _results.Add(searchResult)
 
-    member this.SearchPath (startDir : DirectoryInfo) : unit =
-        let dirs =
-            if _settings.Recursive then
-                startDir :: this.GetSearchDirs(startDir)
-            else
-                [startDir]
-        if _settings.Verbose then
-            printfn "\nDirectories to be searched (%d):" dirs.Length
-            List.iter (fun d -> Common.Log (sprintf "%s " (d:DirectoryInfo).FullName)) dirs
-        
-        let files = this.GetSearchFiles(dirs)
-        if _settings.Verbose then
-            Common.Log (sprintf "\nFiles to be searched (%d):" files.Length)
-            Seq.iter (fun f -> Common.Log (sprintf "%s " (f:FileInfo).FullName)) files
-            printfn ""
-
-        for f in files do
-            this.SearchFile f
-
-    member this.SearchFile (f : FileInfo) : unit =
-        match _fileTypes.GetFileType f with
-        | FileType.Archive -> Common.Log (sprintf "Archive file searching not currently supported")
-        | FileType.Binary -> this.SearchBinaryFile f
-        | FileType.Text -> this.SearchTextFile f
-        | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
-        | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.FullName)
-
-    member this.SearchTextFile (f : FileInfo) : unit =
-        if _settings.Verbose then
-            Common.Log (sprintf "Searching text file %s" f.FullName)
-        if _settings.MultiLineSearch then
-            this.SearchTextFileContents f
-        else
-            this.SearchTextFileLines f
-
-    member this.SearchTextFileContents (f : FileInfo) : unit =
-        try
-            let contents = FileUtil.GetFileContents f.FullName
-            let results = this.SearchContents(contents)
-            for r:SearchResult in results do
-                r.File <- f
-                this.AddSearchResult r
-        with
-        | :? IOException as e -> printfn "%s" e.Message
+    member this.recGetPatternMatches (patterns : Regex list) (s : string) (pMatches : (Regex * Match) list) = 
+        match patterns with
+        | [] -> pMatches
+        | p :: ps ->
+            let nextMatches =
+                if settings.FirstMatch
+                then [p.Match(s)]
+                else [for m in p.Matches(s) do yield m]
+            let nextPMatches = List.map (fun m -> (p, m)) nextMatches
+            this.recGetPatternMatches ps s (List.append pMatches nextPMatches)
 
     member this.GetLineIndices (s : string) : (int * int) list =
         let newLineIndices =
@@ -197,11 +155,11 @@ type Searcher (settings : SearchSettings) =
             |> List.ofSeq
             |> List.rev
 
-    member this.SearchContents (s : string) : List<SearchResult> =
+    member this.SearchContents (s : string) : List<SearchResult.t> =
         let patternMatches = new Dictionary<Regex, int>()
-        let results = new List<SearchResult>()
+        let results = new List<SearchResult.t>()
         let lineIndices = this.GetLineIndices s
-        for p in _settings.SearchPatterns do
+        for p in settings.SearchPatterns do
             let mutable m = p.Match s
             let mutable stop = false
             while m.Success && not stop do
@@ -234,97 +192,156 @@ type Searcher (settings : SearchSettings) =
                         []
                 if (linesBefore.Length = 0 || this.LinesBeforeMatch linesBefore) &&
                    (linesAfter.Length = 0 || this.LinesAfterMatch linesAfter) then
-                    results.Add(new SearchResult(p,
-                                                 null,
-                                                 lineNum,
-                                                 matchStartIndex - startLineIndex + 1,
-                                                 matchEndIndex - startLineIndex + 1,
-                                                 line,
-                                                 linesBefore,
-                                                 linesAfter))
-                    if _settings.FirstMatch then
+                    let r = SearchResult.Create p lineNum (matchStartIndex - startLineIndex + 1) (matchEndIndex - startLineIndex + 1) line linesBefore linesAfter
+                    results.Add(r)
+                    if settings.FirstMatch then
                         stop <- true
                 m <- m.NextMatch()
         results
 
-    member this.SearchTextFileLines (f : FileInfo) : unit =
+    member this.SearchTextFileContents (f : SearchFile.t) : unit =
         try
-            let lines = FileUtil.GetFileLines f.FullName
-            let results = this.SearchLines lines
-            for r:SearchResult in results do
-                r.File <- f
+            let contents = FileUtil.GetFileContents f.File.FullName
+            let results = this.SearchContents(contents)
+            for r:SearchResult.t in results do
+                let fileResult = { r with File=f }
+                this.AddSearchResult fileResult
+        with
+        | :? IOException as e -> printfn "%s" e.Message
+
+    member this.SearchLine (line : string) (lineNum : int) (linesBefore : string list) (linesAfter : string list) : SearchResult.t list =
+        let pMatches = this.recGetPatternMatches settings.SearchPatterns line []
+        let toSearchResult (p : Regex) (m : Match) = 
+            SearchResult.Create p lineNum (m.Index + 1) (m.Index + m.Length + 1) line linesBefore linesAfter
+        let results : SearchResult.t list = List.map (fun (p, m) -> toSearchResult p m) pMatches
+        results
+
+    member this.SearchLines (lines : string list) =
+        let rec recSearchLines (lineNum : int) (linesBefore : string list) (lines : string list) (results : SearchResult.t list) =
+            let nextLines =
+                if settings.FirstMatch && (List.length results) = (List.length settings.SearchPatterns)
+                then []
+                else lines
+            match nextLines with
+            | [] -> results
+            | l :: ls ->
+                let linesAfter =
+                    if settings.LinesAfter > 0
+                    then
+                        if (List.length ls < settings.LinesAfter)
+                        then ls
+                        else (List.take settings.LinesAfter ls)
+                    else []
+                let rs = this.SearchLine l lineNum linesBefore linesAfter
+                let lbs = 
+                    if settings.LinesBefore > 0
+                    then
+                        if (List.length linesBefore) = settings.LinesBefore
+                        then (List.append (List.tail linesBefore) [l])
+                        else (List.append linesBefore [l])
+                    else []
+                recSearchLines (lineNum + 1) lbs ls (List.append results rs)
+        recSearchLines 1 [] lines []
+
+    member this.SearchTextFileLines (f : SearchFile.t) : unit =
+        try
+            let lines = FileUtil.GetFileLines f.File.FullName |> List.ofSeq
+            let results =
+                this.SearchLines lines
+                |> List.map (fun r -> { r with File = f })
+            for r:SearchResult.t in results do
                 this.AddSearchResult r
         with
         | :? IOException as e -> printfn "%s" e.Message
 
-    member this.SearchLines (lines : string seq) =
-        let patternMatches = new Dictionary<Regex, int>()
-        let results = new List<SearchResult>()
-        let mutable lineNum = 0
-        for line in lines do
-            lineNum <- lineNum + 1
-            for p in _settings.SearchPatterns do
-                if not _settings.FirstMatch || not (patternMatches.ContainsKey p) then
-                    let matches = p.Matches(line)
-                    if matches.Count > 0 then
-                        if not (patternMatches.ContainsKey p) then
-                            patternMatches.Add(p, 1)
-                        if _settings.FirstMatch then
-                            let m = matches.[0]
-                            let matchStartIndex = m.Index + 1
-                            let matchEndIndex = m.Index + m.Length + 1
-                            results.Add(new SearchResult(p, null, lineNum, matchStartIndex, matchEndIndex, line, [], []))
-                        else
-                            for m in matches do
-                                let matchStartIndex = m.Index + 1
-                                let matchEndIndex = m.Index + m.Length + 1
-                                results.Add(new SearchResult(p, null, lineNum, matchStartIndex, matchEndIndex, line, [], []))
+    member this.SearchTextFile (f : SearchFile.t) : unit =
+        if settings.Verbose then
+            Common.Log (sprintf "Searching text file %s" f.File.FullName)
+        if settings.MultiLineSearch then
+            this.SearchTextFileContents f
+        else
+            this.SearchTextFileLines f
+
+    member this.SearchBlob (blob : string): SearchResult.t list =
+        let pMatches = this.recGetPatternMatches settings.SearchPatterns blob []
+        // if settings.debug then log_msg (sprintf "p_matches: %d" (List.length p_matches));
+        let toSearchResult (p : Regex) (m : Match) = 
+            SearchResult.Create p 0 (m.Index + 1) (m.Index + m.Length + 1) "" [] []
+        let results : SearchResult.t list = List.map (fun (p, m) -> toSearchResult p m) pMatches
         results
 
-    member this.SearchBinaryFile (f : FileInfo) : unit =
-        if _settings.Verbose then
-            Common.Log (sprintf "Searching binary file %s" f.FullName)
+    member this.SearchBinaryFile (f : SearchFile.t) : unit =
+        if settings.Verbose then
+            Common.Log (sprintf "Searching binary file %s" f.File.FullName)
         try
-            use sr = new StreamReader (f.FullName)
+            use sr = new StreamReader (f.File.FullName)
             let contents = sr.ReadToEnd()
-            for p in Seq.filter (fun p -> (p:Regex).Match(contents).Success) _settings.SearchPatterns do
+            for p in Seq.filter (fun p -> (p:Regex).Match(contents).Success) settings.SearchPatterns do
                 let mutable m = p.Match contents
                 let mutable stop = false
                 while m.Success && not stop do
                     let matchStartIndex = m.Index + 1
                     let matchEndIndex = m.Index + m.Length + 1
-                    this.AddSearchResult (new SearchResult(p,
-                                                           f,
-                                                           0,
-                                                           matchStartIndex,
-                                                           matchEndIndex,
-                                                           null,
-                                                           [],
-                                                           []))
-                    if _settings.FirstMatch then
+                    let r = SearchResult.Create p 0 matchStartIndex matchEndIndex null [] []
+                    this.AddSearchResult { r with File=f }
+                    if settings.FirstMatch then
                         stop <- true
                     m <- m.NextMatch()
         with
         | :? IOException as ex -> printfn "%s" (ex.Message)
 
-    member this.AddSearchResult (searchResult : SearchResult) : unit =
-        let fileadd = _fileSet.Add(searchResult.File)
-        _results.Add(searchResult)
+    member this.SearchFile (f : SearchFile.t) : unit =
+        match f.FileType with
+        | FileType.Archive -> Common.Log (sprintf "Archive file searching not currently supported")
+        | FileType.Binary -> this.SearchBinaryFile f
+        | FileType.Text -> this.SearchTextFile f
+        | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
+        | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.File.FullName)
 
-    member this.GetSortedResults : SearchResult list = 
+    member this.SearchPath (startDir : DirectoryInfo) : unit =
+        let dirs =
+            if settings.Recursive then
+                startDir :: this.GetSearchDirs(startDir)
+            else
+                [startDir]
+        if settings.Verbose then
+            printfn "\nDirectories to be searched (%d):" dirs.Length
+            List.iter (fun d -> Common.Log (sprintf "%s " (d:DirectoryInfo).FullName)) dirs
+        
+        let files : SearchFile.t list = this.GetSearchFiles(dirs)
+        if settings.Verbose then
+            Common.Log (sprintf "\nFiles to be searched (%d):" files.Length)
+            Seq.iter (fun (f: SearchFile.t) -> Common.Log (sprintf "%s " (f.File.FullName))) files
+            printfn ""
+
+        for f in files do
+            this.SearchFile f
+
+    member this.Search () : unit =
+        if FileUtil.IsDirectory(settings.StartPath) then
+            let startDir = new DirectoryInfo(settings.StartPath)
+            if this.IsSearchDir startDir then
+                this.SearchPath startDir
+            else
+                raise <| Exception ("Startpath does not match search settings")
+        else
+            let startFile = new FileInfo(settings.StartPath)
+            this.SearchFile (SearchFile.Create startFile (_fileTypes.GetFileType startFile))
+
+    member this.GetSortedResults : SearchResult.t list = 
         this.Results
-        |> Seq.sortBy (fun r -> r.SortKey)
+        //|> Seq.sortBy (fun r -> r.SortKey)
         |> List.ofSeq
 
     member this.PrintResults : unit = 
         let sortedResults = this.GetSortedResults
         Common.Log (sprintf "\nSearch results (%d):" this.Results.Count)
         sortedResults
-        |> Seq.iter (fun r -> Common.Log (sprintf "%s" (r.ToString())))
+        |> Seq.iter (fun r -> Common.Log (sprintf "%s" (SearchResult.ToString r)))
 
     member this.GetMatchingDirs : DirectoryInfo list = 
         this.Results
-        |> Seq.map (fun r -> r.File.Directory)
+        |> Seq.map (fun r -> r.File.File.Directory)
         |> Seq.distinctBy (fun d -> d.FullName)
         |> Seq.sortBy (fun d -> d.FullName)
         |> List.ofSeq
@@ -337,7 +354,7 @@ type Searcher (settings : SearchSettings) =
 
     member this.GetMatchingFiles : FileInfo list = 
         this.Results
-        |> Seq.map (fun r -> r.File)
+        |> Seq.map (fun r -> r.File.File)
         |> Seq.distinctBy (fun f -> f.FullName)
         |> Seq.sortBy (fun f -> f.FullName)
         |> List.ofSeq
@@ -352,7 +369,7 @@ type Searcher (settings : SearchSettings) =
         let lines =
             this.Results
             |> Seq.map (fun r -> r.Line.Trim())
-        if _settings.UniqueLines then
+        if settings.UniqueLines then
             Seq.sortBy (fun (s : string) -> s.ToUpper()) lines
             |> Seq.distinct
             |> List.ofSeq
@@ -363,10 +380,10 @@ type Searcher (settings : SearchSettings) =
     member this.PrintMatchingLines : unit = 
         let lines = this.GetMatchingLines
         let title =
-            if _settings.UniqueLines then "Unique lines with matches"
+            if settings.UniqueLines then "Unique lines with matches"
             else "Lines with matches"
         Common.Log (sprintf "\n%s (%d):" title lines.Length)
         for l in lines do
             printfn "%s" l
 
-    ;;
+;;

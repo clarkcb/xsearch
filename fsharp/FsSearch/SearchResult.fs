@@ -6,66 +6,67 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 
-type SearchResult(searchPattern : Regex, file : FileInfo, lineNum : int,
-                  matchStartIndex : int, matchEndIndex : int, line : string,
-                  linesBefore : string list, linesAfter : string list) =
-    member val SearchPattern = searchPattern with get,set
-    member val File = file with get,set
-    member val LineNum = lineNum with get,set
-    member val MatchStartIndex = matchStartIndex with get,set
-    member val MatchEndIndex = matchEndIndex with get,set
-    member val Line = line with get,set
-    member val LinesBefore = linesBefore with get,set
-    member val LinesAfter = linesAfter with get,set
+module SearchResult =
+    type t = {
+        SearchPattern : Regex;
+        File : SearchFile.t;
+        LineNum : int;
+        MatchStartIndex : int;
+        MatchEndIndex : int;
+        Line : string;
+        LinesBefore : string list;
+        LinesAfter : string list;
+    }
 
-    override this.ToString() : string =
-        if this.LinesBefore.Length > 0 || this.LinesAfter.Length > 0 then
-            this.MultLineToString()
-        else
-            this.SingleLineToString()
+    let Create (pattern : Regex) (lineNum : int) (startIndex : int) (endIndex : int) (line : string) (linesBefore : string list) (linesAfter : string list) : t =
+        {
+            SearchPattern = pattern;
+            File = { Containers=[]; File=null; FileType=FileType.Unknown; };
+            LineNum = lineNum;
+            MatchStartIndex = startIndex;
+            MatchEndIndex = endIndex;
+            Line = line;
+            LinesBefore = linesBefore;
+            LinesAfter = linesAfter;
+        }
 
-    member this.LineNumPadding() : int =
-        let maxLineNum = this.LineNum + this.LinesAfter.Length
-        (sprintf "%d" maxLineNum).Length
-
-    member this.MultLineToString() : string =
-        let lines = new List<String>()
-        lines.Add(sprintf "%s\n%s: %d: [%d:%d]\n%s"
-                      (new String('=', 80))
-                      this.File.FullName
-                      this.LineNum
-                      this.MatchStartIndex
-                      this.MatchEndIndex
-                      (new String('-', 80)))
-        let mutable currentLineNum = this.LineNum
-        let lineFormat = sprintf " {0,%d} | {1}" (this.LineNumPadding())
-        if this.LinesBefore.Length > 0 then
-            currentLineNum <- this.LineNum - this.LinesBefore.Length
-            for lineBefore in this.LinesBefore do
-                lines.Add(String.Format(" "+lineFormat, currentLineNum, lineBefore))
-                currentLineNum <- currentLineNum + 1
-        lines.Add(String.Format(">" + lineFormat, this.LineNum, this.Line))
-        if this.LinesAfter.Length > 0 then
-            currentLineNum <- this.LineNum + 1
-            for lineAfter in this.LinesAfter do
-                lines.Add(String.Format(" "+lineFormat, currentLineNum, lineAfter))
-                currentLineNum <- currentLineNum + 1
-        lines.Add("")
-        lines |> List.ofSeq |> String.concat "\n" 
-
-    member this.SingleLineToString() : string =
+    let SingleLineToString (sr : t) : string =
         let matchString =
-            if this.LineNum = 0 then
-                sprintf " matches at [%d:%d]" this.MatchStartIndex this.MatchEndIndex
+            if sr.LineNum = 0 then
+                sprintf " matches at [%d:%d]" sr.MatchStartIndex sr.MatchEndIndex
             else
-                sprintf ": %d: [%d:%d]: %s" this.LineNum this.MatchStartIndex this.MatchEndIndex (this.Line.Trim())
-        let sb =
-            (new StringBuilder()).
-                Append(this.File.FullName).
-                Append(matchString)
-        sb.ToString()
+                sprintf ": %d: [%d:%d]: %s" sr.LineNum sr.MatchStartIndex sr.MatchEndIndex (sr.Line.Trim())
+        (SearchFile.ToString sr.File) + matchString
 
-    member this.SortKey = 
-        (this.File.DirectoryName.ToLower(), this.File.Name.ToLower(), this.LineNum, this.MatchStartIndex)
+    let MultLineToString (sr : t) : string =
+        let hdr = 
+            String.concat "\n" [
+                sprintf "%s" (new String('=', 80));
+                sprintf "%s: %d: [%d:%d]" (SearchFile.ToString sr.File) sr.LineNum sr.MatchStartIndex sr.MatchEndIndex;
+                sprintf "%s" (new String('-', 80));
+            ] + "\n"
+        let maxLineNum = sr.LineNum + (List.length sr.LinesAfter)
+        let maxLineNumLength = maxLineNum.ToString().Length
+        let paddedLineNum (lineNum : int) : string =
+            let lineNumString = lineNum.ToString()
+            (new String(' ', (maxLineNumLength - lineNumString.Length))) + lineNumString
+        let rec recLines (lines : string list) (lineNum : int) (linesString : string) : string =
+            match lines with
+            | [] -> linesString
+            | l :: ls ->
+                recLines ls (lineNum + 1) (linesString + (sprintf "  %s | %s\n" (paddedLineNum lineNum) l))
+        let linesBeforeString = recLines sr.LinesBefore (sr.LineNum - (List.length sr.LinesBefore)) ""
+        let linesAfterString = recLines sr.LinesAfter (sr.LineNum + 1) ""
+        String.concat "" [
+            hdr;
+            linesBeforeString;
+            sprintf "> %s | %s\n" (paddedLineNum sr.LineNum) sr.Line;
+            linesAfterString;
+        ]
 
-    ;;
+    let ToString (sr : t) : string =
+        if (not (List.isEmpty sr.LinesBefore)) || (not (List.isEmpty sr.LinesAfter)) then
+            MultLineToString sr
+        else
+            SingleLineToString sr
+;;

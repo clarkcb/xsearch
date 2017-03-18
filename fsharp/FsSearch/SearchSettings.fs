@@ -5,8 +5,8 @@ open System.Collections.Generic
 open System.IO
 open System.Text.RegularExpressions
 
-module Settings =
-    type SearchSettings = {
+module SearchSettings =
+    type t = {
         ArchivesOnly : bool;
         Debug : bool;
         ExcludeHidden : bool;
@@ -16,6 +16,7 @@ module Settings =
         InDirPatterns : Regex list;
         InExtensions : string list;
         InFilePatterns : Regex list;
+        InFileTypes : FileType list;
         InLinesAfterPatterns : Regex list;
         InLinesBeforePatterns : Regex list;
         LinesAfter : int;
@@ -32,6 +33,7 @@ module Settings =
         OutDirPatterns : Regex list;
         OutExtensions : string list;
         OutFilePatterns : Regex list;
+        OutFileTypes : FileType list;
         OutLinesAfterPatterns : Regex list;
         OutLinesBeforePatterns : Regex list;
         PrintResults : bool;
@@ -55,6 +57,7 @@ module Settings =
         InDirPatterns = [];
         InExtensions = [];
         InFilePatterns = [];
+        InFileTypes = [];
         InLinesAfterPatterns = [];
         InLinesBeforePatterns = [];
         LinesAfter = 0;
@@ -71,6 +74,7 @@ module Settings =
         OutDirPatterns = [];
         OutExtensions = [];
         OutFilePatterns = [];
+        OutFileTypes = [];
         OutLinesAfterPatterns = [];
         OutLinesBeforePatterns = [];
         PrintResults = false;
