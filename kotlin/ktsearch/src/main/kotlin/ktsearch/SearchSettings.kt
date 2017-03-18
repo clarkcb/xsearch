@@ -14,6 +14,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val inDirPatterns: Set<Regex>,
                           val inExtensions: Set<String>,
                           val inFilePatterns: Set<Regex>,
+                          val inFileTypes: Set<FileType>,
                           val inLinesAfterPatterns: Set<Regex>,
                           val inLinesBeforePatterns: Set<Regex>,
                           val linesAfter: Int,
@@ -30,6 +31,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val outDirPatterns: Set<Regex>,
                           val outExtensions: Set<String>,
                           val outFilePatterns: Set<Regex>,
+                          val outFileTypes: Set<FileType>,
                           val outLinesAfterPatterns: Set<Regex>,
                           val outLinesBeforePatterns: Set<Regex>,
                           val printResults: Boolean,
@@ -54,6 +56,7 @@ fun getDefaultSettings() : SearchSettings {
             inDirPatterns = setOf(),
             inExtensions = setOf(),
             inFilePatterns = setOf(),
+            inFileTypes = setOf(),
             inLinesAfterPatterns = setOf(),
             inLinesBeforePatterns = setOf(),
             linesAfter = 0,
@@ -70,6 +73,7 @@ fun getDefaultSettings() : SearchSettings {
             outDirPatterns = setOf(),
             outExtensions = setOf(),
             outFilePatterns = setOf(),
+            outFileTypes = setOf(),
             outLinesAfterPatterns = setOf(),
             outLinesBeforePatterns = setOf(),
             printResults = false,
@@ -86,4 +90,9 @@ fun getDefaultSettings() : SearchSettings {
 fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
     val exts = ext.split(',').filter { it.isNotEmpty() }
     return extensions.plus(exts)
+}
+
+fun addFileTypes(ft: String, filetypes: Set<FileType>): Set<FileType> {
+    val fts = ft.split(',').filter { it.isNotEmpty() }.map { fromName(it) }
+    return filetypes.plus(fts)
 }

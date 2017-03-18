@@ -65,6 +65,8 @@ class SearchOptions() {
                     { s, ss -> ss.copy(inExtensions = addExtensions(s, ss.inExtensions)) },
             "in-filepattern" to
                     { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
+            "in-filetype" to
+                    { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
             "in-linesafterpattern" to
                     { s, ss -> ss.copy(inLinesAfterPatterns = ss.inLinesAfterPatterns.plus(Regex(s))) },
             "in-linesbeforepattern" to
@@ -89,6 +91,8 @@ class SearchOptions() {
                     { s, ss -> ss.copy(outExtensions = addExtensions(s, ss.outExtensions)) },
             "out-filepattern" to
                     { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
+            "out-filetype" to
+                    { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
             "out-linesafterpattern" to
                     { s, ss -> ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns.plus(Regex(s))) },
             "out-linesbeforepattern" to
