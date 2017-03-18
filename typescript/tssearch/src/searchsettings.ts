@@ -7,6 +7,7 @@
 
 "use strict";
 
+var FileType = require('./filetype.ts').FileType;
 var FileTypes = require('./filetypes.ts').FileTypes;
 
 class SearchSettings {

@@ -53,12 +53,19 @@ class FileTypes {
     }
 
     public static fromName(name: string): FileType {
-        if (name.toUpperCase() === 'TEXT')
+        let uname: string = name.toUpperCase();
+        if (uname === 'TEXT')
             return FileType.Text;
-        if (name.toUpperCase() === 'BINARY')
+        if (uname === 'BINARY')
             return FileType.Binary;
-        if (name.toUpperCase() === 'ARCHIVE')
+        if (uname === 'ARCHIVE')
             return FileType.Archive;
+        if (uname === 'ARCHIVE')
+            return FileType.Archive;
+        if (uname === 'CODE')
+            return FileType.Code;
+        if (uname === 'XML')
+            return FileType.Xml;
         return FileType.Unknown;
     }
 
@@ -69,6 +76,10 @@ class FileTypes {
             return FileType.Binary;
         if (FileTypes.isArchiveFile(filename))
             return FileType.Archive;
+        if (FileTypes.isCodeFile(filename))
+            return FileType.Code;
+        if (FileTypes.isXmlFile(filename))
+            return FileType.Xml;
         return FileType.Unknown;
     }
 
@@ -92,6 +103,11 @@ class FileTypes {
         return FileTypes.fileTypeMap['binary'].indexOf(ext) > -1;
     }
 
+    public static isCodeFile(filename: string): boolean {
+        let ext: string = FileUtil.getExtension(filename);
+        return FileTypes.fileTypeMap['code'].indexOf(ext) > -1;
+    }
+
     public static isSearchableFile(filename: string): boolean {
         let ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['searchable'].indexOf(ext) > -1;
@@ -100,6 +116,11 @@ class FileTypes {
     public static isTextFile(filename: string): boolean {
         let ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['text'].indexOf(ext) > -1;
+    }
+
+    public static isXmlFile(filename: string): boolean {
+        let ext: string = FileUtil.getExtension(filename);
+        return FileTypes.fileTypeMap['xml'].indexOf(ext) > -1;
     }
 
     public static isUnknownFile(filename: string): boolean {
