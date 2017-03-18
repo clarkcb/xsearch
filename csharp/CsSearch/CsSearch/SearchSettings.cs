@@ -6,82 +6,82 @@ namespace CsSearch
 {
 	public class SearchSettings
 	{
-		public ISet<string> InExtensions { get; private set; }
-		public ISet<string> OutExtensions { get; private set; }
-		public ISet<Regex> InDirPatterns { get; private set; }
-		public ISet<Regex> OutDirPatterns { get; private set; }
-		public ISet<Regex> InFilePatterns { get; private set; }
-		public ISet<Regex> OutFilePatterns { get; private set; }
-		public ISet<string> InArchiveExtensions { get; private set; }
-		public ISet<string> OutArchiveExtensions { get; private set; }
-		public ISet<Regex> InArchiveFilePatterns { get; private set; }
-		public ISet<Regex> OutArchiveFilePatterns { get; private set; }
-
-		public ISet<Regex> InLinesAfterPatterns { get; private set; }
-		public ISet<Regex> OutLinesAfterPatterns { get; private set; }
-		public ISet<Regex> InLinesBeforePatterns { get; private set; }
-		public ISet<Regex> OutLinesBeforePatterns { get; private set; }
-		public ISet<Regex> LinesAfterToPatterns { get; private set; }
-		public ISet<Regex> LinesAfterUntilPatterns { get; private set; }
-
-		public ISet<Regex> SearchPatterns { get; private set; }
-
-		public string StartPath { get; set; }
-
 		public bool ArchivesOnly { get; set; }
 		public bool Debug { get; set; }
 		public bool ExcludeHidden { get; set; }
 		public bool FirstMatch { get; set; }
+		public ISet<string> InArchiveExtensions { get; private set; }
+		public ISet<Regex> InArchiveFilePatterns { get; private set; }
+		public ISet<Regex> InDirPatterns { get; private set; }
+		public ISet<string> InExtensions { get; private set; }
+		public ISet<Regex> InFilePatterns { get; private set; }
+		public ISet<FileType> InFileTypes { get; private set; }
+		public ISet<Regex> InLinesAfterPatterns { get; private set; }
+		public ISet<Regex> InLinesBeforePatterns { get; private set; }
 		public int LinesAfter { get; set; }
+		public ISet<Regex> LinesAfterToPatterns { get; private set; }
+		public ISet<Regex> LinesAfterUntilPatterns { get; private set; }
 		public int LinesBefore { get; set; }
 		public bool ListDirs { get; set; }
 		public bool ListFiles { get; set; }
 		public bool ListLines { get; set; }
 		public int MaxLineLength { get; set; }
 		public bool MultiLineSearch { get; set; }
+		public ISet<string> OutArchiveExtensions { get; private set; }
+		public ISet<Regex> OutArchiveFilePatterns { get; private set; }
+		public ISet<Regex> OutDirPatterns { get; private set; }
+		public ISet<string> OutExtensions { get; private set; }
+		public ISet<Regex> OutFilePatterns { get; private set; }
+		public ISet<FileType> OutFileTypes { get; private set; }
+		public ISet<Regex> OutLinesAfterPatterns { get; private set; }
+		public ISet<Regex> OutLinesBeforePatterns { get; private set; }
 		public bool PrintResults { get; set; }
 		public bool PrintUsage { get; set; }
 		public bool PrintVersion { get; set; }
 		public bool Recursive { get; set; }
 		public bool SearchArchives { get; set; }
+		public ISet<Regex> SearchPatterns { get; private set; }
+		public string StartPath { get; set; }
 		public bool UniqueLines { get; set; }
 		public bool Verbose { get; set; }
 
 		public SearchSettings()
 		{
-			InExtensions = new HashSet<string>();
-			OutExtensions = new HashSet<string>();
-			InDirPatterns = new HashSet<Regex>();
-			OutDirPatterns = new HashSet<Regex>();
-			InFilePatterns = new HashSet<Regex>();
-			OutFilePatterns = new HashSet<Regex>();
-			InArchiveExtensions = new HashSet<string>();
-			OutArchiveExtensions = new HashSet<string>();
-			InArchiveFilePatterns = new HashSet<Regex>();
-			OutArchiveFilePatterns = new HashSet<Regex>();
-			InLinesAfterPatterns = new HashSet<Regex>();
-			OutLinesAfterPatterns = new HashSet<Regex>();
-			InLinesBeforePatterns = new HashSet<Regex>();
-			OutLinesBeforePatterns = new HashSet<Regex>();
-			LinesAfterToPatterns = new HashSet<Regex>();
-			LinesAfterUntilPatterns = new HashSet<Regex>();
-			SearchPatterns = new HashSet<Regex>();
 			ArchivesOnly = false;
 			Debug = false;
 			ExcludeHidden = true;
 			FirstMatch = false;
+			InArchiveExtensions = new HashSet<string>();
+			InArchiveFilePatterns = new HashSet<Regex>();
+			InDirPatterns = new HashSet<Regex>();
+			InExtensions = new HashSet<string>();
+			InFilePatterns = new HashSet<Regex>();
+			InFileTypes = new HashSet<FileType>();
+			InLinesAfterPatterns = new HashSet<Regex>();
+			InLinesBeforePatterns = new HashSet<Regex>();
 			LinesAfter = 0;
+			LinesAfterToPatterns = new HashSet<Regex>();
+			LinesAfterUntilPatterns = new HashSet<Regex>();
 			LinesBefore = 0;
 			ListDirs = false;
 			ListFiles = false;
 			ListLines = false;
 			MaxLineLength = 150;
 			MultiLineSearch = false;
+			OutArchiveExtensions = new HashSet<string>();
+			OutArchiveFilePatterns = new HashSet<Regex>();
+			OutDirPatterns = new HashSet<Regex>();
+			OutExtensions = new HashSet<string>();
+			OutFilePatterns = new HashSet<Regex>();
+			OutFileTypes = new HashSet<FileType>();
+			OutLinesAfterPatterns = new HashSet<Regex>();
+			OutLinesBeforePatterns = new HashSet<Regex>();
 			PrintResults = false;
 			PrintUsage = false;
 			PrintVersion = false;
 			Recursive = true;
 			SearchArchives = false;
+			SearchPatterns = new HashSet<Regex>();
 			UniqueLines = false;
 			Verbose = false;
 		}
@@ -186,6 +186,25 @@ namespace CsSearch
 		public void AddSearchPattern(string pattern)
 		{
 			AddPattern(SearchPatterns, pattern);
+		}
+
+		private static void AddFileType(ISet<FileType> set, string typeNameList)
+		{
+			var typeNames = typeNameList.Split(new[] { ',' });
+			foreach (var t in typeNames)
+			{
+				set.Add(FileTypes.FromName(t));
+			}
+		}
+
+		public void AddInFileType(string typeName)
+		{
+			AddFileType(InFileTypes, typeName);
+		}
+
+		public void AddOutFileType(string typeName)
+		{
+			AddFileType(OutFileTypes, typeName);
 		}
 
 		public void SetArchivesOnly()
