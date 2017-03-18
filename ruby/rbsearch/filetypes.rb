@@ -14,7 +14,9 @@ module FileType
   Unknown = 0
   Archive = 1
   Binary  = 2
-  Text    = 3
+  Code    = 3
+  Text    = 4
+  Xml     = 5
 end
 
 class FileTypes
@@ -23,13 +25,18 @@ class FileTypes
   end
 
   def self.from_name(name)
+    uname = name.upcase()
     filetype = FileType::Unknown
-    if name.upcase() == "TEXT"
+    if uname == "TEXT"
       filetype = FileType::Text
-    elsif name.upcase() == "BINARY"
+    elsif uname == "BINARY"
       filetype = FileType::Binary
-    elsif name.upcase() == "ARCHIVE"
+    elsif uname == "ARCHIVE"
       filetype = FileType::Archive
+    elsif uname == "CODE"
+      filetype = FileType::Code
+    elsif uname == "XML"
+      filetype = FileType::Xml
     end
     filetype
   end
@@ -70,11 +77,19 @@ class FileTypes
     @file_type_map['binary'].include?(FileUtil::get_extension(f))
   end
 
+  def is_code_file(f)
+    @file_type_map['code'].include?(FileUtil::get_extension(f))
+  end
+
   def is_searchable_file(f)
     @file_type_map['searchable'].include?(FileUtil::get_extension(f))
   end
 
   def is_text_file(f)
     @file_type_map['text'].include?(FileUtil::get_extension(f))
+  end
+
+  def is_xml_file(f)
+    @file_type_map['xml'].include?(FileUtil::get_extension(f))
   end
 end
