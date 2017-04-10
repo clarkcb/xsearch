@@ -82,11 +82,13 @@ searchOptionsToString searchOptions =
     formatOptLine o d = " " ++ padString o longest ++ "  " ++ d
 
 data ActionType = ArgActionType
+                | BoolFlagActionType
                 | FlagActionType
                 | UnknownActionType
   deriving (Show, Eq)
 
 type ArgAction = SearchSettings -> String -> SearchSettings
+type BoolFlagAction = SearchSettings -> Bool -> SearchSettings
 type FlagAction = SearchSettings -> SearchSettings
 
 argActions :: [(String, ArgAction)]
@@ -136,6 +138,30 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("version", \ss -> ss {printVersion=True})
               ]
 
+boolFlagActions :: [(String, BoolFlagAction)]
+boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=(not b)})
+                  , ("archivesonly", \ss b -> ss {archivesOnly=b,
+                                                  searchArchives=b})
+                  , ("debug", \ss b -> ss {debug=b, verbose=b})
+                  , ("excludehidden", \ss b -> ss {excludeHidden=b})
+                  , ("firstmatch", \ss b -> ss {firstMatch=b})
+                  , ("help", \ss b -> ss {printUsage=b})
+                  , ("includehidden", \ss b -> ss {excludeHidden=(not b)})
+                  , ("listdirs", \ss b -> ss {listDirs=b})
+                  , ("listfiles", \ss b -> ss {listFiles=b})
+                  , ("listlines", \ss b -> ss {listLines=b})
+                  , ("multilinesearch", \ss b -> ss {multiLineSearch=b})
+                  , ("noprintmatches", \ss b -> ss {printResults=(not b)})
+                  , ("norecursive", \ss b -> ss {recursive=(not b)})
+                  , ("nosearcharchives", \ss b -> ss {searchArchives=(not b)})
+                  , ("printmatches", \ss b -> ss {printResults=b})
+                  , ("recursive", \ss b -> ss {recursive=b})
+                  , ("searcharchives", \ss b -> ss {searchArchives=b})
+                  , ("uniquelines", \ss b -> ss {uniqueLines=b})
+                  , ("verbose", \ss b -> ss {verbose=b})
+                  , ("version", \ss b -> ss {printVersion=b})
+                  ]
+
 shortToLong :: [SearchOption] -> String -> Either String String
 shortToLong _ "" = Left "Missing argument"
 shortToLong opts s | length s == 2 && head s == '-' =
@@ -158,11 +184,13 @@ settingsFromArgs opts arguments =
           [a] | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               ArgActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
+              BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) []
               FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) []
               UnknownActionType -> Left $ "Invalid option: " ++ a ++ "\n"
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               ArgActionType -> recSettingsFromArgs (getArgAction (argName a) settings (head as)) (tail as)
+              BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) as
               FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
           a:as -> recSettingsFromArgs (settings {startPath=a}) as
@@ -171,15 +199,20 @@ settingsFromArgs opts arguments =
         getActionType :: String -> ActionType
         getActionType a
           | isArgAction a = ArgActionType
+          | isBoolFlagAction a = BoolFlagActionType
           | isFlagAction a = FlagActionType
           | otherwise = UnknownActionType
         argName :: String -> String
         argName = dropWhile (=='-')
-        getArgAction ::String -> ArgAction
+        getArgAction :: String -> ArgAction
         getArgAction a = snd $ head $ filter (\(x,_) -> a==x) argActions
-        getFlagAction ::String -> FlagAction
+        getBoolFlagAction :: String -> BoolFlagAction
+        getBoolFlagAction a = snd $ head $ filter (\(x,_) -> a==x) boolFlagActions
+        getFlagAction :: String -> FlagAction
         getFlagAction a = snd $ head $ filter (\(x,_) -> a==x) flagActions
-        isArgAction ::String -> Bool
+        isArgAction :: String -> Bool
         isArgAction a = isJust $ lookup a argActions
-        isFlagAction ::String -> Bool
+        isBoolFlagAction :: String -> Bool
+        isBoolFlagAction a = isJust $ lookup a boolFlagActions
+        isFlagAction :: String -> Bool
         isFlagAction a = isJust $ lookup a flagActions
