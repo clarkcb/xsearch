@@ -14,6 +14,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.List;
 
 public class SearchMain {
 
@@ -49,18 +50,18 @@ public class SearchMain {
                 Searcher searcher = new Searcher(settings);
 
                 searcher.validateSettings();
-                searcher.search();
+                List<SearchResult> results = searcher.search();
 
                 // print the results
                 if (settings.getPrintResults()) {
                     Logger.log("");
-                    searcher.printSearchResults();
+                    searcher.printSearchResults(results);
                 }
                 if (settings.getListDirs()) {
-                    searcher.printMatchingDirs();
+                    searcher.printMatchingDirs(results);
                 }
                 if (settings.getListFiles()) {
-                    searcher.printMatchingFiles();
+                    searcher.printMatchingFiles(results);
                 }
                 if (settings.getListLines()) {
                     searcher.printMatchingLines();

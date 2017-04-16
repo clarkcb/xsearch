@@ -22,6 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Set;
@@ -68,7 +72,7 @@ public class Searcher {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    public final boolean isSearchDir(final File d) {
+    private boolean isSearchDir(final File d) {
         List<String> pathElems = FileUtil.splitPath(d.toString());
         if (settings.getExcludeHidden()
                 && pathElems.stream().anyMatch(FileUtil::isHidden)) {
@@ -83,7 +87,7 @@ public class Searcher {
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
-    public final List<File> getSearchDirs(final File startPath) {
+    private List<File> getSearchDirs(final File startPath) {
         List<File> searchDirs = new ArrayList<>();
         searchDirs.add(startPath);
         if (settings.getRecursive()) {
@@ -117,7 +121,7 @@ public class Searcher {
         return subSearchDirs;
     }
 
-    public final boolean isSearchFile(final File f) {
+    private boolean isSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInExtensions().isEmpty()
                 ||
@@ -136,7 +140,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
     }
 
-    public final boolean isArchiveSearchFile(final File f) {
+    private boolean isArchiveSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInArchiveExtensions().isEmpty()
                 ||
@@ -155,7 +159,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
     }
 
-    public final boolean filterFile(final File f) {
+    private boolean filterFile(final File f) {
         if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
             return false;
         }
@@ -182,7 +186,7 @@ public class Searcher {
         return searchFiles;
     }
 
-    public final List<SearchFile> getSearchFiles(final List<File> searchDirs) {
+    private List<SearchFile> getSearchFiles(final List<File> searchDirs) {
         List<SearchFile> searchFiles = new ArrayList<>();
         for (File d : searchDirs) {
             searchFiles.addAll(getSearchFilesForDir(d));
@@ -190,12 +194,13 @@ public class Searcher {
         return searchFiles;
     }
 
-    public final void search() throws SearchException {
+    public final List<SearchResult> search() throws SearchException {
         // figure out if startPath is a directory or a file and search accordingly
+        List<SearchResult> results = new ArrayList<>();
         File startPathFile = new File(settings.getStartPath());
         if (startPathFile.isDirectory()) {
             if (isSearchDir(startPathFile)) {
-                searchPath(startPathFile);
+                results.addAll(searchPath(startPathFile));
             } else {
                 throw new SearchException("Startpath does not match search settings");
             }
@@ -206,8 +211,8 @@ public class Searcher {
                 if (null == d) {
                     d = new File(".");
                 }
-                searchFile(new SearchFile(d.getPath(), startPathFile.getName(),
-                        fileType));
+                results.addAll(searchFile(new SearchFile(d.getPath(), startPathFile.getName(),
+                        fileType)));
             } else {
                 throw new SearchException("Startpath does not match search settings");
             }
@@ -217,9 +222,10 @@ public class Searcher {
         if (settings.getVerbose()) {
             log("\nFile search complete.\n");
         }
+        return results;
     }
 
-    public final void searchPath(final File filePath) {
+    private List<SearchResult> searchPath(final File filePath) {
         // get the search directories
         List<File> searchDirs = getSearchDirs(filePath);
         if (settings.getVerbose()) {
@@ -243,42 +249,92 @@ public class Searcher {
         }
 
         // search the files
-        searchFiles.forEach(this::searchFile);
+        //searchFiles.forEach(this::searchFile);
+        return searchFiles(searchFiles);
     }
 
-    public final void searchFile(final SearchFile sf) {
+    private List<SearchResult> searchFiles(List<SearchFile> searchFiles) {
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        List<SearchResult> results = new ArrayList<>();
+
+        int offset = 0;
+        int batchSize = 1000;
+
+        do {
+            List<SearchFile> nextBatch = ListUtil.take(ListUtil.drop(searchFiles, offset), batchSize);
+            results.addAll(batchSearchFiles(nextBatch, executorService));
+            offset += batchSize;
+        } while (offset < searchFiles.size());
+
+        executorService.shutdown();
+        // TODO: how long should we wait?
+        try {
+            executorService.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    private List<SearchResult> batchSearchFiles(List<SearchFile> searchFiles, ExecutorService executorService) {
+        //System.out.println("Next batch: " + searchFiles.size() + " searchFiles");
+        List<SearchResult> results = new ArrayList<>();
+        List<Callable<List<SearchResult>>> callables = new ArrayList<>(searchFiles.size());
+        for (SearchFile sf : searchFiles) {
+            callables.add(() -> searchFile(sf));
+        }
+        try {
+            executorService.invokeAll(callables)
+                    .stream()
+                    .forEach(future -> {
+                        try {
+                            results.addAll(future.get());
+                        } catch (Exception e) {
+                            throw new IllegalStateException(e);
+                        }
+                    });
+        } catch (Exception e) {
+            System.out.println("Exception while trying to search files: " + e.getMessage());
+        }
+        return results;
+    }
+
+    public final List<SearchResult> searchFile(final SearchFile sf) {
         FileType fileType = sf.getFileType();
         if (fileType == FileType.TEXT) {
-            searchTextFile(sf);
+            return searchTextFile(sf);
         } else if (fileType == FileType.BINARY) {
-            searchBinaryFile(sf);
+            return searchBinaryFile(sf);
         }
+        return new ArrayList<>();
     }
 
-    public final void searchTextFile(final SearchFile sf) {
+    private List<SearchResult> searchTextFile(final SearchFile sf) {
         if (settings.getVerbose()) {
             log(String.format("Searching text file %s", sf.toString()));
         }
         if (settings.getMultiLineSearch()) {
-            searchTextFileContents(sf);
+            return searchTextFileContents(sf);
         } else {
-            searchTextFileLines(sf);
+            return searchTextFileLines(sf);
         }
     }
 
-    public final void searchTextFileContents(final SearchFile sf) {
+    private List<SearchResult> searchTextFileContents(final SearchFile sf) {
+        List<SearchResult> results = new ArrayList<>();
         try {
             String contents = FileUtil.getFileContents(sf.toFile());
-            List<SearchResult> results = searchMultiLineString(contents);
+            results.addAll(searchMultiLineString(contents));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
-                addSearchResult(r);
+                //addSearchResult(r);
             }
         } catch (NoSuchElementException e) {
             log(e.toString() + ": " + sf.toString());
         } catch (IllegalStateException | IOException e) {
             log(e.toString());
         }
+        return results;
     }
 
     private List<Number> getNewLineIndices(final String s) {
@@ -309,9 +365,7 @@ public class Searcher {
     public final List<SearchResult> searchMultiLineString(final String s) {
         List<SearchResult> results = new ArrayList<>();
         for (Pattern p : settings.getSearchPatterns()) {
-            for (SearchResult r : searchMultiLineStringForPattern(s, p)) {
-                results.add(r);
-            }
+            results.addAll(searchMultiLineStringForPattern(s, p));
         }
         return results;
     }
@@ -405,14 +459,15 @@ public class Searcher {
         return results;
     }
 
-    public final void searchTextFileLines(final SearchFile sf) {
+    private List<SearchResult> searchTextFileLines(final SearchFile sf) {
         LineIterator it = null;
+        List<SearchResult> results = new ArrayList<>();
         try {
             it = FileUtil.getFileLineIterator(sf.toFile());
-            List<SearchResult> results = searchStringIterator(it);
+            results.addAll(searchStringIterator(it));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
-                addSearchResult(r);
+                //addSearchResult(r);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -421,6 +476,7 @@ public class Searcher {
                 it.close();
             }
         }
+        return results;
     }
 
     private boolean linesMatch(final List<String> lines,
@@ -541,17 +597,18 @@ public class Searcher {
         return results;
     }
 
-    public final void searchBinaryFile(final SearchFile sf) {
+    private List<SearchResult> searchBinaryFile(final SearchFile sf) {
         if (settings.getVerbose()) {
             log(String.format("Searching binary file %s", sf.getPath()));
         }
+        List<SearchResult> results = new ArrayList<>();
         try {
             String content = FileUtil.getFileContents(sf.toFile(), "ISO8859-1");
             for (Pattern p : settings.getSearchPatterns()) {
                 Matcher m = p.matcher(content);
                 boolean found = m.find();
                 while (found) {
-                    addSearchResult(new SearchResult(
+                    results.add(new SearchResult(
                             p,
                             sf,
                             0,
@@ -564,6 +621,7 @@ public class Searcher {
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
             log(e.toString());
         }
+        return results;
     }
 
     private void addSearchResult(final SearchResult searchResult) {
@@ -599,39 +657,39 @@ public class Searcher {
         return pathCmp;
     }
 
-    private List<SearchResult> getSortedSearchResults() {
+    private List<SearchResult> getSortedSearchResults(List<SearchResult> results) {
         return results.stream().sorted(this::compareResults)
                 .collect(Collectors.toList());
     }
 
-    public final void printSearchResults() {
-        List<SearchResult> sortedResults = getSortedSearchResults();
+    public final void printSearchResults(List<SearchResult> results) {
+        List<SearchResult> sortedResults = getSortedSearchResults(results);
         log(String.format("Search results (%d):", sortedResults.size()));
         for (SearchResult r : sortedResults) {
             log(r.toString());
         }
     }
 
-    public final List<String> getMatchingDirs() {
-        return searchFileSet.stream().map(SearchFile::getPath).distinct()
+    public final List<String> getMatchingDirs(List<SearchResult> results) {
+        return results.stream().map(r -> r.getSearchFile().getPath()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
-    public final void printMatchingDirs() {
-        List<String> dirs = getMatchingDirs();
+    public final void printMatchingDirs(List<SearchResult> results) {
+        List<String> dirs = getMatchingDirs(results);
         log(String.format("\nDirectories with matches (%d):", dirs.size()));
         for (String d : dirs) {
             log(d);
         }
     }
 
-    public final List<String> getMatchingFiles() {
-        return searchFileSet.stream().map(SearchFile::toString).sorted()
-                .collect(Collectors.toList());
+    public final List<String> getMatchingFiles(List<SearchResult> results) {
+        return results.stream().map(r -> r.getSearchFile().toString()).distinct()
+                .sorted().collect(Collectors.toList());
     }
 
-    public final void printMatchingFiles() {
-        List<String> files = getMatchingFiles();
+    public final void printMatchingFiles(List<SearchResult> results) {
+        List<String> files = getMatchingFiles(results);
         log(String.format("\nFiles with matches (%d):", files.size()));
         for (String f : files) {
             log(f);
