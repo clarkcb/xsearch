@@ -1,7 +1,6 @@
 package scalasearch
 
 import java.io.File
-import java.util
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -9,7 +8,7 @@ import scala.xml.XML
 import scala.collection.JavaConversions._
 
 case class SearchOption(shortarg:String, longarg:String, desc:String) {
-  val sortarg =
+  val sortarg: String =
     if (shortarg.nonEmpty) {
       shortarg.toLowerCase + "@" + longarg.toLowerCase
     } else {
