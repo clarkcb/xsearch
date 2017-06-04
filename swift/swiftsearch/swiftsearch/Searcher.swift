@@ -142,12 +142,14 @@ open class Searcher {
 
     fileprivate func getSearchDirs(_ filePath: String) -> [String] {
         var searchDirs = [String]()
-        let enumerator: FileManager.DirectoryEnumerator? = FileUtil.enumeratorForPath(filePath)
-        while let element = enumerator!.nextObject() as? String {
-            let fullPath = URL(fileURLWithPath: filePath).appendingPathComponent(element).absoluteString
-            if FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
-                && isSearchDir(element) {
+        
+        if let enumerator = FileUtil.enumeratorForPath(filePath) {
+            while let element = enumerator.nextObject() as? String {
+                let fullPath = FileUtil.joinPath(filePath, childPath: element)
+                if FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
+                    && isSearchDir(element) {
                     searchDirs.append(fullPath)
+                }
             }
         }
         return searchDirs
@@ -158,7 +160,7 @@ open class Searcher {
         var searchFiles = [String]()
         let pathFiles = FileUtil.contentsForPath(filePath)
         for f in pathFiles {
-            let fullPath = URL(fileURLWithPath: filePath).appendingPathComponent(f).absoluteString
+            let fullPath = FileUtil.joinPath(filePath, childPath: f)
             if !FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
                 && filterFile(f) {
                     searchFiles.append(fullPath)
