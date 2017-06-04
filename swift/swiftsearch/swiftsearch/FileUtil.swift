@@ -68,8 +68,16 @@ class FileUtil {
     static func isHiddenFile(_ fileName: String) -> Bool {
         return fileName.hasPrefix(".") && !isDotDir(fileName)
     }
-
+    
     static func splitPath(_ filePath: String) -> [String] {
         return filePath.characters.split {$0 == "/"}.map { String($0) }
+    }
+    
+    static func joinPath(_ path: String, childPath: String) -> String {
+        if path[path.index(before: path.endIndex)] == "/" {
+            return "\(path)\(childPath)"
+        } else {
+            return "\(path)/\(childPath)"
+        }
     }
 }
