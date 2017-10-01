@@ -11,12 +11,12 @@ from collections import deque
 from cStringIO import StringIO
 import json
 import os
-import platform
 import sys
 import xml.dom.minidom as minidom
 
 from common import get_text
 from config import SEARCHOPTIONSPATH
+from searchexception import SearchException
 from searchoption import SearchOption
 from searchsettings import SearchSettings
 
@@ -182,7 +182,7 @@ class SearchOptions(object):
             elif arg == 'startpath':
                 settings.startpath = json_dict[arg]
             else:
-                raise Exception('Invalid option: {0}'.format(arg))
+                raise SearchException('Invalid option: {0}'.format(arg))
 
     def set_options_from_xml(self):
         searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
@@ -197,7 +197,7 @@ class SearchOptions(object):
             elif long in self.bool_flag_action_dict:
                 func = self.bool_flag_action_dict[long]
             else:
-                raise ValueError('Unknown search option: %s' % long)
+                raise SearchException('Unknown search option: %s' % long)
             self.options.append(SearchOption(short, long, desc, func))
             self.longarg_dict[long] = long
             if short:
@@ -220,14 +220,14 @@ class SearchOptions(object):
                         argval = argdeque.popleft()
                         self.arg_action_dict[longarg](argval, settings)
                     else:
-                        raise Exception('Missing value for option {0}'.
+                        raise SearchException('Missing value for option {0}'.
                                         format(arg))
                 elif longarg in self.bool_flag_action_dict:
                     self.bool_flag_action_dict[longarg](True, settings)
                     if longarg in ('help', 'version'):
                         return settings
                 else:
-                    raise Exception('Invalid option: {0}'.format(arg))
+                    raise SearchException('Invalid option: {0}'.format(arg))
             else:
                 settings.startpath = arg
         return settings

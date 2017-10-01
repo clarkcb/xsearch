@@ -11,6 +11,7 @@ import sys
 
 import common
 from searcher import Searcher
+from searchexception import SearchException
 from searchoptions import SearchOptions
 
 def main():
@@ -19,7 +20,7 @@ def main():
     settings = None
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
-    except Exception, e:
+    except SearchException, e:
         common.log('\nERROR: {0!s}\n'.format(e))
         searchoptions.usage()
 

@@ -8,7 +8,6 @@
 ################################################################################
 from collections import deque
 from cStringIO import StringIO
-from datetime import datetime, timedelta
 import os
 from scandir import scandir
 
@@ -29,6 +28,7 @@ except ImportError as e:
 import common
 from filetypes import FileType, FileTypes
 from fileutil import FileUtil
+from searchexception import SearchException
 from searchfile import SearchFile
 from searchresult import SearchResult
 

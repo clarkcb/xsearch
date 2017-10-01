@@ -8,6 +8,7 @@
 ################################################################################
 import re
 from filetypes import FileType
+from searchexception import SearchException
 
 class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
@@ -68,7 +69,7 @@ class SearchSettings(object):
         elif type(patterns) in set([str, unicode]):
             self.__dict__[pattern_set_name].add(re.compile(patterns, compile_flag))
         else:
-            print 'ERROR: patterns is an unknown type'
+            raise SearchException('patterns is an unknown type')
 
     def add_filetypes(self, filetypes, filetype_set_name):
         filetype_set = set()
@@ -77,7 +78,7 @@ class SearchSettings(object):
         elif type(filetypes) in set([str, unicode]):
             filetype_set = set([FileType.from_name(ft) for ft in filetypes.split(',') if ft])
         else:
-            raise Exception('ERROR: patterns is an unknown type')
+            raise SearchException('filetypes is an unknown type')
         self.__dict__[filetype_set_name] = self.__dict__[filetype_set_name].union(filetype_set)
 
     def set_property(self, name, val):
