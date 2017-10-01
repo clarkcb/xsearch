@@ -13,7 +13,7 @@
   (:use [clojure.string :only (split)]
         [cljsearch.searchfile :only (new-search-file)]))
 
-; needs string argumet and returns string
+; needs string argument and returns string
 (defn expand-path [f]
   (let [home (File. (System/getProperty "user.home"))]
     (if (.startsWith f "~")

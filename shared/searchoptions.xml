@@ -76,7 +76,7 @@
     Suppress printing of search results to stdout
   </searchoption>
   <searchoption long="norecursive" short="R">
-    Do not search recursively
+    Do not search recursively (no subdirectories)
   </searchoption>
   <searchoption long="nosearcharchives" short="Z">
     Do not search archive files (bz2, gz, tar, zip)*
