@@ -6,13 +6,17 @@
 # class FileUtilTest: testing of FileUtil
 #
 ################################################################################
+import os
 import sys
 import unittest
 
-sys.path.insert(0, '..')
+sys.path.insert(1, '../pysearch')
 
-from pysearch.config import XSEARCHPATH
-from pysearch.searchresult import SearchResult
+from config import XSEARCHPATH
+from filetypes import FileType
+from searchfile import SearchFile
+from searchresult import SearchResult
+
 
 class SearchResultTest(unittest.TestCase):
 
@@ -20,48 +24,51 @@ class SearchResultTest(unittest.TestCase):
 
     def test_singleline_searchresult(self):
         pattern = "Search"
-        filepath = "%s/Searcher.cs" % self.cssearch_path
+        filename = 'Searcher.cs'
+        sf = SearchFile(path=self.cssearch_path, filename=filename, filetype=FileType.Text)
         linenum = 10
         match_start_index = 15
         match_end_index = 23
         line = "\tpublic class Searcher\n"
         linesbefore = []
         linesafter = []
-        searchresult = SearchResult(pattern=pattern, filename=filepath,
+        searchresult = SearchResult(pattern=pattern, file=sf,
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, linesbefore=linesbefore,
             linesafter=linesafter)
-        expectedoutput = "%s: %d: [%d:%d]: %s" % (filepath, linenum,
+        expectedoutput = "%s: %d: [%d:%d]: %s" % (os.path.join(self.cssearch_path, filename), linenum,
             match_start_index, match_end_index, line.strip())
-        self.assertEquals(expectedoutput, str(searchresult))
+        self.assertEqual(expectedoutput, str(searchresult))
 
     def test_binaryfile_searchresult(self):
         pattern = "Search"
-        filepath = "%s/Searcher.exe" % self.cssearch_path
+        filename = 'Searcher.exe'
+        sf = SearchFile(path=self.cssearch_path, filename=filename, filetype=FileType.Binary)
         linenum = 0
         match_start_index = 0
         match_end_index = 0
         line = None
         linesbefore = []
         linesafter = []
-        searchresult = SearchResult(pattern=pattern, filename=filepath,
+        searchresult = SearchResult(pattern=pattern, file=sf,
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, linesbefore=linesbefore,
             linesafter=linesafter)
-        expectedoutput = "%s matches at [%d:%d]" % (filepath, match_start_index,
+        expectedoutput = "%s matches at [%d:%d]" % (os.path.join(self.cssearch_path, filename), match_start_index,
             match_end_index)
-        self.assertEquals(expectedoutput, str(searchresult))
+        self.assertEqual(expectedoutput, str(searchresult))
 
     def test_multiline_searchresult(self):
         pattern = "Search"
-        filepath = "%s/Searcher.cs" % self.cssearch_path
+        filename = 'Searcher.cs'
+        sf = SearchFile(path=self.cssearch_path, filename=filename, filetype=FileType.Text)
         linenum = 10
         match_start_index = 15
         match_end_index = 23
         line = "\tpublic class Searcher\n"
         linesbefore = ["namespace CsSearch\n", "{\n"]
         linesafter = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"]
-        searchresult = SearchResult(pattern=pattern, filename=filepath,
+        searchresult = SearchResult(pattern=pattern, file=sf,
             linenum=linenum, match_start_index=match_start_index,
             match_end_index=match_end_index, line=line, lines_before=linesbefore,
             lines_after=linesafter)
@@ -73,8 +80,8 @@ class SearchResultTest(unittest.TestCase):
 > 10 | \tpublic class Searcher
   11 | \t{
   12 | \t\tprivate readonly FileTypes _fileTypes;
-""" % (filepath, linenum, match_start_index, match_end_index)
-        self.assertEquals(expectedoutput, str(searchresult))
+""" % (os.path.join(self.cssearch_path, filename), linenum, match_start_index, match_end_index)
+        self.assertEqual(expectedoutput, str(searchresult))
 
 if __name__ == '__main__':
     unittest.main()

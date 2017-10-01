@@ -9,13 +9,14 @@
 import sys
 import unittest
 
-sys.path.insert(0, '..')
+sys.path.insert(1, '../pysearch')
 
-from pysearch.config import SHAREDPATH
-from pysearch.filetypes import FileType
-from pysearch.searcher import Searcher
-from pysearch.searchfile import SearchFile
-from pysearch.searchsettings import SearchSettings
+from config import SHAREDPATH
+from filetypes import FileType
+from searcher import Searcher
+from searchfile import SearchFile
+from searchsettings import SearchSettings
+
 
 class SearcherTest(unittest.TestCase):
 
@@ -23,6 +24,7 @@ class SearcherTest(unittest.TestCase):
         settings = SearchSettings()
         settings.startpath = '.'
         settings.add_patterns('Searcher', 'searchpatterns')
+        settings.debug = True
         return settings
 
     def get_test_file(self):
@@ -295,20 +297,19 @@ class SearcherTest(unittest.TestCase):
         results = []
         try:
             fo = open(testfile, 'r')
-            contents = fo.read()
-            results = searcher.search_multiline_string(contents)
+            results = searcher.search_line_iterator(fo)
             fo.close()
         except IOError as e:
-            print('IOError: {0!s}'.format(e))
+            print(('IOError: {0!s}'.format(e)))
         self.assertEqual(len(results), 2)
 
         firstResult = results[0]
-        self.assertEqual(firstResult.linenum, 23)
+        self.assertEqual(firstResult.linenum, 29)
         self.assertEqual(firstResult.match_start_index, 3)
         self.assertEqual(firstResult.match_end_index, 11)
 
         secondResult = results[1]
-        self.assertEqual(secondResult.linenum, 29)
+        self.assertEqual(secondResult.linenum, 35)
         self.assertEqual(secondResult.match_start_index, 24)
         self.assertEqual(secondResult.match_end_index, 32)
 
@@ -322,19 +323,20 @@ class SearcherTest(unittest.TestCase):
         results = []
         try:
             fo = open(testfile, 'r')
-            results = searcher.search_line_iterator(fo)
+            contents = fo.read()
+            results = searcher.search_multiline_string(contents)
             fo.close()
         except IOError as e:
-            print('IOError: {0!s}'.format(e))
+            print(('IOError: {0!s}'.format(e)))
         self.assertEqual(len(results), 2)
 
         firstResult = results[0]
-        self.assertEqual(firstResult.linenum, 23)
+        self.assertEqual(firstResult.linenum, 29)
         self.assertEqual(firstResult.match_start_index, 3)
         self.assertEqual(firstResult.match_end_index, 11)
 
         secondResult = results[1]
-        self.assertEqual(secondResult.linenum, 29)
+        self.assertEqual(secondResult.linenum, 35)
         self.assertEqual(secondResult.match_start_index, 24)
         self.assertEqual(secondResult.match_end_index, 32)
 

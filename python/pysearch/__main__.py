@@ -1,3 +1,3 @@
-from pysearch import main
+from .pysearch import main
 
 main()

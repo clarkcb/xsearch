@@ -7,9 +7,11 @@
 #
 ################################################################################
 
+
 def log(message):
     """log a message (for now just print to stdout)"""
-    print message
+    print(message)
+
 
 def get_text(nodelist):
     """Get the text from an xml node"""

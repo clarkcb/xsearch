@@ -6,13 +6,13 @@
 # class FileTypes
 #
 ################################################################################
-import os
 import xml.dom.minidom as minidom
 
 from common import get_text
 from config import FILETYPESPATH
 from fileutil import FileUtil
 from searchexception import SearchException
+
 
 class FileType(object):
     """FileType enum"""
@@ -24,7 +24,7 @@ class FileType(object):
     Xml     = 5
 
     @classmethod
-    def from_name(self, name):
+    def from_name(cls, name):
         uname = name.upper()
         if uname == 'TEXT':
             return FileType.Text
@@ -37,6 +37,7 @@ class FileType(object):
         if uname == 'XML':
             return FileType.Xml
         raise SearchException('Invalid file type: {0!s}\n'.format(name))
+
 
 class FileTypes(object):
     """a class to provide file type information"""

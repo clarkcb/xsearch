@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ################################################################################
 #
 # pysearch.py
 #
-# A CLI file search utility implemented in python (2.x)
+# A CLI file search utility implemented in python (3.x)
 #
 ################################################################################
 import sys
@@ -14,13 +14,14 @@ from searcher import Searcher
 from searchexception import SearchException
 from searchoptions import SearchOptions
 
+
 def main():
     searchoptions = SearchOptions()
 
     settings = None
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
-    except SearchException, e:
+    except SearchException as e:
         common.log('\nERROR: {0!s}\n'.format(e))
         searchoptions.usage()
 
@@ -74,6 +75,7 @@ def main():
     except KeyboardInterrupt:
         common.log('')
         sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

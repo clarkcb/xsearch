@@ -10,9 +10,10 @@ import re
 import sys
 import unittest
 
-sys.path.insert(0, '..')
+sys.path.insert(1, '../pysearch')
 
-from pysearch.searchsettings import SearchSettings
+from searchsettings import SearchSettings
+
 
 class SearchSettingsTest(unittest.TestCase):
     def setUp(self):
@@ -109,7 +110,8 @@ class SearchSettingsTest(unittest.TestCase):
     def test_add_patterns(self):
         p = 'Search'
         self.settings.add_patterns(p, 'searchpatterns')
-        self.assertEquals(list(self.settings.searchpatterns)[0].pattern, p)
+        self.assertEqual(list(self.settings.searchpatterns)[0].pattern, p)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -9,9 +9,10 @@
 import sys
 import unittest
 
-sys.path.insert(0, '..')
+sys.path.insert(1, '../pysearch')
 
-from pysearch.fileutil import FileUtil
+from fileutil import FileUtil
+
 
 class FileUtilTest(unittest.TestCase):
 ################################################################################
@@ -72,8 +73,9 @@ class FileUtilTest(unittest.TestCase):
         self.assertFalse(FileUtil.is_hidden(filename))
 
     def test_is_hidden_double_dot(self):
-        filename = '.'
+        filename = '..'
         self.assertFalse(FileUtil.is_hidden(filename))
+
 
 if __name__ == '__main__':
     unittest.main()

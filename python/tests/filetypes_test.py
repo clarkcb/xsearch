@@ -9,9 +9,10 @@
 import sys
 import unittest
 
-sys.path.insert(0, '..')
+sys.path.insert(1, '../pysearch')
 
-from pysearch.filetypes import FileType, FileTypes
+from filetypes import FileType, FileTypes
+
 
 class FileTypesTest(unittest.TestCase):
     @classmethod
@@ -33,6 +34,7 @@ class FileTypesTest(unittest.TestCase):
     def test_get_filetype_unknown_file(self):
         filename = 'unknown.xyz'
         self.assertEqual(self.filetypes.get_filetype(filename), FileType.Unknown)
+
 
 if __name__ == '__main__':
     unittest.main()

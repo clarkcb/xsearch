@@ -10,10 +10,12 @@ import re
 import sys
 import unittest
 
-sys.path.insert(0, '..')
+sys.path.insert(1, '../pysearch')
 
-from pysearch.searchoptions import SearchOptions
-from pysearch.searchsettings import SearchSettings
+from searchexception import SearchException
+from searchoptions import SearchOptions
+from searchsettings import SearchSettings
+
 
 class SearchOptionsTest(unittest.TestCase):
     @classmethod
@@ -64,7 +66,7 @@ class SearchOptionsTest(unittest.TestCase):
         self.assertEqual(settings.startpath, '.')
         for x in set(['py', 'rb']):
             self.assertIn(x, settings.in_extensions)
-        self.assertEquals(list(settings.searchpatterns)[0].pattern, 'Search')
+        self.assertEqual(list(settings.searchpatterns)[0].pattern, 'Search')
 
     def test_archivesonly_arg(self):
         args = ['--archivesonly']
@@ -80,15 +82,15 @@ class SearchOptionsTest(unittest.TestCase):
 
     def test_missing_arg(self):
         args = ['-x', 'py,rb', '-s', 'Search', '.', '-D']
-        with self.assertRaises(Exception) as cm:
+        with self.assertRaises(SearchException) as cm:
             settings = self.searchoptions.search_settings_from_args(args)
-        self.assertEqual(cm.exception.message, 'Missing value for option D')
+        self.assertEqual(str(cm.exception), 'Missing value for option D')
 
     def test_invalid_arg(self):
         args = ['-x', 'py,rb', '-s', 'Search', '.', '-Q']
-        with self.assertRaises(Exception) as cm:
+        with self.assertRaises(SearchException) as cm:
             settings = self.searchoptions.search_settings_from_args(args)
-        self.assertEqual(cm.exception.message, 'Invalid option: Q')
+        self.assertEqual(str(cm.exception), 'Invalid option: Q')
 
 
     def test_settings_from_json(self):
@@ -109,9 +111,9 @@ class SearchOptionsTest(unittest.TestCase):
         self.assertEqual(settings.startpath, '~/src/xsearch/')
         for x in set(['js', 'ts']):
             self.assertIn(x, settings.in_extensions)
-        self.assertEquals(list(settings.searchpatterns)[0].pattern, 'Searcher')
-        self.assertEquals(list(settings.out_dirpatterns)[0].pattern, 'node_module')
-        self.assertEquals(list(settings.out_filepatterns)[0].pattern, 'temp')
+        self.assertEqual(list(settings.searchpatterns)[0].pattern, 'Searcher')
+        self.assertEqual(list(settings.out_dirpatterns)[0].pattern, 'node_module')
+        self.assertEqual(list(settings.out_filepatterns)[0].pattern, 'temp')
         self.assertEqual(settings.linesbefore, 2)
         self.assertEqual(settings.linesafter, 2)
         self.assertTrue(settings.debug)

@@ -10,6 +10,7 @@ import re
 from filetypes import FileType
 from searchexception import SearchException
 
+
 class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
@@ -56,7 +57,7 @@ class SearchSettings(object):
     def add_exts(self, exts, ext_set_name):
         if type(exts) is list:
             self.__dict__[ext_set_name] = self.__dict__[ext_set_name].union(exts)
-        elif type(exts) in set([str, unicode]):
+        elif type(exts) is str:
             ext_set = set([ext for ext in exts.split(',') if ext])
             self.__dict__[ext_set_name] = self.__dict__[ext_set_name].union(ext_set)
 
@@ -66,16 +67,16 @@ class SearchSettings(object):
         if type(patterns) is list:
             pattern_set = set([re.compile(p, compile_flag) for p in patterns])
             self.__dict__[pattern_set_name] = self.__dict__[pattern_set_name].union(pattern_set)
-        elif type(patterns) in set([str, unicode]):
+        elif type(patterns) is str:
             self.__dict__[pattern_set_name].add(re.compile(patterns, compile_flag))
         else:
             raise SearchException('patterns is an unknown type')
 
     def add_filetypes(self, filetypes, filetype_set_name):
-        filetype_set = set()
+        # filetype_set = set()
         if type(filetypes) is list:
-            filetype_set = set([FileType.from_name(ft) for tf in filetypes])
-        elif type(filetypes) in set([str, unicode]):
+            filetype_set = set([FileType.from_name(ft) for ft in filetypes])
+        elif type(filetypes) is str:
             filetype_set = set([FileType.from_name(ft) for ft in filetypes.split(',') if ft])
         else:
             raise SearchException('filetypes is an unknown type')
@@ -95,8 +96,8 @@ class SearchSettings(object):
             self.set_property(p, propdict[p])
 
     def __str__(self):
-        all_props = set(['startpath']) | self._extension_set_names | \
-            self._pattern_set_names | set(self._props_with_defaults.keys())
+        all_props = {'startpath'} | self._extension_set_names | \
+                    self._pattern_set_names | set(self._props_with_defaults.keys())
         print_dict = {}
         s = '{0}('.format(self.__class__.__name__)
         for p in sorted(all_props):
@@ -106,7 +107,7 @@ class SearchSettings(object):
                     print_dict[p] = str([x.pattern for x in val])
                 else:
                     print_dict[p] = str(list(val))
-            elif type(val) in set([str, unicode]):
+            elif type(val) is str:
                 if val:
                     print_dict[p] = '"{0}"'.format(val)
                 else:

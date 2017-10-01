@@ -8,7 +8,7 @@
 #
 ################################################################################
 from collections import deque
-from cStringIO import StringIO
+from io import StringIO
 import json
 import os
 import sys
@@ -19,6 +19,7 @@ from config import SEARCHOPTIONSPATH
 from searchexception import SearchException
 from searchoption import SearchOption
 from searchsettings import SearchSettings
+
 
 class SearchOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
@@ -188,20 +189,20 @@ class SearchOptions(object):
         searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
         searchoptionnodes = searchoptionsdom.getElementsByTagName('searchoption')
         for searchoptionnode in searchoptionnodes:
-            long = searchoptionnode.getAttribute('long')
-            short = searchoptionnode.getAttribute('short')
+            longarg = searchoptionnode.getAttribute('long')
+            shortarg = searchoptionnode.getAttribute('short')
             desc = get_text(searchoptionnode.childNodes).strip()
-            func = None
-            if long in self.arg_action_dict:
-                func = self.arg_action_dict[long]
-            elif long in self.bool_flag_action_dict:
-                func = self.bool_flag_action_dict[long]
+            # func = None
+            if longarg in self.arg_action_dict:
+                func = self.arg_action_dict[longarg]
+            elif longarg in self.bool_flag_action_dict:
+                func = self.bool_flag_action_dict[longarg]
             else:
-                raise SearchException('Unknown search option: %s' % long)
-            self.options.append(SearchOption(short, long, desc, func))
-            self.longarg_dict[long] = long
-            if short:
-                self.longarg_dict[short] = long
+                raise SearchException('Unknown search option: %s' % longarg)
+            self.options.append(SearchOption(shortarg, longarg, desc, func))
+            self.longarg_dict[longarg] = longarg
+            if shortarg:
+                self.longarg_dict[shortarg] = longarg
 
     def search_settings_from_args(self, args):
         """Returns a SearchSettings instance for a given list of args"""
@@ -214,18 +215,21 @@ class SearchOptions(object):
             if arg.startswith('-'):
                 while arg and arg.startswith('-'):
                     arg = arg[1:]
-                longarg = self.longarg_dict[arg]
-                if longarg in self.arg_action_dict:
-                    if argdeque:
-                        argval = argdeque.popleft()
-                        self.arg_action_dict[longarg](argval, settings)
+                if arg in self.longarg_dict:
+                    longarg = self.longarg_dict[arg]
+                    if longarg in self.arg_action_dict:
+                        if argdeque:
+                            argval = argdeque.popleft()
+                            self.arg_action_dict[longarg](argval, settings)
+                        else:
+                            raise SearchException('Missing value for option {0}'.
+                                            format(arg))
+                    elif longarg in self.bool_flag_action_dict:
+                        self.bool_flag_action_dict[longarg](True, settings)
+                        if longarg in ('help', 'version'):
+                            return settings
                     else:
-                        raise SearchException('Missing value for option {0}'.
-                                        format(arg))
-                elif longarg in self.bool_flag_action_dict:
-                    self.bool_flag_action_dict[longarg](True, settings)
-                    if longarg in ('help', 'version'):
-                        return settings
+                        raise SearchException('Invalid option: {0}'.format(arg))
                 else:
                     raise SearchException('Invalid option: {0}'.format(arg))
             else:
@@ -233,7 +237,7 @@ class SearchOptions(object):
         return settings
 
     def usage(self):
-        print self.get_usage_string()
+        print(self.get_usage_string())
         sys.exit(1)
 
     def get_usage_string(self):
@@ -243,7 +247,7 @@ class SearchOptions(object):
         opt_strings = []
         opt_descs = []
         longest = 0
-        for opt in sorted(self.options, key=lambda opt: opt.sortarg):
+        for opt in sorted(self.options, key=lambda o: o.sortarg):
             opt_string = ''
             if opt.shortarg:
                 opt_string += '-{0},'.format(opt.shortarg)

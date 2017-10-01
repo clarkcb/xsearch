@@ -6,8 +6,8 @@
 # class SearchResult: encapsulates a search result
 #
 ################################################################################
-from cStringIO import StringIO
-import os
+from io import StringIO
+
 
 def __atmost_before_index(s, maxlen, start_index):
     if start_index >= maxlen:
@@ -15,14 +15,17 @@ def __atmost_before_index(s, maxlen, start_index):
     else:
         return s[:start_index]
 
+
 def __atmost_after_index(s, maxlen, start_index):
     if len(s[start_index:]) > maxlen:
         return s[start_index:maxlen - 3] + '...'
     else:
         return s[start_index:]
 
+
 def strip_newlines(s):
     return s.rstrip("\r\n")
+
 
 class SearchResult(object):
     """encapsulates a search result"""
@@ -44,8 +47,7 @@ class SearchResult(object):
     def sortkey(self):
         path = self.file.path.lower()
         filename = self.file.filename.lower()
-        return (path, filename, self.linenum, self.match_start_index)
-
+        return path, filename, self.linenum, self.match_start_index
 
     def __str__(self):
         if self.lines_before or self.lines_after:
@@ -129,12 +131,12 @@ class SearchResult(object):
         return s
 
     def __unicode__(self):
-        return unicode(self.__str__())
+        return str(self.__str__())
 
     def __repr__(self):
         s = '<{0}'.format(self.__class__.__name__)
         s += ' pattern: "{0}"'.format(self.pattern)
-        s += ', filename: "{0}"'.format(self.filename)
+        s += ', filename: "{0}"'.format(self.file)
         s += ', linenum: {0}'.format(self.linenum)
         s += ', line: "{0}"'.format(self.line.replace("\n", "\\n"))
         if self.contained:

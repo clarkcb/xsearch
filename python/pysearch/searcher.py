@@ -7,30 +7,29 @@
 #
 ################################################################################
 from collections import deque
-from cStringIO import StringIO
+from io import StringIO
 import os
-from scandir import scandir
 
 TARFILE_MODULE_AVAILABLE = True
 ZIPFILE_MODULE_AVAILABLE = True
 
 try:
     import tarfile
-except ImportError as e:
-    print 'tarfile not imported: {0!s}'.format(e)
+except ImportError as ie:
+    print('tarfile not imported: {0!s}'.format(ie))
     TARFILE_MODULE_AVAILABLE = False
 try:
     import zipfile
-except ImportError as e:
-    print 'zipfile not imported: {0!s}'.format(e)
+except ImportError as ie:
+    print('zipfile not imported: {0!s}'.format(ie))
     ZIPFILE_MODULE_AVAILABLE = False
 
 import common
 from filetypes import FileType, FileTypes
 from fileutil import FileUtil
-from searchexception import SearchException
 from searchfile import SearchFile
 from searchresult import SearchResult
+
 
 class Searcher(object):
     """a class to search files"""
@@ -68,7 +67,7 @@ class Searcher(object):
     def is_archive_search_file(self, f):
         ext = FileUtil.get_extension(f)
         if self.settings.in_archiveextensions and \
-            not ext in self.settings.in_archiveextensions:
+            ext not in self.settings.in_archiveextensions:
             return False
         if self.settings.out_archiveextensions and \
             ext in self.settings.out_archiveextensions:
@@ -81,25 +80,26 @@ class Searcher(object):
             return False
         return True
 
-    def is_search_file(self, sf):
-        if self.settings.in_filetypes and \
-            not sf.filetype in self.settings.in_filetypes:
+    def is_search_file(self, filename):
+        if self.settings.in_filepatterns and \
+            not matches_any_pattern(filename, self.settings.in_filepatterns):
             return False
-        if self.settings.out_filetypes and \
-           sf.filetype in self.settings.out_filetypes:
+        if self.settings.out_filepatterns and \
+            matches_any_pattern(filename, self.settings.out_filepatterns):
             return False
-        ext = FileUtil.get_extension(sf.filename)
+        ext = FileUtil.get_extension(filename)
         if self.settings.in_extensions and \
-            not ext in self.settings.in_extensions:
+            ext not in self.settings.in_extensions:
             return False
         if self.settings.out_extensions and \
             ext in self.settings.out_extensions:
             return False
-        if self.settings.in_filepatterns and \
-            not matches_any_pattern(sf.filename, self.settings.in_filepatterns):
+        filetype = self.filetypes.get_filetype(filename)
+        if self.settings.in_filetypes and \
+            filetype not in self.settings.in_filetypes:
             return False
-        if self.settings.out_filepatterns and \
-            matches_any_pattern(sf.filename, self.settings.out_filepatterns):
+        if self.settings.out_filetypes and \
+            filetype in self.settings.out_filetypes:
             return False
         return True
 
@@ -114,7 +114,7 @@ class Searcher(object):
             if self.settings.recursive:
                 for root, dirs, files in os.walk(self.settings.startpath):
                     searchdirs.extend([
-                        os.path.join(root, d) for d in dirs \
+                        os.path.join(root, d) for d in dirs
                         if self.is_search_dir(os.path.join(root, d))])
         elif os.path.isfile(self.settings.startpath):
             d = os.path.dirname(self.settings.startpath)
@@ -128,12 +128,12 @@ class Searcher(object):
             return False
         if sf.filetype == FileType.Archive:
             return self.settings.searcharchives and self.is_archive_search_file(sf.filename)
-        return not self.settings.archivesonly and self.is_search_file(sf)
+        return not self.settings.archivesonly and self.is_search_file(sf.filename)
 
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
         # files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
-        files = [e.name for e in scandir(d) if e.is_file()]
+        files = [f.name for f in os.scandir(d) if f.is_file()]
         searchfiles = [SearchFile(path=d,
                                   filename=f,
                                   filetype=self.filetypes.get_filetype(f))
@@ -267,7 +267,7 @@ class Searcher(object):
         return search_results
 
     def get_lines_after_to_or_until(self, s, after_start_indices):
-        lines_after_patterns = []
+        # lines_after_patterns = []
         if self.settings.linesaftertopatterns:
             lines_after_patterns = self.settings.linesaftertopatterns
         else:
@@ -279,7 +279,7 @@ class Searcher(object):
             if m:
                 match_indices[p] = m.start() + after_start_indices[0]
         if match_indices:
-            first_index = min(x for x in match_indices.values())
+            first_index = min(x for x in list(match_indices.values()))
             for i, x in enumerate(after_start_indices):
                 if x < first_index and i < len(after_start_indices) - 1:
                     lines_after.append(
@@ -315,7 +315,7 @@ class Searcher(object):
         matches = p.finditer(s)
         for m in matches:
             m_line_start_index = 0
-            m_line_end_index = len(s) - 1
+            # m_line_end_index = len(s) - 1
             before_start_indices = [x for x in start_line_indices if x <= m.start()]
             before_line_count = 0
             if before_start_indices:
@@ -388,11 +388,11 @@ class Searcher(object):
                 line = lines_after.popleft()
             else:
                 try:
-                    line = lines.next().rstrip('\r\n')
+                    line = next(lines).rstrip('\r\n')
                 except StopIteration:
                     break
                 except AttributeError:
-                    #common.log('AttributeError: %s' % e)
+                    common.log('AttributeError: %s' % e)
                     break
             linenum += 1
             if self.settings.linesafter:
@@ -408,7 +408,7 @@ class Searcher(object):
                 matchiter = p.finditer(line)
                 while True:
                     try:
-                        match = matchiter.next()
+                        match = next(matchiter)
                     except StopIteration:
                         break
                     else:
@@ -478,7 +478,8 @@ class Searcher(object):
     def search_archive_file(self, sf):
         """Search an archive (compressed) file"""
         ext = FileUtil.get_extension(sf.filename)
-        if not ext: return
+        if not ext:
+            return
         if self.settings.debug:
             common.log('Searching {0} file {1}'.format(ext, sf))
         if ext in ('zip', 'jar', 'war', 'ear'):
@@ -569,7 +570,6 @@ class Searcher(object):
     def get_sorted_results(self):
         return sorted(self.results, key=lambda r: r.sortkey())
 
-
     def print_results(self):
         sorted_results = self.get_sorted_results()
         common.log('Search results (%d):' % len(sorted_results))
@@ -596,7 +596,7 @@ class Searcher(object):
         if pattern:
             patterns.append(pattern)
         else:
-            patterns.extend(self.patterndict.keys())
+            patterns.extend(list(self.patterndict.keys()))
         dir_list = set()
         for p in patterns:
             dir_list.update([
@@ -612,7 +612,7 @@ class Searcher(object):
         if pattern:
             patterns.append(pattern)
         else:
-            patterns.extend(self.patterndict.keys())
+            patterns.extend(list(self.patterndict.keys()))
         file_list = set()
         for p in patterns:
             file_list.update([
@@ -628,7 +628,7 @@ class Searcher(object):
         if pattern:
             patterns.append(pattern)
         else:
-            patterns.extend(self.patterndict.keys())
+            patterns.extend(list(self.patterndict.keys()))
         line_list = []
         for p in patterns:
             line_list.extend([r.line.strip() for r in self.patterndict[p]])
@@ -636,10 +636,12 @@ class Searcher(object):
             line_list = list(set(line_list))
         return sorted(line_list, key=lambda s: s.upper())
 
+
 def matches_any_pattern(s, pattern_set):
     """Returns true if string s matches any pattern in pattern_set, else
        false"""
     return any(p.search(s) for p in pattern_set)
+
 
 def any_matches_any_pattern(slist, pattern_set):
     """Returns true if any string in slist matches any pattern in
@@ -649,12 +651,14 @@ def any_matches_any_pattern(slist, pattern_set):
             return True
     return False
 
+
 def get_new_line_indices(s):
     indices = []
     for i, c in enumerate(s):
         if c == '\n':
             indices.append(i)
     return indices
+
 
 def get_lines_at_indices(s, at_indices, start_line_indices,
                          end_line_indices):
@@ -666,10 +670,12 @@ def get_lines_at_indices(s, at_indices, start_line_indices,
         lines.append(line)
     return lines
 
+
 def get_lines_before(s, before_start_indices, start_line_indices,
                      end_line_indices):
     return get_lines_at_indices(s, before_start_indices,
                                 start_line_indices, end_line_indices)
+
 
 def lines_match(lines, in_patterns, out_patterns):
     if (not in_patterns or
