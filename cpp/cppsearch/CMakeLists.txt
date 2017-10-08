@@ -8,7 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
-include_directories(/usr/local/include/boost)
 
 include_directories(/Users/cary/src/xsearch/cpp/cppsearch/include)
 include_directories(${Boost_INCLUDE_DIRS})
