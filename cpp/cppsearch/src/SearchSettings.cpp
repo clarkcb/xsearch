@@ -169,6 +169,14 @@ bool SearchSettings::get_searcharchives() {
     return searcharchives;
 }
 
+vector<string>* SearchSettings::get_in_archiveextensions() {
+    return &in_archiveextensions;
+}
+
+vector<SearchPattern*>* SearchSettings::get_in_archivefilepatterns() {
+    return &in_archivefilepatterns;
+}
+
 vector<SearchPattern*>* SearchSettings::get_in_dirpatterns() {
     return &in_dirpatterns;
 }
@@ -179,6 +187,14 @@ vector<string>* SearchSettings::get_in_extensions() {
 
 vector<SearchPattern*>* SearchSettings::get_in_filepatterns() {
     return &in_filepatterns;
+}
+
+vector<string>* SearchSettings::get_out_archiveextensions() {
+    return &out_archiveextensions;
+}
+
+vector<SearchPattern*>* SearchSettings::get_out_archivefilepatterns() {
+    return &out_archivefilepatterns;
 }
 
 vector<SearchPattern*>* SearchSettings::get_out_dirpatterns() {

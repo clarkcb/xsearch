@@ -106,9 +106,14 @@ public:
     bool get_uniquelines();
     bool get_verbose();
 
+    vector<string>* get_in_archiveextensions();
+    vector<SearchPattern*>* get_in_archivefilepatterns();
     vector<SearchPattern*>* get_in_dirpatterns();
     vector<string>* get_in_extensions();
     vector<SearchPattern*>* get_in_filepatterns();
+
+    vector<string>* get_out_archiveextensions();
+    vector<SearchPattern*>* get_out_archivefilepatterns();
     vector<SearchPattern*>* get_out_dirpatterns();
     vector<string>* get_out_extensions();
     vector<SearchPattern*>* get_out_filepatterns();
