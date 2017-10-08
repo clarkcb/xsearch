@@ -5,9 +5,9 @@
 #include <iostream>
 #include <FileUtil.h>
 #include <SearchException.h>
+#include <boost/format.hpp>
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
-#include "common.h"
 #include "config.h"
 #include "FileTypes.h"
 #include "SearchOption.h"
@@ -144,7 +144,6 @@ SearchSettings* SearchOptions::settings_from_args(int &argc, char **argv) {
     string* next_arg;
     while (!arg_deque.empty()) {
         next_arg = new string(arg_deque.front());
-        //cout << "next_arg: " << next_arg << endl;
         arg_deque.pop_front();
         
         if ((*next_arg)[0] == '-') {
@@ -198,7 +197,7 @@ string* SearchOptions::get_usage_string() {
     auto* usage_string = new string("\nUsage:\n cppsearch [options] -s <searchpattern> <startpath>\n\nOptions:\n");
 
     vector<string> opt_strings = {};
-    vector<const string*> opt_descs = {};
+    vector<string> opt_descs = {};
 
     auto sort_option_lambda = [](const SearchOption* s1, const SearchOption* s2) -> bool {
         return s1->sortarg->compare(*s2->sortarg) < 0;
@@ -219,14 +218,12 @@ string* SearchOptions::get_usage_string() {
         }
         opt_strings.push_back(opt_string);
         const string* description = option->description;
-        opt_descs.push_back(description);
+        opt_descs.push_back(*description);
     }
 
     string format = string(" %1$-") + to_string(longest) + "s  %2$s\n";
     for (int i = 0; i < opt_strings.size(); i++) {
-        char target[255] = {0};
-        std::sprintf(target, format.c_str(), opt_strings[i].c_str(), opt_descs[i]->c_str());
-        usage_string->append(target);
+        usage_string->append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
     }
     return usage_string;
 }
