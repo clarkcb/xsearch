@@ -35,7 +35,6 @@ vector<SearchResult*> Searcher::search() {
         return search_path(*startpath);
 
     } else if (FileUtil::is_regular_file(startpath)) {
-        //cout << "startpath is a regular file" << endl;
         FileType filetype = filetypes->get_filetype(startpath);
         boost::filesystem::path path(*startpath);
         string parent_path = path.parent_path().string();
@@ -45,7 +44,6 @@ vector<SearchResult*> Searcher::search() {
     } else {
         throw SearchException("startpath is an unsupported file type");
     }
-    return results;
 }
 
 bool matches_any_pattern(const string& s, vector<SearchPattern*> patterns) {
@@ -103,12 +101,7 @@ vector<string> Searcher::get_search_dirs(string filepath) {
     return searchdirs;
 }
 
-bool Searcher::is_search_file(string filepath) {
-    boost::filesystem::path p(filepath);
-    string filename = p.filename().string();
-    if (settings->get_excludehidden() && FileUtil::is_hidden(&filename)) {
-        return false;
-    }
+bool Searcher::is_search_file(string filename) {
     string ext = FileUtil::get_extension(&filename);
     vector<string>* in_exts = settings->get_in_extensions();
     vector<string>* out_exts = settings->get_out_extensions();
@@ -122,6 +115,32 @@ bool Searcher::is_search_file(string filepath) {
             && (out_filepatterns->empty() || !matches_any_pattern(filename, *out_filepatterns)));
 }
 
+bool Searcher::is_archive_search_file(string filename) {
+    string ext = FileUtil::get_extension(&filename);
+    vector<string>* in_exts = settings->get_in_archiveextensions();
+    vector<string>* out_exts = settings->get_out_archiveextensions();
+    if ((!in_exts->empty() && find(in_exts->begin(), in_exts->end(), ext) == in_exts->end())
+        || (!out_exts->empty() && find(out_exts->begin(), out_exts->end(), ext) != out_exts->end())) {
+        return false;
+    }
+    vector<SearchPattern*>* in_filepatterns = settings->get_in_archivefilepatterns();
+    vector<SearchPattern*>* out_filepatterns = settings->get_out_archivefilepatterns();
+    return ((in_filepatterns->empty() || matches_any_pattern(filename, *in_filepatterns))
+            && (out_filepatterns->empty() || !matches_any_pattern(filename, *out_filepatterns)));
+}
+
+bool Searcher::filter_file(string filepath) {
+    boost::filesystem::path p(filepath);
+    string filename = p.filename().string();
+    if (FileUtil::is_hidden(&filename) && settings->get_excludehidden()) {
+        return false;
+    }
+    if (filetypes->get_filetype(&filename) == FileType::ARCHIVE) {
+        return settings->get_searcharchives() && is_archive_search_file(filename);
+    }
+    return !settings->get_archivesonly() && is_search_file(filename);
+}
+
 vector<SearchFile*> Searcher::get_search_files(vector<string> searchdirs) {
     vector<SearchFile*> searchfiles = {};
 
@@ -133,7 +152,7 @@ vector<SearchFile*> Searcher::get_search_files(vector<string> searchdirs) {
         boost::filesystem::directory_iterator end_it;
         for (boost::filesystem::directory_iterator it(p); it != end_it; ++it) {
             boost::filesystem::path subpath = (*it).path();
-            if (boost::filesystem::is_regular_file(subpath) && is_search_file(subpath.string())) {
+            if (boost::filesystem::is_regular_file(subpath) && filter_file(subpath.string())) {
                 string parent_path = subpath.parent_path().string();
                 string filename = subpath.filename().string();
                 FileType filetype = filetypes->get_filetype(&filename);
@@ -183,16 +202,13 @@ vector<SearchResult*> Searcher::search_path(string filepath) {
 vector<SearchResult*> Searcher::search_file(SearchFile* sf) {
     vector<SearchResult*> results = {};
     if (sf->filetype == FileType::CODE) {
-        //cout << "searchfile is a CODE (TEXT) file: " << sf->filename << endl;
         results = search_text_file(sf);
     } else if (sf->filetype == FileType::XML) {
-        //cout << "searchfile is an XML (TEXT) file: " << sf->filename << endl;
         results = search_text_file(sf);
     } else if (sf->filetype == FileType::TEXT) {
-        //cout << "searchfile is a TEXT file: " << sf->filename << endl;
         results = search_text_file(sf);
     } else if (sf->filetype == FileType::BINARY) {
-        //cout << "searchfile is a BINARY file: " << sf->filename << endl;
+        results = search_binary_file(sf);
     } else if (sf->filetype == FileType::ARCHIVE) {
         //cout << "searchfile is an ARCHIVE file: " << sf->filename << endl;
     } else {
@@ -223,6 +239,7 @@ vector<SearchResult*> Searcher::search_ifstream(std::ifstream& fin) {
 
 vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
     vector<SearchResult*> results = {};
+    set<string> found_patterns = {};
 
     int linenum = 0;
     smatch pmatch;
@@ -230,13 +247,22 @@ vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
     for (; getline(fin, line); ) {
         ++linenum;
         for (const auto& p : *(settings->get_searchpatterns())) {
+            if (settings->get_firstmatch() && found_patterns.find(*p->pattern) != found_patterns.end()) {
+                continue;
+            }
             unsigned long trimmed = 0;
             string linebuf = string(line);
-            while (!linebuf.empty() && regex_search(linebuf, pmatch, p->r)) {
+            bool skip_pattern = false;
+            while (!skip_pattern && !linebuf.empty() && regex_search(linebuf, pmatch, p->r)) {
                 for (unsigned i=0; i < pmatch.size(); ++i) {
                     unsigned long match_start_idx = pmatch.position(i) + trimmed;
                     unsigned long match_end_idx = match_start_idx + pmatch.length(i);
                     results.push_back(new SearchResult(p, nullptr, linenum, match_start_idx + 1, match_end_idx + 1, line));
+                    if (settings->get_firstmatch()) {
+                        found_patterns.insert(*p->pattern);
+                        skip_pattern = true;
+                        break;
+                    }
                     linebuf = line.substr(match_end_idx);
                     trimmed = match_end_idx;
                 }
@@ -247,9 +273,7 @@ vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
 }
 
 vector<SearchResult*> Searcher::search_ifstream_contents(std::ifstream& fin) {
-    log("Searching ifstream contents");
     string contents = FileUtil::get_contents(fin);
-    //log(contents);
     return search_string(&contents);
 }
 
@@ -257,7 +281,6 @@ vector<unsigned long> get_newline_indices(string* s) {
     vector<unsigned long> newline_indices = {};
     for (unsigned long i=0; i < s->length(); i++) {
         if (s->at(i) == '\n') {
-            //cout << i << ": " << s->at(i);
             newline_indices.push_back(i);
         }
     }
@@ -279,20 +302,19 @@ string get_line_for_pos(string* s, vector<unsigned long> newline_indices, long p
 }
 
 vector<SearchResult*> Searcher::search_string(string* s) {
-    log("Searching string");
     vector<SearchResult*> results = {};
+    set<string> found_patterns = {};
     vector<unsigned long> newline_indices = get_newline_indices(s);
-    for (unsigned long newline_indice : newline_indices) {
-        cout << " " << newline_indice;
-    }
-    cout << endl;
 
     smatch pmatch;
     for (const auto& p : *(settings->get_searchpatterns())) {
+        if (settings->get_firstmatch() && found_patterns.find(*p->pattern) != found_patterns.end()) {
+            continue;
+        }
         unsigned long trimmed = 0;
         string sbuf = string(*s);
-        while (!sbuf.empty() && regex_search(sbuf, pmatch, p->r)) {
-            cout << "found match" << endl;
+        bool skip_pattern = false;
+        while (!skip_pattern && !sbuf.empty() && regex_search(sbuf, pmatch, p->r)) {
             for (unsigned i=0; i < pmatch.size(); ++i) {
                 unsigned long match_start_idx = pmatch.position(i) + trimmed;
                 unsigned long match_end_idx = match_start_idx + pmatch.length(i);
@@ -301,6 +323,11 @@ vector<SearchResult*> Searcher::search_string(string* s) {
                 unsigned long line_match_start_idx = match_start_idx - newline_indices[linenum - 2];
                 unsigned long line_match_end_idx = line_match_start_idx + pmatch.length();
                 results.push_back(new SearchResult(p, nullptr, linenum, line_match_start_idx, line_match_end_idx, line));
+                if (settings->get_firstmatch()) {
+                    found_patterns.insert(*p->pattern);
+                    skip_pattern = true;
+                    break;
+                }
                 sbuf = s->substr(match_end_idx);
                 trimmed = match_end_idx;
             }
@@ -311,16 +338,37 @@ vector<SearchResult*> Searcher::search_string(string* s) {
 }
 
 vector<SearchResult*> Searcher::search_binary_file(SearchFile* sf) {
-    //cout << "Searching binary file " << sf->searchfile_to_string() << endl;
     vector<SearchResult*> results = {};
+    set<string> found_patterns = {};
 
     std::ifstream fin(sf->searchfile_to_string());
-    string contents = FileUtil::get_contents(fin);
+    string s = FileUtil::get_contents(fin);
     fin.close();
 
-    for (const auto& r : results) {
-        r->searchfile = sf;
+    smatch pmatch;
+    for (const auto& p : *(settings->get_searchpatterns())) {
+        if (settings->get_firstmatch() && found_patterns.find(*p->pattern) != found_patterns.end()) {
+            continue;
+        }
+        unsigned long trimmed = 0;
+        string sbuf = string(s);
+        bool skip_pattern = false;
+        while (!skip_pattern && !sbuf.empty() && regex_search(sbuf, pmatch, p->r)) {
+            for (unsigned i=0; i < pmatch.size(); ++i) {
+                unsigned long match_start_idx = pmatch.position(i) + trimmed;
+                unsigned long match_end_idx = match_start_idx + pmatch.length(i);
+                results.push_back(new SearchResult(p, sf, 0, match_start_idx, match_end_idx, ""));
+                if (settings->get_firstmatch()) {
+                    found_patterns.insert(*p->pattern);
+                    skip_pattern = true;
+                    break;
+                }
+                sbuf = s.substr(match_end_idx);
+                trimmed = match_end_idx;
+            }
+        }
     }
+
     return results;
 }
 
