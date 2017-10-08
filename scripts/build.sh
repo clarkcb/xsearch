@@ -42,6 +42,24 @@ copy_test_resources () {
 # Build Functions
 ########################################
 
+build_cpp () {
+    echo
+    log "build_cpp"
+    CPPSEARCH_PATH=$CPP_PATH/cppsearch
+    log "cd $CPPSEARCH_PATH"
+    cd $CPPSEARCH_PATH
+
+    # clean
+    log "/usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror"
+    /usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror
+
+    # build
+    log "/usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror"
+    /usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror
+
+    cd -
+}
+
 build_clojure () {
     echo
     log "build_clojure"
@@ -294,7 +312,9 @@ build_typescript () {
 
 build_all () {
     log "build_all"
-    
+
+    build_cpp
+
     build_clojure
 
     build_csharp
@@ -341,6 +361,8 @@ fi
 
 if [ "$ARG" == "all" ]; then
     build_all
+elif [ "$ARG" == "cpp" ]; then
+    build_cpp
 elif [ "$ARG" == "clojure" ]; then
     build_clojure
 elif [ "$ARG" == "csharp" ]; then
