@@ -49,7 +49,7 @@ bool FileUtil::is_dot_dir(const std::string* name) {
 
 bool FileUtil::is_hidden(const std::string* name) {
     boost::filesystem::path path(*name);
-    return !name->empty() && name->substr(0,1) == "." && !FileUtil::is_dot_dir(name);
+    return !name->empty() && name->at(0) == '.' && !FileUtil::is_dot_dir(name);
 }
 
 std::vector<std::string> FileUtil::split_path(const std::string& filepath) {
