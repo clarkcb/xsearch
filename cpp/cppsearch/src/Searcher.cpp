@@ -257,8 +257,30 @@ vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
     int linenum = 0;
     smatch pmatch;
     string line;
-    for (; getline(fin, line); ) {
+
+    deque<string> lines_before;
+    deque<string> lines_after;
+    unsigned int lines_before_count = settings->get_linesbefore();
+    unsigned int lines_after_count = settings->get_linesafter();
+
+    while (true) {
         ++linenum;
+        if (!lines_after.empty()) {
+            line = lines_after.front();
+            lines_after.pop_front();
+        } else if (getline(fin, line)) {
+            // nothing to do, action in if statement
+        } else {
+            break;
+        }
+
+        if (lines_after_count > 0) {
+            string next_line;
+            while (lines_after.size() < lines_after_count && getline(fin, next_line)) {
+                lines_after.push_back(next_line);
+            }
+        }
+
         for (const auto& p : *(settings->get_searchpatterns())) {
             if (settings->get_firstmatch() && found_patterns.find(*p->pattern) != found_patterns.end()) {
                 continue;
@@ -270,7 +292,10 @@ vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
                 for (unsigned i=0; i < pmatch.size(); ++i) {
                     unsigned long match_start_idx = pmatch.position(i) + trimmed;
                     unsigned long match_end_idx = match_start_idx + pmatch.length(i);
-                    results.push_back(new SearchResult(p, nullptr, linenum, match_start_idx + 1, match_end_idx + 1, line));
+                    vector<string>* v_lines_before = new vector<string>(lines_before.begin(), lines_before.end());
+                    vector<string>* v_lines_after = new vector<string>(lines_after.begin(), lines_after.end());
+                    results.push_back(new SearchResult(p, nullptr, linenum, match_start_idx + 1, match_end_idx + 1,
+                                                       line, v_lines_before, v_lines_after));
                     if (settings->get_firstmatch()) {
                         found_patterns.insert(*p->pattern);
                         skip_pattern = true;
@@ -279,6 +304,15 @@ vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
                     linebuf = line.substr(match_end_idx);
                     trimmed = match_end_idx;
                 }
+            }
+        }
+
+        if (lines_before_count > 0) {
+            if (lines_before.size() == lines_before_count) {
+                lines_before.pop_front();
+            }
+            if (lines_before.size() < lines_before_count) {
+                lines_before.push_back(line);
             }
         }
     }
