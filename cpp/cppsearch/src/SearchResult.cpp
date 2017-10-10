@@ -75,7 +75,7 @@ string SearchResult::multi_line_result_to_string() {
     if (!lines_before.empty()) {
         current_linenum -= lines_before.size();
         for (const auto& line_before : lines_before) {
-            result_string.append(boost::str(boost::format(lineFormat) % current_linenum % line_before));
+            result_string.append(" ").append(boost::str(boost::format(lineFormat) % current_linenum % line_before));
             current_linenum++;
         }
     }
@@ -84,7 +84,7 @@ string SearchResult::multi_line_result_to_string() {
 
     if (!lines_after.empty()) {
         for (const auto& line_after : lines_after) {
-            result_string.append(boost::str(boost::format(lineFormat) % current_linenum % line_after));
+            result_string.append(" ").append(boost::str(boost::format(lineFormat) % current_linenum % line_after));
             current_linenum++;
         }
     }
