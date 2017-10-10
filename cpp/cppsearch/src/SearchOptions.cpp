@@ -1,24 +1,22 @@
 #include <algorithm>
 #include <cstdlib>
-#include <cstdio>
 #include <deque>
 #include <iostream>
 #include <FileUtil.h>
 #include <SearchException.h>
 #include <boost/format.hpp>
-#include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
+#include "common.h"
 #include "config.h"
 #include "FileTypes.h"
 #include "SearchOption.h"
 #include "SearchOptions.h"
 
-using namespace rapidjson;
 using namespace std;
 
 SearchOptions::SearchOptions() {
 
-    arg_action_map = {
+    coll_arg_map = {
             {"in-archiveext", [](string* s, SearchSettings* ss) { ss->add_in_archiveextension(s); }},
             {"in-archivefilepattern", [](string* s, SearchSettings* ss) { ss->add_in_archivefilepattern(s); }},
             {"in-dirpattern", [](string* s, SearchSettings* ss) { ss->add_in_dirpattern(s); }},
@@ -27,11 +25,8 @@ SearchOptions::SearchOptions() {
             {"in-filetype", [](string* s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(&t); }},
             {"in-linesafterpattern", [](string* s, SearchSettings* ss) { ss->add_in_linesafterpattern(s); }},
             {"in-linesbeforepattern", [](string* s, SearchSettings* ss) { ss->add_in_linesbeforepattern(s); }},
-            {"linesafter", [](string* s, SearchSettings* ss) { ss->set_linesafter(stoi(*s)); }},
             {"linesaftertopattern", [](string* s, SearchSettings* ss) { ss->add_linesaftertopattern(s); }},
             {"linesafteruntilpattern", [](string* s, SearchSettings* ss) { ss->add_linesafteruntilpattern(s); }},
-            {"linesbefore", [](string* s, SearchSettings* ss) { ss->set_linesbefore(stoi(*s)); }},
-            {"maxlinelength", [](string* s, SearchSettings* ss) { ss->set_maxlinelength(stoi(*s)); }},
             {"out-archiveext", [](string* s, SearchSettings* ss) { ss->add_out_archiveextension(s); }},
             {"out-archivefilepattern", [](string* s, SearchSettings* ss) { ss->add_out_archivefilepattern(s); }},
             {"out-dirpattern", [](string* s, SearchSettings* ss) { ss->add_out_dirpattern(s); }},
@@ -40,11 +35,22 @@ SearchOptions::SearchOptions() {
             {"out-filetype", [](string* s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(&t); }},
             {"out-linesafterpattern", [](string* s, SearchSettings* ss) { ss->add_out_linesafterpattern(s); }},
             {"out-linesbeforepattern", [](string* s, SearchSettings* ss) { ss->add_out_linesbeforepattern(s); }},
-            {"search", [](string* s, SearchSettings* ss) { ss->add_searchpattern(s); }},
+            {"searchpattern", [](string* s, SearchSettings* ss) { ss->add_searchpattern(s); }},
             {"settings-file", [this](string* s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
     };
 
-    flag_action_map = {
+    int_arg_map = {
+            {"linesafter", [](int i, SearchSettings* ss) { ss->set_linesafter(i); }},
+            {"linesbefore", [](int i, SearchSettings* ss) { ss->set_linesbefore(i); }},
+            {"maxlinelength", [](int i, SearchSettings* ss) { ss->set_maxlinelength(i); }}
+    };
+
+    str_arg_map = {
+            {"startpath", [](string* s, SearchSettings* ss) { ss->set_startpath(s); }},
+            {"settings-file", [this](string* s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
+    };
+
+    bool_arg_map = {
             {"archivesonly", [](bool b, SearchSettings* ss) { ss->set_archivesonly(b); }},
             {"allmatches", [](bool b, SearchSettings* ss) { ss->set_firstmatch(!b); }},
             {"debug", [](bool b, SearchSettings* ss) { ss->set_debug(b); }},
@@ -154,26 +160,42 @@ SearchSettings* SearchOptions::settings_from_args(int &argc, char **argv) {
             auto long_arg_found = long_arg_map.find(*next_arg);
             if (long_arg_found != long_arg_map.end()) {
                 auto longarg = long_arg_map[*next_arg];
-                auto arg_action_found = arg_action_map.find(longarg);
-                if (arg_action_found != arg_action_map.end()) {
+
+                auto bool_arg_found = bool_arg_map.find(longarg);
+                auto coll_arg_found = coll_arg_map.find(longarg);
+                auto int_arg_found = int_arg_map.find(longarg);
+                auto str_arg_found = str_arg_map.find(longarg);
+
+                if (bool_arg_found != bool_arg_map.end()) {
+                    bool_arg_map[longarg](true, settings);
+                } else if (coll_arg_found != coll_arg_map.end()
+                           || int_arg_found != int_arg_map.end()
+                           || str_arg_found != str_arg_map.end()) {
                     if (arg_deque.empty()) {
                         string msg = "Missing value for option ";
                         msg.append(*next_arg);
                         throw SearchException(msg);
                     } else {
-                        next_arg = new string(arg_deque.front());
+                        auto* arg_val = new string(arg_deque.front());
                         arg_deque.pop_front();
-                        arg_action_map[longarg](next_arg, settings);
+                        if (coll_arg_found != coll_arg_map.end()) {
+                            coll_arg_map[longarg](arg_val, settings);
+                        } else if (int_arg_found != int_arg_map.end()) {
+                            int int_val = stoi(*arg_val);
+                            if (int_val < 0) {
+                                string msg = "Invalid value for option ";
+                                msg.append(*next_arg).append(": ").append(*arg_val);
+                                throw SearchException(msg);
+                            }
+                            int_arg_map[longarg](int_val, settings);
+                        } else if (str_arg_found != str_arg_map.end()) {
+                            str_arg_map[longarg](arg_val, settings);
+                        }
                     }
-                } else {
-                    auto flag_action_found = flag_action_map.find(longarg);
-                    if (flag_action_found != flag_action_map.end()) {
-                        flag_action_map[longarg](true, settings);
-                    } else {
-                        string msg = "Invalid option: ";
-                        msg.append(*next_arg);
-                        throw SearchException(msg);
-                    }
+                } else { // shouldn't be possible to get here
+                    string msg = "Invalid option: ";
+                    msg.append(*next_arg);
+                    throw SearchException(msg);
                 }
             } else {
                 string msg = "Invalid option: ";
