@@ -1,8 +1,16 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <sys/stat.h>
-#include <sstream>
 #include "FileUtil.h"
+
+std::string FileUtil::expand_path(const std::string* filepath) {
+    if (filepath->at(0) == '~') {
+        std::string expanded = getenv("HOME");
+        expanded.append("/").append(filepath->substr(1));
+        return expanded;
+    }
+    return *filepath;
+}
 
 bool FileUtil::file_exists(const std::string* name) {
     struct stat buffer;

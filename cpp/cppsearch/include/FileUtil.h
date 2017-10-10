@@ -6,6 +6,7 @@
 
 class FileUtil {
 public:
+    static std::string expand_path(const std::string* filepath);
     static bool file_exists(const std::string* name);
     static std::string get_contents(const std::string* filepath);
     static std::string get_contents(const std::ifstream& fin);
