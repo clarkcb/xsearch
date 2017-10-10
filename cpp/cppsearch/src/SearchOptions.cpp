@@ -78,8 +78,67 @@ SearchOptions::SearchOptions() {
     load_options();
 }
 
-void SearchOptions::settings_from_file(string* filepath, SearchSettings* ss) {
+void SearchOptions::settings_from_file(string* filepath, SearchSettings* settings) {
+    if (!FileUtil::file_exists(filepath)) {
+        string msg = "Settings file not found: ";
+        msg.append(*filepath);
+        throw SearchException(msg);
+    }
 
+    FILE *fp = fopen(filepath->c_str(), "r");
+
+    char readBuffer[65536];
+    FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+
+    Document document;
+    document.ParseStream(is);
+    fclose(fp);
+
+    settings_from_document(&document, settings);
+}
+
+void SearchOptions::settings_from_json(string* json, SearchSettings* settings) {
+    Document document;
+    document.Parse(json->c_str());
+    settings_from_document(&document, settings);
+}
+
+void SearchOptions::settings_from_document(Document* document, SearchSettings* settings) {
+    assert(document->IsObject());
+
+    for(Value::ConstMemberIterator it=document->MemberBegin(); it != document->MemberEnd(); it++) {
+        string name = it->name.GetString();
+
+        if (it->value.IsArray()) {
+            assert(coll_arg_map.find(name) != coll_arg_map.end());
+            const auto& arr = it->value.GetArray();
+            for (SizeType i = 0; i < arr.Size(); i++) {
+                assert(arr[i].IsString());
+                auto* s = new string(arr[i].GetString());
+                coll_arg_map[name](s, settings);
+            }
+
+        } else if (it->value.IsNumber()) {
+            assert(int_arg_map.find(name) != int_arg_map.end());
+            int i = it->value.GetInt();
+            if (i < 0) {
+                string msg = "Invalid value for option ";
+                msg.append(name).append(": ").append(to_string(i));
+                throw SearchException(msg);
+            }
+            int_arg_map[name](i, settings);
+
+        } else if (it->value.IsBool()) {
+            assert(bool_arg_map.find(name) != bool_arg_map.end());
+            bool b = it->value.GetBool();
+            bool_arg_map[name](b, settings);
+
+        } else if (it->value.IsString()) {
+            assert(str_arg_map.find(name) != str_arg_map.end());
+            auto* s = new string(it->value.GetString());
+            str_arg_map[name](s, settings);
+        }
+    }
 }
 
 void SearchOptions::load_options() {
@@ -110,7 +169,6 @@ void SearchOptions::load_options() {
         assert(searchoption.HasMember("long"));
         const Value &longValue = searchoption["long"];
         auto* lng = new string(longValue.GetString());
-        //printf("\nlong = \"%s\"\n", lng->c_str());
         long_arg_map[*lng] = *lng;
 
         string* sht;
@@ -121,12 +179,10 @@ void SearchOptions::load_options() {
         } else {
             sht = new string("");
         }
-        //printf("short = \"%s\"\n", sht->c_str());
 
         assert(searchoption.HasMember("desc"));
         const Value &descValue = searchoption["desc"];
         auto* desc = new string(descValue.GetString());
-        //printf("desc = \"%s\"\n", desc->c_str());
 
         auto* option = new SearchOption(sht, lng, desc);
         options.push_back(option);
