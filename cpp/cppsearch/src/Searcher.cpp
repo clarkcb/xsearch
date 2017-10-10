@@ -19,28 +19,41 @@ void Searcher::validate_settings(SearchSettings* ss) {
     string* startpath = ss->get_startpath();
     if (startpath == nullptr || startpath->empty()) {
         throw SearchException("Startpath not defined");
-    } else if (!FileUtil::file_exists(startpath)) {
+    }
+    string expanded = FileUtil::expand_path(startpath);
+    if (!FileUtil::file_exists(startpath) && !FileUtil::file_exists(&expanded)) {
         throw SearchException("Startpath not found");
     }
-
     if (ss->get_searchpatterns()->empty()) {
         throw SearchException("No search patterns defined");
     }
 }
 
+SearchFile* Searcher::get_searchfile(string* filepath) {
+    FileType filetype = filetypes->get_filetype(filepath);
+    boost::filesystem::path path(*filepath);
+    string parent_path = path.parent_path().string();
+    string filename = path.filename().string();
+    return new SearchFile(parent_path, filename, filetype);
+}
+
 vector<SearchResult*> Searcher::search() {
     string *startpath = settings->get_startpath();
-    vector<SearchResult*> results = {};
+    string expanded = FileUtil::expand_path(startpath);
     if (FileUtil::is_directory(startpath)) {
         return search_path(*startpath);
 
+    } else if (FileUtil::is_directory(&expanded)) {
+        return search_path(expanded);
+
     } else if (FileUtil::is_regular_file(startpath)) {
-        FileType filetype = filetypes->get_filetype(startpath);
-        boost::filesystem::path path(*startpath);
-        string parent_path = path.parent_path().string();
-        string filename = path.filename().string();
-        auto* sf = new SearchFile(parent_path, filename, filetype);
+        auto* sf = get_searchfile(startpath);
         return search_file(sf);
+
+    } else if (FileUtil::is_regular_file(&expanded)) {
+        auto* sf = get_searchfile(&expanded);
+        return search_file(sf);
+
     } else {
         throw SearchException("startpath is an unsupported file type");
     }
