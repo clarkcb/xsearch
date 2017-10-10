@@ -18,8 +18,12 @@ set(SOURCE_FILES include/common.h src/common.cpp include/config.h
         include/SearchSettings.h src/SearchSettings.cpp include/SearchFile.h src/SearchFile.cpp
         include/SearchOption.h src/SearchOption.cpp include/SearchOptions.h src/SearchOptions.cpp
         include/SearchPattern.h src/SearchPattern.cpp include/SearchResult.h src/SearchResult.cpp
-        include/Searcher.h src/Searcher.cpp cppsearch.cpp)
+        include/Searcher.h src/Searcher.cpp)
 
-add_executable(cppsearch ${SOURCE_FILES})
+add_library(xsearch ${SOURCE_FILES})
 
-target_link_libraries(cppsearch ${Boost_LIBRARIES})
+target_link_libraries(xsearch ${Boost_LIBRARIES})
+
+add_executable(cppsearch cppsearch.cpp)
+
+target_link_libraries(cppsearch xsearch)
