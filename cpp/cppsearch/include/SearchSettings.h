@@ -27,12 +27,12 @@ private:
     vector<SearchPattern*> linesaftertopatterns;
     vector<SearchPattern*> linesafteruntilpatterns;
 
-    int linesafter = 0;
-    int linesbefore = 0;
+    unsigned int linesafter = 0;
+    unsigned int linesbefore = 0;
     bool listdirs = false;
     bool listfiles = false;
     bool listlines = false;
-    int maxlinelength = 0;
+    unsigned int maxlinelength = 0;
     bool multilinesearch = false;
 
     vector<string> out_archiveextensions;
@@ -91,12 +91,12 @@ public:
     bool get_excludehidden();
     bool get_firstmatch();
     bool get_multilinesearch();
-    int get_linesafter();
-    int get_linesbefore();
+    unsigned int get_linesafter();
+    unsigned int get_linesbefore();
     bool get_listdirs();
     bool get_listfiles();
     bool get_listlines();
-    int get_maxlinelength();
+    unsigned int get_maxlinelength();
     bool get_printresults();
     bool get_printusage();
     bool get_printversion();
@@ -130,12 +130,12 @@ public:
     void set_excludehidden(bool b);
     void set_firstmatch(bool b);
     void set_multilinesearch(bool b);
-    void set_linesafter(int linecount);
-    void set_linesbefore(int linecount);
+    void set_linesafter(unsigned int linecount);
+    void set_linesbefore(unsigned int linecount);
     void set_listdirs(bool b);
     void set_listfiles(bool b);
     void set_listlines(bool b);
-    void set_maxlinelength(int max);
+    void set_maxlinelength(unsigned int max);
     void set_printresults(bool b);
     void set_printusage(bool b);
     void set_printversion(bool b);

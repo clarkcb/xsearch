@@ -125,11 +125,11 @@ bool SearchSettings::get_multilinesearch() {
     return multilinesearch;
 }
 
-int SearchSettings::get_linesafter() {
+unsigned int SearchSettings::get_linesafter() {
     return linesafter;
 }
 
-int SearchSettings::get_linesbefore() {
+unsigned int SearchSettings::get_linesbefore() {
     return linesbefore;
 }
 
@@ -145,7 +145,7 @@ bool SearchSettings::get_listlines() {
     return listlines;
 }
 
-int SearchSettings::get_maxlinelength() {
+unsigned int SearchSettings::get_maxlinelength() {
     return maxlinelength;
 }
 
@@ -244,11 +244,11 @@ void SearchSettings::set_firstmatch(const bool b) {
     firstmatch = b;
 }
 
-void SearchSettings::set_linesafter(const int linecount) {
+void SearchSettings::set_linesafter(const unsigned int linecount) {
     linesafter = linecount;
 }
 
-void SearchSettings::set_linesbefore(const int linecount) {
+void SearchSettings::set_linesbefore(const unsigned int linecount) {
     linesbefore = linecount;
 }
 
@@ -264,7 +264,7 @@ void SearchSettings::set_listlines(const bool b) {
     listlines = b;
 }
 
-void SearchSettings::set_maxlinelength(const int max) {
+void SearchSettings::set_maxlinelength(const unsigned int max) {
     maxlinelength = max;
 }
 
