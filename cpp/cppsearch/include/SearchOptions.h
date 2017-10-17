@@ -19,7 +19,7 @@ public:
 private:
     unordered_map<string, std::function<void(string*, SearchSettings*)>> coll_arg_map;
     unordered_map<string, std::function<void(bool, SearchSettings*)>> bool_arg_map;
-    unordered_map<string, std::function<void(int, SearchSettings*)>> int_arg_map;
+    unordered_map<string, std::function<void(unsigned int, SearchSettings*)>> int_arg_map;
     unordered_map<string, std::function<void(string*, SearchSettings*)>> str_arg_map;
     unordered_map<string, string> long_arg_map;
     vector<SearchOption*> options;

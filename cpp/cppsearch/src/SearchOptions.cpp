@@ -22,7 +22,7 @@ SearchOptions::SearchOptions() {
             {"in-dirpattern", [](string* s, SearchSettings* ss) { ss->add_in_dirpattern(s); }},
             {"in-ext", [](string* s, SearchSettings* ss) { ss->add_in_extension(s); }},
             {"in-filepattern", [](string* s, SearchSettings* ss) { ss->add_in_filepattern(s); }},
-            {"in-filetype", [](string* s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(&t); }},
+            {"in-filetype", [](string* s, SearchSettings* ss) { auto t = FileTypes::from_name(*s); ss->add_in_filetype(&t); }},
             {"in-linesafterpattern", [](string* s, SearchSettings* ss) { ss->add_in_linesafterpattern(s); }},
             {"in-linesbeforepattern", [](string* s, SearchSettings* ss) { ss->add_in_linesbeforepattern(s); }},
             {"linesaftertopattern", [](string* s, SearchSettings* ss) { ss->add_linesaftertopattern(s); }},
@@ -32,7 +32,7 @@ SearchOptions::SearchOptions() {
             {"out-dirpattern", [](string* s, SearchSettings* ss) { ss->add_out_dirpattern(s); }},
             {"out-ext", [](string* s, SearchSettings* ss) { ss->add_out_extension(s); }},
             {"out-filepattern", [](string* s, SearchSettings* ss) { ss->add_out_filepattern(s); }},
-            {"out-filetype", [](string* s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(&t); }},
+            {"out-filetype", [](string* s, SearchSettings* ss) { auto t = FileTypes::from_name(*s); ss->add_out_filetype(&t); }},
             {"out-linesafterpattern", [](string* s, SearchSettings* ss) { ss->add_out_linesafterpattern(s); }},
             {"out-linesbeforepattern", [](string* s, SearchSettings* ss) { ss->add_out_linesbeforepattern(s); }},
             {"searchpattern", [](string* s, SearchSettings* ss) { ss->add_searchpattern(s); }},
@@ -40,9 +40,9 @@ SearchOptions::SearchOptions() {
     };
 
     int_arg_map = {
-            {"linesafter", [](int i, SearchSettings* ss) { ss->set_linesafter(i); }},
-            {"linesbefore", [](int i, SearchSettings* ss) { ss->set_linesbefore(i); }},
-            {"maxlinelength", [](int i, SearchSettings* ss) { ss->set_maxlinelength(i); }}
+            {"linesafter", [](unsigned int i, SearchSettings* ss) { ss->set_linesafter(i); }},
+            {"linesbefore", [](unsigned int i, SearchSettings* ss) { ss->set_linesbefore(i); }},
+            {"maxlinelength", [](unsigned int i, SearchSettings* ss) { ss->set_maxlinelength(i); }}
     };
 
     str_arg_map = {
@@ -79,7 +79,7 @@ SearchOptions::SearchOptions() {
 }
 
 void SearchOptions::settings_from_file(string* filepath, SearchSettings* settings) {
-    if (!FileUtil::file_exists(filepath)) {
+    if (!FileUtil::file_exists(*filepath)) {
         string msg = "Settings file not found: ";
         msg.append(*filepath);
         throw SearchException(msg);
@@ -126,7 +126,7 @@ void SearchOptions::settings_from_document(Document* document, SearchSettings* s
                 msg.append(name).append(": ").append(to_string(i));
                 throw SearchException(msg);
             }
-            int_arg_map[name](i, settings);
+            int_arg_map[name]((unsigned int)i, settings);
 
         } else if (it->value.IsBool()) {
             assert(bool_arg_map.find(name) != bool_arg_map.end());
@@ -142,16 +142,16 @@ void SearchOptions::settings_from_document(Document* document, SearchSettings* s
 }
 
 void SearchOptions::load_options() {
-    auto* searchoptions_path = new string(XSEARCHPATH);
-    searchoptions_path->append("/shared/searchoptions.json");
+    auto searchoptions_path = string(XSEARCHPATH);
+    searchoptions_path.append("/shared/searchoptions.json");
 
     if (!FileUtil::file_exists(searchoptions_path)) {
         string msg = "Searchoptions file not found: ";
-        msg.append(*searchoptions_path);
+        msg.append(searchoptions_path);
         throw SearchException(msg);
     }
 
-    FILE* fp = fopen(searchoptions_path->c_str(), "r");
+    FILE* fp = fopen(searchoptions_path.c_str(), "r");
 
     char readBuffer[65536];
     FileReadStream is(fp, readBuffer, sizeof(readBuffer));
