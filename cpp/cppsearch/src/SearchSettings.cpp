@@ -26,7 +26,11 @@ void SearchSettings::add_pattern(const string* p, vector<SearchPattern*>* ps) {
 
 void SearchSettings::add_extensions(const string* exts, vector<string>* extensions) {
     vector<string> xs = StringUtil::split_string(*exts, ",");
-    extensions->insert(extensions->end(), xs.begin(), xs.end());
+    for (const auto& x : xs) {
+        if (!x.empty()) {
+            extensions->push_back(x);
+        }
+    }
 }
 
 void SearchSettings::add_in_archiveextension(const string* ext) {
