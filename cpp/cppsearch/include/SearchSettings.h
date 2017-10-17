@@ -32,7 +32,7 @@ private:
     bool listdirs = false;
     bool listfiles = false;
     bool listlines = false;
-    unsigned int maxlinelength = 0;
+    unsigned int maxlinelength = 150;
     bool multilinesearch = false;
 
     vector<string> out_archiveextensions;
