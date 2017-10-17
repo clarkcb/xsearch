@@ -27,3 +27,11 @@ target_link_libraries(xsearch ${Boost_LIBRARIES})
 add_executable(cppsearch cppsearch.cpp)
 
 target_link_libraries(cppsearch xsearch)
+
+set(TEST_FILES include/catch.hpp tests/FileTypesTest.cpp tests/FileUtilTest.cpp tests/SearchOptionsTest.cpp
+        tests/SearchSettingsTest.cpp tests/tests-main.cpp)
+
+
+add_executable(cppsearch-tests ${TEST_FILES})
+
+target_link_libraries(cppsearch-tests xsearch)
