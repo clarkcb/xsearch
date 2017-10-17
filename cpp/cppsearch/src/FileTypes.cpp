@@ -17,18 +17,18 @@ FileTypes::FileTypes() {
 }
 
 void FileTypes::load_filetypes() {
-    auto* filetypes_path = new string(XSEARCHPATH);
-    filetypes_path->append("/shared/filetypes.json");
+    auto filetypes_path = string(XSEARCHPATH);
+    filetypes_path.append("/shared/filetypes.json");
 
     if (!FileUtil::file_exists(filetypes_path)) {
         string msg = "Filetypes file not found: ";
-        msg.append(*filetypes_path);
+        msg.append(filetypes_path);
         log_error(msg);
         // TODO: SearchException
         return;
     }
 
-    FILE* fp = fopen(filetypes_path->c_str(), "r");
+    FILE* fp = fopen(filetypes_path.c_str(), "r");
 
     char readBuffer[65536];
     FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -66,8 +66,8 @@ void FileTypes::load_filetypes() {
     }
 }
 
-FileType FileTypes::from_name(const string* name) {
-    string uname = boost::to_upper_copy(*name);
+FileType FileTypes::from_name(const string& name) {
+    string uname = boost::to_upper_copy(name);
     if (uname == "TEXT") {
         return FileType::TEXT;
     }
@@ -86,7 +86,7 @@ FileType FileTypes::from_name(const string* name) {
     return FileType::UNKNOWN;
 }
 
-FileType FileTypes::get_filetype(const string* filepath) {
+FileType FileTypes::get_filetype(const string& filepath) {
     if (is_code_file(filepath)) {
         return FileType::CODE;
     }
@@ -105,47 +105,47 @@ FileType FileTypes::get_filetype(const string* filepath) {
     return FileType::UNKNOWN;
 }
 
-bool FileTypes::found_ext(const set<string>* ext_set, const string* ext) {
-    auto found = ext_set->find(*ext);
+bool FileTypes::found_ext(const set<string>* ext_set, const string& ext) {
+    auto found = ext_set->find(ext);
     return found != ext_set->end();
 }
 
-bool FileTypes::is_archive_file(const string* filepath) {
+bool FileTypes::is_archive_file(const string& filepath) {
     string ext = FileUtil::get_extension(filepath);
-    return found_ext(&archive_extensions, &ext);
+    return found_ext(&archive_extensions, ext);
 }
 
-bool FileTypes::is_binary_file(const string* filepath) {
+bool FileTypes::is_binary_file(const string& filepath) {
     string ext = FileUtil::get_extension(filepath);
-    return found_ext(&binary_extensions, &ext);
+    return found_ext(&binary_extensions, ext);
 }
 
-bool FileTypes::is_code_file(const string* filepath) {
+bool FileTypes::is_code_file(const string& filepath) {
     string ext = FileUtil::get_extension(filepath);
-    return found_ext(&code_extensions, &ext);
+    return found_ext(&code_extensions, ext);
 }
 
-bool FileTypes::is_searchable_file(const string* filepath) {
+bool FileTypes::is_searchable_file(const string& filepath) {
     string ext = FileUtil::get_extension(filepath);
-    return found_ext(&text_extensions, &ext)
-           || found_ext(&code_extensions, &ext)
-           || found_ext(&xml_extensions, &ext)
-           || found_ext(&binary_extensions, &ext)
-           || found_ext(&archive_extensions, &ext);
+    return found_ext(&text_extensions, ext)
+           || found_ext(&code_extensions, ext)
+           || found_ext(&xml_extensions, ext)
+           || found_ext(&binary_extensions, ext)
+           || found_ext(&archive_extensions, ext);
 }
 
-bool FileTypes::is_text_file(const string* filepath) {
+bool FileTypes::is_text_file(const string& filepath) {
     string ext = FileUtil::get_extension(filepath);
-    return found_ext(&text_extensions, &ext)
-           || found_ext(&code_extensions, &ext)
-           || found_ext(&xml_extensions, &ext);
+    return found_ext(&text_extensions, ext)
+           || found_ext(&code_extensions, ext)
+           || found_ext(&xml_extensions, ext);
 }
 
-bool FileTypes::is_unknown_file(const string* filepath) {
+bool FileTypes::is_unknown_file(const string& filepath) {
     return get_filetype(filepath) == FileType::UNKNOWN;
 }
 
-bool FileTypes::is_xml_file(const string* filepath) {
+bool FileTypes::is_xml_file(const string& filepath) {
     string ext = FileUtil::get_extension(filepath);
-    return found_ext(&xml_extensions, &ext);
+    return found_ext(&xml_extensions, ext);
 }

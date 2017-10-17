@@ -11,15 +11,15 @@ enum class FileType {UNKNOWN, ARCHIVE, BINARY, CODE, TEXT, XML};
 class FileTypes {
 public:
     FileTypes();
-    static FileType from_name(const string* name);
-    FileType get_filetype(const string* filepath);
-    bool is_archive_file(const string* filepath);
-    bool is_binary_file(const string* filepath);
-    bool is_code_file(const string* filepath);
-    bool is_searchable_file(const string* filepath);
-    bool is_text_file(const string* filepath);
-    bool is_unknown_file(const string* filepath);
-    bool is_xml_file(const string* filepath);
+    static FileType from_name(const string& name);
+    FileType get_filetype(const string& filepath);
+    bool is_archive_file(const string& filepath);
+    bool is_binary_file(const string& filepath);
+    bool is_code_file(const string& filepath);
+    bool is_searchable_file(const string& filepath);
+    bool is_text_file(const string& filepath);
+    bool is_unknown_file(const string& filepath);
+    bool is_xml_file(const string& filepath);
 
 private:
     set<string> archive_extensions;
@@ -28,7 +28,7 @@ private:
     set<string> text_extensions;
     set<string> xml_extensions;
     void load_filetypes();
-    bool found_ext(const set<string>* ext_set, const string* ext);
+    bool found_ext(const set<string>* ext_set, const string& ext);
 };
 
 #endif //CPPSEARCH_FILETYPES_H
