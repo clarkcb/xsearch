@@ -17,7 +17,7 @@ private:
     bool is_search_file(string filepath);
     bool is_archive_search_file(string filepath);
     bool filter_file(string filepath);
-    SearchFile* get_searchfile(string* filepath);
+    SearchFile* get_searchfile(string& filepath);
     vector<SearchFile*> get_search_files(vector<string> searchdirs);
 
     vector<SearchResult*> search_text_file(SearchFile* sf);

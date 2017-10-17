@@ -20,8 +20,8 @@ void Searcher::validate_settings(SearchSettings* ss) {
     if (startpath == nullptr || startpath->empty()) {
         throw SearchException("Startpath not defined");
     }
-    string expanded = FileUtil::expand_path(startpath);
-    if (!FileUtil::file_exists(startpath) && !FileUtil::file_exists(&expanded)) {
+    string expanded = FileUtil::expand_path(*startpath);
+    if (!FileUtil::file_exists(*startpath) && !FileUtil::file_exists(expanded)) {
         throw SearchException("Startpath not found");
     }
     if (ss->get_searchpatterns()->empty()) {
@@ -29,29 +29,29 @@ void Searcher::validate_settings(SearchSettings* ss) {
     }
 }
 
-SearchFile* Searcher::get_searchfile(string* filepath) {
+SearchFile* Searcher::get_searchfile(string& filepath) {
     FileType filetype = filetypes->get_filetype(filepath);
-    boost::filesystem::path path(*filepath);
+    boost::filesystem::path path(filepath);
     string parent_path = path.parent_path().string();
     string filename = path.filename().string();
     return new SearchFile(parent_path, filename, filetype);
 }
 
 vector<SearchResult*> Searcher::search() {
-    string *startpath = settings->get_startpath();
-    string expanded = FileUtil::expand_path(startpath);
-    if (FileUtil::is_directory(startpath)) {
+    string* startpath = settings->get_startpath();
+    string expanded = FileUtil::expand_path(*startpath);
+    if (FileUtil::is_directory(*startpath)) {
         return search_path(*startpath);
 
-    } else if (FileUtil::is_directory(&expanded)) {
+    } else if (FileUtil::is_directory(expanded)) {
         return search_path(expanded);
 
-    } else if (FileUtil::is_regular_file(startpath)) {
-        auto* sf = get_searchfile(startpath);
+    } else if (FileUtil::is_regular_file(*startpath)) {
+        auto* sf = get_searchfile(*startpath);
         return search_file(sf);
 
-    } else if (FileUtil::is_regular_file(&expanded)) {
-        auto* sf = get_searchfile(&expanded);
+    } else if (FileUtil::is_regular_file(expanded)) {
+        auto* sf = get_searchfile(expanded);
         return search_file(sf);
 
     } else {
@@ -82,7 +82,7 @@ bool Searcher::is_search_dir(string filepath) {
     vector<string> elems = FileUtil::split_path(filepath);
     if (settings->get_excludehidden()) {
         for (auto& elem : elems) {
-            if (FileUtil::is_hidden(&elem)) {
+            if (FileUtil::is_hidden(elem)) {
                 return false;
             }
         }
@@ -115,7 +115,7 @@ vector<string> Searcher::get_search_dirs(string filepath) {
 }
 
 bool Searcher::is_search_file(string filename) {
-    string ext = FileUtil::get_extension(&filename);
+    string ext = FileUtil::get_extension(filename);
     vector<string>* in_exts = settings->get_in_extensions();
     vector<string>* out_exts = settings->get_out_extensions();
     if ((!in_exts->empty() && find(in_exts->begin(), in_exts->end(), ext) == in_exts->end())
@@ -129,7 +129,7 @@ bool Searcher::is_search_file(string filename) {
 }
 
 bool Searcher::is_archive_search_file(string filename) {
-    string ext = FileUtil::get_extension(&filename);
+    string ext = FileUtil::get_extension(filename);
     vector<string>* in_exts = settings->get_in_archiveextensions();
     vector<string>* out_exts = settings->get_out_archiveextensions();
     if ((!in_exts->empty() && find(in_exts->begin(), in_exts->end(), ext) == in_exts->end())
@@ -145,10 +145,10 @@ bool Searcher::is_archive_search_file(string filename) {
 bool Searcher::filter_file(string filepath) {
     boost::filesystem::path p(filepath);
     string filename = p.filename().string();
-    if (FileUtil::is_hidden(&filename) && settings->get_excludehidden()) {
+    if (FileUtil::is_hidden(filename) && settings->get_excludehidden()) {
         return false;
     }
-    if (filetypes->get_filetype(&filename) == FileType::ARCHIVE) {
+    if (filetypes->get_filetype(filename) == FileType::ARCHIVE) {
         return settings->get_searcharchives() && is_archive_search_file(filename);
     }
     return !settings->get_archivesonly() && is_search_file(filename);
@@ -168,7 +168,7 @@ vector<SearchFile*> Searcher::get_search_files(vector<string> searchdirs) {
             if (boost::filesystem::is_regular_file(subpath) && filter_file(subpath.string())) {
                 string parent_path = subpath.parent_path().string();
                 string filename = subpath.filename().string();
-                FileType filetype = filetypes->get_filetype(&filename);
+                FileType filetype = filetypes->get_filetype(filename);
                 searchfiles.push_back(new SearchFile(parent_path, filename, filetype));
             }
         }
@@ -269,7 +269,7 @@ vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
             line = lines_after.front();
             lines_after.pop_front();
         } else if (getline(fin, line)) {
-            // nothing to do, action in if statement
+            // nothing to do, action in if clause
         } else {
             break;
         }
