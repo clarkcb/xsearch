@@ -29,7 +29,7 @@ private val xml = "xml"
 private val unknown = "unknown"
 
 fun fromName(name: String) : FileType {
-    val lname = name.toLowerCase()
+    val lname = name.trim().toLowerCase()
     if (lname == text) {
         return FileType.TEXT
     } else if (lname == binary) {

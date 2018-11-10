@@ -5,7 +5,7 @@ package ktsearch
  */
 object FileUtil {
     private val dotDirs: Set<String> = setOf(".", "..")
-    private val DEFAULT_ENCODING = "UTF-8"
+    //private val DEFAULT_ENCODING = "UTF-8"
 
     fun isDotDir(f: String): Boolean {
         return dotDirs.contains(f)

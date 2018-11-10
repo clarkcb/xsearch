@@ -168,9 +168,12 @@ class Searcher(val settings: SearchSettings) {
             }
             log("")
         }
+        return searchFiles(searchFiles)
+    }
 
+    fun searchFiles(sfs: List<SearchFile>): List<SearchResult> {
         val results: MutableList<SearchResult> = mutableListOf()
-        for (sf in searchFiles) {
+        for (sf in sfs) {
             results.addAll(searchFile(sf))
         }
         return results.toList()
@@ -260,8 +263,11 @@ class Searcher(val settings: SearchSettings) {
 
             for (m in matches) {
                 val beforeNewlineIndices = newlineIndices.takeWhile { it <= m.range.start }
+                val beforeLineCount = newlineIndices.count { it <= m.range.start }
                 val linesBefore =
                         if (settings.linesBefore > 0) {
+//                            val lbIndices = beforeNewlineIndices.reversed().
+//                                    take(settings.linesBefore + 1).reversed()
                             val lbIndices = beforeNewlineIndices.reversed().
                                     take(settings.linesBefore + 1).reversed()
                             getLinesFromMultiLineString(s, lbIndices)

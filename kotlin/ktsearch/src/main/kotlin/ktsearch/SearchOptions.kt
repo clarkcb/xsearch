@@ -177,7 +177,7 @@ class SearchOptions() {
     fun applySetting(key: String, s: String, settings: SearchSettings): SearchSettings {
         if (this.argActionMap.containsKey(key)) {
             return this.argActionMap.get(key)!!.invoke(s, settings)
-        } else if (key.equals("startpath")) {
+        } else if (key == "startpath") {
             return settings.copy(startPath = s)
         } else {
             throw SearchException("Invalid option: " + key)
