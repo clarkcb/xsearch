@@ -76,8 +76,8 @@
   (let [lines (get-matching-lines settings)]
     (log-msg
       (if (:uniquelines settings)
-        (format"\nUnique lines with matches (%d):" (count lines))
-        (format"\nLines with matches (%d):" (count lines))))
+        (format "\nUnique lines with matches (%d):" (count lines))
+        (format "\nLines with matches (%d):" (count lines))))
     (doseq [l lines] (log-msg l))))
 
 (defn validate-settings [settings]
