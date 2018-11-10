@@ -7,12 +7,12 @@ import scala.xml.XML
 
 object FileType extends Enumeration {
   type FileType = Value
-  val Unknown = Value
-  val Archive = Value
-  val Binary  = Value
-  val Code    = Value
-  val Text    = Value
-  val Xml     = Value
+  val Unknown: FileType = Value
+  val Archive: FileType = Value
+  val Binary: FileType  = Value
+  val Code: FileType    = Value
+  val Text: FileType    = Value
+  val Xml: FileType     = Value
 }
 
 object FileTypes {

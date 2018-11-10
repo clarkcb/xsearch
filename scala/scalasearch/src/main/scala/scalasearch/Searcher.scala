@@ -498,11 +498,10 @@ class Searcher (settings: SearchSettings) {
     val zf = new ZipFile(sf.toFile)
     val entries = zf.entries().filterNot(_.isDirectory)
     val entryMap = mutable.LinkedHashMap.empty[String, List[ZipEntry]]
-    entries foreach {
-      ze =>
-        val f = new File(ze.getName)
-        entryMap(f.getParent) = entryMap.getOrElse(f.getParent,
-          List.empty[ZipEntry]) :+ ze
+    entries foreach { ze =>
+      val f = new File(ze.getName)
+      entryMap(f.getParent) = entryMap.getOrElse(f.getParent,
+        List.empty[ZipEntry]) :+ ze
     }
     entryMap foreach { e =>
       val dirName = e._1
