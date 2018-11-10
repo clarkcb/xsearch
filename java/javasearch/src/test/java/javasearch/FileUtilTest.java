@@ -39,13 +39,13 @@ public class FileUtilTest {
 
     @Test
     public final void testGetHiddenMissingExtension() {
-        File file = new File("filename.");
+        File file = new File(".filename.");
         assertEquals(FileUtil.getExtension(file), "");
     }
 
     @Test
     public final void testGetHiddenNoExtension() {
-        File file = new File("filename");
+        File file = new File(".filename");
         assertEquals(FileUtil.getExtension(file), "");
     }
 

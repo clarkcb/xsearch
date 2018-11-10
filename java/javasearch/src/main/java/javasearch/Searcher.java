@@ -72,7 +72,7 @@ public class Searcher {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    private boolean isSearchDir(final File d) {
+    public boolean isSearchDir(final File d) {
         List<String> pathElems = FileUtil.splitPath(d.toString());
         if (settings.getExcludeHidden()
                 && pathElems.stream().anyMatch(FileUtil::isHidden)) {
@@ -121,7 +121,7 @@ public class Searcher {
         return subSearchDirs;
     }
 
-    private boolean isSearchFile(final File f) {
+    public boolean isSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInExtensions().isEmpty()
                 ||
@@ -140,7 +140,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
     }
 
-    private boolean isArchiveSearchFile(final File f) {
+    public boolean isArchiveSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInArchiveExtensions().isEmpty()
                 ||
@@ -159,7 +159,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
     }
 
-    private boolean filterFile(final File f) {
+    public boolean filterFile(final File f) {
         if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
             return false;
         }
@@ -249,7 +249,6 @@ public class Searcher {
         }
 
         // search the files
-        //searchFiles.forEach(this::searchFile);
         return searchFiles(searchFiles);
     }
 
@@ -266,12 +265,17 @@ public class Searcher {
             offset += batchSize;
         } while (offset < searchFiles.size());
 
-        executorService.shutdown();
-        // TODO: how long should we wait?
         try {
-            executorService.awaitTermination(60, TimeUnit.SECONDS);
+            executorService.shutdown();
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.err.println("tasks interrupted");
+        } finally {
+            if (!executorService.isTerminated()) {
+                System.err.println("cancel non-finished tasks");
+            }
+            executorService.shutdownNow();
+            //System.out.println("shutdown finished");
         }
         return results;
     }
@@ -467,7 +471,6 @@ public class Searcher {
             results.addAll(searchStringIterator(it));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
-                //addSearchResult(r);
             }
         } catch (IOException e) {
             e.printStackTrace();

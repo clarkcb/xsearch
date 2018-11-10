@@ -34,8 +34,11 @@ public final class FileUtil {
     private static final String DEFAULT_ENCODING = "UTF-8";
 
     public static String getExtension(final File f) {
+        return getExtension(f.getName());
+    }
+
+    public static String getExtension(final String fileName) {
         String ext = "";
-        String fileName = f.getName();
         int lastIndex = fileName.lastIndexOf(".");
         if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
             ext = fileName.substring(lastIndex + 1);
