@@ -41,7 +41,7 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 	if err := json.Unmarshal(data, &fileSettings); err != nil {
 		return err
 	}
-	for k, _ := range fileSettings {
+	for k := range fileSettings {
 		if af, isAction := argActionMap[k]; isAction {
 			if v, hasVal := fileSettings[k]; hasVal {
 				switch reflect.TypeOf(v).Kind() {

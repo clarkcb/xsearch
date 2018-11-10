@@ -1,7 +1,5 @@
 package xsearch
 
-import ()
-
 type FileType int
 
 const (
@@ -20,6 +18,12 @@ type FileTypes struct {
 func (f *FileTypes) getFileType(file string) FileType {
 	if f.IsTextFile(file) {
 		return FILETYPE_TEXT
+	}
+	if f.IsCodeFile(file) {
+		return FILETYPE_CODE
+	}
+	if f.IsXmlFile(file) {
+		return FILETYPE_XML
 	}
 	if f.IsBinaryFile(file) {
 		return FILETYPE_BINARY

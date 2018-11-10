@@ -28,7 +28,7 @@ func GetSearchOptions() *SearchOptions {
 			&SearchOption{"w", "maxlinelength", "Max length of line of result to print out (default: 150)"},
 			&SearchOption{"m", "multilinesearch", "Search files as single multi-line content block"},
 			&SearchOption{"P", "noprintmatches", "Suppress printing of search results to stdout"},
-			&SearchOption{"R", "norecursive", "Do not search recursively"},
+			&SearchOption{"R", "norecursive", "Do not search recursively (no subdirectories)"},
 			&SearchOption{"Z", "nosearcharchives", "Do not search archive files (bz2, gz, tar, zip)*"},
 			&SearchOption{"", "out-archiveext", "Specify extension for archive files to exclude from search"},
 			&SearchOption{"", "out-archivefilepattern", "Specify name pattern for archive files to exclude from search"},
