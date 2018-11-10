@@ -6,6 +6,10 @@
     "name": "Cary Clark",
     "email": "clarkcb@gmail.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clarkcb/xsearch.git"
+  },
   "main": "./src/jssearch.js",
   "bin": {
     "jssearch": "./bin/jssearch"
@@ -24,11 +28,11 @@
   },
   "devDependencies": {
     "del": "^1.2.0",
-    "gulp": "^3.9.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-replace": "^0.5.4",
-    "gulp-uglify": "^1.2.0",
-    "jshint": "^2.8.0",
-    "nodeunit": "^0.9.1"
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-replace": "^1.0.0",
+    "gulp-uglify": "^3.0.1",
+    "jshint": "^2.9.6",
+    "nodeunit": "^0.11.3"
   }
 }
