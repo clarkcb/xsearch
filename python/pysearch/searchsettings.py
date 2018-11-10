@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-################################################################################
+###############################################################################
 #
 # searchsettings.py
 #
 # class SearchSettings: encapsulates search settings
 #
-################################################################################
+###############################################################################
 import re
 from filetypes import FileType
 from searchexception import SearchException
@@ -15,7 +15,8 @@ class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
     _extension_set_names = set('''in_extensions out_extensions
-                                  in_archiveextensions out_archiveextensions'''.split())
+                                  in_archiveextensions
+                                  out_archiveextensions'''.split())
 # TODO: move filetypes to own group
     _pattern_set_names = set('''in_dirpatterns out_dirpatterns
                                 in_filepatterns out_filepatterns

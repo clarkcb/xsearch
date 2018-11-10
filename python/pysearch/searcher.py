@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-################################################################################
+###############################################################################
 #
 # searcher.py
 #
 # class Searcher: executes a file search
 #
-################################################################################
+###############################################################################
 from collections import deque
 from io import StringIO
 import os
@@ -127,8 +127,10 @@ class Searcher(object):
         if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
             return False
         if sf.filetype == FileType.Archive:
-            return self.settings.searcharchives and self.is_archive_search_file(sf.filename)
-        return not self.settings.archivesonly and self.is_search_file(sf.filename)
+            return self.settings.searcharchives and \
+                   self.is_archive_search_file(sf.filename)
+        return not self.settings.archivesonly and \
+               self.is_search_file(sf.filename)
 
     def get_search_files_for_directory(self, d):
         """Get the list of files to search in a given directory"""
@@ -388,17 +390,22 @@ class Searcher(object):
                 line = lines_after.popleft()
             else:
                 try:
-                    line = next(lines).rstrip('\r\n')
+                    line = next(lines)
+                    line = line.rstrip('\r\n')
+                except UnicodeDecodeError as e:
+                    common.log('UnicodeDecodeError: %s' % e)
+                    break
                 except StopIteration:
                     break
-                except AttributeError:
+                except AttributeError as e:
                     common.log('AttributeError: %s' % e)
                     break
             linenum += 1
             if self.settings.linesafter:
                 while len(lines_after) < self.settings.linesafter:
                     try:
-                        lines_after.append(lines.next().rstrip('\r\n'))
+                        line_after = next(lines)
+                        lines_after.append(line_after.rstrip('\r\n'))
                     except StopIteration:
                         break
             for p in self.settings.searchpatterns:
@@ -437,7 +444,7 @@ class Searcher(object):
                             while not lines_after_to_match and \
                                   not lines_after_until_match:
                                 try:
-                                    next_line = lines.next().rstrip('\r\n')
+                                    next_line = next(lines).rstrip('\r\n')
                                     lines_after.append(next_line)
                                     if self.settings.linesaftertopatterns and \
                                        matches_any_pattern(next_line,

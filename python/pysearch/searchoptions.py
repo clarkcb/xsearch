@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-################################################################################
+###############################################################################
 #
 # searchoptions.py
 #
 # class SearchOptions: defines the available command-line options and
 #                      corresponding utility methods
 #
-################################################################################
+###############################################################################
 from collections import deque
 from io import StringIO
 import json
