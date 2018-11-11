@@ -1,6 +1,6 @@
 Test file
 
-This is a file to test xsearch, which currently has the following 9 implementations:
+This is a file to test xsearch, which currently has the following 16 implementations:
 
 1. cljsearch for Clojure
 2. cssearch for C#
@@ -8,10 +8,16 @@ This is a file to test xsearch, which currently has the following 9 implementati
 4. gosearch for Go
 5. hssearch for Haskell
 6. javasearch for Java
-7. nodesearch for Node.js (JavaScript)
-8. pysearch.py for Python
-9. rbsearch.rb for Ruby
-10. scalasearch for Scala
+7. jssearch for JavaScript (Node.js)
+8. ktsearch for Kotlin
+9. mlsearch for ocaml
+10. phpsearch.php for PHP
+11. plsearch.pl for Perl
+12. pysearch.py for Python
+13. rbsearch.rb for Ruby
+14. scalasearch for Scala
+15. swiftsearch for Swift
+16. tssearch for TypeScript
 
 
 The basic code structure includes these elements:
@@ -29,10 +35,16 @@ The basic code structure includes these elements:
   after, etc., used by Searcher
 
 
+Partially done implementations:
+
+* csearch for C
+* cppsearch for C++
+
+
 Other possible implementations:
 
+* adasearch for Ada
 * erlsearch for Erlang
-* mlsearch for OCaml
 * rssearch for Rust
 
 
