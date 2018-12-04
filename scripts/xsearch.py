@@ -31,6 +31,7 @@ xsearch_dict = {
     'java':       'javasearch',
     'javascript': 'jssearch',
     'kotlin':     'ktsearch',
+    'objc':       'objcsearch',
     'ocaml':      'mlsearch',
     'perl':       'plsearch.pl',
     'php':        'phpsearch.php',

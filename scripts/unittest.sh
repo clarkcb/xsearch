@@ -121,6 +121,20 @@ unittest_kotlin () {
     gradle -b $KTSEARCH_PATH/build.gradle test
 }
 
+unittest_objc () {
+    echo
+    log "unittest_objc"
+    OBJCSEARCH_PATH=$OBJC_PATH/objcsearch
+    cd $OBJCSEARCH_PATH
+    XCTEST="/Applications/Xcode.app/Contents/Developer/usr/bin/xctest"
+    # TESTS="/Users/cary/Library/Developer/Xcode/DerivedData/objcsearch-ahhnhqcmbhdevtgqfhmgnnerqaln/Build/Products/Debug/objcsearch_tests.xctest"
+    TESTS="$OBJCSEARCH_PATH/build/Release/objcsearch_tests.xctest"
+    # Usage: xctest [-XCTest All | <TestCaseClassName/testMethodName>] <path of unit to be tested>
+    log "Unit-testing objcsearch"
+    $XCTEST -XCTest All $TESTS
+    cd -
+}
+
 unittest_ocaml () {
     echo
     log "unittest_ocaml"
@@ -300,6 +314,8 @@ elif [ "$ARG" == "javascript" ]; then
     unittest_javascript
 elif [ "$ARG" == "kotlin" ]; then
     unittest_kotlin
+elif [ "$ARG" == "objc" ]; then
+    unittest_objc
 elif [ "$ARG" == "ocaml" ]; then
     unittest_ocaml
 elif [ "$ARG" == "perl" ]; then

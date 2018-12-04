@@ -226,6 +226,23 @@ build_kotlin () {
     cd -
 }
 
+build_objc () {
+    echo
+    log "build_objc"
+    OBJCSEARCH_PATH=$OBJC_PATH/objcsearch
+
+    # TODO: copy resource files locally?
+
+    # run xcodebuild
+    log "Building objcsearch"
+    cd $OBJCSEARCH_PATH
+    # log "xcodebuild -project objcsearch.xcodeproj"
+    # xcodebuild -project objcsearch.xcodeproj
+    log "xcodebuild -alltargets"
+    xcodebuild -alltargets
+    cd -
+}
+
 build_ocaml () {
     echo
     log "build_ocaml"
@@ -331,6 +348,8 @@ build_all () {
 
     build_kotlin
 
+    build_objc
+
     build_ocaml
 
     build_perl
@@ -379,6 +398,8 @@ elif [ "$ARG" == "javascript" ]; then
     build_javascript
 elif [ "$ARG" == "kotlin" ]; then
     build_kotlin
+elif [ "$ARG" == "objc" ]; then
+    build_objc
 elif [ "$ARG" == "ocaml" ]; then
     build_ocaml
 elif [ "$ARG" == "perl" ]; then
