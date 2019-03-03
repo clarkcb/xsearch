@@ -310,14 +310,14 @@ open class Searcher {
     fileprivate func lineFromIndices(_ s: String, startLineIndex: Int, endLineIndex: Int) -> String {
         let startLineStringIndex = s.index(s.startIndex, offsetBy: startLineIndex)
         let endLineStringIndex = s.index(s.startIndex, offsetBy: endLineIndex)
-        let lineRange = Range<String.Index>(startLineStringIndex ..< endLineStringIndex)
+        let lineRange = startLineStringIndex ..< endLineStringIndex
         return s.substring(with: lineRange)
     }
 
     fileprivate func getNewLineIndices(_ s: String) -> [Int] {
         var indices = [Int]()
         var currentIndex = 0
-        for c in s.characters {
+        for c in s {
             if c == "\n" {
                 indices.append(currentIndex)
             }
