@@ -12,7 +12,7 @@ func getMatchingFiles(_ results: [SearchResult]) -> [String] {
     var files = Set<String>()
     for r in results.filter({$0.file != nil}) {
         let f = r.file!
-        files.insert(f)
+        files.insert(f.description)
     }
     return Array(files).sorted(by: {$0 < $1})
 }
@@ -36,6 +36,12 @@ func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [S
     return lines.sorted(by: {$0.lowercased() < $1.lowercased()})
 }
 
+func handleError(_ error: NSError, _ options: SearchOptions) {
+    logMsg("")
+    logError(error.domain)
+    options.usage(1)
+}
+
 func main() {
     let options = SearchOptions()
 
@@ -45,9 +51,7 @@ func main() {
     let settings = options.settingsFromArgs(args, error: &error)
 
     if error != nil {
-        logMsg("")
-        logError(error!.domain)
-        options.usage()
+        handleError(error!, options)
     }
     
     if settings.debug {
@@ -61,17 +65,13 @@ func main() {
     let searcher = Searcher(settings: settings, error: &error)
 
     if error != nil {
-        logMsg("")
-        logError(error!.domain)
-        options.usage()
+        handleError(error!, options)
     }
 
     searcher.search(&error)
 
     if error != nil {
-        logMsg("")
-        logError(error!.domain)
-        options.usage()
+        handleError(error!, options)
     }
     
     let results = searcher.getSearchResults()

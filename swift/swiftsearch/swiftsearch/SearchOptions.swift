@@ -97,6 +97,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
 
 open class SearchOptions {
     fileprivate var searchOptions = [SearchOption]()
+    fileprivate var longArgDict: [String:String] = [:]
 
     init() {
         setSearchOptions()
@@ -106,6 +107,12 @@ open class SearchOptions {
         let parser = SearchOptionsXmlParser()
         searchOptions = parser.parseFile(Config.searchOptionsPath)
         searchOptions.sort(by: { $0.sortArg() < $1.sortArg() })
+        for so in searchOptions {
+            longArgDict[so.long] = so.long
+            if !so.short.isEmpty {
+                longArgDict[so.short] = so.long
+            }
+        }
     }
 
     fileprivate let argActionDict: [String: (String, SearchSettings) -> ()] = [
@@ -174,108 +181,101 @@ open class SearchOptions {
         },
         "search": { (s: String, ss: SearchSettings) -> () in
             ss.searchPatterns.append(Regex(s))
-        },
-    ]
-
-    fileprivate let flagActionDict: [String: (SearchSettings) -> ()] = [
-        "allmatches": { (ss: SearchSettings) -> () in
-            ss.firstMatch = false
-        },
-        "archivesonly": { (ss: SearchSettings) -> () in
-            ss.archivesOnly = true
-            ss.searchArchives = true
-        },
-        "debug": { (ss: SearchSettings) -> () in
-            ss.debug = true
-            ss.verbose = true
-        },
-        "excludehidden": { (ss: SearchSettings) -> () in
-            ss.excludeHidden = true
-        },
-        "firstmatch": { (ss: SearchSettings) -> () in
-            ss.firstMatch = true
-        },
-        "help": { (ss: SearchSettings) -> () in
-            ss.printUsage = true
-        },
-        "includehidden": { (ss: SearchSettings) -> () in
-            ss.excludeHidden = false
-        },
-        "listdirs": { (ss: SearchSettings) -> () in
-            ss.listDirs = true
-        },
-        "listfiles": { (ss: SearchSettings) -> () in
-            ss.listFiles = true
-        },
-        "listlines": { (ss: SearchSettings) -> () in
-            ss.listLines = true
-        },
-        "multilinesearch": { (ss: SearchSettings) -> () in
-            ss.multiLineSearch = true
-        },
-        "noprintmatches": { (ss: SearchSettings) -> () in
-            ss.printResults = false
-        },
-        "norecursive": { (ss: SearchSettings) -> () in
-            ss.recursive = false
-        },
-        "nosearcharchives": { (ss: SearchSettings) -> () in
-            ss.searchArchives = false
-        },
-        "printmatches": { (ss: SearchSettings) -> () in
-            ss.printResults = true
-        },
-        "recursive": { (ss: SearchSettings) -> () in
-            ss.recursive = true
-        },
-        "searcharchives": { (ss: SearchSettings) -> () in
-            ss.searchArchives = true
-        },
-        "uniquelines": { (ss: SearchSettings) -> () in
-            ss.uniqueLines = true
-        },
-        "verbose": { (ss: SearchSettings) -> () in
-            ss.verbose = true
-        },
-        "version": { (ss: SearchSettings) -> () in
-            ss.printVersion = true
-        },
-    ]
-
-    fileprivate func dictFromOptions(_ options: [SearchOption]) -> [String:SearchOption] {
-        var dict = toDictionary(options) {($0.long, $0)}
-        for (k, v) in (toDictionary(options.filter {!$0.short.isEmpty}) {($0.short, $0)}) {
-            dict[k] = v
         }
-        return dict
-    }
+    ]
 
-//    init(settings: SearchSettings, error: NSErrorPointer) {
+    fileprivate let boolFlagActionDict: [String: (Bool, SearchSettings) -> ()] = [
+        "allmatches": { (b: Bool, ss: SearchSettings) -> () in
+            ss.firstMatch = !b
+        },
+        "archivesonly": { (b: Bool, ss: SearchSettings) -> () in
+            ss.archivesOnly = b
+            if b { ss.searchArchives = true }
+        },
+        "debug": { (b: Bool, ss: SearchSettings) -> () in
+            ss.debug = b
+            if b { ss.verbose = true }
+        },
+        "excludehidden": { (b: Bool, ss: SearchSettings) -> () in
+            ss.excludeHidden = b
+        },
+        "firstmatch": { (b: Bool, ss: SearchSettings) -> () in
+            ss.firstMatch = b
+        },
+        "help": { (b: Bool, ss: SearchSettings) -> () in
+            ss.printUsage = b
+        },
+        "includehidden": { (b: Bool, ss: SearchSettings) -> () in
+            ss.excludeHidden = !b
+        },
+        "listdirs": { (b: Bool, ss: SearchSettings) -> () in
+            ss.listDirs = b
+        },
+        "listfiles": { (b: Bool, ss: SearchSettings) -> () in
+            ss.listFiles = b
+        },
+        "listlines": { (b: Bool, ss: SearchSettings) -> () in
+            ss.listLines = b
+        },
+        "multilinesearch": { (b: Bool, ss: SearchSettings) -> () in
+            ss.multiLineSearch = b
+        },
+        "noprintmatches": { (b: Bool, ss: SearchSettings) -> () in
+            ss.printResults = !b
+        },
+        "norecursive": { (b: Bool, ss: SearchSettings) -> () in
+            ss.recursive = !b
+        },
+        "nosearcharchives": { (b: Bool, ss: SearchSettings) -> () in
+            ss.searchArchives = !b
+        },
+        "printmatches": { (b: Bool, ss: SearchSettings) -> () in
+            ss.printResults = b
+        },
+        "recursive": { (b: Bool, ss: SearchSettings) -> () in
+            ss.recursive = b
+        },
+        "searcharchives": { (b: Bool, ss: SearchSettings) -> () in
+            ss.searchArchives = b
+        },
+        "uniquelines": { (b: Bool, ss: SearchSettings) -> () in
+            ss.uniqueLines = b
+        },
+        "verbose": { (b: Bool, ss: SearchSettings) -> () in
+            ss.verbose = b
+        },
+        "version": { (b: Bool, ss: SearchSettings) -> () in
+            ss.printVersion = b
+        }
+    ]
+
     func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
         var i = 0
         let settings = SearchSettings()
-        let argDict = dictFromOptions(searchOptions.filter
-            {self.argActionDict.index(forKey: $0.long) != nil})
-        let flagDict = dictFromOptions(searchOptions.filter
-            {self.flagActionDict.index(forKey: $0.long) != nil})
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
-                while arg.hasPrefix("-") && arg.characters.count > 1 {
-                    arg = arg.substring(from: arg.characters.index(arg.startIndex, offsetBy: 1))
+                while arg.hasPrefix("-") && arg.lengthOfBytes(using: String.Encoding.utf8) > 1 {
+                    arg = arg.substring(from: arg.index(arg.startIndex, offsetBy: 1))
                 }
-                if argDict.index(forKey: arg) != nil {
-                    if args.count > i {
-                        argActionDict[argDict[arg]!.long]!(args[i+1], settings)
-                        i += 1
+                if longArgDict.index(forKey: arg) != nil {
+                    let longArg = longArgDict[arg]
+                    if argActionDict.index(forKey: longArg!) != nil {
+                        if args.count > i+1 {
+                            argActionDict[longArg!]!(args[i+1], settings)
+                            i += 1
+                        } else {
+                            setError(error, msg: "Missing argument for option \(arg)")
+                        }
+                    } else if boolFlagActionDict.index(forKey: longArg!) != nil {
+                        boolFlagActionDict[longArg!]!(true, settings)
                     } else {
-                        setError(error, msg: "Missing argument for option \(arg)")
+                        setError(error, msg: "Invalid option: \(arg)")
                     }
-                } else if flagDict.index(forKey: arg) != nil {
-                    flagActionDict[flagDict[arg]!.long]!(settings)
                 } else {
                     setError(error, msg: "Invalid option: \(arg)")
                 }
+                
             } else {
                 settings.startPath = args[i]
             }
@@ -295,10 +295,10 @@ open class SearchOptions {
         let optStrings = searchOptions.map
             { $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)" }
         let optDescs = searchOptions.map { $0.desc }
-        let longest = optStrings.map({ $0.characters.count }).max()!
+        let longest = optStrings.map({ $0.lengthOfBytes(using: String.Encoding.utf8) }).max()!
         for i in 0 ..< optStrings.count {
             var optLine = " \(optStrings[i])"
-            while optLine.characters.count <= longest {
+            while optLine.lengthOfBytes(using: String.Encoding.utf8) <= longest {
                 optLine += " "
             }
             optLine += "  \(optDescs[i])\n"

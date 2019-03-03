@@ -12,6 +12,21 @@ class FileUtil {
     fileprivate static let dotDirs = Set<String>([".", ".."])
     fileprivate static let separator = "/"
 
+    static func expandPath(_ filePath: String) -> String {
+        if filePath.hasPrefix("~") {
+           let homePath = ProcessInfo.init().environment["HOME"]
+            var expanded: String? = homePath
+            if expanded != nil {
+                if filePath.lengthOfBytes(using: String.Encoding.utf8) > 1 {
+                    let index = filePath.index(filePath.startIndex, offsetBy: 1)
+                    expanded!.append(String(filePath[index...]))
+                }
+                return expanded!
+            }
+        }
+        return filePath
+    }
+
     static func getExtension(_ fileName: String) -> String {
         let ext = NSURL(fileURLWithPath: fileName).pathExtension?.uppercased()
         if ext == "Z" {
@@ -21,7 +36,7 @@ class FileUtil {
     }
 
     static func hasExtension(_ fileName: String, ext: String) -> Bool {
-        return getExtension(fileName) == ext
+        return getExtension(fileName) == ext.lowercased()
     }
 
     fileprivate static func getFileManager() -> FileManager {
@@ -61,7 +76,7 @@ class FileUtil {
     }
 
     static func isHidden(_ filePath: String) -> Bool {
-        let pathElems = splitPath(filePath)
+        let pathElems = filePath.split {$0 == "/"}.map { String($0) }
         return pathElems.filter({self.isHiddenFile($0)}).count > 0
     }
 
@@ -69,12 +84,18 @@ class FileUtil {
         return fileName.hasPrefix(".") && !isDotDir(fileName)
     }
     
-    static func splitPath(_ filePath: String) -> [String] {
-        return filePath.characters.split {$0 == "/"}.map { String($0) }
+    static func splitPath(_ filePath: String) -> (String, String) {
+        let pathElems = filePath.split {$0 == "/"}.map { String($0) }
+        if pathElems.count > 1 {
+            let path = pathElems.prefix(pathElems.count-1).joined(separator: separator)
+            return (path, pathElems[pathElems.count-1])
+        } else {
+            return ("", filePath)
+        }
     }
     
     static func joinPath(_ path: String, childPath: String) -> String {
-        if path[path.index(before: path.endIndex)] == "/" {
+        if path.hasSuffix(separator) {
             return "\(path)\(childPath)"
         } else {
             return "\(path)/\(childPath)"

@@ -83,7 +83,7 @@ func takeRight<T>(_ seq: [T], num: Int) -> [T] {
 
 // for printing the borders in multiline search results
 extension String {
-    func `repeat`(_ n: Int) -> String {
+func `repeat`(_ n: Int) -> String {
         var result = self
         for _ in 1 ..< n {
             result += self

@@ -31,25 +31,25 @@ class DefaultSettings {
 }
 
 open class SearchSettings: CustomStringConvertible {
-    var archivesOnly = DefaultSettings.archivesOnly
-    var debug = DefaultSettings.debug
-    var excludeHidden = DefaultSettings.excludeHidden
-    var firstMatch = DefaultSettings.firstMatch
+    var archivesOnly: Bool = DefaultSettings.archivesOnly
+    var debug: Bool = DefaultSettings.debug
+    var excludeHidden: Bool = DefaultSettings.excludeHidden
+    var firstMatch: Bool = DefaultSettings.firstMatch
     var linesAfter = DefaultSettings.linesAfter
     var linesBefore = DefaultSettings.linesBefore
-    var listDirs = DefaultSettings.listDirs
-    var listFiles = DefaultSettings.listFiles
-    var listLines = DefaultSettings.listLines
+    var listDirs: Bool = DefaultSettings.listDirs
+    var listFiles: Bool = DefaultSettings.listFiles
+    var listLines: Bool = DefaultSettings.listLines
     var maxLineLength = DefaultSettings.maxLineLength
-    var multiLineSearch = DefaultSettings.multiLineSearch
-    var printResults = DefaultSettings.printResults
-    var printUsage = DefaultSettings.printUsage
-    var printVersion = DefaultSettings.printVersion
-    var recursive = DefaultSettings.recursive
-    var searchArchives = DefaultSettings.searchArchives
+    var multiLineSearch: Bool = DefaultSettings.multiLineSearch
+    var printResults: Bool = DefaultSettings.printResults
+    var printUsage: Bool = DefaultSettings.printUsage
+    var printVersion: Bool = DefaultSettings.printVersion
+    var recursive: Bool = DefaultSettings.recursive
+    var searchArchives: Bool = DefaultSettings.searchArchives
     var startPath = DefaultSettings.startPath
-    var uniqueLines = DefaultSettings.uniqueLines
-    var verbose = DefaultSettings.verbose
+    var uniqueLines: Bool = DefaultSettings.uniqueLines
+    var verbose: Bool = DefaultSettings.verbose
 
     var inArchiveExtensions = Set<String>()
     var inArchiveFilePatterns = Array<Regex>()
@@ -72,7 +72,7 @@ open class SearchSettings: CustomStringConvertible {
     var searchPatterns = Array<Regex>()
 
     fileprivate func splitExtensions(_ exts: String) -> [String] {
-        return exts.characters.split {$0 == ","}.map { String($0) }
+        return exts.split {$0 == ","}.map { String($0) }
     }
 
     func addInArchiveExtension(_ ext: String) {
@@ -133,7 +133,7 @@ open class SearchSettings: CustomStringConvertible {
         s += ", recursive=\(recursive)"
         s += ", searchArchives=\(searchArchives)"
         s += ", searchPatterns=\(arrayToString(searchPatterns))"
-        s += ", startPath=\"\(startPath)\""
+        s += ", startPath=\"\(startPath!)\""
         s += ", uniqueLines=\(uniqueLines)"
         s += ", verbose=\(verbose)"
         s += ")"

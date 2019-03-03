@@ -10,24 +10,22 @@ import Foundation
 
 class SearchFile: CustomStringConvertible {
     let containerSeparator = "!"
-    let containers: [String] = []
-    let path: String
-    let fileName: String
-    let fileType: String
+    let containers: [String]
+    let filePath: String
+    let fileType: FileType
 
-    init(path: String, fileName: String, fileType: String) {
-        self.path = path
-        self.fileName = fileName
+    init(filePath: String, fileType: FileType) {
+        self.filePath = filePath
         self.fileType = fileType
+        self.containers = []
     }
 
     var description: String {
         var s = ""
-        let url = URL(fileURLWithPath: path)
         if !containers.isEmpty {
             s += containers.joined(separator: containerSeparator) + containerSeparator
         }
-        s += url.appendingPathComponent(fileName).absoluteString
+        s += filePath
         return s
     }
 }

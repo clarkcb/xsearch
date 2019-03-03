@@ -10,7 +10,7 @@ import Foundation
 
 open class SearchResult: CustomStringConvertible {
     let searchPattern: String
-    var file: String?
+    var file: SearchFile?
     let lineNum: Int
     let matchStartIndex: Int
     let matchEndIndex: Int
@@ -18,7 +18,7 @@ open class SearchResult: CustomStringConvertible {
     let linesBefore: [String]
     let linesAfter: [String]
 
-    init(searchPattern: String, file: String, lineNum: Int,
+    init(searchPattern: String, file: SearchFile?, lineNum: Int,
         matchStartIndex: Int, matchEndIndex: Int, line: String,
         linesBefore: [String], linesAfter: [String]) {
             self.searchPattern = searchPattern
@@ -40,7 +40,7 @@ open class SearchResult: CustomStringConvertible {
     }
 
     fileprivate func singleLineToString() -> String {
-        var s = file ?? "<text>"
+        var s = file?.description ?? "<text>"
         if lineNum > 0 {
             s += ": \(lineNum): [\(matchStartIndex):\(matchEndIndex)]: "
             s += line.trimmingCharacters(in: whitespace as CharacterSet)
@@ -65,7 +65,7 @@ open class SearchResult: CustomStringConvertible {
     fileprivate func multiLineToString() -> String {
         let sepLen = 80
         var s = ""
-        let filepath = file ?? "<text>"
+        let filepath = file?.description ?? "<text>"
         let eq = "="
         let dash = "-"
         s += "\(eq.`repeat`(sepLen))\n"
@@ -73,7 +73,7 @@ open class SearchResult: CustomStringConvertible {
         s += "\(dash.`repeat`(sepLen))\n"
 
         let maxLineNum = lineNum + linesAfter.count
-        let maxNumLen = "\(maxLineNum)".characters.count
+        let maxNumLen = "\(maxLineNum)".lengthOfBytes(using: String.Encoding.utf8)
         let format = "%\(maxNumLen)d"
         if linesBefore.count > 0 {
             s += linesToString(linesBefore, startNum: lineNum - linesBefore.count, format: format)

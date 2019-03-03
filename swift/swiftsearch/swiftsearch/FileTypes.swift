@@ -131,30 +131,30 @@ open class FileTypes {
         }
         return FileType.unknown
     }
-
+    
+    func isFileOfType(_ fileName: String, _ typeName: String) -> Bool {
+        return fileTypesDict.index(forKey: typeName) != nil &&
+            fileTypesDict[typeName]!.contains(FileUtil.getExtension(fileName))
+    }
+    
     open func isArchiveFile(_ fileName: String) -> Bool {
-        return fileTypesDict.index(forKey: FileTypes.archive) != nil &&
-            fileTypesDict[FileTypes.archive]!.contains(FileUtil.getExtension(fileName))
+        return isFileOfType(fileName, FileTypes.archive)
     }
 
     open func isBinaryFile(_ fileName: String) -> Bool {
-        return fileTypesDict.index(forKey: FileTypes.binary) != nil &&
-            fileTypesDict[FileTypes.binary]!.contains(FileUtil.getExtension(fileName))
+        return isFileOfType(fileName, FileTypes.binary)
     }
     
     open func isCodeFile(_ fileName: String) -> Bool {
-        return fileTypesDict.index(forKey: FileTypes.code) != nil &&
-            fileTypesDict[FileTypes.code]!.contains(FileUtil.getExtension(fileName))
+        return isFileOfType(fileName, FileTypes.code)
     }
     
     open func isSearchableFile(_ fileName: String) -> Bool {
-        return fileTypesDict.index(forKey: FileTypes.searchable) != nil &&
-            fileTypesDict[FileTypes.searchable]!.contains(FileUtil.getExtension(fileName))
+        return isFileOfType(fileName, FileTypes.searchable)
     }
 
     open func isTextFile(_ fileName: String) -> Bool {
-        return fileTypesDict.index(forKey: FileTypes.text) != nil &&
-            fileTypesDict[FileTypes.text]!.contains(FileUtil.getExtension(fileName))
+        return isFileOfType(fileName, FileTypes.text)
     }
 
     open func isUnknownFile(_ fileName: String) -> Bool {
@@ -164,7 +164,6 @@ open class FileTypes {
     }
     
     open func isXmlFile(_ fileName: String) -> Bool {
-        return fileTypesDict.index(forKey: FileTypes.xml) != nil &&
-            fileTypesDict[FileTypes.xml]!.contains(FileUtil.getExtension(fileName))
+        return isFileOfType(fileName, FileTypes.xml)
     }
 }

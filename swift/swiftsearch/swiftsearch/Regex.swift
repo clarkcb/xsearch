@@ -20,7 +20,7 @@ class Regex {
 
     func matches(_ s: String) -> [NSTextCheckingResult] {
         return self.expression.matches(in: s, options: [],
-            range: NSMakeRange(0, s.characters.count)) 
+            range: NSMakeRange(0, s.lengthOfBytes(using: String.Encoding.utf8)))
     }
 
     func test(_ s: String) -> Bool {
