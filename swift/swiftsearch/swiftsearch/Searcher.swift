@@ -310,8 +310,7 @@ open class Searcher {
     fileprivate func lineFromIndices(_ s: String, startLineIndex: Int, endLineIndex: Int) -> String {
         let startLineStringIndex = s.index(s.startIndex, offsetBy: startLineIndex)
         let endLineStringIndex = s.index(s.startIndex, offsetBy: endLineIndex)
-        let lineRange = startLineStringIndex ..< endLineStringIndex
-        return s.substring(with: lineRange)
+        return String(s[startLineStringIndex ..< endLineStringIndex])
     }
 
     fileprivate func getNewLineIndices(_ s: String) -> [Int] {
@@ -466,14 +465,12 @@ open class Searcher {
         return path1 < path2
     }
 
-    // results in swift are already sorted the way I want (case-insensitive by path, then filename,
-    // then lineNum, then matchStartIndex). This method is an example to reference for languages
-    // that require sorting (go, etc.)
+    // if results weren't in DESC order, would use this method to sort them
     fileprivate func getSortedSearchResults() -> [SearchResult] {
         return results.sorted(by: {self.cmpResultsInDir($0, $1)})
     }
     
     open func getSearchResults() -> [SearchResult] {
-        return results
+        return results.reversed() // reverse to get ASC order
     }
 }

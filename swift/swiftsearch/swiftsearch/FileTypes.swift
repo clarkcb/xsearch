@@ -93,7 +93,7 @@ open class FileTypes {
                 .union(fileTypesDict[FileTypes.archive]!)
     }
     
-    static open func fromName(_ typeName: String) -> FileType {
+    static public func fromName(_ typeName: String) -> FileType {
         let lname = typeName.lowercased()
         if lname == text {
             return FileType.text

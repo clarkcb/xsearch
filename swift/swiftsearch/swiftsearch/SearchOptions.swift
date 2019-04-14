@@ -256,7 +256,7 @@ open class SearchOptions {
             var arg = args[i]
             if arg.hasPrefix("-") {
                 while arg.hasPrefix("-") && arg.lengthOfBytes(using: String.Encoding.utf8) > 1 {
-                    arg = arg.substring(from: arg.index(arg.startIndex, offsetBy: 1))
+                    arg = String(arg[arg.index(arg.startIndex, offsetBy: 1)...])
                 }
                 if longArgDict.index(forKey: arg) != nil {
                     let longArg = longArgDict[arg]
