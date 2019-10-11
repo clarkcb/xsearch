@@ -85,6 +85,7 @@
         startdir (if startpath (file startpath) nil)
         tests [(fn [ss] (if (not startpath) "Startpath not defined" nil))
                (fn [ss] (if (or (not startdir) (not (.exists startdir))) "Startpath not found" nil))
+               (fn [ss] (if (and startdir (not (.canRead startdir))) "Startpath not readable" nil))
                (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns defined" nil))]]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
