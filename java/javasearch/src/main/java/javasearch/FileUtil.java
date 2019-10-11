@@ -49,6 +49,17 @@ public final class FileUtil {
         return ext;
     }
 
+    public static boolean hasExtension(final File f, String ext) {
+        return hasExtension(f.getName(), ext);
+    }
+
+    public static boolean hasExtension(final String fileName, String ext) {
+        if (!ext.equals("Z")) { // the only always-uppercase ext
+            ext = ext.toLowerCase();
+        }
+        return getExtension(fileName).equals(ext);
+    }
+
     public static boolean isDotDir(final String f) {
         return dotDirs.contains(f);
     }
