@@ -6,6 +6,7 @@
 # class FileTypes
 #
 ###############################################################################
+from enum import Enum
 import xml.dom.minidom as minidom
 
 from .common import get_text
@@ -14,29 +15,22 @@ from .fileutil import FileUtil
 from .searchexception import SearchException
 
 
-class FileType(object):
+class FileType(Enum):
     """FileType enum"""
-    Unknown = 0
-    Archive = 1
-    Binary  = 2
-    Code    = 3
-    Text    = 4
-    Xml     = 5
+    UNKNOWN = 0
+    ARCHIVE = 1
+    BINARY = 2
+    CODE = 3
+    TEXT = 4
+    XML = 5
 
     @classmethod
     def from_name(cls, name):
         uname = name.upper()
-        if uname == 'TEXT':
-            return FileType.Text
-        if uname == 'BINARY':
-            return FileType.Binary
-        if uname == 'ARCHIVE':
-            return FileType.Archive
-        if uname == 'CODE':
-            return FileType.Code
-        if uname == 'XML':
-            return FileType.Xml
-        raise SearchException('Invalid file type: {0!s}\n'.format(name))
+        try:
+            return FileType[uname]
+        except KeyError:
+            raise SearchException('Invalid file type: {0!s}\n'.format(name))
 
 
 class FileTypes(object):
@@ -49,15 +43,15 @@ class FileTypes(object):
 
     def get_filetype(self, filename):
         if self.is_text_file(filename):
-            return FileType.Text
+            return FileType.TEXT
         if self.is_binary_file(filename):
-            return FileType.Binary
+            return FileType.BINARY
         if self.is_archive_file(filename):
-            return FileType.Archive
+            return FileType.ARCHIVE
         if self.is_code_file(filename):
-            return FileType.Code
+            return FileType.CODE
         if self.is_xml_file(filename):
-            return FileType.Xml
+            return FileType.XML
         return FileType.Unknown
 
     def is_archive_file(self, f):

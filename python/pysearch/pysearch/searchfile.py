@@ -20,7 +20,7 @@ class SearchFile(object):
         self.containers = []
         self.path = ''
         self.filename = ''
-        self.filetype = FileType.Unknown
+        self.filetype = FileType.UNKNOWN
         self.__dict__.update(kargs)
 
     @property
