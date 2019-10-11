@@ -10,6 +10,7 @@ Main class for initiating javasearch from command line
 
 package javasearch;
 
+import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -71,7 +72,7 @@ public class SearchMain {
                 handleError(e.getMessage(), options);
             }
 
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (ParseException | IOException e) {
             handleError(e.getMessage());
         }
     }

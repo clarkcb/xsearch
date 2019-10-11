@@ -13,6 +13,7 @@ package javasearch;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -22,18 +23,15 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 public class SearchOptions {
     private List<SearchOption> options;
 
-    public SearchOptions() throws ParserConfigurationException, SAXException, IOException {
+    public SearchOptions() throws IOException, ParseException {
         options = new ArrayList<>();
-        setOptionsFromXml();
+        setOptionsFromJson();
     }
 
     @FunctionalInterface
@@ -100,6 +98,25 @@ public class SearchOptions {
         }
     };
 
+    private void setOptionsFromJson() throws IOException, ParseException {
+        final String searchOptionsJsonPath = "/searchoptions.json";
+        InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsJsonPath);
+        Object obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream));
+        JSONObject jsonObj = (JSONObject)obj;
+        JSONArray searchoptionsArray = (JSONArray) jsonObj.get("searchoptions");
+
+        for (Object o : searchoptionsArray) {
+            Map searchoptionMap = (Map) o;
+            String longArg = (String) searchoptionMap.get("long");
+            String desc = (String) searchoptionMap.get("desc");
+            String shortArg = "";
+            if (searchoptionMap.containsKey("short")) {
+                shortArg = (String) searchoptionMap.get("short");
+            }
+            options.add(new SearchOption(shortArg, longArg, desc));
+        }
+    }
+
     private void setOptionsFromXml() throws ParserConfigurationException, SAXException, IOException {
         final String searchOptionsXmlPath = "/searchoptions.xml";
         InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsXmlPath);
@@ -132,8 +149,11 @@ public class SearchOptions {
                 Logger.log("Settings file not found: " + filePath);
                 System.exit(1);
             }
-            String json = FileUtil.getFileContents(file);
-            settingsFromJson(json, settings);
+            if (!FileUtil.hasExtension(filePath, "json")) {
+                Logger.log("Invalid settings file type (just be JSON): " + filePath);
+                System.exit(1);
+            }
+            settingsFromJson(FileUtil.getFileContents(file), settings);
         } catch (FileNotFoundException e) {
             Logger.log("Settings file not found: " + filePath);
             System.exit(1);
