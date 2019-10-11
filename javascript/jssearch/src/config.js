@@ -6,12 +6,12 @@
 
 "use strict";
 
-var config = require('../../../shared/config.json');
+const config = require('../../../shared/config.json');
 
-var isWin = /^win/.test(process.platform);
+const isWin = /^win/.test(process.platform);
 
-var HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
-var HOME = process.env[HOME_NAME];
+const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
+const HOME = process.env[HOME_NAME];
 
 exports.XSEARCHPATH = config.xsearchpath;
 exports.SHAREDPATH = exports.XSEARCHPATH + '/shared';

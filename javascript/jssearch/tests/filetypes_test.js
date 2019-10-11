@@ -8,41 +8,41 @@ var FileType = require('../src/filetype.js').FileType;
 var FileTypes = require('../src/filetypes.js').FileTypes;
 
 exports.testFileTypesArchiveFile = function(test) {
-    var fileTypes = new FileTypes();
-    var filename = 'archive.zip';
-    var res = fileTypes.isArchiveFile(filename);
+    const fileTypes = new FileTypes();
+    const filename = 'archive.zip';
+    const res = fileTypes.isArchiveFile(filename);
     test.ok(res, filename + " is archive file");
-    var type = fileTypes.getFileType(filename);
+    const type = fileTypes.getFileType(filename);
     test.ok(type === FileType.ARCHIVE, "FileType of " + filename + " is " + type);
     test.done();
 };
 
 exports.testFileTypesBinaryFile = function(test) {
-    var fileTypes = new FileTypes();
-    var filename = 'binary.exe';
-    var res = fileTypes.isBinaryFile(filename);
+    const fileTypes = new FileTypes();
+    const filename = 'binary.exe';
+    const res = fileTypes.isBinaryFile(filename);
     test.ok(res, filename + " is binary file");
-    var type = fileTypes.getFileType(filename);
+    const type = fileTypes.getFileType(filename);
     test.ok(type === FileType.BINARY, "FileType of " + filename + " is " + type);
     test.done();
 };
 
 exports.testFileTypesTextFile = function(test) {
-    var fileTypes = new FileTypes();
-    var filename = 'text.txt';
-    var res = fileTypes.isTextFile(filename);
+    const fileTypes = new FileTypes();
+    const filename = 'text.txt';
+    const res = fileTypes.isTextFile(filename);
     test.ok(res, filename + " is text file");
-    var type = fileTypes.getFileType(filename);
+    const type = fileTypes.getFileType(filename);
     test.ok(type === FileType.TEXT, "FileType of " + filename + " is " + type);
     test.done();
 };
 
 exports.testFileTypesUnknownFile = function(test) {
-    var fileTypes = new FileTypes();
-    var filename = 'unknown.xyz';
-    var res = fileTypes.isUnknownFile(filename);
+    const fileTypes = new FileTypes();
+    const filename = 'unknown.xyz';
+    const res = fileTypes.isUnknownFile(filename);
     test.ok(res, filename + " is unknown file");
-    var type = fileTypes.getFileType(filename);
+    const type = fileTypes.getFileType(filename);
     test.ok(type === FileType.UNKNOWN, "FileType of " + filename + " is " + type);
     test.done();
 };

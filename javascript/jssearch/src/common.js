@@ -13,17 +13,17 @@ if (typeof String.prototype.startsWith !== 'function') {
     };
 }
 
-var log = (message) => console.log(message);
+const log = (message) => console.log(message);
 exports.log = log;
 
-var boolHashFromArray = function (arr) {
+const boolHashFromArray = function (arr) {
     let hash = {};
     arr.forEach(a => hash[a] = true);
     return hash;
 };
 exports.boolHashFromArray = boolHashFromArray;
 
-var setFromArray = function (arr) {
+const setFromArray = function (arr) {
     let hash = boolHashFromArray(arr);
     let set = [];
     for (let k in hash) {

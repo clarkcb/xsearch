@@ -4,11 +4,11 @@
  * defines the set of search options and provides functionality to define search settings from them
  */
 
-var config = require('./config.js');
-var FileTypes = require('./filetypes.js').FileTypes;
-var FileUtil = require('./fileutil.js').FileUtil;
-var SearchOption = require('./searchoption.js').SearchOption;
-var SearchSettings = require('./searchsettings.js').SearchSettings;
+const config = require('./config.js');
+const FileTypes = require('./filetypes.js').FileTypes;
+const FileUtil = require('./fileutil.js').FileUtil;
+const SearchOption = require('./searchoption.js').SearchOption;
+const SearchSettings = require('./searchsettings.js').SearchSettings;
 
 function SearchOptions() {
     "use strict";
@@ -181,7 +181,7 @@ function SearchOptions() {
                     }
                 } else if (boolFlagActionMap[longKey]) {
                     boolFlagActionMap[longKey](obj[k], settings);
-                } else if (k == 'startpath') {
+                } else if (k === 'startpath') {
                     settings.startPath = obj[k];
                 } else {
                     err = new Error("Invalid option: "+k);

@@ -4,11 +4,11 @@
  * Some nodeunit tests of searchoptions.js
  */
 
-var SearchOptions = require('../src/searchoptions.js').SearchOptions;
-var SearchSettings = require('../src/searchsettings.js').SearchSettings;
+const SearchOptions = require('../src/searchoptions.js').SearchOptions;
+const SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
 exports.testNoArgs = function(test) {
-    var searchOptions = new SearchOptions();
+    const searchOptions = new SearchOptions();
     searchOptions.settingsFromArgs([], function(err, settings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
@@ -38,8 +38,8 @@ exports.testNoArgs = function(test) {
 };
 
 exports.testValidArgs = function(test) {
-    var searchOptions = new SearchOptions();
-    var args = ['-x', 'js,java', '-s', 'Searcher', '.'];
+    const searchOptions = new SearchOptions();
+    const args = ['-x', 'js,java', '-s', 'Searcher', '.'];
     searchOptions.settingsFromArgs(args, function(err, settings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
@@ -56,8 +56,8 @@ exports.testValidArgs = function(test) {
 };
 
 exports.testArchivesOnly = function(test) {
-    var searchOptions = new SearchOptions();
-    var args = ['--archivesonly'];
+    const searchOptions = new SearchOptions();
+    const args = ['--archivesonly'];
     searchOptions.settingsFromArgs(args, function(err, settings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
@@ -70,8 +70,8 @@ exports.testArchivesOnly = function(test) {
 };
 
 exports.testDebug = function(test) {
-    var searchOptions = new SearchOptions();
-    var args = ['--debug'];
+    const searchOptions = new SearchOptions();
+    const args = ['--debug'];
     searchOptions.settingsFromArgs(args, function(err, settings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
@@ -84,11 +84,11 @@ exports.testDebug = function(test) {
 };
 
 exports.testMissingArg = function(test) {
-    var searchOptions = new SearchOptions();
-    var args = ['-x'];
+    const searchOptions = new SearchOptions();
+    const args = ['-x'];
     searchOptions.settingsFromArgs(args, function(err) {
         if (err) {
-            var expected = "Error: Missing argument for option x";
+            const expected = "Error: Missing argument for option x";
             test.ok(err == expected, "Got missing argument err");
             test.done();
         } else {
@@ -99,11 +99,11 @@ exports.testMissingArg = function(test) {
 };
 
 exports.testIvalidArg = function(test) {
-    var searchOptions = new SearchOptions();
-    var args = ['-Q'];
+    const searchOptions = new SearchOptions();
+    const args = ['-Q'];
     searchOptions.settingsFromArgs(args, function(err) {
         if (err) {
-            var expected = "Error: Invalid option: Q";
+            const expected = "Error: Invalid option: Q";
             test.ok(err == expected, "Got invalid option err");
             test.done();
         } else {
@@ -114,9 +114,9 @@ exports.testIvalidArg = function(test) {
 };
 
 exports.testSettingsFromJson = function(test) {
-    var searchOptions = new SearchOptions();
-    var settings = new SearchSettings();
-    var json = '{\n' +
+    const searchOptions = new SearchOptions();
+    const settings = new SearchSettings();
+    const json = '{\n' +
                '  "startpath": "~/src/xsearch/",\n' +
                '  "in-ext": ["js","ts"],\n' +
                '  "out-dirpattern": "node_module",\n' +
@@ -128,7 +128,7 @@ exports.testSettingsFromJson = function(test) {
                '  "allmatches": false,\n' +
                '  "includehidden": true\n' +
                '}';
-    var err = searchOptions.settingsFromJson(json, settings);
+    const err = searchOptions.settingsFromJson(json, settings);
     test.ok(err == null, "Null err");
     test.ok(settings.startPath === '~/src/xsearch/', "Startpath === ~/src/xsearch/");
     test.ok(settings.inExtensions.length === 2, "settings.inExtensions.length === 2");
