@@ -47,8 +47,12 @@ public class Searcher {
         if (null == startPath || startPath.isEmpty()) {
             throw new SearchException("Startpath not defined");
         }
-        if (!(new File(startPath)).exists()) {
+        File startPathFile = new File(startPath);
+        if (!startPathFile.exists()) {
             throw new SearchException("Startpath not found");
+        }
+        if (!startPathFile.canRead()) {
+            throw new SearchException("Startpath not readable");
         }
         if (settings.getSearchPatterns().isEmpty()) {
             throw new SearchException("No search patterns defined");
