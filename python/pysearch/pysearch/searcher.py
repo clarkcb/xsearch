@@ -48,6 +48,7 @@ class Searcher(object):
         """Assert required settings in SearchSettings instance"""
         assert self.settings.startpath, 'Startpath not defined'
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
+        assert os.access(self.settings.startpath, os.R_OK), 'Startpath not readable'
         assert self.settings.searchpatterns, 'No search patterns defined'
 
     def is_search_dir(self, d):
