@@ -10,7 +10,7 @@ import json
 import os
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-config_json_path = os.path.join(cwd, '../../shared/config.json')
+config_json_path = os.path.join(cwd, '../../../shared/config.json')
 config = json.load(open(config_json_path))
 
 XSEARCHPATH = config['xsearchpath']
