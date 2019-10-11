@@ -207,16 +207,18 @@ namespace CsSearch
 			AddFileType(OutFileTypes, typeName);
 		}
 
-		public void SetArchivesOnly()
+		public void SetArchivesOnly(bool archivesOnly)
 		{
-			ArchivesOnly = true;
-			SearchArchives = true;
+			ArchivesOnly = archivesOnly;
+			if (archivesOnly)
+				SearchArchives = true;
 		}
 
-		public void SetDebug()
+		public void SetDebug(bool debug)
 		{
-			Debug = true;
-			Verbose = true;
+			Debug = debug;
+			if (debug)
+				Verbose = true;
 		}
 
 		protected static string EnumerableToString<T>(IEnumerable<T> enumerable)
