@@ -53,7 +53,7 @@ class FileTypes(object):
             return FileType.CODE
         if self.is_xml_file(filename):
             return FileType.XML
-        return FileType.Unknown
+        return FileType.UNKNOWN
 
     def is_archive_file(self, f):
         """Return true if file is of a (known) archive file type"""
