@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace CsSearch
 {
@@ -42,15 +43,16 @@ namespace CsSearch
 			return filepath;
 		}
 
-		public static string GetFileContents(SearchFile f)
+		public static string GetFileContents(SearchFile f, Encoding encoding)
 		{
-			return GetFileContents(f.FullName);
+			return GetFileContents(f.FullName, encoding);
 		}
 
-		public static string GetFileContents(string filepath)
+		public static string GetFileContents(string filepath, Encoding encoding)
 		{
 			try
 			{
+				//using (var sr = new StreamReader(filepath, encoding))
 				using (var sr = new StreamReader(filepath))
 				{
 					var contents = sr.ReadToEnd();

@@ -32,7 +32,6 @@ namespace CsSearch
 		{
 			Initialize(searchPattern, file, lineNum, matchStartIndex,
 				matchEndIndex, line, linesBefore, linesAfter);
-
 		}
 
 		private void Initialize(Regex searchPattern, SearchFile file,

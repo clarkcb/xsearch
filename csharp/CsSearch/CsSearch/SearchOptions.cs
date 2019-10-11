@@ -41,8 +41,8 @@ namespace CsSearch
 			new Dictionary<string, Action<bool, SearchSettings>>
 				{
 					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
-					{ "archivesonly", (b, settings) => { if (b) settings.SetArchivesOnly(); else settings.ArchivesOnly = b; } },
-					{ "debug", (b, settings) => { if (b) settings.SetDebug(); else settings.Debug = b; } },
+					{ "archivesonly", (b, settings) => settings.SetArchivesOnly(b) },
+					{ "debug", (b, settings) => settings.SetDebug(b) },
 					{ "excludehidden", (b, settings) => settings.ExcludeHidden = b },
 					{ "firstmatch", (b, settings) => settings.FirstMatch = b },
 					{ "help", (b, settings) => settings.PrintUsage = b },

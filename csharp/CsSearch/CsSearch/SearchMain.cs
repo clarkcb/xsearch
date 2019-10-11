@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CsSearch
+﻿namespace CsSearch
 {
 	class SearchMain
 	{

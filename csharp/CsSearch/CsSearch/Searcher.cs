@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -273,7 +274,7 @@ namespace CsSearch
 		{
 			try
 			{
-				var contents = FileUtil.GetFileContents(f);
+				var contents = FileUtil.GetFileContents(f, Settings.TextFileEncoding);
 				var results = SearchContents(contents);
 				foreach (var r in results)
 				{
@@ -514,6 +515,8 @@ namespace CsSearch
 					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
 			try
 			{
+				// get the binary bytes in a single-byte encoding (will break if UTF8)
+				//using (var sr = new StreamReader(f.FullName, Encoding.GetEncoding("ISO_8859_1")))
 				using (var sr = new StreamReader(f.FullName))
 				{
 					var contents = sr.ReadToEnd();
