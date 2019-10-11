@@ -27,7 +27,7 @@ class SearchOptions(object):
     def __init__(self):
         self.options = []
         self.set_dicts()
-        self.set_options_from_xml()
+        self.set_options_from_json()
 
     def set_dicts(self):
         self.arg_action_dict = {
@@ -184,6 +184,26 @@ class SearchOptions(object):
                 settings.startpath = json_dict[arg]
             else:
                 raise SearchException('Invalid option: {0}'.format(arg))
+
+    def set_options_from_json(self):
+        with open(SEARCHOPTIONSPATH, mode='r') as f:
+            searchoptions_dict = json.load(f)
+        for searchoption_obj in searchoptions_dict['searchoptions']:
+            longarg = searchoption_obj['long']
+            shortarg = ''
+            if 'short' in searchoption_obj:
+                shortarg = searchoption_obj['short']
+            desc = searchoption_obj['desc']
+            if longarg in self.arg_action_dict:
+                func = self.arg_action_dict[longarg]
+            elif longarg in self.bool_flag_action_dict:
+                func = self.bool_flag_action_dict[longarg]
+            else:
+                raise SearchException('Unknown search option: %s' % longarg)
+            self.options.append(SearchOption(shortarg, longarg, desc, func))
+            self.longarg_dict[longarg] = longarg
+            if shortarg:
+                self.longarg_dict[shortarg] = longarg
 
     def set_options_from_xml(self):
         searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)

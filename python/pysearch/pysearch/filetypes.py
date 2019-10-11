@@ -7,6 +7,7 @@
 #
 ###############################################################################
 from enum import Enum
+import json
 import xml.dom.minidom as minidom
 
 from .common import get_text
@@ -39,7 +40,7 @@ class FileTypes(object):
     def __init__(self, **kargs):
         self.filetypes = {}
         self.__dict__.update(kargs)
-        self.__populate_filetypes()
+        self._populate_filetypes_from_json()
 
     def get_filetype(self, filename):
         if self.is_text_file(filename):
@@ -78,7 +79,21 @@ class FileTypes(object):
         """Return true if file is of a (known) xml file type"""
         return FileUtil.get_extension(f) in self.filetypes['xml']
 
-    def __populate_filetypes(self):
+    def _populate_filetypes_from_json(self):
+        with open(FILETYPESPATH, mode='r') as f:
+            filetypes_dict = json.load(f)
+        for filetype_obj in filetypes_dict['filetypes']:
+            typename = filetype_obj['type']
+            exts = set(filetype_obj['extensions'])
+            self.filetypes[typename] = exts
+        self.filetypes['text'] = \
+            self.filetypes['text'].union(self.filetypes['code'],
+                                         self.filetypes['xml'])
+        self.filetypes['searchable'] = \
+            self.filetypes['binary'].union(self.filetypes['archive'],
+                                           self.filetypes['text'])
+
+    def _populate_filetypes_from_xml(self):
         filetypedom = minidom.parse(FILETYPESPATH)
         filetypenodes = filetypedom.getElementsByTagName('filetype')
         for filetypenode in filetypenodes:
