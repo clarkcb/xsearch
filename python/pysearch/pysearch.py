@@ -9,10 +9,8 @@
 ###############################################################################
 import sys
 
-from .common import log
-from .searcher import Searcher
-from .searchexception import SearchException
-from .searchoptions import SearchOptions
+from pysearch import Searcher, SearchOptions, SearchSettings, \
+    SearchException, log, __version__
 
 
 def main():
@@ -33,7 +31,7 @@ def main():
         searchoptions.usage()
 
     if settings.printversion:
-        log('Version: 0.1')
+        log('Version: {}'.format(__version__))
         sys.exit(1)
 
     try:
