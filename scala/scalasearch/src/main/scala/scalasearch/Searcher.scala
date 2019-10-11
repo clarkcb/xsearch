@@ -1,9 +1,12 @@
 package scalasearch
 
-import java.io.{InputStream, BufferedInputStream, File, FileInputStream}
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
+import java.nio.charset.Charset
 import java.util.zip.{GZIPInputStream, ZipEntry, ZipFile}
+
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+
 import scala.collection.JavaConversions.enumerationAsScalaIterator
 import scala.collection.mutable
 import scala.io.Source
@@ -13,14 +16,23 @@ class Searcher (settings: SearchSettings) {
   def validateSettings(): Unit = {
     settings.startPath match {
       case Some(path) if path.length > 0 =>
-        if (!new File(path).exists()) {
+        val pathFile = new File(path)
+        if (!pathFile.exists()) {
           throw new SearchException("Startpath not found")
+        } else if (!pathFile.canRead) {
+          throw new SearchException("Startpath not readable")
         }
       case _ =>
         throw new SearchException("Startpath not defined")
     }
     if (settings.searchPatterns.isEmpty) {
       throw new SearchException("No search patterns defined")
+    }
+    try {
+      val _ = Charset.forName(settings.textFileEncoding)
+    } catch {
+      case _: IllegalArgumentException =>
+        throw new SearchException("Invalid encoding provided")
     }
   }
   validateSettings()
@@ -204,8 +216,8 @@ class Searcher (settings: SearchSettings) {
     FileTypes.getFileType(sf) match {
       case FileType.Text =>
         // TODO: some very basic encoding detection, for now using arbitrary
-        // single-byte encoding
-        searchTextFileSource(sf, Source.fromFile(sf.toFile, "ISO-8859-1"))
+        //       single-byte encoding
+        searchTextFileSource(sf, Source.fromFile(sf.toFile, settings.textFileEncoding))
       case FileType.Binary =>
         searchBinaryFileSource(sf, Source.fromFile(sf.toFile, "ISO-8859-1"))
       case FileType.Archive =>

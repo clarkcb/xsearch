@@ -18,8 +18,11 @@ object FileUtil {
     }
   }
 
-  def getFileContents(f: File): String = {
-    Source.fromFile(f).mkString
+  def getFileContents(f: File, enc: String=DefaultSettings.textFileEncoding): String = {
+    val bufferedSource = Source.fromFile(f, enc)
+    val contents = bufferedSource.mkString
+    bufferedSource.close
+    contents
   }
 
   def isDotDir(name: String): Boolean = {

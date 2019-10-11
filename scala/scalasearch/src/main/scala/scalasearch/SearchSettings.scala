@@ -21,6 +21,7 @@ object DefaultSettings {
   var recursive = true
   var searchArchives = false
   var startPath: Option[String] = None
+  var textFileEncoding: String = "UTF-8"
   var uniqueLines = false
   var verbose = false
 }
@@ -61,6 +62,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           searchArchives: Boolean = DefaultSettings.searchArchives,
                           searchPatterns: Set[Regex] = Set.empty[Regex],
                           startPath: Option[String] = DefaultSettings.startPath,
+                          textFileEncoding: String = DefaultSettings.textFileEncoding,
                           uniqueLines: Boolean = DefaultSettings.uniqueLines,
                           verbose: Boolean = DefaultSettings.verbose) {
 
