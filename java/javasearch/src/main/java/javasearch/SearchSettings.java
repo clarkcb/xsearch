@@ -56,6 +56,7 @@ public class SearchSettings {
     private boolean searchArchives;
     private Set<Pattern> searchPatterns;
     private String startPath;
+    private String textFileEncoding;
     private boolean uniqueLines;
     private boolean verbose;
 
@@ -95,6 +96,7 @@ public class SearchSettings {
         this.recursive = DefaultSettings.RECURSIVE;
         this.searchArchives = DefaultSettings.SEARCHARCHIVES;
         this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.textFileEncoding = DefaultSettings.TEXTFILEENCODING;
         this.uniqueLines = DefaultSettings.UNIQUELINES;
         this.verbose = DefaultSettings.VERBOSE;
     }
@@ -239,6 +241,14 @@ public class SearchSettings {
 
     public final void setSearchArchives(final boolean searchArchives) {
         this.searchArchives = searchArchives;
+    }
+
+    public String getTextFileEncoding() {
+        return textFileEncoding;
+    }
+
+    public void setTextFileEncoding(String textFileEncoding) {
+        this.textFileEncoding = textFileEncoding;
     }
 
     public final boolean getUniqueLines() {
@@ -514,6 +524,7 @@ public class SearchSettings {
                 + ", searchArchives: " + this.searchArchives
                 + ", searchPatterns: " + patternSetToString(this.searchPatterns)
                 + ", startPath: " + startPath
+                + ", textFileEncoding: " + textFileEncoding
                 + ", uniqueLines: " + this.uniqueLines
                 + ", verbose: " + this.verbose
                 + ")";

@@ -21,6 +21,7 @@ public final class DefaultSettings {
     public static final boolean PRINTVERSION = false;
     public static final boolean RECURSIVE = true;
     public static final boolean SEARCHARCHIVES = false;
+    public static final String TEXTFILEENCODING = "UTF-8";
     public static final boolean UNIQUELINES = false;
     public static final boolean VERBOSE = false;
 }

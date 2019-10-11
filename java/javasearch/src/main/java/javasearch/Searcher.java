@@ -14,21 +14,14 @@ import org.apache.commons.io.LineIterator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Searcher {
@@ -59,6 +52,11 @@ public class Searcher {
         }
         if (settings.getSearchPatterns().isEmpty()) {
             throw new SearchException("No search patterns defined");
+        }
+        try {
+            Charset c = Charset.forName(settings.getTextFileEncoding());
+        } catch (IllegalArgumentException e) {
+            throw new SearchException("Invalid encoding provided");
         }
     }
 
@@ -327,7 +325,7 @@ public class Searcher {
     private List<SearchResult> searchTextFileContents(final SearchFile sf) {
         List<SearchResult> results = new ArrayList<>();
         try {
-            String contents = FileUtil.getFileContents(sf.toFile());
+            String contents = FileUtil.getFileContents(sf.toFile(), settings.getTextFileEncoding());
             results.addAll(searchMultiLineString(contents));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
@@ -467,7 +465,7 @@ public class Searcher {
         LineIterator it = null;
         List<SearchResult> results = new ArrayList<>();
         try {
-            it = FileUtil.getFileLineIterator(sf.toFile());
+            it = FileUtil.getFileLineIterator(sf.toFile(), settings.getTextFileEncoding());
             results.addAll(searchStringIterator(it));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
