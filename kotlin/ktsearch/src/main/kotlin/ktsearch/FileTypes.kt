@@ -1,9 +1,15 @@
 package ktsearch
 
+import org.json.simple.JSONArray
+import org.json.simple.JSONObject
+import org.json.simple.parser.JSONParser
+import org.json.simple.parser.ParseException
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.io.InputStreamReader
+import java.util.*
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
 
@@ -47,16 +53,50 @@ fun fromName(name: String) : FileType {
 
 class FileTypes {
 
-    private val FILETYPESXMLPATH = "/filetypes.xml"
+    private val FILETYPESJSONPATH = "/filetypes.json"
     private val fileTypeMap: Map<String, Set<String>>
 
     init {
-        fileTypeMap = getFileTypesFromXml()
+        fileTypeMap = getFileTypesFromJson()
+    }
+
+    private fun getFileTypesFromJson(): Map<String, Set<String>> {
+        val ftMap: MutableMap<String, Set<String>> = mutableMapOf()
+        val fileTypesInputStream = javaClass.getResourceAsStream(FILETYPESJSONPATH)
+
+        try {
+            val obj: Any = JSONParser().parse(InputStreamReader(fileTypesInputStream))
+            val jsonObj = obj as JSONObject
+            val filetypesArray = jsonObj["filetypes"] as JSONArray
+            for (o in filetypesArray) {
+                val filetypeMap = o as Map<*, *>
+                val typeName = filetypeMap["type"] as String
+                val extArray = filetypeMap["extensions"] as JSONArray
+                val extSet: Set<String> = extArray.map { e -> e.toString() }.toSet()
+                ftMap.put(typeName, extSet)
+            }
+            val allText: MutableSet<String> = mutableSetOf()
+            allText.addAll(ftMap.get("code")!!)
+            allText.addAll(ftMap.get("text")!!)
+            allText.addAll(ftMap.get("xml")!!)
+            ftMap.put("text",  allText)
+            val allSearchable: MutableSet<String> = mutableSetOf()
+            allSearchable.addAll(ftMap.get("archive")!!)
+            allSearchable.addAll(ftMap.get("binary")!!)
+            allSearchable.addAll(ftMap.get("text")!!)
+            ftMap.put("searchable",  allSearchable)
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return ftMap
     }
 
     private fun getFileTypesFromXml(): Map<String, Set<String>> {
         val ftMap: MutableMap<String, Set<String>> = mutableMapOf()
-        val fileTypesInputStream = javaClass.getResourceAsStream(FILETYPESXMLPATH)
+        val fileTypesInputStream = javaClass.getResourceAsStream("/filetypes.xml")
         val factory = DocumentBuilderFactory.newInstance()
 
         try {

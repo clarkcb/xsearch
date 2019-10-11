@@ -1,14 +1,15 @@
 package ktsearch
 
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import javax.xml.parsers.DocumentBuilderFactory
-
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.JSONValue
+import org.json.simple.parser.JSONParser
 import org.json.simple.parser.ParseException
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStreamReader
+import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * @author cary on 7/23/16.
@@ -26,7 +27,28 @@ class SearchOptions() {
     val searchOptions : List<SearchOption>
 
     init {
-        searchOptions = loadSearchOptionsFromXml()
+        searchOptions = loadSearchOptionsFromJson()
+    }
+
+    private fun loadSearchOptionsFromJson() : List<SearchOption> {
+        val searchOptionsXmlPath = "/searchoptions.json"
+        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsXmlPath)
+        val obj: Any = JSONParser().parse(InputStreamReader(searchOptionsInputStream))
+        val jsonObj = obj as JSONObject
+        val searchoptionsArray = jsonObj["searchoptions"] as JSONArray
+
+        val options : MutableList<SearchOption> = mutableListOf()
+        for (o in searchoptionsArray) {
+            val searchoptionMap = o as Map<String, String>
+            val longArg = searchoptionMap["long"] as String
+            val desc = searchoptionMap["desc"] as String
+            var shortArg = ""
+            if (searchoptionMap.containsKey("short")) {
+                shortArg = searchoptionMap["short"] as String
+            }
+            options.add(SearchOption(shortArg, longArg, desc))
+        }
+        return options.toList().sortedBy { it.sortarg }
     }
 
     private fun loadSearchOptionsFromXml() : List<SearchOption> {
@@ -55,6 +77,8 @@ class SearchOptions() {
     }
 
     private val argActionMap: Map<String, ((String, SearchSettings) -> SearchSettings)> = mapOf(
+            "encoding" to
+                    { s, ss -> ss.copy(textFileEncoding = s) },
             "in-archiveext" to
                     { s, ss -> ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions)) },
             "in-archivefilepattern" to
