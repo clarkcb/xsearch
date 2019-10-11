@@ -42,7 +42,7 @@ class FileTypes(object):
         self.__dict__.update(kargs)
         self._populate_filetypes_from_json()
 
-    def get_filetype(self, filename):
+    def get_filetype(self, filename: str) -> FileType:
         if self.is_text_file(filename):
             return FileType.TEXT
         if self.is_binary_file(filename):
@@ -55,27 +55,27 @@ class FileTypes(object):
             return FileType.XML
         return FileType.UNKNOWN
 
-    def is_archive_file(self, f):
+    def is_archive_file(self, f: str) -> bool:
         """Return true if file is of a (known) archive file type"""
         return FileUtil.get_extension(f) in self.filetypes['archive']
 
-    def is_binary_file(self, f):
+    def is_binary_file(self, f: str) -> bool:
         """Return true if file is of a (known) searchable binary file type"""
         return FileUtil.get_extension(f) in self.filetypes['binary']
 
-    def is_code_file(self, f):
+    def is_code_file(self, f: str) -> bool:
         """Return true if file is of a (known) code file type"""
         return FileUtil.get_extension(f) in self.filetypes['code']
 
-    def is_searchable_file(self, f):
+    def is_searchable_file(self, f: str) -> bool:
         """Return true if file is of a (known) searchable type"""
         return FileUtil.get_extension(f) in self.filetypes['searchable']
 
-    def is_text_file(self, f):
+    def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
         return FileUtil.get_extension(f) in self.filetypes['text']
 
-    def is_xml_file(self, f):
+    def is_xml_file(self, f: str) -> bool:
         """Return true if file is of a (known) xml file type"""
         return FileUtil.get_extension(f) in self.filetypes['xml']
 

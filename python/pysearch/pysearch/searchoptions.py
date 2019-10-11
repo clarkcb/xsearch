@@ -12,6 +12,7 @@ from io import StringIO
 import json
 import os
 import sys
+from typing import List
 import xml.dom.minidom as minidom
 
 from .common import get_text
@@ -166,14 +167,14 @@ class SearchOptions(object):
         }
         self.longarg_dict = {}
 
-    def settings_from_file(self, filepath, settings):
+    def settings_from_file(self, filepath: str, settings: SearchSettings):
         assert os.path.exists(filepath), 'Settings file not found: %s' % filepath
         with open(filepath) as f:
             jsonstr = f.read()
             # print "jsonstr: '%s'" % jsonstr
             self.settings_from_json(jsonstr, settings)
 
-    def settings_from_json(self, jsonstr, settings):
+    def settings_from_json(self, jsonstr: str, settings: SearchSettings):
         json_dict = json.loads(jsonstr)
         for arg in json_dict:
             if arg in self.arg_action_dict:
@@ -224,7 +225,7 @@ class SearchOptions(object):
             if shortarg:
                 self.longarg_dict[shortarg] = longarg
 
-    def search_settings_from_args(self, args):
+    def search_settings_from_args(self, args: List[str]) -> SearchSettings:
         """Returns a SearchSettings instance for a given list of args"""
         settings = SearchSettings()
         # default printresults to True since running from command line

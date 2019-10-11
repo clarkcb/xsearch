@@ -8,7 +8,7 @@
 ###############################################################################
 
 
-def log(message):
+def log(message: str):
     """log a message (for now just print to stdout)"""
     print(message)
 

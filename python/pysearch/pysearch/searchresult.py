@@ -7,16 +7,18 @@
 #
 ###############################################################################
 from io import StringIO
+from typing import List
 
+from .searchfile import SearchFile
 
-def __atmost_before_index(s, maxlen, start_index):
+def _atmost_before_index(s, maxlen, start_index):
     if start_index >= maxlen:
         return '...' + s[start_index - maxlen - 3:start_index]
     else:
         return s[:start_index]
 
 
-def __atmost_after_index(s, maxlen, start_index):
+def _atmost_after_index(s, maxlen, start_index):
     if len(s[start_index:]) > maxlen:
         return s[start_index:maxlen - 3] + '...'
     else:
@@ -31,29 +33,24 @@ class SearchResult(object):
     """encapsulates a search result"""
     SEPARATOR_LEN = 80
 
-    def __init__(self, **kargs):
-        self.pattern = ''
-        self.file = None
-        self.linenum = 0
-        self.line = ''
-        self.contained = ''
-        self.lines_before = []
-        self.lines_after = []
-        self.match_start_index = 0
-        self.match_end_index = 0
-        self.maxlinelength = 150
-        self.__dict__.update(kargs)
+    def __init__(self, pattern: str = '', file: SearchFile = None, linenum: int = 0, line: str = '',
+                 contained: str = '', lines_before: List[str] = None, lines_after: List[str] = None,
+                 match_start_index: int = 0, match_end_index: int = 0, maxlinelength: int = 150):
+        self.pattern = pattern
+        self.file = file
+        self.linenum = linenum
+        self.line = line
+        self.contained = contained
+        self.lines_before = lines_before
+        self.lines_after = lines_after
+        self.match_start_index = match_start_index
+        self.match_end_index = match_end_index
+        self.maxlinelength = maxlinelength
 
     def sortkey(self):
         path = self.file.path.lower()
         filename = self.file.filename.lower()
         return path, filename, self.linenum, self.match_start_index
-
-    def __str__(self):
-        if self.lines_before or self.lines_after:
-            return self.__multiline_str()
-        else:
-            return self.__singleline_str()
 
     def __singleline_str(self):
         sio = StringIO()
@@ -61,18 +58,18 @@ class SearchResult(object):
         if self.linenum and self.line:
             sio.write(': {0}: [{1}:{2}]'.format(self.linenum,
                       self.match_start_index, self.match_end_index))
-            sio.write(': {0}'.format(self.__format_matching_line()))
+            sio.write(': {0}'.format(self._format_matching_line()))
         else:
             sio.write(' matches at [{0}:{1}]'.format(self.match_start_index, self.match_end_index))
         s = sio.getvalue()
         sio.close()
         return s
 
-    def __format_line(self, line):
-        formatted = self.__atmost_after_index(line, self.maxlinelength, 0).strip()
+    def _format_line(self, line):
+        formatted = _atmost_after_index(line, self.maxlinelength, 0).strip()
         return formatted
 
-    def __format_matching_line(self):
+    def _format_matching_line(self):
         formatted = self.line
         linelength = len(self.line)
         matchlength = self.match_end_index - self.match_start_index
@@ -98,7 +95,7 @@ class SearchResult(object):
             formatted = before + self.line[before_index:after_index] + after
         return formatted.strip()
 
-    def linenum_padding(self):
+    def _linenum_padding(self):
         max_linenum = self.linenum + len(self.lines_after)
         return len(str(max_linenum))
 
@@ -110,7 +107,7 @@ class SearchResult(object):
         if self.contained:
             sio.write(': {0}'.format(self.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
-        line_format = ' {0:>' + str(self.linenum_padding()) + '} | {1}\n'
+        line_format = ' {0:>' + str(self._linenum_padding()) + '} | {1}\n'
         current_linenum = self.linenum
         if self.lines_before:
             current_linenum -= len(self.lines_before)
@@ -130,8 +127,14 @@ class SearchResult(object):
         sio.close()
         return s
 
+    def __str__(self):
+        if self.lines_before or self.lines_after:
+            return self.__multiline_str()
+        else:
+            return self.__singleline_str()
+
     def __unicode__(self):
-        return str(self.__str__())
+        return self.__str__()
 
     def __repr__(self):
         s = '<{0}'.format(self.__class__.__name__)

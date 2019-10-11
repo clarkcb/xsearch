@@ -16,7 +16,7 @@ class FileUtil(object):
     DOT_DIRS = ('.', '..')
 
     @staticmethod
-    def get_extension(filename):
+    def get_extension(filename: str) -> str:
         """Returns the extension for a given filename, if any, else empty
            string"""
         ext = ''
@@ -25,13 +25,13 @@ class FileUtil(object):
         return ext.lower()
 
     @staticmethod
-    def is_dot_dir(filename):
+    def is_dot_dir(filename: str) -> bool:
         """Returns true if file is dot dir (. or ..)"""
         f = os.path.basename(filename)
         return f in FileUtil.DOT_DIRS
 
     @staticmethod
-    def is_hidden(filename):
+    def is_hidden(filename: str) -> bool:
         """Returns true if file is hidden else false"""
         f = os.path.basename(filename)
         if len(f) > 1 and f.startswith('.') and not FileUtil.is_dot_dir(f):
