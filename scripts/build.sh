@@ -25,8 +25,12 @@ copy_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/config.json $resources_path/"
     cp $SHARED_PATH/config.json $resources_path/
+    log "cp $SHARED_PATH/filetypes.json $resources_path/"
+    cp $SHARED_PATH/filetypes.json $resources_path/
     log "cp $SHARED_PATH/filetypes.xml $resources_path/"
     cp $SHARED_PATH/filetypes.xml $resources_path/
+    log "cp $SHARED_PATH/searchoptions.json $resources_path/"
+    cp $SHARED_PATH/searchoptions.json $resources_path/
     log "cp $SHARED_PATH/searchoptions.xml $resources_path/"
     cp $SHARED_PATH/searchoptions.xml $resources_path/
 }
@@ -42,20 +46,20 @@ copy_test_resources () {
 # Build Functions
 ########################################
 
-build_cpp () {
+build_c () {
     echo
-    log "build_cpp"
-    CPPSEARCH_PATH=$CPP_PATH/cppsearch
-    log "cd $CPPSEARCH_PATH"
-    cd $CPPSEARCH_PATH
+    log "build_c"
+    CSEARCH_PATH=$C_PATH/csearch
+    log "cd $CSEARCH_PATH"
+    cd $CSEARCH_PATH
 
     # clean
-    log "/usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror"
-    /usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror
+    log "make clean"
+    make clean
 
-    # build
-    log "/usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror"
-    /usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror
+    # make
+    log "make"
+    make
 
     cd -
 }
@@ -80,6 +84,24 @@ build_clojure () {
     cd -
 }
 
+build_cpp () {
+    echo
+    log "build_cpp"
+    CPPSEARCH_PATH=$CPP_PATH/cppsearch
+    log "cd $CPPSEARCH_PATH"
+    cd $CPPSEARCH_PATH
+
+    # clean
+    log "/usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror"
+    /usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror
+
+    # build
+    log "/usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror"
+    /usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror
+
+    cd -
+}
+
 build_csharp () {
     echo
     log "build_csharp"
@@ -93,8 +115,8 @@ build_csharp () {
 
     # run a mono xbuild
     log "Building cssearch"
-    log "xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln"
-    xbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
+    log "msbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln"
+    msbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
 
 }
 
@@ -111,8 +133,8 @@ build_fsharp () {
 
     # run a mono xbuild
     log "Building fssearch"
-    log "xbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln"
-    xbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln
+    log "msbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln"
+    msbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln
 }
 
 build_go () {
@@ -380,10 +402,12 @@ fi
 
 if [ "$ARG" == "all" ]; then
     build_all
-elif [ "$ARG" == "cpp" ]; then
-    build_cpp
+elif [ "$ARG" == "c" ]; then
+    build_c
 elif [ "$ARG" == "clojure" ]; then
     build_clojure
+elif [ "$ARG" == "cpp" ]; then
+    build_cpp
 elif [ "$ARG" == "csharp" ]; then
     build_csharp
 elif [ "$ARG" == "fsharp" ]; then
