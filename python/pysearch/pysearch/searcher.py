@@ -25,10 +25,10 @@ except ImportError as ie:
     ZIPFILE_MODULE_AVAILABLE = False
 
 import common
-from filetypes import FileType, FileTypes
-from fileutil import FileUtil
-from searchfile import SearchFile
-from searchresult import SearchResult
+from .filetypes import FileType, FileTypes
+from .fileutil import FileUtil
+from .searchfile import SearchFile
+from .searchresult import SearchResult
 
 
 class Searcher(object):
@@ -177,6 +177,15 @@ class Searcher(object):
             for f in searchfiles:
                 common.log(f)
             common.log("")
+        # TODO: concurrent.futures.ProcessPoolExecutor, e.g.
+        #       with concurrent.futures.ProcessPoolExecutor() as executor:
+        #           futures = [executor.submit(<func_name>, <arg>) for _ in range(10)]
+        #           for f in concurrent.futures.as_completed(futures):
+        #               print(f.result())
+        #      - OR -
+        #           nums = list(range(10))
+        #           # runs in parallel but returns results in list order
+        #           results = executor.map(<func_name>, nums)
         for sf in searchfiles:
             self.search_file(sf)
 

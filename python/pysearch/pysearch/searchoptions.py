@@ -14,11 +14,11 @@ import os
 import sys
 import xml.dom.minidom as minidom
 
-from common import get_text
-from config import SEARCHOPTIONSPATH
-from searchexception import SearchException
-from searchoption import SearchOption
-from searchsettings import SearchSettings
+from .common import get_text
+from .config import SEARCHOPTIONSPATH
+from .searchexception import SearchException
+from .searchoption import SearchOption
+from .searchsettings import SearchSettings
 
 
 class SearchOptions(object):

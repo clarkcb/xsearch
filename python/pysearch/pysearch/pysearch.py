@@ -9,10 +9,10 @@
 ###############################################################################
 import sys
 
-import common
-from searcher import Searcher
-from searchexception import SearchException
-from searchoptions import SearchOptions
+from .common import log
+from .searcher import Searcher
+from .searchexception import SearchException
+from .searchoptions import SearchOptions
 
 
 def main():

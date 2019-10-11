@@ -8,10 +8,10 @@
 ###############################################################################
 import xml.dom.minidom as minidom
 
-from common import get_text
-from config import FILETYPESPATH
-from fileutil import FileUtil
-from searchexception import SearchException
+from .common import get_text
+from .config import FILETYPESPATH
+from .fileutil import FileUtil
+from .searchexception import SearchException
 
 
 class FileType(object):

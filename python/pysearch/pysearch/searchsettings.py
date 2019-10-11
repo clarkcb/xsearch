@@ -7,8 +7,8 @@
 #
 ###############################################################################
 import re
-from filetypes import FileType
-from searchexception import SearchException
+from .filetypes import FileType
+from .searchexception import SearchException
 
 
 class SearchSettings(object):

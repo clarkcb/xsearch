@@ -9,7 +9,7 @@
 from io import StringIO
 import os
 
-from filetypes import FileType
+from .filetypes import FileType
 
 
 class SearchFile(object):
