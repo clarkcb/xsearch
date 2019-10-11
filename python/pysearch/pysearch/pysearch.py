@@ -22,18 +22,18 @@ def main():
     try:
         settings = searchoptions.search_settings_from_args(sys.argv[1:])
     except SearchException as e:
-        common.log('\nERROR: {0!s}\n'.format(e))
+        log('\nERROR: {0!s}\n'.format(e))
         searchoptions.usage()
 
     if settings.debug:
-        common.log('settings: {0!s}'.format(settings))
+        log('settings: {0!s}'.format(settings))
 
     if settings.printusage:
-        common.log('')
+        log('')
         searchoptions.usage()
 
     if settings.printversion:
-        common.log('Version: 0.1')
+        log('Version: 0.1')
         sys.exit(1)
 
     try:
@@ -42,22 +42,22 @@ def main():
 
         # print the results
         if settings.printresults:
-            common.log('')
+            log('')
             searcher.print_results()
 
         if settings.listdirs:
             dir_list = searcher.get_matching_dirs()
             if dir_list:
-                common.log('\nDirectories with matches (%d):' % len(dir_list))
+                log('\nDirectories with matches (%d):' % len(dir_list))
                 for d in dir_list:
-                    common.log(d)
+                    log(d)
 
         if settings.listfiles:
             file_list = searcher.get_matching_files()
             if file_list:
-                common.log('\nFiles with matches (%d):' % len(file_list))
+                log('\nFiles with matches (%d):' % len(file_list))
                 for f in file_list:
-                    common.log(f)
+                    log(f)
 
         if settings.listlines:
             line_list = searcher.get_matching_lines()
@@ -65,15 +65,15 @@ def main():
                 msg = '\nLines with matches (%d):'
                 if settings.uniquelines:
                     msg = '\nUnique lines with matches (%d):'
-                common.log(msg % len(line_list))
+                log(msg % len(line_list))
                 for line in line_list:
-                    common.log(line)
+                    log(line)
 
     except AssertionError as e:
-        common.log('\nERROR: {0!s}\n'.format(e))
+        log('\nERROR: {0!s}\n'.format(e))
         searchoptions.usage()
     except KeyboardInterrupt:
-        common.log('')
+        log('')
         sys.exit(0)
 
 
