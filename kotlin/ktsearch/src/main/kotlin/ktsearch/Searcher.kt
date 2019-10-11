@@ -3,7 +3,7 @@ package ktsearch
 import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset
-import java.util.NoSuchElementException
+import java.util.*
 
 /**
  * @author cary on 7/23/16.
@@ -29,6 +29,11 @@ class Searcher(val settings: SearchSettings) {
         }
         if (settings.searchPatterns.isEmpty()) {
             throw SearchException("No search patterns defined")
+        }
+        try {
+            val c = Charset.forName(settings.textFileEncoding)
+        } catch (e: IllegalArgumentException) {
+            throw SearchException("Invalid encoding provided")
         }
     }
 
@@ -201,7 +206,8 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun searchTextFileContents(sf: SearchFile): List<SearchResult> {
-        val results: List<SearchResult> = searchMultilineString(sf.file.readText())
+        val results: List<SearchResult> =
+                searchMultilineString(sf.file.readText(Charset.forName(settings.textFileEncoding)))
         return results.map { r -> r.copy(file = sf) }
     }
 
@@ -302,7 +308,7 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun searchTextFileLines(sf: SearchFile): List<SearchResult> {
-        val results: List<SearchResult> = sf.file.reader().
+        val results: List<SearchResult> = sf.file.reader(Charset.forName(settings.textFileEncoding)).
                 useLines { ss -> searchStringIterator(ss.iterator()) }
         return results.map { r -> r.copy(file = sf) }
     }

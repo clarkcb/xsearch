@@ -41,6 +41,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val searchArchives: Boolean,
                           val searchPatterns: Set<Regex>,
                           val startPath: String?,
+                          val textFileEncoding: String,
                           val uniqueLines: Boolean,
                           val verbose: Boolean) {
 }
@@ -83,6 +84,7 @@ fun getDefaultSettings() : SearchSettings {
             searchArchives = false,
             searchPatterns = setOf(),
             startPath = null,
+            textFileEncoding = "UTF-8",
             uniqueLines = false,
             verbose = false)
 }
