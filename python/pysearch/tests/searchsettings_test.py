@@ -6,13 +6,9 @@
 # class SearchSettingsTest: testing of SearchSettings class
 #
 ################################################################################
-import re
-import sys
 import unittest
 
-sys.path.insert(1, '../pysearch')
-
-from searchsettings import SearchSettings
+from pysearch import SearchSettings
 
 
 class SearchSettingsTest(unittest.TestCase):
@@ -104,7 +100,7 @@ class SearchSettingsTest(unittest.TestCase):
     def test_add_comma_delimited_extensions(self):
         self.settings.add_exts('py,rb,scala', 'in_extensions')
         self.assertEqual(len(self.settings.in_extensions), 3)
-        for x in set(['py', 'rb', 'scala']):
+        for x in {'py', 'rb', 'scala'}:
             self.assertIn(x, self.settings.in_extensions)
 
     def test_add_patterns(self):

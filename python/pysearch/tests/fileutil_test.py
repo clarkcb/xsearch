@@ -6,12 +6,9 @@
 # class FileUtilTest: testing of FileUtil
 #
 ################################################################################
-import sys
 import unittest
 
-sys.path.insert(1, '../pysearch')
-
-from fileutil import FileUtil
+from pysearch import FileUtil
 
 
 class FileUtilTest(unittest.TestCase):

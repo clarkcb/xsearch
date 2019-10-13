@@ -6,15 +6,9 @@
 # class SearchOptionsTest: testing of SearchOptions class
 #
 ################################################################################
-import re
-import sys
 import unittest
 
-sys.path.insert(1, '../pysearch')
-
-from searchexception import SearchException
-from searchoptions import SearchOptions
-from searchsettings import SearchSettings
+from pysearch import SearchException, SearchOptions, SearchSettings
 
 
 class SearchOptionsTest(unittest.TestCase):
@@ -109,7 +103,7 @@ class SearchOptionsTest(unittest.TestCase):
 }'''
         self.searchoptions.settings_from_json(json, settings)
         self.assertEqual(settings.startpath, '~/src/xsearch/')
-        for x in set(['js', 'ts']):
+        for x in {'js', 'ts'}:
             self.assertIn(x, settings.in_extensions)
         self.assertEqual(list(settings.searchpatterns)[0].pattern, 'Searcher')
         self.assertEqual(list(settings.out_dirpatterns)[0].pattern, 'node_module')

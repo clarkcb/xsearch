@@ -6,16 +6,9 @@
 # Searcher testing
 #
 ################################################################################
-import sys
 import unittest
 
-sys.path.insert(1, '../pysearch')
-
-from config import SHAREDPATH
-from filetypes import FileType
-from searcher import Searcher
-from searchfile import SearchFile
-from searchsettings import SearchSettings
+from pysearch import FileType, Searcher, SearchFile, SearchSettings, SHAREDPATH
 
 
 class SearcherTest(unittest.TestCase):
@@ -228,47 +221,47 @@ class SearcherTest(unittest.TestCase):
     def test_filter_file_matches_by_default(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.Text)
+        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
         self.assertTrue(searcher.filter_file(f))
 
     def test_filter_file_is_search_file(self):
         settings = self.get_settings()
         settings.add_exts('pm', 'in_extensions')
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.Text)
+        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
         self.assertTrue(searcher.filter_file(f))
 
     def test_filter_file_not_is_search_file(self):
         settings = self.get_settings()
         settings.add_exts('pl', 'in_extensions')
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.Text)
+        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
         self.assertFalse(searcher.filter_file(f))
 
     def test_filter_file_is_hidden_file(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='.gitignore', filetype=FileType.Unknown)
+        f = SearchFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
         self.assertFalse(searcher.filter_file(f))
 
     def test_filter_file_hidden_includehidden(self):
         settings = self.get_settings()
         settings.excludehidden = False
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='.gitignore', filetype=FileType.Unknown)
+        f = SearchFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
         self.assertTrue(searcher.filter_file(f))
 
     def test_filter_file_archive_no_searcharchives(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='archive.zip', filetype=FileType.Archive)
+        f = SearchFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
         self.assertFalse(searcher.filter_file(f))
 
     def test_filter_file_archive_searcharchives(self):
         settings = self.get_settings()
         settings.searcharchives = 1
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='archive.zip', filetype=FileType.Archive)
+        f = SearchFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
         self.assertTrue(searcher.filter_file(f))
 
     def test_filter_file_archive_archivesonly(self):
@@ -276,7 +269,7 @@ class SearcherTest(unittest.TestCase):
         settings.archivesonly = True
         settings.searcharchives = True
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='archive.zip', filetype=FileType.Archive)
+        f = SearchFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
         self.assertTrue(searcher.filter_file(f))
 
     def test_filter_file_nonarchive_archivesonly(self):
@@ -284,7 +277,7 @@ class SearcherTest(unittest.TestCase):
         settings.archivesonly = True
         settings.searcharchives = True
         searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.Text)
+        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
         self.assertFalse(searcher.filter_file(f))
 
 ################################################################################
