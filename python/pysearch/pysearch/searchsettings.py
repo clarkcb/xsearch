@@ -31,7 +31,7 @@ class SearchSettings(object):
                  out_linesafterpatterns: PatternSet = None, out_linesbeforepatterns: PatternSet = None,
                  printresults: bool = True, printusage: bool = False, printversion: bool = False,
                  recursive: bool = True, searcharchives: bool = False, searchpatterns: PatternSet = None,
-                 startpath: str = '', textfileencoding: str = 'UTF-8', uniquelines: bool = True,
+                 startpath: str = '', textfileencoding: str = 'UTF-8', uniquelines: bool = False,
                  verbose: bool = False):
         self.archivesonly = archivesonly
         self.debug = debug
