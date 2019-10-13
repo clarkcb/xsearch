@@ -7,6 +7,7 @@
 #
 ###############################################################################
 import os
+import codecs
 from collections import deque
 from io import StringIO
 from typing import Deque, List, TextIO, BinaryIO
@@ -52,6 +53,10 @@ class Searcher(object):
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
         assert os.access(self.settings.startpath, os.R_OK), 'Startpath not readable'
         assert self.settings.searchpatterns, 'No search patterns defined'
+        try:
+            codecs.lookup(self.settings.textfileencoding)
+        except LookupError:
+            raise AssertionError('Invalid encoding: {}'.format(self.settings.textfileencoding))
 
     def is_search_dir(self, d: str) -> bool:
         path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
