@@ -112,25 +112,29 @@ class Searcher(object):
             return False
         return True
 
-    def get_search_dirs(self) -> List[str]:
-        """Get the list of directories to search"""
+    def get_search_files(self) -> List[SearchFile]:
+        """Get the list of all files to search in single walkthrough"""
         if self.settings.debug:
-            log('get_search_dirs()')
-        searchdirs = []
+            log('get_search_files()')
+        searchfiles = []
         if os.path.isdir(self.settings.startpath):
             if self.is_search_dir(os.path.abspath(self.settings.startpath)):
-                searchdirs.append(self.settings.startpath)
-            if self.settings.recursive:
-                for root, dirs, files in os.walk(self.settings.startpath):
-                    searchdirs.extend([
-                        os.path.join(root, d) for d in dirs
-                        if self.is_search_dir(os.path.join(root, d))])
+                if self.settings.recursive:
+                    for root, dirs, files in os.walk(self.settings.startpath):
+                        if self.is_search_dir(root):
+                            new_searchfiles = [
+                                SearchFile(path=root,
+                                           filename=f,
+                                           filetype=self.filetypes.get_filetype(f))
+                                for f in files
+                            ]
+                            searchfiles.extend([sf for sf in new_searchfiles if self.filter_file(sf)])
         elif os.path.isfile(self.settings.startpath):
-            d = os.path.dirname(self.settings.startpath)
-            if not d:
-                d = '.'
-            searchdirs.append(d)
-        return searchdirs
+            d, f = os.path.split(self.settings.startpath)
+            sf = SearchFile(path=d, filename=f, filetype=self.filetypes.get_filetype(f))
+            if self.filter_file(sf):
+                searchfiles.append(sf)
+        return sorted(searchfiles, key=lambda sf: (sf.path, sf.filename))
 
     def filter_file(self, sf: SearchFile) -> bool:
         if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
@@ -141,51 +145,21 @@ class Searcher(object):
         return not self.settings.archivesonly and \
                self.is_search_file(sf.filename)
 
-    def get_search_files_for_directory(self, d: str) -> List[SearchFile]:
-        """Get the list of files to search in a given directory"""
-        # files = [f for f in os.listdir(d) if os.path.isfile(os.path.join(d, f))]
-        files = [f.name for f in os.scandir(d) if f.is_file()]
-        searchfiles = [SearchFile(path=d,
-                                  filename=f,
-                                  filetype=self.filetypes.get_filetype(f))
-                       for f in files]
-        return [sf for sf in searchfiles if self.filter_file(sf)]
-
-    def get_search_files(self, searchdirs: List[str]) -> List[SearchFile]:
-        """Get the list of files to search"""
-        if self.settings.debug:
-            log('get_search_files()')
-        searchfiles = []
-        if os.path.isdir(self.settings.startpath):
-            for d in searchdirs:
-                searchfiles.extend(self.get_search_files_for_directory(d))
-        elif os.path.isfile(self.settings.startpath):
-            (d, f) = os.path.split(self.settings.startpath)
-            if not d:
-                d = '.'
-            searchfiles.append(SearchFile(path=d,
-                                          filename=f,
-                                          filetype=self.filetypes.get_filetype(f)))
-        return searchfiles
-
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
-        # get the searchdirs
-        searchdirs = self.get_search_dirs()
+        # get the searchfiles (now a single walkthrough)
+        searchfiles = self.get_search_files()
         if self.settings.verbose:
+            searchdirs = sorted(list({sf.path for sf in searchfiles}))
             log('\nDirectories to be searched ({0}):'.format(len(searchdirs)))
             for d in searchdirs:
                 log(d)
-            log("")
-
-        # get the searchfiles
-        searchfiles = self.get_search_files(searchdirs)
-        if self.settings.verbose:
-            log('\nFiles to be searched ({0}):'.format(len(searchfiles)))
+            log('\n\nFiles to be searched ({0}):'.format(len(searchfiles)))
             for f in searchfiles:
                 log(str(f))
             log("")
+
         # TODO: concurrent.futures.ProcessPoolExecutor, e.g.
         #       with concurrent.futures.ProcessPoolExecutor() as executor:
         #           futures = [executor.submit(<func_name>, <arg>) for _ in range(10)]
