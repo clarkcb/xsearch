@@ -37,9 +37,10 @@ class FileType(Enum):
 class FileTypes(object):
     """a class to provide file type information"""
 
-    def __init__(self, **kargs):
-        self.filetypes = {}
-        self.__dict__.update(kargs)
+    __slots__ = ['_filetypes']
+
+    def __init__(self):
+        self._filetypes = {}
         self._populate_filetypes_from_json()
 
     def get_filetype(self, filename: str) -> FileType:
@@ -57,27 +58,27 @@ class FileTypes(object):
 
     def is_archive_file(self, f: str) -> bool:
         """Return true if file is of a (known) archive file type"""
-        return FileUtil.get_extension(f) in self.filetypes['archive']
+        return FileUtil.get_extension(f) in self._filetypes['archive']
 
     def is_binary_file(self, f: str) -> bool:
         """Return true if file is of a (known) searchable binary file type"""
-        return FileUtil.get_extension(f) in self.filetypes['binary']
+        return FileUtil.get_extension(f) in self._filetypes['binary']
 
     def is_code_file(self, f: str) -> bool:
         """Return true if file is of a (known) code file type"""
-        return FileUtil.get_extension(f) in self.filetypes['code']
+        return FileUtil.get_extension(f) in self._filetypes['code']
 
     def is_searchable_file(self, f: str) -> bool:
         """Return true if file is of a (known) searchable type"""
-        return FileUtil.get_extension(f) in self.filetypes['searchable']
+        return FileUtil.get_extension(f) in self._filetypes['searchable']
 
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
-        return FileUtil.get_extension(f) in self.filetypes['text']
+        return FileUtil.get_extension(f) in self._filetypes['text']
 
     def is_xml_file(self, f: str) -> bool:
         """Return true if file is of a (known) xml file type"""
-        return FileUtil.get_extension(f) in self.filetypes['xml']
+        return FileUtil.get_extension(f) in self._filetypes['xml']
 
     def _populate_filetypes_from_json(self):
         with open(FILETYPESPATH, mode='r') as f:
@@ -85,13 +86,12 @@ class FileTypes(object):
         for filetype_obj in filetypes_dict['filetypes']:
             typename = filetype_obj['type']
             exts = set(filetype_obj['extensions'])
-            self.filetypes[typename] = exts
-        self.filetypes['text'] = \
-            self.filetypes['text'].union(self.filetypes['code'],
-                                         self.filetypes['xml'])
-        self.filetypes['searchable'] = \
-            self.filetypes['binary'].union(self.filetypes['archive'],
-                                           self.filetypes['text'])
+            self._filetypes[typename] = exts
+        self._filetypes['text'].update(self._filetypes['code'],
+                                       self._filetypes['xml'])
+        self._filetypes['searchable'] = \
+            self._filetypes['binary'].union(self._filetypes['archive'],
+                                           self._filetypes['text'])
 
     def _populate_filetypes_from_xml(self):
         filetypedom = minidom.parse(FILETYPESPATH)
@@ -100,10 +100,9 @@ class FileTypes(object):
             name = filetypenode.getAttribute('name')
             extnode = filetypenode.getElementsByTagName('extensions')[0]
             exts = set(get_text(extnode.childNodes).split())
-            self.filetypes[name] = exts
-        self.filetypes['text'] = \
-            self.filetypes['text'].union(self.filetypes['code'],
-                                         self.filetypes['xml'])
-        self.filetypes['searchable'] = \
-            self.filetypes['binary'].union(self.filetypes['archive'],
-                                           self.filetypes['text'])
+            self._filetypes[name] = exts
+        self._filetypes['text'].update(self._filetypes['code'],
+                                       self._filetypes['xml'])
+        self._filetypes['searchable'] = \
+            self._filetypes['binary'].union(self._filetypes['archive'],
+                                           self._filetypes['text'])

@@ -33,6 +33,9 @@ class SearchResult(object):
     """encapsulates a search result"""
     SEPARATOR_LEN = 80
 
+    __slots__ = ['pattern', 'file', 'linenum', 'line', 'contained', 'lines_before', 'lines_after',
+                 'match_start_index', 'match_end_index', 'maxlinelength']
+
     def __init__(self, pattern: str = '', file: SearchFile = None, linenum: int = 0, line: str = '',
                  contained: str = '', lines_before: List[str] = None, lines_after: List[str] = None,
                  match_start_index: int = 0, match_end_index: int = 0, maxlinelength: int = 150):

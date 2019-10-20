@@ -8,6 +8,7 @@
 ###############################################################################
 from io import StringIO
 import os
+from typing import List
 
 from .filetypes import FileType
 
@@ -16,12 +17,14 @@ class SearchFile(object):
     """encapsulates a search file"""
     CONTAINER_SEPARATOR = '!'
 
-    def __init__(self, **kargs):
-        self.containers = []
-        self.path = ''
-        self.filename = ''
-        self.filetype = FileType.UNKNOWN
-        self.__dict__.update(kargs)
+    __slots__ = ['containers', 'path', 'filename', 'filetype']
+
+    def __init__(self, containers: List[str] = None, path: str = '', filename: str = '',
+                 filetype: FileType = FileType.UNKNOWN):
+        self.containers = containers if containers else []
+        self.path = path
+        self.filename = filename
+        self.filetype = filetype
 
     @property
     def relativepath(self):

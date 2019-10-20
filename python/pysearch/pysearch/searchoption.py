@@ -10,6 +10,9 @@
 
 class SearchOption(object):
     """a class to encapsulate a specific command line option"""
+
+    __slots__ = ['shortarg', 'longarg', 'desc', 'func']
+
     def __init__(self, shortarg: str, longarg: str, desc: str, func):
         self.shortarg = shortarg
         self.longarg = longarg

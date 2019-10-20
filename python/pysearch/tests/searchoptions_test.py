@@ -58,7 +58,7 @@ class SearchOptionsTest(unittest.TestCase):
         args = ['-x', 'py,rb', '-s', 'Search', '.']
         settings = self.searchoptions.search_settings_from_args(args)
         self.assertEqual(settings.startpath, '.')
-        for x in set(['py', 'rb']):
+        for x in {'py', 'rb'}:
             self.assertIn(x, settings.in_extensions)
         self.assertEqual(list(settings.searchpatterns)[0].pattern, 'Search')
 

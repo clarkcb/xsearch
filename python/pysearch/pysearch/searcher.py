@@ -37,7 +37,9 @@ from .searchsettings import SearchSettings, PatternSet
 class Searcher(object):
     """a class to search files"""
 
-    def __init__(self, settings: SearchSettings, **kwargs):
+    __slots__ = ['settings', 'filetypes', 'results', 'patterndict', 'filedict', 'rescounts']
+
+    def __init__(self, settings: SearchSettings):
         self.settings = settings
         self.validate_settings()
         self.filetypes = FileTypes()
@@ -45,7 +47,6 @@ class Searcher(object):
         self.patterndict = {}
         self.filedict = {}
         self.rescounts = {}
-        self.__dict__.update(kwargs)
 
     def validate_settings(self):
         """Assert required settings in SearchSettings instance"""

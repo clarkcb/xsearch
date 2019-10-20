@@ -17,6 +17,16 @@ PatternSet = Set[Pattern]
 class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
+    __slots__ = ['archivesonly', 'debug', 'excludehidden', 'firstmatch', 'in_archiveextensions',
+                 'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
+                 'in_filetypes', 'in_linesafterpatterns', 'in_linesbeforepatterns', 'linesafter',
+                 'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
+                 'listfiles', 'listlines', 'maxlinelength', 'multilinesearch', 'out_archivefilepatterns',
+                 'out_archiveextensions', 'out_dirpatterns', 'out_extensions', 'out_filepatterns',
+                 'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'printresults',
+                 'printusage', 'printversion', 'recursive', 'searcharchives', 'searchpatterns', 'startpath',
+                 'textfileencoding', 'uniquelines', 'verbose']
+
     def __init__(self, archivesonly: bool = False, debug: bool = False, excludehidden: bool = True,
                  firstmatch: bool = False, in_archiveextensions: Set[str] = None,
                  in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
@@ -75,34 +85,38 @@ class SearchSettings(object):
 
     def add_exts(self, exts, ext_set_name: str):
         if isinstance(exts, list) or isinstance(exts, set):
-            self.__dict__[ext_set_name] = self.__dict__[ext_set_name].union(exts)
+            ext_set = getattr(self, ext_set_name)
+            ext_set.update(exts)
         elif isinstance(exts, str):
-            ext_set = set([ext for ext in exts.split(',') if ext])
-            self.__dict__[ext_set_name] = self.__dict__[ext_set_name].union(ext_set)
+            new_ext_set = set([ext for ext in exts.split(',') if ext])
+            ext_set = getattr(self, ext_set_name)
+            ext_set.update(new_ext_set)
 
-    def add_patterns(self, patterns, pattern_set_name: str):
-        compile_flag = re.S | re.U
+    def add_patterns(self, patterns, pattern_set_name: str, compile_flag = re.S | re.U):
         if isinstance(patterns, list) or isinstance(patterns, set):
-            pattern_set = set([re.compile(p, compile_flag) for p in patterns])
-            self.__dict__[pattern_set_name] = self.__dict__[pattern_set_name].union(pattern_set)
+            new_pattern_set = set([re.compile(p, compile_flag) for p in patterns])
+            pattern_set = getattr(self, pattern_set_name)
+            pattern_set.update(new_pattern_set)
         elif isinstance(patterns, str):
-            self.__dict__[pattern_set_name].add(re.compile(patterns, compile_flag))
+            pattern_set = getattr(self, pattern_set_name)
+            pattern_set.add(re.compile(patterns, compile_flag))
         else:
             raise SearchException('patterns is an unknown type')
 
     def add_filetypes(self, filetypes, filetype_set_name: str):
         if isinstance(filetypes, list) or isinstance(filetypes, set):
-            filetype_set = set([FileType.from_name(ft) for ft in filetypes])
+            new_filetype_set = set([FileType.from_name(ft) for ft in filetypes])
         elif isinstance(filetypes, str):
-            filetype_set = set([FileType.from_name(ft) for ft in filetypes.split(',') if ft])
+            new_filetype_set = set([FileType.from_name(ft) for ft in filetypes.split(',') if ft])
         else:
             raise SearchException('filetypes is an unknown type')
-        self.__dict__[filetype_set_name] = self.__dict__[filetype_set_name].union(filetype_set)
+        filetype_set = getattr(self, filetype_set_name)
+        filetype_set.update(new_filetype_set)
 
     def set_property(self, name: str, val):
-        self.__dict__[name] = val
+        setattr(self, name, val)
         # some trues trigger others
-        if type(val) is bool and val:
+        if isinstance(val, bool) and val:
             if name == 'archivesonly':
                 self.searcharchives = True
             elif name == 'debug':
@@ -113,17 +127,16 @@ class SearchSettings(object):
             self.set_property(p, propdict[p])
 
     def __str__(self):
-        all_props = {p for p in self.__dict__.keys() if not callable(self.__dict__[p])}
         print_dict = {}
         s = '{0}('.format(self.__class__.__name__)
-        for p in sorted(all_props):
-            val = self.__dict__[p]
-            if type(val) == set:
+        for p in sorted(self.__slots__):
+            val = getattr(self, p)
+            if isinstance(val, set):
                 if len(val) > 0 and hasattr(list(val)[0], 'pattern'):
                     print_dict[p] = str([x.pattern for x in val])
                 else:
                     print_dict[p] = str(list(val))
-            elif type(val) is str:
+            elif isinstance(val, str):
                 if val:
                     print_dict[p] = '"{0}"'.format(val)
                 else:
