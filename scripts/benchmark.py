@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ################################################################################
 #
@@ -7,7 +7,7 @@
 # A simple benchmarking tool for the various xsearch language versions
 #
 ################################################################################
-from cStringIO import StringIO
+from io import StringIO
 import subprocess
 import sys
 import time
@@ -41,18 +41,18 @@ time_keys = ['real', 'sys', 'user', 'total']
 # Benchmarker class
 ########################################
 class Benchmarker(object):
-    def __init__(self, **kargs):
+    def __init__(self, **kwargs):
         self.xsearch_names = all_xsearch_names
         self.scenarios = []
         self.runs = default_runs
-        self.debug = False
-        self.__dict__.update(kargs)
+        self.debug = True
+        self.__dict__.update(kwargs)
 
     def print_totals_dict(self, totals_dict, total_runs=default_runs):
         sio = StringIO()
         longest = max([len(x) for x in self.xsearch_names])
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user',
-               'avg','rank',  'total', 'avg', 'rank']
+               'avg', 'rank', 'total', 'avg', 'rank']
         col_width = max([len(h) for h in hdr]) + 1
         hdr_place = ' %' + str(col_width) + 's'
         hdr_places = hdr_place * len(hdr)
@@ -60,17 +60,17 @@ class Benchmarker(object):
         hdr_line = hdr_format % tuple(['xsearch'] + hdr)
         sep_line = '-' * len(hdr_line)
         sio.write("\n")
-        sio.write("%s\n" % hdr_line)
-        sio.write("%s\n" % sep_line)
+        sio.write("{}\n".format(hdr_line))
+        sio.write("{}\n".format(sep_line))
         reals = sorted([v['real'] for v in totals_dict.values()])
         syss = sorted([v['sys'] for v in totals_dict.values()])
         users = sorted([v['user'] for v in totals_dict.values()])
         totals = sorted([v['total'] for v in totals_dict.values()])
+        time_place = ' %' + str(col_width) + '.2f'
+        rank_place = ' %' + str(col_width) + 'd'
+        val_places = (time_place + time_place + rank_place) * 4
+        line_format = ' %%-%ds %s' % (longest, val_places)
         for x in self.xsearch_names:
-            time_place = ' %' + str(col_width) + '.2f'
-            rank_place = ' %' + str(col_width) + 'd'
-            val_places = (time_place + time_place + rank_place) * 4
-            line_format = ' %%-%ds %s' % (longest, val_places)
             xr = totals_dict[x]['real']
             xra = xr / total_runs
             xrr = reals.index(xr) + 1
@@ -85,14 +85,14 @@ class Benchmarker(object):
             xtr = totals.index(xt) + 1
             vals = [x, xr, xra, xrr, xs, xsa, xsr, xu, xua, xur, xt, xta, xtr]
             line = line_format % tuple(vals)
-            sio.write("%s\n" % line)
-        print sio.getvalue()
+            sio.write("{}\n".format(line))
+        print(sio.getvalue())
 
-    def print_totals(self, results):
-        s = len(self.scenarios)
-        total_runs = s * self.runs
-        print "\nTotal results for %d scenarios with %d runs (%d total runs)" % \
-            (s, self.runs, total_runs)
+    def print_totals(self, results, last_scenario, total_runs):
+        total_scenarios = len(self.scenarios)
+        max_runs = total_scenarios * self.runs
+        print("\nTotal results for {} out of {} scenarios with {} out of {} total runs".
+            format(last_scenario, total_scenarios, total_runs, max_runs))
         totals_dict = { x: {s: 0 for s in time_keys} for x in self.xsearch_names }
         for r in results:
             for x in self.xsearch_names:
@@ -101,8 +101,8 @@ class Benchmarker(object):
         self.print_totals_dict(totals_dict, total_runs)
 
     def print_scenario_totals(self, s, sn, results):
-        print '\nTotal results for scenario %d ("%s") with %d runs' % \
-            (sn, s.name, self.runs)
+        print('\nTotal results for scenario {} ("{}") with {} runs'.
+            format(sn, s.name, self.runs))
         totals_dict = { x: {s: 0 for s in time_keys} for x in self.xsearch_names }
         for r in results:
             for x in self.xsearch_names:
@@ -112,7 +112,7 @@ class Benchmarker(object):
 
     def print_run_results(self, sn, result):
         sio = StringIO()
-        sio.write('\nResults for scenario %d ("%s") run %d' % (sn, result.scenario.name, result.run))
+        sio.write('\nResults for scenario {} ("{}") run {}'.format(sn, result.scenario.name, result.run))
         longest = max([len(x) for x in self.xsearch_names])
         hdr = ['real', 'rank', 'sys', 'rank', 'user', 'rank', 'total', 'rank']
         col_width = max([len(h) for h in hdr]) + 1
@@ -122,17 +122,17 @@ class Benchmarker(object):
         hdr_line = hdr_format % tuple(['xsearch'] + hdr)
         sep_line = '-' * len(hdr_line)
         sio.write("\n")
-        sio.write("%s\n" % hdr_line)
-        sio.write("%s\n" % sep_line)
+        sio.write("{}\n".format(hdr_line))
+        sio.write("{}\n".format(sep_line))
         reals = sorted([v['real'] for v in result.time_dict.values()])
         syss = sorted([v['sys'] for v in result.time_dict.values()])
         users = sorted([v['user'] for v in result.time_dict.values()])
         totals = sorted([v['total'] for v in result.time_dict.values()])
+        time_place = ' %' + str(col_width) + '.2f'
+        rank_place = ' %' + str(col_width) + 'd'
+        val_places = (time_place + rank_place) * 4
+        line_format = ' %%-%ds %s' % (longest, val_places)
         for x in self.xsearch_names:
-            time_place = ' %' + str(col_width) + '.2f'
-            rank_place = ' %' + str(col_width) + 'd'
-            val_places = (time_place + rank_place) * 4
-            line_format = ' %%-%ds %s' % (longest, val_places)
             xr = result.time_dict[x]['real']
             xrr = reals.index(xr) + 1
             xs = result.time_dict[x]['sys']
@@ -143,19 +143,20 @@ class Benchmarker(object):
             xtr = totals.index(xt) + 1
             vals = [x, xr, xrr, xs, xsr, xu, xur, xt, xtr]
             line = line_format % tuple(vals)
-            sio.write("%s\n" % line)
-        print sio.getvalue()
+            sio.write("{}\n".format(line))
+        print(sio.getvalue())
 
     def times_from_lines(self, lines):
         times = lines[0].split()
         times.reverse()
+        # print(times)
         time_dict = {}
         try:
             time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
             time_dict['total'] = sum(time_dict.values())
         except ValueError as e:
-            print "ValueError: %s" % str(e)
-            print "Invalid times line: \"%s\"" % lines[0]
+            print("ValueError: {}".format(str(e)))
+            print("Invalid times line: \"{}\"".format(lines[0]))
             time_dict = {s: 0 for s in ['real', 'sys', 'user', 'total']}
         return time_dict
 
@@ -167,14 +168,15 @@ class Benchmarker(object):
                 xs = [sorted(nonmatching.keys())[0]]
             elif len(nonmatching) > 2:
                 xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
-            print
+            print()
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print '%s output line length (%d) != %s output line length (%d)' % (x, lens[x], y, lens[y])
+                    print('{} output line length ({}) != {} output line length ({})'.format(x, lens[x], y, lens[y]))
         else:
-            print '\nOutput line lengths of all versions match'
+            print('\nOutput line lengths of all versions match')
 
     def compare_outputs(self, xsearch_output):
+        # print('compare_outputs')
         nonmatching = nonmatching_outputs(xsearch_output)
         if nonmatching:
             xs = []
@@ -182,29 +184,80 @@ class Benchmarker(object):
                 xs = sorted(nonmatching.keys())
             elif len(nonmatching) > 2:
                 xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
-            print
+            print()
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print '%s output != %s output' % (x, y)
-                    # print '%s output:\n"%s"' % (x, xsearch_output[x])
-                    # print '%s output:\n"%s"' % (y, xsearch_output[y])
+                    print('{} output != {} output'.format(x, y))
+                    # print('{} output:\n"{}"'.format(x, xsearch_output[x]))
+                    # print('{} output:\n"{}"'.format(y, xsearch_output[y]))
         else:
-            print '\nOutputs of all versions match'
+            print('\nOutputs of all versions match')
 
     def do_run(self, s, sn, rn):
+        # return self.do_run_seq(s, sn, rn)
+        return self.do_run_concurrent(s, sn, rn)
+
+    def do_run_concurrent(self, s, sn, rn):
+        """This run version starts procs for all language versions before going back and 
+           capturing their outputs
+        """
+        xsearch_procs = {}
         xsearch_output = {}
         xsearch_times = {}
         for x in self.xsearch_names:
             fullargs = ['time', x] + s.args
-            print ' '.join(fullargs[1:])
+            print(' '.join(fullargs[1:]))
+            xsearch_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+            # print('process opened for {}'.format(x))
+
+        for x in self.xsearch_names:
+            p = xsearch_procs[x]
+            output_lines = []
+            time_lines = []
+            while True:
+                output_line = p.stdout.readline()
+                time_line = p.stderr.readline()
+                if not output_line and not time_line:
+                    break
+                if output_line:
+                    output_lines.append(output_line.decode().strip())
+                if time_line:
+                    time_lines.append(time_line.decode().strip())
+            p.terminate()
+            # output = '\n'.join(output_lines)
+            # Temporary: sort output lines to reduce mismatches
+            output = '\n'.join(sorted(output_lines))
+            if s.replace_xsearch_name:
+                output = xsearch_name_regex.sub('xsearch', output)
+            xsearch_output[x] = output
+            if self.debug:
+                print('{} output:\n"{}"'.format(x, output))
+            xsearch_times[x] = self.times_from_lines(time_lines)
+        self.compare_outputs(xsearch_output)
+        return RunResult(scenario=s, run=rn, time_dict=xsearch_times)
+
+    def do_run_seq(self, s, sn, rn):
+        """This run version runs each language version subprocess sequentially
+        """
+        xsearch_output = {}
+        xsearch_times = {}
+        for x in self.xsearch_names:
+            fullargs = ['time', x] + s.args
+            print(' '.join(fullargs[1:]))
             p = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
+            # print('process opened')
             output_lines = []
             time_lines = []
             times = {}
             while True:
+                #print("Reading stdout")
                 output_line = p.stdout.readline()
+                #print('output_line: "{}"'.format(output_line))
+                #print("Reading stderr")
                 time_line = p.stderr.readline()
+                #print('time_line: "{}"'.format(time_line))
                 if output_line == '' and time_line == '':
                     break
                 if output_line != '':
@@ -216,25 +269,31 @@ class Benchmarker(object):
                 output = xsearch_name_regex.sub('xsearch', output)
             xsearch_output[x] = output
             if self.debug:
-                print 'output:\n"%s"' % output
+                print('output:\n"{}"'.format(output))
             xsearch_times[x] = self.times_from_lines(time_lines)
         self.compare_outputs(xsearch_output)
         return RunResult(scenario=s, run=rn, time_dict=xsearch_times)
 
     def run(self):
         results = []
-        for i,s in enumerate(self.scenarios):
-            sn = i+1
-            s_results = []
-            for r in range(self.runs):
-                rn = r+1
-                print '\nscenario %d ("%s") run %d\n' % (sn, s.name, rn)
-                result = self.do_run(s, sn, rn)
-                s_results.append(result)
-                self.print_run_results(sn, result)
-            self.print_scenario_totals(s, sn, s_results)
-            results.extend(s_results)
-        self.print_totals(results)
+        sn = 0
+        runs = 0
+        try:
+            for i,s in enumerate(self.scenarios):
+                sn = i+1
+                s_results = []
+                for r in range(self.runs):
+                    rn = r+1
+                    print('\nscenario {} ("{}") run {}\n'.format(sn, s.name, rn))
+                    result = self.do_run(s, sn, rn)
+                    runs += 1
+                    s_results.append(result)
+                    self.print_run_results(sn, result)
+                self.print_scenario_totals(s, sn, s_results)
+                results.extend(s_results)
+        except KeyboardInterrupt:
+            print('\n')
+        self.print_totals(results, sn, runs)
 
 
 ########################################
@@ -255,32 +314,32 @@ def get_args(args):
                         if lang in xsearch_dict:
                             xsearch_names.append(xsearch_dict[lang])
                         else:
-                            print 'Skipping unknown language: %s' % lang
+                            print('Skipping unknown language: {}'.format(lang))
                 else:
-                    print 'ERROR: missing language names for -l arg'
+                    print('ERROR: missing language names for -l arg')
                     sys.exit(1)
             elif arg == '-r': # runs
                 if args:
                     runs = int(args.pop(0))
                 else:
-                    print 'ERROR: missing runs value for -r arg'
+                    print('ERROR: missing runs value for -r arg')
                     sys.exit(1)
             elif arg == '--debug':
                 debug = True
             else:
-                print 'ERROR: unknown arg: %s' % arg
+                print('ERROR: unknown arg: {}'.format(arg))
                 sys.exit(1)
 
         else:
-            print 'ERROR: unknown arg: %s' % arg
+            print('ERROR: unknown arg: {}'.format(arg))
             sys.exit(1)
     return xsearch_names, runs, debug
 
 
 def main():
     xsearch_names, runs, debug = get_args(sys.argv[1:])
-    print 'xsearch_names: %s' % str(xsearch_names)
-    print 'runs: %d' % runs
+    print('xsearch_names: {}'.format(str(xsearch_names)))
+    print('runs: {}'.format(runs))
     benchmarker = Benchmarker(xsearch_names=xsearch_names, runs=runs,
         scenarios=scenarios, debug=debug)
     benchmarker.run()

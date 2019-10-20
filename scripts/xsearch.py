@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ################################################################################
 #
@@ -48,7 +48,7 @@ if platform.system() == 'Windows':
     HOME_NAME = 'USERPROFILE'
     all_xsearch_names = sorted([xsearch_dict[l] for l in win_supported])
 
-xsearch_name_regex = re.compile(r'\b(%s)(\.exe)?\b' % '|'.join(all_xsearch_names), re.I | re.S)
+xsearch_name_regex = re.compile(r'\b({})(\.exe)?\b'.format('|'.join(all_xsearch_names)), re.I | re.S)
 
 default_runs = 10
 
@@ -87,8 +87,8 @@ def nonmatching_outputs(xsearch_output):
             x_output = xsearch_output[x]
             y_output = xsearch_output[y]
             if x_output != y_output:
-                # print "\n%s:\n\"%s\"" % (x, x_output)
-                # print "\n%s:\n\"%s\"" % (y, y_output)
+                # print("\n{}:\n\"{}\"".format(x, x_output))
+                # print("\n{}:\n\"{}\"".format(y, y_output))
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
     return nonmatching
