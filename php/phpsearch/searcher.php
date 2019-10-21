@@ -102,41 +102,57 @@ class Searcher {
         return array_filter(scandir($d), $filter_non_dot_dirs);
     }
 
-    private function rec_get_search_dirs($d) {
+    private function get_dir_search_dirs(string $d): array {
+        $filter_dirs = function($f) use ($d) {
+            return is_dir(FileUtil::join_path($d, $f)) && $this->is_search_dir($f);
+        };
         $join_path = function($f) use ($d) {
             return FileUtil::join_path($d, $f);
         };
-        $filter_search_dirs = function($f) use ($join_path) {
-            return $this->is_search_dir($join_path($f));
-        };
-        $searchdirs = array_filter($this->get_non_dot_dirs($d), $filter_search_dirs);
-        $searchdirs = array_map($join_path, $searchdirs);
-        foreach ($searchdirs as $searchdir) {
-            $searchdirs = array_merge($searchdirs, $this->rec_get_search_dirs($searchdir));
-        }
-        return $searchdirs;
+        $searchdirs = array_filter($this->get_non_dot_dirs($d), $filter_dirs);
+        return array_map($join_path, $searchdirs);
     }
 
-    private function get_search_dirs() {
-        $searchdirs = array();
+    private function get_dir_search_files(string $d): array {
+        $filter_files = function($f) use ($d) {
+            return is_file(FileUtil::join_path($d, $f)) && $this->filter_file($f);
+        };
+        $to_search_file = function($f) use ($d) {
+            return new SearchFile($d, $f, $this->filetypes->get_filetype($f));
+        };
+        $searchfiles = array_filter(scandir($d), $filter_files);
+        return array_map($to_search_file, $searchfiles);
+    }
+
+    private function rec_get_search_files(string $d): array {
+        $searchdirs = $this->get_dir_search_dirs($d);
+        $searchfiles = $this->get_dir_search_files($d);
+        foreach ($searchdirs as $searchdir) {
+            $searchfiles = array_merge($searchfiles, $this->rec_get_search_files($searchdir));
+        }
+        return $searchfiles;
+    }
+
+    private function get_search_files(): array {
+        $searchfiles = array();
         if (is_dir($this->settings->startpath)) {
             if ($this->is_search_dir($this->settings->startpath)) {
-                $searchdirs[] = $this->settings->startpath;
                 if ($this->settings->recursive) {
-                    $searchdirs = array_merge($searchdirs,
-                        $this->rec_get_search_dirs($this->settings->startpath));
+                    $searchfiles = $this->rec_get_search_files($this->settings->startpath);
+                } else {
+                    $searchfiles = $this->get_dir_search_files($this->settings->startpath);
                 }
             } else {
                 throw new SearchException("Startpath does not match search settings");
             }
         } else if (is_file($this->settings->startpath)) {
             if ($this->filter_file($this->settings->startpath))
-                $searchdirs[] = dirname($this->settings->startpath);
+                $searchfiles[] = $this->settings->startpath;
             else
                 throw new SearchException("Startpath does not match search settings");
         }
-        sort($searchdirs);
-        return $searchdirs;
+        sort($searchfiles);
+        return $searchfiles;
     }
 
     public function filter_file(string $f): bool {
@@ -148,47 +164,18 @@ class Searcher {
         return !$this->settings->archivesonly && $this->is_search_file($f);
     }
 
-    private function get_search_files_for_directory($d) {
-        $filter_search_files = function($f) use ($d) {
-            $p = FileUtil::join_path($d, $f);
-            return is_file($p) && $this->filter_file($f);
-        };
-        $searchfiles = array_filter(scandir($d), $filter_search_files);
-        $join_path = function($f) use ($d) {
-            return FileUtil::join_path($d, $f);
-        };
-        $searchfiles = array_map($join_path, $searchfiles);
-        return $searchfiles;
-    }
-
-    private function get_search_files($searchdirs) {
-        $searchfiles = array();
-        if (is_dir($this->settings->startpath)) {
-            foreach ($searchdirs as $searchdir) {
-                $searchfiles = array_merge($searchfiles, 
-                    $this->get_search_files_for_directory($searchdir));
-            }
-        } else if (is_file($this->settings->startpath)) {
-            if ($this->filter_file($this->settings->startpath))
-                $searchfiles[] = $this->settings->startpath;
-            else
-                throw new SearchException("Startpath does not match search settings");
-        }
-        return $searchfiles;
-    }
-
     public function search() {
-        $searchdirs = $this->get_search_dirs();
+        $searchfiles = $this->get_search_files($this->settings->startpath);
         if ($this->settings->verbose) {
+            $get_path = function($sf) {
+                return $sf->path;
+            };
+            $searchdirs = array_unique(array_map($get_path, $searchfiles));
             log_msg(sprintf("\nDirectories to be searched (%d):", count($searchdirs)));
             foreach ($searchdirs as $d) {
                 log_msg($d);
             }
-        }
-
-        $searchfiles = $this->get_search_files($searchdirs);
-        if ($this->settings->verbose) {
-            log_msg(sprintf("\nFiles to be searched (%d):", count($searchfiles)));
+            log_msg(sprintf("\n\nFiles to be searched (%d):", count($searchfiles)));
             foreach ($searchfiles as $f) {
                 log_msg($f);
             }
