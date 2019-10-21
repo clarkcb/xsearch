@@ -18,6 +18,7 @@ class SearchSettings {
     public $recursive = true;
     public $searcharchives = false;
     public $startpath = NULL;
+    public $textfileencoding = 'utf-8';
     public $uniquelines = false;
     public $verbose = false;
 
@@ -138,6 +139,7 @@ class SearchSettings {
         $s .= ', searcharchives: ' . $this->bool_to_string($this->searcharchives);
         $s .= ', searchpatterns: ' . $this->arr_to_string($this->searchpatterns);
         $s .= ', startpath: "' . $this->startpath . '"';
+        $s .= ', textfileencoding: "' . $this->textfileencoding . '"';
         $s .= ', uniquelines: ' . $this->bool_to_string($this->uniquelines);
         $s .= ', verbose: ' . $this->bool_to_string($this->verbose);
         $s .= ')';

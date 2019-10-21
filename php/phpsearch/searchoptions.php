@@ -7,6 +7,9 @@ class SearchOptions {
         $this->options = array();
 
         $this->arg_action_map = [
+            'encoding' => function(string $s, SearchSettings $settings) {
+                $settings->textfileencoding = $s;
+            },
             'in-archiveext' => function(string $s, SearchSettings $settings) {
                 $settings->add_exts($s, $settings->in_archiveextensions);
             },
