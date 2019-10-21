@@ -3,7 +3,7 @@
 class SearchFile {
     const CONTAINER_SEPARATOR = '!';
 
-    function __construct($path, $filename, $filetype) {
+    function __construct(string $path, string $filename, $filetype) {
         $this->containers = array();
         $this->path = $path;
         $this->filename = $filename;

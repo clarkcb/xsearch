@@ -23,7 +23,7 @@ class Searcher {
         }
     }
 
-    private function matches_any_pattern($s, $patterns) {
+    private function matches_any_pattern(string $s, array $patterns): bool {
         foreach ($patterns as $pattern) {
             $pattern = '/' . $pattern . '/';
             if (preg_match_all($pattern, $s))
@@ -32,7 +32,7 @@ class Searcher {
         return false;
     }
 
-    private function any_matches_any_pattern($slist, $patterns) {
+    private function any_matches_any_pattern(array $slist, array $patterns): bool {
         foreach ($slist as $s) {
             if ($this->matches_any_pattern($s, $patterns))
                 return true;
@@ -40,7 +40,7 @@ class Searcher {
         return false;
     }
 
-    public function is_search_dir($d) {
+    public function is_search_dir(string $d): bool {
         if (FileUtil::is_dot_dir($d))
             return true;
         if ($this->settings->excludehidden && FileUtil::is_hidden($d))
@@ -55,7 +55,7 @@ class Searcher {
         return true;
     }
 
-    public function is_search_file($f) {
+    public function is_search_file(string $f): bool {
         $ext = FileUtil::get_extension($f);
         if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions))
             return false;
@@ -75,7 +75,7 @@ class Searcher {
         return true;
     }
 
-    public function is_archive_search_file($f) {
+    public function is_archive_search_file(string $f): bool {
         $ext = FileUtil::get_extension($f);
         if ($this->settings->in_archiveextensions &&
             !in_array($ext, $this->settings->in_archiveextensions))
@@ -92,7 +92,7 @@ class Searcher {
         return true;
     }
 
-    private function get_non_dot_dirs($d) {
+    private function get_non_dot_dirs(string $d): array {
         $filter_non_dot_dirs = function($f) use ($d) {
             return (is_dir(FileUtil::join_path($d, $f)) && !FileUtil::is_dot_dir($f));
         };
@@ -136,7 +136,7 @@ class Searcher {
         return $searchdirs;
     }
 
-    public function filter_file($f) {
+    public function filter_file(string $f): bool {
         if ($this->settings->excludehidden && FileUtil::is_hidden($f))
             return false;
         if ($this->filetypes->is_archive($f)) {
@@ -197,16 +197,15 @@ class Searcher {
         }
     }
 
-    public function search_file($f) {
-        $type = $this->filetypes->get_filetype($f);
-        if ($type == FileType::Text) {
+    public function search_file(SearchFile $f) {
+        if ($f->filetype == FileType::Text) {
             $this->search_text_file($f);
-        } else if ($type == FileType::Binary) {
+        } else if ($f->filetype == FileType::Binary) {
             $this->search_binary_file($f);
         }
     }
 
-    private function search_text_file($f) {
+    private function search_text_file(SearchFile $f) {
         if ($this->settings->debug)
             log_msg("Searching text file $f");
         if ($this->settings->multilinesearch) {
@@ -216,7 +215,7 @@ class Searcher {
         }
     }
 
-    private function get_new_line_indices($s) {
+    private function get_new_line_indices(string $s): array {
         $indices = array();
         $i = 0;
         while ($i < strlen($s)) {
@@ -227,7 +226,7 @@ class Searcher {
         return $indices;
     }
 
-    private function search_text_file_contents($f) {
+    private function search_text_file_contents(SearchFile $f) {
         $contents = file_get_contents($f);
         $results = $this->search_multiline_string($contents);
         foreach ($results as $r) {
@@ -244,18 +243,18 @@ class Searcher {
         }
     }
 
-    private function get_before_indices($indices, $after_index) {
+    private function get_before_indices(array $indices, int $after_index): array {
         $less_or_equal = function($i) use ($after_index) { return $i <= $after_index; };
         return array_filter($indices, $less_or_equal);
     }
 
-    private function get_after_indices($indices, $before_index) {
+    private function get_after_indices(array $indices, int $before_index): array {
         $greater_than = function($i) use ($before_index) { return $i > $before_index; };
         return array_filter($indices, $greater_than);
     }
 
-    private function get_lines_before($s, $before_start_indices, $start_line_indices,
-        $end_line_indices) {
+    private function get_lines_before(string $s, array $before_start_indices,
+        array $start_line_indices, array $end_line_indices): array {
         $lines_before = array();
         $i = 0;
         while($i < count($before_start_indices) && $i < $this->settings->linesbefore) {
@@ -268,8 +267,8 @@ class Searcher {
         return $lines_before;
     }
 
-    private function get_lines_after($s, $after_start_indices, $start_line_indices,
-        $end_line_indices) {
+    private function get_lines_after(string $s, array $after_start_indices,
+        array $start_line_indices, array $end_line_indices): array {
         $lines_after = array();
         $i = 0;
         while($i < count($after_start_indices) && $i < $this->settings->linesafter) {
@@ -282,7 +281,7 @@ class Searcher {
         return $lines_after;
     }
 
-    public function search_multiline_string($s) {
+    public function search_multiline_string(string $s): array {
         $results = array();
         $new_line_indices = $this->get_new_line_indices($s);
         $plus_one = function($i) { return $i + 1; };
@@ -344,7 +343,7 @@ class Searcher {
         return $results;
     }
 
-    private function search_text_file_lines($f) {
+    private function search_text_file_lines(SearchFile $f) {
         $lines = file($f);
         $results = $this->search_lines($lines);
         foreach ($results as $r) {
@@ -361,7 +360,7 @@ class Searcher {
         }
     }
 
-    private function lines_match($lines, $in_patterns, $out_patterns) {
+    private function lines_match(array $lines, array $in_patterns, array $out_patterns): bool {
         if ((!$in_patterns || $this->any_matches_any_pattern($lines, $in_patterns))
             &&
             (!$out_patterns || !$this->any_matches_any_pattern($lines, $out_patterns)))
@@ -369,17 +368,17 @@ class Searcher {
         return false;
     }
 
-    private function lines_before_match($lines_before) {
+    private function lines_before_match(array $lines_before): bool {
         return $this->lines_match($lines_before, $this->settings->in_linesbeforepatterns,
             $this->settings->out_linesbeforepatterns);
     }
 
-    private function lines_after_match($lines_after) {
+    private function lines_after_match(array $lines_after): bool {
         return $this->lines_match($lines_after, $this->settings->in_linesafterpatterns,
             $this->settings->out_linesafterpatterns);
     }
 
-    public function search_lines($lines) {
+    public function search_lines(array $lines) {
         $linenum = 0;
         $line = '';
         $lines_before = array();
@@ -439,7 +438,7 @@ class Searcher {
         return $results;
     }
 
-    private function search_binary_file($f) {
+    private function search_binary_file(SearchFile $f) {
         if ($this->settings->debug)
             log_msg("Searching binary file $f");
         $contents = file_get_contents($f);
@@ -479,7 +478,7 @@ class Searcher {
         }
     }
 
-    public function get_matching_dirs() {
+    public function get_matching_dirs(): array {
         $dirs = array();
         foreach($this->results as $r) {
             $d = dirname($r->file);
@@ -498,7 +497,7 @@ class Searcher {
         }
     }
 
-    public function get_matching_files() {
+    public function get_matching_files(): array {
         $files = array();
         foreach($this->results as $r) {
             $f = $r->file;
@@ -517,7 +516,7 @@ class Searcher {
         }
     }
 
-    public function get_matching_lines() {
+    public function get_matching_lines(): array {
         $lines = array();
         foreach($this->results as $r) {
             $l = trim($r->line);

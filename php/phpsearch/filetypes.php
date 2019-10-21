@@ -27,7 +27,7 @@ class FileTypes {
         return $file_type_map;
     }
 
-    public static function from_name($name) {
+    public static function from_name(string $name) {
         $uname = strtoupper($name);
         if ($uname == 'TEXT') {
             return FileType::Text;
@@ -47,7 +47,7 @@ class FileTypes {
         return FileType::Unknown;
     }
 
-    public function get_filetype($file) {
+    public function get_filetype(string $file) {
         if ($this->is_text($file)) {
             return FileType::Text;
         }
@@ -66,31 +66,31 @@ class FileTypes {
         return FileType::Unknown;
     }
 
-    public function is_archive($f) {
+    public function is_archive(string $f): bool {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['archive']);
     }
 
-    public function is_binary($f) {
+    public function is_binary(string $f): bool {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['binary']);
     }
 
-    public function is_code($f) {
+    public function is_code(string $f): bool {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['code']);
     }
 
-    public function is_text($f) {
+    public function is_text(string $f): bool {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['text']);
     }
 
-    public function is_xml($f) {
+    public function is_xml(string $f): bool {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['xml']);
     }
 
-    public function is_searchable($f) {
+    public function is_searchable(string $f): bool {
         return in_array(FileUtil::get_extension($f), $this->file_type_map['searchable']);
     }
 
-    public function is_unknown($f) {
+    public function is_unknown(string $f): bool {
         return !$this->is_searchable($f);
     }
 }

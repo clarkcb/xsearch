@@ -1,7 +1,7 @@
 <?php
 
 class SearchOption {
-    function __construct($shortarg, $longarg, $desc, $func) {
+    function __construct(string $shortarg, string $longarg, string $desc, $func) {
         $this->shortarg = $shortarg;
         $this->longarg = $longarg;
         $this->desc = $desc;

@@ -77,30 +77,30 @@ class SearchSettings {
         }
     }
 
-    public function set_archivesonly($b) {
+    public function set_archivesonly(bool $b) {
         $this->archivesonly = $b;
         if ($b) {
             $this->searcharchives = $b;
         }
     }
 
-    public function set_debug($b) {
+    public function set_debug(bool $b) {
         $this->debug = $b;
         if ($b) {
             $this->verbose = $b;
         }
     }
 
-    private function arr_to_string($arr) {
+    private function arr_to_string(array $arr): string {
         $s = '["' . implode('","', $arr) . '"]';
         return $s;
     }
 
-    private function bool_to_string($b) {
+    private function bool_to_string(bool $b): string {
         return $b ? 'true' : 'false';
     }
 
-    public function __toString() {
+    public function __toString(): string {
         $s = 'SearchSettings(';
         $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);

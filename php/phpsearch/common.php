@@ -1,14 +1,14 @@
 <?php
 
-function log_msg($msg) {
+function log_msg(string $msg) {
 	echo "$msg\n";
 }
 
-function cmp_ignorecase($s1, $s2) {
+function cmp_ignorecase(string $s1, string $s2) {
     return strcmp(strtolower($s1), strtolower($s2));
 }
 
-function cmp_searchresults($r1, $r2) {
+function cmp_searchresults(SearchResult $r1, SearchResult $r2) {
     $dircmp = cmp_ignorecase(dirname($r1->file), dirname($r2->file));
     if ($dircmp !== 0) {
         return $dircmp;
