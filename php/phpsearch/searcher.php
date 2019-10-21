@@ -18,6 +18,9 @@ class Searcher {
         if (!file_exists($this->settings->startpath)) {
             throw new SearchException('Startpath not found');
         }
+        if (!is_readable($this->settings->startpath)) {
+            throw new SearchException('Startpath not readable');
+        }
         if (count($this->settings->searchpatterns) == 0) {
             throw new SearchException('No search patterns defined');
         }
