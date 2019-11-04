@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class FileUtil
+ */
 class FileUtil {
 
     public static $DOT_PATHS = array('.', '..');

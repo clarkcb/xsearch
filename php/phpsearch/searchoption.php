@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Class SearchOption
+ *
+ * @property string shortarg
+ * @property string longarg
+ * @property string desc
+ * @property func
+ * @property string sortarg
+ */
 class SearchOption {
     function __construct(string $shortarg, string $longarg, string $desc, $func) {
         $this->shortarg = $shortarg;

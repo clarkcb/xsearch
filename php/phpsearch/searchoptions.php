@@ -2,7 +2,15 @@
 
 require_once __DIR__ . '/autoload.php';
 
+/**
+ * Class SearchOptions
+ */
 class SearchOptions {
+    /**
+     * @var array
+     */
+    private $options;
+
     function __construct() {
         $this->options = array();
 
@@ -199,7 +207,7 @@ class SearchOptions {
         }
     }
 
-    public function settings_from_args(array $args) {
+    public function settings_from_args(array $args): SearchSettings {
         $settings = new SearchSettings();
         while (count($args) > 0) {
             $arg = array_shift($args);
@@ -234,7 +242,7 @@ class SearchOptions {
         echo $this->get_usage_string() . "\n";
     }
 
-    private function get_usage_string() {
+    private function get_usage_string(): string {
         $usage = "Usage:\n phpsearch.php [options] -s <searchpattern>";
         $usage .= " <startpath>\n\nOptions:\n";
         $opt_map = array();
@@ -258,7 +266,7 @@ class SearchOptions {
     }
 }
 
-function cmp_searchoptions(SearchOption $o1, SearchOption $o2) {
+function cmp_searchoptions(SearchOption $o1, SearchOption $o2): int {
     return strcmp($o1->sortarg, $o2->sortarg);
 }
 

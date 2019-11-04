@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/autoload.php';
 
+/**
+ * Class FileTypes
+ */
 class FileTypes {
     function __construct() {
         $this->file_type_map = $this->get_file_type_map();

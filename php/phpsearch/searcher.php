@@ -3,7 +3,19 @@
 require_once __DIR__ . '/autoload.php';
 require_once __DIR__ . '/common.php';
 
+/**
+ * Class Searcher
+ */
 class Searcher {
+    /**
+     * @var SearchSettings
+     */
+    private $settings;
+    /**
+     * @var FileTypes
+     */
+    private $filetypes;
+
     function __construct(SearchSettings $settings) {
         $this->settings = $settings;
         $this->filetypes = new FileTypes();
@@ -406,7 +418,7 @@ class Searcher {
                         $end_index = $start_index + strlen($m[0]);
                         $r = new SearchResult(
                             $pattern,
-                            '',
+                            NULL,
                             $linenum,
                             $start_index,
                             $end_index,

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class FileType
+ */
 abstract class FileType {
     const Unknown = -1;
     const Archive = 1;

@@ -1,8 +1,11 @@
 <?php
 
-class SearchException extends \Exception {
-    function __construct($message) {
-        $this->message = $message;
+/**
+ * Class SearchException
+ */
+class SearchException extends Exception {
+    function __construct(string $message) {
+        parent::__construct($message);
     }
 }
 

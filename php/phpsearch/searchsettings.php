@@ -1,5 +1,47 @@
 <?php
-
+/**
+ * Class SearchSettings
+ *
+ * @property bool archivesonly
+ * @property bool debug
+ * @property bool excludehidden
+ * @property bool firstmatch
+ * @property array in_archiveextensions
+ * @property array in_archivefilepatterns
+ * @property array in_dirpatterns
+ * @property array in_extensions
+ * @property array in_filepatterns
+ * @property array in_filetypes
+ * @property array in_linesafterpatterns
+ * @property array in_linesbeforepatterns
+ * @property int linesafter
+ * @property array linesaftertopatterns
+ * @property array linesafteruntilpatterns
+ * @property int linesbefore
+ * @property bool listdirs
+ * @property bool listfiles
+ * @property bool listlines
+ * @property int maxlinelength
+ * @property bool multilinesearch
+ * @property array out_archiveextensions
+ * @property array out_archivefilepatterns
+ * @property array out_dirpatterns
+ * @property array out_extensions
+ * @property array out_filepatterns
+ * @property array out_filetypes
+ * @property array out_linesafterpatterns
+ * @property array out_linesbeforepatterns
+ * @property bool printresults
+ * @property bool printusage
+ * @property bool printversion
+ * @property bool recursive
+ * @property bool searcharchives
+ * @property array searchpatterns
+ * @property string startpath
+ * @property string textfileencoding
+ * @property bool uniquelines
+ * @property bool verbose
+ */
 class SearchSettings {
     public $archivesonly = false;
     public $debug = false;
