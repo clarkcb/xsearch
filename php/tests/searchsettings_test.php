@@ -1,12 +1,15 @@
 <?php
 
-class SearchSettingsTest extends PHPUnit_Framework_TestCase {
-    function __construct() {
+class SearchSettingsTest extends PHPUnit_Framework_TestCase
+{
+    public function __construct()
+    {
         parent::__construct();
         $this->settings = new SearchSettings();
     }
 
-    public function test_default_settings() {
+    public function test_default_settings()
+    {
         $this->assertFalse($this->settings->archivesonly);
         $this->assertFalse($this->settings->debug);
         $this->assertTrue($this->settings->excludehidden);
@@ -28,37 +31,40 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($this->settings->verbose);
     }
 
-    public function test_add_single_extension() {
+    public function test_add_single_extension()
+    {
         $this->settings->add_exts('php', $this->settings->in_extensions);
         $this->assertEquals(count($this->settings->in_extensions), 1);
         $this->assertEquals($this->settings->in_extensions[0], 'php');
     }
 
-    public function test_add_comma_delimited_extensions() {
+    public function test_add_comma_delimited_extensions()
+    {
         $this->settings->add_exts('php,py', $this->settings->in_extensions);
         $this->assertEquals(count($this->settings->in_extensions), 2);
         $this->assertTrue(in_array('php', $this->settings->in_extensions));
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
 
-    public function test_add_extensions_array() {
+    public function test_add_extensions_array()
+    {
         $this->settings->add_exts(['php','py'], $this->settings->in_extensions);
         $this->assertEquals(count($this->settings->in_extensions), 2);
         $this->assertTrue(in_array('php', $this->settings->in_extensions));
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
 
-    public function test_add_patterns_string() {
+    public function test_add_patterns_string()
+    {
         $this->settings->add_patterns('Searcher', $this->settings->searchpatterns);
         $this->assertEquals(count($this->settings->searchpatterns), 1);
         $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
     }
 
-    public function test_add_patterns_array() {
+    public function test_add_patterns_array()
+    {
         $this->settings->add_patterns(['Searcher'], $this->settings->searchpatterns);
         $this->assertEquals(count($this->settings->searchpatterns), 1);
         $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
     }
 }
-
-?>

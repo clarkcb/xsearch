@@ -1,12 +1,15 @@
 <?php
 
-class SearchOptionsTest extends PHPUnit_Framework_TestCase {
-    function __construct() {
+class SearchOptionsTest extends PHPUnit_Framework_TestCase
+{
+    public function __construct()
+    {
         parent::__construct();
         $this->searchoptions = new SearchOptions();
     }
 
-    public function test_no_args() {
+    public function test_no_args()
+    {
         $settings = $this->searchoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
         $this->assertFalse($settings->debug);
@@ -29,7 +32,8 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($settings->verbose);
     }
 
-    public function test_valid_args() {
+    public function test_valid_args()
+    {
         $args = ['-x', 'php,py', '-s', 'Search', '.'];
         $settings = $this->searchoptions->settings_from_args($args);
         $this->assertEquals(count($settings->in_extensions), 2);
@@ -40,14 +44,16 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($settings->startpath, '.');
     }
 
-    public function test_archivesonly_arg() {
+    public function test_archivesonly_arg()
+    {
         $args = ['--archivesonly'];
         $settings = $this->searchoptions->settings_from_args($args);
         $this->assertTrue($settings->archivesonly);
         $this->assertTrue($settings->searcharchives);
     }
 
-    public function test_debug_arg() {
+    public function test_debug_arg()
+    {
         $args = ['--debug'];
         $settings = $this->searchoptions->settings_from_args($args);
         $this->assertTrue($settings->debug);
@@ -57,7 +63,8 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
     /**
     * @expectedException SearchException
     */
-    public function test_missing_arg() {
+    public function test_missing_arg()
+    {
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-D'];
         $settings = $this->searchoptions->settings_from_args($args);
     }
@@ -65,14 +72,16 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase {
     /**
     * @expectedException SearchException
     */
-    public function test_invalid_arg() {
+    public function test_invalid_arg()
+    {
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-Q'];
         $settings = $this->searchoptions->settings_from_args($args);
     }
 
 
 
-    public function test_settings_from_json() {
+    public function test_settings_from_json()
+    {
         $settings = new SearchSettings();
         $json = <<<"END_JSON"
 {
@@ -107,5 +116,3 @@ END_JSON;
         $this->assertTrue(!$settings->excludehidden);
     }
 }
-
-?>

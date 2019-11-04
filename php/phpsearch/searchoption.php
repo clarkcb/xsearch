@@ -9,8 +9,10 @@
  * @property func
  * @property string sortarg
  */
-class SearchOption {
-    function __construct(string $shortarg, string $longarg, string $desc, $func) {
+class SearchOption
+{
+    public function __construct(string $shortarg, string $longarg, string $desc, $func)
+    {
         $this->shortarg = $shortarg;
         $this->longarg = $longarg;
         $this->desc = $desc;
@@ -18,12 +20,11 @@ class SearchOption {
         $this->sortarg = $this->__sortarg();
     }
 
-    private function __sortarg() {
+    private function __sortarg()
+    {
         if ($this->shortarg) {
             return strtolower($this->shortarg) . 'a' . $this->longarg;
         }
         return $this->longarg;
     }
 }
-
-?>

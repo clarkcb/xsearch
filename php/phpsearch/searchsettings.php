@@ -42,7 +42,8 @@
  * @property bool uniquelines
  * @property bool verbose
  */
-class SearchSettings {
+class SearchSettings
+{
     public $archivesonly = false;
     public $debug = false;
     public $excludehidden = true;
@@ -59,7 +60,7 @@ class SearchSettings {
     public $printversion = false;
     public $recursive = true;
     public $searcharchives = false;
-    public $startpath = NULL;
+    public $startpath = null;
     public $textfileencoding = 'utf-8';
     public $uniquelines = false;
     public $verbose = false;
@@ -84,7 +85,8 @@ class SearchSettings {
     public $out_linesbeforepatterns = array();
     public $searchpatterns = array();
 
-    public function add_exts($ext, &$exts) {
+    public function add_exts($ext, &$exts)
+    {
         if (gettype($ext) == 'string') {
             $xs = explode(',', $ext);
             foreach ($xs as $x) {
@@ -97,7 +99,8 @@ class SearchSettings {
         }
     }
 
-    public function add_filetypes($filetype, &$filetypes) {
+    public function add_filetypes($filetype, &$filetypes)
+    {
         if (gettype($filetype) == 'string') {
             $fts = explode(',', $filetype);
             foreach ($fts as $ft) {
@@ -110,7 +113,8 @@ class SearchSettings {
         }
     }
 
-    public function add_patterns($pattern, &$patterns) {
+    public function add_patterns($pattern, &$patterns)
+    {
         if (gettype($pattern) == 'string') {
             $patterns[] = $pattern;
         } elseif (gettype($pattern) == 'array') {
@@ -120,30 +124,35 @@ class SearchSettings {
         }
     }
 
-    public function set_archivesonly(bool $b) {
+    public function set_archivesonly(bool $b)
+    {
         $this->archivesonly = $b;
         if ($b) {
             $this->searcharchives = $b;
         }
     }
 
-    public function set_debug(bool $b) {
+    public function set_debug(bool $b)
+    {
         $this->debug = $b;
         if ($b) {
             $this->verbose = $b;
         }
     }
 
-    private function arr_to_string(array $arr): string {
+    private function arr_to_string(array $arr): string
+    {
         $s = '["' . implode('","', $arr) . '"]';
         return $s;
     }
 
-    private function bool_to_string(bool $b): string {
+    private function bool_to_string(bool $b): string
+    {
         return $b ? 'true' : 'false';
     }
 
-    public function __toString(): string {
+    public function __toString(): string
+    {
         $s = 'SearchSettings(';
         $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);
@@ -188,5 +197,3 @@ class SearchSettings {
         return $s;
     }
 }
-
-?>

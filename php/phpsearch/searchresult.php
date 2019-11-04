@@ -12,11 +12,20 @@
  * @property array lines_before
  * @property array lines_after
  */
-class SearchResult {
+class SearchResult
+{
     const SEPARATOR_LEN = 80;
 
-    function __construct(string $pattern, $file, int $linenum, int $match_start_index,
-        int $match_end_index, string $line, array $lines_before, array $lines_after) {
+    public function __construct(
+        string $pattern,
+        $file,
+        int $linenum,
+        int $match_start_index,
+        int $match_end_index,
+        string $line,
+        array $lines_before,
+        array $lines_after
+    ) {
         $this->pattern = $pattern;
         $this->file = $file;
         $this->linenum = $linenum;
@@ -27,14 +36,16 @@ class SearchResult {
         $this->lines_after = $lines_after;
     }
 
-    public function __toString(): string {
+    public function __toString(): string
+    {
         if ($this->lines_before || $this->lines_after) {
             return $this->multiline_tostring();
         }
         return $this->singleline_tostring();
     }
 
-    private function singleline_tostring(): string {
+    private function singleline_tostring(): string
+    {
         $s = $this->file;
         if ($this->linenum) {
             $s .= ': ' . $this->linenum . ': ';
@@ -47,15 +58,18 @@ class SearchResult {
         return $s;
     }
 
-    private function linenum_padding(): int {
+    private function linenum_padding(): int
+    {
         return strlen(sprintf("%d", $this->linenum + count($this->lines_after)));
     }
 
-    private function trim_newline(string $s) {
+    private function trim_newline(string $s)
+    {
         return rtrim($s, "\r\n");
     }
 
-    private function multiline_tostring(): string {
+    private function multiline_tostring(): string
+    {
         $s = str_repeat('=', self::SEPARATOR_LEN) . "\n";
         $s .= $this->file . ': ' . $this->linenum . ': ';
         $s .= '[' . $this->match_start_index . ':' . $this->match_end_index . ']';
@@ -80,5 +94,3 @@ class SearchResult {
         return $s;
     }
 }
-
-?>

@@ -12,10 +12,10 @@ define('Z_SHAREDPATH', $sharedpath);
 define('Z_FILETYPESPATH', $sharedpath . '/filetypes.xml');
 define('Z_SEARCHOPTIONSPATH', $sharedpath . '/searchoptions.xml');
 
-class Config {
+class Config
+{
     const XSEARCHPATH = Z_XSEARCHPATH;
     const SHAREDPATH = Z_SHAREDPATH;
     const FILETYPESPATH = Z_FILETYPESPATH;
     const SEARCHOPTIONSPATH = Z_SEARCHOPTIONSPATH;
 }
-?>

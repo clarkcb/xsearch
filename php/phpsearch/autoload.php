@@ -7,5 +7,3 @@ spl_autoload_register(function ($class) {
     $include_path = Config::XSEARCHPATH . "/php/phpsearch/";
     include $include_path . str_replace("\\", "/", strtolower($class)) . '.php';
 });
-
-?>

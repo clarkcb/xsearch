@@ -4,7 +4,8 @@
 require_once __DIR__ . '/autoload.php';
 require_once __DIR__ . '/common.php';
 
-function main($argv) {
+function main($argv)
+{
     $searchoptions = new SearchOptions();
     try {
         $settings = $searchoptions->settings_from_args(array_slice($argv, 1));
@@ -40,7 +41,6 @@ function main($argv) {
         if ($settings->listlines) {
             $searcher->print_matching_lines();
         }
-
     } catch (SearchException $e) {
         log_msg("\nERROR: " . $e->getMessage() . "\n");
         $searchoptions->usage();

@@ -3,7 +3,8 @@
 /**
  * Class FileType
  */
-abstract class FileType {
+abstract class FileType
+{
     const Unknown = -1;
     const Archive = 1;
     const Binary  = 2;
@@ -11,4 +12,3 @@ abstract class FileType {
     const Text    = 4;
     const Xml     = 5;
 }
-?>
