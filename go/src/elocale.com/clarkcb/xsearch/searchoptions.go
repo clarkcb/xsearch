@@ -190,6 +190,9 @@ type argAction func(s string, settings *SearchSettings)
 
 func (so *SearchOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
+		"encoding": func(s string, settings *SearchSettings) {
+			settings.TextFileEncoding = s
+		},
 		"in-archiveext": func(s string, settings *SearchSettings) {
 			settings.AddInArchiveExtension(s)
 		},

@@ -6,6 +6,7 @@ func GetSearchOptions() *SearchOptions {
 			&SearchOption{"a", "allmatches", "Capture all matches*"},
 			&SearchOption{"", "archivesonly", "Search only archive files"},
 			&SearchOption{"", "debug", "Set output mode to debug"},
+			&SearchOption{"e", "encoding", "Set the encoding to use with text files (default: \"utf-8\")"},
 			&SearchOption{"", "excludehidden", "Exclude hidden files and directories*"},
 			&SearchOption{"1", "firstmatch", "Capture only the first file+pattern match"},
 			&SearchOption{"h", "help", "Print this usage and exit"},

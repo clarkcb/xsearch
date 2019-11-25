@@ -8,6 +8,7 @@ import (
 
 type SearchSettings struct {
 	StartPath               string
+	TextFileEncoding        string
 	InExtensions            []*string
 	OutExtensions           []*string
 	InDirPatterns           *SearchPatterns
@@ -48,6 +49,7 @@ type SearchSettings struct {
 func GetDefaultSearchSettings() *SearchSettings {
 	return &SearchSettings{
 		"",                  // StartPath
+		"utf-8",             // StartPath
 		[]*string{},         // InExtensions
 		[]*string{},         // OutExtensions
 		NewSearchPatterns(), // InDirPatterns
@@ -244,7 +246,8 @@ func (s *SearchSettings) String() string {
 	buffer.WriteString(fmt.Sprintf(", SearchArchives: %t", s.SearchArchives))
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("SearchPatterns", s.SearchPatterns, &buffer)
-	buffer.WriteString(fmt.Sprintf(", StartPath: %s", s.StartPath))
+	buffer.WriteString(fmt.Sprintf(", StartPath: \"%s\"", s.StartPath))
+	buffer.WriteString(fmt.Sprintf(", TextFileEncoding: \"%s\"", s.TextFileEncoding))
 	buffer.WriteString(fmt.Sprintf(", UniqueLines: %t", s.UniqueLines))
 	buffer.WriteString(fmt.Sprintf(", Verbose: %t", s.Verbose))
 	buffer.WriteString("}")
