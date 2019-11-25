@@ -9,7 +9,7 @@ func TestAddSearchResult(t *testing.T) {
 
 	path := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
 	name := "searchresults_test.go"
-	searchItem := NewSearchItem(&path, &name)
+	searchItem := NewSearchItem(&path, &name, FILETYPE_CODE)
 
 	line := "func TestAddSearchResult(t *testing.T) {"
 

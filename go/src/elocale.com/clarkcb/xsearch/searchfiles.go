@@ -58,6 +58,7 @@ func (si *SearchItems) AddItem(i *SearchItem) {
 		i.Containers,
 		si.getStrPtr(i.Path),
 		si.getStrPtr(i.Name),
+		i.fileType,
 	})
 }
 
@@ -77,13 +78,15 @@ type SearchItem struct {
 	Containers []string
 	Path       *string
 	Name       *string
+	fileType   FileType
 }
 
-func NewSearchItem(path *string, name *string) *SearchItem {
+func NewSearchItem(path *string, name *string, fileType FileType) *SearchItem {
 	return &SearchItem{
 		[]string{},
 		path,
 		name,
+		fileType,
 	}
 }
 

@@ -15,6 +15,8 @@ type SearchSettings struct {
 	OutDirPatterns          *SearchPatterns
 	InFilePatterns          *SearchPatterns
 	OutFilePatterns         *SearchPatterns
+	InFileTypes             []FileType
+	OutFileTypes            []FileType
 	InArchiveExtensions     []*string
 	OutArchiveExtensions    []*string
 	InArchiveFilePatterns   *SearchPatterns
@@ -56,6 +58,8 @@ func GetDefaultSearchSettings() *SearchSettings {
 		NewSearchPatterns(), // OutDirPatterns
 		NewSearchPatterns(), // InFilePatterns
 		NewSearchPatterns(), // OutFilePatterns
+		[]FileType{},        // InArchiveExtensions
+		[]FileType{},        // OutArchiveExtensions
 		[]*string{},         // InArchiveExtensions
 		[]*string{},         // OutArchiveExtensions
 		NewSearchPatterns(), // InArchiveFilePatterns
@@ -120,6 +124,14 @@ func (s *SearchSettings) AddInFilePattern(p string) {
 
 func (s *SearchSettings) AddOutFilePattern(p string) {
 	addPattern(&p, s.OutFilePatterns)
+}
+
+func (s *SearchSettings) AddInFileType(t FileType) {
+	s.InFileTypes = append(s.InFileTypes, t)
+}
+
+func (s *SearchSettings) AddOutFileType(t FileType) {
+	s.OutFileTypes = append(s.OutFileTypes, t)
 }
 
 func (s *SearchSettings) AddInArchiveExtension(xs string) {
@@ -187,7 +199,17 @@ func addStringListToBuffer(name string, list []*string, buffer *bytes.Buffer) {
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
 	elems := []string{}
 	for _, l := range list {
-		elems = append(elems, *l)
+		elems = append(elems, fmt.Sprintf("\"%s\"", *l))
+	}
+	buffer.WriteString(strings.Join(elems, ","))
+	buffer.WriteString("]")
+}
+
+func addFileTypeListToBuffer(name string, list []FileType, buffer *bytes.Buffer) {
+	buffer.WriteString(fmt.Sprintf("%s: [", name))
+	elems := []string{}
+	for _, ft := range list {
+		elems = append(elems, fmt.Sprintf("\"%s\"", getNameForFileType(ft)))
 	}
 	buffer.WriteString(strings.Join(elems, ","))
 	buffer.WriteString("]")
@@ -210,6 +232,8 @@ func (s *SearchSettings) String() string {
 	addStringListToBuffer("InExtensions", s.InExtensions, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("InFilePatterns", s.InFilePatterns, &buffer)
+	buffer.WriteString(", ")
+	addFileTypeListToBuffer("InFileTypes", s.InFileTypes, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("InLinesAfterPatterns", s.InLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")
@@ -235,6 +259,8 @@ func (s *SearchSettings) String() string {
 	addStringListToBuffer("OutExtensions", s.OutExtensions, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("OutFilePatterns", s.OutFilePatterns, &buffer)
+	buffer.WriteString(", ")
+	addFileTypeListToBuffer("OutFileTypes", s.OutFileTypes, &buffer)
 	buffer.WriteString(", ")
 	addSearchPatternsToBuffer("OutLinesAfterPatterns", s.OutLinesAfterPatterns, &buffer)
 	buffer.WriteString(", ")

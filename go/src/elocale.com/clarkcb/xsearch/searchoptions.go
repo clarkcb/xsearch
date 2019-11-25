@@ -222,6 +222,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		"in-filepattern": func(s string, settings *SearchSettings) {
 			settings.AddInFilePattern(s)
 		},
+		"in-filetype": func(s string, settings *SearchSettings) {
+			settings.AddInFileType(getFileTypeForName(s))
+		},
 		"in-linesafterpattern": func(s string, settings *SearchSettings) {
 			settings.AddInLinesAfterPattern(s)
 		},
@@ -272,6 +275,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		},
 		"out-filepattern": func(s string, settings *SearchSettings) {
 			settings.AddOutFilePattern(s)
+		},
+		"out-filetype": func(s string, settings *SearchSettings) {
+			settings.AddOutFileType(getFileTypeForName(s))
 		},
 		"out-linesafterpattern": func(s string, settings *SearchSettings) {
 			settings.AddOutLinesAfterPattern(s)

@@ -20,7 +20,17 @@ func makeSet(slice []string) set {
 			s[v] = true
 		}
 	}
-	return set(s)
+	return s
+}
+
+func makeMap(slice []string) map[string]string {
+	s := make(map[string]string)
+	for _, v := range slice {
+		if v != "" {
+			s[v] = v
+		}
+	}
+	return s
 }
 
 func union(s1, s2 set) set {
@@ -31,12 +41,21 @@ func union(s1, s2 set) set {
 	for k, _ := range s2 {
 		s[k] = true
 	}
-	return set(s)
+	return s
 }
 
 func contains(slice []*string, s string) bool {
 	for _, as := range slice {
 		if s == *as {
+			return true
+		}
+	}
+	return false
+}
+
+func containsFileType(fileTypes []FileType, fileType FileType) bool {
+	for _, ft := range fileTypes {
+		if fileType == ft {
 			return true
 		}
 	}

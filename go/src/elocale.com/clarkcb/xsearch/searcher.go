@@ -176,7 +176,35 @@ func (s *Searcher) isSearchFile(filename *string) bool {
 	if len(s.Settings.OutExtensions) > 0 && contains(s.Settings.OutExtensions, ext) {
 		return false
 	}
+	fileType := s.fileTypes.getFileType(*filename)
+	if len(s.Settings.InFileTypes) > 0 && !containsFileType(s.Settings.InFileTypes, fileType) {
+		return false
+	}
+	if len(s.Settings.OutFileTypes) > 0 && containsFileType(s.Settings.OutFileTypes, fileType) {
+		return false
+	}
 	return filterInBySearchPatterns(filename, s.Settings.InFilePatterns,
+		s.Settings.OutFilePatterns)
+}
+
+func (s *Searcher) isSearchItem(si *SearchItem) bool {
+	if (isHidden(*si.Path) || isHidden(*si.Name)) && s.Settings.ExcludeHidden {
+		return false
+	}
+	ext := getExtension(*si.Name)
+	if len(s.Settings.InExtensions) > 0 && !contains(s.Settings.InExtensions, ext) {
+		return false
+	}
+	if len(s.Settings.OutExtensions) > 0 && contains(s.Settings.OutExtensions, ext) {
+		return false
+	}
+	if len(s.Settings.InFileTypes) > 0 && !containsFileType(s.Settings.InFileTypes, si.fileType) {
+		return false
+	}
+	if len(s.Settings.OutFileTypes) > 0 && containsFileType(s.Settings.OutFileTypes, si.fileType) {
+		return false
+	}
+	return filterInBySearchPatterns(si.Name, s.Settings.InFilePatterns,
 		s.Settings.OutFilePatterns)
 }
 
@@ -651,14 +679,16 @@ func (s *Searcher) searchTarFileReader(r io.Reader, si *SearchItem) {
 		dir, file := filepath.Split(hdr.Name)
 		if !strings.HasSuffix(hdr.Name, "/") {
 			if s.isSearchFile(&file) {
-				newSearchItem := NewSearchItem(&dir, &file)
+				t := s.fileTypes.getFileType(file)
+				newSearchItem := NewSearchItem(&dir, &file, t)
 				for _, c := range si.Containers {
 					newSearchItem.AddContainer(c)
 				}
 				newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
 				s.searchFileReader(tr, newSearchItem)
 			} else if s.isArchiveSearchFile(&file) {
-				newSearchItem := NewSearchItem(&dir, &file)
+				t := s.fileTypes.getFileType(file)
+				newSearchItem := NewSearchItem(&dir, &file, t)
 				for _, c := range si.Containers {
 					newSearchItem.AddContainer(c)
 				}
@@ -691,7 +721,8 @@ func (s *Searcher) searchGzipFileReader(r io.Reader, si *SearchItem) {
 		name := gr.Name
 		if s.isSearchFile(&name) {
 			emptyStr := ""
-			newSearchItem := NewSearchItem(&emptyStr, &name)
+			t := s.fileTypes.getFileType(name)
+			newSearchItem := NewSearchItem(&emptyStr, &name, t)
 			for _, c := range si.Containers {
 				newSearchItem.AddContainer(c)
 			}
@@ -712,7 +743,8 @@ func (s *Searcher) searchBzip2FileReader(r io.Reader, si *SearchItem) {
 		containedFileName := strings.TrimSuffix(*si.Name, ".bz2")
 		if s.isSearchFile(&containedFileName) {
 			emptyStr := ""
-			newSearchItem := NewSearchItem(&emptyStr, &containedFileName)
+			t := s.fileTypes.getFileType(containedFileName)
+			newSearchItem := NewSearchItem(&emptyStr, &containedFileName, t)
 			for _, c := range si.Containers {
 				newSearchItem.AddContainer(c)
 			}
@@ -746,7 +778,8 @@ func (s *Searcher) searchZipFileReader(r io.Reader, si *SearchItem) {
 				s.errChan <- err
 				return
 			}
-			newSearchItem := NewSearchItem(&dir, &file)
+			t := s.fileTypes.getFileType(file)
+			newSearchItem := NewSearchItem(&dir, &file, t)
 			for _, c := range si.Containers {
 				newSearchItem.AddContainer(c)
 			}
@@ -775,8 +808,8 @@ func (s *Searcher) searchArchiveFileReader(r io.Reader, si *SearchItem) {
 }
 
 func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
-	switch s.fileTypes.getFileType(*si.Name) {
-	case FILETYPE_TEXT:
+	switch si.fileType {
+	case FILETYPE_CODE, FILETYPE_XML, FILETYPE_TEXT:
 		s.searchTextFileReader(r, si)
 	case FILETYPE_BINARY:
 		s.searchBinaryFileReader(r, si)
@@ -794,7 +827,7 @@ func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
 }
 
 func (s *Searcher) searchSearchItem(si *SearchItem) {
-	if !s.fileTypes.IsSearchableFile(*si.Name) {
+	if !s.fileTypes.IsSearchableItem(si) {
 		if contains(s.Settings.InExtensions, getExtension(*si.Name)) {
 			if s.Settings.Debug {
 				log(fmt.Sprintf("File made searchable by passing in-ext: %s",
@@ -875,7 +908,8 @@ func (s *Searcher) processSearchChannels() {
 // the public-facing method takes a string and converts to a SearchItem type
 func (s *Searcher) SearchFile(fp string) {
 	dir, file := filepath.Split(fp)
-	searchItem := NewSearchItem(&dir, &file)
+	t := s.fileTypes.getFileType(file)
+	searchItem := NewSearchItem(&dir, &file, t)
 	s.searchSearchItem(searchItem)
 }
 
