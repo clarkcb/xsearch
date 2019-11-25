@@ -53,7 +53,8 @@
   (doseq [o OPTIONS] (print-option o)))
 
 (def arg-action-map
-  { :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
+  { :encoding (fn [settings s] (assoc settings :textfileencoding s))
+    :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
     :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archivefilepatterns))
     :in-dirpattern (fn [settings s] (add-pattern settings s :in-dirpatterns))
     :in-ext (fn [settings s] (add-extension settings s :in-extensions))

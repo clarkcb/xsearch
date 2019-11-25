@@ -51,49 +51,51 @@
     searcharchives
     searchpatterns
     startpath
+    textfileencoding
     uniquelines
     verbose
   ])
 
 (def DEFAULT-SETTINGS (->SearchSettings
-    false ; archivesonly
-    false ; debug
-    true  ; excludehidden
-    false ; firstmatch
-    #{}   ; in-archiveextensions
-    #{}   ; in-archivefilepatterns
-    #{}   ; in-dirpatterns
-    #{}   ; in-extensions
-    #{}   ; in-filepatterns
-    #{}   ; in-filetypes
-    #{}   ; in-linesafterpatterns
-    #{}   ; in-linesbeforepatterns
-    0     ; linesafter
-    #{}   ; linesaftertopatterns
-    #{}   ; linesafteruntilpatterns
-    0     ; linesbefore
-    false ; listdirs
-    false ; listfiles
-    false ; listlines
-    150   ; maxlinelength
-    false ; multilinesearch
-    #{}   ; out-archiveextensions
-    #{}   ; out-archivefilepatterns
-    #{}   ; out-dirpatterns
-    #{}   ; out-extensions
-    #{}   ; out-filepatterns
-    #{}   ; out-filetypes
-    #{}   ; out-linesafterpatterns
-    #{}   ; out-linesbeforepatterns
-    true  ; printresults
-    false ; printusage
-    false ; printversion
-    true  ; recursive
-    false ; searcharchives
-    #{}   ; searchpatterns
-    nil   ; startpath
-    false ; uniquelines
-    false ; verbose
+    false   ; archivesonly
+    false   ; debug
+    true    ; excludehidden
+    false   ; firstmatch
+    #{}     ; in-archiveextensions
+    #{}     ; in-archivefilepatterns
+    #{}     ; in-dirpatterns
+    #{}     ; in-extensions
+    #{}     ; in-filepatterns
+    #{}     ; in-filetypes
+    #{}     ; in-linesafterpatterns
+    #{}     ; in-linesbeforepatterns
+    0       ; linesafter
+    #{}     ; linesaftertopatterns
+    #{}     ; linesafteruntilpatterns
+    0       ; linesbefore
+    false   ; listdirs
+    false   ; listfiles
+    false   ; listlines
+    150     ; maxlinelength
+    false   ; multilinesearch
+    #{}     ; out-archiveextensions
+    #{}     ; out-archivefilepatterns
+    #{}     ; out-dirpatterns
+    #{}     ; out-extensions
+    #{}     ; out-filepatterns
+    #{}     ; out-filetypes
+    #{}     ; out-linesafterpatterns
+    #{}     ; out-linesbeforepatterns
+    true    ; printresults
+    false   ; printusage
+    false   ; printversion
+    true    ; recursive
+    false   ; searcharchives
+    #{}     ; searchpatterns
+    nil     ; startpath
+    "utf-8" ; textfileencoding
+    false   ; uniquelines
+    false   ; verbose
   ))
 
 (defn add-element [x coll]

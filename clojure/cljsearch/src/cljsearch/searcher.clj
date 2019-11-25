@@ -86,7 +86,22 @@
         tests [(fn [ss] (if (not startpath) "Startpath not defined" nil))
                (fn [ss] (if (or (not startdir) (not (.exists startdir))) "Startpath not found" nil))
                (fn [ss] (if (and startdir (not (.canRead startdir))) "Startpath not readable" nil))
-               (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns defined" nil))]]
+               (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns defined" nil))
+               (fn [ss]
+                 (if
+                   (not
+                     (=
+                       (try
+                         (java.nio.charset.Charset/forName (:textfileencoding ss))
+                         (catch IllegalArgumentException e nil)
+                       )
+                       nil
+                     )
+                   ) nil (format "Invalid encoding: %s" (:textfileencoding ss))
+                 )
+               )
+              ]
+       ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
 (defn get-search-dirs [settings]
@@ -196,7 +211,7 @@
 (defn search-binary-file [f settings]
   (if (:verbose settings)
     (log-msg (format "Searching binary file %s" f)))
-  (let [contents (slurp f)
+  (let [contents (slurp f :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
         search-results (search-binary-string contents settings)
         with-file-results (map #(assoc-in % [:file] f) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
@@ -302,7 +317,7 @@
     (map #(search-multiline-string-for-pattern s % settings) (:searchpatterns settings))))
 
 (defn search-text-file-contents [f settings]
-  (let [contents (slurp f)
+  (let [contents (slurp f :encoding (:textfileencoding settings))
         search-results (search-multiline-string contents settings)
         with-file-results (map #(assoc-in % [:file] f) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
@@ -372,7 +387,7 @@
         results))))
 
 (defn search-text-file-lines [f settings]
-  (with-open [rdr (reader f)]
+  (with-open [rdr (reader f :encoding (:textfileencoding settings))]
     (let [search-results (search-lines (line-seq rdr) settings)
           with-file-results (map #(assoc-in % [:file] f) search-results)]
       (doseq [r with-file-results] (save-search-result r)))))
