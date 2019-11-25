@@ -93,13 +93,12 @@
                      (=
                        (try
                          (java.nio.charset.Charset/forName (:textfileencoding ss))
-                         (catch IllegalArgumentException e nil)
-                       )
-                       nil
-                     )
-                   ) nil (format "Invalid encoding: %s" (:textfileencoding ss))
-                 )
-               )
+                         (catch IllegalArgumentException e nil))
+                       nil)
+                   ) nil (format "Invalid encoding: %s" (:textfileencoding ss))))
+               (fn [ss] (if (< (:linesafter ss) 0) "Invalid linesafter" nil))
+               (fn [ss] (if (< (:linesbefore ss) 0) "Invalid linesbefore" nil))
+               (fn [ss] (if (< (:maxlinelength ss) 0) "Invalid maxlinelength" nil))
               ]
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
