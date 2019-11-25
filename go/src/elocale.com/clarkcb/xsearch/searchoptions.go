@@ -21,8 +21,24 @@ type SearchOptions struct {
 	SearchOptions []*SearchOption
 }
 
+func SearchOptionsFromJson() (*SearchOptions, error) {
+	data, err := ioutil.ReadFile(SEARCHOPTIONSPATH)
+	if err != nil {
+		return &SearchOptions{}, err
+	}
+	var searchOptions SearchOptions
+	if err = json.Unmarshal(data, &searchOptions); err != nil {
+		return &SearchOptions{}, err
+	}
+	return &searchOptions, nil
+}
+
 func NewSearchOptions() *SearchOptions {
-	return GetSearchOptions()
+	searchOptions, err := SearchOptionsFromJson()
+	if err != nil {
+		// do something
+	}
+	return searchOptions
 }
 
 func (so *SearchOptions) SettingsFromFile(filepath string, settings *SearchSettings) error {
@@ -36,26 +52,24 @@ func (so *SearchOptions) SettingsFromFile(filepath string, settings *SearchSetti
 func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings) error {
 	argActionMap := so.getArgActionMap()
 	boolFlagActionMap := so.getBoolFlagActionMap()
-	type FileSettings map[string]interface{}
-	var fileSettings FileSettings
-	if err := json.Unmarshal(data, &fileSettings); err != nil {
+	type JsonSettings map[string]interface{}
+	var jsonSettings JsonSettings
+	if err := json.Unmarshal(data, &jsonSettings); err != nil {
 		return err
 	}
-	for k := range fileSettings {
+	for k := range jsonSettings {
 		if af, isAction := argActionMap[k]; isAction {
-			if v, hasVal := fileSettings[k]; hasVal {
-				switch reflect.TypeOf(v).Kind() {
-				case reflect.String:
-					af(v.(string), settings)
-				case reflect.Int32, reflect.Int64:
-					s := strconv.Itoa(v.(int))
-					af(s, settings)
-				case reflect.Float32, reflect.Float64:
-					s := fmt.Sprintf("%v", v.(float64))
-					af(s, settings)
-				case reflect.Slice:
-					for i := range v.([]interface{}) {
-						af(v.([]interface{})[i].(string), settings)
+			if v, hasVal := jsonSettings[k]; hasVal {
+				switch v := v.(type) {
+				case string:
+					af(v, settings)
+				case int:
+					af(strconv.Itoa(v), settings)
+				case float32, float64:
+					af(fmt.Sprintf("%v", v.(float64)), settings)
+				case []interface{}:
+					for i := range v {
+						af(v[i].(string), settings)
 					}
 				default:
 					log(fmt.Sprintf("k: %v", k))
@@ -68,13 +82,13 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 				log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if ff, isFlag := boolFlagActionMap[k]; isFlag {
-			if v, hasVal := fileSettings[k]; hasVal {
+			if v, hasVal := jsonSettings[k]; hasVal {
 				ff(v.(bool), settings)
 			} else {
 				log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if k == "startpath" {
-			if sp, hasStartPath := fileSettings[k]; hasStartPath {
+			if sp, hasStartPath := jsonSettings[k]; hasStartPath {
 				settings.StartPath = sp.(string)
 			} else {
 				log("startpath value is invalid")

@@ -13,7 +13,7 @@ func TestGetFileType(t *testing.T) {
 		"nonsense.zippitydooda": FILETYPE_UNKNOWN,
 	}
 
-	fileTypes := GetFileTypes()
+	fileTypes := FileTypesFromJson()
 
 	for k, v := range expected {
 		if ft := fileTypes.getFileType(k); ft != v {
@@ -33,7 +33,7 @@ func TestIsSearchableFile(t *testing.T) {
 		"nonsense.zippitydooda": false,
 	}
 
-	fileTypes := GetFileTypes()
+	fileTypes := FileTypesFromJson()
 
 	for k, v := range expected {
 		if is := fileTypes.IsSearchableFile(k); is != v {

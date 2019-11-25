@@ -1,5 +1,11 @@
 package xsearch
 
+import (
+	"encoding/json"
+	"io/ioutil"
+	"strings"
+)
+
 type FileType int
 
 const (
@@ -15,7 +21,33 @@ type FileTypes struct {
 	fileTypeMap map[string]set
 }
 
+// used for unmarshalling
+type JsonFileType struct {
+	Type       string
+	Extensions []string
+}
+
+type JsonFileTypes struct {
+	FileTypes []*JsonFileType
+}
+
+func FileTypesFromJson() *FileTypes {
+	var fileTypes FileTypes
+	fileTypes.fileTypeMap = make(map[string]set)
+	data, err := ioutil.ReadFile(FILETYPESPATH)
+	if err != nil {
+		return &fileTypes
 	}
+	var jsonFileTypes JsonFileTypes
+	if err = json.Unmarshal(data, &jsonFileTypes); err != nil {
+		return &fileTypes
+	}
+	for _, ft := range jsonFileTypes.FileTypes {
+		fileTypes.fileTypeMap[ft.Type] = makeSet(ft.Extensions)
+	}
+	return &fileTypes
+}
+
 func (f *FileTypes) getFileType(file string) FileType {
 	if f.IsCodeFile(file) {
 		return FILETYPE_CODE
