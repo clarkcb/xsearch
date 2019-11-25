@@ -158,11 +158,11 @@
         (not (:archivesonly settings))
         (is-search-file? f settings)))))
 
-(defn get-search-files-for-directory [d settings]
-  (vec (filter #(filter-file? % settings) (get-files-in-directory d))))
-
-(defn get-search-files [searchdirs settings]
-  (apply concat (map #(get-search-files-for-directory % settings) searchdirs)))
+(defn get-search-files [settings]
+  (let [startdir (file (:startpath settings))]
+    (if (:recursive settings)
+      (vec (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq startdir))))
+      (vec (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles startdir)))))))
 
 (defn search-archive-file [f settings]
   (if (:verbose settings)
@@ -193,13 +193,6 @@
             (concat [result] (search-binary-string-for-pattern b m
               endmatchindex settings)))))
       [])))
-
-(defn search-binary-string-for-pattern-old [b p settings]
-  (if (:debug settings)
-    (log-msg (format "Searching binary string for pattern %s" p)))
-  (if (re-find p b)
-    [(->SearchResult p nil 0 0 0 "" [] [])]
-    []))
 
 (defn search-binary-string [b settings]
   (if (:debug settings)
@@ -422,19 +415,13 @@
       (log-msg "")))
   (doseq [f searchfiles] (search-file f settings)))
 
-(defn search-dirs [searchdirs settings]
-  (if (:verbose settings)
-    (do
-      (log-msg (format "\nDirectories to be searched (%d):" (count searchdirs)))
-      (doseq [d searchdirs] (log-msg (.getPath d)))))
-  (search-files (get-search-files searchdirs settings) settings))
-
 (defn search [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
-      (let [startfile (file (:startpath settings))]
-        (if (.isFile startfile)
-          (search-file startfile settings)
-          (search-dirs (get-search-dirs settings) settings))
-        []))
+      (let [startfile (file (:startpath settings))
+            searchfiles (if
+                          (.isFile startfile) [startfile]
+                          (get-search-files settings))]
+        (search-files searchfiles settings))
+        [])
       errs))
