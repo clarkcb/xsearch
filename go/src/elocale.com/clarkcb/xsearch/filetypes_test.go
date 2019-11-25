@@ -5,6 +5,8 @@ import "testing"
 func TestGetFileType(t *testing.T) {
 	expected := map[string]FileType{
 		"hello.txt":             FILETYPE_TEXT,
+		"filetypes.go":          FILETYPE_CODE,
+		"markup.xml":            FILETYPE_XML,
 		"lib.a":                 FILETYPE_BINARY,
 		"noext":                 FILETYPE_BINARY,
 		"archive.tar.gz":        FILETYPE_ARCHIVE,
@@ -23,6 +25,8 @@ func TestGetFileType(t *testing.T) {
 func TestIsSearchableFile(t *testing.T) {
 	expected := map[string]bool{
 		"hello.txt":             true,
+		"filetypes.go":          true,
+		"markup.xml":            true,
 		"lib.a":                 true,
 		"noext":                 true,
 		"archive.tar.gz":        true,
