@@ -144,14 +144,14 @@ build_go () {
     export PATH=$GOPATH/bin:$PATH
 
     # build the code to generate the dynamic code for gosearch
-    log "Building gengosearchcode"
-    echo "go install elocale.com/clarkcb/gosearchcodegen/gengosearchcode"
-    go install elocale.com/clarkcb/gosearchcodegen/gengosearchcode
+    #log "Building gengosearchcode"
+    #echo "go install elocale.com/clarkcb/gosearchcodegen/gengosearchcode"
+    #go install elocale.com/clarkcb/gosearchcodegen/gengosearchcode
 
     # run it to generate the dynamic gosearch code
-    log "Running gengosearchcode"
-    log "gengosearchcode"
-    gengosearchcode
+    #log "Running gengosearchcode"
+    #log "gengosearchcode"
+    #gengosearchcode
 
     # go fmt the gosearch source (for auto-generated code)
     log "Auto-formatting gosearch"
@@ -161,7 +161,7 @@ build_go () {
     # now build gosearch
     log "Building gosearch"
     log "go install elocale.com/clarkcb/xsearch/gosearch"
-    go install elocale.com/clarkcb/xsearch/gosearch
+    go install elocale.com/clarkcb/xsearch/cmd/gosearch
 }
 
 build_haskell () {

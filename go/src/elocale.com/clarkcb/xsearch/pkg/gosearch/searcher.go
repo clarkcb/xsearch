@@ -19,7 +19,7 @@ The two main methods of Searcher are:
 * SearchFile - this performs a search of a single file. Its use is less common
                but provided for cases where this is needed.
 */
-package xsearch
+package gosearch
 
 import (
 	"archive/tar"

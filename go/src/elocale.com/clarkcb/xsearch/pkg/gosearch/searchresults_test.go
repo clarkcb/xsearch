@@ -1,8 +1,10 @@
-package xsearch
+package gosearch
 
-import "fmt"
-import "regexp"
-import "testing"
+import (
+	"fmt"
+	"regexp"
+	"testing"
+)
 
 func TestAddSearchResult(t *testing.T) {
 	searchResults := NewSearchResults()

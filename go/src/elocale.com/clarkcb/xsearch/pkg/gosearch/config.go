@@ -1,4 +1,4 @@
-package xsearch
+package gosearch
 
 const XSEARCHPATH = "/Users/cary/src/xsearch"
 const SHAREDPATH = XSEARCHPATH + "/shared"

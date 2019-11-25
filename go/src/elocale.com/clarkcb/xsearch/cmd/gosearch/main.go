@@ -1,13 +1,14 @@
 package main
 
 import (
-	"elocale.com/clarkcb/xsearch"
 	"fmt"
 	"os"
+
+	"elocale.com/clarkcb/xsearch/pkg/gosearch"
 )
 
 func main() {
-	searchOptions := xsearch.NewSearchOptions()
+	searchOptions := gosearch.NewSearchOptions()
 	settings, err := searchOptions.SearchSettingsFromArgs(os.Args[1:])
 	if err != nil {
 		fmt.Printf("\nERROR: %s\n", err)
@@ -22,7 +23,7 @@ func main() {
 		fmt.Printf("settings: %s\n", settings.String())
 	}
 
-	searcher := xsearch.NewSearcher(settings)
+	searcher := gosearch.NewSearcher(settings)
 	err = searcher.Search()
 	if err != nil {
 		fmt.Printf("\nERROR: %s\n", err)

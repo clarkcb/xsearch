@@ -1,4 +1,4 @@
-package xsearch
+package gosearch
 
 func GetSearchOptions() *SearchOptions {
 	return &SearchOptions{

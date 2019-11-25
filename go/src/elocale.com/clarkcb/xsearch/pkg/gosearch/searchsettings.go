@@ -1,4 +1,4 @@
-package xsearch
+package gosearch
 
 import (
 	"bytes"

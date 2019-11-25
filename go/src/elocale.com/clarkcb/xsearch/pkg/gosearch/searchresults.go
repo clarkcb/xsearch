@@ -1,12 +1,13 @@
-package xsearch
+package gosearch
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/pmylund/sortutil"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/pmylund/sortutil"
 )
 
 type SearchResults struct {
