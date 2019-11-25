@@ -35,32 +35,35 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 )
 
 type Searcher struct {
-	Settings      *SearchSettings
-	fileTypes     *FileTypes
-	searchDirs    []*string
-	searchItems   *SearchItems
-	addItemChan   chan *SearchItem
-	doneChan      chan *string
-	errChan       chan error
-	searchResults *SearchResults
-	resultChan    chan *SearchResult
+	Settings         *SearchSettings
+	fileTypes        *FileTypes
+	searchDirs       []*string
+	searchItems      *SearchItems
+	errors           []error
+	addItemChan      chan *SearchItem
+	addItemsDoneChan chan bool
+	doneChan         chan *string
+	errChan          chan error
+	searchResults    *SearchResults
+	resultChan       chan *SearchResult
 }
 
 func NewSearcher(settings *SearchSettings) *Searcher {
 	return &Searcher{
-		settings,                  // Settings
-		GetFileTypes(),            // fileTypes
-		[]*string{},               // searchDirs
-		NewSearchItems(),          // searchItems
-		make(chan *SearchItem, 1), // addItemChan
-		make(chan *string, 10),    // doneChan
-		make(chan error, 1),       // errChan
-		NewSearchResults(),        // searchResults
-		make(chan *SearchResult),  // resultChan
+		settings,                 // Settings
+		FileTypesFromJson(),      // fileTypes
+		[]*string{},              // searchDirs
+		NewSearchItems(),         // searchItems
+		[]error{},                // errors
+		make(chan *SearchItem),   // addItemChan
+		make(chan bool),          // addItemsDoneChan
+		make(chan *string, 10),   // doneChan
+		make(chan error, 1),      // errChan
+		NewSearchResults(),       // searchResults
+		make(chan *SearchResult), // resultChan
 	}
 }
 
@@ -72,15 +75,39 @@ func (s *Searcher) GetSearchResults() *SearchResults {
 	return s.searchResults
 }
 
-func (s *Searcher) validSettings() error {
+func (s *Searcher) validateSettings() error {
 	if s.Settings.StartPath == "" {
 		return fmt.Errorf("Startpath not defined")
 	}
-	if _, err := os.Stat(s.Settings.StartPath); err != nil {
-		return fmt.Errorf("Startpath not found")
+	fi, err := os.Stat(s.Settings.StartPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("Startpath not found")
+		}
+		if os.IsPermission(err) {
+			return fmt.Errorf("Startpath not readable")
+		}
+		return err
+	}
+	if fi.IsDir() && !s.isSearchDir(&s.Settings.StartPath) {
+		return fmt.Errorf("Startpath does not match search settings")
+	} else if fi.Mode().IsRegular() {
+		dir, file := filepath.Split(s.Settings.StartPath)
+		if !s.isSearchDir(&dir) || !s.isSearchFile(&file) {
+			return fmt.Errorf("Startpath does not match search settings")
+		}
 	}
 	if s.Settings.SearchPatterns.IsEmpty() {
 		return fmt.Errorf("No search patterns defined")
+	}
+	if s.Settings.LinesAfter < 0 {
+		return fmt.Errorf("Invalid linesafter")
+	}
+	if s.Settings.LinesBefore < 0 {
+		return fmt.Errorf("Invalid linesbefore")
+	}
+	if strings.ToLower(s.Settings.TextFileEncoding) != "utf-8" {
+		return fmt.Errorf("Invalid or unsupported text file encoding")
 	}
 	return nil
 }
@@ -104,49 +131,6 @@ func (s *Searcher) isSearchDir(d *string) bool {
 		s.Settings.OutDirPatterns)
 }
 
-func (s *Searcher) addSearchDir(d *string) {
-	s.searchDirs = append(s.searchDirs, d)
-}
-
-func (s *Searcher) checkAddSearchDir(d *string) error {
-	if s.isSearchDir(d) {
-		s.addSearchDir(d)
-	}
-	return nil
-}
-
-// this method passed to the filepath.Walk method, it must have this signature
-func (s *Searcher) checkAddSearchWalkDir(d string, fi os.FileInfo, err error) error {
-	if fi.IsDir() {
-		return s.checkAddSearchDir(&d)
-	}
-	return nil
-}
-
-func (s *Searcher) setSearchDirs() error {
-	if s.Settings.Verbose {
-		log("\nBuilding directory search list")
-	}
-	startPath := normalizePath(s.Settings.StartPath)
-	fi, err := os.Stat(startPath)
-	if err != nil {
-		return err
-	}
-	if fi.IsDir() {
-		if s.Settings.Recursive {
-			return filepath.Walk(startPath, s.checkAddSearchWalkDir)
-		}
-		return s.checkAddSearchDir(&startPath)
-	}
-	dir, _ := filepath.Split(startPath)
-	if dir == "" {
-		dir = "."
-	} else {
-		dir = normalizePath(dir)
-	}
-	return s.checkAddSearchDir(&dir)
-}
-
 func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 	if s.fileTypes.IsArchiveFile(*filename) {
 		if isHidden(*filename) && s.Settings.ExcludeHidden {
@@ -160,6 +144,24 @@ func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 			return false
 		}
 		return filterInBySearchPatterns(filename, s.Settings.InArchiveFilePatterns,
+			s.Settings.OutArchiveFilePatterns)
+	}
+	return false
+}
+
+func (s *Searcher) isArchiveSearchItem(si *SearchItem) bool {
+	if si.fileType == FILETYPE_ARCHIVE {
+		if (isHidden(*si.Path) || isHidden(*si.Name)) && s.Settings.ExcludeHidden {
+			return false
+		}
+		ext := getExtension(*si.Name)
+		if len(s.Settings.InArchiveExtensions) > 0 && !contains(s.Settings.InArchiveExtensions, ext) {
+			return false
+		}
+		if len(s.Settings.OutArchiveExtensions) > 0 && contains(s.Settings.OutArchiveExtensions, ext) {
+			return false
+		}
+		return filterInBySearchPatterns(si.Name, s.Settings.InArchiveFilePatterns,
 			s.Settings.OutArchiveFilePatterns)
 	}
 	return false
@@ -215,59 +217,72 @@ func (s *Searcher) filterFile(f *string) bool {
 	return !s.Settings.ArchivesOnly && s.isSearchFile(f)
 }
 
-func (s *Searcher) setSearchFilesForDirectory(d *string) {
-	fileInfos, err := ioutil.ReadDir(*d)
-	if err != nil {
-		if s.Settings.Debug {
-			log(fmt.Sprintf("err in setSearchFilesForDirectory: %s\n", err.Error()))
-		}
-		s.errChan <- err
-		return
+func (s *Searcher) filterSearchItem(si *SearchItem) bool {
+	if si.fileType == FILETYPE_ARCHIVE {
+		return s.Settings.SearchArchives && s.isArchiveSearchItem(si)
 	}
-	for _, fi := range fileInfos {
-		if !fi.IsDir() {
-			name := fi.Name()
-			if s.filterFile(&name) {
-				s.addItemChan <- NewSearchItem(d, &name)
-			}
-		}
+	return !s.Settings.ArchivesOnly && s.isSearchItem(si)
+}
+
+func (s *Searcher) fileToSearchItem(f string) *SearchItem {
+	dir, file := filepath.Split(f)
+	if dir == "" {
+		dir = "."
+	} else {
+		dir = normalizePath(dir)
 	}
-	s.doneChan <- d
+	t := s.fileTypes.getFileType(file)
+	return NewSearchItem(&dir, &file, t)
+}
+
+func (s *Searcher) checkAddSearchFile(f string) {
+	searchItem := s.fileToSearchItem(f)
+	if s.filterSearchItem(searchItem) {
+		s.addItemChan <- searchItem
+	}
+}
+
+// this method passed to the filepath.Walk method, it must have this signature
+func (s *Searcher) checkAddSearchWalkFile(f string, fi os.FileInfo, err error) error {
+	if fi.Mode().IsRegular() {
+		s.checkAddSearchFile(f)
+	}
+	return nil
 }
 
 func (s *Searcher) setSearchFiles() error {
 	if s.Settings.Verbose {
 		log("\nBuilding file search list")
 	}
-	// check if StartPath is directory or file
-	fi, err := os.Stat(s.Settings.StartPath)
+
+	startPath := normalizePath(s.Settings.StartPath)
+	fi, err := os.Stat(startPath)
 	if err != nil {
 		return err
 	}
 	if fi.IsDir() {
-		// gather search files concurrently for each search dir
-		for _, d := range s.searchDirs {
-			go func(dir *string) {
-				s.setSearchFilesForDirectory(dir)
-			}(d)
-		}
-	} else if fi.Mode().IsRegular() {
-		go func() {
-			dir, file := filepath.Split(s.Settings.StartPath)
-			if s.filterFile(&file) {
-				if dir == "" {
-					dir = "."
-				} else {
-					dir = normalizePath(dir)
-				}
-				s.addItemChan <- NewSearchItem(&dir, &file)
-				time.Sleep(10 * time.Millisecond)
-				s.doneChan <- &dir
-			} else {
-				s.errChan <- fmt.Errorf("Startpath does not match search settings")
+		if s.Settings.Recursive {
+			err := filepath.Walk(startPath, s.checkAddSearchWalkFile)
+			if err != nil {
+				return err
 			}
-		}()
+		} else {
+			files, err := ioutil.ReadDir(startPath)
+			if err != nil {
+				return err
+			}
+
+			for _, file := range files {
+				s.checkAddSearchFile(file.Name())
+			}
+		}
+
+	} else if fi.Mode().IsRegular() {
+		s.checkAddSearchFile(s.Settings.StartPath)
 	}
+
+	s.addItemsDoneChan <- true
+
 	return nil
 }
 
@@ -312,7 +327,7 @@ func getNewLineCount(bytes []byte) int {
 }
 
 func newlineIndices(bytes []byte) []int {
-	newlineidxs := []int{}
+	var newlineidxs []int
 	for i, b := range bytes {
 		if b == '\n' {
 			newlineidxs = append(newlineidxs, i)
@@ -344,7 +359,7 @@ func lineStartEndIndicesForIndex(idx int, bytes []byte) (int, int) {
 func splitIntoLines(bytes []byte) []*string {
 	newlineidxs := newlineIndices(bytes)
 	emptyStr := ""
-	lines := []*string{}
+	var lines []*string
 	startidx, endidx := 0, 0
 	for _, n := range newlineidxs {
 		endidx = n
@@ -364,7 +379,7 @@ func splitIntoLines(bytes []byte) []*string {
 }
 
 func linesBeforeIndex(bytes []byte, idx int, lineCount int) []*string {
-	lines := []*string{}
+	var lines []*string
 	if idx < 1 {
 		return lines
 	}
@@ -382,7 +397,7 @@ func linesBeforeIndex(bytes []byte, idx int, lineCount int) []*string {
 }
 
 func linesAfterIndex(bytes []byte, idx int, lineCount int) []*string {
-	lines := []*string{}
+	var lines []*string
 	newlines := 0
 	afteridx := idx
 	for afteridx < len(bytes)-1 && newlines < lineCount {
@@ -415,9 +430,9 @@ func (s *Searcher) SearchMultiLineString(str string) []*SearchResult {
 }
 
 func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
-	results := []*SearchResult{}
-	linesBefore := []*string{}
-	linesAfter := []*string{}
+	var results []*SearchResult
+	var linesBefore []*string
+	var linesAfter []*string
 	findLimit := -1
 	if s.Settings.FirstMatch {
 		findLimit = 1
@@ -482,11 +497,11 @@ func (s *Searcher) searchTextFileReaderLines(r io.Reader, si *SearchItem) {
 }
 
 func (s *Searcher) SearchTextReaderLines(r io.Reader) []*SearchResult {
-	results := []*SearchResult{}
+	var results []*SearchResult
 	scanner := bufio.NewScanner(r)
 	linenum := 0
-	linesBefore := []*string{}
-	linesAfter := []*string{}
+	var linesBefore []*string
+	var linesAfter []*string
 	linesAfterIdx := 0
 	patternMatches := map[*regexp.Regexp]int{}
 ReadLines:
@@ -871,9 +886,9 @@ func (s *Searcher) doBatchFileSearch(searchItems []*SearchItem) {
 	wg.Wait()
 }
 
-func (s *Searcher) doFileSearch() {
+func (s *Searcher) doFileSearch() error {
 	const batchSize = 240 // max files to search at one time
-	searchItems := []*SearchItem{}
+	var searchItems []*SearchItem
 	sii := s.searchItems.Iterator()
 	for sii.Next() {
 		searchItems = append(searchItems, sii.Value())
@@ -882,25 +897,30 @@ func (s *Searcher) doFileSearch() {
 	go s.processSearchChannels()
 
 	// batch search (to avoid too many files open at once)
-	for len(searchItems) > batchSize {
-		nextSearchItems := searchItems[:batchSize]
-		s.doBatchFileSearch(nextSearchItems)
+	for len(searchItems) > batchSize && len(s.errors) == 0 {
+		s.doBatchFileSearch(searchItems[:batchSize])
 		searchItems = searchItems[batchSize:]
 	}
-	s.doBatchFileSearch(searchItems)
+	if len(searchItems) > 0 && len(s.errors) == 0 {
+		s.doBatchFileSearch(searchItems)
+	}
+	if len(s.errors) > 0 {
+		return s.errors[0]
+	}
+	return nil
 }
 
 func (s *Searcher) processSearchChannels() {
 	//get the results from the results channel
 	doneFiles := map[string]bool{}
-	for len(doneFiles) < s.searchItems.Count() {
+	for len(doneFiles) < s.searchItems.Count() && len(s.errors) == 0 {
 		select {
 		case r := <-s.resultChan:
 			s.addSearchResult(r)
 		case f := <-s.doneChan:
 			doneFiles[*f] = true
 		case e := <-s.errChan:
-			panic(e)
+			s.errors = append(s.errors, e)
 		}
 	}
 }
@@ -914,57 +934,70 @@ func (s *Searcher) SearchFile(fp string) {
 }
 
 //get the search items (files) from the file channel
-func (s *Searcher) getSearchItems() {
-	doneDirs := map[string]bool{}
-	for len(doneDirs) < len(s.searchDirs) {
+func (s *Searcher) processSearchItemChannels() {
+	addItemsDone := false
+	for !addItemsDone {
 		select {
+		case b := <-s.addItemsDoneChan:
+			addItemsDone = b
 		case i := <-s.addItemChan:
 			s.searchItems.AddItem(i)
-		case d := <-s.doneChan:
-			doneDirs[*d] = true
-		case e := <-s.errChan:
-			panic(e)
 		}
 	}
 }
 
+func (s *Searcher) printToBeSearched() {
+	dirs := []string{}
+	files := []string{}
+
+	sfi := s.searchItems.Iterator()
+	for sfi.Next() {
+		dirs = append(dirs, *sfi.Value().Path)
+		files = append(files, sfi.Value().String())
+	}
+
+	dirMap := makeMap(dirs)
+	dirs = getSortedKeys(dirMap)
+
+	log(fmt.Sprintf("\nDirectories to be searched (%d):", len(dirs)))
+	for _, d := range dirs {
+		log(d)
+	}
+
+	fileMap := makeMap(files)
+	files = getSortedKeys(fileMap)
+
+	log(fmt.Sprintf("\nFiles to be searched (%d):", len(files)))
+	for _, f := range files {
+		log(f)
+	}
+}
+
 func (s *Searcher) Search() error {
-	if err := s.validSettings(); err != nil {
+	if err := s.validateSettings(); err != nil {
 		return err
-	}
-
-	// get search directory list
-	if err := s.setSearchDirs(); err != nil {
-		return err
-	}
-
-	if s.Settings.Verbose {
-		log(fmt.Sprintf("\nDirectories to be searched (%d):", len(s.searchDirs)))
-		for _, d := range s.searchDirs {
-			log(*d)
-		}
 	}
 
 	// get search file list
+	// first start the processSearchItemChannels goroutine
+	go s.processSearchItemChannels()
+
+	// now fill the searchItem channels
 	if err := s.setSearchFiles(); err != nil {
 		return err
 	}
-	s.getSearchItems()
 
 	if s.Settings.Verbose {
-		log(fmt.Sprintf("\nFiles to be searched (%d):", s.searchItems.Count()))
-		sfi := s.searchItems.Iterator()
-		for sfi.Next() {
-			log(sfi.Value().String())
-		}
+		s.printToBeSearched()
 	}
 
 	// search the files
 	if s.Settings.Verbose {
 		log("\nStarting file search...\n")
 	}
-	s.doFileSearch()
-
+	if err := s.doFileSearch(); err != nil {
+		return err
+	}
 	if s.Settings.Verbose {
 		log("\nFile search complete.\n")
 	}
