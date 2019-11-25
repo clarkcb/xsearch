@@ -1,6 +1,6 @@
 .DS_Store
 bin/
-pkg/
+darwin_amd64/
 cloudnimble.com/
 unicharlister/
 
