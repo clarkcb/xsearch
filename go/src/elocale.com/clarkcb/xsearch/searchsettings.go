@@ -94,15 +94,19 @@ func GetDefaultSearchSettings() *SearchSettings {
 
 func (s *SearchSettings) AddInExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
-		ext := strings.ToLower(x)
-		s.InExtensions = append(s.InExtensions, &ext)
+		if x != "" {
+			ext := strings.ToLower(x)
+			s.InExtensions = append(s.InExtensions, &ext)
+		}
 	}
 }
 
 func (s *SearchSettings) AddOutExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
-		ext := strings.ToLower(x)
-		s.OutExtensions = append(s.OutExtensions, &ext)
+		if x != "" {
+			ext := strings.ToLower(x)
+			s.OutExtensions = append(s.OutExtensions, &ext)
+		}
 	}
 }
 
@@ -190,7 +194,7 @@ func addSearchPatternsToBuffer(name string, sp *SearchPatterns, buffer *bytes.Bu
 		if i > 0 {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString(r.String())
+		buffer.WriteString(fmt.Sprintf("\"%s\"", r.String()))
 	}
 	buffer.WriteString("]")
 }

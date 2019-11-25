@@ -34,7 +34,7 @@ func TestAddPattern(t *testing.T) {
 func TestAddExtensions(t *testing.T) {
 	settings := GetDefaultSearchSettings()
 	settings.AddInExtension("go,hs")
-	if len(settings.InExtensions) == 0 {
-		t.Errorf("InExtensions should not be empty")
+	if len(settings.InExtensions) != 2 {
+		t.Errorf("InExtensions should have two elements")
 	}
 }
