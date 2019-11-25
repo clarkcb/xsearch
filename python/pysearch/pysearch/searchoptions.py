@@ -160,10 +160,10 @@ class SearchOptions(object):
                     settings.set_property('linesafter', int(x)),
             'linesbefore':
                 lambda x, settings:
-                settings.set_property('linesbefore', int(x)),
+                    settings.set_property('linesbefore', int(x)),
             'maxlinelength':
                 lambda x, settings:
-                settings.set_property('maxlinelength', int(x)),
+                    settings.set_property('maxlinelength', int(x)),
         }
 
         self.str_arg_dict = {

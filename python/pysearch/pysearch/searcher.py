@@ -54,6 +54,8 @@ class Searcher(object):
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
         assert os.access(self.settings.startpath, os.R_OK), 'Startpath not readable'
         assert self.settings.searchpatterns, 'No search patterns defined'
+        assert self.settings.linesafter >= 0, 'Invalid linesafter'
+        assert self.settings.linesbefore >= 0, 'Invalid linesafter'
         try:
             codecs.lookup(self.settings.textfileencoding)
         except LookupError:
