@@ -42,7 +42,19 @@
         get-desc (fn [l] (get longdescmap l))]
     (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
 
-(def OPTIONS (get-searchoptions-from-xml))
+(defn get-searchoptions-from-json []
+  (let [contents (slurp (io/resource "searchoptions.json"))
+        searchoptions-objs (:searchoptions (json/read-str contents :key-fn keyword))
+        longnames (map #(get % :long) searchoptions-objs)
+        shortnames (map #(get % :short "") searchoptions-objs)
+        longshortmap (zipmap longnames shortnames)
+        descs (map #(.trim %) (map :desc searchoptions-objs))
+        longdescmap (zipmap longnames descs)
+        get-short (fn [l] (get longshortmap l))
+        get-desc (fn [l] (get longdescmap l))]
+    (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
+
+(def OPTIONS (get-searchoptions-from-json))
 
 (defn print-option [opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]

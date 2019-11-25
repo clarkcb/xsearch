@@ -11,6 +11,7 @@
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
   (:require [clojure.java.io :as io])
+  (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :only (split lower-case)]
         [clojure.xml :only (parse)]
@@ -22,7 +23,7 @@
 (def TEXT "text")
 (def XML "xml")
 
-(defn get-filetypemap []
+(defn get-filetypemap-from-xml []
   (let [ftcontents (slurp (io/resource "filetypes.xml"))
         ftstream (java.io.ByteArrayInputStream. (.getBytes ftcontents))
         filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse ftstream)))
@@ -41,7 +42,25 @@
         ]
   (merge filetypemap textmap searchablemap)))
 
-(def FILETYPEMAP (get-filetypemap))
+(defn get-filetypemap-from-json []
+  (let [contents (slurp (io/resource "filetypes.json"))
+        filetypes-objs (:filetypes (json/read-str contents :key-fn keyword))
+        typenames (map :type filetypes-objs)
+        extension-sets (map #(set %) (map :extensions filetypes-objs))
+        filetypemap (zipmap typenames extension-sets)
+        textmap (hash-map "all-text"
+                  (union (get filetypemap TEXT)
+                         (get filetypemap CODE)
+                         (get filetypemap XML)))
+        searchablemap (hash-map "searchable"
+                        (union (get filetypemap ARCHIVE)
+                               (get filetypemap BINARY)
+                               (get filetypemap TEXT)))
+        fullmap (merge filetypemap textmap searchablemap)
+        ]
+    fullmap))
+
+(def FILETYPEMAP (get-filetypemap-from-json))
 
 (defn archive-ext? [ext]
   (contains? (get FILETYPEMAP ARCHIVE) ext))
