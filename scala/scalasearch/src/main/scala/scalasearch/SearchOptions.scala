@@ -1,11 +1,14 @@
 package scalasearch
 
-import java.io.File
+import java.io.{File, IOException, InputStreamReader}
+
+import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
+
 import scala.annotation.tailrec
+import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.xml.XML
-import scala.collection.JavaConversions._
 
 case class SearchOption(shortarg:String, longarg:String, desc:String) {
   val sortarg: String =
@@ -18,12 +21,39 @@ case class SearchOption(shortarg:String, longarg:String, desc:String) {
 
 object SearchOptions {
   // TODO: move to config file
-  private val _searchOptionsXmlPath = "/searchoptions.xml"
+  private val _searchOptionsJsonPath = "/searchoptions.json"
   private val _searchOptions = mutable.ListBuffer.empty[SearchOption]
 
   private def searchOptions: List[SearchOption] = {
     if (_searchOptions.isEmpty) {
-      val root = XML.load(getClass.getResourceAsStream(_searchOptionsXmlPath))
+      try {
+        val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
+        val obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream))
+        val jsonObj = obj.asInstanceOf[JSONObject]
+        val soIt = jsonObj.get("searchoptions").asInstanceOf[JSONArray].iterator()
+        while (soIt.hasNext) {
+          val soObj = soIt.next().asInstanceOf[JSONObject]
+          val longArg = soObj.get("long").asInstanceOf[String]
+          val shortArg =
+            if (soObj.containsKey("short")) soObj.get("short").asInstanceOf[String]
+            else ""
+          val desc = soObj.get("desc").asInstanceOf[String]
+          val option = SearchOption(shortArg, longArg, desc)
+          _searchOptions += option
+        }
+      } catch {
+        case e: ParseException =>
+          print(e.getMessage)
+        case e: IOException =>
+          print(e.getMessage)
+      }
+      List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
+    } else List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
+  }
+
+  private def searchOptionsFromXml: List[SearchOption] = {
+    if (_searchOptions.isEmpty) {
+      val root = XML.load(getClass.getResourceAsStream("/searchoptions.xml"))
       val searchOptionNodes = root \\ "searchoption"
       for (searchOptionNode <- searchOptionNodes) {
         val short = (searchOptionNode \ "@short").text
@@ -170,30 +200,38 @@ object SearchOptions {
   }
 
   private def getArgMap: Map[String, String] = {
-    val longOpts = searchOptions.map {o => (o.longarg, o.longarg)}.toMap
+    val longOpts: Map[String, String] = searchOptions.map { o => (o.longarg, o.longarg)}.toMap
     val shortOpts = searchOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg, o.longarg)}.toMap
     longOpts ++ shortOpts
   }
 
   def settingsFromArgs(args: Array[String]): SearchSettings = {
     val argMap = getArgMap
-    val switchPattern = """^\-+(\w[\w\-]*)$""".r
+    val switchPattern = """^-+(\w[\w\-]*)$""".r
     @tailrec
     def nextArg(arglist: List[String], ss: SearchSettings): SearchSettings = {
       arglist match {
         case Nil => ss
         case switchPattern(arg) :: tail =>
-          val longArg = argMap.getOrElse(arg, "")
-          if (argActionMap.contains(longArg)) {
-            if (tail.nonEmpty) {
-              nextArg(tail.tail, argActionMap(longArg)(tail.head, ss))
-            } else {
-              throw new SearchException("Missing value for arg %s".format(arg))
-            }
-          } else if (boolFlagActionMap.contains(longArg)) {
-            nextArg(tail, boolFlagActionMap(longArg)(true, ss))
-          } else {
-            throw new SearchException("Invalid option: %s".format(arg))
+          argMap.get(arg) match {
+            case Some(longArg) =>
+              if (argActionMap.contains(longArg)) {
+                if (tail.nonEmpty) {
+                  nextArg(tail.tail, argActionMap(longArg)(tail.head, ss))
+                } else {
+                  throw new SearchException("Missing value for arg %s".format(arg))
+                }
+              } else if (boolFlagActionMap.contains(longArg)) {
+                if (Set("help", "version").contains(longArg)) {
+                  nextArg(Nil, boolFlagActionMap(longArg)(true, ss))
+                } else {
+                  nextArg(tail, boolFlagActionMap(longArg)(true, ss))
+                }
+              } else {
+                throw new SearchException("Invalid option: %s".format(arg))
+              }
+            case None =>
+              throw new SearchException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
           nextArg(tail, ss.copy(startPath = Some(arg)))
