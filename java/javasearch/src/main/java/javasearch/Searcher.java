@@ -62,6 +62,15 @@ public class Searcher {
         } catch (IllegalArgumentException e) {
             throw new SearchException("Invalid encoding provided");
         }
+        if (settings.getLinesAfter() < 0) {
+            throw new SearchException("Invalid linesafter");
+        }
+        if (settings.getLinesBefore() < 0) {
+            throw new SearchException("Invalid linesbefore");
+        }
+        if (settings.getMaxLineLength() < 0) {
+            throw new SearchException("Invalid maxlinelength");
+        }
     }
 
     private boolean anyMatchesAnyPattern(final List<String> sList,
