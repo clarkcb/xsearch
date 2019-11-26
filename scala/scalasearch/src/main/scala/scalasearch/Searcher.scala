@@ -32,7 +32,16 @@ class Searcher (settings: SearchSettings) {
       val _ = Charset.forName(settings.textFileEncoding)
     } catch {
       case _: IllegalArgumentException =>
-        throw new SearchException("Invalid encoding provided")
+        throw new SearchException(s"Invalid encoding: ${settings.textFileEncoding}")
+    }
+    if (settings.linesAfter < 0) {
+      throw new SearchException("Invalid linesafter")
+    }
+    if (settings.linesBefore < 0) {
+      throw new SearchException("Invalid linesbefore")
+    }
+    if (settings.maxLineLength < 0) {
+      throw new SearchException("Invalid maxlinelength")
     }
   }
   validateSettings()
