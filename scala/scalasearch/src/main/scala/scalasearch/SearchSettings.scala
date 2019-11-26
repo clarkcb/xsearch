@@ -59,12 +59,15 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           printUsage: Boolean = DefaultSettings.printUsage,
                           printVersion: Boolean = DefaultSettings.printVersion,
                           recursive: Boolean = DefaultSettings.recursive,
-                          searchArchives: Boolean = DefaultSettings.searchArchives,
+                          var searchArchives: Boolean = DefaultSettings.searchArchives,
                           searchPatterns: Set[Regex] = Set.empty[Regex],
                           startPath: Option[String] = DefaultSettings.startPath,
                           textFileEncoding: String = DefaultSettings.textFileEncoding,
                           uniqueLines: Boolean = DefaultSettings.uniqueLines,
-                          verbose: Boolean = DefaultSettings.verbose) {
+                          var verbose: Boolean = DefaultSettings.verbose) {
+
+  searchArchives = archivesOnly || searchArchives
+  verbose = debug || verbose
 
   def hasLinesBefore: Boolean = {
     linesBefore > 0 || hasLinesBeforePatterns
@@ -122,6 +125,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", searchArchives: " + searchArchives +
       ", searchPatterns: " + searchPatterns +
       ", startpath: " + startPath  +
+      ", textFileEncoding: " + textFileEncoding  +
       ", uniqueLines: " + uniqueLines +
       ", verbose: " + verbose +
       ")"
