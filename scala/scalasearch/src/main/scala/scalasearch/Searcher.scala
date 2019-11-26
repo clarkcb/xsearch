@@ -113,11 +113,18 @@ class Searcher (settings: SearchSettings) {
       false
     } else {
       val ext = FileUtil.getExtension(fileName)
+      val fileType = FileTypes.getFileType(new File(fileName))
       ((settings.inExtensions.isEmpty ||
         settings.inExtensions.contains(ext))
         &&
         (settings.outExtensions.isEmpty ||
           !settings.outExtensions.contains(ext))
+        &&
+        (settings.inFileTypes.isEmpty ||
+          settings.inFileTypes.contains(fileType))
+        &&
+        (settings.outFileTypes.isEmpty ||
+          !settings.outFileTypes.contains(fileType))
         &&
         filterByPatterns(fileName, settings.inFilePatterns,
           settings.outFilePatterns))
@@ -147,7 +154,7 @@ class Searcher (settings: SearchSettings) {
   def filterFile(f: File): Boolean = {
     FileTypes.getFileType(f) match {
       case FileType.Unknown => false
-      case fileType@FileType.Archive =>
+      case FileType.Archive =>
         settings.searchArchives && isArchiveSearchFile(f)
       case _ =>
         !settings.archivesOnly && isSearchFile(f)
@@ -223,7 +230,7 @@ class Searcher (settings: SearchSettings) {
 
   def searchFile(sf: SearchFile): Unit = {
     FileTypes.getFileType(sf) match {
-      case FileType.Text =>
+      case ft if Set(FileType.Text, FileType.Code, FileType.Xml).contains(ft) =>
         // TODO: some very basic encoding detection, for now using arbitrary
         //       single-byte encoding
         searchTextFileSource(sf, Source.fromFile(sf.toFile, settings.textFileEncoding))
@@ -238,7 +245,7 @@ class Searcher (settings: SearchSettings) {
 
   private def searchFileSource(sf: SearchFile, source: Source): Unit = {
     FileTypes.getFileType(sf) match {
-      case FileType.Text =>
+      case ft if Set(FileType.Text, FileType.Code, FileType.Xml).contains(ft) =>
         searchTextFileSource(sf, source)
       case FileType.Binary =>
         searchBinaryFileSource(sf, source)
