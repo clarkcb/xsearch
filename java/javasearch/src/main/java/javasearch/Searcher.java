@@ -15,11 +15,17 @@ import org.apache.commons.io.LineIterator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,7 +48,7 @@ public class Searcher {
         System.out.println(message);
     }
 
-    public final void validateSettings() throws SearchException {
+    final void validateSettings() throws SearchException {
         String startPath = settings.getStartPath();
         if (null == startPath || startPath.isEmpty()) {
             throw new SearchException("Startpath not defined");
@@ -83,7 +89,7 @@ public class Searcher {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    public boolean isSearchDir(final File d) {
+    boolean isSearchDir(final File d) {
         List<String> pathElems = FileUtil.splitPath(d.toString());
         if (settings.getExcludeHidden()
                 && pathElems.stream().anyMatch(FileUtil::isHidden)) {
@@ -98,41 +104,7 @@ public class Searcher {
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
-    private List<File> getSearchDirs(final File startPath) {
-        List<File> searchDirs = new ArrayList<>();
-        searchDirs.add(startPath);
-        if (settings.getRecursive()) {
-            searchDirs.addAll(recGetSearchDirs(startPath));
-        }
-        return searchDirs;
-    }
-
-    private List<File> getSubDirs(final File dir) {
-        List<File> subDirs = new ArrayList<>();
-        File[] dirFiles = dir.listFiles();
-        if (dirFiles != null) {
-            for (File f : dirFiles) {
-                if (f.isDirectory()) {
-                    subDirs.add(f);
-                }
-            }
-        }
-        return subDirs;
-    }
-
-    private List<File> recGetSearchDirs(final File dir) {
-        List<File> subDirs = getSubDirs(dir);
-        List<File> searchDirs = subDirs.stream().filter(this::isSearchDir)
-                .collect(Collectors.toList());
-        List<File> subSearchDirs = new ArrayList<>();
-        subSearchDirs.addAll(searchDirs);
-        for (File d : searchDirs) {
-            subSearchDirs.addAll(recGetSearchDirs(d));
-        }
-        return subSearchDirs;
-    }
-
-    public boolean isSearchFile(final File f) {
+    boolean isSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInExtensions().isEmpty()
                 ||
@@ -151,7 +123,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
     }
 
-    public boolean isArchiveSearchFile(final File f) {
+    boolean isArchiveSearchFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInArchiveExtensions().isEmpty()
                 ||
@@ -170,7 +142,7 @@ public class Searcher {
                 !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
     }
 
-    public boolean filterFile(final File f) {
+    boolean filterFile(final File f) {
         if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
             return false;
         }
@@ -178,31 +150,6 @@ public class Searcher {
             return settings.getSearchArchives() && isArchiveSearchFile(f);
         }
         return !settings.getArchivesOnly() && isSearchFile(f);
-    }
-
-    private List<SearchFile> getSearchFilesForDir(final File dir) {
-        List<SearchFile> searchFiles = new ArrayList<>();
-        File[] currentFiles = dir.listFiles();
-        if (currentFiles != null) {
-            for (File f : currentFiles) {
-                if (f.isFile()) {
-                    FileType fileType = fileTypes.getFileType(f);
-                    if (filterFile(f)) {
-                        searchFiles.add(new SearchFile(f.getParent(), f.getName(),
-                                fileType));
-                    }
-                }
-            }
-        }
-        return searchFiles;
-    }
-
-    private List<SearchFile> getSearchFiles(final List<File> searchDirs) {
-        List<SearchFile> searchFiles = new ArrayList<>();
-        for (File d : searchDirs) {
-            searchFiles.addAll(getSearchFilesForDir(d));
-        }
-        return searchFiles;
     }
 
     public final List<SearchResult> search() throws SearchException {
@@ -236,22 +183,86 @@ public class Searcher {
         return results;
     }
 
-    private List<SearchResult> searchPath(final File filePath) {
-        // get the search directories
-        List<File> searchDirs = getSearchDirs(filePath);
-        if (settings.getVerbose()) {
-            log(String.format("\nDirectories to be searched (%d):",
-                    searchDirs.size()));
-            for (File d : searchDirs) {
-                System.out.println(d.getPath());
-            }
-            log("");
+    private static class FindSearchFileVisitor extends SimpleFileVisitor<Path> {
+        FileTypes fileTypes;
+        Function<File, Boolean> filterDir;
+        Function<File, Boolean> filterFile;
+        List<SearchFile> searchFiles;
+
+        FindSearchFileVisitor(FileTypes fileTypes, Function<File, Boolean> filterDir,
+                              Function<File, Boolean> filterFile) {
+            super();
+            this.fileTypes = fileTypes;
+            this.filterDir = filterDir;
+            this.filterFile = filterFile;
+            searchFiles = new ArrayList<>();
         }
 
-        // get the search files in the search directories
-        List<SearchFile> searchFiles = getSearchFiles(searchDirs);
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            Objects.requireNonNull(dir);
+            Objects.requireNonNull(attrs);
+            if (filterDir.apply(dir.toFile())) {
+                return FileVisitResult.CONTINUE;
+            }
+            return FileVisitResult.SKIP_SUBTREE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+            Objects.requireNonNull(path);
+            Objects.requireNonNull(attrs);
+            if (attrs.isRegularFile()) {
+                File f = path.toFile();
+                if (filterFile.apply(f)) {
+                    searchFiles.add(new SearchFile(f.getParent(), f.getName(),
+                            fileTypes.getFileType(f)));
+                }
+            }
+
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path path, IOException exc) {
+            System.err.println(exc.getMessage());
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            if (exc != null)
+                throw exc;
+            return FileVisitResult.CONTINUE;
+        }
+    }
+
+    private List<SearchResult> searchPath(final File filePath) {
+        Path startPath = filePath.toPath();
+        FindSearchFileVisitor findSearchFileVisitor = new FindSearchFileVisitor(fileTypes,
+                this::isSearchDir, this::filterFile);
+
+        // walk file tree to get search files
+        try {
+            Files.walkFileTree(startPath, findSearchFileVisitor);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<SearchFile> searchFiles = findSearchFileVisitor.searchFiles;
+
         if (settings.getVerbose()) {
-            log(String.format("\nFiles to be searched (%d):",
+            List<String> searchDirs = searchFiles.stream()
+                    .map(SearchFile::getPath)
+                    .distinct()
+                    .sorted(String::compareTo)
+                    .collect(Collectors.toList());
+            log(String.format("\nDirectories to be searched (%d):",
+                    searchDirs.size()));
+            for (String d : searchDirs) {
+                log(d);
+            }
+            log(String.format("\n\nFiles to be searched (%d):",
                     searchFiles.size()));
             for (SearchFile sf : searchFiles) {
                 log(sf.toString());
