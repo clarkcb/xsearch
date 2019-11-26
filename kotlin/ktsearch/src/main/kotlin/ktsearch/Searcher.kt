@@ -31,9 +31,18 @@ class Searcher(val settings: SearchSettings) {
             throw SearchException("No search patterns defined")
         }
         try {
-            val c = Charset.forName(settings.textFileEncoding)
+            Charset.forName(settings.textFileEncoding)
         } catch (e: IllegalArgumentException) {
             throw SearchException("Invalid encoding provided")
+        }
+        if (settings.linesAfter < 0) {
+            throw SearchException("Invalid linesafter")
+        }
+        if (settings.linesBefore < 0) {
+            throw SearchException("Invalid linesbefore")
+        }
+        if (settings.maxLineLength < 0) {
+            throw SearchException("Invalid maxlinelength")
         }
     }
 
