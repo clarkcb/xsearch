@@ -194,7 +194,7 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun searchFile(sf: SearchFile): List<SearchResult> {
-        if (sf.fileType === FileType.TEXT) {
+        if (setOf(FileType.TEXT, FileType.CODE, FileType.XML).contains(sf.fileType)) {
             return searchTextFile(sf)
         } else if (sf.fileType === FileType.BINARY) {
             return searchBinaryFile(sf)
