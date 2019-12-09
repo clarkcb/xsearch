@@ -302,6 +302,15 @@ build_ruby () {
     log "Nothing to do for ruby"
 }
 
+build_rust () {
+    echo
+    log "build_rust"
+    RSSEARCH_PATH=$RUST_PATH/rssearch
+    cd $RSSEARCH_PATH
+    cargo build
+    cd -
+}
+
 build_scala () {
     echo
     log "build_scala"
@@ -382,6 +391,8 @@ build_all () {
 
     build_ruby
 
+    build_rust
+
     build_scala
 
     build_swift
@@ -434,6 +445,8 @@ elif [ "$ARG" == "python" ]; then
     build_python
 elif [ "$ARG" == "ruby" ]; then
     build_ruby
+elif [ "$ARG" == "rust" ]; then
+    build_rust
 elif [ "$ARG" == "scala" ]; then
     build_scala
 elif [ "$ARG" == "swift" ]; then

@@ -211,6 +211,19 @@ unittest_ruby () {
     done
 }
 
+unittest_rust () {
+    echo
+    log "unittest_rust"
+    RSSEARCH_PATH=$RUST_PATH/rssearch
+
+    # Run cargo test
+    log "Unit-testing rssearch"
+    log "cargo test"
+    cd $RSSEARCH_PATH
+    cargo test
+    cd -
+}
+
 unittest_scala () {
     echo
     log "unittest_scala"
@@ -278,6 +291,8 @@ unittest_all () {
 
     unittest_ruby
 
+    unittest_rust
+
     unittest_scala
 
     unittest_swift
@@ -326,6 +341,8 @@ elif [ "$ARG" == "python" ]; then
     unittest_python
 elif [ "$ARG" == "ruby" ]; then
     unittest_ruby
+elif [ "$ARG" == "rust" ]; then
+    unittest_rust
 elif [ "$ARG" == "scala" ]; then
     unittest_scala
 elif [ "$ARG" == "swift" ]; then

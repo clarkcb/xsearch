@@ -1,0 +1,7 @@
+en - Hello
+de - Guten Tag
+es - Buenos días
+fr - Bonjour
+ja - こんにちは
+ru - Здравствуйте
+zh - 你好
