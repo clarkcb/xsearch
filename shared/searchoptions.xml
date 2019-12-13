@@ -9,6 +9,9 @@
   <searchoption long="debug" short="">
     Set output mode to debug
   </searchoption>
+  <searchoption long="encoding" short="e">
+    Set the encoding to use with text files (default: "utf-8")
+  </searchoption>
   <searchoption long="excludehidden" short="">
     Exclude hidden files and directories*
   </searchoption>

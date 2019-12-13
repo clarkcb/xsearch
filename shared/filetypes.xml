@@ -2,21 +2,21 @@
 <filetypes>
   <filetype name="archive">
     <extensions>7z ane apk arj bz2 cpio ear egg gz hqx jar pax pyz pyzw rar sit
-      sitx swc tar tgz war zip zipx Z</extensions>
+      sitx swc tar tgz war whl zip zipx Z</extensions>
   </filetype>
   <filetype name="binary">
     <extensions>a ai beam bin chm class com dat dbmdl dcr dir dll dms doc dot
-      dxr dylib epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm
+      dxr dylib epub exe fm hi hlp idx indd lib lnk mdb mo mobi mpp nib o obj odm
       odt ott pages pdb ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt
       wri xcuserstate xls xlt</extensions>
   </filetype>
   <filetype name="code">
     <extensions>ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl
-      cc cfm cgi clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es es6 ex
-      exs frm fs fth fx go groovy h h++ hh hpp hs hxx ipp ipynb java js js2 jsf json
-      jsp jspf jsx kt kts lhs lisp lua m ml p pas pbxproj php php3 php4 php5 pl
-      pm ps1 psc1 psd1 psm1 pxd pxi py pyw pyx r rb rexx rkt rs s sass sbt sc scm
-      scss scala sh swift tcl tk ts vb vbs</extensions>
+      cc cfm cgi cjs clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es es6 ex
+      exs frm fs fth fx go groovy h h++ hbs hh hpp hs hxx ipp ipynb java js js2
+      jsf json jsonld jsp jspf jsx kt kts lhs lisp lua m ml p pas pbxproj php php3
+      php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi py pyw pyx r rb rexx rkt rs s sass
+      sbt sc scm scss scala sh swift tcl tk ts vb vbs vue</extensions>
   </filetype>
   <filetype name="nosearch">
     <extensions>aif aifc aiff au avi bmp cab cur db dib dmg eot gif icns ico
@@ -33,7 +33,7 @@
       html hxx ics icz iml in inc ini ipr iws jad jam jql layout lhs log ltx mak
       mako manifest map markdown master md mf mht mml moc mod mxml org p patch pm po
       pod policy pot properties ps pt rc rc2 rdf rex rst rtf rtx scc sct sfv sgm sgml
-      sht shtm shtml sln smi smil spec sqc sql st str strings sty suml sxw t
+      sht shtm shtml sln smi smil snap spec sqc sql st str strings sty suml sxw t
       tex text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml
       vssscc vxml wbxml webinfo wml wmls wrl wsc wsd wsdd xlf xsp yaml
       yml</extensions>
