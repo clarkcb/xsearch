@@ -1,7 +1,20 @@
 en - Hello
+ar - السلام عليكم
+cs - Dobrý den
 de - Guten Tag
+el - Γειά σου
 es - Buenos días
+eo - Bonan tagon
+eu - Kaixo
+fi - Hyvää päivää
 fr - Bonjour
+he - שלום
+ji - नमस्ते
 ja - こんにちは
+ka - გამარჯობა
+ko - 안녕하세요
+nl - Goededag
+ro - Bună ziua
 ru - Здравствуйте
+vi - Chào anh
 zh - 你好

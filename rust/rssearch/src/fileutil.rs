@@ -12,10 +12,7 @@ impl FileUtil {
     /// assert_eq!(FileUtil::get_extension("filename.txt"), Some("txt"));
     /// ```
     pub fn get_extension(filename: &str) -> Option<&str> {
-        Path::new(filename)
-            .extension()
-            .and_then(OsStr::to_str)
-            .and_then(|ext| Some(ext))
+        Path::new(filename).extension().and_then(OsStr::to_str)
     }
 
     /// Check whether a dirname is for a "dot dir"

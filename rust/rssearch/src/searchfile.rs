@@ -33,6 +33,19 @@ impl SearchFile {
     pub fn filepath(&self) -> String {
         format!("{}", Path::new(&self.path).join(&self.name).display())
     }
+
+    pub fn fullpath(&self) -> String {
+        if self.containers.is_empty() {
+            format!("{}", Path::new(&self.path).join(&self.name).display())
+        } else {
+            let container_str = self.containers.join("!");
+            format!(
+                "{}!{}",
+                container_str,
+                Path::new(&self.path).join(&self.name).display()
+            )
+        }
+    }
 }
 
 impl Ord for SearchFile {

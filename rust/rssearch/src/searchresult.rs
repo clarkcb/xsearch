@@ -55,7 +55,7 @@ impl fmt::Display for SearchResult {
                     buffer.push_str(
                         format!(
                             "\n{}: {}: [{}:{}]\n",
-                            f.filepath(),
+                            f.fullpath(),
                             self.line_num,
                             self.match_start_index,
                             self.match_end_index
@@ -113,7 +113,7 @@ impl fmt::Display for SearchResult {
             write!(f, "{}", buffer)
         } else {
             let file_prefix = match &self.file {
-                Some(f) => f.filepath(),
+                Some(f) => f.fullpath(),
                 None => "<text>".to_string(),
             };
             if self.line_num > 0 {
