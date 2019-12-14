@@ -160,7 +160,7 @@ build_go () {
 
     # now build gosearch
     log "Building gosearch"
-    log "go install elocale.com/clarkcb/xsearch/gosearch"
+    log "go install elocale.com/clarkcb/xsearch/cmd/gosearch"
     go install elocale.com/clarkcb/xsearch/cmd/gosearch
 }
 
@@ -293,7 +293,12 @@ build_php () {
 build_python () {
     echo
     log "build_python"
-    log "Nothing to do for python"
+    PYSEARCH_PATH=$PYTHON_PATH/pysearch
+    RESOURCES_PATH=$PYSEARCH_PATH/data
+
+    # copy the shared xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
+    copy_resources $RESOURCES_PATH
 }
 
 build_ruby () {
