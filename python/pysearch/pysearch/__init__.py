@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-__version__ = '0.1.0'
 
 from .common import log
-from .config import SHAREDPATH, XSEARCHPATH
+from .config import SHAREDPATH, XSEARCHPATH, VERSION
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
 from .searcher import Searcher

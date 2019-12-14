@@ -1,15 +1,16 @@
 from setuptools import setup
-from pysearch import __version__
+from pysearch import VERSION
 
 #long_description = open('README.md').read()
 
 setup(name='pysearch',
-      version=__version__,
+      version=VERSION,
       description='Python version of xsearch',
       # long_description=long_description,
       url='https://github.com/clarkcb/xsearch.git',
       author='Cary Clark',
       author_email='clarkcb@gmail.com',
+      include_package_data=True,
       license='MIT',
       packages=['pysearch'],
       python_requires='>=3',
