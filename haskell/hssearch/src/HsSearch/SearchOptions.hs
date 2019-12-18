@@ -92,7 +92,8 @@ type BoolFlagAction = SearchSettings -> Bool -> SearchSettings
 type FlagAction = SearchSettings -> SearchSettings
 
 argActions :: [(String, ArgAction)]
-argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ newExtensions s})
+argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
+             , ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ newExtensions s})
              , ("in-archivefilepattern", \ss s -> ss {inArchiveFilePatterns = inArchiveFilePatterns ss ++ [s]})
              , ("in-dirpattern", \ss s -> ss {inDirPatterns = inDirPatterns ss ++ [s]})
              , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ newExtensions s})

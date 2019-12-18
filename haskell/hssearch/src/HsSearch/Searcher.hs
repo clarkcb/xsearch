@@ -168,13 +168,14 @@ linesMatch ls lsInPatterns lsOutPatterns = inPatternMatches && not outPatternMat
 anyMatchesAnyPattern :: [B.ByteString] -> [String] -> Bool
 anyMatchesAnyPattern ls = any (anyMatchesPattern ls)
 
+matchesPattern :: B.ByteString -> String -> Bool
+matchesPattern l p = l =~ p
+
 anyMatchesPattern :: [B.ByteString] -> String -> Bool
-anyMatchesPattern ls p = any matchesPattern ls
-  where matchesPattern l = l =~ p :: Bool
+anyMatchesPattern ls p = any (\l -> matchesPattern l p) ls
 
 matchesAnyPattern :: B.ByteString -> [String] -> Bool
-matchesAnyPattern l = any matchesPattern
-  where matchesPattern p = l =~ p :: Bool
+matchesAnyPattern l ps = any (\p -> matchesPattern l p) ps
 
 searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFileContents settings f = do

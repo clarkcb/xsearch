@@ -43,6 +43,7 @@ data SearchSettings = SearchSettings {
                                      , searchArchives :: Bool
                                      , searchPatterns :: [String]
                                      , startPath :: String
+                                     , textFileEncoding :: String
                                      , uniqueLines :: Bool
                                      , verbose :: Bool
                                      } deriving (Show, Eq)
@@ -83,6 +84,7 @@ defaultSearchSettings = SearchSettings {
                                        , searchArchives=False
                                        , searchPatterns=[]
                                        , startPath=""
+                                       , textFileEncoding="utf-8"
                                        , uniqueLines=False
                                        , verbose=False
                                        }
