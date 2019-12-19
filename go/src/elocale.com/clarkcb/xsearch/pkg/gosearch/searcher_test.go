@@ -127,7 +127,7 @@ func TestIsSearchDir_DoesNotMatchOutPattern_True(t *testing.T) {
  * isSearchFile tests
 *************************************************************/
 
-func TestisSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
+func TestIsSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
 	settings := getSettings()
 	searcher := NewSearcher(settings)
 	f := "FileUtil.cs"
@@ -136,7 +136,7 @@ func TestisSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_MatchesInExtension_True(t *testing.T) {
+func TestIsSearchFile_MatchesInExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("cs")
 	searcher := NewSearcher(settings)
@@ -146,7 +146,7 @@ func TestisSearchFile_MatchesInExtension_True(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
+func TestIsSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("java")
 	searcher := NewSearcher(settings)
@@ -156,7 +156,7 @@ func TestisSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_MatchesOutExtension_False(t *testing.T) {
+func TestIsSearchFile_MatchesOutExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("cs")
 	searcher := NewSearcher(settings)
@@ -166,7 +166,7 @@ func TestisSearchFile_MatchesOutExtension_False(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
+func TestIsSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("java")
 	searcher := NewSearcher(settings)
@@ -176,7 +176,7 @@ func TestisSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_MatchesInPattern_True(t *testing.T) {
+func TestIsSearchFile_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInFilePattern("Search")
 	searcher := NewSearcher(settings)
@@ -186,7 +186,7 @@ func TestisSearchFile_MatchesInPattern_True(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
+func TestIsSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInFilePattern("Search")
 	searcher := NewSearcher(settings)
@@ -196,7 +196,7 @@ func TestisSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_MatchesOutPattern_False(t *testing.T) {
+func TestIsSearchFile_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutFilePattern("Search")
 	searcher := NewSearcher(settings)
@@ -206,7 +206,7 @@ func TestisSearchFile_MatchesOutPattern_False(t *testing.T) {
 	}
 }
 
-func TestisSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
+func TestIsSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutFilePattern("Search")
 	searcher := NewSearcher(settings)
@@ -441,7 +441,7 @@ func TestSearchTextReaderLines(t *testing.T) {
 	}
 
 	firstResult := results[0]
-	expectedFirstLineNum := 23
+	expectedFirstLineNum := 29
 	if firstResult.LineNum != expectedFirstLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
@@ -458,7 +458,7 @@ func TestSearchTextReaderLines(t *testing.T) {
 	}
 
 	secondResult := results[1]
-	expectedSecondLineNum := 29
+	expectedSecondLineNum := 35
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)
@@ -492,7 +492,7 @@ func TestSearchMultiLineString(t *testing.T) {
 	}
 
 	firstResult := results[0]
-	expectedFirstLineNum := 23
+	expectedFirstLineNum := 29
 	if firstResult.LineNum != expectedFirstLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
@@ -509,7 +509,7 @@ func TestSearchMultiLineString(t *testing.T) {
 	}
 
 	secondResult := results[1]
-	expectedSecondLineNum := 29
+	expectedSecondLineNum := 35
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)

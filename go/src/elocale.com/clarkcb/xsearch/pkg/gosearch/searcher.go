@@ -106,6 +106,9 @@ func (s *Searcher) validateSettings() error {
 	if s.Settings.LinesBefore < 0 {
 		return fmt.Errorf("Invalid linesbefore")
 	}
+	if s.Settings.MaxLineLength < 0 {
+		return fmt.Errorf("Invalid maxlinelength")
+	}
 	if strings.ToLower(s.Settings.TextFileEncoding) != "utf-8" {
 		return fmt.Errorf("Invalid or unsupported text file encoding")
 	}

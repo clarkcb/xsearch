@@ -7,16 +7,24 @@ import (
 	"elocale.com/clarkcb/xsearch/pkg/gosearch"
 )
 
+func errorAndExit(err error, searchOptions *gosearch.SearchOptions) {
+	fmt.Printf("\nERROR: %s\n", err)
+	searchOptions.PrintUsage()
+}
+
 func main() {
 	searchOptions := gosearch.NewSearchOptions()
 	settings, err := searchOptions.SearchSettingsFromArgs(os.Args[1:])
 	if err != nil {
-		fmt.Printf("\nERROR: %s\n", err)
-		searchOptions.PrintUsage()
+		errorAndExit(err, searchOptions)
 	}
 
 	if settings.PrintUsage {
 		searchOptions.PrintUsage()
+	}
+
+	if settings.PrintVersion {
+		searchOptions.PrintVersion()
 	}
 
 	if settings.Debug {
@@ -26,8 +34,7 @@ func main() {
 	searcher := gosearch.NewSearcher(settings)
 	err = searcher.Search()
 	if err != nil {
-		fmt.Printf("\nERROR: %s\n", err)
-		searchOptions.PrintUsage()
+		errorAndExit(err, searchOptions)
 	}
 
 	// if there are results and PrintResults is true then print them out

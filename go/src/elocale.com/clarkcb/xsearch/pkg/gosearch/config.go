@@ -1,8 +1,11 @@
 package gosearch
 
 const (
-	XSEARCHPATH = "/Users/cary/src/xsearch"
-	SHAREDPATH = XSEARCHPATH + "/shared"
-	FILETYPESPATH = SHAREDPATH + "/filetypes.json"
+	// TODO: get most of these from config.json
+	XSEARCHPATH       = "/Users/cary/src/xsearch"
+	SHAREDPATH        = XSEARCHPATH + "/shared"
+	CONFIGFILEPATH    = SHAREDPATH + "/config.json"
+	FILETYPESPATH     = SHAREDPATH + "/filetypes.json"
 	SEARCHOPTIONSPATH = SHAREDPATH + "/searchoptions.json"
+	VERSION           = "1.0.0"
 )

@@ -164,6 +164,11 @@ func (so *SearchOptions) PrintUsage() {
 	os.Exit(0)
 }
 
+func (so *SearchOptions) PrintVersion() {
+	log(fmt.Sprintf("xsearch version %s", VERSION))
+	os.Exit(0)
+}
+
 func (so *SearchOptions) getSortKeyMap() map[string]string {
 	m := map[string]string{}
 	for _, o := range so.SearchOptions {
