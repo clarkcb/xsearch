@@ -15,6 +15,7 @@ main :: IO ()
 main = do
   -- FileTypes tests
   fileTypeTests <- getFileTypeTests
+  fileTypeFromNameTests <- getFileTypeFromNameTests
 
   -- FileUtil tests
   fileUtilTests <- getFileUtilTests
@@ -42,7 +43,7 @@ main = do
   defaultSearchSettingsTests <- getDefaultSearchSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
-  defaultMain (fileTypeTests ++ fileUtilTests ++
+  defaultMain (fileTypeTests ++ fileTypeFromNameTests ++ fileUtilTests ++
     isSearchDirTests ++ isSearchFileTests ++ isArchiveSearchFileTests ++
     filterFileTests ++ searchLinesTests ++ searchContentsTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++

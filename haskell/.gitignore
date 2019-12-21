@@ -13,6 +13,7 @@ cabal.config
 *.prof
 *.hp
 *.aux
+.stack-work/
 
 # resource files
 config.json
