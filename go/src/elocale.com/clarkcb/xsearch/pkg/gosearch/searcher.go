@@ -153,7 +153,7 @@ func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 }
 
 func (s *Searcher) isArchiveSearchItem(si *SearchItem) bool {
-	if si.fileType == FILETYPE_ARCHIVE {
+	if si.fileType == FiletypeArchive {
 		if (isHidden(*si.Path) || isHidden(*si.Name)) && s.Settings.ExcludeHidden {
 			return false
 		}
@@ -221,7 +221,7 @@ func (s *Searcher) filterFile(f *string) bool {
 }
 
 func (s *Searcher) filterSearchItem(si *SearchItem) bool {
-	if si.fileType == FILETYPE_ARCHIVE {
+	if si.fileType == FiletypeArchive {
 		return s.Settings.SearchArchives && s.isArchiveSearchItem(si)
 	}
 	return !s.Settings.ArchivesOnly && s.isSearchItem(si)
@@ -827,11 +827,11 @@ func (s *Searcher) searchArchiveFileReader(r io.Reader, si *SearchItem) {
 
 func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
 	switch si.fileType {
-	case FILETYPE_CODE, FILETYPE_XML, FILETYPE_TEXT:
+	case FiletypeCode, FiletypeXml, FiletypeText:
 		s.searchTextFileReader(r, si)
-	case FILETYPE_BINARY:
+	case FiletypeBinary:
 		s.searchBinaryFileReader(r, si)
-	case FILETYPE_ARCHIVE:
+	case FiletypeArchive:
 		if s.Settings.SearchArchives {
 			s.searchArchiveFileReader(r, si)
 		} else {

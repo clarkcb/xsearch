@@ -9,12 +9,12 @@ import (
 type FileType int
 
 const (
-	FILETYPE_UNKNOWN FileType = iota
-	FILETYPE_ARCHIVE FileType = iota
-	FILETYPE_BINARY  FileType = iota
-	FILETYPE_CODE    FileType = iota
-	FILETYPE_TEXT    FileType = iota
-	FILETYPE_XML     FileType = iota
+	FiletypeUnknown FileType = iota
+	FiletypeArchive FileType = iota
+	FiletypeBinary  FileType = iota
+	FiletypeCode    FileType = iota
+	FiletypeText    FileType = iota
+	FiletypeXml     FileType = iota
 )
 
 type FileTypes struct {
@@ -50,56 +50,56 @@ func FileTypesFromJson() *FileTypes {
 
 func (f *FileTypes) getFileType(file string) FileType {
 	if f.IsCodeFile(file) {
-		return FILETYPE_CODE
+		return FiletypeCode
 	}
 	if f.IsXmlFile(file) {
-		return FILETYPE_XML
+		return FiletypeXml
 	}
 	if f.IsTextFile(file) {
-		return FILETYPE_TEXT
+		return FiletypeText
 	}
 	if f.IsBinaryFile(file) {
-		return FILETYPE_BINARY
+		return FiletypeBinary
 	}
 	if f.IsArchiveFile(file) {
-		return FILETYPE_ARCHIVE
+		return FiletypeArchive
 	}
-	return FILETYPE_UNKNOWN
+	return FiletypeUnknown
 }
 
 func getFileTypeForName(name string) FileType {
 	if strings.ToUpper(name) == "TEXT" {
-		return FILETYPE_TEXT
+		return FiletypeText
 	}
 	if strings.ToUpper(name) == "BINARY" {
-		return FILETYPE_BINARY
+		return FiletypeBinary
 	}
 	if strings.ToUpper(name) == "CODE" {
-		return FILETYPE_CODE
+		return FiletypeCode
 	}
 	if strings.ToUpper(name) == "ARCHIVE" {
-		return FILETYPE_ARCHIVE
+		return FiletypeArchive
 	}
 	if strings.ToUpper(name) == "XML" {
-		return FILETYPE_XML
+		return FiletypeXml
 	}
-	return FILETYPE_UNKNOWN
+	return FiletypeUnknown
 }
 
 func getNameForFileType(fileType FileType) string {
-	if fileType == FILETYPE_TEXT {
+	if fileType == FiletypeText {
 		return "TEXT"
 	}
-	if fileType == FILETYPE_BINARY {
+	if fileType == FiletypeBinary {
 		return "BINARY"
 	}
-	if fileType == FILETYPE_CODE {
+	if fileType == FiletypeCode {
 		return "CODE"
 	}
-	if fileType == FILETYPE_ARCHIVE {
+	if fileType == FiletypeArchive {
 		return "ARCHIVE"
 	}
-	if fileType == FILETYPE_XML {
+	if fileType == FiletypeXml {
 		return "XML"
 	}
 	return "UNKNOWN"
@@ -142,10 +142,10 @@ func (f *FileTypes) IsSearchableFile(file string) bool {
 }
 
 func (f *FileTypes) IsSearchableItem(si *SearchItem) bool {
-	return si.fileType == FILETYPE_CODE || si.fileType == FILETYPE_XML || si.fileType == FILETYPE_TEXT ||
-		si.fileType == FILETYPE_BINARY || si.fileType == FILETYPE_ARCHIVE
+	return si.fileType == FiletypeCode || si.fileType == FiletypeXml || si.fileType == FiletypeText ||
+		si.fileType == FiletypeBinary || si.fileType == FiletypeArchive
 }
 
 func (f *FileTypes) IsUnknownFile(file string) bool {
-	return f.getFileType(file) == FILETYPE_UNKNOWN
+	return f.getFileType(file) == FiletypeUnknown
 }
