@@ -3,9 +3,11 @@ module HsSearch.FileTypes
   ( FileType(..)
   , getFileType
   , getFileTypes
+  , getFileTypeForName
   , isSearchableFileType
   ) where
 
+import Data.Char (toLower)
 import Text.XML.HXT.Core
 
 import HsSearch.FileUtil (getExtension, normalizeExtension)
@@ -59,6 +61,17 @@ getFileTypes files = do
   xmlFileTypes <- getXmlFileTypes
   return $ map (fileTypeFromXmlFileTypes xmlFileTypes) files
 
+getFileTypeForName :: String -> FileType
+getFileTypeForName typeName =
+  case (lower typeName) of
+    "archive" -> Archive
+    "binary" -> Binary
+    "code" -> Code
+    "xml" -> Xml
+    "text" -> Text
+    _ -> Unknown
+  where lower = map toLower
+
 fileTypeFromXmlFileTypes :: [XmlFileType] -> FilePath -> FileType
 fileTypeFromXmlFileTypes xmlFileTypes f =
   case getExtension f of
@@ -72,6 +85,8 @@ matchingTypeForExtension xmlFileTypes x =
     fts -> case fileTypeName fts of
            "archive" -> Archive
            "binary" -> Binary
+           "code" -> Code
+           "xml" -> Xml
            tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
   where fileTypeName = name . head

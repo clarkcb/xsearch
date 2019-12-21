@@ -6,6 +6,7 @@ module HsSearch.SearchSettings
 
 import Data.List.Split (splitOn)
 
+import HsSearch.FileTypes
 import HsSearch.FileUtil (normalizeExtension)
 
 data SearchSettings = SearchSettings {
@@ -18,6 +19,7 @@ data SearchSettings = SearchSettings {
                                      , inDirPatterns :: [String]
                                      , inExtensions :: [String]
                                      , inFilePatterns :: [String]
+                                     , inFileTypes :: [FileType]
                                      , inLinesAfterPatterns :: [String]
                                      , inLinesBeforePatterns :: [String]
                                      , linesAfter :: Int
@@ -34,6 +36,7 @@ data SearchSettings = SearchSettings {
                                      , outDirPatterns :: [String]
                                      , outExtensions :: [String]
                                      , outFilePatterns :: [String]
+                                     , outFileTypes :: [FileType]
                                      , outLinesAfterPatterns :: [String]
                                      , outLinesBeforePatterns :: [String]
                                      , printResults :: Bool
@@ -59,6 +62,7 @@ defaultSearchSettings = SearchSettings {
                                        , inDirPatterns=[]
                                        , inExtensions=[]
                                        , inFilePatterns=[]
+                                       , inFileTypes=[]
                                        , inLinesAfterPatterns=[]
                                        , inLinesBeforePatterns=[]
                                        , linesAfter=0
@@ -75,6 +79,7 @@ defaultSearchSettings = SearchSettings {
                                        , outDirPatterns=[]
                                        , outExtensions=[]
                                        , outFilePatterns=[]
+                                       , outFileTypes=[]
                                        , outLinesAfterPatterns=[]
                                        , outLinesBeforePatterns=[]
                                        , printResults=True

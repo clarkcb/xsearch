@@ -13,6 +13,7 @@ import qualified Data.Text as T
 import Text.XML.HXT.Core
 
 import HsSearch.Paths_hssearch (getDataFileName)
+import HsSearch.FileTypes (getFileTypeForName)
 import HsSearch.SearchSettings
 
 data SearchOption = SearchOption { long, short, desc :: String }
@@ -98,6 +99,7 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("in-dirpattern", \ss s -> ss {inDirPatterns = inDirPatterns ss ++ [s]})
              , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ newExtensions s})
              , ("in-filepattern", \ss s -> ss {inFilePatterns = inFilePatterns ss ++ [s]})
+             , ("in-filetype", \ss s -> ss {inFileTypes = inFileTypes ss ++ [getFileTypeForName s]})
              , ("in-linesafterpattern", \ss s -> ss {inLinesAfterPatterns = inLinesAfterPatterns ss ++ [s]})
              , ("in-linesbeforepattern", \ss s -> ss {inLinesBeforePatterns = inLinesBeforePatterns ss ++ [s]})
              , ("linesafter", \ss s -> ss {linesAfter = read s})
@@ -110,6 +112,7 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})
              , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ newExtensions s})
              , ("out-filepattern", \ss s -> ss {outFilePatterns = outFilePatterns ss ++ [s]})
+             , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
              , ("out-linesafterpattern", \ss s -> ss {outLinesAfterPatterns = outLinesAfterPatterns ss ++ [s]})
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
              , ("search", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})

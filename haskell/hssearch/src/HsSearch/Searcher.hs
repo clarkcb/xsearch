@@ -60,6 +60,10 @@ isSearchFile settings fp = all ($fp) tests
                          || any (\p -> x =~ p :: Bool) inPatterns
                 , \x -> null outPatterns
                          || all (\p -> not $ x =~ p :: Bool) outPatterns
+                , \x -> null inTypes
+                         || (getFileTypeForName fp) `elem` inTypes
+                , \x -> null outTypes
+                         || (getFileTypeForName fp) `elem` outTypes
                 , \x -> not (isHiddenFilePath x) || includeHidden
                 ]
         inExts = inExtensions settings
@@ -70,6 +74,8 @@ isSearchFile settings fp = all ($fp) tests
                     | otherwise    = any (hasExtension f) outExts
         inPatterns = inFilePatterns settings
         outPatterns = outFilePatterns settings
+        inTypes = inFileTypes settings
+        outTypes = outFileTypes settings
         includeHidden = not $ excludeHidden settings
 
 isArchiveSearchFile :: SearchSettings -> FilePath -> Bool
@@ -325,8 +331,8 @@ searchLineForPattern settings num bs l as = patternResults
 doSearchFile :: SearchSettings -> (FilePath,FileType) -> IO [SearchResult]
 doSearchFile settings ft =
   case snd ft of
-    Text -> searchTextFile settings $ fst ft
     Binary -> searchBinaryFile settings $ fst ft
+    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings $ fst ft
     _ -> return []
 
 doSearchFiles :: SearchSettings -> [FilePath] -> IO [SearchResult]
