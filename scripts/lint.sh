@@ -59,8 +59,8 @@ lint_go () {
     # Analyze
     log "Analyzing gosearch"
     cd $SRC_PATH
-    log "go vet $PACKAGE"
-    go vet $PACKAGE
+    log "go vet $PACKAGE/..."
+    go vet $PACKAGE/...
     cd -
 }
 
@@ -68,7 +68,7 @@ lint_haskell () {
     echo
     log "lint_haskell"
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
-    HLINT=$HSSEARCH_PATH/.cabal-sandbox/bin/hlint
+    HLINT=$HOME/.local/bin/hlint
 
     # Analyze
     log "Analyzing hssearch"

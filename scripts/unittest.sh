@@ -61,10 +61,11 @@ unittest_go () {
     log "unittest_go"
     export GOSRC_PATH=$GO_PATH/src/elocale.com/clarkcb/xsearch
 
-    # now build gosearch
+    # Run the tests using go test
     log "Unit-testing gosearch"
-    log "go test"
-    cd $GOSRC_PATH; go test; cd -
+    log "go test --cover elocale.com/clarkcb/xsearch/..."
+    # cd $GOSRC_PATH; go test; cd -
+    go test --cover elocale.com/clarkcb/xsearch/...
 }
 
 unittest_haskell () {
@@ -72,10 +73,10 @@ unittest_haskell () {
     log "unittest_haskell"
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
 
-    # build with cabal
+    # test with stack
     log "Unit-testing hssearch"
-    log "cabal test"
-    cd $HSSEARCH_PATH/; cabal test; cd -
+    log "stack test"
+    cd $HSSEARCH_PATH/; stack test; cd -
 }
 
 unittest_java () {

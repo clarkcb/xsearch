@@ -155,8 +155,8 @@ build_go () {
 
     # go fmt the gosearch source (for auto-generated code)
     log "Auto-formatting gosearch"
-    log "go fmt elocale.com/clarkcb/xsearch"
-    go fmt elocale.com/clarkcb/xsearch
+    log "go fmt elocale.com/clarkcb/xsearch/..."
+    go fmt elocale.com/clarkcb/xsearch/...
 
     # now build gosearch
     log "Building gosearch"
@@ -168,29 +168,22 @@ build_haskell () {
     echo
     log "build_haskell"
     HSSEARCH_PATH=$HASKELL_PATH/hssearch
-    SANDBOX_PATH=$HSSEARCH_PATH/.cabal-sandbox
     RESOURCES_PATH=$HSSEARCH_PATH/data
-
-    if [ ! -d "$SANDBOX_PATH" ]; then
-        echo "$SANDBOX_PATH not found, initializing and installing dependencies"
-        cd $HSSEARCH_PATH/
-        cabal sandbox init --sandbox $SANDBOX_PATH
-        cd -
-    fi
-    if [ -d "$SANDBOX_PATH" ]; then
-        cd $HSSEARCH_PATH/
-        cabal install --only-dependencies
-        cd -
-    fi
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
-    # build with cabal
+    # build with stack (via make)
     log "Building hssearch"
-    log "cabal build"
-    cd $HSSEARCH_PATH/; cabal build; cd -
+    cd $HSSEARCH_PATH/
+    log "stack setup"
+    make setup
+    log "stack build"
+    make build
+    log "stack install"
+    stack install
+    cd -
 }
 
 build_java () {
