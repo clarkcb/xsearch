@@ -19,7 +19,7 @@ xsearchPath :: FilePath
 xsearchPath = "/Users/cary/src/xsearch"
 
 getXsearchPath :: IO FilePath
-getXsearchPath = do
+getXsearchPath =
   return xsearchPath
 
 getDataPath :: IO FilePath

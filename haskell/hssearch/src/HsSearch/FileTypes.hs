@@ -63,7 +63,7 @@ getFileTypes files = do
 
 getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =
-  case (lower typeName) of
+  case lower typeName of
     "archive" -> Archive
     "binary" -> Binary
     "code" -> Code

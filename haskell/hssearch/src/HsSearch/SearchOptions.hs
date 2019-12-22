@@ -59,7 +59,7 @@ getOptDesc SearchOption {desc=""} = error "No description for SearchOption"
 getOptDesc SearchOption {desc=d} = d
 
 sortSearchOption :: SearchOption -> SearchOption -> Ordering
-sortSearchOption (SearchOption {long=l1, short=s1}) (SearchOption {long=l2, short=s2}) =
+sortSearchOption SearchOption {long=l1, short=s1} SearchOption {long=l2, short=s2} =
   compare (shortOrLong s1 l1) (shortOrLong s2 l2)
   where
     shortOrLong "" l = l
@@ -143,21 +143,21 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               ]
 
 boolFlagActions :: [(String, BoolFlagAction)]
-boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=(not b)})
+boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                   , ("archivesonly", \ss b -> ss {archivesOnly=b,
                                                   searchArchives=b})
                   , ("debug", \ss b -> ss {debug=b, verbose=b})
                   , ("excludehidden", \ss b -> ss {excludeHidden=b})
                   , ("firstmatch", \ss b -> ss {firstMatch=b})
                   , ("help", \ss b -> ss {printUsage=b})
-                  , ("includehidden", \ss b -> ss {excludeHidden=(not b)})
+                  , ("includehidden", \ss b -> ss {excludeHidden=not b})
                   , ("listdirs", \ss b -> ss {listDirs=b})
                   , ("listfiles", \ss b -> ss {listFiles=b})
                   , ("listlines", \ss b -> ss {listLines=b})
                   , ("multilinesearch", \ss b -> ss {multiLineSearch=b})
-                  , ("noprintmatches", \ss b -> ss {printResults=(not b)})
-                  , ("norecursive", \ss b -> ss {recursive=(not b)})
-                  , ("nosearcharchives", \ss b -> ss {searchArchives=(not b)})
+                  , ("noprintmatches", \ss b -> ss {printResults=not b})
+                  , ("norecursive", \ss b -> ss {recursive=not b})
+                  , ("nosearcharchives", \ss b -> ss {searchArchives=not b})
                   , ("printmatches", \ss b -> ss {printResults=b})
                   , ("recursive", \ss b -> ss {recursive=b})
                   , ("searcharchives", \ss b -> ss {searchArchives=b})

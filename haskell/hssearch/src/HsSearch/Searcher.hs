@@ -61,9 +61,9 @@ isSearchFile settings fp = all ($fp) tests
                 , \x -> null outPatterns
                          || all (\p -> not $ x =~ p :: Bool) outPatterns
                 , \x -> null inTypes
-                         || (getFileTypeForName fp) `elem` inTypes
+                         || getFileTypeForName x `elem` inTypes
                 , \x -> null outTypes
-                         || (getFileTypeForName fp) `elem` outTypes
+                         || getFileTypeForName x `elem` outTypes
                 , \x -> not (isHiddenFilePath x) || includeHidden
                 ]
         inExts = inExtensions settings
@@ -178,10 +178,10 @@ matchesPattern :: B.ByteString -> String -> Bool
 matchesPattern l p = l =~ p
 
 anyMatchesPattern :: [B.ByteString] -> String -> Bool
-anyMatchesPattern ls p = any (\l -> matchesPattern l p) ls
+anyMatchesPattern ls p = any (`matchesPattern` p) ls
 
 matchesAnyPattern :: B.ByteString -> [String] -> Bool
-matchesAnyPattern l ps = any (\p -> matchesPattern l p) ps
+matchesAnyPattern l = any (matchesPattern l)
 
 searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
 searchTextFileContents settings f = do
