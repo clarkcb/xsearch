@@ -30,6 +30,11 @@ dependencies:
 - text
 - timeit
 
+data-files:
+  - data/*.json
+  - data/*.xml
+
+
 library:
   source-dirs: src
 

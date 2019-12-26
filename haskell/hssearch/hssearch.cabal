@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d643e3cce6e8f4965106993a28a1881d3ccb097e25f4379657cf2e6c5253427e
+-- hash: 8c5cf4b2e15da02dc5a012d948f2d5005ef5cb703c301e31887579794b3bfb03
 
 name:           hssearch
 version:        0.1.0.0
@@ -20,6 +20,12 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+data-files:
+    data/config.json
+    data/filetypes.json
+    data/searchoptions.json
+    data/filetypes.xml
+    data/searchoptions.xml
 
 source-repository head
   type: git
