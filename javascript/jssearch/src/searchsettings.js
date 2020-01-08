@@ -45,6 +45,7 @@ function SearchSettings() {
     self.searchArchives = false;
     self.searchPatterns = [];
     self.startPath = "";
+    self.textFileEncoding = "utf-8";
     self.uniqueLines = false;
     self.verbose = false;
 
@@ -187,7 +188,8 @@ function SearchSettings() {
             ', recursive=' + self.recursive +
             ', searchArchives=' + self.searchArchives +
             ', ' + listToString('searchPatterns', self.searchPatterns) +
-            ',  startPath="' + self.startPath + '"' +
+            ', startPath="' + self.startPath + '"' +
+            ', textFileEncoding="' + self.textFileEncoding + '"' +
             ', uniqueLines=' + self.uniqueLines +
             ', verbose=' + self.verbose +
             ')';

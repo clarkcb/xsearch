@@ -21,6 +21,8 @@ function SearchOptions() {
     let flagMap = {};
 
     const argActionMap = {
+        'encoding':
+            (x, settings) => { settings.textFileEncoding = x; },
         'in-archiveext':
             (x, settings) => { settings.addInArchiveExtension(x); },
         'in-archivefilepattern':

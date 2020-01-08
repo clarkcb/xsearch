@@ -37,6 +37,8 @@ class SearchOptions {
         this.flagMap = {};
 
         this.argActionMap = {
+            'encoding':
+                (x: string, settings: SearchSettings) => { settings.textFileEncoding = x; },
             'in-archiveext':
                 (x: string, settings: SearchSettings) => { settings.addInArchiveExtension(x); },
             'in-archivefilepattern':

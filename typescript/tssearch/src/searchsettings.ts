@@ -47,6 +47,7 @@ class SearchSettings {
     searchArchives: boolean = false;
     searchPatterns: RegExp[] = [];
     startPath: string = "";
+    textFileEncoding: string = "utf-8";
     uniqueLines: boolean = false;
     verbose: boolean = false;
 
@@ -208,7 +209,8 @@ class SearchSettings {
             + ', recursive=' + this.recursive
             + ', searchArchives=' + this.searchArchives
             + ', ' + SearchSettings.listToString('searchPatterns', this.searchPatterns)
-            + ',  startPath="' + this.startPath + '"'
+            + ', startPath="' + this.startPath + '"'
+            + ', textFileEncoding="' + this.textFileEncoding + '"'
             + ', uniqueLines=' + this.uniqueLines
             + ', verbose=' + this.verbose
             + ')';

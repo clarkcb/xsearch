@@ -4,7 +4,7 @@
 /// <reference path="searchresult.ts"/>
 /// <reference path="searchsettings.ts"/>
 /*
- * searcher.js
+ * searcher.ts
  *
  * performs the searching based on the given SearchSettings instance
  */
@@ -35,6 +35,7 @@ class Searcher {
         assert.ok(fs.existsSync(this._settings.startPath), 'Startpath not found');
         assert.ok(this.isSearchDir(this._settings.startPath), 'Startpath does not match search settings');
         assert.ok(this._settings.searchPatterns.length, 'No search patterns defined');
+        assert.equal(this._settings.textFileEncoding, "utf-8", "Invalid encoding");
     }
 
     private static matchesAnyElement(s: string, elements: string[]): boolean {

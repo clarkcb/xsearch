@@ -26,6 +26,7 @@ function Searcher(settings) {
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
         assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
         assert.ok(_settings.searchPatterns.length, 'No search patterns defined');
+        assert.equal(settings.textFileEncoding, "utf-8", "Invalid encoding");
     };
 
     const matchesAnyElement = (s, elements) => elements.indexOf(s) > -1;
