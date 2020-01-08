@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
+	"gosearch/pkg/gosearch"
 	"os"
-
-	"elocale.com/clarkcb/xsearch/pkg/gosearch"
 )
 
 func errorAndExit(err error, searchOptions *gosearch.SearchOptions) {

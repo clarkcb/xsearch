@@ -188,6 +188,20 @@ func (s *SearchSettings) AddSearchPattern(p string) {
 	addPattern(&p, s.SearchPatterns)
 }
 
+func (s *SearchSettings) SetArchivesOnly(archivesOnly bool) {
+	s.ArchivesOnly = archivesOnly
+	if archivesOnly {
+		s.SearchArchives = true
+	}
+}
+
+func (s *SearchSettings) SetDebug(debug bool) {
+	s.Debug = debug
+	if debug {
+		s.Verbose = true
+	}
+}
+
 func addSearchPatternsToBuffer(name string, sp *SearchPatterns, buffer *bytes.Buffer) {
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
 	for i, r := range sp.patterns {

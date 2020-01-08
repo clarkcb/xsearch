@@ -315,16 +315,10 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.FirstMatch = !b
 		},
 		"archivesonly": func(b bool, settings *SearchSettings) {
-			settings.ArchivesOnly = b
-			if b {
-				settings.SearchArchives = b
-			}
+			settings.SetArchivesOnly(b)
 		},
 		"debug": func(b bool, settings *SearchSettings) {
-			settings.Debug = b
-			if b {
-				settings.Verbose = b
-			}
+			settings.SetDebug(b)
 		},
 		"excludehidden": func(b bool, settings *SearchSettings) {
 			settings.ExcludeHidden = b

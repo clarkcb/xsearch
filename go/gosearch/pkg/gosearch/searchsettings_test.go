@@ -38,3 +38,25 @@ func TestAddExtensions(t *testing.T) {
 		t.Errorf("InExtensions should have two elements")
 	}
 }
+
+func TestSetArchivesOnly(t *testing.T) {
+	settings := GetDefaultSearchSettings()
+	settings.SetArchivesOnly(true)
+	if !settings.ArchivesOnly {
+		t.Errorf("ArchivesOnly should be true")
+	}
+	if !settings.SearchArchives {
+		t.Errorf("SearchArchives should be true")
+	}
+}
+
+func TestSetDebug(t *testing.T) {
+	settings := GetDefaultSearchSettings()
+	settings.SetDebug(true)
+	if !settings.Debug {
+		t.Errorf("Debug should be true")
+	}
+	if !settings.Verbose {
+		t.Errorf("Verbose should be true")
+	}
+}
