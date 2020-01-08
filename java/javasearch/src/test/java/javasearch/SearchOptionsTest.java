@@ -2,9 +2,9 @@ package javasearch;
 
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
-import org.xml.sax.SAXException;
-import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 public class SearchOptionsTest {
@@ -38,10 +38,10 @@ public class SearchOptionsTest {
             assertFalse(settings.getVerbose());
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
-            assertTrue(false);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+            fail();
+        } catch (ParseException | IOException e) {
             System.out.println("Exception: " + e.getMessage());
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -55,13 +55,13 @@ public class SearchOptionsTest {
             assertTrue(settings.getInExtensions().contains("java"));
             assertTrue(settings.getInExtensions().contains("scala"));
             assertEquals(settings.getSearchPatterns().size(), 1);
-            assertTrue(settings.getSearchPatterns().toArray()[0].toString().equals("Search"));
+            assertEquals("Search", settings.getSearchPatterns().toArray()[0].toString());
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
-            assertTrue(false);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+            fail();
+        } catch (ParseException | IOException e) {
             System.out.println("Exception: " + e.getMessage());
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -84,20 +84,20 @@ public class SearchOptionsTest {
             SearchSettings settings = new SearchSettings();
             searchOptions.settingsFromJson(json.toString(), settings);
 
-            assertTrue(settings.getStartPath().equals("~/src/xsearch/"));
+            assertEquals("~/src/xsearch/", settings.getStartPath());
 
             assertEquals(settings.getInExtensions().size(), 2);
             assertTrue(settings.getInExtensions().contains("js"));
             assertTrue(settings.getInExtensions().contains("ts"));
 
             assertEquals(settings.getOutDirPatterns().size(), 1);
-            assertTrue(settings.getOutDirPatterns().toArray()[0].toString().equals("node_module"));
+            assertEquals("node_module", settings.getOutDirPatterns().toArray()[0].toString());
 
             assertEquals(settings.getOutFilePatterns().size(), 1);
-            assertTrue(settings.getOutFilePatterns().toArray()[0].toString().equals("temp"));
+            assertEquals("temp", settings.getOutFilePatterns().toArray()[0].toString());
 
             assertEquals(settings.getSearchPatterns().size(), 1);
-            assertTrue(settings.getSearchPatterns().toArray()[0].toString().equals("Searcher"));
+            assertEquals("Searcher", settings.getSearchPatterns().toArray()[0].toString());
 
             assertEquals(settings.getLinesBefore(), 2);
             assertEquals(settings.getLinesAfter(), 2);
@@ -107,10 +107,10 @@ public class SearchOptionsTest {
             assertTrue(settings.getExcludeHidden());
         } catch (ParseException e) {
             System.out.println("ParseException: " + e.getMessage());
-            assertTrue(false);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            System.out.println("Exception: " + e.getMessage());
-            assertTrue(false);
+            fail();
+        } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
+            fail();
         }
     }
 }

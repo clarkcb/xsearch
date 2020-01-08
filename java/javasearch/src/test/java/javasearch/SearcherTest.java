@@ -320,7 +320,8 @@ public class SearcherTest {
     @Test
     public final void testFilterFile_NotIsArchiveSearchFile_False() {
         SearchSettings settings = getSettings();
-        settings.addOutExtension("zip");
+        settings.setSearchArchives(true);
+        settings.addOutArchiveExtension("zip");
         Searcher searcher = new Searcher(settings);
         File file = new File("archive.zip");
         assertFalse(searcher.filterFile(file));
@@ -374,7 +375,7 @@ public class SearcherTest {
      * searchStringIterator test
      *************************************************************/
     @Test
-    public final void TestSearchStringIterator() {
+    public final void testSearchStringIterator() {
         SearchSettings settings = getSettings();
         Searcher searcher = new Searcher(settings);
         Iterator<String> lineIterator;
@@ -411,7 +412,7 @@ public class SearcherTest {
      * searchMultiLineString tests
      *************************************************************/
     @Test
-    public final void TestSearchMultiLineString() {
+    public final void testSearchMultiLineString() {
         SearchSettings settings = getSettings();
         Searcher searcher = new Searcher(settings);
         String contents;
@@ -445,7 +446,7 @@ public class SearcherTest {
     }
 
     @Test
-    public final void TestSearchMultiLineStringWithLinesBefore() {
+    public final void testSearchMultiLineStringWithLinesBefore() {
         SearchSettings settings = getSettings();
         settings.setLinesBefore(2);
         Searcher searcher = new Searcher(settings);
@@ -482,7 +483,7 @@ public class SearcherTest {
     }
 
     @Ignore
-    public final void TestPrintSearchResults() {
+    public final void testPrintSearchResults() {
         SearchSettings settings = getSettings();
         //settings.setLinesBefore(2);
         Searcher searcher = new Searcher(settings);
