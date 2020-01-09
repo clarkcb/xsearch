@@ -15,14 +15,14 @@ namespace CsSearch
 		private const char backSlash = '\\';
 		private static readonly char[] dirSeps = new char[] { forwardSlash, backSlash };
 
-		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f)
+		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f, Encoding enc)
 		{
-			return EnumerableStringFromFile(f.FullName);
+			return EnumerableStringFromFile(f.FullName, enc);
 		}
 
-		public static IEnumerable<string> EnumerableStringFromFile(string filepath)
+		public static IEnumerable<string> EnumerableStringFromFile(string filepath, Encoding enc)
 		{
-			using (var sr = new StreamReader(filepath))
+			using (var sr = new StreamReader(filepath, enc))
 			{
 				// read each line, ensuring not null (EOF)
 				string line;
