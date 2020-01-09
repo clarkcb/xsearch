@@ -16,7 +16,7 @@ namespace CsSearch
                     return reader.ReadToEnd();
             }
 
-            catch(Exception exception)
+            catch(Exception)
             {
                 //ApplicationProvider.WriteToLog<EmbeddedResource>().Error(exception.Message);
                 throw new Exception($"Failed to read Embedded Resource {namespaceAndFileName}");
