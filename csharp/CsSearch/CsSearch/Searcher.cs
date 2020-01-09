@@ -238,6 +238,21 @@ namespace CsSearch
 
 		private void SearchBatch(SearchFile[] searchFiles)
 		{
+			if (searchFiles.Length > 100)
+			{
+				SearchBatchConcurrent(searchFiles);
+			}
+			else
+			{
+				foreach (var f in searchFiles)
+				{
+					DoSearchFile(f);
+				}
+			}
+		}
+
+		private void SearchBatchConcurrent(SearchFile[] searchFiles)
+		{
 			var searchTasks = new Task[searchFiles.Length];
 			for (var i = 0; i < searchFiles.Length; i++)
 			{
