@@ -63,11 +63,21 @@ namespace CsSearch
 			return string.Format("{0}", maxLineNum).Length;
 		}
 
+		private string GetRelativeFilePath(SearchSettings settings)
+		{
+			if (settings.StartPath[0] == '~')
+			{
+				return FileUtil.ContractPath(File.FullName);
+			}
+
+			return FileUtil.GetRelativePath(File.FullName, settings.StartPath);
+		}
+
 		private string MultiLineToString(SearchSettings settings)
 		{
 			var sb = new StringBuilder().
 				Append(new String('=', 80)).Append('\n').
-				Append(FileUtil.GetRelativePath(File.FullName, settings.StartPath)).Append(": ").
+				Append(GetRelativeFilePath(settings)).Append(": ").
 				Append(LineNum).Append(": ").
 				Append('[').Append(MatchStartIndex).Append(':').
 				Append(MatchEndIndex).Append("]\n").
@@ -102,7 +112,7 @@ namespace CsSearch
 
 		private string SingleLineToString(SearchSettings settings)
 		{
-			var sb = new StringBuilder().Append(FileUtil.GetRelativePath(File.FullName, settings.StartPath));
+			var sb = new StringBuilder().Append(GetRelativeFilePath(settings));
 			if (LineNum == 0)
 			{
 				sb.Append(string.Format(" matches at [{0}:{1}]", MatchStartIndex, MatchEndIndex));

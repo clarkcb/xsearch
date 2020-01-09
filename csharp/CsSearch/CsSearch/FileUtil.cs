@@ -36,11 +36,12 @@ namespace CsSearch
 
 		public static string ExpandPath(string filepath)
 		{
-			if (filepath[0] == '~')
-			{
-				return JoinPath(GetHomePath(), filepath.Substring(1));
-			}
-			return filepath;
+			return filepath[0] == '~' ? JoinPath(GetHomePath(), filepath.Substring(1)) : filepath;
+		}
+
+		public static string ContractPath(string filepath)
+		{
+			return filepath[0] == '~' ? filepath : filepath.Replace(GetHomePath(), "~");
 		}
 
 		public static string GetFileContents(SearchFile f, Encoding encoding)

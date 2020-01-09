@@ -29,14 +29,15 @@ namespace CsSearch
 		{
 			if (string.IsNullOrEmpty(Settings.StartPath))
 				throw new SearchException("Startpath not defined");
-			if (FileUtil.IsDirectory(Settings.StartPath))
+			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
+			if (FileUtil.IsDirectory(expandedPath))
 			{
-				if (!(new DirectoryInfo(Settings.StartPath)).Exists)
+				if (!(new DirectoryInfo(expandedPath)).Exists)
 					throw new SearchException("Startpath not found");
 			}
 			else
 			{
-				if (!(new FileInfo(Settings.StartPath)).Exists)
+				if (!(new FileInfo(expandedPath)).Exists)
 					throw new SearchException("Startpath not found");
 			}
 			if (Settings.SearchPatterns.Count < 1)
@@ -138,7 +139,7 @@ namespace CsSearch
 			if (Settings.Debug)
 			{
 				Common.Log(string.Format("Getting search files under {0}",
-					FileUtil.GetRelativePath(dir.FullName, Settings.StartPath)));
+					FileUtil.ContractPath(dir.FullName)));
 			}
 			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
 			try
@@ -151,7 +152,7 @@ namespace CsSearch
 			{
 				if (Settings.Verbose)
 					Common.Log(String.Format("Error while accessing dir {0}: {1}",
-						FileUtil.GetRelativePath(dir.FullName, Settings.StartPath), e.Message));
+						FileUtil.ContractPath(dir.FullName), e.Message));
 			}
 			return dirSearchFiles;
 		}
@@ -168,9 +169,10 @@ namespace CsSearch
 
 		public void Search()
 		{
-			if (FileUtil.IsDirectory(Settings.StartPath))
+			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
+			if (FileUtil.IsDirectory(expandedPath))
 			{
-				var startDir = new DirectoryInfo(Settings.StartPath);
+				var startDir = new DirectoryInfo(expandedPath);
 				if (IsSearchDirectory(startDir))
 				{
 					SearchPath(startDir);
@@ -182,7 +184,7 @@ namespace CsSearch
 			}
 			else
 			{
-				var f = new FileInfo(Settings.StartPath);
+				var f = new FileInfo(expandedPath);
 				if (FilterFile(f))
 				{
 					DoSearchFile(new SearchFile(f.DirectoryName, f.Name, _fileTypes.GetFileType(f)));
@@ -206,7 +208,7 @@ namespace CsSearch
 				Common.Log(string.Format("Directories to be searched ({0}):", searchDirs.Count));
 				foreach (var d in searchDirs)
 				{
-					Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
+					Common.Log(FileUtil.ContractPath(d.FullName));
 				}
 				Common.Log("");
 			}
@@ -217,7 +219,7 @@ namespace CsSearch
 				Common.Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Length));
 				foreach (var f in searchFiles)
 				{
-					Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
+					Common.Log(FileUtil.ContractPath(f.FullName));
 				}
 				Common.Log("");
 			}
@@ -271,7 +273,7 @@ namespace CsSearch
 		{
 			if (Settings.Verbose)
 				Common.Log(string.Format("Searching text file {0}",
-					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+					FileUtil.ContractPath(f.FullName)));
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else
