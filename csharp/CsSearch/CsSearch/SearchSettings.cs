@@ -42,7 +42,7 @@ namespace CsSearch
 		public bool SearchArchives { get; set; }
 		public ISet<Regex> SearchPatterns { get; private set; }
 		public string StartPath { get; set; }
-		public Encoding TextFileEncoding { get; set; }
+		public string TextFileEncoding { get; set; }
 		public bool UniqueLines { get; set; } = false;
 		public bool Verbose { get; set; }
 
@@ -83,7 +83,7 @@ namespace CsSearch
 			Recursive = true;
 			SearchArchives = false;
 			SearchPatterns = new HashSet<Regex>();
-			TextFileEncoding = Encoding.UTF8;
+			TextFileEncoding = "utf-8";
 			UniqueLines = false;
 			Verbose = false;
 		}
@@ -280,6 +280,7 @@ namespace CsSearch
 			sb.Append(", SearchArchives: " + SearchArchives);
 			sb.Append(", SearchPatterns: " + EnumerableToString(SearchPatterns));
 			sb.Append(", StartPath: \"" + StartPath + "\"");
+			sb.Append(", TextFileEncoding: \"" + TextFileEncoding + "\"");
 			sb.Append(", UniqueLines: " + UniqueLines);
 			sb.Append(", Verbose: " + Verbose);
 			sb.Append(")");

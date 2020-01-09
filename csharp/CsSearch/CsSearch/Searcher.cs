@@ -41,6 +41,14 @@ namespace CsSearch
 			}
 			if (Settings.SearchPatterns.Count < 1)
 				throw new SearchException("No search patterns defined");
+			try
+			{
+				var enc = Encoding.GetEncoding(Settings.TextFileEncoding);
+			}
+			catch (ArgumentException)
+			{
+				throw new SearchException("Invalid encoding");
+			}
 		}
 
 		public bool IsSearchDirectory(DirectoryInfo d)
@@ -274,7 +282,8 @@ namespace CsSearch
 		{
 			try
 			{
-				var contents = FileUtil.GetFileContents(f, Settings.TextFileEncoding);
+				var enc = Encoding.GetEncoding(Settings.TextFileEncoding);
+				var contents = FileUtil.GetFileContents(f, enc);
 				var results = SearchContents(contents);
 				foreach (var r in results)
 				{
@@ -400,7 +409,8 @@ namespace CsSearch
 		{
 			try
 			{
-				var enumerableLines = FileUtil.EnumerableStringFromFile(f);
+				var enc = Encoding.GetEncoding(Settings.TextFileEncoding);
+				var enumerableLines = FileUtil.EnumerableStringFromFile(f, enc);
 				var results = SearchLines(enumerableLines);
 
 				foreach (var r in results)
