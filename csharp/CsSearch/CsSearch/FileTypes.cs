@@ -31,7 +31,7 @@ namespace CsSearch
 
 		public FileTypes()
 		{
-			_fileTypesResource = Properties.Resources.filetypes;
+			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
 			PopulateFileTypes();
 		}

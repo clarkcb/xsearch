@@ -1,2 +1,2 @@
 @echo off
-%USERPROFILE%\src\xsearch\csharp\CsSearch\CsSearch\bin\Debug\CsSearch.exe %*
+%USERPROFILE%\src\xsearch\csharp\CsSearch\CsSearch\bin\Debug\netcoreapp2.2\CsSearch.dll %*

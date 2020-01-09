@@ -12,12 +12,14 @@ namespace CsSearchTests
 	{
 		private static string GetTestFileContent()
 		{
-			return Properties.Resources.testFile2;
+			//return Properties.Resources.testFile2;
+			return EmbeddedTestResource.GetResourceFileContents("CsSearchTests.Resources.testFile2.txt");
 		}
 
 		public static IEnumerable<string> GetTestFileLines()
 		{
-			foreach (var line in Properties.Resources.testFile2.Split(new[] { "\n", "\r" }, StringSplitOptions.None))
+			var testFile2Contents = GetTestFileContent();
+			foreach (var line in testFile2Contents.Split(new[] { "\n", "\r" }, StringSplitOptions.None))
 			{
 				yield return line;
 			}

@@ -71,7 +71,7 @@ namespace CsSearchTests
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
 			var expectedPath = CsSearchPath + "/Searcher.exe";
-			var expectedOutput = string.Format("{0} matches", expectedPath);
+			var expectedOutput = $"{expectedPath} matches at [0:0]";
 
 			Assert.AreEqual(searchResult.ToString(settings), expectedOutput);
 		}

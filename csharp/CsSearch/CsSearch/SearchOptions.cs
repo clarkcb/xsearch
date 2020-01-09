@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 
@@ -69,7 +70,7 @@ namespace CsSearch
 
 		public SearchOptions()
 		{
-			_searchOptionsResource = Properties.Resources.searchoptions;
+			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.xml");
 			Options = new List<SearchOption>();
 			ArgDictionary = new Dictionary<string, SearchOption>();
 			FlagDictionary = new Dictionary<string, SearchOption>();

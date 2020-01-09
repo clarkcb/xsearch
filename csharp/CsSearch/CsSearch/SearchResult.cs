@@ -65,12 +65,16 @@ namespace CsSearch
 
 		private string GetRelativeFilePath(SearchSettings settings)
 		{
-			if (settings.StartPath[0] == '~')
+			if (!string.IsNullOrEmpty(settings.StartPath))
 			{
-				return FileUtil.ContractPath(File.FullName);
+				if (settings.StartPath[0] == '~')
+				{
+					return FileUtil.ContractPath(File.FullName);
+				}
+				return FileUtil.GetRelativePath(File.FullName, settings.StartPath);
 			}
 
-			return FileUtil.GetRelativePath(File.FullName, settings.StartPath);
+			return File.FullName;
 		}
 
 		private string MultiLineToString(SearchSettings settings)
