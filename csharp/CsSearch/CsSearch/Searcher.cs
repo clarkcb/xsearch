@@ -264,23 +264,30 @@ namespace CsSearch
 
 		public void DoSearchFile(SearchFile f)
 		{
-			if (f.Type == FileType.Text)
+			switch (f.Type)
 			{
-				SearchTextFile(f);
-			}
-			else if (f.Type == FileType.Binary)
-			{
-				SearchBinaryFile(f);
-			}
-			else if (f.Type == FileType.Archive)
-			{
-				Common.Log(string.Format("Skipping archive file {0}",
-					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
-			}
-			else if (Settings.Verbose)
-			{
-				Common.Log(string.Format("Skipping file {0}",
-					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+				case FileType.Code:
+				case FileType.Text:
+				case FileType.Xml:
+					SearchTextFile(f);
+					break;
+				case FileType.Binary:
+					SearchBinaryFile(f);
+					break;
+				case FileType.Archive:
+					Common.Log(string.Format("Skipping archive file {0}",
+						FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+					break;
+				default:
+				{
+					if (Settings.Verbose)
+					{
+						Common.Log(string.Format("Skipping file {0}",
+							FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+					}
+
+					break;
+				}
 			}
 		}
 
