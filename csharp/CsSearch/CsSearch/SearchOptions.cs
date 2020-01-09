@@ -109,9 +109,8 @@ namespace CsSearch
 
 		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
 		{
-			var settings = new SearchSettings();
 			// default to PrintResults = true since this is called from CLI functionality
-			settings.PrintResults = true;
+			var settings = new SearchSettings {PrintResults = true};
 			var queue = new Queue<string>(args);
 
 			while (queue.Count > 0)

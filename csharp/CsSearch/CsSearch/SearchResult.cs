@@ -59,8 +59,8 @@ namespace CsSearch
 
 		private int LineNumPadding()
 		{
-			int maxLineNum = LineNum + LinesAfter.Count;
-			return string.Format("{0}", maxLineNum).Length;
+			var maxLineNum = LineNum + LinesAfter.Count;
+			return $"{maxLineNum}".Length;
 		}
 
 		private string GetRelativeFilePath(SearchSettings settings)
@@ -76,14 +76,14 @@ namespace CsSearch
 		private string MultiLineToString(SearchSettings settings)
 		{
 			var sb = new StringBuilder().
-				Append(new String('=', 80)).Append('\n').
+				Append(new string('=', 80)).Append('\n').
 				Append(GetRelativeFilePath(settings)).Append(": ").
 				Append(LineNum).Append(": ").
 				Append('[').Append(MatchStartIndex).Append(':').
 				Append(MatchEndIndex).Append("]\n").
 				Append(new String('-', 80)).Append('\n');
-			int currentLineNum = LineNum;
-			string lineFormat = " {0," + LineNumPadding() + "} | {1}\n";
+			var currentLineNum = LineNum;
+			var lineFormat = " {0," + LineNumPadding() + "} | {1}\n";
 			if (LinesBefore.Count > 0)
 			{
 				currentLineNum -= LinesBefore.Count;
@@ -99,7 +99,7 @@ namespace CsSearch
 			if (LinesAfter.Count > 0)
 			{
 				currentLineNum++;
-				foreach (string lineAfter in LinesAfter)
+				foreach (var lineAfter in LinesAfter)
 				{
 					sb.Append(' ').
 						Append(string.Format(lineFormat, currentLineNum,
@@ -115,12 +115,11 @@ namespace CsSearch
 			var sb = new StringBuilder().Append(GetRelativeFilePath(settings));
 			if (LineNum == 0)
 			{
-				sb.Append(string.Format(" matches at [{0}:{1}]", MatchStartIndex, MatchEndIndex));
+				sb.Append($" matches at [{MatchStartIndex}:{MatchEndIndex}]");
 			}
 			else
 			{
-				sb.Append(string.Format(": {0}: [{1}:{2}]: ", LineNum,
-					MatchStartIndex, MatchEndIndex));
+				sb.Append($": {LineNum}: [{MatchStartIndex}:{MatchEndIndex}]: ");
 				sb.Append(FormatMatchingLine());
 			}
 			return sb.ToString();
@@ -138,11 +137,11 @@ namespace CsSearch
 				var beforeIndex = MatchStartIndex;
 				if (MatchStartIndex > 0)
 				{
-					beforeIndex = beforeIndex - (adjustedMaxLength / 4);
+					beforeIndex -= (adjustedMaxLength / 4);
 					if (beforeIndex < 0)
 						beforeIndex = 0;
 				}
-				adjustedMaxLength = adjustedMaxLength - (MatchStartIndex - beforeIndex);
+				adjustedMaxLength -= (MatchStartIndex - beforeIndex);
 				var afterIndex = MatchEndIndex + adjustedMaxLength;
 				if (afterIndex > lineLength)
 					afterIndex = lineLength;

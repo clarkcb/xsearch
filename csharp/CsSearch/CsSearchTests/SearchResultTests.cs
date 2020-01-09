@@ -17,10 +17,10 @@ namespace CsSearchTests
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
-			var lineNum = 10;
-			var matchStartIndex = 15;
-			var matchEndIndex = 23;
-			var line = "\tpublic class Searcher\n";
+			const int lineNum = 10;
+			const int matchStartIndex = 15;
+			const int matchEndIndex = 23;
+			const string line = "\tpublic class Searcher\n";
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
 			var expectedPath = CsSearchPath + "/Searcher.cs";
@@ -36,10 +36,10 @@ namespace CsSearchTests
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
-			var lineNum = 10;
-			var matchStartIndex = 15;
-			var matchEndIndex = 23;
-			var line = "\tpublic class Searcher";
+			const int lineNum = 10;
+			const int matchStartIndex = 15;
+			const int matchEndIndex = 23;
+			const string line = "\tpublic class Searcher";
 			var linesBefore = new List<string> { "namespace CsSearch", "{" };
 			var linesAfter = new List<string> {"\t{", "\t\tprivate readonly FileTypes _fileTypes;"};
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
@@ -64,9 +64,9 @@ namespace CsSearchTests
 			var settings = new SearchSettings();
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile(CsSearchPath, "Searcher.exe", FileType.Binary);
-			var lineNum = 0;
-			var matchStartIndex = 0;
-			var matchEndIndex = 0;
+			const int lineNum = 0;
+			const int matchStartIndex = 0;
+			const int matchEndIndex = 0;
 			string line = null;
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);

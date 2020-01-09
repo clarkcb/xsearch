@@ -15,7 +15,7 @@ namespace CsSearch
 		public SearchSettings Settings { get; private set; }
 		public ConcurrentBag<SearchResult> Results { get; private set; }
 
-		private static int _fileBatchSize = 255;
+		private const int FileBatchSize = 255;
 
 		public Searcher(SearchSettings settings)
 		{
@@ -112,8 +112,7 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Common.Log(String.Format("Error while accessing dir {0}: {1}",
-						FileUtil.GetRelativePath(dir.FullName, Settings.StartPath), e.Message));
+					Common.Log($"Error while accessing dir {FileUtil.ContractPath(dir.FullName)}: {e.Message}");
 			}
 			return searchDirs;
 		}
@@ -138,8 +137,7 @@ namespace CsSearch
 		{
 			if (Settings.Debug)
 			{
-				Common.Log(string.Format("Getting search files under {0}",
-					FileUtil.ContractPath(dir.FullName)));
+				Common.Log($"Getting search files under {FileUtil.ContractPath(dir.FullName)}");
 			}
 			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
 			try
@@ -151,8 +149,7 @@ namespace CsSearch
 			catch (IOException e)
 			{
 				if (Settings.Verbose)
-					Common.Log(String.Format("Error while accessing dir {0}: {1}",
-						FileUtil.ContractPath(dir.FullName), e.Message));
+					Common.Log($"Error while accessing dir {FileUtil.ContractPath(dir.FullName)}: {e.Message}");
 			}
 			return dirSearchFiles;
 		}
@@ -205,7 +202,7 @@ namespace CsSearch
 			}
 			if (Settings.Verbose)
 			{
-				Common.Log(string.Format("Directories to be searched ({0}):", searchDirs.Count));
+				Common.Log($"Directories to be searched ({searchDirs.Count}):");
 				foreach (var d in searchDirs)
 				{
 					Common.Log(FileUtil.ContractPath(d.FullName));
@@ -216,7 +213,7 @@ namespace CsSearch
 			var searchFiles = GetSearchFiles(searchDirs).ToArray();
 			if (Settings.Verbose)
 			{
-				Common.Log(string.Format("\nFiles to be searched ({0}):", searchFiles.Length));
+				Common.Log($"\nFiles to be searched ({searchFiles.Length}):");
 				foreach (var f in searchFiles)
 				{
 					Common.Log(FileUtil.ContractPath(f.FullName));
@@ -225,10 +222,10 @@ namespace CsSearch
 			}
 
 			var searched = 0;
-			while (searchFiles.Length - searched > _fileBatchSize)
+			while (searchFiles.Length - searched > FileBatchSize)
 			{
-				SearchBatch(searchFiles.Skip(searched).Take(_fileBatchSize).ToArray());
-				searched += _fileBatchSize;
+				SearchBatch(searchFiles.Skip(searched).Take(FileBatchSize).ToArray());
+				searched += FileBatchSize;
 			}
 			if (searchFiles.Length > searched)
 			{
@@ -275,15 +272,13 @@ namespace CsSearch
 					SearchBinaryFile(f);
 					break;
 				case FileType.Archive:
-					Common.Log(string.Format("Skipping archive file {0}",
-						FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+					Common.Log($"Skipping archive file {FileUtil.ContractPath(f.FullName)}");
 					break;
 				default:
 				{
 					if (Settings.Verbose)
 					{
-						Common.Log(string.Format("Skipping file {0}",
-							FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+						Common.Log($"Skipping file {FileUtil.ContractPath(f.FullName)}");
 					}
 
 					break;
@@ -294,8 +289,7 @@ namespace CsSearch
 		private void SearchTextFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Common.Log(string.Format("Searching text file {0}",
-					FileUtil.ContractPath(f.FullName)));
+				Common.Log($"Searching text file {FileUtil.ContractPath(f.FullName)}");
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else
@@ -412,7 +406,7 @@ namespace CsSearch
 					if ((linesBefore.ToList().Count == 0 || LinesBeforeMatch(linesBefore))
 						&&
 						(linesAfter.ToList().Count == 0 || LinesAfterMatch(linesAfter)))
-					results.Add(new SearchResult(
+						results.Add(new SearchResult(
 						p,
 						null,
 						lineNum,
@@ -545,8 +539,7 @@ namespace CsSearch
 		private void SearchBinaryFile(SearchFile f)
 		{
 			if (Settings.Verbose)
-				Common.Log(string.Format("Searching binary file {0}",
-					FileUtil.GetRelativePath(f.FullName, Settings.StartPath)));
+				Common.Log($"Searching binary file {FileUtil.ContractPath(f.FullName)}");
 			try
 			{
 				// get the binary bytes in a single-byte encoding (will break if UTF8)
@@ -596,7 +589,7 @@ namespace CsSearch
 		public void PrintResults()
 		{
 			var sortedResults = GetSortedSearchResults();
-			Common.Log(string.Format("Search results ({0}):", sortedResults.Count));
+			Common.Log($"Search results ({sortedResults.Count}):");
 			foreach (var searchResult in sortedResults)
 			{
 				Common.Log(searchResult.ToString(Settings));
@@ -614,7 +607,7 @@ namespace CsSearch
 		public void PrintMatchingDirs()
 		{
 			var matchingDirs = GetMatchingDirs();
-			Common.Log(string.Format("\nDirectories with matches ({0}):", matchingDirs.Count()));
+			Common.Log($"\nDirectories with matches ({matchingDirs.Count()}):");
 			foreach (var d in matchingDirs)
 			{
 				Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
@@ -632,7 +625,7 @@ namespace CsSearch
 		public void PrintMatchingFiles()
 		{
 			var matchingFiles = GetMatchingFiles();
-			Common.Log(string.Format("\nFiles with matches ({0}):", matchingFiles.Count()));
+			Common.Log($"\nFiles with matches ({matchingFiles.Count()}):");
 			foreach (var f in matchingFiles)
 			{
 				Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
@@ -654,7 +647,7 @@ namespace CsSearch
 		{
 			var matchingLines = GetMatchingLines();
 			var hdrText = Settings.UniqueLines ? "Unique lines with matches" : "Lines with matches";
-			Common.Log(string.Format("\n{0} ({1}):", hdrText, matchingLines.Count()));
+			Common.Log($"\n{hdrText} ({matchingLines.Count()}):");
 			foreach (var m in matchingLines)
 			{
 				Common.Log(m);
@@ -662,7 +655,7 @@ namespace CsSearch
 		}
 	}
 
-	class CaseInsensitiveComparer : IComparer<string>
+	internal class CaseInsensitiveComparer : IComparer<string>
 	{
 		public int Compare(string a, string b)
 		{

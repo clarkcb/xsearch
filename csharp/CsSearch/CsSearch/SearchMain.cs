@@ -45,7 +45,7 @@
 			}
 			catch (SearchException e)
 			{
-				Common.Log(string.Format("\nERROR: {0}", e.Message));
+				Common.Log($"\nERROR: {e.Message}");
 				options.Usage(1);
 			}
 		}

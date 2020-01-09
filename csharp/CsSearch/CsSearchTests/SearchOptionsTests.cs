@@ -9,12 +9,12 @@ namespace CsSearchTests
 	[TestFixture]
 	public class SearchOptionsTests
 	{
-		SearchOptions searchOptions = new SearchOptions();
+		private readonly SearchOptions _searchOptions = new SearchOptions();
 
 		[Test]
 		public void SettingsFromArgs_NoArgs_HasDefaultValues()
 		{
-			var settings = searchOptions.SettingsFromArgs(new List<string>());
+			var settings = _searchOptions.SettingsFromArgs(new List<string>());
 			Assert.IsFalse(settings.ArchivesOnly);
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
@@ -40,7 +40,7 @@ namespace CsSearchTests
 		public void SettingsFromArgs_ValidArgs_HasArgValues()
 		{
 			var args = new List<string>() { "-x", "cs", "-s", "Search", "." };
-			var settings = searchOptions.SettingsFromArgs(args);
+			var settings = _searchOptions.SettingsFromArgs(args);
 			var startFile = new FileInfo(".");
 			Assert.AreEqual(settings.StartPath, startFile.FullName);
 			Assert.AreEqual(settings.InExtensions.Count, 1);
@@ -53,7 +53,7 @@ namespace CsSearchTests
 		public void SettingsFromArgs_InValidArgs_ThrowsSearchException()
 		{
 			var args = new List<string>() { "-x", "cs", "-s", "Search", ".", "-Q" };
-			var ex = Assert.Throws<SearchException>(() => searchOptions.SettingsFromArgs(args));
+			var ex = Assert.Throws<SearchException>(() => _searchOptions.SettingsFromArgs(args));
 			Assert.AreEqual(ex.Message, "Invalid option: Q");
 		}
 	}

@@ -14,21 +14,21 @@ namespace CsSearchTests
 		[Test]
 		public void GetRelativePath_PathWithCurrentDirectory_RelativePath()
 		{
-			string path = Environment.CurrentDirectory + "/rest/of/path/";
+			var path = Environment.CurrentDirectory + "/rest/of/path/";
 			Assert.AreEqual(FileUtil.GetRelativePath(path, "."), "./rest/of/path/");
 		}
 
 		[Test]
 		public void GetRelativePath_PathWithoutCurrentDirectory_FullPath()
 		{
-			string path = "/a/full/path/by/itself/";
+			const string path = "/a/full/path/by/itself/";
 			Assert.AreEqual(FileUtil.GetRelativePath(path, "/a/full/path"), path);
 		}
 
 		[Test]
 		public void GetRelativePath_RelativePath_Unchanged()
 		{
-			string path = "./a/relative/path/";
+			const string path = "./a/relative/path/";
 			Assert.AreEqual(FileUtil.GetRelativePath(path, "."), path);
 		}
 
@@ -131,7 +131,7 @@ namespace CsSearchTests
 		[Test]
 		public void ExpandPath_WithTilde_ExpandHome()
 		{
-			var path = "~/src/git/xsearch";
+			const string path = "~/src/git/xsearch";
 			var expected = FileUtil.JoinPath(FileUtil.GetHomePath(), path.Substring(1));
 			var actual = FileUtil.ExpandPath(path);
 			Assert.AreEqual(actual, expected);
@@ -147,7 +147,7 @@ namespace CsSearchTests
 		[Test]
 		public void ExpandPath_WithBackSlashes_UnchangedPath()
 		{
-			var path = @"C:\src\git\xsearch\";
+			const string path = @"C:\src\git\xsearch\";
 			Assert.AreEqual(FileUtil.ExpandPath(path), path);
 		}
 
@@ -157,21 +157,21 @@ namespace CsSearchTests
 		[Test]
 		public void NormalizePath_NoTrailingSlash_UnchangedPath()
 		{
-			var path = "~/src/git/xsearch";
+			const string path = "~/src/git/xsearch";
 			Assert.AreEqual(FileUtil.NormalizePath(path), path);
 		}
 
 		[Test]
 		public void NormalizePath_TrailingSlash_TrimmedPath()
 		{
-			var path = "~/src/git/xsearch/";
+			const string path = "~/src/git/xsearch/";
 			Assert.AreEqual(FileUtil.NormalizePath(path), "~/src/git/xsearch");
 		}
 
 		[Test]
 		public void NormalizePath_TrailingBackSlash_TrimmedPath()
 		{
-			var path = @"C:\src\git\xsearch\";
+			const string path = @"C:\src\git\xsearch\";
 			Assert.AreEqual(FileUtil.NormalizePath(path), @"C:\src\git\xsearch");
 		}
 
@@ -181,8 +181,8 @@ namespace CsSearchTests
 		[Test]
 		public void JoinPath_NoTrailingSlash_EqualsExpected()
 		{
-			var path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests";
-			var filename = "FileUtilTests.cs";
+			const string path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests";
+			const string filename = "FileUtilTests.cs";
 			var pathAndFile = path + "/" + filename;
 			Assert.AreEqual(FileUtil.JoinPath(path, filename), pathAndFile);
 		}
@@ -190,8 +190,8 @@ namespace CsSearchTests
 		[Test]
 		public void JoinPath_TrailingSlash_EqualsExpected()
 		{
-			var path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests/";
-			var filename = "FileUtilTests.cs";
+			const string path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests/";
+			const string filename = "FileUtilTests.cs";
 			var pathAndFile = path + filename;
 			Assert.AreEqual(FileUtil.JoinPath(path, filename), pathAndFile);
 		}
@@ -199,8 +199,8 @@ namespace CsSearchTests
 		[Test]
 		public void JoinPath_NoTrailingBackSlash_EqualsExpected()
 		{
-			var path = @"C:\src\git\xsearch";
-			var filename = "FileUtilTests.cs";
+			const string path = @"C:\src\git\xsearch";
+			const string filename = "FileUtilTests.cs";
 			var pathAndFile = path + "\\" + filename;
 			Assert.AreEqual(FileUtil.JoinPath(path, filename), pathAndFile);
 		}
@@ -208,8 +208,8 @@ namespace CsSearchTests
 		[Test]
 		public void JoinPath_TrailingBackSlash_EqualsExpected()
 		{
-			var path = @"C:\src\git\xsearch\";
-			var filename = "FileUtilTests.cs";
+			const string path = @"C:\src\git\xsearch\";
+			const string filename = "FileUtilTests.cs";
 			var pathAndFile = path + filename;
 			Assert.AreEqual(FileUtil.JoinPath(path, filename), pathAndFile);
 		}
@@ -217,8 +217,8 @@ namespace CsSearchTests
 		[Test]
 		public void JoinPath_NoSlashes_EqualsExpected()
 		{
-			var path = "CsSearchTests";
-			var filename = "FileUtilTests.cs";
+			const string path = "CsSearchTests";
+			const string filename = "FileUtilTests.cs";
 			var pathAndFile = path + "/" + filename;
 			Assert.AreEqual(FileUtil.JoinPath(path, filename), pathAndFile);
 		}

@@ -13,18 +13,9 @@ namespace CsSearch
 		public string FileName { get; private set; }
 		public FileType Type { get; private set; }
 
-		public string FullName
-		{
-			get { return ToString(); }
-		}
+		public string FullName => ToString();
 
-		public string PathAndName
-		{
-			get
-			{
-				return FileUtil.JoinPath(FilePath, FileName);
-			}
-		}
+		public string PathAndName => FileUtil.JoinPath(FilePath, FileName);
 
 		public SearchFile(string path, string fileName, FileType type) : this(new List<string>(), path, fileName, type) {}
 

@@ -26,7 +26,7 @@ namespace CsSearch
 		}
 	}
 
-	class SearchArgOption : SearchOption
+	internal class SearchArgOption : SearchOption
 	{
 		public Action<string, SearchSettings> Action { get; private set; }
 		public SearchArgOption(string shortArg, string longArg, Action<string, SearchSettings> action, string description) :
@@ -36,7 +36,7 @@ namespace CsSearch
 		}
 	}
 
-	class SearchFlagOption : SearchOption
+	internal class SearchFlagOption : SearchOption
 	{
 		public Action<bool, SearchSettings> Action { get; private set; }
 		public SearchFlagOption(string shortArg, string longArg, Action<bool, SearchSettings> action, string description) :

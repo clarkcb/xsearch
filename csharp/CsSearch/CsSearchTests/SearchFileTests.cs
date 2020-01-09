@@ -6,8 +6,8 @@ namespace CsSearchTests
 	[TestFixture]
 	class SearchFileTests
 	{
-		string CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch";
-		string WinCsSearchPath = @"C:\src\git\xsearch\csharp\CsSearch\CsSearch";
+		private const string CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch";
+		private const string WinCsSearchPath = @"C:\src\git\xsearch\csharp\CsSearch\CsSearch";
 
 		[Test]
 		public void SearchFile_ToString_EqualsExpected()

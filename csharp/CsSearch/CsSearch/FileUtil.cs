@@ -7,13 +7,13 @@ namespace CsSearch
 {
 	public class FileUtil
 	{
-		private const string currentPath = ".";
-		private const string parentPath = "..";
-		private static readonly ISet<string> dotDirs = new HashSet<string> { currentPath, parentPath };
+		private const string CurrentPath = ".";
+		private const string ParentPath = "..";
+		private static readonly ISet<string> DotDirs = new HashSet<string> { CurrentPath, ParentPath };
 
-		private const char forwardSlash = '/';
-		private const char backSlash = '\\';
-		private static readonly char[] dirSeps = new char[] { forwardSlash, backSlash };
+		private const char ForwardSlash = '/';
+		private const char BackSlash = '\\';
+		private static readonly char[] DirSeps = new char[] { ForwardSlash, BackSlash };
 
 		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f, Encoding enc)
 		{
@@ -79,11 +79,11 @@ namespace CsSearch
 			var filePath = fullPath;
 			if (IsDotDir(startpath))
 			{
-				if (NormalizePath(startpath) == currentPath)
+				if (NormalizePath(startpath) == CurrentPath)
 				{
 					filePath = filePath.Replace(Environment.CurrentDirectory, ".");
 				}
-				else if (NormalizePath(startpath) == parentPath)
+				else if (NormalizePath(startpath) == ParentPath)
 				{
 					var parentDirectory = NormalizePath(new DirectoryInfo(startpath).FullName);
 					filePath = filePath.Replace(parentDirectory, "..");
@@ -111,29 +111,29 @@ namespace CsSearch
 
 		public static bool IsDotDir(string filename)
 		{
-			return dotDirs.Contains(NormalizePath(filename));
+			return DotDirs.Contains(NormalizePath(filename));
 		}
 
 		public static bool IsHidden(FileSystemInfo f)
 		{
-			var startsWithDot = f.Name.StartsWith(currentPath) && !IsDotDir(f.Name);
+			var startsWithDot = f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name);
 			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
 			return (startsWithDot || hasHiddenAttribute);
 		}
 
 		public static string JoinPath(string path1, string path2)
 		{
-			var dirSep = forwardSlash;
-			if (path1.IndexOf(backSlash) > -1)
-				dirSep = backSlash;
-			if (path2[0] == forwardSlash || path2[0] == backSlash)
+			var dirSep = ForwardSlash;
+			if (path1.IndexOf(BackSlash) > -1)
+				dirSep = BackSlash;
+			if (path2[0] == ForwardSlash || path2[0] == BackSlash)
 				path2 = path2.Substring(1);
 			return NormalizePath(path1) + dirSep + path2;
 		}
 
 		public static string NormalizePath(string path)
 		{
-			return path.TrimEnd(dirSeps);
+			return path.TrimEnd(DirSeps);
 		}
 	}
 }
