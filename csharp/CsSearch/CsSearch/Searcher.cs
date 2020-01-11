@@ -17,6 +17,8 @@ namespace CsSearch
 		private Encoding TextFileEncoding { get; set; }
 
 		private const int FileBatchSize = 255;
+		// use single-byte encoding for reading binary files (will break if UTF8)
+		private readonly Encoding _binaryEncoding = Encoding.GetEncoding("ISO-8859-1");
 
 		public Searcher(SearchSettings settings)
 		{
@@ -544,9 +546,7 @@ namespace CsSearch
 				Common.Log($"Searching binary file {FileUtil.ContractPath(f.FullName)}");
 			try
 			{
-				// get the binary bytes in a single-byte encoding (will break if UTF8)
-				//using (var sr = new StreamReader(f.FullName, Encoding.GetEncoding("ISO_8859_1")))
-				using (var sr = new StreamReader(f.FullName))
+				using (var sr = new StreamReader(f.FullName, _binaryEncoding))
 				{
 					var contents = sr.ReadToEnd();
 					foreach (var p in Settings.SearchPatterns)
