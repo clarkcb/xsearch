@@ -17,7 +17,11 @@ namespace CsSearch
 
 		public string PathAndName => FileUtil.JoinPath(FilePath, FileName);
 
-		public SearchFile(string path, string fileName, FileType type) : this(new List<string>(), path, fileName, type) {}
+		public SearchFile(FileInfo fileInfo, FileType type) :
+			this(new List<string>(), fileInfo.DirectoryName, fileInfo.Name, type) {}
+
+		public SearchFile(string path, string fileName, FileType type) :
+			this(new List<string>(), path, fileName, type) {}
 
 		public SearchFile(IList<string> containers, string path,
 			string fileName, FileType type)
