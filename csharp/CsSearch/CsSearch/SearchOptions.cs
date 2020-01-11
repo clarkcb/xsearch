@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,7 +12,7 @@ namespace CsSearch
 	{
 		private readonly string _searchOptionsResource;
 
-		public static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
+		private static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
 			new Dictionary<string, Action<string,SearchSettings>>
 				{
 					{ "encoding", (s, settings) => settings.TextFileEncoding = s },
@@ -37,9 +38,10 @@ namespace CsSearch
 					{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
 					{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
 					{ "search", (s, settings) => settings.AddSearchPattern(s) },
+					{ "settings-file", SettingsFromFile },
 				};
 
-		public static Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
+		private static Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
 			new Dictionary<string, Action<bool, SearchSettings>>
 				{
 					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
@@ -106,6 +108,14 @@ namespace CsSearch
 					}
 				}
 			}
+		}
+
+		private static void SettingsFromFile(string filePath, SearchSettings settings)
+		{
+			var fileInfo = new FileInfo(filePath);
+			if (!fileInfo.Exists)
+				throw new SearchException("Settings fie not found: " + filePath);
+			// TODO: implement
 		}
 
 		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
@@ -179,7 +189,7 @@ namespace CsSearch
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("\nUsage:");
-			sb.AppendLine(" CsSearch.exe [options] -s <searchpattern> <startpath>\n");
+			sb.AppendLine(" cssearch [options] -s <searchpattern> <startpath>\n");
 			sb.AppendLine("Options:");
 			var optStrings = new List<string>();
 			var optDescs = new List<string>();
