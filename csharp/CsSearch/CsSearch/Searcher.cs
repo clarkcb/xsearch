@@ -68,10 +68,10 @@ namespace CsSearch
 			if (Settings.ExcludeHidden && FileUtil.IsHidden(d))
 				return false;
 			if (Settings.InDirPatterns.Count > 0 &&
-				!Settings.InDirPatterns.Any(p => p.Match(d.Name).Success))
+				!Settings.InDirPatterns.Any(p => p.Matches(d.FullName).Count > 0))
 				return false;
 			if (Settings.OutDirPatterns.Count > 0 &&
-				Settings.OutDirPatterns.Any(p => p.Match(d.Name).Success))
+				Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0))
 				return false;
 			return true;
 		}
