@@ -14,6 +14,7 @@ namespace CsSearch
 		private readonly FileTypes _fileTypes;
 		public SearchSettings Settings { get; private set; }
 		public ConcurrentBag<SearchResult> Results { get; private set; }
+		private Encoding TextFileEncoding { get; set; }
 
 		private const int FileBatchSize = 255;
 
@@ -44,7 +45,7 @@ namespace CsSearch
 				throw new SearchException("No search patterns defined");
 			try
 			{
-				var enc = Encoding.GetEncoding(Settings.TextFileEncoding);
+				TextFileEncoding = Encoding.GetEncoding(Settings.TextFileEncoding);
 			}
 			catch (ArgumentException)
 			{
@@ -300,8 +301,7 @@ namespace CsSearch
 		{
 			try
 			{
-				var enc = Encoding.GetEncoding(Settings.TextFileEncoding);
-				var contents = FileUtil.GetFileContents(f, enc);
+				var contents = FileUtil.GetFileContents(f, TextFileEncoding);
 				var results = SearchContents(contents);
 				foreach (var r in results)
 				{
@@ -427,8 +427,7 @@ namespace CsSearch
 		{
 			try
 			{
-				var enc = Encoding.GetEncoding(Settings.TextFileEncoding);
-				var enumerableLines = FileUtil.EnumerableStringFromFile(f, enc);
+				var enumerableLines = FileUtil.EnumerableStringFromFile(f, TextFileEncoding);
 				var results = SearchLines(enumerableLines);
 
 				foreach (var r in results)
