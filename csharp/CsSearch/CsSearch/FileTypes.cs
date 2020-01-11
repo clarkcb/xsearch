@@ -22,12 +22,12 @@ namespace CsSearch
 		private readonly string _fileTypesResource;
 		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
 
-		private const string archive = "archive";
-		private const string binary = "binary";
-		private const string code = "code";
-		private const string searchable = "searchable";
-		private const string text = "text";
-		private const string xml = "xml";
+		private const string Archive = "archive";
+		private const string Binary = "binary";
+		private const string Code = "code";
+		private const string Searchable = "searchable";
+		private const string Text = "text";
+		private const string Xml = "xml";
 
 		public FileTypes()
 		{
@@ -46,57 +46,65 @@ namespace CsSearch
 				var extensionSet = new HashSet<string>(extensions.Split(new[]{' ','\n'}).Select(x => "." + x));
 				_fileTypesDictionary[name] = extensionSet;
 			}
-			_fileTypesDictionary[text].UnionWith(_fileTypesDictionary[code]);
-			_fileTypesDictionary[text].UnionWith(_fileTypesDictionary[xml]);
-			_fileTypesDictionary[searchable] = new HashSet<string>(_fileTypesDictionary[text]);
-			_fileTypesDictionary[searchable].UnionWith(_fileTypesDictionary[binary]);
-			_fileTypesDictionary[searchable].UnionWith(_fileTypesDictionary[archive]);
+			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
+			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
+			_fileTypesDictionary[Searchable] = new HashSet<string>(_fileTypesDictionary[Text]);
+			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Binary]);
+			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Archive]);
 		}
 
 		public static FileType FromName(string name)
 		{
-			string lname = name.ToLowerInvariant();
-			if (lname.Equals(archive)) return FileType.Archive;
-			if (lname.Equals(binary)) return FileType.Binary;
-			if (lname.Equals(text)) return FileType.Text;
-			if (lname.Equals(code)) return FileType.Code;
-			if (lname.Equals(xml)) return FileType.Xml;
-			return FileType.Unknown;
+			var lname = name.ToLowerInvariant();
+			switch (lname)
+			{
+				case Archive:
+					return FileType.Archive;
+				case Binary:
+					return FileType.Binary;
+				case Code:
+					return FileType.Code;
+				case Text:
+					return FileType.Text;
+				case Xml:
+					return FileType.Xml;
+				default:
+					return FileType.Unknown;
+			}
 		}
 
 		public FileType GetFileType(FileInfo f)
 		{
 			if (IsArchiveFile(f)) return FileType.Archive;
 			if (IsBinaryFile(f)) return FileType.Binary;
-			if (IsTextFile(f)) return FileType.Text;
 			if (IsCodeFile(f)) return FileType.Code;
 			if (IsXmlFile(f)) return FileType.Xml;
-			return FileType.Unknown;
+			return IsTextFile(f) ? FileType.Text : FileType.Unknown;
 		}
 
 		public bool IsArchiveFile(FileInfo f)
 		{
-			return _fileTypesDictionary[archive].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Archive].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsBinaryFile(FileInfo f)
 		{
-			return _fileTypesDictionary[binary].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Binary].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsCodeFile(FileInfo f)
 		{
-			return _fileTypesDictionary[code].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Code].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsSearchableFile(FileInfo f)
 		{
-			return _fileTypesDictionary[searchable].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Searchable].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsTextFile(FileInfo f)
 		{
-			return _fileTypesDictionary[text].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Text].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsUnknownFile(FileInfo f)
@@ -106,7 +114,7 @@ namespace CsSearch
 
 		public bool IsXmlFile(FileInfo f)
 		{
-			return _fileTypesDictionary[xml].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
 		}
 	}
 }
