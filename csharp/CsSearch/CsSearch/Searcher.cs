@@ -110,22 +110,6 @@ namespace CsSearch
 			return true;
 		}
 
-		public IEnumerable<DirectoryInfo> GetSearchDirs(DirectoryInfo dir)
-		{
-			IEnumerable<DirectoryInfo> searchDirs = new List<DirectoryInfo>();
-			try
-			{
-				searchDirs = dir.EnumerateDirectories().Where(IsSearchDirectory);
-				return searchDirs.Aggregate(searchDirs, (current, d) => current.Concat(GetSearchDirs(d)));
-			}
-			catch (IOException e)
-			{
-				if (Settings.Verbose)
-					Common.Log($"Error while accessing dir {FileUtil.ContractPath(dir.FullName)}: {e.Message}");
-			}
-			return searchDirs;
-		}
-
 		public bool FilterFile(FileInfo f)
 		{
 			if (FileUtil.IsHidden(f) && Settings.ExcludeHidden)
@@ -137,39 +121,13 @@ namespace CsSearch
 			return (!Settings.ArchivesOnly && IsSearchFile(f));
 		}
 
-		private SearchFile SearchFileFromFileInfo(FileInfo f)
+		private IEnumerable<SearchFile> GetSearchFiles()
 		{
-			return new SearchFile(new List<string>(), f.DirectoryName, f.Name, _fileTypes.GetFileType(f));
-		}
-
-		private IEnumerable<SearchFile> GetSearchFilesForDir(DirectoryInfo dir)
-		{
-			if (Settings.Debug)
-			{
-				Common.Log($"Getting search files under {FileUtil.ContractPath(dir.FullName)}");
-			}
-			IEnumerable<SearchFile> dirSearchFiles = new List<SearchFile>();
-			try
-			{
-				dirSearchFiles = dir.EnumerateFiles().
-					Where(FilterFile).
-					Select((f,i) => SearchFileFromFileInfo(f));
-			}
-			catch (IOException e)
-			{
-				if (Settings.Verbose)
-					Common.Log($"Error while accessing dir {FileUtil.ContractPath(dir.FullName)}: {e.Message}");
-			}
-			return dirSearchFiles;
-		}
-
-		public IEnumerable<SearchFile> GetSearchFiles(IEnumerable<DirectoryInfo> dirs)
-		{
-			var searchFiles = new List<SearchFile>();
-			foreach (var d in dirs)
-			{
-				searchFiles.AddRange(GetSearchFilesForDir(d));
-			}
+			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
+			var searchFiles = new DirectoryInfo(expandedPath).
+				EnumerateFiles("*", System.IO.SearchOption.AllDirectories).
+				Where(f => IsSearchDirectory(f.Directory) && FilterFile(f)).
+				Select(f => new SearchFile(f, _fileTypes.GetFileType(f)));
 			return searchFiles;
 		}
 
@@ -193,7 +151,7 @@ namespace CsSearch
 				var f = new FileInfo(expandedPath);
 				if (FilterFile(f))
 				{
-					DoSearchFile(new SearchFile(f.DirectoryName, f.Name, _fileTypes.GetFileType(f)));
+					SearchFile(new SearchFile(f, _fileTypes.GetFileType(f)));
 				}
 				else
 				{
@@ -204,24 +162,17 @@ namespace CsSearch
 
 		public void SearchPath(DirectoryInfo path)
 		{
-			var searchDirs = new List<DirectoryInfo> { path };
-			if (Settings.Recursive)
-			{
-				searchDirs.AddRange(GetSearchDirs(path));
-			}
+			var searchFiles = GetSearchFiles().ToArray();
 			if (Settings.Verbose)
 			{
-				Common.Log($"Directories to be searched ({searchDirs.Count}):");
+				var searchDirs = searchFiles.Select(f => f.FilePath).Distinct().
+					OrderBy(d => d).ToArray();
+				Common.Log($"Directories to be searched ({searchDirs.Length}):");
 				foreach (var d in searchDirs)
 				{
-					Common.Log(FileUtil.ContractPath(d.FullName));
+					Common.Log(FileUtil.ContractPath(d));
 				}
-				Common.Log("");
-			}
-
-			var searchFiles = GetSearchFiles(searchDirs).ToArray();
-			if (Settings.Verbose)
-			{
+				
 				Common.Log($"\nFiles to be searched ({searchFiles.Length}):");
 				foreach (var f in searchFiles)
 				{
@@ -242,9 +193,9 @@ namespace CsSearch
 			}
 		}
 
-		private void SearchBatch(SearchFile[] searchFiles)
+		private void SearchBatch(IReadOnlyList<SearchFile> searchFiles)
 		{
-			if (searchFiles.Length > 100)
+			if (searchFiles.Count > 100)
 			{
 				SearchBatchConcurrent(searchFiles);
 			}
@@ -252,23 +203,23 @@ namespace CsSearch
 			{
 				foreach (var f in searchFiles)
 				{
-					DoSearchFile(f);
+					SearchFile(f);
 				}
 			}
 		}
 
-		private void SearchBatchConcurrent(SearchFile[] searchFiles)
+		private void SearchBatchConcurrent(IReadOnlyList<SearchFile> searchFiles)
 		{
-			var searchTasks = new Task[searchFiles.Length];
-			for (var i = 0; i < searchFiles.Length; i++)
+			var searchTasks = new Task[searchFiles.Count];
+			for (var i = 0; i < searchFiles.Count; i++)
 			{
 				var searchFile = searchFiles[i];
-				searchTasks[i] = Task.Factory.StartNew(() => DoSearchFile(searchFile));
+				searchTasks[i] = Task.Factory.StartNew(() => SearchFile(searchFile));
 			}
 			Task.WaitAll(searchTasks);
 		}
 
-		public void DoSearchFile(SearchFile f)
+		public void SearchFile(SearchFile f)
 		{
 			switch (f.Type)
 			{
@@ -356,7 +307,8 @@ namespace CsSearch
 			if (Settings.LinesBefore == 0) return linesBefore;
 			var starts = beforeStartIndices.Reverse().Take(Settings.LinesBefore).Reverse().ToList();
 			var ends = beforeEndIndices.Reverse().Take(Settings.LinesBefore + 1).Reverse().Skip(1).ToList();
-			linesBefore.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
+			linesBefore.AddRange(starts.Select(
+				(t, i) => content.Substring(t, ends[i] - t)));
 			return linesBefore;
 		}
 
@@ -367,7 +319,8 @@ namespace CsSearch
 			if (Settings.LinesAfter == 0) return linesAfter;
 			var starts = afterStartIndices.Take(Settings.LinesAfter).ToList();
 			var ends = afterEndIndices.Skip(1).Take(Settings.LinesAfter).ToList();
-			linesAfter.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
+			linesAfter.AddRange(starts.Select(
+				(t, i) => content.Substring(t, ends[i] - t)));
 			return linesAfter;
 		}
 
@@ -406,7 +359,8 @@ namespace CsSearch
 					var linesBefore = GetLinesBeforeFromContents(contents,
 						beforeStartIndices.AsEnumerable().Reverse().Skip(1).Reverse(),
 						beforeEndIndices);
-					var linesAfter = GetLinesAfterFromContents(contents, afterStartIndices, afterEndIndices);
+					var linesAfter = GetLinesAfterFromContents(contents, afterStartIndices,
+						afterEndIndices);
 					if ((linesBefore.ToList().Count == 0 || LinesBeforeMatch(linesBefore))
 						&&
 						(linesAfter.ToList().Count == 0 || LinesAfterMatch(linesAfter)))
@@ -598,12 +552,13 @@ namespace CsSearch
 			}
 		}
 
-		public IEnumerable<DirectoryInfo> GetMatchingDirs()
+		private IEnumerable<DirectoryInfo> GetMatchingDirs()
 		{
 			return new List<DirectoryInfo>(
-				Results.Select(r => r.File.FilePath).
-				Distinct().Select(d => new DirectoryInfo(d)).
-				OrderBy(d => d.FullName));
+				Results.Where(r => r.File != null).
+					Select(r => r.File.FilePath).
+					Distinct().Select(d => new DirectoryInfo(d)).
+					OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingDirs()
@@ -616,12 +571,13 @@ namespace CsSearch
 			}
 		}
 
-		public IEnumerable<FileInfo> GetMatchingFiles()
+		private IEnumerable<FileInfo> GetMatchingFiles()
 		{
 			return new List<FileInfo>(
-				Results.Select(r => r.File.PathAndName).
-				Distinct().Select(f => new FileInfo(f)).
-				OrderBy(d => d.FullName));
+				Results.Where(r => r.File != null).
+					Select(r => r.File.PathAndName).
+					Distinct().Select(f => new FileInfo(f)).
+					OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingFiles()
@@ -634,9 +590,10 @@ namespace CsSearch
 			}
 		}
 
-		public IEnumerable<string> GetMatchingLines()
+		private IEnumerable<string> GetMatchingLines()
 		{
-			var lines = Results.Select(r => r.Line.Trim()).ToList();
+			var lines = Results.Where(r => r.Line != null).
+				Select(r => r.Line.Trim()).ToList();
 			if (Settings.UniqueLines)
 			{
 				lines = new HashSet<string>(lines).ToList();
@@ -661,7 +618,11 @@ namespace CsSearch
 	{
 		public int Compare(string a, string b)
 		{
-			return a.ToUpper().CompareTo(b.ToUpper());
+			if (a == null)
+				return -1;
+			if (b == null)
+				return 1;
+			return String.Compare(a.ToUpper(), b.ToUpper(), StringComparison.Ordinal);
 		}
 	}
 }
