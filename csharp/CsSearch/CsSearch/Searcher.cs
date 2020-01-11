@@ -12,8 +12,8 @@ namespace CsSearch
 	public class Searcher
 	{
 		private readonly FileTypes _fileTypes;
-		public SearchSettings Settings { get; private set; }
-		public ConcurrentBag<SearchResult> Results { get; private set; }
+		private SearchSettings Settings { get; set; }
+		private ConcurrentBag<SearchResult> Results { get; set; }
 		private Encoding TextFileEncoding { get; set; }
 
 		private const int FileBatchSize = 255;
@@ -51,6 +51,12 @@ namespace CsSearch
 			{
 				throw new SearchException("Invalid encoding");
 			}
+			if (Settings.LinesBefore < 0)
+				throw new SearchException("Invalid linesbefore");
+			if (Settings.LinesAfter < 0)
+				throw new SearchException("Invalid linesafter");
+			if (Settings.MaxLineLength < 0)
+				throw new SearchException("Invalid maxlinelength");
 		}
 
 		public bool IsSearchDirectory(DirectoryInfo d)
@@ -345,12 +351,10 @@ namespace CsSearch
 			IEnumerable<int> beforeStartIndices, IEnumerable<int> beforeEndIndices)
 		{
 			var linesBefore = new List<string>();
-			if (Settings.LinesBefore > 0)
-			{
-				var starts = beforeStartIndices.Reverse().Take(Settings.LinesBefore).Reverse().ToList();
-				var ends = beforeEndIndices.Reverse().Take(Settings.LinesBefore + 1).Reverse().Skip(1).ToList();
-				linesBefore.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
-			}
+			if (Settings.LinesBefore == 0) return linesBefore;
+			var starts = beforeStartIndices.Reverse().Take(Settings.LinesBefore).Reverse().ToList();
+			var ends = beforeEndIndices.Reverse().Take(Settings.LinesBefore + 1).Reverse().Skip(1).ToList();
+			linesBefore.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
 			return linesBefore;
 		}
 
@@ -358,12 +362,10 @@ namespace CsSearch
 			IEnumerable<int> afterStartIndices, IEnumerable<int> afterEndIndices)
 		{
 			var linesAfter = new List<string>();
-			if (Settings.LinesAfter > 0)
-			{
-				var starts = afterStartIndices.Take(Settings.LinesAfter).ToList();
-				var ends = afterEndIndices.Skip(1).Take(Settings.LinesAfter).ToList();
-				linesAfter.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
-			}
+			if (Settings.LinesAfter == 0) return linesAfter;
+			var starts = afterStartIndices.Take(Settings.LinesAfter).ToList();
+			var ends = afterEndIndices.Skip(1).Take(Settings.LinesAfter).ToList();
+			linesAfter.AddRange(starts.Select((t, i) => content.Substring(t, ends[i] - t)));
 			return linesAfter;
 		}
 
@@ -479,49 +481,50 @@ namespace CsSearch
 			var lineNum = 0;
 			var linesBefore = new Queue<string>();
 			var linesAfter = new Queue<string>();
-			var lineEnumerator = lines.GetEnumerator();
-			var stop = false;
 
-			while ((lineEnumerator.MoveNext() || linesAfter.Count > 0) && !stop)
+			using (var lineEnumerator = lines.GetEnumerator())
 			{
-				lineNum++;
-				var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
-				if (Settings.LinesAfter > 0)
+				var stop = false;
+				while ((lineEnumerator.MoveNext() || linesAfter.Count > 0) && !stop)
 				{
-					while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
+					lineNum++;
+					var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
+					if (Settings.LinesAfter > 0)
 					{
-						linesAfter.Enqueue(lineEnumerator.Current);
-					}
-				}
-
-				if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
-					&&
-					(Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
-				{
-					foreach (var p in Settings.SearchPatterns)
-					{
-						var matches = p.Matches(line);
-						foreach (Match match in matches)
+						while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
 						{
-							if (Settings.FirstMatch && patternMatches.ContainsKey(p))
-							{
-								stop = true;
-								break;
-							}
-							results.Add(new SearchResult(p,
-								null,
-								lineNum,
-								match.Index + 1,
-								match.Index + match.Length + 1,
-								line,
-								new List<string>(linesBefore),
-								new List<string>(linesAfter)));
-							patternMatches[p] = 1;
+							linesAfter.Enqueue(lineEnumerator.Current);
 						}
 					}
-				}
-				if (Settings.LinesBefore > 0)
-				{
+
+					if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
+					    &&
+					    (Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
+					{
+						foreach (var p in Settings.SearchPatterns)
+						{
+							var matches = p.Matches(line);
+							foreach (Match match in matches)
+							{
+								if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+								{
+									stop = true;
+									break;
+								}
+								results.Add(new SearchResult(p,
+									null,
+									lineNum,
+									match.Index + 1,
+									match.Index + match.Length + 1,
+									line,
+									new List<string>(linesBefore),
+									new List<string>(linesAfter)));
+								patternMatches[p] = 1;
+							}
+						}
+					}
+
+					if (Settings.LinesBefore == 0) continue;
 					if (linesBefore.Count == Settings.LinesBefore)
 					{
 						linesBefore.Dequeue();
