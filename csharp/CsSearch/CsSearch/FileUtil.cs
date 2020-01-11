@@ -53,8 +53,7 @@ namespace CsSearch
 		{
 			try
 			{
-				//using (var sr = new StreamReader(filepath, encoding))
-				using (var sr = new StreamReader(filepath))
+				using (var sr = new StreamReader(filepath, encoding))
 				{
 					var contents = sr.ReadToEnd();
 					return contents;
