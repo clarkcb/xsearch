@@ -106,7 +106,7 @@ build_csharp () {
     echo
     log "build_csharp"
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
-    #CONFIGURATION=Debug
+    # CONFIGURATION=Debug
     CONFIGURATION=Release
 
     # copy the shared xml files to the local resource location
