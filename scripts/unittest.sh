@@ -59,13 +59,15 @@ unittest_fsharp () {
 unittest_go () {
     echo
     log "unittest_go"
-    export GOSRC_PATH=$GO_PATH/src/elocale.com/clarkcb/xsearch
+    export GOSEARCH_PATH=$GO_PATH/gosearch
 
     # Run the tests using go test
     log "Unit-testing gosearch"
-    log "go test --cover elocale.com/clarkcb/xsearch/..."
+    cd $GOSEARCH_PATH
+    log "go test --cover ./..."
     # cd $GOSRC_PATH; go test; cd -
-    go test --cover elocale.com/clarkcb/xsearch/...
+    go test --cover ./...
+    cd -
 }
 
 unittest_haskell () {
