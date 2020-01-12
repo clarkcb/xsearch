@@ -67,58 +67,45 @@ namespace CsSearch
 				return true;
 			if (Settings.ExcludeHidden && FileUtil.IsHidden(d))
 				return false;
-			if (Settings.InDirPatterns.Count > 0 &&
-				!Settings.InDirPatterns.Any(p => p.Matches(d.FullName).Count > 0))
-				return false;
-			if (Settings.OutDirPatterns.Count > 0 &&
-				Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0))
-				return false;
-			return true;
+			return (Settings.InDirPatterns.Count == 0 ||
+			        Settings.InDirPatterns.Any(p => p.Matches(d.FullName).Count > 0)) &&
+			       (Settings.OutDirPatterns.Count == 0 ||
+			        !Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0));
 		}
 
-		public bool IsSearchFile(FileInfo f)
+		public bool IsSearchFile(SearchFile sf)
 		{
-			if (Settings.InExtensions.Count > 0 &&
-				!Settings.InExtensions.Contains(f.Extension))
-				return false;
-			if (Settings.OutExtensions.Count > 0 &&
-				Settings.OutExtensions.Contains(f.Extension))
-				return false;
-			if (Settings.InFilePatterns.Count > 0 &&
-				!Settings.InFilePatterns.Any(p => p.Match(f.Name).Success))
-				return false;
-			if (Settings.OutFilePatterns.Count > 0 &&
-				Settings.OutFilePatterns.Any(p => p.Match(f.Name).Success))
-				return false;
-			return true;
+			return (Settings.InExtensions.Count == 0 ||
+			        Settings.InExtensions.Contains(sf.File.Extension)) &&
+			       (Settings.OutExtensions.Count == 0 ||
+			        !Settings.OutExtensions.Contains(sf.File.Extension)) &&
+			       (Settings.InFilePatterns.Count == 0 ||
+			        Settings.InFilePatterns.Any(p => p.Match(sf.File.Name).Success)) &&
+			       (Settings.OutFilePatterns.Count == 0 ||
+			        !Settings.OutFilePatterns.Any(p => p.Match(sf.File.Name).Success));
 		}
 
-		public bool IsArchiveSearchFile(FileInfo f)
+		public bool IsArchiveSearchFile(SearchFile sf)
 		{
-			if (Settings.InArchiveExtensions.Count > 0 &&
-				!Settings.InArchiveExtensions.Contains(f.Extension))
-				return false;
-			if (Settings.OutArchiveExtensions.Count > 0 &&
-				Settings.OutArchiveExtensions.Contains(f.Extension))
-				return false;
-			if (Settings.InArchiveFilePatterns.Count > 0 &&
-				!Settings.InArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
-				return false;
-			if (Settings.OutArchiveFilePatterns.Count > 0 &&
-				Settings.OutArchiveFilePatterns.Any(p => p.Match(f.Name).Success))
-				return false;
-			return true;
+			return (Settings.InArchiveExtensions.Count == 0 ||
+			        Settings.InArchiveExtensions.Contains(sf.File.Extension)) &&
+			       (Settings.OutArchiveExtensions.Count == 0 ||
+			        !Settings.OutArchiveExtensions.Contains(sf.File.Extension)) &&
+			       (Settings.InArchiveFilePatterns.Count == 0 ||
+			        Settings.InArchiveFilePatterns.Any(p => p.Match(sf.File.Name).Success)) &&
+			       (Settings.OutArchiveFilePatterns.Count == 0 ||
+			        !Settings.OutArchiveFilePatterns.Any(p => p.Match(sf.File.Name).Success));
 		}
 
-		public bool FilterFile(FileInfo f)
+		public bool FilterFile(SearchFile sf)
 		{
-			if (FileUtil.IsHidden(f) && Settings.ExcludeHidden)
+			if (FileUtil.IsHidden(sf.File) && Settings.ExcludeHidden)
 				return false;
-			if (_fileTypes.IsArchiveFile(f))
+			if (sf.Type.Equals(FileType.Archive))
 			{
-				return (Settings.SearchArchives && IsArchiveSearchFile(f));
+				return (Settings.SearchArchives && IsArchiveSearchFile(sf));
 			}
-			return (!Settings.ArchivesOnly && IsSearchFile(f));
+			return (!Settings.ArchivesOnly && IsSearchFile(sf));
 		}
 
 		private IEnumerable<SearchFile> GetSearchFiles()
@@ -126,8 +113,10 @@ namespace CsSearch
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
 			var searchFiles = new DirectoryInfo(expandedPath).
 				EnumerateFiles("*", System.IO.SearchOption.AllDirectories).
-				Where(f => IsSearchDirectory(f.Directory) && FilterFile(f)).
-				Select(f => new SearchFile(f, _fileTypes.GetFileType(f)));
+				Where(f => IsSearchDirectory(f.Directory)).
+				Select(f => new SearchFile(f, _fileTypes.GetFileType(f))).
+				Where(FilterFile).
+				Select(sf => sf);
 			return searchFiles;
 		}
 
@@ -149,9 +138,10 @@ namespace CsSearch
 			else
 			{
 				var f = new FileInfo(expandedPath);
-				if (FilterFile(f))
+				var sf = new SearchFile(f, _fileTypes.GetFileType(f));
+				if (FilterFile(sf))
 				{
-					SearchFile(new SearchFile(f, _fileTypes.GetFileType(f)));
+					SearchFile(sf);
 				}
 				else
 				{
@@ -162,18 +152,23 @@ namespace CsSearch
 
 		public void SearchPath(DirectoryInfo path)
 		{
-			var searchFiles = GetSearchFiles().ToArray();
+			var searchFiles = GetSearchFiles().ToList();
 			if (Settings.Verbose)
 			{
-				var searchDirs = searchFiles.Select(f => f.FilePath).Distinct().
-					OrderBy(d => d).ToArray();
+				searchFiles.Sort(new SearchFilesComparer());
+
+				var searchDirs = searchFiles
+					.Where(sf => sf.File.Directory != null)
+					.Select(sf => sf.File.Directory.ToString())
+					.Distinct()
+					.OrderBy(d => d).ToArray();
 				Common.Log($"Directories to be searched ({searchDirs.Length}):");
 				foreach (var d in searchDirs)
 				{
 					Common.Log(FileUtil.ContractPath(d));
 				}
 				
-				Common.Log($"\nFiles to be searched ({searchFiles.Length}):");
+				Common.Log($"\nFiles to be searched ({searchFiles.Count}):");
 				foreach (var f in searchFiles)
 				{
 					Common.Log(FileUtil.ContractPath(f.FullName));
@@ -182,12 +177,12 @@ namespace CsSearch
 			}
 
 			var searched = 0;
-			while (searchFiles.Length - searched > FileBatchSize)
+			while (searchFiles.Count - searched > FileBatchSize)
 			{
 				SearchBatch(searchFiles.Skip(searched).Take(FileBatchSize).ToArray());
 				searched += FileBatchSize;
 			}
-			if (searchFiles.Length > searched)
+			if (searchFiles.Count > searched)
 			{
 				SearchBatch(searchFiles.Skip(searched).ToArray());
 			}
@@ -494,13 +489,13 @@ namespace CsSearch
 			return results;
 		}
 
-		private void SearchBinaryFile(SearchFile f)
+		private void SearchBinaryFile(SearchFile sf)
 		{
 			if (Settings.Verbose)
-				Common.Log($"Searching binary file {FileUtil.ContractPath(f.FullName)}");
+				Common.Log($"Searching binary file {FileUtil.ContractPath(sf.FullName)}");
 			try
 			{
-				using (var sr = new StreamReader(f.FullName, _binaryEncoding))
+				using (var sr = new StreamReader(sf.FullName, _binaryEncoding))
 				{
 					var contents = sr.ReadToEnd();
 					foreach (var p in Settings.SearchPatterns)
@@ -514,7 +509,7 @@ namespace CsSearch
 						{
 							AddSearchResult(new SearchResult(
 								p,
-								f,
+								sf,
 								0,
 								m.Index + 1,
 								m.Index + m.Length + 1,
@@ -536,9 +531,8 @@ namespace CsSearch
 
 		private IList<SearchResult> GetSortedSearchResults()
 		{
-			IComparer<SearchResult> comparer = new SearchResultsComparer();
 			var sorted = Results.ToList();
-			sorted.Sort(comparer);
+			sorted.Sort(new SearchResultsComparer());
 			return sorted;
 		}
 
@@ -555,10 +549,10 @@ namespace CsSearch
 		private IEnumerable<DirectoryInfo> GetMatchingDirs()
 		{
 			return new List<DirectoryInfo>(
-				Results.Where(r => r.File != null).
-					Select(r => r.File.FilePath).
-					Distinct().Select(d => new DirectoryInfo(d)).
-					OrderBy(d => d.FullName));
+					Results.Where(r => r.File != null).
+						Select(r => r.File.File.Directory).
+						Distinct().
+						OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingDirs()
@@ -618,6 +612,8 @@ namespace CsSearch
 	{
 		public int Compare(string a, string b)
 		{
+			if (a == null && b == null)
+				return 0;
 			if (a == null)
 				return -1;
 			if (b == null)

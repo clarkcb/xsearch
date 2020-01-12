@@ -10,6 +10,8 @@ namespace CsSearchTests
 	[TestFixture]
 	class SearcherTests
 	{
+		private readonly FileTypes _fileTypes = new FileTypes();
+		
 		private static string GetTestFileContent()
 		{
 			//return Properties.Resources.testFile2;
@@ -124,7 +126,8 @@ namespace CsSearchTests
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.True(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -134,7 +137,8 @@ namespace CsSearchTests
 			settings.AddInExtension("cs");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.True(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -144,7 +148,8 @@ namespace CsSearchTests
 			settings.AddInExtension("java");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.False(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsSearchFile(sf));
 		}
 
 
@@ -155,7 +160,8 @@ namespace CsSearchTests
 			settings.AddOutExtension("cs");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.False(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -165,7 +171,8 @@ namespace CsSearchTests
 			settings.AddOutExtension("java");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.True(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -175,7 +182,8 @@ namespace CsSearchTests
 			settings.AddInFilePattern("Search");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("Searcher.cs");
-			Assert.True(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -185,7 +193,8 @@ namespace CsSearchTests
 			settings.AddInFilePattern("Search");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.False(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -195,7 +204,8 @@ namespace CsSearchTests
 			settings.AddOutFilePattern("Search");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("Searcher.cs");
-			Assert.False(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsSearchFile(sf));
 		}
 
 		[Test]
@@ -205,7 +215,8 @@ namespace CsSearchTests
 			settings.AddOutFilePattern("Search");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.True(searcher.IsSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsSearchFile(sf));
 		}
 
 
@@ -219,7 +230,8 @@ namespace CsSearchTests
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -229,7 +241,8 @@ namespace CsSearchTests
 			settings.AddInArchiveExtension("zip");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -239,7 +252,8 @@ namespace CsSearchTests
 			settings.AddInArchiveExtension("gz");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsArchiveSearchFile(sf));
 		}
 
 
@@ -250,7 +264,8 @@ namespace CsSearchTests
 			settings.AddOutArchiveExtension("zip");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -260,7 +275,8 @@ namespace CsSearchTests
 			settings.AddOutArchiveExtension("gz");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -270,7 +286,8 @@ namespace CsSearchTests
 			settings.AddInArchiveFilePattern("arch");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -280,7 +297,8 @@ namespace CsSearchTests
 			settings.AddInArchiveFilePattern("archives");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -290,7 +308,8 @@ namespace CsSearchTests
 			settings.AddOutArchiveFilePattern("arch");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.IsArchiveSearchFile(sf));
 		}
 
 		[Test]
@@ -300,7 +319,8 @@ namespace CsSearchTests
 			settings.AddOutArchiveFilePattern("archives");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.IsArchiveSearchFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.IsArchiveSearchFile(sf));
 		}
 
 		/*************************************************************
@@ -313,7 +333,8 @@ namespace CsSearchTests
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
 			var file = new FileInfo(".gitignore");
-			Assert.False(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -323,7 +344,8 @@ namespace CsSearchTests
 			settings.ExcludeHidden = false;
 			var searcher = new Searcher(settings);
 			var file = new FileInfo(".gitignore");
-			Assert.True(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -332,7 +354,8 @@ namespace CsSearchTests
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -342,7 +365,8 @@ namespace CsSearchTests
 			settings.SearchArchives = true;
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -353,7 +377,8 @@ namespace CsSearchTests
 			settings.AddInArchiveExtension("zip");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.True(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -363,7 +388,8 @@ namespace CsSearchTests
 			settings.AddOutExtension("zip");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -373,7 +399,8 @@ namespace CsSearchTests
 			settings.ArchivesOnly = true;
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
-			Assert.False(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.FilterFile(sf));
 		}
 
 
@@ -383,7 +410,8 @@ namespace CsSearchTests
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.True(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -393,7 +421,8 @@ namespace CsSearchTests
 			settings.AddInExtension("cs");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.True(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.True(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -403,7 +432,8 @@ namespace CsSearchTests
 			settings.AddOutExtension("cs");
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.False(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.FilterFile(sf));
 		}
 
 		[Test]
@@ -413,7 +443,8 @@ namespace CsSearchTests
 			settings.ArchivesOnly = true;
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("FileUtil.cs");
-			Assert.False(searcher.FilterFile(file));
+			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
+			Assert.False(searcher.FilterFile(sf));
 		}
 
 

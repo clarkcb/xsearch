@@ -166,27 +166,37 @@ namespace CsSearch
 			}
 			return formatted.Trim();
 		}
-	}
-
-	public class SearchResultsComparer : IComparer<SearchResult>
-	{
-		public int Compare(SearchResult r1, SearchResult r2)
+		
+		public static int Compare(SearchResult r1, SearchResult r2)
 		{
-			var pathCmp = r1.File.FilePath.ToUpper().CompareTo(r2.File.FilePath.ToUpper());
-			if (pathCmp != 0)
+			if (r1 == null && r2 == null)
+				return 0;
+			if (r1 == null)
+				return -1;
+			if (r2 == null)
+				return 1;
+			if (r1.File != null && r2.File != null)
 			{
-				return pathCmp;
-			}
-			var fileCmp = r1.File.FileName.ToUpper().CompareTo(r2.File.FileName.ToUpper());
-			if (fileCmp != 0)
-			{
-				return fileCmp;
+				var sfCmp = SearchFile.Compare(r1.File, r2.File);
+				if (sfCmp != 0)
+				{
+					return sfCmp;
+				}
 			}
 			if (r1.LineNum == r2.LineNum)
 			{
 				return r1.MatchStartIndex - r2.MatchStartIndex;
 			}
 			return r1.LineNum - r2.LineNum;
+		}
+
+	}
+
+	public class SearchResultsComparer : IComparer<SearchResult>
+	{
+		public int Compare(SearchResult r1, SearchResult r2)
+		{
+			return SearchResult.Compare(r1, r2);
 		}
 	}
 }

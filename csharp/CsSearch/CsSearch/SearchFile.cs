@@ -9,26 +9,23 @@ namespace CsSearch
 		public static string ContainerSeparator = "!";
 
 		public IList<string> Containers { get; private set; }
-		public string FilePath { get; private set; }
-		public string FileName { get; private set; }
+		public FileInfo File { get; private set; }
 		public FileType Type { get; private set; }
 
 		public string FullName => ToString();
 
-		public string PathAndName => FileUtil.JoinPath(FilePath, FileName);
+		public string PathAndName => File.ToString();
 
 		public SearchFile(FileInfo fileInfo, FileType type) :
-			this(new List<string>(), fileInfo.DirectoryName, fileInfo.Name, type) {}
+			this(new List<string>(), fileInfo, type) {}
 
 		public SearchFile(string path, string fileName, FileType type) :
-			this(new List<string>(), path, fileName, type) {}
+			this(new List<string>(), new FileInfo(Path.Combine(path, fileName)), type) {}
 
-		public SearchFile(IList<string> containers, string path,
-			string fileName, FileType type)
+		public SearchFile(IList<string> containers, FileInfo file, FileType type)
 		{
 			Containers = containers;
-			FilePath = path;
-			FileName = fileName;
+			File = file;
 			Type = type;
 		}
 
@@ -56,6 +53,36 @@ namespace CsSearch
 			}
 			sb.Append(PathAndName);
 			return sb.ToString();
+		}
+		
+		public static int Compare(SearchFile sf1, SearchFile sf2)
+		{
+			if (sf1 == null && sf2 == null)
+				return 0;
+			if (sf1 == null)
+				return -1;
+			if (sf2 == null)
+				return 1;
+
+			if (sf1.File.Directory != null && sf2.File.Directory != null)
+			{
+				var pathCmp = sf1.File.Directory.ToString().ToUpperInvariant()
+					.CompareTo(sf2.File.Directory.ToString().ToUpperInvariant());
+				if (pathCmp != 0)
+				{
+					return pathCmp;
+				}
+			}
+			return sf1.File.Name.ToUpperInvariant()
+				.CompareTo(sf2.File.Name.ToUpperInvariant());
+		}
+	}
+
+	public class SearchFilesComparer : IComparer<SearchFile>
+	{
+		public int Compare(SearchFile sf1, SearchFile sf2)
+		{
+			return SearchFile.Compare(sf1, sf2);
 		}
 	}
 }
