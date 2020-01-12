@@ -140,8 +140,7 @@ build_fsharp () {
 build_go () {
     echo
     log "build_go"
-    export GOPATH=$GO_PATH
-    export PATH=$GOPATH/bin:$PATH
+    export GOSEARCH_PATH=$GO_PATH/gosearch
 
     # build the code to generate the dynamic code for gosearch
     #log "Building gengosearchcode"
@@ -155,13 +154,15 @@ build_go () {
 
     # go fmt the gosearch source (for auto-generated code)
     log "Auto-formatting gosearch"
-    log "go fmt elocale.com/clarkcb/xsearch/..."
-    go fmt elocale.com/clarkcb/xsearch/...
+    cd $GOSEARCH_PATH
+    log "go fmt ./..."
+    go fmt ./...
 
     # now build gosearch
     log "Building gosearch"
-    log "go install elocale.com/clarkcb/xsearch/cmd/gosearch"
-    go install elocale.com/clarkcb/xsearch/cmd/gosearch
+    log "go install ./..."
+    go install ./...
+    cd -
 }
 
 build_haskell () {
