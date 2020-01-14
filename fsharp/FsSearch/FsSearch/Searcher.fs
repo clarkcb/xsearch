@@ -104,10 +104,14 @@ type Searcher (settings : SearchSettings.t) =
         match patterns with
         | [] -> pMatches
         | p :: ps ->
+            let allMatches = [for m in p.Matches(s) do yield m]
             let nextMatches =
-                if settings.FirstMatch
-                then [p.Match(s)]
-                else [for m in p.Matches(s) do yield m]
+                if allMatches.IsEmpty
+                then []
+                else
+                    if settings.FirstMatch
+                    then allMatches |> List.take 1
+                    else allMatches
             let nextPMatches = List.map (fun m -> (p, m)) nextMatches
             this.recGetPatternMatches ps s (List.append pMatches nextPMatches)
 
