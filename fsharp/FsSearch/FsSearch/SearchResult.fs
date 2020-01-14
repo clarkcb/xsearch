@@ -1,9 +1,6 @@
 ﻿namespace FsSearch
 
 open System
-open System.Collections.Generic
-open System.IO
-open System.Text
 open System.Text.RegularExpressions
 
 module SearchResult =
@@ -41,15 +38,15 @@ module SearchResult =
     let MultLineToString (sr : t) : string =
         let hdr = 
             String.concat "\n" [
-                sprintf "%s" (new String('=', 80));
+                sprintf "%s" (String('=', 80));
                 sprintf "%s: %d: [%d:%d]" (SearchFile.ToString sr.File) sr.LineNum sr.MatchStartIndex sr.MatchEndIndex;
-                sprintf "%s" (new String('-', 80));
+                sprintf "%s" (String('-', 80));
             ] + "\n"
         let maxLineNum = sr.LineNum + (List.length sr.LinesAfter)
         let maxLineNumLength = maxLineNum.ToString().Length
         let paddedLineNum (lineNum : int) : string =
             let lineNumString = lineNum.ToString()
-            (new String(' ', (maxLineNumLength - lineNumString.Length))) + lineNumString
+            (String(' ', (maxLineNumLength - lineNumString.Length))) + lineNumString
         let rec recLines (lines : string list) (lineNum : int) (linesString : string) : string =
             match lines with
             | [] -> linesString

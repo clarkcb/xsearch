@@ -1,6 +1,5 @@
 ﻿namespace FsSearch
 
-open System
 open System.IO
 
 module SearchFile = 

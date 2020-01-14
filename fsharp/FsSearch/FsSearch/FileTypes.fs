@@ -3,8 +3,6 @@
 open System
 open System.Collections.Generic
 open System.IO
-open System.Resources
-open System.Text.RegularExpressions
 open System.Xml.Linq
 
 type FileType = 
@@ -30,18 +28,18 @@ type FileTypes() =
             (FileUtil.ExtensionsListFromString s)
 
     let PopulateFileTypes (fileStream : FileStream) =
-        let fileTypesDictionary = new Dictionary<string, ISet<string>>()
+        let fileTypesDictionary = Dictionary<string, ISet<string>>()
         let filetypes = XDocument.Load(fileStream).Descendants(XName.Get("filetype"))
         for f in filetypes do
             let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
             let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
-            fileTypesDictionary.Add(name, new HashSet<String>(extSet))
-        let allText = new HashSet<String>(fileTypesDictionary.[text])
+            fileTypesDictionary.Add(name, HashSet<String>(extSet))
+        let allText = HashSet<String>(fileTypesDictionary.[text])
         allText.UnionWith(fileTypesDictionary.[code])
         allText.UnionWith(fileTypesDictionary.[xml])
         if fileTypesDictionary.Remove(text) then
             fileTypesDictionary.Add(text, allText)
-        let searchableSet = new HashSet<String>(fileTypesDictionary.[text])
+        let searchableSet = HashSet<String>(fileTypesDictionary.[text])
         searchableSet.UnionWith(fileTypesDictionary.[binary])
         searchableSet.UnionWith(fileTypesDictionary.[archive])
         fileTypesDictionary.Add(searchable, searchableSet)
@@ -52,7 +50,7 @@ type FileTypes() =
 
 
     let _fileTypesPath = Path.Combine(Config.XSEARCHPATH, "shared/filetypes.xml")
-    let _fileTypesFileInfo = new FileInfo(_fileTypesPath)
+    let _fileTypesFileInfo = FileInfo(_fileTypesPath)
     let _fileTypesDictionary = PopulateFileTypesFromFileInfo(_fileTypesFileInfo)
 
     // read-only member properties

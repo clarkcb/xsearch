@@ -50,7 +50,7 @@ module FileUtil =
     }
 
     let ExtensionsListFromString (exts : string) : string list =
-        let nonWord = new Regex(@"\W+")
+        let nonWord = Regex(@"\W+")
         nonWord.Split(exts)
         |> Array.toList
         |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)

@@ -1,10 +1,5 @@
 ﻿namespace FsSearch
 
-open System
-open System.Collections.Generic
-open System.IO
-open System.Text.RegularExpressions
-
 module Main =
 
     let HandleError (err : string) : unit =
@@ -12,7 +7,7 @@ module Main =
         SearchOptions.Usage(1)
 
     let Search (settings : SearchSettings.t) : unit =
-        let searcher = new Searcher(settings)
+        let searcher = Searcher(settings)
 
         let errs = searcher.ValidateSettings()
         if errs.Length > 0 then

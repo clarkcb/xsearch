@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Common.fs" />
+        <Compile Include="Config.fs" />
+        <Compile Include="FileUtil.fs" />
+        <Compile Include="FileTypes.fs" />
+        <Compile Include="SearchSettings.fs" />
+        <Compile Include="SearchFile.fs" />
+        <Compile Include="SearchResult.fs" />
+        <Compile Include="SearchOptions.fs" />
+        <Compile Include="Searcher.fs" />
+        <Compile Include="SearchMain.fs" />
+    </ItemGroup>
+
+</Project>

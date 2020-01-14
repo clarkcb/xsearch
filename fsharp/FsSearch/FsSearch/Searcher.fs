@@ -2,14 +2,13 @@
 
 open System
 open System.Collections.Generic
-open System.Diagnostics
 open System.IO
 open System.Text.RegularExpressions
 
 type Searcher (settings : SearchSettings.t) =
-    let _fileTypes = new FileTypes()
-    let _results = new List<SearchResult.t>()
-    let _fileSet = new HashSet<FileInfo>()
+    let _fileTypes = FileTypes()
+    let _results = List<SearchResult.t>()
+    let _fileSet = HashSet<FileInfo>()
 
     // read-only member properties
     member this.Results = _results
@@ -156,8 +155,8 @@ type Searcher (settings : SearchSettings.t) =
             |> List.rev
 
     member this.SearchContents (s : string) : List<SearchResult.t> =
-        let patternMatches = new Dictionary<Regex, int>()
-        let results = new List<SearchResult.t>()
+        let patternMatches = Dictionary<Regex, int>()
+        let results = List<SearchResult.t>()
         let lineIndices = this.GetLineIndices s
         for p in settings.SearchPatterns do
             let mutable m = p.Match s
@@ -319,7 +318,7 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.Search () : unit =
         if FileUtil.IsDirectory(settings.StartPath) then
-            let startDir = new DirectoryInfo(settings.StartPath)
+            let startDir = DirectoryInfo(settings.StartPath)
             if this.IsSearchDir startDir then
                 this.SearchPath startDir
             else

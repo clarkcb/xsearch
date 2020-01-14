@@ -1,9 +1,7 @@
 ﻿namespace FsSearch
 
 open System
-open System.Collections.Generic
 open System.IO
-open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -19,7 +17,7 @@ module SearchOptions =
         List.append extList (FileUtil.ExtensionsListFromString exts)
 
     let FileTypesListFromString (fts : string) : FileType list =
-        let nonWord = new Regex(@"\W+")
+        let nonWord = Regex(@"\W+")
         nonWord.Split(fts)
         |> Array.toList
         |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
@@ -31,27 +29,27 @@ module SearchOptions =
     let argActionMap : Map<string, string -> SearchSettings.t -> SearchSettings.t> =
         [
             ("in-archiveext", (fun (s : string) (settings : SearchSettings.t) -> { settings with InArchiveExtensions = addExtensions s settings.InArchiveExtensions }));
-            ("in-archivefilepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InArchiveFilePatterns = List.append settings.InArchiveFilePatterns [new Regex(s)] }));
-            ("in-dirpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InDirPatterns = List.append settings.InDirPatterns [new Regex(s)] }));
+            ("in-archivefilepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InArchiveFilePatterns = List.append settings.InArchiveFilePatterns [Regex(s)] }));
+            ("in-dirpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InDirPatterns = List.append settings.InDirPatterns [Regex(s)] }));
             ("in-ext", (fun (s : string) (settings : SearchSettings.t) -> { settings with InExtensions = addExtensions s settings.InExtensions }));
-            ("in-filepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InFilePatterns = List.append settings.InFilePatterns [new Regex(s)] }));
+            ("in-filepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InFilePatterns = List.append settings.InFilePatterns [Regex(s)] }));
             ("in-filetype", (fun (s : string) (settings : SearchSettings.t) -> { settings with InFileTypes = addFileTypes s settings.InFileTypes }));
-            ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InLinesAfterPatterns = List.append settings.InLinesAfterPatterns [new Regex(s)] }));
-            ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InLinesBeforePatterns = List.append settings.InLinesBeforePatterns [new Regex(s)] }));
+            ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InLinesAfterPatterns = List.append settings.InLinesAfterPatterns [Regex(s)] }));
+            ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InLinesBeforePatterns = List.append settings.InLinesBeforePatterns [Regex(s)] }));
             ("linesafter", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfter = Int32.Parse(s) }));
-            ("linesaftertopattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfterToPatterns = List.append settings.LinesAfterToPatterns [new Regex(s)] }));
-            ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfterUntilPatterns = List.append settings.LinesAfterUntilPatterns [new Regex(s)] }));
+            ("linesaftertopattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfterToPatterns = List.append settings.LinesAfterToPatterns [Regex(s)] }));
+            ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfterUntilPatterns = List.append settings.LinesAfterUntilPatterns [Regex(s)] }));
             ("linesbefore", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesBefore = Int32.Parse(s) }));
             ("maxlinelength", (fun (s : string) (settings : SearchSettings.t) -> { settings with MaxLineLength = Int32.Parse(s) }));
             ("out-archiveext", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutArchiveExtensions = addExtensions s settings.OutArchiveExtensions }));
-            ("out-archivefilepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutArchiveFilePatterns = List.append settings.OutArchiveFilePatterns [new Regex(s)] }));
-            ("out-dirpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutDirPatterns = List.append settings.OutDirPatterns [new Regex(s)] }));
+            ("out-archivefilepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutArchiveFilePatterns = List.append settings.OutArchiveFilePatterns [Regex(s)] }));
+            ("out-dirpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutDirPatterns = List.append settings.OutDirPatterns [Regex(s)] }));
             ("out-ext", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutExtensions = addExtensions s settings.OutExtensions }));
-            ("out-filepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutFilePatterns = List.append settings.OutFilePatterns [new Regex(s)] }));
+            ("out-filepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutFilePatterns = List.append settings.OutFilePatterns [Regex(s)] }));
             ("out-filetype", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutFileTypes = addFileTypes s settings.OutFileTypes }));
-            ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesAfterPatterns = List.append settings.OutLinesAfterPatterns [new Regex(s)] }));
-            ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesBeforePatterns = List.append settings.OutLinesBeforePatterns [new Regex(s)] }));
-            ("search", (fun (s : string) (settings : SearchSettings.t) -> { settings with SearchPatterns = List.append settings.SearchPatterns [new Regex(s)] }));
+            ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesAfterPatterns = List.append settings.OutLinesAfterPatterns [Regex(s)] }));
+            ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesBeforePatterns = List.append settings.OutLinesBeforePatterns [Regex(s)] }));
+            ("search", (fun (s : string) (settings : SearchSettings.t) -> { settings with SearchPatterns = List.append settings.SearchPatterns [Regex(s)] }));
         ] |> Map.ofList
 
     let flagActionMap : Map<string, bool -> SearchSettings.t -> SearchSettings.t> =
@@ -102,7 +100,7 @@ module SearchOptions =
             Seq.append shortargs longargs
             |> Map.ofSeq
 
-        let argRegex = new Regex("^(?:-{1,2})(?<opt>.*)$")
+        let argRegex = Regex("^(?:-{1,2})(?<opt>.*)$")
         
         let (|IsOption|_|) (arg:string) =            
             let m = argRegex.Match(arg)
@@ -167,7 +165,7 @@ module SearchOptions =
 
         let usageString = 
             usageStrings
-            |> List.append ["\nUsage:"; " FsSearch.exe [options] -s <searchpattern> <startpath>\n"; "Options:"] 
+            |> List.append ["\nUsage:"; " fssearch [options] -s <searchpattern> <startpath>\n"; "Options:"] 
             |> String.concat "\n"
         usageString
 
