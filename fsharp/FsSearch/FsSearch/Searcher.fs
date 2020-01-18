@@ -122,6 +122,18 @@ type Searcher (settings : SearchSettings.t) =
                 recGetSearchFiles ds (List.append searchfiles newsearchfiles)
         recGetSearchFiles dirs []
 
+    member this.GetSearchFiles () : SearchFile.t list =
+        let expandedPath = FileUtil.ExpandPath settings.StartPath
+        let searchOption =
+            if settings.Recursive then System.IO.SearchOption.AllDirectories
+            else System.IO.SearchOption.TopDirectoryOnly
+        let dir = DirectoryInfo(expandedPath)
+        dir.EnumerateFiles("*", searchOption)
+        |> Seq.filter (fun f -> this.IsSearchDir(f.Directory))
+        |> Seq.map (fun f -> SearchFile.Create f (_fileTypes.GetFileType f))
+        |> Seq.filter (fun sf -> this.FilterFile sf)
+        |> List.ofSeq
+
     member this.AddSearchResult (searchResult : SearchResult.t) : unit =
         _results.Add(searchResult)
 
@@ -327,22 +339,27 @@ type Searcher (settings : SearchSettings.t) =
         | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.File.FullName)
 
     member this.SearchPath (startDir : DirectoryInfo) : unit =
-        let dirs =
-            if settings.Recursive then
-                startDir :: this.GetSearchDirs(startDir)
-            else
-                [startDir]
+        let searchFiles : SearchFile.t list =
+            this.GetSearchFiles()
+            |> List.filter (fun sf -> sf.File <> null)
+            |> List.sortBy (fun sf -> sf.File.ToString())
+
         if settings.Verbose then
-            printfn "\nDirectories to be searched (%d):" dirs.Length
-            List.iter (fun d -> Common.Log (sprintf "%s " (d:DirectoryInfo).FullName)) dirs
+            let searchDirs =
+                searchFiles
+                |> List.filter (fun sf -> sf.File.Directory <> null)
+                |> List.map (fun sf -> sf.File.Directory.ToString())
+                |> List.distinct
+                |> List.sort
+            
+            Common.Log (sprintf "\nDirectories to be searched (%d):" searchDirs.Length)
+            List.iter (fun d -> Common.Log (sprintf "%s " d)) searchDirs
         
-        let files : SearchFile.t list = this.GetSearchFiles(dirs)
-        if settings.Verbose then
-            Common.Log (sprintf "\nFiles to be searched (%d):" files.Length)
-            Seq.iter (fun (f: SearchFile.t) -> Common.Log (sprintf "%s " (f.File.FullName))) files
+            Common.Log (sprintf "\nFiles to be searched (%d):" searchFiles.Length)
+            Seq.iter (fun (f: SearchFile.t) -> Common.Log (sprintf "%s " (f.File.ToString()))) searchFiles
             printfn ""
 
-        for f in files do
+        for f in searchFiles do
             this.SearchFile f
 
     member this.Search () : unit =
@@ -359,13 +376,12 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.GetSortedResults : SearchResult.t list = 
         this.Results
-        //|> Seq.sortBy (fun r -> r.SortKey)
+        |> Seq.sortBy (fun r -> (r.File.File.ToString(), r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
         |> List.ofSeq
 
     member this.PrintResults : unit = 
-        let sortedResults = this.GetSortedResults
         Common.Log (sprintf "\nSearch results (%d):" this.Results.Count)
-        sortedResults
+        this.GetSortedResults
         |> Seq.iter (fun r -> Common.Log (sprintf "%s" (SearchResult.ToString r)))
 
     member this.GetMatchingDirs : DirectoryInfo list = 
