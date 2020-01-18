@@ -40,6 +40,7 @@ module SearchSettings =
         SearchArchives : bool;
         SearchPatterns : Regex list;
         StartPath : string;
+        TextFileEncoding : string;
         UniqueLines : bool;
         Verbose : bool
     }
@@ -81,6 +82,7 @@ module SearchSettings =
         SearchArchives = false;
         SearchPatterns = [];
         StartPath = "";
+        TextFileEncoding = "utf-8";
         UniqueLines = false;
         Verbose = false
     }
@@ -122,6 +124,7 @@ module SearchSettings =
             sprintf ", SearchArchives: %b" settings.SearchArchives;
             sprintf ", SearchPatterns: %s" (Common.list_to_string(settings.SearchPatterns));
             sprintf ", StartPath: \"%s\"" settings.StartPath;
+            sprintf ", TextFileEncoding: \"%s\"" settings.TextFileEncoding;
             sprintf ", UniqueLines: %b" settings.UniqueLines;
             sprintf ", Verbose: %b" settings.Verbose;
             ")"

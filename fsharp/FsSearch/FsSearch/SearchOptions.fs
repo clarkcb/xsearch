@@ -36,6 +36,7 @@ module SearchOptions =
             ("in-filetype", (fun (s : string) (settings : SearchSettings.t) -> { settings with InFileTypes = addFileTypes s settings.InFileTypes }));
             ("in-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InLinesAfterPatterns = List.append settings.InLinesAfterPatterns [Regex(s)] }));
             ("in-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with InLinesBeforePatterns = List.append settings.InLinesBeforePatterns [Regex(s)] }));
+            ("encoding", (fun (s : string) (settings : SearchSettings.t) -> { settings with TextFileEncoding = s }));
             ("linesafter", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfter = Int32.Parse(s) }));
             ("linesaftertopattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfterToPatterns = List.append settings.LinesAfterToPatterns [Regex(s)] }));
             ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with LinesAfterUntilPatterns = List.append settings.LinesAfterUntilPatterns [Regex(s)] }));

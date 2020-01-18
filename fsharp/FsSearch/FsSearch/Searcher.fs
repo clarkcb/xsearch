@@ -3,23 +3,41 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 
 type Searcher (settings : SearchSettings.t) =
     let _fileTypes = FileTypes()
     let _results = List<SearchResult.t>()
     let _fileSet = HashSet<FileInfo>()
+    let _binaryEncoding = Encoding.GetEncoding("ISO-8859-1")
+    let mutable _textFileEncoding = Encoding.GetEncoding("utf-8")
 
     // read-only member properties
     member this.Results = _results
     member this.FileSet = _fileSet
+    member this.BinaryEncoding = _binaryEncoding
+
+    // read-write member properties
+    member this.TextFileEncoding 
+        with get () = _textFileEncoding
+        and set enc = _textFileEncoding <- enc
 
     // member methods
+    member this.EncodingFromStringOrError (encName : string) : string option =
+        try
+            this.TextFileEncoding <- Encoding.GetEncoding(encName)
+            None
+        with
+        | :? ArgumentException as e ->
+            Some (sprintf "Invalid encoding: %s" encName)
+
     member this.ValidateSettings () : string list =
         [
             (if String.IsNullOrEmpty settings.StartPath then (Some "Startpath not defined") else None);
             (if Directory.Exists(settings.StartPath) || File.Exists(settings.StartPath) then None else (Some "Startpath not found"));
             (if List.isEmpty settings.SearchPatterns then (Some "No search patterns defined") else None);
+            (this.EncodingFromStringOrError settings.TextFileEncoding);
         ]
         |> List.filter (fun e -> e.IsSome)
         |> List.map (fun e -> e.Value)
@@ -204,7 +222,7 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.SearchTextFileContents (f : SearchFile.t) : unit =
         try
-            let contents = FileUtil.GetFileContents f.File.FullName
+            let contents = FileUtil.GetFileContents (f.File.FullName) (this.TextFileEncoding)
             let results = this.SearchContents(contents)
             for r:SearchResult.t in results do
                 let fileResult = { r with File=f }
@@ -248,7 +266,7 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.SearchTextFileLines (f : SearchFile.t) : unit =
         try
-            let lines = FileUtil.GetFileLines f.File.FullName |> List.ofSeq
+            let lines = FileUtil.GetFileLines f.File.FullName this.TextFileEncoding |> List.ofSeq
             let results =
                 this.SearchLines lines
                 |> List.map (fun r -> { r with File = f })
@@ -277,7 +295,7 @@ type Searcher (settings : SearchSettings.t) =
         if settings.Verbose then
             Common.Log (sprintf "Searching binary file %s" f.File.FullName)
         try
-            use sr = new StreamReader (f.File.FullName)
+            use sr = new StreamReader (f.File.FullName, this.BinaryEncoding)
             let contents = sr.ReadToEnd()
             for p in Seq.filter (fun p -> (p:Regex).Match(contents).Success) settings.SearchPatterns do
                 let mutable m = p.Match contents

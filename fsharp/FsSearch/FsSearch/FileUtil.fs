@@ -13,15 +13,20 @@ module FileUtil =
         | home when home <> null -> home
         | _ -> Environment.GetEnvironmentVariable("USERPROFILE")
 
-    let GetFileContents (filepath : string) : string =
+    let GetFileContents (filepath : string) (encoding : Encoding) : string =
         let contents =
             try
-                use sr = new StreamReader (filepath)
+                use sr = new StreamReader (filepath, encoding)
                 sr.ReadToEnd()
             with
             | :? IOException as e -> printfn "%s" e.Message; ""
         contents
 
+    let GetFileLines (filePath : string) (encoding : Encoding) = seq {
+        use sr = new StreamReader (filePath, encoding)
+        while not sr.EndOfStream do
+            yield sr.ReadLine ()
+    }
     let ExpandPath (filepath : string) : string =
         if filepath.[0] = '~' then GetHomePath() + filepath.Substring(1)
         else filepath
@@ -43,11 +48,6 @@ module FileUtil =
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
         startsWithDot
 
-    let GetFileLines (filePath : string) = seq {
-        use sr = new StreamReader (filePath)
-        while not sr.EndOfStream do
-            yield sr.ReadLine ()
-    }
 
     let ExtensionsListFromString (exts : string) : string list =
         let nonWord = Regex(@"\W+")
