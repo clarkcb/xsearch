@@ -2,11 +2,21 @@
 
 open System
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 
 module FileUtil = 
 
-    let dotDirs = Set.ofList ["."; ".."]
+    let currentPath = "."
+    let parentPath = ".."
+    let forwardSlash = '/'
+    let backSlash = '\\'
+    let dirSeps = [| forwardSlash; backSlash |]
+    let dotDirs = Set.ofList [
+        currentPath; parentPath;
+        currentPath + string forwardSlash; parentPath + string forwardSlash;
+        currentPath + string backSlash; parentPath + string backSlash
+    ]
 
     let GetHomePath () : string = 
         match Environment.GetEnvironmentVariable("HOME") with
@@ -27,27 +37,34 @@ module FileUtil =
         while not sr.EndOfStream do
             yield sr.ReadLine ()
     }
+
+    let NormalizePath (path : string) : string = 
+        path.TrimEnd(dirSeps)
+
+    let JoinPath (path1 : string) (path2 : string) : string = 
+        let dirSep =
+            if path1.IndexOf(backSlash) > -1 then backSlash else forwardSlash
+        let p2 =
+            if path2.[0] = forwardSlash || path2.[0] = backSlash then path2.Substring(1) else path2
+        String.Format("{0}{1}{2}", NormalizePath path1, dirSep, p2)
+
     let ExpandPath (filepath : string) : string =
-        if filepath.[0] = '~' then GetHomePath() + filepath.Substring(1)
+        if filepath.[0] = '~' then JoinPath (GetHomePath()) (filepath.Substring(1))
         else filepath
 
-    let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
+    let ContractPath (filepath : string) : string =
+        if filepath.[0] = '~' then filepath 
+        else filepath.Replace(GetHomePath(), "~")
 
-    let IsDirectory (filepath : string) : bool =
-        if IsDotDir filepath then true
-        else
-            try
-                let attr = File.GetAttributes(filepath)
-                attr &&& FileAttributes.Directory = FileAttributes.Directory
-            with
-            | :? DirectoryNotFoundException -> false
-            | :? FileNotFoundException -> false
+    let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
 
     let IsHidden (filepath : string) : bool = 
         let startsWithDot = filepath.[0] = '.' && not (IsDotDir filepath)
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
         startsWithDot
 
+    let IsHiddenFile (fileInfo : FileSystemInfo) : bool = 
+        IsHidden (fileInfo.Name)
 
     let ExtensionsListFromString (exts : string) : string list =
         let nonWord = Regex(@"\W+")

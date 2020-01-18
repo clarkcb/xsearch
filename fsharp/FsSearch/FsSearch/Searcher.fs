@@ -85,7 +85,7 @@ type Searcher (settings : SearchSettings.t) =
          not (Seq.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutArchiveFilePatterns))
 
     member this.FilterFile (f: SearchFile.t) : bool = 
-        if FileUtil.IsHidden f.File.Name && settings.ExcludeHidden then
+        if FileUtil.IsHiddenFile f.File && settings.ExcludeHidden then
             false
         else if f.FileType = FileType.Archive then
             settings.SearchArchives && this.IsArchiveSearchFile f
@@ -346,14 +346,15 @@ type Searcher (settings : SearchSettings.t) =
             this.SearchFile f
 
     member this.Search () : unit =
-        if FileUtil.IsDirectory(settings.StartPath) then
-            let startDir = DirectoryInfo(settings.StartPath)
+        let expandedPath = FileUtil.ExpandPath(settings.StartPath)
+        if Directory.Exists(expandedPath) then
+            let startDir = DirectoryInfo(expandedPath)
             if this.IsSearchDir startDir then
                 this.SearchPath startDir
             else
                 raise <| Exception ("Startpath does not match search settings")
         else
-            let startFile = new FileInfo(settings.StartPath)
+            let startFile = new FileInfo(expandedPath)
             this.SearchFile (SearchFile.Create startFile (_fileTypes.GetFileType startFile))
 
     member this.GetSortedResults : SearchResult.t list = 
