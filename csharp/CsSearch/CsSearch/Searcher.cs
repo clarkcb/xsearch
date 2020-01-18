@@ -33,15 +33,9 @@ namespace CsSearch
 			if (string.IsNullOrEmpty(Settings.StartPath))
 				throw new SearchException("Startpath not defined");
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
-			if (FileUtil.IsDirectory(expandedPath))
+			if (!Directory.Exists(expandedPath) && !File.Exists(expandedPath))
 			{
-				if (!(new DirectoryInfo(expandedPath)).Exists)
-					throw new SearchException("Startpath not found");
-			}
-			else
-			{
-				if (!(new FileInfo(expandedPath)).Exists)
-					throw new SearchException("Startpath not found");
+				throw new SearchException("Startpath not found");
 			}
 			if (Settings.SearchPatterns.Count < 1)
 				throw new SearchException("No search patterns defined");
@@ -111,19 +105,20 @@ namespace CsSearch
 		private IEnumerable<SearchFile> GetSearchFiles()
 		{
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
-			var searchFiles = new DirectoryInfo(expandedPath).
-				EnumerateFiles("*", System.IO.SearchOption.AllDirectories).
+			var searchOption = Settings.Recursive ? System.IO.SearchOption.AllDirectories :
+				System.IO.SearchOption.TopDirectoryOnly;
+			return new DirectoryInfo(expandedPath).
+				EnumerateFiles("*", searchOption).
 				Where(f => IsSearchDirectory(f.Directory)).
 				Select(f => new SearchFile(f, _fileTypes.GetFileType(f))).
 				Where(FilterFile).
 				Select(sf => sf);
-			return searchFiles;
 		}
 
 		public void Search()
 		{
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
-			if (FileUtil.IsDirectory(expandedPath))
+			if (Directory.Exists(expandedPath))
 			{
 				var startDir = new DirectoryInfo(expandedPath);
 				if (IsSearchDirectory(startDir))

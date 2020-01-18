@@ -15,6 +15,14 @@ namespace CsSearch
 		private const char BackSlash = '\\';
 		private static readonly char[] DirSeps = new char[] { ForwardSlash, BackSlash };
 
+		public static string GetHomePath()
+		{
+			var home = Environment.GetEnvironmentVariable("HOME");
+			if (null == home)
+				return Environment.GetEnvironmentVariable("USERPROFILE");
+			return home;
+		}
+
 		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f, Encoding enc)
 		{
 			return EnumerableStringFromFile(f.FullName, enc);
@@ -34,21 +42,6 @@ namespace CsSearch
 			}
 		}
 
-		public static string ExpandPath(string filepath)
-		{
-			return filepath[0] == '~' ? JoinPath(GetHomePath(), filepath.Substring(1)) : filepath;
-		}
-
-		public static string ContractPath(string filepath)
-		{
-			return filepath[0] == '~' ? filepath : filepath.Replace(GetHomePath(), "~");
-		}
-
-		public static string GetFileContents(SearchFile f, Encoding encoding)
-		{
-			return GetFileContents(f.FullName, encoding);
-		}
-
 		public static string GetFileContents(string filepath, Encoding encoding)
 		{
 			try
@@ -65,12 +58,19 @@ namespace CsSearch
 			}
 		}
 
-		public static string GetHomePath()
+		public static string GetFileContents(SearchFile f, Encoding encoding)
 		{
-			var home = Environment.GetEnvironmentVariable("HOME");
-			if (null == home)
-				return Environment.GetEnvironmentVariable("USERPROFILE");
-			return home;
+			return GetFileContents(f.FullName, encoding);
+		}
+
+		public static string ExpandPath(string filepath)
+		{
+			return filepath[0] == '~' ? JoinPath(GetHomePath(), filepath.Substring(1)) : filepath;
+		}
+
+		public static string ContractPath(string filepath)
+		{
+			return filepath[0] == '~' ? filepath : filepath.Replace(GetHomePath(), "~");
 		}
 
 		public static string GetRelativePath(string fullPath, string startpath)
@@ -89,23 +89,6 @@ namespace CsSearch
 				}
 			}
 			return filePath;
-		}
-
-		public static bool IsDirectory(string filename)
-		{
-			try
-			{
-				var attr = File.GetAttributes(filename);
-				return ((attr & FileAttributes.Directory) == FileAttributes.Directory);
-			}
-			catch (DirectoryNotFoundException)
-			{
-				return false;
-			}
-			catch (FileNotFoundException)
-			{
-				return false;
-			}
 		}
 
 		public static bool IsDotDir(string filename)

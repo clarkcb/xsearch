@@ -33,30 +33,6 @@ namespace CsSearchTests
 		}
 
 		/*************************************************************
-		 * IsDirectory tests
-		*************************************************************/
-		[Test]
-		public void IsDirectory_IsSingleDot_IsDirectory()
-		{
-			const string dotDir = ".";
-			Assert.IsTrue(FileUtil.IsDirectory(dotDir));
-		}
-
-		[Test]
-		public void IsDirectory_IsDoubleDot_IsDirectory()
-		{
-			const string dotDir = "..";
-			Assert.IsTrue(FileUtil.IsDirectory(dotDir));
-		}
-
-		[Test]
-		public void IsDirectory_InvalidPath_NotIsDirectory()
-		{
-			const string invalidDir = "/this/path/is/invalid/ZZZ";
-			Assert.IsFalse(FileUtil.IsDirectory(invalidDir));
-		}
-
-		/*************************************************************
 		 * IsDotDir tests
 		*************************************************************/
 		[Test]
