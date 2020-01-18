@@ -37,6 +37,9 @@ type Searcher (settings : SearchSettings.t) =
             (if String.IsNullOrEmpty settings.StartPath then (Some "Startpath not defined") else None);
             (if Directory.Exists(settings.StartPath) || File.Exists(settings.StartPath) then None else (Some "Startpath not found"));
             (if List.isEmpty settings.SearchPatterns then (Some "No search patterns defined") else None);
+            (if settings.LinesBefore < 0 then (Some "Invalid linesbefore") else None);
+            (if settings.LinesAfter < 0 then (Some "Invalid linesafter") else None);
+            (if settings.MaxLineLength < 0 then (Some "Invalid maxlinelength") else None);
             (this.EncodingFromStringOrError settings.TextFileEncoding);
         ]
         |> List.filter (fun e -> e.IsSome)
