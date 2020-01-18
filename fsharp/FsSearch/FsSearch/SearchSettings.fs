@@ -87,6 +87,22 @@ module SearchSettings =
         Verbose = false
     }
 
+    let AddExtensions (exts : string) (extList : string list) : string list =
+        List.append extList (FileUtil.ExtensionsListFromString exts)
+
+    let AddPattern (pattern : string) (patternList : Regex list) : Regex list =
+        List.append patternList [Regex(pattern)]
+
+    let SetArchivesOnly (archivesOnly : bool) (settings : t) : t =
+        match archivesOnly with
+        | true -> { settings with ArchivesOnly=true; SearchArchives=true }
+        | _ -> { settings with ArchivesOnly=false }
+
+    let SetDebug (debug : bool) (settings : t) : t =
+        match debug with
+        | true -> { settings with Debug=true; Verbose=true }
+        | _ -> { settings with Debug=false }
+
     let FileTypesListToString (lst : FileType list) : string = 
         let rec recListToString (acc : string) (lst : FileType list) =
             match lst with
