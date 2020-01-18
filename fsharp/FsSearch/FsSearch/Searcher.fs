@@ -65,7 +65,11 @@ type Searcher (settings : SearchSettings.t) =
         (List.isEmpty settings.InFilePatterns ||
          List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.InFilePatterns) &&
         (List.isEmpty settings.OutFilePatterns ||
-         not (List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutFilePatterns))
+         not (List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutFilePatterns)) &&
+        (List.isEmpty settings.InFileTypes ||
+         List.exists (fun ft -> ft = f.FileType) settings.InFileTypes) &&
+        (List.isEmpty settings.OutFileTypes ||
+         not (List.exists (fun ft -> ft = f.FileType) settings.OutFileTypes))
 
     member this.IsArchiveSearchFile (f : SearchFile.t) : bool =
         (Seq.isEmpty settings.InArchiveExtensions ||
@@ -315,7 +319,7 @@ type Searcher (settings : SearchSettings.t) =
         match f.FileType with
         | FileType.Archive -> Common.Log (sprintf "Archive file searching not currently supported")
         | FileType.Binary -> this.SearchBinaryFile f
-        | FileType.Text -> this.SearchTextFile f
+        | FileType.Code | FileType.Text | FileType.Xml -> this.SearchTextFile f
         | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
         | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.File.FullName)
 

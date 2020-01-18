@@ -65,12 +65,21 @@ type FileTypes() =
         else if lname.Equals(xml) then FileType.Xml
         else FileType.Unknown
 
+    static member ToName (fileType : FileType) : string =
+        match fileType with
+        | FileType.Archive -> "Archive"
+        | FileType.Binary -> "Binary"
+        | FileType.Code -> "Code"
+        | FileType.Text -> "Text"
+        | FileType.Xml -> "Xml"
+        | _ -> "Unknown"
+
     member this.GetFileType (f : FileInfo) : FileType =
-        if this.IsTextFile f then FileType.Text
+        if this.IsArchiveFile f then FileType.Archive
         else if this.IsBinaryFile f then FileType.Binary
-        else if this.IsArchiveFile f then FileType.Archive
         else if this.IsCodeFile f then FileType.Code
         else if this.IsXmlFile f then FileType.Xml
+        else if this.IsTextFile f then FileType.Text
         else FileType.Unknown
 
     member this.IsArchiveFile (f : FileInfo) : bool =

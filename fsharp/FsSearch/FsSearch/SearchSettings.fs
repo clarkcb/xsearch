@@ -87,6 +87,14 @@ module SearchSettings =
         Verbose = false
     }
 
+    let FileTypesListToString (lst : FileType list) : string = 
+        let rec recListToString (acc : string) (lst : FileType list) =
+            match lst with
+            | []     -> acc.Trim()
+            | [a]    -> (recListToString (acc + " \"" + (FileTypes.ToName a) + "\"") [])
+            | h :: t -> (recListToString (acc + " \"" + (FileTypes.ToName h) + "\";") t) in
+        sprintf "[%s]" (recListToString "" lst)
+
     let ToString settings =
         String.concat "" [
             "SearchSettings(";
@@ -99,6 +107,7 @@ module SearchSettings =
             sprintf ", InDirPatterns: %s" (Common.list_to_string(settings.InDirPatterns));
             sprintf ", InExtensions: %s" (Common.list_to_string(settings.InExtensions));
             sprintf ", InFilePatterns: %s" (Common.list_to_string(settings.InFilePatterns));
+            sprintf ", InFileTypes: %s" (FileTypesListToString settings.InFileTypes);
             sprintf ", InLinesAfterPatterns: %s" (Common.list_to_string(settings.InLinesAfterPatterns));
             sprintf ", InLinesBeforePatterns: %s" (Common.list_to_string(settings.InLinesBeforePatterns));
             sprintf ", LinesAfter: %d" settings.LinesAfter;
@@ -115,6 +124,7 @@ module SearchSettings =
             sprintf ", OutDirPatterns: %s" (Common.list_to_string(settings.OutDirPatterns));
             sprintf ", OutExtensions: %s" (Common.list_to_string(settings.OutExtensions));
             sprintf ", OutFilePatterns: %s" (Common.list_to_string(settings.OutFilePatterns));
+            sprintf ", OutFileTypes: %s" (FileTypesListToString settings.OutFileTypes);
             sprintf ", OutLinesAfterPatterns: %s" (Common.list_to_string(settings.OutLinesAfterPatterns));
             sprintf ", OutLinesBeforePatterns: %s" (Common.list_to_string(settings.OutLinesBeforePatterns));
             sprintf ", PrintResults: %b" settings.PrintResults;
