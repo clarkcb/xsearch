@@ -106,35 +106,38 @@ build_csharp () {
     echo
     log "build_csharp"
     RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
-    # CONFIGURATION=Debug
-    CONFIGURATION=Release
+    CONFIGURATIONS=(Debug Release)
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
-    # run a mono xbuild
-    log "Building cssearch"
-    log "msbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln"
-    msbuild /p:Configuration=$CONFIGURATION $CSHARP_PATH/CsSearch/CsSearch.sln
-
+    # run msbuild for both configurations
+    for c in ${CONFIGURATIONS[*]}
+    do
+        log "Building cssearch for $c configuration"
+        log "msbuild /p:Configuration=$c $CSHARP_PATH/CsSearch/CsSearch.sln"
+        msbuild /p:Configuration=$c $CSHARP_PATH/CsSearch/CsSearch.sln
+    done
 }
 
 build_fsharp () {
     echo
     log "build_fsharp"
-    RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
-    CONFIGURATION=Debug
-    #CONFIGURATION=Release
+    RESOURCES_PATH=$FSHARP_PATH/FsSearch/FsSearch/Resources
+    CONFIGURATIONS=(Debug Release)
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
-    # run a mono xbuild
-    log "Building fssearch"
-    log "msbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln"
-    msbuild /p:Configuration=$CONFIGURATION $FSHARP_PATH/FsSearch.sln
+    # run msbuild for both configurations
+    for c in ${CONFIGURATIONS[*]}
+    do
+        log "Building fssearch for $c configuration"
+        log "msbuild /p:Configuration=$c $FSHARP_PATH/FsSearch/FsSearch.sln"
+        msbuild /p:Configuration=$c $FSHARP_PATH/FsSearch/FsSearch.sln
+    done
 }
 
 build_go () {

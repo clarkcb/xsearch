@@ -37,23 +37,23 @@ unittest_clojure () {
 unittest_csharp () {
     echo
     log "unittest_csharp"
-    CSSEARCHTESTS_PATH=$CSHARP_PATH/CsSearch/CsSearchTests
-    # CONFIGURATION=Debug
-    CONFIGURATION=Release
+    CSSEARCH_PATH=$CSHARP_PATH/CsSearch
 
-    # run a mono xbuild
+    # run dotnet test
     log "Unit-testing cssearch"
-    log "mono $CSSEARCHTESTS_PATH/bin/$CONFIGURATION/CsSearchTests.exe"
-    mono $CSSEARCHTESTS_PATH/bin/$CONFIGURATION/CsSearchTests.exe
+    log "dotnet test $CSSEARCH_PATH/CsSearch.sln"
+    dotnet test $CSSEARCH_PATH/CsSearch.sln
 }
 
 unittest_fsharp () {
     echo
     log "unittest_fsharp"
-    RESOURCES_PATH=$FSHARP_PATH/FsSearch/Resources
+    FSSEARCH_PATH=$FSHARP_PATH/FsSearch
 
-    # run a mono xbuild
+    # run dotnet test
     log "Unit-testing fssearch"
+    log "dotnet test $FSSEARCH_PATH/FsSearch.sln"
+    dotnet test $FSSEARCH_PATH/FsSearch.sln
 }
 
 unittest_go () {

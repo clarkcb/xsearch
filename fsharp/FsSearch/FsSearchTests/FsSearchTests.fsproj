@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="nunit" Version="3.11.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="3.11.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Resources\testFile2.txt" />
+        <!-- Compile Include="EmbeddedTestResource.fs" / -->
+        <Compile Include="FileTypesTests.fs" />
+        <Compile Include="FileUtilTests.fs" />
+        <Compile Include="SearcherTests.fs" />
+        <Compile Include="SearchFileTests.fs" />
+        <Compile Include="SearchOptionsTests.fs" />
+        <Compile Include="SearchResultTests.fs" />
+        <Compile Include="SearchSettingTests.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FsSearch\FsSearch.fsproj" />
+    </ItemGroup>
+
+</Project>
