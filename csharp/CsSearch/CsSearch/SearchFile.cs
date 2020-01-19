@@ -20,7 +20,7 @@ namespace CsSearch
 			this(new List<string>(), fileInfo, type) {}
 
 		public SearchFile(string path, string fileName, FileType type) :
-			this(new List<string>(), new FileInfo(Path.Combine(path, fileName)), type) {}
+			this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type) {}
 
 		public SearchFile(IList<string> containers, FileInfo file, FileType type)
 		{
