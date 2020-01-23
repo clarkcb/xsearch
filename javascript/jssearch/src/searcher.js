@@ -27,7 +27,22 @@ function Searcher(settings) {
     const validateSettings = function () {
         assert.ok(_settings.startPath, 'Startpath not defined');
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
-        assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
+        try {
+            fs.accessSync(_settings.startPath, fs.constants.R_OK);
+        } catch (accessErr) {
+            if (accessErr.code === "EACCES") {
+                assert.ok(false, 'Startpath not readable');
+            }
+            throw accessErr;
+        }
+        let stat = fs.lstatSync(_settings.startPath);
+        if (stat.isDirectory()) {
+            assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
+        } else if (stat.isFile()) {
+            assert.ok(self.filterFile(_settings.startPath), 'Startpath does not match search settings');
+        } else {
+            assert.ok(false, 'Startpath not readable file type');
+        }
         assert.ok(_settings.searchPatterns.length, 'No search patterns defined');
         assert.ok(_supportedEncodings.indexOf(_settings.textFileEncoding) > -1, "Invalid encoding");
     };
