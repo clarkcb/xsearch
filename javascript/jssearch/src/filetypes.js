@@ -46,20 +46,24 @@ function FileTypes() {
     })();
 
     this.getFileType = function (filename) {
+        if (self.isCodeFile(filename))
+            return FileType.CODE;
+        if (self.isXmlFile(filename))
+            return FileType.XML;
         if (self.isTextFile(filename))
             return FileType.TEXT;
         if (self.isBinaryFile(filename))
             return FileType.BINARY;
         if (self.isArchiveFile(filename))
             return FileType.ARCHIVE;
-        if (self.isCodeFile(filename))
-            return FileType.CODE;
-        if (self.isXmlFile(filename))
-            return FileType.XML;
         return FileType.UNKNOWN;
     };
 
     this.getFileTypeAsync = function (filename, cb) {
+        if (self.isCodeFile(filename))
+            return cb(FileType.CODE);
+        if (self.isXmlFile(filename))
+            return cb(FileType.XML);
         if (self.isTextFile(filename))
             return cb(FileType.TEXT);
         if (self.isBinaryFile(filename))
@@ -117,6 +121,20 @@ FileTypes.fromName = function (name) {
     if (name.toUpperCase() === 'XML')
         return FileType.XML;
     return FileType.UNKNOWN;
+};
+
+FileTypes.toName = function (fileType) {
+    if (fileType === FileType.ARCHIVE)
+        return 'ARCHIVE';
+    if (fileType === FileType.BINARY)
+        return 'BINARY';
+    if (fileType === FileType.CODE)
+        return 'CODE';
+    if (fileType === FileType.TEXT)
+        return 'TEXT';
+    if (fileType === FileType.XML)
+        return 'XML';
+    return 'UNKNOWN';
 };
 
 exports.FileTypes = FileTypes;

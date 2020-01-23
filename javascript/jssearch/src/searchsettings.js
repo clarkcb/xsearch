@@ -149,7 +149,21 @@ function SearchSettings() {
     };
 
     const listToString = function (name, lst) {
-        return `${name}=["${lst.join('","')}"]`;
+        if (lst.length) return `${name}=["${lst.join('","')}"]`;
+        return `${name}=[]`;
+    };
+
+    const fileTypesToString = function (name, fileTypes) {
+        if (fileTypes.length) {
+            var s = `${name}=[`;
+            for (var i=0; i < fileTypes.length; i++) {
+                if (i > 0) s += ', ';
+                s += '"' + FileTypes.toName(fileTypes[i]) + '"';
+            }
+            s += ']';
+            return s;
+        }
+        return `${name}=[]`;
     };
 
     self.toString = function () {
@@ -163,7 +177,7 @@ function SearchSettings() {
             ', ' + listToString('inDirPatterns', self.inDirPatterns) +
             ', ' + listToString('inExtensions', self.inExtensions) +
             ', ' + listToString('inFilePatterns', self.inFilePatterns) +
-            ', ' + listToString('inFileTypes', self.inFileTypes) +
+            ', ' + fileTypesToString('inFileTypes', self.inFileTypes) +
             ', ' + listToString('inLinesAfterPatterns', self.inLinesAfterPatterns) +
             ', ' + listToString('inLinesBeforePatterns', self.inLinesBeforePatterns) +
             ', linesAfter=' + self.linesAfter +
@@ -180,7 +194,7 @@ function SearchSettings() {
             ', ' + listToString('outDirPatterns', self.outDirPatterns) +
             ', ' + listToString('outExtensions', self.outExtensions) +
             ', ' + listToString('outFilePatterns', self.outFilePatterns) +
-            ', ' + listToString('outFileTypes', self.outFileTypes) +
+            ', ' + fileTypesToString('outFileTypes', self.outFileTypes) +
             ', ' + listToString('outLinesAfterPatterns', self.outLinesAfterPatterns) +
             ', ' + listToString('outLinesBeforePatterns', self.outLinesBeforePatterns) +
             ', printResults=' + self.printResults +

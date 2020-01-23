@@ -232,7 +232,7 @@ function Searcher(settings) {
 
     const searchFile = function (filepath) {
         let filetype = _filetypes.getFileType(filepath);
-        if (filetype === FileType.TEXT) {
+        if (filetype === FileType.CODE || filetype === FileType.TEXT || filetype === FileType.XML) {
             searchTextFile(filepath);
         } else if (filetype === FileType.BINARY) {
             searchBinaryFile(filepath);
