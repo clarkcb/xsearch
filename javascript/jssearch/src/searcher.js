@@ -85,32 +85,21 @@ function Searcher(settings) {
             return false;
         }
         let ext = FileUtil.getExtension(file);
-        if (_settings.inExtensions.length &&
-            !matchesAnyElement(ext, _settings.inExtensions)) {
-            return false;
-        }
-        if (_settings.outExtensions.length &&
-            matchesAnyElement(ext, _settings.outExtensions)) {
-            return false;
-        }
-        if (_settings.inFilePatterns.length &&
-            !matchesAnyPattern(file, _settings.inFilePatterns)) {
-            return false;
-        }
-        if (_settings.outFilePatterns.length &&
-            matchesAnyPattern(file, _settings.outFilePatterns)) {
+        if ((_settings.inExtensions.length &&
+            !matchesAnyElement(ext, _settings.inExtensions))
+            || (_settings.outExtensions.length &&
+                matchesAnyElement(ext, _settings.outExtensions))
+            || (_settings.inFilePatterns.length &&
+                !matchesAnyPattern(file, _settings.inFilePatterns))
+            || (_settings.outFilePatterns.length &&
+                matchesAnyPattern(file, _settings.outFilePatterns))) {
             return false;
         }
         let filetype = _filetypes.getFileType(file);
-        if (_settings.inFileTypes.length &&
-            !matchesAnyElement(filetype, _settings.inFileTypes)) {
-            return false;
-        }
-        if (_settings.outFileTypes.length &&
-            matchesAnyElement(filetype, _settings.outFileTypes)) {
-            return false;
-        }
-        return true;
+        return !((_settings.inFileTypes.length &&
+            !matchesAnyElement(filetype, _settings.inFileTypes))
+            || (_settings.outFileTypes.length &&
+                matchesAnyElement(filetype, _settings.outFileTypes)));
     };
 
     self.isArchiveSearchFile = function (file) {
