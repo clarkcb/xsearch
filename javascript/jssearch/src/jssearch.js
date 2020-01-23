@@ -11,7 +11,7 @@ var Searcher = require('./searcher.js').Searcher;
 var SearchOptions = require('./searchoptions.js').SearchOptions;
 
 function handleError(err, searchOptions) {
-    const errMsg = err.toString().replace(/\w*Error/, "ERROR");
+    const errMsg = "ERROR: " + err.message;
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
 }
