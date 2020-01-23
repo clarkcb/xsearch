@@ -9,20 +9,20 @@ var uglify = require('gulp-uglify');
 
 var DEST = 'build/';
 
-gulp.task('clean', function () {  
-  return del(['./build']);
-});
+function clean(cb) {
+  del(['./build']);
+  cb();
+}
 
-gulp.task('build', function() {
-  del(['./build'], function(err) {
-    if (err) return;
-    return gulp.src('./src/*.js')
+function build(cb) {
+  gulp.src('./src/*.js')
       .pipe(replace(/require\('\.\/(\w+)\.js'\)/g, "require('./$1.min.js')"))
-      .pipe(uglify())
+      //.pipe(uglify())
       .pipe(rename({ extname: '.min.js' }))
       .pipe(gulp.dest(DEST));
-  });
-});
+  cb();
+}
 
-gulp.task('default', ['build'], function() {
-});
+exports.clean = clean;
+exports.build = build;
+exports.default = gulp.series(clean, build);
