@@ -365,18 +365,18 @@ exports.TestSearchLines = function(test) {
     const lines = FileUtil.getFileLines(testFile);
 
     const results = searcher.searchLines(lines);
-    test.ok(results.length == 2);
+    test.ok(results.length === 2);
 
     const firstResult = results[0];
-    const expectedFirstLineNum = 23;
-    test.ok(firstResult.linenum == expectedFirstLineNum);
+    const expectedFirstLineNum = 29;
+    test.ok(firstResult.linenum === expectedFirstLineNum);
     const expectedFirstMatchStartIndex = 3;
     test.ok(firstResult.matchStartIndex === expectedFirstMatchStartIndex);
     const expectedFirstMatchEndIndex = 11;
     test.ok(firstResult.matchEndIndex === expectedFirstMatchEndIndex);
 
     const secondResult = results[1];
-    const expectedSecondLineNum = 29;
+    const expectedSecondLineNum = 35;
     test.ok(secondResult.linenum === expectedSecondLineNum);
     const expectedSecondMatchStartIndex = 24;
     test.ok(secondResult.matchStartIndex === expectedSecondMatchStartIndex);
@@ -395,18 +395,18 @@ exports.TestSearchMultiLineString = function(test) {
     const contents = FileUtil.getFileContents(testFile);
 
     const results = searcher.searchMultiLineString(contents);
-    test.ok(results.length == 2);
+    test.ok(results.length === 2);
 
     const firstResult = results[0];
-    const expectedFirstLineNum = 23;
-    test.ok(firstResult.linenum == expectedFirstLineNum);
+    const expectedFirstLineNum = 29;
+    test.ok(firstResult.linenum === expectedFirstLineNum);
     const expectedFirstMatchStartIndex = 3;
     test.ok(firstResult.matchStartIndex === expectedFirstMatchStartIndex);
     const expectedFirstMatchEndIndex = 11;
     test.ok(firstResult.matchEndIndex === expectedFirstMatchEndIndex);
 
     const secondResult = results[1];
-    const expectedSecondLineNum = 29;
+    const expectedSecondLineNum = 35;
     test.ok(secondResult.linenum === expectedSecondLineNum);
     const expectedSecondMatchStartIndex = 24;
     test.ok(secondResult.matchStartIndex === expectedSecondMatchStartIndex);
