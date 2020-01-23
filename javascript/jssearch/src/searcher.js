@@ -18,6 +18,9 @@ function Searcher(settings) {
     "use strict";
     let self = this;
     const _settings = settings;
+    const _binaryEncoding = "latin1";
+    // from https://github.com/nodejs/node/blob/master/lib/buffer.js
+    const _supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le', 'binary', 'base64', 'hex'];
     const _filetypes = new FileTypes();
     self.results = [];
 
@@ -26,7 +29,7 @@ function Searcher(settings) {
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
         assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
         assert.ok(_settings.searchPatterns.length, 'No search patterns defined');
-        assert.equal(settings.textFileEncoding, "utf-8", "Invalid encoding");
+        assert.ok(_supportedEncodings.indexOf(_settings.textFileEncoding) > -1, "Invalid encoding");
     };
 
     const matchesAnyElement = (s, elements) => elements.indexOf(s) > -1;
@@ -236,7 +239,7 @@ function Searcher(settings) {
         if (_settings.verbose) {
             common.log(`Searching binary file: "${filepath}"`);
         }
-        let contents = FileUtil.getFileContents(filepath);
+        let contents = FileUtil.getFileContents(filepath, _binaryEncoding);
         let pattern = '';
         let patternResults = {};
         _settings.searchPatterns.forEach(p => {
@@ -276,7 +279,7 @@ function Searcher(settings) {
     };
 
     const searchTextFileContents = function (filepath) {
-        let contents = FileUtil.getFileContents(filepath);
+        let contents = FileUtil.getFileContents(filepath, _settings.textFileEncoding);
         let results = self.searchMultiLineString(contents);
         results.forEach(r => {
             let resultWithFilepath =
@@ -408,7 +411,7 @@ function Searcher(settings) {
     };
 
     const searchTextFileLines = function (filepath) {
-        let lines = FileUtil.getFileLines(filepath);
+        let lines = FileUtil.getFileLines(filepath, _settings.textFileEncoding);
         let results = self.searchLines(lines);
         results.forEach(r => {
             let resultWithFilepath =

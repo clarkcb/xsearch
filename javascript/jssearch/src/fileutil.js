@@ -28,12 +28,12 @@ FileUtil.getExtension = function (filepath) {
     }
 };
 
-FileUtil.getFileContents = function (filepath) {
-    return fs.readFileSync(filepath).toString();
+FileUtil.getFileContents = function (filepath, encoding) {
+    return fs.readFileSync(filepath, encoding).toString();
 };
 
-FileUtil.getFileContentsAsync = function (filepath, cb) {
-    fs.readFile(filepath, (err, data) => {
+FileUtil.getFileContentsAsync = function (filepath, encoding, cb) {
+    fs.readFile(filepath, encoding, (err, data) => {
         if (err) {
             common.log("An error occurred trying to read file: " + filepath);
             throw err;
@@ -42,12 +42,12 @@ FileUtil.getFileContentsAsync = function (filepath, cb) {
     });
 };
 
-FileUtil.getFileLines = function (filepath) {
-    return FileUtil.getFileContents(filepath).split(/\r?\n/);
+FileUtil.getFileLines = function (filepath, encoding) {
+    return FileUtil.getFileContents(filepath, encoding).split(/\r?\n/);
 };
 
-FileUtil.getFileLinesAsync = function (filepath, cb) {
-    FileUtil.getFileContentsAsync(filepath, contents => cb(contents.split(/\r?\n/)));
+FileUtil.getFileLinesAsync = function (filepath, encoding, cb) {
+    FileUtil.getFileContentsAsync(filepath, encoding, contents => cb(contents.split(/\r?\n/)));
 };
 
 FileUtil.getRelativePath = function (filepath, startpath) {
