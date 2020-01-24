@@ -44,16 +44,16 @@ class FileTypes(object):
         self._populate_filetypes_from_json()
 
     def get_filetype(self, filename: str) -> FileType:
+        if self.is_code_file(filename):
+            return FileType.CODE
+        if self.is_xml_file(filename):
+            return FileType.XML
         if self.is_text_file(filename):
             return FileType.TEXT
         if self.is_binary_file(filename):
             return FileType.BINARY
         if self.is_archive_file(filename):
             return FileType.ARCHIVE
-        if self.is_code_file(filename):
-            return FileType.CODE
-        if self.is_xml_file(filename):
-            return FileType.XML
         return FileType.UNKNOWN
 
     def is_archive_file(self, f: str) -> bool:
