@@ -149,7 +149,7 @@ class SearchOptions(object):
             'out-linesbeforepattern':
                 lambda x, settings:
                     settings.add_patterns(x, 'out_linesbeforepatterns'),
-            'search':
+            'searchpattern':
                 lambda x, settings:
                     settings.add_patterns(x, 'searchpatterns')
         }
