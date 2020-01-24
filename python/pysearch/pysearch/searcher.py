@@ -91,26 +91,21 @@ class Searcher(object):
             return False
         return True
 
-    def is_search_file(self, filename: str) -> bool:
-        if self.settings.in_filepatterns and \
-            not matches_any_pattern(filename, self.settings.in_filepatterns):
+    def is_search_file(self, sf: SearchFile) -> bool:
+        if (self.settings.in_filepatterns and
+            not matches_any_pattern(sf.filename, self.settings.in_filepatterns)) \
+                or (self.settings.out_filepatterns and
+                    matches_any_pattern(sf.filename, self.settings.out_filepatterns)):
             return False
-        if self.settings.out_filepatterns and \
-            matches_any_pattern(filename, self.settings.out_filepatterns):
-            return False
-        ext = FileUtil.get_extension(filename)
-        if self.settings.in_extensions and \
-            ext not in self.settings.in_extensions:
-            return False
-        if self.settings.out_extensions and \
-            ext in self.settings.out_extensions:
-            return False
-        filetype = self.filetypes.get_filetype(filename)
-        if self.settings.in_filetypes and \
-            filetype not in self.settings.in_filetypes:
-            return False
-        if self.settings.out_filetypes and \
-            filetype in self.settings.out_filetypes:
+        ext = FileUtil.get_extension(sf.filename)
+        if (self.settings.in_extensions and
+            ext not in self.settings.in_extensions) \
+                or (self.settings.out_extensions and
+                    ext in self.settings.out_extensions) \
+                or (self.settings.in_filetypes and
+                    sf.filetype not in self.settings.in_filetypes) \
+                or (self.settings.out_filetypes and
+                    sf.filetype in self.settings.out_filetypes):
             return False
         return True
 
@@ -145,7 +140,7 @@ class Searcher(object):
             return self.settings.searcharchives and \
                    self.is_archive_search_file(sf.filename)
         return not self.settings.archivesonly and \
-               self.is_search_file(sf.filename)
+               self.is_search_file(sf)
 
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
@@ -180,7 +175,7 @@ class Searcher(object):
             if self.settings.verbose:
                 log('Skipping unsearchable file: {0}'.format(sf))
             return
-        if sf.filetype == FileType.TEXT:
+        if sf.filetype == FileType.CODE or sf.filetype == FileType.TEXT or sf.filetype == FileType.XML:
             self.search_text_file(sf)
         elif sf.filetype == FileType.BINARY:
             self.search_binary_file(sf)
