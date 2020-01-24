@@ -14,7 +14,7 @@
     <extensions>ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl
       cc cfm cgi cjs clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es es6 ex
       exs frm fs fth fx go groovy h h++ hbs hh hpp hs hxx ipp ipynb java js js2
-      jsf json jsonld jsp jspf jsx kt kts lhs lisp lua m ml p pas pbxproj php php3
+      jsf json jsonld jsp jspf jsx kt kts lhs lisp lua m ml mli p pas pbxproj php php3
       php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi py pyw pyx r rb rexx rkt rs s sass
       sbt sc scm scss scala sh swift tcl tk ts vb vbs vue</extensions>
   </filetype>
