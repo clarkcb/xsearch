@@ -18,7 +18,7 @@ class SearchOptionsTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        requiredArgs = ["--search", searchString, startPath]
+        requiredArgs = ["--searchpattern", searchString, startPath]
     }
 
     override func tearDown() {

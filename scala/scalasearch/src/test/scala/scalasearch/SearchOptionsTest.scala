@@ -490,7 +490,7 @@ class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
                  |  "in-ext": ["js","ts"],
                  |  "out-dirpattern": ["build", "node_module", "tests", "typings"],
                  |  "out-filepattern": ["gulpfile", "\\.min\\."],
-                 |  "search": "Searcher",
+                 |  "searchpattern": "Searcher",
                  |  "linesbefore": 2,
                  |  "linesafter": 2,
                  |  "debug": true,

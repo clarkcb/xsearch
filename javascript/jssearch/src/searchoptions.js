@@ -65,7 +65,7 @@ function SearchOptions() {
             (x, settings) => { settings.addOutLinesAfterPattern(x); },
         'out-linesbeforepattern':
             (x, settings) => { settings.addOutLinesBeforePattern(x); },
-        'search':
+        'searchpattern':
             (x, settings) => { settings.addSearchPattern(x); },
         'settings-file':
             (x, settings) => { return settingsFromFile(x, settings); }

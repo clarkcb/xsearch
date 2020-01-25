@@ -53,7 +53,7 @@ module SearchOptions =
             ("out-filetype", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutFileTypes = AddFileTypes s settings.OutFileTypes }));
             ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesAfterPatterns = AddPattern s settings.OutLinesAfterPatterns }));
             ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesBeforePatterns = AddPattern s settings.OutLinesBeforePatterns }));
-            ("search", (fun (s : string) (settings : SearchSettings.t) -> { settings with SearchPatterns = AddPattern s settings.SearchPatterns }));
+            ("searchpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with SearchPatterns = AddPattern s settings.SearchPatterns }));
         ] |> Map.ofList
 
     let flagActionMap : Map<string, bool -> SearchSettings.t -> SearchSettings.t> =

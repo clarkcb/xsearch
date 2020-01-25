@@ -118,7 +118,7 @@ exports.testSettingsFromJson = function (test) {
         '  "in-ext": ["js","ts"],\n' +
         '  "out-dirpattern": "node_module",\n' +
         '  "out-filepattern": ["temp"],\n' +
-        '  "search": "Searcher",\n' +
+        '  "searchpattern": "Searcher",\n' +
         '  "linesbefore": 2,\n' +
         '  "linesafter": 2,\n' +
         '  "debug": true,\n' +

@@ -63,7 +63,7 @@ public class SearchOptions {
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
             put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
             put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
-            put("search", (s, settings) -> settings.addSearchPattern(s));
+            put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
             put("settings-file", (s, settings) -> settingsFromFile(s, settings));
         }
     };

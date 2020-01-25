@@ -78,8 +78,6 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase
         $settings = $this->searchoptions->settings_from_args($args);
     }
 
-
-
     public function test_settings_from_json()
     {
         $settings = new SearchSettings();
@@ -89,7 +87,7 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "search": "Searcher",
+  "searchpattern": "Searcher",
   "linesbefore": 2,
   "linesafter": 2,
   "debug": true,

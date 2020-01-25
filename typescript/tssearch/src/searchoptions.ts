@@ -81,7 +81,7 @@ class SearchOptions {
                 (x: string, settings: SearchSettings) => { settings.addOutLinesAfterPattern(x); },
             'out-linesbeforepattern':
                 (x: string, settings: SearchSettings) => { settings.addOutLinesBeforePattern(x); },
-            'search':
+            'searchpattern':
                 (x: string, settings: SearchSettings) => { settings.addSearchPattern(x); },
             'settings-file':
                 (x: string, settings: SearchSettings) => { this.settingsFromFile(x, settings); }

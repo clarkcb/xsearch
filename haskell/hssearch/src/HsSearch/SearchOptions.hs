@@ -115,7 +115,7 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
              , ("out-linesafterpattern", \ss s -> ss {outLinesAfterPatterns = outLinesAfterPatterns ss ++ [s]})
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
-             , ("search", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
+             , ("searchpattern", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
              ]
 
 flagActions :: [(String, FlagAction)]

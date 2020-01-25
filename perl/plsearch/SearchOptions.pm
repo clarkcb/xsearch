@@ -106,7 +106,7 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{out_linesbeforepatterns});
     },
-    'search' => sub {
+    'searchpattern' => sub {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{searchpatterns});
     },

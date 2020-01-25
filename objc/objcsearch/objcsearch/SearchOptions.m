@@ -202,7 +202,7 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
             }, @"out-linesbeforepattern",
             ^void (NSString* s, SearchSettings *ss) {
                 [ss.searchPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"search",
+            }, @"searchpattern",
 //            ^void (NSString* s, SearchSettings *ss) {
 //                [self settingsFromFile:s settings:ss];
 //            }, @"settings-file",

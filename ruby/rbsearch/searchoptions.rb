@@ -67,7 +67,7 @@ class SearchOptions
         settings.out_linesafterpatterns) },
       :'out-linesbeforepattern' => ->(x, settings){ settings.add_patterns(x,
         settings.out_linesbeforepatterns) },
-      :'search' => ->(x, settings){ settings.add_patterns(x,
+      :'searchpattern' => ->(x, settings){ settings.add_patterns(x,
         settings.searchpatterns) },
       :'settings-file' => ->(x, settings){ settings_from_file(x, settings) }
     }

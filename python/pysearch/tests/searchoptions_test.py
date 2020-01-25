@@ -86,7 +86,6 @@ class SearchOptionsTest(unittest.TestCase):
             settings = self.searchoptions.search_settings_from_args(args)
         self.assertEqual(str(cm.exception), 'Invalid option: Q')
 
-
     def test_settings_from_json(self):
         settings = SearchSettings()
         json = '''{
@@ -94,7 +93,7 @@ class SearchOptionsTest(unittest.TestCase):
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "search": "Searcher",
+  "searchpattern": "Searcher",
   "linesbefore": 2,
   "linesafter": 2,
   "debug": true,

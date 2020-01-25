@@ -114,7 +114,7 @@
   <searchoption long="recursive" short="r">
     Search recursively through subdirectories*
   </searchoption>
-  <searchoption long="search" short="s">
+  <searchoption long="searchpattern" short="s">
     Specify search pattern
   </searchoption>
   <searchoption long="searcharchives" short="z">

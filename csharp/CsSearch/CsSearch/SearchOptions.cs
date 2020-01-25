@@ -36,7 +36,7 @@ namespace CsSearch
 					{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
 					{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
 					{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
-					{ "search", (s, settings) => settings.AddSearchPattern(s) },
+					{ "searchpattern", (s, settings) => settings.AddSearchPattern(s) },
 					{ "settings-file", SettingsFromFile },
 				};
 

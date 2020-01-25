@@ -115,7 +115,7 @@ object SearchOptions {
       ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
     "out-linesbeforepattern" ->
       ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
-    "search" ->
+    "searchpattern" ->
       ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
     "settings-file" ->
       ((s, ss) => settingsFromFile(s, ss))

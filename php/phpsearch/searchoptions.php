@@ -83,7 +83,7 @@ class SearchOptions
             'out-linesbeforepattern' => function (string $s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->out_linesbeforepatterns);
             },
-            'search' => function (string $s, SearchSettings $settings) {
+            'searchpattern' => function (string $s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->searchpatterns);
             },
             'settings-file' => function (string $s, SearchSettings $settings) {

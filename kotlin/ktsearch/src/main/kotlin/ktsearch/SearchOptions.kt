@@ -121,7 +121,7 @@ class SearchOptions() {
                     { s, ss -> ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns.plus(Regex(s))) },
             "out-linesbeforepattern" to
                     { s, ss -> ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns.plus(Regex(s))) },
-            "search" to
+            "searchpattern" to
                     { s, ss -> ss.copy(searchPatterns = ss.searchPatterns.plus(Regex(s))) },
             "settings-file" to
                     { s, ss -> settingsFromFile(s, ss) }

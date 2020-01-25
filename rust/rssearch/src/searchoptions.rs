@@ -444,12 +444,6 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
         }),
     );
     arg_map.insert(
-        "search".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
-            Ok(settings.search_patterns.push(Regex::new(s).unwrap()))
-        }),
-    );
-    arg_map.insert(
         "searchpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.search_patterns.push(Regex::new(s).unwrap()))
@@ -618,7 +612,7 @@ mod tests {
               "linesbefore": 2,
               "out-dirpattern": "node_module",
               "out-filepattern": ["temp"],
-              "search": "Searcher",
+              "searchpattern": "Searcher",
               "startpath": "~/src/xsearch/"
             }"#;
 

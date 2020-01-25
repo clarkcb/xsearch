@@ -72,7 +72,7 @@ public class SearchOptionsTest {
                 .append("  \"in-ext\": [\"js\",\"ts\"],\n")
                 .append("  \"out-dirpattern\": \"node_module\",\n")
                 .append("  \"out-filepattern\": [\"temp\"],\n")
-                .append("  \"search\": \"Searcher\",\n")
+                .append("  \"searchpattern\": \"Searcher\",\n")
                 .append("  \"linesbefore\": 2,\n")
                 .append("  \"linesafter\": 2,\n")
                 .append("  \"debug\": true,\n")

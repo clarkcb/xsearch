@@ -3,7 +3,7 @@
   "in-ext": ["js", "ts"],
   "out-dirpattern": ["_", "ansible", "build", "chef", "node_module", "target", "test", "typings"],
   "out-filepattern": ["gulpfile", "\\.min\\."],
-  "search": "Searcher",
+  "searchpattern": "Searcher",
   "linesbefore": 2,
   "linesafter": 2,
   "debug": true,

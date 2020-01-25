@@ -290,7 +290,7 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		"out-linesbeforepattern": func(s string, settings *SearchSettings) {
 			settings.AddOutLinesBeforePattern(s)
 		},
-		"search": func(s string, settings *SearchSettings) {
+		"searchpattern": func(s string, settings *SearchSettings) {
 			settings.AddSearchPattern(s)
 		},
 		"settings-file": func(s string, settings *SearchSettings) {

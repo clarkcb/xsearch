@@ -89,7 +89,7 @@ let arg_actions : (string * argAction) list = [
   ("out-filepattern", fun s ss -> { ss with out_filepatterns=List.append ss.out_filepatterns [Re2.Regex.create_exn s] });
   ("out-linesafterpattern", fun s ss -> { ss with out_linesafterpatterns=List.append ss.out_linesafterpatterns [Re2.Regex.create_exn s] });
   ("out-linesbeforepattern", fun s ss -> { ss with out_linesbeforepatterns=List.append ss.out_linesbeforepatterns [Re2.Regex.create_exn s] });
-  ("search", fun s ss -> { ss with searchpatterns=List.append ss.searchpatterns [Re2.Regex.create_exn s] })
+  ("searchpattern", fun s ss -> { ss with searchpatterns=List.append ss.searchpatterns [Re2.Regex.create_exn s] })
 ];;
 
 type boolFlagAction = bool -> Searchsettings.t -> Searchsettings.t;;

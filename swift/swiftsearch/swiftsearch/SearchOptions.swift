@@ -179,7 +179,7 @@ open class SearchOptions {
         "out-linesbeforepattern": { (s: String, ss: SearchSettings) -> () in
             ss.outLinesBeforePatterns.append(Regex(s))
         },
-        "search": { (s: String, ss: SearchSettings) -> () in
+        "searchpattern": { (s: String, ss: SearchSettings) -> () in
             ss.searchPatterns.append(Regex(s))
         }
     ]

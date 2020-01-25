@@ -66,7 +66,7 @@ func TestSearchSettingsFromJson(t *testing.T) {
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "search": "Searcher",
+  "searchpattern": "Searcher",
   "linesbefore": 2,
   "linesafter": 2,
   "debug": true,
