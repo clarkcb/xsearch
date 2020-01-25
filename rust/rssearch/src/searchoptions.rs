@@ -80,7 +80,7 @@ impl SearchOptions {
                 if let Err(error) = self.settings_from_value(&value, &mut settings) {
                     return Err(error);
                 }
-            }
+            },
             Err(error) => return Err(SearchError::new(error.description())),
         }
         Ok(settings)
@@ -99,27 +99,27 @@ impl SearchOptions {
                         return Err(error);
                     }
                 }
-            }
+            },
             Value::Bool(b) => {
                 if let Err(error) = self.apply_flag(name, *b, settings) {
                     return Err(error);
                 }
-            }
+            },
             Value::Number(n) => {
                 let s: String = format!("{}", n);
                 if let Err(error) = self.apply_arg(name, &s, settings) {
                     return Err(error);
                 }
-            }
+            },
             Value::Object(_) => {
                 if let Err(error) = self.settings_from_value(value, settings) {
                     return Err(error);
                 }
-            }
+            },
             Value::String(s) => match name.as_str() {
                 "startpath" => {
                     settings.startpath = String::from(s);
-                }
+                },
                 _ => {
                     if let Err(error) = self.apply_arg(name, &s, settings) {
                         return Err(error);
@@ -143,7 +143,7 @@ impl SearchOptions {
                         return Err(error);
                     }
                 }
-            }
+            },
             _ => {}
         }
         Ok(())
@@ -183,7 +183,7 @@ impl SearchOptions {
                                 if let Err(error) = self.apply_arg(arg, &argval, &mut settings) {
                                     return Err(error);
                                 }
-                            }
+                            },
                             None => {
                                 return Err(SearchError::new(
                                     format!("Missing value for option {}", &nextarg).as_str(),
@@ -194,17 +194,17 @@ impl SearchOptions {
                             if let Err(error) = self.apply_flag(arg, true, &mut settings) {
                                 return Err(error);
                             }
-                        }
+                        },
                         _ => {
                             return Err(SearchError::new(
                                 format!("Invalid option: {}", &nextarg).as_str(),
                             ))
                         }
                     }
-                }
+                },
                 Some(nextarg) => {
                     settings.startpath = String::from(nextarg);
-                }
+                },
                 None => break,
             }
         }
@@ -643,7 +643,7 @@ mod tests {
                 );
                 assert_eq!(settings.startpath, String::from("~/src/xsearch/"));
                 assert!(settings.verbose);
-            }
+            },
             Err(error) => {
                 log(error.description());
                 assert!(false)
@@ -693,7 +693,7 @@ mod tests {
                 );
                 assert_eq!(settings.startpath, String::from("/Users/cary/src/xsearch/"));
                 assert!(settings.verbose);
-            }
+            },
             Err(error) => {
                 log(error.description());
                 assert!(false)

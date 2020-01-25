@@ -57,7 +57,7 @@ impl Searcher {
                 io::ErrorKind::NotFound => return Err(SearchError::new("Startpath not found")),
                 io::ErrorKind::PermissionDenied => {
                     return Err(SearchError::new("Startpath not readable"))
-                }
+                },
                 _ => {
                     return Err(SearchError::new(
                         "An unknown error occurred trying to read startpath",
@@ -210,7 +210,7 @@ impl Searcher {
             match self.search_file(&sf) {
                 Ok(mut file_results) => {
                     results.append(&mut file_results);
-                }
+                },
                 Err(error) => {
                     log(format!("{}", error).as_str());
                     return Err(error);
@@ -233,7 +233,7 @@ impl Searcher {
                     log(format!("Skipping archive file: {}", searchfile.filepath()).as_str());
                     Ok(vec![])
                 }
-            }
+            },
             _ => {
                 log(format!("Skipping unknown file type: {:?}", searchfile.filetype).as_str());
                 Ok(vec![])
@@ -253,11 +253,11 @@ impl Searcher {
             // TODO: what other extensions are zip format?
             Some(ext) if ["zip", "zipx", "jar", "war", "ear", "whl"].contains(&ext) => {
                 self.search_archive_zip_file(searchfile)
-            }
+            },
             Some(ext) => {
                 log(format!("Searching not currently supported for {} files", ext).as_str());
                 Ok(vec![])
-            }
+            },
             None => {
                 log(format!(
                     "Skipping unknown archive file of unknown type: {}",
@@ -296,7 +296,7 @@ impl Searcher {
                         }
                     }
                 }
-            }
+            },
             Err(error) => {
                 return Err(SearchError::new(error.description()));
             }
@@ -360,7 +360,7 @@ impl Searcher {
                             )
                         })
                         .collect());
-                }
+                },
                 FileType::Binary => match self.get_byte_string_for_reader(zipfile) {
                     Ok(bytestring) => match self.search_binary_byte_string(&bytestring) {
                         Ok(results) => {
@@ -449,7 +449,7 @@ impl Searcher {
                             Vec::new(),
                         ));
                     }
-                }
+                },
                 Err(error) => return Err(error),
             },
             Err(error) => return Err(error),
@@ -503,7 +503,7 @@ impl Searcher {
                         Ok(bytestring) => bytestring,
                         Err(error) => return Err(error),
                     }
-                }
+                },
                 Err(error) => {
                     //let msg = format!("{} (file: {}", error.description(), searchfile.filepath());
                     return Err(SearchError::new(error.description()));
@@ -652,7 +652,7 @@ impl Searcher {
                                         lines_after.push_back(line);
                                         v_lines_after.push(line.to_string());
                                     }
-                                }
+                                },
                                 None => break,
                             }
                         }
@@ -816,7 +816,7 @@ impl Searcher {
                                 } else {
                                     _nlis
                                 }
-                            }
+                            },
                             None => vec![],
                         }
                     };

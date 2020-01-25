@@ -100,7 +100,7 @@ fn search(args: Iter<String>) {
                     if searcher.settings.list_lines {
                         print_result_lines(&results, searcher.settings.unique_lines);
                     }
-                }
+                },
                 Err(error) => error_and_exit(error, &options),
             }
         }

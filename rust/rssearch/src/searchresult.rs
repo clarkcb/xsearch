@@ -62,7 +62,7 @@ impl fmt::Display for SearchResult {
                         )
                         .as_str(),
                     );
-                }
+                },
                 None => {
                     buffer.push_str(
                         format!(
