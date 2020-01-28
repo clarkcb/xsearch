@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 ################################################################################
 #
 # rbsearch.rb
@@ -12,25 +14,20 @@ require_relative 'searcher.rb'
 require_relative 'searchoptions.rb'
 
 def main
-  searchoptions = SearchOptions.new
+  options = SearchOptions.new
 
-  settings = nil
-  begin
-    settings = searchoptions.search_settings_from_args(ARGV)
-  rescue ArgumentError => e
-    log("\nERROR: #{e.message}\n\n")
-    searchoptions.usage
-  end
+  settings =
+    begin
+      options.search_settings_from_args(ARGV)
+    rescue SearchError => e
+      handle_error(e, options)
+    end
 
-  settings.debug = settings.debug
-
-  if settings.debug
-    log("settings:\n#{settings.to_s}")
-  end
+  log("settings: #{settings}") if settings.debug
 
   if settings.printusage
     log("\n")
-    searchoptions.usage
+    options.usage
   end
 
   if settings.printversion
@@ -38,54 +35,64 @@ def main
     abort
   end
 
-  begin
-    searcher = Searcher.new(settings)
-    searcher.search
-
-    # print the results
-    if settings.printresults
-      log("\n")
-      searcher.print_results()
-    end
-
-    if settings.listdirs
-      log("\n")
-      dirs = searcher.get_matching_dirs()
-      log("Directories with matches (#{dirs.count}):")
-      dirs.each do |d|
-        log("#{d}\n")
-      end
-    end
-
-    if settings.listfiles
-      log("\n")
-      files = searcher.get_matching_files()
-      log("Files with matches (#{files.count}):")
-      files.each do |f|
-        log("#{f}\n")
-      end
-    end
-
-    if settings.listlines
-      log("\n")
-      lines = searcher.get_matching_lines()
-      hdrText = "Lines with matches"
-      if settings.uniquelines
-        hdrText = "Unique lines with matches"
-      end
-      log("#{hdrText} (#{lines.count}):")
-      lines.each do |line|
-        log("#{line}\n")
-      end
-    end
-
-  rescue RuntimeError => e
-    log("\nERROR: #{e.message}\n\n")
-    searchoptions.usage
-  end
-
+  search(options, settings)
 end
 
-if __FILE__ == $0
+def handle_error(err, options)
+  log("\nERROR: #{err.message}\n\n")
+  options.usage
+end
+
+def search(options, settings)
+  searcher = Searcher.new(settings)
+  searcher.search
+
+  # print the results
+  if settings.printresults
+    log("\n")
+    searcher.print_results
+  end
+
+  if settings.listdirs
+    log("\n")
+    dirs = searcher.get_matching_dirs
+    log("Directories with matches (#{dirs.size}):")
+    dirs.each do |d|
+      log("#{d}\n")
+    end
+  end
+
+  if settings.listfiles
+    log("\n")
+    files = searcher.get_matching_files
+    log("Files with matches (#{files.size}):")
+    files.each do |f|
+      log("#{f}\n")
+    end
+  end
+
+  if settings.listlines
+    log("\n")
+    lines = searcher.get_matching_lines
+    hdr_text =
+      if settings.uniquelines
+        'Unique lines with matches'
+      else
+        'Lines with matches'
+      end
+    log("#{hdr_text} (#{lines.size}):")
+    lines.each do |line|
+      log("#{line}\n")
+    end
+  end
+
+rescue SearchError => e
+  handle_error(e, options)
+
+rescue RuntimeError => e
+  handle_error(e, options)
+end
+
+if __FILE__ == $PROGRAM_NAME
   main
 end

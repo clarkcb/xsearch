@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ################################################################################
 #
 # config.rb
@@ -8,7 +10,6 @@
 
 require 'json'
 require 'pathname'
-require 'rbconfig'
 
 currdir = File.absolute_path(File.dirname(__FILE__))
 config_rel_path = '../../shared/config.json'
@@ -17,6 +18,8 @@ file = File.read(config_json_path)
 config = JSON.parse(file)
 
 XSEARCHPATH = config['xsearchpath']
-SHAREDPATH = "#{XSEARCHPATH}/shared"
-FILETYPESPATH = "#{SHAREDPATH}/filetypes.xml"
-SEARCHOPTIONSPATH = "#{SHAREDPATH}/searchoptions.xml"
+SHAREDPATH = "#{XSEARCHPATH}/shared".freeze
+FILETYPESPATH = "#{SHAREDPATH}/filetypes.xml".freeze
+FILETYPESJSONPATH = "#{SHAREDPATH}/filetypes.json".freeze
+SEARCHOPTIONSPATH = "#{SHAREDPATH}/searchoptions.xml".freeze
+SEARCHOPTIONSJSONPATH = "#{SHAREDPATH}/searchoptions.json".freeze

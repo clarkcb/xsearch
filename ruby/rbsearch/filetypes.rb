@@ -1,95 +1,93 @@
-################################################################################
-#
-# filetypes.rb
-#
-# Provides information on file type (archive, binary, text, unknown)
-#
-################################################################################
-require 'rexml/document'
+# frozen_string_literal: true
+
+require 'json'
 require_relative 'config.rb'
 require_relative 'fileutil.rb'
-include REXML
 
 module FileType
-  Unknown = 0
-  Archive = 1
-  Binary  = 2
-  Code    = 3
-  Text    = 4
-  Xml     = 5
+  UNKNOWN = 0
+  ARCHIVE = 1
+  BINARY  = 2
+  CODE    = 3
+  TEXT    = 4
+  XML     = 5
 end
 
+# FileTypes - provides basic file type information
 class FileTypes
+  FILE_TYPE_NAMES = %w[UNKNOWN ARCHIVE BINARY CODE TEXT XML].freeze
+
   def initialize
-    set_file_type_map
+    set_filetype_map_from_json
   end
 
   def self.from_name(name)
-    uname = name.upcase()
-    filetype = FileType::Unknown
-    if uname == "TEXT"
-      filetype = FileType::Text
-    elsif uname == "BINARY"
-      filetype = FileType::Binary
-    elsif uname == "ARCHIVE"
-      filetype = FileType::Archive
-    elsif uname == "CODE"
-      filetype = FileType::Code
-    elsif uname == "XML"
-      filetype = FileType::Xml
-    end
-    filetype
+    idx = FILE_TYPE_NAMES.index(name.upcase)
+    idx.nil? ? 0 : idx
   end
 
-  def set_file_type_map
+  def self.to_name(filetype)
+    filetype < FILE_TYPE_NAMES.size ? FILE_TYPE_NAMES[filetype] : 0
+  end
+
+  def set_filetype_map_from_json
     @file_type_map = {}
-    doc = Document.new(File.new(File.expand_path(FILETYPESPATH)))
-    doc.elements.each('filetypes/filetype') { |filetype|
-      name = filetype.attributes['name']
-      filetype.elements.each('extensions') { |extensions|
-        exts = extensions.text.split(' ')
-        @file_type_map[name] = exts.to_set
-      }
-    }
+    f = File.open(File.expand_path(FILETYPESJSONPATH), mode: 'r')
+    json = f.read
+    json_hash = JSON.parse(json)
+    json_hash['filetypes'].each do |ft|
+      typename = ft['type']
+      exts = ft['extensions'].to_set
+      @file_type_map[typename] = exts
+    end
     @file_type_map['text'] = @file_type_map['text'] + @file_type_map['code'] +
-      @file_type_map['xml']
+                             @file_type_map['xml']
     @file_type_map['searchable'] = @file_type_map['text'] +
-      @file_type_map['archive'] + @file_type_map['binary']
+                                   @file_type_map['archive'] +
+                                   @file_type_map['binary']
+  rescue StandardError => e
+    raise SearchError, "#{e} (file: #{SEARCHOPTIONSJSONPATH})"
+  ensure
+    f&.close
   end
 
   def get_filetype(filename)
-    if is_text_file(filename)
-      FileType::Text
-    elsif is_binary_file(filename)
-      FileType::Binary
-    elsif is_archive_file(filename)
-      FileType::Archive
+    if code_file?(filename)
+      FileType::CODE
+    elsif xml_file?(filename)
+      FileType::XML
+    elsif text_file?(filename)
+      FileType::TEXT
+    elsif binary_file?(filename)
+      FileType::BINARY
+    elsif archive_file?(filename)
+      FileType::ARCHIVE
     else
-      FileType::Unknown
+      FileType::UNKNOWN
     end
   end
 
-  def is_archive_file(f)
-    @file_type_map['archive'].include?(FileUtil::get_extension(f))
+  def archive_file?(filename)
+    @file_type_map['archive'].include?(FileUtil.get_extension(filename))
   end
 
-  def is_binary_file(f)
-    @file_type_map['binary'].include?(FileUtil::get_extension(f))
+  def binary_file?(filename)
+    @file_type_map['binary'].include?(FileUtil.get_extension(filename))
   end
 
-  def is_code_file(f)
-    @file_type_map['code'].include?(FileUtil::get_extension(f))
+  def code_file?(filename)
+    @file_type_map['code'].include?(FileUtil.get_extension(filename))
   end
 
-  def is_searchable_file(f)
-    @file_type_map['searchable'].include?(FileUtil::get_extension(f))
+  def searchable_file?(filename)
+    @file_type_map['searchable'].include?(FileUtil.get_extension(filename))
   end
 
-  def is_text_file(f)
-    @file_type_map['text'].include?(FileUtil::get_extension(f))
+  def text_file?(filename)
+    @file_type_map['text'].include?(FileUtil.get_extension(filename))
   end
 
-  def is_xml_file(f)
-    @file_type_map['xml'].include?(FileUtil::get_extension(f))
+  def xml_file?(filename)
+    @file_type_map['xml'].include?(FileUtil.get_extension(filename))
   end
 end

@@ -6,14 +6,14 @@
 #
 ################################################################################
 
-require_relative "../rbsearch/config.rb"
-require_relative "../rbsearch/searchresult.rb"
-require "test/unit"
+require_relative '../rbsearch/config.rb'
+require_relative '../rbsearch/searchresult.rb'
+require 'test/unit'
  
 class SearchResultTest < Test::Unit::TestCase
   @cssearch_path = "#{XSEARCHPATH}/csharp/CsSearch/CsSearch"
   def test_singleline_searchresult
-    pattern = "Search"
+    pattern = 'Search'
     filepath = "#{@cssearch_path}/Searcher.cs"
     linenum = 10
     match_start_index = 15
@@ -29,7 +29,7 @@ class SearchResultTest < Test::Unit::TestCase
   end
 
   def test_binaryfile_searchresult
-    pattern = "Search"
+    pattern = 'Search'
     filepath = "#{@cssearch_path}/Searcher.exe"
     linenum = 0
     match_start_index = 0
@@ -44,7 +44,7 @@ class SearchResultTest < Test::Unit::TestCase
   end
 
   def test_multiline_searchresult
-    pattern = "Search"
+    pattern = 'Search'
     filepath = "#{@cssearch_path}/Searcher.cs"
     linenum = 10
     match_start_index = 15

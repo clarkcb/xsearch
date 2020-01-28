@@ -1,19 +1,14 @@
-################################################################################
-#
-# searchfile.rb
-#
-# class SearchFile: encapsulates a file to be searched
-#
-################################################################################
+# frozen_string_literal: true
 
+# SearchFile - encapsulates a file to be searched
 class SearchFile
 
   attr_accessor :containers
-  attr_accessor :path
-  attr_accessor :filename
-  attr_accessor :filetype
+  attr_reader :path
+  attr_reader :filename
+  attr_reader :filetype
 
-  @CONTAINER_SEPARATOR = '!'
+  CONTAINER_SEPARATOR = '!'.freeze
 
   def initialize(path, filename, filetype)
     @containers = []
@@ -23,16 +18,16 @@ class SearchFile
   end
 
   def relativepath
+    return '.' + File::SEPARATOR + @filename if @path == '.' || @path == './'
     Pathname.new(@path).join(@filename).to_s
   end
 
   def to_s
-    s = ""
-    if @containers.length > 0
-      @containers.join(@CONTAINER_SEPARATOR) + @CONTAINER_SEPARATOR
+    s = ''
+    unless @containers.empty?
+      s += @containers.join(CONTAINER_SEPARATOR) + CONTAINER_SEPARATOR
     end
-    s += relativepath
-    s
+    s + relativepath
   end
 
 end

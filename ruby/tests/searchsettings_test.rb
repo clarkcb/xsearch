@@ -6,9 +6,9 @@
 #
 ################################################################################
 
-require_relative "../rbsearch/searchsettings.rb"
-require "test/unit"
- 
+require_relative '../rbsearch/searchsettings.rb'
+require 'test/unit'
+
 class SearchSettingsTest < Test::Unit::TestCase
   def setup
     @settings = SearchSettings.new
@@ -57,7 +57,9 @@ class SearchSettingsTest < Test::Unit::TestCase
     @settings.linesafter = 5
     @settings.linesbefore = 5
     assert_equal(@settings.archivesonly, true)
+    assert_equal(@settings.searcharchives, true)
     assert_equal(@settings.debug, true)
+    assert_equal(@settings.verbose, true)
     assert_equal(@settings.linesafter, 5)
     assert_equal(@settings.linesbefore, 5)
   end
@@ -75,9 +77,23 @@ class SearchSettingsTest < Test::Unit::TestCase
     assert(@settings.in_extensions.include?('rb'))
   end
 
+  def test_add_extensions_as_array
+    @settings.add_exts(%w[py rb], @settings.in_extensions)
+    assert_equal(@settings.in_extensions.length, 2)
+    assert(@settings.in_extensions.include?('py'))
+    assert(@settings.in_extensions.include?('rb'))
+  end
+
   def test_add_pattern
     @settings.add_pattern('Search', @settings.searchpatterns)
     assert_equal(@settings.searchpatterns.length, 1)
     assert_equal(@settings.searchpatterns.first.source, 'Search')
+  end
+
+  def test_add_patterns_as_array
+    @settings.add_patterns(%w[Search FileTypes], @settings.searchpatterns)
+    assert_equal(@settings.searchpatterns.length, 2)
+    assert_equal(@settings.searchpatterns.first.source, 'Search')
+    assert_equal(@settings.searchpatterns[1].source, 'FileTypes')
   end
 end

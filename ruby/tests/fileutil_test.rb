@@ -6,9 +6,9 @@
 #
 ################################################################################
 
-require_relative "../rbsearch/fileutil.rb"
-require "test/unit"
- 
+require_relative '../rbsearch/fileutil.rb'
+require 'test/unit'
+
 class FileUtilTest < Test::Unit::TestCase
 ################################################################################
 # get_extension tests
@@ -48,17 +48,17 @@ class FileUtilTest < Test::Unit::TestCase
 ################################################################################
   def test_is_dot_dir_single_dot
     filename = '.'
-    assert(FileUtil.is_dot_dir?(filename))
+    assert(FileUtil.dot_dir?(filename))
   end
 
   def test_is_dot_dir_double_dot
     filename = '..'
-    assert(FileUtil.is_dot_dir?(filename))
+    assert(FileUtil.dot_dir?(filename))
   end
 
   def test_is_dot_dir_non_dot_dir
     filename = '.git'
-    assert(!FileUtil.is_dot_dir?(filename))
+    assert(!FileUtil.dot_dir?(filename))
   end
 
 ################################################################################
@@ -66,21 +66,21 @@ class FileUtilTest < Test::Unit::TestCase
 ################################################################################
   def test_is_hidden_hidden_file
     filename = '.filename.txt'
-    assert(FileUtil.is_hidden?(filename))
+    assert(FileUtil.hidden?(filename))
   end
 
   def test_is_hidden_not_hidden_file
     filename = 'filename.txt'
-    assert(!FileUtil.is_hidden?(filename))
+    assert(!FileUtil.hidden?(filename))
   end
 
   def test_is_hidden_single_dot
     filename = '.'
-    assert(!FileUtil.is_hidden?(filename))
+    assert(!FileUtil.hidden?(filename))
   end
 
   def test_is_hidden_double_dot
     filename = '..'
-    assert(!FileUtil.is_hidden?(filename))
+    assert(!FileUtil.hidden?(filename))
   end
 end

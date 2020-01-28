@@ -1,17 +1,11 @@
-################################################################################
-#
-# searchoption.rb
-#
-# class SearchOption: encapsulates a (command-line) search option
-#
-################################################################################
+# frozen_string_literal: true
 
+# SearchOption - encapsulates a CLI search option
 class SearchOption
-
-  attr_accessor :shortarg
-  attr_accessor :longarg
-  attr_accessor :desc
-  attr_accessor :func
+  attr_reader :shortarg
+  attr_reader :longarg
+  attr_reader :desc
+  attr_reader :func
 
   def initialize(shortarg, longarg, desc, func)
     @shortarg = shortarg
@@ -21,8 +15,8 @@ class SearchOption
   end
 
   def sortarg
-    if not @shortarg.nil? and not @shortarg.empty?
-        @shortarg.downcase + "a" + @longarg.downcase
+    if !@shortarg.nil? && !@shortarg.empty?
+      @shortarg.downcase + 'a' + @longarg.downcase
     else
       @longarg.downcase
     end

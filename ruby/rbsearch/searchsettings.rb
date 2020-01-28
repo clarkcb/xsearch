@@ -1,15 +1,10 @@
-################################################################################
-#
-# searchsettings.rb
-#
-# class SearchSettings: encapsulates search settings
-#
-################################################################################
+require_relative 'filetypes.rb'
 
+# SearchSettings - encapsulates search settings
 class SearchSettings
 
-  attr_accessor :archivesonly
-  attr_accessor :debug
+  attr_reader :archivesonly
+  attr_reader :debug
   attr_accessor :excludehidden
   attr_accessor :firstmatch
   attr_accessor :in_archiveextensions
@@ -44,6 +39,7 @@ class SearchSettings
   attr_accessor :searcharchives
   attr_accessor :searchpatterns
   attr_accessor :startpath
+  attr_accessor :textfileencoding
   attr_accessor :uniquelines
   attr_accessor :verbose
 
@@ -65,6 +61,7 @@ class SearchSettings
     @recursive = true
     @searcharchives = false
     @startpath = nil
+    @textfileencoding = 'utf-8'
     @uniquelines = false
     @verbose = false
 
@@ -91,12 +88,12 @@ class SearchSettings
 
   def add_exts(exts, ext_set)
     if exts.instance_of? String
-      exts.split(",").each do |x|
-          ext_set.push(x)
+      exts.split(',').each do |x|
+        ext_set.push(x)
       end
     elsif exts.instance_of? Array
       exts.each do |x|
-          ext_set.push(x)
+        ext_set.push(x)
       end
     end
   end
@@ -117,75 +114,85 @@ class SearchSettings
 
   def add_filetypes(filetypes, filetypes_set)
     if filetypes.instance_of? String
-      filetypes.split(",").each do |t|
-        filetypes_set.push(FileTypes::from_name(t))
+      filetypes.split(',').each do |t|
+        filetypes_set.push(FileTypes.from_name(t))
       end
-    elsif exts.instance_of? Array
+    elsif filetypes.instance_of? Array
       filetypes.each do |t|
-        filetypes_set.push(FileTypes::from_name(t))
+        filetypes_set.push(FileTypes.from_name(t))
       end
     end
   end
 
-  def set_archivesonly(b)
-    @archivesonly = b
-    if b
-      @searcharchives = b
-    end
+  def archivesonly=(bool)
+    @archivesonly = bool
+    @searcharchives = bool if bool
   end
 
-  def set_debug(b)
-    @debug = b
-    if b
-      @verbose = b
-    end
-  end
-
-  def list_to_s(name, lst)
-    "#{name}=[\"#{lst.join("\", \"")}\"]"
+  def debug=(bool)
+    @debug = bool
+    @verbose = bool if bool
   end
 
   def to_s
     s = 'SearchSettings('
-    s += "archivesonly: #{@archivesonly}"
-    s += ", debug: #{@debug}"
-    s += ", firstmatch: #{@firstmatch}"
-    s += ", excludehidden: #{@excludehidden}"
-    s += ", " + list_to_s("in_archiveextensions", @in_archiveextensions)
-    s += ", " + list_to_s("in_archivefilepatterns", @in_archivefilepatterns)
-    s += ", " + list_to_s("in_dirpatterns", @in_dirpatterns)
-    s += ", " + list_to_s("in_extensions", @in_extensions)
-    s += ", " + list_to_s("in_filepatterns", @in_filepatterns)
-    s += ", " + list_to_s("in_filetypes", @in_filetypes)
-    s += ", " + list_to_s("in_linesafterpatterns", @in_linesafterpatterns)
-    s += ", " + list_to_s("in_linesbeforepatterns", @in_linesbeforepatterns)
-    s += ", linesafter: #{@linesafter}"
-    s += ", " + list_to_s("linesaftertopatterns", @linesaftertopatterns)
-    s += ", " + list_to_s("linesafteruntilpatterns", @linesafteruntilpatterns)
-    s += ", linesbefore: #{@linesbefore}"
-    s += ", listdirs: #{@listdirs}"
-    s += ", listfiles: #{@listfiles}"
-    s += ", listlines: #{@listlines}"
-    s += ", maxlinelength: #{@maxlinelength}"
-    s += ", multilinesearch: #{@multilinesearch}"
-    s += ", " + list_to_s("out_archiveextensions", @out_archiveextensions)
-    s += ", " + list_to_s("out_archivefilepatterns", @out_archivefilepatterns)
-    s += ", " + list_to_s("out_dirpatterns", @out_dirpatterns)
-    s += ", " + list_to_s("out_extensions", @out_extensions)
-    s += ", " + list_to_s("out_filepatterns", @out_filepatterns)
-    s += ", " + list_to_s("out_filetypes", @out_filetypes)
-    s += ", " + list_to_s("out_linesafterpatterns", @out_linesafterpatterns)
-    s += ", " + list_to_s("out_linesbeforepatterns", @out_linesbeforepatterns)
-    s += ", printresults: #{@printresults}"
-    s += ", printusage: #{@printusage}"
-    s += ", printversion: #{@printversion}"
-    s += ", recursive: #{@recursive}"
-    s += ", searcharchives: #{@searcharchives}"
-    s += ", " + list_to_s("searchpatterns", @searchpatterns)
-    s += ", startpath: \"#{@startpath}\""
-    s += ", uniquelines: #{@uniquelines}"
-    s += ", verbose: #{@verbose}"
-    s += ")"
+    s << "archivesonly: #{@archivesonly}"
+    s << ", debug: #{@debug}"
+    s << ", firstmatch: #{@firstmatch}"
+    s << ", excludehidden: #{@excludehidden}"
+    s << ', ' + list_to_s('in_archiveextensions', @in_archiveextensions)
+    s << ', ' + list_to_s('in_archivefilepatterns', @in_archivefilepatterns)
+    s << ', ' + list_to_s('in_dirpatterns', @in_dirpatterns)
+    s << ', ' + list_to_s('in_extensions', @in_extensions)
+    s << ', ' + list_to_s('in_filepatterns', @in_filepatterns)
+    s << ', ' + filetypes_to_s('in_filetypes', @in_filetypes)
+    s << ', ' + list_to_s('in_linesafterpatterns', @in_linesafterpatterns)
+    s << ', ' + list_to_s('in_linesbeforepatterns', @in_linesbeforepatterns)
+    s << ", linesafter: #{@linesafter}"
+    s << ', ' + list_to_s('linesaftertopatterns', @linesaftertopatterns)
+    s << ', ' + list_to_s('linesafteruntilpatterns', @linesafteruntilpatterns)
+    s << ", linesbefore: #{@linesbefore}"
+    s << ", listdirs: #{@listdirs}"
+    s << ", listfiles: #{@listfiles}"
+    s << ", listlines: #{@listlines}"
+    s << ", maxlinelength: #{@maxlinelength}"
+    s << ", multilinesearch: #{@multilinesearch}"
+    s << ', ' + list_to_s('out_archiveextensions', @out_archiveextensions)
+    s << ', ' + list_to_s('out_archivefilepatterns', @out_archivefilepatterns)
+    s << ', ' + list_to_s('out_dirpatterns', @out_dirpatterns)
+    s << ', ' + list_to_s('out_extensions', @out_extensions)
+    s << ', ' + list_to_s('out_filepatterns', @out_filepatterns)
+    s << ', ' + filetypes_to_s('out_filetypes', @out_filetypes)
+    s << ', ' + list_to_s('out_linesafterpatterns', @out_linesafterpatterns)
+    s << ', ' + list_to_s('out_linesbeforepatterns', @out_linesbeforepatterns)
+    s << ", printresults: #{@printresults}"
+    s << ", printusage: #{@printusage}"
+    s << ", printversion: #{@printversion}"
+    s << ", recursive: #{@recursive}"
+    s << ", searcharchives: #{@searcharchives}"
+    s << ', ' + list_to_s('searchpatterns', @searchpatterns)
+    s << ", startpath: \"#{@startpath}\""
+    s << ", textfileencoding: \"#{@textfileencoding}\""
+    s << ", uniquelines: #{@uniquelines}"
+    s << ", verbose: #{@verbose}"
+    s << ')'
     s
+  end
+
+  private
+
+  def list_to_s(name, lst)
+    "#{name}=[\"#{lst.join('", "')}\"]"
+  end
+
+  def filetypes_to_s(name, filetypes)
+    s = "#{name}=["
+    count = 0
+    filetypes.each do |ft|
+      s << ', ' if count.positive?
+      s << "\"#{FileTypes.to_name(ft)}\""
+      count += 1
+    end
+    s + ']'
   end
 end
