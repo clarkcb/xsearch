@@ -7,7 +7,7 @@
 const SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
 exports.testDefaultSettings = function(test) {
-    var settings = new SearchSettings();
+    const settings = new SearchSettings();
     test.ok(!settings.archivesOnly, "archivesOnly is false by default");
     test.ok(!settings.debug, "debug is false by default");
     test.ok(settings.excludeHidden, "excludeHidden is true by default");
@@ -17,7 +17,7 @@ exports.testDefaultSettings = function(test) {
     test.ok(!settings.listDirs, "listDirs is false by default");
     test.ok(!settings.listFiles, "listFiles is false by default");
     test.ok(!settings.listLines, "listLines is false by default");
-    test.ok(settings.maxLineLength == 150, "maxLineLength == 150 by default");
+    test.ok(settings.maxLineLength === 150, "maxLineLength == 150 by default");
     test.ok(!settings.multilineSearch, "multilineSearch is false by default");
     test.ok(!settings.printResults, "printResults is true by default");
     test.ok(!settings.printUsage, "printUsage is false by default");
@@ -30,8 +30,8 @@ exports.testDefaultSettings = function(test) {
     test.done();
 };
 
-exports.testAddExtensions = function(test) {
-    var settings = new SearchSettings();
+exports.testAddExtensionsAsCommaSeparatedString = function(test) {
+    let settings = new SearchSettings();
     settings.addInExtension("js,java");
     test.ok(settings.inExtensions.length === 2, "inExtensions has two extensions");
     test.ok(settings.inExtensions[0] === 'js', "first extension is js");
@@ -39,16 +39,34 @@ exports.testAddExtensions = function(test) {
     test.done();
 };
 
+exports.testAddExtensionsAsArray = function(test) {
+    let settings = new SearchSettings();
+    settings.addInExtension(["js","java"]);
+    test.ok(settings.inExtensions.length === 2, "inExtensions has two extensions");
+    test.ok(settings.inExtensions[0] === 'js', "first extension is js");
+    test.ok(settings.inExtensions[1] === 'java', "first extension is java");
+    test.done();
+};
+
 exports.testAddSearchPattern = function(test) {
-    var settings = new SearchSettings();
+    let settings = new SearchSettings();
     settings.addSearchPattern("Searcher");
     test.ok(settings.searchPatterns.length === 1, "searchPatterns has one pattern");
     test.ok(settings.searchPatterns[0].source === 'Searcher', "pattern is /Searcher/");
     test.done();
 };
 
+exports.testAddSearchPatterns = function(test) {
+    let settings = new SearchSettings();
+    settings.addSearchPattern(["Searcher", "FileTypes"]);
+    test.ok(settings.searchPatterns.length === 2, "searchPatterns has two patterns");
+    test.ok(settings.searchPatterns[0].source === 'Searcher', "pattern is /Searcher/");
+    test.ok(settings.searchPatterns[1].source === 'FileTypes', "pattern is /FileTypes/");
+    test.done();
+};
+
 exports.testSetArchivesOnly = function(test) {
-    var settings = new SearchSettings();
+    let settings = new SearchSettings();
     test.ok(settings.archivesOnly === false, "archivesOnly is false by default");
     test.ok(settings.searchArchives === false, "searchArchives is false by default");
     settings.setArchivesOnly();
@@ -58,7 +76,7 @@ exports.testSetArchivesOnly = function(test) {
 };
 
 exports.testSetDebug = function(test) {
-    var settings = new SearchSettings();
+    let settings = new SearchSettings();
     test.ok(settings.debug === false, "debug is false by default");
     test.ok(settings.verbose === false, "verbose is false by default");
     settings.setDebug();
