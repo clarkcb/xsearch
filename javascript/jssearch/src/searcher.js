@@ -21,7 +21,8 @@ function Searcher(settings) {
     const _settings = settings;
     const _binaryEncoding = "latin1";
     // from https://github.com/nodejs/node/blob/master/lib/buffer.js
-    const _supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le', 'binary', 'base64', 'hex'];
+    const _supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
+        'binary', 'base64', 'hex'];
     const _filetypes = new FileTypes();
     self.results = [];
 
@@ -38,14 +39,20 @@ function Searcher(settings) {
         }
         let stat = fs.lstatSync(_settings.startPath);
         if (stat.isDirectory()) {
-            assert.ok(self.isSearchDir(_settings.startPath), 'Startpath does not match search settings');
+            assert.ok(self.isSearchDir(_settings.startPath),
+                'Startpath does not match search settings');
         } else if (stat.isFile()) {
-            assert.ok(self.filterFile(_settings.startPath), 'Startpath does not match search settings');
+            assert.ok(self.filterFile(_settings.startPath),
+                'Startpath does not match search settings');
         } else {
             assert.ok(false, 'Startpath not readable file type');
         }
         assert.ok(_settings.searchPatterns.length, 'No search patterns defined');
-        assert.ok(_supportedEncodings.indexOf(_settings.textFileEncoding) > -1, "Invalid encoding");
+        assert.ok(_supportedEncodings.indexOf(_settings.textFileEncoding) > -1,
+            "Invalid encoding");
+        assert.ok(_settings.linesBefore > -1, "Invalid linesbefore");
+        assert.ok(_settings.linesAfter > -1, "Invalid linesafter");
+        assert.ok(_settings.maxLineLength > -1, "Invalid maxlinelength");
     };
 
     const matchesAnyElement = (s, elements) => elements.indexOf(s) > -1;
