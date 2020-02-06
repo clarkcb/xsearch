@@ -27,11 +27,41 @@ exports.testFileTypesBinaryFile = function(test) {
     test.done();
 };
 
+exports.testFileTypesCodeFile = function(test) {
+    const fileTypes = new FileTypes();
+    const filename = 'code.js';
+    const res = fileTypes.isCodeFile(filename);
+    test.ok(res, filename + " is code file");
+    const type = fileTypes.getFileType(filename);
+    test.ok(type === FileType.CODE, "FileType of " + filename + " is " + type);
+    test.done();
+};
+
 exports.testFileTypesTextFile = function(test) {
     const fileTypes = new FileTypes();
     const filename = 'text.txt';
     const res = fileTypes.isTextFile(filename);
     test.ok(res, filename + " is text file");
+    const type = fileTypes.getFileType(filename);
+    test.ok(type === FileType.TEXT, "FileType of " + filename + " is " + type);
+    test.done();
+};
+
+exports.testFileTypesXmlFile = function(test) {
+    const fileTypes = new FileTypes();
+    const filename = 'markup.xml';
+    const res = fileTypes.isXmlFile(filename);
+    test.ok(res, filename + " is xml file");
+    const type = fileTypes.getFileType(filename);
+    test.ok(type === FileType.XML, "FileType of " + filename + " is " + type);
+    test.done();
+};
+
+exports.testFileTypesSearchableFile = function(test) {
+    const fileTypes = new FileTypes();
+    const filename = 'README.md';
+    const res = fileTypes.isSearchableFile(filename);
+    test.ok(res, filename + " is searchable file");
     const type = fileTypes.getFileType(filename);
     test.ok(type === FileType.TEXT, "FileType of " + filename + " is " + type);
     test.done();
