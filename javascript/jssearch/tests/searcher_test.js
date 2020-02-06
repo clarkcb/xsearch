@@ -11,8 +11,8 @@ const SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
 const testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 
-const getSettings = function() {
-    var settings = new SearchSettings();
+const getSettings = () => {
+    let settings = new SearchSettings();
     settings.startPath = '.';
     settings.addSearchPattern ('Searcher');
     return settings;
@@ -21,28 +21,28 @@ const getSettings = function() {
 /*************************************************************
  * isSearchDir tests
  *************************************************************/
-exports.testisSearchDir_SingleDot_True = function(test) {
+exports.testisSearchDir_SingleDot_True = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     test.ok(searcher.isSearchDir("."));
     test.done()
 };
 
-exports.testisSearchDir_DoubleDot_True = function(test) {
+exports.testisSearchDir_DoubleDot_True = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     test.ok(searcher.isSearchDir(".."));
     test.done()
 };
 
-exports.testisSearchDir_IsHidden_False = function(test) {
+exports.testisSearchDir_IsHidden_False = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     test.ok(!searcher.isSearchDir(".git"));
     test.done()
 };
 
-exports.testisSearchDir_IsHiddenIncludeHidden_True = function(test) {
+exports.testisSearchDir_IsHiddenIncludeHidden_True = (test) => {
     const settings = getSettings();
     settings.excludeHidden = false;
     const searcher = new Searcher(settings);
@@ -50,14 +50,14 @@ exports.testisSearchDir_IsHiddenIncludeHidden_True = function(test) {
     test.done()
 };
 
-exports.testisSearchDir_NoPatterns_True = function(test) {
+exports.testisSearchDir_NoPatterns_True = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     test.ok(searcher.isSearchDir("/Users"));
     test.done()
 };
 
-exports.testisSearchDir_MatchesInPattern_True = function(test) {
+exports.testisSearchDir_MatchesInPattern_True = (test) => {
     const settings = getSettings();
     settings.addInDirPattern("Search");
     const searcher = new Searcher(settings);
@@ -65,7 +65,7 @@ exports.testisSearchDir_MatchesInPattern_True = function(test) {
     test.done()
 };
 
-exports.testisSearchDir_MatchesOutPattern_False = function(test) {
+exports.testisSearchDir_MatchesOutPattern_False = (test) => {
     const settings = getSettings();
     settings.addOutDirPattern("Search");
     const searcher = new Searcher(settings);
@@ -73,7 +73,7 @@ exports.testisSearchDir_MatchesOutPattern_False = function(test) {
     test.done()
 };
 
-exports.testisSearchDir_DoesNotMatchInPattern_False = function(test) {
+exports.testisSearchDir_DoesNotMatchInPattern_False = (test) => {
     const settings = getSettings();
     settings.addInDirPattern("SearchFiles");
     const searcher = new Searcher(settings);
@@ -81,7 +81,7 @@ exports.testisSearchDir_DoesNotMatchInPattern_False = function(test) {
     test.done()
 };
 
-exports.testisSearchDir_DoesNotMatchOutPattern_True = function(test) {
+exports.testisSearchDir_DoesNotMatchOutPattern_True = (test) => {
     const settings = getSettings();
     settings.addOutDirPattern("SearchFiles");
     const searcher = new Searcher(settings);
@@ -93,7 +93,7 @@ exports.testisSearchDir_DoesNotMatchOutPattern_True = function(test) {
 /*************************************************************
  * isSearchFile tests
  *************************************************************/
-exports.testIsSearchFile_NoExtensionsNoPatterns_True = function(test) {
+exports.testIsSearchFile_NoExtensionsNoPatterns_True = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const file = "FileUtil.cs";
@@ -101,7 +101,7 @@ exports.testIsSearchFile_NoExtensionsNoPatterns_True = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_MatchesInExtension_True = function(test) {
+exports.testIsSearchFile_MatchesInExtension_True = (test) => {
     const settings = getSettings();
     settings.addInExtension("cs");
     const searcher = new Searcher(settings);
@@ -110,7 +110,7 @@ exports.testIsSearchFile_MatchesInExtension_True = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_DoesNotMatchInExtension_False = function(test) {
+exports.testIsSearchFile_DoesNotMatchInExtension_False = (test) => {
     const settings = getSettings();
     settings.addInExtension("java");
     const searcher = new Searcher(settings);
@@ -119,7 +119,7 @@ exports.testIsSearchFile_DoesNotMatchInExtension_False = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_MatchesOutExtension_False = function(test) {
+exports.testIsSearchFile_MatchesOutExtension_False = (test) => {
     const settings = getSettings();
     settings.addOutExtension("cs");
     const searcher = new Searcher(settings);
@@ -128,7 +128,7 @@ exports.testIsSearchFile_MatchesOutExtension_False = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_DoesNotMatchOutExtension_True = function(test) {
+exports.testIsSearchFile_DoesNotMatchOutExtension_True = (test) => {
     const settings = getSettings();
     settings.addOutExtension("java");
     const searcher = new Searcher(settings);
@@ -137,7 +137,7 @@ exports.testIsSearchFile_DoesNotMatchOutExtension_True = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_MatchesInPattern_True = function(test) {
+exports.testIsSearchFile_MatchesInPattern_True = (test) => {
     const settings = getSettings();
     settings.addInFilePattern("Search");
     const searcher = new Searcher(settings);
@@ -146,7 +146,7 @@ exports.testIsSearchFile_MatchesInPattern_True = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_DoesNotMatchInPattern_False = function(test) {
+exports.testIsSearchFile_DoesNotMatchInPattern_False = (test) => {
     const settings = getSettings();
     settings.addInFilePattern("Search");
     const searcher = new Searcher(settings);
@@ -155,7 +155,7 @@ exports.testIsSearchFile_DoesNotMatchInPattern_False = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_MatchesOutPattern_False = function(test) {
+exports.testIsSearchFile_MatchesOutPattern_False = (test) => {
     const settings = getSettings();
     settings.addOutFilePattern("Search");
     const searcher = new Searcher(settings);
@@ -164,7 +164,7 @@ exports.testIsSearchFile_MatchesOutPattern_False = function(test) {
     test.done()
 };
 
-exports.testIsSearchFile_DoesNotMatchOutPattern_True = function(test) {
+exports.testIsSearchFile_DoesNotMatchOutPattern_True = (test) => {
     const settings = getSettings();
     settings.addOutFilePattern("Search");
     const searcher = new Searcher(settings);
@@ -176,7 +176,7 @@ exports.testIsSearchFile_DoesNotMatchOutPattern_True = function(test) {
 /*************************************************************
  * IsArchiveSearchFile tests
  *************************************************************/
-exports.testIsArchiveSearchFile_NoExtensionsNoPatterns_True = function(test) {
+exports.testIsArchiveSearchFile_NoExtensionsNoPatterns_True = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const file = "archive.zip";
@@ -184,7 +184,7 @@ exports.testIsArchiveSearchFile_NoExtensionsNoPatterns_True = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_MatchesInExtension_True = function(test) {
+exports.testIsArchiveSearchFile_MatchesInExtension_True = (test) => {
     const settings = getSettings();
     settings.addInArchiveExtension("zip");
     const searcher = new Searcher(settings);
@@ -193,7 +193,7 @@ exports.testIsArchiveSearchFile_MatchesInExtension_True = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_DoesNotMatchInExtension_False = function(test) {
+exports.testIsArchiveSearchFile_DoesNotMatchInExtension_False = (test) => {
     const settings = getSettings();
     settings.addInArchiveExtension("gz");
     const searcher = new Searcher(settings);
@@ -202,7 +202,7 @@ exports.testIsArchiveSearchFile_DoesNotMatchInExtension_False = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_MatchesOutExtension_False = function(test) {
+exports.testIsArchiveSearchFile_MatchesOutExtension_False = (test) => {
     const settings = getSettings();
     settings.addOutArchiveExtension("zip");
     const searcher = new Searcher(settings);
@@ -211,7 +211,7 @@ exports.testIsArchiveSearchFile_MatchesOutExtension_False = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_DoesNotMatchOutExtension_True = function(test) {
+exports.testIsArchiveSearchFile_DoesNotMatchOutExtension_True = (test) => {
     const settings = getSettings();
     settings.addOutArchiveExtension("gz");
     const searcher = new Searcher(settings);
@@ -220,7 +220,7 @@ exports.testIsArchiveSearchFile_DoesNotMatchOutExtension_True = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_MatchesInPattern_True = function(test) {
+exports.testIsArchiveSearchFile_MatchesInPattern_True = (test) => {
     const settings = getSettings();
     settings.addInArchiveFilePattern("arch");
     const searcher = new Searcher(settings);
@@ -229,7 +229,7 @@ exports.testIsArchiveSearchFile_MatchesInPattern_True = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_DoesNotMatchInPattern_False = function(test) {
+exports.testIsArchiveSearchFile_DoesNotMatchInPattern_False = (test) => {
     const settings = getSettings();
     settings.addInArchiveFilePattern("archives");
     const searcher = new Searcher(settings);
@@ -238,7 +238,7 @@ exports.testIsArchiveSearchFile_DoesNotMatchInPattern_False = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_MatchesOutPattern_False = function(test) {
+exports.testIsArchiveSearchFile_MatchesOutPattern_False = (test) => {
     const settings = getSettings();
     settings.addOutArchiveFilePattern("arch");
     const searcher = new Searcher(settings);
@@ -247,7 +247,7 @@ exports.testIsArchiveSearchFile_MatchesOutPattern_False = function(test) {
     test.done()
 };
 
-exports.testIsArchiveSearchFile_DoesNotMatchOutPattern_True = function(test) {
+exports.testIsArchiveSearchFile_DoesNotMatchOutPattern_True = (test) => {
     const settings = getSettings();
     settings.addOutArchiveFilePattern("archives");
     const searcher = new Searcher(settings);
@@ -259,7 +259,7 @@ exports.testIsArchiveSearchFile_DoesNotMatchOutPattern_True = function(test) {
 /*************************************************************
  * filterFile tests
  *************************************************************/
-exports.testFilterFile_IsHidden_False = function(test) {
+exports.testFilterFile_IsHidden_False = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const file = ".gitignore";
@@ -267,7 +267,7 @@ exports.testFilterFile_IsHidden_False = function(test) {
     test.done()
 };
 
-exports.testFilterFile_IsHiddenIncludeHidden_True = function(test) {
+exports.testFilterFile_IsHiddenIncludeHidden_True = (test) => {
     const settings = getSettings();
     settings.excludeHidden = false;
     const searcher = new Searcher(settings);
@@ -276,7 +276,7 @@ exports.testFilterFile_IsHiddenIncludeHidden_True = function(test) {
     test.done()
 };
 
-exports.testFilterFile_ArchiveNoSearchArchives_False = function(test) {
+exports.testFilterFile_ArchiveNoSearchArchives_False = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const file = "archive.zip";
@@ -284,7 +284,7 @@ exports.testFilterFile_ArchiveNoSearchArchives_False = function(test) {
     test.done()
 };
 
-exports.testFilterFile_ArchiveSearchArchives_True = function(test) {
+exports.testFilterFile_ArchiveSearchArchives_True = (test) => {
     const settings = getSettings();
     settings.searchArchives = true;
     const searcher = new Searcher(settings);
@@ -293,7 +293,7 @@ exports.testFilterFile_ArchiveSearchArchives_True = function(test) {
     test.done()
 };
 
-exports.testFilterFile_IsArchiveSearchFile_True = function(test) {
+exports.testFilterFile_IsArchiveSearchFile_True = (test) => {
     const settings = getSettings();
     settings.searchArchives = true;
     settings.addInArchiveExtension("zip");
@@ -303,7 +303,7 @@ exports.testFilterFile_IsArchiveSearchFile_True = function(test) {
     test.done()
 };
 
-exports.testFilterFile_NotIsArchiveSearchFile_False = function(test) {
+exports.testFilterFile_NotIsArchiveSearchFile_False = (test) => {
     const settings = getSettings();
     settings.addOutExtension("zip");
     const searcher = new Searcher(settings);
@@ -312,7 +312,7 @@ exports.testFilterFile_NotIsArchiveSearchFile_False = function(test) {
     test.done()
 };
 
-exports.testFilterFile_ArchiveFileArchivesOnly_True = function(test) {
+exports.testFilterFile_ArchiveFileArchivesOnly_True = (test) => {
     const settings = getSettings();
     settings.archivesOnly = true;
     const searcher = new Searcher(settings);
@@ -321,7 +321,7 @@ exports.testFilterFile_ArchiveFileArchivesOnly_True = function(test) {
     test.done()
 };
 
-exports.testFilterFile_NoExtensionsNoPatterns_True = function(test) {
+exports.testFilterFile_NoExtensionsNoPatterns_True = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const file = "FileUtil.cs";
@@ -329,7 +329,7 @@ exports.testFilterFile_NoExtensionsNoPatterns_True = function(test) {
     test.done()
 };
 
-exports.testFilterFile_IsSearchFile_True = function(test) {
+exports.testFilterFile_IsSearchFile_True = (test) => {
     const settings = getSettings();
     settings.addInExtension("cs");
     const searcher = new Searcher(settings);
@@ -338,7 +338,7 @@ exports.testFilterFile_IsSearchFile_True = function(test) {
     test.done()
 };
 
-exports.testFilterFile_NotIsSearchFile_False = function(test) {
+exports.testFilterFile_NotIsSearchFile_False = (test) => {
     const settings = getSettings();
     settings.addOutExtension("cs");
     const searcher = new Searcher(settings);
@@ -347,7 +347,7 @@ exports.testFilterFile_NotIsSearchFile_False = function(test) {
     test.done()
 };
 
-exports.testFilterFile_NonArchiveFileArchivesOnly_False = function(test) {
+exports.testFilterFile_NonArchiveFileArchivesOnly_False = (test) => {
     const settings = getSettings();
     settings.archivesOnly = true;
     const searcher = new Searcher(settings);
@@ -359,7 +359,7 @@ exports.testFilterFile_NonArchiveFileArchivesOnly_False = function(test) {
 /*************************************************************
  * searchLines test
  *************************************************************/
-exports.TestSearchLines = function(test) {
+exports.TestSearchLines = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const lines = FileUtil.getFileLines(testFile);
@@ -389,7 +389,7 @@ exports.TestSearchLines = function(test) {
 /*************************************************************
  * searchMultiLineString test
  *************************************************************/
-exports.TestSearchMultiLineString = function(test) {
+exports.TestSearchMultiLineString = (test) => {
     const settings = getSettings();
     const searcher = new Searcher(settings);
     const contents = FileUtil.getFileContents(testFile);

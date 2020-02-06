@@ -7,7 +7,7 @@
 const FileType = require('../src/filetype.js').FileType;
 const FileTypes = require('../src/filetypes.js').FileTypes;
 
-exports.testFileTypesArchiveFile = function(test) {
+exports.testFileTypesArchiveFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'archive.zip';
     const res = fileTypes.isArchiveFile(filename);
@@ -17,7 +17,7 @@ exports.testFileTypesArchiveFile = function(test) {
     test.done();
 };
 
-exports.testFileTypesBinaryFile = function(test) {
+exports.testFileTypesBinaryFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'binary.exe';
     const res = fileTypes.isBinaryFile(filename);
@@ -27,7 +27,7 @@ exports.testFileTypesBinaryFile = function(test) {
     test.done();
 };
 
-exports.testFileTypesCodeFile = function(test) {
+exports.testFileTypesCodeFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'code.js';
     const res = fileTypes.isCodeFile(filename);
@@ -37,7 +37,7 @@ exports.testFileTypesCodeFile = function(test) {
     test.done();
 };
 
-exports.testFileTypesTextFile = function(test) {
+exports.testFileTypesTextFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'text.txt';
     const res = fileTypes.isTextFile(filename);
@@ -47,7 +47,7 @@ exports.testFileTypesTextFile = function(test) {
     test.done();
 };
 
-exports.testFileTypesXmlFile = function(test) {
+exports.testFileTypesXmlFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'markup.xml';
     const res = fileTypes.isXmlFile(filename);
@@ -57,7 +57,7 @@ exports.testFileTypesXmlFile = function(test) {
     test.done();
 };
 
-exports.testFileTypesSearchableFile = function(test) {
+exports.testFileTypesSearchableFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'README.md';
     const res = fileTypes.isSearchableFile(filename);
@@ -67,7 +67,7 @@ exports.testFileTypesSearchableFile = function(test) {
     test.done();
 };
 
-exports.testFileTypesUnknownFile = function(test) {
+exports.testFileTypesUnknownFile = (test) => {
     const fileTypes = new FileTypes();
     const filename = 'unknown.xyz';
     const res = fileTypes.isUnknownFile(filename);

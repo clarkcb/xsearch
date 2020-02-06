@@ -41,7 +41,7 @@ function FileTypes() {
         return fileTypeMap;
     })();
 
-    this.getFileType = function (filename) {
+    self.getFileType = (filename) => {
         if (self.isCodeFile(filename))
             return FileType.CODE;
         if (self.isXmlFile(filename))
@@ -55,7 +55,7 @@ function FileTypes() {
         return FileType.UNKNOWN;
     };
 
-    this.getFileTypeAsync = function (filename, cb) {
+    self.getFileTypeAsync = (filename, cb) => {
         if (self.isCodeFile(filename))
             return cb(FileType.CODE);
         if (self.isXmlFile(filename))
@@ -69,43 +69,43 @@ function FileTypes() {
         cb(FileType.UNKNOWN);
     };
 
-    this.isArchiveFile = function (filename) {
+    self.isArchiveFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.archive.indexOf(ext) > -1;
     };
 
-    this.isBinaryFile = function (filename) {
+    self.isBinaryFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.binary.indexOf(ext) > -1;
     };
 
-    this.isCodeFile = function (filename) {
+    self.isCodeFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.code.indexOf(ext) > -1;
     };
 
-    this.isSearchableFile = function (filename) {
+    self.isSearchableFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.searchable.indexOf(ext) > -1;
     };
 
-    this.isTextFile = function (filename) {
+    self.isTextFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.text.indexOf(ext) > -1;
     };
 
-    this.isXmlFile = function (filename) {
+    self.isXmlFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.xml.indexOf(ext) > -1;
     };
 
-    this.isUnknownFile = function (filename) {
+    self.isUnknownFile = (filename) => {
         let ext = FileUtil.getExtension(filename);
         return fileTypeMap.searchable.indexOf(ext) === -1;
     };
 }
 
-FileTypes.fromName = function (name) {
+FileTypes.fromName = (name) => {
     if (name.toUpperCase() === 'TEXT')
         return FileType.TEXT;
     if (name.toUpperCase() === 'BINARY')
@@ -119,7 +119,7 @@ FileTypes.fromName = function (name) {
     return FileType.UNKNOWN;
 };
 
-FileTypes.toName = function (fileType) {
+FileTypes.toName = (fileType) => {
     if (fileType === FileType.ARCHIVE)
         return 'ARCHIVE';
     if (fileType === FileType.BINARY)

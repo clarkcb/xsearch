@@ -4,11 +4,10 @@
  * Some nodeunit tests of searchresult.js
  */
 
-const config = require('../src/config.js');
 const FileType = require('../src/filetype.js').FileType;
 const SearchFile = require('../src/searchfile.js').SearchFile;
 
-exports.testSearchFileAbsPath = function(test) {
+exports.testSearchFileAbsPath = (test) => {
     const pathname = '/Users/cary/src/xsearch/javascript/jssearch/src';
     const filename = 'searchfile.js';
     const searchfile = new SearchFile(pathname, filename, FileType.CODE);
@@ -17,7 +16,7 @@ exports.testSearchFileAbsPath = function(test) {
     test.done();
 };
 
-exports.testSearchFileRelPath1 = function(test) {
+exports.testSearchFileRelPath1 = (test) => {
     const pathname = '.';
     const filename = 'searchfile.js';
     const searchfile = new SearchFile(pathname, filename, FileType.CODE);
@@ -26,7 +25,7 @@ exports.testSearchFileRelPath1 = function(test) {
     test.done();
 };
 
-exports.testSearchFileRelPath2 = function(test) {
+exports.testSearchFileRelPath2 = (test) => {
     const pathname = './';
     const filename = 'searchfile.js';
     const searchfile = new SearchFile(pathname, filename, FileType.CODE);
@@ -35,7 +34,7 @@ exports.testSearchFileRelPath2 = function(test) {
     test.done();
 };
 
-exports.testSearchFileRelPath3 = function(test) {
+exports.testSearchFileRelPath3 = (test) => {
     const pathname = '..';
     const filename = 'searchfile.js';
     const searchfile = new SearchFile(pathname, filename, FileType.CODE);

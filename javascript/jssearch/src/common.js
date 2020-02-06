@@ -8,7 +8,7 @@
 
 // add a startsWith method to String type
 if (typeof String.prototype.startsWith !== 'function') {
-    String.prototype.startsWith = function (str) {
+    String.prototype.startsWith = (str) => {
         return this.slice(0, str.length) === str;
     };
 }
@@ -16,14 +16,14 @@ if (typeof String.prototype.startsWith !== 'function') {
 const log = (message) => console.log(message);
 exports.log = log;
 
-const boolHashFromArray = function (arr) {
+const boolHashFromArray = (arr) => {
     let hash = {};
     arr.forEach(a => hash[a] = true);
     return hash;
 };
 exports.boolHashFromArray = boolHashFromArray;
 
-const setFromArray = function (arr) {
+const setFromArray = (arr) => {
     let hash = boolHashFromArray(arr);
     let set = [];
     for (let k in hash) {

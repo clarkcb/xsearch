@@ -7,9 +7,9 @@
 const SearchOptions = require('../src/searchoptions.js').SearchOptions;
 const SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
-exports.testNoArgs = function(test) {
+exports.testNoArgs = (test) => {
     const searchOptions = new SearchOptions();
-    searchOptions.settingsFromArgs([], function(err, settings) {
+    searchOptions.settingsFromArgs([], (err, settings) => {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
@@ -23,7 +23,7 @@ exports.testNoArgs = function(test) {
         test.ok(!settings.listDirs, "listDirs is false by default");
         test.ok(!settings.listFiles, "listFiles is false by default");
         test.ok(!settings.listLines, "listLines is false by default");
-        test.ok(settings.maxLineLength == 150, "maxLineLength == 150 by default");
+        test.ok(settings.maxLineLength === 150, "maxLineLength == 150 by default");
         test.ok(!settings.multilineSearch, "multilineSearch is false by default");
         test.ok(settings.printResults, "printResults is set to true in settingsFromArgs");
         test.ok(!settings.printUsage, "printUsage is false by default");
@@ -37,10 +37,10 @@ exports.testNoArgs = function(test) {
     });
 };
 
-exports.testValidArgs = function(test) {
+exports.testValidArgs = (test) => {
     const searchOptions = new SearchOptions();
     const args = ['-x', 'js,java', '-s', 'Searcher', '.'];
-    searchOptions.settingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, (err, settings) => {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
@@ -55,10 +55,10 @@ exports.testValidArgs = function(test) {
     });
 };
 
-exports.testArchivesOnly = function(test) {
+exports.testArchivesOnly = (test) => {
     const searchOptions = new SearchOptions();
     const args = ['--archivesonly'];
-    searchOptions.settingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, (err, settings) => {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
@@ -69,10 +69,10 @@ exports.testArchivesOnly = function(test) {
     });
 };
 
-exports.testDebug = function(test) {
+exports.testDebug = (test) => {
     const searchOptions = new SearchOptions();
     const args = ['--debug'];
-    searchOptions.settingsFromArgs(args, function(err, settings) {
+    searchOptions.settingsFromArgs(args, (err, settings) => {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
@@ -83,13 +83,13 @@ exports.testDebug = function(test) {
     });
 };
 
-exports.testMissingArg = function(test) {
+exports.testMissingArg = (test) => {
     const searchOptions = new SearchOptions();
     const args = ['-x'];
-    searchOptions.settingsFromArgs(args, function(err) {
+    searchOptions.settingsFromArgs(args, (err) => {
         if (err) {
-            const expected = "Error: Missing argument for option x";
-            test.ok(err == expected, "Got missing argument err");
+            const expected = "Missing argument for option x";
+            test.ok(err.message === expected, "Got missing argument err");
             test.done();
         } else {
             test.ok(false, "Did not get expected missing argument error");
@@ -98,13 +98,13 @@ exports.testMissingArg = function(test) {
     });
 };
 
-exports.testIvalidArg = function(test) {
+exports.testIvalidArg = (test) => {
     const searchOptions = new SearchOptions();
     const args = ['-Q'];
-    searchOptions.settingsFromArgs(args, function(err) {
+    searchOptions.settingsFromArgs(args, (err) => {
         if (err) {
-            const expected = "Error: Invalid option: Q";
-            test.ok(err == expected, "Got invalid option err");
+            const expected = "Invalid option: Q";
+            test.ok(err.message === expected, "Got invalid option err");
             test.done();
         } else {
             test.ok(false, "Did not get expected unknown option error");
@@ -113,7 +113,7 @@ exports.testIvalidArg = function(test) {
     });
 };
 
-exports.testSettingsFromJson = function(test) {
+exports.testSettingsFromJson = (test) => {
     const searchOptions = new SearchOptions();
     const settings = new SearchSettings();
     const json = '{\n' +

@@ -26,7 +26,7 @@ function Searcher(settings) {
     const _filetypes = new FileTypes();
     self.results = [];
 
-    const validateSettings = function () {
+    const validateSettings = () => {
         assert.ok(_settings.startPath, 'Startpath not defined');
         assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
         try {
@@ -57,15 +57,15 @@ function Searcher(settings) {
 
     const matchesAnyElement = (s, elements) => elements.indexOf(s) > -1;
 
-    const matchesAnyPattern = function (s, patterns) {
+    const matchesAnyPattern = (s, patterns) => {
         return patterns.some((p, i, arr) => s.search(p) > -1);
     };
 
-    const anyMatchesAnyPattern = function (ss, patterns) {
+    const anyMatchesAnyPattern = (ss, patterns) => {
         return ss.some((s, i, arr) =>matchesAnyPattern(s, patterns));
     };
 
-    self.isSearchDir = function (dir) {
+    self.isSearchDir = (dir) => {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
@@ -88,7 +88,7 @@ function Searcher(settings) {
     // can validate now that isSearchDir is defined
     validateSettings();
 
-    self.isSearchFile = function (file) {
+    self.isSearchFile = (file) => {
         if (FileUtil.isHidden(file) && _settings.excludeHidden) {
             return false;
         }
@@ -110,7 +110,7 @@ function Searcher(settings) {
                 matchesAnyElement(filetype, _settings.outFileTypes)));
     };
 
-    self.isArchiveSearchFile = function (file) {
+    self.isArchiveSearchFile = (file) => {
         if (FileUtil.isHidden(file) && _settings.excludeHidden) {
             return false;
         }
@@ -192,14 +192,14 @@ function Searcher(settings) {
         return searchFiles;
     };
 
-    self.filterFile = function (f) {
+    self.filterFile = (f) => {
         if (_filetypes.isArchiveFile(f)) {
             return (_settings.searchArchives && self.isArchiveSearchFile(f));
         }
         return (!_settings.archivesOnly && self.isSearchFile(f));
     };
 
-    self.search = function () {
+    self.search = () => {
         // get the search files
         let searchfiles = getSearchFiles(_settings.startPath);
         if (_settings.verbose) {
@@ -293,17 +293,17 @@ function Searcher(settings) {
         });
     };
 
-    const getNewLineIndices = function (s) {
+    const getNewLineIndices = (s) => {
         let indices = [];
         for (let i = 0; i < s.length; i++) {
-            if (s.charAt(i) == "\n") {
+            if (s.charAt(i) === "\n") {
                 indices.push(i);
             }
         }
         return indices;
     };
 
-    const getLinesAtIndices = function(s, atIndices, startLineIndices, endLineIndices) {
+    const getLinesAtIndices = (s, atIndices, startLineIndices, endLineIndices) => {
         if (atIndices.length === 0)
             return [];
         let lines = [];
@@ -314,21 +314,21 @@ function Searcher(settings) {
         return lines;
     };
 
-    const getLinesBefore = function(s, beforeStartIndices, startLineIndices, endLineIndices) {
+    const getLinesBefore = (s, beforeStartIndices, startLineIndices, endLineIndices) => {
         return getLinesAtIndices(s, beforeStartIndices, startLineIndices, endLineIndices);
     };
 
-    const getLinesAfter = function(s, afterStartIndices, startLineIndices, endLineIndices) {
+    const getLinesAfter = (s, afterStartIndices, startLineIndices, endLineIndices) => {
         return getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
     };
 
-    const getLessThanOrEqual = matchVal => function(i) { return i <= matchVal; };
+    const getLessThanOrEqual = matchVal => (i) => { return i <= matchVal; };
 
-    const getGreaterThan = matchVal =>function(i) { return i > matchVal; };
+    const getGreaterThan = matchVal => (i) => { return i > matchVal; };
 
     const plusOne = i => i + 1;
 
-    self.searchMultiLineString = function (s) {
+    self.searchMultiLineString = (s) => {
         let patternResults = {};
         let linesBefore = [];
         let linesAfter = [];
@@ -398,17 +398,17 @@ function Searcher(settings) {
         return results;
     };
 
-    const linesMatch = function(lines, inPatterns, outPatterns) {
+    const linesMatch = (lines, inPatterns, outPatterns) => {
         return ((inPatterns.length === 0 || anyMatchesAnyPattern(lines, inPatterns)) &&
                (outPatterns.length === 0 || ! anyMatchesAnyPattern(lines, outPatterns)));
     };
 
-    const linesBeforeMatch = function(linesBefore) {
+    const linesBeforeMatch = (linesBefore) => {
         return linesMatch(linesBefore, _settings.inLinesBeforePatterns,
             _settings.outLinesBeforePatterns);
     };
 
-    const linesAfterMatch = function(linesAfter) {
+    const linesAfterMatch = (linesAfter) => {
         return linesMatch(linesAfter, _settings.inLinesAfterPatterns,
             _settings.outLinesAfterPatterns);
     };
@@ -426,7 +426,7 @@ function Searcher(settings) {
     };
 
     // return results so that filepath can be added to them
-    self.searchLines = function (lines) {
+    self.searchLines = (lines) => {
         let linenum = 0;
         let pattern;
         let linesBefore = [];
@@ -475,7 +475,7 @@ function Searcher(settings) {
                 }
             });
             if (_settings.linesBefore > 0) {
-                if (linesBefore.length == _settings.linesBefore)
+                if (linesBefore.length === _settings.linesBefore)
                     linesBefore.shift();
                 if (linesBefore.length < _settings.linesBefore)
                     linesBefore.push(line);
@@ -484,11 +484,11 @@ function Searcher(settings) {
         return results;
     };
 
-    const addSearchResult = function (result) {
+    const addSearchResult = (result) => {
         self.results.push(result);
     };
 
-    const cmpSearchResults = function(r1, r2) {
+    const cmpSearchResults = (r1, r2) => {
         const pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
         if (pathCmp === 0) {
             const fileCmp = path.basename(r1.file.filename).localeCompare(path.basename(r2.file.filename));
@@ -503,36 +503,36 @@ function Searcher(settings) {
         return pathCmp;
     };
 
-    self.printSearchResults = function () {
+    self.printSearchResults = () => {
         // first sort the results
         self.results.sort(cmpSearchResults);
         common.log("\nSearch results " + `(${self.results.length}):`);
         self.results.forEach(r => common.log(r.toString()));
     };
 
-    self.getMatchingDirs = function () {
+    self.getMatchingDirs = () => {
         const dirs = self.results.map(r => path.dirname(r.filename));
         return common.setFromArray(dirs);
     };
 
-    self.printMatchingDirs = function () {
+    self.printMatchingDirs = () => {
         const dirs = self.getMatchingDirs();
         common.log("\nDirectories with matches " + `(${dirs.length}):`);
         dirs.forEach(d => common.log(d));
     };
 
-    self.getMatchingFiles = function () {
+    self.getMatchingFiles = () => {
         const files = self.results.map(r => r.filename);
         return common.setFromArray(files);
     };
 
-    self.printMatchingFiles = function () {
+    self.printMatchingFiles = () => {
         const files = self.getMatchingFiles();
         common.log("\nFiles with matches " + `(${files.length}):`);
         files.forEach(f => common.log(f));
     };
 
-    self.getMatchingLines = function () {
+    self.getMatchingLines = () => {
         let lines = self.results.filter(r => r.linenum > 0).map(r => r.line.trim());
         if (_settings.uniqueLines) {
             lines = common.setFromArray(lines);
@@ -545,7 +545,7 @@ function Searcher(settings) {
         return lines;
     };
 
-    self.printMatchingLines = function () {
+    self.printMatchingLines = () => {
         const lines = self.getMatchingLines();
         let hdrText;
         if (_settings.uniqueLines)

@@ -19,12 +19,12 @@ function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
     self.linesAfter = linesAfter;
     self.maxLineLength = 150;
 
-    self.toString = function () {
+    self.toString = () => {
         return self.linesBefore.length + self.linesAfter.length > 0 ?
             multiLineToString() : singleLineToString();
     };
 
-    const singleLineToString = function () {
+    const singleLineToString = () => {
         let s = self.file.toString();
         if (self.linenum && self.line) {
             s += `: ${self.linenum}: [${self.matchStartIndex}:` +
@@ -35,12 +35,12 @@ function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
         return s;
     };
 
-    const lineNumPadding = function() {
+    const lineNumPadding = () => {
         let maxLineNum = self.linenum + self.linesAfter.length;
         return ("" + maxLineNum).length;
     };
 
-    const padLeft = function(s, i) {
+    const padLeft = (s, i) => {
         let p = "" + s;
         while (p.length < i) {
             p = ' '.concat(p);
@@ -48,11 +48,11 @@ function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
         return p;
     };
 
-    const trimRight = function(s) {
+    const trimRight = (s) => {
         return s.replace(/[\r\n]+$/, '');
     };
 
-    const multiLineToString = function () {
+    const multiLineToString = () => {
         let s = new Array(81).join("=") + "\n" + `${self.file}: ` +
             `${self.linenum}: [${self.matchStartIndex}:${self.matchEndIndex}]` +
             "\n" + new Array(81).join("-") + "\n";
@@ -75,18 +75,11 @@ function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
                 s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;
             });
-
-
-            for (let i = 0; i < self.linesAfter.length; i++) {
-                let a = trimRight(self.linesAfter[i]);
-                s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
-                currentLineNum++;
-            }
         }
         return s;
     };
 
-    const formatMatchingLine = function () {
+    const formatMatchingLine = () => {
         let formatted = self.line.trim().slice(0);
         let lineLength = self.line.length;
         let matchLength = self.matchEndIndex - self.matchStartIndex;

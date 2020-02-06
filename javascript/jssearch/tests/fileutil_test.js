@@ -9,37 +9,37 @@ const FileUtil = require('../src/fileutil.js').FileUtil;
 /***************************************************************************
  * getExtension tests
  **************************************************************************/
-exports.testGetTxtExtension = function(test) {
+exports.testGetTxtExtension = (test) => {
     const file = "filename.txt";
     test.ok(FileUtil.getExtension(file) === "txt", "ext == \"txt\"");
     test.done();
 };
 
-exports.testGetMissingExtension = function(test) {
+exports.testGetMissingExtension = (test) => {
     const file = "filename.";
     test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
     test.done();
 };
 
-exports.testGetNoExtension = function(test) {
+exports.testGetNoExtension = (test) => {
     const file = "filename";
     test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
     test.done();
 };
 
-exports.testGetHiddenTxtExtension = function(test) {
+exports.testGetHiddenTxtExtension = (test) => {
     const file = ".filename.txt";
     test.ok(FileUtil.getExtension(file) === "txt", "ext == \"txt\"");
     test.done();
 };
 
-exports.testGetHiddenMissingExtension = function(test) {
+exports.testGetHiddenMissingExtension = (test) => {
     const file = "filename.";
     test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
     test.done();
 };
 
-exports.testGetHiddenNoExtension = function(test) {
+exports.testGetHiddenNoExtension = (test) => {
     const file = "filename";
     test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
     test.done();
@@ -48,7 +48,7 @@ exports.testGetHiddenNoExtension = function(test) {
 /***************************************************************************
  * getRelativePath tests
  **************************************************************************/
-exports.testGetRelativePath = function(test) {
+exports.testGetRelativePath = (test) => {
     const filepath = "/Users/cary/filename.txt";
     test.ok(FileUtil.getRelativePath(filepath, '.') === "./filename.txt", "relativepath === ./filenametxt");
     test.done();
@@ -57,31 +57,31 @@ exports.testGetRelativePath = function(test) {
 /***************************************************************************
  * isDotDir tests
  **************************************************************************/
-exports.testIsDotDirSingleDot = function(test) {
+exports.testIsDotDirSingleDot = (test) => {
     const filename = ".";
     test.ok(FileUtil.isDotDir(filename), "isDotDir(" + filename + ") == true");
     test.done();
 };
 
-exports.testIsDotDirDoubleDot = function(test) {
+exports.testIsDotDirDoubleDot = (test) => {
     const filename = "..";
     test.ok(FileUtil.isDotDir(filename), "isDotDir(" + filename + ") == true");
     test.done();
 };
 
-exports.testIsDotDirNotDotDir = function(test) {
+exports.testIsDotDirNotDotDir = (test) => {
     const filename = "~/path";
     test.ok(!FileUtil.isDotDir(filename), "isDotDir(" + filename + ") == false");
     test.done();
 };
 
-exports.testIsDotDirPathWithDot = function(test) {
+exports.testIsDotDirPathWithDot = (test) => {
     const filename = "./path";
     test.ok(!FileUtil.isDotDir(filename), "isDotDir(" + filename + ") == false");
     test.done();
 };
 
-exports.testIsDotDirHiddenFile = function(test) {
+exports.testIsDotDirHiddenFile = (test) => {
     const filename = ".gitignore";
     test.ok(!FileUtil.isDotDir(filename), "isDotDir(" + filename + ") == false");
     test.done();
@@ -90,25 +90,25 @@ exports.testIsDotDirHiddenFile = function(test) {
 /***************************************************************************
  * isHidden tests
  **************************************************************************/
-exports.testIsHiddenSingleDot = function(test) {
+exports.testIsHiddenSingleDot = (test) => {
     const filename = ".";
     test.ok(!FileUtil.isHidden(filename));
     test.done();
 };
 
-exports.testIsHiddenDoubleDot = function(test) {
+exports.testIsHiddenDoubleDot = (test) => {
     const filename = "..";
     test.ok(!FileUtil.isHidden(filename));
     test.done();
 };
 
-exports.testIsHiddenHiddenFile = function(test) {
+exports.testIsHiddenHiddenFile = (test) => {
     const filename = ".gitignore";
     test.ok(FileUtil.isHidden(filename));
     test.done();
 };
 
-exports.testIsHiddenNotHiddenFile = function(test) {
+exports.testIsHiddenNotHiddenFile = (test) => {
     const filename = "file.txt";
     test.ok(!FileUtil.isHidden(filename));
     test.done();
@@ -117,14 +117,14 @@ exports.testIsHiddenNotHiddenFile = function(test) {
 /***************************************************************************
  * expandPath tests
  **************************************************************************/
-exports.testExpandPathPathWithTilde = function(test) {
+exports.testExpandPathPathWithTilde = (test) => {
     const filepath = "~/filename.txt";
     const expected = process.env.HOME + "/filename.txt";
     test.ok(FileUtil.expandPath(filepath) === expected);
     test.done();
 };
 
-exports.testExpandPathPathNoTilde = function(test) {
+exports.testExpandPathPathNoTilde = (test) => {
     const filepath = "./filename.txt";
     test.ok(FileUtil.expandPath(filepath) === filepath);
     test.done();

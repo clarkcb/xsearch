@@ -49,73 +49,73 @@ function SearchSettings() {
     self.uniqueLines = false;
     self.verbose = false;
 
-    const addExtensions = function (exts, arr) {
+    const addExtensions = (exts, arr) => {
         let xs = exts;
         if (typeof(exts) === 'string') {
             xs = exts.split(/,/);
         }
         xs.filter(x => x !== '').forEach(x => arr.push(x));
     };
-    self.addInExtension = function (ext) {
+    self.addInExtension = (ext) => {
         addExtensions(ext, self.inExtensions);
     };
-    self.addOutExtension = function (ext) {
+    self.addOutExtension = (ext) => {
         addExtensions(ext, self.outExtensions);
     };
-    const addPatterns = function (patterns, arr) {
+    const addPatterns = (patterns, arr) => {
         if (typeof(patterns) === 'string') {
             arr.push(new RegExp(patterns));
         } else if (patterns.constructor === Array) {
             patterns.forEach(p => arr.push(new RegExp(p)));
         }
     };
-    self.addInDirPattern = function (pattern) {
+    self.addInDirPattern = (pattern) => {
         addPatterns(pattern, self.inDirPatterns);
     };
-    self.addOutDirPattern = function (pattern) {
+    self.addOutDirPattern = (pattern) => {
         addPatterns(pattern, self.outDirPatterns);
     };
-    self.addInFilePattern = function (pattern) {
+    self.addInFilePattern = (pattern) => {
         addPatterns(pattern, self.inFilePatterns);
     };
-    self.addOutFilePattern = function (pattern) {
+    self.addOutFilePattern = (pattern) => {
         addPatterns(pattern, self.outFilePatterns);
     };
-    self.addSearchPattern = function (pattern) {
+    self.addSearchPattern = (pattern) => {
         addPatterns(pattern, self.searchPatterns);
     };
-    self.addInArchiveExtension = function (ext) {
+    self.addInArchiveExtension = (ext) => {
         addExtensions(ext, self.inArchiveExtensions);
     };
-    self.addOutArchiveExtension = function (ext) {
+    self.addOutArchiveExtension = (ext) => {
         addExtensions(ext, self.outArchiveExtensions);
     };
-    self.addInArchiveFilePattern = function (pattern) {
+    self.addInArchiveFilePattern = (pattern) => {
         addPatterns(pattern, self.inArchiveFilePatterns);
     };
-    self.addOutArchiveFilePattern = function (pattern) {
+    self.addOutArchiveFilePattern = (pattern) => {
         addPatterns(pattern, self.outArchiveFilePatterns);
     };
-    self.addInLinesAfterPattern = function (pattern) {
+    self.addInLinesAfterPattern = (pattern) => {
         addPatterns(pattern, self.inLinesAfterPatterns);
     };
-    self.addOutLinesAfterPattern = function (pattern) {
+    self.addOutLinesAfterPattern = (pattern) => {
         addPatterns(pattern, self.outLinesAfterPatterns);
     };
-    self.addInLinesBeforePattern = function (pattern) {
+    self.addInLinesBeforePattern = (pattern) => {
         addPatterns(pattern, self.inLinesBeforePatterns);
     };
-    self.addOutLinesBeforePattern = function (pattern) {
+    self.addOutLinesBeforePattern = (pattern) => {
         addPatterns(pattern, self.outLinesBeforePatterns);
     };
-    self.addLinesAfterToPattern = function (pattern) {
+    self.addLinesAfterToPattern = (pattern) => {
         addPatterns(pattern, self.linesAfterToPatterns);
     };
-    self.addLinesAfterUntilPattern = function (pattern) {
+    self.addLinesAfterUntilPattern = (pattern) => {
         addPatterns(pattern, self.linesAfterUntilPatterns);
     };
 
-    const addFileTypes = function (filetypes, arr) {
+    const addFileTypes = (filetypes, arr) => {
         if (typeof(filetypes) === 'string') {
             filetypes.split(/,/).filter(ft => ft !== '').
                 forEach(ft => arr.push(FileTypes.fromName(ft)));
@@ -123,37 +123,37 @@ function SearchSettings() {
             filetypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
         }
     };
-    self.addInFileType = function (filetype) {
+    self.addInFileType = (filetype) => {
         addFileTypes(filetype, self.inFileTypes);
     };
-    self.addOutFileType = function (filetype) {
+    self.addOutFileType = (filetype) => {
         addFileTypes(filetype, self.outFileTypes);
     };
 
-    self.setArchivesOnly = function () {
+    self.setArchivesOnly = () => {
         self.setArchivesOnlyBool(true);
     };
 
-    self.setArchivesOnlyBool = function (b) {
+    self.setArchivesOnlyBool = (b) => {
         self.archivesOnly = b;
         if (b) self.searchArchives = b;
     };
 
-    self.setDebug = function () {
+    self.setDebug = () => {
         self.setDebugBool(true);
     };
 
-    self.setDebugBool = function (b) {
+    self.setDebugBool = (b) => {
         self.debug = b;
         if (b) self.verbose = b;
     };
 
-    const listToString = function (name, lst) {
+    const listToString = (name, lst) => {
         if (lst.length) return `${name}=["${lst.join('","')}"]`;
         return `${name}=[]`;
     };
 
-    const fileTypesToString = function (name, fileTypes) {
+    const fileTypesToString = (name, fileTypes) => {
         if (fileTypes.length) {
             var s = `${name}=[`;
             for (var i=0; i < fileTypes.length; i++) {
@@ -166,7 +166,7 @@ function SearchSettings() {
         return `${name}=[]`;
     };
 
-    self.toString = function () {
+    self.toString = () => {
         return 'SearchSettings(' +
             'archivesOnly=' + self.archivesOnly +
             ', debug=' + self.debug +

@@ -10,7 +10,7 @@ const SearchResult = require('../src/searchresult.js').SearchResult;
 
 const cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
 
-exports.testSingleLineResult = function(test) {
+exports.testSingleLineResult = (test) => {
     const pattern = 'Search';
     const file = cssearch_path + '/Searcher.cs';
     const linenum = 10;
@@ -28,7 +28,7 @@ exports.testSingleLineResult = function(test) {
     test.done();
 };
 
-exports.testBinaryFileResult = function(test) {
+exports.testBinaryFileResult = (test) => {
     const pattern = 'Search';
     const file = cssearch_path + '/bin/Debug/CsSearch.exe';
     const linenum = 0;
@@ -45,7 +45,7 @@ exports.testBinaryFileResult = function(test) {
     test.done();
 };
 
-exports.testMultiLineResult = function(test) {
+exports.testMultiLineResult = (test) => {
     const pattern = 'Search';
     const file = cssearch_path + '/Searcher.cs';
     const linenum = 10;

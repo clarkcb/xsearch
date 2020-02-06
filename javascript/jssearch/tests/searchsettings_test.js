@@ -6,7 +6,7 @@
 
 const SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
-exports.testDefaultSettings = function(test) {
+exports.testDefaultSettings = (test) => {
     const settings = new SearchSettings();
     test.ok(!settings.archivesOnly, "archivesOnly is false by default");
     test.ok(!settings.debug, "debug is false by default");
@@ -30,7 +30,7 @@ exports.testDefaultSettings = function(test) {
     test.done();
 };
 
-exports.testAddExtensionsAsCommaSeparatedString = function(test) {
+exports.testAddExtensionsAsCommaSeparatedString = (test) => {
     let settings = new SearchSettings();
     settings.addInExtension("js,java");
     test.ok(settings.inExtensions.length === 2, "inExtensions has two extensions");
@@ -39,7 +39,7 @@ exports.testAddExtensionsAsCommaSeparatedString = function(test) {
     test.done();
 };
 
-exports.testAddExtensionsAsArray = function(test) {
+exports.testAddExtensionsAsArray = (test) => {
     let settings = new SearchSettings();
     settings.addInExtension(["js","java"]);
     test.ok(settings.inExtensions.length === 2, "inExtensions has two extensions");
@@ -48,7 +48,7 @@ exports.testAddExtensionsAsArray = function(test) {
     test.done();
 };
 
-exports.testAddSearchPattern = function(test) {
+exports.testAddSearchPattern = (test) => {
     let settings = new SearchSettings();
     settings.addSearchPattern("Searcher");
     test.ok(settings.searchPatterns.length === 1, "searchPatterns has one pattern");
@@ -56,7 +56,7 @@ exports.testAddSearchPattern = function(test) {
     test.done();
 };
 
-exports.testAddSearchPatterns = function(test) {
+exports.testAddSearchPatterns = (test) => {
     let settings = new SearchSettings();
     settings.addSearchPattern(["Searcher", "FileTypes"]);
     test.ok(settings.searchPatterns.length === 2, "searchPatterns has two patterns");
@@ -65,7 +65,7 @@ exports.testAddSearchPatterns = function(test) {
     test.done();
 };
 
-exports.testSetArchivesOnly = function(test) {
+exports.testSetArchivesOnly = (test) => {
     let settings = new SearchSettings();
     test.ok(settings.archivesOnly === false, "archivesOnly is false by default");
     test.ok(settings.searchArchives === false, "searchArchives is false by default");
@@ -75,7 +75,7 @@ exports.testSetArchivesOnly = function(test) {
     test.done();
 };
 
-exports.testSetDebug = function(test) {
+exports.testSetDebug = (test) => {
     let settings = new SearchSettings();
     test.ok(settings.debug === false, "debug is false by default");
     test.ok(settings.verbose === false, "verbose is false by default");

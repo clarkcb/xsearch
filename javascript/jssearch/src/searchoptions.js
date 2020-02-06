@@ -114,11 +114,11 @@ function SearchOptions() {
             (b, settings) => { settings.printVersion = b; }
     };
 
-    function optcmp(o1, o2) {
+    const optcmp = (o1, o2) => {
         const a = o1.sortarg;
         const b = o2.sortarg;
         return a.localeCompare(b);
-    }
+    };
 
     // setOptionsFromJson
     (() => {
@@ -159,17 +159,17 @@ function SearchOptions() {
         options.sort(optcmp);
     })();
 
-    var settingsFromFile = function (filepath, settings) {
+    const settingsFromFile = (filepath, settings) => {
         const fs = require('fs');
         if (fs.existsSync(filepath)) {
-            let json = FileUtil.getFileContents(filepath);
+            let json = fs.readFileSync(filepath).toString();
             return settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');
         }
     };
 
-    self.settingsFromJson = function (json, settings) {
+    self.settingsFromJson = (json, settings) => {
         let err = null;
         let obj = JSON.parse(json);
         for (let k in obj) {
@@ -180,21 +180,21 @@ function SearchOptions() {
                     if (obj[k]) {
                         argMap[k].func(obj[k], settings);
                     } else {
-                        err = new Error("Missing argument for option "+k);
+                        err = new Error("Missing argument for option " + k);
                     }
                 } else if (boolFlagActionMap[longKey]) {
                     boolFlagActionMap[longKey](obj[k], settings);
                 } else if (k === 'startpath') {
                     settings.startPath = obj[k];
                 } else {
-                    err = new Error("Invalid option: "+k);
+                    err = new Error("Invalid option: " + k);
                 }
             }
         }
         return err;
     };
 
-    self.settingsFromArgs = function (args, cb) {
+    self.settingsFromArgs = (args, cb) => {
         let err = null;
         let settings = new SearchSettings();
 
@@ -227,16 +227,16 @@ function SearchOptions() {
         cb(err, settings);
     };
 
-    self.usage = function () {
+    self.usage = () => {
         self.usageWithCode(0);
     };
 
-    self.usageWithCode = function (exitCode) {
+    self.usageWithCode = (exitCode) => {
         console.log(getUsageString());
         process.exit(exitCode);
     };
 
-    const getUsageString = function () {
+    const getUsageString = () => {
         let usage = 'Usage:\n jssearch [options] -s <searchpattern> <startpath>\n\n';
         usage += 'Options:\n';
         let optStrings = [];

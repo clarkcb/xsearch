@@ -12,7 +12,7 @@ function SearchOption(shortarg, longarg, desc, func) {
     self.desc = desc;
     self.func = func;
 
-    self.sortarg = (function () {
+    self.sortarg = (() => {
         if (self.shortarg)
             return self.shortarg.toLowerCase() + 'a' + self.longarg.toLowerCase();
         return self.longarg.toLowerCase();
