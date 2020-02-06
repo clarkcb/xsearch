@@ -131,17 +131,25 @@ function Searcher(settings) {
         matchesAnyPattern(file, _settings.outArchiveFilePatterns));
     };
 
-    const getSearchDirs = function (startPath) {
-        let searchDirs = [];
+    const getSearchFiles = (startPath) => {
+        let searchFiles = [];
         let stats = fs.statSync(startPath);
         if (stats.isDirectory()) {
             if (self.isSearchDir(startPath)) {
-                searchDirs.push(startPath);
                 if (_settings.recursive) {
-                    if (_settings.debug) {
-                        common.log(`Getting list of directories to search under ${startPath}`);
-                    }
-                    [].push.apply(searchDirs, recGetSearchDirs(startPath));
+                    [].push.apply(searchFiles, recGetSearchFiles(startPath));
+                } else {
+                    fs.readdirSync(startPath).map(f => {
+                        return path.join(startPath, f);
+                    }).forEach(f => {
+                        let stats = fs.statSync(f);
+                        if (stats.isFile() && self.filterFile(f)) {
+                            const filename = path.basename(startPath);
+                            const filetype = _filetypes.getFileType(filename);
+                            const sf = new SearchFile(d, filename, filetype);
+                            searchFiles.push(sf);
+                        }
+                    });
                 }
             } else {
                 common.log("Warning: startPath does not match search criteria");
@@ -149,36 +157,39 @@ function Searcher(settings) {
         } else if (stats.isFile()) {
             let d = path.dirname(startPath);
             if (!d) d = ".";
-            if (self.isSearchDir(d)) {
-                searchDirs.push(d);
+            if (self.isSearchDir(d) && self.filterFile(startPath)) {
+                const filename = path.basename(startPath);
+                const filetype = _filetypes.getFileType(filename);
+                const sf = new SearchFile(d, filename, filetype);
+                searchFiles.push(sf);
             } else {
-                common.log("Warning: startPath's path does not match search criteria");
+                common.log("Warning: startPath does not match search criteria");
             }
         }
-        return searchDirs;
+        return searchFiles;
     };
 
-    const recGetSearchDirs = function (currentDir) {
+    const recGetSearchFiles = (currentDir) => {
         let searchDirs = [];
+        let searchFiles = [];
         fs.readdirSync(currentDir).map(f => {
             return path.join(currentDir, f);
-        }).filter(f => {
-            return fs.statSync(f).isDirectory() && self.isSearchDir(f);
         }).forEach(f => {
-            searchDirs.push(f);
-            [].push.apply(searchDirs, recGetSearchDirs(f));
+            let stats = fs.statSync(f);
+            if (stats.isDirectory() && self.isSearchDir(f)) {
+                searchDirs.push(f);
+            } else if (stats.isFile() && self.filterFile(f)) {
+                const pathname = path.dirname(f);
+                const filename = path.basename(f);
+                const filetype = _filetypes.getFileType(filename);
+                const sf = new SearchFile(pathname, filename, filetype);
+                searchFiles.push(sf);
+            }
         });
-        return searchDirs;
-    };
-
-    const handleFsError = function (err) {
-        if (err.errno === 34 && err.code === "ENOENT") {
-            // this error seems to occur when the file is a soft link
-            // to a non-existent file
-        } else {
-            common.log(err);
-            process.exit(1);
-        }
+        searchDirs.forEach(d => {
+            [].push.apply(searchFiles, recGetSearchFiles(d));
+        });
+        return searchFiles;
     };
 
     self.filterFile = function (f) {
@@ -188,70 +199,50 @@ function Searcher(settings) {
         return (!_settings.archivesOnly && self.isSearchFile(f));
     };
 
-    const getSearchFilesForDirectory = function (dir) {
-        return fs.readdirSync(dir).map(f => {
-            return path.join(dir, f);
-        }).filter(f => {
-            return fs.statSync(f).isFile() && self.filterFile(f);
-        });
-    };
-
-    const getSearchFiles = function (searchDirs) {
-        let searchFiles = [];
-        let stats = fs.statSync(_settings.startPath);
-        if (stats.isDirectory()) {
-            searchDirs.forEach(d => {
-                searchFiles.push.apply(searchFiles, getSearchFilesForDirectory(d));
-            });
-        } else if (stats.isFile()) {
-            searchFiles.push(_settings.startPath);
-        }
-        return searchFiles;
-    };
-
     self.search = function () {
+        // get the search files
+        let searchfiles = getSearchFiles(_settings.startPath);
         if (_settings.verbose) {
-            common.log("Search initiated");
-        }
-
-        // get the search dirs
-        let dirs = [];
-        dirs.push.apply(dirs, getSearchDirs(_settings.startPath));
-        if (_settings.verbose) {
+            let dirs = searchfiles.map(sf => sf.pathname);
+            dirs = common.setFromArray(dirs);
+            dirs.sort();
             common.log("\nDirectories to be searched " + `(${dirs.length}):`);
             dirs.forEach(d => common.log(d));
-        }
 
-        // get the search files
-        let files = getSearchFiles(dirs);
-        if (_settings.verbose) {
-            common.log("\nFiles to be searched " + `(${files.length}):`);
-            files.forEach(f => common.log(f));
+            common.log("\nFiles to be searched " + `(${searchfiles.length}):`);
+            searchfiles.forEach(sf => common.log(sf.relativePath()));
             common.log("");
         }
 
         // search the files
-        files.forEach(f => searchFile(f));
+        searchfiles.forEach(f => searchFile(f));
 
         if (_settings.verbose) {
             common.log("Search complete.");
         }
     };
 
-    const searchFile = function (filepath) {
-        let filetype = _filetypes.getFileType(filepath);
-        if (filetype === FileType.CODE || filetype === FileType.TEXT || filetype === FileType.XML) {
-            searchTextFile(filepath);
-        } else if (filetype === FileType.BINARY) {
-            searchBinaryFile(filepath);
+    const searchFile = (searchfile) => {
+        switch (searchfile.filetype) {
+            case FileType.CODE:
+            case FileType.TEXT:
+            case FileType.XML:
+                searchTextFile(searchfile);
+                break;
+            case FileType.BINARY:
+                searchBinaryFile(searchfile);
+                break;
+            default:
+                // TODO: add message about unsupported filetype
+                break;
         }
     };
 
-    const searchBinaryFile = function (filepath) {
+    const searchBinaryFile = (searchfile) => {
         if (_settings.verbose) {
-            common.log(`Searching binary file: "${filepath}"`);
+            common.log(`Searching binary file: "${searchfile}"`);
         }
-        let contents = FileUtil.getFileContents(filepath, _binaryEncoding);
+        let contents = FileUtil.getFileContents(searchfile.relativePath(), _binaryEncoding);
         let pattern = '';
         let patternResults = {};
         _settings.searchPatterns.forEach(p => {
@@ -263,7 +254,7 @@ function Searcher(settings) {
             while (match) {
                 addSearchResult(new SearchResult(
                     pattern,
-                    filepath,
+                    searchfile,
                     0,
                     match.index+1,
                     pattern.lastIndex+1,
@@ -279,23 +270,23 @@ function Searcher(settings) {
         });
     };
 
-    const searchTextFile = function (filepath) {
+    const searchTextFile = (searchfile) => {
         if (_settings.verbose) {
-            common.log(`Searching text file ${filepath}`);
+            common.log(`Searching text file ${searchfile}`);
         }
         if (_settings.multilineSearch) {
-            searchTextFileContents(filepath);
+            searchTextFileContents(searchfile);
         } else {
-            searchTextFileLines(filepath);
+            searchTextFileLines(searchfile);
         }
     };
 
-    const searchTextFileContents = function (filepath) {
-        let contents = FileUtil.getFileContents(filepath, _settings.textFileEncoding);
+    const searchTextFileContents = (searchfile) => {
+        let contents = FileUtil.getFileContents(searchfile.relativePath(), _settings.textFileEncoding);
         let results = self.searchMultiLineString(contents);
         results.forEach(r => {
             let resultWithFilepath =
-                new SearchResult(r.pattern, filepath, r.linenum,
+                new SearchResult(r.pattern, searchfile, r.linenum,
                     r.matchStartIndex, r.matchEndIndex, r.line,
                     r.linesBefore, r.linesAfter);
             addSearchResult(resultWithFilepath);
@@ -422,12 +413,12 @@ function Searcher(settings) {
             _settings.outLinesAfterPatterns);
     };
 
-    const searchTextFileLines = function (filepath) {
-        let lines = FileUtil.getFileLines(filepath, _settings.textFileEncoding);
+    const searchTextFileLines = (searchfile) => {
+        let lines = FileUtil.getFileLines(searchfile.relativePath(), _settings.textFileEncoding);
         let results = self.searchLines(lines);
         results.forEach(r => {
             let resultWithFilepath =
-                new SearchResult(r.pattern, filepath, r.linenum,
+                new SearchResult(r.pattern, searchfile, r.linenum,
                     r.matchStartIndex, r.matchEndIndex, r.line,
                     r.linesBefore, r.linesAfter);
             addSearchResult(resultWithFilepath);
@@ -498,9 +489,9 @@ function Searcher(settings) {
     };
 
     const cmpSearchResults = function(r1, r2) {
-        const pathCmp = path.dirname(r1.filename).localeCompare(path.dirname(r2.filename));
+        const pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
         if (pathCmp === 0) {
-            const fileCmp = path.basename(r1.filename).localeCompare(path.basename(r2.filename));
+            const fileCmp = path.basename(r1.file.filename).localeCompare(path.basename(r2.file.filename));
             if (fileCmp === 0) {
                 if (r1.linenum === r2.linenum) {
                     return r1.matchStartIndex - r2.matchStartIndex;

@@ -4,12 +4,13 @@
  * SearchResult class represents a search result
  */
 
-function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex,
+function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
     line, linesBefore, linesAfter) {
     "use strict";
     let self = this;
     self.pattern = pattern;
-    self.filename = filename;
+    // file is SearchFile instance
+    self.file = file;
     self.linenum = linenum;
     self.matchStartIndex = matchStartIndex;
     self.matchEndIndex = matchEndIndex;
@@ -24,7 +25,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     };
 
     const singleLineToString = function () {
-        let s = self.filename;
+        let s = self.file.toString();
         if (self.linenum && self.line) {
             s += `: ${self.linenum}: [${self.matchStartIndex}:` +
                 `${self.matchEndIndex}]: ` + formatMatchingLine();
@@ -52,7 +53,7 @@ function SearchResult(pattern, filename, linenum, matchStartIndex, matchEndIndex
     };
 
     const multiLineToString = function () {
-        let s = new Array(81).join("=") + "\n" + `${self.filename}: ` +
+        let s = new Array(81).join("=") + "\n" + `${self.file}: ` +
             `${self.linenum}: [${self.matchStartIndex}:${self.matchEndIndex}]` +
             "\n" + new Array(81).join("-") + "\n";
         let currentLineNum = self.linenum;
