@@ -4,8 +4,6 @@
  * identifies file types (archive, binary, text, unknown)
  */
 
-var fs = require('fs');
-
 var common = require('./common.js');
 var config = require('./config.js');
 var FileType = require('./filetype.js').FileType;
@@ -15,33 +13,31 @@ function FileTypes() {
     "use strict";
     let self = this;
 
-    const fileTypeMap = (function () {
-        //TODO: move to config file
+    const fileTypeMap = (() => {
+        let fs = require('fs');
+
+        let json = '';
+        if (fs.existsSync(FileUtil.expandPath(config.FILETYPESJSONPATH))) {
+            json = fs.readFileSync(FileUtil.expandPath(config.FILETYPESJSONPATH)).toString();
+        } else {
+            throw new Error('File not found: ' + config.FILETYPESJSONPATH);
+        }
+
         let fileTypeMap = {};
 
-        const DomJS = require("dom-js").DomJS;
-        const domjs = new DomJS();
-
-        const xml = fs.readFileSync(FileUtil.expandPath(config.FILETYPESPATH)).toString();
-        domjs.parse(xml, function(err, dom) {
-            if (err) {
-                throw err;
-            }
-            dom.children.forEach(child => {
-                if (child.name && child.name === 'filetype') {
-                    let name = child.attributes.name;
-                    child.children.forEach(filetypeChild => {
-                        if (filetypeChild.name && filetypeChild.name === 'extensions') {
-                            let extensions = filetypeChild.children[0].text;
-                            fileTypeMap[name] = common.setFromArray(extensions.split(/\s+/));
-                        }
-                    });
-                }
+        let obj = JSON.parse(json);
+        if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
+            obj['filetypes'].forEach(ft => {
+                let typename = ft['type'];
+                let extensions = ft['extensions'];
+                fileTypeMap[typename] = common.setFromArray(extensions);
             });
-            fileTypeMap.text = [].concat(fileTypeMap.text, fileTypeMap.code, fileTypeMap.xml);
-            fileTypeMap.searchable = [].concat(fileTypeMap.text, fileTypeMap.binary,
-                fileTypeMap.archive);
-        });
+        } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
+
+        fileTypeMap.text = [].concat(fileTypeMap.text, fileTypeMap.code, fileTypeMap.xml);
+        fileTypeMap.searchable = [].concat(fileTypeMap.text, fileTypeMap.binary,
+            fileTypeMap.archive);
+
         return fileTypeMap;
     })();
 

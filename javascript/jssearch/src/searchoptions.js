@@ -5,7 +5,6 @@
  */
 
 const config = require('./config.js');
-const FileTypes = require('./filetypes.js').FileTypes;
 const FileUtil = require('./fileutil.js').FileUtil;
 const SearchOption = require('./searchoption.js').SearchOption;
 const SearchSettings = require('./searchsettings.js').SearchSettings;
@@ -121,40 +120,42 @@ function SearchOptions() {
         return a.localeCompare(b);
     }
 
-    // setOptionsFromXml
-    (function () {
+    // setOptionsFromJson
+    (() => {
         const fs = require('fs');
-        const DomJS = require('dom-js').DomJS;
 
-        const domjs = new DomJS();
-        const xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
-        domjs.parse(xml, function(err, dom) {
-            if (err) {
-                throw err;
-            }
-            dom.children.forEach(child => {
-                if (child.name && child.name === 'searchoption') {
-                    const longArg = child.attributes.long;
-                    const shortArg = child.attributes.short;
-                    const desc = child.text().trim();
-                    let func = null;
-                    argNameMap[longArg] = longArg;
-                    if (shortArg) argNameMap[shortArg] = longArg;
-                    if (argActionMap[longArg]) func = argActionMap[longArg];
-                    else if (boolFlagActionMap[longArg]) func = boolFlagActionMap[longArg];
-                    else throw new Error("Unknown option: "+longArg);
-                    const option = new SearchOption(shortArg, longArg, desc, func);
-                    options.push(option);
-                    if (argActionMap[longArg]) {
-                        argMap[longArg] = option;
-                        if (shortArg) argMap[shortArg] = option;
-                    } else if (boolFlagActionMap[longArg]) {
-                        flagMap[longArg] = option;
-                        if (shortArg) flagMap[shortArg] = option;
-                    }
+        let json = '';
+        if (fs.existsSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH))) {
+            json = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
+        } else {
+            throw new Error('File not found: ' + config.SEARCHOPTIONSJSONPATH);
+        }
+
+        let obj = JSON.parse(json);
+        if (obj.hasOwnProperty('searchoptions') && Array.isArray(obj['searchoptions'])) {
+            obj['searchoptions'].forEach(so => {
+                let longArg = so['long'];
+                let shortArg = '';
+                if (so.hasOwnProperty('short'))
+                    shortArg = so['short'];
+                let desc = so['desc'];
+                let func = null;
+                argNameMap[longArg] = longArg;
+                if (shortArg) argNameMap[shortArg] = longArg;
+                if (argActionMap[longArg]) func = argActionMap[longArg];
+                else if (boolFlagActionMap[longArg]) func = boolFlagActionMap[longArg];
+                else throw new Error("Unknown option: " + longArg);
+                const option = new SearchOption(shortArg, longArg, desc, func);
+                options.push(option);
+                if (argActionMap[longArg]) {
+                    argMap[longArg] = option;
+                    if (shortArg) argMap[shortArg] = option;
+                } else if (boolFlagActionMap[longArg]) {
+                    flagMap[longArg] = option;
+                    if (shortArg) flagMap[shortArg] = option;
                 }
             });
-        });
+        } else throw new Error("Invalid searchoptions file: " + config.SEARCHOPTIONSJSONPATH);
         options.sort(optcmp);
     })();
 
