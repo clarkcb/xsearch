@@ -6,10 +6,10 @@
 
 "use strict";
 
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-var common = require('./common.js');
+const common = require('./common.js');
 
 function FileUtil() {}
 

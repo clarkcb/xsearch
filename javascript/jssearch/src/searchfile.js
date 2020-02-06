@@ -4,7 +4,7 @@
  * encapsulates a file to be searched
  */
 
-var path = require('path');
+const path = require('path');
 
 function SearchFile(pathname, filename, filetype) {
     "use strict";

@@ -4,14 +4,14 @@
  * Some nodeunit tests of searcher.js
  */
 
-var config = require('../src/config.js');
-var FileUtil = require('../src/fileutil.js').FileUtil;
-var Searcher = require('../src/searcher.js').Searcher;
-var SearchSettings = require('../src/searchsettings.js').SearchSettings;
+const config = require('../src/config.js');
+const FileUtil = require('../src/fileutil.js').FileUtil;
+const Searcher = require('../src/searcher.js').Searcher;
+const SearchSettings = require('../src/searchsettings.js').SearchSettings;
 
-var testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
+const testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 
-var getSettings = function() {
+const getSettings = function() {
     var settings = new SearchSettings();
     settings.startPath = '.';
     settings.addSearchPattern ('Searcher');

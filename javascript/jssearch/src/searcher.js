@@ -4,15 +4,16 @@
  * performs the searching based on the given SearchSettings instance
  */
 
-var assert = require('assert');
-var fs = require('fs');
-var path = require('path');
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
-var common = require('./common.js');
-var FileType = require('./filetype.js').FileType;
-var FileTypes = require('./filetypes.js').FileTypes;
-var FileUtil = require('./fileutil.js').FileUtil;
-var SearchResult = require('./searchresult.js').SearchResult;
+const common = require('./common.js');
+const FileType = require('./filetype.js').FileType;
+const FileTypes = require('./filetypes.js').FileTypes;
+const FileUtil = require('./fileutil.js').FileUtil;
+const SearchFile = require('./searchfile.js').SearchFile;
+const SearchResult = require('./searchresult.js').SearchResult;
 
 function Searcher(settings) {
     "use strict";

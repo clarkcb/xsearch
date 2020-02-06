@@ -4,7 +4,7 @@
  * represents the settings to use when performing the search
  */
 
-var FileTypes = require('./filetypes.js').FileTypes;
+const FileTypes = require('./filetypes.js').FileTypes;
 
 function SearchSettings() {
     "use strict";

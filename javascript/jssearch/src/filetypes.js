@@ -4,10 +4,10 @@
  * identifies file types (archive, binary, text, unknown)
  */
 
-var common = require('./common.js');
-var config = require('./config.js');
-var FileType = require('./filetype.js').FileType;
-var FileUtil = require('./fileutil.js').FileUtil;
+const common = require('./common.js');
+const config = require('./config.js');
+const FileType = require('./filetype.js').FileType;
+const FileUtil = require('./fileutil.js').FileUtil;
 
 function FileTypes() {
     "use strict";
