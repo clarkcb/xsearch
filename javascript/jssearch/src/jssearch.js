@@ -25,6 +25,9 @@ function searchMain() {
             handleError(err, searchOptions);
         }
 
+        if (settings.debug)
+            common.log("settings: " + settings.toString());
+
         if (settings.printUsage) {
             common.log('');
             searchOptions.usage();
@@ -35,11 +38,8 @@ function searchMain() {
             process.exit(0);
         }
 
-        if (settings.debug)
-            common.log("settings: " + settings.toString());
-
         try {
-            let searcher = new Searcher(settings);
+            const searcher = new Searcher(settings);
             searcher.search();
 
             if (settings.printResults) {
