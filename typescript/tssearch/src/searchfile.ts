@@ -23,6 +23,11 @@ export class SearchFile {
         this.filetype = filetype;
     }
 
+    public relativePath(): string {
+        if (this.pathname === '.' || this.pathname === './') return './' + this.filename;
+        return path.join(this.pathname, this.filename);
+    };
+
     public toString(): string {
         let s: string = '';
         if (this.containers.length > 0) {
