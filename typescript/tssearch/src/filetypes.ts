@@ -50,19 +50,31 @@ export class FileTypes {
 
     public static fromName(name: string): FileType {
         let uname: string = name.toUpperCase();
-        if (uname === 'TEXT')
-            return FileType.Text;
+        if (uname === 'ARCHIVE')
+            return FileType.Archive;
         if (uname === 'BINARY')
             return FileType.Binary;
-        if (uname === 'ARCHIVE')
-            return FileType.Archive;
-        if (uname === 'ARCHIVE')
-            return FileType.Archive;
         if (uname === 'CODE')
             return FileType.Code;
+        if (uname === 'TEXT')
+            return FileType.Text;
         if (uname === 'XML')
             return FileType.Xml;
         return FileType.Unknown;
+    }
+
+    public static toName(fileType: FileType): string {
+        if (fileType === FileType.Archive)
+            return 'ARCHIVE';
+        if (fileType === FileType.Binary)
+            return 'BINARY';
+        if (fileType === FileType.Code)
+            return 'CODE';
+        if (fileType === FileType.Text)
+            return 'TEXT';
+        if (fileType === FileType.Xml)
+            return 'XML';
+        return 'UNKNOWN';
     }
 
     public static getFileType(filename: string): FileType {
