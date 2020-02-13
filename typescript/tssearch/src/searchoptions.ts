@@ -127,8 +127,7 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.printVersion = b; }
         };
 
-
-        this.setOptionsFromXml();
+        this.setOptionsFromJsonFile();
     }
 
     private optcmp(o1: SearchOption, o2: SearchOption) {
@@ -137,53 +136,39 @@ export class SearchOptions {
         return a.localeCompare(b);
     }
 
-    // setOptionsFromXml
-    private setOptionsFromXml(): void {
-        const self = this;
+    // setOptionsFromJsonFile
+    private setOptionsFromJsonFile(): void {
         const fs = require('fs');
-        const DomJS = require('dom-js').DomJS;
 
-        const domjs = new DomJS();
-        const xml = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSPATH)).toString();
-        domjs.parse(xml, function(err: Error, dom) {
-            if (err) {
-                throw err;
-            }
-            dom.children.forEach(child => {
-                if (child.name && child.name === 'searchoption') {
-                    const longArg: string = child.attributes.long;
-                    const shortArg: string = child.attributes.short;
-                    const desc: string = child.text().trim();
-                    let func: any;
-                    if (longArg in self.argActionMap) {
-                        func = self.argActionMap[longArg];
-                    }
-                    else if (longArg in self.boolFlagActionMap) {
-                        func = self.boolFlagActionMap[longArg];
-                    }
-                    else throw new Error("Unknown option: "+longArg);
-                    const option = new SearchOption(shortArg, longArg, desc, func);
-                    self.options.push(option);
-                    if (longArg in self.argActionMap) {
-                        self.argMap[longArg] = option;
-                        if (shortArg) {
-                            self.argMap[shortArg] = option;
-                            self.argActionMap[shortArg] = self.argActionMap[longArg];
-                        }
-                    } else if (longArg in self.boolFlagActionMap) {
-                        self.flagMap[longArg] = option;
-                        if (shortArg) {
-                            self.flagMap[shortArg] = option;
-                            self.boolFlagActionMap[shortArg] = self.boolFlagActionMap[longArg];
-                        }
-                    } else { // shouldn't get here
-                        console.log("ERROR: " + longArg + " not found in either map");
-                        self.usageWithCode(1);
-                    }
+        let json = '';
+        if (fs.existsSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH))) {
+            json = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
+        } else {
+            throw new Error('File not found: ' + config.SEARCHOPTIONSJSONPATH);
+        }
+
+        let obj = JSON.parse(json);
+        if (obj.hasOwnProperty('searchoptions') && Array.isArray(obj['searchoptions'])) {
+            obj['searchoptions'].forEach(so => {
+                let longArg = so['long'];
+                let shortArg = '';
+                if (so.hasOwnProperty('short'))
+                    shortArg = so['short'];
+                let desc = so['desc'];
+                this.argNameMap[longArg] = longArg;
+                if (shortArg) this.argNameMap[shortArg] = longArg;
+                const option = new SearchOption(shortArg, longArg, desc);
+                this.options.push(option);
+                if (this.argActionMap[longArg]) {
+                    this.argMap[longArg] = option;
+                    if (shortArg) this.argMap[shortArg] = option;
+                } else if (this.boolFlagActionMap[longArg]) {
+                    this.flagMap[longArg] = option;
+                    if (shortArg) this.flagMap[shortArg] = option;
                 }
             });
-        });
-        this.options.sort(this.optcmp);
+        } else throw new Error("Invalid searchoptions file: " + config.SEARCHOPTIONSJSONPATH);
+        this.options.sort(SearchOptions.optcmp);
     }
 
     private settingsFromFile(filepath: string, settings: SearchSettings): Error {
