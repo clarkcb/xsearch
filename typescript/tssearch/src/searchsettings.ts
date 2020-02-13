@@ -161,7 +161,21 @@ export class SearchSettings {
     }
 
     private static listToString(name: string, lst: string[]|RegExp[]): string {
-        return `${name}=["${lst.join('","')}"]`;
+        let s = `${name}=[`;
+        if (lst.length)
+            s += `"${lst.join('","')}"`;
+        s += ']';
+        return s;
+    }
+
+    private static fileTypesToString(name: string, fileTypes: FileType[]): string {
+        let s = `${name}=[`;
+        for (let i=0; i < fileTypes.length; i++) {
+            if (i > 0) s += ', ';
+            s += `"${FileTypes.toName(fileTypes[i])}"`;
+        }
+        s += ']';
+        return s;
     }
 
     public toString(): string {
@@ -175,7 +189,7 @@ export class SearchSettings {
             + ', ' + SearchSettings.listToString('inDirPatterns', this.inDirPatterns)
             + ', ' + SearchSettings.listToString('inExtensions', this.inExtensions)
             + ', ' + SearchSettings.listToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + SearchSettings.listToString('inFileTypes', this.inFileTypes)
+            + ', ' + SearchSettings.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', ' + SearchSettings.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns)
             + ', ' + SearchSettings.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns)
             + ', linesAfter=' + this.linesAfter
@@ -192,7 +206,7 @@ export class SearchSettings {
             + ', ' + SearchSettings.listToString('outDirPatterns', this.outDirPatterns)
             + ', ' + SearchSettings.listToString('outExtensions', this.outExtensions)
             + ', ' + SearchSettings.listToString('outFilePatterns', this.outFilePatterns)
-            + ', ' + SearchSettings.listToString('outFileTypes', this.outFileTypes)
+            + ', ' + SearchSettings.fileTypesToString('outFileTypes', this.outFileTypes)
             + ', ' + SearchSettings.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
             + ', ' + SearchSettings.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
             + ', printResults=' + this.printResults
