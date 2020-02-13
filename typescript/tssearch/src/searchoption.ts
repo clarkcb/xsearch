@@ -6,22 +6,16 @@
 
 "use strict";
 
-interface SettingsFunc {
-    (): void;
-}
-
 export class SearchOption {
     shortarg: string;
     longarg: string;
     desc: string;
-    func: SettingsFunc;
     public sortarg: string;
 
-    constructor(shortarg: string, longarg: string, desc: string, func: SettingsFunc) {
+    constructor(shortarg: string, longarg: string, desc: string) {
         this.shortarg = shortarg;
         this.longarg = longarg;
         this.desc = desc;
-        this.func = func;
         this.sortarg = this.getSortarg();
     }
 
