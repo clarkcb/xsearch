@@ -66,20 +66,24 @@ export class FileTypes {
     }
 
     public static getFileType(filename: string): FileType {
+        if (FileTypes.isCodeFile(filename))
+            return FileType.Code;
+        if (FileTypes.isXmlFile(filename))
+            return FileType.Xml;
         if (FileTypes.isTextFile(filename))
             return FileType.Text;
         if (FileTypes.isBinaryFile(filename))
             return FileType.Binary;
         if (FileTypes.isArchiveFile(filename))
             return FileType.Archive;
-        if (FileTypes.isCodeFile(filename))
-            return FileType.Code;
-        if (FileTypes.isXmlFile(filename))
-            return FileType.Xml;
         return FileType.Unknown;
     }
 
     public static getFileTypeAsync(filename: string, cb: (ft: FileType) => void): void {
+        if (FileTypes.isCodeFile(filename))
+            return cb(FileType.Code);
+        if (FileTypes.isXmlFile(filename))
+            return cb(FileType.Xml);
         if (FileTypes.isTextFile(filename))
             return cb(FileType.Text);
         if (FileTypes.isBinaryFile(filename))
