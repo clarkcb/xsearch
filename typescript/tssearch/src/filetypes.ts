@@ -19,32 +19,29 @@ export class FileTypes {
     private static fileTypeMap: FileTypeMap = FileTypes.getFileTypeMap();
 
     private static getFileTypeMap(): FileTypeMap {
-        //TODO: move to config file
+        const fs = require('fs');
+
+        let json = '';
+        if (fs.existsSync(FileUtil.expandPath(config.FILETYPESJSONPATH))) {
+            json = fs.readFileSync(FileUtil.expandPath(config.FILETYPESJSONPATH)).toString();
+        } else {
+            throw new Error('File not found: ' + config.FILETYPESJSONPATH);
+        }
+
         let fileTypeMap: FileTypeMap = {};
 
-        const DomJS = require("dom-js").DomJS;
-        const domjs = new DomJS();
-
-        const xml: string = fs.readFileSync(FileUtil.expandPath(config.FILETYPESPATH)).toString();
-        domjs.parse(xml, function(err: Error, dom) {
-            if (err) {
-                throw err;
-            }
-            dom.children.forEach(child => {
-                if (child.name && child.name === 'filetype') {
-                    let name: string = child.attributes.name;
-                    child.children.forEach(filetypeChild => {
-                        if (filetypeChild.name && filetypeChild.name === 'extensions') {
-                            let extensions: string = filetypeChild.children[0].text;
-                            fileTypeMap[name] = common.setFromArray(extensions.split(/\s+/));
-                        }
-                    });
-                }
+        let obj = JSON.parse(json);
+        if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
+            obj['filetypes'].forEach(ft => {
+                let typename: string = ft['type'];
+                let extensions: string[] = ft['extensions'];
+                fileTypeMap[typename] = common.setFromArray(extensions);
             });
-            fileTypeMap['text'] = [].concat(fileTypeMap['text'], fileTypeMap['code'], fileTypeMap['xml']);
-            fileTypeMap['searchable'] = [].concat(fileTypeMap['text'], fileTypeMap['binary'],
-                fileTypeMap['archive']);
-        });
+        } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
+
+        fileTypeMap.text = fileTypeMap.text.concat(fileTypeMap.code, fileTypeMap.xml);
+        fileTypeMap.searchable = fileTypeMap.text.concat(fileTypeMap.binary, fileTypeMap.archive);
+
         return fileTypeMap;
     }
 
