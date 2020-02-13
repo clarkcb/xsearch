@@ -8,8 +8,8 @@ import {SearchOptions} from '../src/searchoptions';
 import {SearchSettings} from '../src/searchsettings';
 
 exports.testNoArgs = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    searchOptions.settingsFromArgs([], function(err: Error, settings: SearchSettings) {
+    const searchOptions: SearchOptions = new SearchOptions();
+    searchOptions.settingsFromArgs([], function(err: Error|void, settings: SearchSettings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
@@ -23,7 +23,7 @@ exports.testNoArgs = function(test) {
         test.ok(!settings.listDirs, "listDirs is false by default");
         test.ok(!settings.listFiles, "listFiles is false by default");
         test.ok(!settings.listLines, "listLines is false by default");
-        test.ok(settings.maxLineLength == 150, "maxLineLength == 150 by default");
+        test.ok(settings.maxLineLength === 150, "maxLineLength == 150 by default");
         test.ok(!settings.multilineSearch, "multilineSearch is false by default");
         test.ok(settings.printResults, "printResults is set to true in settingsFromArgs");
         test.ok(!settings.printUsage, "printUsage is false by default");
@@ -38,9 +38,9 @@ exports.testNoArgs = function(test) {
 };
 
 exports.testValidArgs = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['-x', 'js,java', '-s', 'Searcher', '.'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+    const searchOptions: SearchOptions = new SearchOptions();
+    let args: string[] = ['-x', 'js,java', '-s', 'Searcher', '.'];
+    searchOptions.settingsFromArgs(args, function(err: Error|void, settings: SearchSettings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
@@ -56,37 +56,37 @@ exports.testValidArgs = function(test) {
 };
 
 exports.testArchivesOnly = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['--archivesonly'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+    const searchOptions: SearchOptions = new SearchOptions();
+    let args: string[] = ['--archivesonly'];
+    searchOptions.settingsFromArgs(args, function(err: Error|void, settings: SearchSettings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
         }
-        test.ok(settings.archivesOnly === true, "archivesOnly is true");
-        test.ok(settings.searchArchives === true, "searchArchives is true");
+        test.ok(settings.archivesOnly, "archivesOnly is true");
+        test.ok(settings.searchArchives, "searchArchives is true");
         test.done();
     });
 };
 
 exports.testDebug = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['--debug'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+    const searchOptions: SearchOptions = new SearchOptions();
+    let args: string[] = ['--debug'];
+    searchOptions.settingsFromArgs(args, function(err: Error|void, settings: SearchSettings) {
         if (err) {
             test.ok(false, "There was an error calling settingsFromArgs: "+ err);
             test.done();
         }
-        test.ok(settings.debug === true, "debug is true");
-        test.ok(settings.verbose === true, "verbose is true");
+        test.ok(settings.debug, "debug is true");
+        test.ok(settings.verbose, "verbose is true");
         test.done();
     });
 };
 
 exports.testMissingArg = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['-x'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+    const searchOptions: SearchOptions = new SearchOptions();
+    let args: string[] = ['-x'];
+    searchOptions.settingsFromArgs(args, function(err: Error|void, settings: SearchSettings) {
         if (err) {
             var expected = "Missing argument for option x";
             test.ok(err.message === expected, "Got missing argument err");
@@ -99,9 +99,9 @@ exports.testMissingArg = function(test) {
 };
 
 exports.testInvalidArg = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var args: string[] = ['-Q'];
-    searchOptions.settingsFromArgs(args, function(err: Error, settings: SearchSettings) {
+    const searchOptions: SearchOptions = new SearchOptions();
+    let args: string[] = ['-Q'];
+    searchOptions.settingsFromArgs(args, function(err: Error|void, settings: SearchSettings) {
         if (err) {
             var expected = "Invalid option: Q";
             test.ok(err.message === expected, "Got invalid option err");
@@ -114,9 +114,9 @@ exports.testInvalidArg = function(test) {
 };
 
 exports.testSettingsFromJson = function(test) {
-    var searchOptions: SearchOptions = new SearchOptions();
-    var settings: SearchSettings = new SearchSettings();
-    var json: string = '{\n' +
+    const searchOptions: SearchOptions = new SearchOptions();
+    const settings: SearchSettings = new SearchSettings();
+    const json: string = '{\n' +
         '  "startpath": "~/src/xsearch/",\n' +
         '  "in-ext": ["js","ts"],\n' +
         '  "out-dirpattern": "node_module",\n' +
@@ -128,7 +128,7 @@ exports.testSettingsFromJson = function(test) {
         '  "allmatches": false,\n' +
         '  "includehidden": true\n' +
         '}';
-    var err: Error = searchOptions.settingsFromJson(json, settings);
+    var err: Error|void = searchOptions.settingsFromJson(json, settings);
     test.ok(err == null, "Null err");
     test.ok(settings.startPath === '~/src/xsearch/', "Startpath === ~/src/xsearch/");
     test.ok(settings.inExtensions.length === 2, "settings.inExtensions.length === 2");
@@ -146,6 +146,6 @@ exports.testSettingsFromJson = function(test) {
     test.ok(settings.debug, "settings.debug === true");
     test.ok(settings.verbose, "settings.verbose === true");
     test.ok(settings.firstMatch, "settings.firstMatch === true");
-    test.ok(settings.excludeHidden === false, "settings.excludeHidden === false");
+    test.ok(!settings.excludeHidden, "settings.excludeHidden === false");
     test.done();
 };

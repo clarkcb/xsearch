@@ -7,7 +7,7 @@
 import {SearchSettings} from '../src/searchsettings';
 
 exports.testDefaultSettings = function(test) {
-    var settings: SearchSettings = new SearchSettings();
+    const settings: SearchSettings = new SearchSettings();
     test.ok(!settings.archivesOnly, "archivesOnly is false by default");
     test.ok(!settings.debug, "debug is false by default");
     test.ok(settings.excludeHidden, "excludeHidden is true by default");
@@ -31,7 +31,7 @@ exports.testDefaultSettings = function(test) {
 };
 
 exports.testAddExtensions = function(test) {
-    var settings: SearchSettings = new SearchSettings();
+    let settings: SearchSettings = new SearchSettings();
     settings.addInExtension("js,java");
     test.ok(settings.inExtensions.length === 2, "inExtensions has two extensions");
     test.ok(settings.inExtensions[0] === 'js', "first extension is js");
@@ -40,7 +40,7 @@ exports.testAddExtensions = function(test) {
 };
 
 exports.testAddSearchPattern = function(test) {
-    var settings: SearchSettings = new SearchSettings();
+    let settings: SearchSettings = new SearchSettings();
     settings.addSearchPattern("Searcher");
     test.ok(settings.searchPatterns.length === 1, "searchPatterns has one pattern");
     test.ok(settings.searchPatterns[0].source === 'Searcher', "pattern is /Searcher/");
@@ -48,21 +48,21 @@ exports.testAddSearchPattern = function(test) {
 };
 
 exports.testSetArchivesOnly = function(test) {
-    var settings: SearchSettings = new SearchSettings();
-    test.ok(settings.archivesOnly === false, "archivesOnly is false by default");
-    test.ok(settings.searchArchives === false, "searchArchives is false by default");
-    settings.setArchivesOnly();
-    test.ok(settings.archivesOnly === true, "archivesOnly is now true");
-    test.ok(settings.searchArchives === true, "searchArchives is now true");
+    let settings: SearchSettings = new SearchSettings();
+    test.ok(!settings.archivesOnly, "archivesOnly is false by default");
+    test.ok(!settings.searchArchives, "searchArchives is false by default");
+    settings.setArchivesOnly(true);
+    test.ok(settings.archivesOnly, "archivesOnly is now true");
+    test.ok(settings.searchArchives, "searchArchives is now true");
     test.done();
 };
 
 exports.testSetDebug = function(test) {
-    var settings: SearchSettings = new SearchSettings();
-    test.ok(settings.debug === false, "debug is false by default");
-    test.ok(settings.verbose === false, "verbose is false by default");
-    settings.setDebug();
-    test.ok(settings.debug === true, "debug is now true");
-    test.ok(settings.verbose === true, "verbose is now true");
+    let settings: SearchSettings = new SearchSettings();
+    test.ok(!settings.debug, "debug is false by default");
+    test.ok(!settings.verbose, "verbose is false by default");
+    settings.setDebug(true);
+    test.ok(settings.debug, "debug is now true");
+    test.ok(settings.verbose, "verbose is now true");
     test.done();
 };
