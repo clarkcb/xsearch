@@ -14,8 +14,10 @@ import * as config from './config';
 export class FileUtil {
 
     public static expandPath(filepath: string): string {
-        let idx: number = filepath.indexOf('~');
-        return idx === 0 ? process.env.HOME + filepath.substring(1) : filepath;
+        if (filepath[0] === "~") {
+            return config.HOME + filepath.substring(1);
+        }
+        return filepath;
     }
 
     public static getExtension(filepath: string): string {
@@ -27,26 +29,27 @@ export class FileUtil {
         return '';
     }
 
-    public static getFileContents(filepath: string): string {
-        return fs.readFileSync(filepath).toString();
+    public static getFileContents(filepath: string, encoding: string): string {
+        return fs.readFileSync(filepath, encoding).toString();
     }
 
-    public static getFileContentsAsync(filepath: string, cb): void {
+    public static getFileContentsAsync(filepath: string, cb: (contents: string) => void): void {
         cb(fs.readFileSync(filepath).toString());
     }
 
-    public static getFileLines(filepath: string): string[] {
-        return FileUtil.getFileContents(filepath).split(/\r?\n/);
+    public static getFileLines(filepath: string, encoding: string): string[] {
+        return FileUtil.getFileContents(filepath, encoding).split(/\r?\n/);
     }
 
-    public static getFileLinesAsync(filepath: string, cb): void {
-        cb(FileUtil.getFileContents(filepath).split(/\r?\n/));
+    public static getFileLinesAsync(filepath: string, encoding: string, cb: (lines: string[]) => void): void {
+        cb(FileUtil.getFileContents(filepath, encoding).split(/\r?\n/));
     }
 
     public static getRelativePath(filepath: string, startpath: string): string {
-        if (startpath === '.' && filepath.startsWith(process.env.HOME)) {
-            return '.' + filepath.substring(process.env.HOME.length);
+        if (startpath === '.' && filepath.startsWith(config.HOME)) {
+            return '.' + filepath.substring(config.HOME.length);
         }
+        return filepath;
     }
 
     public static isDotDir(filepath: string): boolean {
