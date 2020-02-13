@@ -88,9 +88,9 @@ export class SearchOptions {
             'allmatches':
                 (b: boolean, settings: SearchSettings) => { settings.firstMatch = !b; },
             'archivesonly':
-                (b: boolean, settings: SearchSettings) => { settings.setArchivesOnlyBool(b); },
+                (b: boolean, settings: SearchSettings) => { settings.setArchivesOnly(b); },
             'debug':
-                (b: boolean, settings: SearchSettings) => { settings.setDebugBool(b); },
+                (b: boolean, settings: SearchSettings) => { settings.setDebug(b); },
             'excludehidden':
                 (b: boolean, settings: SearchSettings) => { settings.excludeHidden = b; },
             'firstmatch':

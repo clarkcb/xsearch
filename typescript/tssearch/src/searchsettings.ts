@@ -150,20 +150,12 @@ export class SearchSettings {
         SearchSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
-    public setArchivesOnly(): void {
-        this.setArchivesOnlyBool(true);
-    }
-
-    public setArchivesOnlyBool(b: boolean): void {
+    public setArchivesOnly(b: boolean): void {
         this.archivesOnly = b;
         if (b) this.searchArchives = b;
     }
 
-    public setDebug(): void {
-        this.setDebugBool(true);
-    }
-
-    public setDebugBool(b: boolean): void {
+    public setDebug(b: boolean): void {
         this.debug = b;
         if (b) this.verbose = b;
     }
