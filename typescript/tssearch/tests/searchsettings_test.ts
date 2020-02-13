@@ -1,12 +1,10 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="../src/searchsettings.ts"/>
 /*
  * searchsettings_test.js
  *
  * Some nodeunit tests of searchsettings.js
  */
 
-var SearchSettings = require('../build/searchsettings.js').SearchSettings;
+import {SearchSettings} from '../src/searchsettings';
 
 exports.testDefaultSettings = function(test) {
     var settings: SearchSettings = new SearchSettings();

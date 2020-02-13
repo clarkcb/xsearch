@@ -1,16 +1,13 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="../src/common.ts"/>
-/// <reference path="../src/config.ts"/>
-/// <reference path="../src/searchresult.ts"/>
 /*
  * searchresult_test.js
  *
  * Some nodeunit tests of searchresult.js
  */
 
-var common = require('../build/common.js');
-var config = require('../build/config.js');
-var SearchResult = require('../build/searchresult.js').SearchResult;
+import * as config from '../src/config';
+import {SearchResult} from '../src/searchresult';
+import {SearchFile} from '../src/searchfile';
+import {FileType} from '../src/filetype';
 
 var cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
 

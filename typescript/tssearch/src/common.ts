@@ -1,4 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
 /*
  * common.ts
  *
@@ -7,7 +6,7 @@
 
 "use strict";
 
-interface String {
+export interface String {
     startsWith(str: string): boolean;
 }
 
@@ -18,19 +17,17 @@ if (typeof String.prototype.startsWith !== 'function') {
     };
 }
 
-var log = function (message: string): void {
+export function log(message: string): void {
     console.log(message);
-};
-exports.log = log;
+}
 
-var boolHashFromArray = function (arr: string[]): {[key:string]: boolean} {
+export function boolHashFromArray(arr: string[]): {[key:string]: boolean} {
     let hash: {[key:string]: boolean} = {};
     arr.forEach(a => hash[a] = true);
     return hash;
-};
-exports.boolHashFromArray = boolHashFromArray;
+}
 
-var setFromArray = function (arr: string[]): string[] {
+export function setFromArray(arr: string[]): string[] {
     let hash: {[key:string]: boolean} = boolHashFromArray(arr);
     let set: string[] = [];
     for (let k in hash) {
@@ -39,5 +36,4 @@ var setFromArray = function (arr: string[]): string[] {
         }
     }
     return set;
-};
-exports.setFromArray = setFromArray;
+}

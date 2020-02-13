@@ -1,5 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="filetype.ts"/>
 /*
  * filetypes.ts
  *
@@ -8,18 +6,16 @@
 
 "use strict";
 
-var fs = require('fs');
-
-var common = require('./common.ts');
-var config = require('./config.ts');
-var FileType = require('./filetype.ts').FileType;
-var FileUtil = require('./fileutil.ts').FileUtil;
+import * as config from './config';
+import * as common from './common';
+import {FileType} from './FileType';
+import {FileUtil} from './fileutil';
 
 interface FileTypeMap {
     [key: string]: string[]
 }
 
-class FileTypes {
+export class FileTypes {
     private static fileTypeMap: FileTypeMap = FileTypes.getFileTypeMap();
 
     private static getFileTypeMap(): FileTypeMap {
@@ -83,7 +79,7 @@ class FileTypes {
         return FileType.Unknown;
     }
 
-    public static getFileTypeAsync(filename: string, cb): void {
+    public static getFileTypeAsync(filename: string, cb: (ft: FileType) => void): void {
         if (FileTypes.isTextFile(filename))
             return cb(FileType.Text);
         if (FileTypes.isBinaryFile(filename))
@@ -128,5 +124,3 @@ class FileTypes {
         return FileTypes.fileTypeMap['searchable'].indexOf(ext) === -1;
     }
 }
-
-exports.FileTypes = FileTypes;

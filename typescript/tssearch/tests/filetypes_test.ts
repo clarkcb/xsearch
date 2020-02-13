@@ -1,14 +1,11 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="../src/filetype.ts"/>
-/// <reference path="../src/filetypes.ts"/>
 /*
  * filetypes_test.js
  *
  * Some nodeunit tests of filetypes.js
  */
 
-var FileType = require('../build/filetype.js').FileType;
-var FileTypes = require('../build/filetypes.js').FileTypes;
+import {FileType} from '../src/filetype';
+import {FileTypes} from '../src/filetypes';
 
 exports.testFileTypesArchiveFile = function(test) {
     var filename: string = 'archive.zip';

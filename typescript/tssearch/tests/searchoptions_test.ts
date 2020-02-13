@@ -1,14 +1,11 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="../src/searchoptions.ts"/>
-/// <reference path="../src/searchsettings.ts"/>
 /*
  * searchoptions_test.js
  *
  * Some nodeunit tests of searchoptions.js
  */
 
-var SearchOptions = require('../build/searchoptions.js').SearchOptions;
-var SearchSettings = require('../build/searchsettings.js').SearchSettings;
+import {SearchOptions} from '../src/searchoptions';
+import {SearchSettings} from '../src/searchsettings';
 
 exports.testNoArgs = function(test) {
     var searchOptions: SearchOptions = new SearchOptions();

@@ -1,20 +1,18 @@
-/// <reference path="searcher.ts"/>
-/// <reference path="searchoptions.ts"/>
-/// <reference path="searchsettings.ts"/>
 /*
- * tssearch.js
+ * tssearch.ts
  *
  * file search utility written in typescript
  */
 
 "use strict";
 
-var common = require('./common.ts');
-var Searcher = require('./searcher.ts').Searcher;
-var SearchOptions = require('./searchoptions.ts').SearchOptions;
+import * as common from './common';
+import {SearchOptions} from './searchoptions';
+import {SearchSettings} from './searchsettings';
+import {Searcher} from './searcher';
 
 function handleError(err: Error, searchOptions: SearchOptions) {
-    const errMsg: string = err.toString().replace(/\w*Error/, "ERROR");
+    const errMsg: string = "ERROR: " + err.message;
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
 }

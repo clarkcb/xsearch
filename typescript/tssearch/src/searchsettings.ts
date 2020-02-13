@@ -1,4 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
 /*
  * searchsettings.ts
  *
@@ -7,10 +6,10 @@
 
 "use strict";
 
-var FileType = require('./filetype.ts').FileType;
-var FileTypes = require('./filetypes.ts').FileTypes;
+import {FileType} from './filetype';
+import {FileTypes} from './filetypes';
 
-class SearchSettings {
+export class SearchSettings {
     archivesOnly: boolean = false;
     debug: boolean = false;
     excludeHidden: boolean = true;
@@ -55,7 +54,7 @@ class SearchSettings {
         if (typeof(exts) === 'string') {
             exts.split(/,/).filter(x => x !== '').forEach(x => arr.push(x));
         } else if (exts.constructor === Array) {
-            exts.forEach(x => arr.push(x));
+            exts.forEach((x: string) => arr.push(x));
         }
     }
 
@@ -72,7 +71,7 @@ class SearchSettings {
             filetypes.split(/,/).filter(ft => ft !== '').
                 forEach(ft => arr.push(FileTypes.fromName(ft)));
         } else if (filetypes.constructor === Array) {
-            filetypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
+            filetypes.forEach((ft: string) => arr.push(FileTypes.fromName(ft)));
         }
     }
 
@@ -88,7 +87,7 @@ class SearchSettings {
         if (typeof(patterns) === 'string') {
             arr.push(new RegExp(patterns));
         } else if (patterns.constructor === Array) {
-            patterns.forEach(p => arr.push(new RegExp(p)));
+            patterns.forEach((p: string) => arr.push(new RegExp(p)));
         }
     }
 
@@ -216,5 +215,3 @@ class SearchSettings {
             + ')';
     }
 }
-
-exports.SearchSettings = SearchSettings;

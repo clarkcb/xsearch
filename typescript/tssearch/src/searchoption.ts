@@ -1,4 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
 /*
  * searchoption.js
  *
@@ -11,7 +10,7 @@ interface SettingsFunc {
     (): void;
 }
 
-class SearchOption {
+export class SearchOption {
     shortarg: string;
     longarg: string;
     desc: string;
@@ -32,5 +31,3 @@ class SearchOption {
         return this.longarg.toLowerCase();
     }
 }
-
-exports.SearchOption = SearchOption;

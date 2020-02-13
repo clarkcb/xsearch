@@ -1,5 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="filetype.ts"/>
 /*
  * searchfile.js
  *
@@ -8,9 +6,11 @@
 
 "use strict";
 
+import {FileType} from './filetype';
+
 var path = require('path');
 
-class SearchFile {
+export class SearchFile {
     containerSeparator: string = '!';
     containers: string[] = [];
     pathname: string;
@@ -32,5 +32,3 @@ class SearchFile {
         return s;
     }
 }
-
-exports.SearchFile = SearchFile;

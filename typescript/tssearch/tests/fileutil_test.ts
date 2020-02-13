@@ -1,12 +1,10 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="../src/fileutil.ts"/>
 /*
  * fileutil_test.js
  *
  * Some nodeunit tests of fileutil.js
  */
 
-var FileUtil = require('../build/fileutil.js').FileUtil;
+import {FileUtil} from '../src/fileutil';
 
 /***************************************************************************
  * getExtension tests

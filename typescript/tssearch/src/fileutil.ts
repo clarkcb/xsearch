@@ -1,5 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="common.ts"/>
 /*
  * fileutil.js
  *
@@ -8,12 +6,12 @@
 
 "use strict";
 
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-var common = require('./common.ts');
+import * as config from './config';
 
-class FileUtil {
+export class FileUtil {
 
     public static expandPath(filepath: string): string {
         let idx: number = filepath.indexOf('~');
@@ -60,5 +58,3 @@ class FileUtil {
         return f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f);
     }
 }
-
-exports.FileUtil = FileUtil;

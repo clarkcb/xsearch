@@ -1,8 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="common.ts"/>
-/// <reference path="filetype.ts"/>
-/// <reference path="searchresult.ts"/>
-/// <reference path="searchsettings.ts"/>
 /*
  * searcher.ts
  *
@@ -11,17 +6,20 @@
 
 "use strict";
 
-var assert = require('assert');
-var fs = require('fs');
-var path = require('path');
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
-var common = require('./common.ts');
-var FileType = require('./filetype.ts').FileType;
-var FileTypes = require('./filetypes.ts').FileTypes;
-var FileUtil = require('./fileutil.ts').FileUtil;
-var SearchResult = require('./searchresult.ts').SearchResult;
+import * as common from './common';
+import {FileType} from './filetype';
+import {FileTypes} from './filetypes';
+import {FileUtil} from './fileutil';
+import {SearchFile} from './searchfile';
+import {SearchResult} from './searchresult';
+import {SearchSettings} from './searchsettings';
 
-class Searcher {
+export class Searcher {
+
     _settings: SearchSettings;
     results: SearchResult[] = [];
 
@@ -578,5 +576,3 @@ class Searcher {
         lines.forEach(l => common.log(l));
     }
 }
-
-exports.Searcher = Searcher;

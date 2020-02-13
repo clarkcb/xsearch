@@ -1,20 +1,14 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="../src/config.ts"/>
-/// <reference path="../src/fileutil.ts"/>
-/// <reference path="../src/searcher.ts"/>
-/// <reference path="../src/searchresult.ts"/>
-/// <reference path="../src/searchsettings.ts"/>
 /*
  * searcher_test.js
  *
  * Some nodeunit tests of searcher.js
  */
 
-var config = require('../build/config.js');
-var FileUtil = require('../build/fileutil.js').FileUtil;
-var Searcher = require('../build/searcher.js').Searcher;
-var SearchResult = require('../build/searchresult.js').SearchResult;
-var SearchSettings = require('../build/searchsettings.js').SearchSettings;
+import * as config from '../src/config';
+import {FileUtil} from '../src/fileutil';
+import {Searcher} from '../src/searcher';
+import {SearchResult} from '../src/searchresult';
+import {SearchSettings} from '../src/searchsettings';
 
 var testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 

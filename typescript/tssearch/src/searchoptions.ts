@@ -1,6 +1,3 @@
-/// <reference path="../typings/node/node.d.ts"/>
-/// <reference path="searchoption.ts"/>
-/// <reference path="searchsettings.ts"/>
 /*
  * searchoptions.js
  *
@@ -9,10 +6,10 @@
 
 "use strict";
 
-var config = require('./config.ts');
-var FileUtil = require('./fileutil.ts').FileUtil;
-var SearchOption = require('./searchoption.ts').SearchOption;
-var SearchSettings = require('./searchsettings.ts').SearchSettings;
+import * as config from './config';
+import {FileUtil} from './fileutil';
+import {SearchOption} from './searchoption';
+import {SearchSettings} from './searchsettings';
 
 interface StringOptionMap {
     [key: string]: SearchOption
@@ -22,7 +19,7 @@ interface StringActionMap {
     [key: string]: any
 }
 
-class SearchOptions {
+export class SearchOptions {
     // the list of SearchOption objects (populated by setOptionsFromXml)
     options: SearchOption[];
     argMap: StringOptionMap;
@@ -294,5 +291,3 @@ class SearchOptions {
         return usage;
     }
 }
-
-exports.SearchOptions = SearchOptions;

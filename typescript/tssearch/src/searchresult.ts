@@ -1,13 +1,14 @@
-/// <reference path="../typings/node/node.d.ts"/>
 /*
  * searchresults.ts
  *
  * SearchResult class represents a search result
  */
 
+import {SearchFile} from './searchfile';
+
 "use strict";
 
-class SearchResult {
+export class SearchResult {
    pattern: RegExp;
    filename: string;
    linenum: number;
@@ -127,5 +128,3 @@ class SearchResult {
         return formatted;
     }
 }
-
-exports.SearchResult = SearchResult;
