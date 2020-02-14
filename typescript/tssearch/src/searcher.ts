@@ -61,12 +61,16 @@ export class Searcher {
         assert.ok(this._settings.maxLineLength > -1, 'Invalid maxlinelength');
     }
 
-    private static matchesAnyElement(s: string, elements: string[]): boolean {
+    private static matchesAnyString(s: string, elements: string[]): boolean {
         return elements.indexOf(s) > -1;
     }
 
     private static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
         return patterns.some((p: RegExp, i: number, arr) => s.search(p) > -1);
+    }
+
+    private static matchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
+        return fileTypes.indexOf(ft) > -1;
     }
 
     private static anyMatchesAnyPattern(ss: string[], patterns: RegExp[]) {
@@ -78,7 +82,7 @@ export class Searcher {
             return true;
         }
         if (this._settings.excludeHidden) {
-            let nonDotElems = dir.split(path.sep).filter((p: string) => !Searcher.matchesAnyElement(p, ['.','..']));
+            let nonDotElems = dir.split(path.sep).filter((p: string) => !Searcher.matchesAnyString(p, ['.','..']));
             if (nonDotElems.length === 0) {
                 return true;
             }
@@ -100,11 +104,11 @@ export class Searcher {
         }
         let ext: string = FileUtil.getExtension(file);
         if (this._settings.inExtensions.length &&
-            !Searcher.matchesAnyElement(ext, this._settings.inExtensions)) {
+            !Searcher.matchesAnyString(ext, this._settings.inExtensions)) {
             return false;
         }
         if (this._settings.outExtensions.length &&
-            Searcher.matchesAnyElement(ext, this._settings.outExtensions)) {
+            Searcher.matchesAnyString(ext, this._settings.outExtensions)) {
             return false;
         }
         if (this._settings.inFilePatterns.length &&
@@ -117,11 +121,11 @@ export class Searcher {
         }
         let filetype: FileType = FileTypes.getFileType(file);
         if (this._settings.inFileTypes.length &&
-            !Searcher.matchesAnyElement(filetype, this._settings.inFileTypes)) {
+            !Searcher.matchesAnyFileType(filetype, this._settings.inFileTypes)) {
             return false;
         }
         if (this._settings.outFileTypes.length &&
-            Searcher.matchesAnyElement(filetype, this._settings.outFileTypes)) {
+            Searcher.matchesAnyFileType(filetype, this._settings.outFileTypes)) {
             return false;
         }
         return true;
@@ -133,11 +137,11 @@ export class Searcher {
         }
         let ext: string = FileUtil.getExtension(file);
         if (this._settings.inArchiveExtensions.length &&
-            !Searcher.matchesAnyElement(ext, this._settings.inArchiveExtensions)) {
+            !Searcher.matchesAnyString(ext, this._settings.inArchiveExtensions)) {
             return false;
         }
         if (this._settings.outArchiveExtensions.length &&
-            Searcher.matchesAnyElement(ext, this._settings.outArchiveExtensions)) {
+            Searcher.matchesAnyString(ext, this._settings.outArchiveExtensions)) {
             return false;
         }
         if (this._settings.inArchiveFilePatterns.length &&
