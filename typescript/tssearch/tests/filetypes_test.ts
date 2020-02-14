@@ -25,12 +25,30 @@ exports.testFileTypesBinaryFile = function(test) {
     test.done();
 };
 
+exports.testFileTypesCodeFile = function(test) {
+    const filename: string = 'code.js';
+    const res: boolean = FileTypes.isCodeFile(filename);
+    test.ok(res, filename + " is code file");
+    const type: FileType = FileTypes.getFileType(filename);
+    test.ok(type === FileType.Code, "FileType of " + filename + " is " + type);
+    test.done();
+};
+
 exports.testFileTypesTextFile = function(test) {
     const filename: string = 'text.txt';
     const res: boolean = FileTypes.isTextFile(filename);
     test.ok(res, filename + " is text file");
     const type: FileType = FileTypes.getFileType(filename);
     test.ok(type === FileType.Text, "FileType of " + filename + " is " + type);
+    test.done();
+};
+
+exports.testFileTypesXmlFile = function(test) {
+    const filename: string = 'markup.xml';
+    const res: boolean = FileTypes.isXmlFile(filename);
+    test.ok(res, filename + " is xml file");
+    const type: FileType = FileTypes.getFileType(filename);
+    test.ok(type === FileType.Xml, "FileType of " + filename + " is " + type);
     test.done();
 };
 
