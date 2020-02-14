@@ -47,6 +47,15 @@ exports.testAddSearchPattern = function(test) {
     test.done();
 };
 
+exports.testAddSearchPatterns = function(test) {
+    let settings: SearchSettings = new SearchSettings();
+    settings.addSearchPatterns(["Searcher", "FileTypes"]);
+    test.ok(settings.searchPatterns.length === 2, "searchPatterns has two patterns");
+    test.ok(settings.searchPatterns[0].source === 'Searcher', "pattern is /Searcher/");
+    test.ok(settings.searchPatterns[1].source === 'FileTypes', "pattern is /FileTypes/");
+    test.done();
+};
+
 exports.testSetArchivesOnly = function(test) {
     let settings: SearchSettings = new SearchSettings();
     test.ok(!settings.archivesOnly, "archivesOnly is false by default");

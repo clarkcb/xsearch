@@ -111,6 +111,10 @@ export class SearchSettings {
         SearchSettings.addPatterns(pattern, this.searchPatterns);
     }
 
+    public addSearchPatterns(patterns: string[]): void {
+        SearchSettings.addPatterns(patterns, this.searchPatterns);
+    }
+
     public addInArchiveExtension(ext: string): void {
         SearchSettings.addExtensions(ext, this.inArchiveExtensions);
     }
