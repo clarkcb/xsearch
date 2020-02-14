@@ -12,7 +12,7 @@ import {SearchSettings} from './searchsettings';
 import {Searcher} from './searcher';
 
 function handleError(err: Error, searchOptions: SearchOptions) {
-    const errMsg: string = "ERROR: " + err.message;
+    const errMsg: string = 'ERROR: ' + err.message;
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
 }
@@ -21,10 +21,13 @@ function searchMain() {
     const searchOptions = new SearchOptions();
     const args = process.argv.slice(2);
 
-    searchOptions.settingsFromArgs(args, (err: Error, settings: SearchSettings) => {
+    searchOptions.settingsFromArgs(args, (err: Error | void, settings: SearchSettings) => {
         if (err) {
             handleError(err, searchOptions);
         }
+
+        if (settings.debug)
+            common.log('settings: ' + settings.toString());
 
         if (settings.printUsage) {
             common.log('');
@@ -35,9 +38,6 @@ function searchMain() {
             common.log('Version: 0.1');
             process.exit(0);
         }
-
-        if (settings.debug)
-            common.log("settings: " + settings.toString());
 
         try {
             let searcher: Searcher = new Searcher(settings);
