@@ -19,6 +19,10 @@ import {SearchResult} from './searchresult';
 import {SearchSettings} from './searchsettings';
 
 export class Searcher {
+    _binaryEncoding: string = "latin1";
+    // from https://github.com/nodejs/node/blob/master/lib/buffer.js
+    _supportedEncodings: string[] = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
+        'binary', 'base64', 'hex'];
 
     _settings: SearchSettings;
     results: SearchResult[] = [];
@@ -31,9 +35,30 @@ export class Searcher {
     private validateSettings(): void {
         assert.ok(this._settings.startPath, 'Startpath not defined');
         assert.ok(fs.existsSync(this._settings.startPath), 'Startpath not found');
-        assert.ok(this.isSearchDir(this._settings.startPath), 'Startpath does not match search settings');
+        try {
+            fs.accessSync(this._settings.startPath, fs.constants.R_OK);
+        } catch (accessErr) {
+            if (accessErr.code === 'EACCES') {
+                assert.ok(false, 'Startpath not readable');
+            }
+            throw accessErr;
+        }
+        let stat = fs.lstatSync(this._settings.startPath);
+        if (stat.isDirectory()) {
+            assert.ok(this.isSearchDir(this._settings.startPath),
+                'Startpath does not match search settings');
+        } else if (stat.isFile()) {
+            assert.ok(this.filterFile(this._settings.startPath),
+                'Startpath does not match search settings');
+        } else {
+            assert.ok(false, 'Startpath not readable file type');
+        }
         assert.ok(this._settings.searchPatterns.length, 'No search patterns defined');
-        assert.equal(this._settings.textFileEncoding, "utf-8", "Invalid encoding");
+        assert.ok(this._supportedEncodings.indexOf(this._settings.textFileEncoding) > -1,
+            'Invalid encoding');
+        assert.ok(this._settings.linesBefore > -1, 'Invalid linesbefore');
+        assert.ok(this._settings.linesAfter > -1, 'Invalid linesafter');
+        assert.ok(this._settings.maxLineLength > -1, 'Invalid maxlinelength');
     }
 
     private static matchesAnyElement(s: string, elements: string[]): boolean {
