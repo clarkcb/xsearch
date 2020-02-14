@@ -22,14 +22,15 @@ interface StringActionMap {
 export class SearchOptions {
     // the list of SearchOption objects (populated by setOptionsFromXml)
     options: SearchOption[];
+    argNameMap: {[index: string]:string};
     argMap: StringOptionMap;
     flagMap: StringOptionMap;
     argActionMap: StringActionMap;
     boolFlagActionMap: StringActionMap;
-    flagActionMap: StringActionMap;
 
     constructor() {
         this.options = [];
+        this.argNameMap = {};
         this.argMap = {};
         this.flagMap = {};
 
@@ -130,7 +131,7 @@ export class SearchOptions {
         this.setOptionsFromJsonFile();
     }
 
-    private optcmp(o1: SearchOption, o2: SearchOption) {
+    private static optcmp(o1: SearchOption, o2: SearchOption) {
         const a: string = o1.sortarg;
         const b: string = o2.sortarg;
         return a.localeCompare(b);
@@ -171,18 +172,18 @@ export class SearchOptions {
         this.options.sort(SearchOptions.optcmp);
     }
 
-    private settingsFromFile(filepath: string, settings: SearchSettings): Error {
+    private settingsFromFile(filepath: string, settings: SearchSettings): Error | undefined {
         const fs = require('fs');
         if (fs.existsSync(filepath)) {
-            let json: string = FileUtil.getFileContents(filepath);
+            let json: string = FileUtil.getFileContents(filepath, settings.textFileEncoding);
             return this.settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');
         }
     }
 
-    public settingsFromJson(json: string, settings: SearchSettings): Error {
-        let err: Error = null;
+    public settingsFromJson(json: string, settings: SearchSettings): Error | undefined {
+        let err: Error | undefined = undefined;
         let obj = JSON.parse(json);
         for (let k in obj) {
             if (err) break;
@@ -205,13 +206,13 @@ export class SearchOptions {
         return err;
     }
 
-    public settingsFromArgs(args: string[], cb) {
-        let err: Error = null;
+    public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: SearchSettings) => void) {
+        let err: Error | undefined = undefined;
         let settings: SearchSettings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
         while(args && !err) {
-            let arg: string = args.shift();
+            let arg: string = args.shift() || '';
             if (!arg) {
                 break;
             }
@@ -219,18 +220,17 @@ export class SearchOptions {
                 while (arg && arg.charAt(0) === '-') {
                     arg = arg.substring(1);
                 }
-                if (this.argMap[arg]) {
+                let longarg = this.argNameMap[arg];
+                if (this.argMap[longarg]) {
                     if (args.length > 0) {
-                        //this.argMap[arg].func(args.shift(), settings);
-                        err = this.argActionMap[arg](args.shift(), settings);
+                        err = this.argActionMap[longarg](args.shift(), settings);
                     } else {
-                        err = new Error("Missing argument for option "+arg);
+                        err = new Error("Missing argument for option " + arg);
                     }
-                } else if (this.flagMap[arg]) {
-                    //this.flagMap[arg].func(settings);
-                    this.boolFlagActionMap[arg](true, settings);
+                } else if (this.flagMap[longarg]) {
+                    this.boolFlagActionMap[longarg](true, settings);
                 } else {
-                    err = new Error("Invalid option: "+arg);
+                    err = new Error("Invalid option: " + arg);
                 }
             } else {
                 settings.startPath = arg;
