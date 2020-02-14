@@ -10,7 +10,7 @@ import {SearchFile} from './searchfile';
 
 export class SearchResult {
    pattern: RegExp;
-   filename: string;
+   file?: SearchFile;
    linenum: number;
    matchStartIndex: number;
    matchEndIndex: number;
@@ -19,11 +19,9 @@ export class SearchResult {
    linesAfter: string[];
    maxLineLength: number;
 
-    constructor(pattern: RegExp, filename: string, linenum: number,
-                matchStartIndex: number, matchEndIndex: number, line: string,
+    constructor(pattern: RegExp, linenum: number, matchStartIndex: number, matchEndIndex: number, line: string,
                 linesBefore: string[], linesAfter: string[]) {
         this.pattern = pattern;
-        this.filename = filename;
         this.linenum = linenum;
         this.matchStartIndex = matchStartIndex;
         this.matchEndIndex = matchEndIndex;
@@ -39,7 +37,7 @@ export class SearchResult {
     }
 
     private singleLineToString(): string {
-        let s = this.filename;
+        let s = this.file ? this.file.toString() : '<text>';
         if (this.linenum && this.line) {
             s += ': ' + this.linenum + ': [' + this.matchStartIndex + ':' +
                 this.matchEndIndex +']: ' + this.formatMatchingLine();
@@ -68,7 +66,8 @@ export class SearchResult {
     }
 
     private multiLineToString(): string {
-        let s: string = Array(81).join("=") + "\n" + `${this.filename}: ` +
+        const filename = this.file ? this.file.toString() : '<text>';
+        let s: string = Array(81).join("=") + "\n" + `${filename}: ` +
             `${this.linenum}: [${this.matchStartIndex}:${this.matchEndIndex}]` +
              "\n" + Array(81).join("-") + "\n";
         let currentLineNum: number = this.linenum;
