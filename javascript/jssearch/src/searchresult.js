@@ -4,95 +4,97 @@
  * SearchResult class represents a search result
  */
 
-function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
-    line, linesBefore, linesAfter) {
+class SearchResult {
     "use strict";
-    let self = this;
-    self.pattern = pattern;
-    // file is SearchFile instance
-    self.file = file;
-    self.linenum = linenum;
-    self.matchStartIndex = matchStartIndex;
-    self.matchEndIndex = matchEndIndex;
-    self.line = line;
-    self.linesBefore = linesBefore;
-    self.linesAfter = linesAfter;
-    self.maxLineLength = 150;
 
-    self.toString = () => {
-        return self.linesBefore.length + self.linesAfter.length > 0 ?
-            multiLineToString() : singleLineToString();
-    };
+    constructor(pattern, file, linenum, matchStartIndex, matchEndIndex, line, linesBefore, linesAfter) {
+        this.pattern = pattern;
+        // file is SearchFile instance
+        this.file = file;
+        this.linenum = linenum;
+        this.matchStartIndex = matchStartIndex;
+        this.matchEndIndex = matchEndIndex;
+        this.line = line;
+        this.linesBefore = linesBefore;
+        this.linesAfter = linesAfter;
+        this.maxLineLength = 150;
+    }
 
-    const singleLineToString = () => {
-        let s = self.file.toString();
-        if (self.linenum && self.line) {
-            s += `: ${self.linenum}: [${self.matchStartIndex}:` +
-                `${self.matchEndIndex}]: ` + formatMatchingLine();
+    toString() {
+        return this.linesBefore.length + this.linesAfter.length > 0 ?
+            this.multiLineToString() : this.singleLineToString();
+    }
+
+    singleLineToString() {
+        let s = this.file ? this.file.toString() : '<text>';
+        if (this.linenum && this.line) {
+            s += `: ${this.linenum}: [${this.matchStartIndex}:` +
+                `${this.matchEndIndex}]: ` + this.formatMatchingLine();
         } else {
-            s += ` matches at [${self.matchStartIndex}:${self.matchEndIndex}]`;
+            s += ` matches at [${this.matchStartIndex}:${this.matchEndIndex}]`;
         }
         return s;
-    };
+    }
 
-    const lineNumPadding = () => {
-        let maxLineNum = self.linenum + self.linesAfter.length;
+    lineNumPadding() {
+        let maxLineNum = this.linenum + this.linesAfter.length;
         return ("" + maxLineNum).length;
-    };
+    }
 
-    const padLeft = (s, i) => {
+    padLeft(s, i) {
         let p = "" + s;
         while (p.length < i) {
             p = ' '.concat(p);
         }
         return p;
-    };
+    }
 
-    const trimRight = (s) => {
+    trimRight(s) {
         return s.replace(/[\r\n]+$/, '');
-    };
+    }
 
-    const multiLineToString = () => {
-        let s = new Array(81).join("=") + "\n" + `${self.file}: ` +
-            `${self.linenum}: [${self.matchStartIndex}:${self.matchEndIndex}]` +
+    multiLineToString() {
+        const filename = this.file ? this.file.toString() : '<text>';
+        let s = new Array(81).join("=") + "\n" + `${filename}: ` +
+            `${this.linenum}: [${this.matchStartIndex}:${this.matchEndIndex}]` +
             "\n" + new Array(81).join("-") + "\n";
-        let currentLineNum = self.linenum;
-        let numPadding = lineNumPadding();
-        if (self.linesBefore.length > 0) {
-            currentLineNum = currentLineNum - self.linesBefore.length;
-            self.linesBefore.forEach(lineBefore => {
-                let b = trimRight(lineBefore);
-                s += "  " + padLeft(currentLineNum, numPadding) + " | " + b + "\n";
+        let currentLineNum = this.linenum;
+        let numPadding = this.lineNumPadding();
+        if (this.linesBefore.length > 0) {
+            currentLineNum = currentLineNum - this.linesBefore.length;
+            this.linesBefore.forEach(lineBefore => {
+                let b = this.trimRight(lineBefore);
+                s += "  " + this.padLeft(currentLineNum, numPadding) + " | " + b + "\n";
                 currentLineNum++;
             });
         }
-        s += "> " + padLeft(currentLineNum, numPadding) + " | " +
-            trimRight(self.line) + "\n";
-        if (self.linesAfter.length > 0) {
+        s += "> " + this.padLeft(currentLineNum, numPadding) + " | " +
+            this.trimRight(this.line) + "\n";
+        if (this.linesAfter.length > 0) {
             currentLineNum++;
-            self.linesAfter.forEach(lineAfter => {
-                let a = trimRight(lineAfter);
-                s += "  " + padLeft(currentLineNum, numPadding) + " | " + a + "\n";
+            this.linesAfter.forEach(lineAfter => {
+                let a = this.trimRight(lineAfter);
+                s += "  " + this.padLeft(currentLineNum, numPadding) + " | " + a + "\n";
                 currentLineNum++;
             });
         }
         return s;
     };
 
-    const formatMatchingLine = () => {
-        let formatted = self.line.trim().slice(0);
-        let lineLength = self.line.length;
-        let matchLength = self.matchEndIndex - self.matchStartIndex;
-        if (lineLength > self.maxLineLength) {
-            let adjustedMaxLength = self.maxLineLength - matchLength;
-            let beforeIndex = self.matchStartIndex;
-            if (self.matchStartIndex > 0) {
+    formatMatchingLine() {
+        let formatted = this.line.trim().slice(0);
+        let lineLength = this.line.length;
+        let matchLength = this.matchEndIndex - this.matchStartIndex;
+        if (lineLength > this.maxLineLength) {
+            let adjustedMaxLength = this.maxLineLength - matchLength;
+            let beforeIndex = this.matchStartIndex;
+            if (this.matchStartIndex > 0) {
                 beforeIndex = beforeIndex - (adjustedMaxLength / 4);
                 if (beforeIndex < 0)
                     beforeIndex = 0;
             }
-            adjustedMaxLength = adjustedMaxLength - (self.matchStartIndex - beforeIndex);
-            let afterIndex = self.matchEndIndex + adjustedMaxLength;
+            adjustedMaxLength = adjustedMaxLength - (this.matchStartIndex - beforeIndex);
+            let afterIndex = this.matchEndIndex + adjustedMaxLength;
             if (afterIndex > lineLength)
                 afterIndex = lineLength;
 
@@ -106,7 +108,7 @@ function SearchResult(pattern, file, linenum, matchStartIndex, matchEndIndex,
                 after = '...';
                 afterIndex -= 3;
             }
-            formatted = before + self.line.substring(beforeIndex, afterIndex) + after;
+            formatted = before + this.line.substring(beforeIndex, afterIndex) + after;
         }
         return formatted;
     };

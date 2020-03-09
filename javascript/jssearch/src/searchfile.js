@@ -6,29 +6,31 @@
 
 const path = require('path');
 
-function SearchFile(pathname, filename, filetype) {
+class SearchFile {
     "use strict";
-    let self = this;
-    self.containerSeparator = '!';
-    self.containers = [];
-    self.pathname = pathname;
-    self.filename = filename;
-    self.filetype = filetype;
 
-    self.relativePath = () => {
-        if (self.pathname === '.' || self.pathname === './') return './' + self.filename;
-        return path.join(self.pathname, self.filename);
-    };
+    constructor(pathname, filename, filetype) {
+        this.containerSeparator = '!';
+        this.containers = [];
+        this.pathname = pathname;
+        this.filename = filename;
+        this.filetype = filetype;
+    }
 
-    self.toString = () => {
+    relativePath() {
+        if (this.pathname === '.' || this.pathname === './') return './' + this.filename;
+        return path.join(this.pathname, this.filename);
+    }
+
+    toString() {
         let s = '';
-        if (self.containers.length > 0) {
-            s = self.containers.join(self.containerSeparator) + self.containerSeparator;
+        if (this.containers.length > 0) {
+            s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }
-        s += self.relativePath();
+        s += this.relativePath();
 
         return s;
-    };
+    }
 }
 
 exports.SearchFile = SearchFile;

@@ -4,19 +4,21 @@
  * encapsulates a search option
  */
 
-function SearchOption(shortarg, longarg, desc, func) {
+class SearchOption {
     "use strict";
-    let self = this;
-    self.shortarg = shortarg;
-    self.longarg = longarg;
-    self.desc = desc;
-    self.func = func;
 
-    self.sortarg = (() => {
-        if (self.shortarg)
-            return self.shortarg.toLowerCase() + 'a' + self.longarg.toLowerCase();
-        return self.longarg.toLowerCase();
-    })();
+    constructor(shortarg, longarg, desc, func) {
+        this.shortarg = shortarg;
+        this.longarg = longarg;
+        this.desc = desc;
+        this.func = func;
+
+        this.sortarg = (() => {
+            if (this.shortarg)
+                return this.shortarg.toLowerCase() + 'a' + this.longarg.toLowerCase();
+            return this.longarg.toLowerCase();
+        })();
+    }
 }
 
 exports.SearchOption = SearchOption;

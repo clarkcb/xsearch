@@ -15,62 +15,68 @@ const FileUtil = require('./fileutil.js').FileUtil;
 const SearchFile = require('./searchfile.js').SearchFile;
 const SearchResult = require('./searchresult.js').SearchResult;
 
-function Searcher(settings) {
+class Searcher {
     "use strict";
-    let self = this;
-    const _settings = settings;
-    const _binaryEncoding = "latin1";
-    // from https://github.com/nodejs/node/blob/master/lib/buffer.js
-    const _supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
-        'binary', 'base64', 'hex'];
-    const _filetypes = new FileTypes();
-    self.results = [];
 
-    const validateSettings = () => {
-        assert.ok(_settings.startPath, 'Startpath not defined');
-        assert.ok(fs.existsSync(_settings.startPath), 'Startpath not found');
+    constructor(settings) {
+        this.settings = settings;
+        this.binaryEncoding = 'latin1';
+        // from https://github.com/nodejs/node/blob/master/lib/buffer.js
+        this.supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
+            'binary', 'base64', 'hex'];
+        this.filetypes = new FileTypes();
+        this.results = [];
+
+        this.validateSettings();
+    }
+
+    validateSettings() {
+        assert.ok(this.settings.startPath, 'Startpath not defined');
+        assert.ok(fs.existsSync(this.settings.startPath), 'Startpath not found');
         try {
-            fs.accessSync(_settings.startPath, fs.constants.R_OK);
+            fs.accessSync(this.settings.startPath, fs.constants.R_OK);
         } catch (accessErr) {
-            if (accessErr.code === "EACCES") {
+            if (accessErr.code === 'EACCES') {
                 assert.ok(false, 'Startpath not readable');
             }
             throw accessErr;
         }
-        let stat = fs.lstatSync(_settings.startPath);
+        let stat = fs.lstatSync(this.settings.startPath);
         if (stat.isDirectory()) {
-            assert.ok(self.isSearchDir(_settings.startPath),
+            assert.ok(this.isSearchDir(this.settings.startPath),
                 'Startpath does not match search settings');
         } else if (stat.isFile()) {
-            assert.ok(self.filterFile(_settings.startPath),
+            assert.ok(this.filterFile(this.settings.startPath),
                 'Startpath does not match search settings');
         } else {
             assert.ok(false, 'Startpath not readable file type');
         }
-        assert.ok(_settings.searchPatterns.length, 'No search patterns defined');
-        assert.ok(_supportedEncodings.indexOf(_settings.textFileEncoding) > -1,
-            "Invalid encoding");
-        assert.ok(_settings.linesBefore > -1, "Invalid linesbefore");
-        assert.ok(_settings.linesAfter > -1, "Invalid linesafter");
-        assert.ok(_settings.maxLineLength > -1, "Invalid maxlinelength");
-    };
+        assert.ok(this.settings.searchPatterns.length, 'No search patterns defined');
+        assert.ok(this.supportedEncodings.indexOf(this.settings.textFileEncoding) > -1,
+            'Invalid encoding');
+        assert.ok(this.settings.linesBefore > -1, 'Invalid linesbefore');
+        assert.ok(this.settings.linesAfter > -1, 'Invalid linesafter');
+        assert.ok(this.settings.maxLineLength > -1, 'Invalid maxlinelength');
+    }
 
-    const matchesAnyElement = (s, elements) => elements.indexOf(s) > -1;
+    matchesAnyElement(s, elements) {
+        return elements.indexOf(s) > -1;
+    }
 
-    const matchesAnyPattern = (s, patterns) => {
+    matchesAnyPattern(s, patterns) {
         return patterns.some((p, i, arr) => s.search(p) > -1);
-    };
+    }
 
-    const anyMatchesAnyPattern = (ss, patterns) => {
-        return ss.some((s, i, arr) =>matchesAnyPattern(s, patterns));
-    };
+    anyMatchesAnyPattern(ss, patterns) {
+        return ss.some((s, i, arr) => this.matchesAnyPattern(s, patterns));
+    }
 
-    self.isSearchDir = (dir) => {
+    isSearchDir(dir) {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
-        if (_settings.excludeHidden) {
-            let nonDotElems = dir.split(path.sep).filter(p => !matchesAnyElement(p, ['.','..']));
+        if (this.settings.excludeHidden) {
+            let nonDotElems = dir.split(path.sep).filter(p => !this.matchesAnyElement(p, ['.','..']));
             if (nonDotElems.length === 0) {
                 return true;
             }
@@ -78,131 +84,114 @@ function Searcher(settings) {
                 return false;
             }
         }
-        if (_settings.inDirPatterns.length && !matchesAnyPattern(dir,
-            _settings.inDirPatterns)) {
+        if (this.settings.inDirPatterns.length && !this.matchesAnyPattern(dir,
+            this.settings.inDirPatterns)) {
             return false;
         }
-        return !(_settings.outDirPatterns.length && matchesAnyPattern(dir,
-            _settings.outDirPatterns));
-    };
-    // can validate now that isSearchDir is defined
-    validateSettings();
+        return !(this.settings.outDirPatterns.length && this.matchesAnyPattern(dir,
+            this.settings.outDirPatterns));
+    }
 
-    self.isSearchFile = (file) => {
-        if (FileUtil.isHidden(file) && _settings.excludeHidden) {
+    isSearchFile(file) {
+        if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
             return false;
         }
         let ext = FileUtil.getExtension(file);
-        if ((_settings.inExtensions.length &&
-            !matchesAnyElement(ext, _settings.inExtensions))
-            || (_settings.outExtensions.length &&
-                matchesAnyElement(ext, _settings.outExtensions))
-            || (_settings.inFilePatterns.length &&
-                !matchesAnyPattern(file, _settings.inFilePatterns))
-            || (_settings.outFilePatterns.length &&
-                matchesAnyPattern(file, _settings.outFilePatterns))) {
+        if ((this.settings.inExtensions.length &&
+            !this.matchesAnyElement(ext, this.settings.inExtensions))
+            || (this.settings.outExtensions.length &&
+                this.matchesAnyElement(ext, this.settings.outExtensions))
+            || (this.settings.inFilePatterns.length &&
+                !this.matchesAnyPattern(file, this.settings.inFilePatterns))
+            || (this.settings.outFilePatterns.length &&
+                this.matchesAnyPattern(file, this.settings.outFilePatterns))) {
             return false;
         }
-        let filetype = _filetypes.getFileType(file);
-        return !((_settings.inFileTypes.length &&
-            !matchesAnyElement(filetype, _settings.inFileTypes))
-            || (_settings.outFileTypes.length &&
-                matchesAnyElement(filetype, _settings.outFileTypes)));
-    };
+        let filetype = this.filetypes.getFileType(file);
+        return !((this.settings.inFileTypes.length &&
+            !this.matchesAnyElement(filetype, this.settings.inFileTypes))
+            || (this.settings.outFileTypes.length &&
+                this.matchesAnyElement(filetype, this.settings.outFileTypes)));
+    }
 
-    self.isArchiveSearchFile = (file) => {
-        if (FileUtil.isHidden(file) && _settings.excludeHidden) {
+    isArchiveSearchFile(file) {
+        if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
             return false;
         }
         let ext = FileUtil.getExtension(file);
-        if (_settings.inArchiveExtensions.length &&
-            !matchesAnyElement(ext, _settings.inArchiveExtensions)) {
+        if (this.settings.inArchiveExtensions.length &&
+            !this.matchesAnyElement(ext, this.settings.inArchiveExtensions)) {
             return false;
         }
-        if (_settings.outArchiveExtensions.length &&
-            matchesAnyElement(ext, _settings.outArchiveExtensions)) {
+        if (this.settings.outArchiveExtensions.length &&
+            this.matchesAnyElement(ext, this.settings.outArchiveExtensions)) {
             return false;
         }
-        if (_settings.inArchiveFilePatterns.length &&
-            !matchesAnyPattern(file, _settings.inArchiveFilePatterns)) {
+        if (this.settings.inArchiveFilePatterns.length &&
+            !this.matchesAnyPattern(file, this.settings.inArchiveFilePatterns)) {
             return false;
         }
-        return !(_settings.outArchiveFilePatterns.length &&
-        matchesAnyPattern(file, _settings.outArchiveFilePatterns));
-    };
+        return !(this.settings.outArchiveFilePatterns.length &&
+            this.matchesAnyPattern(file, this.settings.outArchiveFilePatterns));
+    }
 
-    const getSearchFiles = (startPath) => {
+    getSearchFiles(startPath) {
         let searchFiles = [];
         let stats = fs.statSync(startPath);
         if (stats.isDirectory()) {
-            if (self.isSearchDir(startPath)) {
-                if (_settings.recursive) {
-                    [].push.apply(searchFiles, recGetSearchFiles(startPath));
-                } else {
-                    fs.readdirSync(startPath).map(f => {
-                        return path.join(startPath, f);
-                    }).forEach(f => {
-                        let stats = fs.statSync(f);
-                        if (stats.isFile() && self.filterFile(f)) {
-                            const filename = path.basename(startPath);
-                            const filetype = _filetypes.getFileType(filename);
-                            const sf = new SearchFile(d, filename, filetype);
-                            searchFiles.push(sf);
-                        }
-                    });
-                }
+            if (this.isSearchDir(startPath)) {
+                searchFiles = searchFiles.concat(this.recGetSearchFiles(startPath));
             } else {
                 common.log("Warning: startPath does not match search criteria");
             }
         } else if (stats.isFile()) {
-            let d = path.dirname(startPath);
-            if (!d) d = ".";
-            if (self.isSearchDir(d) && self.filterFile(startPath)) {
+            const dirname = path.dirname(startPath) || '.';
+            if (this.isSearchDir(dirname) && this.filterFile(startPath)) {
                 const filename = path.basename(startPath);
-                const filetype = _filetypes.getFileType(filename);
-                const sf = new SearchFile(d, filename, filetype);
+                const filetype = this.filetypes.getFileType(filename);
+                const sf = new SearchFile(dirname, filename, filetype);
                 searchFiles.push(sf);
             } else {
                 common.log("Warning: startPath does not match search criteria");
             }
         }
         return searchFiles;
-    };
+    }
 
-    const recGetSearchFiles = (currentDir) => {
+    recGetSearchFiles(currentDir) {
         let searchDirs = [];
         let searchFiles = [];
         fs.readdirSync(currentDir).map(f => {
             return path.join(currentDir, f);
         }).forEach(f => {
             let stats = fs.statSync(f);
-            if (stats.isDirectory() && self.isSearchDir(f)) {
+            if (stats.isDirectory() && this.settings.recursive && this.isSearchDir(f)) {
                 searchDirs.push(f);
-            } else if (stats.isFile() && self.filterFile(f)) {
-                const pathname = path.dirname(f);
+            } else if (stats.isFile() && this.filterFile(f)) {
+                const dirname = path.dirname(f) || '.';
                 const filename = path.basename(f);
-                const filetype = _filetypes.getFileType(filename);
-                const sf = new SearchFile(pathname, filename, filetype);
+                const filetype = this.filetypes.getFileType(filename);
+                const sf = new SearchFile(dirname, filename, filetype);
                 searchFiles.push(sf);
             }
         });
         searchDirs.forEach(d => {
-            [].push.apply(searchFiles, recGetSearchFiles(d));
+            [].push.apply(searchFiles, this.recGetSearchFiles(d));
         });
         return searchFiles;
-    };
+    }
 
-    self.filterFile = (f) => {
-        if (_filetypes.isArchiveFile(f)) {
-            return (_settings.searchArchives && self.isArchiveSearchFile(f));
+    filterFile(f) {
+        if (this.filetypes.isArchiveFile(f)) {
+            return (this.settings.searchArchives && this.isArchiveSearchFile(f));
         }
-        return (!_settings.archivesOnly && self.isSearchFile(f));
-    };
+        return (!this.settings.archivesOnly && this.isSearchFile(f));
+    }
 
-    self.search = () => {
+    search() {
         // get the search files
-        let searchfiles = getSearchFiles(_settings.startPath);
-        if (_settings.verbose) {
+        let searchfiles = this.getSearchFiles(this.settings.startPath);
+        if (this.settings.verbose) {
             let dirs = searchfiles.map(sf => sf.pathname);
             dirs = common.setFromArray(dirs);
             dirs.sort();
@@ -215,44 +204,44 @@ function Searcher(settings) {
         }
 
         // search the files
-        searchfiles.forEach(f => searchFile(f));
+        searchfiles.forEach(f => this.searchFile(f));
 
-        if (_settings.verbose) {
+        if (this.settings.verbose) {
             common.log("Search complete.");
         }
-    };
+    }
 
-    const searchFile = (searchfile) => {
+    searchFile(searchfile) {
         switch (searchfile.filetype) {
             case FileType.CODE:
             case FileType.TEXT:
             case FileType.XML:
-                searchTextFile(searchfile);
+                this.searchTextFile(searchfile);
                 break;
             case FileType.BINARY:
-                searchBinaryFile(searchfile);
+                this.searchBinaryFile(searchfile);
                 break;
             default:
                 // TODO: add message about unsupported filetype
                 break;
         }
-    };
+    }
 
-    const searchBinaryFile = (searchfile) => {
-        if (_settings.verbose) {
+    searchBinaryFile(searchfile) {
+        if (this.settings.verbose) {
             common.log(`Searching binary file: "${searchfile}"`);
         }
-        let contents = FileUtil.getFileContents(searchfile.relativePath(), _binaryEncoding);
+        let contents = FileUtil.getFileContents(searchfile.relativePath(), this.binaryEncoding);
         let pattern = '';
         let patternResults = {};
-        _settings.searchPatterns.forEach(p => {
+        this.settings.searchPatterns.forEach(p => {
             pattern = new RegExp(p.source, "g");
-            if (_settings.firstMatch && (pattern.source in patternResults)) {
+            if (this.settings.firstMatch && (pattern.source in patternResults)) {
                 return;
             }
             let match = pattern.exec(contents);
             while (match) {
-                addSearchResult(new SearchResult(
+                this.addSearchResult(new SearchResult(
                     pattern,
                     searchfile,
                     0,
@@ -261,39 +250,39 @@ function Searcher(settings) {
                     null,
                     [],
                     []));
-                if (_settings.firstMatch) {
+                if (this.settings.firstMatch) {
                     patternResults[pattern.source] = 1;
                     break;
                 }
                 match = pattern.exec(contents);
             }
         });
-    };
+    }
 
-    const searchTextFile = (searchfile) => {
-        if (_settings.verbose) {
+    searchTextFile(searchfile) {
+        if (this.settings.verbose) {
             common.log(`Searching text file ${searchfile}`);
         }
-        if (_settings.multilineSearch) {
-            searchTextFileContents(searchfile);
+        if (this.settings.multilineSearch) {
+            this.searchTextFileContents(searchfile);
         } else {
-            searchTextFileLines(searchfile);
+            this.searchTextFileLines(searchfile);
         }
-    };
+    }
 
-    const searchTextFileContents = (searchfile) => {
-        let contents = FileUtil.getFileContents(searchfile.relativePath(), _settings.textFileEncoding);
-        let results = self.searchMultiLineString(contents);
+    searchTextFileContents(searchfile) {
+        let contents = FileUtil.getFileContents(searchfile.relativePath(), this.settings.textFileEncoding);
+        let results = this.searchMultiLineString(contents);
         results.forEach(r => {
             let resultWithFilepath =
                 new SearchResult(r.pattern, searchfile, r.linenum,
                     r.matchStartIndex, r.matchEndIndex, r.line,
                     r.linesBefore, r.linesAfter);
-            addSearchResult(resultWithFilepath);
+            this.addSearchResult(resultWithFilepath);
         });
-    };
+    }
 
-    const getNewLineIndices = (s) => {
+    getNewLineIndices(s) {
         let indices = [];
         for (let i = 0; i < s.length; i++) {
             if (s.charAt(i) === "\n") {
@@ -301,9 +290,9 @@ function Searcher(settings) {
             }
         }
         return indices;
-    };
+    }
 
-    const getLinesAtIndices = (s, atIndices, startLineIndices, endLineIndices) => {
+    getLinesAtIndices(s, atIndices, startLineIndices, endLineIndices) {
         if (atIndices.length === 0)
             return [];
         let lines = [];
@@ -312,41 +301,47 @@ function Searcher(settings) {
             lines.push(line);
         });
         return lines;
-    };
+    }
 
-    const getLinesBefore = (s, beforeStartIndices, startLineIndices, endLineIndices) => {
-        return getLinesAtIndices(s, beforeStartIndices, startLineIndices, endLineIndices);
-    };
+    getLinesBefore(s, beforeStartIndices, startLineIndices, endLineIndices) {
+        return this.getLinesAtIndices(s, beforeStartIndices, startLineIndices, endLineIndices);
+    }
 
-    const getLinesAfter = (s, afterStartIndices, startLineIndices, endLineIndices) => {
-        return getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
-    };
+    getLinesAfter(s, afterStartIndices, startLineIndices, endLineIndices) {
+        return this.getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
+    }
 
-    const getLessThanOrEqual = matchVal => (i) => { return i <= matchVal; };
+    getLessThanOrEqual(matchVal) {
+        return (i) => { return i <= matchVal; };
+    }
 
-    const getGreaterThan = matchVal => (i) => { return i > matchVal; };
+    getGreaterThan(matchVal) {
+        return (i) => { return i > matchVal; };
+    }
 
-    const plusOne = i => i + 1;
+    plusOne(i) {
+        return i + 1;
+    }
 
-    self.searchMultiLineString = (s) => {
+    searchMultiLineString(s) {
         let patternResults = {};
         let linesBefore = [];
         let linesAfter = [];
         let results = [];
-        let newLineIndices = getNewLineIndices(s);
-        let startLineIndices = [0].concat(newLineIndices.map(plusOne));
+        let newLineIndices = this.getNewLineIndices(s);
+        let startLineIndices = [0].concat(newLineIndices.map(this.plusOne));
         let endLineIndices = newLineIndices.concat([s.length - 1]);
-        _settings.searchPatterns.forEach(p => {
+        this.settings.searchPatterns.forEach(p => {
             let pattern = new RegExp(p.source, "g");
             let match = pattern.exec(s);
             let stop = false;
             while (match && !stop) {
-                if (_settings.firstMatch && pattern.source in patternResults) {
+                if (this.settings.firstMatch && pattern.source in patternResults) {
                     stop = true;
                     continue;
                 }
-                let lessOrEqual = getLessThanOrEqual(match.index);
-                let greaterThan = getGreaterThan(match.index);
+                let lessOrEqual = this.getLessThanOrEqual(match.index);
+                let greaterThan = this.getGreaterThan(match.index);
                 let lineStartIndex = 0;
                 let lineEndIndex = s.length - 1;
                 let beforeLineCount = 0;
@@ -354,30 +349,30 @@ function Searcher(settings) {
                 if (beforeStartIndices.length > 0) {
                     lineStartIndex = beforeStartIndices.pop();
                     beforeLineCount = beforeStartIndices.length;
-                    if (beforeStartIndices.length > _settings.linesBefore) {
+                    if (beforeStartIndices.length > this.settings.linesBefore) {
                         beforeStartIndices = beforeStartIndices.slice(
-                            beforeStartIndices.length - _settings.linesBefore);
+                            beforeStartIndices.length - this.settings.linesBefore);
                     }
                 }
                 lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
                 let line = s.substring(lineStartIndex, lineEndIndex);
-                if (_settings.linesBefore && beforeLineCount) {
-                    linesBefore = getLinesBefore(s, beforeStartIndices,
+                if (this.settings.linesBefore && beforeLineCount) {
+                    linesBefore = this.getLinesBefore(s, beforeStartIndices,
                         startLineIndices, endLineIndices);
                 }
-                if (_settings.linesAfter) {
+                if (this.settings.linesAfter) {
                     let afterStartIndices = startLineIndices.filter(greaterThan);
-                    if (afterStartIndices.length > _settings.linesAfter) {
+                    if (afterStartIndices.length > this.settings.linesAfter) {
                         afterStartIndices = afterStartIndices.slice(0,
-                            _settings.linesAfter);
+                            this.settings.linesAfter);
                     }
-                    linesAfter = getLinesAfter(s, afterStartIndices,
+                    linesAfter = this.getLinesAfter(s, afterStartIndices,
                         startLineIndices, endLineIndices);
                 }
                 let matchStartIndex = match.index - lineStartIndex + 1;
                 let matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
-                if ((_settings.linesBefore === 0 || linesBeforeMatch(linesBefore)) &&
-                    (_settings.linesAfter === 0 || linesAfterMatch(linesAfter))) {
+                if ((this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
+                    (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
                     let searchResult = new SearchResult(
                         pattern,
                         '',
@@ -396,37 +391,37 @@ function Searcher(settings) {
             }
         });
         return results;
-    };
+    }
 
-    const linesMatch = (lines, inPatterns, outPatterns) => {
-        return ((inPatterns.length === 0 || anyMatchesAnyPattern(lines, inPatterns)) &&
-               (outPatterns.length === 0 || ! anyMatchesAnyPattern(lines, outPatterns)));
-    };
+    linesMatch(lines, inPatterns, outPatterns) {
+        return ((inPatterns.length === 0 || this.anyMatchesAnyPattern(lines, inPatterns)) &&
+            (outPatterns.length === 0 || ! this.anyMatchesAnyPattern(lines, outPatterns)));
+    }
 
-    const linesBeforeMatch = (linesBefore) => {
-        return linesMatch(linesBefore, _settings.inLinesBeforePatterns,
-            _settings.outLinesBeforePatterns);
-    };
+    linesBeforeMatch(linesBefore) {
+        return this.linesMatch(linesBefore, this.settings.inLinesBeforePatterns,
+            this.settings.outLinesBeforePatterns);
+    }
 
-    const linesAfterMatch = (linesAfter) => {
-        return linesMatch(linesAfter, _settings.inLinesAfterPatterns,
-            _settings.outLinesAfterPatterns);
-    };
+    linesAfterMatch(linesAfter) {
+        return this.linesMatch(linesAfter, this.settings.inLinesAfterPatterns,
+            this.settings.outLinesAfterPatterns);
+    }
 
-    const searchTextFileLines = (searchfile) => {
-        let lines = FileUtil.getFileLines(searchfile.relativePath(), _settings.textFileEncoding);
-        let results = self.searchLines(lines);
+    searchTextFileLines(searchfile) {
+        let lines = FileUtil.getFileLines(searchfile.relativePath(), this.settings.textFileEncoding);
+        let results = this.searchLines(lines);
         results.forEach(r => {
             let resultWithFilepath =
                 new SearchResult(r.pattern, searchfile, r.linenum,
                     r.matchStartIndex, r.matchEndIndex, r.line,
                     r.linesBefore, r.linesAfter);
-            addSearchResult(resultWithFilepath);
+            this.addSearchResult(resultWithFilepath);
         });
-    };
+    }
 
     // return results so that filepath can be added to them
-    self.searchLines = (lines) => {
+    searchLines(lines) {
         let linenum = 0;
         let pattern;
         let linesBefore = [];
@@ -434,7 +429,7 @@ function Searcher(settings) {
         let results = [];
         let patternResults = {};
         while (true) {
-            if (Object.keys(patternResults).length === _settings.searchPatterns.length) {
+            if (Object.keys(patternResults).length === this.settings.searchPatterns.length) {
                 break;
             }
             let line = "";
@@ -446,17 +441,17 @@ function Searcher(settings) {
                 break;
             }
             linenum += 1;
-            if (_settings.linesAfter > 0) {
-                while (linesAfter.length < _settings.linesAfter && lines.length > 0) {
+            if (this.settings.linesAfter > 0) {
+                while (linesAfter.length < this.settings.linesAfter && lines.length > 0) {
                     linesAfter.push(lines.shift());
                 }
             }
-            _settings.searchPatterns.forEach(p => {
+            this.settings.searchPatterns.forEach(p => {
                 pattern = new RegExp(p.source, "g");
                 let match = pattern.exec(line);
                 while (match) {
-                    if ((_settings.linesBefore === 0 || linesBeforeMatch(linesBefore)) &&
-                        (_settings.linesAfter === 0 || linesAfterMatch(linesAfter))) {
+                    if ((this.settings.linesBefore === 0 || linesBeforeMatch(linesBefore)) &&
+                        (this.settings.linesAfter === 0 || linesAfterMatch(linesAfter))) {
                         results.push(new SearchResult(
                             pattern,
                             '',
@@ -466,7 +461,7 @@ function Searcher(settings) {
                             line,
                             [].concat(linesBefore),
                             [].concat(linesAfter)));
-                        if (_settings.firstMatch) {
+                        if (this.settings.firstMatch) {
                             patternResults[pattern.source] = 1;
                             break;
                         }
@@ -474,21 +469,21 @@ function Searcher(settings) {
                     match = pattern.exec(line);
                 }
             });
-            if (_settings.linesBefore > 0) {
-                if (linesBefore.length === _settings.linesBefore)
+            if (this.settings.linesBefore > 0) {
+                if (linesBefore.length === this.settings.linesBefore)
                     linesBefore.shift();
-                if (linesBefore.length < _settings.linesBefore)
+                if (linesBefore.length < this.settings.linesBefore)
                     linesBefore.push(line);
             }
         }
         return results;
-    };
+    }
 
-    const addSearchResult = (result) => {
-        self.results.push(result);
-    };
+    addSearchResult(result) {
+        this.results.push(result);
+    }
 
-    const cmpSearchResults = (r1, r2) => {
+    cmpSearchResults(r1, r2) {
         const pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
         if (pathCmp === 0) {
             const fileCmp = path.basename(r1.file.filename).localeCompare(path.basename(r2.file.filename));
@@ -501,40 +496,40 @@ function Searcher(settings) {
             return fileCmp;
         }
         return pathCmp;
-    };
+    }
 
-    self.printSearchResults = () => {
+    printSearchResults() {
         // first sort the results
-        self.results.sort(cmpSearchResults);
-        common.log("\nSearch results " + `(${self.results.length}):`);
-        self.results.forEach(r => common.log(r.toString()));
-    };
+        this.results.sort(this.cmpSearchResults);
+        common.log("\nSearch results " + `(${this.results.length}):`);
+        this.results.forEach(r => common.log(r.toString()));
+    }
 
-    self.getMatchingDirs = () => {
-        const dirs = self.results.map(r => path.dirname(r.filename));
+    getMatchingDirs() {
+        const dirs = this.results.map(r => path.dirname(r.filename));
         return common.setFromArray(dirs);
-    };
+    }
 
-    self.printMatchingDirs = () => {
-        const dirs = self.getMatchingDirs();
+    printMatchingDirs() {
+        const dirs = this.getMatchingDirs();
         common.log("\nDirectories with matches " + `(${dirs.length}):`);
         dirs.forEach(d => common.log(d));
-    };
+    }
 
-    self.getMatchingFiles = () => {
-        const files = self.results.map(r => r.filename);
+    getMatchingFiles() {
+        const files = this.results.map(r => r.filename);
         return common.setFromArray(files);
-    };
+    }
 
-    self.printMatchingFiles = () => {
-        const files = self.getMatchingFiles();
+    printMatchingFiles() {
+        const files = this.getMatchingFiles();
         common.log("\nFiles with matches " + `(${files.length}):`);
         files.forEach(f => common.log(f));
-    };
+    }
 
-    self.getMatchingLines = () => {
-        let lines = self.results.filter(r => r.linenum > 0).map(r => r.line.trim());
-        if (_settings.uniqueLines) {
+    getMatchingLines() {
+        let lines = this.results.filter(r => r.linenum > 0).map(r => r.line.trim());
+        if (this.settings.uniqueLines) {
             lines = common.setFromArray(lines);
         }
         lines.sort((a, b) => {
@@ -543,18 +538,18 @@ function Searcher(settings) {
             return a.toUpperCase() < b.toUpperCase() ? -1 : 1;
         });
         return lines;
-    };
+    }
 
-    self.printMatchingLines = () => {
-        const lines = self.getMatchingLines();
+    printMatchingLines() {
+        const lines = this.getMatchingLines();
         let hdrText;
-        if (_settings.uniqueLines)
+        if (this.settings.uniqueLines)
             hdrText = "\nUnique lines with matches " + `(${lines.length}):`;
         else
             hdrText = "\nLines with matches " + `(${lines.length}):`;
         common.log(hdrText);
         lines.forEach(l => common.log(l));
-    };
+    }
 }
 
 exports.Searcher = Searcher;
