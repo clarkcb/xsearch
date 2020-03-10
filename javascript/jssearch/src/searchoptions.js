@@ -4,10 +4,10 @@
  * defines the set of search options and provides functionality to define search settings from them
  */
 
-const config = require('./config.js');
-const FileUtil = require('./fileutil.js').FileUtil;
-const SearchOption = require('./searchoption.js').SearchOption;
-const SearchSettings = require('./searchsettings.js').SearchSettings;
+const config = require('./config');
+const FileUtil = require('./fileutil').FileUtil;
+const SearchOption = require('./searchoption').SearchOption;
+const SearchSettings = require('./searchsettings').SearchSettings;
 
 class SearchOptions {
     "use strict";

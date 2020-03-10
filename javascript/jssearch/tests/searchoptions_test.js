@@ -4,8 +4,8 @@
  * Some nodeunit tests of searchoptions.js
  */
 
-const SearchOptions = require('../src/searchoptions.js').SearchOptions;
-const SearchSettings = require('../src/searchsettings.js').SearchSettings;
+const SearchOptions = require('../src/searchoptions').SearchOptions;
+const SearchSettings = require('../src/searchsettings').SearchSettings;
 
 exports.testNoArgs = (test) => {
     const searchOptions = new SearchOptions();

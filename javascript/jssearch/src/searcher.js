@@ -8,12 +8,12 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const common = require('./common.js');
-const FileType = require('./filetype.js').FileType;
-const FileTypes = require('./filetypes.js').FileTypes;
-const FileUtil = require('./fileutil.js').FileUtil;
-const SearchFile = require('./searchfile.js').SearchFile;
-const SearchResult = require('./searchresult.js').SearchResult;
+const common = require('./common');
+const FileType = require('./filetype').FileType;
+const FileTypes = require('./filetypes').FileTypes;
+const FileUtil = require('./fileutil').FileUtil;
+const SearchFile = require('./searchfile').SearchFile;
+const SearchResult = require('./searchresult').SearchResult;
 
 class Searcher {
     "use strict";

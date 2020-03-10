@@ -4,9 +4,9 @@
  * Some nodeunit tests of searchresult.js
  */
 
-const common = require('../src/common.js');
-const config = require('../src/config.js');
-const SearchResult = require('../src/searchresult.js').SearchResult;
+const common = require('../src/common');
+const config = require('../src/config');
+const SearchResult = require('../src/searchresult').SearchResult;
 
 const cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
 

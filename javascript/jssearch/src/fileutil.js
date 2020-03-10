@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const common = require('./common.js');
+const common = require('./common');
 
 function FileUtil() {}
 

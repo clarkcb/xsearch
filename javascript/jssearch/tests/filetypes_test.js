@@ -4,8 +4,8 @@
  * Some nodeunit tests of filetypes.js
  */
 
-const FileType = require('../src/filetype.js').FileType;
-const FileTypes = require('../src/filetypes.js').FileTypes;
+const FileType = require('../src/filetype').FileType;
+const FileTypes = require('../src/filetypes').FileTypes;
 
 exports.testFileTypesArchiveFile = (test) => {
     const fileTypes = new FileTypes();

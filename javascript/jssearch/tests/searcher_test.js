@@ -4,10 +4,10 @@
  * Some nodeunit tests of searcher.js
  */
 
-const config = require('../src/config.js');
-const FileUtil = require('../src/fileutil.js').FileUtil;
-const Searcher = require('../src/searcher.js').Searcher;
-const SearchSettings = require('../src/searchsettings.js').SearchSettings;
+const config = require('../src/config');
+const FileUtil = require('../src/fileutil').FileUtil;
+const Searcher = require('../src/searcher').Searcher;
+const SearchSettings = require('../src/searchsettings').SearchSettings;
 
 const testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 

@@ -6,9 +6,9 @@
 
 "use strict";
 
-const common = require('./common.js');
-const Searcher = require('./searcher.js').Searcher;
-const SearchOptions = require('./searchoptions.js').SearchOptions;
+const common = require('./common');
+const Searcher = require('./searcher').Searcher;
+const SearchOptions = require('./searchoptions').SearchOptions;
 
 function handleError(err, searchOptions) {
     const errMsg = "ERROR: " + err.message;

@@ -4,7 +4,7 @@
  * Some nodeunit tests of searchsettings.js
  */
 
-const SearchSettings = require('../src/searchsettings.js').SearchSettings;
+const SearchSettings = require('../src/searchsettings').SearchSettings;
 
 exports.testDefaultSettings = (test) => {
     const settings = new SearchSettings();

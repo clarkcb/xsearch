@@ -4,8 +4,8 @@
  * Some nodeunit tests of searchresult.js
  */
 
-const FileType = require('../src/filetype.js').FileType;
-const SearchFile = require('../src/searchfile.js').SearchFile;
+const FileType = require('../src/filetype').FileType;
+const SearchFile = require('../src/searchfile').SearchFile;
 
 exports.testSearchFileAbsPath = (test) => {
     const pathname = '/Users/cary/src/xsearch/javascript/jssearch/src';
