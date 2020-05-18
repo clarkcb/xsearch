@@ -394,24 +394,25 @@ exports.TestSearchMultiLineString = (test) => {
     const searcher = new Searcher(settings);
     const contents = FileUtil.getFileContents(testFile);
 
-    const results = searcher.searchMultiLineString(contents);
-    test.ok(results.length === 2);
+    searcher.searchMultiLineString(contents, (err, results) => {
+        test.ok(results.length === 2);
 
-    const firstResult = results[0];
-    const expectedFirstLineNum = 29;
-    test.ok(firstResult.linenum === expectedFirstLineNum);
-    const expectedFirstMatchStartIndex = 3;
-    test.ok(firstResult.matchStartIndex === expectedFirstMatchStartIndex);
-    const expectedFirstMatchEndIndex = 11;
-    test.ok(firstResult.matchEndIndex === expectedFirstMatchEndIndex);
+        const firstResult = results[0];
+        const expectedFirstLineNum = 29;
+        test.ok(firstResult.linenum === expectedFirstLineNum);
+        const expectedFirstMatchStartIndex = 3;
+        test.ok(firstResult.matchStartIndex === expectedFirstMatchStartIndex);
+        const expectedFirstMatchEndIndex = 11;
+        test.ok(firstResult.matchEndIndex === expectedFirstMatchEndIndex);
 
-    const secondResult = results[1];
-    const expectedSecondLineNum = 35;
-    test.ok(secondResult.linenum === expectedSecondLineNum);
-    const expectedSecondMatchStartIndex = 24;
-    test.ok(secondResult.matchStartIndex === expectedSecondMatchStartIndex);
-    const expectedSecondMatchEndIndex = 32;
-    test.ok(secondResult.matchEndIndex === expectedSecondMatchEndIndex);
+        const secondResult = results[1];
+        const expectedSecondLineNum = 35;
+        test.ok(secondResult.linenum === expectedSecondLineNum);
+        const expectedSecondMatchStartIndex = 24;
+        test.ok(secondResult.matchStartIndex === expectedSecondMatchStartIndex);
+        const expectedSecondMatchEndIndex = 32;
+        test.ok(secondResult.matchEndIndex === expectedSecondMatchEndIndex);
 
-    test.done()
+        test.done()
+    });
 };

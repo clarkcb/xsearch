@@ -14,7 +14,20 @@ exports.testFileTypesArchiveFile = (test) => {
     test.ok(res, filename + " is archive file");
     const type = fileTypes.getFileType(filename);
     test.ok(type === FileType.ARCHIVE, "FileType of " + filename + " is " + type);
-    test.done();
+
+    fileTypes.getFileTypeAsync(filename, (err, type) => {
+        test.ok(err === null, 'err === null');
+        test.ok(type === FileType.ARCHIVE, "FileType of " + filename + " is " + type);
+    });
+
+    const invalid_filename = 200;
+    fileTypes.getFileTypeAsync(invalid_filename, (err, t) => {
+        console.log('err: ' + err);
+        test.ok(err !== null, 'err !== null');
+        console.log('type: ' + t);
+        test.ok(t === undefined, "FileType of " + invalid_filename + " is undefined");
+        test.done();
+    });
 };
 
 exports.testFileTypesBinaryFile = (test) => {
