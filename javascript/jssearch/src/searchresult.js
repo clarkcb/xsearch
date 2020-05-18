@@ -82,35 +82,37 @@ class SearchResult {
     };
 
     formatMatchingLine() {
-        let formatted = this.line.trim().slice(0);
+        let formatted = this.line;
         let lineLength = this.line.length;
-        let matchLength = this.matchEndIndex - this.matchStartIndex;
         if (lineLength > this.maxLineLength) {
-            let adjustedMaxLength = this.maxLineLength - matchLength;
-            let beforeIndex = this.matchStartIndex;
-            if (this.matchStartIndex > 0) {
-                beforeIndex = beforeIndex - (adjustedMaxLength / 4);
-                if (beforeIndex < 0)
-                    beforeIndex = 0;
+            let startIndex = this.matchStartIndex;
+            let endIndex = this.matchEndIndex;
+            let formattedLength = endIndex - startIndex;
+            while (formattedLength < this.maxLineLength) {
+                if (startIndex > 0)
+                    startIndex--;
+                if (endIndex < lineLength - 1)
+                    endIndex++;
+                formattedLength = endIndex - startIndex;
             }
-            adjustedMaxLength = adjustedMaxLength - (this.matchStartIndex - beforeIndex);
-            let afterIndex = this.matchEndIndex + adjustedMaxLength;
-            if (afterIndex > lineLength)
-                afterIndex = lineLength;
-
-            let before = '';
-            if (beforeIndex > 3) {
-                before = '...';
-                beforeIndex += 3;
+            formatted = this.line.slice(startIndex, endIndex - 1);
+            const whitespaceChars = [' ', '\t', '\n', '\r'];
+            while (whitespaceChars.indexOf(formatted.charAt(0)) > -1) {
+                formatted = formatted.slice(1);
+                startIndex++;
             }
-            let after = '';
-            if (afterIndex < lineLength - 3) {
-                after = '...';
-                afterIndex -= 3;
+            while (whitespaceChars.indexOf(formatted.charAt(formatted.length - 1)) > -1) {
+                formatted = formatted.slice(0, formatted.length - 1);
+                endIndex--;
             }
-            formatted = before + this.line.substring(beforeIndex, afterIndex) + after;
+            if (startIndex > 2) {
+                formatted = '...' + formatted.slice(3);
+            }
+            if (endIndex < lineLength - 3) {
+                formatted = formatted.slice(0, formatted.length - 3) + '...';
+            }
         }
-        return formatted;
+        return formatted.trim();
     };
 }
 
