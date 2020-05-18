@@ -5,9 +5,9 @@
  */
 
 const config = require('./config');
-const FileUtil = require('./fileutil').FileUtil;
-const SearchOption = require('./searchoption').SearchOption;
-const SearchSettings = require('./searchsettings').SearchSettings;
+const {expandPath} = require('./fileutil');
+const {SearchOption} = require('./searchoption');
+const {SearchSettings} = require('./searchsettings');
 
 class SearchOptions {
     "use strict";
@@ -115,8 +115,8 @@ class SearchOptions {
             const fs = require('fs');
 
             let json = '';
-            if (fs.existsSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH))) {
-                json = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
+            if (fs.existsSync(expandPath(config.SEARCHOPTIONSJSONPATH))) {
+                json = fs.readFileSync(expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
             } else {
                 throw new Error('File not found: ' + config.SEARCHOPTIONSJSONPATH);
             }

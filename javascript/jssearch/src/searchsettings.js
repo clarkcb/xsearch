@@ -4,7 +4,7 @@
  * represents the settings to use when performing the search
  */
 
-const FileTypes = require('./filetypes').FileTypes;
+const {FileTypes} = require('./filetypes');
 
 class SearchSettings {
     "use strict";

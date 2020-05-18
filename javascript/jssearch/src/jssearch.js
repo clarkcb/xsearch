@@ -6,9 +6,12 @@
 
 "use strict";
 
+const path = require('path');
+
 const common = require('./common');
-const Searcher = require('./searcher').Searcher;
-const SearchOptions = require('./searchoptions').SearchOptions;
+const {Searcher} = require('./searcher');
+const {SearchError} = require('./searcherror');
+const {SearchOptions} = require('./searchoptions');
 
 function handleError(err, searchOptions) {
     const errMsg = "ERROR: " + err.message;

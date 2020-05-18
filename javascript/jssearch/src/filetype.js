@@ -15,4 +15,4 @@ const FileType = {
     XML:     6
 };
 
-exports.FileType = FileType;
+exports = FileType;

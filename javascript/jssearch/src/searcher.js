@@ -9,11 +9,12 @@ const fs = require('fs');
 const path = require('path');
 
 const common = require('./common');
-const FileType = require('./filetype').FileType;
-const FileTypes = require('./filetypes').FileTypes;
-const FileUtil = require('./fileutil').FileUtil;
-const SearchFile = require('./searchfile').SearchFile;
-const SearchResult = require('./searchresult').SearchResult;
+const FileType = require('./filetype');
+const {FileTypes} = require('./filetypes');
+const FileUtil = require('./fileutil');
+const {SearchError} = require('./searcherror');
+const {SearchFile} = require('./searchfile');
+const {SearchResult} = require('./searchresult');
 
 class Searcher {
     "use strict";

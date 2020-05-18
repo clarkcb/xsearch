@@ -6,8 +6,8 @@
 
 const common = require('./common');
 const config = require('./config');
-const FileType = require('./filetype').FileType;
-const FileUtil = require('./fileutil').FileUtil;
+const FileType = require('./filetype');
+const {expandPath, getExtension} = require('./fileutil');
 
 class FileTypes {
     "use strict";
@@ -17,8 +17,8 @@ class FileTypes {
             let fs = require('fs');
 
             let json = '';
-            if (fs.existsSync(FileUtil.expandPath(config.FILETYPESJSONPATH))) {
-                json = fs.readFileSync(FileUtil.expandPath(config.FILETYPESJSONPATH)).toString();
+            if (fs.existsSync(expandPath(config.FILETYPESJSONPATH))) {
+                json = fs.readFileSync(expandPath(config.FILETYPESJSONPATH)).toString();
             } else {
                 throw new Error('File not found: ' + config.FILETYPESJSONPATH);
             }
@@ -57,51 +57,56 @@ class FileTypes {
     }
 
     getFileTypeAsync(filename, cb) {
-        if (this.isCodeFile(filename))
-            return cb(FileType.CODE);
-        if (this.isXmlFile(filename))
-            return cb(FileType.XML);
-        if (this.isTextFile(filename))
-            return cb(FileType.TEXT);
-        if (this.isBinaryFile(filename))
-            return cb(FileType.BINARY);
-        if (this.isArchiveFile(filename))
-            return cb(FileType.ARCHIVE);
-        cb(FileType.UNKNOWN);
+        console.log(filename);
+        try {
+            if (this.isCodeFile(filename))
+                return cb(null, FileType.CODE);
+            if (this.isXmlFile(filename))
+                return cb(null, FileType.XML);
+            if (this.isTextFile(filename))
+                return cb(null, FileType.TEXT);
+            if (this.isBinaryFile(filename))
+                return cb(null, FileType.BINARY);
+            if (this.isArchiveFile(filename))
+                return cb(null, FileType.ARCHIVE);
+        } catch (err) {
+            return cb(err);
+        }
+        return cb(null, FileType.UNKNOWN);
     }
 
     isArchiveFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.archive.indexOf(ext) > -1;
     }
 
     isBinaryFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.binary.indexOf(ext) > -1;
     }
 
     isCodeFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.code.indexOf(ext) > -1;
     }
 
     isSearchableFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.searchable.indexOf(ext) > -1;
     }
 
     isTextFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.text.indexOf(ext) > -1;
     }
 
     isXmlFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.xml.indexOf(ext) > -1;
     }
 
     isUnknownFile(filename) {
-        let ext = FileUtil.getExtension(filename);
+        let ext = getExtension(filename);
         return this.fileTypeMap.searchable.indexOf(ext) === -1;
     }
 }
