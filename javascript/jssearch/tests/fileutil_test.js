@@ -10,39 +10,112 @@ const FileUtil = require('../src/fileutil').FileUtil;
  * getExtension tests
  **************************************************************************/
 exports.testGetTxtExtension = (test) => {
-    const file = "filename.txt";
-    test.ok(FileUtil.getExtension(file) === "txt", "ext == \"txt\"");
+    const file = 'filename.txt';
+    test.ok(FileUtil.getExtension(file) === 'txt', 'ext === "txt"');
     test.done();
+};
+
+exports.testGetTxtExtensionAsync = (test) => {
+    const file = 'filename.txt';
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err === null, 'err === null');
+        test.ok(ext === 'txt', 'ext === "txt"');
+        test.done();
+    });
 };
 
 exports.testGetMissingExtension = (test) => {
-    const file = "filename.";
-    test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
+    const file = 'filename.';
+    test.ok(FileUtil.getExtension(file) === '', 'ext === ""');
     test.done();
+};
+
+exports.testGetMissingExtensionAsync = (test) => {
+    const file = 'filename.';
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err === null, 'err === null');
+        test.ok(ext === '', 'ext === ""');
+        test.done();
+    });
 };
 
 exports.testGetNoExtension = (test) => {
-    const file = "filename";
-    test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
+    const file = 'filename';
+    test.ok(FileUtil.getExtension(file) === '', 'ext === ""');
     test.done();
+};
+
+exports.testGetNoExtensionAsync = (test) => {
+    const file = 'filename';
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err === null, 'err === null');
+        test.ok(ext === '', 'ext === ""');
+        test.done();
+    });
 };
 
 exports.testGetHiddenTxtExtension = (test) => {
-    const file = ".filename.txt";
-    test.ok(FileUtil.getExtension(file) === "txt", "ext == \"txt\"");
+    const file = '.filename.txt';
+    test.ok(FileUtil.getExtension(file) === 'txt', 'ext === "txt"');
     test.done();
+};
+
+exports.testGetHiddenTxtExtensionAsync = (test) => {
+    const file = '.filename.txt';
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err === null, 'err === null');
+        test.ok(ext === 'txt', 'ext === "txt"');
+        test.done();
+    });
 };
 
 exports.testGetHiddenMissingExtension = (test) => {
-    const file = "filename.";
-    test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
+    const file = 'filename.';
+    test.ok(FileUtil.getExtension(file) === '', 'ext === ""');
     test.done();
 };
 
+exports.testGetHiddenMissingExtensionAsync = (test) => {
+    const file = 'filename.';
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err === null, 'err === null');
+        test.ok(ext === '', 'ext === ""');
+        test.done();
+    });
+};
+
 exports.testGetHiddenNoExtension = (test) => {
-    const file = "filename";
-    test.ok(FileUtil.getExtension(file) === "", "ext == \"\"");
+    const file = 'filename';
+    test.ok(FileUtil.getExtension(file) === '', 'ext === ""');
     test.done();
+};
+
+exports.testGetHiddenNoExtensionAsync = (test) => {
+    const file = 'filename';
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err === null, 'err === null');
+        test.ok(ext === '', 'ext === ""');
+        test.done();
+    });
+};
+
+exports.testGetExtensionNonString = (test) => {
+    const file = 200;
+    try {
+        const ext = FileUtil.getExtension(file);
+    } catch (err) {
+        test.ok(err !== null, 'err !== null');
+    }
+    test.done();
+};
+
+exports.testGetExtensionNonStringAsync = (test) => {
+    const file = 200;
+    FileUtil.getExtensionAsync(file, (err, ext) => {
+        test.ok(err !== null, 'err !== null');
+        test.ok(ext === undefined, 'ext == undefined');
+        test.done();
+    });
 };
 
 /***************************************************************************
