@@ -91,7 +91,7 @@ class FileTypes(object):
                                        self._filetypes['xml'])
         self._filetypes['searchable'] = \
             self._filetypes['binary'].union(self._filetypes['archive'],
-                                           self._filetypes['text'])
+                                            self._filetypes['text'])
 
     def _populate_filetypes_from_xml(self):
         filetypedom = minidom.parse(FILETYPESPATH)
@@ -105,4 +105,4 @@ class FileTypes(object):
                                        self._filetypes['xml'])
         self._filetypes['searchable'] = \
             self._filetypes['binary'].union(self._filetypes['archive'],
-                                           self._filetypes['text'])
+                                            self._filetypes['text'])

@@ -6,7 +6,11 @@
 # class SearchOptionsTest: testing of SearchOptions class
 #
 ################################################################################
+import os
+import sys
 import unittest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from pysearch import SearchException, SearchOptions, SearchSettings
 
@@ -37,7 +41,7 @@ class SearchOptionsTest(unittest.TestCase):
         self.assertFalse(settings.searcharchives)
         self.assertFalse(settings.uniquelines)
         self.assertFalse(settings.verbose)
-        # test the extensino and pattern sets
+        # test the extension and pattern sets
         self.assertFalse(settings.in_archiveextensions)
         self.assertFalse(settings.in_archivefilepatterns)
         self.assertFalse(settings.in_dirpatterns)

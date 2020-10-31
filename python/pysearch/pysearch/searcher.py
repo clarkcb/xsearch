@@ -6,8 +6,14 @@
 # class Searcher: executes a file search
 #
 ###############################################################################
-import os
+from .searchsettings import SearchSettings, PatternSet
+from .searchresult import SearchResult, SearchResultFormatter
+from .searchfile import SearchFile
+from .fileutil import FileUtil
+from .filetypes import FileType, FileTypes
+from .common import log
 import codecs
+import os
 from collections import deque
 from io import StringIO
 from typing import Deque, List, TextIO, BinaryIO
@@ -26,18 +32,12 @@ except ImportError as ie:
     print('zipfile not imported: {0!s}'.format(ie))
     ZIPFILE_MODULE_AVAILABLE = False
 
-from .common import log
-from .filetypes import FileType, FileTypes
-from .fileutil import FileUtil
-from .searchfile import SearchFile
-from .searchresult import SearchResult
-from .searchsettings import SearchSettings, PatternSet
-
 
 class Searcher(object):
     """a class to search files"""
 
-    __slots__ = ['settings', 'filetypes', 'results', 'patterndict', 'filedict', 'rescounts']
+    __slots__ = ['settings', 'filetypes', 'results',
+                 'patterndict', 'filedict', 'rescounts']
 
     def __init__(self, settings: SearchSettings):
         self.settings = settings
@@ -52,14 +52,16 @@ class Searcher(object):
         """Assert required settings in SearchSettings instance"""
         assert self.settings.startpath, 'Startpath not defined'
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
-        assert os.access(self.settings.startpath, os.R_OK), 'Startpath not readable'
+        assert os.access(self.settings.startpath,
+                         os.R_OK), 'Startpath not readable'
         assert self.settings.searchpatterns, 'No search patterns defined'
         assert self.settings.linesafter >= 0, 'Invalid linesafter'
         assert self.settings.linesbefore >= 0, 'Invalid linesafter'
         try:
             codecs.lookup(self.settings.textfileencoding)
         except LookupError:
-            raise AssertionError('Invalid encoding: {}'.format(self.settings.textfileencoding))
+            raise AssertionError('Invalid encoding: {}'.format(
+                self.settings.textfileencoding))
 
     def is_search_dir(self, d: str) -> bool:
         path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
@@ -68,26 +70,26 @@ class Searcher(object):
                 if FileUtil.is_hidden(p):
                     return False
         if self.settings.in_dirpatterns and \
-            not any_matches_any_pattern(path_elems, self.settings.in_dirpatterns):
+                not any_matches_any_pattern(path_elems, self.settings.in_dirpatterns):
             return False
         if self.settings.out_dirpatterns and \
-            any_matches_any_pattern(path_elems, self.settings.out_dirpatterns):
+                any_matches_any_pattern(path_elems, self.settings.out_dirpatterns):
             return False
         return True
 
     def is_archive_search_file(self, f: str) -> bool:
         ext = FileUtil.get_extension(f)
         if self.settings.in_archiveextensions and \
-            ext not in self.settings.in_archiveextensions:
+                ext not in self.settings.in_archiveextensions:
             return False
         if self.settings.out_archiveextensions and \
-            ext in self.settings.out_archiveextensions:
+                ext in self.settings.out_archiveextensions:
             return False
         if self.settings.in_archivefilepatterns and \
-            not matches_any_pattern(f, self.settings.in_archivefilepatterns):
+                not matches_any_pattern(f, self.settings.in_archivefilepatterns):
             return False
         if self.settings.out_archivefilepatterns and \
-            matches_any_pattern(f, self.settings.out_archivefilepatterns):
+                matches_any_pattern(f, self.settings.out_archivefilepatterns):
             return False
         return True
 
@@ -125,10 +127,12 @@ class Searcher(object):
                                            filetype=self.filetypes.get_filetype(f))
                                 for f in files
                             ]
-                            searchfiles.extend([sf for sf in new_searchfiles if self.filter_file(sf)])
+                            searchfiles.extend(
+                                [sf for sf in new_searchfiles if self.filter_file(sf)])
         elif os.path.isfile(self.settings.startpath):
             d, f = os.path.split(self.settings.startpath)
-            sf = SearchFile(path=d, filename=f, filetype=self.filetypes.get_filetype(f))
+            sf = SearchFile(path=d, filename=f,
+                            filetype=self.filetypes.get_filetype(f))
             if self.filter_file(sf):
                 searchfiles.append(sf)
         return sorted(searchfiles, key=lambda sf: (sf.path, sf.filename))
@@ -138,9 +142,9 @@ class Searcher(object):
             return False
         if sf.filetype == FileType.ARCHIVE:
             return self.settings.searcharchives and \
-                   self.is_archive_search_file(sf.filename)
+                self.is_archive_search_file(sf.filename)
         return not self.settings.archivesonly and \
-               self.is_search_file(sf)
+            self.is_search_file(sf)
 
     def search(self):
         """Search files to find instances of searchpattern(s) starting from
@@ -190,13 +194,13 @@ class Searcher(object):
         if self.settings.debug:
             log("Searching binary file {0!s}".format(sf.relativepath))
         try:
-            fo = open(sf.relativepath, 'rb')
+            fo = open(sf.relativepath, mode='r', encoding='latin-1')
             self.search_binary_file_obj(sf, fo)
             fo.close()
         except IOError as e:
             log('IOError: {0!s}: {1!s}'.format(e, sf))
 
-    def search_binary_file_obj(self, sf: SearchFile, fo: BinaryIO):
+    def search_binary_file_obj(self, sf: SearchFile, fo: TextIO):
         """Search a binary file file object"""
         contents = fo.read()
         for p in self.settings.searchpatterns:
@@ -219,7 +223,8 @@ class Searcher(object):
         if self.settings.debug:
             log("Searching text file {0!s}".format(sf.relativepath))
         try:
-            fo = open(sf.relativepath, mode='r', encoding=self.settings.textfileencoding)
+            fo = open(sf.relativepath, mode='r',
+                      encoding=self.settings.textfileencoding)
             self._search_text_file_obj(sf, fo)
             fo.close()
         except IOError as e:
@@ -307,13 +312,15 @@ class Searcher(object):
         for m in matches:
             m_line_start_index = 0
             # m_line_end_index = len(s) - 1
-            before_start_indices = [x for x in start_line_indices if x <= m.start()]
+            before_start_indices = [
+                x for x in start_line_indices if x <= m.start()]
             before_line_count = 0
             if before_start_indices:
                 m_line_start_index = before_start_indices.pop()
                 before_line_count = len(before_start_indices)
                 before_start_indices = before_start_indices[self.settings.linesbefore * -1:]
-            m_line_end_index = end_line_indices[start_line_indices.index(m_line_start_index)]
+            m_line_end_index = end_line_indices[start_line_indices.index(
+                m_line_start_index)]
             line = s[m_line_start_index:m_line_end_index]
             if self.settings.linesbefore and before_line_count:
                 lines_before = self.get_lines_before(s,
@@ -321,7 +328,8 @@ class Searcher(object):
                                                      start_line_indices,
                                                      end_line_indices)
             if self.do_lines_after():
-                after_start_indices = [x for x in start_line_indices if x > m.start()]
+                after_start_indices = [
+                    x for x in start_line_indices if x > m.start()]
                 after_start_indices = after_start_indices[:self.settings.linesafter]
                 lines_after = self.get_lines_after(s,
                                                    after_start_indices,
@@ -423,25 +431,25 @@ class Searcher(object):
                             # check to see if lines_after has a match
                             if self.settings.linesaftertopatterns and \
                                any_matches_any_pattern(lines_after,
-                                   self.settings.linesaftertopatterns):
-                               lines_after_to_match = True
+                                                       self.settings.linesaftertopatterns):
+                                lines_after_to_match = True
                             if self.settings.linesafteruntilpatterns and \
                                any_matches_any_pattern(lines_after,
-                               self.settings.linesafteruntilpatterns):
-                               lines_after_until_match = True
+                                                       self.settings.linesafteruntilpatterns):
+                                lines_after_until_match = True
                             # if not read in more lines until a match or EOF
                             while not lines_after_to_match and \
-                                  not lines_after_until_match:
+                                    not lines_after_until_match:
                                 try:
                                     next_line = next(lines).rstrip('\r\n')
                                     lines_after.append(next_line)
                                     if self.settings.linesaftertopatterns and \
                                        matches_any_pattern(next_line,
-                                           self.settings.linesaftertopatterns):
+                                                           self.settings.linesaftertopatterns):
                                         lines_after_to_match = True
                                     elif self.settings.linesafteruntilpatterns and \
-                                         matches_any_pattern(next_line,
-                                             self.settings.linesafteruntilpatterns):
+                                        matches_any_pattern(next_line,
+                                                            self.settings.linesafteruntilpatterns):
                                         lines_after_until_match = True
                                 except StopIteration:
                                     break
@@ -460,8 +468,7 @@ class Searcher(object):
                                          match_start_index=match.start() + 1,
                                          match_end_index=match.end() + 1,
                                          lines_before=list(lines_before),
-                                         lines_after=sr_lines_after,
-                                         maxlinelength=self.settings.maxlinelength)
+                                         lines_after=sr_lines_after)
                         results.append(search_result)
                         pattern_match_dict[p] = 1
             if self.settings.linesbefore:
@@ -486,7 +493,7 @@ class Searcher(object):
                 if not ext == 'ear':
                     log('BadZipfile: {0!s}: {1}'.format(e, sf))
         elif ext in ('bz2', 'tar', 'tgz', 'gz') and \
-             tarfile.is_tarfile(sf.relativepath):
+                tarfile.is_tarfile(sf.relativepath):
             # handle tar files
             try:
                 self.search_tar_file(sf, ext)
@@ -568,22 +575,14 @@ class Searcher(object):
 
     def print_results(self):
         sorted_results = self.get_sorted_results()
+        formatter = SearchResultFormatter(self.settings)
         log('Search results (%d):' % len(sorted_results))
         for r in sorted_results:
-            self.print_result(r)
-
-    def print_result(self, search_result: SearchResult):
-        """Print the current search result info to the console"""
-        sio = StringIO()
-        if len(self.settings.searchpatterns) > 1:
-            sio.write('{0}: '.format(search_result.pattern))
-        sio.write(str(search_result))
-        s = sio.getvalue()
-        sio.close()
-        try:
-            log(s)
-        except UnicodeEncodeError:
-            log(repr(s))
+            s = formatter.format(r)
+            try:
+                log(s)
+            except UnicodeEncodeError:
+                log(repr(s))
 
     def get_matching_dirs(self, pattern=None):
         """Get list of dirs with matches for a given pattern
@@ -676,6 +675,6 @@ def lines_match(lines, in_patterns: PatternSet, out_patterns: PatternSet):
     if (not in_patterns or
         any_matches_any_pattern(lines, in_patterns)) and \
        (not out_patterns or
-        not any_matches_any_pattern(lines, out_patterns)):
+            not any_matches_any_pattern(lines, out_patterns)):
         return True
     return False

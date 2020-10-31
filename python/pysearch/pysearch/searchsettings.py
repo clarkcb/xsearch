@@ -14,21 +14,24 @@ from .searchexception import SearchException
 
 PatternSet = Set[Pattern]
 
+
 class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
-    __slots__ = ['archivesonly', 'debug', 'excludehidden', 'firstmatch', 'in_archiveextensions',
-                 'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
-                 'in_filetypes', 'in_linesafterpatterns', 'in_linesbeforepatterns', 'linesafter',
-                 'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
-                 'listfiles', 'listlines', 'maxlinelength', 'multilinesearch', 'out_archivefilepatterns',
-                 'out_archiveextensions', 'out_dirpatterns', 'out_extensions', 'out_filepatterns',
-                 'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'printresults',
-                 'printusage', 'printversion', 'recursive', 'searcharchives', 'searchpatterns', 'startpath',
-                 'textfileencoding', 'uniquelines', 'verbose']
+    __slots__ = [
+        'archivesonly', 'colorize', 'debug', 'excludehidden', 'firstmatch', 'in_archiveextensions',
+        'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
+        'in_filetypes', 'in_linesafterpatterns', 'in_linesbeforepatterns', 'linesafter',
+        'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
+        'listfiles', 'listlines', 'maxlinelength', 'multilinesearch', 'out_archivefilepatterns',
+        'out_archiveextensions', 'out_dirpatterns', 'out_extensions', 'out_filepatterns',
+        'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'printresults',
+        'printusage', 'printversion', 'recursive', 'searcharchives', 'searchpatterns', 'startpath',
+        'textfileencoding', 'uniquelines', 'verbose'
+    ]
 
-    def __init__(self, archivesonly: bool = False, debug: bool = False, excludehidden: bool = True,
-                 firstmatch: bool = False, in_archiveextensions: Set[str] = None,
+    def __init__(self, archivesonly: bool = False, colorize: bool = True, debug: bool = False,
+                 excludehidden: bool = True, firstmatch: bool = False, in_archiveextensions: Set[str] = None,
                  in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
                  in_extensions: Set[str] = None, in_filepatterns: PatternSet = None, in_filetypes: Set[str] = None,
                  in_linesafterpatterns: PatternSet = None, in_linesbeforepatterns: PatternSet = None,
@@ -44,39 +47,55 @@ class SearchSettings(object):
                  startpath: str = '', textfileencoding: str = 'UTF-8', uniquelines: bool = False,
                  verbose: bool = False):
         self.archivesonly = archivesonly
+        self.colorize = colorize
         self.debug = debug
         self.excludehidden = excludehidden
         self.firstmatch = firstmatch
-        self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set([])
-        self.in_archivefilepatterns: PatternSet = in_archivefilepatterns if in_archivefilepatterns else set([])
-        self.in_dirpatterns: PatternSet = in_dirpatterns if in_dirpatterns else set([])
+        self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set([
+        ])
+        self.in_archivefilepatterns: PatternSet = in_archivefilepatterns if in_archivefilepatterns else set([
+        ])
+        self.in_dirpatterns: PatternSet = in_dirpatterns if in_dirpatterns else set([
+        ])
         self.in_extensions = in_extensions if in_extensions else set([])
-        self.in_filepatterns: PatternSet = in_filepatterns if in_filepatterns else set([])
+        self.in_filepatterns: PatternSet = in_filepatterns if in_filepatterns else set([
+        ])
         self.in_filetypes = in_filetypes if in_filetypes else set([])
-        self.in_linesafterpatterns: PatternSet = in_linesafterpatterns if in_linesafterpatterns else set([])
-        self.in_linesbeforepatterns: PatternSet = in_linesbeforepatterns if in_linesbeforepatterns else set([])
+        self.in_linesafterpatterns: PatternSet = in_linesafterpatterns if in_linesafterpatterns else set([
+        ])
+        self.in_linesbeforepatterns: PatternSet = in_linesbeforepatterns if in_linesbeforepatterns else set([
+        ])
         self.linesafter = linesafter
-        self.linesaftertopatterns: PatternSet = linesaftertopatterns if linesaftertopatterns else set([])
-        self.linesafteruntilpatterns: PatternSet = linesafteruntilpatterns if linesafteruntilpatterns else set([])
+        self.linesaftertopatterns: PatternSet = linesaftertopatterns if linesaftertopatterns else set([
+        ])
+        self.linesafteruntilpatterns: PatternSet = linesafteruntilpatterns if linesafteruntilpatterns else set([
+        ])
         self.linesbefore = linesbefore
         self.listdirs = listdirs
         self.listfiles = listfiles
         self.listlines = listlines
         self.maxlinelength = maxlinelength
         self.multilinesearch = multilinesearch
-        self.out_archiveextensions = out_archiveextensions if out_archiveextensions else set([])
-        self.out_archivefilepatterns: PatternSet = out_archivefilepatterns if out_archivefilepatterns else set([])
-        self.out_dirpatterns: PatternSet = out_dirpatterns if out_dirpatterns else set([])
+        self.out_archiveextensions = out_archiveextensions if out_archiveextensions else set([
+        ])
+        self.out_archivefilepatterns: PatternSet = out_archivefilepatterns if out_archivefilepatterns else set([
+        ])
+        self.out_dirpatterns: PatternSet = out_dirpatterns if out_dirpatterns else set([
+        ])
         self.out_extensions = out_extensions if out_extensions else set([])
-        self.out_filepatterns: PatternSet = out_filepatterns if out_filepatterns else set([])
+        self.out_filepatterns: PatternSet = out_filepatterns if out_filepatterns else set([
+        ])
         self.out_filetypes = out_filetypes if out_filetypes else set([])
-        self.out_linesafterpatterns: PatternSet = out_linesafterpatterns if out_linesafterpatterns else set([])
-        self.out_linesbeforepatterns: PatternSet = out_linesbeforepatterns if out_linesbeforepatterns else set([])
+        self.out_linesafterpatterns: PatternSet = out_linesafterpatterns if out_linesafterpatterns else set([
+        ])
+        self.out_linesbeforepatterns: PatternSet = out_linesbeforepatterns if out_linesbeforepatterns else set([
+        ])
         self.recursive = recursive
         self.printresults = printresults
         self.printusage = printusage
         self.printversion = printversion
-        self.searchpatterns: PatternSet = searchpatterns if searchpatterns else set([])
+        # self.searchpatterns: PatternSet = searchpatterns if searchpatterns else set([])
+        self.searchpatterns = searchpatterns if searchpatterns else set([])
         self.searcharchives = searcharchives
         self.startpath = startpath
         self.textfileencoding = textfileencoding
@@ -92,9 +111,10 @@ class SearchSettings(object):
             ext_set = getattr(self, ext_set_name)
             ext_set.update(new_ext_set)
 
-    def add_patterns(self, patterns, pattern_set_name: str, compile_flag = re.S | re.U):
+    def add_patterns(self, patterns, pattern_set_name: str, compile_flag=re.S | re.U):
         if isinstance(patterns, list) or isinstance(patterns, set):
-            new_pattern_set = set([re.compile(p, compile_flag) for p in patterns])
+            new_pattern_set = set([re.compile(p, compile_flag)
+                                   for p in patterns])
             pattern_set = getattr(self, pattern_set_name)
             pattern_set.update(new_pattern_set)
         elif isinstance(patterns, str):
@@ -105,9 +125,11 @@ class SearchSettings(object):
 
     def add_filetypes(self, filetypes, filetype_set_name: str):
         if isinstance(filetypes, list) or isinstance(filetypes, set):
-            new_filetype_set = set([FileType.from_name(ft) for ft in filetypes])
+            new_filetype_set = set([FileType.from_name(ft)
+                                    for ft in filetypes])
         elif isinstance(filetypes, str):
-            new_filetype_set = set([FileType.from_name(ft) for ft in filetypes.split(',') if ft])
+            new_filetype_set = set([FileType.from_name(ft)
+                                    for ft in filetypes.split(',') if ft])
         else:
             raise SearchException('filetypes is an unknown type')
         filetype_set = getattr(self, filetype_set_name)

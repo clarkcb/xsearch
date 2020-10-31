@@ -10,6 +10,11 @@
       "desc": "Search only archive files"
     },
     {
+      "long": "colorize",
+      "short": "c",
+      "desc": "Colorize console output*"
+    },
+    {
       "long": "debug",
       "desc": "Set output mode to debug"
     },
@@ -111,6 +116,11 @@
       "long": "multilinesearch",
       "short": "m",
       "desc": "Search files as single multi-line content block"
+    },
+    {
+      "long": "nocolorize",
+      "short": "C",
+      "desc": "Do not colorize console output"
     },
     {
       "long": "noprintmatches",

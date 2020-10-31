@@ -38,6 +38,9 @@ class SearchOptions(object):
             'archivesonly':
                 lambda b, settings:
                     settings.set_property('archivesonly', b),
+            'colorize':
+                lambda b, settings:
+                    settings.set_property('colorize', b),
             'debug':
                 lambda b, settings:
                     settings.set_property('debug', b),
@@ -65,6 +68,9 @@ class SearchOptions(object):
             'multilinesearch':
                 lambda b, settings:
                     settings.set_property('multilinesearch', b),
+            'nocolorize':
+                lambda b, settings:
+                    settings.set_property('colorize', not b),
             'noprintmatches':
                 lambda b, settings:
                     settings.set_property('printresults', not b),
@@ -178,7 +184,8 @@ class SearchOptions(object):
         self.longarg_dict = {}
 
     def settings_from_file(self, filepath: str, settings: SearchSettings):
-        assert os.path.exists(filepath), 'Settings file not found: %s' % filepath
+        assert os.path.exists(
+            filepath), 'Settings file not found: %s' % filepath
         with open(filepath) as f:
             jsonstr = f.read()
             # print "jsonstr: '%s'" % jsonstr
@@ -228,7 +235,8 @@ class SearchOptions(object):
 
     def set_options_from_xml(self):
         searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
-        searchoptionnodes = searchoptionsdom.getElementsByTagName('searchoption')
+        searchoptionnodes = searchoptionsdom.getElementsByTagName(
+            'searchoption')
         for searchoptionnode in searchoptionnodes:
             longarg = searchoptionnode.getAttribute('long')
             shortarg = searchoptionnode.getAttribute('short')
@@ -285,7 +293,8 @@ class SearchOptions(object):
                                     if i < 0:
                                         invalid_int = True
                                 if invalid_int:
-                                    err = 'Invalid value for option {}: {}'.format(arg, argval)
+                                    err = 'Invalid value for option {}: {}'.format(
+                                        arg, argval)
                                     raise SearchException(err)
                                 self.int_arg_dict[longarg](argval, settings)
                             elif longarg in self.str_arg_dict:
@@ -294,9 +303,10 @@ class SearchOptions(object):
                                 self.settings_from_file(argval, settings)
                         else:
                             raise SearchException('Missing value for option {0}'.
-                                            format(arg))
+                                                  format(arg))
                     else:
-                        raise SearchException('Invalid option: {0}'.format(arg))
+                        raise SearchException(
+                            'Invalid option: {0}'.format(arg))
                 else:
                     raise SearchException('Invalid option: {0}'.format(arg))
             else:
@@ -310,7 +320,8 @@ class SearchOptions(object):
     def get_usage_string(self):
         sio = StringIO()
         sio.write('Usage:\n')
-        sio.write(' pysearch.py [options] -s <searchpattern> <startpath>\n\nOptions:\n')
+        sio.write(
+            ' pysearch.py [options] -s <searchpattern> <startpath>\n\nOptions:\n')
         opt_strings = []
         opt_descs = []
         longest = 0
