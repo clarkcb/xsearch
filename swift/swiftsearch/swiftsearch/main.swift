@@ -76,9 +76,10 @@ func main() {
     let results = searcher.getSearchResults()
 
     if settings.printResults {
+        let formatter = SearchResultFormatter(settings: settings)
         logMsg("\nSearch results (\(results.count)):")
-            logMsg("\(r)")
         for res in results {
+            logMsg("\(formatter.format(result: res))")
         }
     }
 

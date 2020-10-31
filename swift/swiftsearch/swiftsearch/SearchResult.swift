@@ -8,7 +8,7 @@
 
 import Foundation
 
-open class SearchResult: CustomStringConvertible {
+open class SearchResult {
     let searchPattern: String
     var file: SearchFile?
     let lineNum: Int
@@ -19,71 +19,154 @@ open class SearchResult: CustomStringConvertible {
     let linesAfter: [String]
 
     init(searchPattern: String, file: SearchFile?, lineNum: Int,
-        matchStartIndex: Int, matchEndIndex: Int, line: String,
-        linesBefore: [String], linesAfter: [String]) {
-            self.searchPattern = searchPattern
-            self.file = file
-            self.lineNum = lineNum
-            self.matchStartIndex = matchStartIndex
-            self.matchEndIndex = matchEndIndex
-            self.line = line
-            self.linesBefore = linesBefore
-            self.linesAfter = linesAfter
+         matchStartIndex: Int, matchEndIndex: Int, line: String,
+         linesBefore: [String], linesAfter: [String])
+    {
+        self.searchPattern = searchPattern
+        self.file = file
+        self.lineNum = lineNum
+        self.matchStartIndex = matchStartIndex
+        self.matchEndIndex = matchEndIndex
+        self.line = line
+        self.linesBefore = linesBefore
+        self.linesAfter = linesAfter
+    }
+}
+
+class SearchResultFormatter {
+    let settings: SearchSettings
+
+    init(settings: SearchSettings) {
+        self.settings = settings
     }
 
-    open var description: String {
-        if !linesBefore.isEmpty || !linesAfter.isEmpty {
-            return multiLineToString()
+    func format(result: SearchResult) -> String {
+        if !result.linesBefore.isEmpty || !result.linesAfter.isEmpty {
+            return multiLineFormat(result: result)
         } else {
-            return singleLineToString()
+            return singleLineFormat(result: result)
         }
     }
 
-    fileprivate func singleLineToString() -> String {
-        var s = file?.description ?? "<text>"
-        if lineNum > 0 {
-            s += ": \(lineNum): [\(matchStartIndex):\(matchEndIndex)]: "
-            s += line.trimmingCharacters(in: whitespace as CharacterSet)
-        } else {
-            s += " matches at [\(matchStartIndex):\(matchEndIndex)]"
-        }
-        return s
+    private func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int) -> String {
+        let strMatchStartIndex = s.index(s.startIndex, offsetBy: matchStartIndex)
+        let strMatchEndIndex = s.index(s.startIndex, offsetBy: matchEndIndex)
+        return String(s[..<strMatchStartIndex]) +
+            Color.GREEN +
+            String(s[strMatchStartIndex ..< strMatchEndIndex]) +
+            Color.RESET +
+            String(s[strMatchEndIndex...])
     }
 
-    fileprivate func linesToString(_ lines: [String], startNum: Int, format: String) -> String {
-        var s = ""
+    private func formatMatchingLine(result: SearchResult) -> String {
+        let whitespaceChars: Set<Character> = [" ", "\t", "\n", "\r"]
+        let leadingWhitespaceCount = result.line.prefix(while: { whitespaceChars.contains($0) }).count
+        var formatted = result.line.trimmingCharacters(in: whitespace as CharacterSet)
+        var formattedLength = formatted.count
+        let maxLineEndIndex = formattedLength - 1
+        let matchLength = result.matchEndIndex - result.matchStartIndex
+        var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
+        var matchEndIndex = matchStartIndex + matchLength
+
+        if formattedLength > settings.maxLineLength {
+            var lineStartIndex = matchStartIndex
+            var lineEndIndex = lineStartIndex + matchLength
+            matchStartIndex = 0
+            matchEndIndex = matchLength
+
+            while lineEndIndex > formattedLength - 1 {
+                lineStartIndex -= 1
+                lineEndIndex -= 1
+                matchStartIndex += 1
+                matchEndIndex += 1
+            }
+
+            formattedLength = lineEndIndex - lineStartIndex
+            while formattedLength < settings.maxLineLength {
+                if lineStartIndex > 0 {
+                    lineStartIndex -= 1
+                    matchStartIndex += 1
+                    matchEndIndex += 1
+                    formattedLength = lineEndIndex - lineStartIndex
+                }
+                if formattedLength < settings.maxLineLength, lineEndIndex < maxLineEndIndex {
+                    lineEndIndex += 1
+                }
+                formattedLength = lineEndIndex - lineStartIndex
+            }
+
+            var before = ""
+            var after = ""
+            if lineStartIndex > 2 {
+                before = "..."
+                lineStartIndex += 3
+            }
+            if lineEndIndex < maxLineEndIndex - 3 {
+                after = "..."
+                lineEndIndex -= 3
+            }
+            let strLineStartIndex = formatted.index(formatted.startIndex, offsetBy: lineStartIndex)
+            let strLineEndIndex = formatted.index(formatted.startIndex, offsetBy: lineEndIndex)
+
+            formatted = before + String(formatted[strLineStartIndex ..< strLineEndIndex]) + after
+        }
+
+        if settings.colorize {
+            formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+        }
+
+        return formatted
+    }
+
+    private func singleLineFormat(result: SearchResult) -> String {
+        var str = result.file?.description() ?? "<text>"
+        if result.lineNum > 0 {
+            str += ": \(result.lineNum): [\(result.matchStartIndex):\(result.matchEndIndex)]: "
+            str += formatMatchingLine(result: result)
+        } else {
+            str += " matches at [\(result.matchStartIndex):\(result.matchEndIndex)]"
+        }
+        return str
+    }
+
+    private func linesToString(_ lines: [String], startNum: Int, format: String) -> String {
+        var str = ""
         var currentLineNum = startNum
         for line in lines {
             var currentLine = "  " + String(format: format, currentLineNum)
             currentLine += " | \(line)\n"
-            s += currentLine
+            str += currentLine
             currentLineNum += 1
         }
-        return s
+        return str
     }
 
-    fileprivate func multiLineToString() -> String {
+    private func multiLineFormat(result: SearchResult) -> String {
         let sepLen = 80
-        var s = ""
-        let filepath = file?.description ?? "<text>"
+        var str = ""
+        let filepath = result.file?.description() ?? "<text>"
         let eq = "="
         let dash = "-"
-        s += "\(eq.`repeat`(sepLen))\n"
-        s += "\(filepath): \(lineNum): [\(matchStartIndex):\(matchEndIndex)]\n"
-        s += "\(dash.`repeat`(sepLen))\n"
+        str += "\(eq.repeat(sepLen))\n"
+        str += "\(filepath): \(result.lineNum): [\(result.matchStartIndex):\(result.matchEndIndex)]\n"
+        str += "\(dash.repeat(sepLen))\n"
 
-        let maxLineNum = lineNum + linesAfter.count
+        let maxLineNum = result.lineNum + result.linesAfter.count
         let maxNumLen = "\(maxLineNum)".lengthOfBytes(using: String.Encoding.utf8)
         let format = "%\(maxNumLen)d"
-        if linesBefore.count > 0 {
-            s += linesToString(linesBefore, startNum: lineNum - linesBefore.count, format: format)
+        if result.linesBefore.count > 0 {
+            str += linesToString(result.linesBefore, startNum: result.lineNum - result.linesBefore.count, format: format)
         }
-        var currentLine = String(format: format, lineNum)
+        var line = result.line
+        if settings.colorize {
+            line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+        }
+        var currentLine = String(format: format, result.lineNum)
         currentLine = "> \(currentLine) | \(line)\n"
-        s += currentLine
-        if linesAfter.count > 0 {
-            s += linesToString(linesAfter, startNum: lineNum + 1, format: format)
+        str += currentLine
+        if result.linesAfter.count > 0 {
+            str += linesToString(result.linesAfter, startNum: result.lineNum + 1, format: format)
         }
-        return s
+        return str
     }
 }

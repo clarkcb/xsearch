@@ -10,6 +10,7 @@
 
 enum DefaultSettings {
     static let archivesOnly = false
+    static let colorize = true
     static let debug = false
     static let excludeHidden = true
     static let firstMatch = false
@@ -33,6 +34,7 @@ enum DefaultSettings {
 
 open class SearchSettings: CustomStringConvertible {
     var archivesOnly: Bool = DefaultSettings.archivesOnly
+    var colorize: Bool = DefaultSettings.colorize
     var debug: Bool = DefaultSettings.debug
     var excludeHidden: Bool = DefaultSettings.excludeHidden
     var firstMatch: Bool = DefaultSettings.firstMatch
@@ -112,43 +114,47 @@ open class SearchSettings: CustomStringConvertible {
     }
 
     open var description: String {
-        var s = "SearchSettings("
-        s += "archivesOnly=\(archivesOnly)"
-        s += ", debug=\(debug)"
-        s += ", excludeHidden=\(excludeHidden)"
-        s += ", firstMatch=\(firstMatch)"
-        s += ", inArchiveExtensions=\(setToString(inArchiveExtensions))"
-        s += ", inArchiveExtensions=\(setToString(inArchiveExtensions))"
-        s += ", inDirPatterns=\(arrayToString(inDirPatterns))"
-        s += ", inExtensions=\(setToString(inExtensions))"
-        s += ", inFilePatterns=\(arrayToString(inFilePatterns))"
-        s += ", inLinesAfterPatterns=\(arrayToString(inLinesAfterPatterns))"
-        s += ", inLinesBeforePatterns=\(arrayToString(inLinesBeforePatterns))"
-        s += ", linesAfterToPatterns=\(arrayToString(linesAfterToPatterns))"
-        s += ", linesAfterUntilPatterns=\(arrayToString(linesAfterUntilPatterns))"
-        s += ", linesAfter=\(linesAfter)"
-        s += ", linesBefore=\(linesBefore)"
-        s += ", listDirs=\(listDirs)"
-        s += ", listFiles=\(listFiles)"
-        s += ", listLines=\(listLines)"
-        s += ", maxLineLength=\(maxLineLength)"
-        s += ", outArchiveExtensions=\(setToString(outArchiveExtensions))"
-        s += ", outArchiveExtensions=\(setToString(outArchiveExtensions))"
-        s += ", outDirPatterns=\(arrayToString(outDirPatterns))"
-        s += ", outExtensions=\(setToString(outExtensions))"
-        s += ", outFilePatterns=\(arrayToString(outFilePatterns))"
-        s += ", outLinesAfterPatterns=\(arrayToString(outLinesAfterPatterns))"
-        s += ", outLinesBeforePatterns=\(arrayToString(outLinesBeforePatterns))"
-        s += ", printResults=\(printResults)"
-        s += ", printUsage=\(printUsage)"
-        s += ", printVersion=\(printVersion)"
-        s += ", recursive=\(recursive)"
-        s += ", searchArchives=\(searchArchives)"
-        s += ", searchPatterns=\(arrayToString(searchPatterns))"
-        s += ", startPath=\"\(startPath!)\""
-        s += ", uniqueLines=\(uniqueLines)"
-        s += ", verbose=\(verbose)"
-        s += ")"
+        let s = "SearchSettings(" +
+            "archivesOnly=\(archivesOnly)" +
+            ", colorize=\(colorize)" +
+            ", debug=\(debug)" +
+            ", excludeHidden=\(excludeHidden)" +
+            ", firstMatch=\(firstMatch)" +
+            ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
+            ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
+            ", inDirPatterns=\(arrayToString(inDirPatterns))" +
+            ", inExtensions=\(setToString(inExtensions))" +
+            ", inFilePatterns=\(arrayToString(inFilePatterns))" +
+            ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }))" +
+            ", inLinesAfterPatterns=\(arrayToString(inLinesAfterPatterns))" +
+            ", inLinesBeforePatterns=\(arrayToString(inLinesBeforePatterns))" +
+            ", linesAfterToPatterns=\(arrayToString(linesAfterToPatterns))" +
+            ", linesAfterUntilPatterns=\(arrayToString(linesAfterUntilPatterns))" +
+            ", linesAfter=\(linesAfter)" +
+            ", linesBefore=\(linesBefore)" +
+            ", listDirs=\(listDirs)" +
+            ", listFiles=\(listFiles)" +
+            ", listLines=\(listLines)" +
+            ", maxLineLength=\(maxLineLength)" +
+            ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
+            ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
+            ", outDirPatterns=\(arrayToString(outDirPatterns))" +
+            ", outExtensions=\(setToString(outExtensions))" +
+            ", outFilePatterns=\(arrayToString(outFilePatterns))" +
+            ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }))" +
+            ", outLinesAfterPatterns=\(arrayToString(outLinesAfterPatterns))" +
+            ", outLinesBeforePatterns=\(arrayToString(outLinesBeforePatterns))" +
+            ", printResults=\(printResults)" +
+            ", printUsage=\(printUsage)" +
+            ", printVersion=\(printVersion)" +
+            ", recursive=\(recursive)" +
+            ", searchArchives=\(searchArchives)" +
+            ", searchPatterns=\(arrayToString(searchPatterns))" +
+            ", startPath=\"\(startPath!)\"" +
+            ", textFileEncoding=\"\(textFileEncoding)\"" +
+            ", uniqueLines=\(uniqueLines)" +
+            ", verbose=\(verbose)" +
+            ")"
         return s
     }
 }
