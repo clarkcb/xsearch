@@ -42,8 +42,8 @@ impl Searcher {
         }
 
         Ok(Searcher {
-            filetypes: filetypes,
-            settings: settings,
+            filetypes,
+            settings,
         })
     }
 

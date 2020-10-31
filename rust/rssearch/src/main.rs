@@ -5,7 +5,9 @@ use std::process;
 use crate::common::log;
 use crate::searcher::{get_result_dirs, get_result_files, get_result_lines};
 use crate::searcherror::SearchError;
+use crate::searchresultformatter::SearchResultFormatter;
 
+pub mod color;
 pub mod common;
 pub mod config;
 pub mod filetypes;
@@ -16,6 +18,7 @@ pub mod searchfile;
 pub mod searchoptions;
 pub mod searchresult;
 pub mod searchsettings;
+pub mod searchresultformatter;
 
 fn print_error(error: SearchError, options: &searchoptions::SearchOptions) {
     log(format!("\nERROR: {}", error.description).as_str());
@@ -86,9 +89,11 @@ fn search(args: Iter<String>) {
             match searcher.search() {
                 Ok(results) => {
                     if searcher.settings.print_results {
+                        let formatter = SearchResultFormatter::new(
+                            searcher.settings.colorize, searcher.settings.max_line_length);
                         log(format!("\nSearch results ({}):", results.len()).as_str());
                         for r in results.iter() {
-                            log(format!("{}", r).as_str());
+                            log(formatter.format(r).as_str());
                         }
                     }
                     if searcher.settings.list_dirs {

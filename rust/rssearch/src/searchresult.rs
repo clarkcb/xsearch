@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt;
 
+use crate::color::{GREEN, RESET};
 use crate::searchfile::SearchFile;
 
 #[derive(Debug, Eq)]
@@ -35,103 +36,6 @@ impl SearchResult {
             line: line,
             lines_before: lines_before,
             lines_after: lines_after,
-        }
-    }
-
-    fn linenum_padding(&self) -> usize {
-        format!("{}", self.line_num + self.lines_after.len()).len()
-    }
-}
-
-const SEPARATOR_LEN: usize = 80;
-
-impl fmt::Display for SearchResult {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if !self.lines_before.is_empty() || !self.lines_after.is_empty() {
-            let mut buffer = String::new();
-            buffer.push_str("=".repeat(SEPARATOR_LEN).as_str());
-            match &self.file {
-                Some(f) => {
-                    buffer.push_str(
-                        format!(
-                            "\n{}: {}: [{}:{}]\n",
-                            f.fullpath(),
-                            self.line_num,
-                            self.match_start_index,
-                            self.match_end_index
-                        )
-                        .as_str(),
-                    );
-                },
-                None => {
-                    buffer.push_str(
-                        format!(
-                            "\n{}: [{}:{}]\n",
-                            self.line_num, self.match_start_index, self.match_end_index
-                        )
-                        .as_str(),
-                    );
-                }
-            }
-            buffer.push_str("-".repeat(SEPARATOR_LEN).as_str());
-            buffer.push_str("\n");
-            let linenum_padding = self.linenum_padding();
-            let mut current_linenum = self.line_num;
-            if !self.lines_before.is_empty() {
-                current_linenum -= self.lines_before.len();
-                for line_before in self.lines_before.iter() {
-                    let lb = format!(
-                        "  {:linenum_padding$} | {}\n",
-                        current_linenum,
-                        line_before,
-                        linenum_padding = linenum_padding
-                    );
-                    buffer.push_str(lb.as_str());
-                    current_linenum += 1;
-                }
-            }
-            let l = format!(
-                "> {:linenum_padding$} | {}\n",
-                current_linenum,
-                self.line,
-                linenum_padding = linenum_padding
-            );
-            buffer.push_str(l.as_str());
-            if !self.lines_after.is_empty() {
-                current_linenum += 1;
-                for line_after in self.lines_after.iter() {
-                    let la = format!(
-                        "  {:linenum_padding$} | {}\n",
-                        current_linenum,
-                        line_after,
-                        linenum_padding = linenum_padding
-                    );
-                    buffer.push_str(la.as_str());
-                    current_linenum += 1;
-                }
-            }
-            write!(f, "{}", buffer)
-        } else {
-            let file_prefix = match &self.file {
-                Some(f) => f.fullpath(),
-                None => "<text>".to_string(),
-            };
-            if self.line_num > 0 {
-                return write!(
-                    f,
-                    "{}: {}: [{}:{}]: {}",
-                    file_prefix,
-                    self.line_num,
-                    self.match_start_index,
-                    self.match_end_index,
-                    self.line.trim()
-                );
-            }
-            write!(
-                f,
-                "{} matches at [{}:{}]",
-                file_prefix, self.match_start_index, self.match_end_index
-            )
         }
     }
 }
@@ -174,11 +78,13 @@ impl PartialEq for SearchResult {
 mod tests {
     use crate::common::log;
     use crate::filetypes::FileType;
+    use crate::searchresultformatter::SearchResultFormatter;
 
     use super::*;
 
     #[test]
     fn test_singleline_searchresult() {
+        let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("Searcher");
         let path = String::from("~/src/xsearch/csharp/CsSearch/CsSearch");
         let filename = String::from("Searcher.cs");
@@ -207,12 +113,85 @@ mod tests {
             match_end_index,
             line.trim()
         );
-        let result_output = format!("{}", result);
-        assert_eq!(result_output, expected_output);
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_singleline_longer_than_maxlinelength_searchresult() {
+        let formatter = SearchResultFormatter::new(false, 100);
+        let pattern = String::from("maxlen");
+        let path = String::from(".");
+        let filename = String::from("maxlen.txt");
+        let file = SearchFile::new(path, filename, FileType::Code);
+        let linenum = 1;
+        let match_start_index = 53;
+        let match_end_index = 59;
+        let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
+        let lines_before: Vec<String> = Vec::new();
+        let lines_after: Vec<String> = Vec::new();
+        let result = SearchResult::new(
+            pattern,
+            Some(file.clone()),
+            linenum,
+            match_start_index,
+            match_end_index,
+            line.clone(),
+            lines_before,
+            lines_after,
+        );
+        let expected_line = String::from("...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...");
+        let expected_output = format!(
+            "{}: {}: [{}:{}]: {}",
+            &file.filepath(),
+            linenum,
+            match_start_index,
+            match_end_index,
+            expected_line
+        );
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_singleline_colorize_searchresult() {
+        let formatter = SearchResultFormatter::new(true, 100);
+        let pattern = String::from("maxlen");
+        let path = String::from(".");
+        let filename = String::from("maxlen.txt");
+        let file = SearchFile::new(path, filename, FileType::Code);
+        let linenum = 1;
+        let match_start_index = 53;
+        let match_end_index = 59;
+        let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
+        let lines_before: Vec<String> = Vec::new();
+        let lines_after: Vec<String> = Vec::new();
+        let result = SearchResult::new(
+            pattern,
+            Some(file.clone()),
+            linenum,
+            match_start_index,
+            match_end_index,
+            line.clone(),
+            lines_before,
+            lines_after,
+        );
+        let expected_line = String::from(format!("...89012345678901234567890123456789012345678901{}maxlen{}89012345678901234567890123456789012345678901...", GREEN, RESET));
+        let expected_output = format!(
+            "{}: {}: [{}:{}]: {}",
+            &file.filepath(),
+            linenum,
+            match_start_index,
+            match_end_index,
+            expected_line
+        );
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
     }
 
     #[test]
     fn test_binary_searchresult() {
+        let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("Searcher");
         let path = String::from("~/src/xsearch/csharp/CsSearch/CsSearch");
         let filename = String::from("Searcher.exe");
@@ -239,12 +218,13 @@ mod tests {
             match_start_index,
             match_end_index
         );
-        let result_output = format!("{}", result);
-        assert_eq!(result_output, expected_output);
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
     }
 
     #[test]
     fn test_multiline_searchresult() {
+        let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("Searcher");
         let path = String::from("~/src/xsearch/csharp/CsSearch/CsSearch");
         let filename = String::from("Searcher.cs");
@@ -282,7 +262,7 @@ mod tests {
   12 | \t\tprivate readonly FileTypes _fileTypes;
 ";
         log(format!("\nexpected_output:\n{}", expected_output).as_str());
-        let result_output = format!("{}", result);
+        let result_output = formatter.format(&result);
         log(format!("\nresult_output:\n{}", result_output).as_str());
         assert_eq!(result_output, expected_output);
     }

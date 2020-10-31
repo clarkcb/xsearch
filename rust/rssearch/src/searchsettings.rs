@@ -2,9 +2,10 @@ use regex::Regex;
 
 use crate::filetypes;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SearchSettings {
     pub archives_only: bool,
+    pub colorize: bool,
     pub debug: bool,
     pub exclude_hidden: bool,
     pub first_match: bool,
@@ -49,6 +50,7 @@ impl SearchSettings {
     pub fn default() -> SearchSettings {
         SearchSettings {
             archives_only: false,
+            colorize: true,
             debug: false,
             exclude_hidden: true,
             first_match: false,
@@ -200,6 +202,7 @@ mod tests {
     fn test_default() {
         let settings = SearchSettings::default();
         assert_eq!(settings.archives_only, false);
+        assert_eq!(settings.colorize, true);
         assert_eq!(settings.debug, false);
         assert_eq!(settings.exclude_hidden, true);
         assert_eq!(settings.first_match, false);

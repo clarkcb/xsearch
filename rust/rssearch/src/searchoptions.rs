@@ -463,6 +463,10 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_archives_only(b))),
     );
     flag_map.insert(
+        "colorize".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.colorize = b)),
+    );
+    flag_map.insert(
         "debug".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_debug(b))),
     );
@@ -497,6 +501,10 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     flag_map.insert(
         "multilinesearch".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.multiline_search = b)),
+    );
+    flag_map.insert(
+        "nocolorize".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.colorize = !b)),
     );
     flag_map.insert(
         "noprintmatches".to_string(),
