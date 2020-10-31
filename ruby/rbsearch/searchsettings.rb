@@ -4,6 +4,7 @@ require_relative 'filetypes.rb'
 class SearchSettings
 
   attr_reader :archivesonly
+  attr_accessor :colorize
   attr_reader :debug
   attr_accessor :excludehidden
   attr_accessor :firstmatch
@@ -45,6 +46,7 @@ class SearchSettings
 
   def initialize
     @archivesonly = false
+    @colorize = true
     @debug = false
     @excludehidden = true
     @firstmatch = false

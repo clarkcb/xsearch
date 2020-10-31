@@ -6,13 +6,19 @@
 #
 ################################################################################
 
+# require_relative '../rbsearch/color.rb'
 require_relative '../rbsearch/config.rb'
 require_relative '../rbsearch/searchresult.rb'
+require_relative '../rbsearch/searchresultformatter.rb'
+require_relative '../rbsearch/searchsettings.rb'
 require 'test/unit'
  
 class SearchResultTest < Test::Unit::TestCase
   @cssearch_path = "#{XSEARCHPATH}/csharp/CsSearch/CsSearch"
   def test_singleline_searchresult
+    settings = SearchSettings::new()
+    settings.colorize = false
+    formatter = SearchResultFormatter::new(settings)
     pattern = 'Search'
     filepath = "#{@cssearch_path}/Searcher.cs"
     linenum = 10
@@ -25,10 +31,65 @@ class SearchResultTest < Test::Unit::TestCase
       match_end_index, line, linesbefore, linesafter)
     expectedoutput = "#{filepath}: #{linenum}: [#{match_start_index}:#{match_end_index}]:"
     expectedoutput += " #{line.strip}"
-    assert_equal(searchresult.to_s, expectedoutput)
+    output = formatter.format(searchresult)
+    assert_equal(expectedoutput, output)
+  end
+
+  def test_singleline_longer_than_maxlength_searchresult
+    settings = SearchSettings::new()
+    settings.colorize = false
+    settings.maxlinelength = 100
+    formatter = SearchResultFormatter::new(settings)
+    pattern = 'pattern'
+    filepath = "./maxlen.txt"
+    linenum = 1
+    match_start_index = 53
+    match_end_index = 59
+    line = '0123456789012345678901234567890123456789012345678901' +
+           'maxlen' +
+           '8901234567890123456789012345678901234567890123456789'
+    linesbefore = []
+    linesafter = []
+    searchresult = SearchResult.new(pattern, filepath, linenum, match_start_index,
+      match_end_index, line, linesbefore, linesafter)
+    expectedline = '...89012345678901234567890123456789012345678901' +
+                   'maxlen' +
+                   '89012345678901234567890123456789012345678901...'
+    expectedoutput = "#{filepath}: #{linenum}: [#{match_start_index}:#{match_end_index}]:"
+    expectedoutput += " #{expectedline}"
+    output = formatter.format(searchresult)
+    assert_equal(expectedoutput, output)
+  end
+
+  def test_singleline_longer_colorize_searchresult
+    settings = SearchSettings::new()
+    settings.colorize = true
+    settings.maxlinelength = 100
+    formatter = SearchResultFormatter::new(settings)
+    pattern = 'pattern'
+    filepath = "./maxlen.txt"
+    linenum = 1
+    match_start_index = 53
+    match_end_index = 59
+    line = '0123456789012345678901234567890123456789012345678901' +
+           'maxlen' +
+           '8901234567890123456789012345678901234567890123456789'
+    linesbefore = []
+    linesafter = []
+    searchresult = SearchResult.new(pattern, filepath, linenum, match_start_index,
+      match_end_index, line, linesbefore, linesafter)
+    expectedline = '...89012345678901234567890123456789012345678901' +
+                   'maxlen'.green +
+                   '89012345678901234567890123456789012345678901...'
+    expectedoutput = "#{filepath}: #{linenum}: [#{match_start_index}:#{match_end_index}]:"
+    expectedoutput += " #{expectedline}"
+    output = formatter.format(searchresult)
+    assert_equal(expectedoutput, output)
   end
 
   def test_binaryfile_searchresult
+    settings = SearchSettings::new()
+    formatter = SearchResultFormatter::new(settings)
     pattern = 'Search'
     filepath = "#{@cssearch_path}/Searcher.exe"
     linenum = 0
@@ -40,10 +101,14 @@ class SearchResultTest < Test::Unit::TestCase
     searchresult = SearchResult.new(pattern, filepath, linenum, match_start_index,
       match_end_index, line, linesbefore, linesafter)
     expectedoutput = "#{filepath} matches at [0:0]"
-    assert_equal(searchresult.to_s, expectedoutput)
+    output = formatter.format(searchresult)
+    assert_equal(expectedoutput, output)
   end
 
   def test_multiline_searchresult
+    settings = SearchSettings::new()
+    settings.colorize = false
+    formatter = SearchResultFormatter::new(settings)
     pattern = 'Search'
     filepath = "#{@cssearch_path}/Searcher.cs"
     linenum = 10
@@ -66,6 +131,7 @@ class SearchResultTest < Test::Unit::TestCase
 
 eos
     expectedoutput = outputtemplate % [filepath, linenum, match_start_index, match_end_index]
-    assert_equal(searchresult.to_s, expectedoutput)
+    output = formatter.format(searchresult)
+    assert_equal(expectedoutput, output)
   end
 end

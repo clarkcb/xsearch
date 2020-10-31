@@ -3,6 +3,7 @@
 require 'json'
 require_relative 'config.rb'
 require_relative 'fileutil.rb'
+require_relative 'searcherror.rb'
 
 module FileType
   UNKNOWN = 0

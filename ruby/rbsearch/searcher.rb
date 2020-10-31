@@ -9,6 +9,7 @@ require_relative 'fileutil.rb'
 require_relative 'searcherror.rb'
 require_relative 'searchfile.rb'
 require_relative 'searchresult.rb'
+require_relative 'searchresultformatter.rb'
 
 # Searcher - finds files to search and searches them according to settings
 class Searcher
@@ -243,10 +244,19 @@ class Searcher
   end
 
   def print_results
+    formatter = SearchResultFormatter.new(@settings)
     log("Search results (#{@results.size}):")
     @results.each do |r|
-      print_result(r)
+      # print_result(r)
+      log(formatter.format(r))
     end
+  end
+
+  def print_result(search_result)
+    s = ''
+    s += "#{search_result.pattern}: " if @settings.searchpatterns.size > 1
+    s += search_result.to_s
+    log(s)
   end
 
   def get_matching_dirs
@@ -476,12 +486,5 @@ class Searcher
 
   def add_search_result(search_result)
     @results.push(search_result)
-  end
-
-  def print_result(search_result)
-    s = ''
-    s += "#{search_result.pattern}: " if @settings.searchpatterns.size > 1
-    s += search_result.to_s
-    log(s)
   end
 end
