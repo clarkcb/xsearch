@@ -23,7 +23,7 @@
     <repository>
       <id>central</id>
       <name>Maven repository</name>
-      <url>http://repo1.maven.org/maven2</url>
+      <url>https://repo1.maven.org/maven2</url>
     </repository>
   </repositories>
 
@@ -44,7 +44,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.1</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
