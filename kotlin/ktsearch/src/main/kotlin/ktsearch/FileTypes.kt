@@ -36,18 +36,25 @@ private val unknown = "unknown"
 
 fun fromName(name: String) : FileType {
     val lname = name.trim().toLowerCase()
-    if (lname == text) {
-        return FileType.TEXT
-    } else if (lname == binary) {
-        return FileType.BINARY
-    } else if (lname == archive) {
-        return FileType.ARCHIVE
-    } else if (lname == code) {
-        return FileType.CODE
-    } else if (lname == xml) {
-        return FileType.XML
-    } else {
-        return FileType.UNKNOWN
+    when (lname) {
+        text -> {
+            return FileType.TEXT
+        }
+        binary -> {
+            return FileType.BINARY
+        }
+        archive -> {
+            return FileType.ARCHIVE
+        }
+        code -> {
+            return FileType.CODE
+        }
+        xml -> {
+            return FileType.XML
+        }
+        else -> {
+            return FileType.UNKNOWN
+        }
     }
 }
 

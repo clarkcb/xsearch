@@ -1,11 +1,10 @@
 package ktsearch
 
-import kotlin.collections.Set
-
 /**
  * @author cary on 7/23/16.
  */
 data class SearchSettings(val archivesOnly: Boolean,
+                          val colorize: Boolean,
                           val debug: Boolean,
                           val excludeHidden: Boolean,
                           val firstMatch: Boolean,
@@ -49,6 +48,7 @@ data class SearchSettings(val archivesOnly: Boolean,
 fun getDefaultSettings() : SearchSettings {
     return SearchSettings(
             archivesOnly = false,
+            colorize = true,
             debug = false,
             excludeHidden = true,
             firstMatch = false,
@@ -97,4 +97,12 @@ fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
 fun addFileTypes(ft: String, filetypes: Set<FileType>): Set<FileType> {
     val fts = ft.split(',').filter { it.isNotEmpty() }.map { fromName(it) }
     return filetypes.plus(fts)
+}
+
+fun setArchivesOnly(ss: SearchSettings, archivesOnly: Boolean): SearchSettings {
+    return ss.copy(archivesOnly = archivesOnly, searchArchives = archivesOnly || ss.searchArchives)
+}
+
+fun setDebug(ss: SearchSettings, debug: Boolean): SearchSettings {
+    return ss.copy(debug = debug, verbose = debug || ss.verbose)
 }

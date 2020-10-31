@@ -59,25 +59,24 @@ class SearchOptionsTest {
                  |  "debug": true,
                  |  "allmatches": false,
                  |  "includehidden": false
-                 |}"""
+                 |}""".trimMargin()
         val searchOptions = SearchOptions()
-        val settings = getDefaultSettings()
-        searchOptions.settingsFromJson(json.trimMargin(), settings)
+        val settings = searchOptions.settingsFromJson(json, getDefaultSettings())
 
-        assertTrue(settings.startPath === "~/src/xsearch/")
+        assertTrue(settings.startPath == "~/src/xsearch/")
 
         assertEquals(settings.inExtensions.size, 2)
         assertTrue(settings.inExtensions.contains("js"))
         assertTrue(settings.inExtensions.contains("ts"))
 
         assertEquals(settings.outDirPatterns.size, 4)
-        assertTrue(settings.outDirPatterns.contains(Regex("node_module")))
+        assertTrue(settings.outDirPatterns.count {it.pattern == "node_module"} == 1)
 
         assertEquals(settings.outFilePatterns.size, 2)
-        assertTrue(settings.outFilePatterns.contains(Regex("gulpfile")))
+        assertTrue(settings.outFilePatterns.count {it.pattern == "gulpfile"} == 1)
 
         assertEquals(settings.searchPatterns.size, 1)
-        assertTrue(settings.searchPatterns.first().toString().equals("Searcher"))
+        assertTrue(settings.searchPatterns.first().pattern == "Searcher")
 
         assertEquals(settings.linesBefore, 2)
         assertEquals(settings.linesAfter, 2)

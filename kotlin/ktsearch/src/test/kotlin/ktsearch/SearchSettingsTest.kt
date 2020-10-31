@@ -1,8 +1,8 @@
 package ktsearch
 
-import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Test
 
 /**
  * @author cary on 7/30/16.
@@ -11,23 +11,25 @@ class SearchSettingsTest {
     @Test
     fun testDefaultSettings() {
         val settings = getDefaultSettings()
-        assertEquals(settings.archivesOnly, false)
-        assertEquals(settings.debug, false)
-        assertEquals(settings.excludeHidden, false)
-        assertEquals(settings.firstMatch, false)
-        assertEquals(settings.linesAfter, 0)
-        assertEquals(settings.linesBefore, 0)
-        assertEquals(settings.listDirs, false)
-        assertEquals(settings.listFiles, false)
-        assertEquals(settings.listLines, false)
-        assertEquals(settings.maxLineLength, 150)
-        assertEquals(settings.multiLineSearch, false)
-        assertEquals(settings.printResults, false)
-        assertEquals(settings.printUsage, false)
-        assertEquals(settings.printVersion, false)
-        assertEquals(settings.searchArchives, false)
-        assertEquals(settings.uniqueLines, false)
-        assertEquals(settings.verbose, false)
+        assertEquals(false, settings.archivesOnly)
+        assertEquals(true, settings.colorize)
+        assertEquals(false, settings.debug)
+        assertEquals(true, settings.excludeHidden)
+        assertEquals(false, settings.firstMatch)
+        assertEquals(0, settings.linesAfter)
+        assertEquals(0, settings.linesBefore)
+        assertEquals(false, settings.listDirs)
+        assertEquals(false, settings.listFiles)
+        assertEquals(false, settings.listLines)
+        assertEquals(150, settings.maxLineLength)
+        assertEquals(false, settings.multiLineSearch)
+        assertEquals(false, settings.printResults)
+        assertEquals(false, settings.printUsage)
+        assertEquals(false, settings.printVersion)
+        assertEquals(false, settings.searchArchives)
+        assertEquals(true, settings.recursive)
+        assertEquals(false, settings.uniqueLines)
+        assertEquals(false, settings.verbose)
     }
 
     @Test
@@ -46,5 +48,19 @@ class SearchSettingsTest {
         assertEquals(settings.inExtensions.size.toLong(), 2)
         assertTrue(settings.inExtensions.contains("java"))
         assertTrue(settings.inExtensions.contains("scala"))
+    }
+
+    @Test
+    fun testSetArchivesOnly() {
+        val settings = setArchivesOnly(getDefaultSettings(), true)
+        assertTrue(settings.archivesOnly)
+        assertTrue(settings.searchArchives)
+    }
+
+    @Test
+    fun testSetDebug() {
+        val settings = setDebug(getDefaultSettings(), true)
+        assertTrue(settings.debug)
+        assertTrue(settings.verbose)
     }
 }

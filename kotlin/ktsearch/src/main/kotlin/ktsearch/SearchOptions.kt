@@ -131,6 +131,7 @@ class SearchOptions() {
             "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
                     searchArchives = b) else ss.copy(archivesOnly = b) },
             "allmatches" to { b, ss -> ss.copy(firstMatch = !b) },
+            "colorize" to { b, ss -> ss.copy(colorize = b) },
             "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
                 ss.copy(debug = b) },
             "excludehidden" to { b, ss -> ss.copy(excludeHidden = b) },
@@ -158,61 +159,67 @@ class SearchOptions() {
             val json = file.readText()
             return settingsFromJson(json, settings)
         } catch (e: FileNotFoundException) {
-            throw SearchException("Settings file not found: " + filePath)
+            throw SearchException("Settings file not found: $filePath")
         } catch (e: IOException) {
-            throw SearchException("IOException reading settings file: " + filePath)
+            throw SearchException("IOException reading settings file: $filePath")
         } catch (e: ParseException) {
-            throw SearchException("ParseException trying to parse the JSON in " + filePath)
+            throw SearchException("ParseException trying to parse the JSON in $filePath")
         }
     }
 
     fun settingsFromJson(json: String, settings: SearchSettings): SearchSettings {
         val obj = JSONValue.parseWithException(json)
         val jsonObject = obj as JSONObject
-        fun recSettingsFromJson(keys: Set<Any?>, settings: SearchSettings) : SearchSettings {
-            if (keys.isEmpty()) return settings
+        fun recSettingsFromJson(keys: List<Any?>, settings: SearchSettings) : SearchSettings {
+            return if (keys.isEmpty()) settings
             else {
                 val ko = keys.first()
-                val vo = jsonObject.get(ko)
+                val vo = jsonObject[ko]
                 if (ko != null && ko is String && vo != null) {
-                    return recSettingsFromJson(keys.minus(ko), applySetting(ko, vo, settings))
+                    recSettingsFromJson(keys.drop(1), applySetting(ko, vo, settings))
                 } else {
-                    return recSettingsFromJson(keys.minus(ko), settings)
+                    recSettingsFromJson(keys.drop(1), settings)
                 }
             }
         }
-        return recSettingsFromJson(obj.keys, settings)
+        return recSettingsFromJson(obj.keys.toList(), settings)
     }
 
     fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
-        if (obj is String) {
-            return applySetting(key, obj, settings)
-        } else if (obj is Boolean) {
-            return applySetting(key, obj, settings)
-        } else if (obj is Long) {
-            return applySetting(key, obj.toString(), settings)
-        } else if (obj is JSONArray) {
-            return applySetting(key, obj.toList().map { it as String }, settings)
-        } else {
-            return settings
+        when (obj) {
+            is String -> {
+                return applySetting(key, obj, settings)
+            }
+            is Boolean -> {
+                return applySetting(key, obj, settings)
+            }
+            is Long -> {
+                return applySetting(key, obj.toString(), settings)
+            }
+            is JSONArray -> {
+                return applySetting(key, obj.toList().map { it as String }, settings)
+            }
+            else -> {
+                return settings
+            }
         }
     }
 
     fun applySetting(key: String, s: String, settings: SearchSettings): SearchSettings {
         if (this.argActionMap.containsKey(key)) {
-            return this.argActionMap.get(key)!!.invoke(s, settings)
+            return this.argActionMap[key]!!.invoke(s, settings)
         } else if (key == "startpath") {
             return settings.copy(startPath = s)
         } else {
-            throw SearchException("Invalid option: " + key)
+            throw SearchException("Invalid option: $key")
         }
     }
 
     fun applySetting(key: String, bool: Boolean, settings: SearchSettings): SearchSettings {
         if (this.boolFlagActionMap.containsKey(key)) {
-            return this.boolFlagActionMap.get(key)!!.invoke(bool, settings)
+            return this.boolFlagActionMap[key]!!.invoke(bool, settings)
         } else {
-            throw SearchException("Invalid option: " + key)
+            throw SearchException("Invalid option: $key")
         }
     }
 

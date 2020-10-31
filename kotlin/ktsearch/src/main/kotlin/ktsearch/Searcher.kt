@@ -104,8 +104,14 @@ class Searcher(val settings: SearchSettings) {
                 (settings.inFilePatterns.isEmpty()
                         || matchesAnyPattern(sf.file.name, settings.inFilePatterns))
                 &&
+                (settings.inFileTypes.isEmpty()
+                        || settings.inFileTypes.contains(sf.fileType))
+                &&
                 (settings.outFilePatterns.isEmpty()
                         || !matchesAnyPattern(sf.file.name, settings.outFilePatterns))
+                &&
+                (settings.outFileTypes.isEmpty()
+                        || !settings.outFileTypes.contains(sf.fileType))
     }
 
     fun isArchiveSearchFile(sf: SearchFile): Boolean {

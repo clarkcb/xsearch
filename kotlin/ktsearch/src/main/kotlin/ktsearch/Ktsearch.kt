@@ -43,17 +43,16 @@ class SearchResultComparator : Comparator<SearchResult> {
     }
 }
 
-fun printResults(results: List<SearchResult>) {
+fun printResults(results: List<SearchResult>, settings: SearchSettings) {
     log("\nSearch results (${results.size}):")
+    val formatter = SearchResultFormatter(settings)
     for (r in results.sortedWith(SearchResultComparator())) {
-        log(r.toString())
+        log(formatter.format(r))
     }
 }
 
 fun printMatchingDirs(results: List<SearchResult>) {
-    val dirs = results.map { r -> r.file }.filter { it != null }.
-            map { f -> f!!.file.parent }.filter { it != null }.
-            distinct().sorted()
+    val dirs = results.mapNotNull { r -> r.file }.mapNotNull { f -> f.file.parent }.distinct().sorted()
     log("\nDirectories with matches (${dirs.size}):")
     for (d in dirs) {
         log(d)
@@ -61,8 +60,7 @@ fun printMatchingDirs(results: List<SearchResult>) {
 }
 
 fun printMatchingFiles(results: List<SearchResult>) {
-    val files = results.map { r -> r.file }.filter { it != null }.
-            map { f -> f.toString() }.distinct().sorted()
+    val files = results.mapNotNull { r -> r.file }.map { f -> f.toString() }.distinct().sorted()
     log("\nFiles with matches (${files.size}):")
     for (f in files) {
         log(f)
@@ -88,7 +86,7 @@ fun search(settings: SearchSettings) {
     val results: List<SearchResult> = searcher.search()
 
     if (settings.printResults) {
-        printResults(results)
+        printResults(results, settings)
     }
     if (settings.listDirs) {
         printMatchingDirs(results)
@@ -105,7 +103,7 @@ fun main(args : Array<String>) {
     val searchOptions = SearchOptions()
     try {
         val settings = searchOptions.settingsFromArgs(args)
-        if (settings.debug) log("settings: " + settings)
+        if (settings.debug) log("settings: $settings")
         if (settings.printUsage) printUsage(searchOptions)
         else search(settings)
     } catch (e: SearchException) {

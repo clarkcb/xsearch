@@ -12,8 +12,6 @@ data class SearchResult(val searchPattern: Regex,
                         val linesBefore: List<String>,
                         val linesAfter: List<String>) {
 
-    private val noSearchFileText = "<text>"
-
     constructor(searchPattern: Regex,
                 file: SearchFile?,
                 lineNum: Int,
@@ -22,38 +20,54 @@ data class SearchResult(val searchPattern: Regex,
                 line: String) :
             this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex,
                     line, listOf(), listOf())
+}
 
-    override fun toString(): String {
-        if (linesBefore.isNotEmpty() || linesAfter.isNotEmpty()) {
-            return multiLineToString()
+class SearchResultFormatter(val settings: SearchSettings) {
+    private val noSearchFileText = "<text>"
+
+    fun format(result: SearchResult): String {
+        return if (result.linesBefore.isNotEmpty() || result.linesAfter.isNotEmpty()) {
+            multiLineFormat(result)
         } else {
-            return singleLineToString()
+            singleLineFormat(result)
         }
     }
 
-    fun multiLineToString(): String {
+    private fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String {
+        return s.substring(0, matchStartIndex) +
+                Color.GREEN +
+                s.substring(matchStartIndex, matchEndIndex) +
+                Color.RESET +
+                s.substring(matchEndIndex)
+    }
+
+    private fun multiLineFormat(result: SearchResult): String {
         val lineSepLength = 80
-        val fileString = if (file == null) noSearchFileText else file.toString()
+        val fileString = if (result.file == null) noSearchFileText else result.file.toString()
         val sb = StringBuilder().
                 append("=".repeat(lineSepLength)).append("\n").
-                append(fileString).append(": ").append(lineNum).append(": [").
-                append(matchStartIndex).append(":").append(matchEndIndex).
+                append(fileString).append(": ").append(result.lineNum).append(": [").
+                append(result.matchStartIndex).append(":").append(result.matchEndIndex).
                 append("]\n").append("-".repeat(lineSepLength)).append("\n")
-        var currentLineNum = lineNum
-        val lineNumPadding = (lineNum + linesAfter.size).toString().length
+        var currentLineNum = result.lineNum
+        val lineNumPadding = (result.lineNum + result.linesAfter.size).toString().length
         val lineFormat = " %1$" + lineNumPadding + "d | %2\$s\n"
-        if (linesBefore.isNotEmpty()) {
-            currentLineNum -= linesBefore.size
-            for (lineBefore in linesBefore) {
+        if (result.linesBefore.isNotEmpty()) {
+            currentLineNum -= result.linesBefore.size
+            for (lineBefore in result.linesBefore) {
                 sb.append(" ").append(String.format(lineFormat, currentLineNum,
                         lineBefore))
                 currentLineNum++
             }
         }
-        sb.append(">").append(String.format(lineFormat, lineNum, line))
-        if (linesAfter.isNotEmpty()) {
+        var line = result.line
+        if (settings.colorize) {
+            line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+        }
+        sb.append(">").append(String.format(lineFormat, result.lineNum, line))
+        if (result.linesAfter.isNotEmpty()) {
             currentLineNum++
-            for (lineAfter in linesAfter) {
+            for (lineAfter in result.linesAfter) {
                 sb.append(" ").append(String.format(lineFormat, currentLineNum,
                         lineAfter))
                 currentLineNum++
@@ -62,34 +76,83 @@ data class SearchResult(val searchPattern: Regex,
         return sb.toString()
     }
 
-    private fun singleLineToString(): String {
+    private fun formatMatchingLine(result: SearchResult): String {
+        var formatted = result.line.trim()
+        var leadingWhitespaceCount = result.line.trimEnd().length - formatted.length
+        var formattedLength = formatted.length
+        val maxLineEndIndex = formattedLength - 1
+        val matchLength = result.matchEndIndex - result.matchStartIndex
+        var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
+        var matchEndIndex = matchStartIndex + matchLength
+
+        if (formattedLength > settings.maxLineLength) {
+            var lineStartIndex = matchStartIndex
+            var lineEndIndex = lineStartIndex + matchLength
+            matchStartIndex = 0
+            matchEndIndex = matchLength
+
+            while (lineEndIndex > formattedLength - 1) {
+                lineStartIndex--
+                lineEndIndex--
+                matchStartIndex++
+                matchEndIndex++
+            }
+
+            formattedLength = lineEndIndex - lineStartIndex
+            while (formattedLength < settings.maxLineLength) {
+                if (lineStartIndex > 0) {
+                    lineStartIndex--
+                    matchStartIndex++
+                    matchEndIndex++
+                    formattedLength = lineEndIndex - lineStartIndex
+                }
+                if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
+                    lineEndIndex++
+                }
+                formattedLength = lineEndIndex - lineStartIndex
+            }
+
+            formatted = formatted.substring(lineStartIndex, lineEndIndex)
+
+            if (lineStartIndex > 2) {
+                formatted = "..." + formatted.substring(3)
+            }
+            if (lineEndIndex < maxLineEndIndex - 3) {
+                formatted = formatted.substring(0, formattedLength - 3) + "..."
+            }
+        }
+
+        if (settings.colorize) {
+            formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+        }
+
+        return formatted
+    }
+
+    private fun singleLineFormat(result: SearchResult): String {
         val sb = StringBuilder()
-        if (file != null) {
-            sb.append(file.toString())
+        if (result.file != null) {
+            sb.append(result.file.toString())
         } else {
             sb.append(noSearchFileText)
         }
 
-        if (lineNum == 0) {
+        if (result.lineNum == 0) {
             sb.append(" matches at [").
-                    append(matchStartIndex).
+                    append(result.matchStartIndex).
                     append(":").
-                    append(matchEndIndex).
+                    append(result.matchEndIndex).
                     append("]")
         } else {
             sb.append(": ").
-                    append(lineNum).
+                    append(result.lineNum).
                     append(": [").
-                    append(matchStartIndex).
+                    append(result.matchStartIndex).
                     append(":").
-                    append(matchEndIndex).
+                    append(result.matchEndIndex).
                     append("]: ").
-                    append(formatMatchingLine(line))
+                    append(formatMatchingLine(result))
         }
         return sb.toString()
-    }
-
-    private fun formatMatchingLine(line: String): String {
-        return line.trim()
     }
 }

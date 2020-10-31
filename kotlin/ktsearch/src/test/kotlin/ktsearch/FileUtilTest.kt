@@ -1,8 +1,9 @@
 package ktsearch
 
-import org.junit.Test
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.io.File
 
 /**
  * @author cary on 7/30/16.
@@ -40,5 +41,32 @@ class FileUtilTest {
     fun testIsDotDirHiddenFile() {
         val filename = ".gitignore"
         assertFalse(FileUtil.isDotDir(filename))
+    }
+
+    /***************************************************************************
+     * isHidden tests
+     **************************************************************************/
+    @Test
+    fun testIsHiddenSingleDot() {
+        val filename = "."
+        assertFalse(FileUtil.isHidden(filename))
+    }
+
+    @Test
+    fun testIsHiddenDoubleDot() {
+        val filename = ".."
+        assertFalse(FileUtil.isHidden(filename))
+    }
+
+    @Test
+    fun testIsHiddenHiddenFileName() {
+        val filename = ".gitignore"
+        assertTrue(FileUtil.isHidden(filename))
+    }
+
+    @Test
+    fun testIsHiddenNotHiddenFileName() {
+        val filename = "file.txt"
+        assertFalse(FileUtil.isHidden(filename))
     }
 }
