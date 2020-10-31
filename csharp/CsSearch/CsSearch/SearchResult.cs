@@ -16,9 +16,6 @@ namespace CsSearch
 		public IList<string> LinesBefore { get; private set; }
 		public IList<string> LinesAfter { get; private set; }
 
-		// temp
-		private const int MaxLineLength = 150;
-
 		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
 			int matchStartIndex, int matchEndIndex, string line)
 		{
@@ -26,17 +23,15 @@ namespace CsSearch
 				matchEndIndex, line, new List<string>(), new List<string>());
 		}
 
-		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
-			int matchStartIndex, int matchEndIndex, string line,
-			IList<string> linesBefore, IList<string> linesAfter)
+		public SearchResult(Regex searchPattern, SearchFile file, int lineNum, int matchStartIndex,
+			int matchEndIndex, string line, IList<string> linesBefore, IList<string> linesAfter)
 		{
 			Initialize(searchPattern, file, lineNum, matchStartIndex,
 				matchEndIndex, line, linesBefore, linesAfter);
 		}
 
-		private void Initialize(Regex searchPattern, SearchFile file,
-			int lineNum, int matchStartIndex, int matchEndIndex, string line,
-			IList<string> linesBefore, IList<string> linesAfter)
+		private void Initialize(Regex searchPattern, SearchFile file, int lineNum, int matchStartIndex,
+			int matchEndIndex, string line, IList<string> linesBefore, IList<string> linesAfter)
 		{
 			SearchPattern = searchPattern;
 			File = file;
@@ -48,125 +43,6 @@ namespace CsSearch
 			LinesAfter = linesAfter;
 		}
 
-		public string ToString(SearchSettings settings)
-		{
-			if (LinesBefore.Count > 0 || LinesAfter.Count > 0)
-			{
-				return MultiLineToString(settings);
-			}
-			return SingleLineToString(settings);
-		}
-
-		private int LineNumPadding()
-		{
-			var maxLineNum = LineNum + LinesAfter.Count;
-			return $"{maxLineNum}".Length;
-		}
-
-		private string GetRelativeFilePath(SearchSettings settings)
-		{
-			if (!string.IsNullOrEmpty(settings.StartPath))
-			{
-				if (settings.StartPath[0] == '~')
-				{
-					return FileUtil.ContractPath(File.FullName);
-				}
-				return FileUtil.GetRelativePath(File.FullName, settings.StartPath);
-			}
-
-			return File.FullName;
-		}
-
-		private string MultiLineToString(SearchSettings settings)
-		{
-			var sb = new StringBuilder().
-				Append(new string('=', 80)).Append('\n').
-				Append(GetRelativeFilePath(settings)).Append(": ").
-				Append(LineNum).Append(": ").
-				Append('[').Append(MatchStartIndex).Append(':').
-				Append(MatchEndIndex).Append("]\n").
-				Append(new String('-', 80)).Append('\n');
-			var currentLineNum = LineNum;
-			var lineFormat = " {0," + LineNumPadding() + "} | {1}\n";
-			if (LinesBefore.Count > 0)
-			{
-				currentLineNum -= LinesBefore.Count;
-				foreach (string lineBefore in LinesBefore)
-				{
-					sb.Append(' ').
-						Append(string.Format(lineFormat, currentLineNum,
-						lineBefore));
-					currentLineNum++;
-				}
-			}
-			sb.Append('>').Append(string.Format(lineFormat, LineNum, Line));
-			if (LinesAfter.Count > 0)
-			{
-				currentLineNum++;
-				foreach (var lineAfter in LinesAfter)
-				{
-					sb.Append(' ').
-						Append(string.Format(lineFormat, currentLineNum,
-						lineAfter));
-					currentLineNum++;
-				}
-			}
-			return sb.ToString();
-		}
-
-		private string SingleLineToString(SearchSettings settings)
-		{
-			var sb = new StringBuilder().Append(GetRelativeFilePath(settings));
-			if (LineNum == 0)
-			{
-				sb.Append($" matches at [{MatchStartIndex}:{MatchEndIndex}]");
-			}
-			else
-			{
-				sb.Append($": {LineNum}: [{MatchStartIndex}:{MatchEndIndex}]: ");
-				sb.Append(FormatMatchingLine());
-			}
-			return sb.ToString();
-		}
-
-		private string FormatMatchingLine()
-		{
-			var formatted = Line;
-			var lineLength = Line.Length;
-			var matchLength = MatchEndIndex - MatchStartIndex;
-
-			if (lineLength > MaxLineLength)
-			{
-				var adjustedMaxLength = MaxLineLength - matchLength;
-				var beforeIndex = MatchStartIndex;
-				if (MatchStartIndex > 0)
-				{
-					beforeIndex -= (adjustedMaxLength / 4);
-					if (beforeIndex < 0)
-						beforeIndex = 0;
-				}
-				adjustedMaxLength -= (MatchStartIndex - beforeIndex);
-				var afterIndex = MatchEndIndex + adjustedMaxLength;
-				if (afterIndex > lineLength)
-					afterIndex = lineLength;
-
-				var before = "";
-				if (beforeIndex > 3)
-				{
-					before = "...";
-					beforeIndex += 3;
-				}
-				var after = "";
-				if (afterIndex < lineLength - 3)
-				{
-					after = "...";
-					afterIndex -= 3;
-				}
-				formatted = before + Line.Substring(beforeIndex, afterIndex-beforeIndex) + after;
-			}
-			return formatted.Trim();
-		}
-		
 		public static int Compare(SearchResult r1, SearchResult r2)
 		{
 			if (r1 == null && r2 == null)

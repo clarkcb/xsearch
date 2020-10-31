@@ -16,22 +16,23 @@ namespace CsSearchTests
 		{
 			var settings = _searchOptions.SettingsFromArgs(new List<string>());
 			Assert.IsFalse(settings.ArchivesOnly);
+			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
 			Assert.IsFalse(settings.FirstMatch);
-			Assert.AreEqual(settings.LinesAfter, 0);
-			Assert.AreEqual(settings.LinesBefore, 0);
+			Assert.AreEqual(0, settings.LinesAfter);
+			Assert.AreEqual(0, settings.LinesBefore);
 			Assert.IsFalse(settings.ListDirs);
 			Assert.IsFalse(settings.ListFiles);
 			Assert.IsFalse(settings.ListLines);
-			Assert.AreEqual(settings.MaxLineLength, 150);
+			Assert.AreEqual(150, settings.MaxLineLength);
 			Assert.IsFalse(settings.MultiLineSearch);
 			Assert.IsTrue(settings.PrintResults);
 			Assert.IsFalse(settings.PrintUsage);
 			Assert.IsFalse(settings.PrintVersion);
 			Assert.IsTrue(settings.Recursive);
 			Assert.IsFalse(settings.SearchArchives);
-			Assert.AreEqual(settings.StartPath, null);
+			Assert.AreEqual(null, settings.StartPath);
 			Assert.IsFalse(settings.UniqueLines);
 			Assert.IsFalse(settings.Verbose);
 		}
@@ -43,9 +44,9 @@ namespace CsSearchTests
 			var settings = _searchOptions.SettingsFromArgs(args);
 			var startFile = new FileInfo(".");
 			//Assert.AreEqual(settings.StartPath, startFile.FullName);
-			Assert.AreEqual(settings.InExtensions.Count, 1);
+			Assert.AreEqual(1, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
-			Assert.AreEqual(settings.SearchPatterns.Count, 1);
+			Assert.AreEqual(1, settings.SearchPatterns.Count);
 			Assert.IsTrue(settings.SearchPatterns.First().ToString() == "Search");
 		}
 
@@ -54,7 +55,7 @@ namespace CsSearchTests
 		{
 			var args = new List<string>() { "-x", "cs", "-s", "Search", ".", "-Q" };
 			var ex = Assert.Throws<SearchException>(() => _searchOptions.SettingsFromArgs(args));
-			Assert.AreEqual(ex.Message, "Invalid option: Q");
+			Assert.AreEqual("Invalid option: Q", ex.Message);
 		}
 	}
 }

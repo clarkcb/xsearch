@@ -12,6 +12,7 @@ namespace CsSearchTests
 		{
 			var settings = new SearchSettings();
 			Assert.IsFalse(settings.ArchivesOnly);
+			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
 			Assert.IsFalse(settings.FirstMatch);

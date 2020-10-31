@@ -534,10 +534,11 @@ namespace CsSearch
 		public void PrintResults()
 		{
 			var sortedResults = GetSortedSearchResults();
+			var formatter = new SearchResultFormatter(Settings);
 			Common.Log($"Search results ({sortedResults.Count}):");
 			foreach (var searchResult in sortedResults)
 			{
-				Common.Log(searchResult.ToString(Settings));
+				Common.Log(formatter.Format(searchResult));
 			}
 		}
 

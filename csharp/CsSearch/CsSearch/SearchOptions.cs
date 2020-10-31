@@ -45,6 +45,7 @@ namespace CsSearch
 				{
 					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
 					{ "archivesonly", (b, settings) => settings.SetArchivesOnly(b) },
+					{ "colorize", (b, settings) => settings.Colorize = b },
 					{ "debug", (b, settings) => settings.SetDebug(b) },
 					{ "excludehidden", (b, settings) => settings.ExcludeHidden = b },
 					{ "firstmatch", (b, settings) => settings.FirstMatch = b },
@@ -54,6 +55,7 @@ namespace CsSearch
 					{ "listfiles", (b, settings) => settings.ListFiles = b },
 					{ "listlines", (b, settings) => settings.ListLines = b },
 					{ "multilinesearch", (b, settings) => settings.MultiLineSearch = b },
+					{ "nocolorize", (b, settings) => settings.Colorize = !b },
 					{ "noprintmatches", (b, settings) => settings.PrintResults = !b },
 					{ "norecursive", (b, settings) => settings.Recursive = !b },
 					{ "nosearcharchives", (b, settings) => settings.SearchArchives = !b },

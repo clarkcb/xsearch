@@ -7,6 +7,7 @@ namespace CsSearch
 	public class SearchSettings
 	{
 		public bool ArchivesOnly { get; set; }
+		public bool Colorize { get; set; }
 		public bool Debug { get; set; }
 		public bool ExcludeHidden { get; set; }
 		public bool FirstMatch { get; set; }
@@ -49,6 +50,7 @@ namespace CsSearch
 		public SearchSettings()
 		{
 			ArchivesOnly = false;
+			Colorize = true;
 			Debug = false;
 			ExcludeHidden = true;
 			FirstMatch = false;
@@ -247,6 +249,7 @@ namespace CsSearch
 		{
 			var sb = new StringBuilder("SearchSettings(");
 			sb.Append("ArchivesOnly: " + ArchivesOnly);
+			sb.Append(", Colorize: " + Colorize);
 			sb.Append(", Debug: " + Debug);
 			sb.Append(", ExcludeHidden: " + ExcludeHidden);
 			sb.Append(", FirstMatch: " + FirstMatch);
