@@ -6,11 +6,13 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/pmylund/sortutil"
 )
 
 type SearchResults struct {
+	Settings      *SearchSettings
 	SearchResults []*SearchResult
 	DirCounts     map[string]int
 	FileCounts    map[string]int
@@ -18,8 +20,9 @@ type SearchResults struct {
 	PatternCounts map[string]int
 }
 
-func NewSearchResults() *SearchResults {
+func NewSearchResults(settings *SearchSettings) *SearchResults {
 	return &SearchResults{
+		settings,
 		[]*SearchResult{},
 		make(map[string]int),
 		make(map[string]int),
@@ -214,13 +217,147 @@ func (rs *SearchResults) PrintPatternCounts(patterns []string) {
 func (rs *SearchResults) PrintSearchResults() {
 	// sort them first
 	sort.Sort(rs)
+	formatter := NewSearchResultFormatter(rs.Settings)
 	log(fmt.Sprintf("Search results (%d):", len(rs.SearchResults)))
 	for _, r := range rs.SearchResults {
 		if len(rs.PatternCounts) > 1 {
 			log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
 		}
-		log(r.String())
+		log(formatter.Format(r))
 	}
+}
+
+type SearchResultFormatter struct {
+	Settings *SearchSettings
+}
+
+func NewSearchResultFormatter(settings *SearchSettings) *SearchResultFormatter {
+	return &SearchResultFormatter{
+		settings,
+	}
+}
+
+func (f *SearchResultFormatter) Format(r *SearchResult) string {
+	if len(r.LinesBefore) > 0 || len(r.LinesAfter) > 0 {
+		return f.multiLineFormat(r)
+	} else {
+		return f.singleLineFormat(r)
+	}
+}
+
+const SEPARATOR_LEN = 80
+
+func lineNumPadding(r *SearchResult) int {
+	return len(fmt.Sprintf("%d", r.LineNum+len(r.LinesAfter)))
+}
+
+func colorize(s string, matchStartIndex int, matchEndIndex int) string {
+	return s[0:matchStartIndex] +
+		COLOR_GREEN +
+		s[matchStartIndex:matchEndIndex] +
+		COLOR_RESET +
+		s[matchEndIndex:]
+}
+
+func (f *SearchResultFormatter) multiLineFormat(r *SearchResult) string {
+	var buffer bytes.Buffer
+	buffer.WriteString(strings.Repeat("=", SEPARATOR_LEN))
+	buffer.WriteString(fmt.Sprintf("\n%s: %d: [%d:%d]\n", r.File.String(),
+		r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
+	buffer.WriteString(strings.Repeat("-", SEPARATOR_LEN))
+	buffer.WriteString("\n")
+	lineFormat := fmt.Sprintf(" %%%dd | %%s\n", lineNumPadding(r))
+	currentLineNum := r.LineNum
+	if len(r.LinesBefore) > 0 {
+		currentLineNum -= len(r.LinesBefore)
+		for _, l := range r.LinesBefore {
+			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
+			currentLineNum++
+		}
+	}
+	line := *r.Line
+	if f.Settings.Colorize {
+		line = colorize(line, r.MatchStartIndex-1, r.MatchEndIndex-1)
+	}
+	buffer.WriteString(">" + fmt.Sprintf(lineFormat, currentLineNum, line))
+	if len(r.LinesAfter) > 0 {
+		currentLineNum++
+		for _, l := range r.LinesAfter {
+			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
+			currentLineNum++
+		}
+	}
+	return buffer.String()
+}
+
+func (f *SearchResultFormatter) singleLineFormat(r *SearchResult) string {
+	if r.LineNum > 0 {
+		return fmt.Sprintf("%s: %d: [%d:%d]: %s", r.File.String(), r.LineNum,
+			r.MatchStartIndex, r.MatchEndIndex, f.formatMatchingLine(r))
+	} else {
+		return fmt.Sprintf("%s matches at [%d:%d]", r.File.String(),
+			r.MatchStartIndex, r.MatchEndIndex)
+	}
+}
+
+func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
+	formatted := *r.Line
+	leadingWhitespaceCount := 0
+
+	for _, c := range formatted {
+		if unicode.IsSpace(c) {
+			leadingWhitespaceCount += 1
+		} else {
+			break
+		}
+	}
+	formatted = strings.TrimSpace(formatted)
+	formattedLength := len(formatted)
+	maxLineEndIndex := formattedLength - 1
+	matchLength := r.MatchEndIndex - r.MatchStartIndex
+	matchStartIndex := r.MatchStartIndex - 1 - leadingWhitespaceCount
+	matchEndIndex := matchStartIndex + matchLength
+
+	if formattedLength > f.Settings.MaxLineLength {
+		lineStartIndex := matchStartIndex
+		lineEndIndex := lineStartIndex + matchLength
+		matchStartIndex = 0
+		matchEndIndex = matchLength
+
+		for lineEndIndex > formattedLength-1 {
+			lineStartIndex -= 1
+			lineEndIndex -= 1
+			matchStartIndex += 1
+			matchEndIndex += 1
+		}
+
+		formattedLength = lineEndIndex - lineStartIndex
+		for formattedLength < f.Settings.MaxLineLength {
+			if lineStartIndex > 0 {
+				lineStartIndex -= 1
+				matchStartIndex += 1
+				matchEndIndex += 1
+				formattedLength = lineEndIndex - lineStartIndex
+			}
+			if formattedLength < f.Settings.MaxLineLength && lineEndIndex < maxLineEndIndex {
+				lineEndIndex += 1
+			}
+			formattedLength = lineEndIndex - lineStartIndex
+		}
+
+		formatted = formatted[lineStartIndex:lineEndIndex]
+		if lineStartIndex > 2 {
+			formatted = "..." + formatted[3:]
+		}
+		if lineEndIndex < maxLineEndIndex-3 {
+			formatted = formatted[0:len(formatted)-3] + "..."
+		}
+	}
+
+	if f.Settings.Colorize {
+		formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+	}
+	return formatted
 }
 
 type SearchResult struct {
@@ -232,96 +369,6 @@ type SearchResult struct {
 	Line            *string
 	LinesBefore     []*string
 	LinesAfter      []*string
-}
-
-func (r *SearchResult) String() string {
-	if len(r.LinesBefore) > 0 || len(r.LinesAfter) > 0 {
-		return r.multiLineString()
-	} else {
-		return r.singleLineString()
-	}
-}
-
-const SEPARATOR_LEN = 80
-
-func (r *SearchResult) lineNumPadding() int {
-	return len(fmt.Sprintf("%d", r.LineNum+len(r.LinesAfter)))
-}
-
-func (r *SearchResult) multiLineString() string {
-	var buffer bytes.Buffer
-	buffer.WriteString(strings.Repeat("=", SEPARATOR_LEN))
-	buffer.WriteString(fmt.Sprintf("\n%s: %d: [%d:%d]\n", r.File.String(),
-		r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
-	buffer.WriteString(strings.Repeat("-", SEPARATOR_LEN))
-	buffer.WriteString("\n")
-	lineFormat := fmt.Sprintf(" %%%dd | %%s\n", r.lineNumPadding())
-	currentLineNum := r.LineNum
-	if len(r.LinesBefore) > 0 {
-		currentLineNum -= len(r.LinesBefore)
-		for _, l := range r.LinesBefore {
-			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
-			currentLineNum++
-		}
-	}
-	buffer.WriteString(">" + fmt.Sprintf(lineFormat, currentLineNum, *r.Line))
-	if len(r.LinesAfter) > 0 {
-		currentLineNum++
-		for _, l := range r.LinesAfter {
-			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
-			currentLineNum++
-		}
-	}
-	return buffer.String()
-}
-
-func (r *SearchResult) singleLineString() string {
-	if r.LineNum > 0 {
-		return fmt.Sprintf("%s: %d: [%d:%d]: %s", r.File.String(), r.LineNum,
-			r.MatchStartIndex, r.MatchEndIndex, r.formatMatchingLine())
-	} else {
-		return fmt.Sprintf("%s matches at [%d:%d]", r.File.String(),
-			r.MatchStartIndex, r.MatchEndIndex)
-	}
-}
-
-// temp
-const MAXLINELENGTH = 150
-
-// TODO: resize line as necessary to match MaxLineLength
-func (r *SearchResult) formatMatchingLine() string {
-	formatted := *r.Line
-	lineLength := len(formatted)
-	matchLength := r.MatchEndIndex - r.MatchStartIndex
-
-	if lineLength > MAXLINELENGTH {
-		adjustedMaxLength := MAXLINELENGTH - matchLength
-		beforeIndex := r.MatchStartIndex
-		if r.MatchStartIndex > 0 {
-			beforeIndex = beforeIndex - (adjustedMaxLength / 4)
-			if beforeIndex < 0 {
-				beforeIndex = 0
-			}
-		}
-		adjustedMaxLength = adjustedMaxLength - (r.MatchStartIndex - beforeIndex)
-		afterIndex := r.MatchEndIndex + adjustedMaxLength
-		if afterIndex > lineLength {
-			afterIndex = lineLength
-		}
-
-		before := ""
-		if beforeIndex > 3 {
-			before = "..."
-			beforeIndex += 3
-		}
-		after := ""
-		if afterIndex < lineLength-3 {
-			after = "..."
-			afterIndex -= 3
-		}
-		formatted = before + formatted[beforeIndex:afterIndex] + after
-	}
-	return strings.TrimSpace(formatted)
 }
 
 func (r *SearchResult) Text() string {

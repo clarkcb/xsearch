@@ -7,7 +7,9 @@ import (
 )
 
 func TestAddSearchResult(t *testing.T) {
-	searchResults := NewSearchResults()
+	settings := GetDefaultSearchSettings()
+	settings.Colorize = false
+	searchResults := NewSearchResults(settings)
 
 	path := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
 	name := "searchresults_test.go"

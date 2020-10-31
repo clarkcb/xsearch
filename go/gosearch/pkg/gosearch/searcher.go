@@ -53,17 +53,17 @@ type Searcher struct {
 
 func NewSearcher(settings *SearchSettings) *Searcher {
 	return &Searcher{
-		settings,                 // Settings
-		FileTypesFromJson(),      // fileTypes
-		[]*string{},              // searchDirs
-		NewSearchItems(),         // searchItems
-		[]error{},                // errors
-		make(chan *SearchItem),   // addItemChan
-		make(chan bool),          // addItemsDoneChan
-		make(chan *string, 10),   // doneChan
-		make(chan error, 1),      // errChan
-		NewSearchResults(),       // searchResults
-		make(chan *SearchResult), // resultChan
+		settings,                   // Settings
+		FileTypesFromJson(),        // fileTypes
+		[]*string{},                // searchDirs
+		NewSearchItems(),           // searchItems
+		[]error{},                  // errors
+		make(chan *SearchItem),     // addItemChan
+		make(chan bool),            // addItemsDoneChan
+		make(chan *string, 10),     // doneChan
+		make(chan error, 1),        // errChan
+		NewSearchResults(settings), // searchResults
+		make(chan *SearchResult),   // resultChan
 	}
 }
 

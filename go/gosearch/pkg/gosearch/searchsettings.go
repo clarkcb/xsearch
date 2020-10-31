@@ -29,6 +29,7 @@ type SearchSettings struct {
 	LinesAfterUntilPatterns *SearchPatterns
 	SearchPatterns          *SearchPatterns
 	ArchivesOnly            bool
+	Colorize                bool
 	Debug                   bool
 	ExcludeHidden           bool
 	FirstMatch              bool
@@ -72,6 +73,7 @@ func GetDefaultSearchSettings() *SearchSettings {
 		NewSearchPatterns(), // LinesAfterUntilPatterns
 		NewSearchPatterns(), // SearchPatterns
 		false,               // ArchivesOnly
+		true,                // Debug
 		false,               // Debug
 		true,                // ExcludeHidden
 		false,               // FirstMatch
@@ -237,6 +239,7 @@ func (s *SearchSettings) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("SearchSettings{")
 	buffer.WriteString(fmt.Sprintf("ArchivesOnly: %t", s.ArchivesOnly))
+	buffer.WriteString(fmt.Sprintf(", Colorize: %t", s.Colorize))
 	buffer.WriteString(fmt.Sprintf(", Debug: %t", s.Debug))
 	buffer.WriteString(fmt.Sprintf(", ExcludeHidden: %t", s.ExcludeHidden))
 	buffer.WriteString(fmt.Sprintf(", FirstMatch: %t", s.FirstMatch))
