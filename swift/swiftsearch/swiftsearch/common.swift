@@ -10,12 +10,12 @@ import Foundation
 
 let whitespace = CharacterSet(charactersIn: " \t\r\n")
 
-func logMsg(_ s: String) {
-    print(s)
+func logMsg(_ str: String) {
+    print(str)
 }
 
-func logError(_ s: String) {
-    logMsg("ERROR: \(s)")
+func logError(_ str: String) {
+    logMsg("ERROR: \(str)")
 }
 
 func setError(_ error: NSErrorPointer, msg: String) {
@@ -25,14 +25,11 @@ func setError(_ error: NSErrorPointer, msg: String) {
 // from http://ijoshsmith.com/2014/06/18/create-a-swift-dictionary-from-an-array/
 func toDictionary<E, K, V>(
     _ array: [E],
-    transformer: (_ element: E) -> (key: K, value: V)?)
-    -> Dictionary<K, V>
-{
-    return array.reduce([:]) {
-        (dict, e) in
+    transformer: (_ element: E) -> (key: K, value: V)?
+) -> [K: V] {
+    array.reduce([:]) { dict, e in
         var d = dict
-        if let (key, value) = transformer(e)
-        {
+        if let (key, value) = transformer(e) {
             d[key] = value
         }
         return d
@@ -42,11 +39,11 @@ func toDictionary<E, K, V>(
 func arrayToString(_ arr: [String]) -> String {
     var str: String = "["
     var count: Int = 0
-    for s in arr {
+    for elem in arr {
         if count > 0 {
             str += ", "
         }
-        str += "\"\(s)\""
+        str += "\"\(elem)\""
         count += 1
     }
     str += "]"
@@ -54,17 +51,17 @@ func arrayToString(_ arr: [String]) -> String {
 }
 
 func arrayToString(_ arr: [Regex]) -> String {
-    return arrayToString(arr.map({$0.pattern}))
+    arrayToString(arr.map(\.pattern))
 }
 
-func setToString(_ set:Set<String>) -> String {
-    return arrayToString(Array(set.sorted()))
+func setToString(_ set: Set<String>) -> String {
+    arrayToString(Array(set.sorted()))
 }
 
 func take<T>(_ seq: [T], num: Int) -> [T] {
     var newSeq: [T] = []
     var taken = 0
-    while taken < num && taken < seq.count {
+    while taken < num, taken < seq.count {
         newSeq.append(seq[taken])
         taken += 1
     }
@@ -74,7 +71,7 @@ func take<T>(_ seq: [T], num: Int) -> [T] {
 func takeRight<T>(_ seq: [T], num: Int) -> [T] {
     var right: [T] = []
     var sub = 1
-    while sub <= num && sub <= seq.count {
+    while sub <= num, sub <= seq.count {
         right.append(seq[seq.count - sub])
         sub += 1
     }
@@ -83,7 +80,7 @@ func takeRight<T>(_ seq: [T], num: Int) -> [T] {
 
 // for printing the borders in multiline search results
 extension String {
-func `repeat`(_ n: Int) -> String {
+    func `repeat`(_ n: Int) -> String {
         var result = self
         for _ in 1 ..< n {
             result += self

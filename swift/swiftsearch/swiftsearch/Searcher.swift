@@ -9,87 +9,120 @@
 import Foundation
 // FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
 // Consider refactoring the code to use the non-optional operators.
-fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l < r
-  case (nil, _?):
-    return true
-  default:
-    return false
-  }
+private func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
+    switch (lhs, rhs) {
+    case let (l?, r?):
+        return l < r
+    case (nil, _?):
+        return true
+    default:
+        return false
+    }
 }
 
 open class Searcher {
     let fileTypes = FileTypes()
     let settings: SearchSettings
-    fileprivate var results = [SearchResult]()
+    private var results = [SearchResult]()
 
     init(settings: SearchSettings, error: NSErrorPointer) {
         self.settings = settings
         validateSettings(error)
     }
 
-    fileprivate func validateSettings(_ error: NSErrorPointer) {
+    private func strToEncoding(_ encName: String) -> String.Encoding? {
+        // TODO: work from available encodings: https://developer.apple.com/documentation/swift/string/encoding
+        var encoding: String.Encoding?
+        switch encName {
+        case "UTF-8", "utf-8", "UTF8", "utf8":
+            encoding = String.Encoding.utf8
+        default:
+            encoding = nil
+        }
+        return encoding
+    }
+
+    private func validateSettings(_ error: NSErrorPointer) {
         if settings.startPath == nil || settings.startPath!.isEmpty {
             setError(error, msg: "Startpath not defined")
-        } else if !FileUtil.exists(settings.startPath!) && !FileUtil.exists(FileUtil.expandPath(settings.startPath!)) {
+        } else if !FileUtil.exists(settings.startPath!), !FileUtil.exists(FileUtil.expandPath(settings.startPath!)) {
             setError(error, msg: "Startpath not found")
-        } else if !FileUtil.isReadableFile(settings.startPath!) && !FileUtil.isReadableFile(FileUtil.expandPath(settings.startPath!)) {
+        } else if !FileUtil.isReadableFile(settings.startPath!), !FileUtil.isReadableFile(FileUtil.expandPath(settings.startPath!)) {
             setError(error, msg: "Startpath not readable")
         } else if settings.searchPatterns.isEmpty {
             setError(error, msg: "No search patterns defined")
+        } else if settings.linesAfter < 0 {
+            setError(error, msg: "Invalid linesafter")
+        } else if settings.linesBefore < 0 {
+            setError(error, msg: "Invalid linesbefore")
+        } else if settings.maxLineLength < 0 {
+            setError(error, msg: "Invalid maxlinelength")
+        } else if strToEncoding(settings.textFileEncoding) == nil {
+            setError(error, msg: "Invalid textfileencoding")
         }
     }
 
-    fileprivate func matchesAnyPattern(_ s: String, _ patterns: [Regex]) -> Bool {
-        return patterns.filter({$0.test(s)}).count > 0
+    private func matchesAnyPattern(_ str: String, _ patterns: [Regex]) -> Bool {
+        patterns.filter { $0.test(str) }.count > 0
     }
 
-    fileprivate func anyMatchesAnyPattern(_ ss: [String], _ patterns: [Regex]) -> Bool {
-        return ss.filter({self.matchesAnyPattern($0, patterns)}).count > 0
+    private func anyMatchesAnyPattern(_ strs: [String], _ patterns: [Regex]) -> Bool {
+        strs.filter { self.matchesAnyPattern($0, patterns) }.count > 0
     }
 
-    fileprivate func filterByExtensions(_ ext: String, inExtensions: Set<String>,
-        outExtensions: Set<String>) -> Bool {
-        return ((inExtensions.isEmpty || inExtensions.contains(ext))
+    private func filterByExtensions(_ ext: String, inExtensions: Set<String>,
+                                    outExtensions: Set<String>) -> Bool
+    {
+        ((inExtensions.isEmpty || inExtensions.contains(ext))
             && (outExtensions.isEmpty || !outExtensions.contains(ext)))
     }
 
-    fileprivate func filterByPatterns(_ s: String, inPatterns: Array<Regex>,
-        outPatterns: Array<Regex>) -> Bool {
-        return ((inPatterns.isEmpty || matchesAnyPattern(s, Array(inPatterns)))
-            && (outPatterns.isEmpty || !matchesAnyPattern(s, Array(outPatterns))))
+    private func filterByPatterns(_ str: String, inPatterns: [Regex],
+                                  outPatterns: [Regex]) -> Bool
+    {
+        ((inPatterns.isEmpty || matchesAnyPattern(str, Array(inPatterns)))
+            && (outPatterns.isEmpty || !matchesAnyPattern(str, Array(outPatterns))))
+    }
+
+    private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
+                                   outFileTypes: [FileType]) -> Bool
+    {
+        ((inFileTypes.isEmpty || inFileTypes.contains(fileType))
+            && (outFileTypes.isEmpty || !outFileTypes.contains(fileType)))
     }
 
     func isSearchDir(_ dirPath: String) -> Bool {
-        if FileUtil.isHidden(dirPath) && settings.excludeHidden {
+        if FileUtil.isHidden(dirPath), settings.excludeHidden {
             return false
         }
         return filterByPatterns(dirPath, inPatterns: settings.inDirPatterns,
-            outPatterns: settings.outDirPatterns)
+                                outPatterns: settings.outDirPatterns)
     }
 
     func isSearchFile(_ filePath: String) -> Bool {
-        if FileUtil.isHiddenFile(URL(fileURLWithPath: filePath).lastPathComponent) && settings.excludeHidden {
+        if FileUtil.isHiddenFile(URL(fileURLWithPath: filePath).lastPathComponent), settings.excludeHidden {
             return false
         }
         return (filterByExtensions(FileUtil.getExtension(filePath),
-            inExtensions: settings.inExtensions,
-            outExtensions: settings.outExtensions)
-            && filterByPatterns(filePath, inPatterns: settings.inFilePatterns,
-                outPatterns: settings.outFilePatterns))
+                                   inExtensions: settings.inExtensions,
+                                   outExtensions: settings.outExtensions)
+                && filterByPatterns(filePath,
+                                    inPatterns: settings.inFilePatterns,
+                                    outPatterns: settings.outFilePatterns)
+                && filterByFileTypes(fileTypes.getFileType(filePath),
+                                     inFileTypes: settings.inFileTypes,
+                                     outFileTypes: settings.outFileTypes))
     }
 
     func isArchiveSearchFile(_ filePath: String) -> Bool {
-        if FileUtil.isHidden(URL(fileURLWithPath: filePath).lastPathComponent) && settings.excludeHidden {
+        if FileUtil.isHidden(URL(fileURLWithPath: filePath).lastPathComponent), settings.excludeHidden {
             return false
         }
         return (filterByExtensions(FileUtil.getExtension(filePath),
-            inExtensions: settings.inArchiveExtensions,
-            outExtensions: settings.outArchiveExtensions)
-            && filterByPatterns(filePath, inPatterns: settings.inArchiveFilePatterns,
-                outPatterns: settings.outArchiveFilePatterns))
+                                   inExtensions: settings.inArchiveExtensions,
+                                   outExtensions: settings.outArchiveExtensions)
+                && filterByPatterns(filePath, inPatterns: settings.inArchiveFilePatterns,
+                                    outPatterns: settings.outArchiveFilePatterns))
     }
 
     open func search(_ error: NSErrorPointer) {
@@ -118,43 +151,44 @@ open class Searcher {
         }
     }
 
-    fileprivate func searchPath(_ filePath: String) {
+    private func searchPath(_ filePath: String) {
         var searchDirs = [filePath]
         if settings.recursive {
             searchDirs += getSearchDirs(filePath)
         }
         if settings.verbose {
             logMsg("\nDirectories to be searched (\(searchDirs.count)):")
-            for d in searchDirs {
-                logMsg(d)
+            for dir in searchDirs {
+                logMsg(dir)
             }
         }
 
         var searchFiles: [SearchFile] = []
         // TODO: get files from directories concurrently
-        for d in searchDirs {
-            let dirFiles = getSearchFiles(d)
+        for dir in searchDirs {
+            let dirFiles = getSearchFiles(dir)
             searchFiles += dirFiles
         }
         if settings.verbose {
             logMsg("\nFiles to be searched (\(searchFiles.count)):")
-            for f in searchFiles {
-                logMsg(f.description)
+            for file in searchFiles {
+                logMsg(file.description())
             }
         }
-        for f in searchFiles {
-            searchFile(f)
+        for file in searchFiles {
+            searchFile(file)
         }
     }
 
-    fileprivate func getSearchDirs(_ filePath: String) -> [String] {
+    private func getSearchDirs(_ filePath: String) -> [String] {
         var searchDirs = [String]()
 
         if let enumerator = FileUtil.enumeratorForPath(filePath) {
             while let element = enumerator.nextObject() as? String {
                 let fullPath = FileUtil.joinPath(filePath, childPath: element)
-                if FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
-                    && isSearchDir(element) {
+                if FileUtil.isDirectory(fullPath), FileUtil.isReadableFile(fullPath),
+                   isSearchDir(element)
+                {
                     searchDirs.append(fullPath)
                 }
             }
@@ -163,22 +197,22 @@ open class Searcher {
     }
 
     // gets search files only directly under the given path
-    fileprivate func getSearchFiles(_ filePath: String) -> [SearchFile] {
+    private func getSearchFiles(_ filePath: String) -> [SearchFile] {
         var searchFiles = [SearchFile]()
         let pathFiles = FileUtil.contentsForPath(filePath)
-        for f in pathFiles {
-            let fullPath = FileUtil.joinPath(filePath, childPath: f)
-            if !FileUtil.isDirectory(fullPath) && FileUtil.isReadableFile(fullPath)
-                && filterFile(f) {
-                    let searchFile = SearchFile(filePath: fullPath, fileType: fileTypes.getFileType(f))
-                    searchFiles.append(searchFile)
+        for file in pathFiles {
+            let fullPath = FileUtil.joinPath(filePath, childPath: file)
+            if !FileUtil.isDirectory(fullPath), FileUtil.isReadableFile(fullPath),
+               filterFile(file)
+            {
+                let searchFile = SearchFile(filePath: fullPath, fileType: fileTypes.getFileType(file))
+                searchFiles.append(searchFile)
             }
-
         }
         return searchFiles
     }
 
-    fileprivate func filterFile(_ filePath: String) -> Bool {
+    private func filterFile(_ filePath: String) -> Bool {
         let fileType = fileTypes.getFileType(filePath)
         if fileType == FileType.unknown {
             return false
@@ -190,133 +224,139 @@ open class Searcher {
         return !settings.archivesOnly && isSearchFile(filePath)
     }
 
-    func searchFile(_ sf: SearchFile) {
-        //let fileType = fileTypes.getFileType(filePath)
-        if sf.fileType == FileType.text {
-            searchTextFile(sf)
-        } else if sf.fileType == FileType.binary {
-            searchBinaryFile(sf)
-        } else if sf.fileType == FileType.archive {
-            searchArchiveFile(sf)
+    func searchFile(_ searchFile: SearchFile) {
+        if settings.debug {
+            logMsg("Searching file: \(searchFile.description())")
+        }
+        // let fileType = fileTypes.getFileType(filePath)
+        if searchFile.fileType == FileType.text {
+            searchTextFile(searchFile)
+        } else if searchFile.fileType == FileType.binary {
+            searchBinaryFile(searchFile)
+        } else if searchFile.fileType == FileType.archive {
+            searchArchiveFile(searchFile)
         }
     }
 
-    fileprivate func searchTextFile(_ sf: SearchFile) {
+    private func searchTextFile(_ searchFile: SearchFile) {
         if settings.multiLineSearch {
-            searchTextFileContents(sf)
+            searchTextFileContents(searchFile)
         } else {
-            searchTextFileLines(sf)
+            searchTextFileLines(searchFile)
         }
     }
 
-    fileprivate func searchTextFileContents(_ sf: SearchFile) {
-        let contents = try? String(contentsOfFile: sf.filePath,
-            encoding: String.Encoding.utf8)
+    private func searchTextFileContents(_ searchFile: SearchFile) {
+        let contents = try? String(contentsOfFile: searchFile.filePath,
+                                   encoding: String.Encoding.utf8)
         if contents != nil {
             let results = searchMultiLineString(contents!)
             // add filePath
-            for r in results {
+            for res in results {
                 let result = SearchResult(
-                    searchPattern: r.searchPattern,
-                    file: sf,
-                    lineNum: r.lineNum,
-                    matchStartIndex: r.matchStartIndex,
-                    matchEndIndex: r.matchEndIndex,
-                    line: r.line,
-                    linesBefore: r.linesBefore,
-                    linesAfter: r.linesAfter)
+                    searchPattern: res.searchPattern,
+                    file: searchFile,
+                    lineNum: res.lineNum,
+                    matchStartIndex: res.matchStartIndex,
+                    matchEndIndex: res.matchEndIndex,
+                    line: res.line,
+                    linesBefore: res.linesBefore,
+                    linesAfter: res.linesAfter
+                )
                 addSearchResult(result)
             }
         }
     }
 
-    open func searchMultiLineString(_ s: String) -> [SearchResult] {
+    open func searchMultiLineString(_ str: String) -> [SearchResult] {
         var sResults = [SearchResult]()
-        for p in settings.searchPatterns {
-            sResults += searchMultiLineStringForPattern(s, pattern: p)
+        for pat in settings.searchPatterns {
+            sResults += searchMultiLineStringForPattern(str, pattern: pat)
         }
         return sResults
     }
 
-    fileprivate func searchMultiLineStringForPattern(_ s: String, pattern: Regex) -> [SearchResult] {
+    private func searchMultiLineStringForPattern(_ str: String, pattern: Regex) -> [SearchResult] {
         var spResults = [SearchResult]()
-        let newLineIndices = getNewLineIndices(s)
-        let startLineIndices = [0] + newLineIndices.map {$0+1}
-        let endLineIndices = newLineIndices + [s.lengthOfBytes(using: String.Encoding.utf8) - 1]
-        var matches = pattern.matches(s)
-        if matches.count > 0 && settings.firstMatch {
+        let newLineIndices = getNewLineIndices(str)
+        let startLineIndices = [0] + newLineIndices.map { $0 + 1 }
+        let endLineIndices = newLineIndices + [str.lengthOfBytes(using: String.Encoding.utf8) - 1]
+        var matches = pattern.matches(str)
+        if matches.count > 0, settings.firstMatch {
             matches = [matches[0]]
         }
-        for m in matches {
-            let beforeStartLineIndices = startLineIndices.filter({$0 < m.range.location})
+        for match in matches {
+            let beforeStartLineIndices = startLineIndices.filter { $0 < match.range.location }
             let startLineIndex = beforeStartLineIndices[beforeStartLineIndices.count - 1]
             let endLineIndex = endLineIndices[beforeStartLineIndices.count - 1]
-            let line = lineFromIndices(s, startLineIndex: startLineIndex, endLineIndex: endLineIndex)
+            let line = lineFromIndices(str, startLineIndex: startLineIndex, endLineIndex: endLineIndex)
             var linesBefore: [String] = []
             if settings.linesBefore > 0 {
-                var linesBeforeStartIndices = takeRight(beforeStartLineIndices
-                    .filter({$0 < startLineIndex}), num: settings.linesBefore)
-                var linesBeforeEndIndices = takeRight(endLineIndices.filter({$0 < endLineIndex}),
-                    num: settings.linesBefore)
+                let linesBeforeStartIndices = takeRight(beforeStartLineIndices
+                    .filter { $0 < startLineIndex }, num: settings.linesBefore)
+                let linesBeforeEndIndices = takeRight(endLineIndices.filter { $0 < endLineIndex },
+                                                      num: settings.linesBefore)
                 for i in 0 ..< linesBeforeStartIndices.count {
-                    linesBefore.append(lineFromIndices(s, startLineIndex: linesBeforeStartIndices[i],
-                        endLineIndex: linesBeforeEndIndices[i]))
+                    linesBefore.append(lineFromIndices(str, startLineIndex: linesBeforeStartIndices[i],
+                                                       endLineIndex: linesBeforeEndIndices[i]))
                 }
             }
             var linesAfter: [String] = []
             if settings.linesAfter > 0 {
-                let linesAfterStartIndices = take(startLineIndices.filter({$0 > startLineIndex}),
-                    num: settings.linesAfter)
-                let linesAfterEndIndices = take(endLineIndices.filter({$0 > endLineIndex}),
-                    num: settings.linesAfter)
+                let linesAfterStartIndices = take(startLineIndices.filter { $0 > startLineIndex },
+                                                  num: settings.linesAfter)
+                let linesAfterEndIndices = take(endLineIndices.filter { $0 > endLineIndex },
+                                                num: settings.linesAfter)
                 for i in 0 ..< linesAfterStartIndices.count {
-                    linesAfter.append(lineFromIndices(s, startLineIndex: linesAfterStartIndices[i],
-                        endLineIndex: linesAfterEndIndices[i]))
+                    linesAfter.append(lineFromIndices(str, startLineIndex: linesAfterStartIndices[i],
+                                                      endLineIndex: linesAfterEndIndices[i]))
                 }
             }
 
-            if (linesBefore.isEmpty || linesBeforeMatch(linesBefore))
-                && (linesAfter.isEmpty || linesAfterMatch(linesAfter)) {
+            if linesBefore.isEmpty || linesBeforeMatch(linesBefore),
+               linesAfter.isEmpty || linesAfterMatch(linesAfter)
+            {
                 let result = SearchResult(
                     searchPattern: pattern.pattern,
                     file: nil,
                     lineNum: beforeStartLineIndices.count,
-                    matchStartIndex: m.range.location - startLineIndex + 1,
-                    matchEndIndex: m.range.location + m.range.length - startLineIndex + 1,
+                    matchStartIndex: match.range.location - startLineIndex + 1,
+                    matchEndIndex: match.range.location + match.range.length - startLineIndex + 1,
                     line: line,
                     linesBefore: linesBefore,
-                    linesAfter: linesAfter)
+                    linesAfter: linesAfter
+                )
                 spResults.append(result)
             }
         }
         return spResults
     }
 
-    fileprivate func linesMatch(_ lines: [String], _ inPatterns: [Regex], _ outPatterns: [Regex]) -> Bool {
-        return (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns))
+    private func linesMatch(_ lines: [String], _ inPatterns: [Regex], _ outPatterns: [Regex]) -> Bool {
+        (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns))
             && (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
     }
 
-    fileprivate func linesBeforeMatch(_ linesBefore: [String]) -> Bool {
-        return linesBefore.isEmpty || linesMatch(linesBefore, settings.inLinesBeforePatterns,
-            settings.outLinesBeforePatterns)
+    private func linesBeforeMatch(_ linesBefore: [String]) -> Bool {
+        linesBefore.isEmpty || linesMatch(linesBefore, settings.inLinesBeforePatterns,
+                                          settings.outLinesBeforePatterns)
     }
 
-    fileprivate func linesAfterMatch(_ linesAfter: [String]) -> Bool {
-        return linesAfter.isEmpty || linesMatch(linesAfter, settings.inLinesAfterPatterns,
-            settings.outLinesAfterPatterns)
+    private func linesAfterMatch(_ linesAfter: [String]) -> Bool {
+        linesAfter.isEmpty || linesMatch(linesAfter, settings.inLinesAfterPatterns,
+                                         settings.outLinesAfterPatterns)
     }
 
-    fileprivate func lineFromIndices(_ s: String, startLineIndex: Int, endLineIndex: Int) -> String {
-        let startLineStringIndex = s.index(s.startIndex, offsetBy: startLineIndex)
-        let endLineStringIndex = s.index(s.startIndex, offsetBy: endLineIndex)
-        return String(s[startLineStringIndex ..< endLineStringIndex])
+    private func lineFromIndices(_ str: String, startLineIndex: Int, endLineIndex: Int) -> String {
+        let startLineStringIndex = str.index(str.startIndex, offsetBy: startLineIndex)
+        let endLineStringIndex = str.index(str.startIndex, offsetBy: endLineIndex)
+        return String(str[startLineStringIndex ..< endLineStringIndex])
     }
 
-    fileprivate func getNewLineIndices(_ s: String) -> [Int] {
+    private func getNewLineIndices(_ str: String) -> [Int] {
         var indices = [Int]()
         var currentIndex = 0
-        for c in s {
+        for c in str {
             if c == "\n" {
                 indices.append(currentIndex)
             }
@@ -325,20 +365,21 @@ open class Searcher {
         return indices
     }
 
-    fileprivate func searchTextFileLines(_ sf: SearchFile) {
+    private func searchTextFileLines(_ searchFile: SearchFile) {
         let results: [SearchResult]
-        if let reader = StreamReader(path: sf.filePath) {
+        if let reader = StreamReader(path: searchFile.filePath) {
             results = searchLineReader(reader)
-            for r in results {
+            for res in results {
                 let result = SearchResult(
-                    searchPattern: r.searchPattern,
-                    file: sf,
-                    lineNum: r.lineNum,
-                    matchStartIndex: r.matchStartIndex,
-                    matchEndIndex: r.matchEndIndex,
-                    line: r.line,
-                    linesBefore: r.linesBefore,
-                    linesAfter: r.linesAfter)
+                    searchPattern: res.searchPattern,
+                    file: searchFile,
+                    lineNum: res.lineNum,
+                    matchStartIndex: res.matchStartIndex,
+                    matchEndIndex: res.matchEndIndex,
+                    line: res.line,
+                    linesBefore: res.linesBefore,
+                    linesAfter: res.linesAfter
+                )
                 addSearchResult(result)
             }
             reader.close()
@@ -362,7 +403,7 @@ open class Searcher {
             }
             if line == nil {
                 stop = true
-            } else if settings.firstMatch && settings.searchPatterns.count == matchedPatterns.count {
+            } else if settings.firstMatch, settings.searchPatterns.count == matchedPatterns.count {
                 stop = true
             } else {
                 if settings.linesAfter > 0 {
@@ -374,24 +415,26 @@ open class Searcher {
                         }
                     }
                 }
-                let searchPatterns = settings.searchPatterns.filter({!matchedPatterns.contains($0.pattern)})
-                for p in searchPatterns {
-                    let matches = p.matches(line!)
-                    for m in matches {
-                        if (linesBefore.isEmpty || linesBeforeMatch(linesBefore))
-                        && (linesAfter.isEmpty || linesAfterMatch(linesAfter)) {
+                let searchPatterns = settings.searchPatterns.filter { !matchedPatterns.contains($0.pattern) }
+                for pat in searchPatterns {
+                    let matches = pat.matches(line!)
+                    for match in matches {
+                        if linesBefore.isEmpty || linesBeforeMatch(linesBefore),
+                           linesAfter.isEmpty || linesAfterMatch(linesAfter)
+                        {
                             let result = SearchResult(
-                                searchPattern: p.pattern,
+                                searchPattern: pat.pattern,
                                 file: nil,
                                 lineNum: lineNum,
-                                matchStartIndex: m.range.location + 1,
-                                matchEndIndex: m.range.location + m.range.length + 1,
+                                matchStartIndex: match.range.location + 1,
+                                matchEndIndex: match.range.location + match.range.length + 1,
                                 line: line!,
                                 linesBefore: linesBefore,
-                                linesAfter: linesAfter)
+                                linesAfter: linesAfter
+                            )
                             results.append(result)
                             if settings.firstMatch {
-                                matchedPatterns.insert(p.pattern)
+                                matchedPatterns.insert(pat.pattern)
                             }
                         }
                     }
@@ -409,56 +452,57 @@ open class Searcher {
         return results
     }
 
-    fileprivate func searchBinaryFile(_ sf: SearchFile) {
-        if let data = try? Data(contentsOf: URL(fileURLWithPath: sf.filePath)) {
+    private func searchBinaryFile(_ searchFile: SearchFile) {
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: searchFile.filePath)) {
             // convert to a string using (any) single-byte encoding, using UTF8
             // should cause conversion problems
-            if let ds = NSString(data: data, encoding: String.Encoding.isoLatin1.rawValue) {
-                for p in settings.searchPatterns {
-                    var matches = p.matches(ds as String)
-                    if matches.count > 0 && settings.firstMatch {
+            if let dstr = NSString(data: data, encoding: String.Encoding.isoLatin1.rawValue) {
+                for pat in settings.searchPatterns {
+                    var matches = pat.matches(dstr as String)
+                    if matches.count > 0, settings.firstMatch {
                         matches = [matches[0]]
                     }
-                    for m in matches {
+                    for match in matches {
                         let result = SearchResult(
-                            searchPattern: p.pattern,
-                            file: sf,
+                            searchPattern: pat.pattern,
+                            file: searchFile,
                             lineNum: 0,
-                            matchStartIndex: m.range.location + 1,
-                            matchEndIndex: m.range.location + m.range.length + 1,
+                            matchStartIndex: match.range.location + 1,
+                            matchEndIndex: match.range.location + match.range.length + 1,
                             line: "",
                             linesBefore: [],
-                            linesAfter: [])
+                            linesAfter: []
+                        )
                         results.append(result)
                     }
                 }
             } else {
-                logMsg("Problem encountered creating binary string \(sf.description)")
+                logMsg("Problem encountered creating binary string \(searchFile.description())")
             }
         } else {
-            logMsg("Problem encountered reading binary file \(sf.description)")
+            logMsg("Problem encountered reading binary file \(searchFile.description())")
         }
     }
 
-    fileprivate func searchArchiveFile(_ sf: SearchFile) {
-        logMsg("searchArchiveFile(filePath=\"\(sf.description)\")")
+    private func searchArchiveFile(_ searchFile: SearchFile) {
+        logMsg("searchArchiveFile(filePath=\"\(searchFile.description())\")")
     }
 
-    fileprivate func addSearchResult(_ result: SearchResult) {
+    private func addSearchResult(_ result: SearchResult) {
         results.append(result)
     }
-    
-    fileprivate func cmpResultsInDir(_ r1: SearchResult, _ r2: SearchResult) -> Bool {
-        let path1 = NSURL(fileURLWithPath: r1.file!.filePath).deletingLastPathComponent?.absoluteString
-        let path2 = NSURL(fileURLWithPath: r2.file!.filePath).deletingLastPathComponent?.absoluteString
+
+    private func cmpResultsInDir(_ res1: SearchResult, _ res2: SearchResult) -> Bool {
+        let path1 = NSURL(fileURLWithPath: res1.file!.filePath).deletingLastPathComponent?.absoluteString
+        let path2 = NSURL(fileURLWithPath: res2.file!.filePath).deletingLastPathComponent?.absoluteString
         if path1 == path2 {
-            let file1 = NSURL(fileURLWithPath: r1.file!.filePath).lastPathComponent!.lowercased()
-            let file2 = NSURL(fileURLWithPath: r2.file!.filePath).lastPathComponent!.lowercased()
+            let file1 = NSURL(fileURLWithPath: res1.file!.filePath).lastPathComponent!.lowercased()
+            let file2 = NSURL(fileURLWithPath: res2.file!.filePath).lastPathComponent!.lowercased()
             if file1 == file2 {
-                if r1.lineNum == r2.lineNum {
-                    return r1.matchStartIndex < r2.matchStartIndex
+                if res1.lineNum == res2.lineNum {
+                    return res1.matchStartIndex < res2.matchStartIndex
                 }
-                return r1.lineNum < r2.lineNum
+                return res1.lineNum < res2.lineNum
             }
             return file1 < file2
         }
@@ -466,11 +510,12 @@ open class Searcher {
     }
 
     // if results weren't in DESC order, would use this method to sort them
-    fileprivate func getSortedSearchResults() -> [SearchResult] {
-        return results.sorted(by: {self.cmpResultsInDir($0, $1)})
+    private func getSortedSearchResults() -> [SearchResult] {
+        results.sorted(by: { self.cmpResultsInDir($0, $1) })
     }
-    
+
     open func getSearchResults() -> [SearchResult] {
-        return results.reversed() // reverse to get ASC order
+//        return results.reversed() // reverse to get ASC order
+        results // reverse to get ASC order
     }
 }

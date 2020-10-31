@@ -8,7 +8,7 @@
 
 import Foundation
 
-class SearchFile: CustomStringConvertible {
+class SearchFile {
     let containerSeparator = "!"
     let containers: [String]
     let filePath: String
@@ -17,15 +17,12 @@ class SearchFile: CustomStringConvertible {
     init(filePath: String, fileType: FileType) {
         self.filePath = filePath
         self.fileType = fileType
-        self.containers = []
+        containers = []
     }
 
-    var description: String {
-        var s = ""
-        if !containers.isEmpty {
-            s += containers.joined(separator: containerSeparator) + containerSeparator
-        }
-        s += filePath
-        return s
+    func description() -> String {
+        var str = "\(containers.isEmpty ? "" : containers.joined(separator: containerSeparator) + containerSeparator)"
+        str += filePath
+        return str
     }
 }

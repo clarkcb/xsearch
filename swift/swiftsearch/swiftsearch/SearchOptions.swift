@@ -8,7 +8,7 @@
 
 import Foundation
 
-class SearchOption: CustomStringConvertible {
+class SearchOption {
     let short: String
     let long: String
     let desc: String
@@ -26,13 +26,8 @@ class SearchOption: CustomStringConvertible {
         return long
     }
 
-    var description: String {
-        var s = "SearchOption("
-        s += "short: \"\(short)\""
-        s += ", long: \"\(long)\""
-        s += ", desc: \"\(desc)\""
-        s += ")"
-        return s
+    func description() -> String {
+        "SearchOption(short: \"\(short)\", long: \"\(long)\", desc: \"\(desc)\")"
     }
 }
 
@@ -47,7 +42,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     var desc = NSMutableString()
 
     func parseFile(_ filepath: String) -> [SearchOption] {
-        if (FileManager.default.fileExists(atPath: filepath)) {
+        if FileManager.default.fileExists(atPath: filepath) {
             let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
             let inputStream: InputStream? = InputStream(data: data!)
             let parser: XMLParser? = XMLParser(stream: inputStream!)
@@ -61,9 +56,10 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
         return searchOptions
     }
 
-    func parser(_ parser: XMLParser, didStartElement elementName: String,
-        namespaceURI: String?, qualifiedName qName: String?,
-        attributes attributeDict: [String : String]) {
+    func parser(_: XMLParser, didStartElement elementName: String,
+                namespaceURI _: String?, qualifiedName _: String?,
+                attributes attributeDict: [String: String])
+    {
         element = elementName
         if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if attributeDict.index(forKey: longAttributeName) != nil {
@@ -77,176 +73,184 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
         }
     }
 
-    func parser(_ parser: XMLParser, foundCharacters string: String) {
+    func parser(_: XMLParser, foundCharacters string: String) {
         if element == searchOptionNodeName {
             desc.append(string)
         }
     }
 
-    func parser(_ parser: XMLParser, didEndElement elementName: String,
-        namespaceURI: String?, qualifiedName qName: String?) {
+    func parser(_: XMLParser, didEndElement elementName: String,
+                namespaceURI _: String?, qualifiedName _: String?)
+    {
         if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if !desc.isEqual(nil) {
                 let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
                 searchOptions.append(SearchOption(short: shortName,
-                    long: longName, desc: trimmedDesc))
+                                                  long: longName, desc: trimmedDesc))
             }
         }
     }
 }
 
 open class SearchOptions {
-    fileprivate var searchOptions = [SearchOption]()
-    fileprivate var longArgDict: [String:String] = [:]
+    private var searchOptions = [SearchOption]()
+    private var longArgDict: [String: String] = [:]
 
     init() {
         setSearchOptions()
     }
 
-    fileprivate func setSearchOptions() {
+    private func setSearchOptions() {
         let parser = SearchOptionsXmlParser()
         searchOptions = parser.parseFile(Config.searchOptionsPath)
         searchOptions.sort(by: { $0.sortArg() < $1.sortArg() })
-        for so in searchOptions {
-            longArgDict[so.long] = so.long
-            if !so.short.isEmpty {
-                longArgDict[so.short] = so.long
+        for opt in searchOptions {
+            longArgDict[opt.long] = opt.long
+            if !opt.short.isEmpty {
+                longArgDict[opt.short] = opt.long
             }
         }
     }
 
-    fileprivate let argActionDict: [String: (String, SearchSettings) -> ()] = [
-        "in-archiveext": { (s: String, ss: SearchSettings) -> () in
-            ss.addInArchiveExtension(s)
+    private let argActionDict: [String: (String, SearchSettings) -> Void] = [
+        "encoding": { (str: String, settings: SearchSettings) -> Void in
+            settings.textFileEncoding = str
         },
-        "in-archivefilepattern": { (s: String, ss: SearchSettings) -> () in
-            ss.inArchiveFilePatterns.append(Regex(s))
+        "in-archiveext": { (str: String, settings: SearchSettings) -> Void in
+            settings.addInArchiveExtension(str)
         },
-        "in-dirpattern": { (s: String, ss: SearchSettings) -> () in
-            ss.inDirPatterns.append(Regex(s))
+        "in-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.inArchiveFilePatterns.append(Regex(str))
         },
-        "in-ext": { (s: String, ss: SearchSettings) -> () in
-            ss.addInExtension(s)
+        "in-dirpattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.inDirPatterns.append(Regex(str))
         },
-        "in-filepattern": { (s: String, ss: SearchSettings) -> () in
-            ss.inFilePatterns.append(Regex(s))
+        "in-ext": { (str: String, settings: SearchSettings) -> Void in
+            settings.addInExtension(str)
         },
-        "in-filetype": { (s: String, ss: SearchSettings) -> () in
-            ss.inFilePatterns.append(Regex(s))
+        "in-filepattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.inFilePatterns.append(Regex(str))
         },
-        "in-linesafterpattern": { (s: String, ss: SearchSettings) -> () in
-            ss.inLinesAfterPatterns.append(Regex(s))
+        "in-filetype": { (str: String, settings: SearchSettings) -> Void in
+            settings.inFileTypes.append(FileTypes.fromName(str))
         },
-        "in-linesbeforepattern": { (s: String, ss: SearchSettings) -> () in
-            ss.inLinesBeforePatterns.append(Regex(s))
+        "in-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.inLinesAfterPatterns.append(Regex(str))
         },
-        "linesafter": { (s: String, ss: SearchSettings) -> () in
-            ss.linesAfter = Int(s)!
+        "in-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.inLinesBeforePatterns.append(Regex(str))
         },
-        "linesaftertopattern": { (s: String, ss: SearchSettings) -> () in
-            ss.linesAfterToPatterns.append(Regex(s))
+        "linesafter": { (str: String, settings: SearchSettings) -> Void in
+            settings.linesAfter = Int(str)!
         },
-        "linesafteruntilpattern": { (s: String, ss: SearchSettings) -> () in
-            ss.linesAfterUntilPatterns.append(Regex(s))
+        "linesaftertopattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.linesAfterToPatterns.append(Regex(str))
         },
-        "linesbefore": { (s: String, ss: SearchSettings) -> () in
-            ss.linesBefore = Int(s)!
+        "linesafteruntilpattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.linesAfterUntilPatterns.append(Regex(str))
         },
-        "maxlinelength": { (s: String, ss: SearchSettings) -> () in
-            ss.maxLineLength = Int(s)!
+        "linesbefore": { (str: String, settings: SearchSettings) -> Void in
+            settings.linesBefore = Int(str)!
         },
-        "out-archiveext": { (s: String, ss: SearchSettings) -> () in
-            ss.addOutArchiveExtension(s)
+        "maxlinelength": { (str: String, settings: SearchSettings) -> Void in
+            settings.maxLineLength = Int(str)!
         },
-        "out-archivefilepattern": { (s: String, ss: SearchSettings) -> () in
-            ss.outArchiveFilePatterns.append(Regex(s))
+        "out-archiveext": { (str: String, settings: SearchSettings) -> Void in
+            settings.addOutArchiveExtension(str)
         },
-        "out-dirpattern": { (s: String, ss: SearchSettings) -> () in
-            ss.outDirPatterns.append(Regex(s))
+        "out-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.outArchiveFilePatterns.append(Regex(str))
         },
-        "out-ext": { (s: String, ss: SearchSettings) -> () in
-            ss.addOutExtension(s)
+        "out-dirpattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.outDirPatterns.append(Regex(str))
         },
-        "out-filepattern": { (s: String, ss: SearchSettings) -> () in
-            ss.outFilePatterns.append(Regex(s))
+        "out-ext": { (str: String, settings: SearchSettings) -> Void in
+            settings.addOutExtension(str)
         },
-        "out-filetype": { (s: String, ss: SearchSettings) -> () in
-            ss.outFilePatterns.append(Regex(s))
+        "out-filepattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.outFilePatterns.append(Regex(str))
         },
-        "out-linesafterpattern": { (s: String, ss: SearchSettings) -> () in
-            ss.outLinesAfterPatterns.append(Regex(s))
+        "out-filetype": { (str: String, settings: SearchSettings) -> Void in
+            settings.outFileTypes.append(FileTypes.fromName(str))
         },
-        "out-linesbeforepattern": { (s: String, ss: SearchSettings) -> () in
-            ss.outLinesBeforePatterns.append(Regex(s))
+        "out-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.outLinesAfterPatterns.append(Regex(str))
         },
-        "searchpattern": { (s: String, ss: SearchSettings) -> () in
-            ss.searchPatterns.append(Regex(s))
-        }
+        "out-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.outLinesBeforePatterns.append(Regex(str))
+        },
+        "searchpattern": { (str: String, settings: SearchSettings) -> Void in
+            settings.searchPatterns.append(Regex(str))
+        },
     ]
 
-    fileprivate let boolFlagActionDict: [String: (Bool, SearchSettings) -> ()] = [
-        "allmatches": { (b: Bool, ss: SearchSettings) -> () in
-            ss.firstMatch = !b
+    private let boolFlagActionDict: [String: (Bool, SearchSettings) -> Void] = [
+        "allmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.firstMatch = !bool
         },
-        "archivesonly": { (b: Bool, ss: SearchSettings) -> () in
-            ss.archivesOnly = b
-            if b { ss.searchArchives = true }
+        "archivesonly": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.setArchivesOnly(bool)
         },
-        "debug": { (b: Bool, ss: SearchSettings) -> () in
-            ss.debug = b
-            if b { ss.verbose = true }
+        "colorize": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.colorize = bool
         },
-        "excludehidden": { (b: Bool, ss: SearchSettings) -> () in
-            ss.excludeHidden = b
+        "debug": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.setDebug(bool)
         },
-        "firstmatch": { (b: Bool, ss: SearchSettings) -> () in
-            ss.firstMatch = b
+        "excludehidden": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.excludeHidden = bool
         },
-        "help": { (b: Bool, ss: SearchSettings) -> () in
-            ss.printUsage = b
+        "firstmatch": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.firstMatch = bool
         },
-        "includehidden": { (b: Bool, ss: SearchSettings) -> () in
-            ss.excludeHidden = !b
+        "help": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printUsage = bool
         },
-        "listdirs": { (b: Bool, ss: SearchSettings) -> () in
-            ss.listDirs = b
+        "includehidden": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.excludeHidden = !bool
         },
-        "listfiles": { (b: Bool, ss: SearchSettings) -> () in
-            ss.listFiles = b
+        "listdirs": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.listDirs = bool
         },
-        "listlines": { (b: Bool, ss: SearchSettings) -> () in
-            ss.listLines = b
+        "listfiles": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.listFiles = bool
         },
-        "multilinesearch": { (b: Bool, ss: SearchSettings) -> () in
-            ss.multiLineSearch = b
+        "listlines": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.listLines = bool
         },
-        "noprintmatches": { (b: Bool, ss: SearchSettings) -> () in
-            ss.printResults = !b
+        "multilinesearch": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.multiLineSearch = bool
         },
-        "norecursive": { (b: Bool, ss: SearchSettings) -> () in
-            ss.recursive = !b
+        "nocolorize": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.colorize = !bool
         },
-        "nosearcharchives": { (b: Bool, ss: SearchSettings) -> () in
-            ss.searchArchives = !b
+        "noprintmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printResults = !bool
         },
-        "printmatches": { (b: Bool, ss: SearchSettings) -> () in
-            ss.printResults = b
+        "norecursive": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.recursive = !bool
         },
-        "recursive": { (b: Bool, ss: SearchSettings) -> () in
-            ss.recursive = b
+        "nosearcharchives": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.searchArchives = !bool
         },
-        "searcharchives": { (b: Bool, ss: SearchSettings) -> () in
-            ss.searchArchives = b
+        "printmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printResults = bool
         },
-        "uniquelines": { (b: Bool, ss: SearchSettings) -> () in
-            ss.uniqueLines = b
+        "recursive": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.recursive = bool
         },
-        "verbose": { (b: Bool, ss: SearchSettings) -> () in
-            ss.verbose = b
+        "searcharchives": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.searchArchives = bool
         },
-        "version": { (b: Bool, ss: SearchSettings) -> () in
-            ss.printVersion = b
-        }
+        "uniquelines": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.uniqueLines = bool
+        },
+        "verbose": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.verbose = bool
+        },
+        "version": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printVersion = bool
+        },
     ]
 
     func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
@@ -255,14 +259,14 @@ open class SearchOptions {
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
-                while arg.hasPrefix("-") && arg.lengthOfBytes(using: String.Encoding.utf8) > 1 {
+                while arg.hasPrefix("-"), arg.lengthOfBytes(using: String.Encoding.utf8) > 1 {
                     arg = String(arg[arg.index(arg.startIndex, offsetBy: 1)...])
                 }
                 if longArgDict.index(forKey: arg) != nil {
                     let longArg = longArgDict[arg]
                     if argActionDict.index(forKey: longArg!) != nil {
-                        if args.count > i+1 {
-                            argActionDict[longArg!]!(args[i+1], settings)
+                        if args.count > i + 1 {
+                            argActionDict[longArg!]!(args[i + 1], settings)
                             i += 1
                         } else {
                             setError(error, msg: "Missing argument for option \(arg)")
@@ -275,7 +279,6 @@ open class SearchOptions {
                 } else {
                     setError(error, msg: "Invalid option: \(arg)")
                 }
-                
             } else {
                 settings.startPath = args[i]
             }
@@ -290,20 +293,21 @@ open class SearchOptions {
     }
 
     func getUsageString() -> String {
-        var s = "\nUsage:\n swiftsearch [options] -s <searchpattern> <startpath>\n\n"
-        s += "Options:\n"
-        let optStrings = searchOptions.map
-            { $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)" }
-        let optDescs = searchOptions.map { $0.desc }
-        let longest = optStrings.map({ $0.lengthOfBytes(using: String.Encoding.utf8) }).max()!
+        var str = "\nUsage:\n swiftsearch [options] -s <searchpattern> <startpath>\n\n"
+        str += "Options:\n"
+        let optStrings = searchOptions.map {
+            $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)"
+        }
+        let optDescs = searchOptions.map(\.desc)
+        let longest = optStrings.map { $0.lengthOfBytes(using: String.Encoding.utf8) }.max()!
         for i in 0 ..< optStrings.count {
             var optLine = " \(optStrings[i])"
             while optLine.lengthOfBytes(using: String.Encoding.utf8) <= longest {
                 optLine += " "
             }
             optLine += "  \(optDescs[i])\n"
-            s += optLine
+            str += optLine
         }
-        return s
+        return str
     }
 }

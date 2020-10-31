@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
-//import Foundation
+// import Foundation
 
-class DefaultSettings {
+enum DefaultSettings {
     static let archivesOnly = false
     static let debug = false
     static let excludeHidden = true
@@ -26,6 +26,7 @@ class DefaultSettings {
     static let recursive = true
     static let searchArchives = false
     static let startPath: String? = ""
+    static let textFileEncoding: String = "UTF-8"
     static let uniqueLines = false
     static let verbose = false
 }
@@ -48,55 +49,66 @@ open class SearchSettings: CustomStringConvertible {
     var recursive: Bool = DefaultSettings.recursive
     var searchArchives: Bool = DefaultSettings.searchArchives
     var startPath = DefaultSettings.startPath
+    var textFileEncoding = DefaultSettings.textFileEncoding
     var uniqueLines: Bool = DefaultSettings.uniqueLines
     var verbose: Bool = DefaultSettings.verbose
 
     var inArchiveExtensions = Set<String>()
-    var inArchiveFilePatterns = Array<Regex>()
-    var inDirPatterns = Array<Regex>()
+    var inArchiveFilePatterns = [Regex]()
+    var inDirPatterns = [Regex]()
     var inExtensions = Set<String>()
-    var inFilePatterns = Array<Regex>()
-    var inFileTypes = Array<FileType>()
-    var inLinesAfterPatterns = Array<Regex>()
-    var inLinesBeforePatterns = Array<Regex>()
-    var linesAfterToPatterns = Array<Regex>()
-    var linesAfterUntilPatterns = Array<Regex>()
+    var inFilePatterns = [Regex]()
+    var inFileTypes = [FileType]()
+    var inLinesAfterPatterns = [Regex]()
+    var inLinesBeforePatterns = [Regex]()
+    var linesAfterToPatterns = [Regex]()
+    var linesAfterUntilPatterns = [Regex]()
     var outArchiveExtensions = Set<String>()
-    var outArchiveFilePatterns = Array<Regex>()
-    var outDirPatterns = Array<Regex>()
+    var outArchiveFilePatterns = [Regex]()
+    var outDirPatterns = [Regex]()
     var outExtensions = Set<String>()
-    var outFilePatterns = Array<Regex>()
-    var outFileTypes = Array<FileType>()
-    var outLinesAfterPatterns = Array<Regex>()
-    var outLinesBeforePatterns = Array<Regex>()
-    var searchPatterns = Array<Regex>()
+    var outFilePatterns = [Regex]()
+    var outFileTypes = [FileType]()
+    var outLinesAfterPatterns = [Regex]()
+    var outLinesBeforePatterns = [Regex]()
+    var searchPatterns = [Regex]()
 
     fileprivate func splitExtensions(_ exts: String) -> [String] {
-        return exts.split {$0 == ","}.map { String($0) }
+        exts.split { $0 == "," }.map { String($0) }
     }
 
-    func addInArchiveExtension(_ ext: String) {
-        for x in splitExtensions(ext) {
-            inArchiveExtensions.insert(x)
+    func addInArchiveExtension(_ exts: String) {
+        for ext in splitExtensions(exts) {
+            inArchiveExtensions.insert(ext)
         }
     }
 
-    func addInExtension(_ ext: String) {
-        for x in splitExtensions(ext) {
-            inExtensions.insert(x)
+    func addInExtension(_ exts: String) {
+        for ext in splitExtensions(exts) {
+            inExtensions.insert(ext)
         }
     }
 
-    func addOutArchiveExtension(_ ext: String) {
-        for x in splitExtensions(ext) {
-            outArchiveExtensions.insert(x)
+    func addOutArchiveExtension(_ exts: String) {
+        for ext in splitExtensions(exts) {
+            outArchiveExtensions.insert(ext)
         }
     }
 
-    func addOutExtension(_ ext: String) {
-        for x in splitExtensions(ext) {
-            outExtensions.insert(x)
+    func addOutExtension(_ exts: String) {
+        for ext in splitExtensions(exts) {
+            outExtensions.insert(ext)
         }
+    }
+
+    func setArchivesOnly(_ archivesOnly: Bool) {
+        self.archivesOnly = archivesOnly
+        if archivesOnly { searchArchives = true }
+    }
+
+    func setDebug(_ debug: Bool) {
+        self.debug = debug
+        if debug { verbose = true }
     }
 
     open var description: String {

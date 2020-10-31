@@ -13,17 +13,17 @@ class Regex {
 
     init(_ pattern: String) {
         self.pattern = pattern
-        //var error: NSError?
-        self.expression = try! NSRegularExpression(pattern: pattern,
-            options: .dotMatchesLineSeparators)
+        // var error: NSError?
+        expression = try! NSRegularExpression(pattern: pattern,
+                                              options: .dotMatchesLineSeparators)
     }
 
-    func matches(_ s: String) -> [NSTextCheckingResult] {
-        return self.expression.matches(in: s, options: [],
-            range: NSMakeRange(0, s.lengthOfBytes(using: String.Encoding.utf8)))
+    func matches(_ str: String) -> [NSTextCheckingResult] {
+        expression.matches(in: str, options: [],
+                           range: NSMakeRange(0, str.lengthOfBytes(using: String.Encoding.isoLatin1)))
     }
 
-    func test(_ s: String) -> Bool {
-        return matches(s).count > 0
+    func test(_ str: String) -> Bool {
+        matches(str).count > 0
     }
 }

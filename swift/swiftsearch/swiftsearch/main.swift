@@ -10,30 +10,29 @@ import Foundation
 
 func getMatchingFiles(_ results: [SearchResult]) -> [String] {
     var files = Set<String>()
-    for r in results.filter({$0.file != nil}) {
-        let f = r.file!
-        files.insert(f.description)
+    for res in results.filter({ $0.file != nil }) {
+        files.insert(res.file!.description())
     }
-    return Array(files).sorted(by: {$0 < $1})
+    return Array(files).sorted { $0 < $1 }
 }
 
 func getMatchingDirs(_ results: [SearchResult]) -> [String] {
     let files = getMatchingFiles(results)
     var dirs = Set<String>()
-    for f in files {
-        let dir = NSURL(fileURLWithPath: f).deletingLastPathComponent?.absoluteString
+    for file in files {
+        let dir = NSURL(fileURLWithPath: file).deletingLastPathComponent?.absoluteString
         dirs.insert(dir!)
     }
-    return Array(dirs).sorted(by: {$0 < $1})
+    return Array(dirs).sorted { $0 < $1 }
 }
 
 func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [String] {
-    var lines = results.map {$0.line.trimmingCharacters(in: whitespace as CharacterSet)}
+    var lines = results.map { $0.line.trimmingCharacters(in: whitespace as CharacterSet) }
     if settings.uniqueLines {
         let lineSet = Set<String>(lines)
         lines = Array(lineSet)
     }
-    return lines.sorted(by: {$0.lowercased() < $1.lowercased()})
+    return lines.sorted { $0.lowercased() < $1.lowercased() }
 }
 
 func handleError(_ error: NSError, _ options: SearchOptions) {
@@ -53,7 +52,7 @@ func main() {
     if error != nil {
         handleError(error!, options)
     }
-    
+
     if settings.debug {
         logMsg("\nsettings: \(settings)")
     }
@@ -73,29 +72,29 @@ func main() {
     if error != nil {
         handleError(error!, options)
     }
-    
+
     let results = searcher.getSearchResults()
 
     if settings.printResults {
         logMsg("\nSearch results (\(results.count)):")
-        for r in results {
             logMsg("\(r)")
+        for res in results {
         }
     }
 
     if settings.listDirs {
         let dirs = getMatchingDirs(results)
         logMsg("\nDirectories with matches (\(dirs.count)):")
-        for d in dirs {
-            logMsg(d)
+        for dir in dirs {
+            logMsg(dir)
         }
     }
 
     if settings.listFiles {
         let files = getMatchingFiles(results)
         logMsg("\nFiles with matches (\(files.count)):")
-        for f in files {
-            logMsg(f)
+        for file in files {
+            logMsg(file)
         }
     }
 
@@ -104,8 +103,8 @@ func main() {
         let hdr = settings.uniqueLines ? "\nUnique lines with matches (\(lines.count)):"
             : "\nLines with matches (\(lines.count)):"
         logMsg(hdr)
-        for l in lines {
-            logMsg(l)
+        for line in lines {
+            logMsg(line)
         }
     }
 }
