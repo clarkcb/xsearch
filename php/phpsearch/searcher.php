@@ -39,6 +39,15 @@ class Searcher
         if (count($this->settings->searchpatterns) == 0) {
             throw new SearchException('No search patterns defined');
         }
+        if ($this->settings->linesafter < 0) {
+            throw new SearchException('Invalid linesafter');
+        }
+        if ($this->settings->linesbefore < 0) {
+            throw new SearchException('Invalid linesbefore');
+        }
+        if ($this->settings->maxlinelength < 0) {
+            throw new SearchException('Invalid maxlinelength');
+        }
     }
 
     private function matches_any_pattern(string $s, array $patterns): bool
@@ -569,9 +578,10 @@ class Searcher
     {
         $sorted_results = $this->results;
         usort($sorted_results, 'cmp_searchresults');
+        $formatter = new SearchResultFormatter($this->settings);
         log_msg(sprintf("\nSearch results (%d):", count($sorted_results)));
         foreach ($sorted_results as $r) {
-            log_msg($r);
+            log_msg($formatter->format($r));
         }
     }
 

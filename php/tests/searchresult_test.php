@@ -5,6 +5,9 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
     const CSSEARCHPATH = '~/src/xsearch/csharp/CsSearch/CsSearch';
     public function test_singleline_searchresult()
     {
+        $settings = new SearchSettings();
+        $settings->colorize = false;
+        $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
         $file = self::CSSEARCHPATH . "/Searcher.cs";
         $linenum = 10;
@@ -31,11 +34,51 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
             $match_end_index,
             trim($line)
         );
-        $this->assertEquals($expectedoutput, "$searchresult");
+        $output = $formatter->format($searchresult);
+        $this->assertEquals($expectedoutput, $output);
+    }
+
+    public function test_singleline_longer_than_maxlength_searchresult()
+    {
+        $settings = new SearchSettings();
+        $settings->colorize = false;
+        $settings->maxlinelength = 100;
+        $formatter = new SearchResultFormatter($settings);
+        $pattern = "maxlen";
+        $file = self::CSSEARCHPATH . "/maxlen.txt";
+        $linenum = 1;
+        $match_start_index = 53;
+        $match_end_index = 59;
+        $line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
+        $linesbefore = [];
+        $linesafter = [];
+        $searchresult = new SearchResult(
+            $pattern,
+            $file,
+            $linenum,
+            $match_start_index,
+            $match_end_index,
+            $line,
+            $linesbefore,
+            $linesafter
+        );
+        $expectedline = '...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...';
+        $expectedoutput = sprintf(
+            "%s: %d: [%d:%d]: %s",
+            $file,
+            $linenum,
+            $match_start_index,
+            $match_end_index,
+            $expectedline
+        );
+        $output = $formatter->format($searchresult);
+        $this->assertEquals($expectedoutput, $output);
     }
 
     public function test_binaryfile_searchresult()
     {
+        $settings = new SearchSettings();
+        $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
         $file = self::CSSEARCHPATH . "/Searcher.exe";
         $linenum = 0;
@@ -55,11 +98,15 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
             $linesafter
         );
         $expectedoutput = sprintf("%s matches at [%d:%d]", $file, $match_start_index, $match_end_index);
-        $this->assertEquals($expectedoutput, "$searchresult");
+        $output = $formatter->format($searchresult);
+        $this->assertEquals($expectedoutput, $output);
     }
 
     public function test_multiline_searchresult()
     {
+        $settings = new SearchSettings();
+        $settings->colorize = false;
+        $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
         $file = self::CSSEARCHPATH . "/Searcher.cs";
         $linenum = 10;
@@ -94,6 +141,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
             $match_start_index,
             $match_end_index
         );
-        $this->assertEquals($expectedoutput, "$searchresult");
+        $output = $formatter->format($searchresult);
+        $this->assertEquals($expectedoutput, $output);
     }
 }

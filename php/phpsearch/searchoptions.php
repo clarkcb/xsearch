@@ -98,6 +98,9 @@ class SearchOptions
             'archivesonly' => function (bool $b, SearchSettings $settings) {
                 $settings->set_archivesonly($b);
             },
+            'colorize' => function (bool $b, SearchSettings $settings) {
+                $settings->colorize = $b;
+            },
             'debug' => function (bool $b, SearchSettings $settings) {
                 $settings->set_debug($b);
             },
@@ -124,6 +127,9 @@ class SearchOptions
             },
             'multilinesearch' => function (bool $b, SearchSettings $settings) {
                 $settings->multilinesearch = $b;
+            },
+            'nocolorize' => function (bool $b, SearchSettings $settings) {
+                $settings->colorize = !$b;
             },
             'noprintmatches' => function (bool $b, SearchSettings $settings) {
                 $settings->printresults = !$b;

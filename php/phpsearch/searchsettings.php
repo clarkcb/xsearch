@@ -3,6 +3,7 @@
  * Class SearchSettings
  *
  * @property bool archivesonly
+ * @property bool colorize
  * @property bool debug
  * @property bool excludehidden
  * @property bool firstmatch
@@ -45,6 +46,7 @@
 class SearchSettings
 {
     public $archivesonly = false;
+    public $colorize = true;
     public $debug = false;
     public $excludehidden = true;
     public $firstmatch = false;
@@ -155,6 +157,7 @@ class SearchSettings
     {
         $s = 'SearchSettings(';
         $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
+        $s .= ', colorize: ' . $this->bool_to_string($this->colorize);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);
         $s .= ', excludehidden: ' . $this->bool_to_string($this->excludehidden);
         $s .= ', firstmatch: ' . $this->bool_to_string($this->firstmatch);
