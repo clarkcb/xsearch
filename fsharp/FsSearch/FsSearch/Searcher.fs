@@ -379,10 +379,11 @@ type Searcher (settings : SearchSettings.t) =
         |> Seq.sortBy (fun r -> (r.File.File.ToString(), r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
         |> List.ofSeq
 
-    member this.PrintResults : unit = 
+    member this.PrintResults : unit =
+        let formatter = SearchResultFormatter(settings)
         Common.Log (sprintf "\nSearch results (%d):" this.Results.Count)
         this.GetSortedResults
-        |> Seq.iter (fun r -> Common.Log (sprintf "%s" (SearchResult.ToString r)))
+        |> Seq.iter (fun r -> Common.Log (sprintf "%s" (formatter.Format r)))
 
     member this.GetMatchingDirs : DirectoryInfo list = 
         this.Results

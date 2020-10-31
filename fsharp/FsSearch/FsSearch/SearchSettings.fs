@@ -5,6 +5,7 @@ open System.Text.RegularExpressions
 module SearchSettings =
     type t = {
         ArchivesOnly : bool;
+        Colorize : bool;
         Debug : bool;
         ExcludeHidden : bool;
         FirstMatch : bool;
@@ -47,6 +48,7 @@ module SearchSettings =
 
     let DefaultSettings = {
         ArchivesOnly = false;
+        Colorize = true;
         Debug = false;
         ExcludeHidden = true;
         FirstMatch = false;
@@ -115,6 +117,7 @@ module SearchSettings =
         String.concat "" [
             "SearchSettings(";
             sprintf "ArchivesOnly: %b" settings.ArchivesOnly;
+            sprintf ", Colorize: %b" settings.Colorize;
             sprintf ", Debug: %b" settings.Debug;
             sprintf ", ExcludeHidden: %b" settings.ExcludeHidden;
             sprintf ", FirstMatch: %b" settings.FirstMatch;

@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <Compile Include="Common.fs" />
+        <Compile Include="Color.fs" />
         <Compile Include="Config.fs" />
         <Compile Include="SearchException.fs" />
         <Compile Include="FileUtil.fs" />
@@ -15,6 +16,7 @@
         <Compile Include="SearchSettings.fs" />
         <Compile Include="SearchFile.fs" />
         <Compile Include="SearchResult.fs" />
+        <Compile Include="SearchResultFormatter.fs" />
         <Compile Include="SearchOptions.fs" />
         <Compile Include="Searcher.fs" />
         <Compile Include="SearchMain.fs" />

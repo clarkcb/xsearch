@@ -60,6 +60,7 @@ module SearchOptions =
         [
             ("allmatches", (fun (b : bool) (settings : SearchSettings.t) -> { settings with FirstMatch = not b }));
             ("archivesonly", (fun (b : bool) (settings : SearchSettings.t) -> SearchSettings.SetArchivesOnly b settings));
+            ("colorize", (fun (b : bool) (settings : SearchSettings.t) -> { settings with Colorize = b }));
             ("debug", (fun (b : bool) (settings : SearchSettings.t) -> SearchSettings.SetDebug b settings));
             ("excludehidden", (fun (b : bool) (settings : SearchSettings.t) -> { settings with ExcludeHidden = b }));
             ("firstmatch", (fun (b : bool) (settings : SearchSettings.t) -> { settings with FirstMatch = b }));
@@ -69,6 +70,7 @@ module SearchOptions =
             ("listfiles", (fun (b : bool) (settings : SearchSettings.t) -> { settings with ListFiles = b }));
             ("listlines", (fun (b : bool) (settings : SearchSettings.t) -> { settings with ListLines = b }));
             ("multilinesearch", (fun (b : bool) (settings : SearchSettings.t) -> { settings with MultiLineSearch = b }));
+            ("nocolorize", (fun (b : bool) (settings : SearchSettings.t) -> { settings with Colorize = not b }));
             ("noprintmatches", (fun (b : bool) (settings : SearchSettings.t) -> { settings with PrintResults = not b }));
             ("norecursive", (fun (b : bool) (settings : SearchSettings.t) -> { settings with Recursive = not b }));
             ("nosearcharchives", (fun (b : bool) (settings : SearchSettings.t) -> { settings with SearchArchives = not b }));
