@@ -191,10 +191,10 @@
           contents (slurp (expand-path TESTFILE))
           results (search-multiline-string contents settings)]
       (is (= (count results) 2))
-      (is (= (:linenum (first results)) 23))
+      (is (= (:linenum (first results)) 29))
       (is (= (:startmatchindex (first results)) 3))
       (is (= (:endmatchindex (first results)) 11))
-      (is (= (:linenum (second results)) 29))
+      (is (= (:linenum (second results)) 35))
       (is (= (:startmatchindex (second results)) 24))
       (is (= (:endmatchindex (second results)) 32)))))
 

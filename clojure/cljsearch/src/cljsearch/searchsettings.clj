@@ -16,6 +16,7 @@
 (defrecord SearchSettings
   [
     archivesonly
+    colorize
     debug
     excludehidden
     firstmatch
@@ -58,6 +59,7 @@
 
 (def DEFAULT-SETTINGS (->SearchSettings
     false   ; archivesonly
+    true    ; colorize
     false   ; debug
     true    ; excludehidden
     false   ; firstmatch

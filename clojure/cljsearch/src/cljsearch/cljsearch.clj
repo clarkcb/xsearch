@@ -17,7 +17,7 @@
         (let [errs (search settings)]
           (if (empty? errs)
             (do
-              (if (:printresults settings) (print-search-results))
+              (if (:printresults settings) (print-search-results settings))
               (if (:listdirs settings) (print-matching-dirs))
               (if (:listfiles settings) (print-matching-files))
               (if (:listlines settings) (print-matching-lines settings)))

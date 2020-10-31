@@ -43,12 +43,12 @@
        (empty? (:out-dirpatterns settings))
         (not-any? #(re-find % (.getPath d)) (:out-dirpatterns settings))))))
 
-(defn print-search-result [r]
-  (log-msg (search-result-to-string r)))
+(defn print-search-result [r settings]
+  (log-msg (search-result-to-string r settings)))
 
-(defn print-search-results []
+(defn print-search-results [settings]
   (log-msg (format "\nSearch results (%d):" (count (deref search-results))))
-  (doseq [r (deref search-results)] (print-search-result r)))
+  (doseq [r (deref search-results)] (print-search-result r settings)))
 
 (defn get-matching-dirs []
   (sort (distinct (map #(.getParent (:file %)) (deref search-results)))))

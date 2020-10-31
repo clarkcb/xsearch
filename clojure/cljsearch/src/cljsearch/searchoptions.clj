@@ -87,12 +87,13 @@
     :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
     :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-linesafterpatterns))
     :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-linesbeforepatterns))
-    :search (fn [settings s] (add-pattern settings s :searchpatterns))
+    :searchpattern (fn [settings s] (add-pattern settings s :searchpatterns))
   })
 
 (def bool-flag-action-map
   { :allmatches (fn [settings b] (assoc settings :firstmatch (not b)))
     :archivesonly (fn [settings b] (set-archivesonly settings b))
+    :colorize (fn [settings b] (assoc settings :colorize b))
     :debug (fn [settings b] (set-debug settings b))
     :excludehidden (fn [settings b] (assoc settings :excludehidden b))
     :firstmatch (fn [settings b] (assoc settings :firstmatch b))
@@ -102,6 +103,7 @@
     :listfiles (fn [settings b] (assoc settings :listfiles b))
     :listlines (fn [settings b] (assoc settings :listlines b))
     :multilinesearch (fn [settings b] (assoc settings :multilinesearch b))
+    :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
     :noprintmatches (fn [settings b] (assoc settings :printresults (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :nosearcharchives (fn [settings b] (assoc settings :searcharchives (not b)))
