@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
 
 public class Searcher {
 
-    private SearchSettings settings;
+    final private SearchSettings settings;
     private List<SearchResult> results;
-    private FileTypes fileTypes;
+    final private FileTypes fileTypes;
     private Set<SearchFile> searchFileSet;
 
     public Searcher(final SearchSettings settings) {
@@ -689,9 +689,10 @@ public class Searcher {
 
     public final void printSearchResults(List<SearchResult> results) {
         List<SearchResult> sortedResults = getSortedSearchResults(results);
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
         log(String.format("Search results (%d):", sortedResults.size()));
         for (SearchResult r : sortedResults) {
-            log(r.toString());
+            log(formatter.format(r));
         }
     }
 

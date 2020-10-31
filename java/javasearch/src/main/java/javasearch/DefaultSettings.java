@@ -6,6 +6,7 @@ public final class DefaultSettings {
     }
 
     public static final boolean ARCHIVESONLY = false;
+    public static final boolean COLORIZE = true;
     public static final boolean DEBUG = false;
     public static final boolean FIRSTMATCH = false;
     public static final boolean EXCLUDEHIDDEN = true;

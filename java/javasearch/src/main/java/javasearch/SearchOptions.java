@@ -77,6 +77,7 @@ public class SearchOptions {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
+            put("colorize", (b, settings) -> settings.setColorize(b));
             put("debug", (b, settings) -> settings.setDebug(b));
             put("excludehidden", (b, settings) -> settings.setExcludeHidden(b));
             put("firstmatch", (b, settings) -> settings.setFirstMatch(b));
@@ -86,6 +87,7 @@ public class SearchOptions {
             put("listfiles", (b, settings) -> settings.setListFiles(b));
             put("listlines", (b, settings) -> settings.setListLines(b));
             put("multilinesearch", (b, settings) -> settings.setMultiLineSearch(b));
+            put("nocolorize", (b, settings) -> settings.setColorize(!b));
             put("noprintmatches", (b, settings) -> settings.setPrintResults(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("nosearcharchives", (b, settings) -> settings.setSearchArchives(!b));

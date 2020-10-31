@@ -3,6 +3,7 @@ package javasearch;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -17,23 +18,81 @@ public class SearchResultTest {
 
     @Test
     public final void testSingleLineSearchResult() {
+        SearchSettings settings = new SearchSettings();
+        settings.setMaxLineLength(DefaultSettings.MAXLINELENGTH);
+        settings.setColorize(false);
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");
         final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-            "Searcher.cs", FileType.TEXT);
+            "Searcher.cs", FileType.CODE);
         final int lineNum = 10;
         final int matchStartIndex = 15;
-        final int matchEndIndex = 23;
+        final int matchEndIndex = 21;
         final String line = "\tpublic class Searcher\n";
-        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
-            matchStartIndex, matchEndIndex, line);
+        final List<String> beforeAfterLines = new ArrayList<>();
+        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum, matchStartIndex,
+                matchEndIndex, line, beforeAfterLines, beforeAfterLines);
         final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.cs";
         final String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
                 lineNum, matchStartIndex, matchEndIndex, line.trim());
-        assertEquals(searchResult.toString(), expectedOutput);
+        final String output = formatter.format(searchResult);
+        assertEquals(expectedOutput, output);
+    }
+
+    @Test
+    public final void testSingleLineLongerThanMaxLineLengthSearchResult() {
+        SearchSettings settings = new SearchSettings();
+        settings.setMaxLineLength(100);
+        settings.setColorize(false);
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
+        final Pattern pattern = Pattern.compile("maxlen");
+        final SearchFile searchFile = new SearchFile(".", "maxlen.txt", FileType.TEXT);
+        final int lineNum = 1;
+        final int matchStartIndex = 53;
+        final int matchEndIndex = 59;
+        final String line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
+        final List<String> linesBeforeAfter = new ArrayList<>();
+        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+            matchStartIndex, matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
+        final String expectedPath = "." + File.separator + "maxlen.txt";
+        final String expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...";
+        final String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
+                lineNum, matchStartIndex, matchEndIndex, expectedLine);
+        final String output = formatter.format(searchResult);
+        assertEquals(expectedOutput, output);
+    }
+
+    @Test
+    public final void testSingleLineLongerColorizeSearchResult() {
+        SearchSettings settings = new SearchSettings();
+        settings.setMaxLineLength(100);
+        settings.setColorize(true);
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
+        final Pattern pattern = Pattern.compile("maxlen");
+        final SearchFile searchFile = new SearchFile(".", "maxlen.txt", FileType.TEXT);
+        final int lineNum = 10;
+        final int matchStartIndex = 53;
+        final int matchEndIndex = 59;
+        final String line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
+        final List<String> linesBeforeAfter = new ArrayList<>();
+        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+            matchStartIndex, matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
+        final String expectedPath = "." + File.separator + "maxlen.txt";
+        final String expectedLine = "...89012345678901234567890123456789012345678901" +
+                Color.GREEN +
+                "maxlen" +
+                Color.RESET +
+                "89012345678901234567890123456789012345678901...";
+        final String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
+                lineNum, matchStartIndex, matchEndIndex, expectedLine);
+        final String output = formatter.format(searchResult);
+        assertEquals(expectedOutput, output);
     }
 
     @Test
     public final void testBinaryFileSearchResult() {
+        SearchSettings settings = new SearchSettings();
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");
         final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
             "Searcher.exe", FileType.BINARY);
@@ -44,14 +103,18 @@ public class SearchResultTest {
             matchStartIndex, matchEndIndex, null);
         final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.exe";
         final String expectedOutput = String.format("%s matches at [0:0]", expectedPath);
-        assertEquals(searchResult.toString(), expectedOutput);
+        final String output = formatter.format(searchResult);
+        assertEquals(expectedOutput, output);
     }
 
     @Test
     public final void testMultiLineSearchResult() {
+        SearchSettings settings = new SearchSettings();
+        settings.setColorize(false);
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");
         final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-                "Searcher.cs", FileType.TEXT);
+                "Searcher.cs", FileType.CODE);
         final int lineNum = 10;
         final int matchStartIndex = 15;
         final int matchEndIndex = 23;
@@ -71,6 +134,7 @@ public class SearchResultTest {
                 "  11 | \t{\n" +
                 "  12 | \t\tprivate readonly FileTypes _fileTypes;\n",
                 expectedPath, lineNum, matchStartIndex, matchEndIndex);
-        assertEquals(searchResult.toString(), expectedOutput);
+        final String output = formatter.format(searchResult);
+        assertEquals(expectedOutput, output);
     }
 }

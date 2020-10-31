@@ -21,6 +21,7 @@ public class SearchSettings {
     private static final int INITIAL_SET_CAPACITY = 4;
 
     private boolean archivesOnly;
+    private boolean colorize;
     private boolean debug;
     private boolean excludeHidden;
     private boolean firstMatch;
@@ -62,6 +63,7 @@ public class SearchSettings {
 
     public SearchSettings() {
         this.archivesOnly = DefaultSettings.ARCHIVESONLY;
+        this.colorize = DefaultSettings.COLORIZE;
         this.debug = DefaultSettings.DEBUG;
         this.firstMatch = DefaultSettings.FIRSTMATCH;
         this.excludeHidden = DefaultSettings.EXCLUDEHIDDEN;
@@ -118,6 +120,14 @@ public class SearchSettings {
         if (archivesOnly) {
             this.searchArchives = true;
         }
+    }
+
+    public final boolean getColorize() {
+        return this.colorize;
+    }
+
+    public final void setColorize(final boolean colorize) {
+        this.colorize = colorize;
     }
 
     public final boolean getDebug() {
@@ -491,6 +501,7 @@ public class SearchSettings {
         }
         return "SearchSettings("
                 + "archivesOnly: " + this.archivesOnly
+                + ", colorize: " + this.colorize
                 + ", debug: " + this.debug
                 + ", excludeHidden: " + this.excludeHidden
                 + ", firstMatch: " + this.firstMatch

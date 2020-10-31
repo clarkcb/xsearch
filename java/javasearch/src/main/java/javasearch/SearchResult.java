@@ -16,16 +16,14 @@ import java.util.regex.Pattern;
 
 public class SearchResult {
 
-    private Pattern searchPattern;
+    final private Pattern searchPattern;
     private SearchFile searchFile;
-    private int lineNum;
-    private int matchStartIndex;
-    private int matchEndIndex;
-    private String line;
-    private List<String> linesBefore;
-    private List<String> linesAfter;
-
-    private static String noSearchFileText = "<text>";
+    final private int lineNum;
+    final private int matchStartIndex;
+    final private int matchEndIndex;
+    final private String line;
+    final private List<String> linesBefore;
+    final private List<String> linesAfter;
 
     public SearchResult(final Pattern searchPattern,
                         final SearchFile file,
@@ -89,122 +87,5 @@ public class SearchResult {
 
     public final List<String> getLinesAfter() {
         return this.linesAfter;
-    }
-
-    public final String toString() {
-        if (linesBefore.size() > 0 || linesAfter.size() > 0) {
-            return multiLineToString();
-        } else {
-            return singleLineToString();
-        }
-    }
-
-    private String repeatString(final String s, final int times) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < times; i++) {
-            sb.append(s);
-        }
-        return sb.toString();
-    }
-
-    private int lineNumPadding() {
-        int maxLineNum = lineNum + linesAfter.size();
-        return String.format("%d", maxLineNum).length();
-    }
-
-    public final String multiLineToString() {
-        int lineSepLength = 80;
-        String fileString = searchFile == null ? noSearchFileText : searchFile.toString();
-        StringBuilder sb = new StringBuilder()
-                .append(repeatString("=", lineSepLength)).append("\n")
-                .append(fileString).append(": ").append(lineNum).append(": ")
-                .append("[").append(matchStartIndex).append(":")
-                .append(matchEndIndex).append("]\n")
-                .append(repeatString("-", lineSepLength)).append("\n");
-        int currentLineNum = lineNum;
-        String lineFormat = " %1$" + lineNumPadding() + "d | %2$s\n";
-        if (!linesBefore.isEmpty()) {
-            currentLineNum -= linesBefore.size();
-            for (String lineBefore : linesBefore) {
-                sb.append(" ")
-                        .append(String.format(lineFormat, currentLineNum,
-                                StringUtil.trimNewLine(lineBefore)));
-                currentLineNum++;
-            }
-        }
-        sb.append(">").append(String.format(lineFormat, lineNum,
-                StringUtil.trimNewLine(line)));
-        if (!linesAfter.isEmpty()) {
-            currentLineNum++;
-            for (String lineAfter : linesAfter) {
-                sb.append(" ")
-                        .append(String.format(lineFormat, currentLineNum,
-                                StringUtil.trimNewLine(lineAfter)));
-                currentLineNum++;
-            }
-        }
-        return sb.toString();
-    }
-
-    public final String singleLineToString() {
-        StringBuilder sb = new StringBuilder();
-        try {
-            sb.append(this.searchFile.toString());
-        } catch (NullPointerException e) {
-            sb.append(noSearchFileText);
-        }
-        if (this.lineNum == 0) {
-            sb.append(" matches at [")
-                    .append(matchStartIndex)
-                    .append(":")
-                    .append(matchEndIndex)
-                    .append("]");
-        } else {
-            sb.append(": ")
-                    .append(lineNum)
-                    .append(": [")
-                    .append(matchStartIndex)
-                    .append(":")
-                    .append(matchEndIndex)
-                    .append("]: ")
-                    .append(formatMatchingLine());
-        }
-        return sb.toString();
-    }
-
-    private String formatMatchingLine() {
-        String formatted = this.line;
-        int lineLength = this.line.length();
-        int matchLength = this.matchEndIndex - this.matchStartIndex;
-        int maxLineLength = 150;
-        if (lineLength > maxLineLength) {
-            int adjustedMaxLength = maxLineLength - matchLength;
-            int beforeIndex = this.matchStartIndex;
-            if (this.matchStartIndex > 0) {
-                beforeIndex = beforeIndex - (adjustedMaxLength / 4);
-                if (beforeIndex < 0) {
-                    beforeIndex = 0;
-                }
-            }
-            adjustedMaxLength = adjustedMaxLength - (this.matchStartIndex - beforeIndex);
-            int afterIndex = this.matchEndIndex + adjustedMaxLength;
-            if (afterIndex > lineLength) {
-                afterIndex = lineLength;
-            }
-
-            final String ellipses = "...";
-            String before = "";
-            if (beforeIndex > ellipses.length()) {
-                before = ellipses;
-                beforeIndex += ellipses.length();
-            }
-            String after = "";
-            if (afterIndex < lineLength - ellipses.length()) {
-                after = ellipses;
-                afterIndex -= ellipses.length();
-            }
-            formatted = before + this.line.substring(beforeIndex, afterIndex) + after;
-        }
-        return formatted.trim();
     }
 }
