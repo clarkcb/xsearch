@@ -3,76 +3,103 @@ package scalasearch
 import scala.util.matching.Regex
 
 case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
-                        lineNum: Int, matchStartIndex:Int,
-                   matchEndIndex:Int, line: String,
-                   linesBefore: Seq[String], linesAfter: Seq[String],
-                   maxLineLength:Int=DefaultSettings.maxLineLength) {
+                        lineNum: Int, matchStartIndex: Int,
+                        matchEndIndex: Int, line: String,
+                        linesBefore: Seq[String], linesAfter: Seq[String]) {
 
   def this(searchPattern: Regex, file: Option[SearchFile], lineNum: Int,
            matchStartIndex: Int, matchEndIndex: Int, line: String) = {
     this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       Seq.empty[String], Seq.empty[String])
   }
+}
 
+class SearchResultFormatter(val settings: SearchSettings) {
   val sepLen = 80
 
-  override def toString: String = {
-    if (linesBefore.nonEmpty || linesAfter.nonEmpty) {
-      multiLineToString
+  def format(result: SearchResult): String = {
+    if (result.linesBefore.nonEmpty || result.linesAfter.nonEmpty) {
+      multiLineFormat(result)
     } else {
-      singleLineToString
+      singleLineFormat(result)
     }
   }
 
-  def singleLineToString: String = {
-    val filepath = if (file.isDefined) file.get.getPathWithContainers else "<text>"
+  private def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
+    s.substring(0, matchStartIndex) +
+      Color.GREEN +
+      s.substring(matchStartIndex, matchEndIndex) +
+      Color.RESET +
+      s.substring(matchEndIndex)
+  }
+
+  private def formatMatchingLine(result: SearchResult): String = {
+    val leadingWhitespaceCount = result.line.takeWhile(c => Character.isWhitespace(c)).length
+    var formatted = result.line.trim
+    var formattedLength = formatted.length
+    val maxLineEndIndex = formattedLength - 1
+    val matchLength = result.matchEndIndex - result.matchStartIndex
+    var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
+    var matchEndIndex = matchStartIndex + matchLength
+
+    if (formattedLength > settings.maxLineLength) {
+      var lineStartIndex = matchStartIndex
+      var lineEndIndex = lineStartIndex + matchLength
+      matchStartIndex = 0
+      matchEndIndex = matchLength
+
+      while (lineEndIndex > formattedLength - 1) {
+        lineStartIndex -= 1
+        lineEndIndex -= 1
+        matchStartIndex += 1
+        matchEndIndex += 1
+      }
+
+      formattedLength = lineEndIndex - lineStartIndex
+      while (formattedLength < settings.maxLineLength) {
+        if (lineStartIndex > 0) {
+          lineStartIndex -= 1
+          matchStartIndex += 1
+          matchEndIndex += 1
+          formattedLength = lineEndIndex - lineStartIndex
+        }
+        if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
+          lineEndIndex += 1
+        }
+        formattedLength = lineEndIndex - lineStartIndex
+      }
+
+      formatted = formatted.substring(lineStartIndex, lineEndIndex)
+
+      if (lineStartIndex > 2) {
+        formatted = "..." + formatted.substring(3)
+      }
+      if (lineEndIndex < maxLineEndIndex - 3) {
+        formatted = formatted.substring(0, formattedLength - 3) + "..."
+      }
+    }
+
+    if (settings.colorize) {
+      formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+    }
+
+    formatted
+  }
+
+  def singleLineFormat(result: SearchResult): String = {
+    val filepath = if (result.file.isDefined) result.file.get.getPathWithContainers else "<text>"
     val matchString =
-      if (lineNum > 0) {
-        ": %d: [%d:%d]: %s".format(lineNum, matchStartIndex, matchEndIndex,
-          formatMatchingLine)
+      if (result.lineNum > 0) {
+        ": %d: [%d:%d]: %s".format(result.lineNum, result.matchStartIndex, result.matchEndIndex,
+          formatMatchingLine(result))
       } else {
-        " matches at [%d:%d]".format(matchStartIndex, matchEndIndex)
+        " matches at [%d:%d]".format(result.matchStartIndex, result.matchEndIndex)
       }
     filepath + matchString
   }
 
-  private def formatMatchingLine: String = {
-    val lineLength = line.length
-    val matchLength = matchEndIndex - matchStartIndex
-    val formatted =
-      if (lineLength > maxLineLength) {
-        var adjustedMaxLength = maxLineLength - matchLength
-        var beforeIndex = matchStartIndex
-        if (matchStartIndex > 0) {
-          beforeIndex -= (adjustedMaxLength / 4)
-          if (beforeIndex < 0) beforeIndex = 0
-        }
-        adjustedMaxLength -= (matchStartIndex - beforeIndex)
-        var afterIndex = matchEndIndex + adjustedMaxLength
-        if (afterIndex > lineLength) afterIndex = lineLength
-        val before =
-          if (beforeIndex > 3) {
-            beforeIndex += 3
-            "..."
-          } else {
-            ""
-          }
-        val after =
-          if (afterIndex < lineLength - 3) {
-            afterIndex -= 3
-            "..."
-          } else {
-            ""
-          }
-        before + line.substring(beforeIndex, afterIndex) + after
-      } else {
-        line
-      }
-    formatted.trim
-  }
-
-  def lineNumPadding: Int = {
-    val maxLineNum = lineNum + linesAfter.length
+  def lineNumPadding(result: SearchResult): Int = {
+    val maxLineNum = result.lineNum + result.linesAfter.length
     "%d".format(maxLineNum).length
   }
 
@@ -88,24 +115,28 @@ case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
     }
   }
 
-  def multiLineToString: String = {
+  def multiLineFormat(result: SearchResult): String = {
     val sb = new StringBuilder
-    val filepath = if (file.isDefined) file.get.getPathWithContainers else "<text>"
+    val filepath = if (result.file.isDefined) result.file.get.getPathWithContainers else "<text>"
     sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
-      lineNum, matchStartIndex, matchEndIndex, "-" * sepLen))
-    val lineFormat = " %1$" + lineNumPadding + "d | %2$s\n"
-    var currentLineNum = lineNum
-    if (linesBefore.nonEmpty) {
-      currentLineNum -= linesBefore.length
-      linesBefore.foreach { lineBefore =>
+      result.lineNum, result.matchStartIndex, result.matchEndIndex, "-" * sepLen))
+    val lineFormat = " %1$" + lineNumPadding(result) + "d | %2$s\n"
+    var currentLineNum = result.lineNum
+    if (result.linesBefore.nonEmpty) {
+      currentLineNum -= result.linesBefore.length
+      result.linesBefore.foreach { lineBefore =>
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineBefore)))
         currentLineNum += 1
       }
     }
-    sb.append(">" + lineFormat.format(lineNum, trimNewLines(line)))
-    if (linesAfter.nonEmpty) {
+    var line = trimNewLines(result.line)
+    if (settings.colorize) {
+      line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+    }
+    sb.append(">" + lineFormat.format(result.lineNum, line))
+    if (result.linesAfter.nonEmpty) {
       currentLineNum += 1
-      linesAfter.foreach { lineAfter =>
+      result.linesAfter.foreach { lineAfter =>
         sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
         currentLineNum += 1
       }

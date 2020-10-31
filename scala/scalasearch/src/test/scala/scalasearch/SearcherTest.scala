@@ -271,7 +271,7 @@ class SearcherTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterA
     val settings = getSearchSettings.copy(archivesOnly = true)
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(!searcher.filterFile(file))
+    assert(searcher.filterFile(file))
   }
 
   test("testFilterFile_NoExtensionsNoPatterns_True") {

@@ -12,7 +12,7 @@ class FileTypesTest extends FunSuite {
     """7z arj bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx Z""".
       split("\\s+").foreach { ext =>
         val archiveFile = new File("archive."+ext)
-        println("archilveFile: "+archiveFile)
+        println("archiveFile: "+archiveFile)
         assert(!FileTypes.isBinaryFile(archiveFile))
         assert(!FileTypes.isCodeFile(archiveFile))
         assert(FileTypes.isArchiveFile(archiveFile))
@@ -58,7 +58,7 @@ class FileTypesTest extends FunSuite {
         assert(FileTypes.isTextFile(codeFile))
         assert(!FileTypes.isUnknownFile(codeFile))
         val fileType = FileTypes.getFileType(codeFile)
-        assert(fileType == FileType.Text)
+        assert(fileType == FileType.Code)
     }
   }
 
@@ -100,7 +100,7 @@ class FileTypesTest extends FunSuite {
         assert(FileTypes.isTextFile(textFile))
         assert(!FileTypes.isUnknownFile(textFile))
         val fileType = FileTypes.getFileType(textFile)
-        assert(fileType == FileType.Text)
+        assert(Set(FileType.Code, FileType.Text, FileType.Xml).contains(fileType))
     }
   }
 
@@ -134,7 +134,7 @@ class FileTypesTest extends FunSuite {
         assert(FileTypes.isTextFile(xmlFile))
         assert(!FileTypes.isUnknownFile(xmlFile))
         val fileType = FileTypes.getFileType(xmlFile)
-        assert(fileType == FileType.Text)
+        assert(fileType == FileType.Xml)
     }
   }
 }

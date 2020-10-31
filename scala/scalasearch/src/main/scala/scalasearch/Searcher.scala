@@ -668,17 +668,10 @@ class Searcher (settings: SearchSettings) {
   }
 
   def printSearchResults(): Unit = {
-    getSearchResults.foreach(printSearchResult)
+    // TODO: add includePattern setting in formatted output
+    val formatter = new SearchResultFormatter(settings)
+    getSearchResults.foreach(r => Common.log(formatter.format(r)))
  }
-
-  private def printSearchResult(r: SearchResult): Unit = {
-    val patternString = if (settings.searchPatterns.size > 1) {
-      "\"" + r.searchPattern + "\": "
-    } else {
-      ""
-    }
-    Common.log(patternString + r.toString)
-  }
 
   // retrieve only AFTER search
   lazy val searchResults: Seq[SearchResult] = _searchResults.sortWith(cmpSearchResults).toVector

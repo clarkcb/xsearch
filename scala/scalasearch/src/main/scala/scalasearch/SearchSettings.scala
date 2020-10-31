@@ -5,6 +5,7 @@ import scalasearch.FileType.FileType
 
 object DefaultSettings {
   val archivesOnly = false
+  val colorize = true
   val debug = false
   val excludeHidden = true
   val firstMatch = false
@@ -27,6 +28,7 @@ object DefaultSettings {
 }
 
 case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
+                          colorize: Boolean = DefaultSettings.colorize,
                           debug: Boolean = DefaultSettings.debug,
                           excludeHidden: Boolean = DefaultSettings.excludeHidden,
                           firstMatch: Boolean = DefaultSettings.firstMatch,
@@ -96,6 +98,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
   override def toString: String = {
     "SearchSettings(" +
       "archivesOnly: " + archivesOnly +
+      ", colorize: " + colorize +
       ", debug: " + debug +
       ", excludeHidden: " + excludeHidden +
       ", firstMatch: " + firstMatch +

@@ -73,6 +73,8 @@ object SearchOptions {
   type ArgAction = (String, SearchSettings) => SearchSettings
 
   private val argActionMap = Map[String, ArgAction](
+    "encoding" ->
+      ((s, ss) => ss.copy(textFileEncoding = s)),
     "in-archiveext" ->
       ((s, ss) => ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions))),
     "in-archivefilepattern" ->
@@ -127,6 +129,7 @@ object SearchOptions {
     "archivesonly" -> ((b, ss) =>
       if (b) ss.copy(archivesOnly = b, searchArchives = b) else ss.copy(archivesOnly = b)),
     "allmatches" -> ((b, ss) => ss.copy(firstMatch = !b)),
+    "colorize" -> ((b, ss) => ss.copy(colorize = b)),
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
     "excludehidden" -> ((b, ss) => ss.copy(excludeHidden = b)),
     "firstmatch" -> ((b, ss) => ss.copy(firstMatch = b)),
@@ -136,6 +139,7 @@ object SearchOptions {
     "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
     "listlines" -> ((b, ss) => ss.copy(listLines = b)),
     "multilinesearch" -> ((b, ss) => ss.copy(multiLineSearch = b)),
+    "nocolorize" -> ((b, ss) => ss.copy(colorize = !b)),
     "noprintmatches" -> ((b, ss) => ss.copy(printResults = !b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
     "nosearcharchives" -> ((b, ss) => ss.copy(searchArchives = !b)),
