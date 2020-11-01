@@ -4,21 +4,19 @@
  * Class SearchResult
  *
  * @property string pattern
- * @property object file
+ * @property ?SearchFile file
  * @property int linenum
  * @property int match_start_index
  * @property int match_end_index
  * @property string line
  * @property array lines_before
  * @property array lines_after
- * @property int maxlinelength
- * @property bool colorize
  */
 class SearchResult
 {
     public function __construct(
         string $pattern,
-        $file,
+        ?SearchFile $file,
         int $linenum,
         int $match_start_index,
         int $match_end_index,

@@ -6,7 +6,7 @@
  * @property string shortarg
  * @property string longarg
  * @property string desc
- * @property func
+ * @property callable func
  * @property string sortarg
  */
 class SearchOption

@@ -6,7 +6,7 @@
  * @property array containers
  * @property string path
  * @property string filename
- * @property filetype
+ * @property FileType filetype
  */
 class SearchFile
 {
@@ -24,7 +24,8 @@ class SearchFile
     {
         $s = "";
         if ($this->containers) {
-            $s = join(CONTAINER_SEPARATOR, $this->containers) . CONTAINER_SEPARATOR;
+            $s = join(SearchFile::CONTAINER_SEPARATOR, $this->containers) .
+                SearchFile::CONTAINER_SEPARATOR;
         }
         $s .= FileUtil::join_path($this->path, $this->filename);
         return $s;

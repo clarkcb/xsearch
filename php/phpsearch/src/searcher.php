@@ -405,7 +405,7 @@ class Searcher
                     }
                     $r = new SearchResult(
                         $pattern,
-                        '',
+                        null,
                         $before_line_count + 1,
                         $start_index - $m_line_start_index + 1,
                         $end_index - $m_line_start_index + 1,
