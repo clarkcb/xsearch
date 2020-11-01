@@ -1,0 +1,16 @@
+{
+    "name": "clarkcb/phpsearch",
+    "description": "PHP implementation of xsearch",
+    "type": "project",
+    "require-dev": {
+        "phpunit/phpunit": "^9.4"
+    },
+    "authors": [
+        {
+            "name": "Cary Clark",
+            "email": "clarkcb@gmail.com"
+        }
+    ],
+    "require": {},
+    "bin": ["bin/phpsearch"]
+}

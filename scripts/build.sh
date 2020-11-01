@@ -284,7 +284,32 @@ build_perl () {
 build_php () {
     echo
     log "build_php"
-    log "Nothing to do for php"
+    PHPSEARCH_PATH=$PHP_PATH/phpsearch
+    RESOURCES_PATH=$PHPSEARCH_PATH/resources
+
+    # copy the shared json files to the local resource location
+    mkdir -p $RESOURCES_PATH
+    copy_resources $RESOURCES_PATH
+
+    COMPOSER=$(which composer)
+    if [ -z "$COMPOSER" ]; then
+        echo "Need to install composer to continue"
+        return
+    fi
+
+    # run a composer build
+    log "Building phpsearch"
+
+    cd $PHPSEARCH_PATH/
+    if [ -d "$PHPSEARCH_PATH/vendor" ]; then
+        log "composer update"
+        composer update
+    else
+        log "composer install"
+        composer install
+    fi
+
+    cd -
 }
 
 build_python () {
