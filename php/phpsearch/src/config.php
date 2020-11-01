@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 $config_json_path = __DIR__ . '/../config/config.json';
 $config = json_decode(file_get_contents($config_json_path));

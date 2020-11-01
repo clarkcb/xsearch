@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 require_once __DIR__ . '/autoload.php';
 require_once __DIR__ . '/common.php';
@@ -16,6 +16,10 @@ class Searcher
      * @var FileTypes
      */
     private $filetypes;
+    /**
+     * @var array
+     */
+    private $results;
 
     public function __construct(SearchSettings $settings)
     {
@@ -425,7 +429,7 @@ class Searcher
 
     private function search_text_file_lines(SearchFile $f)
     {
-        $lines = file($f);
+        $lines = file($f->filepath());
         $results = $this->search_lines($lines);
         foreach ($results as $r) {
             $fr = new SearchResult(

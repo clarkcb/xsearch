@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Class SearchFile
@@ -18,6 +18,11 @@ class SearchFile
         $this->path = $path;
         $this->filename = $filename;
         $this->filetype = $filetype;
+    }
+
+    public function filepath(): string
+    {
+        return FileUtil::join_path($this->path, $this->filename);
     }
 
     public function __toString(): string
