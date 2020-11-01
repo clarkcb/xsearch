@@ -64,6 +64,12 @@ class FileTypes
 
     public function get_filetype(string $file)
     {
+        if ($this->is_code($file)) {
+            return FileType::Code;
+        }
+        if ($this->is_xml($file)) {
+            return FileType::Xml;
+        }
         if ($this->is_text($file)) {
             return FileType::Text;
         }
@@ -72,12 +78,6 @@ class FileTypes
         }
         if ($this->is_archive($file)) {
             return FileType::Archive;
-        }
-        if ($this->is_code($file)) {
-            return FileType::Code;
-        }
-        if ($this->is_xml($file)) {
-            return FileType::Xml;
         }
         return FileType::Unknown;
     }

@@ -219,7 +219,7 @@ class Searcher
 
     public function search()
     {
-        $searchfiles = $this->get_search_files($this->settings->startpath);
+        $searchfiles = $this->get_search_files();
         if ($this->settings->verbose) {
             $get_path = function ($sf) {
                 return $sf->path;
@@ -243,7 +243,8 @@ class Searcher
 
     public function search_file(SearchFile $f)
     {
-        if ($f->filetype == FileType::Text) {
+        if ($f->filetype == FileType::Text || $f->filetype == FileType::Code ||
+            $f->filetype == FileType::Xml) {
             $this->search_text_file($f);
         } elseif ($f->filetype == FileType::Binary) {
             $this->search_binary_file($f);
