@@ -10,7 +10,6 @@ import Cocoa
 import XCTest
 
 class SearchSettingsTests: XCTestCase {
-
     override func setUp() {
         super.setUp()
     }
@@ -21,6 +20,7 @@ class SearchSettingsTests: XCTestCase {
 
     func testDefaultSettings() {
         XCTAssert(DefaultSettings.archivesOnly == false, "archivesOnly == false")
+        XCTAssert(DefaultSettings.colorize == true, "colorize == true")
         XCTAssert(DefaultSettings.debug == false, "debug == false")
         XCTAssert(DefaultSettings.excludeHidden == true, "excludeHidden == true")
         XCTAssert(DefaultSettings.firstMatch == false, "firstMatch == false")
@@ -39,6 +39,7 @@ class SearchSettingsTests: XCTestCase {
     func testInitialSettingsEqualDefaultSettings() {
         let settings = SearchSettings()
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
+        XCTAssert(settings.colorize == DefaultSettings.colorize, "colorize == true")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
         XCTAssert(settings.firstMatch == DefaultSettings.firstMatch, "firstMatch == false")
@@ -46,13 +47,38 @@ class SearchSettingsTests: XCTestCase {
         XCTAssert(settings.listFiles == DefaultSettings.listFiles, "listFiles == false")
         XCTAssert(settings.listLines == DefaultSettings.listLines, "listLines == false")
         XCTAssert(settings.multiLineSearch == DefaultSettings.multiLineSearch,
-            "multiLineSearch == false")
+                  "multiLineSearch == false")
         XCTAssert(settings.printResults == DefaultSettings.printResults, "printResults == true")
         XCTAssert(settings.printUsage == DefaultSettings.printUsage, "printUsage == false")
         XCTAssert(settings.printVersion == DefaultSettings.printVersion, "printVersion == false")
         XCTAssert(settings.searchArchives == DefaultSettings.searchArchives,
-            "searchArchives == false")
+                  "searchArchives == false")
         XCTAssert(settings.uniqueLines == DefaultSettings.uniqueLines, "uniqueLines == false")
         XCTAssert(settings.verbose == DefaultSettings.verbose, "verbose == false")
+    }
+
+    func testAddExtensions() {
+        let settings = SearchSettings()
+        settings.addInExtension("java")
+        settings.addInExtension("scala")
+        settings.addInExtension("cs,fs")
+        XCTAssert(settings.inExtensions.contains("java"))
+        XCTAssert(settings.inExtensions.contains("scala"))
+        XCTAssert(settings.inExtensions.contains("cs"))
+        XCTAssert(settings.inExtensions.contains("fs"))
+    }
+
+    func testSetArchivesOnly() {
+        let settings = SearchSettings()
+        settings.setArchivesOnly(true)
+        XCTAssertTrue(settings.archivesOnly)
+        XCTAssertTrue(settings.searchArchives)
+    }
+
+    func testSetDebug() {
+        let settings = SearchSettings()
+        settings.setDebug(true)
+        XCTAssertTrue(settings.debug)
+        XCTAssertTrue(settings.verbose)
     }
 }

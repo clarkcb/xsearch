@@ -9,8 +9,9 @@
 import Cocoa
 import XCTest
 
-class FileTypesTests: XCTestCase {
+import swiftsearch
 
+class FileTypesTests: XCTestCase {
     let fileTypes = FileTypes()
 
     override func setUp() {
@@ -23,43 +24,43 @@ class FileTypesTests: XCTestCase {
 
     func testArchiveFiles() {
         let exts = ["7z", "arj", "bz2", "cpio", "ear", "gz", "hqx", "jar",
-            "pax", "rar", "sit", "sitx", "tar", "tgz", "war", "zip", "zipx",
-            "Z"]
-        for x in exts {
-            let fileName = "archive.\(x)"
+                    "pax", "rar", "sit", "sitx", "tar", "tgz", "war", "zip", "zipx",
+                    "Z"]
+        for ext in exts {
+            let fileName = "archive.\(ext)"
             XCTAssert(fileTypes.isArchiveFile(fileName), "isArchiveFile(\(fileName)) == true")
             XCTAssert(!fileTypes.isBinaryFile(fileName), "isBinaryFile(\(fileName)) == false")
             XCTAssert(!fileTypes.isTextFile(fileName), "isTextFile(\(fileName)) == false")
-            XCTAssert(fileTypes.getFileType(fileName) == FileType.Archive,
-                "\(fileName) is archive file")
+            XCTAssert(fileTypes.getFileType(fileName) == FileType.archive,
+                      "\(fileName) is archive file")
         }
     }
 
     func testBinaryFiles() {
         let exts = ["a", "ai", "beam", "bin", "chm", "class", "com", "dat",
-            "dbmdl", "dcr", "dir", "dll", "dms", "doc", "dot", "dxr", "dylib",
-            "epub", "exe", "fm", "hi", "hlp", "indd", "lib", "lnk", "mdb", "mo",
-            "mobi", "mpp", "nib", "o", "obj", "odm", "odt", "ott", "pages",
-            "pdb", "ppt", "psd", "pub", "pyc", "pyo", "qxd", "rpt", "so", "swf",
-            "sys", "vsd", "wpd", "wps", "wpt", "wri", "xls", "xlt"]
-        for x in exts {
-            let fileName = "binfile.\(x)"
+                    "dbmdl", "dcr", "dir", "dll", "dms", "doc", "dot", "dxr", "dylib",
+                    "epub", "exe", "fm", "hi", "hlp", "indd", "lib", "lnk", "mdb", "mo",
+                    "mobi", "mpp", "nib", "o", "obj", "odm", "odt", "ott", "pages",
+                    "pdb", "ppt", "psd", "pub", "pyc", "pyo", "qxd", "rpt", "so", "swf",
+                    "sys", "vsd", "wpd", "wps", "wpt", "wri", "xls", "xlt"]
+        for ext in exts {
+            let fileName = "binfile.\(ext)"
             XCTAssert(!fileTypes.isArchiveFile(fileName), "isArchiveFile(\(fileName)) == false")
             XCTAssert(fileTypes.isBinaryFile(fileName), "isBinaryFile(\(fileName)) == true")
             XCTAssert(!fileTypes.isTextFile(fileName), "isTextFile(\(fileName)) == false")
-            XCTAssert(fileTypes.getFileType(fileName) == FileType.Binary,
-                "\(fileName) is binary file")
+            XCTAssert(fileTypes.getFileType(fileName) == FileType.binary,
+                      "\(fileName) is binary file")
         }
     }
 
     func testGetFileTypeTextFile() {
         let fileName = "code.swift"
         XCTAssert(fileTypes.isTextFile(fileName), "isTextFile(\(fileName)) == true")
-        XCTAssert(fileTypes.getFileType(fileName) == FileType.Text, "\(fileName) is binary file")
+        XCTAssert(fileTypes.getFileType(fileName) == FileType.text, "\(fileName) is text file")
     }
 
     func testGetFileTypeUnknownFile() {
         let fileName = "unknown.ZZZ"
-        XCTAssert(fileTypes.getFileType(fileName) == FileType.Unknown, "\(fileName) is unknown file")
+        XCTAssert(fileTypes.getFileType(fileName) == FileType.unknown, "\(fileName) is unknown file")
     }
 }

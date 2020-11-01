@@ -10,8 +10,7 @@ import Cocoa
 import XCTest
 
 class SearchOptionsTests: XCTestCase {
-
-    let options: SearchOptions = SearchOptions()
+    let options = SearchOptions()
     let startPath: String = "."
     let searchString: String = "Searcher"
     var requiredArgs: [String] = []
@@ -26,7 +25,8 @@ class SearchOptionsTests: XCTestCase {
     }
 
     func testSettingsEqualDefaultSettings() {
-        let settings: SearchSettings = options.settingsFromArgs(requiredArgs)
+        var error: NSError?
+        let settings: SearchSettings = options.settingsFromArgs(requiredArgs, error: &error)
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
@@ -35,20 +35,21 @@ class SearchOptionsTests: XCTestCase {
         XCTAssert(settings.listFiles == DefaultSettings.listFiles, "listFiles == false")
         XCTAssert(settings.listLines == DefaultSettings.listLines, "listLines == false")
         XCTAssert(settings.multiLineSearch == DefaultSettings.multiLineSearch,
-            "multiLineSearch == false")
+                  "multiLineSearch == false")
         XCTAssert(settings.printResults == DefaultSettings.printResults, "printResults == true")
         XCTAssert(settings.printUsage == DefaultSettings.printUsage, "printUsage == false")
         XCTAssert(settings.printVersion == DefaultSettings.printVersion, "printVersion == false")
         XCTAssert(settings.searchArchives == DefaultSettings.searchArchives,
-            "searchArchives == false")
+                  "searchArchives == false")
         XCTAssert(settings.uniqueLines == DefaultSettings.uniqueLines, "uniqueLines == false")
         XCTAssert(settings.verbose == DefaultSettings.verbose, "verbose == false")
     }
 
     func testSettingsFromArgs() {
+        var error: NSError?
         let otherArgs: [String] = ["--in-ext", "scala,swift", "--debug"]
-        let settings: SearchSettings = options.settingsFromArgs(requiredArgs + otherArgs)
-        println("settings: \(settings)")
+        let settings: SearchSettings = options.settingsFromArgs(requiredArgs + otherArgs, error: &error)
+        print("settings: \(settings)")
         XCTAssert(settings.debug, "debug == true")
         XCTAssert(settings.verbose, "verbose == true")
     }
