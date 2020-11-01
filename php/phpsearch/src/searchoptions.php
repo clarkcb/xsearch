@@ -7,9 +7,6 @@ require_once __DIR__ . '/autoload.php';
  */
 class SearchOptions
 {
-    /**
-     * @var array
-     */
     private $options;
 
     public function __construct()
@@ -75,7 +72,7 @@ class SearchOptions
                 $settings->add_patterns($s, $settings->out_filepatterns);
             },
             'out-filetype' => function (string $s, SearchSettings $settings) {
-                $settings->add_filetype($s, $settings->out_filetypes);
+                $settings->add_filetypes($s, $settings->out_filetypes);
             },
             'out-linesafterpattern' => function (string $s, SearchSettings $settings) {
                 $settings->add_patterns($s, $settings->out_linesafterpatterns);
@@ -160,18 +157,18 @@ class SearchOptions
             }
         ];
         $this->longarg_map = array();
-        $this->set_options_from_xml();
+        $this->set_options_from_json();
     }
 
-    private function set_options_from_xml()
+    private function set_options_from_json()
     {
         $searchoptionspath = FileUtil::expand_user_home_path(Config::SEARCHOPTIONSPATH);
         if (file_exists($searchoptionspath)) {
-            $searchoptions = simplexml_load_file($searchoptionspath);
-            foreach ($searchoptions->searchoption as $searchoption) {
-                $short = sprintf($searchoption['short']);
-                $long = sprintf($searchoption['long']);
-                $desc = trim($searchoption);
+            $json_obj = json_decode(file_get_contents($searchoptionspath), true);
+            foreach ($json_obj['searchoptions'] as $so) {
+                $short = sprintf($so['short']);
+                $long = sprintf($so['long']);
+                $desc = $so['desc'];
                 $func = null;
                 if (array_key_exists($long, $this->arg_action_map)) {
                     $func = $this->arg_action_map[$long];

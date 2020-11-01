@@ -1,16 +1,16 @@
 <?php
 
-$currdir = realpath(dirname(__FILE__));
-$config_rel_path = '../resources/config.json';
-$config_json_path = $currdir . '/' . $config_rel_path;
+$config_json_path = __DIR__ . '/../config/config.json';
 $config = json_decode(file_get_contents($config_json_path));
 
 $sharedpath = $config->{'xsearchpath'} . '/shared';
 
+$resources_path = __DIR__ . '/../resources';
+
 define('Z_XSEARCHPATH', $config->{'xsearchpath'});
 define('Z_SHAREDPATH', $sharedpath);
-define('Z_FILETYPESPATH', $sharedpath . '/filetypes.xml');
-define('Z_SEARCHOPTIONSPATH', $sharedpath . '/searchoptions.xml');
+define('Z_FILETYPESPATH', $resources_path . '/filetypes.json');
+define('Z_SEARCHOPTIONSPATH', $resources_path . '/searchoptions.json');
 
 class Config
 {

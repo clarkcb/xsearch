@@ -7,21 +7,23 @@ require_once __DIR__ . '/autoload.php';
  */
 class FileTypes
 {
+    private $file_type_map;
+
     public function __construct()
     {
-        $this->file_type_map = $this->get_file_type_map();
+        $this->file_type_map = $this->get_file_type_map_from_json();
     }
 
-    private function get_file_type_map()
+    private function get_file_type_map_from_json()
     {
         $file_type_map = array();
         $filetypespath = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
         if (file_exists($filetypespath)) {
-            $filetypes = simplexml_load_file($filetypespath);
-            foreach ($filetypes->filetype as $filetype) {
-                $name = sprintf($filetype['name']);
-                $exts = preg_split("/\s+/", $filetype->extensions);
-                $file_type_map[$name] = $exts;
+            $json_obj = json_decode(file_get_contents($filetypespath), true);
+            foreach ($json_obj['filetypes'] as $ft) {
+                $type = sprintf($ft['type']);
+                $exts = $ft['extensions'];
+                $file_type_map[$type] = $exts;
             }
             $file_type_map['text'] = array_merge(
                 $file_type_map['text'],

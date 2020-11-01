@@ -285,11 +285,20 @@ build_php () {
     echo
     log "build_php"
     PHPSEARCH_PATH=$PHP_PATH/phpsearch
+    CONFIG_PATH=$PHPSEARCH_PATH/config
     RESOURCES_PATH=$PHPSEARCH_PATH/resources
+
+    # copy the shared config json file to the local config location
+    mkdir -p $CONFIG_PATH
+    log "cp $SHARED_PATH/config.json $CONFIG_PATH/"
+    cp $SHARED_PATH/config.json $CONFIG_PATH/
 
     # copy the shared json files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
+    cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/
+    log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
+    cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/
 
     COMPOSER=$(which composer)
     if [ -z "$COMPOSER" ]; then
