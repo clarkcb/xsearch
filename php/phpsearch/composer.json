@@ -11,6 +11,8 @@
             "email": "clarkcb@gmail.com"
         }
     ],
-    "require": {},
+    "require": {
+        "ext-json": "*"
+    },
     "bin": ["bin/phpsearch"]
 }

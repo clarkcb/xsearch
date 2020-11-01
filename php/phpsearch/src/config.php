@@ -1,7 +1,7 @@
 <?php
 
 $currdir = realpath(dirname(__FILE__));
-$config_rel_path = '../../shared/config.json';
+$config_rel_path = '../resources/config.json';
 $config_json_path = $currdir . '/' . $config_rel_path;
 $config = json_decode(file_get_contents($config_json_path));
 
