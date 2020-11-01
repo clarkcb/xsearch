@@ -8,7 +8,7 @@
  * @property int linenum
  * @property int match_start_index
  * @property int match_end_index
- * @property string line
+ * @property ?string line
  * @property array lines_before
  * @property array lines_after
  */
@@ -20,7 +20,7 @@ class SearchResult
         int $linenum,
         int $match_start_index,
         int $match_end_index,
-        string $line,
+        ?string $line,
         array $lines_before,
         array $lines_after
     ) {

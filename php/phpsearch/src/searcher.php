@@ -561,7 +561,7 @@ class Searcher
                         0,
                         $start_index,
                         $end_index,
-                        '',
+                        null,
                         [],
                         []
                     );
