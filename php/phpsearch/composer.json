@@ -2,17 +2,22 @@
     "name": "clarkcb/phpsearch",
     "description": "PHP implementation of xsearch",
     "type": "project",
-    "require-dev": {
-        "phpunit/phpunit": "^9.4"
-    },
     "authors": [
         {
             "name": "Cary Clark",
             "email": "clarkcb@gmail.com"
         }
     ],
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    },
     "require": {
         "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.4"
     },
     "bin": ["bin/phpsearch"]
 }
