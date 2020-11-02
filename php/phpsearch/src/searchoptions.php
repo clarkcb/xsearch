@@ -202,7 +202,12 @@ class SearchOptions
         $json_obj = json_decode($json, true);
         foreach (array_keys($json_obj) as $k) {
             if (array_key_exists($k, $this->arg_action_map)) {
-                $this->arg_action_map[$k]($json_obj[$k], $settings);
+                if (gettype($json_obj[$k]) == 'string') {
+                    $this->arg_action_map[$k]($json_obj[$k], $settings);
+                } else {
+                    // TODO: need to figure out what to do in case of array
+                    // print "$k is not a string...";
+                }
             } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
                 $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
             } elseif ($k == 'startpath') {
