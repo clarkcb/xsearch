@@ -6,6 +6,12 @@
   <searchoption long="archivesonly" short="">
     Search only archive files
   </searchoption>
+  <searchoption long="colorize" short="c">
+    Colorize console output*
+  </searchoption>
+  <searchoption long="nocolorize" short="C">
+    Do not colorize console output
+  </searchoption>
   <searchoption long="debug" short="">
     Set output mode to debug
   </searchoption>
