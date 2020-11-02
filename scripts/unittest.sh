@@ -165,16 +165,18 @@ unittest_perl () {
 unittest_php () {
     echo
     log "unittest_php"
-    TESTS_PATH=$PHP_PATH/tests
-    PHPUNIT="phpunit --bootstrap $PHP_PATH/phpsearch/autoload.php"
+    TESTS_PATH=$PHP_PATH/phpsearch/tests
+    PHPUNIT=$(which phpunit)
+
+    if [ -z "$PHPUNIT" ]; then
+        echo "You need to install phpunit first"
+        return
+    fi
 
     # run tests with phpunit
     log "Unit-testing phpsearch"
-    FILES=$(find $TESTS_PATH -name "*.php")
-    for f in ${FILES[*]}; do
-        log "phpunit $f"
-        $PHPUNIT $f
-    done
+    log "phpunit $TESTS_PATH"
+    $PHPUNIT $TESTS_PATH
 }
 
 unittest_python () {
