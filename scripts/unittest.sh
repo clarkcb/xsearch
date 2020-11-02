@@ -165,17 +165,18 @@ unittest_perl () {
 unittest_php () {
     echo
     log "unittest_php"
-    TESTS_PATH=$PHP_PATH/phpsearch/tests
-    PHPUNIT=$(which phpunit)
+    PHPSEARCH_PATH=$PHP_PATH/phpsearch
+    TESTS_PATH=$PHPSEARCH_PATH/tests
+    PHPUNIT=$PHPSEARCH_PATH/vendor/bin/phpunit
 
-    if [ -z "$PHPUNIT" ]; then
+    if [ ! -f "$PHPUNIT" ]; then
         echo "You need to install phpunit first"
         return
     fi
 
     # run tests with phpunit
     log "Unit-testing phpsearch"
-    log "phpunit $TESTS_PATH"
+    log "$PHPUNIT $TESTS_PATH"
     $PHPUNIT $TESTS_PATH
 }
 
