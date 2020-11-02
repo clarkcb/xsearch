@@ -31,7 +31,7 @@ class Searcher
 
     private function validate_settings()
     {
-        if (strlen($this->settings->startpath) == 0) {
+        if (is_null($this->settings->startpath) || strlen($this->settings->startpath) == 0) {
             throw new SearchException('Startpath not defined');
         }
         if (!file_exists($this->settings->startpath)) {
@@ -282,7 +282,7 @@ class Searcher
 
     private function search_text_file_contents(SearchFile $f)
     {
-        $contents = file_get_contents($f);
+        $contents = file_get_contents($f->filepath());
         $results = $this->search_multiline_string($contents);
         foreach ($results as $r) {
             $fr = new SearchResult(
@@ -548,7 +548,7 @@ class Searcher
         if ($this->settings->debug) {
             log_msg("Searching binary file $f");
         }
-        $contents = file_get_contents($f);
+        $contents = file_get_contents($f->filepath());
         foreach ($this->settings->searchpatterns as $pattern) {
             $p = '/' . $pattern . '/';
             if (preg_match_all($p, $contents, $matches, PREG_OFFSET_CAPTURE)) {

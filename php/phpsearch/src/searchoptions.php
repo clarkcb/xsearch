@@ -257,7 +257,7 @@ class SearchOptions
 
     private function get_usage_string(): string
     {
-        $usage = "Usage:\n phpsearch.php [options] -s <searchpattern>";
+        $usage = "Usage:\n phpsearch [options] -s <searchpattern>";
         $usage .= " <startpath>\n\nOptions:\n";
         $opt_map = array();
         $longest = 0;

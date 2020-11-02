@@ -38,7 +38,7 @@
  * @property bool recursive
  * @property bool searcharchives
  * @property array searchpatterns
- * @property string startpath
+ * @property ?string startpath
  * @property string textfileencoding
  * @property bool uniquelines
  * @property bool verbose
