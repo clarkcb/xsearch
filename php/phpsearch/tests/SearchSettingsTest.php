@@ -1,7 +1,15 @@
-<?php
+<?php declare(strict_types=1);
+use PHPUnit\Framework\TestCase;
 
-class SearchSettingsTest extends PHPUnit_Framework_TestCase
+require_once __DIR__ . '/../src/autoload.php';
+
+class SearchSettingsTest extends TestCase
 {
+    /**
+     * @var SearchSettings
+     */
+    private $settings;
+
     public function __construct()
     {
         parent::__construct();
@@ -14,12 +22,12 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->settings->debug);
         $this->assertTrue($this->settings->excludehidden);
         $this->assertFalse($this->settings->firstmatch);
-        $this->assertEquals($this->settings->linesafter, 0);
-        $this->assertEquals($this->settings->linesbefore, 0);
+        $this->assertEquals(0, $this->settings->linesafter);
+        $this->assertEquals(0, $this->settings->linesbefore);
         $this->assertFalse($this->settings->listdirs);
         $this->assertFalse($this->settings->listfiles);
         $this->assertFalse($this->settings->listlines);
-        $this->assertEquals($this->settings->maxlinelength, 150);
+        $this->assertEquals(150, $this->settings->maxlinelength);
         $this->assertFalse($this->settings->multilinesearch);
         $this->assertTrue($this->settings->printresults);
         $this->assertFalse($this->settings->printusage);
@@ -34,14 +42,14 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase
     public function test_add_single_extension()
     {
         $this->settings->add_exts('php', $this->settings->in_extensions);
-        $this->assertEquals(count($this->settings->in_extensions), 1);
-        $this->assertEquals($this->settings->in_extensions[0], 'php');
+        $this->assertCount(1, $this->settings->in_extensions);
+        $this->assertEquals('php', $this->settings->in_extensions[0]);
     }
 
     public function test_add_comma_delimited_extensions()
     {
         $this->settings->add_exts('php,py', $this->settings->in_extensions);
-        $this->assertEquals(count($this->settings->in_extensions), 2);
+        $this->assertCount(2, $this->settings->in_extensions);
         $this->assertTrue(in_array('php', $this->settings->in_extensions));
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
@@ -49,7 +57,7 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase
     public function test_add_extensions_array()
     {
         $this->settings->add_exts(['php','py'], $this->settings->in_extensions);
-        $this->assertEquals(count($this->settings->in_extensions), 2);
+        $this->assertCount(2, $this->settings->in_extensions);
         $this->assertTrue(in_array('php', $this->settings->in_extensions));
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
@@ -57,14 +65,14 @@ class SearchSettingsTest extends PHPUnit_Framework_TestCase
     public function test_add_patterns_string()
     {
         $this->settings->add_patterns('Searcher', $this->settings->searchpatterns);
-        $this->assertEquals(count($this->settings->searchpatterns), 1);
+        $this->assertCount(1, $this->settings->searchpatterns);
         $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
     }
 
     public function test_add_patterns_array()
     {
         $this->settings->add_patterns(['Searcher'], $this->settings->searchpatterns);
-        $this->assertEquals(count($this->settings->searchpatterns), 1);
+        $this->assertCount(1, $this->settings->searchpatterns);
         $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
     }
 }

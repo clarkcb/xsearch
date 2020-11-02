@@ -1,7 +1,15 @@
-<?php
+<?php declare(strict_types=1);
+use PHPUnit\Framework\TestCase;
 
-class SearchOptionsTest extends PHPUnit_Framework_TestCase
+require_once __DIR__ . '/../src/autoload.php';
+
+class SearchOptionsTest extends TestCase
 {
+    /**
+     * @var SearchOptions
+     */
+    private $searchoptions;
+
     public function __construct()
     {
         parent::__construct();
@@ -15,12 +23,12 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($settings->debug);
         $this->assertTrue($settings->excludehidden);
         $this->assertFalse($settings->firstmatch);
-        $this->assertEquals($settings->linesafter, 0);
-        $this->assertEquals($settings->linesbefore, 0);
+        $this->assertEquals(0, $settings->linesafter);
+        $this->assertEquals(0, $settings->linesbefore);
         $this->assertFalse($settings->listdirs);
         $this->assertFalse($settings->listfiles);
         $this->assertFalse($settings->listlines);
-        $this->assertEquals($settings->maxlinelength, 150);
+        $this->assertEquals(150, $settings->maxlinelength);
         $this->assertFalse($settings->multilinesearch);
         $this->assertTrue($settings->printresults);
         $this->assertFalse($settings->printusage);
@@ -36,12 +44,12 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase
     {
         $args = ['-x', 'php,py', '-s', 'Search', '.'];
         $settings = $this->searchoptions->settings_from_args($args);
-        $this->assertEquals(count($settings->in_extensions), 2);
+        $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('php', $settings->in_extensions));
         $this->assertTrue(in_array('py', $settings->in_extensions));
-        $this->assertEquals(count($settings->searchpatterns), 1);
-        $this->assertEquals($settings->searchpatterns[0], 'Search');
-        $this->assertEquals($settings->startpath, '.');
+        $this->assertCount(1, $settings->searchpatterns);
+        $this->assertEquals('Search', $settings->searchpatterns[0]);
+        $this->assertEquals('.', $settings->startpath);
     }
 
     public function test_archivesonly_arg()
@@ -60,22 +68,18 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($settings->verbose);
     }
 
-    /**
-    * @expectedException SearchException
-    */
     public function test_missing_arg()
     {
+        $this->expectException(SearchException::class);
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-D'];
-        $settings = $this->searchoptions->settings_from_args($args);
+        $this->searchoptions->settings_from_args($args);
     }
 
-    /**
-    * @expectedException SearchException
-    */
     public function test_invalid_arg()
     {
+        $this->expectException(SearchException::class);
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-Q'];
-        $settings = $this->searchoptions->settings_from_args($args);
+        $this->searchoptions->settings_from_args($args);
     }
 
     public function test_settings_from_json()
@@ -96,18 +100,18 @@ class SearchOptionsTest extends PHPUnit_Framework_TestCase
 }
 END_JSON;
         $this->searchoptions->settings_from_json($json, $settings);
-        $this->assertEquals($settings->startpath, '~/src/xsearch/');
-        $this->assertEquals(count($settings->in_extensions), 2);
+        $this->assertEquals('~/src/xsearch/', $settings->startpath);
+        $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('js', $settings->in_extensions));
         $this->assertTrue(in_array('ts', $settings->in_extensions));
-        $this->assertEquals(count($settings->out_dirpatterns), 1);
-        $this->assertEquals($settings->out_dirpatterns[0], 'node_module');
-        $this->assertEquals(count($settings->out_filepatterns), 1);
-        $this->assertEquals($settings->out_filepatterns[0], 'temp');
-        $this->assertEquals(count($settings->searchpatterns), 1);
-        $this->assertEquals($settings->searchpatterns[0], 'Searcher');
-        $this->assertEquals($settings->linesbefore, 2);
-        $this->assertEquals($settings->linesafter, 2);
+        $this->assertCount(1, $settings->out_dirpatterns);
+        $this->assertEquals('node_module', $settings->out_dirpatterns[0]);
+        $this->assertCount(1, $settings->out_filepatterns);
+        $this->assertEquals('temp', $settings->out_filepatterns[0]);
+        $this->assertCount(1, $settings->searchpatterns);
+        $this->assertEquals('Searcher', $settings->searchpatterns[0]);
+        $this->assertEquals(2, $settings->linesbefore);
+        $this->assertEquals(2, $settings->linesafter);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
         $this->assertTrue($settings->firstmatch);

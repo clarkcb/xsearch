@@ -1,45 +1,47 @@
-<?php
+<?php declare(strict_types=1);
+use PHPUnit\Framework\TestCase;
 
-class FileUtilTest extends PHPUnit_Framework_TestCase
+require_once __DIR__ . '/../src/autoload.php';
+
+class FileUtilTest extends TestCase
 {
-
     /***************************************************************************
      * get_extension tests
      **************************************************************************/
     public function test_get_extension_has_txt_extension()
     {
         $filename = 'filename.txt';
-        $this->assertEquals(FileUtil::get_extension($filename), "txt");
+        $this->assertEquals("txt", FileUtil::get_extension($filename));
     }
 
     public function test_get_extension_missing_extension()
     {
         $filename = 'filename.';
-        $this->assertEquals(FileUtil::get_extension($filename), "");
+        $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
     public function test_get_extension_no_extension()
     {
         $filename = 'filename';
-        $this->assertEquals(FileUtil::get_extension($filename), "");
+        $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
     public function test_get_extension_hidden_txt_extension()
     {
         $filename = '.filename.txt';
-        $this->assertEquals(FileUtil::get_extension($filename), "txt");
+        $this->assertEquals("txt", FileUtil::get_extension($filename));
     }
 
     public function test_get_extension_hidden_missing_extension()
     {
         $filename = '.filename.';
-        $this->assertEquals(FileUtil::get_extension($filename), "");
+        $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
     public function test_get_extension_hidden_no_extension()
     {
         $filename = '.filename';
-        $this->assertEquals(FileUtil::get_extension($filename), "");
+        $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
     /***************************************************************************
@@ -98,7 +100,7 @@ class FileUtilTest extends PHPUnit_Framework_TestCase
         $path = '/path/to/nowhere';
         $file = 'nowhere.txt';
         $joined = FileUtil::join_path($path, $file);
-        $this->assertEquals($joined, '/path/to/nowhere/nowhere.txt');
+        $this->assertEquals('/path/to/nowhere/nowhere.txt', $joined);
     }
 
     public function test_join_path_backslashes()
@@ -106,7 +108,7 @@ class FileUtilTest extends PHPUnit_Framework_TestCase
         $path = 'C:\\path\\to\\nowhere';
         $file = 'nowhere.txt';
         $joined = FileUtil::join_path($path, $file);
-        $this->assertEquals($joined, 'C:\\path\\to\\nowhere\\nowhere.txt');
+        $this->assertEquals('C:\\path\\to\\nowhere\\nowhere.txt', $joined);
     }
 
     public function test_join_path_no_slashes()
@@ -114,7 +116,7 @@ class FileUtilTest extends PHPUnit_Framework_TestCase
         $path = 'nowhere';
         $file = 'nowhere.txt';
         $joined = FileUtil::join_path($path, $file);
-        $this->assertEquals($joined, 'nowhere/nowhere.txt');
+        $this->assertEquals('nowhere/nowhere.txt', $joined);
     }
 
     /***************************************************************************
@@ -130,8 +132,8 @@ class FileUtilTest extends PHPUnit_Framework_TestCase
     {
         $path = '/path/to/nowhere/';
         $this->assertEquals(
-            FileUtil::normalize_path($path),
-            '/path/to/nowhere'
+            '/path/to/nowhere',
+            FileUtil::normalize_path($path)
         );
     }
 
@@ -139,8 +141,8 @@ class FileUtilTest extends PHPUnit_Framework_TestCase
     {
         $path = 'C:\\path\\to\\nowhere\\';
         $this->assertEquals(
-            FileUtil::normalize_path($path),
-            'C:\\path\\to\\nowhere'
+            'C:\\path\\to\\nowhere',
+            FileUtil::normalize_path($path)
         );
     }
 
@@ -151,18 +153,18 @@ class FileUtilTest extends PHPUnit_Framework_TestCase
     {
         $path = 'nowhere';
         $split = FileUtil::split_path($path);
-        $this->assertEquals(count($split), 1);
-        $this->assertEquals($split[0], 'nowhere');
+        $this->assertCount(1, $split);
+        $this->assertEquals('nowhere', $split[0]);
     }
 
     public function test_split_path_slashes()
     {
         $path = '/path/to/nowhere';
         $split = FileUtil::split_path($path);
-        $this->assertEquals(count($split), 4);
-        $this->assertEquals($split[0], '');
-        $this->assertEquals($split[1], 'path');
-        $this->assertEquals($split[2], 'to');
-        $this->assertEquals($split[3], 'nowhere');
+        $this->assertCount(4, $split);
+        $this->assertEquals('', $split[0]);
+        $this->assertEquals('path', $split[1]);
+        $this->assertEquals('to', $split[2]);
+        $this->assertEquals('nowhere', $split[3]);
     }
 }

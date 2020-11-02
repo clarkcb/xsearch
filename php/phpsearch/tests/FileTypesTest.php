@@ -1,7 +1,15 @@
-<?php
+<?php declare(strict_types=1);
+use PHPUnit\Framework\TestCase;
 
-class FileTypesTest extends PHPUnit_Framework_TestCase
+require_once __DIR__ . '/../src/autoload.php';
+
+class FileTypesTest extends TestCase
 {
+    /**
+     * @var FileTypes
+     */
+    private $filetypes;
+
     public function __construct()
     {
         parent::__construct();
@@ -11,32 +19,32 @@ class FileTypesTest extends PHPUnit_Framework_TestCase
     public function test_getfiletype_archive_file()
     {
         $filename = 'archive.zip';
-        $this->assertEquals($this->filetypes->is_archive($filename), true);
+        $this->assertEquals(true, $this->filetypes->is_archive($filename));
         $filetype = $this->filetypes->get_filetype($filename);
-        $this->assertEquals($filetype, FileType::Archive);
+        $this->assertEquals(FileType::Archive, $filetype);
     }
 
     public function test_getfiletype_binary_file()
     {
         $filename = 'binary.exe';
-        $this->assertEquals($this->filetypes->is_binary($filename), true);
+        $this->assertEquals(true, $this->filetypes->is_binary($filename));
         $filetype = $this->filetypes->get_filetype($filename);
-        $this->assertEquals($filetype, FileType::Binary);
+        $this->assertEquals(FileType::Binary, $filetype);
     }
 
     public function test_getfiletype_text_file()
     {
         $filename = 'text.txt';
-        $this->assertEquals($this->filetypes->is_text($filename), true);
+        $this->assertEquals(true, $this->filetypes->is_text($filename));
         $filetype = $this->filetypes->get_filetype($filename);
-        $this->assertEquals($filetype, FileType::Text);
+        $this->assertEquals(FileType::Text, $filetype);
     }
 
     public function test_getfiletype_unknown_file()
     {
         $filename = 'unknown.xyz';
-        $this->assertEquals($this->filetypes->is_unknown($filename), true);
+        $this->assertEquals(true, $this->filetypes->is_unknown($filename));
         $filetype = $this->filetypes->get_filetype($filename);
-        $this->assertEquals($filetype, FileType::Unknown);
+        $this->assertEquals(FileType::Unknown, $filetype);
     }
 }

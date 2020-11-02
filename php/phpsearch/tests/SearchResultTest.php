@@ -1,6 +1,9 @@
-<?php
+<?php declare(strict_types=1);
+use PHPUnit\Framework\TestCase;
 
-class SearchResultTest extends PHPUnit_Framework_TestCase
+require_once __DIR__ . '/../src/autoload.php';
+
+class SearchResultTest extends TestCase
 {
     const CSSEARCHPATH = '~/src/xsearch/csharp/CsSearch/CsSearch';
     public function test_singleline_searchresult()
@@ -9,7 +12,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
         $settings->colorize = false;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
-        $file = self::CSSEARCHPATH . "/Searcher.cs";
+        $file = new SearchFile(self::CSSEARCHPATH, "Searcher.cs", FileType::Code);
         $linenum = 10;
         $match_start_index = 15;
         $match_end_index = 23;
@@ -45,7 +48,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
         $settings->maxlinelength = 100;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "maxlen";
-        $file = self::CSSEARCHPATH . "/maxlen.txt";
+        $file = new SearchFile('.', "maxlen.txt", FileType::Text);
         $linenum = 1;
         $match_start_index = 53;
         $match_end_index = 59;
@@ -80,7 +83,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
         $settings = new SearchSettings();
         $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
-        $file = self::CSSEARCHPATH . "/Searcher.exe";
+        $file = new SearchFile(self::CSSEARCHPATH, "Searcher.exe", FileType::Binary);
         $linenum = 0;
         $match_start_index = 0;
         $match_end_index = 0;
@@ -108,7 +111,7 @@ class SearchResultTest extends PHPUnit_Framework_TestCase
         $settings->colorize = false;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
-        $file = self::CSSEARCHPATH . "/Searcher.cs";
+        $file = new SearchFile(self::CSSEARCHPATH, "Searcher.cs", FileType::Code);
         $linenum = 10;
         $match_start_index = 15;
         $match_end_index = 23;

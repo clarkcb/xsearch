@@ -1,6 +1,9 @@
-<?php
+<?php declare(strict_types=1);
+use PHPUnit\Framework\TestCase;
 
-class SearcherTest extends PHPUnit_Framework_TestCase
+require_once __DIR__ . '/../src/autoload.php';
+
+class SearcherTest extends TestCase
 {
     private function get_settings()
     {
@@ -12,7 +15,6 @@ class SearcherTest extends PHPUnit_Framework_TestCase
 
     private function get_test_file()
     {
-        $HOME = getenv('HOME');
         return FileUtil::expand_user_home_path(Config::SHAREDPATH . '/testFiles/testFile2.txt');
     }
 
@@ -334,7 +336,6 @@ class SearcherTest extends PHPUnit_Framework_TestCase
         $settings->searcharchives = 1;
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
-        #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
         $this->assertTrue($searcher->filter_file($file));
     }
 
@@ -345,7 +346,6 @@ class SearcherTest extends PHPUnit_Framework_TestCase
         $settings->searcharchives = 1;
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
-        #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
         $this->assertFalse($searcher->filter_file($file));
     }
 
@@ -359,17 +359,17 @@ class SearcherTest extends PHPUnit_Framework_TestCase
         $testfile = $this->get_test_file();
         $contents = file_get_contents($testfile);
         $results = $searcher->search_multiline_string($contents);
-        $this->assertEquals(count($results), 2);
+        $this->assertCount(2, $results);
 
         $firstResult = $results[0];
-        $this->assertEquals($firstResult->linenum, 23);
-        $this->assertEquals($firstResult->match_start_index, 3);
-        $this->assertEquals($firstResult->match_end_index, 11);
+        $this->assertEquals(23, $firstResult->linenum);
+        $this->assertEquals(3, $firstResult->match_start_index);
+        $this->assertEquals(11, $firstResult->match_end_index);
 
         $secondResult = $results[1];
-        $this->assertEquals($secondResult->linenum, 29);
-        $this->assertEquals($secondResult->match_start_index, 24);
-        $this->assertEquals($secondResult->match_end_index, 32);
+        $this->assertEquals(29, $secondResult->linenum);
+        $this->assertEquals(24, $secondResult->match_start_index);
+        $this->assertEquals(32, $secondResult->match_end_index);
     }
 
     ################################################################################
@@ -382,16 +382,16 @@ class SearcherTest extends PHPUnit_Framework_TestCase
         $testfile = $this->get_test_file();
         $lines = file($testfile);
         $results = $searcher->search_lines($lines);
-        $this->assertEquals(count($results), 2);
+        $this->assertCount(2, $results);
 
         $firstResult = $results[0];
-        $this->assertEquals($firstResult->linenum, 23);
-        $this->assertEquals($firstResult->match_start_index, 3);
-        $this->assertEquals($firstResult->match_end_index, 11);
+        $this->assertEquals(23, $firstResult->linenum);
+        $this->assertEquals(3, $firstResult->match_start_index);
+        $this->assertEquals(11, $firstResult->match_end_index);
 
         $secondResult = $results[1];
-        $this->assertEquals($secondResult->linenum, 29);
-        $this->assertEquals($secondResult->match_start_index, 24);
-        $this->assertEquals($secondResult->match_end_index, 32);
+        $this->assertEquals(29, $secondResult->linenum);
+        $this->assertEquals(24, $secondResult->match_start_index);
+        $this->assertEquals(32, $secondResult->match_end_index);
     }
 }
