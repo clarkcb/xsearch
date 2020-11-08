@@ -1,11 +1,8 @@
 package scalasearch
 
-import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
 
-@RunWith(classOf[JUnitRunner])
-class FileUtilTest extends FunSuite {
+class FileUtilTest extends AnyFunSuite {
   /***************************************************************************
     * getExtension tests
     **************************************************************************/

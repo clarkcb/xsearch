@@ -2,14 +2,12 @@ package scalasearch
 
 import java.io.File
 
-import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite}
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import scala.io.Source
 
-@RunWith(classOf[JUnitRunner])
-class SearcherTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
+class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   val testFile1 = new File(getClass.getResource("/testFile1.txt").toURI)
   var lines1: Iterator[String] = Iterator.empty

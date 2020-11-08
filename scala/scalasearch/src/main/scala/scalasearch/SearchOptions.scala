@@ -6,7 +6,7 @@ import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.xml.XML
 
@@ -49,21 +49,6 @@ object SearchOptions {
       }
       List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
     } else List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
-  }
-
-  private def searchOptionsFromXml: List[SearchOption] = {
-    if (_searchOptions.isEmpty) {
-      val root = XML.load(getClass.getResourceAsStream("/searchoptions.xml"))
-      val searchOptionNodes = root \\ "searchoption"
-      for (searchOptionNode <- searchOptionNodes) {
-        val short = (searchOptionNode \ "@short").text
-        val long = (searchOptionNode \ "@long").text
-        val desc = searchOptionNode.text.trim
-        val option = SearchOption(short, long, desc)
-        _searchOptions += option
-      }
-    }
-    List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
   }
 
   private def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
@@ -170,7 +155,7 @@ object SearchOptions {
         val v = jsonObject.get(k)
         recSettingsFromJson(ks, applySetting(k, v, settings))
     }
-    recSettingsFromJson(jsonObject.keySet().map(_.toString).toList, ss)
+    recSettingsFromJson(jsonObject.keySet().asScala.map(_.toString).toList, ss)
   }
 
   @tailrec

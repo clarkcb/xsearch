@@ -2,12 +2,10 @@ package scalasearch
 
 import java.io.File
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
-@RunWith(classOf[JUnitRunner])
-class SearcherFilteringTest extends FunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
+class SearcherFilteringTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   def getSearchSettings: SearchSettings = {
     new SearchSettings(startPath = Some("."), searchPatterns = Set("Searcher".r))

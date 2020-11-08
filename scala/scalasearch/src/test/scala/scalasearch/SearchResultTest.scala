@@ -1,12 +1,9 @@
 package scalasearch
 
 import org.junit.Assert._
-import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.funsuite.AnyFunSuite
 
-@RunWith(classOf[JUnitRunner])
-class SearchResultTest extends FunSuite {
+class SearchResultTest extends AnyFunSuite {
   test("test single-line search result") {
     val settings = SearchSettings(colorize = false)
     val formatter = new SearchResultFormatter(settings)

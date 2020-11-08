@@ -1,11 +1,9 @@
 package scalasearch
 
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funsuite.AnyFunSuite
 
-@RunWith(classOf[JUnitRunner])
-class SearchOptionsTest extends FunSuite with BeforeAndAfterAll {
+class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
 
   val startpath = "."
   val searchString = "Search"

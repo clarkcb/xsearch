@@ -1,13 +1,14 @@
-lazy val root = (project in file(".")).
-  settings(
-    name := "scalasearch",
-    version := "1.0",
-    scalaVersion := "2.11.4",
-    libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % "1.8.1",
-      "junit" % "junit" % "4.12" % "test",
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
-      "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
-    )
-  )
+name := "scalasearch"
+
+version := "0.1.0"
+
+scalaVersion := "2.13.3"
+
+libraryDependencies ++= Seq(
+  "com.googlecode.json-simple" % "json-simple" % "1.1.1",
+  "org.apache.commons" % "commons-compress" % "1.20",
+  "org.scala-lang.modules" % "scala-xml_2.13" % "1.3.0",
+  "org.scalatest" % "scalatest_2.13" % "3.2.2" % Test,
+  "junit" % "junit" % "4.13.1" % Test
+)
 

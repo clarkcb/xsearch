@@ -46,7 +46,7 @@ object FileTypes {
           while (exIt.hasNext) {
              exSet += exIt.next().asInstanceOf[String]
           }
-          _fileTypeMap.put(typeName, Set.empty[String] ++ exSet)
+           _fileTypeMap(typeName) = Set.empty[String] ++ exSet
         }
       } catch {
         case e: ParseException =>
@@ -63,25 +63,6 @@ object FileTypes {
     } else {
       Map.empty[String, Set[String]] ++ _fileTypeMap
     }
-  }
-
-  private def fileTypeMapFromXml: Map[String, Set[String]] = {
-    if (_fileTypeMap.isEmpty) {
-      val fileTypeMap = mutable.Map.empty[String, Set[String]]
-      val root = XML.load(getClass.getResourceAsStream(_fileTypesXmlPath))
-      val fileTypes = root \\ "filetype"
-      for (fileType <- fileTypes) {
-        val name = (fileType \ "@name").text
-        val exts = (fileType \ "extensions").text.split("""\s+""").toSet
-        fileTypeMap(name) = exts
-      }
-      fileTypeMap(text) = fileTypeMap(text) ++ fileTypeMap(code) ++
-        fileTypeMap(xml)
-      fileTypeMap(searchable) = fileTypeMap(text) ++ fileTypeMap(binary) ++
-        fileTypeMap(archive)
-      _fileTypeMap ++= fileTypeMap
-    }
-    Map.empty[String, Set[String]] ++ _fileTypeMap
   }
 
   def fromName(name: String): FileType.Value = {

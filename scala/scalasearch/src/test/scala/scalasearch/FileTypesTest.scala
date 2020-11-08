@@ -1,12 +1,10 @@
 package scalasearch
 
 import java.io.File
-import org.junit.runner.RunWith
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
-class FileTypesTest extends FunSuite {
+import org.scalatest.funsuite.AnyFunSuite
+
+class FileTypesTest extends AnyFunSuite {
 
   test("test archive extensions") {
     """7z arj bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx Z""".

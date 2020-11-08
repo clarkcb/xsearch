@@ -362,11 +362,12 @@ build_scala () {
     mkdir -p $TEST_RESOURCES_PATH
     copy_test_resources $TEST_RESOURCES_PATH
 
-    # run a maven clean build
+    # run sbt assembly
+    cd $SCALASEARCH_PATH
     log "Building scalasearch"
-    log "mvn -f $SCALASEARCH_PATH/pom.xml clean package"
-    mvn -f $SCALASEARCH_PATH/pom.xml clean package
-    #mvn -f $SCALASEARCH_PATH/pom.xml -DskipTests=true clean install
+    log "sbt assembly"
+    sbt assembly
+    cd -
 }
 
 build_swift () {

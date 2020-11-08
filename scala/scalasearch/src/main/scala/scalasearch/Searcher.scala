@@ -7,7 +7,7 @@ import java.util.zip.{GZIPInputStream, ZipEntry, ZipFile}
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 
-import scala.collection.JavaConversions.enumerationAsScalaIterator
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.io.Source
 import scala.util.matching.Regex
@@ -279,7 +279,7 @@ class Searcher (settings: SearchSettings) {
     settings.searchPatterns.foreach { p =>
       results ++= searchMultiLineStringForPattern(s, p)
     }
-    results
+    results.toSeq
   }
 
   private def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
@@ -348,7 +348,7 @@ class Searcher (settings: SearchSettings) {
         }
       }
     }
-    results
+    results.toSeq
   }
 
   private def linesMatch(lines: Seq[String], inPatterns: Set[Regex],
@@ -446,8 +446,8 @@ class Searcher (settings: SearchSettings) {
           else p.findAllMatchIn(line)
 
         if (matchIterator.hasNext
-          && linesBeforeMatch(linesBefore)
-          && linesAfterMatch(linesAfter)
+          && linesBeforeMatch(linesBefore.toSeq)
+          && linesAfterMatch(linesAfter.toSeq)
           && matchLinesAfterToOrUntil(linesAfter, lines.seq.seq)) {
 
           matchedPatterns.add(p)
@@ -524,7 +524,7 @@ class Searcher (settings: SearchSettings) {
       Common.log("Searching zip file %s".format(sf.toString))
     }
     val zf = new ZipFile(sf.toFile)
-    val entries = zf.entries().filterNot(_.isDirectory)
+    val entries = zf.entries().asScala.filterNot(_.isDirectory)
     val entryMap = mutable.LinkedHashMap.empty[String, List[ZipEntry]]
     entries foreach { ze =>
       val f = new File(ze.getName)
@@ -703,7 +703,7 @@ object Searcher {
     if (newLineIndices.nonEmpty) {
       val lineIndices = mutable.ArrayBuffer[(Int,Int)]((0,newLineIndices.head))
       lineIndices ++= newLineIndices.map(_ + 1).zip(newLineIndices.tail :+ contents.length)
-      lineIndices
+      lineIndices.toSeq
     } else {
       Seq[(Int,Int)]((0,contents.length-1))
     }

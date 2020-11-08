@@ -1,11 +1,9 @@
 package scalasearch
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funsuite.AnyFunSuite
 
-@RunWith(classOf[JUnitRunner])
-class SearchSettingsTest extends FunSuite with BeforeAndAfterAll {
+class SearchSettingsTest extends AnyFunSuite with BeforeAndAfterAll {
 
   def assertDefaultSettings(settings:SearchSettings) {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)

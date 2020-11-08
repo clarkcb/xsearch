@@ -235,10 +235,12 @@ unittest_scala () {
     log "unittest_scala"
     SCALASEARCH_PATH=$SCALA_PATH/scalasearch
 
-    # run tests via maven
+    # run tests via sbt
+    cd $SCALASEARCH_PATH
     log "Unit-testing scalasearch"
-    log "mvn -f $SCALASEARCH_PATH/pom.xml test"
-    mvn -f $SCALASEARCH_PATH/pom.xml test
+    log "sbt test"
+    sbt test
+    cd -
 }
 
 unittest_swift () {
