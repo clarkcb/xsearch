@@ -9,7 +9,8 @@ class SearchResultFormatter
 {
     const SEPARATOR_LEN = 80;
 
-    public function __construct(SearchSettings $settings) {
+    public function __construct(SearchSettings $settings)
+    {
         $this->settings = $settings;
     }
 
@@ -134,8 +135,11 @@ class SearchResultFormatter
         }
         $line = $this->trim_newline($result->line);
         if ($this->settings->colorize) {
-            $line = $this->colorize($line, $result->match_start_index - 1,
-                $result->match_end_index - 1);
+            $line = $this->colorize(
+                $line,
+                $result->match_start_index - 1,
+                $result->match_end_index - 1
+            );
         }
         $s .= sprintf('>'.$lineformat, $current_linenum, $line);
         if ($result->lines_after) {

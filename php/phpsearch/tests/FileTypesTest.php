@@ -32,12 +32,36 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Binary, $filetype);
     }
 
+    public function test_getfiletype_code_file()
+    {
+        $filename = 'code.php';
+        $this->assertEquals(true, $this->filetypes->is_code($filename));
+        $filetype = $this->filetypes->get_filetype($filename);
+        $this->assertEquals(FileType::Code, $filetype);
+    }
+
     public function test_getfiletype_text_file()
     {
         $filename = 'text.txt';
         $this->assertEquals(true, $this->filetypes->is_text($filename));
         $filetype = $this->filetypes->get_filetype($filename);
         $this->assertEquals(FileType::Text, $filetype);
+    }
+
+    public function test_getfiletype_xml_file()
+    {
+        $filename = 'content.xml';
+        $this->assertEquals(true, $this->filetypes->is_xml($filename));
+        $filetype = $this->filetypes->get_filetype($filename);
+        $this->assertEquals(FileType::Xml, $filetype);
+    }
+
+    public function test_getfiletype_searchable_file()
+    {
+        $filename = 'compressed.bz2';
+        $this->assertEquals(true, $this->filetypes->is_searchable($filename));
+        $filetype = $this->filetypes->get_filetype($filename);
+        $this->assertEquals(FileType::Archive, $filetype);
     }
 
     public function test_getfiletype_unknown_file()

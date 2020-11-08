@@ -204,9 +204,14 @@ class SearchOptions
             if (array_key_exists($k, $this->arg_action_map)) {
                 if (gettype($json_obj[$k]) == 'string') {
                     $this->arg_action_map[$k]($json_obj[$k], $settings);
+                } elseif (gettype($json_obj[$k]) == 'integer') {
+                    $this->arg_action_map[$k](sprintf($json_obj[$k]), $settings);
+                } elseif (gettype($json_obj[$k]) == 'array') {
+                    foreach ($json_obj[$k] as $s) {
+                        $this->arg_action_map[$k]($s, $settings);
+                    }
                 } else {
-                    // TODO: need to figure out what to do in case of array
-                    // print "$k is not a string...";
+                    throw new SearchException("Invalid setting type: $k");
                 }
             } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
                 $this->bool_flag_action_map[$k]($json_obj[$k], $settings);

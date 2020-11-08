@@ -20,6 +20,7 @@ class SearchOptionsTest extends TestCase
     {
         $settings = $this->searchoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
+        $this->assertTrue($settings->colorize);
         $this->assertFalse($settings->debug);
         $this->assertTrue($settings->excludehidden);
         $this->assertFalse($settings->firstmatch);
