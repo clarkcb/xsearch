@@ -15,11 +15,11 @@
 (defrecord SearchFile [containers file filetype])
 
 (defn new-search-file
-  ([file filetype]
+  ([^java.io.File file filetype]
    (new-search-file [] file filetype))
   ([containers file filetype]
    (->SearchFile containers file filetype)))
 
-(defn search-file-path [sf]
-  (str (if (:containers sf) (str (str/join "!" (:containers sf)) "!") "")
+(defn search-file-path [^SearchFile sf]
+  (str (if (empty? (:containers sf)) "" (str (str/join "!" (:containers sf)) "!"))
        (.getPath (:file sf))))

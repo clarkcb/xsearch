@@ -10,9 +10,10 @@
   #^{:author "Cary Clark",
      :doc "Search results record and functions"}
   (:use [clojure.string :as str :only (trim trimr trim-newline)]
-        [cljsearch.color :only (RESET GREEN)]))
+        [cljsearch.color :only (RESET GREEN)]
+        [cljsearch.searchfile :only (search-file-path)]))
 
-; record to hold a search-result
+; record to hold a search-result (file is a SearchFile record instance)
 (defrecord SearchResult [pattern file linenum matchstartindex matchendindex line
                          linesbefore linesafter])
 
@@ -28,7 +29,7 @@
         linesafter-indexed (map-indexed vector linesafter)]
     (str
       (apply str (take 80 (repeat "="))) "\n"
-      (:file r) ": " (:linenum r) ": [" (:matchstartindex r) ":" (:matchendindex r) "]\n"
+      (search-file-path (:file r)) ": " (:linenum r) ": [" (:matchstartindex r) ":" (:matchendindex r) "]\n"
       (apply str (take 80 (repeat "-"))) "\n"
       (apply str
         (map #(format lineformat " " (+ (- linenum (count linesbefore)) (first %))
@@ -73,9 +74,9 @@
 (defn singleline-to-string [r settings]
   (if (> (:linenum r) 0)
     (str
-      (:file r) ": " (:linenum r) ": [" (:matchstartindex r) ":"
+      (search-file-path (:file r)) ": " (:linenum r) ": [" (:matchstartindex r) ":"
       (:matchendindex r) "]: " (format-matching-line r settings))
-    (str (:file r) " matches at [" (:matchstartindex r) ":"
+    (str (search-file-path (:file r)) " matches at [" (:matchstartindex r) ":"
       (:matchendindex r) "]")))
 
 (defn search-result-to-string [r settings]

@@ -16,7 +16,7 @@
         [cljsearch.fileutil :only
           (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
             is-dot-dir?)]
-        ;; [cljsearch.searchfile :only (new-search-file search-file-path)]
+        [cljsearch.searchfile :only (new-search-file search-file-path)]
         [cljsearch.searchresult :only
           (->SearchResult search-result-to-string)]))
 
@@ -103,12 +103,6 @@
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
-(defn get-search-dirs [settings]
-  (let [startdir (file (:startpath settings))]
-    (if (:recursive settings)
-      (vec (filter #(is-search-dir? % settings) (filter #(.isDirectory %) (file-seq startdir))))
-      [startdir])))
-
 (defn is-archive-search-file? [f settings]
   (and
     (or
@@ -161,8 +155,14 @@
 (defn get-search-files [settings]
   (let [startdir (file (:startpath settings))]
     (if (:recursive settings)
-      (vec (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq startdir))))
-      (vec (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles startdir)))))))
+      (vec
+       (map
+        #(new-search-file % (get-filetype %))
+        (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq startdir)))))
+      (vec
+       (map
+        #(new-search-file % (get-filetype %))
+        (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles startdir))))))))
 
 (defn search-archive-file [f settings]
   (if (:verbose settings)
@@ -200,12 +200,12 @@
   (apply concat
     (map #(search-binary-string-for-pattern b % settings) (:searchpatterns settings))))
 
-(defn search-binary-file [f settings]
+(defn search-binary-file [sf settings]
   (if (:verbose settings)
-    (log-msg (format "Searching binary file %s" f)))
-  (let [contents (slurp f :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
+    (log-msg (format "Searching binary file %s" (search-file-path sf))))
+  (let [contents (slurp (:file sf) :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
         search-results (search-binary-string contents settings)
-        with-file-results (map #(assoc-in % [:file] f) search-results)]
+        with-file-results (map #(assoc-in % [:file] sf) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
 
 (defn matches-any-pattern? [s pp]
@@ -308,10 +308,10 @@
   (apply concat
     (map #(search-multiline-string-for-pattern s % settings) (:searchpatterns settings))))
 
-(defn search-text-file-contents [f settings]
-  (let [contents (slurp f :encoding (:textfileencoding settings))
+(defn search-text-file-contents [sf settings]
+  (let [contents (slurp (:file sf) :encoding (:textfileencoding settings))
         search-results (search-multiline-string contents settings)
-        with-file-results (map #(assoc-in % [:file] f) search-results)]
+        with-file-results (map #(assoc-in % [:file] sf) search-results)]
     (doseq [r with-file-results] (save-search-result r))))
 
 (defn search-line-for-pattern
@@ -378,49 +378,50 @@
         (take 1 results)
         results))))
 
-(defn search-text-file-lines [f settings]
-  (with-open [rdr (reader f :encoding (:textfileencoding settings))]
+(defn search-text-file-lines [sf settings]
+  (with-open [rdr (reader (:file sf) :encoding (:textfileencoding settings))]
     (let [search-results (search-lines (line-seq rdr) settings)
-          with-file-results (map #(assoc-in % [:file] f) search-results)]
+          with-file-results (map #(assoc-in % [:file] sf) search-results)]
       (doseq [r with-file-results] (save-search-result r)))))
 
-(defn search-text-file [f settings]
+(defn search-text-file [sf settings]
   (if (:verbose settings)
-    (log-msg (format "Searching text file %s" f)))
+    (log-msg (format "Searching text file %s" (search-file-path sf))))
   (if (:multilinesearch settings)
-    (search-text-file-contents f settings)
-    (search-text-file-lines f settings)))
+    (search-text-file-contents sf settings)
+    (search-text-file-lines sf settings)))
 
-(defn search-file [f settings]
-  (let [filetype (get-filetype f)
-        verbose (:verbose settings)]
+(defn search-file [sf settings]
+  (let [filetype (:filetype sf)
+        verbose (:verbose settings)
+        filepath (search-file-path sf)]
     (cond
       (or
         (= filetype :code)
         (= filetype :text)
-        (= filetype :xml)) (search-text-file f settings)
-      (= filetype :binary) (search-binary-file f settings)
+        (= filetype :xml)) (search-text-file sf settings)
+      (= filetype :binary) (search-binary-file sf settings)
       (= filetype :archive)
         (if (:searcharchives settings)
-          (search-archive-file f settings)
-          (if verbose (log-msg (format "Skipping archive file %s" f))))
+          (search-archive-file sf settings)
+          (if verbose (log-msg (format "Skipping archive file %s" filepath))))
       :else
-        (if verbose (log-msg (format "Skipping file of unknown type: %s" f))))))
+        (if verbose (log-msg (format "Skipping file of unknown type: %s" filepath))))))
 
 (defn search-files [searchfiles settings]
   (if (:verbose settings)
     (do
       (log-msg (format "\nFiles to be searched (%d):" (count searchfiles)))
-      (doseq [f searchfiles] (log-msg (.getPath f)))
+      (doseq [sf searchfiles] (log-msg (search-file-path sf)))
       (log-msg "")))
-  (doseq [f searchfiles] (search-file f settings)))
+  (doseq [sf searchfiles] (search-file sf settings)))
 
 (defn search [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
       (let [startfile (file (:startpath settings))
             searchfiles (if
-                          (.isFile startfile) [startfile]
+                          (.isFile startfile) [(new-search-file startfile (get-filetype startfile))]
                           (get-search-files settings))]
         (search-files searchfiles settings))
         [])
