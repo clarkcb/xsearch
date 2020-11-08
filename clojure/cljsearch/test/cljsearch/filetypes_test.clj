@@ -17,6 +17,16 @@
     (testing "test-get-filetype-text-file"
       (is (= (get-filetype f) :text)))))
 
+(deftest test-get-filetype-code-file
+  (let [f "code.clj"]
+    (testing "test-get-filetype-code-file"
+      (is (= (get-filetype f) :code)))))
+
+(deftest test-get-filetype-xml-file
+  (let [f "markup.xml"]
+    (testing "test-get-filetype-xml-file"
+      (is (= (get-filetype f) :xml)))))
+
 (deftest test-get-filetype-unknown-file
   (let [f "unknown.xyz"]
     (testing "test-get-filetype-unknown-file"

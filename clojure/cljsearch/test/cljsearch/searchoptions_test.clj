@@ -1,12 +1,13 @@
 (ns cljsearch.searchoptions-test
   (:require [clojure.test :refer :all])
-  (:use [clojure.string :as str :only (join)])
-  (:use [cljsearch.searchoptions :only (settings-from-args)]))
+  (:use [clojure.string :as str :only (join)]
+        [cljsearch.searchoptions :only (settings-from-args settings-from-json)]))
 
 (deftest test-no-args
   (let [[ss errs] (settings-from-args [])]
     (testing "test-no-args"
       (is (not (:archivesonly ss)))
+      (is (:colorize ss))
       (is (not (:debug ss)))
       (is (:excludehidden ss))
       (is (not (:firstmatch ss)))
@@ -37,9 +38,15 @@
       (is (= (.pattern (first (:searchpatterns ss))) "Search"))
       (is (= (:startpath ss) ".")))))
 
-(deftest test-invalid-args
+(deftest test-missing-arg
+  (let [[ss errs] (settings-from-args ["-x" "clj" "-s" "Search" "." "-D"])]
+    (testing "test-missing-arg"
+      (is (= (count errs) 1))
+      (is (= (first errs) "Missing arg for option D")))))
+
+(deftest test-invalid-arg
   (let [[ss errs] (settings-from-args ["-x" "clj" "-s" "Search" "." "-Q"])]
-    (testing "test-invalid-args"
+    (testing "test-invalid-arg"
       (is (= (count errs) 1))
       (is (= (first errs) "Invalid option: Q")))))
 
@@ -55,3 +62,32 @@
       (is (= (:debug ss) true))
       (is (= (:verbose ss) true)))))
 
+(deftest test-settings-from-json
+  (let [settings-json "{
+  \"startpath\": \"~/src/xsearch\",
+  \"in-ext\": [\"js\",\"ts\"],
+  \"out-dirpattern\": \"node_module\",
+  \"out-filepattern\": [\"temp\"],
+  \"searchpattern\": \"Searcher\",
+  \"linesbefore\": 2,
+  \"linesafter\": 2,
+  \"debug\": true,
+  \"allmatches\": false,
+  \"includehidden\": true
+}"
+        [ss errs] (settings-from-json settings-json)
+        ]
+    (testing "test-debug"
+      (is (= (:startpath ss) "~/src/xsearch"))
+      (is (= (count (:in-extensions ss)) 2))
+      (is (contains? (:in-extensions ss) "js"))
+      (is (contains? (:in-extensions ss) "ts"))
+      (is (= (count (:out-dirpatterns ss)) 1))
+      (is (= (count (:out-filepatterns ss)) 1))
+      (is (= (count (:searchpatterns ss)) 1))
+      (is (= (:linesbefore ss) 2))
+      (is (= (:linesafter ss) 2))
+      (is (= (:debug ss) true))
+      (is (= (:verbose ss) true))
+      (is (= (:firstmatch ss) true))
+      (is (= (:excludehidden ss) false)))))

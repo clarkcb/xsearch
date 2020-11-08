@@ -175,12 +175,12 @@
       (let [settings (get-settings)
             results (search-lines (line-seq rdr) settings)]
         (is (= (count results) 2))
-        (is (= (:linenum (first results)) 23))
-        (is (= (:startmatchindex (first results)) 3))
-        (is (= (:endmatchindex (first results)) 11))
-        (is (= (:linenum (second results)) 29))
-        (is (= (:startmatchindex (second results)) 24))
-        (is (= (:endmatchindex (second results)) 32))))))
+        (is (= (:linenum (first results)) 29))
+        (is (= (:matchstartindex (first results)) 3))
+        (is (= (:matchendindex (first results)) 11))
+        (is (= (:linenum (second results)) 35))
+        (is (= (:matchstartindex (second results)) 24))
+        (is (= (:matchendindex (second results)) 32))))))
 
 ;; *****************************************************************************
 ;; search-multiline-string tests
@@ -192,9 +192,9 @@
           results (search-multiline-string contents settings)]
       (is (= (count results) 2))
       (is (= (:linenum (first results)) 29))
-      (is (= (:startmatchindex (first results)) 3))
-      (is (= (:endmatchindex (first results)) 11))
+      (is (= (:matchstartindex (first results)) 3))
+      (is (= (:matchendindex (first results)) 11))
       (is (= (:linenum (second results)) 35))
-      (is (= (:startmatchindex (second results)) 24))
-      (is (= (:endmatchindex (second results)) 32)))))
+      (is (= (:matchstartindex (second results)) 24))
+      (is (= (:matchendindex (second results)) 32)))))
 

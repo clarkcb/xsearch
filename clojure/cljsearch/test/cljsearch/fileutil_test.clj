@@ -1,8 +1,8 @@
 (ns cljsearch.fileutil-test
   (:use [clojure.java.io :only (file)])
   (:require [clojure.test :refer :all])
-  (:use [clojure.string :as str :only (join)])
-  (:use [cljsearch.fileutil :only
+  (:use [clojure.string :as str :only (join)]
+        [cljsearch.fileutil :only
     (expand-path get-ext has-ext? hidden? is-dot-dir? split-path)]))
 
 (deftest test-expand-path

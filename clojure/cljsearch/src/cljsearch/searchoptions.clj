@@ -141,10 +141,13 @@
         :else
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
-(defn settings-from-json [settings js]
-  (let [obj (json/read-str js :key-fn keyword)
-        ks (keys obj)]
-    (settings-from-map settings ks obj [])))
+(defn settings-from-json
+  ([json]
+    (settings-from-json DEFAULT-SETTINGS json))
+  ([settings json]
+    (let [obj (json/read-str json :key-fn keyword)
+          ks (keys obj)]
+      (settings-from-map settings ks obj []))))
 
 (defn settings-from-file [settings f]
   (let [contents (slurp f)]
