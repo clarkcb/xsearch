@@ -17,6 +17,7 @@ sub new {
     my $class = shift;
     my $self = {
         archivesonly => 0,
+        colorize => 1,
         debug => 0,
         excludehidden => 1,
         firstmatch => 0,
@@ -52,6 +53,7 @@ sub new {
         searcharchives => 0,
         searchpatterns => [],
         startpath => '',
+        textfileencoding => 'UTF-8',
         uniquelines => 0,
         verbose => 0,
     };
@@ -134,6 +136,7 @@ sub to_string {
     my $self = shift @_;
     my $s = "SearchSettings(";
     $s .= 'archivesonly=' . $self->bool_to_string($self->{archivesonly});
+    $s .= ', colorize=' . $self->bool_to_string($self->{colorize});
     $s .= ', debug=' . $self->bool_to_string($self->{debug});
     $s .= ', excludehidden=' . $self->bool_to_string($self->{excludehidden});
     $s .= ', firstmatch=' . $self->bool_to_string($self->{firstmatch});
@@ -169,6 +172,7 @@ sub to_string {
     $s .= ', searcharchives=' . $self->bool_to_string($self->{searcharchives});
     $s .= ', searchpatterns=' . $self->aref_to_string($self->{searchpatterns});
     $s .= ', startpath="' . $self->{startpath} . '"';
+    $s .= ', textfileencoding="' . $self->{textfileencoding} . '"';
     $s .= ', uniquelines=' . $self->bool_to_string($self->{uniquelines});
     $s .= ', verbose=' . $self->bool_to_string($self->{verbose});
     $s .= ')';

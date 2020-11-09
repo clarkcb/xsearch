@@ -151,11 +151,11 @@ unittest_ocaml () {
 unittest_perl () {
     echo
     log "unittest_perl"
-    TESTS_PATH=$PERL_PATH/tests
+    TESTS_PATH=$PERL_PATH/plsearch/t
 
     # run tests using Test::Simple
     log "Unit-testing plsearch"
-    FILES=$(find $TESTS_PATH -name "*.pl")
+    FILES=$(find $TESTS_PATH -name "*_test.pl")
     for f in ${FILES[*]}; do
         log "perl $f"
         perl $f

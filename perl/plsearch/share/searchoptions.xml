@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchoptions>
+  <searchoption long="allmatches" short="a">
+    Capture all matches*
+  </searchoption>
+  <searchoption long="archivesonly" short="">
+    Search only archive files
+  </searchoption>
+  <searchoption long="colorize" short="c">
+    Colorize console output*
+  </searchoption>
+  <searchoption long="nocolorize" short="C">
+    Do not colorize console output
+  </searchoption>
+  <searchoption long="debug" short="">
+    Set output mode to debug
+  </searchoption>
+  <searchoption long="encoding" short="e">
+    Set the encoding to use with text files (default: "utf-8")
+  </searchoption>
+  <searchoption long="excludehidden" short="">
+    Exclude hidden files and directories*
+  </searchoption>
+  <searchoption long="firstmatch" short="1">
+    Capture only the first file+pattern match
+  </searchoption>
+  <searchoption long="help" short="h">
+    Print this usage and exit
+  </searchoption>
+  <searchoption long="includehidden" short="">
+    Include hidden files and directories
+  </searchoption>
+  <searchoption long="in-archiveext" short="">
+    Specify extension for archive files to include in search
+  </searchoption>
+  <searchoption long="in-archivefilepattern" short="">
+    Specify name pattern for archive files to include in search
+  </searchoption>
+  <searchoption long="in-dirpattern" short="d">
+    Specify name pattern for directories to include in search
+  </searchoption>
+  <searchoption long="in-ext" short="x">
+    Specify extension for files to include in search
+  </searchoption>
+  <searchoption long="in-filepattern" short="f">
+    Specify name pattern for files to include in search
+  </searchoption>
+  <searchoption long="in-filetype" short="t">
+    File type to search (text, binary)
+  </searchoption>
+  <searchoption long="in-linesafterpattern" short="">
+    Specify pattern to search the "lines-after" lines on
+  </searchoption>
+  <searchoption long="in-linesbeforepattern" short="">
+    Specify pattern to search the "lines-before" lines on
+  </searchoption>
+  <searchoption long="linesafter" short="L">
+    Number of lines to include after every matched line (default: 0)
+  </searchoption>
+  <searchoption long="linesaftertopattern" short="">
+    Specify pattern to collect lines after up to where pattern matched
+  </searchoption>
+  <searchoption long="linesafteruntilpattern" short="">
+    Specify pattern to collect lines after until pattern matched
+  </searchoption>
+  <searchoption long="linesbefore" short="l">
+    Number of lines to include before every matched line (default: 0)
+  </searchoption>
+  <searchoption long="listdirs" short="">
+    Generate a list of the matching directories after searching
+  </searchoption>
+  <searchoption long="listfiles" short="">
+    Generate a list of the matching files after searching
+  </searchoption>
+  <searchoption long="listlines" short="">
+    Generate a list of the matching lines after searching
+  </searchoption>
+  <searchoption long="maxlinelength" short="w">
+    Max length of line of result to print out (default: 150)
+  </searchoption>
+  <searchoption long="multilinesearch" short="m">
+    Search files as single multi-line content block
+  </searchoption>
+  <searchoption long="noprintmatches" short="P">
+    Suppress printing of search results to stdout
+  </searchoption>
+  <searchoption long="norecursive" short="R">
+    Do not search recursively (no subdirectories)
+  </searchoption>
+  <searchoption long="nosearcharchives" short="Z">
+    Do not search archive files (bz2, gz, tar, zip)*
+  </searchoption>
+  <searchoption long="out-archiveext" short="">
+    Specify extension for archive files to exclude from search
+  </searchoption>
+  <searchoption long="out-archivefilepattern" short="">
+    Specify name pattern for archive files to exclude from search
+  </searchoption>
+  <searchoption long="out-dirpattern" short="D">
+    Specify name pattern for directories to exclude from search
+  </searchoption>
+  <searchoption long="out-ext" short="X">
+    Specify extension for files to exclude from search
+  </searchoption>
+  <searchoption long="out-filepattern" short="F">
+    Specify name pattern for files to exclude from search
+  </searchoption>
+  <searchoption long="out-filetype" short="T">
+    File type not to search (text, binary)
+  </searchoption>
+  <searchoption long="out-linesafterpattern" short="">
+    Specify pattern to filter the "lines-after" lines on
+  </searchoption>
+  <searchoption long="out-linesbeforepattern" short="">
+    Specify pattern to filter the "lines-before" lines on
+  </searchoption>
+  <searchoption long="printmatches" short="p">
+    Print search results to stdout*
+  </searchoption>
+  <searchoption long="recursive" short="r">
+    Search recursively through subdirectories*
+  </searchoption>
+  <searchoption long="searchpattern" short="s">
+    Specify search pattern
+  </searchoption>
+  <searchoption long="searcharchives" short="z">
+    Search archive files (bz2, gz, tar, zip)
+  </searchoption>
+  <searchoption long="settings-file" short="">
+    A path to a JSON file with specified search settings
+  </searchoption>
+  <searchoption long="uniquelines" short="u">
+    Save only search results with unique lines from previous results
+  </searchoption>
+  <searchoption long="verbose" short="v">
+    Set output mode to verbose
+  </searchoption>
+  <searchoption long="version" short="V">
+    Print version and exit
+  </searchoption>
+</searchoptions>

@@ -9,11 +9,11 @@ use warnings;
 use Cwd 'abs_path';
 use File::Basename;
 
-my $curpath;
+my $lib_path;
 
 BEGIN {
-    $curpath = dirname(dirname(abs_path($0)));
-    unshift @INC, $curpath;
+    $lib_path = dirname(dirname(abs_path($0))) . '/lib';
+    unshift @INC, $lib_path;
 }
 
 use plsearch::common;

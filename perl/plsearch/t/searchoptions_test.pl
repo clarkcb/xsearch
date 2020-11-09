@@ -9,11 +9,12 @@ use warnings;
 use Cwd 'abs_path';
 use File::Basename;
 
-my $curpath;
+my $lib_path;
 
 BEGIN {
-    $curpath = dirname(dirname(abs_path($0)));
-    unshift @INC, $curpath;
+    $lib_path = dirname(dirname(abs_path($0))) . '/lib';
+    # print "lib_path: $lib_path\n";
+    unshift @INC, $lib_path;
 }
 
 use Test::Simple tests => 53;

@@ -9,20 +9,22 @@ use warnings;
 use Cwd 'abs_path';
 use File::Basename;
 
-my $curpath;
+my $lib_path;
 
 BEGIN {
-    $curpath = dirname(dirname(abs_path($0)));
-    unshift @INC, $curpath;
+    $lib_path = dirname(dirname(abs_path($0))) . '/lib';
+    # print "lib_path: $lib_path\n";
+    unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 28;
+use Test::Simple tests => 30;
 
 use plsearch::SearchSettings;
 
 sub test_default_settings {
     my $settings = new plsearch::SearchSettings();
     ok(!$settings->{archivesonly}, "archivesonly is false by default");
+    ok($settings->{colorize}, "colorize is true by default");
     ok(!$settings->{debug}, "debug is false by default");
     ok($settings->{excludehidden}, "excludehidden is true by default");
     ok(!$settings->{firstmatch}, "firstmatch is false by default");
@@ -66,11 +68,25 @@ sub test_add_array_extensions {
     ok($settings->{in_extensions}->[1] eq 'py', "in_extensions contains py extension");
 }
 
+sub test_add_single_pattern {
+    my $settings = new plsearch::SearchSettings();
+    $settings->add_patterns('Searcher', $settings->{searchpatterns});
+    ok(scalar @{$settings->{searchpatterns}} == 1, "searchpatterns has one pattern");
+}
+
+sub test_add_array_patterns {
+    my $settings = new plsearch::SearchSettings();
+    $settings->add_patterns(['Searcher', 'Result'], $settings->{searchpatterns});
+    ok(scalar @{$settings->{searchpatterns}} == 2, "searchpatterns has two patterns");
+}
+
 sub main {
     test_default_settings();
     test_add_single_extension();
     test_add_comma_delimited_extensions();
     test_add_array_extensions();
+    test_add_single_pattern();
+    test_add_array_patterns();
 }
 
 main();

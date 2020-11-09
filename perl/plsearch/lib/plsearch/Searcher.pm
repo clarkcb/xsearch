@@ -19,6 +19,7 @@ use plsearch::FileType;
 use plsearch::FileTypes;
 use plsearch::FileUtil;
 use plsearch::SearchResult;
+use plsearch::SearchResultFormatter;
 
 sub new {
     my $class = shift;
@@ -35,14 +36,26 @@ sub new {
 sub validate_settings {
     my $self = shift;
     my $errs = [];
-    if (length($self->{settings}->{startpath}) == 0) {
+    if (!defined($self->{settings}->{startpath}) || length($self->{settings}->{startpath}) == 0) {
         push(@{$errs}, 'Startpath not defined');
     }
     unless (-e $self->{settings}->{startpath}) {
         push(@{$errs}, 'Startpath not found');
     }
+    unless (-r $self->{settings}->{startpath}) {
+        push(@{$errs}, 'Startpath not readable');
+    }
     unless (scalar @{$self->{settings}->{searchpatterns}}) {
         push(@{$errs}, 'No search patterns defined');
+    }
+    if ($self->{settings}->{linesafter} < 0) {
+        push(@{$errs}, 'Invalid linesafter');
+    }
+    if ($self->{settings}->{linesbefore} < 0) {
+        push(@{$errs}, 'Invalid linesbefore');
+    }
+    if ($self->{settings}->{maxlinelength} < 0) {
+        push(@{$errs}, 'Invalid maxlinelength');
     }
     return $errs;
 }
@@ -176,55 +189,39 @@ sub filter_file {
     return !$self->{settings}->{archivesonly} && $self->is_search_file($f);
 }
 
-sub get_search_dirs {
-    my $self = shift;
-    my $searchdirs = [];
-    if (-d $self->{settings}->{startpath}) {
-        if ($self->is_search_dir($self->{settings}->{startpath})) {
-            push(@{$searchdirs}, $self->{settings}->{startpath});
-            if ($self->{settings}->{recursive}) {
-                my @merged = (@{$searchdirs},
-                    @{$self->rec_get_search_dirs($self->{settings}->{startpath})});
-                $searchdirs = \@merged;
-            }
-        } else {
-            plsearch::common::log("ERROR: Startpath does not match search settings");
-        }
-    } elsif (-f $self->{settings}->{startpath}) {
-        plsearch::common::log("Startpath is a file");
-        if ($self->filter_file(basename($self->{settings}->{startpath}))) {
-            push(@{$searchdirs}, dirname($self->{settings}->{startpath}));
-        } else {
-            plsearch::common::log("ERROR: Startpath does not match search settings");
-        }
-    }
-    my @sorted = sort @{$searchdirs};
-    return \@sorted;
-}
-
-sub get_search_files_for_directory {
+sub rec_get_search_files {
+    # print "rec_get_search_files\n";
     my ($self, $d) = @_;
+    # print "d: $d\n";
+    my $searchdirs = [];
     my $searchfiles = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
         my $subfile = File::Spec->join($d, $f);
-        if (-f $subfile && $self->filter_file($f)) {
-            push(@{$searchfiles}, $subfile);
+        if ($subfile !~ m[/\.{1,2}$]) {
+            if (-d $subfile && $self->is_search_dir($f)) {
+                # print "-d $subfile\n";
+                push(@{$searchdirs}, $subfile);
+            } elsif (-f $subfile && $self->filter_file($f)) {
+                # print "-f $subfile\n";
+                push(@{$searchfiles}, $subfile);
+            }
         }
     }
     closedir(DIR);
+    foreach my $searchdir (@{$searchdirs}) {
+        my $subsearchfiles = $self->rec_get_search_files($searchdir);
+        push(@{$searchfiles}, @{$subsearchfiles});
+    }
+
     return $searchfiles;
 }
 
 sub get_search_files {
-    my ($self, $searchdirs) = @_;
+    my $self = shift;
     my $searchfiles = [];
     if (-d $self->{settings}->{startpath}) {
-        foreach my $searchdir (@{$searchdirs}) {
-            my @merged = (@{$searchfiles}, 
-                @{$self->get_search_files_for_directory($searchdir)});
-            $searchfiles = \@merged;
-        }
+        push(@{$searchfiles}, @{$self->rec_get_search_files($self->{settings}->{startpath})});
     } elsif (-f $self->{settings}->{startpath}) {
         if ($self->filter_file($self->{settings}->{startpath})) {
             push(@{$searchfiles}, $self->{settings}->{startpath});
@@ -237,20 +234,20 @@ sub get_search_files {
 
 sub search {
     my $self = shift;
-    # get the directories to search
-    my $searchdirs = $self->get_search_dirs();
+    my $searchfiles = $self->get_search_files();
     if ($self->{settings}->{verbose}) {
-        plsearch::common::log(sprintf("\nDirectories to be searched (%d):", scalar @{$searchdirs}));
-        foreach my $d (@{$searchdirs}) {
+        my @sortedfiles = sort @{$searchfiles};
+        my $sorted_dir_hash = {};
+        foreach my $f (@sortedfiles) {
+            $sorted_dir_hash->{dirname($f)} = 1;
+        }
+        my @sorteddirs = sort (keys %{$sorted_dir_hash});
+        plsearch::common::log(sprintf("\nDirectories to be searched (%d):", scalar @sorteddirs));
+        foreach my $d (@sorteddirs) {
             plsearch::common::log($d);
         }
-    }
-
-    # get the files to search
-    my $searchfiles = $self->get_search_files($searchdirs);
-    if ($self->{settings}->{verbose}) {
-        plsearch::common::log(sprintf("\nFiles to be searched (%d):", scalar @{$searchfiles}));
-        foreach my $f (@{$searchfiles}) {
+        plsearch::common::log(sprintf("\nFiles to be searched (%d):", scalar @sortedfiles));
+        foreach my $f (@sortedfiles) {
             plsearch::common::log($f);
         }
         plsearch::common::log('');
@@ -265,7 +262,7 @@ sub search {
 sub search_file {
     my ($self, $f) = @_;
     my $type = $self->{filetypes}->get_filetype($f);
-    if ($type eq plsearch::FileType->TEXT) {
+    if ($type eq plsearch::FileType->TEXT || $type eq plsearch::FileType->CODE || $type eq plsearch::FileType->XML) {
         $self->search_text_file($f);
     } elsif ($type eq plsearch::FileType->BINARY) {
         $self->search_binary_file($f);
@@ -598,12 +595,31 @@ sub add_search_result {
     push(@{$self->{results}}, $r);
 }
 
+sub sort_results ($$) {
+    my $a = $_[0];
+    my $b = $_[1];
+    if ($a->{file} eq $b->{file}) {
+        if ($a->{linenum} == $b->{linenum}) {
+            $a->{match_start_index} <=> $b->{match_start_index}
+        } else {
+            $a->{linenum} <=> $b->{linenum}
+        }
+    } else {
+        $a->{file} cmp $b->{file}
+    }
+}
+
 sub print_results {
     my ($self) = @_;
     my $len = scalar @{$self->{results}};
+    my @sorted = sort sort_results @{$self->{results}};
+    my $formatter = new plsearch::SearchResultFormatter($self->{settings});
+
     plsearch::common::log("Search results ($len):");
-    foreach my $r (@{$self->{results}}) {
-        plsearch::common::log($r->to_string());
+    # foreach my $r (@{$self->{results}}) {
+    foreach my $r (@sorted) {
+        # plsearch::common::log($r->to_string());
+        plsearch::common::log($formatter->format($r));
     }
 }
 

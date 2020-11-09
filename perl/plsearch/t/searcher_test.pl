@@ -9,11 +9,12 @@ use warnings;
 use Cwd 'abs_path';
 use File::Basename;
 
-my $curpath;
+my $lib_path;
 
 BEGIN {
-    $curpath = dirname(dirname(abs_path($0)));
-    unshift @INC, $curpath;
+    $lib_path = dirname(dirname(abs_path($0))) . '/lib';
+    # print "lib_path: $lib_path\n";
+    unshift @INC, $lib_path;
 }
 
 use Test::Simple tests => 89;
@@ -387,12 +388,12 @@ sub test_search_lines {
     my $results = $searcher->search_multiline_string($contents);
     ok(scalar @{$results} == 2, 'Two search results');
     my $firstResult = $results->[0];
-    ok($firstResult->{linenum} == 23, "First result on line 23");
+    ok($firstResult->{linenum} == 29, "First result on line 23");
     ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
     ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
 
     my $secondResult = $results->[1];
-    ok($secondResult->{linenum} == 29, "Second result on line 29");
+    ok($secondResult->{linenum} == 35, "Second result on line 29");
     ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
     ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
 }
@@ -409,12 +410,12 @@ sub test_search_multiline_string {
     my $results = $searcher->search_lines($lines);
     ok(scalar @{$results} == 2, 'Two search results');
     my $firstResult = $results->[0];
-    ok($firstResult->{linenum} == 23, "First result on line 23");
+    ok($firstResult->{linenum} == 29, "First result on line 23");
     ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
     ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
 
     my $secondResult = $results->[1];
-    ok($secondResult->{linenum} == 29, "Second result on line 29");
+    ok($secondResult->{linenum} == 35, "Second result on line 29");
     ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
     ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
 }

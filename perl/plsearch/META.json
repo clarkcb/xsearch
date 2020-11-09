@@ -1,0 +1,7 @@
+{
+    "version" : "0.1.0",
+    "name"    : "plsearch",
+    "author"  : "Cary Clark",
+    "abstract": "A perl implementation of xsearch",
+    "license" : "perl"
+}

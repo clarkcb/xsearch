@@ -11,7 +11,7 @@ package plsearch::FileUtil;
 use strict;
 use warnings;
 
-use XML::Simple;
+# use XML::Simple;
 use Data::Dumper;
 use File::Basename;
 use plsearch::common;

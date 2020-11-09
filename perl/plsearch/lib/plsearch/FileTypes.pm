@@ -11,14 +11,15 @@ package plsearch::FileTypes;
 use strict;
 use warnings;
 
-use XML::Simple;
+# use XML::Simple;
 use Data::Dumper;
+use JSON::PP qw(decode_json);
 use plsearch::common;
 use plsearch::config;
 use plsearch::FileType;
 use plsearch::FileUtil;
 
-sub get_file_type_hash {
+sub get_xml_file_type_hash {
     my $file_type_hash = {};
     my $file_type_xml_hash = XMLin($FILETYPESPATH);
     $file_type_xml_hash = $file_type_xml_hash->{filetype};
@@ -36,10 +37,27 @@ sub get_file_type_hash {
     return $file_type_hash;
 }
 
+sub get_json_file_type_hash {
+    # print "get_json_file_type_hash\n";
+    my $file_type_hash = {};
+    my $json_file_type_hash = decode_json plsearch::FileUtil::get_file_contents($FILETYPESPATH);
+    foreach my $file_type (@{$json_file_type_hash->{filetypes}}) {
+        $file_type_hash->{$file_type->{type}} = $file_type->{extensions};
+    }
+    my @text = (@{$file_type_hash->{text}}, @{$file_type_hash->{code}},
+        @{$file_type_hash->{xml}});
+    $file_type_hash->{text} = \@text;
+    my @searchable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
+        @{$file_type_hash->{binary}});
+    $file_type_hash->{searchable} = \@searchable;
+    return $file_type_hash;
+}
+
 sub new {
     my $class = shift;
     my $self = {
-        file_types => get_file_type_hash(),
+        # file_types => get_xml_file_type_hash(),
+        file_types => get_json_file_type_hash(),
     };
     bless $self, $class;
     return $self;
@@ -48,6 +66,12 @@ sub new {
 sub from_name {
     my ($name) = @_;
     my $uname = uc($name);
+    if ($uname eq 'CODE') {
+        return plsearch::FileType->CODE;
+    }
+    if ($uname eq 'XML') {
+        return plsearch::FileType->XML;
+    }
     if ($uname eq 'TEXT') {
         return plsearch::FileType->TEXT;
     }
@@ -57,17 +81,17 @@ sub from_name {
     if ($uname eq 'ARCHIVE') {
         return plsearch::FileType->ARCHIVE;
     }
-    if ($uname eq 'CODE') {
-        return plsearch::FileType->CODE;
-    }
-    if ($uname eq 'XML') {
-        return plsearch::FileType->XML;
-    }
     return plsearch::FileType->UNKNOWN;
 }
 
 sub get_filetype {
     my ($self, $file) = @_;
+    if ($self->is_code($file)) {
+        return plsearch::FileType->CODE;
+    }
+    if ($self->is_xml($file)) {
+        return plsearch::FileType->XML;
+    }
     if ($self->is_text($file)) {
         return plsearch::FileType->TEXT;
     }
@@ -76,12 +100,6 @@ sub get_filetype {
     }
     if ($self->is_archive($file)) {
         return plsearch::FileType->ARCHIVE;
-    }
-    if ($self->is_code($file)) {
-        return plsearch::FileType->CODE;
-    }
-    if ($self->is_xml($file)) {
-        return plsearch::FileType->XML;
     }
     return plsearch::FileType->UNKNOWN;
 }

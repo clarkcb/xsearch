@@ -21,13 +21,14 @@ use JSON::PP qw(decode_json);
 use plsearch::FileUtil;
 
 my $absdir = dirname(abs_path(__FILE__));
-my $config_json_path = File::Spec->join($absdir, '../../shared/config.json');
+my $share_path = File::Spec->join($absdir, '../../share');
+my $config_json_path = $share_path . '/config.json';
 my $config = decode_json plsearch::FileUtil::get_file_contents($config_json_path);
 
 our $XSEARCHPATH = $config->{xsearchpath};
 our $SHAREDPATH = "$XSEARCHPATH/shared";
-our $FILETYPESPATH = "$SHAREDPATH/filetypes.xml";
-our $SEARCHOPTIONSPATH = "$SHAREDPATH/searchoptions.xml";
+our $FILETYPESPATH = "$share_path/filetypes.json";
+our $SEARCHOPTIONSPATH = "$share_path/searchoptions.json";
 
 our @EXPORT = qw($XSEARCHPATH $SHAREDPATH $FILETYPESPATH $SEARCHOPTIONSPATH);
 

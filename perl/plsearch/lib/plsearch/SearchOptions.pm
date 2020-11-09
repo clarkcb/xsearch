@@ -11,7 +11,7 @@ package plsearch::SearchOptions;
 use strict;
 use warnings;
 
-use XML::Simple;
+# use XML::Simple;
 use Data::Dumper;
 use JSON::PP qw(decode_json);
 
@@ -22,6 +22,10 @@ use plsearch::SearchOption;
 use plsearch::SearchSettings;
 
 my $arg_action_hash = {
+    'encoding' => sub {
+        my ($s, $settings) = @_;
+        $settings->{textfileencoding} = $s;
+    },
     'in-archiveext' => sub {
         my ($s, $settings) = @_;
         $settings->add_exts($s, $settings->{in_archiveextensions});
@@ -113,6 +117,10 @@ my $arg_action_hash = {
     'settings-file' => sub {
         my ($s, $settings) = @_;
         settings_from_file($s, $settings);
+    },
+    'startpath' => sub {
+        my ($s, $settings) = @_;
+        $settings->{startpath} = $s;
     }
 };
 
@@ -124,6 +132,10 @@ my $bool_flag_action_hash = {
     'archivesonly' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('archivesonly', $b);
+    },
+    'colorize' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('colorize', $b);
     },
     'debug' => sub {
         my ($b, $settings) = @_;
@@ -160,6 +172,10 @@ my $bool_flag_action_hash = {
     'multilinesearch' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('multilinesearch', $b);
+    },
+    'nocolorize' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('colorize', !$b);
     },
     'noprintmatches' => sub {
         my ($b, $settings) = @_;
@@ -202,7 +218,8 @@ my $bool_flag_action_hash = {
 sub new {
     my $class = shift;
     my $self = {
-        options => set_options_from_xml(),
+        # options => set_options_from_xml(),
+        options => set_options_from_json(),
     };
     bless $self, $class;
     return $self;
@@ -216,6 +233,28 @@ sub set_options_from_xml {
         my $long = $options_xml_hash->{searchoption}->[$i]->{long};
         my $desc = $options_xml_hash->{searchoption}->[$i]->{content};
         $desc = plsearch::common::trim($desc);
+        my $func = sub {};
+        if (exists $arg_action_hash->{$long}) {
+            $func = $arg_action_hash->{$long};
+        } elsif (exists $bool_flag_action_hash->{$long}) {
+            $func = $bool_flag_action_hash->{$long};
+        }
+        my $opt = new plsearch::SearchOption($short, $long, $desc, $func);
+        $options_hash->{$long} = $opt;
+        if ($short) {
+            $options_hash->{$short} = $options_hash->{$long};
+        }
+    }
+    return $options_hash;
+}
+
+sub set_options_from_json {
+    my $options_hash = {};
+    my $options_json_hash = decode_json plsearch::FileUtil::get_file_contents($SEARCHOPTIONSPATH);
+    foreach my $searchoption (@{$options_json_hash->{searchoptions}}) {
+        my $short = $searchoption->{short};
+        my $long = $searchoption->{long};
+        my $desc = $searchoption->{desc};
         my $func = sub {};
         if (exists $arg_action_hash->{$long}) {
             $func = $arg_action_hash->{$long};
