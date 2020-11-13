@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Xml.Linq;
+
+using SearchOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>;
 
 namespace CsSearch
 {
@@ -73,11 +76,45 @@ namespace CsSearch
 
 		public SearchOptions()
 		{
-			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.xml");
+			// _searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.xml");
+			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.json");
 			Options = new List<SearchOption>();
 			ArgDictionary = new Dictionary<string, SearchOption>();
 			FlagDictionary = new Dictionary<string, SearchOption>();
-			SetOptionsFromXml();
+			// SetOptionsFromXml();
+			SetOptionsFromJson();
+		}
+
+		private void SetOptionsFromJson()
+		{
+			var searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(_searchOptionsResource);
+			var optionDicts = searchOptionsDict["searchoptions"];
+			foreach (var optionDict in optionDicts)
+			{
+				var longArg = optionDict["long"];
+				var shortArg = optionDict.ContainsKey("short") ? optionDict["short"] : null;
+				var desc = optionDict["desc"];
+				if (ArgActionDictionary.ContainsKey(longArg))
+				{
+					var option = new SearchArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
+					Options.Add(option);
+					ArgDictionary.Add(longArg, option);
+					if (!string.IsNullOrWhiteSpace(shortArg))
+					{
+						ArgDictionary.Add(shortArg, option);
+					}
+				}
+				else if (BoolFlagActionDictionary.ContainsKey(longArg))
+				{
+					var option = new SearchFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
+					Options.Add(option);
+					FlagDictionary.Add(longArg, option);
+					if (!string.IsNullOrWhiteSpace(shortArg))
+					{
+						FlagDictionary.Add(shortArg, option);
+					}
+				}
+			}
 		}
 
 		private void SetOptionsFromXml()

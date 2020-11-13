@@ -19,4 +19,12 @@
       <EmbeddedResource Include="Resources\filetypes.xml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\searchoptions.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\filetypes.json" />
+    </ItemGroup>
+
 </Project>

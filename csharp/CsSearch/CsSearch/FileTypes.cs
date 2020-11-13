@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Xml.Linq;
+
+using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,object>>>;
 
 namespace CsSearch
 {
@@ -31,9 +34,30 @@ namespace CsSearch
 
 		public FileTypes()
 		{
-			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
+			// _fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
+			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
-			PopulateFileTypesFromXml();
+			// PopulateFileTypesFromXml();
+			PopulateFileTypesFromJson();
+		}
+
+		private void PopulateFileTypesFromJson()
+		{
+			var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
+			var filetypeDicts = filetypesDict["filetypes"];
+			foreach (var filetypeDict in filetypeDicts)
+			{
+				var name = ((JsonElement)filetypeDict["type"]).GetString();
+				var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
+					.Select(x => "." + x.GetString());
+				var extensionSet = new HashSet<string>(extensions);
+				_fileTypesDictionary[name] = extensionSet;
+			}
+			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
+			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
+			_fileTypesDictionary[Searchable] = new HashSet<string>(_fileTypesDictionary[Text]);
+			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Binary]);
+			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Archive]);
 		}
 
 		private void PopulateFileTypesFromXml()
