@@ -14,7 +14,7 @@ namespace CsSearch
 		private readonly FileTypes _fileTypes;
 		private SearchSettings Settings { get; set; }
 		private ConcurrentBag<SearchResult> Results { get; set; }
-		private Encoding TextFileEncoding { get; set; }
+		private Encoding TextFileEncoding { get; set; } = Encoding.Default;
 
 		private const int FileBatchSize = 255;
 		// use single-byte encoding for reading binary files (will break if UTF8)
@@ -104,7 +104,7 @@ namespace CsSearch
 
 		private IEnumerable<SearchFile> GetSearchFiles()
 		{
-			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
+			var expandedPath = FileUtil.ExpandPath(Settings.StartPath!);
 			var searchOption = Settings.Recursive ? System.IO.SearchOption.AllDirectories :
 				System.IO.SearchOption.TopDirectoryOnly;
 			return new DirectoryInfo(expandedPath).
@@ -117,7 +117,7 @@ namespace CsSearch
 
 		public void Search()
 		{
-			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
+			var expandedPath = FileUtil.ExpandPath(Settings.StartPath!);
 			if (Directory.Exists(expandedPath))
 			{
 				var startDir = new DirectoryInfo(expandedPath);
@@ -428,59 +428,57 @@ namespace CsSearch
 			var linesBefore = new Queue<string>();
 			var linesAfter = new Queue<string>();
 
-			using (var lineEnumerator = lines.GetEnumerator())
+			using var lineEnumerator = lines.GetEnumerator();
+			var stop = false;
+			while ((lineEnumerator.MoveNext() || linesAfter.Count > 0) && !stop)
 			{
-				var stop = false;
-				while ((lineEnumerator.MoveNext() || linesAfter.Count > 0) && !stop)
+				lineNum++;
+				var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
+				if (Settings.LinesAfter > 0)
 				{
-					lineNum++;
-					var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
-					if (Settings.LinesAfter > 0)
+					while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
 					{
-						while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
-						{
-							linesAfter.Enqueue(lineEnumerator.Current);
-						}
-					}
-
-					if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
-					    &&
-					    (Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
-					{
-						foreach (var p in Settings.SearchPatterns)
-						{
-							var matches = p.Matches(line);
-							foreach (Match match in matches)
-							{
-								if (Settings.FirstMatch && patternMatches.ContainsKey(p))
-								{
-									stop = true;
-									break;
-								}
-								results.Add(new SearchResult(p,
-									null,
-									lineNum,
-									match.Index + 1,
-									match.Index + match.Length + 1,
-									line,
-									new List<string>(linesBefore),
-									new List<string>(linesAfter)));
-								patternMatches[p] = 1;
-							}
-						}
-					}
-
-					if (Settings.LinesBefore == 0) continue;
-					if (linesBefore.Count == Settings.LinesBefore)
-					{
-						linesBefore.Dequeue();
-					}
-					if (linesBefore.Count < Settings.LinesBefore)
-					{
-						linesBefore.Enqueue(line);
+						linesAfter.Enqueue(lineEnumerator.Current);
 					}
 				}
+
+				if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
+				    &&
+				    (Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
+				{
+					foreach (var p in Settings.SearchPatterns)
+					{
+						foreach (Match match in p.Matches(line).Where(m => m != null))
+						{
+							if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+							{
+								stop = true;
+								break;
+							}
+							results.Add(new SearchResult(p,
+								null,
+								lineNum,
+								match.Index + 1,
+								match.Index + match.Length + 1,
+								line,
+								new List<string>(linesBefore),
+								new List<string>(linesAfter)));
+							patternMatches[p] = 1;
+						}
+					}
+				}
+
+				if (Settings.LinesBefore == 0) continue;
+				if (linesBefore.Count == Settings.LinesBefore)
+				{
+					linesBefore.Dequeue();
+				}
+				if (linesBefore.Count < Settings.LinesBefore)
+				{
+					linesBefore.Enqueue(line);
+				}
 			}
+
 			return results;
 		}
 
@@ -490,26 +488,24 @@ namespace CsSearch
 				Common.Log($"Searching binary file {FileUtil.ContractPath(sf.FullName)}");
 			try
 			{
-				using (var sr = new StreamReader(sf.FullName, _binaryEncoding))
+				using var sr = new StreamReader(sf.FullName, _binaryEncoding);
+				var contents = sr.ReadToEnd();
+				foreach (var p in Settings.SearchPatterns)
 				{
-					var contents = sr.ReadToEnd();
-					foreach (var p in Settings.SearchPatterns)
+					var matches = p.Matches(contents).Cast<Match>();
+					if (Settings.FirstMatch)
 					{
-						var matches = p.Matches(contents).Cast<Match>();
-						if (Settings.FirstMatch)
-						{
-							matches = matches.Take(1);
-						}
-						foreach (var m in matches)
-						{
-							AddSearchResult(new SearchResult(
-								p,
-								sf,
-								0,
-								m.Index + 1,
-								m.Index + m.Length + 1,
-								null));
-						}
+						matches = matches.Take(1);
+					}
+					foreach (var m in matches)
+					{
+						AddSearchResult(new SearchResult(
+							p,
+							sf,
+							0,
+							m.Index + 1,
+							m.Index + m.Length + 1,
+							null));
 					}
 				}
 			}
@@ -546,7 +542,7 @@ namespace CsSearch
 		{
 			return new List<DirectoryInfo>(
 					Results.Where(r => r.File != null).
-						Select(r => r.File.File.Directory).
+						Select(r => r.File!.File.Directory).
 						Distinct().
 						OrderBy(d => d.FullName));
 		}
@@ -557,7 +553,7 @@ namespace CsSearch
 			Common.Log($"\nDirectories with matches ({matchingDirs.Count()}):");
 			foreach (var d in matchingDirs)
 			{
-				Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath));
+				Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath!));
 			}
 		}
 
@@ -565,7 +561,7 @@ namespace CsSearch
 		{
 			return new List<FileInfo>(
 				Results.Where(r => r.File != null).
-					Select(r => r.File.PathAndName).
+					Select(r => r.File!.PathAndName).
 					Distinct().Select(f => new FileInfo(f)).
 					OrderBy(d => d.FullName));
 		}
@@ -576,14 +572,14 @@ namespace CsSearch
 			Common.Log($"\nFiles with matches ({matchingFiles.Count()}):");
 			foreach (var f in matchingFiles)
 			{
-				Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath));
+				Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath!));
 			}
 		}
 
 		private IEnumerable<string> GetMatchingLines()
 		{
 			var lines = Results.Where(r => r.Line != null).
-				Select(r => r.Line.Trim()).ToList();
+				Select(r => r.Line!.Trim()).ToList();
 			if (Settings.UniqueLines)
 			{
 				lines = new HashSet<string>(lines).ToList();
@@ -606,7 +602,7 @@ namespace CsSearch
 
 	internal class CaseInsensitiveComparer : IComparer<string>
 	{
-		public int Compare(string a, string b)
+		public int Compare(string? a, string? b)
 		{
 			if (a == null && b == null)
 				return 0;
@@ -614,7 +610,7 @@ namespace CsSearch
 				return -1;
 			if (b == null)
 				return 1;
-			return String.Compare(a.ToUpper(), b.ToUpper(), StringComparison.Ordinal);
+			return string.Compare(a.ToUpper(), b.ToUpper(), StringComparison.Ordinal);
 		}
 	}
 }

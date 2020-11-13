@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -55,32 +56,32 @@ namespace CsSearch
 			return sb.ToString();
 		}
 		
-		public static int Compare(SearchFile sf1, SearchFile sf2)
+		public static int Compare(SearchFile? sf1, SearchFile? sf2)
 		{
-			if (sf1 == null && sf2 == null)
+			if (sf1 is null && sf2 is null)
 				return 0;
-			if (sf1 == null)
+			if (sf1 is null)
 				return -1;
-			if (sf2 == null)
+			if (sf2 is null)
 				return 1;
 
 			if (sf1.File.Directory != null && sf2.File.Directory != null)
 			{
-				var pathCmp = sf1.File.Directory.ToString().ToUpperInvariant()
-					.CompareTo(sf2.File.Directory.ToString().ToUpperInvariant());
+				var pathCmp = string.Compare(sf1.File.Directory.ToString().ToUpperInvariant(),
+					sf2.File.Directory.ToString().ToUpperInvariant(), StringComparison.Ordinal);
 				if (pathCmp != 0)
 				{
 					return pathCmp;
 				}
 			}
-			return sf1.File.Name.ToUpperInvariant()
-				.CompareTo(sf2.File.Name.ToUpperInvariant());
+			return string.Compare(sf1.File.Name.ToUpperInvariant(),
+				sf2.File.Name.ToUpperInvariant(), StringComparison.Ordinal);
 		}
 	}
 
 	public class SearchFilesComparer : IComparer<SearchFile>
 	{
-		public int Compare(SearchFile sf1, SearchFile sf2)
+		public int Compare(SearchFile? sf1, SearchFile? sf2)
 		{
 			return SearchFile.Compare(sf1, sf2);
 		}

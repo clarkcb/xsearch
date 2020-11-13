@@ -2,7 +2,7 @@
 
 namespace CsSearch
 {
-	class Common
+	internal static class Common
 	{
 		public static void Log(string message)
 		{

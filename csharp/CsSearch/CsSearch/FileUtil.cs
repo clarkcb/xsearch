@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CsSearch
 {
-	public class FileUtil
+	public static class FileUtil
 	{
 		private const string CurrentPath = ".";
 		private const string ParentPath = "..";
@@ -17,10 +17,9 @@ namespace CsSearch
 
 		public static string GetHomePath()
 		{
-			var home = Environment.GetEnvironmentVariable("HOME");
-			if (null == home)
-				return Environment.GetEnvironmentVariable("USERPROFILE");
-			return home;
+			return Environment.GetEnvironmentVariable("HOME")
+			       ?? Environment.GetEnvironmentVariable("USERPROFILE")
+			       ?? "~";
 		}
 
 		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f, Encoding enc)
@@ -30,15 +29,13 @@ namespace CsSearch
 
 		public static IEnumerable<string> EnumerableStringFromFile(string filepath, Encoding enc)
 		{
-			using (var sr = new StreamReader(filepath, enc))
+			using var sr = new StreamReader(filepath, enc);
+			// read each line, ensuring not null (EOF)
+			string? line;
+			while ((line = sr.ReadLine()) != null)
 			{
-				// read each line, ensuring not null (EOF)
-				string line;
-				while ((line = sr.ReadLine()) != null)
-				{
-					// return trimmed line
-					yield return line;
-				}
+				// return trimmed line
+				yield return line;
 			}
 		}
 
@@ -46,15 +43,13 @@ namespace CsSearch
 		{
 			try
 			{
-				using (var sr = new StreamReader(filepath, encoding))
-				{
-					var contents = sr.ReadToEnd();
-					return contents;
-				}
+				using var sr = new StreamReader(filepath, encoding);
+				var contents = sr.ReadToEnd();
+				return contents;
 			}
 			catch (IOException e)
 			{
-				throw e;
+				throw new SearchException(e.Message);
 			}
 		}
 

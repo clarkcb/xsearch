@@ -11,7 +11,7 @@ namespace CsSearch
 	{
 		private readonly string _searchOptionsResource;
 
-		private static Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
+		private static readonly Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
 			new Dictionary<string, Action<string,SearchSettings>>
 				{
 					{ "encoding", (s, settings) => settings.TextFileEncoding = s },
@@ -40,13 +40,13 @@ namespace CsSearch
 					{ "settings-file", SettingsFromFile },
 				};
 
-		private static Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
+		private static readonly Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
 			new Dictionary<string, Action<bool, SearchSettings>>
 				{
 					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
-					{ "archivesonly", (b, settings) => settings.SetArchivesOnly(b) },
+					{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
 					{ "colorize", (b, settings) => settings.Colorize = b },
-					{ "debug", (b, settings) => settings.SetDebug(b) },
+					{ "debug", (b, settings) => settings.Debug = b },
 					{ "excludehidden", (b, settings) => settings.ExcludeHidden = b },
 					{ "firstmatch", (b, settings) => settings.FirstMatch = b },
 					{ "help", (b, settings) => settings.PrintUsage = b },

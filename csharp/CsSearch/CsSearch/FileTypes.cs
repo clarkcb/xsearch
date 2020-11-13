@@ -33,17 +33,17 @@ namespace CsSearch
 		{
 			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
-			PopulateFileTypes();
+			PopulateFileTypesFromXml();
 		}
 
-		private void PopulateFileTypes()
+		private void PopulateFileTypesFromXml()
 		{
 			var doc = XDocument.Parse(_fileTypesResource);
 			foreach (var f in doc.Descendants("filetype"))
 			{
 				var name = f.Attributes("name").First().Value;
 				var extensions = f.Descendants("extensions").First().Value;
-				var extensionSet = new HashSet<string>(extensions.Split(new[]{' ','\n'}).Select(x => "." + x));
+				var extensionSet = new HashSet<string>(extensions.Split(new[]{' ', '\n'}).Select(x => "." + x));
 				_fileTypesDictionary[name] = extensionSet;
 			}
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
@@ -55,22 +55,17 @@ namespace CsSearch
 
 		public static FileType FromName(string name)
 		{
-			var lname = name.ToLowerInvariant();
-			switch (lname)
+			return string.IsNullOrEmpty(name)
+				? FileType.Unknown
+				: name.ToLowerInvariant() switch
 			{
-				case Archive:
-					return FileType.Archive;
-				case Binary:
-					return FileType.Binary;
-				case Code:
-					return FileType.Code;
-				case Text:
-					return FileType.Text;
-				case Xml:
-					return FileType.Xml;
-				default:
-					return FileType.Unknown;
-			}
+				Archive => FileType.Archive,
+				Binary => FileType.Binary,
+				Code => FileType.Code,
+				Text => FileType.Text,
+				Xml => FileType.Xml,
+				_ => FileType.Unknown
+			};
 		}
 
 		public FileType GetFileType(FileInfo f)

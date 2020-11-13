@@ -11,14 +11,13 @@ namespace CsSearch
         {
             try
             {
-                using (var stream = typeof(EmbeddedResource).GetTypeInfo().Assembly.GetManifestResourceStream(namespaceAndFileName))
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                    return reader.ReadToEnd();
+                using var stream = typeof(EmbeddedResource).GetTypeInfo().Assembly
+                    .GetManifestResourceStream(namespaceAndFileName);
+                using var reader = new StreamReader(stream!, Encoding.UTF8);
+                return reader.ReadToEnd();
             }
-
             catch(Exception)
             {
-                //ApplicationProvider.WriteToLog<EmbeddedResource>().Error(exception.Message);
                 throw new Exception($"Failed to read Embedded Resource {namespaceAndFileName}");
             }
         }

@@ -57,8 +57,7 @@ namespace CsSearchTests
 		[Test]
 		public void SearchSettings_SetArchivesOnly_HasSearchArchives()
 		{
-			var settings = new SearchSettings();
-			settings.SetArchivesOnly(true);
+			var settings = new SearchSettings {ArchivesOnly = true};
 			Assert.IsTrue(settings.ArchivesOnly);
 			Assert.IsTrue(settings.SearchArchives);
 		}
@@ -66,8 +65,7 @@ namespace CsSearchTests
 		[Test]
 		public void SearchSettings_SetDebug_HasVerbose()
 		{
-			var settings = new SearchSettings();
-			settings.SetDebug(true);
+			var settings = new SearchSettings {Debug = true};
 			Assert.IsTrue(settings.Debug);
 			Assert.IsTrue(settings.Verbose);
 		}

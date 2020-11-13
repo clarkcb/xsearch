@@ -128,7 +128,7 @@ namespace CsSearchTests
 			const int lineNum = 0;
 			const int matchStartIndex = 0;
 			const int matchEndIndex = 0;
-			string line = null;
+			string? line = null;
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
 			var expectedPath = CsSearchPath + "/Searcher.exe";

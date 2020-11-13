@@ -13,28 +13,28 @@ namespace CsSearchTests
 		public void SearchFile_ToString_EqualsExpected()
 		{
 			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
-			Assert.AreEqual(searchFile.ToString(), CsSearchPath + "/Searcher.cs");
+			Assert.AreEqual(CsSearchPath + "/Searcher.cs", searchFile.ToString());
 		}
 
 		[Test]
 		public void SearchFileTrailingSlash_ToString_EqualsExpected()
 		{
 			var searchFile = new SearchFile(CsSearchPath + "/", "Searcher.cs", FileType.Text);
-			Assert.AreEqual(searchFile.ToString(), CsSearchPath + "/Searcher.cs");
+			Assert.AreEqual(CsSearchPath + "/Searcher.cs", searchFile.ToString());
 		}
 
 		[Test]
 		public void SearchFileBackSlashes_ToString_EqualsExpected()
 		{
 			var searchFile = new SearchFile(WinCsSearchPath, "Searcher.cs", FileType.Text);
-			Assert.AreEqual(searchFile.ToString(), WinCsSearchPath + @"\Searcher.cs");
+			Assert.AreEqual(WinCsSearchPath + @"\Searcher.cs", searchFile.ToString());
 		}
 
 		[Test]
 		public void SearchFileBackSlashesTrailingSlash_ToString_EqualsExpected()
 		{
 			var searchFile = new SearchFile(WinCsSearchPath + @"\", "Searcher.cs", FileType.Text);
-			Assert.AreEqual(searchFile.ToString(), WinCsSearchPath + @"\Searcher.cs");
+			Assert.AreEqual(WinCsSearchPath + @"\Searcher.cs", searchFile.ToString());
 		}
 	}
 }

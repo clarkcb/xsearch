@@ -13,42 +13,42 @@ namespace CsSearchTests
 		public void GetFileType_ArchiveFile_FileTypeArchive()
 		{
 			var archiveFile = new FileInfo("archive.zip");
-			Assert.AreEqual(_fileTypes.GetFileType(archiveFile), FileType.Archive);
+			Assert.AreEqual(FileType.Archive, _fileTypes.GetFileType(archiveFile));
 		}
 
 		[Test]
 		public void GetFileType_BinaryFile_FileTypeBinary()
 		{
 			var binaryFile = new FileInfo("binary.exe");
-			Assert.AreEqual(_fileTypes.GetFileType(binaryFile), FileType.Binary);
+			Assert.AreEqual(FileType.Binary, _fileTypes.GetFileType(binaryFile));
 		}
 
 		[Test]
 		public void GetFileType_CodeFile_FileTypeCode()
 		{
 			var codeFile = new FileInfo("code.cs");
-			Assert.AreEqual(_fileTypes.GetFileType(codeFile), FileType.Code);
+			Assert.AreEqual(FileType.Code, _fileTypes.GetFileType(codeFile));
 		}
 
 		[Test]
 		public void GetFileType_TextFile_FileTypeText()
 		{
 			var textFile = new FileInfo("text.txt");
-			Assert.AreEqual(_fileTypes.GetFileType(textFile), FileType.Text);
+			Assert.AreEqual(FileType.Text, _fileTypes.GetFileType(textFile));
 		}
 
 		[Test]
 		public void GetFileType_XmlFile_FileTypeXml()
 		{
 			var xmlFile = new FileInfo("markup.xml");
-			Assert.AreEqual(_fileTypes.GetFileType(xmlFile), FileType.Xml);
+			Assert.AreEqual(FileType.Xml, _fileTypes.GetFileType(xmlFile));
 		}
 
 		[Test]
 		public void GetFileType_UnknownFile_FileTypeUnknown()
 		{
 			var unknownFile = new FileInfo("unknown.xyz");
-			Assert.AreEqual(_fileTypes.GetFileType(unknownFile), FileType.Unknown);
+			Assert.AreEqual(FileType.Unknown, _fileTypes.GetFileType(unknownFile));
 		}
 
 		[Test]

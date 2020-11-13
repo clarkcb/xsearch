@@ -42,8 +42,8 @@ namespace CsSearchTests
 		{
 			var args = new List<string>() { "-x", "cs", "-s", "Search", "." };
 			var settings = _searchOptions.SettingsFromArgs(args);
-			var startFile = new FileInfo(".");
-			//Assert.AreEqual(settings.StartPath, startFile.FullName);
+			var startInfo = new DirectoryInfo(".");
+			Assert.AreEqual(startInfo.ToString(), settings.StartPath);
 			Assert.AreEqual(1, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
 			Assert.AreEqual(1, settings.SearchPatterns.Count);

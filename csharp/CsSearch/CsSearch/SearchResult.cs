@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace CsSearch
@@ -8,30 +6,23 @@ namespace CsSearch
 	public class SearchResult
 	{
 		public Regex SearchPattern { get; private set; }
-		public SearchFile File { get; set; }
+		public SearchFile? File { get; set; }
 		public int LineNum { get; private set; }
 		public int MatchStartIndex { get; private set; }
 		public int MatchEndIndex { get; private set; }
-		public string Line { get; private set; }
+		public string? Line { get; private set; }
 		public IList<string> LinesBefore { get; private set; }
 		public IList<string> LinesAfter { get; private set; }
 
-		public SearchResult(Regex searchPattern, SearchFile file, int lineNum,
-			int matchStartIndex, int matchEndIndex, string line)
+		public SearchResult(Regex searchPattern, SearchFile? file, int lineNum,
+			int matchStartIndex, int matchEndIndex, string? line)
+			: this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
+				new List<string>(), new List<string>())
 		{
-			Initialize(searchPattern, file, lineNum, matchStartIndex,
-				matchEndIndex, line, new List<string>(), new List<string>());
 		}
 
-		public SearchResult(Regex searchPattern, SearchFile file, int lineNum, int matchStartIndex,
-			int matchEndIndex, string line, IList<string> linesBefore, IList<string> linesAfter)
-		{
-			Initialize(searchPattern, file, lineNum, matchStartIndex,
-				matchEndIndex, line, linesBefore, linesAfter);
-		}
-
-		private void Initialize(Regex searchPattern, SearchFile file, int lineNum, int matchStartIndex,
-			int matchEndIndex, string line, IList<string> linesBefore, IList<string> linesAfter)
+		public SearchResult(Regex searchPattern, SearchFile? file, int lineNum, int matchStartIndex,
+			int matchEndIndex, string? line, IList<string> linesBefore, IList<string> linesAfter)
 		{
 			SearchPattern = searchPattern;
 			File = file;
@@ -43,7 +34,7 @@ namespace CsSearch
 			LinesAfter = linesAfter;
 		}
 
-		public static int Compare(SearchResult r1, SearchResult r2)
+		public static int Compare(SearchResult? r1, SearchResult? r2)
 		{
 			if (r1 == null && r2 == null)
 				return 0;
@@ -70,7 +61,7 @@ namespace CsSearch
 
 	public class SearchResultsComparer : IComparer<SearchResult>
 	{
-		public int Compare(SearchResult r1, SearchResult r2)
+		public int Compare(SearchResult? r1, SearchResult? r2)
 		{
 			return SearchResult.Compare(r1, r2);
 		}

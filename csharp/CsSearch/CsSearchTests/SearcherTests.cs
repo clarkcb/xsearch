@@ -14,7 +14,6 @@ namespace CsSearchTests
 		
 		private static string GetTestFileContent()
 		{
-			//return Properties.Resources.testFile2;
 			return EmbeddedTestResource.GetResourceFileContents("CsSearchTests.Resources.testFile2.txt");
 		}
 
@@ -400,7 +399,7 @@ namespace CsSearchTests
 			var searcher = new Searcher(settings);
 			var file = new FileInfo("archive.zip");
 			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.FilterFile(sf));
+			Assert.True(searcher.FilterFile(sf));
 		}
 
 
@@ -462,20 +461,20 @@ namespace CsSearchTests
 			Assert.True(results.Count == 2);
 
 			var firstResult = results[0];
-			const int expectedFirstLineNum = 23;
-			Assert.AreEqual(firstResult.LineNum, expectedFirstLineNum);
+			const int expectedFirstLineNum = 29;
+			Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum);
 			const int expectedFirstMatchStartIndex = 3;
-			Assert.AreEqual(firstResult.MatchStartIndex, expectedFirstMatchStartIndex);
+			Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex);
 			const int expectedFirstMatchEndIndex = 11;
-			Assert.AreEqual(firstResult.MatchEndIndex, expectedFirstMatchEndIndex);
+			Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex);
 
 			var secondResult = results[1];
-			const int expectedSecondLineNum = 29;
-			Assert.AreEqual(secondResult.LineNum, expectedSecondLineNum);
+			const int expectedSecondLineNum = 35;
+			Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum);
 			const int expectedSecondMatchStartIndex = 24;
-			Assert.AreEqual(secondResult.MatchStartIndex, expectedSecondMatchStartIndex);
+			Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex);
 			const int expectedSecondMatchEndIndex = 32;
-			Assert.AreEqual(secondResult.MatchEndIndex, expectedSecondMatchEndIndex);
+			Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex);
 		}
 
 		/*************************************************************
@@ -486,29 +485,26 @@ namespace CsSearchTests
 		{
 			var settings = GetSettings();
 			var searcher = new Searcher(settings);
-			//var testFile = GetTestFile();
-			//var contents = FileUtil.GetFileContents(testFile.FullName);
 			var contents = GetTestFileContent();
 			var results = searcher.SearchContents(contents).ToList();
 
 			Assert.True(results.Count == 2);
 
 			var firstResult = results[0];
-			const int expectedFirstLineNum = 23;
-			Assert.AreEqual(firstResult.LineNum, expectedFirstLineNum);
+			const int expectedFirstLineNum = 29;
+			Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum);
 			const int expectedFirstMatchStartIndex = 3;
-			Assert.AreEqual(firstResult.MatchStartIndex, expectedFirstMatchStartIndex);
+			Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex);
 			const int expectedFirstMatchEndIndex = 11;
-			Assert.AreEqual(firstResult.MatchEndIndex, expectedFirstMatchEndIndex);
+			Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex);
 
 			var secondResult = results[1];
-			const int expectedSecondLineNum = 29;
-			Assert.AreEqual(secondResult.LineNum, expectedSecondLineNum);
+			const int expectedSecondLineNum = 35;
+			Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum);
 			const int expectedSecondMatchStartIndex = 24;
-			Assert.AreEqual(secondResult.MatchStartIndex, expectedSecondMatchStartIndex);
+			Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex);
 			const int expectedSecondMatchEndIndex = 32;
-			Assert.AreEqual(secondResult.MatchEndIndex, expectedSecondMatchEndIndex);
+			Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex);
 		}
-
 	}
 }

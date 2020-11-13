@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 
 namespace CsSearch
@@ -27,12 +26,12 @@ namespace CsSearch
 	        {
 		        if (Settings.StartPath[0] == '~')
 		        {
-			        return FileUtil.ContractPath(result.File.FullName);
+			        return FileUtil.ContractPath(result.File!.FullName);
 		        }
-		        return FileUtil.GetRelativePath(result.File.FullName, Settings.StartPath);
+		        return FileUtil.GetRelativePath(result.File!.FullName, Settings.StartPath);
 	        }
 
-	        return result.File.FullName;
+	        return result.File!.FullName;
         }
 
         private static int LineNumPadding(SearchResult result)
@@ -59,7 +58,7 @@ namespace CsSearch
                 Append(result.LineNum).Append(": ").
                 Append('[').Append(result.MatchStartIndex).Append(':').
                 Append(result.MatchEndIndex).Append("]\n").
-                Append(new String('-', 80)).Append('\n');
+                Append(new string('-', 80)).Append('\n');
             var currentLineNum = result.LineNum;
             var lineFormat = " {0," + LineNumPadding(result) + "} | {1}\n";
             if (result.LinesBefore.Count > 0)
@@ -77,7 +76,7 @@ namespace CsSearch
             var line = result.Line;
             if (Settings.Colorize)
             {
-	            line = Colorize(line, result.MatchStartIndex - 1, result.MatchEndIndex - 1);
+	            line = Colorize(line!, result.MatchStartIndex - 1, result.MatchEndIndex - 1);
             }
             sb.Append('>').Append(string.Format(lineFormat, result.LineNum, line));
             if (result.LinesAfter.Count > 0)
@@ -111,9 +110,9 @@ namespace CsSearch
 
 		private string FormatMatchingLine(SearchResult result)
 		{
-			var formatted = result.Line.TrimEnd();
+			var formatted = result.Line!.TrimEnd();
 			var leadingWhitespaceCount = 0;
-			while (Char.IsWhiteSpace(formatted[leadingWhitespaceCount]))
+			while (char.IsWhiteSpace(formatted[leadingWhitespaceCount]))
 			{
 				leadingWhitespaceCount++;
 			}

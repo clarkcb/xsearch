@@ -4,8 +4,8 @@ namespace CsSearch
 {
 	public class SearchOption
 	{
-		public string ShortArg { get; private set; }
-		public string LongArg { get; private set; }
+		public string? ShortArg { get; }
+		public string LongArg { get; }
 		public string SortArg
 		{
 			get
@@ -16,9 +16,9 @@ namespace CsSearch
 				return longArg;
 			}
 		}
-		public string Description { get; private set; }
+		public string Description { get; }
 
-		public SearchOption(string shortArg, string longArg, string description)
+		public SearchOption(string? shortArg, string longArg, string description)
 		{
 			ShortArg = shortArg;
 			LongArg = longArg;
@@ -29,7 +29,7 @@ namespace CsSearch
 	internal class SearchArgOption : SearchOption
 	{
 		public Action<string, SearchSettings> Action { get; private set; }
-		public SearchArgOption(string shortArg, string longArg, Action<string, SearchSettings> action, string description) :
+		public SearchArgOption(string? shortArg, string longArg, Action<string, SearchSettings> action, string description) :
 			base(shortArg, longArg, description)
 		{
 			Action = action;
@@ -39,7 +39,7 @@ namespace CsSearch
 	internal class SearchFlagOption : SearchOption
 	{
 		public Action<bool, SearchSettings> Action { get; private set; }
-		public SearchFlagOption(string shortArg, string longArg, Action<bool, SearchSettings> action, string description) :
+		public SearchFlagOption(string? shortArg, string longArg, Action<bool, SearchSettings> action, string description) :
 			base(shortArg, longArg, description)
 		{
 			Action = action;

@@ -6,9 +6,33 @@ namespace CsSearch
 {
 	public class SearchSettings
 	{
-		public bool ArchivesOnly { get; set; }
+		private bool _archivesOnly;
+
+		public bool ArchivesOnly
+		{
+			get => _archivesOnly;
+			set
+			{
+				_archivesOnly = value;
+				if (_archivesOnly)
+					SearchArchives = true;
+			}
+		}
+
 		public bool Colorize { get; set; }
-		public bool Debug { get; set; }
+
+		private bool _debug;
+		public bool Debug
+		{
+			get => _debug;
+			set
+			{
+				_debug = value;
+				if (_debug)
+					Verbose = true;
+			}
+		}
+
 		public bool ExcludeHidden { get; set; }
 		public bool FirstMatch { get; set; }
 		public ISet<string> InArchiveExtensions { get; private set; }
@@ -42,9 +66,9 @@ namespace CsSearch
 		public bool Recursive { get; set; }
 		public bool SearchArchives { get; set; }
 		public ISet<Regex> SearchPatterns { get; private set; }
-		public string StartPath { get; set; }
+		public string? StartPath { get; set; }
 		public string TextFileEncoding { get; set; }
-		public bool UniqueLines { get; set; } = false;
+		public bool UniqueLines { get; set; }
 		public bool Verbose { get; set; }
 
 		public SearchSettings()
@@ -211,27 +235,13 @@ namespace CsSearch
 			AddFileType(OutFileTypes, typeName);
 		}
 
-		public void SetArchivesOnly(bool archivesOnly)
-		{
-			ArchivesOnly = archivesOnly;
-			if (archivesOnly)
-				SearchArchives = true;
-		}
-
-		public void SetDebug(bool debug)
-		{
-			Debug = debug;
-			if (debug)
-				Verbose = true;
-		}
-
-		protected static string EnumerableToString<T>(IEnumerable<T> enumerable)
+		private static string EnumerableToString<T>(IEnumerable<T> enumerable)
 		{
 			var sb = new StringBuilder("[");
 			var elemCount = 0;
 			foreach (var x in enumerable)
 			{
-				var t = x.GetType();
+				var t = x!.GetType();
 				if (elemCount > 0)
 					sb.Append(", ");
 				if (t == typeof(string))
@@ -247,47 +257,46 @@ namespace CsSearch
 
 		public override string ToString()
 		{
-			var sb = new StringBuilder("SearchSettings(");
-			sb.Append("ArchivesOnly: " + ArchivesOnly);
-			sb.Append(", Colorize: " + Colorize);
-			sb.Append(", Debug: " + Debug);
-			sb.Append(", ExcludeHidden: " + ExcludeHidden);
-			sb.Append(", FirstMatch: " + FirstMatch);
-			sb.Append(", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions));
-			sb.Append(", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns));
-			sb.Append(", InDirPatterns: " + EnumerableToString(InDirPatterns));
-			sb.Append(", InExtensions: " + EnumerableToString(InExtensions));
-			sb.Append(", InFilePatterns: " + EnumerableToString(InFilePatterns));
-			sb.Append(", InLinesAfterPatterns: " + EnumerableToString(InLinesAfterPatterns));
-			sb.Append(", InLinesBeforePatterns: " + EnumerableToString(InLinesBeforePatterns));
-			sb.Append(", LinesAfter: " + LinesAfter);
-			sb.Append(", LinesAfterToPatterns: " + EnumerableToString(LinesAfterToPatterns));
-			sb.Append(", LinesAfterUntilPatterns: " + EnumerableToString(LinesAfterUntilPatterns));
-			sb.Append(", LinesBefore: " + LinesBefore);
-			sb.Append(", ListDirs: " + ListDirs);
-			sb.Append(", ListFiles: " + ListFiles);
-			sb.Append(", ListLines: " + ListLines);
-			sb.Append(", MaxLineLength: " + MaxLineLength);
-			sb.Append(", MultiLineSearch: " + MultiLineSearch);
-			sb.Append(", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions));
-			sb.Append(", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns));
-			sb.Append(", OutDirPatterns: " + EnumerableToString(OutDirPatterns));
-			sb.Append(", OutExtensions: " + EnumerableToString(OutExtensions));
-			sb.Append(", OutFilePatterns: " + EnumerableToString(OutFilePatterns));
-			sb.Append(", OutLinesAfterPatterns: " + EnumerableToString(OutLinesAfterPatterns));
-			sb.Append(", OutLinesBeforePatterns: " + EnumerableToString(OutLinesBeforePatterns));
-			sb.Append(", PrintResults: " + PrintResults);
-			sb.Append(", PrintUsage: " + PrintUsage);
-			sb.Append(", PrintVersion: " + PrintVersion);
-			sb.Append(", Recursive: " + Recursive);
-			sb.Append(", SearchArchives: " + SearchArchives);
-			sb.Append(", SearchPatterns: " + EnumerableToString(SearchPatterns));
-			sb.Append(", StartPath: \"" + StartPath + "\"");
-			sb.Append(", TextFileEncoding: \"" + TextFileEncoding + "\"");
-			sb.Append(", UniqueLines: " + UniqueLines);
-			sb.Append(", Verbose: " + Verbose);
-			sb.Append(")");
-			return sb.ToString();
+			return "SearchSettings(" +
+				"ArchivesOnly: " + ArchivesOnly +
+				", Colorize: " + Colorize +
+				", Debug: " + Debug +
+				", ExcludeHidden: " + ExcludeHidden +
+				", FirstMatch: " + FirstMatch +
+				", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions) +
+				", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns) +
+				", InDirPatterns: " + EnumerableToString(InDirPatterns) +
+				", InExtensions: " + EnumerableToString(InExtensions) +
+				", InFilePatterns: " + EnumerableToString(InFilePatterns) +
+				", InLinesAfterPatterns: " + EnumerableToString(InLinesAfterPatterns) +
+				", InLinesBeforePatterns: " + EnumerableToString(InLinesBeforePatterns) +
+				", LinesAfter: " + LinesAfter +
+				", LinesAfterToPatterns: " + EnumerableToString(LinesAfterToPatterns) +
+				", LinesAfterUntilPatterns: " + EnumerableToString(LinesAfterUntilPatterns) +
+				", LinesBefore: " + LinesBefore +
+				", ListDirs: " + ListDirs +
+				", ListFiles: " + ListFiles +
+				", ListLines: " + ListLines +
+				", MaxLineLength: " + MaxLineLength +
+				", MultiLineSearch: " + MultiLineSearch +
+				", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions) +
+				", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns) +
+				", OutDirPatterns: " + EnumerableToString(OutDirPatterns) +
+				", OutExtensions: " + EnumerableToString(OutExtensions) +
+				", OutFilePatterns: " + EnumerableToString(OutFilePatterns) +
+				", OutLinesAfterPatterns: " + EnumerableToString(OutLinesAfterPatterns) +
+				", OutLinesBeforePatterns: " + EnumerableToString(OutLinesBeforePatterns) +
+				", PrintResults: " + PrintResults +
+				", PrintUsage: " + PrintUsage +
+				", PrintVersion: " + PrintVersion +
+				", Recursive: " + Recursive +
+				", SearchArchives: " + SearchArchives +
+				", SearchPatterns: " + EnumerableToString(SearchPatterns) +
+				", StartPath: \"" + StartPath + "\"" +
+				", TextFileEncoding: \"" + TextFileEncoding + "\"" +
+				", UniqueLines: " + UniqueLines +
+				", Verbose: " + Verbose +
+				")";
 		}
 	}
 }

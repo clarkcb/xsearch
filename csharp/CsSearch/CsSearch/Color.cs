@@ -1,15 +1,15 @@
 namespace CsSearch
 {
-    public class Color
+    public static class Color
     {
-        public static string Reset =  "\u001B[0m";
-        public static string Black =  "\u001B[30m";
-        public static string Red =    "\u001B[31m";
-        public static string Green =  "\u001B[32m";
-        public static string Yellow = "\u001B[33m";
-        public static string Blue =   "\u001B[34m";
-        public static string Purple = "\u001B[35m";
-        public static string Cyan =   "\u001B[36m";
-        public static string White =  "\u001B[37m";
+        public const string Reset =  "\u001B[0m";
+        public const string Black =  "\u001B[30m";
+        public const string Red =    "\u001B[31m";
+        public const string Green =  "\u001B[32m";
+        public const string Yellow = "\u001B[33m";
+        public const string Blue =   "\u001B[34m";
+        public const string Purple = "\u001B[35m";
+        public const string Cyan =   "\u001B[36m";
+        public const string White =  "\u001B[37m";
     }
 }

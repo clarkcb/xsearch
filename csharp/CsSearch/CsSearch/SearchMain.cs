@@ -1,6 +1,6 @@
 ﻿namespace CsSearch
 {
-	class SearchMain
+	static class SearchMain
 	{
 		static void Main(string[] args)
 		{
