@@ -1,9 +1,9 @@
-namespace FsSearchTests
+namespace FsSearch
 
 open System.IO
 open System.Reflection
 
-module EmbeddedTestResource = 
+module EmbeddedResource = 
 
     let GetResourceFileContents (namespaceAndFileName : string) : string = 
         let contents =

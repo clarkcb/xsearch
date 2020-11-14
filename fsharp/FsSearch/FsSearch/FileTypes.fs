@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Text.Json
 open System.Xml.Linq
 
 type FileType = 
@@ -12,6 +13,8 @@ type FileType =
     | Code    = 3
     | Text    = 4
     | Xml     = 5
+
+type FileTypesDictionary = Dictionary<string, List<Dictionary<string,Object>>>
 
 type FileTypes() =
     static let archive = "archive"
@@ -27,9 +30,31 @@ type FileTypes() =
             Set.empty
             (FileUtil.ExtensionsListFromString s)
 
-    let PopulateFileTypes (fileStream : FileStream) =
+
+    let PopulateFileTypesFromJson (jsonString : string) =
         let fileTypesDictionary = Dictionary<string, ISet<string>>()
-        let filetypes = XDocument.Load(fileStream).Descendants(XName.Get("filetype"))
+        let filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(jsonString)
+        let filetypeDicts = filetypesDict.["filetypes"]
+        for filetypeDict in filetypeDicts do
+            let name = (filetypeDict.["type"] :?> JsonElement).GetString()
+            let extensions =
+                [ for x in (filetypeDict.["extensions"] :?> JsonElement).EnumerateArray() do
+                    yield "." + x.GetString() ]
+            fileTypesDictionary.Add(name, HashSet<String>(extensions))
+        let allText = HashSet<String>(fileTypesDictionary.[text])
+        allText.UnionWith(fileTypesDictionary.[code])
+        allText.UnionWith(fileTypesDictionary.[xml])
+        if fileTypesDictionary.Remove(text) then
+            fileTypesDictionary.Add(text, allText)
+        let searchableSet = HashSet<String>(fileTypesDictionary.[text])
+        searchableSet.UnionWith(fileTypesDictionary.[binary])
+        searchableSet.UnionWith(fileTypesDictionary.[archive])
+        fileTypesDictionary.Add(searchable, searchableSet)
+        fileTypesDictionary
+
+    let PopulateFileTypesFromXml (xmlString : string) =
+        let fileTypesDictionary = Dictionary<string, ISet<string>>()
+        let filetypes = XDocument.Parse(xmlString).Descendants(XName.Get("filetype"))
         for f in filetypes do
             let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
             let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
@@ -45,13 +70,10 @@ type FileTypes() =
         fileTypesDictionary.Add(searchable, searchableSet)
         fileTypesDictionary
 
-    let PopulateFileTypesFromFileInfo (fileTypesPath : FileInfo) =
-        PopulateFileTypes(new FileStream(fileTypesPath.FullName, FileMode.Open))
-
-
-    let _fileTypesPath = Path.Combine(Config.XSEARCHPATH, "shared/filetypes.xml")
-    let _fileTypesFileInfo = FileInfo(_fileTypesPath)
-    let _fileTypesDictionary = PopulateFileTypesFromFileInfo(_fileTypesFileInfo)
+//    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.xml")
+    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.json")
+//    let _fileTypesDictionary = PopulateFileTypesFromXml(_fileTypesResource)
+    let _fileTypesDictionary = PopulateFileTypesFromJson(_fileTypesResource)
 
     // read-only member properties
     member this.FileTypesDictionary = _fileTypesDictionary

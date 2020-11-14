@@ -1,25 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
-        <IsTestProject>false</IsTestProject>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Include="Common.fs" />
-        <Compile Include="Color.fs" />
-        <Compile Include="Config.fs" />
-        <Compile Include="SearchException.fs" />
-        <Compile Include="FileUtil.fs" />
-        <Compile Include="FileTypes.fs" />
-        <Compile Include="SearchSettings.fs" />
-        <Compile Include="SearchFile.fs" />
-        <Compile Include="SearchResult.fs" />
-        <Compile Include="SearchResultFormatter.fs" />
-        <Compile Include="SearchOptions.fs" />
-        <Compile Include="Searcher.fs" />
-        <Compile Include="SearchMain.fs" />
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="Color.fs" />
+    <Compile Include="EmbeddedResource.fs" />
+    <Compile Include="SearchException.fs" />
+    <Compile Include="FileUtil.fs" />
+    <Compile Include="FileTypes.fs" />
+    <Compile Include="SearchSettings.fs" />
+    <Compile Include="SearchFile.fs" />
+    <Compile Include="SearchResult.fs" />
+    <Compile Include="SearchResultFormatter.fs" />
+    <Compile Include="SearchOptions.fs" />
+    <Compile Include="Searcher.fs" />
+    <Compile Include="SearchMain.fs" />
+    <EmbeddedResource Include="Resources\filetypes.xml" />
+    <EmbeddedResource Include="Resources\searchoptions.xml" />
+    <EmbeddedResource Include="Resources\searchoptions.json" />
+    <EmbeddedResource Include="Resources\filetypes.json" />
+  </ItemGroup>
 
 </Project>

@@ -17,10 +17,11 @@ type SearchResultTests () =
 
     [<Test>]
     member this.SearchResultSingleLine_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with Colorize = false }
+        let settings = { SearchSettings.DefaultSettings with Colorize = false; StartPath = "~" }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.cs")) FileType.Code
+        let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.cs")
+        let searchFile = SearchFile.Create file FileType.Code
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
@@ -35,10 +36,10 @@ type SearchResultTests () =
 
     [<Test>]
     member this.SearchResultSingleLineLongerThanMaxLineLength_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with Colorize=false; MaxLineLength=100 }
+        let settings = { SearchSettings.DefaultSettings with Colorize=false; MaxLineLength=100; StartPath="." }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("maxlen")
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath "." "maxlen.txt")) FileType.Code
+        let searchFile = SearchFile.Create (FileInfo("./maxlen.txt")) FileType.Code
         let lineNum = 1
         let matchStartIndex = 53
         let matchEndIndex = 59
@@ -54,10 +55,11 @@ type SearchResultTests () =
 
     [<Test>]
     member this.SearchResultMultiLine_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with Colorize=false }
+        let settings = { SearchSettings.DefaultSettings with Colorize=false; StartPath="~" }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.cs")) FileType.Code
+        let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.cs")
+        let searchFile = SearchFile.Create file FileType.Code
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
@@ -84,10 +86,11 @@ type SearchResultTests () =
 
     [<Test>]
     member this.SearchResultBinaryFile_ToString_EqualsExpected () =
-        let settings = SearchSettings.DefaultSettings
+        let settings = { SearchSettings.DefaultSettings with StartPath="~" }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.exe")) FileType.Binary
+        let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.exe")
+        let searchFile = SearchFile.Create file FileType.Binary
         let lineNum = 0
         let matchStartIndex = 0
         let matchEndIndex = 0

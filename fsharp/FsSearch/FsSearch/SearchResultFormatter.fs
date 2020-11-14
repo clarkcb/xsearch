@@ -10,6 +10,14 @@ type SearchResultFormatter (settings : SearchSettings.t) =
             Color.Reset + 
             s.Substring(matchStartIndex + matchLength)
 
+    let GetRelativeFilePath (result : SearchResult.t) : string =
+        if settings.StartPath <> null then
+            if settings.StartPath = "~"
+            then FileUtil.ContractPath result.File.File.FullName
+            else FileUtil.GetRelativePath result.File.File.FullName settings.StartPath
+        else result.File.File.FullName
+                
+    
     let FormatMatchingLine (result : SearchResult.t) : string =
         let mutable formatted : string = result.Line.Trim()
         let mutable formattedLength = formatted.Length
@@ -57,13 +65,13 @@ type SearchResultFormatter (settings : SearchSettings.t) =
             else
                 let line = FormatMatchingLine result
                 sprintf ": %d: [%d:%d]: %s" result.LineNum result.MatchStartIndex result.MatchEndIndex line
-        (SearchFile.ToString result.File) + matchString
+        (GetRelativeFilePath result) + matchString
 
     let MultLineFormat (result : SearchResult.t) : string =
         let hdr = 
             String.concat "\n" [
                 sprintf "%s" (new string('=', 80));
-                sprintf "%s: %d: [%d:%d]" (SearchFile.ToString result.File) result.LineNum result.MatchStartIndex result.MatchEndIndex;
+                sprintf "%s: %d: [%d:%d]" (GetRelativeFilePath result) result.LineNum result.MatchStartIndex result.MatchEndIndex;
                 sprintf "%s" (new string('-', 80));
             ] + "\n"
         let maxLineNum = result.LineNum + (List.length result.LinesAfter)

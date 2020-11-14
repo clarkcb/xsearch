@@ -1,5 +1,6 @@
 namespace FsSearchTests
 
+open System
 open System.IO
 open NUnit.Framework
 open FsSearch
@@ -7,31 +8,31 @@ open FsSearch
 [<TestFixture>]
 type FileUtilTests () =
 
-    member this.FileTypes = new FileTypes()
+    member this.FileTypes = FileTypes()
 
     [<SetUp>]
     member this.Setup () =
         ()
 
-    //////////////////////////////////////////////////////////////
-    // GetRelativePath tests
-    //////////////////////////////////////////////////////////////
+//    //////////////////////////////////////////////////////////////
+//    // GetRelativePath tests
+//    //////////////////////////////////////////////////////////////
 //    [<Test>]
 //    member this.GetRelativePath_PathWithCurrentDirectory_RelativePath () =
 //        let path = Environment.CurrentDirectory + "/rest/of/path/"
-//        Assert.AreEqual(FileUtil.GetRelativePath(path, "."), "./rest/of/path/")
+//        Assert.AreEqual("./rest/of/path/", FileUtil.GetRelativePath(path, "."))
 //        ()
-
+//
 //    [<Test>]
 //    member this.GetRelativePath_PathWithoutCurrentDirectory_FullPath () =
 //        let path = "/a/full/path/by/itself/"
-//        Assert.AreEqual(FileUtil.GetRelativePath(path, "/a/full/path"), path)
+//        Assert.AreEqual(path, FileUtil.GetRelativePath(path, "/a/full/path"))
 //        ()
-
+//
 //    [<Test>]
 //    member this.GetRelativePath_RelativePath_Unchanged () =
 //        let path = "./a/relative/path/"
-//        Assert.AreEqual(FileUtil.GetRelativePath(path, "."), path)
+//        Assert.AreEqual(path, FileUtil.GetRelativePath(path, "."))
 //        ()
 
     //////////////////////////////////////////////////////////////
@@ -72,25 +73,25 @@ type FileUtilTests () =
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.IsHidden_StartsWithDot_IsHidden () =
-        let hiddenFile = new FileInfo(".FileUtilTests.cs")
+        let hiddenFile = FileInfo(".FileUtilTests.cs")
         Assert.IsTrue(FileUtil.IsHiddenFile(hiddenFile))
         ()
 
     [<Test>]
     member this.IsHidden_NotStartsWithDot_NotIsHidden () =
-        let hiddenFile = new FileInfo("FileUtilTests.cs")
+        let hiddenFile = FileInfo("FileUtilTests.cs")
         Assert.IsFalse(FileUtil.IsHiddenFile(hiddenFile))
         ()
 
     [<Test>]
     member this.IsHidden_SingleDot_NotIsHidden () =
-        let dotDir = new DirectoryInfo(".")
+        let dotDir = DirectoryInfo(".")
         Assert.IsFalse(FileUtil.IsHiddenFile(dotDir))
         ()
 
     [<Test>]
     member this.IsHidden_DoubleDot_NotIsHidden () =
-        let dotDir = new DirectoryInfo("..")
+        let dotDir = DirectoryInfo("..")
         Assert.IsFalse(FileUtil.IsHiddenFile(dotDir))
         ()
 
@@ -102,19 +103,19 @@ type FileUtilTests () =
         let path = "~/src/git/xsearch"
         let expected = FileUtil.JoinPath (FileUtil.GetHomePath()) (path.Substring(1))
         let actual = FileUtil.ExpandPath(path)
-        Assert.AreEqual(actual, expected)
+        Assert.AreEqual(expected, actual)
         ()
 
     [<Test>]
     member this.ExpandPath_NoTilde_UnchangedPath () =
         let path = "/a/full/path/"
-        Assert.AreEqual(FileUtil.ExpandPath(path), path)
+        Assert.AreEqual(path, FileUtil.ExpandPath(path))
         ()
 
     [<Test>]
     member this.ExpandPath_WithBackSlashes_UnchangedPath () =
         let path = @"C:\src\git\xsearch\"
-        Assert.AreEqual(FileUtil.ExpandPath(path), path)
+        Assert.AreEqual(path, FileUtil.ExpandPath(path))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -123,19 +124,19 @@ type FileUtilTests () =
     [<Test>]
     member this.NormalizePath_NoTrailingSlash_UnchangedPath () =
         let path = "~/src/git/xsearch"
-        Assert.AreEqual(FileUtil.NormalizePath(path), path)
+        Assert.AreEqual(path, FileUtil.NormalizePath(path))
         ()
 
     [<Test>]
     member this.NormalizePath_TrailingSlash_TrimmedPath () =
         let path = "~/src/git/xsearch/"
-        Assert.AreEqual(FileUtil.NormalizePath(path), "~/src/git/xsearch")
+        Assert.AreEqual("~/src/git/xsearch", FileUtil.NormalizePath(path))
         ()
 
     [<Test>]
     member this.NormalizePath_TrailingBackSlash_TrimmedPath () =
         let path = @"C:\src\git\xsearch\"
-        Assert.AreEqual(FileUtil.NormalizePath(path), @"C:\src\git\xsearch")
+        Assert.AreEqual(@"C:\src\git\xsearch", FileUtil.NormalizePath(path))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -146,7 +147,7 @@ type FileUtilTests () =
         let path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
-        Assert.AreEqual(FileUtil.JoinPath path filename, pathAndFile)
+        Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
         ()
 
     [<Test>]
@@ -154,7 +155,7 @@ type FileUtilTests () =
         let path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests/"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + filename
-        Assert.AreEqual(FileUtil.JoinPath path filename, pathAndFile)
+        Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
         ()
 
     [<Test>]
@@ -162,7 +163,7 @@ type FileUtilTests () =
         let path = @"C:\src\git\xsearch"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "\\" + filename
-        Assert.AreEqual(FileUtil.JoinPath path filename, pathAndFile)
+        Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
         ()
 
     [<Test>]
@@ -170,7 +171,7 @@ type FileUtilTests () =
         let path = @"C:\src\git\xsearch\"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + filename
-        Assert.AreEqual(FileUtil.JoinPath path filename, pathAndFile)
+        Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
         ()
 
     [<Test>]
@@ -178,5 +179,5 @@ type FileUtilTests () =
         let path = "CsSearchTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
-        Assert.AreEqual(FileUtil.JoinPath path filename, pathAndFile)
+        Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
         ()

@@ -1,6 +1,5 @@
 ﻿namespace FsSearch
 
-open System
 open System.Text.RegularExpressions
 
 module SearchResult =

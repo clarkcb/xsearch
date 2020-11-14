@@ -58,6 +58,14 @@ module FileUtil =
 
     let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
 
+    let GetRelativePath (fullpath : string) (startpath : string) : string =
+        if IsDotDir startpath
+        then match NormalizePath startpath with
+             | "." -> fullpath.Replace(Environment.CurrentDirectory, currentPath)
+             | ".." -> fullpath.Replace(Environment.CurrentDirectory, parentPath)
+             | _ -> fullpath
+        else fullpath
+
     let IsHidden (filepath : string) : bool = 
         let startsWithDot = filepath.[0] = '.' && not (IsDotDir filepath)
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0

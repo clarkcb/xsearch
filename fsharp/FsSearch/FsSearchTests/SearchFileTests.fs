@@ -1,7 +1,6 @@
 namespace FsSearchTests
 
 open System.IO
-open System.Text.RegularExpressions
 open NUnit.Framework
 open FsSearch
 
@@ -18,23 +17,23 @@ type SearchFileTests () =
     [<Test>]
     member this.SearchFile_ToString_EqualsExpected () =
         let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(SearchFile.ToString(searchFile), this.CsSearchPath + "/Searcher.cs")
+        Assert.AreEqual(this.CsSearchPath + "/Searcher.cs", SearchFile.ToString(searchFile))
         ()
 
     [<Test>]
     member this.SearchFileTrailingSlash_ToString_EqualsExpected () =
         let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(SearchFile.ToString(searchFile), this.CsSearchPath + "/Searcher.cs")
+        Assert.AreEqual(this.CsSearchPath + "/Searcher.cs", SearchFile.ToString(searchFile))
         ()
 
     [<Test>]
     member this.SearchFileBackSlashes_ToString_EqualsExpected () =
         let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.WinCsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(SearchFile.ToString(searchFile), this.WinCsSearchPath + @"\Searcher.cs")
+        Assert.AreEqual(this.WinCsSearchPath + @"\Searcher.cs", SearchFile.ToString(searchFile))
         ()
 
     [<Test>]
     member this.SearchFileBackSlashesTrailingSlash_ToString_EqualsExpected () =
         let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.WinCsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(SearchFile.ToString(searchFile), this.WinCsSearchPath + @"\Searcher.cs")
+        Assert.AreEqual(this.WinCsSearchPath + @"\Searcher.cs", SearchFile.ToString(searchFile))
         ()

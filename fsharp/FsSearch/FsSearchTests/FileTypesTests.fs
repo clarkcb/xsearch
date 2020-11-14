@@ -7,7 +7,7 @@ open FsSearch
 [<TestFixture>]
 type FileTypesTests () =
 
-    member this.FileTypes = new FileTypes()
+    member this.FileTypes = FileTypes()
 
     [<SetUp>]
     member this.Setup () =
@@ -16,83 +16,83 @@ type FileTypesTests () =
     [<Test>]
     member this.GetFileType_ArchiveFile_FileTypeArchive () =
         printfn "GetFileType_ArchiveFile_FileTypeArchive"
-        let archiveFile = new FileInfo("archive.zip")
-        Assert.AreEqual(this.FileTypes.GetFileType(archiveFile), FileType.Archive)
+        let archiveFile = FileInfo("archive.zip")
+        Assert.AreEqual(FileType.Archive, this.FileTypes.GetFileType(archiveFile))
         ()
 
     [<Test>]
     member this.GetFileType_BinaryFile_FileTypeBinary () =
         printfn "GetFileType_BinaryFile_FileTypeBinary"
-        let binaryFile = new FileInfo("binary.exe")
-        Assert.AreEqual(this.FileTypes.GetFileType(binaryFile), FileType.Binary)
+        let binaryFile = FileInfo("binary.exe")
+        Assert.AreEqual(FileType.Binary, this.FileTypes.GetFileType(binaryFile))
         ()
 
     [<Test>]
     member this.GetFileType_CodeFile_FileTypeCode () =
         printfn "GetFileType_CodeFile_FileTypeCode"
-        let codeFile = new FileInfo("code.cs")
-        Assert.AreEqual(this.FileTypes.GetFileType(codeFile), FileType.Code)
+        let codeFile = FileInfo("code.cs")
+        Assert.AreEqual(FileType.Code, this.FileTypes.GetFileType(codeFile))
         ()
 
     [<Test>]
     member this.GetFileType_TextFile_FileTypeText () =
         printfn "GetFileType_TextFile_FileTypeText"
-        let textFile = new FileInfo("text.txt")
-        Assert.AreEqual(this.FileTypes.GetFileType(textFile), FileType.Text)
+        let textFile = FileInfo("text.txt")
+        Assert.AreEqual(FileType.Text, this.FileTypes.GetFileType(textFile))
         ()
 
     [<Test>]
     member this.GetFileType_XmlFile_FileTypeXml () =
         printfn "GetFileType_XmlFile_FileTypeXml"
-        let xmlFile = new FileInfo("markup.xml")
-        Assert.AreEqual(this.FileTypes.GetFileType(xmlFile), FileType.Xml)
+        let xmlFile = FileInfo("markup.xml")
+        Assert.AreEqual(FileType.Xml, this.FileTypes.GetFileType(xmlFile))
         ()
 
     [<Test>]
     member this.GetFileType_UnknownFile_FileTypeUnknown () =
         printfn "GetFileType_UnknownFile_FileTypeUnknown"
-        let unknownFile = new FileInfo("unknown.xyz")
-        Assert.AreEqual(this.FileTypes.GetFileType(unknownFile), FileType.Unknown)
+        let unknownFile = FileInfo("unknown.xyz")
+        Assert.AreEqual(FileType.Unknown, this.FileTypes.GetFileType(unknownFile))
         ()
 
     [<Test>]
     member this.IsArchiveFile_ArchiveFile_True () =
         printfn "IsArchiveFile_ArchiveFile_True"
-        let archiveFile = new FileInfo("archive.zip")
+        let archiveFile = FileInfo("archive.zip")
         Assert.IsTrue(this.FileTypes.IsArchiveFile(archiveFile))
         ()
 
     [<Test>]
     member this.IsBinaryFile_BinaryFile_True () =
         printfn "IsBinaryFile_BinaryFile_True"
-        let binaryFile = new FileInfo("binary.exe")
+        let binaryFile = FileInfo("binary.exe")
         Assert.IsTrue(this.FileTypes.IsBinaryFile(binaryFile))
         ()
 
     [<Test>]
     member this.IsCodeFile_CodeFile_True () =
         printfn "IsCodeFile_CodeFile_True"
-        let codeFile = new FileInfo("code.cs")
+        let codeFile = FileInfo("code.cs")
         Assert.IsTrue(this.FileTypes.IsCodeFile(codeFile))
         ()
 
     [<Test>]
     member this.IsTextFile_TextFile_True () =
         printfn "IsTextFile_TextFile_True"
-        let textFile = new FileInfo("text.txt")
+        let textFile = FileInfo("text.txt")
         Assert.IsTrue(this.FileTypes.IsTextFile(textFile))
         ()
 
     [<Test>]
     member this.IsXmlFile_XmlFile_True () =
         printfn "IsXmlFile_XmlFile_True"
-        let xmlFile = new FileInfo("markup.xml")
+        let xmlFile = FileInfo("markup.xml")
         Assert.IsTrue(this.FileTypes.IsXmlFile(xmlFile))
         ()
 
     [<Test>]
     member this.IsSearchableFile_XmlFile_True () =
         printfn "IsSearchableFile_XmlFile_True"
-        let xmlFile = new FileInfo("markup.xml")
+        let xmlFile = FileInfo("markup.xml")
         Assert.IsTrue(this.FileTypes.IsSearchableFile(xmlFile))
         ()

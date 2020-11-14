@@ -1,7 +1,7 @@
 ﻿namespace FsSearch
 
 open System
-open System.IO
+open System.Text.Json
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -82,7 +82,18 @@ module SearchOptions =
             ("version", (fun (b : bool) (settings : SearchSettings.t) -> { settings with PrintVersion = b }));
         ] |> Map.ofList;
 
-    let OptionsFromXml () : SearchOption list =
+    type SearchOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>
+
+    let OptionsFromJson (jsonString : string) : SearchOption list =
+        let searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(jsonString)
+        let optionDicts = searchOptionsDict.["searchoptions"]
+        [ for optionDict in optionDicts do
+            let longArg = optionDict.["long"]
+            let shortArg = if optionDict.ContainsKey("short") then optionDict.["short"] else ""
+            let desc = optionDict.["desc"]
+            yield { ShortArg=shortArg; LongArg=longArg; Description=desc } ]
+
+    let OptionsFromXml (xmlString : string) : SearchOption list =
         let rec recOptionsFromXml (nodeList : XElement list) (options : SearchOption list) : SearchOption list =
             match nodeList with
             | [] -> options
@@ -91,13 +102,14 @@ module SearchOptions =
                 let long = [for a in n.Attributes(XName.Get("long")) do yield a.Value].Head
                 let desc = n.Value.Trim()
                 recOptionsFromXml ns (List.append options [{ ShortArg=short; LongArg=long; Description=desc }])
-        let _searchOptionsPath = Path.Combine(Config.XSEARCHPATH, "shared/searchoptions.xml")
-        let _fileStream = new FileStream(FileUtil.ExpandPath(_searchOptionsPath), FileMode.Open)
-        let optNodes = XDocument.Load(_fileStream).Descendants(XName.Get("searchoption"))
+        let optNodes = XDocument.Parse(xmlString).Descendants(XName.Get("searchoption"))
         recOptionsFromXml (List.ofSeq optNodes) []
         |> List.sortBy (fun o -> if (o.ShortArg <> "") then (o.ShortArg.ToLower() + "@" + o.LongArg) else o.LongArg)
 
-    let options = OptionsFromXml()
+//    let _searchOptionsResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.searchoptions.xml");
+    let _searchOptionsResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.searchoptions.json");
+//    let options = OptionsFromXml(_searchOptionsResource)
+    let options = OptionsFromJson(_searchOptionsResource)
 
     let SettingsFromArgs (args : string[]) : SearchSettings.t * string =
         let optionNameMap =

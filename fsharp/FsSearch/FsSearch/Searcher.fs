@@ -29,7 +29,7 @@ type Searcher (settings : SearchSettings.t) =
             this.TextFileEncoding <- Encoding.GetEncoding(encName)
             None
         with
-        | :? ArgumentException as e ->
+        | :? ArgumentException ->
             Some (sprintf "Invalid encoding: %s" encName)
 
     member this.ValidateSettings () : string list =
@@ -92,41 +92,11 @@ type Searcher (settings : SearchSettings.t) =
         else
             not settings.ArchivesOnly && this.IsSearchFile f
 
-    member this.GetSearchDirs (dir : DirectoryInfo) : DirectoryInfo list =
-        try
-            let dirs = 
-                dir.EnumerateDirectories()
-                |> Seq.filter (fun d -> this.IsSearchDir (d:DirectoryInfo))
-                |> List.ofSeq
-            dirs @ List.fold (fun ds d -> (ds @ (this.GetSearchDirs d))) [] dirs
-        with
-        | :? IOException as e ->
-            Common.Log (sprintf "Error while accessing dir %s: %s" dir.FullName e.Message)
-            List.empty<DirectoryInfo>
-
-    member this.GetSearchFiles (dirs : DirectoryInfo list) : SearchFile.t list =
-        let rec recGetSearchFiles (dirs : DirectoryInfo list) (searchfiles : SearchFile.t list): SearchFile.t list = 
-            match dirs with
-            | [] -> searchfiles
-            | d :: ds -> 
-                let newsearchfiles =
-                    try
-                        d.EnumerateFiles()
-                        |> Seq.map (fun f -> SearchFile.Create f (_fileTypes.GetFileType f))
-                        |> Seq.filter (fun sf -> this.FilterFile sf)
-                        |> List.ofSeq
-                    with
-                    | :? IOException as e ->
-                        Common.Log (sprintf "Error while accessing dir %s: %s" d.FullName e.Message)
-                        []
-                recGetSearchFiles ds (List.append searchfiles newsearchfiles)
-        recGetSearchFiles dirs []
-
     member this.GetSearchFiles () : SearchFile.t list =
         let expandedPath = FileUtil.ExpandPath settings.StartPath
         let searchOption =
-            if settings.Recursive then System.IO.SearchOption.AllDirectories
-            else System.IO.SearchOption.TopDirectoryOnly
+            if settings.Recursive then SearchOption.AllDirectories
+            else SearchOption.TopDirectoryOnly
         let dir = DirectoryInfo(expandedPath)
         dir.EnumerateFiles("*", searchOption)
         |> Seq.filter (fun f -> this.IsSearchDir(f.Directory))
@@ -196,7 +166,7 @@ type Searcher (settings : SearchSettings.t) =
             |> List.rev
 
     member this.SearchContents (s : string) : List<SearchResult.t> =
-        let patternMatches = Dictionary<Regex, int>()
+//        let patternMatches = Dictionary<Regex, int>()
         let results = List<SearchResult.t>()
         let lineIndices = this.GetLineIndices s
         for p in settings.SearchPatterns do
@@ -338,7 +308,7 @@ type Searcher (settings : SearchSettings.t) =
         | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
         | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.File.FullName)
 
-    member this.SearchPath (startDir : DirectoryInfo) : unit =
+    member this.SearchPath : unit =
         let searchFiles : SearchFile.t list =
             this.GetSearchFiles()
             |> List.filter (fun sf -> sf.File <> null)
@@ -367,11 +337,11 @@ type Searcher (settings : SearchSettings.t) =
         if Directory.Exists(expandedPath) then
             let startDir = DirectoryInfo(expandedPath)
             if this.IsSearchDir startDir then
-                this.SearchPath startDir
+                this.SearchPath
             else
                 raise <| Exception ("Startpath does not match search settings")
         else
-            let startFile = new FileInfo(expandedPath)
+            let startFile = FileInfo(expandedPath)
             this.SearchFile (SearchFile.Create startFile (_fileTypes.GetFileType startFile))
 
     member this.GetSortedResults : SearchResult.t list = 
