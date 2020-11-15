@@ -9,3 +9,10 @@ pom.xml.asc
 /.nrepl-port
 .hgignore
 .hg/
+
+.eastwood
+
+# unused resource files
+config.json
+filetypes.xml
+searchoptions.xml
