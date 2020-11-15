@@ -57,5 +57,46 @@ namespace CsSearchTests
 			var ex = Assert.Throws<SearchException>(() => _searchOptions.SettingsFromArgs(args));
 			Assert.AreEqual("Invalid option: Q", ex.Message);
 		}
+		
+		[Test]
+		public void SettingsFromJson_EqualsExpected()
+		{
+			var json = @"{
+  ""startpath"": ""~/src/xsearch/"", 
+  ""in-ext"": [""js"", ""ts""],
+  ""out-dirpattern"": ""node_module"",
+  ""out-filepattern"": [""temp""],
+  ""searchpattern"": ""Searcher"",
+  ""linesbefore"": 2,
+  ""linesafter"": 2,
+  ""debug"": true,
+  ""allmatches"": false,
+  ""includehidden"": false
+}";
+			var settings = new SearchSettings();
+			SearchOptions.SettingsFromJson(json, settings);
+
+			Assert.AreEqual("~/src/xsearch/", settings.StartPath);
+
+			Assert.AreEqual(2, settings.InExtensions.Count);
+			Assert.True(settings.InExtensions.Contains(".js"));
+			Assert.True(settings.InExtensions.Contains(".ts"));
+
+			Assert.AreEqual(1, settings.OutDirPatterns.Count);
+			Assert.AreEqual("node_module", settings.OutDirPatterns.First().ToString());
+
+			Assert.AreEqual(1, settings.OutFilePatterns.Count);
+			Assert.AreEqual("temp", settings.OutFilePatterns.First().ToString());
+
+			Assert.AreEqual(1, settings.SearchPatterns.Count);
+			Assert.AreEqual("Searcher", settings.SearchPatterns.First().ToString());
+
+			Assert.AreEqual(2, settings.LinesBefore);
+			Assert.AreEqual(2, settings.LinesAfter);
+
+			Assert.True(settings.Debug);
+			Assert.True(settings.FirstMatch);
+			Assert.True(settings.ExcludeHidden);
+		}
 	}
 }

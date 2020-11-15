@@ -16,6 +16,7 @@ namespace CsSearch
 		private ConcurrentBag<SearchResult> Results { get; set; }
 		private Encoding TextFileEncoding { get; set; } = Encoding.Default;
 
+		// TODO: move this to SearchSettings
 		private const int FileBatchSize = 255;
 		// use single-byte encoding for reading binary files (will break if UTF8)
 		private readonly Encoding _binaryEncoding = Encoding.GetEncoding("ISO-8859-1");
@@ -541,45 +542,51 @@ namespace CsSearch
 		private IEnumerable<DirectoryInfo> GetMatchingDirs()
 		{
 			return new List<DirectoryInfo>(
-					Results.Where(r => r.File != null).
-						Select(r => r.File!.File.Directory).
-						Distinct().
-						OrderBy(d => d.FullName));
+				Results.Where(r => r.File != null)
+					.Select(r => r.File!.File.Directory)
+					.Distinct()
+					.OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingDirs()
 		{
-			var matchingDirs = GetMatchingDirs();
+			var matchingDirs = GetMatchingDirs()
+				.Select(d => FileUtil.GetRelativePath(d.FullName, Settings.StartPath!))
+				.Distinct()
+				.OrderBy(d => d);
 			Common.Log($"\nDirectories with matches ({matchingDirs.Count()}):");
 			foreach (var d in matchingDirs)
 			{
-				Common.Log(FileUtil.GetRelativePath(d.FullName, Settings.StartPath!));
+				Common.Log(d);
 			}
 		}
 
 		private IEnumerable<FileInfo> GetMatchingFiles()
 		{
 			return new List<FileInfo>(
-				Results.Where(r => r.File != null).
-					Select(r => r.File!.PathAndName).
-					Distinct().Select(f => new FileInfo(f)).
-					OrderBy(d => d.FullName));
+				Results.Where(r => r.File != null)
+					.Select(r => r.File!.PathAndName)
+					.Distinct().Select(f => new FileInfo(f))
+					.OrderBy(d => d.FullName));
 		}
 
 		public void PrintMatchingFiles()
 		{
-			var matchingFiles = GetMatchingFiles();
+			var matchingFiles = GetMatchingFiles()
+				.Select(f => FileUtil.GetRelativePath(f.FullName, Settings.StartPath!))
+				.Distinct()
+				.OrderBy(f => f);
 			Common.Log($"\nFiles with matches ({matchingFiles.Count()}):");
 			foreach (var f in matchingFiles)
 			{
-				Common.Log(FileUtil.GetRelativePath(f.FullName, Settings.StartPath!));
+				Common.Log(f);
 			}
 		}
 
 		private IEnumerable<string> GetMatchingLines()
 		{
-			var lines = Results.Where(r => r.Line != null).
-				Select(r => r.Line!.Trim()).ToList();
+			var lines = Results.Where(r => r.Line != null)
+				.Select(r => r.Line!.Trim()).ToList();
 			if (Settings.UniqueLines)
 			{
 				lines = new HashSet<string>(lines).ToList();

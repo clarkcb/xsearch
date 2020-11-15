@@ -70,9 +70,9 @@ namespace CsSearch
 					{ "version", (b, settings) => settings.PrintVersion = b },
 				};
 
-		public List<SearchOption> Options { get; private set; }
-		public Dictionary<string, SearchOption> ArgDictionary { get; private set; }
-		public Dictionary<string, SearchOption> FlagDictionary { get; private set; }
+		public List<SearchOption> Options { get; }
+		public Dictionary<string, SearchOption> ArgDictionary { get; }
+		public Dictionary<string, SearchOption> FlagDictionary { get; }
 
 		public SearchOptions()
 		{
@@ -153,7 +153,76 @@ namespace CsSearch
 			var fileInfo = new FileInfo(filePath);
 			if (!fileInfo.Exists)
 				throw new SearchException("Settings fie not found: " + filePath);
-			// TODO: implement
+			var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
+			SettingsFromJson(contents, settings);
+		}
+
+		public static void SettingsFromJson(string jsonString, SearchSettings settings)
+		{
+			var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+			foreach (var (key, value) in settingsDict)
+			{
+				var obj = (JsonElement)value;
+				ApplySetting(key, obj, settings);
+			}
+		}
+
+		private static void ApplySetting(string arg, JsonElement obj, SearchSettings settings)
+		{
+			switch (obj.ValueKind)
+			{
+				case JsonValueKind.String:
+					ApplySetting(arg, obj.GetString(), settings);
+					break;
+				case JsonValueKind.True:
+					ApplySetting(arg, true, settings);
+					break;
+				case JsonValueKind.False:
+					ApplySetting(arg, false, settings);
+					break;
+				case JsonValueKind.Number:
+					ApplySetting(arg, obj.GetInt32().ToString(), settings);
+					break;
+				case JsonValueKind.Array:
+					foreach (var arrVal in obj.EnumerateArray())
+					{
+						ApplySetting(arg, arrVal, settings);
+					}
+					break;
+				case JsonValueKind.Undefined:
+				case JsonValueKind.Object:
+				case JsonValueKind.Null:
+				default:
+					break;
+			}
+		}
+
+		private static void ApplySetting(string arg, string val, SearchSettings settings)
+		{
+			if (ArgActionDictionary.ContainsKey(arg))
+			{
+				ArgActionDictionary[arg](val, settings);
+			}
+			else if (arg.Equals("startpath"))
+			{
+				settings.StartPath = val;
+			}
+			else
+			{
+				throw new SearchException("Invalid option: " + arg);
+			}
+		}
+
+		private static void ApplySetting(string arg, bool val, SearchSettings settings)
+		{
+			if (BoolFlagActionDictionary.ContainsKey(arg))
+			{
+				BoolFlagActionDictionary[arg](val, settings);
+			}
+			else
+			{
+				throw new SearchException("Invalid option: " + arg);
+			}
 		}
 
 		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
