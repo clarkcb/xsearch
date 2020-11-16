@@ -38,22 +38,30 @@ unittest_csharp () {
     echo
     log "unittest_csharp"
     CSSEARCH_PATH=$CSHARP_PATH/CsSearch
+    # VERBOSITY=quiet
+    # VERBOSITY=minimal
+    VERBOSITY=normal
+    # VERBOSITY=detailed
 
     # run dotnet test
     log "Unit-testing cssearch"
-    log "dotnet test $CSSEARCH_PATH/CsSearch.sln"
-    dotnet test $CSSEARCH_PATH/CsSearch.sln
+    log "dotnet test $CSSEARCH_PATH/CsSearch.sln --verbosity $VERBOSITY"
+    dotnet test $CSSEARCH_PATH/CsSearch.sln --verbosity $VERBOSITY
 }
 
 unittest_fsharp () {
     echo
     log "unittest_fsharp"
     FSSEARCH_PATH=$FSHARP_PATH/FsSearch
+    # VERBOSITY=quiet
+    # VERBOSITY=minimal
+    VERBOSITY=normal
+    # VERBOSITY=detailed
 
     # run dotnet test
     log "Unit-testing fssearch"
-    log "dotnet test $FSSEARCH_PATH/FsSearch.sln"
-    dotnet test $FSSEARCH_PATH/FsSearch.sln
+    log "dotnet test $FSSEARCH_PATH/FsSearch.sln --verbosity $VERBOSITY"
+    dotnet test $FSSEARCH_PATH/FsSearch.sln --verbosity $VERBOSITY
 }
 
 unittest_go () {
@@ -206,15 +214,22 @@ unittest_python () {
 unittest_ruby () {
     echo
     log "unittest_ruby"
-    TESTS_PATH=$RUBY_PATH/tests
+    RBSEARCH_PATH=$RUBY_PATH/rbsearch
+
+    log "Unit-testing rbsearch"
 
     # Run the individual tests
-    log "Unit-testing rbsearch"
-    FILES=$(find $TESTS_PATH -name "*.rb")
-    for f in ${FILES[*]}; do
-        log "ruby $f"
-        ruby $f
-    done
+    # TESTS_PATH=$RBSEARCH_PATH/test
+    # FILES=$(find $TESTS_PATH -name "*.rb")
+    # for f in ${FILES[*]}; do
+    #     log "ruby $f"
+    #     ruby $f
+    # done
+
+    # Run all tests via rake
+    cd $RBSEARCH_PATH
+    rake test
+    cd -
 }
 
 unittest_rust () {
