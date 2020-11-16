@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative 'color.rb'
+require_relative 'color'
 
 # SearchResult - encapsulates a search result
 class SearchResult
@@ -14,8 +14,8 @@ class SearchResult
 
   SEPARATOR_LEN = 80
 
-  def initialize(pattern, file, linenum=0, match_start_index=0, match_end_index=0, line='', lines_before=[],
-                 lines_after=[])
+  def initialize(pattern, file, linenum=0, match_start_index=0, match_end_index=0,
+                 line='', lines_before=[], lines_after=[])
     @pattern = pattern
     @file = file
     @linenum = linenum

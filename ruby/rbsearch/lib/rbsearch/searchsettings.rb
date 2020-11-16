@@ -1,4 +1,4 @@
-require_relative 'filetypes.rb'
+require_relative 'filetypes'
 
 # SearchSettings - encapsulates search settings
 class SearchSettings

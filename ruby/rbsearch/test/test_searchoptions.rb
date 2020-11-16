@@ -6,8 +6,7 @@
 #
 ################################################################################
 
-require_relative '../rbsearch/searchoptions.rb'
-require_relative '../rbsearch/searchsettings.rb'
+require_relative '../lib/rbsearch'
 require 'test/unit'
  
 class SearchOptionsTest < Test::Unit::TestCase

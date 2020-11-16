@@ -3,13 +3,13 @@
 require 'find'
 require 'pathname'
 require 'set'
-require_relative 'common.rb'
-require_relative 'filetypes.rb'
-require_relative 'fileutil.rb'
-require_relative 'searcherror.rb'
-require_relative 'searchfile.rb'
-require_relative 'searchresult.rb'
-require_relative 'searchresultformatter.rb'
+require_relative 'common'
+require_relative 'filetypes'
+require_relative 'fileutil'
+require_relative 'searcherror'
+require_relative 'searchfile'
+require_relative 'searchresult'
+require_relative 'searchresultformatter'
 
 # Searcher - finds files to search and searches them according to settings
 class Searcher

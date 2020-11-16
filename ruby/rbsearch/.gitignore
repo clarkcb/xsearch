@@ -1,0 +1,14 @@
+# from bundle <new_app_name>
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+
+# unused resource files
+config.json
+filetypes.xml
+searchoptions.xml

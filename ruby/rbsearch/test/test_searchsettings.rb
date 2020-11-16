@@ -6,7 +6,7 @@
 #
 ################################################################################
 
-require_relative '../rbsearch/searchsettings.rb'
+require_relative '../lib/rbsearch'
 require 'test/unit'
 
 class SearchSettingsTest < Test::Unit::TestCase

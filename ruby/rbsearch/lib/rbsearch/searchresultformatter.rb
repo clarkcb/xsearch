@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'color.rb'
+require_relative 'color'
 
 # SearchResultFormatter - provides formatting of search result instances
 class SearchResultFormatter

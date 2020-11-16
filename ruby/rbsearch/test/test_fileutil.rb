@@ -6,7 +6,7 @@
 #
 ################################################################################
 
-require_relative '../rbsearch/fileutil.rb'
+require_relative '../lib/rbsearch'
 require 'test/unit'
 
 class FileUtilTest < Test::Unit::TestCase

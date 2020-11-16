@@ -1,8 +1,10 @@
+# SearchOptions - generate help, create settings from CLI args
 require 'json'
-require_relative 'config.rb'
-require_relative 'searcherror.rb'
-require_relative 'searchoption.rb'
-require_relative 'searchsettings.rb'
+
+require_relative 'common'
+require_relative 'searcherror'
+require_relative 'searchoption'
+require_relative 'searchsettings'
 
 # SearchOptions - parses CLI args into settings, generates usage string
 class SearchOptions
@@ -81,7 +83,7 @@ class SearchOptions
 
   def get_usage_string
     usage = "Usage:\n"
-    usage << " rbsearch.rb [options] -s <searchpattern> <startpath>\n\n"
+    usage << " rbsearch [options] -s <searchpattern> <startpath>\n\n"
     usage << "Options:\n"
     opt_strings = []
     opt_descs = []
@@ -210,7 +212,8 @@ class SearchOptions
   end
 
   def set_options_from_json
-    f = File.open(File.expand_path(SEARCHOPTIONSJSONPATH), mode: 'r')
+    searchoptions_json_path = File.join(File.dirname(__FILE__), "../../data/searchoptions.json")
+    f = File.open(searchoptions_json_path, mode: 'r')
     json = f.read
     json_hash = JSON.parse(json)
     json_hash['searchoptions'].each do |so|

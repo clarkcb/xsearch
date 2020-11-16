@@ -5,13 +5,19 @@
 #
 # rbsearch.rb
 #
-# A file search utility implemented in ruby
+# A ruby implementation of xsearch
 #
 ################################################################################
 
-require_relative 'common.rb'
-require_relative 'searcher.rb'
-require_relative 'searchoptions.rb'
+require_relative 'rbsearch/common'
+require_relative 'rbsearch/filetypes'
+require_relative 'rbsearch/fileutil'
+require_relative 'rbsearch/searcher'
+require_relative 'rbsearch/searchfile'
+require_relative 'rbsearch/searchoption'
+require_relative 'rbsearch/searchoptions'
+require_relative 'rbsearch/searchresult'
+require_relative 'rbsearch/searchsettings'
 
 def main
   options = SearchOptions.new
@@ -31,7 +37,7 @@ def main
   end
 
   if settings.printversion
-    log('Version: 0.1')
+    log('Version: 0.1.0')
     abort
   end
 
@@ -91,8 +97,4 @@ rescue SearchError => e
 
 rescue RuntimeError => e
   handle_error(e, options)
-end
-
-if __FILE__ == $PROGRAM_NAME
-  main
 end

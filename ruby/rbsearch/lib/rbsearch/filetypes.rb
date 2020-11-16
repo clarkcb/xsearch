@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 require 'json'
-require_relative 'config.rb'
-require_relative 'fileutil.rb'
-require_relative 'searcherror.rb'
+require_relative 'fileutil'
+require_relative 'searcherror'
 
 module FileType
   UNKNOWN = 0
@@ -33,7 +32,8 @@ class FileTypes
 
   def set_filetype_map_from_json
     @file_type_map = {}
-    f = File.open(File.expand_path(FILETYPESJSONPATH), mode: 'r')
+    filetypes_json_path = File.join(File.dirname(__FILE__), "../../data/filetypes.json")
+    f = File.open(filetypes_json_path, mode: 'r')
     json = f.read
     json_hash = JSON.parse(json)
     json_hash['filetypes'].each do |ft|

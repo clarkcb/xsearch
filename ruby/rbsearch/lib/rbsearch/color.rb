@@ -4,7 +4,7 @@
 #
 # color.rb
 #
-# Add basic color methods to String
+# Add basic console color methods to String
 #
 ################################################################################
 

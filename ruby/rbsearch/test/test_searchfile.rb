@@ -6,8 +6,7 @@
 #
 ################################################################################
 
-require_relative '../rbsearch/filetypes.rb'
-require_relative '../rbsearch/searchfile.rb'
+require_relative '../lib/rbsearch'
 require 'test/unit'
 
 class SearchFileTest < Test::Unit::TestCase

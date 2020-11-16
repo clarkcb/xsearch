@@ -6,15 +6,14 @@
 #
 ################################################################################
 
-# require_relative '../rbsearch/color.rb'
-require_relative '../rbsearch/config.rb'
-require_relative '../rbsearch/searchresult.rb'
-require_relative '../rbsearch/searchresultformatter.rb'
-require_relative '../rbsearch/searchsettings.rb'
+require_relative '../lib/rbsearch'
 require 'test/unit'
  
 class SearchResultTest < Test::Unit::TestCase
-  @cssearch_path = "#{XSEARCHPATH}/csharp/CsSearch/CsSearch"
+  def setup
+    @cssearch_path = "#{XSEARCHPATH}/csharp/CsSearch/CsSearch"
+  end
+
   def test_singleline_searchresult
     settings = SearchSettings::new()
     settings.colorize = false

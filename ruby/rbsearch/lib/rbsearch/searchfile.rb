@@ -8,7 +8,7 @@ class SearchFile
   attr_reader :filename
   attr_reader :filetype
 
-  CONTAINER_SEPARATOR = '!'.freeze
+  CONTAINER_SEPARATOR = '!'
 
   def initialize(path, filename, filetype)
     @containers = []
@@ -19,6 +19,7 @@ class SearchFile
 
   def relativepath
     return '.' + File::SEPARATOR + @filename if @path == '.' || @path == './'
+
     Pathname.new(@path).join(@filename).to_s
   end
 
