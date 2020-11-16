@@ -105,38 +105,50 @@ build_cpp () {
 build_csharp () {
     echo
     log "build_csharp"
-    RESOURCES_PATH=$CSHARP_PATH/CsSearch/CsSearch/Resources
+    CSSEARCH_PATH=$CSHARP_PATH/CsSearch
+    RESOURCES_PATH=$CSSEARCH_PATH/CsSearch/Resources
+    TEST_RESOURCES_PATH=$CSSEARCH_PATH/CsSearchTests/Resources
     CONFIGURATIONS=(Debug Release)
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json, xml files to the local resource location
     mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
-    # run msbuild for both configurations
+    # copy the shared test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
+    copy_test_resources $TEST_RESOURCES_PATH
+
+    # run dotnet build for both configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building cssearch for $c configuration"
-        log "msbuild /p:Configuration=$c $CSHARP_PATH/CsSearch/CsSearch.sln"
-        msbuild /p:Configuration=$c $CSHARP_PATH/CsSearch/CsSearch.sln
+        log "dotnet build $CSSEARCH_PATH/CsSearch.sln --configuration $c"
+        dotnet build $CSSEARCH_PATH/CsSearch.sln --configuration $c
     done
 }
 
 build_fsharp () {
     echo
     log "build_fsharp"
-    RESOURCES_PATH=$FSHARP_PATH/FsSearch/FsSearch/Resources
+    FSSEARCH_PATH=$FSHARP_PATH/FsSearch
+    RESOURCES_PATH=$FSSEARCH_PATH/FsSearch/Resources
+    TEST_RESOURCES_PATH=$FSSEARCH_PATH/FsSearchTests/Resources
     CONFIGURATIONS=(Debug Release)
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json, xml files to the local resource location
     mkdir -p $RESOURCES_PATH
     copy_resources $RESOURCES_PATH
 
-    # run msbuild for both configurations
+    # copy the shared test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
+    copy_test_resources $TEST_RESOURCES_PATH
+
+    # run dotnet for both configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building fssearch for $c configuration"
-        log "msbuild /p:Configuration=$c $FSHARP_PATH/FsSearch/FsSearch.sln"
-        msbuild /p:Configuration=$c $FSHARP_PATH/FsSearch/FsSearch.sln
+        log "dotnet build $FSSEARCH_PATH/FsSearch.sln --configuration $c"
+        dotnet build $FSSEARCH_PATH/FsSearch.sln --configuration $c
     done
 }
 
@@ -335,7 +347,17 @@ build_python () {
 build_ruby () {
     echo
     log "build_ruby"
-    log "Nothing to do for ruby"
+    RBSEARCH_PATH=$RUBY_PATH/rbsearch
+    RESOURCES_PATH=$RBSEARCH_PATH/data
+    TEST_RESOURCES_PATH=$RBSEARCH_PATH/lib/test/fixtures
+
+    # copy the shared json files to the local resource location
+    mkdir -p $RESOURCES_PATH
+    copy_resources $RESOURCES_PATH
+
+    # copy the shared test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
+    copy_test_resources $TEST_RESOURCES_PATH
 }
 
 build_rust () {
@@ -343,7 +365,10 @@ build_rust () {
     log "build_rust"
     RSSEARCH_PATH=$RUST_PATH/rssearch
     cd $RSSEARCH_PATH
+    log "cargo build"
     cargo build
+    log "cargo build --release"
+    cargo build --release
     cd -
 }
 
