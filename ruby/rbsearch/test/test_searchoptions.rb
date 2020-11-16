@@ -7,9 +7,9 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'test/unit'
+require 'minitest/autorun'
  
-class SearchOptionsTest < Test::Unit::TestCase
+class SearchOptionsTest < Minitest::Test
   def setup
     @searchoptions = SearchOptions.new
   end
@@ -79,12 +79,12 @@ class SearchOptionsTest < Test::Unit::TestCase
 
   def test_missing_arg
     args = %w[-x py,rb -s Search . -D]
-    assert_raise(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
+    assert_raises(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
   end
 
   def test_invalid_arg
     args = %w[-x py,rb -s Search . -Q]
-    assert_raise(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
+    assert_raises(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
   end
 
   def test_settings_from_json

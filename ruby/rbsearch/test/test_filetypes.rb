@@ -7,9 +7,9 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'test/unit'
+require 'minitest/autorun'
 
-class FileTypesTest < Test::Unit::TestCase
+class FileTypesTest < Minitest::Test
   def setup
     @filetypes = FileTypes.new
   end
@@ -41,7 +41,7 @@ class FileTypesTest < Test::Unit::TestCase
 
   def test_get_filetype_searchable_file
     filename = 'config.ini'
-    assert_true(@filetypes.searchable_file?(filename))
+    assert(@filetypes.searchable_file?(filename))
   end
 
   def test_get_filetype_unknown_file

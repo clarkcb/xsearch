@@ -7,9 +7,9 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'test/unit'
+require 'minitest/autorun'
 
-class SearcherTest < Test::Unit::TestCase
+class SearcherTest < Minitest::Test
 
   def get_settings
     settings = SearchSettings.new

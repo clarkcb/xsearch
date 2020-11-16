@@ -7,9 +7,9 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'test/unit'
+require 'minitest/autorun'
 
-class SearchFileTest < Test::Unit::TestCase
+class SearchFileTest < Minitest::Test
   def test_searchfile_abs_path
     path = '/Users/cary/src/xsearch/ruby/rbsearch'
     filename = 'searchfile.rb'

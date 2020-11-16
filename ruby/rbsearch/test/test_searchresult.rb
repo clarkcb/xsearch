@@ -7,11 +7,11 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'test/unit'
+require 'minitest/autorun'
  
-class SearchResultTest < Test::Unit::TestCase
+class SearchResultTest < Minitest::Test
   def setup
-    @cssearch_path = "#{XSEARCHPATH}/csharp/CsSearch/CsSearch"
+    @cssearch_path = "~/src/xsearch/csharp/CsSearch/CsSearch"
   end
 
   def test_singleline_searchresult

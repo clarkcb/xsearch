@@ -7,9 +7,9 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'test/unit'
+require 'minitest/autorun'
 
-class FileUtilTest < Test::Unit::TestCase
+class FileUtilTest < Minitest::Test
 ################################################################################
 # get_extension tests
 ################################################################################
