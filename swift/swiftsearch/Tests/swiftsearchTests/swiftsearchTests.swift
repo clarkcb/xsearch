@@ -12,7 +12,7 @@ final class swiftsearchTests: XCTestCase {
             return
         }
 
-        let fooBinary = productsDirectory.appendingPathComponent("swiftsearch")
+        let fooBinary = productsDirectory.appendingPathComponent("swiftsearchApp")
 
         let process = Process()
         process.executableURL = fooBinary
@@ -26,7 +26,7 @@ final class swiftsearchTests: XCTestCase {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8)
 
-        XCTAssertEqual(output, "Hello, world!\n")
+        XCTAssert(output!.hasPrefix("\nERROR: Startpath not defined"))
     }
 
     /// Returns path to the built products directory.
