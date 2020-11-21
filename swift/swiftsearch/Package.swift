@@ -21,7 +21,9 @@ let package = Package(
             name: "swiftsearch",
             dependencies: [],
             resources: [
+                .process("Resources/filetypes.json"),
                 .process("Resources/filetypes.xml"),
+                .process("Resources/searchoptions.json"),
                 .process("Resources/searchoptions.xml")
 
             ]),

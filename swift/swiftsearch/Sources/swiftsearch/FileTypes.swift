@@ -82,10 +82,11 @@ public class FileTypes {
     private var fileTypesDict = [String: Set<String>]()
 
     public init() {
-        setFileTypeDict()
+        // setFileTypesFromXml()
+        setFileTypesFromJson()
     }
 
-    private func setFileTypeDict() {
+    private func setFileTypesFromXml() {
         let parser = FileTypesXmlParser()
         fileTypesDict = parser.parseFile(Config.fileTypesPath)
         fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
@@ -93,6 +94,29 @@ public class FileTypes {
         fileTypesDict[FileTypes.searchable] =
             fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
                 .union(fileTypesDict[FileTypes.archive]!)
+    }
+
+    private func setFileTypesFromJson() {
+        do {
+            let fileUrl = URL(fileURLWithPath: Config.fileTypesPath)
+            let data = try Data(contentsOf: fileUrl, options: .mappedIfSafe)
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let filetypes = json["filetypes"] as? [[String: Any]] {
+                    for ft in filetypes {
+                        let typeName = ft["type"] as! String
+                        let extensions = ft["extensions"] as! [String]
+                        fileTypesDict[typeName] = Set(extensions)
+                    }
+                    fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
+                        .union(fileTypesDict[FileTypes.xml]!)
+                    fileTypesDict[FileTypes.searchable] =
+                        fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
+                            .union(fileTypesDict[FileTypes.archive]!)
+                }
+            }
+        } catch let error as NSError {
+            print("Failed to load: \(error.localizedDescription)")
+        }
     }
 
     public static func fromName(_ typeName: String) -> FileType {

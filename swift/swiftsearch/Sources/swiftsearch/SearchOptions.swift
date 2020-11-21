@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct SearchOptionStruct {
+struct SearchOption {
     let short: String
     let long: String
     let desc: String
@@ -18,31 +18,8 @@ struct SearchOptionStruct {
     }
 }
 
-class SearchOption {
-    let short: String
-    let long: String
-    let desc: String
-
-    init(short: String, long: String, desc: String) {
-        self.short = short
-        self.long = long
-        self.desc = desc
-    }
-
-    func sortArg() -> String {
-        if !short.isEmpty {
-            return short.lowercased() + "@" + long
-        }
-        return long
-    }
-
-    func description() -> String {
-        "SearchOption(short: \"\(short)\", long: \"\(long)\", desc: \"\(desc)\")"
-    }
-}
-
 class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
-    var searchOptions = [SearchOptionStruct]()
+    var searchOptions = [SearchOption]()
     let searchOptionNodeName = "searchoption"
     let longAttributeName = "long"
     let shortAttributeName = "short"
@@ -51,7 +28,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     var shortName = ""
     var desc = NSMutableString()
 
-    func parseFile(_ filepath: String) -> [SearchOptionStruct] {
+    func parseFile(_ filepath: String) -> [SearchOption] {
         if FileManager.default.fileExists(atPath: filepath) {
             let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
             let inputStream: InputStream? = InputStream(data: data!)
@@ -95,7 +72,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
         if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if !desc.isEqual(nil) {
                 let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
-                searchOptions.append(SearchOptionStruct(short: shortName,
+                searchOptions.append(SearchOption(short: shortName,
                                                   long: longName, desc: trimmedDesc))
             }
         }
@@ -103,29 +80,49 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
 }
 
 public class SearchOptions {
-    private var searchOptions = [SearchOptionStruct]()
+    private var searchOptions = [SearchOption]()
     private var longArgDict: [String: String] = [:]
 
     public init() {
-        setSearchOptions()
+        //setSearchOptionsFromXml()
+        setSearchOptionsFromJson()
     }
 
-    private func setSearchOptions() {
+    private func setSearchOptionsFromXml() {
         let parser = SearchOptionsXmlParser()
-
-//        let bundle = Bundle.main
-//        let searchOptionsPath = bundle.path(forResource: "searchoptions", ofType: "xml")
-//        let searchOptionsPath = bundle.path(forResource: "searchoptions", ofType: "xml", inDirectory: "Resources")
-//        let searchOptionsPath = bundle.url(forResource: "searchoptions", withExtension: "xml")?.absoluteString
-
         searchOptions = parser.parseFile(Config.searchOptionsPath)
-//        searchOptions = parser.parseFile(searchOptionsPath!)
         searchOptions.sort(by: { $0.sortArg < $1.sortArg })
         for opt in searchOptions {
             longArgDict[opt.long] = opt.long
             if !opt.short.isEmpty {
                 longArgDict[opt.short] = opt.long
             }
+        }
+    }
+
+    private func setSearchOptionsFromJson() {
+        do {
+            let searchOptionsUrl = URL(fileURLWithPath: Config.searchOptionsPath)
+            let data = try Data(contentsOf: searchOptionsUrl, options: .mappedIfSafe)
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let options = json["searchoptions"] as? [[String: Any]] {
+                    for so in options {
+                        let longArg = so["long"] as! String
+                        let shortArg = so.index(forKey: "short") != nil ? so["short"] as! String : ""
+                        let desc = so["desc"] as! String
+                        searchOptions.append(SearchOption(short: shortArg, long: longArg, desc: desc))
+                    }
+                    searchOptions.sort(by: { $0.sortArg < $1.sortArg })
+                    for opt in searchOptions {
+                        longArgDict[opt.long] = opt.long
+                        if !opt.short.isEmpty {
+                            longArgDict[opt.short] = opt.long
+                        }
+                    }
+                }
+            }
+        } catch let error as NSError {
+            print("Failed to load: \(error.localizedDescription)")
         }
     }
 

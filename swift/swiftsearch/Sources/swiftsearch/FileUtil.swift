@@ -8,7 +8,7 @@
 
 import Foundation
 
-open class FileUtil {
+public class FileUtil {
     fileprivate static let dotDirs = Set<String>([".", "..", "./", "../"])
     fileprivate static let separator = "/"
 
