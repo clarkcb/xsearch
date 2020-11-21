@@ -9,6 +9,8 @@
 import Cocoa
 import XCTest
 
+import swiftsearch
+
 class SearchOptionsTests: XCTestCase {
     let options = SearchOptions()
     let startPath: String = "."

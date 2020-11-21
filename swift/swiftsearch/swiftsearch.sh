@@ -8,6 +8,6 @@ SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
 #SWIFTSEARCHEXE=$HOME/Library/Developer/Xcode/DerivedData/swiftsearch-fnxmcvhlrjapoaeeqzmwblpnnffc/Build/Products/Debug/swiftsearch
 
 # Release exe location (when compiling from command line (scripts/build.sh swift))
-SWIFTSEARCHEXE=$SWIFTSEARCH_PATH/build/Release/swiftsearch
+SWIFTSEARCHEXE=$SWIFTSEARCH_PATH/.build/release/swiftsearchApp
 
 $SWIFTSEARCHEXE $@

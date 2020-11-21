@@ -8,6 +8,16 @@
 
 import Foundation
 
+struct SearchOptionStruct {
+    let short: String
+    let long: String
+    let desc: String
+
+    var sortArg: String {
+        (short.isEmpty ? short.lowercased() + "@" : "") + long
+    }
+}
+
 class SearchOption {
     let short: String
     let long: String
@@ -32,7 +42,7 @@ class SearchOption {
 }
 
 class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
-    var searchOptions = [SearchOption]()
+    var searchOptions = [SearchOptionStruct]()
     let searchOptionNodeName = "searchoption"
     let longAttributeName = "long"
     let shortAttributeName = "short"
@@ -41,7 +51,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     var shortName = ""
     var desc = NSMutableString()
 
-    func parseFile(_ filepath: String) -> [SearchOption] {
+    func parseFile(_ filepath: String) -> [SearchOptionStruct] {
         if FileManager.default.fileExists(atPath: filepath) {
             let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
             let inputStream: InputStream? = InputStream(data: data!)
@@ -85,25 +95,32 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
         if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if !desc.isEqual(nil) {
                 let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
-                searchOptions.append(SearchOption(short: shortName,
+                searchOptions.append(SearchOptionStruct(short: shortName,
                                                   long: longName, desc: trimmedDesc))
             }
         }
     }
 }
 
-open class SearchOptions {
-    private var searchOptions = [SearchOption]()
+public class SearchOptions {
+    private var searchOptions = [SearchOptionStruct]()
     private var longArgDict: [String: String] = [:]
 
-    init() {
+    public init() {
         setSearchOptions()
     }
 
     private func setSearchOptions() {
         let parser = SearchOptionsXmlParser()
+
+//        let bundle = Bundle.main
+//        let searchOptionsPath = bundle.path(forResource: "searchoptions", ofType: "xml")
+//        let searchOptionsPath = bundle.path(forResource: "searchoptions", ofType: "xml", inDirectory: "Resources")
+//        let searchOptionsPath = bundle.url(forResource: "searchoptions", withExtension: "xml")?.absoluteString
+
         searchOptions = parser.parseFile(Config.searchOptionsPath)
-        searchOptions.sort(by: { $0.sortArg() < $1.sortArg() })
+//        searchOptions = parser.parseFile(searchOptionsPath!)
+        searchOptions.sort(by: { $0.sortArg < $1.sortArg })
         for opt in searchOptions {
             longArgDict[opt.long] = opt.long
             if !opt.short.isEmpty {
@@ -253,7 +270,7 @@ open class SearchOptions {
         },
     ]
 
-    func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
+    public func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
         var i = 0
         let settings = SearchSettings()
         while i < args.count {
@@ -287,7 +304,7 @@ open class SearchOptions {
         return settings
     }
 
-    func usage(_ code: Int32 = 0) {
+    public func usage(_ code: Int32 = 0) {
         logMsg(getUsageString())
         exit(code)
     }

@@ -8,11 +8,11 @@
 
 import Foundation
 
-class FileUtil {
+open class FileUtil {
     fileprivate static let dotDirs = Set<String>([".", "..", "./", "../"])
     fileprivate static let separator = "/"
 
-    static func expandPath(_ filePath: String) -> String {
+    public static func expandPath(_ filePath: String) -> String {
         if filePath.hasPrefix("~") {
             let homePath = ProcessInfo().environment["HOME"]
             var expanded: String? = homePath
@@ -27,7 +27,7 @@ class FileUtil {
         return filePath
     }
 
-    static func getExtension(_ fileName: String) -> String {
+    public static func getExtension(_ fileName: String) -> String {
         let ext = NSURL(fileURLWithPath: fileName).pathExtension?.uppercased()
         if ext == "Z" {
             return ext!
@@ -35,7 +35,7 @@ class FileUtil {
         return ext!.lowercased()
     }
 
-    static func hasExtension(_ fileName: String, ext: String) -> Bool {
+    public static func hasExtension(_ fileName: String, ext: String) -> Bool {
         getExtension(fileName) == ext.lowercased()
     }
 
@@ -44,7 +44,7 @@ class FileUtil {
     }
 
     // gets files only directly under given path
-    static func contentsForPath(_ filePath: String) -> [String] {
+    public static func contentsForPath(_ filePath: String) -> [String] {
         do {
             return try getFileManager().contentsOfDirectory(atPath: filePath)
         } catch {
@@ -53,15 +53,15 @@ class FileUtil {
     }
 
     // gets files recursively under given path
-    static func enumeratorForPath(_ filePath: String) -> FileManager.DirectoryEnumerator? {
+    public static func enumeratorForPath(_ filePath: String) -> FileManager.DirectoryEnumerator? {
         getFileManager().enumerator(atPath: filePath)
     }
 
-    static func exists(_ filePath: String) -> Bool {
+    public static func exists(_ filePath: String) -> Bool {
         getFileManager().fileExists(atPath: filePath)
     }
 
-    static func isDirectory(_ filePath: String) -> Bool {
+    public static func isDirectory(_ filePath: String) -> Bool {
         var isDir: ObjCBool = false
         if getFileManager().fileExists(atPath: filePath, isDirectory: &isDir) {
             return isDir.boolValue
@@ -71,24 +71,24 @@ class FileUtil {
         }
     }
 
-    static func isReadableFile(_ filePath: String) -> Bool {
+    public static func isReadableFile(_ filePath: String) -> Bool {
         getFileManager().isReadableFile(atPath: filePath)
     }
 
-    static func isDotDir(_ filePath: String) -> Bool {
+    public static func isDotDir(_ filePath: String) -> Bool {
         dotDirs.contains(filePath)
     }
 
-    static func isHidden(_ filePath: String) -> Bool {
+    public static func isHidden(_ filePath: String) -> Bool {
         let pathElems = filePath.split { $0 == "/" }.map { String($0) }
         return pathElems.filter { self.isHiddenFile($0) }.count > 0
     }
 
-    static func isHiddenFile(_ fileName: String) -> Bool {
+    public static func isHiddenFile(_ fileName: String) -> Bool {
         fileName.hasPrefix(".") && !isDotDir(fileName)
     }
 
-    static func splitPath(_ filePath: String) -> (String, String) {
+    public static func splitPath(_ filePath: String) -> (String, String) {
         let pathElems = filePath.split { $0 == "/" }.map { String($0) }
         if pathElems.count > 1 {
             let path = pathElems.prefix(pathElems.count - 1).joined(separator: separator)
@@ -98,7 +98,7 @@ class FileUtil {
         }
     }
 
-    static func joinPath(_ path: String, childPath: String) -> String {
+    public static func joinPath(_ path: String, childPath: String) -> String {
         if path.hasSuffix(separator) {
             return "\(path)\(childPath)"
         } else {

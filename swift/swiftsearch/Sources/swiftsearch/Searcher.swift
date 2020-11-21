@@ -20,12 +20,12 @@ private func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
     }
 }
 
-open class Searcher {
+public class Searcher {
     let fileTypes = FileTypes()
     let settings: SearchSettings
     private var results = [SearchResult]()
 
-    init(settings: SearchSettings, error: NSErrorPointer) {
+    public init(settings: SearchSettings, error: NSErrorPointer) {
         self.settings = settings
         validateSettings(error)
     }
@@ -91,7 +91,7 @@ open class Searcher {
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType)))
     }
 
-    func isSearchDir(_ dirPath: String) -> Bool {
+    public func isSearchDir(_ dirPath: String) -> Bool {
         if FileUtil.isHidden(dirPath), settings.excludeHidden {
             return false
         }
@@ -99,7 +99,7 @@ open class Searcher {
                                 outPatterns: settings.outDirPatterns)
     }
 
-    func isSearchFile(_ filePath: String) -> Bool {
+    public func isSearchFile(_ filePath: String) -> Bool {
         if FileUtil.isHiddenFile(URL(fileURLWithPath: filePath).lastPathComponent), settings.excludeHidden {
             return false
         }
@@ -114,7 +114,7 @@ open class Searcher {
                                      outFileTypes: settings.outFileTypes))
     }
 
-    func isArchiveSearchFile(_ filePath: String) -> Bool {
+    public func isArchiveSearchFile(_ filePath: String) -> Bool {
         if FileUtil.isHidden(URL(fileURLWithPath: filePath).lastPathComponent), settings.excludeHidden {
             return false
         }
@@ -125,7 +125,7 @@ open class Searcher {
                                     outPatterns: settings.outArchiveFilePatterns))
     }
 
-    open func search(_ error: NSErrorPointer) {
+    public func search(_ error: NSErrorPointer) {
         let startPath = settings.startPath!
         if FileUtil.isDirectory(startPath) {
             if isSearchDir(startPath) {
@@ -229,7 +229,8 @@ open class Searcher {
             logMsg("Searching file: \(searchFile.description())")
         }
         // let fileType = fileTypes.getFileType(filePath)
-        if searchFile.fileType == FileType.text {
+        if searchFile.fileType == FileType.code || searchFile.fileType == FileType.text
+            || searchFile.fileType == FileType.xml {
             searchTextFile(searchFile)
         } else if searchFile.fileType == FileType.binary {
             searchBinaryFile(searchFile)
@@ -268,7 +269,7 @@ open class Searcher {
         }
     }
 
-    open func searchMultiLineString(_ str: String) -> [SearchResult] {
+    public func searchMultiLineString(_ str: String) -> [SearchResult] {
         var sResults = [SearchResult]()
         for pat in settings.searchPatterns {
             sResults += searchMultiLineStringForPattern(str, pattern: pat)
@@ -514,7 +515,7 @@ open class Searcher {
         results.sorted(by: { self.cmpResultsInDir($0, $1) })
     }
 
-    open func getSearchResults() -> [SearchResult] {
+    public func getSearchResults() -> [SearchResult] {
 //        return results.reversed() // reverse to get ASC order
         results // reverse to get ASC order
     }

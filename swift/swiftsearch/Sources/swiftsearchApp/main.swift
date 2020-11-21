@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import swiftsearch
 
 func getMatchingFiles(_ results: [SearchResult]) -> [String] {
     var files = Set<String>()

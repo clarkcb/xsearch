@@ -8,17 +8,17 @@
 
 import Foundation
 
-let whitespace = CharacterSet(charactersIn: " \t\r\n")
+public let whitespace = CharacterSet(charactersIn: " \t\r\n")
 
-func logMsg(_ str: String) {
+public func logMsg(_ str: String) {
     print(str)
 }
 
-func logError(_ str: String) {
+public func logError(_ str: String) {
     logMsg("ERROR: \(str)")
 }
 
-func setError(_ error: NSErrorPointer, msg: String) {
+public func setError(_ error: NSErrorPointer, msg: String) {
     error?.pointee = NSError(domain: msg, code: 1, userInfo: [:])
 }
 

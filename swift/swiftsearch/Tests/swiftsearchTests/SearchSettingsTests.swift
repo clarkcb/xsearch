@@ -9,6 +9,8 @@
 import Cocoa
 import XCTest
 
+import swiftsearch
+
 class SearchSettingsTests: XCTestCase {
     override func setUp() {
         super.setUp()

@@ -10,6 +10,8 @@
 import Foundation
 import XCTest
 
+import swiftsearch
+
 class FileUtilTests: XCTestCase {
     override func setUp() {
         super.setUp()

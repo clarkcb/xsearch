@@ -53,13 +53,30 @@ class FileTypesTests: XCTestCase {
         }
     }
 
-    func testGetFileTypeTextFile() {
+    func testCodeFile() {
         let fileName = "code.swift"
+        XCTAssert(fileTypes.isCodeFile(fileName), "isCodeFile(\(fileName)) == true")
+        XCTAssert(fileTypes.getFileType(fileName) == FileType.code, "\(fileName) is code file")
+    }
+
+    func testTextFile() {
+        let fileName = "text.txt"
         XCTAssert(fileTypes.isTextFile(fileName), "isTextFile(\(fileName)) == true")
         XCTAssert(fileTypes.getFileType(fileName) == FileType.text, "\(fileName) is text file")
     }
 
-    func testGetFileTypeUnknownFile() {
+    func testSearchableFile() {
+        let fileName = "archive.zip"
+        XCTAssert(fileTypes.isSearchableFile(fileName), "isSearchableFile(\(fileName))")
+    }
+
+    func testXmlFile() {
+        let fileName = "markup.xml"
+        XCTAssert(fileTypes.isXmlFile(fileName), "isXmlFile(\(fileName)) == true")
+        XCTAssert(fileTypes.getFileType(fileName) == FileType.xml, "\(fileName) is xml file")
+    }
+
+    func testUnknownFile() {
         let fileName = "unknown.ZZZ"
         XCTAssert(fileTypes.getFileType(fileName) == FileType.unknown, "\(fileName) is unknown file")
     }

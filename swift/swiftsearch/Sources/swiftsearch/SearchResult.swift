@@ -8,17 +8,17 @@
 
 import Foundation
 
-open class SearchResult {
-    let searchPattern: String
-    var file: SearchFile?
-    let lineNum: Int
-    let matchStartIndex: Int
-    let matchEndIndex: Int
-    let line: String
-    let linesBefore: [String]
-    let linesAfter: [String]
+public class SearchResult {
+    public let searchPattern: String
+    public var file: SearchFile?
+    public let lineNum: Int
+    public let matchStartIndex: Int
+    public let matchEndIndex: Int
+    public let line: String
+    public let linesBefore: [String]
+    public let linesAfter: [String]
 
-    init(searchPattern: String, file: SearchFile?, lineNum: Int,
+    public init(searchPattern: String, file: SearchFile?, lineNum: Int,
          matchStartIndex: Int, matchEndIndex: Int, line: String,
          linesBefore: [String], linesAfter: [String])
     {
@@ -33,14 +33,14 @@ open class SearchResult {
     }
 }
 
-class SearchResultFormatter {
+public class SearchResultFormatter {
     let settings: SearchSettings
 
-    init(settings: SearchSettings) {
+    public init(settings: SearchSettings) {
         self.settings = settings
     }
 
-    func format(result: SearchResult) -> String {
+    public func format(result: SearchResult) -> String {
         if !result.linesBefore.isEmpty || !result.linesAfter.isEmpty {
             return multiLineFormat(result: result)
         } else {
