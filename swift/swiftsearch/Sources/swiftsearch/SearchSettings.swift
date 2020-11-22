@@ -93,6 +93,38 @@ public class SearchSettings: CustomStringConvertible {
         }
     }
 
+    public func addInArchiveFilePattern(_ pattern: String) {
+        inArchiveFilePatterns.append(Regex(pattern))
+    }
+
+    public func addInDirPattern(_ pattern: String) {
+        inDirPatterns.append(Regex(pattern))
+    }
+
+    public func addInFilePattern(_ pattern: String) {
+        inFilePatterns.append(Regex(pattern))
+    }
+
+    public func addInFileType(_ typeName: String) {
+        inFileTypes.append(FileTypes.fromName(typeName))
+    }
+
+    public func addInLinesAfterPattern(_ pattern: String) {
+        inLinesAfterPatterns.append(Regex(pattern))
+    }
+
+    public func addInLinesBeforePattern(_ pattern: String) {
+        inLinesBeforePatterns.append(Regex(pattern))
+    }
+
+    public func addLinesAfterToPattern(_ pattern: String) {
+        linesAfterToPatterns.append(Regex(pattern))
+    }
+
+    public func addLinesAfterUntilPattern(_ pattern: String) {
+        linesAfterUntilPatterns.append(Regex(pattern))
+    }
+
     public func addOutArchiveExtension(_ exts: String) {
         for ext in splitExtensions(exts) {
             outArchiveExtensions.insert(ext)
@@ -105,8 +137,33 @@ public class SearchSettings: CustomStringConvertible {
         }
     }
 
+    public func addOutArchiveFilePattern(_ pattern: String) {
+        outArchiveFilePatterns.append(Regex(pattern))
     }
 
+    public func addOutDirPattern(_ pattern: String) {
+        outDirPatterns.append(Regex(pattern))
+    }
+
+    public func addOutFilePattern(_ pattern: String) {
+        outFilePatterns.append(Regex(pattern))
+    }
+
+    public func addOutFileType(_ typeName: String) {
+        outFileTypes.append(FileTypes.fromName(typeName))
+    }
+
+    public func addOutLinesAfterPattern(_ pattern: String) {
+        outLinesAfterPatterns.append(Regex(pattern))
+    }
+
+    public func addOutLinesBeforePattern(_ pattern: String) {
+        outLinesBeforePatterns.append(Regex(pattern))
+    }
+
+    public func addSearchPattern(_ pattern: String) {
+        searchPatterns.append(Regex(pattern))
+    }
 
     public var archivesOnly: Bool {
         get {

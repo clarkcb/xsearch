@@ -134,34 +134,34 @@ public class SearchOptions {
             settings.addInArchiveExtension(str)
         },
         "in-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.inArchiveFilePatterns.append(Regex(str))
+            settings.addInArchiveFilePattern(str)
         },
         "in-dirpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.inDirPatterns.append(Regex(str))
+            settings.addInDirPattern(str)
         },
         "in-ext": { (str: String, settings: SearchSettings) -> Void in
             settings.addInExtension(str)
         },
         "in-filepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.inFilePatterns.append(Regex(str))
+            settings.addInFilePattern(str)
         },
         "in-filetype": { (str: String, settings: SearchSettings) -> Void in
-            settings.inFileTypes.append(FileTypes.fromName(str))
+            settings.addInFileType(str)
         },
         "in-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.inLinesAfterPatterns.append(Regex(str))
+            settings.addInLinesAfterPattern(str)
         },
         "in-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.inLinesBeforePatterns.append(Regex(str))
+            settings.addInLinesBeforePattern(str)
         },
         "linesafter": { (str: String, settings: SearchSettings) -> Void in
             settings.linesAfter = Int(str)!
         },
         "linesaftertopattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.linesAfterToPatterns.append(Regex(str))
+            settings.addLinesAfterToPattern(str)
         },
         "linesafteruntilpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.linesAfterUntilPatterns.append(Regex(str))
+            settings.addLinesAfterUntilPattern(str)
         },
         "linesbefore": { (str: String, settings: SearchSettings) -> Void in
             settings.linesBefore = Int(str)!
@@ -173,28 +173,28 @@ public class SearchOptions {
             settings.addOutArchiveExtension(str)
         },
         "out-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.outArchiveFilePatterns.append(Regex(str))
+            settings.addOutArchiveFilePattern(str)
         },
         "out-dirpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.outDirPatterns.append(Regex(str))
+            settings.addOutDirPattern(str)
         },
         "out-ext": { (str: String, settings: SearchSettings) -> Void in
             settings.addOutExtension(str)
         },
         "out-filepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.outFilePatterns.append(Regex(str))
+            settings.addOutFilePattern(str)
         },
         "out-filetype": { (str: String, settings: SearchSettings) -> Void in
-            settings.outFileTypes.append(FileTypes.fromName(str))
+            settings.addOutFileType(str)
         },
         "out-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.outLinesAfterPatterns.append(Regex(str))
+            settings.addOutLinesAfterPattern(str)
         },
         "out-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.outLinesBeforePatterns.append(Regex(str))
+            settings.addOutLinesBeforePattern(str)
         },
         "searchpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.searchPatterns.append(Regex(str))
+            settings.addSearchPattern(str)
         },
     ]
 
@@ -203,13 +203,13 @@ public class SearchOptions {
             settings.firstMatch = !bool
         },
         "archivesonly": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.setArchivesOnly(bool)
+            settings.archivesOnly = bool
         },
         "colorize": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.colorize = bool
         },
         "debug": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.setDebug(bool)
+            settings.debug = bool
         },
         "excludehidden": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.excludeHidden = bool
