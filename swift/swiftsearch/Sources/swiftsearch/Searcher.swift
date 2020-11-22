@@ -172,12 +172,12 @@ public class Searcher {
             }.sorted().unique()
             logMsg("\nDirectories to be searched (\(searchDirs.count)):")
             for dir in searchDirs {
-                logMsg(dir)
+                logMsg(FileUtil.formatPath(dir, forPath: settings.startPath!))
             }
 
             logMsg("\nFiles to be searched (\(searchFiles.count)):")
             for file in searchFiles {
-                logMsg(file.description)
+                logMsg(FileUtil.formatPath(file.filePath, forPath: settings.startPath!))
             }
             logMsg("")
         }
@@ -236,7 +236,7 @@ public class Searcher {
 
     func searchFile(_ searchFile: SearchFile) {
         if settings.debug {
-            logMsg("Searching file: \(searchFile.description)")
+            logMsg("Searching file: \(FileUtil.formatPath(searchFile.filePath, forPath: settings.startPath!))")
         }
         if searchFile.fileType == FileType.code || searchFile.fileType == FileType.text
             || searchFile.fileType == FileType.xml {

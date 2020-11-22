@@ -117,8 +117,13 @@ public class SearchResultFormatter {
         return formatted
     }
 
+    private func formatFilePath(result: SearchResult) -> String {
+        result.file == nil ? "<text>" : FileUtil.formatPath(result.file!.filePath,
+                                                            forPath: settings.startPath!)
+    }
+
     private func singleLineFormat(result: SearchResult) -> String {
-        var str = result.file?.description ?? "<text>"
+        var str = formatFilePath(result: result)
         if result.lineNum > 0 {
             str += ": \(result.lineNum): [\(result.matchStartIndex):\(result.matchEndIndex)]: "
             str += formatMatchingLine(result: result)
@@ -143,7 +148,7 @@ public class SearchResultFormatter {
     private func multiLineFormat(result: SearchResult) -> String {
         let sepLen = 80
         var str = ""
-        let filepath = result.file?.description ?? "<text>"
+        let filepath = formatFilePath(result: result)
         let eq = "="
         let dash = "-"
         str += "\(eq.repeat(sepLen))\n"

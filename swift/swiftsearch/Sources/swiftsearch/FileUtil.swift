@@ -12,6 +12,23 @@ public class FileUtil {
     fileprivate static let dotDirs = Set<String>([".", "..", "./", "../"])
     fileprivate static let separator = "/"
 
+    // this formats filePath according to forPath, which means that it will become relative
+    // if forPath is, or the the HOME prefix will be replaced with tilde if forPath.hasPrefix("~")
+    public static func formatPath(_ filePath: String, forPath: String) -> String {
+        if forPath.hasPrefix("~") {
+            return (filePath as NSString).abbreviatingWithTildeInPath
+        }
+        if forPath == "." || forPath.hasPrefix("./") {
+            let fullForPath = URL(fileURLWithPath: ".").path
+            return filePath.replacingOccurrences(of: fullForPath, with: ".")
+        }
+        if forPath == ".." || forPath.hasPrefix("../") {
+            let fullForPath = URL(fileURLWithPath: "..").path
+            return filePath.replacingOccurrences(of: fullForPath, with: "..")
+        }
+        return filePath
+    }
+
     public static func expandPath(_ filePath: String) -> String {
         return (filePath as NSString).expandingTildeInPath
     }

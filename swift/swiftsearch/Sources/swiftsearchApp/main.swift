@@ -80,7 +80,7 @@ func main() {
         let dirs = getMatchingDirs(results)
         logMsg("\nDirectories with matches (\(dirs.count)):")
         for dir in dirs {
-            logMsg(dir)
+            logMsg(FileUtil.formatPath(dir, forPath: settings.startPath!))
         }
     }
 
@@ -88,7 +88,7 @@ func main() {
         let files = getMatchingFiles(results)
         logMsg("\nFiles with matches (\(files.count)):")
         for file in files {
-            logMsg(file)
+            logMsg(FileUtil.formatPath(file, forPath: settings.startPath!))
         }
     }
 
