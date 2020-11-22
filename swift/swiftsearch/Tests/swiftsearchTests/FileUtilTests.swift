@@ -22,6 +22,33 @@ class FileUtilTests: XCTestCase {
     }
 
     /* ==========================================================================
+     * expandPath tests
+     ========================================================================= */
+    func testExpandPathHasTilde() {
+        let homePath = NSHomeDirectory()
+        let expected = FileUtil.joinPath(homePath, childPath: "filename.txt")
+        XCTAssertEqual(expected, FileUtil.expandPath("~/filename.txt"))
+    }
+
+    func testExpandPathNoTilde() {
+        let expected = "/path/to/filename.txt"
+        XCTAssertEqual(expected, FileUtil.expandPath("/path/to/filename.txt"))
+    }
+
+    /* ==========================================================================
+     * exist tests
+     ========================================================================= */
+    func testExistsExistingFile() {
+        let fileTypesFile = FileUtil.joinPath(Config.sharedPath, childPath: "filetypes.json")
+        XCTAssertTrue(FileUtil.exists(fileTypesFile))
+    }
+
+    func testExistsNonexistingFile() {
+        let fileTypesFile = FileUtil.joinPath(Config.sharedPath, childPath: "filetypes.ZZZ")
+        XCTAssertFalse(FileUtil.exists(fileTypesFile))
+    }
+
+    /* ==========================================================================
      * getExtension tests
      ========================================================================= */
     func testGetExtension() {
@@ -43,6 +70,38 @@ class FileUtilTests: XCTestCase {
         XCTAssert(FileUtil.hasExtension("filename.TXT", ext: "txt"),
                   "hasExtension(\"filename.TXT\", \"txt\") == true")
     }
+
+    /* ==========================================================================
+     * isDirectory tests
+     ========================================================================= */
+    func testIsDirectorySingleDot() {
+        XCTAssertTrue(FileUtil.isDirectory("."))
+    }
+
+    func testIsDirectorySingleDotSlash() {
+        XCTAssertTrue(FileUtil.isDirectory("./"))
+    }
+
+    func testIsDirectoryDoubleDot() {
+        XCTAssertTrue(FileUtil.isDirectory(".."))
+    }
+
+    func testIsDirectoryDoubleDotSlash() {
+        XCTAssertTrue(FileUtil.isDirectory("../"))
+    }
+
+    func testIsDirectoryRootDir() {
+        XCTAssertTrue(FileUtil.isDirectory("/"))
+    }
+
+    func testIsDirectoryTildeHomeDir() {
+        XCTAssertTrue(FileUtil.isDirectory("~"))
+    }
+
+    func testIsDirectoryNonDirectory() {
+        XCTAssertFalse(FileUtil.isDirectory("filename.txt"))
+    }
+
 
     /* ==========================================================================
      * isDotDir tests

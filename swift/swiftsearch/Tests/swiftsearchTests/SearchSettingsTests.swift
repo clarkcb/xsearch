@@ -64,22 +64,32 @@ class SearchSettingsTests: XCTestCase {
         settings.addInExtension("java")
         settings.addInExtension("scala")
         settings.addInExtension("cs,fs")
+        XCTAssert(settings.inExtensions.count == 4)
         XCTAssert(settings.inExtensions.contains("java"))
         XCTAssert(settings.inExtensions.contains("scala"))
         XCTAssert(settings.inExtensions.contains("cs"))
         XCTAssert(settings.inExtensions.contains("fs"))
     }
 
+    func testAddPattern() {
+        let settings = SearchSettings()
+        settings.addSearchPattern("Searcher")
+    }
+
     func testSetArchivesOnly() {
         let settings = SearchSettings()
-        settings.setArchivesOnly(true)
+        XCTAssertFalse(settings.archivesOnly)
+        XCTAssertFalse(settings.searchArchives)
+        settings.archivesOnly = true
         XCTAssertTrue(settings.archivesOnly)
         XCTAssertTrue(settings.searchArchives)
     }
 
     func testSetDebug() {
         let settings = SearchSettings()
-        settings.setDebug(true)
+        XCTAssertFalse(settings.debug)
+        XCTAssertFalse(settings.verbose)
+        settings.debug = true
         XCTAssertTrue(settings.debug)
         XCTAssertTrue(settings.verbose)
     }
