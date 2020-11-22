@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class StreamReader {
+public class StreamReader {
     let encoding: String.Encoding
     let chunkSize: Int
     var fileHandle: FileHandle!
@@ -15,7 +15,7 @@ open class StreamReader {
     var buffer: Data
     var atEof: Bool
 
-    init?(path: String, delimiter: String = "\n", encoding: String.Encoding = .utf8,
+    public init?(path: String, delimiter: String = "\n", encoding: String.Encoding = .utf8,
           chunkSize: Int = 4096)
     {
         guard let fileHandle = FileHandle(forReadingAtPath: path),
@@ -36,7 +36,7 @@ open class StreamReader {
     }
 
     /// Return next line, or nil on EOF.
-    func nextLine() -> String? {
+    public func nextLine() -> String? {
         precondition(fileHandle != nil, "Attempt to read from closed file")
 
         // Read data chunks from file until a line delimiter is found:
@@ -66,14 +66,14 @@ open class StreamReader {
     }
 
     /// Start reading from the beginning of file.
-    func rewind() {
+    public func rewind() {
         fileHandle.seek(toFileOffset: 0)
         buffer.count = 0
         atEof = false
     }
 
     /// Close the underlying file. No reading must be done after calling this method.
-    func close() {
+    public func close() {
         fileHandle?.closeFile()
         fileHandle = nil
     }
