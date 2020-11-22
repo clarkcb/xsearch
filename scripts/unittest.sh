@@ -260,7 +260,13 @@ unittest_scala () {
 
 unittest_swift () {
     echo
-    log "unittest_swift - currently unsupported"
+    log "unittest_swift"
+    SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
+    cd $SWIFTSEARCH_PATH
+    log "Unit-testing swiftsearch"
+    log "swift test"
+    swift test
+    cd -
 }
 
 unittest_typescript () {

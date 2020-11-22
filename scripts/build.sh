@@ -399,14 +399,17 @@ build_swift () {
     echo
     log "build_swift"
     SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
+    # CONFIGURATIONS=(debug release)
 
     # TODO: copy resource files locally?
 
-    # run xcodebuild
+    # run swift build
     log "Building swiftsearch"
     cd $SWIFTSEARCH_PATH
-    log "xcodebuild -project swiftsearch.xcodeproj"
-    xcodebuild -project swiftsearch.xcodeproj
+    log "swift build"
+    swift build
+    log "swift build --configuration release"
+    swift build --configuration release
     cd -
 }
 
