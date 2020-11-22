@@ -19,14 +19,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "swiftsearch",
-            dependencies: [],
-            resources: [
-                .process("Resources/filetypes.json"),
-                .process("Resources/filetypes.xml"),
-                .process("Resources/searchoptions.json"),
-                .process("Resources/searchoptions.xml")
-
-            ]),
+            dependencies: []),
         .target(
             name: "swiftsearchApp",
             dependencies: ["swiftsearch"]),

@@ -190,7 +190,7 @@ public class SearchSettings: CustomStringConvertible {
     }
 
     public var description: String {
-        let s = "SearchSettings(" +
+        "SearchSettings(" +
             "archivesOnly=\(archivesOnly)" +
             ", colorize=\(colorize)" +
             ", debug=\(debug)" +
@@ -231,6 +231,5 @@ public class SearchSettings: CustomStringConvertible {
             ", uniqueLines=\(uniqueLines)" +
             ", verbose=\(verbose)" +
             ")"
-        return s
     }
 }

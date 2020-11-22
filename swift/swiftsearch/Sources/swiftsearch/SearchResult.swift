@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class SearchResult {
+public struct SearchResult {
     public let searchPattern: String
     public var file: SearchFile?
     public let lineNum: Int
@@ -119,7 +119,7 @@ public class SearchResultFormatter {
     }
 
     private func singleLineFormat(result: SearchResult) -> String {
-        var str = result.file?.description() ?? "<text>"
+        var str = result.file?.description ?? "<text>"
         if result.lineNum > 0 {
             str += ": \(result.lineNum): [\(result.matchStartIndex):\(result.matchEndIndex)]: "
             str += formatMatchingLine(result: result)
@@ -144,7 +144,7 @@ public class SearchResultFormatter {
     private func multiLineFormat(result: SearchResult) -> String {
         let sepLen = 80
         var str = ""
-        let filepath = result.file?.description() ?? "<text>"
+        let filepath = result.file?.description ?? "<text>"
         let eq = "="
         let dash = "-"
         str += "\(eq.repeat(sepLen))\n"

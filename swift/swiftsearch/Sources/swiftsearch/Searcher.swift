@@ -166,9 +166,7 @@ public class Searcher {
 
     private func searchPath(_ filePath: String) {
         var searchFiles: [SearchFile] = getSearchFiles(filePath)
-        searchFiles = searchFiles.sorted(by: { (sf1, sf2) -> Bool in
-            sf1.filePath < sf2.filePath
-        })
+        searchFiles = searchFiles.sorted(by: { $0.filePath < $1.filePath })
 
         if settings.verbose {
             let searchDirs = searchFiles.map {
@@ -181,7 +179,7 @@ public class Searcher {
 
             logMsg("\nFiles to be searched (\(searchFiles.count)):")
             for file in searchFiles {
-                logMsg(file.description())
+                logMsg(file.description)
             }
             logMsg("")
         }
@@ -240,7 +238,7 @@ public class Searcher {
 
     func searchFile(_ searchFile: SearchFile) {
         if settings.debug {
-            logMsg("Searching file: \(searchFile.description())")
+            logMsg("Searching file: \(searchFile.description)")
         }
         if searchFile.fileType == FileType.code || searchFile.fileType == FileType.text
             || searchFile.fileType == FileType.xml {
@@ -491,15 +489,15 @@ public class Searcher {
                     }
                 }
             } else {
-                logMsg("Problem encountered creating binary string \(searchFile.description())")
+                logMsg("Problem encountered creating binary string \(searchFile.description)")
             }
         } else {
-            logMsg("Problem encountered reading binary file \(searchFile.description())")
+            logMsg("Problem encountered reading binary file \(searchFile.description)")
         }
     }
 
     private func searchArchiveFile(_ searchFile: SearchFile) {
-        logMsg("searchArchiveFile(filePath=\"\(searchFile.description())\")")
+        logMsg("searchArchiveFile(filePath=\"\(searchFile.description)\")")
     }
 
     private func addSearchResult(_ result: SearchResult) {

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class SearchFile {
+public struct SearchFile {
     public let containerSeparator = "!"
     public let containers: [String]
     public let filePath: String
@@ -20,9 +20,8 @@ public class SearchFile {
         containers = []
     }
 
-    public func description() -> String {
-        var str = "\(containers.isEmpty ? "" : containers.joined(separator: containerSeparator) + containerSeparator)"
-        str += filePath
-        return str
+    public var description: String {
+        "\(containers.isEmpty ? "" : containers.joined(separator: containerSeparator) + containerSeparator)" +
+        filePath
     }
 }

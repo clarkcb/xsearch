@@ -12,7 +12,7 @@ import swiftsearch
 func getMatchingFiles(_ results: [SearchResult]) -> [String] {
     var files = Set<String>()
     for res in results.filter({ $0.file != nil }) {
-        files.insert(res.file!.description())
+        files.insert(res.file!.description)
     }
     return Array(files).sorted { $0 < $1 }
 }

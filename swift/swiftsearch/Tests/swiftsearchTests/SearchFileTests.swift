@@ -16,24 +16,24 @@ class SearchFileTests: XCTestCase {
     func testSearchFileAbsPath() {
         let path = "/Users/cary/src/xsearch/swift/swiftsearch/Sources/swiftsearch/SearchFile.swift"
         let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description())
+        XCTAssertEqual(path, searchFile.description)
     }
 
     func testSearchFileTildePath() {
         let path = "~/src/xsearch/swift/swiftsearch/Sources/swiftsearch/SearchFile.swift"
         let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description())
+        XCTAssertEqual(path, searchFile.description)
     }
 
     func testSearchFileRelPath1() {
         let path = "./SearchFile.swift"
         let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description())
+        XCTAssertEqual(path, searchFile.description)
     }
 
     func testSearchFileRelPath2() {
         let path = "../SearchFile.swift"
         let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description())
+        XCTAssertEqual(path, searchFile.description)
     }
 }
