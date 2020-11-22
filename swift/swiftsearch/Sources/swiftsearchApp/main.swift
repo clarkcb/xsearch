@@ -10,21 +10,13 @@ import Foundation
 import swiftsearch
 
 func getMatchingFiles(_ results: [SearchResult]) -> [String] {
-    var files = Set<String>()
-    for res in results.filter({ $0.file != nil }) {
-        files.insert(res.file!.description)
-    }
-    return Array(files).sorted { $0 < $1 }
+    results.compactMap { $0.file }.map { $0.filePath }.sorted().unique()
 }
 
 func getMatchingDirs(_ results: [SearchResult]) -> [String] {
-    let files = getMatchingFiles(results)
-    var dirs = Set<String>()
-    for file in files {
-        let dir = NSURL(fileURLWithPath: file).deletingLastPathComponent?.absoluteString
-        dirs.insert(dir!)
-    }
-    return Array(dirs).sorted { $0 < $1 }
+    results.compactMap { $0.file }.map {
+        URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
+    }.sorted().unique()
 }
 
 func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [String] {
