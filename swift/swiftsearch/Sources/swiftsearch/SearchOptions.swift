@@ -126,77 +126,84 @@ public class SearchOptions {
         }
     }
 
-    private let argActionDict: [String: (String, SearchSettings) -> Void] = [
-        "encoding": { (str: String, settings: SearchSettings) -> Void in
-            settings.textFileEncoding = str
-        },
-        "in-archiveext": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInArchiveExtension(str)
-        },
-        "in-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInArchiveFilePattern(str)
-        },
-        "in-dirpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInDirPattern(str)
-        },
-        "in-ext": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInExtension(str)
-        },
-        "in-filepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInFilePattern(str)
-        },
-        "in-filetype": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInFileType(str)
-        },
-        "in-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInLinesAfterPattern(str)
-        },
-        "in-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addInLinesBeforePattern(str)
-        },
-        "linesafter": { (str: String, settings: SearchSettings) -> Void in
-            settings.linesAfter = Int(str)!
-        },
-        "linesaftertopattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addLinesAfterToPattern(str)
-        },
-        "linesafteruntilpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addLinesAfterUntilPattern(str)
-        },
-        "linesbefore": { (str: String, settings: SearchSettings) -> Void in
-            settings.linesBefore = Int(str)!
-        },
-        "maxlinelength": { (str: String, settings: SearchSettings) -> Void in
-            settings.maxLineLength = Int(str)!
-        },
-        "out-archiveext": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutArchiveExtension(str)
-        },
-        "out-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutArchiveFilePattern(str)
-        },
-        "out-dirpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutDirPattern(str)
-        },
-        "out-ext": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutExtension(str)
-        },
-        "out-filepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutFilePattern(str)
-        },
-        "out-filetype": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutFileType(str)
-        },
-        "out-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutLinesAfterPattern(str)
-        },
-        "out-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addOutLinesBeforePattern(str)
-        },
-        "searchpattern": { (str: String, settings: SearchSettings) -> Void in
-            settings.addSearchPattern(str)
-        },
-    ]
+    // this is computed property so that it can reference self
+    private var argActionDict: [String: (String, SearchSettings) -> Void] {
+        [
+            "encoding": { (str: String, settings: SearchSettings) -> Void in
+                settings.textFileEncoding = str
+            },
+            "in-archiveext": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInArchiveExtension(str)
+            },
+            "in-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInArchiveFilePattern(str)
+            },
+            "in-dirpattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInDirPattern(str)
+            },
+            "in-ext": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInExtension(str)
+            },
+            "in-filepattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInFilePattern(str)
+            },
+            "in-filetype": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInFileType(str)
+            },
+            "in-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInLinesAfterPattern(str)
+            },
+            "in-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addInLinesBeforePattern(str)
+            },
+            "linesafter": { (str: String, settings: SearchSettings) -> Void in
+                settings.linesAfter = Int(str)!
+            },
+            "linesaftertopattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addLinesAfterToPattern(str)
+            },
+            "linesafteruntilpattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addLinesAfterUntilPattern(str)
+            },
+            "linesbefore": { (str: String, settings: SearchSettings) -> Void in
+                settings.linesBefore = Int(str)!
+            },
+            "maxlinelength": { (str: String, settings: SearchSettings) -> Void in
+                settings.maxLineLength = Int(str)!
+            },
+            "out-archiveext": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutArchiveExtension(str)
+            },
+            "out-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutArchiveFilePattern(str)
+            },
+            "out-dirpattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutDirPattern(str)
+            },
+            "out-ext": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutExtension(str)
+            },
+            "out-filepattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutFilePattern(str)
+            },
+            "out-filetype": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutFileType(str)
+            },
+            "out-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutLinesAfterPattern(str)
+            },
+            "out-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addOutLinesBeforePattern(str)
+            },
+            "searchpattern": { (str: String, settings: SearchSettings) -> Void in
+                settings.addSearchPattern(str)
+            },
+            "settings-file": { (str: String, settings: SearchSettings) -> Void in
+                var error: NSError?
+                self.addSettingsFromFile(str, settings: settings, error: &error)
+            },
+        ]
+    }
 
     private let boolFlagActionDict: [String: (Bool, SearchSettings) -> Void] = [
         "allmatches": { (bool: Bool, settings: SearchSettings) -> Void in
@@ -284,14 +291,17 @@ public class SearchOptions {
                             i += 1
                         } else {
                             setError(error, msg: "Missing argument for option \(arg)")
+                            break
                         }
                     } else if boolFlagActionDict.index(forKey: longArg!) != nil {
                         boolFlagActionDict[longArg!]!(true, settings)
                     } else {
                         setError(error, msg: "Invalid option: \(arg)")
+                        break
                     }
                 } else {
                     setError(error, msg: "Invalid option: \(arg)")
+                    break
                 }
             } else {
                 settings.startPath = args[i]
@@ -299,6 +309,79 @@ public class SearchOptions {
             i += 1
         }
         return settings
+    }
+
+    public func settingsFromFile(_ filePath: String, error: NSErrorPointer) -> SearchSettings {
+        let settings = SearchSettings()
+        addSettingsFromFile(filePath, settings: settings, error: error)
+        return settings
+    }
+
+    public func addSettingsFromFile(_ filePath: String, settings: SearchSettings, error: NSErrorPointer) -> Void {
+        do {
+            let fileUrl = URL(fileURLWithPath: filePath)
+            let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
+            addSettingsFromJson(jsonString, settings: settings, error: error)
+        } catch let error as NSError {
+            print("Failed to load: \(error.localizedDescription)")
+        }
+    }
+
+    public func settingsFromJson(_ jsonString: String, error: NSErrorPointer) -> SearchSettings {
+        let settings = SearchSettings()
+        addSettingsFromJson(jsonString, settings: settings, error: error)
+        return settings
+    }
+
+    public func addSettingsFromJson(_ jsonString: String, settings: SearchSettings, error: NSErrorPointer) -> Void {
+        do {
+            if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
+                                                           options: []) as? [String: Any] {
+                for key in json.keys {
+                    if longArgDict.index(forKey: key) != nil {
+                        let longArg = longArgDict[key]
+                        if argActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let string = value as? String {
+                                argActionDict[longArg!]!(string, settings)
+                            } else if let bool = value as? Bool {
+                                argActionDict[longArg!]!(bool.description, settings)
+                            } else if let int = value as? Int {
+                                argActionDict[longArg!]!(int.description, settings)
+                            } else if let stringArray = value as? [String] {
+                                for s in stringArray {
+                                    argActionDict[longArg!]!(s, settings)
+                                }
+                            } else {
+                                setError(error, msg: "Invalid type for \"\(key)\" entry")
+                                break
+                            }
+                        } else if boolFlagActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let bool = value as? Bool {
+                                boolFlagActionDict[longArg!]!(bool, settings)
+                            } else {
+                                setError(error, msg: "Invalid type for \"\(key)\" entry")
+                                break
+                            }
+                        } else {
+                            setError(error, msg: "Invalid option: \(key)")
+                            break
+                        }
+                    } else if key == "startpath" {
+                        let value = json[key]
+                        if let string = value as? String {
+                            settings.startPath = string
+                        }
+                    } else {
+                        setError(error, msg: "Invalid option: \(key)")
+                        break
+                    }
+                }
+            }
+        } catch let error as NSError {
+            print("Failed to load: \(error.localizedDescription)")
+        }
     }
 
     public func usage(_ code: Int32 = 0) {
