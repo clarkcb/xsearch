@@ -13,18 +13,7 @@ public class FileUtil {
     fileprivate static let separator = "/"
 
     public static func expandPath(_ filePath: String) -> String {
-        if filePath.hasPrefix("~") {
-            let homePath = ProcessInfo().environment["HOME"]
-            var expanded: String? = homePath
-            if expanded != nil {
-                if filePath.lengthOfBytes(using: String.Encoding.utf8) > 1 {
-                    let index = filePath.index(filePath.startIndex, offsetBy: 1)
-                    expanded!.append(String(filePath[index...]))
-                }
-                return expanded!
-            }
-        }
-        return filePath
+        return (filePath as NSString).expandingTildeInPath
     }
 
     public static func getExtension(_ fileName: String) -> String {
@@ -65,10 +54,11 @@ public class FileUtil {
         var isDir: ObjCBool = false
         if getFileManager().fileExists(atPath: filePath, isDirectory: &isDir) {
             return isDir.boolValue
-        } else {
-            logMsg("ERROR: filepath not found: \(filePath)")
-            return false
         }
+        if getFileManager().fileExists(atPath: (filePath as NSString).expandingTildeInPath, isDirectory: &isDir) {
+            return isDir.boolValue
+        }
+        return false
     }
 
     public static func isReadableFile(_ filePath: String) -> Bool {

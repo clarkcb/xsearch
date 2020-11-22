@@ -24,6 +24,7 @@ public class Searcher {
     let fileTypes = FileTypes()
     let settings: SearchSettings
     private var results = [SearchResult]()
+    private var textFileEncoding: String.Encoding?
 
     public init(settings: SearchSettings, error: NSErrorPointer) {
         self.settings = settings
@@ -31,11 +32,25 @@ public class Searcher {
     }
 
     private func strToEncoding(_ encName: String) -> String.Encoding? {
-        // TODO: work from available encodings: https://developer.apple.com/documentation/swift/string/encoding
+        // working (non-exhaustively) from available encodings: https://developer.apple.com/documentation/swift/string/encoding
         var encoding: String.Encoding?
-        switch encName {
-        case "UTF-8", "utf-8", "UTF8", "utf8":
+        switch encName.lowercased() {
+        case "utf-8", "utf8":
             encoding = String.Encoding.utf8
+        case "utf-16", "utf16":
+            encoding = String.Encoding.utf16
+        case "utf-32", "utf32":
+            encoding = String.Encoding.utf32
+        case "iso-8859-1", "iso88591", "iso-latin-1", "isolatin1":
+            encoding = String.Encoding.isoLatin1
+        case "macosroman":
+            encoding = String.Encoding.macOSRoman
+        case "windows-1252", "windows1252", "cp-1252", "cp1252":
+            encoding = String.Encoding.windowsCP1252
+        case "shift-jis", "shiftjis":
+            encoding = String.Encoding.shiftJIS
+        case "ascii":
+            encoding = String.Encoding.ascii
         default:
             encoding = nil
         }
@@ -57,8 +72,13 @@ public class Searcher {
             setError(error, msg: "Invalid linesbefore")
         } else if settings.maxLineLength < 0 {
             setError(error, msg: "Invalid maxlinelength")
-        } else if strToEncoding(settings.textFileEncoding) == nil {
-            setError(error, msg: "Invalid textfileencoding")
+        } else {
+            let textFileEncoding = strToEncoding(settings.textFileEncoding)
+            if textFileEncoding == nil {
+                setError(error, msg: "Invalid textfileencoding")
+            } else {
+                self.textFileEncoding = textFileEncoding
+            }
         }
     }
 
@@ -212,7 +232,7 @@ public class Searcher {
         return searchFiles
     }
 
-    private func filterFile(_ filePath: String) -> Bool {
+    public func filterFile(_ filePath: String) -> Bool {
         let fileType = fileTypes.getFileType(filePath)
         if fileType == FileType.unknown {
             return false
@@ -228,7 +248,6 @@ public class Searcher {
         if settings.debug {
             logMsg("Searching file: \(searchFile.description())")
         }
-        // let fileType = fileTypes.getFileType(filePath)
         if searchFile.fileType == FileType.code || searchFile.fileType == FileType.text
             || searchFile.fileType == FileType.xml {
             searchTextFile(searchFile)
@@ -249,7 +268,7 @@ public class Searcher {
 
     private func searchTextFileContents(_ searchFile: SearchFile) {
         let contents = try? String(contentsOfFile: searchFile.filePath,
-                                   encoding: String.Encoding.utf8)
+                                   encoding: self.textFileEncoding!)
         if contents != nil {
             let results = searchMultiLineString(contents!)
             // add filePath
@@ -368,7 +387,7 @@ public class Searcher {
 
     private func searchTextFileLines(_ searchFile: SearchFile) {
         let results: [SearchResult]
-        if let reader = StreamReader(path: searchFile.filePath) {
+        if let reader = StreamReader(path: searchFile.filePath, encoding: self.textFileEncoding!) {
             results = searchLineReader(reader)
             for res in results {
                 let result = SearchResult(

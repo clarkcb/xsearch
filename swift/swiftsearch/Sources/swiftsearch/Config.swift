@@ -10,10 +10,10 @@ import Foundation
 
 public class Config {
     // static let xsearchPath = NSString(string: "~/src/xsearch").stringByExpandingTildeInPath
-    static let xsearchPath = "\(NSHomeDirectory())/src/xsearch"
-    static let sharedPath = "\(xsearchPath)/shared"
-    // static let fileTypesPath = "\(sharedPath)/filetypes.xml"
-    static let fileTypesPath = "\(sharedPath)/filetypes.json"
-    // static let searchOptionsPath = "\(sharedPath)/searchoptions.xml"
-    static let searchOptionsPath = "\(sharedPath)/searchoptions.json"
+    public static let xsearchPath = "\(NSHomeDirectory())/src/xsearch"
+    public static let sharedPath = "\(xsearchPath)/shared"
+    // public static let fileTypesPath = "\(sharedPath)/filetypes.xml"
+    public static let fileTypesPath = "\(sharedPath)/filetypes.json"
+    // public static let searchOptionsPath = "\(sharedPath)/searchoptions.xml"
+    public static let searchOptionsPath = "\(sharedPath)/searchoptions.json"
 }
