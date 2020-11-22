@@ -33,9 +33,9 @@ public enum DefaultSettings {
 }
 
 public class SearchSettings: CustomStringConvertible {
-    public var archivesOnly: Bool = DefaultSettings.archivesOnly
+    private var _archivesOnly: Bool = DefaultSettings.archivesOnly
     public var colorize: Bool = DefaultSettings.colorize
-    public var debug: Bool = DefaultSettings.debug
+    private var _debug: Bool = DefaultSettings.debug
     public var excludeHidden: Bool = DefaultSettings.excludeHidden
     public var firstMatch: Bool = DefaultSettings.firstMatch
     public var linesAfter = DefaultSettings.linesAfter
@@ -105,14 +105,31 @@ public class SearchSettings: CustomStringConvertible {
         }
     }
 
-    public func setArchivesOnly(_ archivesOnly: Bool) {
-        self.archivesOnly = archivesOnly
-        if archivesOnly { searchArchives = true }
     }
 
-    public func setDebug(_ debug: Bool) {
-        self.debug = debug
-        if debug { verbose = true }
+
+    public var archivesOnly: Bool {
+        get {
+            _archivesOnly
+        }
+        set {
+            _archivesOnly = newValue
+            if newValue {
+                searchArchives = newValue
+            }
+        }
+    }
+
+    public var debug: Bool {
+        get {
+            _debug
+        }
+        set {
+            _debug = newValue
+            if newValue {
+                verbose = newValue
+            }
+        }
     }
 
     public var description: String {
