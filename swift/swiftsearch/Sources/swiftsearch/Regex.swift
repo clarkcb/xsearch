@@ -8,8 +8,8 @@
 import Foundation
 
 public struct Regex {
-    let expression: NSRegularExpression
     let pattern: String
+    let expression: NSRegularExpression
 
     public init(_ pattern: String) {
         self.pattern = pattern

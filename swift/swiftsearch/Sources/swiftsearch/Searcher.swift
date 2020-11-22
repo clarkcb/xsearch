@@ -32,7 +32,8 @@ public class Searcher {
     }
 
     private func strToEncoding(_ encName: String) -> String.Encoding? {
-        // working (non-exhaustively) from available encodings: https://developer.apple.com/documentation/swift/string/encoding
+        // working (non-exhaustively) from available encodings:
+        // https://developer.apple.com/documentation/swift/string/encoding
         var encoding: String.Encoding?
         switch encName.lowercased() {
         case "utf-8", "utf8":
@@ -91,22 +92,19 @@ public class Searcher {
     }
 
     private func filterByExtensions(_ ext: String, inExtensions: Set<String>,
-                                    outExtensions: Set<String>) -> Bool
-    {
+                                    outExtensions: Set<String>) -> Bool {
         ((inExtensions.isEmpty || inExtensions.contains(ext))
             && (outExtensions.isEmpty || !outExtensions.contains(ext)))
     }
 
     private func filterByPatterns(_ str: String, inPatterns: [Regex],
-                                  outPatterns: [Regex]) -> Bool
-    {
+                                  outPatterns: [Regex]) -> Bool {
         ((inPatterns.isEmpty || matchesAnyPattern(str, Array(inPatterns)))
             && (outPatterns.isEmpty || !matchesAnyPattern(str, Array(outPatterns))))
     }
 
     private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
-                                   outFileTypes: [FileType]) -> Bool
-    {
+                                   outFileTypes: [FileType]) -> Bool {
         ((inFileTypes.isEmpty || inFileTypes.contains(fileType))
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType)))
     }
@@ -326,8 +324,7 @@ public class Searcher {
             }
 
             if linesBefore.isEmpty || linesBeforeMatch(linesBefore),
-               linesAfter.isEmpty || linesAfterMatch(linesAfter)
-            {
+               linesAfter.isEmpty || linesAfterMatch(linesAfter) {
                 let result = SearchResult(
                     searchPattern: pattern.pattern,
                     file: nil,
@@ -432,8 +429,7 @@ public class Searcher {
                     let matches = pat.matches(line!)
                     for match in matches {
                         if linesBefore.isEmpty || linesBeforeMatch(linesBefore),
-                           linesAfter.isEmpty || linesAfterMatch(linesAfter)
-                        {
+                           linesAfter.isEmpty || linesAfterMatch(linesAfter) {
                             let result = SearchResult(
                                 searchPattern: pat.pattern,
                                 file: nil,

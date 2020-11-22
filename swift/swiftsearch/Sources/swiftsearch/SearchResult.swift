@@ -19,9 +19,8 @@ public struct SearchResult {
     public let linesAfter: [String]
 
     public init(searchPattern: String, file: SearchFile?, lineNum: Int,
-         matchStartIndex: Int, matchEndIndex: Int, line: String,
-         linesBefore: [String], linesAfter: [String])
-    {
+                matchStartIndex: Int, matchEndIndex: Int, line: String,
+                linesBefore: [String], linesAfter: [String]) {
         self.searchPattern = searchPattern
         self.file = file
         self.lineNum = lineNum

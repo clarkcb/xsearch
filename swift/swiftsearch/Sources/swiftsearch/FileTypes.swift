@@ -40,8 +40,7 @@ class FileTypesXmlParser: NSObject, XMLParserDelegate {
 
     func parser(_: XMLParser, didStartElement elementName: String,
                 namespaceURI _: String?, qualifiedName _: String?,
-                attributes attributeDict: [String: String])
-    {
+                attributes attributeDict: [String: String]) {
         element = elementName
         if (elementName as NSString).isEqual(to: fileTypeNodeName) {
             if attributeDict.index(forKey: nameAttributeName) != nil {
@@ -59,8 +58,7 @@ class FileTypesXmlParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_: XMLParser, didEndElement elementName: String,
-                namespaceURI _: String?, qualifiedName _: String?)
-    {
+                namespaceURI _: String?, qualifiedName _: String?) {
         if (elementName as NSString).isEqual(to: fileTypeNodeName) {
             if !extensions.isEqual(nil) {
                 let exts = extensions.components(separatedBy: whitespace)

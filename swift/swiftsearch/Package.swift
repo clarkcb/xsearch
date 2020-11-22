@@ -8,7 +8,7 @@ let package = Package(
     // products already default to swiftsearch.framework, swiftsearchApp and swfitsearchTests.xctest
     products: [
         .library(name: "swiftsearch", targets: ["swiftsearch"]),
-        .executable(name: "swiftsearchApp", targets: ["swiftsearchApp"]),
+        .executable(name: "swiftsearchApp", targets: ["swiftsearchApp"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -25,6 +25,6 @@ let package = Package(
             dependencies: ["swiftsearch"]),
         .testTarget(
             name: "swiftsearchTests",
-            dependencies: ["swiftsearch"]),
+            dependencies: ["swiftsearch"])
     ]
 )

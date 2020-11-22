@@ -16,8 +16,7 @@ public class StreamReader {
     var atEof: Bool
 
     public init?(path: String, delimiter: String = "\n", encoding: String.Encoding = .utf8,
-          chunkSize: Int = 4096)
-    {
+                 chunkSize: Int = 4096) {
         guard let fileHandle = FileHandle(forReadingAtPath: path),
               let delimData = delimiter.data(using: encoding)
         else {

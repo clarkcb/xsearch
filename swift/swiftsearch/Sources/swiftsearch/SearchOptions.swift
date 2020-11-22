@@ -45,8 +45,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
 
     func parser(_: XMLParser, didStartElement elementName: String,
                 namespaceURI _: String?, qualifiedName _: String?,
-                attributes attributeDict: [String: String])
-    {
+                attributes attributeDict: [String: String]) {
         element = elementName
         if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if attributeDict.index(forKey: longAttributeName) != nil {
@@ -67,8 +66,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_: XMLParser, didEndElement elementName: String,
-                namespaceURI _: String?, qualifiedName _: String?)
-    {
+                namespaceURI _: String?, qualifiedName _: String?) {
         if (elementName as NSString).isEqual(to: searchOptionNodeName) {
             if !desc.isEqual(nil) {
                 let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
@@ -201,7 +199,7 @@ public class SearchOptions {
             "settings-file": { (str: String, settings: SearchSettings) -> Void in
                 var error: NSError?
                 self.addSettingsFromFile(str, settings: settings, error: &error)
-            },
+            }
         ]
     }
 
@@ -271,7 +269,7 @@ public class SearchOptions {
         },
         "version": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printVersion = bool
-        },
+        }
     ]
 
     public func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
@@ -317,7 +315,7 @@ public class SearchOptions {
         return settings
     }
 
-    public func addSettingsFromFile(_ filePath: String, settings: SearchSettings, error: NSErrorPointer) -> Void {
+    public func addSettingsFromFile(_ filePath: String, settings: SearchSettings, error: NSErrorPointer) {
         do {
             let fileUrl = URL(fileURLWithPath: filePath)
             let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
@@ -333,7 +331,7 @@ public class SearchOptions {
         return settings
     }
 
-    public func addSettingsFromJson(_ jsonString: String, settings: SearchSettings, error: NSErrorPointer) -> Void {
+    public func addSettingsFromJson(_ jsonString: String, settings: SearchSettings, error: NSErrorPointer) {
         do {
             if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
                                                            options: []) as? [String: Any] {
