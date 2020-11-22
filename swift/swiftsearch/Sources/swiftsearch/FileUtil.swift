@@ -32,37 +32,50 @@ public class FileUtil {
         FileManager.default
     }
 
-    // gets files only directly under given path
-    public static func contentsForPath(_ filePath: String) -> [String] {
+    fileprivate static func getOptions(forSettings settings: SearchSettings) -> FileManager.DirectoryEnumerationOptions {
+        var options: FileManager.DirectoryEnumerationOptions = [.skipsPackageDescendants]
+        if settings.excludeHidden {
+            options.insert(.skipsHiddenFiles)
+        }
+        if !settings.recursive {
+            options.insert(.skipsSubdirectoryDescendants)
+        }
+        return options
+    }
+
+    // gets files only directly under given path --> set settings.recursive to false and call `enumerator` below instead
+    public static func directoryContents(forPath filePath: String, settings: SearchSettings) -> [String] {
         do {
-            return try getFileManager().contentsOfDirectory(atPath: filePath)
+            let options = getOptions(forSettings: settings)
+            let fileUrls = try getFileManager().contentsOfDirectory(at: URL(fileURLWithPath: expandPath(filePath)), includingPropertiesForKeys: [.isRegularFileKey], options: options)
+            return fileUrls.map { $0.path }
         } catch {
             return []
         }
     }
 
     // gets files recursively under given path
-    public static func enumeratorForPath(_ filePath: String) -> FileManager.DirectoryEnumerator? {
-        getFileManager().enumerator(atPath: filePath)
+    public static func enumerator(forPath filePath: String, settings: SearchSettings) -> FileManager.DirectoryEnumerator? {
+        let options = getOptions(forSettings: settings)
+        return getFileManager().enumerator(at: URL(fileURLWithPath: expandPath(filePath)),
+                                           includingPropertiesForKeys: [.isDirectoryKey, .isRegularFileKey],
+                                           options: options)
     }
 
     public static func exists(_ filePath: String) -> Bool {
-        getFileManager().fileExists(atPath: filePath)
+        getFileManager().fileExists(atPath: expandPath(filePath))
     }
 
     public static func isDirectory(_ filePath: String) -> Bool {
         var isDir: ObjCBool = false
-        if getFileManager().fileExists(atPath: filePath, isDirectory: &isDir) {
-            return isDir.boolValue
-        }
-        if getFileManager().fileExists(atPath: (filePath as NSString).expandingTildeInPath, isDirectory: &isDir) {
+        if getFileManager().fileExists(atPath: expandPath(filePath), isDirectory: &isDir) {
             return isDir.boolValue
         }
         return false
     }
 
     public static func isReadableFile(_ filePath: String) -> Bool {
-        getFileManager().isReadableFile(atPath: filePath)
+        getFileManager().isReadableFile(atPath: expandPath(filePath))
     }
 
     public static func isDotDir(_ filePath: String) -> Bool {

@@ -60,9 +60,9 @@ public class Searcher {
     private func validateSettings(_ error: NSErrorPointer) {
         if settings.startPath == nil || settings.startPath!.isEmpty {
             setError(error, msg: "Startpath not defined")
-        } else if !FileUtil.exists(settings.startPath!), !FileUtil.exists(FileUtil.expandPath(settings.startPath!)) {
+        } else if !FileUtil.exists(settings.startPath!) {
             setError(error, msg: "Startpath not found")
-        } else if !FileUtil.isReadableFile(settings.startPath!), !FileUtil.isReadableFile(FileUtil.expandPath(settings.startPath!)) {
+        } else if !FileUtil.isReadableFile(settings.startPath!) {
             setError(error, msg: "Startpath not readable")
         } else if settings.searchPatterns.isEmpty {
             setError(error, msg: "No search patterns defined")
@@ -153,13 +153,6 @@ public class Searcher {
             } else {
                 setError(error, msg: "Startpath does not match search settings")
             }
-        } else if FileUtil.isDirectory(FileUtil.expandPath(startPath)) {
-            let expandedPath = FileUtil.expandPath(startPath)
-            if isSearchDir(expandedPath) {
-                searchPath(expandedPath)
-            } else {
-                setError(error, msg: "Startpath does not match search settings")
-            }
         } else if FileUtil.isReadableFile(startPath) {
             if isSearchFile(startPath) {
                 searchFile(SearchFile(filePath: startPath, fileType: fileTypes.getFileType(startPath)))
@@ -172,64 +165,65 @@ public class Searcher {
     }
 
     private func searchPath(_ filePath: String) {
-        var searchDirs = [filePath]
-        if settings.recursive {
-            searchDirs += getSearchDirs(filePath)
-        }
+        var searchFiles: [SearchFile] = getSearchFiles(filePath)
+        searchFiles = searchFiles.sorted(by: { (sf1, sf2) -> Bool in
+            sf1.filePath < sf2.filePath
+        })
+
         if settings.verbose {
+            let searchDirs = searchFiles.map {
+                URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
+            }.sorted().unique()
             logMsg("\nDirectories to be searched (\(searchDirs.count)):")
             for dir in searchDirs {
                 logMsg(dir)
             }
-        }
 
-        var searchFiles: [SearchFile] = []
-        // TODO: get files from directories concurrently
-        for dir in searchDirs {
-            let dirFiles = getSearchFiles(dir)
-            searchFiles += dirFiles
-        }
-        if settings.verbose {
             logMsg("\nFiles to be searched (\(searchFiles.count)):")
             for file in searchFiles {
                 logMsg(file.description())
             }
+            logMsg("")
         }
+
         for file in searchFiles {
             searchFile(file)
         }
     }
 
-    private func getSearchDirs(_ filePath: String) -> [String] {
-        var searchDirs = [String]()
-
-        if let enumerator = FileUtil.enumeratorForPath(filePath) {
-            while let element = enumerator.nextObject() as? String {
-                let fullPath = FileUtil.joinPath(filePath, childPath: element)
-                if FileUtil.isDirectory(fullPath), FileUtil.isReadableFile(fullPath),
-                   isSearchDir(element)
-                {
-                    searchDirs.append(fullPath)
-                }
-            }
-        }
-        return searchDirs
-    }
-
-    // gets search files only directly under the given path
+    // gets all SearchFiles recursively
     private func getSearchFiles(_ filePath: String) -> [SearchFile] {
         var searchFiles = [SearchFile]()
-        let pathFiles = FileUtil.contentsForPath(filePath)
-        for file in pathFiles {
-            let fullPath = FileUtil.joinPath(filePath, childPath: file)
-            if !FileUtil.isDirectory(fullPath), FileUtil.isReadableFile(fullPath),
-               filterFile(file)
-            {
-                let searchFile = SearchFile(filePath: fullPath, fileType: fileTypes.getFileType(file))
-                searchFiles.append(searchFile)
+        if let enumerator = FileUtil.enumerator(forPath: filePath, settings: settings) {
+            for case let fileURL as URL in enumerator {
+                do {
+                    let fileAttributes = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey])
+                    if fileAttributes.isDirectory! {
+                        if !isSearchDir(fileURL.path) {
+                            enumerator.skipDescendents()
+                        }
+                    } else if fileAttributes.isRegularFile! {
+                        let searchFile = filterToSearchFile(fileURL.path)
+                        if searchFile != nil {
+                            searchFiles.append(searchFile!)
+                        }
+                    }
+                } catch { print(error, fileURL) }
             }
         }
         return searchFiles
+    }
+
+    public func filterToSearchFile(_ filePath: String) -> SearchFile? {
+        let fileType = fileTypes.getFileType(filePath)
+        if fileType == FileType.unknown {
+            return nil
+        }
+        if (fileType == FileType.archive && settings.searchArchives && isArchiveSearchFile(filePath))
+            || (!settings.archivesOnly && isSearchFile(filePath)) {
+            return SearchFile(filePath: filePath, fileType: fileType)
+        }
+        return nil
     }
 
     public func filterFile(_ filePath: String) -> Bool {
