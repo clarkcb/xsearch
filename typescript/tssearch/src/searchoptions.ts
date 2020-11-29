@@ -38,49 +38,49 @@ export class SearchOptions {
             'encoding':
                 (x: string, settings: SearchSettings) => { settings.textFileEncoding = x; },
             'in-archiveext':
-                (x: string, settings: SearchSettings) => { settings.addInArchiveExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addInArchiveExtensions(x); },
             'in-archivefilepattern':
-                (x: string, settings: SearchSettings) => { settings.addInArchiveFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInArchiveFilePatterns(x); },
             'in-dirpattern':
-                (x: string, settings: SearchSettings) => { settings.addInDirPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInDirPatterns(x); },
             'in-ext':
-                (x: string, settings: SearchSettings) => { settings.addInExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addInExtensions(x); },
             'in-filepattern':
-                (x: string, settings: SearchSettings) => { settings.addInFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInFilePatterns(x); },
             'in-filetype':
-                (x: string, settings: SearchSettings) => { settings.addInFileType(x); },
+                (x: string, settings: SearchSettings) => { settings.addInFileTypes(x); },
             'in-linesafterpattern':
-                (x: string, settings: SearchSettings) => { settings.addInLinesAfterPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInLinesAfterPatterns(x); },
             'in-linesbeforepattern':
-                (x: string, settings: SearchSettings) => { settings.addInLinesBeforePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addInLinesBeforePatterns(x); },
             'linesafter':
                 (x: string, settings: SearchSettings) => { settings.linesAfter = parseInt(x); },
             'linesaftertopattern':
-                (x: string, settings: SearchSettings) => { settings.addLinesAfterToPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addLinesAfterToPatterns(x); },
             'linesafteruntilpattern':
-                (x: string, settings: SearchSettings) => { settings.addLinesAfterUntilPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addLinesAfterUntilPatterns(x); },
             'linesbefore':
                 (x: string, settings: SearchSettings) => { settings.linesBefore = parseInt(x); },
             'maxlinelength':
                 (x: string, settings: SearchSettings) => { settings.maxLineLength = parseInt(x); },
             'out-dirpattern':
-                (x: string, settings: SearchSettings) => { settings.addOutDirPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutDirPatterns(x); },
             'out-archiveext':
-                (x: string, settings: SearchSettings) => { settings.addOutArchiveExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutArchiveExtensions(x); },
             'out-archivefilepattern':
-                (x: string, settings: SearchSettings) => { settings.addOutArchiveFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutArchiveFilePatterns(x); },
             'out-ext':
-                (x: string, settings: SearchSettings) => { settings.addOutExtension(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutExtensions(x); },
             'out-filepattern':
-                (x: string, settings: SearchSettings) => { settings.addOutFilePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutFilePatterns(x); },
             'out-filetype':
-                (x: string, settings: SearchSettings) => { settings.addOutFileType(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutFileTypes(x); },
             'out-linesafterpattern':
-                (x: string, settings: SearchSettings) => { settings.addOutLinesAfterPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutLinesAfterPatterns(x); },
             'out-linesbeforepattern':
-                (x: string, settings: SearchSettings) => { settings.addOutLinesBeforePattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addOutLinesBeforePatterns(x); },
             'searchpattern':
-                (x: string, settings: SearchSettings) => { settings.addSearchPattern(x); },
+                (x: string, settings: SearchSettings) => { settings.addSearchPatterns(x); },
             'settings-file':
                 (x: string, settings: SearchSettings) => { this.settingsFromFile(x, settings); }
         };
@@ -148,14 +148,14 @@ export class SearchOptions {
             throw new Error('File not found: ' + config.SEARCHOPTIONSJSONPATH);
         }
 
-        let obj = JSON.parse(json);
+        const obj = JSON.parse(json);
         if (obj.hasOwnProperty('searchoptions') && Array.isArray(obj['searchoptions'])) {
             obj['searchoptions'].forEach(so => {
-                let longArg = so['long'];
+                const longArg = so['long'];
                 let shortArg = '';
                 if (so.hasOwnProperty('short'))
                     shortArg = so['short'];
-                let desc = so['desc'];
+                const desc = so['desc'];
                 this.argNameMap[longArg] = longArg;
                 if (shortArg) this.argNameMap[shortArg] = longArg;
                 const option = new SearchOption(shortArg, longArg, desc);
@@ -175,7 +175,7 @@ export class SearchOptions {
     private settingsFromFile(filepath: string, settings: SearchSettings): Error | undefined {
         const fs = require('fs');
         if (fs.existsSync(filepath)) {
-            let json: string = FileUtil.getFileContents(filepath, settings.textFileEncoding);
+            const json: string = FileUtil.getFileContents(filepath, settings.textFileEncoding);
             return this.settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');
@@ -184,8 +184,8 @@ export class SearchOptions {
 
     public settingsFromJson(json: string, settings: SearchSettings): Error | undefined {
         let err: Error | undefined = undefined;
-        let obj = JSON.parse(json);
-        for (let k in obj) {
+        const obj = JSON.parse(json);
+        for (const k in obj) {
             if (err) break;
             if (obj.hasOwnProperty(k)) {
                 if (this.argMap[k]) {
@@ -208,7 +208,7 @@ export class SearchOptions {
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: SearchSettings) => void) {
         let err: Error | undefined = undefined;
-        let settings: SearchSettings = new SearchSettings();
+        const settings: SearchSettings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
         while(args && !err) {
@@ -220,7 +220,7 @@ export class SearchOptions {
                 while (arg && arg.charAt(0) === '-') {
                     arg = arg.substring(1);
                 }
-                let longarg = this.argNameMap[arg];
+                const longarg = this.argNameMap[arg];
                 if (this.argMap[longarg]) {
                     if (args.length > 0) {
                         err = this.argActionMap[longarg](args.shift(), settings);
@@ -254,11 +254,11 @@ export class SearchOptions {
     private getUsageString(): string {
         let usage: string = 'Usage:\n tssearch [options] -s <searchpattern>' +
             ' <startpath>\n\nOptions:\n';
-        let optStrings: string[] = [];
-        let optDescs: string[] = [];
-        let longest: number = 0;
+        const optStrings: string[] = [];
+        const optDescs: string[] = [];
+        let longest = 0;
         this.options.forEach((opt: SearchOption) => {
-            let optString: string = ' ';
+            let optString = ' ';
             if (opt.shortarg)
                 optString += '-' + opt.shortarg + ',';
             optString += '--' + opt.longarg;
@@ -267,7 +267,7 @@ export class SearchOptions {
             optStrings.push(optString);
             optDescs.push(opt.desc);
         });
-        for (let i: number = 0; i < optStrings.length; i++) {
+        for (let i = 0; i < optStrings.length; i++) {
             let os: string = optStrings[i];
             while (os.length < longest)
                 os += ' ';

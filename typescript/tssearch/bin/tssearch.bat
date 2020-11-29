@@ -1,2 +1,2 @@
 @echo off
-node %USERPROFILE%\src\xsearch\typescript\tssearch\build\tssearch.js %*
+node %~dp0\..\dist\tssearch.js %*

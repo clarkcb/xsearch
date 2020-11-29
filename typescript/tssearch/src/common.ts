@@ -22,18 +22,27 @@ export function log(message: string): void {
 }
 
 export function boolHashFromArray(arr: string[]): {[key:string]: boolean} {
-    let hash: {[key:string]: boolean} = {};
+    const hash: {[key:string]: boolean} = {};
     arr.forEach(a => hash[a] = true);
     return hash;
 }
 
 export function setFromArray(arr: string[]): string[] {
-    let hash: {[key:string]: boolean} = boolHashFromArray(arr);
-    let set: string[] = [];
-    for (let k in hash) {
+    const hash: {[key:string]: boolean} = boolHashFromArray(arr);
+    const set: string[] = [];
+    for (const k in hash) {
         if (hash.hasOwnProperty(k)) {
             set.push(k);
         }
     }
     return set;
+}
+
+export const COLORS = {
+    GREY: '\u001b[30m',
+    RED: '\u001b[31m',
+    GREEN: '\u001b[32m',
+    YELLOW: '\u001b[33m',
+    BLUE: '\u001b[34m',
+    RESET: '\u001b[0m'
 }

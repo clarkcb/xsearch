@@ -10,10 +10,11 @@ import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
 
 export class SearchSettings {
-    archivesOnly: boolean = false;
-    debug: boolean = false;
-    excludeHidden: boolean = true;
-    firstMatch: boolean = false;
+    archivesOnly = false;
+    colorize = true;
+    debug = false;
+    excludeHidden = true;
+    firstMatch = false;
     inArchiveExtensions: string[] = [];
     inArchiveFilePatterns: RegExp[] = [];
     inDirPatterns: RegExp[] = [];
@@ -22,15 +23,15 @@ export class SearchSettings {
     inFileTypes: FileType[] = [];
     inLinesAfterPatterns: RegExp[] = [];
     inLinesBeforePatterns: RegExp[] = [];
-    linesAfter: number = 0;
+    linesAfter = 0;
     linesAfterToPatterns: RegExp[] = [];
     linesAfterUntilPatterns: RegExp[] = [];
-    linesBefore: number = 0;
-    listDirs: boolean = false;
-    listFiles: boolean = false;
-    listLines: boolean = false;
-    maxLineLength: number = 150;
-    multilineSearch: boolean = false;
+    linesBefore = 0;
+    listDirs = false;
+    listFiles = false;
+    listLines = false;
+    maxLineLength = 150;
+    multilineSearch = false;
     outArchiveExtensions: string[] = [];
     outArchiveFilePatterns: RegExp[] = [];
     outDirPatterns: RegExp[] = [];
@@ -39,18 +40,18 @@ export class SearchSettings {
     outFileTypes: FileType[] = [];
     outLinesAfterPatterns: RegExp[] = [];
     outLinesBeforePatterns: RegExp[] = [];
-    printResults: boolean = false;
-    printUsage: boolean = false;
-    printVersion: boolean = false;
-    recursive: boolean = true;
-    searchArchives: boolean = false;
+    printResults = false;
+    printUsage = false;
+    printVersion = false;
+    recursive = true;
+    searchArchives = false;
     searchPatterns: RegExp[] = [];
-    startPath: string = "";
-    textFileEncoding: string = "utf-8";
-    uniqueLines: boolean = false;
-    verbose: boolean = false;
+    startPath = "";
+    textFileEncoding = "utf-8";
+    uniqueLines = false;
+    verbose = false;
 
-    private static addExtensions(exts: any, arr: string[]): void {
+    private static addExtensions(exts: string|string[], arr: string[]): void {
         if (typeof(exts) === 'string') {
             exts.split(/,/).filter(x => x !== '').forEach(x => arr.push(x));
         } else if (exts.constructor === Array) {
@@ -58,15 +59,15 @@ export class SearchSettings {
         }
     }
 
-    public addInExtension(ext: string): void {
+    public addInExtensions(ext: string|string[]): void {
         SearchSettings.addExtensions(ext, this.inExtensions);
     }
 
-    public addOutExtension(ext: string): void {
+    public addOutExtensions(ext: string|string[]): void {
         SearchSettings.addExtensions(ext, this.outExtensions);
     }
 
-    private static addFileTypes(filetypes: any, arr: FileType[]): void {
+    private static addFileTypes(filetypes: string|string[], arr: FileType[]): void {
         if (typeof(filetypes) === 'string') {
             filetypes.split(/,/).filter(ft => ft !== '').
                 forEach(ft => arr.push(FileTypes.fromName(ft)));
@@ -75,15 +76,15 @@ export class SearchSettings {
         }
     }
 
-    public addInFileType(filetype: string): void {
+    public addInFileTypes(filetype: string|string[]): void {
         SearchSettings.addFileTypes(filetype, this.inFileTypes);
     }
 
-    public addOutFileType(filetype: string): void {
+    public addOutFileTypes(filetype: string|string[]): void {
         SearchSettings.addFileTypes(filetype, this.outFileTypes);
     }
 
-    private static addPatterns(patterns: any, arr: RegExp[]): void {
+    private static addPatterns(patterns: string|string[], arr: RegExp[]): void {
         if (typeof(patterns) === 'string') {
             arr.push(new RegExp(patterns));
         } else if (patterns.constructor === Array) {
@@ -91,66 +92,62 @@ export class SearchSettings {
         }
     }
 
-    public addInDirPattern(pattern: string): void {
+    public addInDirPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.inDirPatterns);
     }
 
-    public addOutDirPattern(pattern: string): void {
+    public addOutDirPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.outDirPatterns);
     }
 
-    public addInFilePattern(pattern: string): void {
+    public addInFilePatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.inFilePatterns);
     }
 
-    public addOutFilePattern(pattern: string): void {
+    public addOutFilePatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.outFilePatterns);
     }
 
-    public addSearchPattern(pattern: string): void {
+    public addSearchPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.searchPatterns);
     }
 
-    public addSearchPatterns(patterns: string[]): void {
-        SearchSettings.addPatterns(patterns, this.searchPatterns);
-    }
-
-    public addInArchiveExtension(ext: string): void {
+    public addInArchiveExtensions(ext: string|string[]): void {
         SearchSettings.addExtensions(ext, this.inArchiveExtensions);
     }
 
-    public addOutArchiveExtension(ext: string): void {
+    public addOutArchiveExtensions(ext: string|string[]): void {
         SearchSettings.addExtensions(ext, this.outArchiveExtensions);
     }
 
-    public addInArchiveFilePattern(pattern: string): void {
+    public addInArchiveFilePatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.inArchiveFilePatterns);
     }
-    public addOutArchiveFilePattern(pattern: string): void {
+    public addOutArchiveFilePatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.outArchiveFilePatterns);
     }
 
-    public addInLinesAfterPattern(pattern: string): void {
+    public addInLinesAfterPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.inLinesAfterPatterns);
     }
 
-    public addOutLinesAfterPattern(pattern: string): void {
+    public addOutLinesAfterPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.outLinesAfterPatterns);
     }
 
-    public addInLinesBeforePattern(pattern: string): void {
+    public addInLinesBeforePatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.inLinesBeforePatterns);
     }
 
-    public addOutLinesBeforePattern(pattern: string): void {
+    public addOutLinesBeforePatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.outLinesBeforePatterns);
     }
 
-    public addLinesAfterToPattern(pattern: string): void {
+    public addLinesAfterToPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.linesAfterToPatterns);
     }
 
-    public addLinesAfterUntilPattern(pattern: string): void {
+    public addLinesAfterUntilPatterns(pattern: string|string[]): void {
         SearchSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
@@ -185,6 +182,7 @@ export class SearchSettings {
     public toString(): string {
         return 'SearchSettings('
             + 'archivesOnly=' + this.archivesOnly
+            + ', colorize=' + this.colorize
             + ', debug=' + this.debug
             + ', excludeHidden=' + this.excludeHidden
             + ', firstMatch=' + this.firstMatch

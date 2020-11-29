@@ -15,5 +15,5 @@ export const HOME: string = process.env[HOME_NAME] || '';
 
 export const XSEARCHPATH: string = config.xsearchpath;
 export const SHAREDPATH: string = XSEARCHPATH + '/shared';
-export const FILETYPESJSONPATH: string = SHAREDPATH + '/filetypes.json';
-export const SEARCHOPTIONSJSONPATH: string = SHAREDPATH + '/searchoptions.json';
+export const FILETYPESJSONPATH: string = __dirname + '/../data/filetypes.json';
+export const SEARCHOPTIONSJSONPATH: string = __dirname + '/../data/searchoptions.json';

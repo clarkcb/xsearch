@@ -40,7 +40,7 @@ function searchMain() {
         }
 
         try {
-            let searcher: Searcher = new Searcher(settings);
+            const searcher: Searcher = new Searcher(settings);
             searcher.search();
 
             if (settings.printResults) {

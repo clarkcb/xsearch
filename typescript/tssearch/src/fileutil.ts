@@ -21,8 +21,8 @@ export class FileUtil {
     }
 
     public static getExtension(filepath: string): string {
-        let f: string = path.basename(filepath);
-        let idx: number = f.lastIndexOf('.');
+        const f: string = path.basename(filepath);
+        const idx: number = f.lastIndexOf('.');
         if (idx > 0 && idx < f.length - 1) {
             return f.substring(idx + 1);
         }
@@ -53,11 +53,11 @@ export class FileUtil {
     }
 
     public static isDotDir(filepath: string): boolean {
-        return ['.', '..'].indexOf(filepath) > -1;
+        return ['.', './', '..', '../'].indexOf(filepath) > -1;
     }
 
     public static isHidden(filepath: string): boolean {
-        let f: string = path.basename(filepath);
+        const f: string = path.basename(filepath);
         return f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f);
     }
 }

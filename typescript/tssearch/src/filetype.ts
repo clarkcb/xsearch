@@ -7,4 +7,11 @@
 
 "use strict";
 
-export enum FileType {Unknown, Archive, Binary, Code, Text, Xml}
+export enum FileType {
+    Unknown,
+    Archive,
+    Binary,
+    Code,
+    Text,
+    Xml
+}

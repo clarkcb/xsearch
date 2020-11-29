@@ -8,10 +8,10 @@
 
 import {FileType} from './filetype';
 
-var path = require('path');
+const path = require('path');
 
 export class SearchFile {
-    containerSeparator: string = '!';
+    containerSeparator = '!';
     containers: string[] = [];
     pathname: string;
     filename: string;
@@ -26,10 +26,10 @@ export class SearchFile {
     public relativePath(): string {
         if (this.pathname === '.' || this.pathname === './') return './' + this.filename;
         return path.join(this.pathname, this.filename);
-    };
+    }
 
     public toString(): string {
-        let s: string = '';
+        let s = '';
         if (this.containers.length > 0) {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }

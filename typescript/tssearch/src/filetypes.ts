@@ -8,7 +8,7 @@
 
 import * as config from './config';
 import * as common from './common';
-import {FileType} from './FileType';
+import {FileType} from './filetype';
 import {FileUtil} from './fileutil';
 
 interface FileTypeMap {
@@ -28,13 +28,13 @@ export class FileTypes {
             throw new Error('File not found: ' + config.FILETYPESJSONPATH);
         }
 
-        let fileTypeMap: FileTypeMap = {};
+        const fileTypeMap: FileTypeMap = {};
 
-        let obj = JSON.parse(json);
+        const obj = JSON.parse(json);
         if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
             obj['filetypes'].forEach(ft => {
-                let typename: string = ft['type'];
-                let extensions: string[] = ft['extensions'];
+                const typename: string = ft['type'];
+                const extensions: string[] = ft['extensions'];
                 fileTypeMap[typename] = common.setFromArray(extensions);
             });
         } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
@@ -46,7 +46,7 @@ export class FileTypes {
     }
 
     public static fromName(name: string): FileType {
-        let uname: string = name.toUpperCase();
+        const uname: string = name.toUpperCase();
         if (uname === 'ARCHIVE')
             return FileType.Archive;
         if (uname === 'BINARY')
@@ -103,37 +103,37 @@ export class FileTypes {
     }
 
     public static isArchiveFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['archive'].indexOf(ext) > -1;
     }
 
     public static isBinaryFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['binary'].indexOf(ext) > -1;
     }
 
     public static isCodeFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['code'].indexOf(ext) > -1;
     }
 
     public static isSearchableFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['searchable'].indexOf(ext) > -1;
     }
 
     public static isTextFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['text'].indexOf(ext) > -1;
     }
 
     public static isXmlFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['xml'].indexOf(ext) > -1;
     }
 
     public static isUnknownFile(filename: string): boolean {
-        let ext: string = FileUtil.getExtension(filename);
+        const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['searchable'].indexOf(ext) === -1;
     }
 }
