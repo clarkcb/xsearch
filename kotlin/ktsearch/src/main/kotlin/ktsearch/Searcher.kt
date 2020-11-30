@@ -152,14 +152,14 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun search(): List<SearchResult> {
-        val startPathFile = File(settings.startPath)
-        if (startPathFile.isDirectory) {
-            return searchPath(startPathFile)
+        val startPathFile = File(settings.startPath!!)
+        return if (startPathFile.isDirectory) {
+            searchPath(startPathFile)
         } else if (startPathFile.isFile) {
             val fileType = fileTypes.getFileType(startPathFile)
             val sf = SearchFile(startPathFile, fileType)
             if (filterFile(sf)) {
-                return searchFile(sf)
+                searchFile(sf)
             } else {
                 throw SearchException("Startpath does not match search settings")
             }
@@ -283,8 +283,8 @@ class Searcher(val settings: SearchSettings) {
                     else p.findAll(s)
 
             for (m in matches) {
-                val beforeNewlineIndices = newlineIndices.takeWhile { it <= m.range.start }
-                val beforeLineCount = newlineIndices.count { it <= m.range.start }
+                val beforeNewlineIndices = newlineIndices.takeWhile { it <= m.range.first }
+                val beforeLineCount = newlineIndices.count { it <= m.range.first }
                 val linesBefore =
                         if (settings.linesBefore > 0) {
 //                            val lbIndices = beforeNewlineIndices.reversed().
@@ -293,7 +293,7 @@ class Searcher(val settings: SearchSettings) {
                                     take(settings.linesBefore + 1).reversed()
                             getLinesFromMultiLineString(s, lbIndices)
                         } else listOf<String>()
-                val afterNewlineIndices = newlineIndices.dropWhile { it <= m.range.start }
+                val afterNewlineIndices = newlineIndices.dropWhile { it <= m.range.first }
                 val linesAfter = getLinesAfterFromMultiLineString(s, afterNewlineIndices)
                 if (!linesBeforeMatch(linesBefore) || !linesAfterMatch(linesAfter)) {
                     continue
