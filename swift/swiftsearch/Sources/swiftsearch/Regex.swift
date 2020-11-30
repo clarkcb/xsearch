@@ -18,12 +18,19 @@ public struct Regex {
                                               options: .dotMatchesLineSeparators)
     }
 
+    private func strRange(_ str: String) -> NSRange {
+        NSMakeRange(0, str.lengthOfBytes(using: String.Encoding.isoLatin1))
+    }
+
     public func matches(_ str: String) -> [NSTextCheckingResult] {
-        expression.matches(in: str, options: [],
-                           range: NSMakeRange(0, str.lengthOfBytes(using: String.Encoding.isoLatin1)))
+        expression.matches(in: str, options: [], range: strRange(str))
+    }
+
+    public func firstMatch(_ str: String) -> NSTextCheckingResult? {
+        expression.firstMatch(in: str, options: [], range: strRange(str))
     }
 
     public func test(_ str: String) -> Bool {
-        matches(str).count > 0
+        expression.numberOfMatches(in: str, options: [], range: strRange(str)) > 0
     }
 }

@@ -118,6 +118,10 @@ public class Searcher {
     }
 
     public func isSearchFile(_ filePath: String) -> Bool {
+        return isSearchFile(filePath, fileType: fileTypes.getFileType(filePath))
+    }
+
+    public func isSearchFile(_ filePath: String, fileType: FileType) -> Bool {
         if FileUtil.isHiddenFile(URL(fileURLWithPath: filePath).lastPathComponent), settings.excludeHidden {
             return false
         }
@@ -127,7 +131,7 @@ public class Searcher {
                 && filterByPatterns(filePath,
                                     inPatterns: settings.inFilePatterns,
                                     outPatterns: settings.outFilePatterns)
-                && filterByFileTypes(fileTypes.getFileType(filePath),
+                && filterByFileTypes(fileType,
                                      inFileTypes: settings.inFileTypes,
                                      outFileTypes: settings.outFileTypes))
     }
@@ -152,8 +156,9 @@ public class Searcher {
                 setError(error, msg: "Startpath does not match search settings")
             }
         } else if FileUtil.isReadableFile(startPath) {
-            if isSearchFile(startPath) {
-                searchFile(SearchFile(filePath: startPath, fileType: fileTypes.getFileType(startPath)))
+            let fileType = fileTypes.getFileType(startPath)
+            if isSearchFile(startPath, fileType: fileType) {
+                searchFile(SearchFile(filePath: startPath, fileType: fileType))
             } else {
                 setError(error, msg: "Startpath does not match search settings")
             }
@@ -216,7 +221,7 @@ public class Searcher {
             return nil
         }
         if (fileType == FileType.archive && settings.searchArchives && isArchiveSearchFile(filePath))
-            || (!settings.archivesOnly && isSearchFile(filePath)) {
+            || (!settings.archivesOnly && isSearchFile(filePath, fileType: fileType)) {
             return SearchFile(filePath: filePath, fileType: fileType)
         }
         return nil
@@ -231,7 +236,7 @@ public class Searcher {
             return settings.searchArchives && isArchiveSearchFile(filePath)
         }
         // fileType == FileType.Text || fileType == FileType.Binary
-        return !settings.archivesOnly && isSearchFile(filePath)
+        return !settings.archivesOnly && isSearchFile(filePath, fileType: fileType)
     }
 
     func searchFile(_ searchFile: SearchFile) {
@@ -291,9 +296,13 @@ public class Searcher {
         let newLineIndices = getNewLineIndices(str)
         let startLineIndices = [0] + newLineIndices.map { $0 + 1 }
         let endLineIndices = newLineIndices + [str.lengthOfBytes(using: String.Encoding.utf8) - 1]
-        var matches = pattern.matches(str)
-        if matches.count > 0, settings.firstMatch {
-            matches = [matches[0]]
+        var matches: [NSTextCheckingResult] = []
+        if settings.firstMatch {
+            if let match = pattern.firstMatch(str) {
+                matches = [match]
+            }
+        } else {
+            matches = pattern.matches(str)
         }
         for match in matches {
             let beforeStartLineIndices = startLineIndices.filter { $0 < match.range.location }
