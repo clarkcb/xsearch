@@ -89,7 +89,7 @@ class SearchResultFormatter
                 $formatted = '...' . substr($formatted, 3);
             }
             if ($line_end_index < $max_line_end_index - 3) {
-                $formatted = substr($formatted, 0, strlen($formatted) - 3) . '...';
+                $formatted = substr($formatted, 0, $formatted_length - 3) . '...';
             }
         }
 
