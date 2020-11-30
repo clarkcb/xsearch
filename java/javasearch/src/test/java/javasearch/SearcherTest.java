@@ -8,9 +8,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SearcherTest {
 
@@ -23,7 +21,7 @@ public class SearcherTest {
         return settings;
     }
 
-    private static String testFilePath = "/testFile2.txt";
+    private static final String testFilePath = "/testFile2.txt";
 
     /*************************************************************
      * isSearchDir tests
@@ -404,7 +402,7 @@ public class SearcherTest {
             assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
 
         } catch (IllegalArgumentException e) {
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -441,7 +439,7 @@ public class SearcherTest {
             assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
 
         } catch (IllegalArgumentException e) {
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -478,7 +476,7 @@ public class SearcherTest {
             assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
 
         } catch (IllegalArgumentException e) {
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -497,7 +495,7 @@ public class SearcherTest {
             searcher.printSearchResults(results);
 
         } catch (IllegalArgumentException e) {
-            assertTrue(false);
+            fail();
         }
     }
 }

@@ -30,7 +30,7 @@ public final class FileUtil {
         // inaccessible constructor for utility class
     }
 
-    private static Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
+    private static final Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
     private static final String DEFAULT_ENCODING = "UTF-8";
 
     public static String getExtension(final File f) {
@@ -72,13 +72,18 @@ public final class FileUtil {
         return f.length() > 1 && f.charAt(0) == '.' && !isDotDir(f);
     }
 
+    // NOTE: if the first item in the returned list is not a dotDir, it should be
+    // considered an absolute path
     public static List<String> splitPath(final String path) {
-        String[] elems = path.split(File.separator);
-        List<String> nonDotDirElems = new ArrayList<>();
-        for (String elem : elems) {
-            if (!isDotDir(elem) && !elem.isEmpty()) { nonDotDirElems.add(elem); }
+        if (path == null || path.isEmpty()) {
+            return new ArrayList<>();
         }
-        return nonDotDirElems;
+        String[] elems = path.split(File.separator);
+        List<String> elemList = new ArrayList<>();
+        for (String elem : elems) {
+            if (!elem.isEmpty()) { elemList.add(elem); }
+        }
+        return elemList;
     }
 
     public static String getFileContents(final File f) throws IOException {

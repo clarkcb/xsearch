@@ -27,7 +27,7 @@ import java.io.*;
 import java.util.*;
 
 public class SearchOptions {
-    private List<SearchOption> options;
+    private final List<SearchOption> options;
 
     public SearchOptions() throws IOException, ParseException {
         options = new ArrayList<>();
@@ -40,7 +40,7 @@ public class SearchOptions {
     }
 
     private final int actionMapSize = 24;
-    private Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
+    private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
         {
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
             put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
@@ -73,7 +73,8 @@ public class SearchOptions {
         void set(Boolean b, SearchSettings settings);
     }
 
-    private Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(actionMapSize) {
+    private final int flagMapSize = 22;
+    private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
@@ -281,7 +282,7 @@ public class SearchOptions {
         sb.append(" javasearch [options] -s <searchpattern> <startpath>\n\n");
         sb.append("Options:\n");
 
-        Collections.sort(this.options, (o1, o2) -> o1.getSortArg().compareTo(o2.getSortArg()));
+        this.options.sort(Comparator.comparing(SearchOption::getSortArg));
 
         List<String> optStrings = new ArrayList<>();
         List<String> optDescs = new ArrayList<>();

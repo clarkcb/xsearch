@@ -498,7 +498,11 @@ public class Searcher {
             e.printStackTrace();
         } finally {
             if (it != null) {
-                it.close();
+                try {
+                    it.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return results;

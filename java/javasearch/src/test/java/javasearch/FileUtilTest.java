@@ -16,37 +16,37 @@ public class FileUtilTest {
     @Test
     public final void testGetTxtExtension() {
         File file = new File("filename.txt");
-        assertEquals(FileUtil.getExtension(file), "txt");
+        assertEquals("txt", FileUtil.getExtension(file));
     }
 
     @Test
     public final void testGetMissingExtension() {
         File file = new File("filename.");
-        assertEquals(FileUtil.getExtension(file), "");
+        assertEquals("", FileUtil.getExtension(file));
     }
 
     @Test
     public final void testGetNoExtension() {
         File file = new File("filename");
-        assertEquals(FileUtil.getExtension(file), "");
+        assertEquals("", FileUtil.getExtension(file));
     }
 
     @Test
     public final void testGetHiddenTxtExtension() {
         File file = new File(".filename.txt");
-        assertEquals(FileUtil.getExtension(file), "txt");
+        assertEquals("txt", FileUtil.getExtension(file));
     }
 
     @Test
     public final void testGetHiddenMissingExtension() {
         File file = new File(".filename.");
-        assertEquals(FileUtil.getExtension(file), "");
+        assertEquals("", FileUtil.getExtension(file));
     }
 
     @Test
     public final void testGetHiddenNoExtension() {
         File file = new File(".filename");
-        assertEquals(FileUtil.getExtension(file), "");
+        assertEquals("", FileUtil.getExtension(file));
     }
 
     /***************************************************************************
@@ -128,16 +128,18 @@ public class FileUtilTest {
     public final void testSplitPathWithDot() {
         String path = "./path/to/somewhere/";
         List<String> elems = FileUtil.splitPath(path);
-        assertEquals(elems.size(), 3);
-        assertTrue(elems.get(0).equals("path"));
+        assertEquals(elems.size(), 4);
+        assertEquals(".", elems.get(0));
+        assertEquals("path", elems.get(1));
     }
 
     @Test
     public final void testSplitPathWithDoubleDot() {
         String path = "../path/to/somewhere/";
         List<String> elems = FileUtil.splitPath(path);
-        assertEquals(elems.size(), 3);
-        assertTrue(elems.get(0).equals("path"));
+        assertEquals(elems.size(), 4);
+        assertEquals("..", elems.get(0));
+        assertEquals("path", elems.get(1));
     }
 
     @Test
@@ -145,6 +147,6 @@ public class FileUtilTest {
         String path = "/path/to/somewhere/";
         List<String> elems = FileUtil.splitPath(path);
         assertEquals(elems.size(), 3);
-        assertTrue(elems.get(0).equals("path"));
+        assertEquals("path", elems.get(0));
     }
 }

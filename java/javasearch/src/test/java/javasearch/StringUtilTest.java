@@ -11,6 +11,6 @@ public class StringUtilTest {
     public final void testTrimNewLineWithNewLine() {
         final String s = "This is a line with a newline\n";
         final String trimmed = StringUtil.trimNewLine(s);
-        assertEquals(trimmed, "This is a line with a newline");
+        assertEquals("This is a line with a newline", trimmed);
     }
 }

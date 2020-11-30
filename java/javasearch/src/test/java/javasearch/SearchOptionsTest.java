@@ -86,21 +86,21 @@ public class SearchOptionsTest {
 
             assertEquals("~/src/xsearch/", settings.getStartPath());
 
-            assertEquals(settings.getInExtensions().size(), 2);
+            assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("js"));
             assertTrue(settings.getInExtensions().contains("ts"));
 
-            assertEquals(settings.getOutDirPatterns().size(), 1);
+            assertEquals(1, settings.getOutDirPatterns().size());
             assertEquals("node_module", settings.getOutDirPatterns().toArray()[0].toString());
 
-            assertEquals(settings.getOutFilePatterns().size(), 1);
+            assertEquals(1, settings.getOutFilePatterns().size());
             assertEquals("temp", settings.getOutFilePatterns().toArray()[0].toString());
 
-            assertEquals(settings.getSearchPatterns().size(), 1);
+            assertEquals(1, settings.getSearchPatterns().size());
             assertEquals("Searcher", settings.getSearchPatterns().toArray()[0].toString());
 
-            assertEquals(settings.getLinesBefore(), 2);
-            assertEquals(settings.getLinesAfter(), 2);
+            assertEquals(2, settings.getLinesBefore());
+            assertEquals(2, settings.getLinesAfter());
 
             assertTrue(settings.getDebug());
             assertTrue(settings.getFirstMatch());

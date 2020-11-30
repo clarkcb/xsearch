@@ -1,123 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <modelVersion>4.0.0</modelVersion>
+    <groupId>xsearch</groupId>
+    <artifactId>javasearch</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>${project.artifactId}</name>
 
-  <groupId>xsearch</groupId>
-  <artifactId>javasearch</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>${project.artifactId}</name>
+    <properties>
+        <encoding>UTF-8</encoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
 
-  <properties>
-    <encoding>UTF-8</encoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
 
-  <repositories>
-    <repository>
-      <id>central</id>
-      <name>Maven repository</name>
-      <url>https://repo1.maven.org/maven2</url>
-    </repository>
-  </repositories>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.googlecode.json-simple:json-simple</include>
+                                    <include>commons-io:commons-io</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>com.googlecode.json-simple:json-simple</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>commons-io:commons-io</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-  <dependencies>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
+    <dependencies>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
 
-    <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
-      <version>1.1.1</version>
-    </dependency>
-
-    <!-- testing -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <defaultGoal>install</defaultGoal>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <testSourceDirectory>src/test/java</testSourceDirectory>
-
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.plugin.version}</version>
-        <configuration>
-          <useFile>false</useFile>
-          <argLine>-Xms512m -Xmx512m</argLine>
-          <disableXmlReport>false</disableXmlReport>
-          <!-- If you have classpath issue like NoDefClassError,... -->
-          <useManifestOnlyJar>false</useManifestOnlyJar>
-          <includes>
-            <include>**/*Test.*</include>
-            <include>**/*Suite.*</include>
-          </includes>
-        </configuration>
-      </plugin>
-
-      <!-- the Maven compiler plugin will compile Java source files -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-
-      <!-- allows the route to be run via 'mvn exec:java' -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <configuration>
-          <mainClass>javasearch.SearchMain</mainClass>
-        </configuration>
-      </plugin>
-
-      <!-- shade - specify main class, etc. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.2</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>javasearch.SearchMain</mainClass>
-                  <manifestEntries>
-                    <Class-Path>.</Class-Path>
-                  </manifestEntries>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+        <!-- testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

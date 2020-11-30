@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class SearchSettingsTest {
@@ -18,23 +17,23 @@ public class SearchSettingsTest {
     @Test
     public final void testDefaultSettings() {
         SearchSettings settings = new SearchSettings();
-        assertEquals(settings.getArchivesOnly(), DefaultSettings.ARCHIVESONLY);
-        assertEquals(settings.getDebug(), DefaultSettings.DEBUG);
-        assertEquals(settings.getExcludeHidden(), DefaultSettings.EXCLUDEHIDDEN);
-        assertEquals(settings.getFirstMatch(), DefaultSettings.FIRSTMATCH);
-        assertEquals(settings.getLinesAfter(), DefaultSettings.LINESAFTER);
-        assertEquals(settings.getLinesBefore(), DefaultSettings.LINESBEFORE);
-        assertEquals(settings.getListDirs(), DefaultSettings.LISTDIRS);
-        assertEquals(settings.getListFiles(), DefaultSettings.LISTFILES);
-        assertEquals(settings.getListLines(), DefaultSettings.LISTLINES);
-        assertEquals(settings.getMaxLineLength(), DefaultSettings.MAXLINELENGTH);
-        assertEquals(settings.getMultiLineSearch(), DefaultSettings.MULTILINESEARCH);
-        assertEquals(settings.getPrintResults(), DefaultSettings.PRINTRESULTS);
-        assertEquals(settings.getPrintUsage(), DefaultSettings.PRINTUSAGE);
-        assertEquals(settings.getPrintVersion(), DefaultSettings.PRINTVERSION);
-        assertEquals(settings.getSearchArchives(), DefaultSettings.SEARCHARCHIVES);
-        assertEquals(settings.getUniqueLines(), DefaultSettings.UNIQUELINES);
-        assertEquals(settings.getVerbose(), DefaultSettings.VERBOSE);
+        assertEquals(DefaultSettings.ARCHIVESONLY, settings.getArchivesOnly());
+        assertEquals(DefaultSettings.DEBUG, settings.getDebug());
+        assertEquals(DefaultSettings.EXCLUDEHIDDEN, settings.getExcludeHidden());
+        assertEquals(DefaultSettings.FIRSTMATCH, settings.getFirstMatch());
+        assertEquals(DefaultSettings.LINESAFTER, settings.getLinesAfter());
+        assertEquals(DefaultSettings.LINESBEFORE, settings.getLinesBefore());
+        assertEquals(DefaultSettings.LISTDIRS, settings.getListDirs());
+        assertEquals(DefaultSettings.LISTFILES, settings.getListFiles());
+        assertEquals(DefaultSettings.LISTLINES, settings.getListLines());
+        assertEquals(DefaultSettings.MAXLINELENGTH, settings.getMaxLineLength());
+        assertEquals(DefaultSettings.MULTILINESEARCH, settings.getMultiLineSearch());
+        assertEquals(DefaultSettings.PRINTRESULTS, settings.getPrintResults());
+        assertEquals(DefaultSettings.PRINTUSAGE, settings.getPrintUsage());
+        assertEquals(DefaultSettings.PRINTVERSION, settings.getPrintVersion());
+        assertEquals(DefaultSettings.SEARCHARCHIVES, settings.getSearchArchives());
+        assertEquals(DefaultSettings.UNIQUELINES, settings.getUniqueLines());
+        assertEquals(DefaultSettings.VERBOSE, settings.getVerbose());
     }
 
     @Test

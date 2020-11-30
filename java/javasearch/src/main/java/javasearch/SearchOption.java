@@ -12,9 +12,9 @@ package javasearch;
 
 public class SearchOption {
 
-    private String shortArg;
-    private String longArg;
-    private String description;
+    private final String shortArg;
+    private final String longArg;
+    private final String description;
 
     public SearchOption(final String shortArg, final String longArg,
                         final String description) {

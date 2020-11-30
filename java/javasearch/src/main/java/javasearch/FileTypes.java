@@ -32,7 +32,7 @@ public class FileTypes {
     private static final String text = "text";
     private static final String unknown = "unknown";
     private static final String xml = "xml";
-    private Map<String, Set<String>> fileTypeMap;
+    private final Map<String, Set<String>> fileTypeMap;
 
     private Map<String, Set<String>> getFileTypeMapFromJson() {
         int fileTypeKeys = 8;
@@ -116,20 +116,20 @@ public class FileTypes {
 
     static FileType fromName(final String name) {
         String lname = name.toLowerCase();
+        if (lname.equals(code)) return FileType.CODE;
+        if (lname.equals(xml)) return FileType.XML;
         if (lname.equals(text)) return FileType.TEXT;
         if (lname.equals(binary)) return FileType.BINARY;
         if (lname.equals(archive)) return FileType.ARCHIVE;
-        if (lname.equals(code)) return FileType.CODE;
-        if (lname.equals(xml)) return FileType.XML;
         return FileType.UNKNOWN;
     }
 
     final FileType getFileType(final File f) {
+        if (isCodeFile(f)) return FileType.CODE;
+        if (isXmlFile(f)) return FileType.XML;
         if (isTextFile(f)) return FileType.TEXT;
         if (isBinaryFile(f)) return FileType.BINARY;
         if (isArchiveFile(f)) return FileType.ARCHIVE;
-        if (isCodeFile(f)) return FileType.CODE;
-        if (isXmlFile(f)) return FileType.XML;
         return FileType.UNKNOWN;
     }
 
