@@ -8,6 +8,7 @@
 #
 ################################################################################
 from io import StringIO
+import os
 import subprocess
 import sys
 import time
@@ -21,7 +22,7 @@ from xsearch import *
 #exts = ','.join('clj cs go hs java js pl php py rb scala'.split())
 exts = ','.join('py rb'.split())
 
-startpath = default_startpath
+startpath = os.path.join(XSEARCHPATH, 'python')
 
 default_runs = 10
 
@@ -46,6 +47,7 @@ class Benchmarker(object):
         self.scenarios = []
         self.runs = default_runs
         self.debug = True
+        self.diff_outputs = []
         self.__dict__.update(kwargs)
 
     def print_totals_dict(self, totals_dict, total_runs=default_runs):
@@ -89,6 +91,12 @@ class Benchmarker(object):
         print(sio.getvalue())
 
     def print_totals(self, results, last_scenario, total_runs):
+        if self.diff_outputs:
+            print("\nOutput differences:")
+            for d in self.diff_outputs:
+                print("scenario {}: {} differs from {}".format(d[0], d[1], d[2]))
+        else:
+            print("\nAll outputs of all scenarios match")
         total_scenarios = len(self.scenarios)
         max_runs = total_scenarios * self.runs
         print("\nTotal results for {} out of {} scenarios with {} out of {} total runs".
@@ -154,8 +162,8 @@ class Benchmarker(object):
         try:
             time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
             time_dict['total'] = sum(time_dict.values())
-        except ValueError as e:
-            print("ValueError: {}".format(str(e)))
+        except Exception as e:
+            print("Exception: {}".format(str(e)))
             print("Invalid times line: \"{}\"".format(lines[0]))
             time_dict = {s: 0 for s in ['real', 'sys', 'user', 'total']}
         return time_dict
@@ -175,7 +183,7 @@ class Benchmarker(object):
         else:
             print('\nOutput line lengths of all versions match')
 
-    def compare_outputs(self, xsearch_output):
+    def compare_outputs(self, sn, xsearch_output):
         # print('compare_outputs')
         nonmatching = nonmatching_outputs(xsearch_output)
         if nonmatching:
@@ -188,10 +196,13 @@ class Benchmarker(object):
             for x in xs:
                 for y in sorted(nonmatching[x]):
                     print('{} output != {} output'.format(x, y))
-                    # print('{} output:\n"{}"'.format(x, xsearch_output[x]))
-                    # print('{} output:\n"{}"'.format(y, xsearch_output[y]))
+                    print('{} output:\n"{}"'.format(x, xsearch_output[x]))
+                    print('{} output:\n"{}"'.format(y, xsearch_output[y]))
+                    self.diff_outputs.append((sn, x, y))
+            return False
         else:
             print('\nOutputs of all versions match')
+            return True
 
     def do_run(self, s, sn, rn):
         # return self.do_run_seq(s, sn, rn)
@@ -234,7 +245,7 @@ class Benchmarker(object):
             if self.debug:
                 print('{} output:\n"{}"'.format(x, output))
             xsearch_times[x] = self.times_from_lines(time_lines)
-        self.compare_outputs(xsearch_output)
+        self.compare_outputs(sn, xsearch_output)
         return RunResult(scenario=s, run=rn, time_dict=xsearch_times)
 
     def do_run_seq(self, s, sn, rn):
@@ -271,7 +282,7 @@ class Benchmarker(object):
             if self.debug:
                 print('output:\n"{}"'.format(output))
             xsearch_times[x] = self.times_from_lines(time_lines)
-        self.compare_outputs(xsearch_output)
+        self.compare_outputs(sn, xsearch_output)
         return RunResult(scenario=s, run=rn, time_dict=xsearch_times)
 
     def run(self):
