@@ -5,22 +5,21 @@
 
 @property NSString *searchPattern;
 @property SearchFile *file;
-@property long lineNum;
-@property long matchStartIndex;
-@property long matchEndIndex;
+@property unsigned long lineNum;
+@property unsigned long matchStartIndex;
+@property unsigned long matchEndIndex;
 @property NSString *line;
 @property NSArray<NSString*> *linesBefore;
 @property NSArray<NSString*> *linesAfter;
 
 - (instancetype) initWithPattern:(NSString*)pattern
                             file:(SearchFile*)file
-                         lineNum:(long)lineNum
-                 matchStartIndex:(long)matchStartIndex
-                   matchEndIndex:(long)matchEndIndex
+                         lineNum:(unsigned long)lineNum
+                 matchStartIndex:(unsigned long)matchStartIndex
+                   matchEndIndex:(unsigned long)matchEndIndex
                             line:(NSString*)line
                      linesBefore:(NSArray<NSString*>*)linesBefore
                       linesAfter:(NSArray<NSString*>*)linesAfter;
 
-- (NSString *) description;
-
+- (NSString *) getFilePath;
 @end

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "config.h"
+#import "SearchSettings.h"
 
 @interface FileUtil : NSObject
 
@@ -16,7 +17,7 @@
 + (NSString*) getExtension:(NSString*)fileName;
 + (BOOL) hasExtension:(NSString*)fileName ext:(NSString*)ext;
 + (NSArray<NSString*>*) contentsForPath:(NSString*)filePath error:(NSError**)error;
-+ (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath;
++ (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath settings:(SearchSettings*)settings;
 + (BOOL) exists:(NSString*)filePath;
 + (BOOL) isDirectory:(NSString*)filePath;
 + (BOOL) isDotDir:(NSString*)filePath;
@@ -24,5 +25,7 @@
 + (BOOL) isHiddenFile:(NSString*)fileName;
 + (BOOL) isReadableFile:(NSString*)filePath;
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath;
+
++ (NSDirectoryEnumerationOptions) optionsForSettings:(SearchSettings*)settings;
 
 @end

@@ -107,6 +107,10 @@
     XCTAssert([FileUtil isDirectory:@"/"]);
 }
 
+- (void)testIsDirectoryTildeHomeDir {
+    XCTAssert([FileUtil isDirectory:@"~"]);
+}
+
 - (void)testIsDirectoryNonDirectory {
     XCTAssert(![FileUtil isDirectory:@"filename.txt"]);
 }

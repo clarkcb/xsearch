@@ -12,6 +12,7 @@
     self = [super init];
     if (self) {
         self.archivesOnly = false;
+        self.colorize = true;
         self.debug = false;
         self.excludeHidden = true;
         self.firstMatch = false;
@@ -28,6 +29,7 @@
         self.recursive = true;
         self.searchArchives = false;
         self.startPath = [NSMutableString string];
+        self.textFileEncoding = @"UTF-8";
         self.uniqueLines = false;
         self.verbose = false;
 
@@ -57,6 +59,7 @@
 - (NSString *) description {
     NSMutableString *d = [[NSMutableString alloc] initWithString:@"SearchSettings("];
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
+    [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
     [d appendFormat:@", excludeHidden=%@", boolToNSString(self.excludeHidden)];
     [d appendFormat:@", firstMatch=%@", boolToNSString(self.firstMatch)];
@@ -91,6 +94,7 @@
     [d appendFormat:@", searchArchives=%@", boolToNSString(self.searchArchives)];
     [d appendFormat:@", searchPatterns=%@", arrayToNSString(self.searchPatterns)];
     [d appendFormat:@", startPath=\"%@\"", self.startPath];
+    [d appendFormat:@", textFileEncoding=\"%@\"", self.textFileEncoding];
     [d appendFormat:@", uniqueLines=%@", boolToNSString(self.uniqueLines)];
     [d appendFormat:@", verbose=%@", boolToNSString(self.verbose)];
     [d appendString:@")"];

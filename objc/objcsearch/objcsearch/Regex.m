@@ -15,14 +15,22 @@
     return self;
 }
 
-- (NSArray *) matches:(NSString*) s {
+- (NSArray<NSTextCheckingResult*>*) matches:(NSString*) s {
     return [self.expression matchesInString:s
-                            options:0
-                            range:NSMakeRange(0, [s length])];
+                                    options:0
+                                      range:NSMakeRange(0, [s length])];
+}
+
+- (NSTextCheckingResult*) firstMatch:(NSString*) s {
+    return [self.expression firstMatchInString:s
+                                       options:0
+                                         range:NSMakeRange(0, [s length])];
 }
 
 - (BOOL) test:(NSString *)s {
-    return [[self matches:s] count] > 0;
+    return [self.expression numberOfMatchesInString:s
+                                            options:0
+                                              range:NSMakeRange(0, [s length])] > 0;
 }
 
 - (NSString *)description {

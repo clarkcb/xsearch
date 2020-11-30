@@ -8,6 +8,7 @@
 
 @property FileTypes *fileTypes;
 @property SearchSettings *settings;
+@property NSStringEncoding textFileEncoding;
 
 - (instancetype) initWithSettings:(SearchSettings*)settings error:(NSError**)error;
 - (NSArray<SearchResult*>*) search:(NSError**)error;
@@ -17,9 +18,6 @@
 - (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s error:(NSError**)error;
 
 // private methods
-//- (NSArray<NSString*>*) getSearchDirs:(NSString*)filePath;
-//- (NSArray<SearchFile*>*) getSearchFiles:(NSArray<NSString*>*)searchDirs;
-//- (NSArray<SearchFile*>*) getSearchFilesForDirectory:(NSString*)dirPath error:(NSError**)error;
 - (BOOL) filterFile:(NSString*)filePath;
 - (BOOL) isArchiveSearchFile:(NSString*)filePath;
 - (BOOL) isSearchDir:(NSString*)dirPath;

@@ -66,7 +66,7 @@
 - (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(SearchSettings *)settings {
     if ([obj isKindOfClass:[NSString class]]) {
         if ([name isEqualToString:@"startpath"]) {
-            [settings setStartPath:(NSString*)obj];
+            [settings setStartPath:(NSMutableString*)obj];
         } else if (self.argActionDict[name]) {
             void(^block)() = self.argActionDict[name];
             block(obj, settings);
@@ -74,7 +74,7 @@
     } else if ([obj isKindOfClass:[NSNumber class]]) {
         NSNumber *num = (NSNumber *)obj;
         if (self.argActionDict[name]) {
-            void(^block)() = self.argActionDict[name];
+            void(^block)(NSString* s, SearchSettings* ss) = self.argActionDict[name];
             block([num description], settings);
         } else if (self.boolFlagActionDict[name]) {
             BOOL b = [num boolValue];
@@ -137,6 +137,9 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
 
 - (NSDictionary<NSString*,ArgActionBlockType>*) getArgActionDict {
     return [[NSDictionary alloc] initWithObjectsAndKeys:
+            ^void (NSString* s, SearchSettings *ss) {
+                ss.textFileEncoding = s;
+            }, @"encoding",
             ^void (NSString* s, SearchSettings *ss) {
                 [ss addInArchiveExtension:s];
             }, @"in-archiveext",

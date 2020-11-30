@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4A0E2401200895CD00E73BAD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0E2400200895CD00E73BAD /* main.m */; };
+		4A123598254D098100FEF13E /* SearchResultFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A123597254D098100FEF13E /* SearchResultFormatter.m */; };
 		4A1C43542019A98100594046 /* FileTypesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1C43532019A98100594046 /* FileTypesTests.m */; };
 		4A1C43592019B0AF00594046 /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C86562009CABB00644D0C /* FileTypes.m */; };
 		4A1C435A2019B17500594046 /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C864F20097B8900644D0C /* common.m */; };
@@ -21,6 +22,8 @@
 		4A1C43622019B1B100594046 /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD1F71E200F1402006EA828 /* SearchResult.m */; };
 		4A1C43632019B1B500594046 /* Searcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A79E912200C3491002CF298 /* Searcher.m */; };
 		4A1C4365201A5DB800594046 /* FileUtilTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1C4364201A5DB800594046 /* FileUtilTests.m */; };
+		4A29F26D25730BB5007ED1BA /* SearchResultFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A123597254D098100FEF13E /* SearchResultFormatter.m */; };
+		4A29F27125732A86007ED1BA /* SearchFileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A29F27025732A86007ED1BA /* SearchFileTests.m */; };
 		4A3D6A82219A7E74001CB786 /* SearchSettingsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D6A81219A7E74001CB786 /* SearchSettingsTests.m */; };
 		4A3D6A84219A82C5001CB786 /* SearchResultTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D6A83219A82C5001CB786 /* SearchResultTests.m */; };
 		4A6B74C12197AF8500760F1E /* SearcherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B74C02197AF8500760F1E /* SearcherTests.m */; };
@@ -52,12 +55,16 @@
 /* Begin PBXFileReference section */
 		4A0E23FD200895CD00E73BAD /* objcsearch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = objcsearch; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A0E2400200895CD00E73BAD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		4A123596254D089300FEF13E /* SearchResultFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchResultFormatter.h; sourceTree = "<group>"; };
+		4A123597254D098100FEF13E /* SearchResultFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchResultFormatter.m; sourceTree = "<group>"; };
 		4A1C43512019A98100594046 /* objcsearch_tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = objcsearch_tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A1C43532019A98100594046 /* FileTypesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileTypesTests.m; sourceTree = "<group>"; };
 		4A1C43552019A98100594046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A1C4364201A5DB800594046 /* FileUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtilTests.m; sourceTree = "<group>"; };
+		4A29F27025732A86007ED1BA /* SearchFileTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchFileTests.m; sourceTree = "<group>"; };
 		4A3D6A81219A7E74001CB786 /* SearchSettingsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchSettingsTests.m; sourceTree = "<group>"; };
 		4A3D6A83219A82C5001CB786 /* SearchResultTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchResultTests.m; sourceTree = "<group>"; };
+		4A5A1DB625384FBE002FAFD1 /* color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = color.h; sourceTree = "<group>"; };
 		4A6B74C02197AF8500760F1E /* SearcherTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearcherTests.m; sourceTree = "<group>"; };
 		4A6B74C221992E4300760F1E /* SearchOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchOptionsTests.m; sourceTree = "<group>"; };
 		4A79E911200C3491002CF298 /* Searcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Searcher.h; sourceTree = "<group>"; };
@@ -122,6 +129,7 @@
 		4A0E23FF200895CD00E73BAD /* objcsearch */ = {
 			isa = PBXGroup;
 			children = (
+				4A5A1DB625384FBE002FAFD1 /* color.h */,
 				4A8C865120097CA600644D0C /* common.h */,
 				4A8C864F20097B8900644D0C /* common.m */,
 				4A8C86582009D1FD00644D0C /* config.h */,
@@ -142,6 +150,8 @@
 				4A8C865D200AA08C00644D0C /* SearchOptions.m */,
 				4AD1F71D200F1402006EA828 /* SearchResult.h */,
 				4AD1F71E200F1402006EA828 /* SearchResult.m */,
+				4A123596254D089300FEF13E /* SearchResultFormatter.h */,
+				4A123597254D098100FEF13E /* SearchResultFormatter.m */,
 				4A79E911200C3491002CF298 /* Searcher.h */,
 				4A79E912200C3491002CF298 /* Searcher.m */,
 			);
@@ -152,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				4A1C43532019A98100594046 /* FileTypesTests.m */,
+				4A29F27025732A86007ED1BA /* SearchFileTests.m */,
 				4A1C4364201A5DB800594046 /* FileUtilTests.m */,
 				4A1C43552019A98100594046 /* Info.plist */,
 				4A6B74C02197AF8500760F1E /* SearcherTests.m */,
@@ -205,7 +216,7 @@
 		4A0E23F5200895CD00E73BAD /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Cary Clark";
 				TargetAttributes = {
 					4A0E23FC200895CD00E73BAD = {
@@ -225,6 +236,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 4A0E23F4200895CD00E73BAD;
@@ -264,6 +276,7 @@
 				4AD1F71F200F1402006EA828 /* SearchResult.m in Sources */,
 				4A8C865B200A9B8900644D0C /* SearchOption.m in Sources */,
 				4A8C865020097B8900644D0C /* common.m in Sources */,
+				4A123598254D098100FEF13E /* SearchResultFormatter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,8 +295,10 @@
 				4A1C43592019B0AF00594046 /* FileTypes.m in Sources */,
 				4A1C435D2019B18300594046 /* Regex.m in Sources */,
 				4A3D6A82219A7E74001CB786 /* SearchSettingsTests.m in Sources */,
+				4A29F26D25730BB5007ED1BA /* SearchResultFormatter.m in Sources */,
 				4A1C435E2019B18600594046 /* SearchFile.m in Sources */,
 				4A1C43622019B1B100594046 /* SearchResult.m in Sources */,
+				4A29F27125732A86007ED1BA /* SearchFileTests.m in Sources */,
 				4A1C435A2019B17500594046 /* common.m in Sources */,
 				4A1C4365201A5DB800594046 /* FileUtilTests.m in Sources */,
 				4A3D6A84219A82C5001CB786 /* SearchResultTests.m in Sources */,
@@ -298,6 +313,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -319,6 +335,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -354,6 +371,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -375,6 +393,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -402,6 +421,7 @@
 		4A0E2405200895CD00E73BAD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = 9AAZ88EQ26;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -411,6 +431,7 @@
 		4A0E2406200895CD00E73BAD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				DEVELOPMENT_TEAM = 9AAZ88EQ26;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -2,6 +2,7 @@
 #import "Searcher.h"
 #import "SearchOptions.h"
 #import "SearchResult.h"
+#import "SearchResultFormatter.h"
 #import "SearchSettings.h"
 
 NSArray* argvToNSArray(int argc, const char * argv[]) {
@@ -75,30 +76,31 @@ int main(int argc, const char * argv[]) {
         if (settings.debug) {
             logMsg([NSString stringWithFormat:@"\nsettings: %@", settings]);
         }
-        
+
         if (settings.printUsage) {
             [options usage:0];
         }
 
         Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-        
+
         if (error) {
             handleError(error, options);
         }
-        
+
         NSArray<SearchResult *> *results = [searcher search:&error];
-        
+
         if (error) {
             handleError(error, options);
         }
-        
+
         if (settings.printResults) {
+            SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
             logMsg([NSString stringWithFormat:@"\nSearch results (%lu):", [results count]]);
             for (SearchResult *r in results) {
-                logMsg([r description]);
+                logMsg([formatter format:r]);
             }
         }
-        
+
         if (settings.listDirs) {
             NSArray<NSString*> *dirPaths = getMatchingDirs(results);
             logMsg([NSString stringWithFormat:@"\nDirectories with matches (%lu):", [dirPaths count]]);
@@ -106,7 +108,7 @@ int main(int argc, const char * argv[]) {
                 logMsg(d);
             }
         }
-        
+
         if (settings.listFiles) {
             NSArray<NSString*> *filePaths = getMatchingFiles(results);
             logMsg([NSString stringWithFormat:@"\nFiles with matches (%lu):", [filePaths count]]);
@@ -114,7 +116,7 @@ int main(int argc, const char * argv[]) {
                 logMsg(f);
             }
         }
-        
+
         if (settings.listLines) {
             NSArray<NSString*> *lines = getMatchingLines(results, settings);
             NSString *linesHdr;

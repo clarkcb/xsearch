@@ -131,7 +131,7 @@
     XCTAssert([searcher isSearchFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_MatchesInPattern_True {
+- (void)testIsSearchFile_MatchesInFilePattern_True {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addInFilePattern:@"Search"];
     NSError *error = nil;
@@ -139,7 +139,7 @@
     XCTAssert([searcher isSearchFile:@"Searcher.cs"]);
 }
 
-- (void)testIsSearchFile_DoesNotMatchInPattern_False {
+- (void)testIsSearchFile_DoesNotMatchInFilePattern_False {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addInFilePattern:@"Search"];
     NSError *error = nil;
@@ -147,7 +147,7 @@
     XCTAssert(![searcher isSearchFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_MatchesOutPattern_False {
+- (void)testIsSearchFile_MatchesOutFilePattern_False {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addOutFilePattern:@"Search"];
     NSError *error = nil;
@@ -155,7 +155,7 @@
     XCTAssert(![searcher isSearchFile:@"Searcher.cs"]);
 }
 
-- (void)testIsSearchFile_DoesNotMatchOutPattern_True {
+- (void)testIsSearchFile_DoesNotMatchOutFilePattern_True {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addOutFilePattern:@"Search"];
     NSError *error = nil;
@@ -205,7 +205,7 @@
     XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_MatchesInPattern_True {
+- (void)testIsArchiveSearchFile_MatchesInArchiveFilePattern_True {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addInArchiveFilePattern:@"arch"];
     NSError *error = nil;
@@ -213,7 +213,7 @@
     XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_DoesNotMatchInPattern_False {
+- (void)testIsArchiveSearchFile_DoesNotMatchInArchiveFilePattern_False {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addInArchiveFilePattern:@"archives"];
     NSError *error = nil;
@@ -221,7 +221,7 @@
     XCTAssert(![searcher isArchiveSearchFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_MatchesOutPattern_False {
+- (void)testIsArchiveSearchFile_MatchesOutArchiveFilePattern_False {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addOutArchiveFilePattern:@"arch"];
     NSError *error = nil;
@@ -229,7 +229,7 @@
     XCTAssert(![searcher isArchiveSearchFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_DoesNotMatchOutPattern_True {
+- (void)testIsArchiveSearchFile_DoesNotMatchOutArchiveFilePattern_True {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings addOutArchiveFilePattern:@"archives"];
     NSError *error = nil;
@@ -279,7 +279,7 @@
     XCTAssert([searcher filterFile:@"archive.zip"]);
 }
 
-- (void)testFilterFile_NotIsArchiveSearchFile_True {
+- (void)testFilterFile_NotIsArchiveSearchFile_False {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [settings setSearchArchives:true];
     [settings addOutArchiveExtension:@"zip"];

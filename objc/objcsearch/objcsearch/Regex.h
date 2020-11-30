@@ -6,7 +6,8 @@
 @property NSString *pattern;
 
 - (instancetype) initWithPattern:(NSString*) pattern;
-- (NSArray *) matches:(NSString*) s;
+- (NSArray<NSTextCheckingResult*>*) matches:(NSString*) s;
+- (NSTextCheckingResult *) firstMatch:(NSString*) s;
 - (BOOL) test:(NSString*) s;
 
 @end

@@ -26,6 +26,7 @@
 - (void)testDefaultSettings {
     SearchSettings *settings = [[SearchSettings alloc] init];
     XCTAssert(![settings archivesOnly]);
+    XCTAssert([settings colorize]);
     XCTAssert(![settings debug]);
     XCTAssert([settings excludeHidden]);
     XCTAssert(![settings firstMatch]);

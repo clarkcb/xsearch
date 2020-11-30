@@ -15,27 +15,20 @@
 }
 
 + (NSString*) expandPath:(NSString*)filePath {
-    if ([filePath length] > 0 && [filePath characterAtIndex:0] == '~') {
-        NSString* homePath = [[[NSProcessInfo processInfo]environment]objectForKey:@"HOME"];
-        NSMutableString *expanded = [NSMutableString stringWithString:homePath];
-        if ([filePath length] > 1) {
-            [expanded appendString:[filePath substringFromIndex:1]];
-        }
-        return [NSString stringWithString:expanded];
-    }
-    return filePath;
+    return [filePath stringByExpandingTildeInPath];
 }
 
 + (NSString*) getExtension:(NSString*)fileName {
-    NSRange range = [fileName rangeOfString:@"." options:NSBackwardsSearch];
-    if (range.location != NSNotFound && range.location > 0 && range.location <= [fileName length] - 1) {
-        return [fileName substringFromIndex:range.location + 1];
+    NSURL *fileURL = [NSURL fileURLWithPath:fileName];
+    NSString *ext = [[fileURL pathExtension] uppercaseString];
+    if ([ext isEqualToString:@"Z"]) {
+        return ext;
     }
-    return @"";
+    return [ext lowercaseString];
 }
 
 + (BOOL) hasExtension:(NSString *)fileName ext:(NSString *)ext {
-    return [[self getExtension:fileName] isEqualToString:ext];
+    return [[self getExtension:fileName] isEqualToString:[ext lowercaseString]];
 }
 
 + (NSFileManager *) getFileManager {
@@ -46,8 +39,24 @@
     return [[self getFileManager] contentsOfDirectoryAtPath:filePath error:error];
 }
 
-+ (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath {
-    return [[self getFileManager] enumeratorAtPath:filePath];
++ (NSDirectoryEnumerationOptions) optionsForSettings:(SearchSettings*)settings {
+    NSDirectoryEnumerationOptions options = NSDirectoryEnumerationSkipsPackageDescendants;
+    if (settings.excludeHidden) {
+        options |= NSDirectoryEnumerationSkipsHiddenFiles;
+    }
+    if (!settings.recursive) {
+        options |= NSDirectoryEnumerationSkipsSubdirectoryDescendants;
+    }
+    return options;
+}
+
++ (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath settings:(SearchSettings*)settings{
+    NSDirectoryEnumerationOptions options = [self optionsForSettings:settings];
+    return [[self getFileManager]
+            enumeratorAtURL:[NSURL fileURLWithPath:filePath]
+            includingPropertiesForKeys:@[NSURLIsDirectoryKey, NSURLIsRegularFileKey]
+            options:options
+            errorHandler:nil];
 }
 
 + (BOOL) exists:(NSString*)filePath {
@@ -60,6 +69,9 @@
     }
     BOOL isDir;
     if ([[self getFileManager] fileExistsAtPath:filePath isDirectory:&isDir]) {
+        return isDir;
+    }
+    if ([[self getFileManager] fileExistsAtPath:[filePath stringByExpandingTildeInPath] isDirectory:&isDir]) {
         return isDir;
     }
     return false;

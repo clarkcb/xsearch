@@ -11,6 +11,7 @@
 //}
 
 @property(nonatomic) BOOL archivesOnly;
+@property(nonatomic) BOOL colorize;
 @property(nonatomic) BOOL debug;
 @property(nonatomic) BOOL excludeHidden;
 @property(nonatomic) BOOL firstMatch;
@@ -19,7 +20,7 @@
 @property(nonatomic) BOOL listDirs;
 @property(nonatomic) BOOL listFiles;
 @property(nonatomic) BOOL listLines;
-@property(nonatomic) int maxLineLength;
+@property(nonatomic) uint32_t maxLineLength;
 @property(nonatomic) BOOL multiLineSearch;
 @property(nonatomic) BOOL printResults;
 @property(nonatomic) BOOL printUsage;
@@ -27,6 +28,7 @@
 @property(nonatomic) BOOL recursive;
 @property(nonatomic) BOOL searchArchives;
 @property(nonatomic) NSMutableString *startPath;
+@property(nonatomic) NSString *textFileEncoding;
 @property(nonatomic) BOOL uniqueLines;
 @property(nonatomic) BOOL verbose;
 
