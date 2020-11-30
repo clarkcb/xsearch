@@ -2,6 +2,8 @@ package gosearch
 
 import (
 	"bytes"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -102,6 +104,11 @@ func (si *SearchItem) String() string {
 		buffer.WriteString(strings.Join(si.Containers, containerSeparator))
 		buffer.WriteString(containerSeparator)
 	}
-	buffer.WriteString(filepath.Join(*si.Path, *si.Name))
+	path := normalizePath(*si.Path)
+	if isDotDir(path) {
+		buffer.WriteString(fmt.Sprintf("%s%c%s", path, os.PathSeparator, *si.Name))
+	} else {
+		buffer.WriteString(filepath.Join(*si.Path, *si.Name))
+	}
 	return buffer.String()
 }
