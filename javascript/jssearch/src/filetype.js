@@ -14,5 +14,6 @@ const FileType = {
     TEXT:    5,
     XML:     6
 };
+Object.freeze(FileType);
 
-exports = FileType;
+exports.FileType = FileType;

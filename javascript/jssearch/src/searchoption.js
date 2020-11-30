@@ -5,7 +5,7 @@
  */
 
 class SearchOption {
-    "use strict";
+    'use strict'
 
     constructor(shortarg, longarg, desc, func) {
         this.shortarg = shortarg;

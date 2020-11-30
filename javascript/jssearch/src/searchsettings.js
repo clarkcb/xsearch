@@ -7,10 +7,11 @@
 const {FileTypes} = require('./filetypes');
 
 class SearchSettings {
-    "use strict";
+    'use strict'
 
     constructor() {
         this.archivesOnly = false;
+        this.colorize = true;
         this.debug = false;
         this.excludeHidden = true;
         this.firstMatch = false;
@@ -59,11 +60,11 @@ class SearchSettings {
         xs.filter(x => x !== '').forEach(x => arr.push(x));
     }
 
-    addInExtension(ext) {
+    addInExtensions(ext) {
         this.addExtensions(ext, this.inExtensions);
     }
 
-    addOutExtension(ext) {
+    addOutExtensions(ext) {
         this.addExtensions(ext, this.outExtensions);
     }
 
@@ -75,63 +76,63 @@ class SearchSettings {
         }
     }
 
-    addInDirPattern(pattern) {
+    addInDirPatterns(pattern) {
         this.addPatterns(pattern, this.inDirPatterns);
     }
 
-    addOutDirPattern(pattern) {
+    addOutDirPatterns(pattern) {
         this.addPatterns(pattern, this.outDirPatterns);
     }
 
-    addInFilePattern(pattern) {
+    addInFilePatterns(pattern) {
         this.addPatterns(pattern, this.inFilePatterns);
     }
 
-    addOutFilePattern(pattern) {
+    addOutFilePatterns(pattern) {
         this.addPatterns(pattern, this.outFilePatterns);
     }
 
-    addSearchPattern(pattern) {
+    addSearchPatterns(pattern) {
         this.addPatterns(pattern, this.searchPatterns);
     }
 
-    addInArchiveExtension(ext) {
+    addInArchiveExtensions(ext) {
         this.addExtensions(ext, this.inArchiveExtensions);
     }
 
-    addOutArchiveExtension(ext) {
+    addOutArchiveExtensions(ext) {
         this.addExtensions(ext, this.outArchiveExtensions);
     }
 
-    addInArchiveFilePattern(pattern) {
+    addInArchiveFilePatterns(pattern) {
         this.addPatterns(pattern, this.inArchiveFilePatterns);
     }
 
-    addOutArchiveFilePattern(pattern) {
+    addOutArchiveFilePatterns(pattern) {
         this.addPatterns(pattern, this.outArchiveFilePatterns);
     }
 
-    addInLinesAfterPattern(pattern) {
+    addInLinesAfterPatterns(pattern) {
         this.addPatterns(pattern, this.inLinesAfterPatterns);
     }
 
-    addOutLinesAfterPattern(pattern) {
+    addOutLinesAfterPatterns(pattern) {
         this.addPatterns(pattern, this.outLinesAfterPatterns);
     }
 
-    addInLinesBeforePattern(pattern) {
+    addInLinesBeforePatterns(pattern) {
         this.addPatterns(pattern, this.inLinesBeforePatterns);
     }
 
-    addOutLinesBeforePattern(pattern) {
+    addOutLinesBeforePatterns(pattern) {
         this.addPatterns(pattern, this.outLinesBeforePatterns);
     }
 
-    addLinesAfterToPattern(pattern) {
+    addLinesAfterToPatterns(pattern) {
         this.addPatterns(pattern, this.linesAfterToPatterns);
     }
 
-    addLinesAfterUntilPattern(pattern) {
+    addLinesAfterUntilPatterns(pattern) {
         this.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
@@ -144,28 +145,20 @@ class SearchSettings {
         }
     }
 
-    addInFileType(filetype) {
+    addInFileTypes(filetype) {
         this.addFileTypes(filetype, this.inFileTypes);
     }
 
-    addOutFileType(filetype) {
+    addOutFileTypes(filetype) {
         this.addFileTypes(filetype, this.outFileTypes);
     }
 
-    setArchivesOnly() {
-        this.setArchivesOnlyBool(true);
-    }
-
-    setArchivesOnlyBool(b) {
+    setArchivesOnly(b = true) {
         this.archivesOnly = b;
         if (b) this.searchArchives = b;
     }
 
-    setDebug() {
-        this.setDebugBool(true);
-    }
-
-    setDebugBool(b) {
+    setDebug(b = true) {
         this.debug = b;
         if (b) this.verbose = b;
     }
@@ -191,6 +184,7 @@ class SearchSettings {
     toString() {
         return 'SearchSettings(' +
             'archivesOnly=' + this.archivesOnly +
+            ', colorize=' + this.colorize +
             ', debug=' + this.debug +
             ', excludeHidden=' + this.excludeHidden +
             ', firstMatch=' + this.firstMatch +

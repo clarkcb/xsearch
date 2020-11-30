@@ -15,7 +15,5 @@ const HOME = process.env[HOME_NAME];
 
 exports.XSEARCHPATH = config.xsearchpath;
 exports.SHAREDPATH = exports.XSEARCHPATH + '/shared';
-exports.FILETYPESPATH = exports.SHAREDPATH + '/filetypes.xml';
-exports.FILETYPESJSONPATH = exports.SHAREDPATH + '/filetypes.json';
-exports.SEARCHOPTIONSPATH = exports.SHAREDPATH + '/searchoptions.xml';
-exports.SEARCHOPTIONSJSONPATH = exports.SHAREDPATH + '/searchoptions.json';
+exports.FILETYPESJSONPATH = __dirname + '/../data/filetypes.json';
+exports.SEARCHOPTIONSJSONPATH = __dirname + '/../data/searchoptions.json';

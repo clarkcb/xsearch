@@ -6,11 +6,11 @@
 
 const common = require('./common');
 const config = require('./config');
-const FileType = require('./filetype');
+const {FileType} = require('./filetype');
 const {expandPath, getExtension} = require('./fileutil');
 
 class FileTypes {
-    "use strict";
+    'use strict'
 
     constructor() {
         this.fileTypeMap = (() => {
@@ -57,7 +57,6 @@ class FileTypes {
     }
 
     getFileTypeAsync(filename, cb) {
-        console.log(filename);
         try {
             if (this.isCodeFile(filename))
                 return cb(null, FileType.CODE);

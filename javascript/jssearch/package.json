@@ -1,6 +1,6 @@
 {
   "name": "jssearch",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "An implementation of xsearch in JavaScript + Node.js",
   "author": {
     "name": "Cary Clark",
@@ -10,31 +10,31 @@
     "type": "git",
     "url": "https://github.com/clarkcb/xsearch.git"
   },
-  "main": "./src/jssearch.js",
+  "main": "./dist/jssearch.js",
   "bin": {
-    "jssearch": "./bin/jssearch"
+    "jssearch": "bin/jssearch"
   },
   "scripts": {
-    "test": "nodeunit ./tests"
+    "build": "babel src -d dist",
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "keywords": [
     "xsearch",
-    "jssearch",
     "javascript",
     "node.js"
   ],
   "license": "MIT",
-  "dependencies": {
-    "dom-js": "0.0.9",
-    "npm": "^6.13.6"
-  },
   "devDependencies": {
-    "del": "^5.1.0",
-    "gulp": "^4.0.2",
-    "gulp-rename": "^2.0.0",
-    "gulp-replace": "^1.0.0",
-    "gulp-uglify": "^3.0.2",
-    "jshint": "^2.11.0",
-    "nodeunit": "^0.11.3"
+    "@babel/cli": "^7.12.8",
+    "@babel/core": "^7.12.9",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "babel-preset-minify": "^0.5.1",
+    "eslint": "^7.14.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "jest": "^26.6.3"
   }
 }

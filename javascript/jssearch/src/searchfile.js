@@ -7,7 +7,7 @@
 const path = require('path');
 
 class SearchFile {
-    "use strict";
+    'use strict'
 
     constructor(pathname, filename, filetype) {
         this.containerSeparator = '!';
