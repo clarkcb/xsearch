@@ -104,21 +104,13 @@ unittest_javascript () {
     echo
     log "unittest_javascript"
     JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
-    TESTS_PATH=$JSSEARCH_PATH/tests
-    NODEUNIT_PATH=$JSSEARCH_PATH/node_modules/nodeunit
-    NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
 
-    if [ ! -d $NODEUNIT_PATH ]; then
-        log "nodeunit not installed, installing"
-        cd $JSSEARCH_PATH
-        npm install nodeunit
-        cd -
-    fi
-
-    # run tests via maven
+    # run tests
     log "Unit-testing jssearch"
-    log "nodeunit $TESTS_PATH"
-    $NODEUNIT $TESTS_PATH
+    cd $JSSEARCH_PATH
+    log "npm test"
+    npm test
+    cd -
 }
 
 unittest_kotlin () {
@@ -137,12 +129,10 @@ unittest_objc () {
     log "unittest_objc"
     OBJCSEARCH_PATH=$OBJC_PATH/objcsearch
     cd $OBJCSEARCH_PATH
-    XCTEST="/Applications/Xcode.app/Contents/Developer/usr/bin/xctest"
-    # TESTS="/Users/cary/Library/Developer/Xcode/DerivedData/objcsearch-ahhnhqcmbhdevtgqfhmgnnerqaln/Build/Products/Debug/objcsearch_tests.xctest"
-    TESTS="$OBJCSEARCH_PATH/build/Release/objcsearch_tests.xctest"
-    # Usage: xctest [-XCTest All | <TestCaseClassName/testMethodName>] <path of unit to be tested>
+
     log "Unit-testing objcsearch"
-    $XCTEST -XCTest All $TESTS
+    log "xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests"
+    xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests
     cd -
 }
 
@@ -273,21 +263,12 @@ unittest_typescript () {
     echo
     log "unittest_typescript"
     TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
-    TESTS_PATH=$TSSEARCH_PATH/tests
-    NODEUNIT_PATH=$TSSEARCH_PATH/node_modules/nodeunit
-    NODEUNIT=$NODEUNIT_PATH/bin/nodeunit
 
+    # run tests
+    log "Unit-testing jssearch"
     cd $TSSEARCH_PATH
-
-    # clean and build the test files
-    log "gulp clean build clean-tests build-tests"
-    gulp clean build clean-tests build-tests
-
-    # run tests via maven
-    log "Unit-testing tssearch"
-    log "nodeunit $TESTS_PATH"
-    $NODEUNIT $TESTS_PATH
-
+    log "npm test"
+    npm test
     cd -
 }
 
@@ -342,41 +323,41 @@ fi
 
 if [ "$ARG" == "all" ]; then
     unittest_all
-elif [ "$ARG" == "clojure" ]; then
+elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]; then
     unittest_clojure
-elif [ "$ARG" == "csharp" ]; then
+elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]; then
     unittest_csharp
-elif [ "$ARG" == "fsharp" ]; then
+elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]; then
     unittest_fsharp
 elif [ "$ARG" == "go" ]; then
     unittest_go
-elif [ "$ARG" == "haskell" ]; then
+elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]; then
     unittest_haskell
 elif [ "$ARG" == "java" ]; then
     unittest_java
-elif [ "$ARG" == "javascript" ]; then
+elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]; then
     unittest_javascript
-elif [ "$ARG" == "kotlin" ]; then
+elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]; then
     unittest_kotlin
 elif [ "$ARG" == "objc" ]; then
     unittest_objc
 elif [ "$ARG" == "ocaml" ]; then
     unittest_ocaml
-elif [ "$ARG" == "perl" ]; then
+elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]; then
     unittest_perl
 elif [ "$ARG" == "php" ]; then
     unittest_php
-elif [ "$ARG" == "python" ]; then
+elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]; then
     unittest_python
-elif [ "$ARG" == "ruby" ]; then
+elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]; then
     unittest_ruby
-elif [ "$ARG" == "rust" ]; then
+elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]; then
     unittest_rust
 elif [ "$ARG" == "scala" ]; then
     unittest_scala
 elif [ "$ARG" == "swift" ]; then
     unittest_swift
-elif [ "$ARG" == "typescript" ]; then
+elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]; then
     unittest_typescript
 else
     echo "ERROR: unknown unittest argument: $ARG"

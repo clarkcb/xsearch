@@ -228,8 +228,10 @@ build_javascript () {
     log "build_javascript"
     JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
     cd $JSSEARCH_PATH
+    log "npm install"
     npm install
-    gulp clean build
+    log "npm run build"
+    npm run build
     cd -
 }
 
@@ -261,16 +263,21 @@ build_objc () {
     echo
     log "build_objc"
     OBJCSEARCH_PATH=$OBJC_PATH/objcsearch
+    # TARGET=objcsearch.xcodeproj
+    TARGET=alltargets
 
     # TODO: copy resource files locally?
 
     # run xcodebuild
     log "Building objcsearch"
     cd $OBJCSEARCH_PATH
-    # log "xcodebuild -project objcsearch.xcodeproj"
-    # xcodebuild -project objcsearch.xcodeproj
-    log "xcodebuild -alltargets"
-    xcodebuild -alltargets
+    if [ $TARGET == "alltargets" ]; then
+        log "xcodebuild -alltargets"
+        xcodebuild -alltargets
+    else
+        log "xcodebuild -project $TARGET"
+        xcodebuild -project $TARGET
+    fi
     cd -
 }
 
@@ -418,8 +425,10 @@ build_typescript () {
     log "build_typescript"
     TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
     cd $TSSEARCH_PATH
+    log "npm install"
     npm install
-    gulp clean build
+    log "npm run build"
+    npm run build
     cd -
 }
 
@@ -480,43 +489,43 @@ if [ "$ARG" == "all" ]; then
     build_all
 elif [ "$ARG" == "c" ]; then
     build_c
-elif [ "$ARG" == "clojure" ]; then
+elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]; then
     build_clojure
 elif [ "$ARG" == "cpp" ]; then
     build_cpp
-elif [ "$ARG" == "csharp" ]; then
+elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]; then
     build_csharp
-elif [ "$ARG" == "fsharp" ]; then
+elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]; then
     build_fsharp
 elif [ "$ARG" == "go" ]; then
     build_go
-elif [ "$ARG" == "haskell" ]; then
+elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]; then
     build_haskell
 elif [ "$ARG" == "java" ]; then
     build_java
-elif [ "$ARG" == "javascript" ]; then
+elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]; then
     build_javascript
-elif [ "$ARG" == "kotlin" ]; then
+elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]; then
     build_kotlin
 elif [ "$ARG" == "objc" ]; then
     build_objc
 elif [ "$ARG" == "ocaml" ]; then
     build_ocaml
-elif [ "$ARG" == "perl" ]; then
+elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]; then
     build_perl
 elif [ "$ARG" == "php" ]; then
     build_php
-elif [ "$ARG" == "python" ]; then
+elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]; then
     build_python
-elif [ "$ARG" == "ruby" ]; then
+elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]; then
     build_ruby
-elif [ "$ARG" == "rust" ]; then
+elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]; then
     build_rust
 elif [ "$ARG" == "scala" ]; then
     build_scala
 elif [ "$ARG" == "swift" ]; then
     build_swift
-elif [ "$ARG" == "typescript" ]; then
+elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]; then
     build_typescript
 else
     echo "ERROR: unknown build argument: $ARG"
