@@ -44,15 +44,15 @@ class SearchResultTest < Minitest::Test
     linenum = 1
     match_start_index = 53
     match_end_index = 59
-    line = '0123456789012345678901234567890123456789012345678901' +
-           'maxlen' +
+    line = '0123456789012345678901234567890123456789012345678901' \
+           'maxlen' \
            '8901234567890123456789012345678901234567890123456789'
     linesbefore = []
     linesafter = []
     searchresult = SearchResult.new(pattern, filepath, linenum, match_start_index,
       match_end_index, line, linesbefore, linesafter)
-    expectedline = '...89012345678901234567890123456789012345678901' +
-                   'maxlen' +
+    expectedline = '...89012345678901234567890123456789012345678901' \
+                   'maxlen' \
                    '89012345678901234567890123456789012345678901...'
     expectedoutput = "#{filepath}: #{linenum}: [#{match_start_index}:#{match_end_index}]:"
     expectedoutput += " #{expectedline}"
@@ -70,8 +70,8 @@ class SearchResultTest < Minitest::Test
     linenum = 1
     match_start_index = 53
     match_end_index = 59
-    line = '0123456789012345678901234567890123456789012345678901' +
-           'maxlen' +
+    line = '0123456789012345678901234567890123456789012345678901' \
+           'maxlen' \
            '8901234567890123456789012345678901234567890123456789'
     linesbefore = []
     linesafter = []
@@ -118,17 +118,17 @@ class SearchResultTest < Minitest::Test
     linesafter = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"]
     searchresult = SearchResult.new(pattern, filepath, linenum, match_start_index,
       match_end_index, line, linesbefore, linesafter)
-    outputtemplate = <<-eos
-================================================================================
-%s: %d: [%d:%d]
---------------------------------------------------------------------------------
-   8 | namespace CsSearch
-   9 | {
-> 10 | \tpublic class Searcher
-  11 | \t{
-  12 | \t\tprivate readonly FileTypes _fileTypes;
+    outputtemplate = <<~OUTPUT_TEMPLATE
+      ================================================================================
+      %s: %d: [%d:%d]
+      --------------------------------------------------------------------------------
+         8 | namespace CsSearch
+         9 | {
+      > 10 | \tpublic class Searcher
+        11 | \t{
+        12 | \t\tprivate readonly FileTypes _fileTypes;
 
-eos
+    OUTPUT_TEMPLATE
     expectedoutput = outputtemplate % [filepath, linenum, match_start_index, match_end_index]
     output = formatter.format(searchresult)
     assert_equal(expectedoutput, output)

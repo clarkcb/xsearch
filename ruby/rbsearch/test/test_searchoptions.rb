@@ -89,19 +89,19 @@ class SearchOptionsTest < Minitest::Test
 
   def test_settings_from_json
     settings = SearchSettings.new
-    json = <<-JSON
-{
-  "startpath": "~/src/xsearch/",
-  "in-ext": ["js","ts"],
-  "out-dirpattern": "node_module",
-  "out-filepattern": ["temp"],
-  "searchpattern": "Searcher",
-  "linesbefore": 2,
-  "linesafter": 2,
-  "debug": true,
-  "allmatches": false,
-  "includehidden": true
-}
+    json = <<~JSON
+      {
+        "startpath": "~/src/xsearch/",
+        "in-ext": ["js","ts"],
+        "out-dirpattern": "node_module",
+        "out-filepattern": ["temp"],
+        "searchpattern": "Searcher",
+        "linesbefore": 2,
+        "linesafter": 2,
+        "debug": true,
+        "allmatches": false,
+        "includehidden": true
+      }
     JSON
     @searchoptions.settings_from_json(json, settings)
     assert(settings.debug)
