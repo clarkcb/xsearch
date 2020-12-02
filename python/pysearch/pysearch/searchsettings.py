@@ -19,10 +19,10 @@ class SearchSettings(object):
     """a class to encapsulate search settings for a particular search session"""
 
     __slots__ = [
-        'archivesonly', 'colorize', 'debug', 'excludehidden', 'firstmatch', 'in_archiveextensions',
-        'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
-        'in_filetypes', 'in_linesafterpatterns', 'in_linesbeforepatterns', 'linesafter',
-        'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
+        'archivesonly', 'colorize', 'debug', 'defaultsfiles', 'excludehidden', 'firstmatch',
+        'in_archiveextensions', 'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions',
+        'in_filepatterns', 'in_filetypes', 'in_linesafterpatterns', 'in_linesbeforepatterns',
+        'linesafter', 'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
         'listfiles', 'listlines', 'maxlinelength', 'multilinesearch', 'out_archivefilepatterns',
         'out_archiveextensions', 'out_dirpatterns', 'out_extensions', 'out_filepatterns',
         'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'printresults',
@@ -31,14 +31,14 @@ class SearchSettings(object):
     ]
 
     def __init__(self, archivesonly: bool = False, colorize: bool = True, debug: bool = False,
-                 excludehidden: bool = True, firstmatch: bool = False, in_archiveextensions: Set[str] = None,
-                 in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
-                 in_extensions: Set[str] = None, in_filepatterns: PatternSet = None, in_filetypes: Set[str] = None,
-                 in_linesafterpatterns: PatternSet = None, in_linesbeforepatterns: PatternSet = None,
-                 linesafter: int = 0, linesaftertopatterns: PatternSet = None,
-                 linesafteruntilpatterns: PatternSet = None, linesbefore: int = 0, listdirs: bool = False,
-                 listfiles: bool = False, listlines: bool = False, maxlinelength: int = 150,
-                 multilinesearch: bool = False, out_archivefilepatterns: PatternSet = None,
+                 defaultsfiles: bool = True, excludehidden: bool = True, firstmatch: bool = False,
+                 in_archiveextensions: Set[str] = None, in_archivefilepatterns: PatternSet = None,
+                 in_dirpatterns: PatternSet = None, in_extensions: Set[str] = None, in_filepatterns: PatternSet = None,
+                 in_filetypes: Set[str] = None, in_linesafterpatterns: PatternSet = None,
+                 in_linesbeforepatterns: PatternSet = None, linesafter: int = 0,
+                 linesaftertopatterns: PatternSet = None, linesafteruntilpatterns: PatternSet = None,
+                 linesbefore: int = 0, listdirs: bool = False, listfiles: bool = False, listlines: bool = False,
+                 maxlinelength: int = 150, multilinesearch: bool = False, out_archivefilepatterns: PatternSet = None,
                  out_archiveextensions: Set[str] = None, out_dirpatterns: PatternSet = None,
                  out_extensions: Set[str] = None, out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
                  out_linesafterpatterns: PatternSet = None, out_linesbeforepatterns: PatternSet = None,
@@ -48,6 +48,7 @@ class SearchSettings(object):
                  verbose: bool = False):
         self.archivesonly = archivesonly
         self.colorize = colorize
+        self.defaultsfiles = defaultsfiles
         self.debug = debug
         self.excludehidden = excludehidden
         self.firstmatch = firstmatch

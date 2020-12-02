@@ -22,7 +22,7 @@ class SearchOptionsTest(unittest.TestCase):
 
     def test_no_args(self):
         # test the props
-        settings = self.searchoptions.search_settings_from_args([])
+        settings = self.searchoptions.search_settings_from_args(['--no-defaults-files'])
         self.assertFalse(settings.archivesonly)
         self.assertFalse(settings.debug)
         self.assertFalse(settings.firstmatch)
