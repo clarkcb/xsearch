@@ -321,7 +321,7 @@ class SearchOptions(object):
         sio = StringIO()
         sio.write('Usage:\n')
         sio.write(
-            ' pysearch.py [options] -s <searchpattern> <startpath>\n\nOptions:\n')
+            ' pysearch [options] -s <searchpattern> <startpath>\n\nOptions:\n')
         opt_strings = []
         opt_descs = []
         longest = 0

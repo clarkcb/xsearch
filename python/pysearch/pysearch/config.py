@@ -15,6 +15,6 @@ config = json.load(open(config_json_path))
 
 XSEARCHPATH = config['xsearchpath']
 SHAREDPATH = os.path.join(XSEARCHPATH, 'shared')
-FILETYPESPATH = os.path.join(SHAREDPATH, 'filetypes.json')
-SEARCHOPTIONSPATH = os.path.join(SHAREDPATH, 'searchoptions.json')
+FILETYPESPATH = os.path.join(cwd, '../data/filetypes.json')
+SEARCHOPTIONSPATH = os.path.join(cwd, '../data/searchoptions.json')
 VERSION = config['version']

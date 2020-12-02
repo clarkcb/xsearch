@@ -95,63 +95,63 @@ class SearcherTest(unittest.TestCase):
     def test_is_search_file_matches_by_default(self):
         settings = self.get_settings()
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertTrue(searcher.is_search_file(f))
 
     def test_is_search_file_matches_in_extension(self):
         settings = self.get_settings()
         settings.add_exts('pm', 'in_extensions')
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertTrue(searcher.is_search_file(f))
 
     def test_is_search_file_no_match_in_extension(self):
         settings = self.get_settings()
         settings.add_exts('pl', 'in_extensions')
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertFalse(searcher.is_search_file(f))
 
     def test_is_search_file_matches_out_extension(self):
         settings = self.get_settings()
         settings.add_exts('pm', 'out_extensions')
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertFalse(searcher.is_search_file(f))
 
     def test_is_search_file_no_match_out_extension(self):
         settings = self.get_settings()
         settings.add_exts('py', 'out_extensions')
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertTrue(searcher.is_search_file(f))
 
     def test_is_search_file_matches_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('Search', 'in_filepatterns')
         searcher = Searcher(settings)
-        f = 'Searcher.pm'
+        f = SearchFile(path='.', filename='Searcher.pm', filetype=FileType.CODE)
         self.assertTrue(searcher.is_search_file(f))
 
     def test_is_search_file_no_match_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('Search', 'in_filepatterns')
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertFalse(searcher.is_search_file(f))
 
     def test_is_search_file_matches_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('Search', 'out_filepatterns')
         searcher = Searcher(settings)
-        f = 'Searcher.pm'
+        f = SearchFile(path='.', filename='Searcher.pm', filetype=FileType.CODE)
         self.assertFalse(searcher.is_search_file(f))
 
     def test_is_search_file_no_match_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('Search', 'out_filepatterns')
         searcher = Searcher(settings)
-        f = 'FileUtil.pm'
+        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
         self.assertTrue(searcher.is_search_file(f))
 
 ################################################################################

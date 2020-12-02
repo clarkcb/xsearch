@@ -3,14 +3,11 @@
 #
 # color.py
 #
-# enum class Color
+# Color class - console colors
 #
 ###############################################################################
-from enum import Enum
-
-
 class Color(object):
-    """Color enum"""
+    """Color class - console colors"""
     GREY = '\033[30m'
     RED = '\033[31m'
     GREEN = '\033[32m'

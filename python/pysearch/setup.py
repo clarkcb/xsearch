@@ -11,10 +11,14 @@ setup(name='pysearch',
       author='Cary Clark',
       author_email='clarkcb@gmail.com',
       include_package_data=True,
+      install_requires=[],
       license='MIT',
       packages=['pysearch'],
       python_requires='>=3',
-      install_requires=[],
+      scripts=[
+          'bin/pysearch',
+          # 'bin/pysearch.bat'
+      ],
       tests_require=[
-          'pytest',
+          'nose',
       ])

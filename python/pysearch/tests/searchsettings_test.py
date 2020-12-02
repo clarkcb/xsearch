@@ -25,12 +25,12 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertFalse(self.settings.debug)
         self.assertFalse(self.settings.firstmatch)
         self.assertTrue(self.settings.excludehidden)
-        self.assertEqual(self.settings.linesafter, 0)
-        self.assertEqual(self.settings.linesbefore, 0)
+        self.assertEqual(0, self.settings.linesafter)
+        self.assertEqual(0, self.settings.linesbefore)
         self.assertFalse(self.settings.listdirs)
         self.assertFalse(self.settings.listfiles)
         self.assertFalse(self.settings.listlines)
-        self.assertEqual(self.settings.maxlinelength, 150)
+        self.assertEqual(150, self.settings.maxlinelength)
         self.assertFalse(self.settings.multilinesearch)
         self.assertTrue(self.settings.printresults)
         self.assertFalse(self.settings.printusage)
@@ -78,39 +78,55 @@ class SearchSettingsTest(unittest.TestCase):
             'verbose': True,
         }
         self.settings.set_properties(props)
-        self.assertEqual(self.settings.archivesonly, True)
-        self.assertEqual(self.settings.debug, True)
-        self.assertEqual(self.settings.firstmatch, True)
-        self.assertEqual(self.settings.excludehidden, False)
-        self.assertEqual(self.settings.linesafter, 5)
-        self.assertEqual(self.settings.linesbefore, 5)
-        self.assertEqual(self.settings.listdirs, True)
-        self.assertEqual(self.settings.listfiles, True)
-        self.assertEqual(self.settings.listlines, True)
-        self.assertEqual(self.settings.maxlinelength, 155)
-        self.assertEqual(self.settings.multilinesearch, True)
-        self.assertEqual(self.settings.printresults, False)
-        self.assertEqual(self.settings.printusage, True)
-        self.assertEqual(self.settings.printversion, True)
-        self.assertEqual(self.settings.recursive, False)
-        self.assertEqual(self.settings.searcharchives, True)
-        self.assertEqual(self.settings.uniquelines, True)
-        self.assertEqual(self.settings.verbose, True)
+        self.assertEqual(True, self.settings.archivesonly)
+        self.assertEqual(True, self.settings.debug)
+        self.assertEqual(True, self.settings.firstmatch)
+        self.assertEqual(False, self.settings.excludehidden)
+        self.assertEqual(5, self.settings.linesafter)
+        self.assertEqual(5, self.settings.linesbefore)
+        self.assertEqual(True, self.settings.listdirs)
+        self.assertEqual(True, self.settings.listfiles)
+        self.assertEqual(True, self.settings.listlines)
+        self.assertEqual(155, self.settings.maxlinelength)
+        self.assertEqual(True, self.settings.multilinesearch)
+        self.assertEqual(False, self.settings.printresults)
+        self.assertEqual(True, self.settings.printusage,)
+        self.assertEqual(True, self.settings.printversion)
+        self.assertEqual(False, self.settings.recursive)
+        self.assertEqual(True, self.settings.searcharchives)
+        self.assertEqual(True, self.settings.uniquelines)
+        self.assertEqual(True, self.settings.verbose)
 
     def test_add_single_extension(self):
         self.settings.add_exts('py', 'in_extensions')
+        self.assertEqual(1, len(self.settings.in_extensions))
         self.assertIn('py', self.settings.in_extensions)
 
     def test_add_comma_delimited_extensions(self):
         self.settings.add_exts('py,rb,scala', 'in_extensions')
-        self.assertEqual(len(self.settings.in_extensions), 3)
+        self.assertEqual(3, len(self.settings.in_extensions))
         for x in {'py', 'rb', 'scala'}:
             self.assertIn(x, self.settings.in_extensions)
 
-    def test_add_patterns(self):
+    def test_add_extensions_set(self):
+        extensions_set = {'py','rb','scala'}
+        self.settings.add_exts(extensions_set, 'in_extensions')
+        self.assertEqual(3, len(self.settings.in_extensions))
+        for x in extensions_set:
+            self.assertIn(x, self.settings.in_extensions)
+
+    def test_add_single_pattern(self):
         p = 'Search'
         self.settings.add_patterns(p, 'searchpatterns')
-        self.assertEqual(list(self.settings.searchpatterns)[0].pattern, p)
+        self.assertEqual(1, len(self.settings.searchpatterns))
+        self.assertEqual(p, list(self.settings.searchpatterns)[0].pattern)
+
+    def test_add_patterns_set(self):
+        patterns_set = {'Search', 'Test'}
+        self.settings.add_patterns(patterns_set, 'searchpatterns')
+        self.assertEqual(len(patterns_set), len(self.settings.searchpatterns))
+        for p in self.settings.searchpatterns:
+            self.assertIn(p.pattern, patterns_set)
 
 
 if __name__ == '__main__':
