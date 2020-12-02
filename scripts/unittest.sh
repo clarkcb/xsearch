@@ -181,24 +181,26 @@ unittest_php () {
 unittest_python () {
     echo
     log "unittest_python"
-    TESTS_PATH=$PYTHON_PATH/tests
-    VENV_PATH=$PYTHON_PATH/.env
+    PYSEARCH_PATH=$PYTHON_PATH/pysearch
+    TESTS_PATH=$PYSEARCH_PATH/tests
+    VENV_PATH=$PYSEARCH_PATH/venv
     PYTHON=$VENV_PATH/bin/python
-    export PYTHONPATH=$PYTHON_PATH:$PYTHONPATH
+    export PYTHONPATH=$PYTHON_PATH
 
     # activate the virtualenv
-    source $PYTHON_PATH/.env/bin/activate
+    source $VENV_PATH/bin/activate
+
+    cd $PYSEARCH_PATH
 
     # Run the individual tests
     log "Unit-testing pysearch"
-    FILES=$(find $TESTS_PATH -name "*.py")
-    for f in ${FILES[*]}; do
-        log "python $f"
-        $PYTHON $f
-    done
+    log "nosetests"
+    nosetests
 
     # deactivate the virtualenv
     deactivate
+
+    cd -
 }
 
 unittest_ruby () {
