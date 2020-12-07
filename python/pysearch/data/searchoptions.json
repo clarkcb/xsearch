@@ -19,6 +19,10 @@
       "desc": "Set output mode to debug"
     },
     {
+      "long": "defaults-files",
+      "desc": "Load default settings (.xsearch.json) files*"
+    },
+    {
       "long": "encoding",
       "short": "e",
       "desc": "Set the encoding to use with text files (default: \"utf-8\")"
@@ -121,6 +125,10 @@
       "long": "nocolorize",
       "short": "C",
       "desc": "Do not colorize console output"
+    },
+    {
+      "long": "no-defaults-files",
+      "desc": "Do not load default settings (.xsearch.json) files"
     },
     {
       "long": "noprintmatches",
