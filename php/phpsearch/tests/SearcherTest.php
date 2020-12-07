@@ -3,6 +3,11 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use phpsearch\Config;
+use phpsearch\FileUtil;
+use phpsearch\Searcher;
+use phpsearch\SearchSettings;
+
 class SearcherTest extends TestCase
 {
     private function get_settings()

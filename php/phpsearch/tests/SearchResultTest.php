@@ -1,6 +1,12 @@
 <?php declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 
+use phpsearch\FileType;
+use phpsearch\SearchFile;
+use phpsearch\SearchResult;
+use phpsearch\SearchResultFormatter;
+use phpsearch\SearchSettings;
+
 require_once __DIR__ . '/../src/autoload.php';
 
 class SearchResultTest extends TestCase

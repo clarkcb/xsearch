@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-require_once __DIR__ . '/autoload.php';
+namespace phpsearch;
+
+//require_once __DIR__ . '/../autoload.php';
 
 /**
  * Class FileTypes
@@ -14,7 +16,7 @@ class FileTypes
         $this->file_type_map = $this->get_file_type_map_from_json();
     }
 
-    private function get_file_type_map_from_json()
+    private function get_file_type_map_from_json(): array
     {
         $file_type_map = array();
         $filetypespath = FileUtil::expand_user_home_path(Config::FILETYPESPATH);

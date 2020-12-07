@@ -3,6 +3,10 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use phpsearch\SearchException;
+use phpsearch\SearchOptions;
+use phpsearch\SearchSettings;
+
 class SearchOptionsTest extends TestCase
 {
     /**

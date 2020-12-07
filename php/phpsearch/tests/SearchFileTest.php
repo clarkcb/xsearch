@@ -3,6 +3,9 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use phpsearch\FileType;
+use phpsearch\SearchFile;
+
 class SearchFileTest extends TestCase
 {
     public function test_searchfile_abs_path()

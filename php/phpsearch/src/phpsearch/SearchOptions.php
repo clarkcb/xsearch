@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 
-require_once __DIR__ . '/autoload.php';
+namespace phpsearch;
+
+require_once __DIR__ . '/../autoload.php';
+//include_once __DIR__ . '/common.php';
 
 /**
  * Class SearchOptions
@@ -182,9 +185,11 @@ class SearchOptions
                     $this->longarg_map[$short] = $long;
                 }
             }
-            usort($this->options, 'cmp_searchoptions');
+            usort($this->options, array('phpsearch\SearchOptions', 'cmp_searchoptions'));
+//            usort($this->options, array('common', 'cmp_searchoptions'));
+//            usort($this->options, 'cmp_searchoptions');
         } else {
-            throw new Exception('File not found: ' . $searchoptionspath);
+            throw new SearchException('File not found: ' . $searchoptionspath);
         }
     }
 
@@ -283,9 +288,9 @@ class SearchOptions
         }
         return $usage;
     }
-}
 
-function cmp_searchoptions(SearchOption $o1, SearchOption $o2): int
-{
-    return strcmp($o1->sortarg, $o2->sortarg);
+    private static function cmp_searchoptions(SearchOption $o1, SearchOption $o2): int
+    {
+        return strcmp($o1->sortarg, $o2->sortarg);
+    }
 }

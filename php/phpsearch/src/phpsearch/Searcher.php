@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-require_once __DIR__ . '/autoload.php';
-require_once __DIR__ . '/common.php';
+namespace phpsearch;
+
+//require_once __DIR__ . '/../autoload.php';
+//require_once __DIR__ . '/common.php';
 
 /**
  * Class Searcher
@@ -229,13 +231,13 @@ class Searcher
                 return $sf->path;
             };
             $searchdirs = array_unique(array_map($get_path, $searchfiles));
-            log_msg(sprintf("\nDirectories to be searched (%d):", count($searchdirs)));
+            Logger::log_msg(sprintf("\nDirectories to be searched (%d):", count($searchdirs)));
             foreach ($searchdirs as $d) {
-                log_msg($d);
+                Logger::log_msg($d);
             }
-            log_msg(sprintf("\n\nFiles to be searched (%d):", count($searchfiles)));
+            Logger::log_msg(sprintf("\n\nFiles to be searched (%d):", count($searchfiles)));
             foreach ($searchfiles as $f) {
-                log_msg($f);
+                Logger::log_msg($f);
             }
         }
 
@@ -258,7 +260,7 @@ class Searcher
     private function search_text_file(SearchFile $f)
     {
         if ($this->settings->debug) {
-            log_msg("Searching text file $f");
+            Logger::log_msg("Searching text file $f");
         }
         if ($this->settings->multilinesearch) {
             $this->search_text_file_contents($f);
@@ -546,7 +548,7 @@ class Searcher
     private function search_binary_file(SearchFile $f)
     {
         if ($this->settings->debug) {
-            log_msg("Searching binary file $f");
+            Logger::log_msg("Searching binary file $f");
         }
         $contents = file_get_contents($f->filepath());
         foreach ($this->settings->searchpatterns as $pattern) {
@@ -579,14 +581,35 @@ class Searcher
         $this->results[] = $r;
     }
 
+    private function cmp_ignorecase(string $s1, string $s2): int
+    {
+        return strcmp(strtolower($s1), strtolower($s2));
+    }
+
+    private function cmp_searchresults(SearchResult $r1, SearchResult $r2): int
+    {
+        $dircmp = $this->cmp_ignorecase($r1->file->path, $r2->file->path);
+        if ($dircmp !== 0) {
+            return $dircmp;
+        }
+        $filecmp = $this->cmp_ignorecase($r1->file->filename, $r2->file->filename);
+        if ($filecmp !== 0) {
+            return $filecmp;
+        }
+        if ($r1->linenum === $r2->linenum) {
+            return $r1->match_start_index - $r2->match_start_index;
+        }
+        return $r1->linenum - $r2->linenum;
+    }
+
     public function printresults()
     {
         $sorted_results = $this->results;
-        usort($sorted_results, 'cmp_searchresults');
+        usort($sorted_results, array($this, 'cmp_searchresults'));
         $formatter = new SearchResultFormatter($this->settings);
-        log_msg(sprintf("\nSearch results (%d):", count($sorted_results)));
+        Logger::log_msg(sprintf("\nSearch results (%d):", count($sorted_results)));
         foreach ($sorted_results as $r) {
-            log_msg($formatter->format($r));
+            Logger::log_msg($formatter->format($r));
         }
     }
 
@@ -606,9 +629,9 @@ class Searcher
     public function print_matching_dirs()
     {
         $dirs = $this->get_matching_dirs();
-        log_msg(sprintf("\nDirectories with matches (%d):", count($dirs)));
+        Logger::log_msg(sprintf("\nDirectories with matches (%d):", count($dirs)));
         foreach ($dirs as $d) {
-            log_msg($d);
+            Logger::log_msg($d);
         }
     }
 
@@ -628,9 +651,9 @@ class Searcher
     public function print_matching_files()
     {
         $files = $this->get_matching_files();
-        log_msg(sprintf("\nFiles with matches (%d):", count($files)));
+        Logger::log_msg(sprintf("\nFiles with matches (%d):", count($files)));
         foreach ($files as $f) {
-            log_msg($f);
+            Logger::log_msg($f);
         }
     }
 
@@ -654,9 +677,9 @@ class Searcher
         if ($this->settings->uniquelines) {
             $msg = "\nUnique lines with matches (%d):";
         }
-        log_msg(sprintf($msg, count($lines)));
+        Logger::log_msg(sprintf($msg, count($lines)));
         foreach ($lines as $l) {
-            log_msg($l);
+            Logger::log_msg($l);
         }
     }
 }
