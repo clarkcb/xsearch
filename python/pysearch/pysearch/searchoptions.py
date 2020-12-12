@@ -12,7 +12,7 @@ from io import StringIO
 import json
 import os
 import sys
-from typing import List
+from typing import Any, Dict, List
 import xml.dom.minidom as minidom
 
 from .common import get_text
@@ -169,14 +169,14 @@ class SearchOptions(object):
 
         self.int_arg_dict = {
             'linesafter':
-                lambda x, settings:
-                    settings.set_property('linesafter', int(x)),
+                lambda i, settings:
+                    settings.set_property('linesafter', i),
             'linesbefore':
-                lambda x, settings:
-                    settings.set_property('linesbefore', int(x)),
+                lambda i, settings:
+                    settings.set_property('linesbefore', i),
             'maxlinelength':
-                lambda x, settings:
-                    settings.set_property('maxlinelength', int(x)),
+                lambda i, settings:
+                    settings.set_property('maxlinelength', i),
         }
 
         self.str_arg_dict = {
@@ -190,6 +190,27 @@ class SearchOptions(object):
 
         self.longarg_dict = {}
 
+    def settings_from_dict(self, arg_dict: Dict[str, Any], settings: SearchSettings):
+        for k in arg_dict:
+            if k in self.bool_arg_dict:
+                self.bool_arg_dict[k](arg_dict[k], settings)
+            elif k in self.coll_arg_dict:
+                if isinstance(arg_dict[k], list):
+                    for v in arg_dict[k]:
+                        self.coll_arg_dict[k](v, settings)
+                else:
+                    self.coll_arg_dict[k](arg_dict[k], settings)
+            elif k in self.int_arg_dict:
+                self.int_arg_dict[k](arg_dict[k], settings)
+            elif k in self.str_arg_dict:
+                self.str_arg_dict[k](arg_dict[k], settings)
+            else:
+                raise SearchException('Invalid option: {0}'.format(k))
+
+    def settings_from_json(self, jsonstr: str, settings: SearchSettings):
+        json_dict = json.loads(jsonstr)
+        self.settings_from_dict(json_dict, settings)
+
     def settings_from_file(self, filepath: str, settings: SearchSettings):
         assert os.path.exists(
             filepath), 'Settings file not found: %s' % filepath
@@ -198,19 +219,15 @@ class SearchOptions(object):
             # print "jsonstr: '%s'" % jsonstr
         self.settings_from_json(jsonstr, settings)
 
-    def settings_from_json(self, jsonstr: str, settings: SearchSettings):
-        json_dict = json.loads(jsonstr)
-        for arg in json_dict:
-            if arg in self.bool_arg_dict:
-                self.bool_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.coll_arg_dict:
-                self.coll_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.int_arg_dict:
-                self.int_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.str_arg_dict:
-                self.str_arg_dict[arg](json_dict[arg], settings)
-            else:
-                raise SearchException('Invalid option: {0}'.format(arg))
+    def load_default_files(self, startpath: str, settings: SearchSettings):
+        # check for a .xsearch.json file in the startpath directory, and if it exists, load it
+        # NOTE: we're not validating startpath yet, so just move on if not defined or not found
+        if os.path.exists(startpath) and os.path.exists(os.path.join(startpath, self.default_file_name)):
+            print('{} file found'.format(os.path.join(startpath, self.default_file_name)))
+            self.settings_from_file(os.path.join(startpath, self.default_file_name), settings)
+        if os.path.exists(os.path.join(os.path.expanduser('~'), self.default_file_name)):
+            print('{} file found'.format(os.path.join(os.path.expanduser('~'), self.default_file_name)))
+            self.settings_from_file(os.path.join(os.path.expanduser('~'), self.default_file_name), settings)
 
     def set_options_from_json(self):
         with open(SEARCHOPTIONSPATH, mode='r') as f:
@@ -270,7 +287,7 @@ class SearchOptions(object):
         settings = SearchSettings()
         # default printresults to True since running from command line
         settings.printresults = True
-        captured = {}
+        arg_dict = {}
         argdeque = deque(args)
         while argdeque:
             arg = argdeque.popleft()
@@ -284,7 +301,7 @@ class SearchOptions(object):
                             self.bool_arg_dict[longarg](True, settings)
                             return settings
                         else:
-                            captured[longarg] = True
+                            arg_dict[longarg] = True
                     elif longarg in self.coll_arg_dict or \
                             longarg in self.int_arg_dict or \
                             longarg in self.str_arg_dict or \
@@ -304,9 +321,11 @@ class SearchOptions(object):
                                     err = 'Invalid value for option {}: {}'.format(
                                         arg, argval)
                                     raise SearchException(err)
-                                captured[longarg] = argval
+                                arg_dict[longarg] = i
+                            elif longarg in self.coll_arg_dict:
+                                arg_dict.setdefault(longarg, []).append(argval)
                             else:
-                                captured[longarg] = argval
+                                arg_dict[longarg] = argval
                         else:
                             raise SearchException('Missing value for option {0}'.
                                                   format(arg))
@@ -316,35 +335,14 @@ class SearchOptions(object):
                 else:
                     raise SearchException('Invalid option: {0}'.format(arg))
             else:
-                captured['startpath'] = arg
-        # TODO: uncomment next lines and require code testing this method to include startpath and searchpattern
-        # if 'startpath' not in captured or 'searchpattern' not in captured:
-        #     return settings
-        # TODO: account for these changes in unit tests
-        if 'no-defaults-files' not in captured:
-            # check for a .xsearch.json file in the startpath directory, and if it exists, load it
-            # NOTE: we're not validating startpath yet, so just move on if not defined or not found
-            if 'startpath' in captured and captured['startpath'] and \
-                    os.path.exists(captured['startpath']) and \
-                    os.path.exists(os.path.join(captured['startpath'], self.default_file_name)):
-                print('{} file found'.format(os.path.join(captured['startpath'], self.default_file_name)))
-                self.settings_from_file(os.path.join(captured['startpath'], self.default_file_name), settings)
-            if os.path.exists(os.path.join(os.path.expanduser('~'), self.default_file_name)):
-                print('{} file found'.format(os.path.join(os.path.expanduser('~'), self.default_file_name)))
-                self.settings_from_file(os.path.join(os.path.expanduser('~'), self.default_file_name), settings)
-        for k in captured:
-            if k in self.bool_arg_dict:
-                self.bool_arg_dict[k](captured[k], settings)
-            if k in self.coll_arg_dict:
-                self.coll_arg_dict[k](captured[k], settings)
-            elif k in self.int_arg_dict:
-                self.int_arg_dict[k](captured[k], settings)
-            elif k in self.str_arg_dict:
-                self.str_arg_dict[k](captured[k], settings)
-            elif k == 'settings-file':
-                self.settings_from_file(captured[k], settings)
-            elif k == 'startpath':
-                settings.startpath = captured[k]
+                arg_dict['startpath'] = arg
+        # TODO: need to adjust unit tests to conform to required startpath and searchpattern
+        for s in ('startpath', 'searchpattern'):
+            if s not in arg_dict or not arg_dict[s]:
+                return settings
+        if 'no-defaults-files' not in arg_dict:
+            self.load_default_files(arg_dict['startpath'], settings)
+        self.settings_from_dict(arg_dict, settings)
         return settings
 
     def usage(self):
