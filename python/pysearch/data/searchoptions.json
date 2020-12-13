@@ -19,7 +19,7 @@
       "desc": "Set output mode to debug"
     },
     {
-      "long": "defaults-files",
+      "long": "defaultsfiles",
       "desc": "Load default settings (.xsearch.json) files*"
     },
     {
@@ -127,7 +127,7 @@
       "desc": "Do not colorize console output"
     },
     {
-      "long": "no-defaults-files",
+      "long": "nodefaultsfiles",
       "desc": "Do not load default settings (.xsearch.json) files"
     },
     {

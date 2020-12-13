@@ -48,8 +48,8 @@ class SearchSettings(object):
                  verbose: bool = False):
         self.archivesonly = archivesonly
         self.colorize = colorize
-        self.defaultsfiles = defaultsfiles
         self.debug = debug
+        self.defaultsfiles = defaultsfiles
         self.excludehidden = excludehidden
         self.firstmatch = firstmatch
         self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set([

@@ -12,7 +12,7 @@ from io import StringIO
 import json
 import os
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import xml.dom.minidom as minidom
 
 from .common import get_text
@@ -45,7 +45,7 @@ class SearchOptions(object):
             'debug':
                 lambda b, settings:
                     settings.set_property('debug', b),
-            'defaults-files':
+            'defaultsfiles':
                 lambda b, settings:
                     settings.set_property('defaultsfiles', b),
             'excludehidden':
@@ -75,7 +75,7 @@ class SearchOptions(object):
             'nocolorize':
                 lambda b, settings:
                     settings.set_property('colorize', not b),
-            'no-defaults-files':
+            'nodefaultsfiles':
                 lambda b, settings:
                     settings.set_property('defaultsfiles', not b),
             'noprintmatches':
@@ -216,13 +216,13 @@ class SearchOptions(object):
             filepath), 'Settings file not found: %s' % filepath
         with open(filepath) as f:
             jsonstr = f.read()
-            # print "jsonstr: '%s'" % jsonstr
         self.settings_from_json(jsonstr, settings)
 
-    def load_default_files(self, startpath: str, settings: SearchSettings):
+    def load_default_files(self, startpath: Optional[str], settings: SearchSettings):
         # check for a .xsearch.json file in the startpath directory, and if it exists, load it
         # NOTE: we're not validating startpath yet, so just move on if not defined or not found
-        if os.path.exists(startpath) and os.path.exists(os.path.join(startpath, self.default_file_name)):
+        if startpath and os.path.exists(startpath) and \
+                os.path.exists(os.path.join(startpath, self.default_file_name)):
             print('{} file found'.format(os.path.join(startpath, self.default_file_name)))
             self.settings_from_file(os.path.join(startpath, self.default_file_name), settings)
         if os.path.exists(os.path.join(os.path.expanduser('~'), self.default_file_name)):
@@ -336,12 +336,8 @@ class SearchOptions(object):
                     raise SearchException('Invalid option: {0}'.format(arg))
             else:
                 arg_dict['startpath'] = arg
-        # TODO: need to adjust unit tests to conform to required startpath and searchpattern
-        for s in ('startpath', 'searchpattern'):
-            if s not in arg_dict or not arg_dict[s]:
-                return settings
-        if 'no-defaults-files' not in arg_dict:
-            self.load_default_files(arg_dict['startpath'], settings)
+        if 'nodefaultsfiles' not in arg_dict:
+            self.load_default_files(arg_dict.get('startpath', None), settings)
         self.settings_from_dict(arg_dict, settings)
         return settings
 
