@@ -6,6 +6,7 @@ class SearchSettings
   attr_reader :archivesonly
   attr_accessor :colorize
   attr_reader :debug
+  attr_accessor :defaultsfiles
   attr_accessor :excludehidden
   attr_accessor :firstmatch
   attr_accessor :in_archiveextensions
@@ -48,6 +49,7 @@ class SearchSettings
     @archivesonly = false
     @colorize = true
     @debug = false
+    @defaultsfiles = true
     @excludehidden = true
     @firstmatch = false
     @linesafter = 0
@@ -140,6 +142,7 @@ class SearchSettings
     s = 'SearchSettings('
     s << "archivesonly: #{@archivesonly}"
     s << ", debug: #{@debug}"
+    s << ", defaultsfiles: #{@defaultsfiles}"
     s << ", firstmatch: #{@firstmatch}"
     s << ", excludehidden: #{@excludehidden}"
     s << ', ' + list_to_s('in_archiveextensions', @in_archiveextensions)
