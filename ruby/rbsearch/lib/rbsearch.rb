@@ -20,24 +20,24 @@ require_relative 'rbsearch/searchresult'
 require_relative 'rbsearch/searchsettings'
 
 def main
-  options = SearchOptions.new
+  options = RbSearch::SearchOptions.new
 
   settings =
     begin
       options.search_settings_from_args(ARGV)
-    rescue SearchError => e
+    rescue RbSearch::SearchError => e
       handle_error(e, options)
     end
 
-  log("settings: #{settings}") if settings.debug
+  RbSearch::log("settings: #{settings}") if settings.debug
 
   if settings.printusage
-    log("\n")
+    RbSearch::log("\n")
     options.usage
   end
 
   if settings.printversion
-    log('Version: 0.1.0')
+    RbSearch::log("Version: #{RbSearch::VERSION}")
     abort
   end
 
@@ -45,40 +45,40 @@ def main
 end
 
 def handle_error(err, options)
-  log("\nERROR: #{err.message}\n\n")
+  RbSearch::log("\nERROR: #{err.message}\n\n")
   options.usage
 end
 
 def search(options, settings)
-  searcher = Searcher.new(settings)
+  searcher = RbSearch::Searcher.new(settings)
   searcher.search
 
   # print the results
   if settings.printresults
-    log("\n")
+    RbSearch::log("\n")
     searcher.print_results
   end
 
   if settings.listdirs
-    log("\n")
+    RbSearch::log("\n")
     dirs = searcher.get_matching_dirs
-    log("Directories with matches (#{dirs.size}):")
+    RbSearch::log("Directories with matches (#{dirs.size}):")
     dirs.each do |d|
-      log("#{d}\n")
+      RbSearch::log("#{d}\n")
     end
   end
 
   if settings.listfiles
-    log("\n")
+    RbSearch::log("\n")
     files = searcher.get_matching_files
-    log("Files with matches (#{files.size}):")
+    RbSearch::log("Files with matches (#{files.size}):")
     files.each do |f|
-      log("#{f}\n")
+      RbSearch::log("#{f}\n")
     end
   end
 
   if settings.listlines
-    log("\n")
+    RbSearch::log("\n")
     lines = searcher.get_matching_lines
     hdr_text =
       if settings.uniquelines
@@ -86,13 +86,13 @@ def search(options, settings)
       else
         'Lines with matches'
       end
-    log("#{hdr_text} (#{lines.size}):")
+    RbSearch::log("#{hdr_text} (#{lines.size}):")
     lines.each do |line|
-      log("#{line}\n")
+      RbSearch::log("#{line}\n")
     end
   end
 
-rescue SearchError => e
+rescue RbSearch::SearchError => e
   handle_error(e, options)
 
 rescue RuntimeError => e

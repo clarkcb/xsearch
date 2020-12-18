@@ -8,6 +8,9 @@
 #
 ################################################################################
 
-def log(message)
-  puts message
+module RbSearch
+  module_function
+  def log(message)
+    puts message
+  end
 end
