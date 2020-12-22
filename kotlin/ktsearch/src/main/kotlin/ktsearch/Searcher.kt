@@ -10,7 +10,7 @@ import java.util.*
  */
 class Searcher(val settings: SearchSettings) {
     private val fileTypes: FileTypes
-    private var charset: Charset
+    private var charset: Charset? = null
 
     init {
         validateSettings(settings)
@@ -31,11 +31,6 @@ class Searcher(val settings: SearchSettings) {
         if (settings.searchPatterns.isEmpty()) {
             throw SearchException("No search patterns defined")
         }
-        try {
-            Charset.forName(settings.textFileEncoding)
-        } catch (e: IllegalArgumentException) {
-            throw SearchException("Invalid encoding provided")
-        }
         if (settings.linesAfter < 0) {
             throw SearchException("Invalid linesafter")
         }
@@ -44,6 +39,11 @@ class Searcher(val settings: SearchSettings) {
         }
         if (settings.maxLineLength < 0) {
             throw SearchException("Invalid maxlinelength")
+        }
+        try {
+            charset = Charset.forName(settings.textFileEncoding)
+        } catch (e: IllegalArgumentException) {
+            throw SearchException("Invalid encoding provided")
         }
     }
 
@@ -194,7 +194,7 @@ class Searcher(val settings: SearchSettings) {
 
     private fun searchTextFileContents(sf: SearchFile): List<SearchResult> {
         val results: List<SearchResult> =
-                searchMultilineString(sf.file.readText(Charset.forName(settings.textFileEncoding)))
+                searchMultilineString(sf.file.readText(charset!!))
         return results.map { r -> r.copy(file = sf) }
     }
 
@@ -295,7 +295,7 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun searchTextFileLines(sf: SearchFile): List<SearchResult> {
-        val results: List<SearchResult> = sf.file.reader(Charset.forName(settings.textFileEncoding)).
+        val results: List<SearchResult> = sf.file.reader(charset!!).
                 useLines { ss -> searchStringIterator(ss.iterator()) }
         return results.map { r -> r.copy(file = sf) }
     }
