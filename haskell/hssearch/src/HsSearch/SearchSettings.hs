@@ -11,6 +11,7 @@ import HsSearch.FileUtil (normalizeExtension)
 
 data SearchSettings = SearchSettings {
                                        archivesOnly :: Bool
+                                     , colorize :: Bool
                                      , debug :: Bool
                                      , excludeHidden :: Bool
                                      , firstMatch :: Bool
@@ -54,6 +55,7 @@ data SearchSettings = SearchSettings {
 defaultSearchSettings :: SearchSettings
 defaultSearchSettings = SearchSettings {
                                          archivesOnly=False
+                                       , colorize=True
                                        , debug=False
                                        , excludeHidden=True
                                        , firstMatch=False

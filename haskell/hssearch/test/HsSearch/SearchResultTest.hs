@@ -42,7 +42,7 @@ getSingleLineSearchResultTests = do
                                                  , matchEndIndex=testFileMatchEndIndex
                                                  , line=testFileLine
                                                  }
-  let settings = defaultSearchSettings
+  let settings = defaultSearchSettings { colorize=False }
   let formattedResult = formatSearchResult settings singleLineSearchResult
   let expectedFormat = testFilePath ++ ": " ++ show testFileLineNum ++ ": [" ++
                        show testFileMatchStartIndex ++ ":" ++
@@ -66,7 +66,7 @@ getMultiLineSearchResultTests = do
                                                 , beforeLines=lb
                                                 , afterLines=la
                                                 }
-  let settings = defaultSearchSettings { linesBefore=2, linesAfter=2 }
+  let settings = defaultSearchSettings { colorize=False, linesBefore=2, linesAfter=2 }
   let formattedResult = formatSearchResult settings multiLineSearchResult
   let expectedFormat = replicate 80 '=' ++ "\n" ++ testFilePath ++ ": " ++
                        show testFileLineNum ++ ": [" ++
