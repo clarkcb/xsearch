@@ -3,7 +3,6 @@ module HsSearch.Searcher
       doSearch
     , doSearchFiles
     , filterFile
-    , getSearchDirs
     , getSearchFiles
     , isArchiveSearchFile
     , isSearchDir
@@ -12,7 +11,6 @@ module HsSearch.Searcher
     , searchLines
     ) where
 
-import Control.Monad (liftM)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Maybe (catMaybes)
@@ -37,17 +35,6 @@ isSearchDir settings d = all ($d) tests
         inPatterns = inDirPatterns settings
         outPatterns = outDirPatterns settings
         includeHidden = not $ excludeHidden settings
-
-getSearchDirs :: SearchSettings -> IO [FilePath]
-getSearchDirs settings = do
-  isStartPathDir <- isDirectory $ startPath settings
-  if isStartPathDir
-    then getDirectories
-    else return [getParentPath (startPath settings)]
-  where getDirectories :: IO [FilePath]
-        getDirectories = do
-          dirs <- getRecursiveDirectories $ startPath settings
-          return $ filter (isSearchDir settings) $ startPath settings : dirs
 
 isSearchFile :: SearchSettings -> FilePath -> Bool
 isSearchFile settings fp = all ($fp) tests
@@ -109,19 +96,9 @@ filterFile settings sf | isArchiveFile sf = includeArchiveFile sf
         includeFile f = not (archivesOnly settings) &&
                         isSearchFile settings (searchFilePath f)
 
-getSearchFiles :: SearchSettings -> [FilePath] -> IO [FilePath]
-getSearchFiles settings dirs = do
-  isStartPathDir <- isDirectory $ startPath settings
-  files <- if isStartPathDir
-             then concat `liftM` mapM getDirectoryFiles dirs
-             else return [startPath settings]
-  fileTypes <- getFileTypes files
-  let makeSearchFile (f,t) = SearchFile { searchFileContainers=[]
-                                        , searchFilePath=f
-                                        , searchFileType=t }
-  let filesWithTypes = zipWith (curry makeSearchFile) files fileTypes
-  let searchableFiles = filter isSearchableFile filesWithTypes
-  return $ map searchFilePath (filter (filterFile settings) searchableFiles)
+getSearchFiles :: SearchSettings -> IO [FilePath]
+getSearchFiles settings = do
+  getRecursiveFilteredContents (startPath settings) (isSearchDir settings) (isSearchFile settings)
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do
@@ -343,6 +320,5 @@ doSearchFiles settings searchFiles = do
 
 doSearch :: SearchSettings -> IO [SearchResult]
 doSearch settings = do
-  searchDirs <- getSearchDirs settings
-  searchFiles <- getSearchFiles settings searchDirs
+  searchFiles <- getSearchFiles settings
   doSearchFiles settings searchFiles

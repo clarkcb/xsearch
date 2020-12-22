@@ -6,11 +6,10 @@ import Data.Char (isSpace, toUpper)
 import Data.List (nub, sort, sortBy)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
-import System.TimeIt
 
-import HsSearch.FileUtil (pathExists)
+import HsSearch.FileUtil (getParentPath, pathExists)
 import HsSearch.SearchOptions
-import HsSearch.Searcher (getSearchDirs, getSearchFiles, doSearchFiles)
+import HsSearch.Searcher (getSearchFiles, doSearchFiles)
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
@@ -19,6 +18,9 @@ validateSettings :: SearchSettings -> [String]
 validateSettings settings = concatMap ($settings) validators
   where validators = [ \s -> ["Startpath not defined" | startPath s == ""]
                      , \s -> ["No search patterns defined" | null (searchPatterns s)]
+                     , \s -> ["Invalid lines after" | linesAfter s < 0]
+                     , \s -> ["Invalid lines before" | linesBefore s < 0]
+                     , \s -> ["Invalid max line length" | maxLineLength s < 0]
                      ]
 
 errsOrUsage :: [SearchOption] -> SearchSettings -> Maybe String
@@ -34,18 +36,13 @@ errsOrUsage searchOptions settings =
                    (True, _)     -> "\n" ++ getUsage searchOptions
                    (False, True) -> errMsg ++ getUsage searchOptions
                    _ -> ""
-        
+
 formatResults :: SearchSettings -> [SearchResult] -> String
 formatResults settings results =
   "\nSearch results (" ++ show (length results) ++ "):\n" ++
     (if not (null results)
        then unlines (map (formatSearchResult settings) results)
        else "")
-  where matchString p = "\nMatches for "++ show p ++ ": " ++
-          show (patternCount p) ++ "\n"
-        patternCount :: String -> Int
-        patternCount p = foldr accMatches 0 results
-          where accMatches x acc = if p == searchPattern x then acc + 1 else acc
 
 getMatchingDirs :: [SearchResult] -> [FilePath]
 getMatchingDirs = sort . nub . map getDirectory
@@ -90,12 +87,13 @@ formatMatchingLines results unique =
 formatSearchDirs :: [FilePath] -> String
 formatSearchDirs dirs = 
   "\nDirectories to be searched (" ++ show (length dirs) ++ "):\n" ++
-  unlines dirs
+  unlines (sort dirs)
 
 formatSearchFiles :: [FilePath] -> String
-formatSearchFiles files = 
+formatSearchFiles files =
+  formatSearchDirs (nub (map getParentPath files)) ++
   "\nFiles to be searched (" ++ show (length files) ++ "):\n" ++
-  unlines files
+  unlines (sort files)
 
 logMsg :: String -> IO ()
 logMsg = putStr
@@ -115,11 +113,7 @@ main = do
         Nothing -> do
           foundPath <- pathExists (startPath settings)
           if foundPath then do
-            searchDirs <- getSearchDirs settings
-            logMsg $ if verbose settings
-                     then formatSearchDirs searchDirs
-                     else ""
-            searchFiles <- getSearchFiles settings searchDirs
+            searchFiles <- getSearchFiles settings
             logMsg $ if verbose settings
                      then formatSearchFiles searchFiles
                      else ""

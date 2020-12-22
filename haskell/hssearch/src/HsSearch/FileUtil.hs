@@ -11,6 +11,7 @@ module HsSearch.FileUtil
     , getNonDotDirectoryContents
     , getParentPath
     , getRecursiveContents
+    , getRecursiveFilteredContents
     , getRecursiveDirectories
     , hasExtension
     , isDirectory
@@ -108,6 +109,25 @@ getRecursiveContents dir = do
         subNames <- getRecursiveContents path
         return $ path : subNames
     else return [path]
+  return (concat paths)
+
+getRecursiveFilteredContents :: FilePath -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
+getRecursiveFilteredContents dir dirFilter fileFilter = do
+  filePaths <- getNonDotDirectoryContents dir
+  paths <- forM filePaths $ \path -> do
+    d <- doesDirectoryExist path
+    f <- doesFileExist path
+    case (d, f) of
+      (True, False) ->
+        if dirFilter path
+          then do getRecursiveFilteredContents path dirFilter fileFilter
+        else return []
+      (False, True) ->
+        if fileFilter path
+          then do
+            return [path]
+        else return []
+      (_, _) -> return []
   return (concat paths)
 
 getRecursiveDirectories :: FilePath -> IO [FilePath]
