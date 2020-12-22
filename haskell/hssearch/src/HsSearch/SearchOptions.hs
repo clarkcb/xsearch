@@ -1,46 +1,51 @@
-{-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
+{-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction #-}
 module HsSearch.SearchOptions (
     SearchOption(..)
   , getSearchOptions
   , getUsage
   , settingsFromArgs) where
 
+import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
 import Data.Either (isLeft, lefts, rights)
 import Data.List (isPrefixOf, sortBy)
 import Data.Maybe (isJust)
-import qualified Data.Text as T
-import Text.XML.HXT.Core
+
+import GHC.Generics
+import Data.Aeson
 
 import HsSearch.Paths_hssearch (getDataFileName)
 import HsSearch.FileTypes (getFileTypeForName)
+import HsSearch.FileUtil (getFileString)
 import HsSearch.SearchSettings
 
-data SearchOption = SearchOption { long, short, desc :: String }
-  deriving (Show, Eq)
+data SearchOption = SearchOption
+  { long :: String
+  , short :: Maybe String
+  , desc :: String
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON SearchOption
+
+newtype SearchOptions
+  = SearchOptions {searchoptions :: [SearchOption]}
+  deriving (Show, Eq, Generic)
+
+instance FromJSON SearchOptions
 
 searchOptionsFile :: FilePath
-searchOptionsFile = "searchoptions.xml"
-
-atTag :: ArrowXml a => String -> a XmlTree XmlTree
-atTag tag = deep (isElem >>> hasName tag)
-
-strip :: String -> String
-strip = T.unpack . T.strip . T.pack
-
-getSearchOption :: IOSLA (XIOState ()) XmlTree SearchOption
-getSearchOption = atTag "searchoption" >>>
-  proc f -> do
-    l <- getAttrValue "long" -< f
-    s <- getAttrValue "short" -< f
-    d <- getChildren >>> getText -< f
-    returnA -< SearchOption { long = l, short = s, desc = strip d }
+searchOptionsFile = "searchoptions.json"
 
 getSearchOptions :: IO [SearchOption]
 getSearchOptions = do
   searchOptionsPath <- getDataFileName searchOptionsFile
-  runX (readDocument [withValidate no] searchOptionsPath
-    >>> getSearchOption)
+  searchOptionsJsonString <- getFileString searchOptionsPath
+  case searchOptionsJsonString of
+    (Left _) -> return []
+    (Right jsonString) ->
+      case (eitherDecode (BC.pack jsonString) :: Either String SearchOptions) of
+        (Left e) -> return [SearchOption {long=e, short=Nothing, desc=e}]
+        (Right jsonSearchOptions) -> return (searchoptions jsonSearchOptions)
 
 getUsage :: [SearchOption] -> String
 getUsage searchOptions =
@@ -49,8 +54,8 @@ getUsage searchOptions =
 
 getOptStrings :: [SearchOption] -> [String]
 getOptStrings = map formatOpts
-  where formatOpts SearchOption {long=l, short=""} = getLong l
-        formatOpts SearchOption {long=l, short=s}  = shortAndLong s l
+  where formatOpts SearchOption {long=l, short=Nothing} = getLong l
+        formatOpts SearchOption {long=l, short=Just s}  = shortAndLong s l
         getLong l = "--" ++ l
         shortAndLong s l = "-" ++ s ++ "," ++ getLong l
 
@@ -62,8 +67,8 @@ sortSearchOption :: SearchOption -> SearchOption -> Ordering
 sortSearchOption SearchOption {long=l1, short=s1} SearchOption {long=l2, short=s2} =
   compare (shortOrLong s1 l1) (shortOrLong s2 l2)
   where
-    shortOrLong "" l = l
-    shortOrLong s l = map toLower s ++ "@" ++ l
+    shortOrLong Nothing l = l
+    shortOrLong (Just s) l = map toLower s ++ "@" ++ l
 
 sortSearchOptions :: [SearchOption] -> [SearchOption]
 sortSearchOptions = sortBy sortSearchOption
@@ -122,6 +127,7 @@ flagActions :: [(String, FlagAction)]
 flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("archivesonly", \ss -> ss {archivesOnly=True,
                                             searchArchives=True})
+              , ("colorize", \ss -> ss {colorize=True})
               , ("debug", \ss -> ss {debug=True, verbose=True})
               , ("excludehidden", \ss -> ss {excludeHidden=True})
               , ("firstmatch", \ss -> ss {firstMatch=True})
@@ -131,6 +137,7 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("listfiles", \ss -> ss {listFiles=True})
               , ("listlines", \ss -> ss {listLines=True})
               , ("multilinesearch", \ss -> ss {multiLineSearch=True})
+              , ("nocolorize", \ss -> ss {colorize=False})
               , ("noprintmatches", \ss -> ss {printResults=False})
               , ("norecursive", \ss -> ss {recursive=False})
               , ("nosearcharchives", \ss -> ss {searchArchives=False})
@@ -146,6 +153,7 @@ boolFlagActions :: [(String, BoolFlagAction)]
 boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                   , ("archivesonly", \ss b -> ss {archivesOnly=b,
                                                   searchArchives=b})
+                  , ("colorize", \ss b -> ss {colorize=b})
                   , ("debug", \ss b -> ss {debug=b, verbose=b})
                   , ("excludehidden", \ss b -> ss {excludeHidden=b})
                   , ("firstmatch", \ss b -> ss {firstMatch=b})
@@ -155,6 +163,7 @@ boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                   , ("listfiles", \ss b -> ss {listFiles=b})
                   , ("listlines", \ss b -> ss {listLines=b})
                   , ("multilinesearch", \ss b -> ss {multiLineSearch=b})
+                  , ("nocolorize", \ss b -> ss {colorize=not b})
                   , ("noprintmatches", \ss b -> ss {printResults=not b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
                   , ("nosearcharchives", \ss b -> ss {searchArchives=not b})
@@ -169,11 +178,12 @@ boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
 shortToLong :: [SearchOption] -> String -> Either String String
 shortToLong _ "" = Left "Missing argument"
 shortToLong opts s | length s == 2 && head s == '-' =
-                      if any (\so -> short so == tail s) opts
+                      if any (\so -> short so == Just (tail s)) optsWithShort
                       then Right $ "--" ++ getLongForShort s
                       else Left $ "Invalid option: " ++ tail s ++ "\n"
                    | otherwise = Right s
-  where getLongForShort x = (long . head . filter (\so -> short so == tail x)) opts
+  where optsWithShort = filter (isJust . short) opts
+        getLongForShort x = (long . head . filter (\so -> short so == Just (tail x))) optsWithShort
 
 settingsFromArgs :: [SearchOption] -> [String] -> Either String SearchSettings
 settingsFromArgs opts arguments =

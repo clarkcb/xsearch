@@ -8,6 +8,7 @@ module HsSearch.FileUtil
     , getExtension
     , getFileByteString
     , getFileLines
+    , getFileString
     , getNonDotDirectoryContents
     , getParentPath
     , getRecursiveContents
@@ -148,6 +149,13 @@ getFileByteString f = handle (\(e :: IOException) -> return (Left (show e))) $
     hSetNewlineMode h universalNewlineMode
     contents <- B.hGetContents h
     return (Right contents)
+
+getFileString :: FilePath -> IO (Either String String)
+getFileString f = do
+  bsEither <- getFileByteString f
+  case bsEither of
+    (Left err) -> return $ Left err
+    (Right bs) -> return $ Right (BC.unpack bs)
 
 getFileLines :: FilePath -> IO (Either String [B.ByteString])
 getFileLines f = do

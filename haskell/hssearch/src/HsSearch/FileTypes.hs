@@ -1,16 +1,22 @@
-{-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
+{-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction, OverloadedStrings #-}
 module HsSearch.FileTypes
   ( FileType(..)
+  , JsonFileType(..)
   , getFileType
   , getFileTypes
   , getFileTypeForName
+  , getJsonFileTypes
   , isSearchableFileType
   ) where
 
+import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
-import Text.XML.HXT.Core
+import Data.Text(pack, unpack, replace)
 
-import HsSearch.FileUtil (getExtension, normalizeExtension)
+import GHC.Generics
+import Data.Aeson
+
+import HsSearch.FileUtil (getExtension, normalizeExtension, getFileString)
 import HsSearch.Paths_hssearch (getDataFileName)
 
 data FileType = Unknown
@@ -22,44 +28,10 @@ data FileType = Unknown
   deriving (Show, Eq)
 
 searchableFileTypes :: [FileType]
-searchableFileTypes = [Text, Binary, Archive]
+searchableFileTypes = [Archive, Binary, Code, Text, Xml]
 
 isSearchableFileType :: FileType -> Bool
 isSearchableFileType t = t `elem` searchableFileTypes
-
-data XmlFileType = XmlFileType { name :: String, extensions :: [String] }
-  deriving (Show, Eq)
-
-fileTypesXmlFile :: FilePath
-fileTypesXmlFile = "filetypes.xml"
-
-atTag :: ArrowXml a => String -> a XmlTree XmlTree
-atTag tag = deep (isElem >>> hasName tag)
-
-getXmlFileType :: IOSLA (XIOState ()) XmlTree XmlFileType
-getXmlFileType = atTag "filetype" >>>
-  proc f -> do
-    ftname <- getAttrValue "name" -< f
-    exts <- (getChildren >>> getText) <<< atTag "extensions" -< f
-    returnA -< XmlFileType { name = ftname, extensions = normalized exts }
-  where normalized exts = map normalizeExtension $ words exts
-
-getXmlFileTypes :: IO [XmlFileType]
-getXmlFileTypes = do
-  fileTypesXmlPath <- getDataFileName fileTypesXmlFile
-  runX (readDocument [withValidate no] fileTypesXmlPath >>> getXmlFileType)
-
-getFileType :: FilePath -> IO FileType
-getFileType f = do
-  fileTypes <- getFileTypes [f]
-  case fileTypes of
-    [] -> return Unknown
-    _  -> return $ head fileTypes
-
-getFileTypes :: [FilePath] -> IO [FileType]
-getFileTypes files = do
-  xmlFileTypes <- getXmlFileTypes
-  return $ map (fileTypeFromXmlFileTypes xmlFileTypes) files
 
 getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =
@@ -72,15 +44,60 @@ getFileTypeForName typeName =
     _ -> Unknown
   where lower = map toLower
 
-fileTypeFromXmlFileTypes :: [XmlFileType] -> FilePath -> FileType
-fileTypeFromXmlFileTypes xmlFileTypes f =
+data JsonFileType = JsonFileType
+    { fileType :: String
+    , extensions :: [String]
+    } deriving (Show, Eq, Generic)
+
+instance FromJSON JsonFileType where
+  parseJSON = genericParseJSON defaultOptions {
+                fieldLabelModifier = unpack . replace "fileType" "type" . pack
+              }
+
+newtype JsonFileTypes
+  = JsonFileTypes {filetypes :: [JsonFileType]}
+  deriving (Show, Eq, Generic)
+
+instance FromJSON JsonFileTypes
+
+fileTypesJsonFile :: FilePath
+fileTypesJsonFile = "filetypes.json"
+
+getJsonFileTypes :: IO [JsonFileType]
+getJsonFileTypes = do
+  fileTypesJsonPath <- getDataFileName fileTypesJsonFile
+  fileTypesJsonString <- getFileString fileTypesJsonPath
+  case fileTypesJsonString of
+    (Left _) -> return []
+    (Right jsonString) ->
+      case (eitherDecode (BC.pack jsonString) :: Either String JsonFileTypes) of
+        (Left _) -> return []
+        (Right jsonFileTypes) -> return (map normalizeType (filetypes jsonFileTypes))
+  where normalizeType :: JsonFileType -> JsonFileType
+        normalizeType ft = JsonFileType { fileType = fileType ft,
+                                          extensions = map normalizeExtension (extensions ft) }
+
+getFileType :: FilePath -> IO FileType
+getFileType f = do
+  fileTypes <- getFileTypes [f]
+  case fileTypes of
+    [] -> return Unknown
+    _  -> return $ head fileTypes
+
+getFileTypes :: [FilePath] -> IO [FileType]
+getFileTypes files = do
+  jsonFileTypes <- getJsonFileTypes
+  return $ map (fileTypeFromJsonFileTypes jsonFileTypes) files
+
+fileTypeFromJsonFileTypes :: [JsonFileType] -> FilePath -> FileType
+fileTypeFromJsonFileTypes jsonFileTypes f =
   case getExtension f of
-    Just x -> matchingTypeForExtension xmlFileTypes x
+    Just x -> matchingTypeForExtensionJson jsonFileTypes x
     Nothing -> Unknown
 
-matchingTypeForExtension :: [XmlFileType] -> String -> FileType
-matchingTypeForExtension xmlFileTypes x =
-  case filter (\f -> x `elem` extensions f) xmlFileTypes of
+matchingTypeForExtensionJson :: [JsonFileType] -> String -> FileType
+matchingTypeForExtensionJson jsonFileTypes x =
+  case filter (\f -> x `elem` extensions f) jsonFileTypes of
     [] -> Unknown
     fts -> case fileTypeName fts of
            "archive" -> Archive
@@ -89,4 +106,4 @@ matchingTypeForExtension xmlFileTypes x =
            "xml" -> Xml
            tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
-  where fileTypeName = name . head
+  where fileTypeName = fileType . head

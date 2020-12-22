@@ -1,4 +1,8 @@
-module HsSearch.FileTypesTest (getFileTypeTests, getFileTypeFromNameTests) where
+module HsSearch.FileTypesTest
+  (
+    getFileTypeTests
+  , getFileTypeFromNameTests
+  ) where
 
 import HsSearch.FileTypes
 
