@@ -15,72 +15,72 @@ class FileTypesTest {
     @Test
     fun archiveFileTest() {
         val file = File("test.zip")
-        assertEquals(file.extension, "zip")
+        assertEquals("zip", file.extension)
         assertTrue(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isBinaryFile(file))
         assertFalse(fileTypes.isCodeFile(file))
         assertTrue(fileTypes.isSearchableFile(file))
         assertFalse(fileTypes.isTextFile(file))
         assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(fileTypes.getFileType(file), FileType.ARCHIVE)
+        assertEquals(FileType.ARCHIVE, fileTypes.getFileType(file))
     }
 
     @Test
     fun binaryFileTest() {
         val file = File("test.exe")
-        assertEquals(file.extension, "exe")
+        assertEquals("exe", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertTrue(fileTypes.isBinaryFile(file))
         assertFalse(fileTypes.isCodeFile(file))
         assertTrue(fileTypes.isSearchableFile(file))
         assertFalse(fileTypes.isTextFile(file))
         assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(fileTypes.getFileType(file), FileType.BINARY)
+        assertEquals(FileType.BINARY, fileTypes.getFileType(file))
     }
 
     @Test
     fun javaFileTest() {
         val file = File("Test.java")
-        assertEquals(file.extension, "java")
+        assertEquals("java", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isBinaryFile(file))
         assertTrue(fileTypes.isCodeFile(file))
         assertTrue(fileTypes.isSearchableFile(file))
         assertTrue(fileTypes.isTextFile(file))
         assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(fileTypes.getFileType(file), FileType.TEXT)
+        assertEquals(FileType.TEXT, fileTypes.getFileType(file))
     }
 
     @Test
     fun textFileTest() {
         val file = File("test.txt")
-        assertEquals(file.extension, "txt")
+        assertEquals("txt", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isBinaryFile(file))
         assertFalse(fileTypes.isCodeFile(file))
         assertTrue(fileTypes.isSearchableFile(file))
         assertTrue(fileTypes.isTextFile(file))
         assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(fileTypes.getFileType(file), FileType.TEXT)
+        assertEquals(FileType.TEXT, fileTypes.getFileType(file))
     }
 
     @Test
     fun textFileTestUppercase() {
         val file = File("TEXT.TXT")
-        assertEquals(file.extension, "TXT")
+        assertEquals("TXT", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isBinaryFile(file))
         assertFalse(fileTypes.isCodeFile(file))
         assertTrue(fileTypes.isSearchableFile(file))
         assertTrue(fileTypes.isTextFile(file))
         assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(fileTypes.getFileType(file), FileType.TEXT)
+        assertEquals(FileType.TEXT, fileTypes.getFileType(file))
     }
 
     @Test
     fun unknownFileTest() {
         val file = File("unknown.ZZZ")
-        assertEquals(file.extension, "ZZZ")
+        assertEquals("ZZZ", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isBinaryFile(file))
         assertFalse(fileTypes.isCodeFile(file))
@@ -88,6 +88,6 @@ class FileTypesTest {
         assertFalse(fileTypes.isTextFile(file))
         assertFalse(fileTypes.isXmlFile(file))
         assertTrue(fileTypes.isUnknownFile(file))
-        assertEquals(fileTypes.getFileType(file), FileType.UNKNOWN)
+        assertEquals(FileType.UNKNOWN, fileTypes.getFileType(file))
     }
 }

@@ -35,7 +35,7 @@ class SearchSettingsTest {
     @Test
     fun testAddExtensions() {
         val settings = getDefaultSettings().copy(inExtensions = setOf("java", "scala"))
-        assertEquals(settings.inExtensions.size.toLong(), 2)
+        assertEquals(2, settings.inExtensions.size.toLong())
         assertTrue(settings.inExtensions.contains("java"))
         assertTrue(settings.inExtensions.contains("scala"))
     }
@@ -45,7 +45,7 @@ class SearchSettingsTest {
         val defaultSettings = getDefaultSettings()
         val settings = defaultSettings.
                 copy(inExtensions = addExtensions("java,scala", defaultSettings.inExtensions))
-        assertEquals(settings.inExtensions.size.toLong(), 2)
+        assertEquals(2, settings.inExtensions.size.toLong())
         assertTrue(settings.inExtensions.contains("java"))
         assertTrue(settings.inExtensions.contains("scala"))
     }

@@ -9,22 +9,21 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStreamReader
-import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * @author cary on 7/23/16.
  */
-data class SearchOption(val shortarg: String, val longarg: String, val desc: String) {
+data class SearchOption(val shortarg: String?, val longarg: String, val desc: String) {
     val sortarg =
-            if (shortarg.isNotEmpty()) {
-                shortarg.toLowerCase() + "@" + longarg.toLowerCase()
-            } else {
+            if (shortarg == null) {
                 longarg.toLowerCase()
+            } else {
+                shortarg.toLowerCase() + "@" + longarg.toLowerCase()
             }
 }
 
-class SearchOptions() {
-    val searchOptions : List<SearchOption>
+class SearchOptions {
+    private val searchOptions : List<SearchOption>
 
     init {
         searchOptions = loadSearchOptionsFromJson()
@@ -42,7 +41,7 @@ class SearchOptions() {
             val searchoptionMap = o as Map<String, String>
             val longArg = searchoptionMap["long"] as String
             val desc = searchoptionMap["desc"] as String
-            var shortArg = ""
+            var shortArg: String? = null
             if (searchoptionMap.containsKey("short")) {
                 shortArg = searchoptionMap["short"] as String
             }
@@ -51,28 +50,9 @@ class SearchOptions() {
         return options.toList().sortedBy { it.sortarg }
     }
 
-    private fun loadSearchOptionsFromXml() : List<SearchOption> {
-        val searchOptionsXmlPath = "/searchoptions.xml"
-        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsXmlPath)
-        val factory = DocumentBuilderFactory.newInstance()
-        val builder = factory.newDocumentBuilder()
-        val doc = builder.parse(searchOptionsInputStream)
-        doc.getDocumentElement().normalize()
-        val searchOptionNodes = doc.getElementsByTagName("searchoption")
-        val options : MutableList<SearchOption> = mutableListOf()
-        for (i in 0..(searchOptionNodes.length - 1)) {
-            val searchOptionNode = searchOptionNodes.item(i)
-            val longArg = searchOptionNode.getAttributes().getNamedItem("long").getNodeValue()
-            val shortArg = searchOptionNode.getAttributes().getNamedItem("short").getNodeValue()
-            val desc = searchOptionNode.getTextContent().trim()
-            options.add(SearchOption(shortArg, longArg, desc))
-        }
-        return options.toList().sortedBy { it.sortarg }
-    }
-
     private fun getArgMap() : Map<String, String> {
         val longOpts = searchOptions.map { Pair(it.longarg, it.longarg) }.toMap()
-        val shortOpts = searchOptions.filter { it.shortarg.isNotEmpty() }.map { Pair(it.shortarg, it.longarg) }.toMap()
+        val shortOpts = searchOptions.filter { it.shortarg != null }.map { Pair(it.shortarg!!, it.longarg) }.toMap()
         return longOpts.plus(shortOpts)
     }
 
@@ -185,7 +165,7 @@ class SearchOptions() {
         return recSettingsFromJson(obj.keys.toList(), settings)
     }
 
-    fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
+    private fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
         when (obj) {
             is String -> {
                 return applySetting(key, obj, settings)
@@ -205,17 +185,21 @@ class SearchOptions() {
         }
     }
 
-    fun applySetting(key: String, s: String, settings: SearchSettings): SearchSettings {
-        if (this.argActionMap.containsKey(key)) {
-            return this.argActionMap[key]!!.invoke(s, settings)
-        } else if (key == "startpath") {
-            return settings.copy(startPath = s)
-        } else {
-            throw SearchException("Invalid option: $key")
+    private fun applySetting(key: String, s: String, settings: SearchSettings): SearchSettings {
+        return when {
+            this.argActionMap.containsKey(key) -> {
+                this.argActionMap[key]!!.invoke(s, settings)
+            }
+            key == "startpath" -> {
+                settings.copy(startPath = s)
+            }
+            else -> {
+                throw SearchException("Invalid option: $key")
+            }
         }
     }
 
-    fun applySetting(key: String, bool: Boolean, settings: SearchSettings): SearchSettings {
+    private fun applySetting(key: String, bool: Boolean, settings: SearchSettings): SearchSettings {
         if (this.boolFlagActionMap.containsKey(key)) {
             return this.boolFlagActionMap[key]!!.invoke(bool, settings)
         } else {
@@ -223,10 +207,10 @@ class SearchOptions() {
         }
     }
 
-    fun applySetting(key: String, lst: List<String>, settings: SearchSettings): SearchSettings {
-        if (lst.isEmpty()) return settings
+    private fun applySetting(key: String, lst: List<String>, settings: SearchSettings): SearchSettings {
+        return if (lst.isEmpty()) settings
         else {
-            return applySetting(key, lst.drop(1), applySetting(key, lst.first(), settings))
+            applySetting(key, lst.drop(1), applySetting(key, lst.first(), settings))
         }
     }
 
@@ -238,23 +222,23 @@ class SearchOptions() {
             if (nextArg.startsWith("-")) {
                 val arg = nextArg.dropWhile { it == '-' }
                 if (argMap.containsKey(arg)) {
-                    val longArg = argMap.get(arg)
-                    if (argActionMap.containsKey(longArg)) {
+                    val longArg = argMap[arg]
+                    return if (argActionMap.containsKey(longArg)) {
                         if (args.size > 1) {
                             val argVal = args.drop(1).first()
-                            val ss = argActionMap.get(longArg)!!.invoke(argVal, settings)
-                            return recSettingsFromArgs(args.drop(2), ss)
+                            val ss = argActionMap[longArg]!!.invoke(argVal, settings)
+                            recSettingsFromArgs(args.drop(2), ss)
                         } else {
-                            throw SearchException("Missing value for option " + arg)
+                            throw SearchException("Missing value for option $arg")
                         }
                     } else if (boolFlagActionMap.containsKey(longArg)) {
-                        val ss = boolFlagActionMap.get(longArg)!!.invoke(true, settings)
-                        return recSettingsFromArgs(args.drop(1), ss)
+                        val ss = boolFlagActionMap[longArg]!!.invoke(true, settings)
+                        recSettingsFromArgs(args.drop(1), ss)
                     } else {
-                        throw SearchException("Invalid option: " + arg)
+                        throw SearchException("Invalid option: $arg")
                     }
                 } else {
-                    throw SearchException("Invalid option: " + arg)
+                    throw SearchException("Invalid option: $arg")
                 }
             } else {
                 return recSettingsFromArgs(args.drop(1), settings.copy(startPath = nextArg))
@@ -267,21 +251,19 @@ class SearchOptions() {
         log(getUsageString())
     }
 
-    fun getUsageString() : String {
+    private fun getUsageString() : String {
         val sb = StringBuilder()
         sb.append("Usage:\n")
         sb.append(" ktsearch [options] -s <searchpattern> <startpath>\n\n")
         sb.append("Options:\n")
         fun getOptString(so: SearchOption): String {
-            val s = if (so.shortarg.isEmpty()) "" else "-${so.shortarg},"
-            return s + "--${so.longarg}"
+            return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"
         }
-        val optStrings = searchOptions.map { getOptString(it) }
-        val optDescs = searchOptions.map { it.desc }
-        val longest = optStrings.map { it.length }.max()
+        val optPairs = searchOptions.map { Pair(getOptString(it), it.desc) }
+        val longest = optPairs.map { it.first.length }.max()
         val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
-        for (i in optStrings.indices) {
-            sb.append(String.format(format, optStrings[i], optDescs[i]))
+        for (o in optPairs) {
+            sb.append(String.format(format, o.first, o.second))
         }
         return sb.toString()
     }

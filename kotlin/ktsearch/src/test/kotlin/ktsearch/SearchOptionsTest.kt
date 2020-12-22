@@ -19,12 +19,12 @@ class SearchOptionsTest {
         assertFalse(settings.debug)
         assertTrue(settings.excludeHidden)
         assertFalse(settings.firstMatch)
-        assertEquals(settings.linesAfter, 0)
-        assertEquals(settings.linesBefore, 0)
+        assertEquals(0, settings.linesAfter)
+        assertEquals(0, settings.linesBefore)
         assertFalse(settings.listDirs)
         assertFalse(settings.listFiles)
         assertFalse(settings.listLines)
-        assertEquals(settings.maxLineLength, 150)
+        assertEquals(150, settings.maxLineLength)
         assertFalse(settings.multiLineSearch)
         assertTrue(settings.printResults)
         assertFalse(settings.printUsage)
@@ -39,11 +39,11 @@ class SearchOptionsTest {
         val args = arrayOf("-x", "java,scala", "-s", "Search", ".")
         val searchOptions = SearchOptions()
         val settings = searchOptions.settingsFromArgs(args)
-        assertEquals(settings.inExtensions.size, 2)
+        assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("java"))
         assertTrue(settings.inExtensions.contains("scala"))
-        assertEquals(settings.searchPatterns.size, 1)
-        assertTrue(settings.searchPatterns.first().toString().equals("Search"))
+        assertEquals(1, settings.searchPatterns.size)
+        assertEquals("Search", settings.searchPatterns.first().toString())
     }
 
     @Test
@@ -65,21 +65,21 @@ class SearchOptionsTest {
 
         assertTrue(settings.startPath == "~/src/xsearch/")
 
-        assertEquals(settings.inExtensions.size, 2)
+        assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("js"))
         assertTrue(settings.inExtensions.contains("ts"))
 
-        assertEquals(settings.outDirPatterns.size, 4)
-        assertTrue(settings.outDirPatterns.count {it.pattern == "node_module"} == 1)
+        assertEquals(4, settings.outDirPatterns.size)
+        assertEquals(1, settings.outDirPatterns.count {it.pattern == "node_module"})
 
-        assertEquals(settings.outFilePatterns.size, 2)
-        assertTrue(settings.outFilePatterns.count {it.pattern == "gulpfile"} == 1)
+        assertEquals(2, settings.outFilePatterns.size)
+        assertEquals(1, settings.outFilePatterns.count {it.pattern == "gulpfile"})
 
-        assertEquals(settings.searchPatterns.size, 1)
-        assertTrue(settings.searchPatterns.first().pattern == "Searcher")
+        assertEquals(1, settings.searchPatterns.size)
+        assertEquals("Searcher", settings.searchPatterns.first().pattern)
 
-        assertEquals(settings.linesBefore, 2)
-        assertEquals(settings.linesAfter, 2)
+        assertEquals(2, settings.linesBefore)
+        assertEquals(2, settings.linesAfter)
 
         assertTrue(settings.debug)
         assertTrue(settings.firstMatch)

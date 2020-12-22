@@ -23,88 +23,94 @@ class SearcherTest {
     fun testFilterFile_IsHidden_False() {
         val settings = getSettings()
         val searcher = Searcher(settings)
-        val file = SearchFile(File(".gitignore"), FileType.TEXT)
-        assertFalse(searcher.filterFile(file))
+        val file = File(".gitignore")
+        assertEquals(null, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_IsHiddenIncludeHidden_True() {
         val settings = getSettings().copy(excludeHidden = false)
         val searcher = Searcher(settings)
-        val file = SearchFile(File(".gitignore"), FileType.TEXT)
-        assertTrue(searcher.filterFile(file))
+        val file = File(".gitignore")
+        val searchFile = SearchFile(file, FileType.TEXT)
+        assertEquals(searchFile, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_ArchiveNoSearchArchives_False() {
         val settings = getSettings()
         val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(searcher.filterFile(file))
+        val file = File("archive.zip")
+        assertEquals(null, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_ArchiveSearchArchives_True() {
         val settings = getSettings().copy(searchArchives = true)
         val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.filterFile(file))
+        val file = File("archive.zip")
+        val searchFile = SearchFile(file, FileType.ARCHIVE)
+        assertEquals(searchFile, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_IsArchiveSearchFile_True() {
         val settings = getSettings().copy(searchArchives = true, inArchiveExtensions = setOf("zip"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.filterFile(file))
+        val file = File("archive.zip")
+        val searchFile = SearchFile(file, FileType.ARCHIVE)
+        assertEquals(searchFile, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_NotIsArchiveSearchFile_False() {
         val settings = getSettings().copy(outExtensions = setOf("zip"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(searcher.filterFile(file))
+        val file = File("archive.zip")
+        assertEquals(null, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_ArchiveFileArchivesOnly_True() {
         val settings = getSettings().copy(archivesOnly = true)
         val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.filterFile(file))
+        val file = File("archive.zip")
+        val searchFile = SearchFile(file, FileType.ARCHIVE)
+        assertEquals(searchFile, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_NoExtensionsNoPatterns_True() {
         val settings = getSettings()
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
-        assertTrue(searcher.filterFile(file))
+        val file = File("FileUtil.cs")
+        val searchFile = SearchFile(file, FileType.TEXT)
+        assertEquals(searchFile, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_IsSearchFile_True() {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
-        assertTrue(searcher.filterFile(file))
+        val file = File("FileUtil.cs")
+        val searchFile = SearchFile(file, FileType.TEXT)
+        assertEquals(searchFile, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_NotIsSearchFile_False() {
         val settings = getSettings().copy(outExtensions = setOf("cs"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
-        assertFalse(searcher.filterFile(file))
+        val file = File("FileUtil.cs")
+        assertEquals(null, searcher.filterToSearchFile(file))
     }
 
     @Test
     fun testFilterFile_NonArchiveFileArchivesOnly_False() {
         val settings = getSettings().copy(archivesOnly = true)
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
-        assertFalse(searcher.filterFile(file))
+        val file = File("FileUtil.cs")
+        assertEquals(null, searcher.filterToSearchFile(file))
     }
 
     /***************************************************************************
@@ -328,7 +334,7 @@ class SearcherTest {
      * searchStringIterator tests
      **************************************************************************/
     @Test
-    fun TestSearchStringIterator() {
+    fun testSearchStringIterator() {
         val settings = getSettings()
         val searcher = Searcher(settings)
         val lineIterator = javaClass.getResourceAsStream(testFilePath).reader().readLines().iterator()
@@ -358,7 +364,7 @@ class SearcherTest {
      * searchMultiLineString tests
      **************************************************************************/
     @Test
-    fun TestSearchMultiLineString() {
+    fun testSearchMultiLineString() {
         val settings = getSettings()
         val searcher = Searcher(settings)
         val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
@@ -384,7 +390,7 @@ class SearcherTest {
     }
 
     @Test
-    fun TestSearchMultiLineStringWithLinesBefore() {
+    fun testSearchMultiLineStringWithLinesBefore() {
         val settings = getSettings().copy(linesBefore = 2)
         val searcher = Searcher(settings)
         val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()

@@ -78,7 +78,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
 
     private fun formatMatchingLine(result: SearchResult): String {
         var formatted = result.line.trim()
-        var leadingWhitespaceCount = result.line.trimEnd().length - formatted.length
+        val leadingWhitespaceCount = result.line.trimEnd().length - formatted.length
         var formattedLength = formatted.length
         val maxLineEndIndex = formattedLength - 1
         val matchLength = result.matchEndIndex - result.matchStartIndex

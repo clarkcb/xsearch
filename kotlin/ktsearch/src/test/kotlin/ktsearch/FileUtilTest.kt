@@ -3,7 +3,6 @@ package ktsearch
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /**
  * @author cary on 7/30/16.
