@@ -15,14 +15,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.*;
 
@@ -116,23 +109,6 @@ public class SearchOptions {
             if (searchoptionMap.containsKey("short")) {
                 shortArg = (String) searchoptionMap.get("short");
             }
-            options.add(new SearchOption(shortArg, longArg, desc));
-        }
-    }
-
-    private void setOptionsFromXml() throws ParserConfigurationException, SAXException, IOException {
-        final String searchOptionsXmlPath = "/searchoptions.xml";
-        InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsXmlPath);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(searchOptionsInputStream);
-        doc.getDocumentElement().normalize();
-        NodeList searchOptionNodes = doc.getElementsByTagName("searchoption");
-        for (int i = 0; i < searchOptionNodes.getLength(); i++) {
-            Node searchOptionNode = searchOptionNodes.item(i);
-            String longArg = searchOptionNode.getAttributes().getNamedItem("long").getNodeValue();
-            String shortArg = searchOptionNode.getAttributes().getNamedItem("short").getNodeValue();
-            String desc = searchOptionNode.getTextContent().trim();
             options.add(new SearchOption(shortArg, longArg, desc));
         }
     }

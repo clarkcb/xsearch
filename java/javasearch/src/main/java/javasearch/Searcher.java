@@ -15,16 +15,15 @@ import org.apache.commons.io.LineIterator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,15 +32,12 @@ import java.util.stream.Collectors;
 public class Searcher {
 
     final private SearchSettings settings;
-    private List<SearchResult> results;
     final private FileTypes fileTypes;
-    private Set<SearchFile> searchFileSet;
+    private Charset charset;
 
     public Searcher(final SearchSettings settings) {
         this.settings = settings;
-        this.results = new ArrayList<>();
         this.fileTypes = new FileTypes();
-        this.searchFileSet = new HashSet<>();
     }
 
     private void log(final String message) {
@@ -63,11 +59,6 @@ public class Searcher {
         if (settings.getSearchPatterns().isEmpty()) {
             throw new SearchException("No search patterns defined");
         }
-        try {
-            Charset c = Charset.forName(settings.getTextFileEncoding());
-        } catch (IllegalArgumentException e) {
-            throw new SearchException("Invalid encoding provided");
-        }
         if (settings.getLinesAfter() < 0) {
             throw new SearchException("Invalid linesafter");
         }
@@ -76,6 +67,11 @@ public class Searcher {
         }
         if (settings.getMaxLineLength() < 0) {
             throw new SearchException("Invalid maxlinelength");
+        }
+        try {
+            charset = Charset.forName(settings.getTextFileEncoding());
+        } catch (IllegalArgumentException e) {
+            throw new SearchException("Invalid encoding provided");
         }
     }
 
@@ -104,8 +100,14 @@ public class Searcher {
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
+    // this is temporary to appease the tests
     boolean isSearchFile(final File f) {
-        String ext = FileUtil.getExtension(f);
+        SearchFile sf = new SearchFile(f.getParent(), f.getName(), fileTypes.getFileType(f));
+        return isSearchFile(sf);
+    }
+
+    boolean isSearchFile(final SearchFile sf) {
+        String ext = FileUtil.getExtension(sf.getFileName());
         return (settings.getInExtensions().isEmpty()
                 ||
                 settings.getInExtensions().contains(ext))
@@ -116,11 +118,19 @@ public class Searcher {
                &&
                (settings.getInFilePatterns().isEmpty()
                 ||
-                matchesAnyPattern(f.getName(), settings.getInFilePatterns()))
+                matchesAnyPattern(sf.getFileName(), settings.getInFilePatterns()))
                &&
                (settings.getOutFilePatterns().isEmpty()
                 ||
-                !matchesAnyPattern(f.getName(), settings.getOutFilePatterns()));
+                !matchesAnyPattern(sf.getFileName(), settings.getOutFilePatterns()))
+               &&
+               (settings.getInFileTypes().isEmpty()
+                ||
+                settings.getInFileTypes().contains(sf.getFileType()))
+               &&
+               (settings.getOutFileTypes().isEmpty()
+                ||
+                settings.getOutFileTypes().contains(sf.getFileType()));
     }
 
     boolean isArchiveSearchFile(final File f) {
@@ -152,6 +162,21 @@ public class Searcher {
         return !settings.getArchivesOnly() && isSearchFile(f);
     }
 
+    SearchFile filterToSearchFile(final File f) {
+        if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
+            return null;
+        }
+        FileType fileType = fileTypes.getFileType(f);
+        SearchFile searchFile = new SearchFile(f.getParent(), f.getName(), fileType);
+        if ((fileType == FileType.ARCHIVE
+                && (settings.getSearchArchives() || settings.getArchivesOnly())
+                && isArchiveSearchFile(f))
+                || (!settings.getArchivesOnly() && isSearchFile(searchFile))) {
+            return searchFile;
+        }
+        return null;
+    }
+
     public final List<SearchResult> search() throws SearchException {
         // figure out if startPath is a directory or a file and search accordingly
         List<SearchResult> results = new ArrayList<>();
@@ -163,14 +188,9 @@ public class Searcher {
                 throw new SearchException("Startpath does not match search settings");
             }
         } else if (startPathFile.isFile()) {
-            FileType fileType = fileTypes.getFileType(startPathFile);
-            if (filterFile(startPathFile)) {
-                File d = startPathFile.getParentFile();
-                if (null == d) {
-                    d = new File(".");
-                }
-                results.addAll(searchFile(new SearchFile(d.getPath(), startPathFile.getName(),
-                        fileType)));
+            SearchFile searchFile = filterToSearchFile(startPathFile);
+            if (searchFile != null) {
+                results.addAll(searchFile(searchFile));
             } else {
                 throw new SearchException("Startpath does not match search settings");
             }
@@ -186,15 +206,15 @@ public class Searcher {
     private static class FindSearchFileVisitor extends SimpleFileVisitor<Path> {
         FileTypes fileTypes;
         Function<File, Boolean> filterDir;
-        Function<File, Boolean> filterFile;
+        Function<File, SearchFile> filterToSearchFile;
         List<SearchFile> searchFiles;
 
         FindSearchFileVisitor(FileTypes fileTypes, Function<File, Boolean> filterDir,
-                              Function<File, Boolean> filterFile) {
+                              Function<File, SearchFile> filterToSearchFile) {
             super();
             this.fileTypes = fileTypes;
             this.filterDir = filterDir;
-            this.filterFile = filterFile;
+            this.filterToSearchFile = filterToSearchFile;
             searchFiles = new ArrayList<>();
         }
 
@@ -214,12 +234,11 @@ public class Searcher {
             Objects.requireNonNull(attrs);
             if (attrs.isRegularFile()) {
                 File f = path.toFile();
-                if (filterFile.apply(f)) {
-                    searchFiles.add(new SearchFile(f.getParent(), f.getName(),
-                            fileTypes.getFileType(f)));
+                SearchFile sf = filterToSearchFile.apply(f);
+                if (sf != null) {
+                    searchFiles.add(sf);
                 }
             }
-
             return FileVisitResult.CONTINUE;
         }
 
@@ -240,7 +259,7 @@ public class Searcher {
     private List<SearchResult> searchPath(final File filePath) {
         Path startPath = filePath.toPath();
         FindSearchFileVisitor findSearchFileVisitor = new FindSearchFileVisitor(fileTypes,
-                this::isSearchDir, this::filterFile);
+                this::isSearchDir, this::filterToSearchFile);
 
         // walk file tree to get search files
         try {
@@ -275,59 +294,48 @@ public class Searcher {
     }
 
     private List<SearchResult> searchFiles(List<SearchFile> searchFiles) {
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<SearchResult> results = new ArrayList<>();
 
         int offset = 0;
         int batchSize = 1000;
 
-        do {
-            List<SearchFile> nextBatch = ListUtil.take(ListUtil.drop(searchFiles, offset), batchSize);
-            results.addAll(batchSearchFiles(nextBatch, executorService));
-            offset += batchSize;
-        } while (offset < searchFiles.size());
-
-        try {
-            executorService.shutdown();
-            executorService.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            System.err.println("tasks interrupted");
-        } finally {
-            if (!executorService.isTerminated()) {
-                System.err.println("cancel non-finished tasks");
+        if (searchFiles.size() > batchSize) {
+            do {
+                int toIndex = Math.min(offset + batchSize, searchFiles.size());
+                List<SearchFile> nextBatch = searchFiles.subList(offset, toIndex);
+                results.addAll(batchSearchFiles(nextBatch));
+                offset += batchSize;
+            } while (offset < searchFiles.size());
+        } else {
+            for (SearchFile sf : searchFiles) {
+                results.addAll(searchFile(sf));
             }
-            executorService.shutdownNow();
-            //System.out.println("shutdown finished");
         }
+
         return results;
     }
 
-    private List<SearchResult> batchSearchFiles(List<SearchFile> searchFiles, ExecutorService executorService) {
+    private List<SearchResult> batchSearchFiles(List<SearchFile> searchFiles) {
         //System.out.println("Next batch: " + searchFiles.size() + " searchFiles");
         List<SearchResult> results = new ArrayList<>();
-        List<Callable<List<SearchResult>>> callables = new ArrayList<>(searchFiles.size());
+
+        List<CompletableFuture<List<SearchResult>>> futures = new ArrayList<>(searchFiles.size());
         for (SearchFile sf : searchFiles) {
-            callables.add(() -> searchFile(sf));
+            futures.add(CompletableFuture.supplyAsync(() -> searchFile(sf)));
         }
-        try {
-            executorService.invokeAll(callables)
-                    .stream()
-                    .forEach(future -> {
-                        try {
-                            results.addAll(future.get());
-                        } catch (Exception e) {
-                            throw new IllegalStateException(e);
-                        }
-                    });
-        } catch (Exception e) {
-            System.out.println("Exception while trying to search files: " + e.getMessage());
+        for (CompletableFuture<List<SearchResult>> future : futures) {
+            try {
+                results.addAll(future.get());
+            } catch (InterruptedException | ExecutionException e) {
+                log(e.toString());
+            }
         }
         return results;
     }
 
     public final List<SearchResult> searchFile(final SearchFile sf) {
         FileType fileType = sf.getFileType();
-        if (fileType == FileType.TEXT) {
+        if (fileType == FileType.CODE || fileType == FileType.TEXT || fileType == FileType.XML) {
             return searchTextFile(sf);
         } else if (fileType == FileType.BINARY) {
             return searchBinaryFile(sf);
@@ -349,7 +357,7 @@ public class Searcher {
     private List<SearchResult> searchTextFileContents(final SearchFile sf) {
         List<SearchResult> results = new ArrayList<>();
         try {
-            String contents = FileUtil.getFileContents(sf.toFile(), settings.getTextFileEncoding());
+            String contents = FileUtil.getFileContents(sf.toFile(), charset);
             results.addAll(searchMultiLineString(contents));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
@@ -632,7 +640,7 @@ public class Searcher {
         }
         List<SearchResult> results = new ArrayList<>();
         try {
-            String content = FileUtil.getFileContents(sf.toFile(), "ISO8859-1");
+            String content = FileUtil.getFileContents(sf.toFile(), StandardCharsets.ISO_8859_1);
             for (Pattern p : settings.getSearchPatterns()) {
                 Matcher m = p.matcher(content);
                 boolean found = m.find();
@@ -653,19 +661,8 @@ public class Searcher {
         return results;
     }
 
-    private void addSearchResult(final SearchResult searchResult) {
-        results.add(searchResult);
-        searchFileSet.add(searchResult.getSearchFile());
-    }
-
     private int signum(final int num) {
-        if (num > 0) {
-            return 1;
-        }
-        if (num < 0) {
-            return -1;
-        }
-        return 0;
+        return Integer.compare(num, 0);
     }
 
     private int compareResults(final SearchResult r1, final SearchResult r2) {
@@ -726,7 +723,7 @@ public class Searcher {
         }
     }
 
-    public final List<String> getMatchingLines() {
+    public final List<String> getMatchingLines(List<SearchResult> results) {
         List<String> lines = new ArrayList<>();
         for (SearchResult r : results) {
             lines.add(r.getLine().trim());
@@ -735,13 +732,12 @@ public class Searcher {
             Set<String> lineSet = new HashSet<>(lines);
             lines = new ArrayList<>(lineSet);
         }
-        Collections.sort(lines, (s1, s2) -> s1.toUpperCase()
-                .compareTo(s2.toUpperCase()));
+        lines.sort(Comparator.comparing(String::toUpperCase));
         return lines;
     }
 
-    public final void printMatchingLines() {
-        List<String> lines = getMatchingLines();
+    public final void printMatchingLines(List<SearchResult> results) {
+        List<String> lines = getMatchingLines(results);
         String hdr;
         if (settings.getUniqueLines()) {
             hdr = "\nUnique lines with matches (%d):";

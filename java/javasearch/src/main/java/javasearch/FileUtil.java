@@ -13,16 +13,9 @@ package javasearch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.Scanner;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public final class FileUtil {
 
@@ -91,8 +84,13 @@ public final class FileUtil {
     }
 
     public static String getFileContents(final File f, final String enc) throws IOException {
+        return getFileContents(f, Charset.forName(enc));
+    }
+
+    public static String getFileContents(final File f, final Charset charset) throws IOException {
         String content;
-        try (Scanner scanner = new Scanner(f, enc).useDelimiter("\\Z")) {
+        try (Scanner scanner = new Scanner(new InputStreamReader(new FileInputStream(f), charset))
+                .useDelimiter("\\Z")) {
             content = getScannerContents(scanner);
         } catch (NoSuchElementException | IllegalStateException e) {
             throw e;

@@ -358,6 +358,14 @@ public class SearchSettings {
         addPattern(this.outFilePatterns, pattern);
     }
 
+    public final Set<FileType> getInFileTypes() {
+        return this.inFileTypes;
+    }
+
+    public final Set<FileType> getOutFileTypes() {
+        return this.outFileTypes;
+    }
+
     public final Set<Pattern> getInArchiveFilePatterns() {
         return this.inArchiveFilePatterns;
     }

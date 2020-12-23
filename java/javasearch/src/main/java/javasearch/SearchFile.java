@@ -13,7 +13,7 @@ public class SearchFile {
 
     public SearchFile(final String path, final String fileName,
                       final FileType fileType) {
-        this(new ArrayList<String>(), path, fileName, fileType);
+        this(new ArrayList<>(), path, fileName, fileType);
     }
 
     public SearchFile(final List<String> containers, final String path,

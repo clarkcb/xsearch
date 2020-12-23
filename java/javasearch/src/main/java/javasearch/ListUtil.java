@@ -12,30 +12,17 @@ public final class ListUtil {
     // return a new list with count number of elements dropped from the beginning,
     // or an empty list if the list is shorter than count
     public static <T> List<T> drop(final List<T> list, final int count) {
-        List<T> left = new ArrayList<>();
-        int lastIndex = count;
-        while (lastIndex < list.size()) {
-            left.add(list.get(lastIndex));
-            lastIndex++;
-        }
-        return left;
+        if (count < 1) return list;
+        if (count >= list.size()) return new ArrayList<>();
+        return list.subList(count, list.size());
     }
 
     // return a new list with only the first count number of elements,
     // or the list if it is shorter than count
     public static <T> List<T> take(final List<T> list, final int count) {
-        if (list.size() <= count) {
-            return list;
-        }
-        List<T> left = new ArrayList<>();
-        int lastIndex = 0;
-        int dropCount = count;
-        while (dropCount > 0 && lastIndex < list.size()) {
-            left.add(list.get(lastIndex));
-            dropCount--;
-            lastIndex++;
-        }
-        return left;
+        if (count >= list.size()) return list;
+        if (count < 1) return new ArrayList<>();
+        return list.subList(0, count);
     }
 
     // return a new list with all but the last element in it

@@ -11,9 +11,7 @@ Main class for initiating javasearch from command line
 package javasearch;
 
 import org.json.simple.parser.ParseException;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.List;
 
@@ -65,7 +63,7 @@ public class SearchMain {
                     searcher.printMatchingFiles(results);
                 }
                 if (settings.getListLines()) {
-                    searcher.printMatchingLines();
+                    searcher.printMatchingLines(results);
                 }
 
             } catch (SearchException e) {
