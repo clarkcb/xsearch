@@ -4,11 +4,11 @@ import scala.util.matching.Regex
 
 case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
                         lineNum: Int, matchStartIndex: Int,
-                        matchEndIndex: Int, line: String,
+                        matchEndIndex: Int, line: Option[String],
                         linesBefore: Seq[String], linesAfter: Seq[String]) {
 
   def this(searchPattern: Regex, file: Option[SearchFile], lineNum: Int,
-           matchStartIndex: Int, matchEndIndex: Int, line: String) = {
+           matchStartIndex: Int, matchEndIndex: Int, line: Option[String]) = {
     this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       Seq.empty[String], Seq.empty[String])
   }
@@ -34,56 +34,61 @@ class SearchResultFormatter(val settings: SearchSettings) {
   }
 
   private def formatMatchingLine(result: SearchResult): String = {
-    val leadingWhitespaceCount = result.line.takeWhile(c => Character.isWhitespace(c)).length
-    var formatted = result.line.trim
-    var formattedLength = formatted.length
-    val maxLineEndIndex = formattedLength - 1
-    val matchLength = result.matchEndIndex - result.matchStartIndex
-    var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
-    var matchEndIndex = matchStartIndex + matchLength
+    result.line match {
+      case Some(line) =>
+        val leadingWhitespaceCount = line.takeWhile(c => Character.isWhitespace(c)).length
+        var formatted = line.trim
+        var formattedLength = formatted.length
+        val maxLineEndIndex = formattedLength - 1
+        val matchLength = result.matchEndIndex - result.matchStartIndex
+        var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
+        var matchEndIndex = matchStartIndex + matchLength
 
-    if (formattedLength > settings.maxLineLength) {
-      var lineStartIndex = matchStartIndex
-      var lineEndIndex = lineStartIndex + matchLength
-      matchStartIndex = 0
-      matchEndIndex = matchLength
+        if (formattedLength > settings.maxLineLength) {
+          var lineStartIndex = matchStartIndex
+          var lineEndIndex = lineStartIndex + matchLength
+          matchStartIndex = 0
+          matchEndIndex = matchLength
 
-      while (lineEndIndex > formattedLength - 1) {
-        lineStartIndex -= 1
-        lineEndIndex -= 1
-        matchStartIndex += 1
-        matchEndIndex += 1
-      }
+          while (lineEndIndex > formattedLength - 1) {
+            lineStartIndex -= 1
+            lineEndIndex -= 1
+            matchStartIndex += 1
+            matchEndIndex += 1
+          }
 
-      formattedLength = lineEndIndex - lineStartIndex
-      while (formattedLength < settings.maxLineLength) {
-        if (lineStartIndex > 0) {
-          lineStartIndex -= 1
-          matchStartIndex += 1
-          matchEndIndex += 1
           formattedLength = lineEndIndex - lineStartIndex
+          while (formattedLength < settings.maxLineLength) {
+            if (lineStartIndex > 0) {
+              lineStartIndex -= 1
+              matchStartIndex += 1
+              matchEndIndex += 1
+              formattedLength = lineEndIndex - lineStartIndex
+            }
+            if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
+              lineEndIndex += 1
+            }
+            formattedLength = lineEndIndex - lineStartIndex
+          }
+
+          formatted = formatted.substring(lineStartIndex, lineEndIndex)
+
+          if (lineStartIndex > 2) {
+            formatted = "..." + formatted.substring(3)
+          }
+          if (lineEndIndex < maxLineEndIndex - 3) {
+            formatted = formatted.substring(0, formattedLength - 3) + "..."
+          }
         }
-        if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
-          lineEndIndex += 1
+
+        if (settings.colorize) {
+          formatted = colorize(formatted, matchStartIndex, matchEndIndex)
         }
-        formattedLength = lineEndIndex - lineStartIndex
-      }
 
-      formatted = formatted.substring(lineStartIndex, lineEndIndex)
+        formatted
 
-      if (lineStartIndex > 2) {
-        formatted = "..." + formatted.substring(3)
-      }
-      if (lineEndIndex < maxLineEndIndex - 3) {
-        formatted = formatted.substring(0, formattedLength - 3) + "..."
-      }
+      case None => ""
     }
-
-    if (settings.colorize) {
-      formatted = colorize(formatted, matchStartIndex, matchEndIndex)
-    }
-
-    formatted
   }
 
   def singleLineFormat(result: SearchResult): String = {
@@ -116,31 +121,36 @@ class SearchResultFormatter(val settings: SearchSettings) {
   }
 
   def multiLineFormat(result: SearchResult): String = {
-    val sb = new StringBuilder
-    val filepath = if (result.file.isDefined) result.file.get.getPathWithContainers else "<text>"
-    sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
-      result.lineNum, result.matchStartIndex, result.matchEndIndex, "-" * sepLen))
-    val lineFormat = " %1$" + lineNumPadding(result) + "d | %2$s\n"
-    var currentLineNum = result.lineNum
-    if (result.linesBefore.nonEmpty) {
-      currentLineNum -= result.linesBefore.length
-      result.linesBefore.foreach { lineBefore =>
-        sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineBefore)))
-        currentLineNum += 1
-      }
+    result.line match {
+      case Some(resultLine) =>
+        val sb = new StringBuilder
+        val filepath = if (result.file.isDefined) result.file.get.getPathWithContainers else "<text>"
+        sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
+          result.lineNum, result.matchStartIndex, result.matchEndIndex, "-" * sepLen))
+        val lineFormat = " %1$" + lineNumPadding(result) + "d | %2$s\n"
+        var currentLineNum = result.lineNum
+        if (result.linesBefore.nonEmpty) {
+          currentLineNum -= result.linesBefore.length
+          result.linesBefore.foreach { lineBefore =>
+            sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineBefore)))
+            currentLineNum += 1
+          }
+        }
+        var line = trimNewLines(resultLine)
+        if (settings.colorize) {
+          line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+        }
+        sb.append(">" + lineFormat.format(result.lineNum, line))
+        if (result.linesAfter.nonEmpty) {
+          currentLineNum += 1
+          result.linesAfter.foreach { lineAfter =>
+            sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
+            currentLineNum += 1
+          }
+        }
+        sb.toString()
+
+      case None => ""
     }
-    var line = trimNewLines(result.line)
-    if (settings.colorize) {
-      line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
-    }
-    sb.append(">" + lineFormat.format(result.lineNum, line))
-    if (result.linesAfter.nonEmpty) {
-      currentLineNum += 1
-      result.linesAfter.foreach { lineAfter =>
-        sb.append(" " + lineFormat.format(currentLineNum, trimNewLines(lineAfter)))
-        currentLineNum += 1
-      }
-    }
-    sb.toString()
   }
 }

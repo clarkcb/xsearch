@@ -1,7 +1,8 @@
 package scalasearch
 
-import scala.util.matching.Regex
 import scalasearch.FileType.FileType
+
+import scala.util.matching.Regex
 
 object DefaultSettings {
   val archivesOnly = false

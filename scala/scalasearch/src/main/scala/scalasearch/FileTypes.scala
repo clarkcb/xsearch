@@ -1,12 +1,10 @@
 package scalasearch
 
-import java.io.{File, IOException, InputStreamReader}
-
 import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject}
 
+import java.io.{IOException, InputStreamReader}
 import scala.collection.mutable
-import scala.xml.XML
 
 object FileType extends Enumeration {
   type FileType = Value
@@ -20,7 +18,6 @@ object FileType extends Enumeration {
 
 object FileTypes {
   private val _fileTypesJsonPath = "/filetypes.json"
-  private val _fileTypesXmlPath = "/filetypes.xml"
   private val _fileTypeMap = mutable.Map.empty[String, Set[String]]
 
   private val archive = "archive"
@@ -82,105 +79,45 @@ object FileTypes {
     }
   }
 
-  def getFileType(f: File): FileType.Value = {
-    if (isCodeFile(f)) {
+  def getFileType(fileName: String): FileType.Value = {
+    if (isCodeFile(fileName)) {
       FileType.Code
-    } else if (isXmlFile(f)) {
+    } else if (isXmlFile(fileName)) {
       FileType.Xml
-    } else if (isTextFile(f)) {
+    } else if (isTextFile(fileName)) {
       FileType.Text
-    } else if (isBinaryFile(f)) {
+    } else if (isBinaryFile(fileName)) {
       FileType.Binary
-    } else if (isArchiveFile(f)) {
+    } else if (isArchiveFile(fileName)) {
       FileType.Archive
     } else {
       FileType.Unknown
     }
   }
 
-  def getFileType(f: SearchFile): FileType.Value = {
-    getFileType(f.toFile)
-  }
-
-  def isArchiveFile(f: File): Boolean = {
-    isArchiveFile(f.getName)
-  }
-
-  def isArchiveFile(sf: SearchFile): Boolean = {
-    isArchiveFile(sf.fileName)
-  }
-
   def isArchiveFile(fileName: String): Boolean = {
     fileTypeMap(archive).contains(FileUtil.getExtension(fileName))
-  }
-
-  def isBinaryFile(f: File): Boolean = {
-    isBinaryFile(f.getName)
-  }
-
-  def isBinaryFile(sf: SearchFile): Boolean = {
-    isBinaryFile(sf.fileName)
   }
 
   def isBinaryFile(fileName: String): Boolean = {
     fileTypeMap(binary).contains(FileUtil.getExtension(fileName))
   }
 
-  def isCodeFile(f: File): Boolean = {
-    isCodeFile(f.getName)
-  }
-
-  def isCodeFile(sf: SearchFile): Boolean = {
-    isCodeFile(sf.fileName)
-  }
-
   def isCodeFile(fileName: String): Boolean = {
     fileTypeMap(code).contains(FileUtil.getExtension(fileName))
-  }
-
-  def isSearchableFile(f: File): Boolean = {
-    isSearchableFile(f.getName)
-  }
-
-  def isSearchableFile(sf: SearchFile): Boolean = {
-    isSearchableFile(sf.fileName)
   }
 
   def isSearchableFile(fileName: String): Boolean = {
     fileTypeMap(searchable).contains(FileUtil.getExtension(fileName))
   }
 
-  def isTextFile(f: File): Boolean = {
-    isTextFile(f.getName)
-  }
-
-  def isTextFile(sf: SearchFile): Boolean = {
-    isTextFile(sf.fileName)
-  }
-
   def isTextFile(fileName: String): Boolean = {
     fileTypeMap(text).contains(FileUtil.getExtension(fileName))
-  }
-
-  def isUnknownFile(f: File): Boolean = {
-    isUnknownFile(f.getName)
-  }
-
-  def isUnknownFile(sf: SearchFile): Boolean = {
-    isUnknownFile(sf.fileName)
   }
 
   def isUnknownFile(fileName: String): Boolean = {
     fileTypeMap(unknown).contains(FileUtil.getExtension(fileName)) ||
       !fileTypeMap(searchable).contains(FileUtil.getExtension(fileName))
-  }
-
-  def isXmlFile(f: File): Boolean = {
-    isXmlFile(f.getName)
-  }
-
-  def isXmlFile(sf: SearchFile): Boolean = {
-    isXmlFile(sf.fileName)
   }
 
   def isXmlFile(fileName: String): Boolean = {

@@ -1,22 +1,18 @@
 package scalasearch
 
-import java.io.{File, IOException, InputStreamReader}
-
 import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
 
+import java.io.{File, IOException, InputStreamReader}
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.xml.XML
+import scala.jdk.CollectionConverters._
 
-case class SearchOption(shortarg:String, longarg:String, desc:String) {
-  val sortarg: String =
-    if (shortarg.nonEmpty) {
-      shortarg.toLowerCase + "@" + longarg.toLowerCase
-    } else {
-      longarg.toLowerCase
-    }
+case class SearchOption(shortarg: Option[String], longarg: String, desc: String) {
+  val sortarg: String = shortarg match {
+    case Some(sa) => sa.toLowerCase + "@" + longarg.toLowerCase
+    case None => longarg.toLowerCase
+  }
 }
 
 object SearchOptions {
@@ -26,29 +22,36 @@ object SearchOptions {
 
   private def searchOptions: List[SearchOption] = {
     if (_searchOptions.isEmpty) {
-      try {
-        val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
-        val obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream))
-        val jsonObj = obj.asInstanceOf[JSONObject]
-        val soIt = jsonObj.get("searchoptions").asInstanceOf[JSONArray].iterator()
-        while (soIt.hasNext) {
-          val soObj = soIt.next().asInstanceOf[JSONObject]
-          val longArg = soObj.get("long").asInstanceOf[String]
-          val shortArg =
-            if (soObj.containsKey("short")) soObj.get("short").asInstanceOf[String]
-            else ""
-          val desc = soObj.get("desc").asInstanceOf[String]
-          val option = SearchOption(shortArg, longArg, desc)
-          _searchOptions += option
-        }
-      } catch {
-        case e: ParseException =>
-          print(e.getMessage)
-        case e: IOException =>
-          print(e.getMessage)
+      loadSearchOptionsFromJson()
+    }
+    List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
+  }
+
+  private def loadSearchOptionsFromJson() {
+    try {
+      val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
+      val obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream))
+      val jsonObj = obj.asInstanceOf[JSONObject]
+      val soIt = jsonObj.get("searchoptions").asInstanceOf[JSONArray].iterator()
+      while (soIt.hasNext) {
+        val soObj = soIt.next().asInstanceOf[JSONObject]
+        val longArg = soObj.get("long").asInstanceOf[String]
+        val shortArg =
+          if (soObj.containsKey("short")) {
+            Some(soObj.get("short").asInstanceOf[String])
+          } else {
+            None
+          }
+        val desc = soObj.get("desc").asInstanceOf[String]
+        val option = SearchOption(shortArg, longArg, desc)
+        _searchOptions += option
       }
-      List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
-    } else List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
+    } catch {
+      case e: ParseException =>
+        print(e.getMessage)
+      case e: IOException =>
+        print(e.getMessage)
+    }
   }
 
   private def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
@@ -190,7 +193,7 @@ object SearchOptions {
 
   private def getArgMap: Map[String, String] = {
     val longOpts: Map[String, String] = searchOptions.map { o => (o.longarg, o.longarg)}.toMap
-    val shortOpts = searchOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg, o.longarg)}.toMap
+    val shortOpts = searchOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg.get, o.longarg)}.toMap
     longOpts ++ shortOpts
   }
 
@@ -239,14 +242,17 @@ object SearchOptions {
     sb.append("Usage:\n")
     sb.append(" scalasearch [options] -s <searchpattern> <startpath>\n\n")
     sb.append("Options:\n")
-    val optStrings =
-      (searchOptions.map(o => if (o.shortarg.nonEmpty) "-" + o.shortarg + "," else "")
-        zip searchOptions.map("--" + _.longarg)).map(o => o._1 + o._2)
-    val optDescs = searchOptions.map(_.desc)
-    val longest = optStrings.map(_.length).max
+    val optPairs = searchOptions.map { so =>
+      val opts = so.shortarg match {
+        case Some(sa) => s"-$sa,--${so.longarg}"
+        case None => s"--${so.longarg}"
+      }
+      (opts, so.desc)
+    }
+    val longest = optPairs.map(_._1.length).max
     val format = " %1$-" + longest + "s  %2$s\n"
-    for (i <- optStrings.indices) {
-      sb.append(format.format(optStrings(i), optDescs(i)))
+    optPairs.foreach {op =>
+      sb.append(format.format(op._1, op._2))
     }
     sb.toString()
   }

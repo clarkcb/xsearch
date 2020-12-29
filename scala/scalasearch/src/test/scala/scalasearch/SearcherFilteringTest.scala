@@ -1,14 +1,14 @@
 package scalasearch
 
-import java.io.File
-
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+
+import java.io.File
 
 class SearcherFilteringTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   def getSearchSettings: SearchSettings = {
-    new SearchSettings(startPath = Some("."), searchPatterns = Set("Searcher".r))
+    SearchSettings(startPath = Some("."), searchPatterns = Set("Searcher".r))
   }
 
   /** ***********************************************************
@@ -81,63 +81,64 @@ class SearcherFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Bef
   test("testIsSearchFile_NoExtensionsNoPatterns_True") {
     val settings = getSearchSettings
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_MatchesInExtension_True") {
     val settings = getSearchSettings.copy(inExtensions = Set("cs"))
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_DoesNotMatchInExtension_False") {
     val settings = getSearchSettings.copy(inExtensions = Set("java"))
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(!searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_MatchesOutExtension_False") {
     val settings = getSearchSettings.copy(outExtensions = Set("cs"))
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(!searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_DoesNotMatchOutExtension_True") {
     val settings = getSearchSettings.copy(outExtensions = Set("java"))
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_MatchesInPattern_True") {
     val settings = getSearchSettings.copy(inFilePatterns = Set("Search".r))
     val searcher = new Searcher(settings)
-    val file = new File("Searcher.cs")
+    val file = new SearchFile(new File("Searcher.cs"), FileType.Code)
     assert(searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_DoesNotMatchInPattern_False") {
     val settings = getSearchSettings.copy(inFilePatterns = Set("Search".r))
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(!searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_MatchesOutPattern_False") {
     val settings = getSearchSettings.copy(outFilePatterns = Set("Search".r))
     val searcher = new Searcher(settings)
-    val file = new File("Searcher.cs")
+    val file = new SearchFile(new File("Searcher.cs"), FileType.Code)
     assert(!searcher.isSearchFile(file))
   }
 
   test("testIsSearchFile_DoesNotMatchOutPattern_True") {
     val settings = getSearchSettings.copy(outFilePatterns = Set("Search".r))
     val searcher = new Searcher(settings)
-    val file = new File("FileUtil.cs")
+//    val file = new File("FileUtil.cs")
+    val file = new SearchFile(new File("FileUtil.cs"), FileType.Code)
     assert(searcher.isSearchFile(file))
   }
 
@@ -148,63 +149,63 @@ class SearcherFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Bef
     val settings = getSearchSettings
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(searcher.isArchiveSearchFile(file))
+    assert(searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_MatchesInExtension_True") {
     val settings = getSearchSettings.copy(inArchiveExtensions = Set("zip"))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(searcher.isArchiveSearchFile(file))
+    assert(searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_DoesNotMatchInExtension_False") {
     val settings = getSearchSettings.copy(inArchiveExtensions = Set("gz"))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(!searcher.isArchiveSearchFile(file))
+    assert(!searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_MatchesOutExtension_False") {
     val settings = getSearchSettings.copy(outArchiveExtensions = Set("zip"))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(!searcher.isArchiveSearchFile(file))
+    assert(!searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_DoesNotMatchOutExtension_True") {
     val settings = getSearchSettings.copy(outArchiveExtensions = Set("gz"))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(searcher.isArchiveSearchFile(file))
+    assert(searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_MatchesInPattern_True") {
     val settings = getSearchSettings.copy(inArchiveFilePatterns = Set("arch".r))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(searcher.isArchiveSearchFile(file))
+    assert(searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_DoesNotMatchInPattern_False") {
     val settings = getSearchSettings.copy(inArchiveFilePatterns = Set("archives".r))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(!searcher.isArchiveSearchFile(file))
+    assert(!searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_MatchesOutPattern_False") {
     val settings = getSearchSettings.copy(outArchiveFilePatterns = Set("arch".r))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(!searcher.isArchiveSearchFile(file))
+    assert(!searcher.isArchiveSearchFile(file.getName))
   }
 
   test("testIsArchiveSearchFile_DoesNotMatchOutPattern_True") {
     val settings = getSearchSettings.copy(outArchiveFilePatterns = Set("archives".r))
     val searcher = new Searcher(settings)
     val file = new File("archive.zip")
-    assert(searcher.isArchiveSearchFile(file))
+    assert(searcher.isArchiveSearchFile(file.getName))
   }
 
   /** ***********************************************************
@@ -220,9 +221,9 @@ class SearcherFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Bef
   test("testFilterFile_IsHiddenIncludeHidden_True") {
     val settings = getSearchSettings.copy(excludeHidden = false)
     val searcher = new Searcher(settings)
-    val file = new File(".hidden.txt")
-    println("searcher.isSearchFile(\"%s\"): %s".format(file, searcher.isSearchFile(file)))
-    assert(searcher.filterFile(file))
+    val searchFile = new SearchFile(new File(".hidden.txt"), FileType.Text)
+    println("searcher.isSearchFile(\"%s\"): %s".format(searchFile, searcher.isSearchFile(searchFile)))
+    assert(searcher.filterFile(searchFile.file))
   }
 
   test("testFilterFile_ArchiveNoSearchArchives_False") {

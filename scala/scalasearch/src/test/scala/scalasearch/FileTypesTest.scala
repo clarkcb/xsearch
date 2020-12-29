@@ -1,16 +1,16 @@
 package scalasearch
 
-import java.io.File
-
 import org.scalatest.funsuite.AnyFunSuite
+
+import java.io.File
 
 class FileTypesTest extends AnyFunSuite {
 
   test("test archive extensions") {
     """7z arj bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx Z""".
       split("\\s+").foreach { ext =>
-        val archiveFile = new File("archive."+ext)
-        println("archiveFile: "+archiveFile)
+        val archiveFile = new File("archive." + ext).getName
+        println("archiveFile: " + archiveFile)
         assert(!FileTypes.isBinaryFile(archiveFile))
         assert(!FileTypes.isCodeFile(archiveFile))
         assert(FileTypes.isArchiveFile(archiveFile))
@@ -27,8 +27,8 @@ class FileTypesTest extends AnyFunSuite {
       |epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm odt ott
       |pages pdb ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt wri
       |xls xlt""".stripMargin.split("\\s+").foreach { ext =>
-        val binFile = new File("binfile."+ext)
-        println("binFile: "+binFile)
+        val binFile = new File("binfile." + ext).getName
+        println("binFile: " + binFile)
         assert(FileTypes.isBinaryFile(binFile))
         assert(!FileTypes.isCodeFile(binFile))
         assert(!FileTypes.isArchiveFile(binFile))
@@ -47,8 +47,8 @@ class FileTypesTest extends AnyFunSuite {
       |lua m ml pas php php3 php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi py pyw
       |pyx r rb rkt rs s sass sbt sc scm scss scala sh swift tcl ts vb vbs""".
       stripMargin.split("\\s+").foreach { ext =>
-        val codeFile = new File("codefile."+ext)
-        println("codeFile: "+codeFile)
+        val codeFile = new File("codefile." + ext).getName
+        println("codeFile: " + codeFile)
         assert(!FileTypes.isBinaryFile(codeFile))
         assert(FileTypes.isCodeFile(codeFile))
         assert(!FileTypes.isArchiveFile(codeFile))
@@ -66,8 +66,8 @@ class FileTypesTest extends AnyFunSuite {
       |ogg otf pdf pict png qt ra ram rm rpm snd suo tif tiff tte ttf wav
       |woff""".
       stripMargin.split("\\s+").foreach { ext =>
-        val nosearchFile = new File("nosearch."+ext)
-        println("nosearchFile: "+nosearchFile)
+        val nosearchFile = new File("nosearch." + ext).getName
+        println("nosearchFile: " + nosearchFile)
         assert(!FileTypes.isBinaryFile(nosearchFile))
         assert(!FileTypes.isArchiveFile(nosearchFile))
         assert(!FileTypes.isSearchableFile(nosearchFile))
@@ -90,8 +90,8 @@ class FileTypesTest extends AnyFunSuite {
       |text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml vssscc
       |vxml wbxml webinfo wml wmls wrl wsc wsd wsdd xlf xsp yaml
       |yml""".stripMargin.split("\\s+").foreach { ext =>
-        val textFile = new File("textFile."+ext)
-        println("textFile: "+textFile)
+        val textFile = new File("textFile." + ext).getName
+        println("textFile: " + textFile)
         assert(!FileTypes.isBinaryFile(textFile))
         assert(!FileTypes.isArchiveFile(textFile))
         assert(FileTypes.isSearchableFile(textFile))
@@ -105,8 +105,8 @@ class FileTypesTest extends AnyFunSuite {
   test("test unknown extensions") {
     """adm aps cli clw def df2 ncb nt nt2 orig pc plg roff sun texinfo tr xwd""".
       split("\\s+").foreach { ext =>
-        val unknownFile = new File("unknown."+ext)
-        println("unknownFile: "+unknownFile)
+        val unknownFile = new File("unknown." + ext).getName
+        println("unknownFile: " + unknownFile)
         assert(!FileTypes.isBinaryFile(unknownFile))
         assert(!FileTypes.isArchiveFile(unknownFile))
         assert(!FileTypes.isSearchableFile(unknownFile))
@@ -123,8 +123,8 @@ class FileTypesTest extends AnyFunSuite {
       |settings sldx stc std sti stw svg svgz sxc sxd sxg sxi stw sxm sxw tld
       |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xhtml xht xjb xlsx xltx xml
       |xps xsd xsl xslt xspf xul""".stripMargin.split("\\s+").foreach { ext =>
-        val xmlFile = new File("xmlfile."+ext)
-        println("xmlFile: "+xmlFile)
+        val xmlFile = new File("xmlfile." + ext).getName
+        println("xmlFile: " + xmlFile)
         assert(!FileTypes.isBinaryFile(xmlFile))
         assert(!FileTypes.isCodeFile(xmlFile))
         assert(!FileTypes.isArchiveFile(xmlFile))

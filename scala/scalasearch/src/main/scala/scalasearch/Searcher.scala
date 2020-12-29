@@ -1,32 +1,30 @@
 package scalasearch
 
-import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
-import java.nio.charset.Charset
-import java.util.zip.{GZIPInputStream, ZipEntry, ZipFile}
-
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+import scalasearch.Common.log
+import scalasearch.FileType.FileType
 
-import scala.collection.JavaConverters._
+import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
+import java.nio.charset.Charset
+import java.util.zip.{GZIPInputStream, ZipFile}
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.io.Source
+import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
 
 class Searcher (settings: SearchSettings) {
+  import FileUtil._
+  import Searcher._
+
   def validateSettings(): Unit = {
-    settings.startPath match {
-      case Some(path) if path.length > 0 =>
-        val pathFile = new File(path)
-        if (!pathFile.exists()) {
-          throw new SearchException("Startpath not found")
-        } else if (!pathFile.canRead) {
-          throw new SearchException("Startpath not readable")
-        }
-      case _ =>
-        throw new SearchException("Startpath not defined")
-    }
-    if (settings.searchPatterns.isEmpty) {
-      throw new SearchException("No search patterns defined")
+    settingsTests.foreach { t =>
+      t(settings) match {
+        case Some(err) => throw new SearchException(err)
+        case _ =>
+      }
     }
     try {
       val _ = Charset.forName(settings.textFileEncoding)
@@ -34,155 +32,99 @@ class Searcher (settings: SearchSettings) {
       case _: IllegalArgumentException =>
         throw new SearchException(s"Invalid encoding: ${settings.textFileEncoding}")
     }
-    if (settings.linesAfter < 0) {
-      throw new SearchException("Invalid linesafter")
-    }
-    if (settings.linesBefore < 0) {
-      throw new SearchException("Invalid linesbefore")
-    }
-    if (settings.maxLineLength < 0) {
-      throw new SearchException("Invalid maxlinelength")
-    }
   }
   validateSettings()
-
-  private val currentPath = "."
-  private val tarExtension = "tar"
-
-  private val _searchResults = mutable.ListBuffer[SearchResult]()
-
-  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
-    patterns exists (_.findFirstMatchIn(s).isDefined)
-  }
-
-  def anyMatchesAnyPattern(strings: Seq[String], patterns: Set[Regex]):
-    Boolean = {
-    strings exists (matchesAnyPattern(_, patterns))
-  }
-
-  def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]):
-    Boolean = {
-    ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
-     &&
-     (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
-  }
 
   def isSearchDir(d: File): Boolean = {
     isSearchDir(d.getName)
   }
 
   def isSearchDir(dirName: String): Boolean = {
-    val pathElems = FileUtil.splitPath(dirName)
-    if (pathElems.exists(p => FileUtil.isHidden(p)) && settings.excludeHidden) {
+    val pathElems = splitPath(dirName)
+    if (pathElems.exists(p => isHidden(p)) && settings.excludeHidden) {
       false
     } else {
       filterByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
     }
   }
 
-  private def getSearchSubDirs(dir: File): Seq[File] = {
-    val searchSubDirs = dir.listFiles.filter(_.isDirectory).filter(isSearchDir)
-    searchSubDirs ++ searchSubDirs.flatMap(getSearchSubDirs)
+  def isSearchFile(sf: SearchFile): Boolean = {
+    isSearchFile(sf.file.getPath, sf.fileType)
   }
 
-  def getSearchDirs(startDir: File): Seq[File] = {
-    if (settings.verbose) {
-      Common.log("getSearchDirs(%s)".format(startDir.toString))
-    }
-    val startDirs =
-      if (isSearchDir(startDir)) {
-        Seq[File](startDir)
-      } else {
-        Seq.empty[File]
-      }
-    val subDirs =
-      if (settings.recursive) {
-        getSearchSubDirs(startDir)
-      } else {
-        Seq.empty[File]
-      }
-    startDirs ++ subDirs
-  }
+  def isSearchFile(fileName: String, fileType: FileType): Boolean = {
+    val fileNameTests = Seq[String => Boolean](
+      fileName => !isHidden(fileName) || !settings.excludeHidden,
+      fileName => settings.inExtensions.isEmpty ||
+        settings.inExtensions.contains(getExtension(fileName)),
+      fileName => settings.outExtensions.isEmpty ||
+        !settings.outExtensions.contains(getExtension(fileName)),
+    )
+    val fileTypeTests = Seq[FileType => Boolean](
+      fileType => settings.inFileTypes.isEmpty ||
+        settings.inFileTypes.contains(fileType),
+      fileType => settings.outFileTypes.isEmpty ||
+        !settings.outFileTypes.contains(fileType),
+    )
 
-  def isSearchFile(f: File): Boolean = {
-    isSearchFile(f.getName)
-  }
-
-  def isSearchFile(fileName: String): Boolean = {
-    if (FileUtil.isHidden(fileName) && settings.excludeHidden) {
-      false
-    } else {
-      val ext = FileUtil.getExtension(fileName)
-      val fileType = FileTypes.getFileType(new File(fileName))
-      ((settings.inExtensions.isEmpty ||
-        settings.inExtensions.contains(ext))
-        &&
-        (settings.outExtensions.isEmpty ||
-          !settings.outExtensions.contains(ext))
-        &&
-        (settings.inFileTypes.isEmpty ||
-          settings.inFileTypes.contains(fileType))
-        &&
-        (settings.outFileTypes.isEmpty ||
-          !settings.outFileTypes.contains(fileType))
-        &&
-        filterByPatterns(fileName, settings.inFilePatterns,
-          settings.outFilePatterns))
-    }
-  }
-
-  def isArchiveSearchFile(f: File): Boolean = {
-    isArchiveSearchFile(f.getName)
+    fileNameTests.forall(t => t(fileName)) &&
+      fileTypeTests.forall(t => t(fileType)) &&
+      filterByPatterns(fileName, settings.inFilePatterns, settings.outFilePatterns)
   }
 
   def isArchiveSearchFile(fileName: String): Boolean = {
-    if (FileUtil.isHidden(fileName) && settings.excludeHidden) {
-      false
-    } else {
-      val ext = FileUtil.getExtension(fileName)
-      ((settings.inArchiveExtensions.isEmpty ||
-        settings.inArchiveExtensions.contains(ext))
-        &&
-        (settings.outArchiveExtensions.isEmpty ||
-          !settings.outArchiveExtensions.contains(ext))
-        &&
-        filterByPatterns(fileName, settings.inArchiveFilePatterns,
-          settings.outArchiveFilePatterns))
-    }
+    val fileNameTests = Seq[String => Boolean](
+      fileName => !isHidden(fileName) || !settings.excludeHidden,
+      fileName => settings.inArchiveExtensions.isEmpty ||
+        settings.inArchiveExtensions.contains(getExtension(fileName)),
+      fileName => settings.outArchiveExtensions.isEmpty ||
+        !settings.outArchiveExtensions.contains(getExtension(fileName)),
+    )
+    fileNameTests.forall(t => t(fileName)) &&
+      filterByPatterns(fileName, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
   }
 
   def filterFile(f: File): Boolean = {
-    FileTypes.getFileType(f) match {
+    val fileType = FileTypes.getFileType(f.getName)
+    fileType match {
       case FileType.Unknown => false
       case FileType.Archive =>
-        settings.searchArchives && isArchiveSearchFile(f)
+        settings.searchArchives && isArchiveSearchFile(f.getName)
       case _ =>
-        !settings.archivesOnly && isSearchFile(f)
+        !settings.archivesOnly && isSearchFile(f.getName, fileType)
     }
   }
 
-  def getSearchFilesForDirectory(dir: File): Seq[SearchFile] = {
-    dir.listFiles().filterNot(_.isDirectory).filter(filterFile).map { f =>
-        new SearchFile(f.getParent, f.getName, FileTypes.getFileType(f))
+  def filterToSearchFile(f: File): Option[SearchFile] = {
+    val fileType = FileTypes.getFileType(f.getName)
+    fileType match {
+      case FileType.Unknown => None
+      case FileType.Archive =>
+        if (settings.searchArchives && isArchiveSearchFile(f.getName)) {
+          Some(new SearchFile(f, fileType))
+        } else {
+          None
+        }
+      case _ =>
+        if (!settings.archivesOnly && isSearchFile(f.getPath, fileType)) {
+          Some(new SearchFile(f, fileType))
+        } else {
+          None
+        }
     }
   }
 
-  def getSearchFiles(searchDirs: Seq[File]): Seq[SearchFile] = {
-    def getFilteredFiles(dirs: Seq[File]): Seq[SearchFile] = {
-      dirs.size match {
-        case 0 => Nil
-        case _ =>
-          getSearchFilesForDirectory(dirs.head) ++ getFilteredFiles(dirs.tail)
-      }
-    }
-    getFilteredFiles(searchDirs)
+  final def getSearchFiles(startPathFile: File): Seq[SearchFile] = {
+    val files = startPathFile.listFiles
+    files.filter(_.isFile).flatMap(filterToSearchFile) ++
+      files
+        .filter(_.isDirectory)
+        .filter(_ => settings.recursive)
+        .filter(isSearchDir)
+        .flatMap(getSearchFiles)
   }
 
-  def listToString(stringList: Iterable[Any]): String = {
-    stringList.mkString("[\"", "\", \"", "\"]")
-  }
-
-  def search(): Unit = {
+  def search(): Seq[SearchResult] = {
     val startPathFile = new File(settings.startPath.get)
     if (startPathFile.isDirectory) {
       if (isSearchDir(startPathFile)) {
@@ -192,73 +134,110 @@ class Searcher (settings: SearchSettings) {
       }
     } else if (startPathFile.isFile) {
       if (filterFile(startPathFile)) {
-        val fileType = FileTypes.getFileType(startPathFile)
-        var d: File = startPathFile.getParentFile
-        if (null == d) d = new File(currentPath)
-        searchFile(new SearchFile(d.getPath, startPathFile.getName, fileType))
+        val fileType = FileTypes.getFileType(startPathFile.getName)
+        searchFile(new SearchFile(startPathFile, fileType))
       } else {
         throw new SearchException("Startpath does not match search settings")
+      }
+    } else {
+      throw new SearchException("Startpath not searchable")
+    }
+  }
+
+  def searchPath(startPath: File): Seq[SearchResult] = {
+    val files: Seq[SearchFile] = getSearchFiles(startPath)
+    if (settings.verbose) {
+      val dirs = files.map(f => pathOrCurrent(f.file.getParentFile))
+        .map(_.getPath).distinct.sorted
+      log("\nDirectories to be searched (%d):\n%s".format(dirs.size,
+        dirs.mkString("\n")))
+      log("\nFiles to be searched (%d):\n%s".format(files.size,
+        files.mkString("\n")))
+      log("\nStarting file search...\n")
+    }
+    val results: Seq[SearchResult] = searchFiles(files)
+    if (settings.verbose) {
+      log("\nFile search complete.\n")
+    }
+    results
+  }
+
+  def searchFiles(files: Seq[SearchFile]): Seq[SearchResult] = {
+    var offset = 0
+    val batchSize = 1000
+    var until = offset + batchSize
+
+    if (files.length > batchSize) {
+      val results = mutable.ListBuffer.empty[SearchResult]
+      while (offset < files.length) {
+        results ++= batchSearchFiles(files.slice(offset, until))
+        offset = math.min(offset + batchSize, files.length)
+        until = offset + batchSize
+      }
+      Seq.empty[SearchResult] ++ results
+
+    } else {
+      files.flatMap { f =>
+        searchFile(f)
       }
     }
   }
 
-  def searchPath(filePath: File): Unit = {
-    val searchDirs = getSearchDirs(new File(settings.startPath.get))
-    if (settings.verbose) {
-      Common.log("\nDirectories to be searched (%d):\n%s".format(searchDirs.size,
-        searchDirs.mkString("\n")))
+  def batchSearchFiles(files: Seq[SearchFile]): Seq[SearchResult] = {
+    import java.util.concurrent.ConcurrentHashMap
+
+    val searchFileResultsMap: ConcurrentHashMap[String, Seq[SearchResult]] = new ConcurrentHashMap
+
+    files.map { f =>
+      Future {
+        searchFile(f)
+      }.map { results =>
+        searchFileResultsMap put (f.getPath, results)
+      }
     }
-    val files: Iterable[SearchFile] = getSearchFiles(searchDirs)
-    if (settings.verbose) {
-      Common.log("\nFiles to be searched (%d):\n%s".format(files.size,
-        files.mkString("\n")))
+
+    while (searchFileResultsMap.size() < files.length) {
+      Thread.sleep(500)
     }
-    if (settings.verbose) {
-      Common.log("\nStarting file search...\n")
+
+    val results = mutable.ListBuffer.empty[SearchResult]
+    for (k <- searchFileResultsMap.asScala.keySet) {
+      results ++= searchFileResultsMap.get(k)
     }
-    searchFiles(files)
-    if (settings.verbose) {
-      Common.log("\nFile search complete.\n")
-    }
+    Seq.empty[SearchResult] ++ results
   }
 
-  def searchFiles(files: Traversable[SearchFile]): Unit = {
-    for (f <- files) {
-      searchFile(f)
-    }
-  }
-
-  def searchFile(sf: SearchFile): Unit = {
-    FileTypes.getFileType(sf) match {
+  def searchFile(sf: SearchFile): Seq[SearchResult] = {
+    FileTypes.getFileType(sf.file.getName) match {
       case ft if Set(FileType.Text, FileType.Code, FileType.Xml).contains(ft) =>
-        // TODO: some very basic encoding detection, for now using arbitrary
-        //       single-byte encoding
-        searchTextFileSource(sf, Source.fromFile(sf.toFile, settings.textFileEncoding))
+        searchTextFileSource(sf, Source.fromFile(sf.file, settings.textFileEncoding))
       case FileType.Binary =>
-        searchBinaryFileSource(sf, Source.fromFile(sf.toFile, "ISO-8859-1"))
+        searchBinaryFileSource(sf, Source.fromFile(sf.file, "ISO-8859-1"))
       case FileType.Archive =>
-        searchArchiveFileSource(sf, Source.fromFile(sf.toFile))
+        searchArchiveFileSource(sf, Source.fromFile(sf.file))
       case _ =>
-        Common.log("Skipping unknown file type: %s".format(sf))
+        log("Skipping unknown file type: %s".format(sf))
+        Seq.empty[SearchResult]
     }
   }
 
-  private def searchFileSource(sf: SearchFile, source: Source): Unit = {
-    FileTypes.getFileType(sf) match {
-      case ft if Set(FileType.Text, FileType.Code, FileType.Xml).contains(ft) =>
+  private def searchFileSource(sf: SearchFile, source: Source): Seq[SearchResult] = {
+    FileTypes.getFileType(sf.file.getName) match {
+      case ft if Set(FileType.Code, FileType.Text, FileType.Xml).contains(ft) =>
         searchTextFileSource(sf, source)
       case FileType.Binary =>
         searchBinaryFileSource(sf, source)
       case FileType.Archive =>
         searchArchiveFileSource(sf, source)
       case _ =>
-        Common.log("Skipping unknown file type: %s".format(sf))
+        log("Skipping unknown file type: %s".format(sf))
+        Seq.empty[SearchResult]
     }
   }
 
-  private def searchTextFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchTextFileSource(sf: SearchFile, source: Source): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching text file %s".format(sf.getPathWithContainers))
+      log("Searching text file %s".format(sf.getPathWithContainers))
     }
     if (settings.multiLineSearch) {
       searchTextFileSourceContents(sf, source)
@@ -267,50 +246,17 @@ class Searcher (settings: SearchSettings) {
     }
   }
 
-  private def searchTextFileSourceContents(sf: SearchFile, source: Source): Unit = {
+  private def searchTextFileSourceContents(sf: SearchFile, source: Source): Seq[SearchResult] = {
     val contents = source.mkString
-    searchMultiLineString(contents).foreach { r =>
-      addSearchResult(r.copy(file=Some(sf)))
+    searchMultiLineString(contents).map { r =>
+      r.copy(file = Some(sf))
     }
   }
 
   def searchMultiLineString(s: String): Seq[SearchResult] = {
-    val results = mutable.ArrayBuffer.empty[SearchResult]
-    settings.searchPatterns.foreach { p =>
-      results ++= searchMultiLineStringForPattern(s, p)
-    }
-    results.toSeq
-  }
-
-  private def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
-                                               lineIndices: Seq[(Int, Int)]): Seq[String] = {
-    if (settings.hasLinesAfterToOrUntilPatterns) {
-      val matchIndices = (settings.linesAfterToPatterns ++ settings.linesAfterUntilPatterns).map {
-        p =>
-          p.findFirstMatchIn(s.substring(startIndex)) match {
-            case Some(m) => m.start + startIndex
-            case None => -1
-          }
-      }.filter(_ > -1)
-      if (matchIndices.nonEmpty) {
-        val lines = lineIndices.
-          filter(_._1 < matchIndices.min).
-          map(li => s.substring(li._1, li._2))
-        if (settings.hasLinesAfterUntilPatterns && lines.nonEmpty) {
-          lines.init
-        } else {
-          lines
-        }
-      } else {
-        Seq.empty[String]
-      }
-    } else if (settings.linesAfter > 0) {
-      lineIndices.
-        take(settings.linesAfter).
-        map(li => s.substring(li._1, li._2))
-    } else {
-      Seq.empty[String]
-    }
+    settings.searchPatterns.flatMap { p =>
+      searchMultiLineStringForPattern(s, p)
+    }.toSeq
   }
 
   private def searchMultiLineStringForPattern(s: String, p: Regex): Seq[SearchResult] = {
@@ -318,6 +264,38 @@ class Searcher (settings: SearchSettings) {
     val results = mutable.ArrayBuffer.empty[SearchResult]
     val matches = p.findAllIn(s).matchData
     var stop = false
+
+    def getLinesAfterFromMultiLineString(s: String, startIndex: Int,
+                                         lineIndices: Seq[(Int, Int)]): Seq[String] = {
+      if (settings.hasLinesAfterToOrUntilPatterns) {
+        val matchIndices = (settings.linesAfterToPatterns ++ settings.linesAfterUntilPatterns).map {
+          p =>
+            p.findFirstMatchIn(s.substring(startIndex)) match {
+              case Some(m) => m.start + startIndex
+              case None => -1
+            }
+        }.filter(_ > -1)
+        if (matchIndices.nonEmpty) {
+          val lines = lineIndices.
+            filter(_._1 < matchIndices.min).
+            map(li => s.substring(li._1, li._2))
+          if (settings.hasLinesAfterUntilPatterns && lines.nonEmpty) {
+            lines.init
+          } else {
+            lines
+          }
+        } else {
+          Seq.empty[String]
+        }
+      } else if (settings.linesAfter > 0) {
+        lineIndices.
+          take(settings.linesAfter).
+          map(li => s.substring(li._1, li._2))
+      } else {
+        Seq.empty[String]
+      }
+    }
+
     while (matches.hasNext && !stop) {
       val m = matches.next()
       val thisLineIndices: (Int, Int) = lineIndices.filter(_._1 <= m.start).last
@@ -334,13 +312,13 @@ class Searcher (settings: SearchSettings) {
       val linesAfter = getLinesAfterFromMultiLineString(s, thisLineIndices._2,
         lineIndices.filter(_._1 > thisLineIndices._2))
       if (linesBeforeMatch(linesBefore) && linesAfterMatch(linesAfter)) {
-        results += new SearchResult(
+        results += SearchResult(
           p,
           None,
           beforeLineCount + 1,
           m.start - thisLineIndices._1 + 1,
           m.end - thisLineIndices._1 + 1,
-          line,
+          Some(line),
           linesBefore,
           linesAfter)
         if (settings.firstMatch) {
@@ -349,12 +327,6 @@ class Searcher (settings: SearchSettings) {
       }
     }
     results.toSeq
-  }
-
-  private def linesMatch(lines: Seq[String], inPatterns: Set[Regex],
-      outPatterns: Set[Regex]): Boolean = {
-    (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
-    (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
   }
 
   private def linesBeforeMatch(linesBefore: Seq[String]): Boolean = {
@@ -377,37 +349,37 @@ class Searcher (settings: SearchSettings) {
 
   private def matchLinesAfterToOrUntil(linesAfter: mutable.ListBuffer[String],
                                        lines: Iterator[String]): Boolean = {
-    if (settings.linesAfterToPatterns.isEmpty
-      && settings.linesAfterUntilPatterns.isEmpty)
-      return true
-
-    linesAfter.zipWithIndex.foreach { li =>
-      if (matchesAnyPattern(li._1, settings.linesAfterToPatterns)) {
-        while (li._2 + 1 < linesAfter.size) linesAfter.remove(li._2 + 1)
-        return true
-      } else if (matchesAnyPattern(li._1, settings.linesAfterUntilPatterns)) {
-        while (li._2 < linesAfter.size) linesAfter.remove(li._2)
-        return true
+    if (settings.hasLinesAfterToOrUntilPatterns) {
+      linesAfter.zipWithIndex.foreach { li =>
+        if (matchesAnyPattern(li._1, settings.linesAfterToPatterns)) {
+          while (li._2 + 1 < linesAfter.size) linesAfter.remove(li._2 + 1)
+          return true
+        } else if (matchesAnyPattern(li._1, settings.linesAfterUntilPatterns)) {
+          while (li._2 < linesAfter.size) linesAfter.remove(li._2)
+          return true
+        }
       }
-    }
-    var foundMatch = false
-    while (!foundMatch && lines.hasNext) {
-      val nextLine = lines.next()
-      if (matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
-        linesAfter += nextLine
-        foundMatch = true
-      } else if (matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
-        foundMatch = true
-      } else {
-        linesAfter += nextLine
+      var foundMatch = false
+      while (!foundMatch && lines.hasNext) {
+        val nextLine = lines.next()
+        if (matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
+          linesAfter += nextLine
+          foundMatch = true
+        } else if (matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
+          foundMatch = true
+        } else {
+          linesAfter += nextLine
+        }
       }
+      foundMatch
+    } else {
+      true
     }
-    foundMatch
   }
 
-  private def searchTextFileSourceLines(sf: SearchFile, source: Source): Unit = {
-    searchStringIterator(source.getLines()).foreach { r =>
-      addSearchResult(r.copy(file=Some(sf)))
+  private def searchTextFileSourceLines(sf: SearchFile, source: Source): Seq[SearchResult] = {
+    searchStringIterator(source.getLines()).map { r =>
+      r.copy(file=Some(sf))
     }
   }
 
@@ -442,24 +414,24 @@ class Searcher (settings: SearchSettings) {
 
       searchPatterns.foreach { p =>
         val matchIterator: Iterator[Regex.Match] =
-          if (settings.firstMatch) p.findFirstMatchIn(line).toIterator
+          if (settings.firstMatch) p.findFirstMatchIn(line).iterator
           else p.findAllMatchIn(line)
 
         if (matchIterator.hasNext
           && linesBeforeMatch(linesBefore.toSeq)
           && linesAfterMatch(linesAfter.toSeq)
-          && matchLinesAfterToOrUntil(linesAfter, lines.seq.seq)) {
+          && matchLinesAfterToOrUntil(linesAfter, lines)) {
 
           matchedPatterns.add(p)
 
           for (m <- matchIterator) {
-            results += new SearchResult(
+            results += SearchResult(
               p,
               None,
               lineNum,
               m.start + 1,
               m.end + 1,
-              line,
+              Some(line),
               linesBefore.toList,
               linesAfter.toList)
           }
@@ -478,87 +450,85 @@ class Searcher (settings: SearchSettings) {
     Seq.empty[SearchResult] ++ results
   }
 
-  private def searchBinaryFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchBinaryFileSource(sf: SearchFile, source: Source): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching binary file %s".format(sf.toString))
+      log("Searching binary file %s".format(sf.toString))
     }
     val contents = source.mkString
     source.close()
+    var results = mutable.ListBuffer[SearchResult]()
     for (p <- settings.searchPatterns) {
       val matchIterator =
-        if (settings.firstMatch) p.findAllIn(contents).matchData.take(1)
-        else p.findAllIn(contents).matchData
+        if (settings.firstMatch) {
+          p.findFirstMatchIn(contents)
+        } else {
+          p.findAllMatchIn(contents)
+        }
       for (m <- matchIterator) {
-        addSearchResult(new SearchResult(
-          p,
-          Some(sf),
-          0,
-          m.start + 1,
-          m.end + 1,
-          null))
+        results += new SearchResult(p, Some(sf), 0, m.start + 1, m.end + 1, None)
       }
     }
+    Seq.empty[SearchResult] ++ results
   }
 
-  private def searchArchiveFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchArchiveFileSource(sf: SearchFile, source: Source): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching archive file %s".format(sf.toString))
+      log("Searching archive file %s".format(sf.toString))
     }
     if (FileTypes.isZipArchiveFile(sf)) {
-      searchZipFileSource(sf, source)
+      searchZipFile(sf)
     } else if (FileTypes.isGzArchiveFile(sf)) {
-      searchGzFileSource(sf, source)
+      searchGzFile(sf)
     } else if (FileTypes.isBz2ArchiveFile(sf)) {
-      searchBz2FileSource(sf, source)
+      searchBz2File(sf)
     } else if (FileTypes.isTarArchiveFile(sf)) {
       val tis = new BufferedInputStream(new FileInputStream(sf.getPath))
       searchTarFileInputStream(sf, tis)
     } else {
-      Common.log("Currently unsupported archive file type: %s (%s)".
-        format(FileUtil.getExtension(sf), sf.toString))
+      log("Currently unsupported archive file type: %s (%s)".
+        format(getExtension(sf), sf.toString))
+      Seq.empty[SearchResult]
     }
   }
 
-  private def searchZipFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchZipFile(sf: SearchFile): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching zip file %s".format(sf.toString))
+      log("Searching zip file %s".format(sf.toString))
     }
-    val zf = new ZipFile(sf.toFile)
-    val entries = zf.entries().asScala.filterNot(_.isDirectory)
-    val entryMap = mutable.LinkedHashMap.empty[String, List[ZipEntry]]
-    entries foreach { ze =>
-      val f = new File(ze.getName)
-      entryMap(f.getParent) = entryMap.getOrElse(f.getParent,
-        List.empty[ZipEntry]) :+ ze
-    }
-    entryMap foreach { e =>
-      val dirName = e._1
-      if (isSearchDir(dirName)) {
-        val zes = e._2
-        zes foreach { ze =>
-          val file = new File(ze.getName)
-          val fileType = FileTypes.getFileType(file)
-          if (fileType != FileType.Unknown) {
-            val zsf = new SearchFile(sf.containers :+ sf.getPath, dirName,
-              file.getName, fileType)
-            val zis = zf.getInputStream(zf.getEntry(zsf.getPath))
-            fileType match {
-              case FileType.Archive =>
-                searchArchiveFileSource(zsf, Source.fromInputStream(zis))
-              case _ =>
-                searchFileSource(zsf, Source.fromInputStream(zis))
-            }
-            zis.close()
-          }
+    val zf = new ZipFile(sf.file)
+    zf.entries().asScala.filterNot(_.isDirectory)
+      .map(e => new File(e.getName))
+      .filter { f =>
+        Option(f.getParent) match {
+          case Some(d) => isSearchDir(d)
+          case None => true
         }
       }
-    }
+      .filter(filterFile)
+      .flatMap { f =>
+        val fileType = FileTypes.getFileType(f.getName)
+        if (fileType != FileType.Unknown) {
+          val zsf = new SearchFile(sf.containers :+ sf.getPath, f, fileType)
+          val zis = zf.getInputStream(zf.getEntry(zsf.getPath))
+          val entryResults = fileType match {
+            case FileType.Archive =>
+              searchArchiveFileSource(zsf, Source.fromInputStream(zis))
+            case _ =>
+              searchFileSource(zsf, Source.fromInputStream(zis))
+          }
+          zis.close()
+          entryResults
+        } else {
+          Seq.empty[SearchResult]
+        }
+      }.toSeq
   }
 
-  private def searchTarFileInputStream(sf: SearchFile, is: InputStream): Unit = {
+  private def searchTarFileInputStream(sf: SearchFile, is: InputStream): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching tar file %s".format(sf.toString))
+      log("Searching tar file %s".format(sf.toString))
     }
+    val tarResults = mutable.ListBuffer[SearchResult]()
     val tis = new TarArchiveInputStream(is)
     var entry: TarArchiveEntry = tis.getNextTarEntry
     while (entry != null) {
@@ -566,19 +536,18 @@ class Searcher (settings: SearchSettings) {
         val dirName = new File(entry.getName).getParent
         if (isSearchDir(dirName)) {
           val file = new File(entry.getName)
-          val fileType = FileTypes.getFileType(file)
+          val fileType = FileTypes.getFileType(file.getName)
           if (fileType != FileType.Unknown) {
             val bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
             if (count > 0) {
-              val tzsf = new SearchFile(sf.containers, dirName, file.getName,
-                fileType)
+              val tzsf = new SearchFile(sf.containers, file, fileType)
               val source = Source.fromBytes(bytes)
               fileType match {
                 case FileType.Archive =>
-                  searchArchiveFileSource(tzsf, source)
+                  tarResults ++= searchArchiveFileSource(tzsf, source)
                 case _ =>
-                  searchFileSource(tzsf, source)
+                  tarResults ++= searchFileSource(tzsf, source)
               }
             }
           }
@@ -586,118 +555,98 @@ class Searcher (settings: SearchSettings) {
       }
       entry = tis.getNextTarEntry
     }
+    Seq.empty[SearchResult] ++ tarResults
   }
 
-  private def searchGzFileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchGzFile(sf: SearchFile): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching gzip file %s".format(sf.toString))
+      log("Searching gzip file %s".format(sf.toString))
     }
-    val containedFileName = sf.fileName.split("\\.").init.mkString(currentPath)
-    val containedFileType = FileTypes.getFileType(sf)
-    val containedExtension = FileUtil.getExtension(sf)
-    val gzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName,
+    val containedFileName = sf.file.getName.split("\\.").init.mkString(currentPath)
+    val containedFileType = FileTypes.getFileType(sf.file.getName)
+    val containedExtension = getExtension(sf)
+    val gzsf = new SearchFile(sf.containers :+ sf.getPath, new File(containedFileName),
       containedFileType)
-    if (containedExtension == tarExtension || isSearchFile(gzsf.fileName)) {
+    val gzResults = mutable.ListBuffer[SearchResult]()
+    val fileType = FileTypes.getFileType(gzsf.file.getName)
+    if (containedExtension == tarExtension || isSearchFile(gzsf.file.getName, fileType)) {
       val gzis = new GZIPInputStream(new BufferedInputStream(
         new FileInputStream(sf.getPath)))
       if (containedExtension == tarExtension) {
-        searchTarFileInputStream(gzsf, gzis)
+        gzResults ++= searchTarFileInputStream(gzsf, gzis)
       } else {
         val source = Source.fromInputStream(gzis)
-        searchFileSource(gzsf, source)
+        gzResults ++= searchFileSource(gzsf, source)
       }
       gzis.close()
     }
+    Seq.empty[SearchResult] ++ gzResults
   }
 
-  private def searchBz2FileSource(sf: SearchFile, source: Source): Unit = {
+  private def searchBz2File(sf: SearchFile): Seq[SearchResult] = {
     if (settings.verbose) {
-      Common.log("Searching bzip2 file %s".format(sf.toString))
+      log("Searching bzip2 file %s".format(sf.toString))
     }
-    val containedFileName = sf.fileName.split("\\.").init.mkString(currentPath)
-    val containedFileType = FileTypes.getFileType(sf)
-    val containedExtension = FileUtil.getExtension(sf)
-    val bzsf = new SearchFile(sf.containers :+ sf.getPath, "", containedFileName,
+    val containedFileName = sf.file.getName.split("\\.").init.mkString(currentPath)
+    val containedFileType = FileTypes.getFileType(sf.file.getName)
+    val containedExtension = getExtension(sf)
+    val bzsf = new SearchFile(sf.containers :+ sf.getPath, new File(containedFileName),
       containedFileType)
-    if (containedExtension == tarExtension || isSearchFile(bzsf.fileName)) {
+    val bzResults = mutable.ListBuffer[SearchResult]()
+    val fileType = FileTypes.getFileType(bzsf.file.getName)
+    if (containedExtension == tarExtension || isSearchFile(bzsf.file.getName, fileType)) {
       val bzis = new BZip2CompressorInputStream(new BufferedInputStream(
         new FileInputStream(sf.getPath)))
       if (containedExtension == tarExtension) {
-        searchTarFileInputStream(bzsf, bzis)
+        bzResults ++= searchTarFileInputStream(bzsf, bzis)
       } else {
         val source = Source.fromInputStream(bzis)
-        searchFileSource(bzsf, source)
+        bzResults ++= searchFileSource(bzsf, source)
       }
       bzis.close()
     }
-  }
-
-  private def addSearchResult(r: SearchResult): Unit = {
-    _searchResults.append(r)
-  }
-
-  private def cmpSearchResults(r1: SearchResult, r2: SearchResult): Boolean = {
-    var (path1, fileName1, path2, fileName2) = ("", "", "", "")
-    if (r1.file.isDefined) {
-      val file1 = r1.file.get.toFile
-      path1 = file1.getParent.toLowerCase
-      fileName1 = file1.getName.toLowerCase
-    }
-    if (r2.file.isDefined) {
-      val file2 = r2.file.get.toFile
-      path2 = file2.getParent.toLowerCase
-      fileName2 = file2.getName.toLowerCase
-    }
-    if (path1 == path2) {
-      if (fileName1 == fileName2) {
-        if (r1.lineNum == r2.lineNum) {
-          r1.matchStartIndex < r2.matchStartIndex
-        } else {
-          r1.lineNum < r2.lineNum
-        }
-      } else {
-        fileName1 < fileName2
-      }
-    } else {
-      path1 < path2
-    }
-  }
-
-  def getSearchResults: Seq[SearchResult] = {
-    _searchResults.sortWith(cmpSearchResults).toList
-  }
-
-  def printSearchResults(): Unit = {
-    // TODO: add includePattern setting in formatted output
-    val formatter = new SearchResultFormatter(settings)
-    getSearchResults.foreach(r => Common.log(formatter.format(r)))
- }
-
-  // retrieve only AFTER search
-  lazy val searchResults: Seq[SearchResult] = _searchResults.sortWith(cmpSearchResults).toVector
-
-  def getMatchingDirs: Seq[File] = {
-    searchResults.filter(_.file.isDefined).map(_.file.get.toFile.getParentFile).
-      distinct.toVector
-  }
-
-  def getMatchingFiles: Seq[File] = {
-    searchResults.filter(_.file.isDefined).map(_.file.get.toFile).distinct.
-      toVector
-  }
-
-  def getMatchingLines: Seq[String] = {
-    val allLines = searchResults.flatMap(r => Option(r.line)).map(_.trim)
-    if (settings.uniqueLines) {
-      allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
-    } else {
-      allLines.sortWith(_.toUpperCase < _.toUpperCase)
-    }
+    Seq.empty[SearchResult] ++ bzResults
   }
 }
 
-// doing this so I can test methods in Searcher class that can be static
 object Searcher {
+  val currentPath = "."
+  val tarExtension = "tar"
+
+  val settingsTests: Seq[SearchSettings => Option[String]] = Seq[SearchSettings => Option[String]](
+    ss => if (ss.startPath.isDefined && ss.startPath.get.nonEmpty) None else Some("Startpath not defined"),
+    ss => if (new File(ss.startPath.get).exists()) None else Some("Startpath not found"),
+    ss => if (new File(ss.startPath.get).canRead) None else Some("Startpath not readable"),
+    ss => if (ss.searchPatterns.nonEmpty) None else Some("No search patterns defined"),
+    ss => if (ss.linesAfter >= 0) None else Some("Invalid linesafter"),
+    ss => if (ss.linesBefore >= 0) None else Some("Invalid linesbefore"),
+    ss => if (ss.maxLineLength >= 0) None else Some("Invalid maxlinelength"),
+  )
+
+  def listToString(stringList: Iterable[Any]): String = {
+    stringList.mkString("[\"", "\", \"", "\"]")
+  }
+
+  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
+    patterns exists (_.findFirstMatchIn(s).isDefined)
+  }
+
+  def anyMatchesAnyPattern(strings: Seq[String], patterns: Set[Regex]): Boolean = {
+    strings exists (matchesAnyPattern(_, patterns))
+  }
+
+  def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]): Boolean = {
+    ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
+      &&
+      (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
+  }
+
+  def linesMatch(lines: Seq[String], inPatterns: Set[Regex],
+                         outPatterns: Set[Regex]): Boolean = {
+    (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
+      (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
+  }
+
   def getLineIndices(contents:String): Seq[(Int,Int)] = {
     val newLineIndices = contents.zipWithIndex.collect { case ('\n',i) => i }
     if (newLineIndices.nonEmpty) {
