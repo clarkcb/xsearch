@@ -116,7 +116,7 @@ class Searcher(val settings: SearchSettings) {
         if ((sf.fileType === FileType.ARCHIVE
                     && (settings.searchArchives || settings.archivesOnly)
                     && isArchiveSearchFile(sf))
-            || !settings.archivesOnly && isSearchFile(sf)) {
+            || (!settings.archivesOnly && isSearchFile(sf))) {
             return sf
         }
         return null
