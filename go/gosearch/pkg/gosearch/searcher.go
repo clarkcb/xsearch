@@ -28,6 +28,9 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/ianaindex"
+	"golang.org/x/text/transform"
 	"io"
 	"io/ioutil"
 	"os"
@@ -49,6 +52,7 @@ type Searcher struct {
 	errChan          chan error
 	searchResults    *SearchResults
 	resultChan       chan *SearchResult
+	textDecoder      *encoding.Decoder
 }
 
 func NewSearcher(settings *SearchSettings) *Searcher {
@@ -64,6 +68,7 @@ func NewSearcher(settings *SearchSettings) *Searcher {
 		make(chan error, 1),        // errChan
 		NewSearchResults(settings), // searchResults
 		make(chan *SearchResult),   // resultChan
+		nil,
 	}
 }
 
@@ -109,9 +114,11 @@ func (s *Searcher) validateSettings() error {
 	if s.Settings.MaxLineLength < 0 {
 		return fmt.Errorf("Invalid maxlinelength")
 	}
-	if strings.ToLower(s.Settings.TextFileEncoding) != "utf-8" {
+	enc, err := ianaindex.IANA.Encoding(s.Settings.TextFileEncoding)
+	if err != nil {
 		return fmt.Errorf("Invalid or unsupported text file encoding")
 	}
+	s.textDecoder = enc.NewDecoder()
 	return nil
 }
 
@@ -828,7 +835,7 @@ func (s *Searcher) searchArchiveFileReader(r io.Reader, si *SearchItem) {
 func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
 	switch si.fileType {
 	case FiletypeCode, FiletypeXml, FiletypeText:
-		s.searchTextFileReader(r, si)
+		s.searchTextFileReader(transform.NewReader(r, s.textDecoder), si)
 	case FiletypeBinary:
 		s.searchBinaryFileReader(r, si)
 	case FiletypeArchive:
