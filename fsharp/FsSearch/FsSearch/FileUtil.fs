@@ -71,8 +71,9 @@ module FileUtil =
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
         startsWithDot
 
-    let IsHiddenFile (fileInfo : FileSystemInfo) : bool = 
-        IsHidden (fileInfo.Name)
+    let IsHiddenFile (f : FileSystemInfo) : bool = 
+        (f.Name.[0] = '.' && not (IsDotDir f.Name)) ||
+        (f.Exists && (f.Attributes &&& FileAttributes.Hidden) = FileAttributes.Hidden)
 
     let ExtensionsListFromString (exts : string) : string list =
         let nonWord = Regex(@"\W+")

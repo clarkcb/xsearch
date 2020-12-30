@@ -93,9 +93,8 @@ namespace CsSearch
 
 		public static bool IsHidden(FileSystemInfo f)
 		{
-			var startsWithDot = f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name);
-			var hasHiddenAttribute = f.Exists && (f.Attributes & FileAttributes.Hidden) != 0;
-			return (startsWithDot || hasHiddenAttribute);
+			return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
+			        || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
 		}
 
 		public static string JoinPath(string path1, string path2)
