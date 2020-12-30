@@ -15,28 +15,8 @@
 }
 
 - (NSStringEncoding) strToEncoding:(NSString*)s {
-    s = [s lowercaseString];
-    NSStringEncoding encoding = 0;
-    if ([s isEqualToString:@"utf-8"] || [s isEqualToString:@"utf8"]) {
-        encoding = NSUTF8StringEncoding;
-    } else if ([s isEqualToString:@"utf-16"] || [s isEqualToString:@"utf16"]) {
-        encoding = NSUTF16StringEncoding;
-    } else if ([s isEqualToString:@"utf-32"] || [s isEqualToString:@"utf32"]) {
-        encoding = NSUTF32StringEncoding;
-    } else if ([s isEqualToString:@"iso-8859-1"] || [s isEqualToString:@"iso88591"]
-               || [s isEqualToString:@"iso-latin-1"] || [s isEqualToString:@"isolatin1"]
-               || [s isEqualToString:@"latin-1"] || [s isEqualToString:@"latin1"]) {
-        encoding = NSISOLatin1StringEncoding;
-    } else if ([s isEqualToString:@"macosroman"]) {
-        encoding = NSMacOSRomanStringEncoding;
-    } else if ([s isEqualToString:@"windows-1252"] || [s isEqualToString:@"windows1252"]
-               || [s isEqualToString:@"cp-1252"] || [s isEqualToString:@"cp1252"]) {
-        encoding = NSWindowsCP1252StringEncoding;
-    } else if ([s isEqualToString:@"shift-jis"] || [s isEqualToString:@"shiftjis"]) {
-        encoding = NSShiftJISStringEncoding;
-    } else if ([s isEqualToString:@"ascii"]) {
-        encoding = NSASCIIStringEncoding;
-    }
+    NSStringEncoding encoding =
+        CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding((CFStringRef) s));
     return encoding;
 }
 
@@ -59,7 +39,7 @@
         setError(error, @"Invalid maxlinelength");
     } else {
         NSStringEncoding encoding = [self strToEncoding:settings.textFileEncoding];
-        if (encoding == 0) {
+        if (encoding == 0xFFFFFFFF) {
             setError(error, @"Invalid textfileencoding");
         } else {
             self.textFileEncoding = encoding;
@@ -86,12 +66,13 @@
 }
 
 - (BOOL) filterByPatterns:(NSString*)s inPatterns:(NSArray<Regex*>*)inPatterns outPatterns:(NSArray<Regex*>*)outPatterns {
-    return (([inPatterns count] == 0 || [self matchesAnyPattern:s patterns:inPatterns]) && ([outPatterns count] == 0 || ![self matchesAnyPattern:s patterns:outPatterns]));
+    return (([inPatterns count] == 0 || [self matchesAnyPattern:s patterns:inPatterns]) &&
+            ([outPatterns count] == 0 || ![self matchesAnyPattern:s patterns:outPatterns]));
 }
 
 - (BOOL) filterByExtensions:(NSString*)ext inExtensions:(NSArray<NSString*>*)inExtensions outExtensions:(NSArray<NSString*>*)outExtensions {
-    return (([inExtensions count] == 0 || [inExtensions containsObject:ext])
-            && ([outExtensions count] == 0 || ![outExtensions containsObject:ext]));
+    return (([inExtensions count] == 0 || [inExtensions containsObject:ext]) &&
+            ([outExtensions count] == 0 || ![outExtensions containsObject:ext]));
 }
 
 - (BOOL) isSearchDir:(NSString*)dirPath {
@@ -124,9 +105,6 @@
         return false;
     }
     FileType fileType = [self.fileTypes getFileType:filePath];
-    //if (fileType == FileTypeUnknown) {
-    //    return false;
-    //}
     if (fileType == FileTypeArchive) {
         return self.settings.searchArchives && [self isArchiveSearchFile:filePath];
     }
@@ -253,7 +231,9 @@
 }
 
 - (NSArray<SearchResult*>*) searchBinaryFile:(SearchFile*)sf error:(NSError**)error {
-    NSString *contents = [[NSString alloc] initWithContentsOfFile:sf.filePath encoding:NSISOLatin1StringEncoding error:error];
+    NSString *contents = [[NSString alloc] initWithContentsOfFile:sf.filePath
+                                                         encoding:NSISOLatin1StringEncoding
+                                                            error:error];
     if (*error != nil) {
         return [NSArray array];
     }
@@ -298,7 +278,12 @@
                                                          encoding:self.textFileEncoding
                                                             error:error];
     if (*error != nil) {
-        return [NSArray array];
+        if ([[*error domain] isEqualToString:@"NSCocoaErrorDomain"] && [*error code] == 261) {
+            // this indicates problem reading text file with encoding, just reset the error and move on
+            *error = nil;
+        } else {
+            return [NSArray array];
+        }
     }
     NSArray<SearchResult*> *results = [NSArray array];
     if (contents != nil) {
