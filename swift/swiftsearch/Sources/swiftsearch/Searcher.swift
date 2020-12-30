@@ -33,8 +33,8 @@ public class Searcher {
 
     private func strToEncoding(_ encName: String) -> String.Encoding? {
         var encoding: String.Encoding?
-        let enc: String.Encoding = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding(encName as CFString)))
-        if enc.rawValue == 0xFFFFFFFF {
+        let enc = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding(encName as CFString)))
+        if enc.rawValue == 0xFFFF_FFFF {
             encoding = nil
         } else {
             encoding = enc
@@ -76,19 +76,22 @@ public class Searcher {
     }
 
     private func filterByExtensions(_ ext: String, inExtensions: Set<String>,
-                                    outExtensions: Set<String>) -> Bool {
+                                    outExtensions: Set<String>) -> Bool
+    {
         ((inExtensions.isEmpty || inExtensions.contains(ext))
             && (outExtensions.isEmpty || !outExtensions.contains(ext)))
     }
 
     private func filterByPatterns(_ str: String, inPatterns: [Regex],
-                                  outPatterns: [Regex]) -> Bool {
+                                  outPatterns: [Regex]) -> Bool
+    {
         ((inPatterns.isEmpty || matchesAnyPattern(str, Array(inPatterns)))
             && (outPatterns.isEmpty || !matchesAnyPattern(str, Array(outPatterns))))
     }
 
     private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
-                                   outFileTypes: [FileType]) -> Bool {
+                                   outFileTypes: [FileType]) -> Bool
+    {
         ((inFileTypes.isEmpty || inFileTypes.contains(fileType))
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType)))
     }
@@ -102,7 +105,7 @@ public class Searcher {
     }
 
     public func isSearchFile(_ filePath: String) -> Bool {
-        return isSearchFile(filePath, fileType: fileTypes.getFileType(filePath))
+        isSearchFile(filePath, fileType: fileTypes.getFileType(filePath))
     }
 
     public func isSearchFile(_ filePath: String, fileType: FileType) -> Bool {
@@ -204,7 +207,8 @@ public class Searcher {
             return nil
         }
         if (fileType == FileType.archive && settings.searchArchives && isArchiveSearchFile(filePath))
-            || (!settings.archivesOnly && isSearchFile(filePath, fileType: fileType)) {
+            || (!settings.archivesOnly && isSearchFile(filePath, fileType: fileType))
+        {
             return SearchFile(filePath: filePath, fileType: fileType)
         }
         return nil
@@ -224,7 +228,8 @@ public class Searcher {
 
     func searchFile(_ searchFile: SearchFile) {
         if searchFile.fileType == FileType.code || searchFile.fileType == FileType.text
-            || searchFile.fileType == FileType.xml {
+            || searchFile.fileType == FileType.xml
+        {
             searchTextFile(searchFile)
         } else if searchFile.fileType == FileType.binary {
             searchBinaryFile(searchFile)
@@ -243,7 +248,7 @@ public class Searcher {
 
     private func searchTextFileContents(_ searchFile: SearchFile) {
         let contents = try? String(contentsOfFile: searchFile.filePath,
-                                   encoding: self.textFileEncoding!)
+                                   encoding: textFileEncoding!)
         if contents != nil {
             let results = searchMultiLineString(contents!)
             // add filePath
@@ -313,7 +318,8 @@ public class Searcher {
             }
 
             if linesBefore.isEmpty || linesBeforeMatch(linesBefore),
-               linesAfter.isEmpty || linesAfterMatch(linesAfter) {
+               linesAfter.isEmpty || linesAfterMatch(linesAfter)
+            {
                 let result = SearchResult(
                     searchPattern: pattern.pattern,
                     file: nil,
@@ -365,7 +371,7 @@ public class Searcher {
 
     private func searchTextFileLines(_ searchFile: SearchFile) {
         let results: [SearchResult]
-        if let reader = StreamReader(path: searchFile.filePath, encoding: self.textFileEncoding!) {
+        if let reader = StreamReader(path: searchFile.filePath, encoding: textFileEncoding!) {
             results = searchLineReader(reader)
             for res in results {
                 let result = SearchResult(
@@ -418,7 +424,8 @@ public class Searcher {
                     let matches = pat.matches(line!)
                     for match in matches {
                         if linesBefore.isEmpty || linesBeforeMatch(linesBefore),
-                           linesAfter.isEmpty || linesAfterMatch(linesAfter) {
+                           linesAfter.isEmpty || linesAfterMatch(linesAfter)
+                        {
                             let result = SearchResult(
                                 searchPattern: pat.pattern,
                                 file: nil,

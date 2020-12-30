@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class FileUtil {
+public enum FileUtil {
     fileprivate static let dotDirs = Set<String>([".", "..", "./", "../"])
     fileprivate static let separator = "/"
 
@@ -30,7 +30,7 @@ public class FileUtil {
     }
 
     public static func expandPath(_ filePath: String) -> String {
-        return (filePath as NSString).expandingTildeInPath
+        (filePath as NSString).expandingTildeInPath
     }
 
     public static func getExtension(_ fileName: String) -> String {
@@ -65,7 +65,7 @@ public class FileUtil {
         do {
             let options = getOptions(forSettings: settings)
             let fileUrls = try getFileManager().contentsOfDirectory(at: URL(fileURLWithPath: expandPath(filePath)), includingPropertiesForKeys: [.isRegularFileKey], options: options)
-            return fileUrls.map { $0.path }
+            return fileUrls.map(\.path)
         } catch {
             return []
         }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class Color {
+public enum Color {
     public static let RESET = "\u{001B}[0m"
     public static let BLACK = "\u{001B}[30m"
     public static let RED = "\u{001B}[31m"

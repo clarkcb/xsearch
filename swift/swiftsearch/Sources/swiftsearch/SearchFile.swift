@@ -22,6 +22,6 @@ public struct SearchFile {
 
     public var description: String {
         "\(containers.isEmpty ? "" : containers.joined(separator: containerSeparator) + containerSeparator)" +
-        filePath
+            filePath
     }
 }

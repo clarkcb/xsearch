@@ -20,7 +20,8 @@ public struct SearchResult {
 
     public init(searchPattern: String, file: SearchFile?, lineNum: Int,
                 matchStartIndex: Int, matchEndIndex: Int, line: String,
-                linesBefore: [String], linesAfter: [String]) {
+                linesBefore: [String], linesAfter: [String])
+    {
         self.searchPattern = searchPattern
         self.file = file
         self.lineNum = lineNum

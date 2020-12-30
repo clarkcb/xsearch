@@ -10,11 +10,11 @@ import Foundation
 import swiftsearch
 
 func getMatchingFiles(_ results: [SearchResult]) -> [String] {
-    results.compactMap { $0.file }.map { $0.filePath }.sorted().unique()
+    results.compactMap(\.file).map(\.filePath).sorted().unique()
 }
 
 func getMatchingDirs(_ results: [SearchResult]) -> [String] {
-    results.compactMap { $0.file }.map {
+    results.compactMap(\.file).map {
         URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
     }.sorted().unique()
 }
