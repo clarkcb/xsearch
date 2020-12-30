@@ -35,6 +35,7 @@ public class SearchOptions {
     private final int actionMapSize = 24;
     private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
         {
+            put("encoding", (s, settings) -> settings.setTextFileEncoding(s));
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
             put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
             put("in-dirpattern", (s, settings) -> settings.addInDirPattern(s));

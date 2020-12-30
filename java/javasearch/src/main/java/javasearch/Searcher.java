@@ -361,7 +361,6 @@ public class Searcher {
             results.addAll(searchMultiLineString(contents));
             for (SearchResult r : results) {
                 r.setSearchFile(sf);
-                //addSearchResult(r);
             }
         } catch (NoSuchElementException e) {
             log(e.toString() + ": " + sf.toString());
@@ -425,6 +424,7 @@ public class Searcher {
                 newLineIndices);
         final int linesBeforeCount = settings.getLinesBefore();
         final int linesAfterCount = settings.getLinesAfter();
+        final int sLength = s.length();
         Matcher m = p.matcher(s);
         boolean found = m.find();
         while (found) {
@@ -436,7 +436,11 @@ public class Searcher {
                         .filter(i -> i.intValue() <= m.start())
                         .collect(Collectors.toList());
                 int lineNum = beforeStartIndices.size();
-                int endLineIndex = endLineIndices.get(beforeStartIndices.size() - 1).intValue();
+                int nextEndLineIndex = endLineIndices.get(beforeStartIndices.size() - 1).intValue();
+                if (nextEndLineIndex == sLength - 1) {
+                    nextEndLineIndex++;
+                }
+                int endLineIndex = nextEndLineIndex;
                 int startLineIndex = beforeStartIndices
                         .remove(beforeStartIndices.size() - 1).intValue();
                 String line = s.substring(startLineIndex, endLineIndex);
