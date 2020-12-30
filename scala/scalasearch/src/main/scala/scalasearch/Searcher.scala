@@ -247,9 +247,17 @@ class Searcher (settings: SearchSettings) {
   }
 
   private def searchTextFileSourceContents(sf: SearchFile, source: Source): Seq[SearchResult] = {
-    val contents = source.mkString
-    searchMultiLineString(contents).map { r =>
-      r.copy(file = Some(sf))
+    try {
+      val contents = source.mkString
+      searchMultiLineString(contents).map { r =>
+        r.copy(file = Some(sf))
+      }
+    } catch {
+      case _: java.nio.charset.MalformedInputException =>
+        if (settings.verbose) {
+          log(s"Skipping file with unsupported encoding: $sf")
+        }
+        Seq.empty[SearchResult]
     }
   }
 
@@ -378,8 +386,16 @@ class Searcher (settings: SearchSettings) {
   }
 
   private def searchTextFileSourceLines(sf: SearchFile, source: Source): Seq[SearchResult] = {
-    searchStringIterator(source.getLines()).map { r =>
-      r.copy(file=Some(sf))
+    try {
+      searchStringIterator(source.getLines()).map { r =>
+        r.copy(file=Some(sf))
+      }
+    } catch {
+      case _: java.nio.charset.MalformedInputException =>
+        if (settings.verbose) {
+          log(s"Skipping file with unsupported encoding: $sf")
+        }
+        Seq.empty[SearchResult]
     }
   }
 
@@ -447,6 +463,7 @@ class Searcher (settings: SearchSettings) {
         }
       }
     }
+
     Seq.empty[SearchResult] ++ results
   }
 
