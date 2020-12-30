@@ -19,7 +19,7 @@ public struct Regex {
     }
 
     private func strRange(_ str: String) -> NSRange {
-        NSMakeRange(0, str.lengthOfBytes(using: String.Encoding.isoLatin1))
+        NSMakeRange(0, str.count)
     }
 
     public func matches(_ str: String) -> [NSTextCheckingResult] {

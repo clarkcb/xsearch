@@ -32,28 +32,12 @@ public class Searcher {
     }
 
     private func strToEncoding(_ encName: String) -> String.Encoding? {
-        // working (non-exhaustively) from available encodings:
-        // https://developer.apple.com/documentation/swift/string/encoding
         var encoding: String.Encoding?
-        switch encName.lowercased() {
-        case "utf-8", "utf8":
-            encoding = String.Encoding.utf8
-        case "utf-16", "utf16":
-            encoding = String.Encoding.utf16
-        case "utf-32", "utf32":
-            encoding = String.Encoding.utf32
-        case "iso-8859-1", "iso88591", "iso-latin-1", "isolatin1":
-            encoding = String.Encoding.isoLatin1
-        case "macosroman":
-            encoding = String.Encoding.macOSRoman
-        case "windows-1252", "windows1252", "cp-1252", "cp1252":
-            encoding = String.Encoding.windowsCP1252
-        case "shift-jis", "shiftjis":
-            encoding = String.Encoding.shiftJIS
-        case "ascii":
-            encoding = String.Encoding.ascii
-        default:
+        let enc: String.Encoding = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(CFStringConvertIANACharSetNameToEncoding(encName as CFString)))
+        if enc.rawValue == 0xFFFFFFFF {
             encoding = nil
+        } else {
+            encoding = enc
         }
         return encoding
     }
@@ -204,9 +188,8 @@ public class Searcher {
                             enumerator.skipDescendents()
                         }
                     } else if fileAttributes.isRegularFile! {
-                        let searchFile = filterToSearchFile(fileURL.path)
-                        if searchFile != nil {
-                            searchFiles.append(searchFile!)
+                        if let searchFile = filterToSearchFile(fileURL.path) {
+                            searchFiles.append(searchFile)
                         }
                     }
                 } catch { print(error, fileURL) }
@@ -240,9 +223,6 @@ public class Searcher {
     }
 
     func searchFile(_ searchFile: SearchFile) {
-        if settings.debug {
-            logMsg("Searching file: \(FileUtil.formatPath(searchFile.filePath, forPath: settings.startPath!))")
-        }
         if searchFile.fileType == FileType.code || searchFile.fileType == FileType.text
             || searchFile.fileType == FileType.xml {
             searchTextFile(searchFile)
