@@ -171,19 +171,18 @@
         for (SearchFile *sf in searchFiles) {
             [dirSet addObject:[[sf description] stringByDeletingLastPathComponent]];
         }
-        NSArray *searchDirs = [NSArray arrayWithArray:[dirSet allObjects]];
-        searchDirs = [searchDirs sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+        NSArray *searchDirs = [[NSArray arrayWithArray:[dirSet allObjects]] sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
             return [s1 compare:s2];
         }];
 
         logMsg([NSString stringWithFormat:@"\nDirectories to be searched (%lu):", [searchDirs count]]);
         for (NSString *d in searchDirs) {
-            logMsg(d);
+            logMsg([FileUtil relativePath:d to:self.settings.startPath]);
         }
 
         logMsg([NSString stringWithFormat:@"\nFiles to be searched (%lu):", [searchFiles count]]);
         for (SearchFile *sf in searchFiles) {
-            logMsg([sf description]);
+            logMsg([FileUtil relativePath:[sf description] to:self.settings.startPath]);
         }
     }
 
@@ -221,7 +220,17 @@
         }
         element = (NSURL*)[enumerator nextObject];
     }
-    return [NSArray arrayWithArray:searchFiles];
+    return [[NSArray arrayWithArray:searchFiles] sortedArrayUsingComparator:^NSComparisonResult(SearchFile *sf1, SearchFile *sf2) {
+        NSString *p1 = [[sf1 description] stringByDeletingLastPathComponent];
+        NSString *p2 = [[sf2 description] stringByDeletingLastPathComponent];
+        if ([p1 isEqualToString:p2]) {
+            NSString *f1 = [[sf1 description] lastPathComponent];
+            NSString *f2 = [[sf2 description] lastPathComponent];
+            return [f1 compare:f2];
+        }
+        return [p1 compare:p2];
+    }];
+
 }
 
 
@@ -326,7 +335,7 @@
 - (NSArray<NSString*>*) getLinesAfter:(NSString*)s
                       beforeLineCount:(int)beforeLineCount
                      startLineIndices:(NSArray<NSNumber*>*)startLineIndices
-                     endLineIndices:(NSArray<NSNumber*>*)endLineIndices {
+                       endLineIndices:(NSArray<NSNumber*>*)endLineIndices {
     NSMutableArray *linesAfter = [NSMutableArray array];
     
     if (self.settings.linesAfter > 0) {
@@ -345,7 +354,9 @@
     return [NSArray arrayWithArray:linesAfter];
 }
 
-- (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s pattern:(Regex*)pattern error:(NSError**)error {
+- (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s
+                                          pattern:(Regex*)pattern
+                                            error:(NSError**)error {
     NSMutableArray<SearchResult*> *results = [NSMutableArray array];
     NSArray<NSNumber*> *newLineIndices = [self getNewLineIndices:s];
     NSArray<NSNumber*> *startLineIndices = [self getStartLineIndices:newLineIndices];

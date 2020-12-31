@@ -14,6 +14,9 @@
 
 + (NSSet<NSString*>*) dotDirs;
 + (NSString*) expandPath:(NSString*)filePath;
++ (NSString*) contractPath:(NSString*)filePath;
++ (NSString*) absolutePath:(NSString*)filePath;
++ (NSString*) relativePath:(NSString*)filePath to:(NSString*)toPath;
 + (NSString*) getExtension:(NSString*)fileName;
 + (BOOL) hasExtension:(NSString*)fileName ext:(NSString*)ext;
 + (NSArray<NSString*>*) contentsForPath:(NSString*)filePath error:(NSError**)error;
@@ -25,7 +28,7 @@
 + (BOOL) isHiddenFile:(NSString*)fileName;
 + (BOOL) isReadableFile:(NSString*)filePath;
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath;
-
++ (NSString*) normalizePath:(NSString*)path;
 + (NSDirectoryEnumerationOptions) optionsForSettings:(SearchSettings*)settings;
 
 @end

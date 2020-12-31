@@ -14,8 +14,60 @@
     return [NSSet setWithObjects:@".", @"..", @"./", @"../", nil];
 }
 
++ (BOOL) isDotDir:(NSString*)filePath {
+    return [[self dotDirs] containsObject:filePath];
+}
+
 + (NSString*) expandPath:(NSString*)filePath {
     return [filePath stringByExpandingTildeInPath];
+}
+
++ (NSString*) contractPath:(NSString*)filePath {
+    return [filePath stringByAbbreviatingWithTildeInPath];
+}
+
++ (NSString*) absolutePath:(NSString*)filePath {
+    NSString *normFilePath = [self normalizePath:filePath];
+    if ([self isDotDir:normFilePath] || [normFilePath hasPrefix:@"./"] || [normFilePath containsString:@"../"]) {
+        NSString *pwd = [[NSFileManager defaultManager] currentDirectoryPath];
+        if ([normFilePath isEqualToString:@"."]) {
+            return pwd;
+        }
+        if ([normFilePath isEqualToString:@".."]) {
+            return [pwd stringByDeletingLastPathComponent];
+        }
+        if ([normFilePath hasPrefix:@"./"]) {
+            return [pwd stringByAppendingString:[normFilePath substringFromIndex:1]];
+        }
+        if ([normFilePath containsString:@"../"]) {
+            NSArray<NSString*> *elems = [normFilePath componentsSeparatedByString:@"/"];
+            NSMutableString *resolved;
+            if ([elems[0] isEqualToString:@".."]) {
+                resolved = [NSMutableString stringWithString:[pwd stringByDeletingLastPathComponent]];
+            } else {
+                resolved = [NSMutableString stringWithString:elems[0]];
+            }
+            for (unsigned long i=1; i < [elems count]; i++) {
+                if ([elems[i] isEqualToString:@".."]) {
+                    resolved = [NSMutableString stringWithString:[resolved stringByDeletingLastPathComponent]];
+                } else if (![elems[i] isEqualToString:@""]) {
+                    [resolved appendString:[NSString stringWithFormat:@"/%@", elems[i]]];
+                }
+            }
+            return [NSString stringWithString:resolved];
+        }
+    }
+    return filePath;
+}
+
++ (NSString*) relativePath:(NSString*)filePath to:(NSString*)toPath {
+    NSString *normFilePath = [self normalizePath:filePath];
+    NSString *normToPath = [self normalizePath:toPath];
+    NSString *absToPath = [self absolutePath:normToPath];
+    if ([absToPath isEqualToString:normToPath]) {
+        return filePath;
+    }
+    return [normFilePath stringByReplacingOccurrencesOfString:absToPath withString:normToPath];
 }
 
 + (NSString*) getExtension:(NSString*)fileName {
@@ -77,10 +129,6 @@
     return false;
 }
 
-+ (BOOL) isDotDir:(NSString*)filePath {
-    return [[self dotDirs] containsObject:filePath];
-}
-
 + (BOOL) isHidden:(NSString*)filePath {
     NSArray<NSString*> *elems = [filePath componentsSeparatedByString:@"/"];
     for (NSString *elem in elems) {
@@ -106,6 +154,13 @@
     }
     [joined appendString:childPath];
     return [NSString stringWithString:joined];
+}
+
++ (NSString*) normalizePath:(NSString*)path {
+    if ([path hasSuffix:@"/"]) {
+        return [path substringToIndex:[path length] - 1];
+    }
+    return path;
 }
 
 @end

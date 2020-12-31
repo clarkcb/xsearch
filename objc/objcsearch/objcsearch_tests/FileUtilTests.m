@@ -17,7 +17,6 @@
 
 - (void)setUp {
     [super setUp];
-    self.homePath = [[[NSProcessInfo processInfo]environment]objectForKey:@"HOME"];
 }
 
 - (void)tearDown {
@@ -28,13 +27,53 @@
  * expandPath tests
  **************************************************************************/
 - (void)testExpandPathHasTilde {
-    NSString *expected = [FileUtil joinPath:self.homePath childPath:@"filename.txt"];
+    NSString *expected = [FileUtil joinPath:NSHomeDirectory() childPath:@"filename.txt"];
     XCTAssert([[FileUtil expandPath:@"~/filename.txt"] isEqualToString:expected]);
 }
 
 - (void)testExpandPathNoTilde {
     NSString *expected = @"/path/to/filename.txt";
     XCTAssert([[FileUtil expandPath:@"/path/to/filename.txt"] isEqualToString:expected]);
+}
+
+/***************************************************************************
+ * contractPath tests
+ **************************************************************************/
+- (void)testContractPathHasTilde {
+    NSString *expected = @"~/filename.txt";
+    XCTAssert([[FileUtil contractPath:@"~/filename.txt"] isEqualToString:expected]);
+}
+
+- (void)testContractPathUnderHome {
+    NSString *expected = @"~/filename.txt";
+    NSString *pathUnderHome = [FileUtil joinPath:NSHomeDirectory() childPath:@"filename.txt"];
+    XCTAssert([[FileUtil contractPath:pathUnderHome] isEqualToString:expected]);
+}
+
+- (void)testContractPathNotUnderHome {
+    NSString *expected = @"/path/to/filename.txt";
+    XCTAssert([[FileUtil contractPath:@"/path/to/filename.txt"] isEqualToString:expected]);
+}
+
+/***************************************************************************
+ * relativePath tests
+ **************************************************************************/
+- (void)testRelativePathToPathIsCurrent {
+    NSString *toPath = @".";
+    NSString *pwd = [[NSFileManager defaultManager] currentDirectoryPath];
+    NSString *fullPath = [FileUtil joinPath:pwd childPath:@"objcsearch"];
+    NSString *expected = @"./objcsearch";
+    NSString *relativePath = [FileUtil relativePath:fullPath to:toPath];
+    XCTAssert([relativePath isEqualToString:expected]);
+}
+
+- (void)testRelativePathToPathIsParent {
+    NSString *toPath = @"..";
+    NSString *pwd = [[NSFileManager defaultManager] currentDirectoryPath];
+    NSString *fullPath = [FileUtil joinPath:[pwd stringByDeletingLastPathComponent] childPath:@"Debug"];
+    NSString *expected = @"../Debug";
+    NSString *relativePath = [FileUtil relativePath:fullPath to:toPath];
+    XCTAssert([relativePath isEqualToString:expected]);
 }
 
 /***************************************************************************

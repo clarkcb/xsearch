@@ -1,3 +1,4 @@
+#import "FileUtil.h"
 #import "SearchResultFormatter.h"
 
 @implementation SearchResultFormatter
@@ -25,7 +26,7 @@
 
 - (NSString *) singleLineFormat:(SearchResult*)result {
     NSMutableString *s = [NSMutableString string];
-    [s appendString:[result getFilePath]];
+    [s appendString:[FileUtil relativePath:[result getFilePath] to:[self.settings startPath]]];
     if (result.lineNum > 0) {
         [s appendFormat:@": %lu: [%lu:%lu]: ", result.lineNum,
          result.matchStartIndex, result.matchEndIndex];
