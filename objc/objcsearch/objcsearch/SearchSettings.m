@@ -153,6 +153,11 @@
 - (void) addFileType:(NSString *)typeName toArr:(NSMutableArray *)arr {
     FileType fileType = [FileTypes fromName:typeName];
     [arr addObject:[NSNumber numberWithInt:fileType]];
+    // if fileType is FileTypeText, add text sub-types
+    if (fileType == FileTypeText) {
+        [arr addObject:[NSNumber numberWithInt:FileTypeCode]];
+        [arr addObject:[NSNumber numberWithInt:FileTypeXml]];
+    }
 }
 
 - (void) addInFileType:(NSString *)typeName {

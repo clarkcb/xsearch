@@ -36,13 +36,13 @@
 - (NSDictionary<NSString*,NSSet<NSString*>*>*) fileTypesFromJson {
     NSMutableString *fileTypesJsonPath = [NSMutableString stringWithUTF8String:SHAREDPATH];
     [fileTypesJsonPath appendString:@"/filetypes.json"];
-    
+
     NSMutableDictionary *fileTypesDict = [[NSMutableDictionary alloc] init];
     
     if (![[NSFileManager defaultManager] fileExistsAtPath:fileTypesJsonPath]) {
         return nil;
     }
-    
+
     NSData *data = [NSData dataWithContentsOfFile:fileTypesJsonPath];
 
     if (NSClassFromString(@"NSJSONSerialization")) {
@@ -51,9 +51,9 @@
                          JSONObjectWithData:data
                          options:0
                          error:&error];
-        
+
         if (error) { /* JSON was malformed, act appropriately here */ }
-        
+
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             NSArray *fileTypes = jsonObject[@"filetypes"];
             for (NSDictionary *typeDict in fileTypes) {
@@ -68,7 +68,6 @@
 
 + (FileType) fromName:(NSString*)typeName {
     NSString *lname = [typeName lowercaseString];
-    
     if (lname == [NSString stringWithUTF8String:T_TEXT]) {
         return FileTypeText;
     }
@@ -107,6 +106,12 @@
 }
 
 - (FileType) getFileType:(NSString*)fileName {
+    if ([self isCodeFile:fileName]) {
+        return FileTypeCode;
+    }
+    if ([self isXmlFile:fileName]) {
+        return FileTypeXml;
+    }
     if ([self isTextFile:fileName]) {
         return FileTypeText;
     }
@@ -115,12 +120,6 @@
     }
     if ([self isArchiveFile:fileName]) {
         return FileTypeArchive;
-    }
-    if ([self isCodeFile:fileName]) {
-        return FileTypeCode;
-    }
-    if ([self isXmlFile:fileName]) {
-        return FileTypeXml;
     }
     return FileTypeUnknown;
 }
