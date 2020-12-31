@@ -161,15 +161,14 @@ namespace CsSearch
 				Common.Log($"Directories to be searched ({searchDirs.Length}):");
 				foreach (var d in searchDirs)
 				{
-					Common.Log(FileUtil.ContractPath(d));
+					Common.Log(FileUtil.ContractOrRelativePath(d, Settings.StartPath!));
 				}
 				
 				Common.Log($"\nFiles to be searched ({searchFiles.Count}):");
 				foreach (var f in searchFiles)
 				{
-					Common.Log(FileUtil.ContractPath(f.FullName));
+					Common.Log(FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!));
 				}
-				Common.Log("");
 			}
 
 			var searched = 0;
@@ -239,8 +238,8 @@ namespace CsSearch
 
 		private void SearchTextFile(SearchFile f)
 		{
-			if (Settings.Verbose)
-				Common.Log($"Searching text file {FileUtil.ContractPath(f.FullName)}");
+			if (Settings.Debug)
+				Common.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!)}");
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else

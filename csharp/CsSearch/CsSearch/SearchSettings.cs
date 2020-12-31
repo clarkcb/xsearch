@@ -268,6 +268,7 @@ namespace CsSearch
 				", InDirPatterns: " + EnumerableToString(InDirPatterns) +
 				", InExtensions: " + EnumerableToString(InExtensions) +
 				", InFilePatterns: " + EnumerableToString(InFilePatterns) +
+				", InFileTypes: " + EnumerableToString(InFileTypes) +
 				", InLinesAfterPatterns: " + EnumerableToString(InLinesAfterPatterns) +
 				", InLinesBeforePatterns: " + EnumerableToString(InLinesBeforePatterns) +
 				", LinesAfter: " + LinesAfter +
@@ -284,6 +285,7 @@ namespace CsSearch
 				", OutDirPatterns: " + EnumerableToString(OutDirPatterns) +
 				", OutExtensions: " + EnumerableToString(OutExtensions) +
 				", OutFilePatterns: " + EnumerableToString(OutFilePatterns) +
+				", OutFileTypes: " + EnumerableToString(OutFileTypes) +
 				", OutLinesAfterPatterns: " + EnumerableToString(OutLinesAfterPatterns) +
 				", OutLinesBeforePatterns: " + EnumerableToString(OutLinesBeforePatterns) +
 				", PrintResults: " + PrintResults +

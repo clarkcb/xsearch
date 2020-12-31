@@ -70,20 +70,23 @@ namespace CsSearch
 
 		public static string GetRelativePath(string fullPath, string startpath)
 		{
-			var filePath = fullPath;
-			if (IsDotDir(startpath))
+			var filePath = NormalizePath(fullPath);
+			startpath = NormalizePath(startpath);
+			var startFullPath = NormalizePath(new DirectoryInfo(startpath).FullName);
+			if (startFullPath != startpath)
 			{
-				if (NormalizePath(startpath) == CurrentPath)
-				{
-					filePath = filePath.Replace(Environment.CurrentDirectory, ".");
-				}
-				else if (NormalizePath(startpath) == ParentPath)
-				{
-					var parentDirectory = NormalizePath(new DirectoryInfo(startpath).FullName);
-					filePath = filePath.Replace(parentDirectory, "..");
-				}
+				filePath = filePath.Replace(startFullPath, startpath);
 			}
 			return filePath;
+		}
+
+		public static string ContractOrRelativePath(string fullPath, string startpath)
+		{
+			if (startpath[0] == '~')
+			{
+				return ContractPath(fullPath);
+			}
+			return GetRelativePath(fullPath, startpath);
 		}
 
 		public static bool IsDotDir(string filename)
