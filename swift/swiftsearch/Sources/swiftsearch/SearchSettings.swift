@@ -106,7 +106,13 @@ public class SearchSettings: CustomStringConvertible {
     }
 
     public func addInFileType(_ typeName: String) {
-        inFileTypes.append(FileTypes.fromName(typeName))
+        let fileType = FileTypes.fromName(typeName)
+        inFileTypes.append(fileType)
+        // if text, add text sub-types
+        if fileType == FileType.text {
+            inFileTypes.append(FileType.code)
+            inFileTypes.append(FileType.xml)
+        }
     }
 
     public func addInLinesAfterPattern(_ pattern: String) {
@@ -150,7 +156,13 @@ public class SearchSettings: CustomStringConvertible {
     }
 
     public func addOutFileType(_ typeName: String) {
-        outFileTypes.append(FileTypes.fromName(typeName))
+        let fileType = FileTypes.fromName(typeName)
+        outFileTypes.append(fileType)
+        // if text, add text sub-types
+        if fileType == FileType.text {
+            outFileTypes.append(FileType.code)
+            outFileTypes.append(FileType.xml)
+        }
     }
 
     public func addOutLinesAfterPattern(_ pattern: String) {
