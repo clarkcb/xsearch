@@ -56,15 +56,18 @@ module FileUtil =
         if filepath.[0] = '~' then filepath 
         else filepath.Replace(GetHomePath(), "~")
 
-    let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
-
     let GetRelativePath (fullpath : string) (startpath : string) : string =
-        if IsDotDir startpath
-        then match NormalizePath startpath with
-             | "." -> fullpath.Replace(Environment.CurrentDirectory, currentPath)
-             | ".." -> fullpath.Replace(Environment.CurrentDirectory, parentPath)
-             | _ -> fullpath
+        let startFullPath = NormalizePath (new DirectoryInfo (startpath)).FullName
+        let normStartPath = NormalizePath startpath
+        if startFullPath <> normStartPath
+        then fullpath.Replace (startFullPath, normStartPath)
         else fullpath
+
+    let ContractOrRelativePath (fullpath : string) (startpath : string) : string =
+        if startpath.[0] = '~' then ContractPath fullpath 
+        else GetRelativePath fullpath startpath
+        
+    let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
 
     let IsHidden (filepath : string) : bool = 
         let startsWithDot = filepath.[0] = '.' && not (IsDotDir filepath)

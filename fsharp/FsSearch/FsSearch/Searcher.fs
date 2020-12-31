@@ -265,7 +265,7 @@ type Searcher (settings : SearchSettings.t) =
         | :? IOException as e -> printfn "%s" e.Message
 
     member this.SearchTextFile (f : SearchFile.t) : unit =
-        if settings.Verbose then
+        if settings.Debug then
             Common.Log (sprintf "Searching text file %s" f.File.FullName)
         if settings.MultiLineSearch then
             this.SearchTextFileContents f
@@ -323,11 +323,10 @@ type Searcher (settings : SearchSettings.t) =
                 |> List.sort
             
             Common.Log (sprintf "\nDirectories to be searched (%d):" searchDirs.Length)
-            List.iter (fun d -> Common.Log (sprintf "%s " d)) searchDirs
+            List.iter (fun d -> Common.Log (sprintf "%s" (FileUtil.ContractOrRelativePath d settings.StartPath))) searchDirs
         
             Common.Log (sprintf "\nFiles to be searched (%d):" searchFiles.Length)
-            Seq.iter (fun (f: SearchFile.t) -> Common.Log (sprintf "%s " (f.File.ToString()))) searchFiles
-            printfn ""
+            Seq.iter (fun (f: SearchFile.t) -> Common.Log (sprintf "%s" (FileUtil.ContractOrRelativePath (f.File.ToString()) settings.StartPath))) searchFiles
 
         for f in searchFiles do
             this.SearchFile f

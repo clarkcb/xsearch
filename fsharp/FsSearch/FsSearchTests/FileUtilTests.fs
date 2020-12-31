@@ -14,26 +14,26 @@ type FileUtilTests () =
     member this.Setup () =
         ()
 
-//    //////////////////////////////////////////////////////////////
-//    // GetRelativePath tests
-//    //////////////////////////////////////////////////////////////
-//    [<Test>]
-//    member this.GetRelativePath_PathWithCurrentDirectory_RelativePath () =
-//        let path = Environment.CurrentDirectory + "/rest/of/path/"
-//        Assert.AreEqual("./rest/of/path/", FileUtil.GetRelativePath(path, "."))
-//        ()
-//
-//    [<Test>]
-//    member this.GetRelativePath_PathWithoutCurrentDirectory_FullPath () =
-//        let path = "/a/full/path/by/itself/"
-//        Assert.AreEqual(path, FileUtil.GetRelativePath(path, "/a/full/path"))
-//        ()
-//
-//    [<Test>]
-//    member this.GetRelativePath_RelativePath_Unchanged () =
-//        let path = "./a/relative/path/"
-//        Assert.AreEqual(path, FileUtil.GetRelativePath(path, "."))
-//        ()
+    //////////////////////////////////////////////////////////////
+    // GetRelativePath tests
+    //////////////////////////////////////////////////////////////
+    [<Test>]
+    member this.GetRelativePath_PathWithCurrentDirectory_RelativePath () =
+        let path = Environment.CurrentDirectory + "/rest/of/path/"
+        Assert.AreEqual("./rest/of/path/", FileUtil.GetRelativePath path ".")
+        ()
+
+    [<Test>]
+    member this.GetRelativePath_PathWithoutCurrentDirectory_FullPath () =
+        let path = "/a/full/path/by/itself/"
+        Assert.AreEqual(path, FileUtil.GetRelativePath path "/a/full/path")
+        ()
+
+    [<Test>]
+    member this.GetRelativePath_RelativePath_Unchanged () =
+        let path = "./a/relative/path/"
+        Assert.AreEqual(path, FileUtil.GetRelativePath path ".")
+        ()
 
     //////////////////////////////////////////////////////////////
     // IsDotDir tests
