@@ -65,14 +65,20 @@
     return false;
 }
 
+- (BOOL) filterByExtensions:(NSString*)ext inExtensions:(NSArray<NSString*>*)inExtensions outExtensions:(NSArray<NSString*>*)outExtensions {
+    return (([inExtensions count] == 0 || [inExtensions containsObject:ext]) &&
+            ([outExtensions count] == 0 || ![outExtensions containsObject:ext]));
+}
+
 - (BOOL) filterByPatterns:(NSString*)s inPatterns:(NSArray<Regex*>*)inPatterns outPatterns:(NSArray<Regex*>*)outPatterns {
     return (([inPatterns count] == 0 || [self matchesAnyPattern:s patterns:inPatterns]) &&
             ([outPatterns count] == 0 || ![self matchesAnyPattern:s patterns:outPatterns]));
 }
 
-- (BOOL) filterByExtensions:(NSString*)ext inExtensions:(NSArray<NSString*>*)inExtensions outExtensions:(NSArray<NSString*>*)outExtensions {
-    return (([inExtensions count] == 0 || [inExtensions containsObject:ext]) &&
-            ([outExtensions count] == 0 || ![outExtensions containsObject:ext]));
+- (BOOL) filterByTypes:(FileType)fileType inTypes:(NSArray<NSNumber*>*)inTypes outTypes:(NSArray<NSNumber*>*)outTypes {
+    NSNumber *num = [NSNumber numberWithInt:fileType];
+    return (([inTypes count] == 0 || [inTypes containsObject:num]) &&
+            ([outTypes count] == 0 || ![outTypes containsObject:num]));
 }
 
 - (BOOL) isSearchDir:(NSString*)dirPath {
@@ -89,6 +95,19 @@
     [self filterByPatterns:filePath
                 inPatterns:self.settings.inFilePatterns
                outPatterns:self.settings.outFilePatterns];
+}
+
+- (BOOL) isSearchSearchFile:(SearchFile*)searchFile {
+    return [self filterByExtensions:[FileUtil getExtension:[searchFile filePath]]
+                       inExtensions:self.settings.inExtensions
+                      outExtensions:self.settings.outExtensions] &&
+    [self filterByPatterns:[searchFile filePath]
+                inPatterns:self.settings.inFilePatterns
+               outPatterns:self.settings.outFilePatterns] &&
+    [self filterByTypes:[searchFile fileType]
+                inTypes:self.settings.inFileTypes
+               outTypes:self.settings.outFileTypes]
+;
 }
 
 - (BOOL) isArchiveSearchFile:(NSString*)filePath {
@@ -119,11 +138,10 @@
     if (fileType == FileTypeUnknown) {
         return nil;
     }
+    SearchFile *sf = [[SearchFile alloc] initWithFilePath:filePath fileType:fileType];
     if ((fileType == FileTypeArchive && self.settings.searchArchives && [self isArchiveSearchFile:filePath]) ||
-        (!self.settings.archivesOnly && [self isSearchFile:filePath])) {
-        return [[SearchFile alloc]
-                initWithFilePath:filePath
-                fileType:fileType];
+        (!self.settings.archivesOnly && [self isSearchSearchFile:sf])) {
+        return sf;
     }
     return nil;
 }
