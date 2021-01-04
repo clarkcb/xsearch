@@ -1,18 +1,34 @@
 #include <boost/algorithm/string.hpp>
 #include "SearchOption.h"
 
-using namespace std;
+namespace cppsearch {
+    SearchOption::SearchOption(const std::string* sa, const std::string& la, const std::string& desc) {
+        m_shortarg = sa;
+        m_longarg = la;
+        m_description = desc;
+        if (m_shortarg != nullptr && !m_shortarg->empty()) {
+            std::string so = boost::to_lower_copy(*m_shortarg);
+            so.append("@");
+            so.append(m_longarg);
+            m_sortarg = so;
+        } else {
+            m_sortarg = m_longarg;
+        }
+    }
 
-SearchOption::SearchOption(const string* sa, const string* la, const string* desc) {
-    shortarg = sa;
-    longarg = la;
-    description = desc;
-    if (shortarg != nullptr && !shortarg->empty()) {
-        string* so = new string(boost::to_lower_copy(*shortarg));
-        so->append("@");
-        so->append(*longarg);
-        sortarg = so;
-    } else {
-        sortarg = longarg;
+    const std::string* SearchOption::shortarg() const {
+        return m_shortarg;
+    }
+
+    std::string SearchOption::longarg() const {
+        return m_longarg;
+    }
+
+    std::string SearchOption::description() const {
+        return m_description;
+    }
+
+    std::string SearchOption::sortarg() const {
+        return m_sortarg;
     }
 }

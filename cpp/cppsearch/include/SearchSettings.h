@@ -5,146 +5,149 @@
 #include "FileTypes.h"
 #include "SearchPattern.h"
 
-using namespace std;
+namespace cppsearch {
+    class SearchSettings {
+    private:
+        bool m_archivesonly = false;
+        bool m_colorize = true;
+        bool m_debug = false;
+        bool m_excludehidden = true;
+        bool m_firstmatch = false;
 
-class SearchSettings {
-private:
-    bool archivesonly = false;
-    bool debug = false;
-    bool excludehidden = true;
-    bool firstmatch = false;
+        std::vector<std::string> m_in_archiveextensions;
+        std::vector<SearchPattern*> m_in_archivefilepatterns;
+        std::vector<SearchPattern*> m_in_dirpatterns;
+        std::vector<std::string> m_in_extensions;
+        std::vector<SearchPattern*> m_in_filepatterns;
+        std::vector<FileType> m_in_filetypes;
 
-    vector<string> in_archiveextensions;
-    vector<SearchPattern*> in_archivefilepatterns;
-    vector<SearchPattern*> in_dirpatterns;
-    vector<string> in_extensions;
-    vector<SearchPattern*> in_filepatterns;
-    vector<const FileType*> in_filetypes;
+        std::vector<SearchPattern*> m_in_linesafterpatterns;
+        std::vector<SearchPattern*> m_in_linesbeforepatterns;
 
-    vector<SearchPattern*> in_linesafterpatterns;
-    vector<SearchPattern*> in_linesbeforepatterns;
+        std::vector<SearchPattern*> m_linesaftertopatterns;
+        std::vector<SearchPattern*> m_linesafteruntilpatterns;
 
-    vector<SearchPattern*> linesaftertopatterns;
-    vector<SearchPattern*> linesafteruntilpatterns;
+        unsigned int m_linesafter = 0;
+        unsigned int m_linesbefore = 0;
+        bool m_listdirs = false;
+        bool m_listfiles = false;
+        bool m_listlines = false;
+        size_t m_maxlinelength = 150;
+        bool m_multilinesearch = false;
 
-    unsigned int linesafter = 0;
-    unsigned int linesbefore = 0;
-    bool listdirs = false;
-    bool listfiles = false;
-    bool listlines = false;
-    unsigned int maxlinelength = 150;
-    bool multilinesearch = false;
+        std::vector<std::string> m_out_archiveextensions;
+        std::vector<SearchPattern*> m_out_archivefilepatterns;
+        std::vector<SearchPattern*> m_out_dirpatterns;
+        std::vector<std::string> m_out_extensions;
+        std::vector<SearchPattern*> m_out_filepatterns;
+        std::vector<FileType> m_out_filetypes;
 
-    vector<string> out_archiveextensions;
-    vector<SearchPattern*> out_archivefilepatterns;
-    vector<SearchPattern*> out_dirpatterns;
-    vector<string> out_extensions;
-    vector<SearchPattern*> out_filepatterns;
-    vector<const FileType*> out_filetypes;
+        std::vector<SearchPattern*> m_out_linesafterpatterns;
+        std::vector<SearchPattern*> m_out_linesbeforepatterns;
 
-    vector<SearchPattern*> out_linesafterpatterns;
-    vector<SearchPattern*> out_linesbeforepatterns;
+        bool m_printresults = false;
+        bool m_printusage = false;
+        bool m_printversion = false;
+        bool m_recursive = true;
+        bool m_searcharchives = false;
 
-    bool printresults = false;
-    bool printusage = false;
-    bool printversion = false;
-    bool recursive = true;
-    bool searcharchives = false;
+        std::vector<SearchPattern*> m_searchpatterns;
+        std::string* m_startpath;
 
-    vector<SearchPattern*> searchpatterns;
-    string* startpath;
+        bool m_uniquelines = false;
+        bool m_verbose = false;
 
-    bool uniquelines = false;
-    bool verbose = false;
+        static std::string bool_to_string(bool b);
+        static std::string string_vector_to_string(std::vector<std::string>* s);
+        static std::string searchpatterns_to_string(std::vector<SearchPattern*>* ps);
 
-    string bool_to_string(bool b);
-    string string_vector_to_string(vector<string>* s);
-    string searchpatterns_to_string(vector<SearchPattern*>* ps);
+        static void add_pattern(const std::string& p, std::vector<SearchPattern*>* ps);
+        static void add_extensions(const std::string& exts, std::vector<std::string>* extensions);
 
-    void add_pattern(const string* p, vector<SearchPattern*>* ps);
-    void add_extensions(const string* exts, vector<string>* extensions);
+    public:
+        SearchSettings();
+        void add_in_archiveextension(const std::string& ext);
+        void add_in_archivefilepattern(const std::string& pattern);
+        void add_in_dirpattern(const std::string& pattern);
+        void add_in_extension(const std::string& ext);
+        void add_in_filepattern(const std::string& pattern);
+        void add_in_filetype(FileType filetype);
+        void add_in_linesafterpattern(const std::string& pattern);
+        void add_in_linesbeforepattern(const std::string& pattern);
+        void add_linesaftertopattern(const std::string& pattern);
+        void add_linesafteruntilpattern(const std::string& pattern);
+        void add_out_archiveextension(const std::string& ext);
+        void add_out_archivefilepattern(const std::string& pattern);
+        void add_out_dirpattern(const std::string& pattern);
+        void add_out_extension(const std::string& ext);
+        void add_out_filepattern(const std::string& pattern);
+        void add_out_filetype(FileType filetype);
+        void add_out_linesafterpattern(const std::string& pattern);
+        void add_out_linesbeforepattern(const std::string& pattern);
+        void add_searchpattern(const std::string& searchpattern);
 
-public:
-    SearchSettings();
-    void add_in_archiveextension(const string* ext);
-    void add_in_archivefilepattern(const string* pattern);
-    void add_in_dirpattern(const string* pattern);
-    void add_in_extension(const string* ext);
-    void add_in_filepattern(const string* pattern);
-    void add_in_filetype(const FileType* filetype);
-    void add_in_linesafterpattern(const string* pattern);
-    void add_in_linesbeforepattern(const string* pattern);
-    void add_linesaftertopattern(const string* pattern);
-    void add_linesafteruntilpattern(const string* pattern);
-    void add_out_archiveextension(const string* ext);
-    void add_out_archivefilepattern(const string* pattern);
-    void add_out_dirpattern(const string* pattern);
-    void add_out_extension(const string* ext);
-    void add_out_filepattern(const string* pattern);
-    void add_out_filetype(const FileType* filetype);
-    void add_out_linesafterpattern(const string* pattern);
-    void add_out_linesbeforepattern(const string* pattern);
-    void add_searchpattern(const string* searchpattern);
+        bool archivesonly() const;
+        bool colorize() const;
+        bool debug() const;
+        bool excludehidden() const;
+        bool firstmatch() const;
+        bool multilinesearch() const;
+        unsigned int linesafter() const;
+        unsigned int linesbefore() const;
+        bool listdirs() const;
+        bool listfiles() const;
+        bool listlines() const;
+        size_t maxlinelength() const;
+        bool printresults() const;
+        bool printusage() const;
+        bool printversion() const;
+        bool recursive() const;
+        bool searcharchives() const;
+        std::string* startpath();
+        bool uniquelines() const;
+        bool verbose() const;
 
-    bool get_archivesonly();
-    bool get_debug();
-    bool get_excludehidden();
-    bool get_firstmatch();
-    bool get_multilinesearch();
-    unsigned int get_linesafter();
-    unsigned int get_linesbefore();
-    bool get_listdirs();
-    bool get_listfiles();
-    bool get_listlines();
-    unsigned int get_maxlinelength();
-    bool get_printresults();
-    bool get_printusage();
-    bool get_printversion();
-    bool get_recursive();
-    bool get_searcharchives();
-    string* get_startpath();
-    bool get_uniquelines();
-    bool get_verbose();
+        std::vector<std::string>* in_archiveextensions();
+        std::vector<SearchPattern*>* in_archivefilepatterns();
+        std::vector<SearchPattern*>* in_dirpatterns();
+        std::vector<std::string>* in_extensions();
+        std::vector<SearchPattern*>* in_filepatterns();
 
-    vector<string>* get_in_archiveextensions();
-    vector<SearchPattern*>* get_in_archivefilepatterns();
-    vector<SearchPattern*>* get_in_dirpatterns();
-    vector<string>* get_in_extensions();
-    vector<SearchPattern*>* get_in_filepatterns();
+        std::vector<std::string>* out_archiveextensions();
+        std::vector<SearchPattern*>* out_archivefilepatterns();
+        std::vector<SearchPattern*>* out_dirpatterns();
+        std::vector<std::string>* out_extensions();
+        std::vector<SearchPattern*>* out_filepatterns();
+        std::vector<SearchPattern*>* searchpatterns();
 
-    vector<string>* get_out_archiveextensions();
-    vector<SearchPattern*>* get_out_archivefilepatterns();
-    vector<SearchPattern*>* get_out_dirpatterns();
-    vector<string>* get_out_extensions();
-    vector<SearchPattern*>* get_out_filepatterns();
-    vector<SearchPattern*>* get_searchpatterns();
+        // bool is_in_archiveextension(const std::string* ext);
+        // bool is_in_extension(const std::string* ext);
+        // bool is_in_filetype(const FileType* m_filetype);
+        // bool is_out_archiveextension(const std::string* ext);
+        // bool is_out_extension(const std::string* ext);
 
-    // bool is_in_archiveextension(const string* ext);
-    // bool is_in_extension(const string* ext);
-    // bool is_in_filetype(const FileType* filetype);
-    // bool is_out_archiveextension(const string* ext);
-    // bool is_out_extension(const string* ext);
-
-    void set_archivesonly(bool b);
-    void set_debug(bool b);
-    void set_excludehidden(bool b);
-    void set_firstmatch(bool b);
-    void set_multilinesearch(bool b);
-    void set_linesafter(unsigned int linecount);
-    void set_linesbefore(unsigned int linecount);
-    void set_listdirs(bool b);
-    void set_listfiles(bool b);
-    void set_listlines(bool b);
-    void set_maxlinelength(unsigned int max);
-    void set_printresults(bool b);
-    void set_printusage(bool b);
-    void set_printversion(bool b);
-    void set_recursive(bool b);
-    void set_searcharchives(bool b);
-    void set_startpath(string* startpath);
-    void set_uniquelines(bool b);
-    void set_verbose(bool b);
-    string settings_to_string();
-};
+        void archivesonly(bool b);
+        void colorize(bool b);
+        void debug(bool b);
+        void excludehidden(bool b);
+        void firstmatch(bool b);
+        void multilinesearch(bool b);
+        void linesafter(unsigned int linecount);
+        void linesbefore(unsigned int linecount);
+        void listdirs(bool b);
+        void listfiles(bool b);
+        void listlines(bool b);
+        void maxlinelength(size_t max);
+        void printresults(bool b);
+        void printusage(bool b);
+        void printversion(bool b);
+        void recursive(bool b);
+        void searcharchives(bool b);
+        void startpath(std::string& startpath);
+        void uniquelines(bool b);
+        void verbose(bool b);
+        std::string string();
+    };
+}
 
 #endif //CPPSEARCH_SEARCHSETTINGS_H

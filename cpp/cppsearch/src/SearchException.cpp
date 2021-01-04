@@ -1,9 +1,11 @@
 #include "SearchException.h"
 
-SearchException::SearchException(const std::string msg) {
-    message = msg;
-}
+namespace cppsearch {
+    SearchException::SearchException(const std::string& message) {
+        m_message = message;
+    }
 
-const char *SearchException::what() const throw() {
-    return message.c_str();
+    const char *SearchException::what() const throw() {
+        return m_message.c_str();
+    }
 }

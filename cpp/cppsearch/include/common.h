@@ -3,7 +3,9 @@
 
 #include <string>
 
-void log(const std::string& name);
-void log_error(const std::string& name);
+namespace cppsearch {
+    void log(const std::string& name);
+    void log_error(const std::string& name);
+}
 
 #endif //CPPSEARCH_COMMON_H

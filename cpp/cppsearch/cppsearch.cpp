@@ -1,36 +1,36 @@
-#include <iostream>
-#include <Searcher.h>
-#include <StringUtil.h>
-#include <SearchException.h>
 #include "common.h"
+#include "Searcher.h"
+#include "StringUtil.h"
+#include "SearchException.h"
+#include "SearchResultFormatter.h"
 #include "SearchOptions.h"
 
-using namespace std;
+using namespace cppsearch;
 
-vector<string> get_result_dirs(vector<SearchResult*>* results) {
-    vector<string> result_dirs = {};
+std::vector<std::string> get_result_dirs(std::vector<SearchResult*>* results) {
+    std::set<std::string> result_dir_set = {};
     for (const auto& result : *results) {
-        if (find(result_dirs.begin(), result_dirs.end(), result->searchfile->path) == result_dirs.end())
-        result_dirs.push_back(result->searchfile->path);
+        result_dir_set.insert(result->searchfile()->path());
     }
+    std::vector<std::string> result_dirs(result_dir_set.begin(), result_dir_set.end());
     return result_dirs;
 }
 
-vector<string> get_result_files(vector<SearchResult*>* results) {
-    vector<string> result_files = {};
+std::vector<std::string> get_result_files(std::vector<SearchResult*>* results) {
+    std::set<std::string> result_file_set = {};
     for (const auto& result : *results) {
-        if (find(result_files.begin(), result_files.end(), result->searchfile->searchfile_to_string()) == result_files.end())
-            result_files.push_back(result->searchfile->searchfile_to_string());
+        result_file_set.insert(result->searchfile()->string());
     }
+    std::vector<std::string> result_files(result_file_set.begin(), result_file_set.end());
     return result_files;
 }
 
-vector<string> get_result_lines(vector<SearchResult*>* results, bool unique) {
-    vector<string> result_lines = {};
+std::vector<std::string> get_result_lines(std::vector<SearchResult*>* results, bool unique) {
+    std::set<std::string> result_line_set = {};
     for (const auto& result : *results) {
-        if (!unique || find(result_lines.begin(), result_lines.end(), result->line) == result_lines.end())
-            result_lines.push_back(StringUtil::trim_leading_whitespace(result->line));
+        result_line_set.insert(result->line());
     }
+    std::vector<std::string> result_lines(result_line_set.begin(), result_line_set.end());
     sort(result_lines.begin(), result_lines.end());
     return result_lines;
 }
@@ -47,37 +47,38 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        SearchSettings* settings = options->settings_from_args(argc, argv);
+        auto* settings = options->settings_from_args(argc, argv);
 
-        if (settings->get_debug()) {
-            log(settings->settings_to_string());
+        if (settings->debug()) {
+            log(settings->string());
         }
 
-        if (settings->get_printusage()) {
+        if (settings->printusage()) {
             options->usage();
         }
 
         auto* searcher = new Searcher(settings);
 
-        vector<SearchResult*> results = searcher->search();
+        std::vector<SearchResult*> results = searcher->search();
 
-        if (settings->get_printresults()) {
-            string msg = "\nSearch results (";
-            msg.append(to_string(results.size())).append("):");
+        if (settings->printresults()) {
+            auto* formatter = new SearchResultFormatter(settings);
+            std::string msg = "\nSearch results (";
+            msg.append(std::to_string(results.size())).append("):");
             log(msg);
             for (const auto& result : results) {
-                log(result->result_to_string());
+                log(formatter->format(result));
             }
         }
 
-        if (settings->get_listdirs()) {
-            vector<string> result_dirs = get_result_dirs(&results);
-            string msg = "\nDirectories with matches";
+        if (settings->listdirs()) {
+            std::vector<std::string> result_dirs = get_result_dirs(&results);
+            std::string msg = "\nDirectories with matches";
             if (result_dirs.empty()) {
                 msg.append(": 0");
                 log(msg);
             } else {
-                msg.append(" (").append(to_string(result_dirs.size())).append("):");
+                msg.append(" (").append(std::to_string(result_dirs.size())).append("):");
                 log(msg);
                 for (const auto& d : result_dirs) {
                     log(d);
@@ -85,14 +86,14 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->get_listfiles()) {
-            vector<string> result_files = get_result_files(&results);
-            string msg = "\nFiles with matches";
+        if (settings->listfiles()) {
+            std::vector<std::string> result_files = get_result_files(&results);
+            std::string msg = "\nFiles with matches";
             if (result_files.empty()) {
                 msg.append(": 0");
                 log(msg);
             } else {
-                msg.append(" (").append(to_string(result_files.size())).append("):");
+                msg.append(" (").append(std::to_string(result_files.size())).append("):");
                 log(msg);
                 for (const auto& f : result_files) {
                     log(f);
@@ -100,10 +101,10 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->get_listlines()) {
-            vector<string> result_lines = get_result_lines(&results, settings->get_uniquelines());
-            string msg;
-            if (settings->get_uniquelines()) {
+        if (settings->listlines()) {
+            std::vector<std::string> result_lines = get_result_lines(&results, settings->uniquelines());
+            std::string msg;
+            if (settings->uniquelines()) {
                 msg = "\nUnique lines with matches";
             } else {
                 msg = "\nLines with matches";
@@ -112,7 +113,7 @@ int main(int argc, char *argv[]) {
                 msg.append(": 0");
                 log(msg);
             } else {
-                msg.append(" (").append(to_string(result_lines.size())).append("):");
+                msg.append(" (").append(std::to_string(result_lines.size())).append("):");
                 log(msg);
                 for (const auto& l : result_lines) {
                     log(l);

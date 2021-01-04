@@ -13,11 +13,17 @@ include_directories(/Users/cary/src/xsearch/cpp/cppsearch/include)
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(SOURCE_FILES include/common.h src/common.cpp include/config.h
-        include/FileTypes.h src/FileTypes.cpp include/FileUtil.h src/FileUtil.cpp
-        include/StringUtil.h src/StringUtil.cpp include/SearchException.h src/SearchException.cpp
-        include/SearchSettings.h src/SearchSettings.cpp include/SearchFile.h src/SearchFile.cpp
-        include/SearchOption.h src/SearchOption.cpp include/SearchOptions.h src/SearchOptions.cpp
-        include/SearchPattern.h src/SearchPattern.cpp include/SearchResult.h src/SearchResult.cpp
+        include/FileTypes.h src/FileTypes.cpp
+        include/FileUtil.h src/FileUtil.cpp
+        include/StringUtil.h src/StringUtil.cpp
+        include/SearchException.h src/SearchException.cpp
+        include/SearchSettings.h src/SearchSettings.cpp
+        include/SearchFile.h src/SearchFile.cpp
+        include/SearchOption.h src/SearchOption.cpp
+        include/SearchOptions.h src/SearchOptions.cpp
+        include/SearchPattern.h src/SearchPattern.cpp
+        include/SearchResult.h src/SearchResult.cpp
+        include/SearchResultFormatter.h src/SearchResultFormatter.cpp
         include/Searcher.h src/Searcher.cpp)
 
 add_library(xsearch ${SOURCE_FILES})
@@ -28,9 +34,8 @@ add_executable(cppsearch cppsearch.cpp)
 
 target_link_libraries(cppsearch xsearch)
 
-set(TEST_FILES include/catch.hpp tests/FileTypesTest.cpp tests/FileUtilTest.cpp tests/SearchOptionsTest.cpp
-        tests/SearchSettingsTest.cpp tests/tests-main.cpp)
-
+set(TEST_FILES tests/FileTypesTest.cpp tests/FileUtilTest.cpp tests/SearcherTest.cpp tests/SearchFileTest.cpp
+        tests/SearchOptionsTest.cpp tests/SearchResultTest.cpp tests/SearchSettingsTest.cpp tests/tests-main.cpp)
 
 add_executable(cppsearch-tests ${TEST_FILES})
 

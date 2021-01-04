@@ -1,15 +1,21 @@
 #ifndef CPPSEARCH_SEARCHOPTION_H
 #define CPPSEARCH_SEARCHOPTION_H
 
-using namespace std;
+namespace cppsearch {
+    class SearchOption {
+    private:
+        const std::string* m_shortarg;
+        std::string m_longarg;
+        std::string m_description;
+        std::string m_sortarg;
 
-class SearchOption {
-public:
-    const string* shortarg;
-    const string* longarg;
-    const string* description;
-    const string* sortarg;
-    SearchOption(const string* shortarg, const string* longarg, const string* description);
-};
+    public:
+        SearchOption(const std::string* shortarg, const std::string& longarg, const std::string& description);
+        const std::string* shortarg() const;
+        std::string longarg() const;
+        std::string description() const;
+        std::string sortarg() const;
+    };
+}
 
 #endif //CPPSEARCH_SEARCHOPTION_H

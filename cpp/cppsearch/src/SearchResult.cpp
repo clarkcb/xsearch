@@ -1,101 +1,81 @@
-#include <boost/format.hpp>
-#include <StringUtil.h>
-
-using namespace std;
 #include "SearchResult.h"
+#include "StringUtil.h"
 
-SearchResult::SearchResult(const SearchPattern* p, SearchFile* sf,
-                           const long lnum, const long ms_idx, const long me_idx,
-                           const string ln) {
-    vector<string> lsb = {};
-    vector<string> lsa = {};
-    init(p, sf, lnum, ms_idx, me_idx, ln, &lsb, &lsa);
-}
-
-SearchResult::SearchResult(const SearchPattern* p, SearchFile* sf, const long lnum,
-                           const long ms_idx, const long me_idx, const string ln,
-                           vector<string>* lsb, vector<string>* lsa) {
-    init(p, sf, lnum, ms_idx, me_idx, ln, lsb, lsa);
-}
-
-void SearchResult::init(const SearchPattern* p, SearchFile* sf, const long lnum,
-                        const long ms_idx, const long me_idx, const string ln,
-                        vector<string>* lsb, vector<string>* lsa) {
-    pattern = p;
-    searchfile = sf;
-    linenum = lnum;
-    match_start_idx = ms_idx;
-    match_end_idx = me_idx;
-    line = ln;
-    lines_before = *lsb;
-    lines_after = *lsa;
-}
-
-string SearchResult::single_line_result_to_string() {
-    auto result_string = string(searchfile->searchfile_to_string());
-    if (linenum == 0) {
-        result_string.append(" matches at [")
-                .append(to_string(match_start_idx))
-                .append(":")
-                .append(to_string(match_end_idx))
-                .append("]");
-    } else {
-        result_string.append(": ")
-                .append(to_string(linenum))
-                .append(": [")
-                .append(to_string(match_start_idx))
-                .append(":")
-                .append(to_string(match_end_idx))
-                .append("]: ")
-                .append(StringUtil::trim_leading_whitespace(line));
-    }
-    return result_string;
-}
-
-long SearchResult::linenum_padding() {
-    long max_linenum = linenum + lines_after.size();
-    return boost::str(boost::format("%ld") % max_linenum).length();
-}
-
-string SearchResult::multi_line_result_to_string() {
-    int line_sep_length = 80;
-    auto result_string = string("================================================================================\n");
-    if (searchfile == nullptr) {
-        result_string.append("<text>");
-    } else {
-        result_string.append(searchfile->searchfile_to_string());
-    }
-    result_string.append(": ").append(to_string(linenum)).append(": [").append(to_string(match_start_idx))
-            .append(":").append(to_string(match_end_idx)).append("]\n");
-    result_string.append("--------------------------------------------------------------------------------\n");
-    long current_linenum = linenum;
-    string lineFormat = " %1$";
-    lineFormat.append(to_string(linenum_padding())).append("ld | %2$s\n");
-
-    if (!lines_before.empty()) {
-        current_linenum -= lines_before.size();
-        for (const auto& line_before : lines_before) {
-            result_string.append(" ").append(boost::str(boost::format(lineFormat) % current_linenum % line_before));
-            current_linenum++;
-        }
-    }
-    result_string.append(">").append(boost::str(boost::format(lineFormat) % current_linenum % line));
-    current_linenum++;
-
-    if (!lines_after.empty()) {
-        for (const auto& line_after : lines_after) {
-            result_string.append(" ").append(boost::str(boost::format(lineFormat) % current_linenum % line_after));
-            current_linenum++;
-        }
+namespace cppsearch {
+    SearchResult::SearchResult(const SearchPattern* pattern, SearchFile* searchfile,
+                               const unsigned long linenum, const unsigned long match_start_idx,
+                               const unsigned long match_end_idx, const std::string& line) {
+        std::vector<std::string> lines_before = {};
+        std::vector<std::string> lines_after = {};
+        init(pattern, searchfile, linenum, match_start_idx, match_end_idx, line, &lines_before,
+             &lines_after);
     }
 
-    return result_string;
-}
+    SearchResult::SearchResult(const SearchPattern* pattern, SearchFile* searchfile,
+                               const unsigned long linenum, const unsigned long match_start_idx,
+                               const unsigned long match_end_idx, const std::string& line,
+                               std::vector<std::string>* lines_before,
+                               std::vector<std::string>* lines_after) {
+        init(pattern, searchfile, linenum, match_start_idx, match_end_idx, line, lines_before,
+             lines_after);
+    }
 
-string SearchResult::result_to_string() {
-    if (!lines_before.empty() || !lines_after.empty()) {
-        return multi_line_result_to_string();
-    } else {
-        return single_line_result_to_string();
+    void SearchResult::init(const SearchPattern* pattern, SearchFile* searchfile,
+                            const unsigned long linenum, const unsigned long match_start_idx,
+                            const unsigned long match_end_idx, const std::string& line,
+                            std::vector<std::string>* lines_before,
+                            std::vector<std::string>* lines_after) {
+        m_pattern = pattern;
+        m_searchfile = searchfile;
+        m_linenum = linenum;
+        m_match_start_idx = match_start_idx;
+        m_match_end_idx = match_end_idx;
+        m_line = line;
+        m_lines_before = *lines_before;
+        m_lines_after = *lines_after;
+    }
+
+    const SearchPattern* SearchResult::pattern() const {
+        return m_pattern;
+    }
+
+    const SearchFile* SearchResult::searchfile() const {
+        return m_searchfile;
+    }
+
+    void SearchResult::set_searchfile(SearchFile* searchfile) {
+        m_searchfile = searchfile;
+    }
+
+    unsigned long SearchResult::linenum() const {
+        return m_linenum;
+    }
+
+    unsigned long SearchResult::match_start_idx() const {
+        return m_match_start_idx;
+    }
+
+    unsigned long SearchResult::match_end_idx() const {
+        return m_match_end_idx;
+    }
+
+    std::string SearchResult::line() const {
+        return m_line;
+    }
+
+    std::vector<std::string> SearchResult::lines_before() const {
+        return m_lines_before;
+    }
+
+    bool SearchResult::has_lines_before() const {
+        return !m_lines_before.empty();
+    }
+
+    std::vector<std::string> SearchResult::lines_after() const {
+        return m_lines_after;
+    }
+
+    bool SearchResult::has_lines_after() const {
+        return !m_lines_after.empty();
     }
 }
