@@ -469,6 +469,78 @@ TEST_CASE("Test search with test file startpath", "[Searcher]") {
     REQUIRE(results[1]->match_end_idx() == 32);
 }
 
+TEST_CASE("Test search with in lines before matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->linesbefore(2);
+    settings->add_in_linesbeforepattern("FileUtil");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 29);
+    REQUIRE(results[0]->match_start_idx() == 3);
+    REQUIRE(results[0]->match_end_idx() == 11);
+}
+
+TEST_CASE("Test search with out lines before matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->linesbefore(2);
+    settings->add_out_linesbeforepattern("FileUtil");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 35);
+    REQUIRE(results[0]->match_start_idx() == 24);
+    REQUIRE(results[0]->match_end_idx() == 32);
+}
+
+TEST_CASE("Test search with in lines after matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->linesafter(2);
+    settings->add_in_linesafterpattern("Settings");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 29);
+    REQUIRE(results[0]->match_start_idx() == 3);
+    REQUIRE(results[0]->match_end_idx() == 11);
+}
+
+TEST_CASE("Test search with out lines after matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->linesafter(2);
+    settings->add_out_linesafterpattern("Settings");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 35);
+    REQUIRE(results[0]->match_start_idx() == 24);
+    REQUIRE(results[0]->match_end_idx() == 32);
+}
+
 TEST_CASE("Test multiline search with test file startpath", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
@@ -487,4 +559,80 @@ TEST_CASE("Test multiline search with test file startpath", "[Searcher]") {
     REQUIRE(results[1]->linenum() == 35);
     REQUIRE(results[1]->match_start_idx() == 24);
     REQUIRE(results[1]->match_end_idx() == 32);
+}
+
+TEST_CASE("Test multiline search with in lines before matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->multilinesearch(true);
+    settings->linesbefore(2);
+    settings->add_in_linesbeforepattern("FileUtil");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 29);
+    REQUIRE(results[0]->match_start_idx() == 3);
+    REQUIRE(results[0]->match_end_idx() == 11);
+}
+
+TEST_CASE("Test multiline search with out lines before matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->multilinesearch(true);
+    settings->linesbefore(2);
+    settings->add_out_linesbeforepattern("FileUtil");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 35);
+    REQUIRE(results[0]->match_start_idx() == 24);
+    REQUIRE(results[0]->match_end_idx() == 32);
+}
+
+TEST_CASE("Test multiline search with in lines after matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->multilinesearch(true);
+    settings->linesafter(2);
+    settings->add_in_linesafterpattern("Settings");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 29);
+    REQUIRE(results[0]->match_start_idx() == 3);
+    REQUIRE(results[0]->match_end_idx() == 11);
+}
+
+TEST_CASE("Test multiline search with out lines after matching", "[Searcher]") {
+    auto *settings = new cppsearch::SearchSettings();
+    std::string startpath = std::string(XSEARCHPATH);
+    startpath.append("/shared/testFiles/testFile2.txt");
+    settings->startpath(startpath);
+    settings->add_searchpattern("Searcher");
+    settings->multilinesearch(true);
+    settings->linesafter(2);
+    settings->add_out_linesafterpattern("Settings");
+    auto *searcher = new cppsearch::Searcher(settings);
+
+    auto results = searcher->search();
+
+    REQUIRE(results.size() == 1);
+    REQUIRE(results[0]->linenum() == 35);
+    REQUIRE(results[0]->match_start_idx() == 24);
+    REQUIRE(results[0]->match_end_idx() == 32);
 }

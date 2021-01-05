@@ -236,6 +236,13 @@ namespace cppsearch {
         }
     }
 
+    bool lines_match(std::vector<std::string>& lines, std::vector<SearchPattern*>* in_patterns,
+                     std::vector<SearchPattern*>* out_patterns) {
+        return lines.empty() ||
+               ((in_patterns->empty() || any_matches_any_pattern(lines, *in_patterns)) &&
+                (out_patterns->empty() || !any_matches_any_pattern(lines, *out_patterns)));
+    }
+
     std::vector<SearchResult*> Searcher::search_ifstream_lines(std::ifstream& fin) {
         std::vector<SearchResult*> results = {};
 
@@ -288,7 +295,16 @@ namespace cppsearch {
                     unsigned long match_start_idx = match.position(0);
                     unsigned long match_end_idx = match_start_idx + match.length(0);
                     auto* v_lines_before = new std::vector<std::string>(lines_before.begin(), lines_before.end());
+                    if (!lines_match(*v_lines_before, m_settings->in_linesbeforepatterns(),
+                                     m_settings->out_linesbeforepatterns())) {
+                        continue;
+                    }
                     auto* v_lines_after = new std::vector<std::string>(lines_after.begin(), lines_after.end());
+                    if (!lines_match(*v_lines_after, m_settings->in_linesafterpatterns(),
+                                     m_settings->out_linesafterpatterns())) {
+                        continue;
+                    }
+
                     results.push_back(new SearchResult(p, nullptr, linenum,
                                                        match_start_idx + 1,
                                                        match_end_idx + 1,
@@ -422,13 +438,20 @@ namespace cppsearch {
                 if (m_settings->linesbefore() > 0) {
                     lines_before = get_lines_before_pos(s, newline_indices, m_settings->linesbefore(),
                                                         line_start_idx);
+                    if (!lines_match(lines_before, m_settings->in_linesbeforepatterns(),
+                                     m_settings->out_linesbeforepatterns())) {
+                        continue;
+                    }
                 }
                 std::vector<std::string> lines_after;
                 if (m_settings->linesafter() > 0) {
                     lines_after = get_lines_after_pos(s, newline_indices, m_settings->linesafter(),
                                                        line_start_idx);
+                    if (!lines_match(lines_after, m_settings->in_linesafterpatterns(),
+                                     m_settings->out_linesafterpatterns())) {
+                        continue;
+                    }
                 }
-
 
                 results.push_back(new SearchResult(p, nullptr, linenum,
                                                    match_start_idx - line_start_idx + 1,

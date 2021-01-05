@@ -112,12 +112,17 @@ namespace cppsearch {
         std::vector<SearchPattern*>* in_dirpatterns();
         std::vector<std::string>* in_extensions();
         std::vector<SearchPattern*>* in_filepatterns();
+        std::vector<SearchPattern*>* in_linesafterpatterns();
+        std::vector<SearchPattern*>* in_linesbeforepatterns();
 
         std::vector<std::string>* out_archiveextensions();
         std::vector<SearchPattern*>* out_archivefilepatterns();
         std::vector<SearchPattern*>* out_dirpatterns();
         std::vector<std::string>* out_extensions();
         std::vector<SearchPattern*>* out_filepatterns();
+        std::vector<SearchPattern*>* out_linesafterpatterns();
+        std::vector<SearchPattern*>* out_linesbeforepatterns();
+
         std::vector<SearchPattern*>* searchpatterns();
 
         // bool is_in_archiveextension(const std::string* ext);

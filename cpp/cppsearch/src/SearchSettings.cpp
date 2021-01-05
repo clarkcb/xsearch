@@ -197,6 +197,14 @@ namespace cppsearch {
         return &m_in_filepatterns;
     }
 
+    std::vector<SearchPattern*>* SearchSettings::in_linesafterpatterns() {
+        return &m_in_linesafterpatterns;
+    }
+
+    std::vector<SearchPattern*>* SearchSettings::in_linesbeforepatterns() {
+        return &m_in_linesbeforepatterns;
+    }
+
     std::vector<std::string>* SearchSettings::out_archiveextensions() {
         return &m_out_archiveextensions;
     }
@@ -215,6 +223,14 @@ namespace cppsearch {
 
     std::vector<SearchPattern*>* SearchSettings::out_filepatterns() {
         return &m_out_filepatterns;
+    }
+
+    std::vector<SearchPattern*>* SearchSettings::out_linesafterpatterns() {
+        return &m_out_linesafterpatterns;
+    }
+
+    std::vector<SearchPattern*>* SearchSettings::out_linesbeforepatterns() {
+        return &m_out_linesbeforepatterns;
     }
 
     std::vector<SearchPattern*>* SearchSettings::searchpatterns() {
