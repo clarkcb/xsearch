@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 #include "SearchOptions.h"
 
-TEST_CASE("Get SearchSettings from minimal args", "[FileType]") {
+TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     auto* options = new cppsearch::SearchOptions();
     char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-s"), const_cast<char *>("Searcher"),
                      const_cast<char *>(".") };
@@ -44,7 +44,7 @@ TEST_CASE("Get SearchSettings from minimal args", "[FileType]") {
     REQUIRE(*startpath == ".");
 }
 
-TEST_CASE("Get SearchSettings from valid args", "[FileType]") {
+TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     auto* options = new cppsearch::SearchOptions();
     char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-x"), const_cast<char *>("java,scala"),
                      const_cast<char *>("-s"), const_cast<char *>("Searcher"), const_cast<char *>(".") };
@@ -89,4 +89,45 @@ TEST_CASE("Get SearchSettings from valid args", "[FileType]") {
 
     auto* startpath = settings->startpath();
     REQUIRE(*startpath == ".");
+}
+
+TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
+    std::string json = R"(
+{
+    "startpath": "~/src/xsearch/",
+    "in-ext": ["js","ts"],
+    "out-dirpattern": ["build", "node_module", "tests", "typings"],
+    "out-filepattern": ["gulpfile", "\\.min\\."],
+    "searchpattern": "Searcher",
+    "linesbefore": 2,
+    "linesafter": 2,
+    "debug": true,
+    "allmatches": false,
+    "includehidden": false
+}
+)";
+
+    auto *options = new cppsearch::SearchOptions();
+    auto *settings = new cppsearch::SearchSettings();
+    options->settings_from_json(json, settings);
+
+    REQUIRE(*(settings->startpath()) == "~/src/xsearch/");
+    REQUIRE(settings->in_extensions()->size() == 2);
+    REQUIRE(settings->in_extensions()->at(0) == "js");
+    REQUIRE(settings->in_extensions()->at(1) == "ts");
+    REQUIRE(settings->out_dirpatterns()->size() == 4);
+    REQUIRE(settings->out_dirpatterns()->at(0)->pattern() == "build");
+    REQUIRE(settings->out_dirpatterns()->at(1)->pattern() == "node_module");
+    REQUIRE(settings->out_dirpatterns()->at(2)->pattern() == "tests");
+    REQUIRE(settings->out_dirpatterns()->at(3)->pattern() == "typings");
+    REQUIRE(settings->out_filepatterns()->size() == 2);
+    REQUIRE(settings->out_filepatterns()->at(0)->pattern() == "gulpfile");
+    REQUIRE(settings->out_filepatterns()->at(1)->pattern() == "\\.min\\.");
+    REQUIRE(settings->searchpatterns()->size() == 1);
+    REQUIRE(settings->searchpatterns()->at(0)->pattern() == "Searcher");
+    REQUIRE(settings->linesbefore() == 2);
+    REQUIRE(settings->linesafter() == 2);
+    REQUIRE(settings->debug() == true);
+    REQUIRE(settings->firstmatch() == true);
+    REQUIRE(settings->excludehidden() == true);
 }

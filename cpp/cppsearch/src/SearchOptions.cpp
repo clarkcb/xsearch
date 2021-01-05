@@ -133,9 +133,15 @@ namespace cppsearch {
                 m_bool_arg_map[name](b, settings);
 
             } else if (it->value.IsString()) {
-                assert(m_str_arg_map.find(name) != m_str_arg_map.end());
                 auto* s = new std::string(it->value.GetString());
-                m_str_arg_map[name](*s, settings);
+                if (m_str_arg_map.find(name) != m_str_arg_map.end()) {
+                    m_str_arg_map[name](*s, settings);
+                } else if (m_coll_arg_map.find(name) != m_coll_arg_map.end()) {
+                    m_coll_arg_map[name](*s, settings);
+                } else {
+                    std::string msg = "Invalid option: " + name;
+                    throw SearchException(msg);
+                }
             }
         }
     }

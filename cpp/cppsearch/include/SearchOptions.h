@@ -20,12 +20,12 @@ namespace cppsearch {
         std::vector<SearchOption*> m_options;
         void load_options();
         void settings_from_file(std::string& filepath, SearchSettings* ss);
-        void settings_from_json(std::string& json, SearchSettings* settings);
         void settings_from_document(Document* document, SearchSettings* settings);
 
     public:
         SearchOptions();
         SearchSettings* settings_from_args(int &argc, char **argv);
+        void settings_from_json(std::string& json, SearchSettings* settings);
         void usage();
         std::string get_usage_string();
     };
