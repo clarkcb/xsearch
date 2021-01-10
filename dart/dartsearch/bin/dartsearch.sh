@@ -1,0 +1,9 @@
+#!/bin/bash
+
+SCRIPTPATH=$(readlink "${BASH_SOURCE[0]}")
+SCRIPTDIR=$(dirname "$SCRIPTPATH")
+PROJECTDIR=$(dirname "$SCRIPTDIR")
+PACKAGESPATH=$PROJECTDIR/.packages
+DARTSEARCHPATH=$SCRIPTDIR/dartsearch.dart
+
+dart --packages="$PACKAGESPATH" "$DARTSEARCHPATH" "$@"
