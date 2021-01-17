@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dartsearch/src/common.dart';
 import 'package:dartsearch/src/file_types.dart';
@@ -375,14 +376,26 @@ class Searcher {
       log('\nFiles to be searched (${searchFiles.length}):');
       searchFiles.forEach((sf) => log(FileUtil.contractPath(sf.file.path)));
     }
-    var fileResultsFutures = searchFiles.map((sf) => _searchFile(sf));
-    return Future.wait(fileResultsFutures).then((filesResults) {
-      var results = <SearchResult>[];
-      for (var fileResults in filesResults) {
-        results.addAll(fileResults);
-      }
-      return results;
-    });
+    // this is the (almost) largest batch size you can have before you get the
+    // "too many files open" errors
+    var _batchSize = 245;
+    var _offset = 0;
+
+    var results = <SearchResult>[];
+
+    while (_offset < searchFiles.length) {
+      var toIndex = min(_offset + _batchSize, searchFiles.length);
+      var fileResultsFutures = searchFiles.sublist(_offset, toIndex)
+          .map((sf) => _searchFile(sf));
+      await Future.wait(fileResultsFutures).then((filesResults) {
+        for (var fileResults in filesResults) {
+          results.addAll(fileResults);
+        }
+      });
+      _offset += _batchSize;
+    }
+
+    return results;
   }
 
   Future<SearchFile> filterToSearchFile(File f) {
