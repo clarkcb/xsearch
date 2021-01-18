@@ -25,7 +25,7 @@ class SearcherTest(unittest.TestCase):
         return settings
 
     def get_test_file(self):
-        return '%s/testFiles/testFile2.txt' % SHAREDPATH
+        return os.path.join(SHAREDPATH, 'testFiles/testFile2.txt')
 
 ################################################################################
 # is_search_dir tests

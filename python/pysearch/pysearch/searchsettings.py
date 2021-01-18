@@ -51,51 +51,37 @@ class SearchSettings(object):
         self.debug = debug
         self.excludehidden = excludehidden
         self.firstmatch = firstmatch
-        self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set([
-        ])
-        self.in_archivefilepatterns: PatternSet = in_archivefilepatterns if in_archivefilepatterns else set([
-        ])
-        self.in_dirpatterns: PatternSet = in_dirpatterns if in_dirpatterns else set([
-        ])
-        self.in_extensions = in_extensions if in_extensions else set([])
-        self.in_filepatterns: PatternSet = in_filepatterns if in_filepatterns else set([
-        ])
-        self.in_filetypes = in_filetypes if in_filetypes else set([])
-        self.in_linesafterpatterns: PatternSet = in_linesafterpatterns if in_linesafterpatterns else set([
-        ])
-        self.in_linesbeforepatterns: PatternSet = in_linesbeforepatterns if in_linesbeforepatterns else set([
-        ])
+        self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set()
+        self.in_archivefilepatterns: PatternSet = in_archivefilepatterns if in_archivefilepatterns else set()
+        self.in_dirpatterns: PatternSet = in_dirpatterns if in_dirpatterns else set()
+        self.in_extensions = in_extensions if in_extensions else set()
+        self.in_filepatterns: PatternSet = in_filepatterns if in_filepatterns else set()
+        self.in_filetypes = in_filetypes if in_filetypes else set()
+        self.in_linesafterpatterns: PatternSet = in_linesafterpatterns if in_linesafterpatterns else set()
+        self.in_linesbeforepatterns: PatternSet = in_linesbeforepatterns if in_linesbeforepatterns else set()
         self.linesafter = linesafter
-        self.linesaftertopatterns: PatternSet = linesaftertopatterns if linesaftertopatterns else set([
-        ])
-        self.linesafteruntilpatterns: PatternSet = linesafteruntilpatterns if linesafteruntilpatterns else set([
-        ])
+        self.linesaftertopatterns: PatternSet = linesaftertopatterns if linesaftertopatterns else set()
+        self.linesafteruntilpatterns: PatternSet = linesafteruntilpatterns if linesafteruntilpatterns else set()
         self.linesbefore = linesbefore
         self.listdirs = listdirs
         self.listfiles = listfiles
         self.listlines = listlines
         self.maxlinelength = maxlinelength
         self.multilinesearch = multilinesearch
-        self.out_archiveextensions = out_archiveextensions if out_archiveextensions else set([
-        ])
-        self.out_archivefilepatterns: PatternSet = out_archivefilepatterns if out_archivefilepatterns else set([
-        ])
-        self.out_dirpatterns: PatternSet = out_dirpatterns if out_dirpatterns else set([
-        ])
-        self.out_extensions = out_extensions if out_extensions else set([])
-        self.out_filepatterns: PatternSet = out_filepatterns if out_filepatterns else set([
-        ])
-        self.out_filetypes = out_filetypes if out_filetypes else set([])
-        self.out_linesafterpatterns: PatternSet = out_linesafterpatterns if out_linesafterpatterns else set([
-        ])
-        self.out_linesbeforepatterns: PatternSet = out_linesbeforepatterns if out_linesbeforepatterns else set([
-        ])
+        self.out_archiveextensions = out_archiveextensions if out_archiveextensions else set()
+        self.out_archivefilepatterns: PatternSet = out_archivefilepatterns if out_archivefilepatterns else set()
+        self.out_dirpatterns: PatternSet = out_dirpatterns if out_dirpatterns else set()
+        self.out_extensions = out_extensions if out_extensions else set()
+        self.out_filepatterns: PatternSet = out_filepatterns if out_filepatterns else set()
+        self.out_filetypes = out_filetypes if out_filetypes else set()
+        self.out_linesafterpatterns: PatternSet = out_linesafterpatterns if out_linesafterpatterns else set()
+        self.out_linesbeforepatterns: PatternSet = out_linesbeforepatterns if out_linesbeforepatterns else set()
         self.recursive = recursive
         self.printresults = printresults
         self.printusage = printusage
         self.printversion = printversion
-        # self.searchpatterns: PatternSet = searchpatterns if searchpatterns else set([])
-        self.searchpatterns = searchpatterns if searchpatterns else set([])
+        # self.searchpatterns: PatternSet = searchpatterns if searchpatterns else set()
+        self.searchpatterns = searchpatterns if searchpatterns else set()
         self.searcharchives = searcharchives
         self.startpath = startpath
         self.textfileencoding = textfileencoding

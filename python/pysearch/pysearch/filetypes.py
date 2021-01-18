@@ -6,9 +6,9 @@
 # class FileTypes
 #
 ###############################################################################
-from enum import Enum
 import json
 import xml.dom.minidom as minidom
+from enum import Enum
 
 from .common import get_text
 from .config import FILETYPESPATH
@@ -37,11 +37,13 @@ class FileType(Enum):
 class FileTypes(object):
     """a class to provide file type information"""
 
-    __slots__ = ['_filetypes']
+    TEXT_TYPES = frozenset([FileType.CODE, FileType.TEXT, FileType.XML])
+
+    __slots__ = ['__filetypes']
 
     def __init__(self):
-        self._filetypes = {}
-        self._populate_filetypes_from_json()
+        self.__filetypes = {}
+        self.__populate_filetypes_from_json()
 
     def get_filetype(self, filename: str) -> FileType:
         if self.is_code_file(filename):
@@ -58,51 +60,51 @@ class FileTypes(object):
 
     def is_archive_file(self, f: str) -> bool:
         """Return true if file is of a (known) archive file type"""
-        return FileUtil.get_extension(f) in self._filetypes['archive']
+        return FileUtil.get_extension(f) in self.__filetypes['archive']
 
     def is_binary_file(self, f: str) -> bool:
         """Return true if file is of a (known) searchable binary file type"""
-        return FileUtil.get_extension(f) in self._filetypes['binary']
+        return FileUtil.get_extension(f) in self.__filetypes['binary']
 
     def is_code_file(self, f: str) -> bool:
         """Return true if file is of a (known) code file type"""
-        return FileUtil.get_extension(f) in self._filetypes['code']
+        return FileUtil.get_extension(f) in self.__filetypes['code']
 
     def is_searchable_file(self, f: str) -> bool:
         """Return true if file is of a (known) searchable type"""
-        return FileUtil.get_extension(f) in self._filetypes['searchable']
+        return FileUtil.get_extension(f) in self.__filetypes['searchable']
 
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
-        return FileUtil.get_extension(f) in self._filetypes['text']
+        return FileUtil.get_extension(f) in self.__filetypes['text']
 
     def is_xml_file(self, f: str) -> bool:
         """Return true if file is of a (known) xml file type"""
-        return FileUtil.get_extension(f) in self._filetypes['xml']
+        return FileUtil.get_extension(f) in self.__filetypes['xml']
 
-    def _populate_filetypes_from_json(self):
+    def __populate_filetypes_from_json(self):
         with open(FILETYPESPATH, mode='r') as f:
             filetypes_dict = json.load(f)
         for filetype_obj in filetypes_dict['filetypes']:
             typename = filetype_obj['type']
             exts = set(filetype_obj['extensions'])
-            self._filetypes[typename] = exts
-        self._filetypes['text'].update(self._filetypes['code'],
-                                       self._filetypes['xml'])
-        self._filetypes['searchable'] = \
-            self._filetypes['binary'].union(self._filetypes['archive'],
-                                            self._filetypes['text'])
+            self.__filetypes[typename] = exts
+        self.__filetypes['text'].update(self.__filetypes['code'],
+                                        self.__filetypes['xml'])
+        self.__filetypes['searchable'] = \
+            self.__filetypes['binary'].union(self.__filetypes['archive'],
+                                             self.__filetypes['text'])
 
-    def _populate_filetypes_from_xml(self):
+    def __populate_filetypes_from_xml(self):
         filetypedom = minidom.parse(FILETYPESPATH)
         filetypenodes = filetypedom.getElementsByTagName('filetype')
         for filetypenode in filetypenodes:
             name = filetypenode.getAttribute('name')
             extnode = filetypenode.getElementsByTagName('extensions')[0]
             exts = set(get_text(extnode.childNodes).split())
-            self._filetypes[name] = exts
-        self._filetypes['text'].update(self._filetypes['code'],
-                                       self._filetypes['xml'])
-        self._filetypes['searchable'] = \
-            self._filetypes['binary'].union(self._filetypes['archive'],
-                                            self._filetypes['text'])
+            self.__filetypes[name] = exts
+        self.__filetypes['text'].update(self.__filetypes['code'],
+                                        self.__filetypes['xml'])
+        self.__filetypes['searchable'] = \
+            self.__filetypes['binary'].union(self.__filetypes['archive'],
+                                             self.__filetypes['text'])

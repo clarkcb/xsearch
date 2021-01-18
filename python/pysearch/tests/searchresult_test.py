@@ -16,8 +16,7 @@ from pysearch import Color, FileType, SearchFile, SearchResult, SearchResultForm
 
 
 class SearchResultTest(unittest.TestCase):
-
-    cssearch_path = "%s/csharp/CsSearch/CsSearch" % XSEARCHPATH
+    cssearch_path = os.path.join(XSEARCHPATH, 'csharp/CsSearch/CsSearch')
 
     def test_singleline_searchresult(self):
         formatter = SearchResultFormatter(SearchSettings(colorize=False))
@@ -38,8 +37,9 @@ class SearchResultTest(unittest.TestCase):
                                     line=line,
                                     lines_before=linesbefore,
                                     lines_after=linesafter)
-        expectedoutput = "{}: {}: [{}:{}]: {}".format(os.path.join(self.cssearch_path, filename), linenum,
-            match_start_index, match_end_index, line.strip())
+        expectedoutput = "{0:s}: {1:d}: [{2:d}:{3:d}]: {4:s}".format(os.path.join(self.cssearch_path, filename),
+                                                                     linenum, match_start_index, match_end_index,
+                                                                     line.strip())
         output = formatter.format(searchresult)
         self.assertEqual(expectedoutput, output)
 
@@ -66,8 +66,9 @@ class SearchResultTest(unittest.TestCase):
                                     lines_after=linesafter)
         expectedline = '...89012345678901234567890123456789012345678901' + \
                        'maxlen89012345678901234567890123456789012345678901...'
-        expectedoutput = "{}: {}: [{}:{}]: {}".format(os.path.join('.', filename), linenum,
-            match_start_index, match_end_index, expectedline)
+        expectedoutput = "{0:s}: {1:d}: [{2:d}:{3:d}]: {4:s}".format(os.path.join('.', filename),
+                                                                     linenum, match_start_index, match_end_index,
+                                                                     expectedline)
         output = formatter.format(searchresult)
         self.assertEqual(expectedoutput, output)
 
@@ -95,8 +96,9 @@ class SearchResultTest(unittest.TestCase):
         expectedline = '...89012345678901234567890123456789012345678901' + \
                        Color.GREEN + 'maxlen' + Color.RESET + \
                        '89012345678901234567890123456789012345678901...'
-        expectedoutput = "{}: {}: [{}:{}]: {}".format(os.path.join('.', filename), linenum,
-            match_start_index, match_end_index, expectedline)
+        expectedoutput = "{0:s}: {1:d}: [{2:d}:{3:d}]: {4:s}".format(os.path.join('.', filename),
+                                                                     linenum, match_start_index, match_end_index,
+                                                                     expectedline)
         output = formatter.format(searchresult)
         self.assertEqual(expectedoutput, output)
 
@@ -119,8 +121,8 @@ class SearchResultTest(unittest.TestCase):
                                     line=line,
                                     lines_before=linesbefore,
                                     lines_after=linesafter)
-        expectedoutput = "{} matches at [{}:{}]".format(os.path.join(self.cssearch_path, filename),
-                                                        match_start_index, match_end_index)
+        expectedoutput = "{0:s} matches at [{1:d}:{2:d}]".format(os.path.join(self.cssearch_path, filename),
+                                                                 match_start_index, match_end_index)
         output = formatter.format(searchresult)
         self.assertEqual(expectedoutput, output)
 
@@ -136,18 +138,18 @@ class SearchResultTest(unittest.TestCase):
         linesbefore = ["namespace CsSearch\n", "{\n"]
         linesafter = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"]
         searchresult = SearchResult(pattern=pattern, file=sf,
-            linenum=linenum, match_start_index=match_start_index,
-            match_end_index=match_end_index, line=line, lines_before=linesbefore,
-            lines_after=linesafter)
-        expectedoutput = """================================================================================
-%s: %d: [%d:%d]
---------------------------------------------------------------------------------
+                                    linenum=linenum, match_start_index=match_start_index,
+                                    match_end_index=match_end_index, line=line, lines_before=linesbefore,
+                                    lines_after=linesafter)
+        expectedoutput = "================================================================================\n" + \
+            '{0:s}: {1:d}: [{2:d}:{3:d}]\n'.format(os.path.join(self.cssearch_path, filename), linenum, match_start_index, match_end_index) + \
+            """--------------------------------------------------------------------------------
    8 | namespace CsSearch
    9 | {
 > 10 | \tpublic class Searcher
   11 | \t{
   12 | \t\tprivate readonly FileTypes _fileTypes;
-""" % (os.path.join(self.cssearch_path, filename), linenum, match_start_index, match_end_index)
+"""
         output = formatter.format(searchresult)
         self.assertEqual(expectedoutput, output)
 

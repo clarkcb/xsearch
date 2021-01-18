@@ -6,8 +6,8 @@
 # class SearchFile: encapsulates a file to search
 #
 ###############################################################################
-from io import StringIO
 import os
+from io import StringIO
 from typing import List
 
 from .filetypes import FileType
@@ -36,5 +36,4 @@ class SearchFile(object):
             sio.write(self.CONTAINER_SEPARATOR.join(self.containers))
             sio.write(self.CONTAINER_SEPARATOR)
         sio.write(self.relativepath)
-        # sio.write(' (%s)' % self.filetype)
         return sio.getvalue()

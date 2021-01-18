@@ -13,7 +13,7 @@ import os
 class FileUtil(object):
     """a file helper class"""
 
-    DOT_DIRS = ('.', '..')
+    DOT_DIRS = frozenset(['.', '..'])
 
     @staticmethod
     def get_extension(filename: str) -> str:
