@@ -21,16 +21,21 @@ source "$DIR/common.sh"
 ########################################
 
 # copy_resources
-copy_resources () {
+copy_json_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/config.json $resources_path/"
     cp $SHARED_PATH/config.json $resources_path/
     log "cp $SHARED_PATH/filetypes.json $resources_path/"
     cp $SHARED_PATH/filetypes.json $resources_path/
-    log "cp $SHARED_PATH/filetypes.xml $resources_path/"
-    cp $SHARED_PATH/filetypes.xml $resources_path/
     log "cp $SHARED_PATH/searchoptions.json $resources_path/"
     cp $SHARED_PATH/searchoptions.json $resources_path/
+}
+
+# copy_resources
+copy_xml_resources () {
+    local resources_path="$1"
+    log "cp $SHARED_PATH/filetypes.xml $resources_path/"
+    cp $SHARED_PATH/filetypes.xml $resources_path/
     log "cp $SHARED_PATH/searchoptions.xml $resources_path/"
     cp $SHARED_PATH/searchoptions.xml $resources_path/
 }
@@ -72,7 +77,7 @@ build_clojure () {
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # Create uberjar with lein
     log "Building cljsearch"
@@ -91,13 +96,25 @@ build_cpp () {
     log "cd $CPPSEARCH_PATH"
     cd $CPPSEARCH_PATH
 
-    # clean
-    log "/usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror"
-    /usr/local/bin/cmake --build cmake-build-debug --target clean -- -W -Wall -Werror
+    CONFIGURATIONS=(debug release)
+    for c in ${CONFIGURATIONS[*]}
+    do
+        CMAKE_BUILD_DIR="cmake-build-$c"
+        CMAKE_BUILD_PATH=$CPPSEARCH_PATH/$CMAKE_BUILD_DIR
+        if [ -d "$CMAKE_BUILD_PATH" ]; then
+            # clean
+            log "/usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target clean -- -W -Wall -Werror"
+            /usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target clean -- -W -Wall -Werror
 
-    # build
-    log "/usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror"
-    /usr/local/bin/cmake --build cmake-build-debug --target cppsearch -- -W -Wall -Werror
+            # build
+            log "/usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch -- -W -Wall -Werror"
+            /usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch -- -W -Wall -Werror
+
+            # build tests
+            log "/usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch-tests -- -W -Wall -Werror"
+            /usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch-tests -- -W -Wall -Werror
+        fi
+    done
 
     cd -
 }
@@ -112,7 +129,7 @@ build_csharp () {
 
     # copy the shared json, xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # copy the shared test files to the local test resource location
     mkdir -p $TEST_RESOURCES_PATH
@@ -127,6 +144,23 @@ build_csharp () {
     done
 }
 
+build_dart () {
+    echo
+    log "build_dart"
+    DARTSEARCH_PATH=$DART_PATH/dartsearch
+    cd $DARTSEARCH_PATH
+    # RESOURCES_PATH=$DARTSEARCH_PATH/lib/data
+
+    # # copy the shared xml files to the local resource location
+    # mkdir -p $RESOURCES_PATH
+    # copy_json_resources $RESOURCES_PATH
+
+    log "Building dartsearch"
+    log "pub install"
+    pub install
+    cd -
+}
+
 build_fsharp () {
     echo
     log "build_fsharp"
@@ -137,7 +171,8 @@ build_fsharp () {
 
     # copy the shared json, xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
+    copy_xml_resources $RESOURCES_PATH
 
     # copy the shared test files to the local test resource location
     mkdir -p $TEST_RESOURCES_PATH
@@ -188,7 +223,7 @@ build_haskell () {
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # build with stack (via make)
     log "Building hssearch"
@@ -211,7 +246,7 @@ build_java () {
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # copy the test files to the local test resource location
     mkdir -p $TEST_RESOURCES_PATH
@@ -244,7 +279,7 @@ build_kotlin () {
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # copy the test files to the local test resource location
     mkdir -p $TEST_RESOURCES_PATH
@@ -348,7 +383,7 @@ build_python () {
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 }
 
 build_ruby () {
@@ -360,7 +395,7 @@ build_ruby () {
 
     # copy the shared json files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # copy the shared test files to the local test resource location
     mkdir -p $TEST_RESOURCES_PATH
@@ -388,7 +423,7 @@ build_scala () {
 
     # copy the shared xml files to the local resource location
     mkdir -p $RESOURCES_PATH
-    copy_resources $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
 
     # copy the test files to the local test resource location
     mkdir -p $TEST_RESOURCES_PATH
@@ -440,6 +475,8 @@ build_all () {
     build_clojure
 
     build_csharp
+
+    build_dart
 
     build_fsharp
 
@@ -495,6 +532,8 @@ elif [ "$ARG" == "cpp" ]; then
     build_cpp
 elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]; then
     build_csharp
+elif [ "$ARG" == "dart" ]; then
+    build_dart
 elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]; then
     build_fsharp
 elif [ "$ARG" == "go" ]; then

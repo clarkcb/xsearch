@@ -24,13 +24,42 @@ unittest_clojure () {
     echo
     log "unittest_clojure"
     CLJSEARCH_PATH=$CLOJURE_PATH/cljsearch
-    RESOURCES_PATH=$CLJSEARCH_PATH/resources
 
     # Test with lein
     log "Unit-testing cljsearch"
     cd $CLJSEARCH_PATH
     log "lein test"
     lein test
+    cd -
+}
+
+unittest_cpp () {
+    echo
+    log "unittest_cpp"
+    CPPSEARCH_PATH=$CPP_PATH/cppsearch
+
+    CONFIGURATIONS=(debug release)
+    for c in ${CONFIGURATIONS[*]}
+    do
+        CMAKE_BUILD_DIR=$CPPSEARCH_PATH/cmake-build-$c
+        if [ -d "$CMAKE_BUILD_DIR" ]; then
+            CPPSEARCH_TEST_EXE=$CMAKE_BUILD_DIR/cppsearch-tests
+            log "Unit-testing cppsearch"
+            log "$CPPSEARCH_TEST_EXE"
+            $CPPSEARCH_TEST_EXE
+        fi
+    done
+}
+
+unittest_dart () {
+    echo
+    log "unittest_dart"
+    DARTSEARCH_PATH=$DART_PATH/dartsearch
+
+    cd $DARTSEARCH_PATH
+    log "Unit-testing dartsearch"
+    log "pub run test"
+    pub run test
     cd -
 }
 
@@ -279,7 +308,11 @@ unittest_all () {
     
     unittest_clojure
 
+    unittest_cpp
+
     unittest_csharp
+
+    unittest_dart
 
     unittest_fsharp
 
@@ -327,8 +360,12 @@ if [ "$ARG" == "all" ]; then
     unittest_all
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]; then
     unittest_clojure
+elif [ "$ARG" == "cpp" ]; then
+    unittest_cpp
 elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]; then
     unittest_csharp
+elif [ "$ARG" == "dart" ]; then
+    unittest_dart
 elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]; then
     unittest_fsharp
 elif [ "$ARG" == "go" ]; then

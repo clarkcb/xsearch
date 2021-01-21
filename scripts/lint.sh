@@ -41,6 +41,17 @@ lint_csharp () {
     log "not implemented at this time"
 }
 
+lint_dart () {
+    echo
+    log "lint_dart"
+    DARTSEARCH_PATH=$DART_PATH/dartsearch
+
+    # Analyze
+    log "Analyzing dartsearch"
+    log "dart analyze $DARTSEARCH_PATH"
+    dart analyze $DARTSEARCH_PATH
+}
+
 lint_fsharp () {
     echo
     log "lint_fsharp"
@@ -247,6 +258,8 @@ lint_all () {
 
     lint_csharp
 
+    lint_dart
+
     lint_fsharp
 
     lint_go
@@ -289,6 +302,8 @@ elif [ "$ARG" == "clojure" ]; then
     lint_clojure
 elif [ "$ARG" == "csharp" ]; then
     lint_csharp
+elif [ "$ARG" == "dart" ]; then
+    lint_dart
 elif [ "$ARG" == "fsharp" ]; then
     lint_fsharp
 elif [ "$ARG" == "go" ]; then
