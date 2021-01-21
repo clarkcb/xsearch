@@ -106,6 +106,13 @@ test_ruby () {
     time rbsearch.rb -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
 }
 
+test_rust () {
+    echo -e "\n################################################################################"
+    log "test_rust"
+    log "rssearch $SEARCH_PARAMS"
+    time rssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+}
+
 test_scala () {
     echo -e "\n################################################################################"
     log "test_scala"

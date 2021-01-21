@@ -1,2 +1,2 @@
 @echo off
-%USERPROFILE%\src\xsearch\haskell\hssearch\dist\build\HsSearch\hssearch.exe %*
+%~dp0\hssearch\dist\build\HsSearch\hssearch.exe %*
