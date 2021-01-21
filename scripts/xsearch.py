@@ -7,39 +7,34 @@
 # Shared domain classes, properties, functions for xsearch scripts
 #
 ################################################################################
-from collections import namedtuple
 import os
 import platform
 import re
 
 ########################################
-# Classes
-########################################
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'], verbose=False)
-RunResult = namedtuple('RunResult', ['scenario', 'run', 'time_dict'], verbose=False)
-
-
-########################################
 # Configuration
 ########################################
 xsearch_dict = {
-    'clojure':    'cljsearch',
+    # 'clojure':    'cljsearch',
+    # 'cpp':        'cppsearch',
     'csharp':     'cssearch',
-    'fsharp':     'fssearch',
+    'dart':     'dartsearch',
+    # 'fsharp':     'fssearch',
     'go':         'gosearch',
-    'haskell':    'hssearch',
-    'java':       'javasearch',
-    'javascript': 'jssearch',
+    # 'haskell':    'hssearch',
+    # 'java':       'javasearch',
+    # 'javascript': 'jssearch',
     'kotlin':     'ktsearch',
     'objc':       'objcsearch',
-    'ocaml':      'mlsearch',
-    'perl':       'plsearch.pl',
-    'php':        'phpsearch.php',
-    'python':     'pysearch.py',
-    'ruby':       'rbsearch.rb',
-    'scala':      'scalasearch',
+    # 'ocaml':      'mlsearch',
+    # 'perl':       'plsearch',
+    # 'php':        'phpsearch',
+    'python':     'pysearch',
+    # 'ruby':       'rbsearch',
+    'rust':       'rssearch',
+    # 'scala':      'scalasearch',
     'swift':      'swiftsearch',
-    'typescript': 'tssearch',
+    # 'typescript': 'tssearch',
 }
 win_supported = ['csharp', 'fsharp', 'go', 'haskell', 'javascript', 'perl', 'python', 'ruby']
 all_xsearch_names = sorted(xsearch_dict.values())
