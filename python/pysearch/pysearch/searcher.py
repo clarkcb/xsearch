@@ -139,9 +139,9 @@ class Searcher(object):
             return False
         if sf.filetype == FileType.ARCHIVE:
             return self.settings.searcharchives and \
-                   self.is_archive_search_file(sf.filename)
+                self.is_archive_search_file(sf.filename)
         return not self.settings.archivesonly and \
-               self.is_search_file(sf)
+            self.is_search_file(sf)
 
     async def search(self) -> List[SearchResult]:
         """Search files to find instances of searchpattern(s) starting from
@@ -203,7 +203,8 @@ class Searcher(object):
             log('IOError: {0!s}: {1!s}'.format(e, sf))
         return search_results
 
-    def __search_binary_file_obj(self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
+    def __search_binary_file_obj(
+            self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
         """Search a binary file file object"""
         contents = fo.read()
         search_results = []
@@ -237,13 +238,15 @@ class Searcher(object):
             log('IOError: {0!s}: {1}'.format(e, sf))
         return search_results
 
-    def __search_text_file_obj(self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
+    def __search_text_file_obj(self, sf: SearchFile,
+                               fo: TextIO) -> List[SearchResult]:
         """Search a text file file object"""
         if self.settings.multilinesearch:
             return self.__search_text_file_contents(sf, fo)
         return self.__search_text_file_lines(sf, fo)
 
-    def __search_text_file_contents(self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
+    def __search_text_file_contents(
+            self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
         """Search a given text file object contents all at once
         """
         contents = fo.read()
@@ -268,7 +271,8 @@ class Searcher(object):
                                                          end_line_indices))
         return search_results
 
-    def get_lines_after_to_or_until(self, s: str, after_start_indices: List[int]):
+    def get_lines_after_to_or_until(
+            self, s: str, after_start_indices: List[int]):
         # lines_after_patterns = []
         if self.settings.linesaftertopatterns:
             lines_after_patterns = self.settings.linesaftertopatterns
@@ -300,7 +304,7 @@ class Searcher(object):
 
     def do_lines_after_or_until(self) -> bool:
         return len(self.settings.linesaftertopatterns) > 0 or \
-               len(self.settings.linesafteruntilpatterns) > 0
+            len(self.settings.linesafteruntilpatterns) > 0
 
     def do_lines_after(self) -> bool:
         return self.settings.linesafter > 0 or self.do_lines_after_or_until()
@@ -614,7 +618,8 @@ def get_lines_at_indices(s: str, at_indices: List[int], start_line_indices: List
 
 def get_lines_before(s: str, before_start_indices: List[int], start_line_indices: List[int],
                      end_line_indices: List[int]):
-    return get_lines_at_indices(s, before_start_indices, start_line_indices, end_line_indices)
+    return get_lines_at_indices(
+        s, before_start_indices, start_line_indices, end_line_indices)
 
 
 def lines_match(lines, in_patterns: PatternSet, out_patterns: PatternSet):

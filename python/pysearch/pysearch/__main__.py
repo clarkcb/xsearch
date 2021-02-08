@@ -39,20 +39,19 @@ def print_results(results: List[SearchResult], settings: SearchSettings):
 def get_matching_dirs(results: List[SearchResult]) -> List[str]:
     """Get list of dirs with matches"""
     dirs = set([r.file.path for r in results])
-    dirs = list(dirs)
-    dirs.sort()
+    dirs = sorted(dirs)
     return dirs
 
 
 def get_matching_files(results: List[SearchResult]) -> List[str]:
     """Get list of files with matches"""
     files = set([(r.file.path, r.file.filename) for r in results])
-    files = list(files)
-    files.sort()
+    files = sorted(files)
     return [os.path.join(f[0], f[1]) for f in files]
 
 
-def get_matching_lines(results: List[SearchResult], settings: SearchSettings) -> List[str]:
+def get_matching_lines(
+        results: List[SearchResult], settings: SearchSettings) -> List[str]:
     """Get list of lines with matches (unique if settings.uniquelines)"""
     lines = [r.line for r in results if r.line]
     if settings.uniquelines:

@@ -30,7 +30,7 @@ class FileUtil(object):
         if not filepath:
             return False
         return filepath in FileUtil.DOT_DIRS or \
-               (filepath.endswith('/') and filepath[:-1] in FileUtil.DOT_DIRS)
+            (filepath.endswith('/') and filepath[:-1] in FileUtil.DOT_DIRS)
 
     @staticmethod
     def is_hidden(filepath: str) -> bool:

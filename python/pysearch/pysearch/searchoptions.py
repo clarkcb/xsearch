@@ -226,7 +226,8 @@ class SearchOptions(object):
             elif longarg == 'settings-file':
                 func = self.settings_from_file
             else:
-                raise SearchException('Unknown search option: {0:s}'.format(longarg))
+                raise SearchException(
+                    'Unknown search option: {0:s}'.format(longarg))
             self.options.append(SearchOption(shortarg, longarg, desc, func))
             self.__longarg_dict[longarg] = longarg
             if shortarg:
@@ -251,7 +252,8 @@ class SearchOptions(object):
             elif longarg == 'settings-file':
                 func = self.settings_from_file
             else:
-                raise SearchException('Unknown search option: {0:s}'.format(longarg))
+                raise SearchException(
+                    'Unknown search option: {0:s}'.format(longarg))
             self.options.append(SearchOption(shortarg, longarg, desc, func))
             self.__longarg_dict[longarg] = longarg
             if shortarg:

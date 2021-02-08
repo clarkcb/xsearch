@@ -68,8 +68,8 @@ class SearchResultFormatter(object):
     @staticmethod
     def colorize(s: str, match_start_index: int, match_end_index: int) -> str:
         return s[0:match_start_index] + Color.GREEN + \
-               s[match_start_index:match_end_index] + \
-               Color.RESET + s[match_end_index:]
+            s[match_start_index:match_end_index] + \
+            Color.RESET + s[match_end_index:]
 
     def __format_matching_line(self, result: SearchResult) -> str:
         if not result.line or not result.line.strip():
@@ -84,7 +84,8 @@ class SearchResultFormatter(object):
         max_line_end_index = formatted_length - 1
         match_length = result.match_end_index - result.match_start_index
 
-        # track where match start and end indices end up (changing to zero-indexed)
+        # track where match start and end indices end up (changing to
+        # zero-indexed)
         match_start_index = result.match_start_index - 1 - leading_ws_count
         match_end_index = match_start_index + match_length
 
@@ -119,7 +120,8 @@ class SearchResultFormatter(object):
             if line_end_index < max_line_end_index - 3:
                 formatted = formatted[:-3] + '...'
         if self.settings.colorize:
-            formatted = self.colorize(formatted, match_start_index, match_end_index)
+            formatted = self.colorize(
+                formatted, match_start_index, match_end_index)
         return formatted
 
     def __singleline_format(self, result: SearchResult) -> str:
@@ -143,13 +145,15 @@ class SearchResultFormatter(object):
 
     def __multiline_format(self, result: SearchResult) -> str:
         sio = StringIO()
-        sio.write('{0}\n{1}:'.format('=' * self.SEPARATOR_LEN, str(result.file)))
+        sio.write('{0}\n{1}:'.format(
+            '=' * self.SEPARATOR_LEN, str(result.file)))
         sio.write(' {0:d}: [{1:d}:{2:d}]'.format(result.linenum, result.match_start_index,
                                                  result.match_end_index))
         if result.contained:
             sio.write(': {0}'.format(result.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
-        line_format = ' {0:>' + str(self.__linenum_padding(result)) + 'd} | {1:s}\n'
+        line_format = ' {0:>' + \
+            str(self.__linenum_padding(result)) + 'd} | {1:s}\n'
         current_linenum = result.linenum
         if result.lines_before:
             current_linenum -= len(result.lines_before)

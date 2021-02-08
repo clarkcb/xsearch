@@ -97,7 +97,8 @@ class SearchSettings(object):
             ext_set = getattr(self, ext_set_name)
             ext_set.update(new_ext_set)
 
-    def add_patterns(self, patterns, pattern_set_name: str, compile_flag=re.S | re.U):
+    def add_patterns(self, patterns, pattern_set_name: str,
+                     compile_flag=re.S | re.U):
         if isinstance(patterns, list) or isinstance(patterns, set):
             new_pattern_set = set([re.compile(p, compile_flag)
                                    for p in patterns])
