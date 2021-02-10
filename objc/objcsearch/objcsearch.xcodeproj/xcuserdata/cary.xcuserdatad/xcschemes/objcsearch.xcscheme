@@ -65,6 +65,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "-e &quot;UTF-8&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-s Search"
             isEnabled = "YES">
          </CommandLineArgument>
