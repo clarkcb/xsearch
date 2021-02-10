@@ -15,7 +15,8 @@ class SearchResultTest {
         val settings = getDefaultSettings().copy(colorize = false)
         val formatter = SearchResultFormatter(settings)
         val pattern = Regex("Search")
-        val file = File("~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs")
+        val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+        val file = File(path)
         val searchFile = SearchFile(file, FileType.CODE)
         val lineNum = 10
         val matchStartIndex = 15
@@ -23,8 +24,7 @@ class SearchResultTest {
         val line = "\tpublic class Searcher\n"
         val searchResult = SearchResult(pattern, searchFile, lineNum,
                 matchStartIndex, matchEndIndex, line)
-        val expectedPath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        val expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
+        val expectedOutput = String.format("%s: %d: [%d:%d]: %s", path,
                 lineNum, matchStartIndex, matchEndIndex, line.trim { it <= ' ' })
         val output = formatter.format(searchResult)
         assertEquals(expectedOutput, output)
@@ -98,11 +98,12 @@ class SearchResultTest {
 
     @Test
     fun testMultiLineSearchResult() {
-        val settings = getDefaultSettings().copy(colorize = false)
+        val settings = getDefaultSettings().copy(colorize = false, linesBefore = 2, linesAfter = 2)
         val formatter = SearchResultFormatter(settings)
-        val pattern = Regex("Search")
-        val file = File("~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs")
-        val searchFile = SearchFile(file, FileType.TEXT)
+        val pattern = Regex("Searcher")
+        val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+        val file = File(path)
+        val searchFile = SearchFile(file, FileType.CODE)
         val lineNum = 10
         val matchStartIndex = 15
         val matchEndIndex = 23
@@ -111,10 +112,9 @@ class SearchResultTest {
         val linesAfter = listOf("\t{", "\t\tprivate readonly FileTypes _fileTypes;")
         val searchResult = SearchResult(pattern, searchFile, lineNum,
                 matchStartIndex, matchEndIndex, line, linesBefore, linesAfter)
-        val expectedPath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
         val expectedOutput =
                 """================================================================================
-                   |$expectedPath: $lineNum: [$matchStartIndex:$matchEndIndex]
+                   |$path: $lineNum: [$matchStartIndex:$matchEndIndex]
                    |--------------------------------------------------------------------------------
                    |   8 | namespace CsSearch
                    |   9 | {

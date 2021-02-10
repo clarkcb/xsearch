@@ -187,7 +187,7 @@ class SearcherTest {
     fun testIsSearchFile_NoExtensionsNoPatterns_True() {
         val settings = getSettings()
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertTrue(searcher.isSearchFile(file))
     }
 
@@ -195,7 +195,7 @@ class SearcherTest {
     fun testIsSearchFile_MatchesInExtension_True() {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertTrue(searcher.isSearchFile(file))
     }
 
@@ -203,7 +203,7 @@ class SearcherTest {
     fun testIsSearchFile_DoesNotMatchInExtension_False() {
         val settings = getSettings().copy(inExtensions = setOf("java"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertFalse(searcher.isSearchFile(file))
     }
 
@@ -211,7 +211,7 @@ class SearcherTest {
     fun testIsSearchFile_MatchesOutExtension_False() {
         val settings = getSettings().copy(outExtensions = setOf("cs"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertFalse(searcher.isSearchFile(file))
     }
 
@@ -219,7 +219,7 @@ class SearcherTest {
     fun testIsSearchFile_DoesNotMatchOutExtension_True() {
         val settings = getSettings().copy(outExtensions = setOf("java"))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertTrue(searcher.isSearchFile(file))
     }
 
@@ -227,7 +227,7 @@ class SearcherTest {
     fun testIsSearchFile_MatchesInPattern_True() {
         val settings = getSettings().copy(inFilePatterns = setOf(Regex("Search")))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("Searcher.cs"), FileType.TEXT)
+        val file = SearchFile(File("Searcher.cs"), FileType.CODE)
         assertTrue(searcher.isSearchFile(file))
     }
 
@@ -235,7 +235,7 @@ class SearcherTest {
     fun testIsSearchFile_DoesNotMatchInPattern_False() {
         val settings = getSettings().copy(inFilePatterns = setOf(Regex("Search")))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertFalse(searcher.isSearchFile(file))
     }
 
@@ -243,7 +243,7 @@ class SearcherTest {
     fun testIsSearchFile_MatchesOutPattern_False() {
         val settings = getSettings().copy(outFilePatterns = setOf(Regex("Search")))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("Searcher.cs"), FileType.TEXT)
+        val file = SearchFile(File("Searcher.cs"), FileType.CODE)
         assertFalse(searcher.isSearchFile(file))
     }
 
@@ -251,7 +251,7 @@ class SearcherTest {
     fun testIsSearchFile_DoesNotMatchOutPattern_True() {
         val settings = getSettings().copy(outFilePatterns = setOf(Regex("Search")))
         val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.TEXT)
+        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
         assertTrue(searcher.isSearchFile(file))
     }
 
@@ -339,7 +339,7 @@ class SearcherTest {
         val searcher = Searcher(settings)
         val lineIterator = javaClass.getResourceAsStream(testFilePath).reader().readLines().iterator()
 
-        val results = searcher.searchStringIterator(lineIterator)
+        val results = searcher.searchLineIterator(lineIterator)
 
         assertEquals(results.size.toLong(), 2)
 

@@ -43,7 +43,7 @@ class Searcher(val settings: SearchSettings) {
         try {
             charset = Charset.forName(settings.textFileEncoding)
         } catch (e: IllegalArgumentException) {
-            throw SearchException("Invalid encoding provided")
+            throw SearchException("Invalid or unsupported encoding: ${settings.textFileEncoding}")
         }
     }
 
@@ -109,7 +109,7 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun filterToSearchFile(f: File): SearchFile? {
-        if (f.isHidden && settings.excludeHidden) {
+        if (settings.excludeHidden && f.isHidden) {
             return null
         }
         val sf = SearchFile(f, fileTypes.getFileType(f))
@@ -152,7 +152,7 @@ class Searcher(val settings: SearchSettings) {
             val searchDirs: List<String> = searchFiles.map { it.file.parent }.distinct().sorted().toList()
             log("\nDirectories to be searched (${searchDirs.size}):")
             for (d in searchDirs) {
-                println(d)
+                log(d)
             }
             log("\n\nFiles to be searched (${searchFiles.size}):")
             for (sf in searchFiles) {
@@ -182,7 +182,7 @@ class Searcher(val settings: SearchSettings) {
     }
 
     private fun searchTextFile(sf: SearchFile): List<SearchResult> {
-        if (settings.verbose) {
+        if (settings.debug) {
             log("Searching text file $sf")
         }
         return if (settings.multiLineSearch) {
@@ -259,8 +259,6 @@ class Searcher(val settings: SearchSettings) {
                 // val beforeLineCount = newlineIndices.count { it <= m.range.first }
                 val linesBefore =
                         if (settings.linesBefore > 0) {
-//                            val lbIndices = beforeNewlineIndices.reversed().
-//                                    take(settings.linesBefore + 1).reversed()
                             val lbIndices = beforeNewlineIndices.reversed().
                                     take(settings.linesBefore + 1).reversed()
                             getLinesFromMultiLineString(s, lbIndices)
@@ -296,7 +294,7 @@ class Searcher(val settings: SearchSettings) {
 
     fun searchTextFileLines(sf: SearchFile): List<SearchResult> {
         val results: List<SearchResult> = sf.file.reader(charset!!).
-                useLines { ss -> searchStringIterator(ss.iterator()) }
+                useLines { ss -> searchLineIterator(ss.iterator()) }
         return results.map { r -> r.copy(file = sf) }
     }
 
@@ -356,7 +354,7 @@ class Searcher(val settings: SearchSettings) {
         return foundMatch
     }
 
-    fun searchStringIterator(lines: Iterator<String>): List<SearchResult> {
+    fun searchLineIterator(lines: Iterator<String>): List<SearchResult> {
         val results: MutableList<SearchResult> = mutableListOf()
         val linesBefore: MutableList<String> = mutableListOf()
         val linesAfter: MutableList<String> = mutableListOf()

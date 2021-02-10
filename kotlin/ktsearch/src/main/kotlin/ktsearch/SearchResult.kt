@@ -26,7 +26,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
     private val noSearchFileText = "<text>"
 
     fun format(result: SearchResult): String {
-        return if (result.linesBefore.isNotEmpty() || result.linesAfter.isNotEmpty()) {
+        return if (settings.linesBefore > 0 || settings.linesAfter > 0) {
             multiLineFormat(result)
         } else {
             singleLineFormat(result)
