@@ -3,6 +3,7 @@ open Common
 
 type t = {
   archivesonly : bool;
+  colorize : bool;
   debug : bool;
   excludehidden : bool;
   firstmatch : bool;
@@ -38,12 +39,14 @@ type t = {
   searcharchives : bool;
   searchpatterns : Re2.Regex.t list;
   startpath : string;
+  textfileencoding : string;
   uniquelines : bool;
   verbose : bool
 }
 
 let default_settings = {
   archivesonly = false;
+  colorize = true;
   debug = false;
   excludehidden = true;
   firstmatch = false;
@@ -79,6 +82,7 @@ let default_settings = {
   searcharchives = false;
   searchpatterns = [];
   startpath = "";
+  textfileencoding = "UTF-8";
   uniquelines = false;
   verbose = false
 };;
@@ -91,9 +95,18 @@ let add_filetypes (ft_string : string) (filetypes : string list) =
   let fts = String.split ft_string ~on:(char_of_int 44) in
   List.append filetypes fts
 
+let set_archivesonly (ss : SearchSettings.t) (archivesonly: bool) (ss : SearchSettings.t) =
+  let searcharchives = if archivesonly then archivesonly else ss.searcharchives
+  { ss with archivesonly=archivesonly; searcharchives=searcharchives }
+
+let set_debug (ss : SearchSettings.t) (debug: bool) (ss : SearchSettings.t) =
+  let verbose = if debug then debug else ss.verbose
+  { ss with debug=debug; verbose=verbose }
+
 let to_string s = 
   String.concat [
     sprintf "{archivesonly=%b" s.archivesonly;
+    sprintf "; colorize=%b" s.colorize;
     sprintf "; debug=%b" s.debug;
     sprintf "; excludehidden=%b" s.excludehidden;
     sprintf "; firstmatch=%b" s.firstmatch;
@@ -128,5 +141,6 @@ let to_string s =
     sprintf "; searcharchives=%b" s.searcharchives;
     sprintf "; searchpatterns=%s" (regexp_list_to_string s.searchpatterns);
     sprintf "; startpath=\"%s\"" s.startpath;
+    sprintf "; textfileencoding=\"%s\"" s.textfileencoding;
     sprintf "; uniquelines=%b" s.uniquelines;
     sprintf "; verbose=%b}" s.verbose];;

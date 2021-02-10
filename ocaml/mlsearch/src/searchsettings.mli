@@ -3,6 +3,7 @@ open Core.Std
 
 type t = {
   archivesonly : bool;
+  colorize : bool;
   debug : bool;
   excludehidden : bool;
   firstmatch : bool;

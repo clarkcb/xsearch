@@ -70,6 +70,7 @@ let get_usage searchoptions =
 type argAction = string -> Searchsettings.t -> Searchsettings.t;;
 
 let arg_actions : (string * argAction) list = [
+  ("encoding", fun s ss -> { ss with textfileencoding=s });
   ("in-archiveext", fun s ss -> { ss with in_archiveextensions=Searchsettings.add_extensions s ss.in_archiveextensions });
   ("in-archivefilepattern", fun s ss -> { ss with in_archivefilepatterns=List.append ss.in_archivefilepatterns [Re2.Regex.create_exn s] });
   ("in-dirpattern", fun s ss -> { ss with in_dirpatterns=List.append ss.in_dirpatterns [Re2.Regex.create_exn s] });
@@ -89,15 +90,17 @@ let arg_actions : (string * argAction) list = [
   ("out-filepattern", fun s ss -> { ss with out_filepatterns=List.append ss.out_filepatterns [Re2.Regex.create_exn s] });
   ("out-linesafterpattern", fun s ss -> { ss with out_linesafterpatterns=List.append ss.out_linesafterpatterns [Re2.Regex.create_exn s] });
   ("out-linesbeforepattern", fun s ss -> { ss with out_linesbeforepatterns=List.append ss.out_linesbeforepatterns [Re2.Regex.create_exn s] });
-  ("searchpattern", fun s ss -> { ss with searchpatterns=List.append ss.searchpatterns [Re2.Regex.create_exn s] })
+  ("searchpattern", fun s ss -> { ss with searchpatterns=List.append ss.searchpatterns [Re2.Regex.create_exn s] });
+  ("startpath", fun s ss -> { ss with startpath=s })
 ];;
 
 type boolFlagAction = bool -> Searchsettings.t -> Searchsettings.t;;
 
 let bool_flag_actions : (string * boolFlagAction) list = [
   ("allmatches", fun b ss -> { ss with firstmatch=(not b) });
-  ("archivesonly", fun b ss -> { ss with archivesonly=b });
-  ("debug", fun b ss -> { ss with debug=b });
+  ("archivesonly", fun b ss -> SearchSettings.set_archivesonly ss b);
+  ("colorize", fun b ss -> { ss with colorize=b });
+  ("debug", fun b ss -> SearchSettings.set_debug ss b);
   ("excludehidden", fun b ss -> { ss with excludehidden=b });
   ("firstmatch", fun b ss -> { ss with firstmatch=b });
   ("help", fun b ss -> { ss with printusage=b });
@@ -106,6 +109,7 @@ let bool_flag_actions : (string * boolFlagAction) list = [
   ("listfiles", fun b ss -> { ss with listfiles=b });
   ("listlines", fun b ss -> { ss with listlines=b });
   ("multilinesearch", fun b ss -> { ss with multilinesearch=b });
+  ("nocolorize", fun b ss -> { ss with colorize=(not b) });
   ("noprintmatches", fun b ss -> { ss with printresults=(not b) });
   ("norecursive", fun b ss -> { ss with recursive=(not b) });
   ("nosearcharchives", fun b ss -> { ss with searcharchives=(not b) });
