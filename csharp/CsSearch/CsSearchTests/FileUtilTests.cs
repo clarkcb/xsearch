@@ -15,20 +15,20 @@ namespace CsSearchTests
 		public void GetRelativePath_PathWithCurrentDirectory_RelativePath()
 		{
 			var path = Environment.CurrentDirectory + "/rest/of/path/";
-			Assert.AreEqual("./rest/of/path/", FileUtil.GetRelativePath(path, "."));
+			Assert.AreEqual("./rest/of/path", FileUtil.GetRelativePath(path, "."));
 		}
 
 		[Test]
 		public void GetRelativePath_PathWithoutCurrentDirectory_FullPath()
 		{
-			const string path = "/a/full/path/by/itself/";
+			const string path = "/a/full/path/by/itself";
 			Assert.AreEqual(path, FileUtil.GetRelativePath(path, "/a/full/path"));
 		}
 
 		[Test]
 		public void GetRelativePath_RelativePath_Unchanged()
 		{
-			const string path = "./a/relative/path/";
+			const string path = "./a/relative/path";
 			Assert.AreEqual(path, FileUtil.GetRelativePath(path, "."));
 		}
 

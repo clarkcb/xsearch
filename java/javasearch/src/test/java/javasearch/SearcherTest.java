@@ -479,23 +479,4 @@ public class SearcherTest {
             fail();
         }
     }
-
-    @Ignore
-    public final void testPrintSearchResults() {
-        SearchSettings settings = getSettings();
-        //settings.setLinesBefore(2);
-        Searcher searcher = new Searcher(settings);
-        String contents;
-        try {
-            InputStream is = getClass().getResourceAsStream(testFilePath);
-            contents = FileUtil.getStreamContents(is);
-            //System.out.println("contents: " + contents);
-            List<SearchResult> results = searcher.searchMultiLineString(contents);
-
-            searcher.printSearchResults(results);
-
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
-    }
 }
