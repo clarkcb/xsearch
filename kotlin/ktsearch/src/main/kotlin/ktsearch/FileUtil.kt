@@ -12,6 +12,6 @@ object FileUtil {
     }
 
     fun isHidden(f: String): Boolean {
-        return f[0] == '.' && !isDotDir(f)
+        return !f.isNullOrEmpty() && f[0] == '.' && !isDotDir(f)
     }
 }
