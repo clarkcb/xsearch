@@ -23,3 +23,6 @@ dependency-reduced-pom.xml
 config.json
 filetypes.xml
 searchoptions.xml
+
+# from https://users.scala-lang.org/t/solved-should-i-add-bsp-directory-in-gitignore/6921
+.bsp/
