@@ -33,6 +33,10 @@ proguard/
 .gradle/
 build/
 bin/
+# TODO: determine whether these should actually be added
+gradle/
+gradlew
+gradlew.bat
 
 # Project-specific
 config.json

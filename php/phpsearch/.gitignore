@@ -1,2 +1,5 @@
 tools/
 vendor/
+
+# phpunit
+.phpunit.result.cache

@@ -1,3 +1,7 @@
 build/
 dist/
 node_modules/
+
+# See https://stackoverflow.com/questions/48524417/should-the-package-lock-json-file-be-added-to-gitignore
+# and https://stackoverflow.com/questions/44206782/do-i-commit-the-package-lock-json-file-created-by-npm-5
+# package-lock.json
