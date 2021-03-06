@@ -12,26 +12,30 @@ import importlib.resources
 import json
 from enum import Enum
 
+from pyfind import FileType
+
+from .common import get_text
+from .config import FILETYPESPATH
 from .fileutil import FileUtil
 from .searchexception import SearchException
 
 
-class FileType(Enum):
-    """FileType enum"""
-    UNKNOWN = 0
-    ARCHIVE = 1
-    BINARY = 2
-    CODE = 3
-    TEXT = 4
-    XML = 5
+# class FileType(Enum):
+#     """FileType enum"""
+#     UNKNOWN = 0
+#     ARCHIVE = 1
+#     BINARY = 2
+#     CODE = 3
+#     TEXT = 4
+#     XML = 5
 
-    @classmethod
-    def from_name(cls, name):
-        uname = name.upper()
-        try:
-            return FileType[uname]
-        except KeyError:
-            raise SearchException(f'Invalid file type: {name}\n')
+#     @classmethod
+#     def from_name(cls, name):
+#         uname = name.upper()
+#         try:
+#             return FileType[uname]
+#         except KeyError:
+#             raise SearchException('Invalid file type: {0!s}\n'.format(name))
 
 
 class FileTypes(object):

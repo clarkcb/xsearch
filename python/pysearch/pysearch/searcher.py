@@ -15,9 +15,10 @@ from collections import deque
 from io import StringIO
 from typing import Deque, List, TextIO
 
+from pyfind import FileType, FileUtil, Finder, FindFile
+
 from .common import log
-from .filetypes import FileType, FileTypes
-from .fileutil import FileUtil
+# from .filetypes import FileTypes
 from .searchfile import SearchFile
 from .searchresult import SearchResult
 from .searchsettings import SearchSettings, PatternSet
@@ -40,12 +41,13 @@ except ImportError as ie:
 class Searcher(object):
     """a class to search files"""
 
-    __slots__ = ['settings', 'file_types']
+    __slots__ = ['settings', 'file_types', 'finder']
 
     def __init__(self, settings: SearchSettings):
         self.settings = settings
+        self.finder = Finder(settings)
         self.__validate_settings()
-        self.file_types = FileTypes()
+        self.filetypes = self.finder.file_types
 
     def __validate_settings(self):
         """Assert required settings in SearchSettings instance"""
@@ -62,102 +64,20 @@ class Searcher(object):
             raise AssertionError('Invalid encoding: {}'.format(
                 self.settings.text_file_encoding))
 
-    def is_search_dir(self, d: str) -> bool:
-        path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
-        if self.settings.exclude_hidden:
-            for p in path_elems:
-                if FileUtil.is_hidden(p):
-                    return False
-        if self.settings.in_dir_patterns and \
-                not any_matches_any_pattern(path_elems, self.settings.in_dir_patterns):
-            return False
-        if self.settings.out_dir_patterns and \
-                any_matches_any_pattern(path_elems, self.settings.out_dir_patterns):
-            return False
-        return True
-
-    def is_archive_search_file(self, f: str) -> bool:
-        ext = FileUtil.get_extension(f)
-        if self.settings.in_archive_extensions and \
-                ext not in self.settings.in_archive_extensions:
-            return False
-        if self.settings.out_archive_extensions and \
-                ext in self.settings.out_archive_extensions:
-            return False
-        if self.settings.in_archive_file_patterns and \
-                not matches_any_pattern(f, self.settings.in_archive_file_patterns):
-            return False
-        if self.settings.out_archive_file_patterns and \
-                matches_any_pattern(f, self.settings.out_archive_file_patterns):
-            return False
-        return True
-
-    def is_search_file(self, sf: SearchFile) -> bool:
-        if (self.settings.in_file_patterns and
-            not matches_any_pattern(sf.file_name, self.settings.in_file_patterns)) \
-                or (self.settings.out_file_patterns and
-                    matches_any_pattern(sf.file_name, self.settings.out_file_patterns)):
-            return False
-        ext = FileUtil.get_extension(sf.file_name)
-        if (self.settings.in_extensions and
-            ext not in self.settings.in_extensions) \
-                or (self.settings.out_extensions and
-                    ext in self.settings.out_extensions) \
-                or (self.settings.in_file_types and
-                    sf.file_type not in self.settings.in_file_types) \
-                or (self.settings.out_file_types and
-                    sf.file_type in self.settings.out_file_types):
-            return False
-        return True
-
-    def get_search_files(self) -> List[SearchFile]:
-        """Get the list of all files to search in single walkthrough"""
-        if self.settings.debug:
-            log('get_search_files()')
-        searchfiles = []
-        for p in self.settings.paths:
-            if os.path.isdir(p):
-                if self.is_search_dir(os.path.abspath(p)):
-                    if self.settings.recursive:
-                        for root, dirs, files in os.walk(p):
-                            if self.is_search_dir(root):
-                                new_searchfiles = [
-                                    SearchFile(path=root,
-                                               file_name=f,
-                                               file_type=self.file_types.get_file_type(f))
-                                    for f in files
-                                ]
-                                searchfiles.extend(
-                                    [sf for sf in new_searchfiles if self.filter_file(sf)])
-            elif os.path.isfile(p):
-                d, f = os.path.split(p)
-                sf = SearchFile(path=d, file_name=f,
-                                file_type=self.file_types.get_file_type(f))
-                if self.filter_file(sf):
-                    searchfiles.append(sf)
-        return sorted(searchfiles, key=lambda sf: (sf.path, sf.file_name))
-
-    def filter_file(self, sf: SearchFile) -> bool:
-        if FileUtil.is_hidden(sf.file_name) and self.settings.exclude_hidden:
-            return False
-        if sf.file_type == FileType.ARCHIVE:
-            return self.settings.search_archives and \
-                self.is_archive_search_file(sf.file_name)
-        return not self.settings.archives_only and \
-            self.is_search_file(sf)
-
     async def search(self) -> List[SearchResult]:
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
         # get the searchfiles (now a single walkthrough)
-        searchfiles = self.get_search_files()
+        # searchfiles = self.get_search_files()
+        findfiles = await self.finder.find()
         if self.settings.verbose:
-            searchdirs = sorted(list({sf.path for sf in searchfiles}))
-            log('\nDirectories to be searched ({0}):'.format(len(searchdirs)))
-            for d in searchdirs:
+            # searchdirs = sorted(list({sf.path for sf in searchfiles}))
+            finddirs = sorted(list({sf.path for sf in findfiles}))
+            log('\nDirectories to be searched ({0}):'.format(len(finddirs)))
+            for d in finddirs:
                 log(d)
-            log('\n\nFiles to be searched ({0}):'.format(len(searchfiles)))
-            for f in searchfiles:
+            log('\n\nFiles to be searched ({0}):'.format(len(findfiles)))
+            for f in findfiles:
                 log(str(f))
             log("")
 
@@ -165,10 +85,10 @@ class Searcher(object):
         batch_size = 250
         offset = 0
         search_results = []
-        while offset < len(searchfiles):
-            to_index = min(offset + batch_size, len(searchfiles))
+        while offset < len(findfiles):
+            to_index = min(offset + batch_size, len(findfiles))
             tasks = []
-            for sf in searchfiles[offset:to_index]:
+            for sf in findfiles[offset:to_index]:
                 tasks.append(asyncio.create_task(self.search_file(sf)))
             for coroutine in asyncio.as_completed(tasks):
                 search_results.extend(await coroutine)
@@ -177,10 +97,6 @@ class Searcher(object):
 
     async def search_file(self, sf: SearchFile) -> List[SearchResult]:
         """Search in a file, return number of matches found"""
-        if not self.file_types.is_searchable_file(sf.file_name):
-            if self.settings.verbose:
-                log('Skipping unsearchable file: {0}'.format(sf))
-            return []
         search_results = []
         if sf.file_type in self.file_types.TEXT_TYPES:
             search_results = self.search_text_file(sf)
@@ -191,6 +107,10 @@ class Searcher(object):
                 search_results = self.search_archive_file(sf)
             except IOError as e:
                 log('IOError: {0!s}: {1!s}'.format(e, sf))
+        else:
+            # it's UNKNOWN
+            if self.settings.verbose:
+                log('Skipping file with unknown type: {0}'.format(sf))
         return search_results
 
     def search_binary_file(self, sf: SearchFile) -> List[SearchResult]:
