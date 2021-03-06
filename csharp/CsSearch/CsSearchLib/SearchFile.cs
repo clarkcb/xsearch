@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+using CsFind;
+
 namespace CsSearchLib
 {
 	public class SearchFile

@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using CsSearchLib;
 using NUnit.Framework;
 
+using CsFind;
+
 namespace CsSearchTests
 {
 	[TestFixture]
@@ -20,7 +22,7 @@ namespace CsSearchTests
 			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Code);
+			var searchFile = new FindFile(CsSearchPath, "Searcher.cs", CsFind.FileType.Code);
 			const int lineNum = 10;
 			const int matchStartIndex = 15;
 			const int matchEndIndex = 23;
@@ -43,7 +45,7 @@ namespace CsSearchTests
 			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("maxlen");
-			var searchFile = new SearchFile(".", "maxlen.txt", FileType.Text);
+			var searchFile = new FindFile(".", "maxlen.txt", CsFind.FileType.Text);
 			const int lineNum = 1;
 			const int matchStartIndex = 53;
 			const int matchEndIndex = 59;
@@ -69,7 +71,7 @@ namespace CsSearchTests
 			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("maxlen");
-			var searchFile = new SearchFile(".", "maxlen.txt", FileType.Text);
+			var searchFile = new FindFile(".", "maxlen.txt", CsFind.FileType.Text);
 			const int lineNum = 1;
 			const int matchStartIndex = 53;
 			const int matchEndIndex = 59;
@@ -80,9 +82,9 @@ namespace CsSearchTests
 				matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
 			const string expectedPath = "./maxlen.txt";
 			var expectedLine = "...89012345678901234567890123456789012345678901" +
-			                   Color.Green +
+			                   CsSearch.Color.Green +
 			                   "maxlen" +
-			                   Color.Reset +
+			                   CsSearch.Color.Reset +
 			                   "89012345678901234567890123456789012345678901...";
 			var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {expectedLine}";
 
@@ -99,7 +101,7 @@ namespace CsSearchTests
 			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
+			var searchFile = new FindFile(CsSearchPath, "Searcher.cs", CsFind.FileType.Text);
 			const int lineNum = 10;
 			const int matchStartIndex = 15;
 			const int matchEndIndex = 23;
@@ -129,7 +131,7 @@ namespace CsSearchTests
 			var settings = new SearchSettings();
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("Search");
-			var searchFile = new SearchFile(CsSearchPath, "Searcher.exe", FileType.Binary);
+			var searchFile = new FindFile(CsSearchPath, "Searcher.exe", CsFind.FileType.Binary);
 			const int lineNum = 0;
 			const int matchStartIndex = 0;
 			const int matchEndIndex = 0;

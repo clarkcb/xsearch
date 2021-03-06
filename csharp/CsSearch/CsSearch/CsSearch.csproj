@@ -14,4 +14,8 @@
         <ProjectReference Include="..\CsSearchLib\CsSearchLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CsFind" Version="0.1.0" />
+    </ItemGroup>
+
 </Project>

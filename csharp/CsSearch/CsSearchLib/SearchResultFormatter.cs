@@ -1,5 +1,7 @@
 using System.Text;
 
+using CsFind;
+
 namespace CsSearchLib
 {
     public class SearchResultFormatter
@@ -22,18 +24,7 @@ namespace CsSearchLib
 
         private string GetRelativeFilePath(SearchResult result)
         {
-			// TODO: figure out how to match settings path to result
-	        // if (!string.IsNullOrEmpty(Settings.StartPath))
-	        // {
-		       //  if (Settings.StartPath[0] == '~')
-		       //  {
-			      //   return FileUtil.ContractPath(result.File!.FullName);
-		       //  }
-		       //  return FileUtil.GetRelativePath(result.File!.FullName, Settings.StartPath);
-	        // }
-
-	        // return result.File!.FullName;
-	        return result.File!.ToString();
+			return FileUtil.ContractOrRelativePath(result.File!.FullName, Settings.Paths);
         }
 
         private static int LineNumPadding(SearchResult result)

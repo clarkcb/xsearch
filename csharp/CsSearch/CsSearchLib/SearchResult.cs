@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using CsFind;
+
 namespace CsSearchLib
 {
 	public class SearchResult
 	{
 		public Regex SearchPattern { get; private set; }
-		public SearchFile? File { get; set; }
+		public FindFile? File { get; set; }
 		public int LineNum { get; private set; }
 		public int MatchStartIndex { get; private set; }
 		public int MatchEndIndex { get; private set; }
@@ -14,14 +16,14 @@ namespace CsSearchLib
 		public IList<string> LinesBefore { get; private set; }
 		public IList<string> LinesAfter { get; private set; }
 
-		public SearchResult(Regex searchPattern, SearchFile? file, int lineNum,
+		public SearchResult(Regex searchPattern, FindFile? file, int lineNum,
 			int matchStartIndex, int matchEndIndex, string? line)
 			: this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
 				new List<string>(), new List<string>())
 		{
 		}
 
-		public SearchResult(Regex searchPattern, SearchFile? file, int lineNum, int matchStartIndex,
+		public SearchResult(Regex searchPattern, FindFile? file, int lineNum, int matchStartIndex,
 			int matchEndIndex, string? line, IList<string> linesBefore, IList<string> linesAfter)
 		{
 			SearchPattern = searchPattern;
@@ -44,7 +46,7 @@ namespace CsSearchLib
 				return 1;
 			if (r1.File != null && r2.File != null)
 			{
-				var sfCmp = SearchFile.Compare(r1.File, r2.File);
+				var sfCmp = FindFile.Compare(r1.File, r2.File);
 				if (sfCmp != 0)
 				{
 					return sfCmp;
