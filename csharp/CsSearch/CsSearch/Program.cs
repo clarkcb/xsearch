@@ -2,7 +2,7 @@
 
 namespace CsSearch
 {
-	static class SearchMain
+	static class Program
 	{
 		static void Main(string[] args)
 		{

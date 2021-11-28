@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CsSearch
+namespace CsSearchLib
 {
 	public static class FileUtil
 	{

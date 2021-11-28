@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,object>>>;
 
-namespace CsSearch
+namespace CsSearchLib
 {
 	public enum FileType
 	{

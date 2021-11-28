@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CsSearch;
+using CsSearchLib;
 using NUnit.Framework;
 
 namespace CsSearchTests

@@ -1,4 +1,4 @@
-namespace CsSearch
+namespace CsSearchLib
 {
     public static class Color
     {

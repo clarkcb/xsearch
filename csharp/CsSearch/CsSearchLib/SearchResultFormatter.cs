@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace CsSearch
+namespace CsSearchLib
 {
     public class SearchResultFormatter
     {

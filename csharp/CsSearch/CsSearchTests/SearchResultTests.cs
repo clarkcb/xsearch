@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using CsSearch;
+using CsSearchLib;
 using NUnit.Framework;
 
 namespace CsSearchTests

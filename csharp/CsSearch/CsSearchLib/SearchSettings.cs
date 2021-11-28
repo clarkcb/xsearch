@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CsSearch
+namespace CsSearchLib
 {
 	public class SearchSettings
 	{

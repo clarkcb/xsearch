@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 using SearchOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>;
 
-namespace CsSearch
+namespace CsSearchLib
 {
 	public class SearchOptions
 	{
