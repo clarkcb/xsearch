@@ -2,29 +2,16 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <PackageVersion>0.1.0</PackageVersion>
         <Authors>Cary Clark</Authors>
-        <Description>C# implementation of xsearch in dotnet 3.1</Description>
+        <Description>C# implementation of xsearch in dotnet 6.0</Description>
         <RootNamespace>CsSearch</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="Resources\searchoptions.json" />
-      <None Remove="Resources\filetypes.json" />
-      <None Remove="Resources\searchoptions.xml" />
-      <EmbeddedResource Include="Resources\searchoptions.xml" />
-      <None Remove="Resources\filetypes.xml" />
-      <EmbeddedResource Include="Resources\filetypes.xml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Resources\searchoptions.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Resources\filetypes.json" />
+        <ProjectReference Include="..\CsSearchLib\CsSearchLib.csproj" />
     </ItemGroup>
 
 </Project>

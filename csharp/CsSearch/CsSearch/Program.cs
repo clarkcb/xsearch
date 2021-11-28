@@ -1,4 +1,6 @@
-﻿namespace CsSearch
+﻿using CsSearchLib;
+
+namespace CsSearch
 {
 	static class SearchMain
 	{

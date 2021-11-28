@@ -1,8 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSearch", "CsSearch\CsSearch.csproj", "{33CF2ED9-5133-48B8-ABEB-103B0C0FD2FF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSearchTests", "CsSearchTests\CsSearchTests.csproj", "{68A5813B-150B-49AE-9ED0-7BC8F06AEB4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSearchLib", "CsSearchLib\CsSearchLib.csproj", "{DD9696DD-74F9-4E2A-B1C6-015FFACE712E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +21,9 @@ Global
 		{68A5813B-150B-49AE-9ED0-7BC8F06AEB4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68A5813B-150B-49AE-9ED0-7BC8F06AEB4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68A5813B-150B-49AE-9ED0-7BC8F06AEB4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD9696DD-74F9-4E2A-B1C6-015FFACE712E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD9696DD-74F9-4E2A-B1C6-015FFACE712E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD9696DD-74F9-4E2A-B1C6-015FFACE712E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD9696DD-74F9-4E2A-B1C6-015FFACE712E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

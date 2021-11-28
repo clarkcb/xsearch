@@ -1,34 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <Nullable>enable</Nullable>
+        <AssemblyName>CsSearchTests</AssemblyName>
+        <RootNamespace>CsSearchTests</RootNamespace>
+    </PropertyGroup>
 
-    <IsPackable>false</IsPackable>
+    <ItemGroup>
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    </ItemGroup>
 
-    <OutputType>Exe</OutputType>
+    <ItemGroup>
+        <ProjectReference Include="..\CsSearchLib\CsSearchLib.csproj" />
+    </ItemGroup>
 
-    <LangVersion>8</LangVersion>
-
-    <Nullable>enable</Nullable>
-
-    <AssemblyName>CsSearchTests</AssemblyName>
-
-    <RootNamespace>CsSearchTests</RootNamespace>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0-alpha.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CsSearch\CsSearch.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Resources\testFile2.txt" />
-    <EmbeddedResource Include="Resources\testFile2.txt" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="Resources\testFile2.txt" />
+        <EmbeddedResource Include="Resources\testFile2.txt" />
+    </ItemGroup>
 
 </Project>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="Resources\searchoptions.json" />
+        <None Remove="Resources\filetypes.json" />
+        <EmbeddedResource Include="Resources\filetypes.json" />
+        <EmbeddedResource Include="Resources\searchoptions.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="CsFindLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\..\xfind\csharp\CsFind\CsFindLib\bin\Debug\net6.0\CsFindLib.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>
