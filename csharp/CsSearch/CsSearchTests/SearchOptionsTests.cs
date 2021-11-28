@@ -27,12 +27,12 @@ namespace CsSearchTests
 			Assert.IsFalse(settings.ListLines);
 			Assert.AreEqual(150, settings.MaxLineLength);
 			Assert.IsFalse(settings.MultiLineSearch);
+			Assert.IsEmpty(settings.Paths);
 			Assert.IsTrue(settings.PrintResults);
 			Assert.IsFalse(settings.PrintUsage);
 			Assert.IsFalse(settings.PrintVersion);
 			Assert.IsTrue(settings.Recursive);
 			Assert.IsFalse(settings.SearchArchives);
-			Assert.AreEqual(null, settings.StartPath);
 			Assert.IsFalse(settings.UniqueLines);
 			Assert.IsFalse(settings.Verbose);
 		}
@@ -43,7 +43,8 @@ namespace CsSearchTests
 			var args = new List<string>() { "-x", "cs", "-s", "Search", "." };
 			var settings = _searchOptions.SettingsFromArgs(args);
 			var startInfo = new DirectoryInfo(".");
-			Assert.AreEqual(startInfo.ToString(), settings.StartPath);
+			Assert.AreEqual(1, settings.Paths.Count);
+			Assert.AreEqual(startInfo.ToString(), settings.Paths.First());
 			Assert.AreEqual(1, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
 			Assert.AreEqual(1, settings.SearchPatterns.Count);
@@ -62,7 +63,7 @@ namespace CsSearchTests
 		public void SettingsFromJson_EqualsExpected()
 		{
 			var json = @"{
-  ""startpath"": ""~/src/xsearch/"", 
+  ""path"": ""~/src/xsearch/"", 
   ""in-ext"": [""js"", ""ts""],
   ""out-dirpattern"": ""node_module"",
   ""out-filepattern"": [""temp""],
@@ -76,7 +77,8 @@ namespace CsSearchTests
 			var settings = new SearchSettings();
 			SearchOptions.SettingsFromJson(json, settings);
 
-			Assert.AreEqual("~/src/xsearch/", settings.StartPath);
+			Assert.AreEqual(1, settings.Paths.Count);
+			Assert.AreEqual("~/src/xsearch/", settings.Paths.First());
 
 			Assert.AreEqual(2, settings.InExtensions.Count);
 			Assert.True(settings.InExtensions.Contains(".js"));

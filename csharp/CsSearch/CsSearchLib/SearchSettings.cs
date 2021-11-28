@@ -60,13 +60,13 @@ namespace CsSearchLib
 		public ISet<FileType> OutFileTypes { get; private set; }
 		public ISet<Regex> OutLinesAfterPatterns { get; private set; }
 		public ISet<Regex> OutLinesBeforePatterns { get; private set; }
+		public ISet<string> Paths { get; set; }
 		public bool PrintResults { get; set; }
 		public bool PrintUsage { get; set; }
 		public bool PrintVersion { get; set; }
 		public bool Recursive { get; set; }
 		public bool SearchArchives { get; set; }
-		public ISet<Regex> SearchPatterns { get; private set; }
-		public string? StartPath { get; set; }
+		public ISet<Regex> SearchPatterns { get; set; }
 		public string TextFileEncoding { get; set; }
 		public bool UniqueLines { get; set; }
 		public bool Verbose { get; set; }
@@ -103,6 +103,7 @@ namespace CsSearchLib
 			OutFileTypes = new HashSet<FileType>();
 			OutLinesAfterPatterns = new HashSet<Regex>();
 			OutLinesBeforePatterns = new HashSet<Regex>();
+			Paths = new HashSet<string>();
 			PrintResults = false;
 			PrintUsage = false;
 			PrintVersion = false;
@@ -288,13 +289,13 @@ namespace CsSearchLib
 				", OutFileTypes: " + EnumerableToString(OutFileTypes) +
 				", OutLinesAfterPatterns: " + EnumerableToString(OutLinesAfterPatterns) +
 				", OutLinesBeforePatterns: " + EnumerableToString(OutLinesBeforePatterns) +
+				", Paths: " + EnumerableToString(Paths) +
 				", PrintResults: " + PrintResults +
 				", PrintUsage: " + PrintUsage +
 				", PrintVersion: " + PrintVersion +
 				", Recursive: " + Recursive +
 				", SearchArchives: " + SearchArchives +
 				", SearchPatterns: " + EnumerableToString(SearchPatterns) +
-				", StartPath: \"" + StartPath + "\"" +
 				", TextFileEncoding: \"" + TextFileEncoding + "\"" +
 				", UniqueLines: " + UniqueLines +
 				", Verbose: " + Verbose +

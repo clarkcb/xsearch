@@ -8,14 +8,16 @@ namespace CsSearchTests
 	[TestFixture]
 	class SearchResultTests
 	{
-		string CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch";
+		private const string CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch";
 
 		[Test]
 		public void SearchResultSingleLine_ToString_EqualsExpected()
 		{
-			var settings = new SearchSettings();
-			settings.MaxLineLength = 100;
-			settings.Colorize = false;
+			var settings = new SearchSettings
+			{
+				MaxLineLength = 100,
+				Colorize = false
+			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Code);
@@ -26,8 +28,7 @@ namespace CsSearchTests
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
 			var expectedPath = CsSearchPath + "/Searcher.cs";
-			var expectedOutput = string.Format("{0}: {1}: [{2}:{3}]: {4}", expectedPath,
-				lineNum, matchStartIndex, matchEndIndex, line.Trim());
+			var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {line.Trim()}";
 
 			Assert.AreEqual(expectedOutput, formatter.Format(searchResult));
 		}
@@ -35,9 +36,11 @@ namespace CsSearchTests
 		[Test]
 		public void SearchResultSingleLineLongerThanMaxLineLength_ToString_EqualsExpected()
 		{
-			var settings = new SearchSettings();
-			settings.MaxLineLength = 100;
-			settings.Colorize = false;
+			var settings = new SearchSettings
+			{
+				MaxLineLength = 100,
+				Colorize = false
+			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("maxlen");
 			var searchFile = new SearchFile(".", "maxlen.txt", FileType.Text);
@@ -51,8 +54,7 @@ namespace CsSearchTests
 				matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
 			const string expectedPath = "./maxlen.txt";
 			const string expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...";
-			var expectedOutput = string.Format("{0}: {1}: [{2}:{3}]: {4}", expectedPath,
-				lineNum, matchStartIndex, matchEndIndex, expectedLine);
+			var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {expectedLine}";
 
 			Assert.AreEqual(expectedOutput, formatter.Format(searchResult));
 		}
@@ -60,9 +62,11 @@ namespace CsSearchTests
 		[Test]
 		public void SearchResultSingleLineLongerColorize_ToString_EqualsExpected()
 		{
-			var settings = new SearchSettings();
-			settings.MaxLineLength = 100;
-			settings.Colorize = true;
+			var settings = new SearchSettings
+			{
+				MaxLineLength = 100,
+				Colorize = true
+			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("maxlen");
 			var searchFile = new SearchFile(".", "maxlen.txt", FileType.Text);
@@ -80,8 +84,7 @@ namespace CsSearchTests
 			                   "maxlen" +
 			                   Color.Reset +
 			                   "89012345678901234567890123456789012345678901...";
-			var expectedOutput = string.Format("{0}: {1}: [{2}:{3}]: {4}", expectedPath,
-				lineNum, matchStartIndex, matchEndIndex, expectedLine);
+			var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {expectedLine}";
 
 			var output = formatter.Format(searchResult);
 			Assert.AreEqual(expectedOutput, output);
@@ -90,8 +93,10 @@ namespace CsSearchTests
 		[Test]
 		public void SearchResultMultiLine_ToString_EqualsExpected()
 		{
-			var settings = new SearchSettings();
-			settings.Colorize = false;
+			var settings = new SearchSettings
+			{
+				Colorize = false
+			};
 			var formatter = new SearchResultFormatter(settings);
 			var pattern = new Regex("Search");
 			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
@@ -104,7 +109,7 @@ namespace CsSearchTests
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 												matchStartIndex, matchEndIndex,
 												line, linesBefore, linesAfter);
-			var expectedPath = CsSearchPath + "/Searcher.cs";
+			var expectedPath = $"{CsSearchPath}/Searcher.cs";
 			var expectedOutput = string.Format(new string('=', 80) + "\n" +
 								 "{0}: {1}: [{2}:{3}]\n" +
 								 new string('-', 80) + "\n" +
@@ -131,7 +136,7 @@ namespace CsSearchTests
 			string? line = null;
 			var searchResult = new SearchResult(pattern, searchFile, lineNum,
 				matchStartIndex, matchEndIndex, line);
-			var expectedPath = CsSearchPath + "/Searcher.exe";
+			var expectedPath = $"{CsSearchPath}/Searcher.exe";
 			var expectedOutput = $"{expectedPath} matches at [0:0]";
 
 			var output = formatter.Format(searchResult);

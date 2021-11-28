@@ -31,10 +31,9 @@ namespace CsSearchLib
 
 		private void ValidateSettings()
 		{
-			if (string.IsNullOrEmpty(Settings.StartPath))
+			if (Settings.Paths.Count == 0)
 				throw new SearchException("Startpath not defined");
-			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
-			if (!Directory.Exists(expandedPath) && !File.Exists(expandedPath))
+			if (Settings.Paths.Select(FileUtil.ExpandPath).Any(p => !Directory.Exists(p) && !File.Exists(p)))
 			{
 				throw new SearchException("Startpath not found");
 			}
@@ -103,71 +102,104 @@ namespace CsSearchLib
 			return (!Settings.ArchivesOnly && IsSearchFile(sf));
 		}
 
-		private IEnumerable<SearchFile> GetSearchFiles()
+		private IEnumerable<SearchFile> GetSearchFilesForPath(string path)
 		{
-			var expandedPath = FileUtil.ExpandPath(Settings.StartPath!);
+			var searchFiles = new List<SearchFile>();
 			var searchOption = Settings.Recursive ? System.IO.SearchOption.AllDirectories :
 				System.IO.SearchOption.TopDirectoryOnly;
-			return new DirectoryInfo(expandedPath).
-				EnumerateFiles("*", searchOption).
-				Where(f => IsSearchDirectory(f.Directory)).
-				Select(f => new SearchFile(f, _fileTypes.GetFileType(f))).
-				Where(FilterFile).
-				Select(sf => sf);
+
+			var expandedPath = FileUtil.ExpandPath(path);
+			if (Directory.Exists(expandedPath))
+			{
+				searchFiles.AddRange(new DirectoryInfo(expandedPath).
+					EnumerateFiles("*", searchOption).
+					Where(f => f.Directory == null || IsSearchDirectory(f.Directory)).
+					Select(f => new SearchFile(f, _fileTypes.GetFileType(f))).
+					Where(FilterFile).
+					Select(sf => sf));
+			}
+			else if (File.Exists(expandedPath))
+			{
+				var fi = new FileInfo(expandedPath);
+				var ff = new SearchFile(fi, _fileTypes.GetFileType(fi));
+				if (FilterFile(ff))
+				{
+					searchFiles.Add(ff);
+				}
+			}
+
+			return searchFiles;
 		}
+
+		// private IEnumerable<SearchFile> GetSearchFiles()
+		// {
+		// 	var searchFiles = new List<SearchFile>();
+		// 	foreach (var p in Settings.Paths)
+		// 	{
+		// 		searchFiles.AddRange(GetSearchFilesForPath(p));
+		// 	}
+		//
+		// 	return searchFiles;
+		// }
 
 		public void Search()
 		{
-			var expandedPath = FileUtil.ExpandPath(Settings.StartPath!);
-			if (Directory.Exists(expandedPath))
+			foreach (var p in Settings.Paths)
 			{
-				var startDir = new DirectoryInfo(expandedPath);
-				if (IsSearchDirectory(startDir))
+				var expandedPath = FileUtil.ExpandPath(p);
+				if (Directory.Exists(expandedPath))
 				{
-					SearchPath(startDir);
+					if (IsSearchDirectory(new DirectoryInfo(expandedPath)))
+					{
+						SearchPath(p);
+					}
+					else
+					{
+						throw new SearchException("Startpath does not match search settings");
+					}
+				}
+				else if (File.Exists(expandedPath))
+				{
+					var f = new FileInfo(expandedPath);
+					var sf = new SearchFile(f, _fileTypes.GetFileType(f));
+					if (FilterFile(sf))
+					{
+						SearchFile(sf);
+					}
+					else
+					{
+						throw new SearchException("Startpath does not match search settings");
+					}
 				}
 				else
 				{
-					throw new SearchException("Startpath does not match search settings");
-				}
-			}
-			else
-			{
-				var f = new FileInfo(expandedPath);
-				var sf = new SearchFile(f, _fileTypes.GetFileType(f));
-				if (FilterFile(sf))
-				{
-					SearchFile(sf);
-				}
-				else
-				{
-					throw new SearchException("Startpath does not match search settings");
+					throw new SearchException($"Path not found: {p}");
 				}
 			}
 		}
 
-		public void SearchPath(DirectoryInfo path)
+		public void SearchPath(string path)
 		{
-			var searchFiles = GetSearchFiles().ToList();
+			var searchFiles = GetSearchFilesForPath(path).ToList();
 			if (Settings.Verbose)
 			{
 				searchFiles.Sort(new SearchFilesComparer());
 
 				var searchDirs = searchFiles
 					.Where(sf => sf.File.Directory != null)
-					.Select(sf => sf.File.Directory.ToString())
+					.Select(sf => sf.File.Directory!.ToString())
 					.Distinct()
 					.OrderBy(d => d).ToArray();
 				Common.Log($"Directories to be searched ({searchDirs.Length}):");
 				foreach (var d in searchDirs)
 				{
-					Common.Log(FileUtil.ContractOrRelativePath(d, Settings.StartPath!));
+					Common.Log(FileUtil.ContractOrRelativePath(d, path));
 				}
 				
 				Common.Log($"\nFiles to be searched ({searchFiles.Count}):");
 				foreach (var f in searchFiles)
 				{
-					Common.Log(FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!));
+					Common.Log(FileUtil.ContractOrRelativePath(f.FullName, path));
 				}
 			}
 
@@ -239,7 +271,8 @@ namespace CsSearchLib
 		private void SearchTextFile(SearchFile f)
 		{
 			if (Settings.Debug)
-				Common.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!)}");
+				// Common.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!)}");
+				Common.Log($"Searching text file {f}");
 			if (Settings.MultiLineSearch)
 				SearchTextFileContents(f);
 			else
@@ -541,7 +574,7 @@ namespace CsSearchLib
 		private IEnumerable<DirectoryInfo> GetMatchingDirs()
 		{
 			return new List<DirectoryInfo>(
-				Results.Where(r => r.File != null)
+				Results.Where(r => r.File?.File.Directory != null)
 					.Select(r => r.File!.File.Directory)
 					.Distinct()
 					.OrderBy(d => d.FullName));
@@ -550,9 +583,10 @@ namespace CsSearchLib
 		public void PrintMatchingDirs()
 		{
 			var matchingDirs = GetMatchingDirs()
-				.Select(d => FileUtil.GetRelativePath(d.FullName, Settings.StartPath!))
+				// .Select(d => FileUtil.GetRelativePath(d.FullName, Settings.StartPath!))
+				.Select(d => d.ToString())
 				.Distinct()
-				.OrderBy(d => d);
+				.OrderBy(d => d).ToList();
 			Common.Log($"\nDirectories with matches ({matchingDirs.Count()}):");
 			foreach (var d in matchingDirs)
 			{
@@ -572,9 +606,10 @@ namespace CsSearchLib
 		public void PrintMatchingFiles()
 		{
 			var matchingFiles = GetMatchingFiles()
-				.Select(f => FileUtil.GetRelativePath(f.FullName, Settings.StartPath!))
+				// .Select(f => FileUtil.GetRelativePath(f.FullName, Settings.StartPath!))
+				.Select(f => f.ToString())
 				.Distinct()
-				.OrderBy(f => f);
+				.OrderBy(f => f).ToList();
 			Common.Log($"\nFiles with matches ({matchingFiles.Count()}):");
 			foreach (var f in matchingFiles)
 			{
@@ -596,7 +631,7 @@ namespace CsSearchLib
 
 		public void PrintMatchingLines()
 		{
-			var matchingLines = GetMatchingLines();
+			var matchingLines = GetMatchingLines().ToList();
 			var hdrText = Settings.UniqueLines ? "Unique lines with matches" : "Lines with matches";
 			Common.Log($"\n{hdrText} ({matchingLines.Count()}):");
 			foreach (var m in matchingLines)

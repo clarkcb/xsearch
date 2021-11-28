@@ -77,7 +77,7 @@ namespace CsSearchLib
 		public SearchOptions()
 		{
 			// _searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.xml");
-			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.json");
+			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.searchoptions.json");
 			Options = new List<SearchOption>();
 			ArgDictionary = new Dictionary<string, SearchOption>();
 			FlagDictionary = new Dictionary<string, SearchOption>();
@@ -94,37 +94,6 @@ namespace CsSearchLib
 				var longArg = optionDict["long"];
 				var shortArg = optionDict.ContainsKey("short") ? optionDict["short"] : null;
 				var desc = optionDict["desc"];
-				if (ArgActionDictionary.ContainsKey(longArg))
-				{
-					var option = new SearchArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
-					Options.Add(option);
-					ArgDictionary.Add(longArg, option);
-					if (!string.IsNullOrWhiteSpace(shortArg))
-					{
-						ArgDictionary.Add(shortArg, option);
-					}
-				}
-				else if (BoolFlagActionDictionary.ContainsKey(longArg))
-				{
-					var option = new SearchFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
-					Options.Add(option);
-					FlagDictionary.Add(longArg, option);
-					if (!string.IsNullOrWhiteSpace(shortArg))
-					{
-						FlagDictionary.Add(shortArg, option);
-					}
-				}
-			}
-		}
-
-		private void SetOptionsFromXml()
-		{
-			var doc = XDocument.Parse(_searchOptionsResource);
-			foreach (var f in doc.Descendants("searchoption"))
-			{
-				var longArg = f.Attributes("long").First().Value;
-				var shortArg = f.Attributes("short").First().Value;
-				var desc = f.Value.Trim();
 				if (ArgActionDictionary.ContainsKey(longArg))
 				{
 					var option = new SearchArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
@@ -203,9 +172,9 @@ namespace CsSearchLib
 			{
 				ArgActionDictionary[arg](val, settings);
 			}
-			else if (arg.Equals("startpath"))
+			else if (arg.Equals("path"))
 			{
-				settings.StartPath = val;
+				settings.Paths.Add(val);
 			}
 			else
 			{
@@ -280,7 +249,7 @@ namespace CsSearchLib
 				}
 				else
 				{
-					settings.StartPath = s;
+					settings.Paths.Add(s);
 				}
 			}
 			return settings;
@@ -296,7 +265,7 @@ namespace CsSearchLib
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("\nUsage:");
-			sb.AppendLine(" cssearch [options] -s <searchpattern> <startpath>\n");
+			sb.AppendLine(" cssearch [options] -s <searchpattern> <path> [<path> ...]\n");
 			sb.AppendLine("Options:");
 			var optStrings = new List<string>();
 			var optDescs = new List<string>();

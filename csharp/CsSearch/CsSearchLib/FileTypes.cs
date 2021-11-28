@@ -35,7 +35,7 @@ namespace CsSearchLib
 		public FileTypes()
 		{
 			// _fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
-			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.json");
+			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
 			// PopulateFileTypesFromXml();
 			PopulateFileTypesFromJson();

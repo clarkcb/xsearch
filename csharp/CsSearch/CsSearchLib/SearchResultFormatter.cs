@@ -22,16 +22,18 @@ namespace CsSearchLib
         
         private string GetRelativeFilePath(SearchResult result)
         {
-	        if (!string.IsNullOrEmpty(Settings.StartPath))
-	        {
-		        if (Settings.StartPath[0] == '~')
-		        {
-			        return FileUtil.ContractPath(result.File!.FullName);
-		        }
-		        return FileUtil.GetRelativePath(result.File!.FullName, Settings.StartPath);
-	        }
+			// TODO: figure out how to match settings path to result
+	        // if (!string.IsNullOrEmpty(Settings.StartPath))
+	        // {
+		       //  if (Settings.StartPath[0] == '~')
+		       //  {
+			      //   return FileUtil.ContractPath(result.File!.FullName);
+		       //  }
+		       //  return FileUtil.GetRelativePath(result.File!.FullName, Settings.StartPath);
+	        // }
 
-	        return result.File!.FullName;
+	        // return result.File!.FullName;
+	        return result.File!.ToString();
         }
 
         private static int LineNumPadding(SearchResult result)

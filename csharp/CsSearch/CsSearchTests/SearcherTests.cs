@@ -28,7 +28,8 @@ namespace CsSearchTests
 
 		private static SearchSettings GetSettings()
 		{
-			var settings = new SearchSettings {StartPath = "."};
+			var paths = new HashSet<string> {"."};
+			var settings = new SearchSettings {Paths = paths};
 			settings.AddSearchPattern("Searcher");
 			return settings;
 		}

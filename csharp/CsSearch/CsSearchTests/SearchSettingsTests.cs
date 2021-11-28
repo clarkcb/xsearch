@@ -16,12 +16,12 @@ namespace CsSearchTests
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
 			Assert.IsFalse(settings.FirstMatch);
-			Assert.AreEqual(settings.LinesAfter, 0);
-			Assert.AreEqual(settings.LinesBefore, 0);
+			Assert.AreEqual(0, settings.LinesAfter);
+			Assert.AreEqual(0, settings.LinesBefore);
 			Assert.IsFalse(settings.ListDirs);
 			Assert.IsFalse(settings.ListFiles);
 			Assert.IsFalse(settings.ListLines);
-			Assert.AreEqual(settings.MaxLineLength, 150);
+			Assert.AreEqual(150, settings.MaxLineLength);
 			Assert.IsFalse(settings.MultiLineSearch);
 			Assert.IsFalse(settings.PrintResults);
 			Assert.IsFalse(settings.PrintUsage);
@@ -37,10 +37,10 @@ namespace CsSearchTests
 		{
 			var settings = new SearchSettings();
 			settings.AddInExtension("cs");
-			Assert.AreEqual(settings.InExtensions.Count, 1);
+			Assert.AreEqual(1, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
 			settings.AddInExtension("java,scala");
-			Assert.AreEqual(settings.InExtensions.Count, 3);
+			Assert.AreEqual(3, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".java"));
 			Assert.IsTrue(settings.InExtensions.Contains(".scala"));
 		}
@@ -50,7 +50,7 @@ namespace CsSearchTests
 		{
 			var settings = new SearchSettings();
 			settings.AddSearchPattern("Search");
-			Assert.AreEqual(settings.SearchPatterns.Count, 1);
+			Assert.AreEqual(1, settings.SearchPatterns.Count);
 			Assert.IsTrue(settings.SearchPatterns.First().ToString() == "Search");
 		}
 
