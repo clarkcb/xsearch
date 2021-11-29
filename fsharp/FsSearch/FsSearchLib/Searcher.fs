@@ -30,12 +30,12 @@ type Searcher (settings : SearchSettings.t) =
             None
         with
         | :? ArgumentException ->
-            Some (sprintf "Invalid encoding: %s" encName)
+            Some $"Invalid encoding: %s{encName}"
 
     member this.ValidateSettings () : string list =
         [
-            (if String.IsNullOrEmpty settings.StartPath then (Some "Startpath not defined") else None);
-            (if Directory.Exists(settings.StartPath) || File.Exists(settings.StartPath) then None else (Some "Startpath not found"));
+            (if List.isEmpty settings.Paths then (Some "Startpath not defined") else None)
+            (if List.forall (fun p -> Directory.Exists(p) || File.Exists(p)) settings.Paths then None else (Some "Startpath not found"));
             (if List.isEmpty settings.SearchPatterns then (Some "No search patterns defined") else None);
             (if settings.LinesBefore < 0 then (Some "Invalid linesbefore") else None);
             (if settings.LinesAfter < 0 then (Some "Invalid linesafter") else None);
@@ -92,8 +92,8 @@ type Searcher (settings : SearchSettings.t) =
         else
             not settings.ArchivesOnly && this.IsSearchFile f
 
-    member this.GetSearchFiles () : SearchFile.t list =
-        let expandedPath = FileUtil.ExpandPath settings.StartPath
+    member this.GetSearchFilesForPath (path: string) : SearchFile.t list =
+        let expandedPath = FileUtil.ExpandPath path
         let searchOption =
             if settings.Recursive then SearchOption.AllDirectories
             else SearchOption.TopDirectoryOnly
@@ -101,8 +101,20 @@ type Searcher (settings : SearchSettings.t) =
         dir.EnumerateFiles("*", searchOption)
         |> Seq.filter (fun f -> this.IsSearchDir(f.Directory))
         |> Seq.map (fun f -> SearchFile.Create f (_fileTypes.GetFileType f))
-        |> Seq.filter (fun sf -> this.FilterFile sf)
+        |> Seq.filter this.FilterFile
         |> List.ofSeq
+
+//    member this.GetSearchFiles () : SearchFile.t list =
+//        let expandedPath = FileUtil.ExpandPath settings.StartPath
+//        let searchOption =
+//            if settings.Recursive then SearchOption.AllDirectories
+//            else SearchOption.TopDirectoryOnly
+//        let dir = DirectoryInfo(expandedPath)
+//        dir.EnumerateFiles("*", searchOption)
+//        |> Seq.filter (fun f -> this.IsSearchDir(f.Directory))
+//        |> Seq.map (fun f -> SearchFile.Create f (_fileTypes.GetFileType f))
+//        |> Seq.filter this.FilterFile
+//        |> List.ofSeq
 
     member this.AddSearchResult (searchResult : SearchResult.t) : unit =
         _results.Add(searchResult)
@@ -211,7 +223,7 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.SearchTextFileContents (f : SearchFile.t) : unit =
         try
-            let contents = FileUtil.GetFileContents (f.File.FullName) (this.TextFileEncoding)
+            let contents = FileUtil.GetFileContents f.File.FullName this.TextFileEncoding
             let results = this.SearchContents(contents)
             for r:SearchResult.t in results do
                 let fileResult = { r with File=f }
@@ -282,7 +294,7 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.SearchBinaryFile (f : SearchFile.t) : unit =
         if settings.Verbose then
-            Common.Log (sprintf "Searching binary file %s" f.File.FullName)
+            Common.Log $"Searching binary file %s{f.File.FullName}"
         try
             use sr = new StreamReader (f.File.FullName, this.BinaryEncoding)
             let contents = sr.ReadToEnd()
@@ -298,7 +310,7 @@ type Searcher (settings : SearchSettings.t) =
                         stop <- true
                     m <- m.NextMatch()
         with
-        | :? IOException as ex -> printfn "%s" (ex.Message)
+        | :? IOException as ex -> printfn $"%s{ex.Message}"
 
     member this.SearchFile (f : SearchFile.t) : unit =
         match f.FileType with
@@ -306,11 +318,11 @@ type Searcher (settings : SearchSettings.t) =
         | FileType.Binary -> this.SearchBinaryFile f
         | FileType.Code | FileType.Text | FileType.Xml -> this.SearchTextFile f
         | FileType.Unknown -> Common.Log (sprintf "Skipping file of unknown type")
-        | _ -> Common.Log (sprintf "Skipping file of indeterminate type (this shouldn't happen): %s" f.File.FullName)
+        | _ -> Common.Log $"Skipping file of indeterminate type (this shouldn't happen): %s{f.File.FullName}"
 
-    member this.SearchPath : unit =
+    member this.SearchPath (path : string) : unit =
         let searchFiles : SearchFile.t list =
-            this.GetSearchFiles()
+            this.GetSearchFilesForPath path
             |> List.filter (fun sf -> sf.File <> null)
             |> List.sortBy (fun sf -> sf.File.ToString())
 
@@ -322,26 +334,27 @@ type Searcher (settings : SearchSettings.t) =
                 |> List.distinct
                 |> List.sort
             
-            Common.Log (sprintf "\nDirectories to be searched (%d):" searchDirs.Length)
-            List.iter (fun d -> Common.Log (sprintf "%s" (FileUtil.ContractOrRelativePath d settings.StartPath))) searchDirs
+            Common.Log $"\nDirectories to be searched (%d{searchDirs.Length}):"
+            List.iter (fun d -> Common.Log $"%s{FileUtil.ContractOrRelativePath d path}") searchDirs
         
-            Common.Log (sprintf "\nFiles to be searched (%d):" searchFiles.Length)
-            Seq.iter (fun (f: SearchFile.t) -> Common.Log (sprintf "%s" (FileUtil.ContractOrRelativePath (f.File.ToString()) settings.StartPath))) searchFiles
+            Common.Log $"\nFiles to be searched (%d{searchFiles.Length}):"
+            Seq.iter (fun (f: SearchFile.t) -> Common.Log $"%s{FileUtil.ContractOrRelativePath (f.File.ToString()) path}") searchFiles
 
         for f in searchFiles do
             this.SearchFile f
 
     member this.Search () : unit =
-        let expandedPath = FileUtil.ExpandPath(settings.StartPath)
-        if Directory.Exists(expandedPath) then
-            let startDir = DirectoryInfo(expandedPath)
-            if this.IsSearchDir startDir then
-                this.SearchPath
+        for path in settings.Paths do
+            let expandedPath = FileUtil.ExpandPath(path)
+            if Directory.Exists(expandedPath) then
+                let startDir = DirectoryInfo(expandedPath)
+                if this.IsSearchDir startDir then
+                    this.SearchPath path
+                else
+                    raise <| Exception "Startpath does not match search settings"
             else
-                raise <| Exception ("Startpath does not match search settings")
-        else
-            let startFile = FileInfo(expandedPath)
-            this.SearchFile (SearchFile.Create startFile (_fileTypes.GetFileType startFile))
+                let startFile = FileInfo(expandedPath)
+                this.SearchFile (SearchFile.Create startFile (_fileTypes.GetFileType startFile))
 
     member this.GetSortedResults : SearchResult.t list = 
         this.Results
@@ -350,9 +363,9 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.PrintResults : unit =
         let formatter = SearchResultFormatter(settings)
-        Common.Log (sprintf "\nSearch results (%d):" this.Results.Count)
+        Common.Log $"\nSearch results (%d{this.Results.Count}):"
         this.GetSortedResults
-        |> Seq.iter (fun r -> Common.Log (sprintf "%s" (formatter.Format r)))
+        |> Seq.iter (fun r -> Common.Log $"%s{formatter.Format r}")
 
     member this.GetMatchingDirs : DirectoryInfo list = 
         this.Results
@@ -363,9 +376,9 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.PrintMatchingDirs : unit = 
         let dirs = this.GetMatchingDirs
-        Common.Log (sprintf "\nDirectories with matches (%d):" dirs.Length)
+        Common.Log $"\nDirectories with matches (%d{dirs.Length}):"
         for d in dirs do
-            printfn "%s" d.FullName
+            printfn $"%s{d.FullName}"
 
     member this.GetMatchingFiles : FileInfo list = 
         this.Results
@@ -376,7 +389,7 @@ type Searcher (settings : SearchSettings.t) =
 
     member this.PrintMatchingFiles : unit = 
         let files = this.GetMatchingFiles
-        Common.Log (sprintf "\nFiles with matches (%d):" files.Length)
+        Common.Log $"\nFiles with matches (%d{files.Length}):"
         for f in files do
             printfn "%s" f.FullName
 
@@ -397,8 +410,8 @@ type Searcher (settings : SearchSettings.t) =
         let title =
             if settings.UniqueLines then "Unique lines with matches"
             else "Lines with matches"
-        Common.Log (sprintf "\n%s (%d):" title lines.Length)
+        Common.Log $"\n%s{title} (%d{lines.Length}):"
         for l in lines do
-            printfn "%s" l
+            printfn $"%s{l}"
 
 ;;

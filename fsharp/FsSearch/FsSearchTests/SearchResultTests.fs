@@ -17,7 +17,7 @@ type SearchResultTests () =
 
     [<Test>]
     member this.SearchResultSingleLine_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with Colorize = false; StartPath = "~" }
+        let settings = { SearchSettings.DefaultSettings with Colorize = false; Paths = ["~"] }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
         let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.cs")
@@ -29,14 +29,14 @@ type SearchResultTests () =
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line [] []
         let searchResult = { searchResult with File=searchFile }
         let expectedPath = this.CsSearchPath + "/Searcher.cs"
-        let expectedOutput = sprintf "%s: %d: [%d:%d]: %s" expectedPath lineNum matchStartIndex matchEndIndex (line.Trim())
+        let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{line.Trim()}"
         let output = formatter.Format searchResult
         Assert.AreEqual(expectedOutput, output)
         ()
 
     [<Test>]
     member this.SearchResultSingleLineLongerThanMaxLineLength_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with Colorize=false; MaxLineLength=100; StartPath="." }
+        let settings = { SearchSettings.DefaultSettings with Colorize=false; MaxLineLength=100; Paths=["."] }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("maxlen")
         let searchFile = SearchFile.Create (FileInfo("./maxlen.txt")) FileType.Code
@@ -48,14 +48,14 @@ type SearchResultTests () =
         let searchResult = { searchResult with File=searchFile }
         let expectedPath = "./maxlen.txt"
         let expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
-        let expectedOutput = sprintf "%s: %d: [%d:%d]: %s" expectedPath lineNum matchStartIndex matchEndIndex expectedLine
+        let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{expectedLine}"
         let output = formatter.Format searchResult
         Assert.AreEqual(expectedOutput, output)
         ()
 
     [<Test>]
     member this.SearchResultMultiLine_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with Colorize=false; StartPath="~" }
+        let settings = { SearchSettings.DefaultSettings with Colorize=false; Paths=["~"] }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
         let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.cs")
@@ -71,7 +71,7 @@ type SearchResultTests () =
         let expectedPath = this.CsSearchPath + "/Searcher.cs"
         let expectedLines = [
                 "================================================================================";
-                sprintf "%s: %d: [%d:%d]" expectedPath lineNum matchStartIndex matchEndIndex;
+                $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]";
                 "--------------------------------------------------------------------------------";
                 "   8 | namespace CsSearch";
                 "   9 | {";
@@ -86,7 +86,7 @@ type SearchResultTests () =
 
     [<Test>]
     member this.SearchResultBinaryFile_ToString_EqualsExpected () =
-        let settings = { SearchSettings.DefaultSettings with StartPath="~" }
+        let settings = { SearchSettings.DefaultSettings with Paths=["~"] }
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
         let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.exe")
@@ -98,7 +98,7 @@ type SearchResultTests () =
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line [] []
         let searchResult = { searchResult with File=searchFile }
         let expectedPath = this.CsSearchPath + "/Searcher.exe"
-        let expectedOutput = sprintf "%s matches at [0:0]" expectedPath
+        let expectedOutput = $"%s{expectedPath} matches at [0:0]"
         let output = formatter.Format searchResult
         Assert.AreEqual(expectedOutput, output)
         ()

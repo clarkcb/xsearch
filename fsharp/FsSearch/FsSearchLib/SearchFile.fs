@@ -22,5 +22,5 @@ module SearchFile =
             match sf.Containers with
             | [] -> ""
             | _  -> sprintf "%s!" (String.concat "!" sf.Containers)
-        sprintf "%s%s" container_str (sf.File.ToString())
+        $"%s{container_str}%s{sf.File.ToString()}"
 ;;

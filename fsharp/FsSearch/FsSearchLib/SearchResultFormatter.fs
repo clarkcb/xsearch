@@ -11,13 +11,14 @@ type SearchResultFormatter (settings : SearchSettings.t) =
             s.Substring(matchStartIndex + matchLength)
 
     let GetRelativeFilePath (result : SearchResult.t) : string =
-        if settings.StartPath <> null then
-            if settings.StartPath = "~"
-            then FileUtil.ContractPath result.File.File.FullName
-            else FileUtil.GetRelativePath result.File.File.FullName settings.StartPath
-        else result.File.File.FullName
-                
-    
+//		 TODO: figure out how to match settings path to result
+//        if settings.StartPath <> null then
+//            if settings.StartPath = "~"
+//            then FileUtil.ContractPath result.File.File.FullName
+//            else FileUtil.GetRelativePath result.File.File.FullName settings.StartPath
+//        else result.File.File.FullName
+        result.File.File.ToString()
+
     let FormatMatchingLine (result : SearchResult.t) : string =
         let mutable formatted : string = result.Line.Trim()
         let mutable formattedLength = formatted.Length
@@ -26,7 +27,7 @@ type SearchResultFormatter (settings : SearchSettings.t) =
         let matchLength = result.MatchEndIndex - result.MatchStartIndex
         let matchStartIndex = result.MatchStartIndex - 1 - leadingWhitespaceCount
         let matchEndIndex = matchStartIndex + matchLength
-        let rec recGetIndices (lineStartIndex : int) (lineEndIndex : int) (matchStartIndex : int) (matchEndIndex : int) : (int * int * int * int) =
+        let rec recGetIndices (lineStartIndex : int) (lineEndIndex : int) (matchStartIndex : int) (matchEndIndex : int) : int * int * int * int =
             if lineEndIndex - lineStartIndex < settings.MaxLineLength then
                 let lsi =
                     if lineStartIndex > 0
@@ -36,14 +37,14 @@ type SearchResultFormatter (settings : SearchSettings.t) =
                     if lineEndIndex - lsi < settings.MaxLineLength && lineEndIndex < maxLineEndIndex
                     then lineEndIndex + 1
                     else lineEndIndex
-                let (msi, mei) =
+                let msi, mei =
                     if lineStartIndex > 0
                     then (matchStartIndex + 1, matchEndIndex + 1)
                     else (matchStartIndex, matchEndIndex)
                 recGetIndices lsi lei msi mei
             else
                 (lineStartIndex, lineEndIndex, matchStartIndex, matchEndIndex)
-        let (lineStartIndex, lineEndIndex, matchStartIndex, matchEndIndex) =
+        let lineStartIndex, lineEndIndex, matchStartIndex, matchEndIndex =
             if formattedLength > settings.MaxLineLength then
                 recGetIndices matchStartIndex matchEndIndex matchStartIndex matchEndIndex
             else
@@ -61,18 +62,18 @@ type SearchResultFormatter (settings : SearchSettings.t) =
     let SingleLineFormat (result : SearchResult.t) : string =
         let matchString =
             if result.LineNum = 0 then
-                sprintf " matches at [%d:%d]" result.MatchStartIndex result.MatchEndIndex
+                $" matches at [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]"
             else
                 let line = FormatMatchingLine result
-                sprintf ": %d: [%d:%d]: %s" result.LineNum result.MatchStartIndex result.MatchEndIndex line
+                $": %d{result.LineNum}: [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]: %s{line}"
         (GetRelativeFilePath result) + matchString
 
     let MultLineFormat (result : SearchResult.t) : string =
         let hdr = 
             String.concat "\n" [
-                sprintf "%s" (new string('=', 80));
-                sprintf "%s: %d: [%d:%d]" (GetRelativeFilePath result) result.LineNum result.MatchStartIndex result.MatchEndIndex;
-                sprintf "%s" (new string('-', 80));
+                $"%s{new string('=', 80)}";
+                $"%s{GetRelativeFilePath result}: %d{result.LineNum}: [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]";
+                $"%s{new string('-', 80)}";
             ] + "\n"
         let maxLineNum = result.LineNum + (List.length result.LinesAfter)
         let maxLineNumLength = maxLineNum.ToString().Length
@@ -83,13 +84,13 @@ type SearchResultFormatter (settings : SearchSettings.t) =
             match lines with
             | [] -> linesString
             | l :: ls ->
-                recLines ls (lineNum + 1) (linesString + (sprintf "  %s | %s\n" (paddedLineNum lineNum) l))
+                recLines ls (lineNum + 1) (linesString + $"  %s{paddedLineNum lineNum} | %s{l}\n")
         let linesBeforeString = recLines result.LinesBefore (result.LineNum - (List.length result.LinesBefore)) ""
         let linesAfterString = recLines result.LinesAfter (result.LineNum + 1) ""
         String.concat "" [
             hdr;
             linesBeforeString;
-            sprintf "> %s | %s\n" (paddedLineNum result.LineNum) result.Line;
+            $"> %s{paddedLineNum result.LineNum} | %s{result.Line}\n";
             linesAfterString;
         ]
 

@@ -26,12 +26,12 @@ type SearchOptionsTests () =
         Assert.IsFalse(settings.ListLines)
         Assert.AreEqual(150, settings.MaxLineLength)
         Assert.IsFalse(settings.MultiLineSearch)
+        Assert.IsEmpty(settings.Paths)
         Assert.IsTrue(settings.PrintResults)
         Assert.IsFalse(settings.PrintUsage)
         Assert.IsFalse(settings.PrintVersion)
         Assert.IsTrue(settings.Recursive)
         Assert.IsFalse(settings.SearchArchives)
-        Assert.AreEqual("", settings.StartPath)
         Assert.AreEqual("utf-8", settings.TextFileEncoding)
         Assert.IsFalse(settings.UniqueLines)
         Assert.IsFalse(settings.Verbose)
@@ -47,6 +47,7 @@ type SearchOptionsTests () =
         Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".cs"))
         Assert.AreEqual(1, settings.SearchPatterns.Length)
         Assert.AreEqual("Search", settings.SearchPatterns.Head.ToString())
+        Assert.AreEqual(1, settings.Paths.Length)
         ()
 
     [<Test>]

@@ -12,5 +12,5 @@ module EmbeddedResource =
                 use reader = new StreamReader(stream)
                 reader.ReadToEnd()
             with
-            | :? IOException as e -> printfn "%s" e.Message; ""
+            | :? IOException as e -> printfn $"%s{e.Message}"; ""
         contents

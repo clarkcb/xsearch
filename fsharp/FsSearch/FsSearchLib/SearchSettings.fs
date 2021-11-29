@@ -34,13 +34,13 @@ module SearchSettings =
         OutFileTypes : FileType list;
         OutLinesAfterPatterns : Regex list;
         OutLinesBeforePatterns : Regex list;
+        Paths : string list;
         PrintResults : bool;
         PrintUsage : bool;
         PrintVersion : bool;
         Recursive : bool;
         SearchArchives : bool;
         SearchPatterns : Regex list;
-        StartPath : string;
         TextFileEncoding : string;
         UniqueLines : bool;
         Verbose : bool
@@ -77,13 +77,13 @@ module SearchSettings =
         OutFileTypes = [];
         OutLinesAfterPatterns = [];
         OutLinesBeforePatterns = [];
+        Paths = [];
         PrintResults = false;
         PrintUsage = false;
         PrintVersion = false;
         Recursive = true;
         SearchArchives = false;
         SearchPatterns = [];
-        StartPath = "";
         TextFileEncoding = "utf-8";
         UniqueLines = false;
         Verbose = false
@@ -146,13 +146,13 @@ module SearchSettings =
             $", OutFileTypes: %s{FileTypesListToString settings.OutFileTypes}";
             $", OutLinesAfterPatterns: %s{Common.list_to_string(settings.OutLinesAfterPatterns)}";
             $", OutLinesBeforePatterns: %s{Common.list_to_string(settings.OutLinesBeforePatterns)}";
+            $", Paths: %s{Common.list_to_string(settings.Paths)}";
             $", PrintResults: %b{settings.PrintResults}";
             $", PrintUsage: %b{settings.PrintUsage}";
             $", PrintVersion: %b{settings.PrintVersion}";
             $", Recursive: %b{settings.Recursive}";
             $", SearchArchives: %b{settings.SearchArchives}";
             $", SearchPatterns: %s{Common.list_to_string(settings.SearchPatterns)}";
-            $", StartPath: \"%s{settings.StartPath}\"";
             $", TextFileEncoding: \"%s{settings.TextFileEncoding}\"";
             $", UniqueLines: %b{settings.UniqueLines}";
             $", Verbose: %b{settings.Verbose}";

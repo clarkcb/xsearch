@@ -4,7 +4,7 @@ open System
 
 module Common = 
     let Log (msg : string) : unit =
-        printfn "%s" msg
+        printfn $"%s{msg}"
 
     let PrintElapsed (name : string) (ts : TimeSpan) : unit =
         let elapsedTime =
@@ -15,7 +15,7 @@ module Common =
 
     let PrintNames (names : string list) : unit =
         for name in names do
-            printfn "Name: %s" name
+            printfn $"Name: %s{name}"
 
     let list_to_string (lst : 'a list) : string = 
         let rec rec_list_to_string (acc : string) (lst : 'a list) =

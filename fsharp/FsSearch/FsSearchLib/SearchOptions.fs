@@ -16,6 +16,9 @@ module SearchOptions =
     let AddExtensions (exts : string) (extList : string list) : string list =
         List.append extList (FileUtil.ExtensionsListFromString exts)
 
+    let AddPath (path : string) (pathList : string list) : string list =
+        List.append pathList [path]
+
     let AddPattern (pattern : string) (patternList : Regex list) : Regex list =
         List.append patternList [Regex(pattern)]
 
@@ -53,6 +56,7 @@ module SearchOptions =
             ("out-filetype", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutFileTypes = AddFileTypes s settings.OutFileTypes }));
             ("out-linesafterpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesAfterPatterns = AddPattern s settings.OutLinesAfterPatterns }));
             ("out-linesbeforepattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with OutLinesBeforePatterns = AddPattern s settings.OutLinesBeforePatterns }));
+            ("path", (fun (s : string) (settings : SearchSettings.t) -> { settings with Paths = AddPath s settings.Paths }));
             ("searchpattern", (fun (s : string) (settings : SearchSettings.t) -> { settings with SearchPatterns = AddPattern s settings.SearchPatterns }));
         ] |> Map.ofList
 
@@ -135,7 +139,7 @@ module SearchOptions =
                         if argActionMap.ContainsKey(long) then
                             match tail with
                             | [] ->
-                                settings, sprintf "Missing value for option: %s" opt
+                                settings, $"Missing value for option: %s{opt}"
                             | aHead :: aTail -> 
                                 recSettingsFromArgs aTail (argActionMap.[long] aHead settings)
                         elif flagActionMap.ContainsKey(long) then
@@ -144,10 +148,10 @@ module SearchOptions =
                             else
                                 recSettingsFromArgs tail (flagActionMap.[long] true settings)
                         else
-                            settings, sprintf "Invalid option: %s" opt
+                            settings, $"Invalid option: %s{opt}"
                     else
-                        settings, sprintf "Invalid option: %s" opt
-                | _ -> recSettingsFromArgs tail { settings with StartPath = head }
+                        settings, $"Invalid option: %s{opt}"
+                | _ -> recSettingsFromArgs tail { settings with Paths = AddPath head settings.Paths }
         recSettingsFromArgs (Array.toList args) { SearchSettings.DefaultSettings with PrintResults = true }
 
     let GetUsageString () : string =
@@ -183,11 +187,11 @@ module SearchOptions =
 
         let usageString = 
             usageStrings
-            |> List.append ["\nUsage:"; " fssearch [options] -s <searchpattern> <startpath>\n"; "Options:"] 
+            |> List.append ["\nUsage:"; " fssearch [options] -s <searchpattern> <path> [<path> ...]\n"; "Options:"] 
             |> String.concat "\n"
         usageString
 
     let Usage (exitCode : int) : unit =
         let usageString = GetUsageString()
-        printfn "%s\n" usageString
+        printfn $"%s{usageString}\n"
         Environment.Exit(exitCode)

@@ -21,7 +21,7 @@ type SearcherTests () =
         | :? SearchException as e -> raise e
 
     member this.GetSettings () : SearchSettings.t =
-        let settings = { SearchSettings.DefaultSettings with StartPath = "." }
+        let settings = { SearchSettings.DefaultSettings with Paths = ["."] }
         let settings = { settings with SearchPatterns = SearchSettings.AddPattern "Searcher" settings.SearchPatterns }
         settings
     
