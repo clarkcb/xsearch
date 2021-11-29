@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+﻿namespace FsSearchLib
 
 open System
 
@@ -11,7 +11,7 @@ module Common =
             String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10)
-        printfn "Elapsed time for %s: %s" name elapsedTime
+        printfn $"Elapsed time for %s{name}: %s{elapsedTime}"
 
     let PrintNames (names : string list) : unit =
         for name in names do
@@ -26,6 +26,6 @@ module Common =
         sprintf "[%s]" (rec_list_to_string "" lst)
 
     let ListToString<'a> (name : string, ls : string list) : string = 
-        sprintf "%s (%d): %s" name ls.Length (list_to_string ls)
+        $"%s{name} (%d{ls.Length}): %s{list_to_string ls}"
 
 ;;

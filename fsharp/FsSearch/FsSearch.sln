@@ -7,6 +7,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsSearch", "FsSearch\FsSear
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsSearchTests", "FsSearchTests\FsSearchTests.fsproj", "{3396DEDC-074A-4C0B-83F2-3A54AF918A2E}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsSearchLib", "FsSearchLib\FsSearchLib.fsproj", "{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{3396DEDC-074A-4C0B-83F2-3A54AF918A2E}.Release|x64.Build.0 = Release|Any CPU
 		{3396DEDC-074A-4C0B-83F2-3A54AF918A2E}.Release|x86.ActiveCfg = Release|Any CPU
 		{3396DEDC-074A-4C0B-83F2-3A54AF918A2E}.Release|x86.Build.0 = Release|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Debug|x64.Build.0 = Debug|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Debug|x86.Build.0 = Debug|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Release|x64.ActiveCfg = Release|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Release|x64.Build.0 = Release|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{D940B14D-1893-4A10-B1B6-66A05B2EF8A1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

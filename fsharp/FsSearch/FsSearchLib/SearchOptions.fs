@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+﻿namespace FsSearchLib
 
 open System
 open System.Text.Json
@@ -107,7 +107,7 @@ module SearchOptions =
         |> List.sortBy (fun o -> if (o.ShortArg <> "") then (o.ShortArg.ToLower() + "@" + o.LongArg) else o.LongArg)
 
 //    let _searchOptionsResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.searchoptions.xml");
-    let _searchOptionsResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.searchoptions.json");
+    let _searchOptionsResource = EmbeddedResource.GetResourceFileContents("FsSearchLib.Resources.searchoptions.json");
 //    let options = OptionsFromXml(_searchOptionsResource)
     let options = OptionsFromJson(_searchOptionsResource)
 

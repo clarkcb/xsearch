@@ -1,7 +1,7 @@
 namespace FsSearchTests
 
 open NUnit.Framework
-open FsSearch
+open FsSearchLib
 
 [<TestFixture>]
 type SearchSettingTests () =

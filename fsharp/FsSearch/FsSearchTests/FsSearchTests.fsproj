@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-
+        <TargetFramework>net6.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
@@ -14,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources\testFile2.txt" />
         <Compile Include="EmbeddedTestResource.fs" />
         <Compile Include="FileTypesTests.fs" />
         <Compile Include="FileUtilTests.fs" />
@@ -23,10 +21,11 @@
         <Compile Include="SearchOptionsTests.fs" />
         <Compile Include="SearchResultTests.fs" />
         <Compile Include="SearchSettingTests.fs" />
+        <EmbeddedResource Include="Resources\testFile2.txt" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FsSearch\FsSearch.fsproj" />
+        <ProjectReference Include="..\FsSearchLib\FsSearchLib.fsproj" />
     </ItemGroup>
 
 </Project>

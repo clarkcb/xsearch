@@ -3,7 +3,7 @@ namespace FsSearchTests
 open System.IO
 open System.Text.RegularExpressions
 open NUnit.Framework
-open FsSearch
+open FsSearchLib
 
 [<TestFixture>]
 type SearchResultTests () =

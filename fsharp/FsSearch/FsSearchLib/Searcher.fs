@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+﻿namespace FsSearchLib
 
 open System
 open System.Collections.Generic

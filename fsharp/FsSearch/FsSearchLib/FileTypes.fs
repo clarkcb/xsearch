@@ -1,10 +1,9 @@
-﻿namespace FsSearch
+﻿namespace FsSearchLib
 
 open System
 open System.Collections.Generic
 open System.IO
 open System.Text.Json
-open System.Xml.Linq
 
 type FileType = 
     | Unknown = 0
@@ -24,12 +23,12 @@ type FileTypes() =
     static let text = "text"
     static let xml = "xml"
 
-    let ExtensionSet (s : string) =
-        List.fold
-            (fun (acc: Set<string>) (ext : string) -> Set.add ext acc)
-            Set.empty
-            (FileUtil.ExtensionsListFromString s)
-
+//    let ExtensionSet (s : string) =
+//        List.fold
+//            (fun (acc: Set<string>) (ext : string) -> Set.add ext acc)
+//            Set.empty
+//            (FileUtil.ExtensionsListFromString s)
+//
 
     let PopulateFileTypesFromJson (jsonString : string) =
         let fileTypesDictionary = Dictionary<string, ISet<string>>()
@@ -52,26 +51,8 @@ type FileTypes() =
         fileTypesDictionary.Add(searchable, searchableSet)
         fileTypesDictionary
 
-    let PopulateFileTypesFromXml (xmlString : string) =
-        let fileTypesDictionary = Dictionary<string, ISet<string>>()
-        let filetypes = XDocument.Parse(xmlString).Descendants(XName.Get("filetype"))
-        for f in filetypes do
-            let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
-            let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
-            fileTypesDictionary.Add(name, HashSet<String>(extSet))
-        let allText = HashSet<String>(fileTypesDictionary.[text])
-        allText.UnionWith(fileTypesDictionary.[code])
-        allText.UnionWith(fileTypesDictionary.[xml])
-        if fileTypesDictionary.Remove(text) then
-            fileTypesDictionary.Add(text, allText)
-        let searchableSet = HashSet<String>(fileTypesDictionary.[text])
-        searchableSet.UnionWith(fileTypesDictionary.[binary])
-        searchableSet.UnionWith(fileTypesDictionary.[archive])
-        fileTypesDictionary.Add(searchable, searchableSet)
-        fileTypesDictionary
-
 //    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.xml")
-    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.json")
+    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearchLib.Resources.filetypes.json")
 //    let _fileTypesDictionary = PopulateFileTypesFromXml(_fileTypesResource)
     let _fileTypesDictionary = PopulateFileTypesFromJson(_fileTypesResource)
 

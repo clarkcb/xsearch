@@ -1,9 +1,11 @@
 ﻿namespace FsSearch
 
+open FsSearchLib
+
 module Main =
 
     let HandleError (err : string) : unit =
-        Common.Log (sprintf "\nERROR: %s" err)
+        Common.Log $"\nERROR: %s{err}"
         SearchOptions.Usage(1)
 
     let Search (settings : SearchSettings.t) : unit =
@@ -39,7 +41,7 @@ module Main =
                 HandleError err
 
             if settings.Debug then
-                Common.Log (sprintf "settings: %s" (SearchSettings.ToString settings))
+                Common.Log $"settings: %s{SearchSettings.ToString settings}"
 
             if settings.PrintUsage then
                 SearchOptions.Usage(0)

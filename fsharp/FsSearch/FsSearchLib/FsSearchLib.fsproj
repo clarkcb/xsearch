@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="Color.fs" />
+    <Compile Include="EmbeddedResource.fs" />
+    <Compile Include="SearchException.fs" />
+    <Compile Include="FileUtil.fs" />
+    <Compile Include="FileTypes.fs" />
+    <Compile Include="SearchSettings.fs" />
+    <Compile Include="SearchFile.fs" />
+    <Compile Include="SearchResult.fs" />
+    <Compile Include="SearchResultFormatter.fs" />
+    <Compile Include="SearchOptions.fs" />
+    <Compile Include="Searcher.fs" />
+    <EmbeddedResource Include="Resources\filetypes.xml" />
+    <EmbeddedResource Include="Resources\searchoptions.xml" />
+    <EmbeddedResource Include="Resources\filetypes.json" />
+    <EmbeddedResource Include="Resources\searchoptions.json" />
+  </ItemGroup>
+
+</Project>

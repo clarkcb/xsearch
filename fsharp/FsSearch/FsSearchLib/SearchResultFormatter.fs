@@ -1,4 +1,4 @@
-namespace FsSearch
+namespace FsSearchLib
 
 type SearchResultFormatter (settings : SearchSettings.t) =
 

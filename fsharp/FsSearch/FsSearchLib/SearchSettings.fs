@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+﻿namespace FsSearchLib
 
 open System.Text.RegularExpressions
 
@@ -116,46 +116,46 @@ module SearchSettings =
     let ToString settings =
         String.concat "" [
             "SearchSettings(";
-            sprintf "ArchivesOnly: %b" settings.ArchivesOnly;
-            sprintf ", Colorize: %b" settings.Colorize;
-            sprintf ", Debug: %b" settings.Debug;
-            sprintf ", ExcludeHidden: %b" settings.ExcludeHidden;
-            sprintf ", FirstMatch: %b" settings.FirstMatch;
-            sprintf ", InArchiveExtensions: %s" (Common.list_to_string(settings.InArchiveExtensions));
-            sprintf ", InArchiveFilePatterns: %s" (Common.list_to_string(settings.InArchiveFilePatterns));
-            sprintf ", InDirPatterns: %s" (Common.list_to_string(settings.InDirPatterns));
-            sprintf ", InExtensions: %s" (Common.list_to_string(settings.InExtensions));
-            sprintf ", InFilePatterns: %s" (Common.list_to_string(settings.InFilePatterns));
-            sprintf ", InFileTypes: %s" (FileTypesListToString settings.InFileTypes);
-            sprintf ", InLinesAfterPatterns: %s" (Common.list_to_string(settings.InLinesAfterPatterns));
-            sprintf ", InLinesBeforePatterns: %s" (Common.list_to_string(settings.InLinesBeforePatterns));
-            sprintf ", LinesAfter: %d" settings.LinesAfter;
-            sprintf ", LinesAfterToPatterns: %s" (Common.list_to_string(settings.LinesAfterToPatterns));
-            sprintf ", LinesAfterUntilPatterns: %s" (Common.list_to_string(settings.LinesAfterUntilPatterns));
-            sprintf ", LinesBefore: %d" settings.LinesBefore;
-            sprintf ", ListDirs: %b" settings.ListDirs;
-            sprintf ", ListFiles: %b" settings.ListFiles;
-            sprintf ", ListLines: %b" settings.ListLines;
-            sprintf ", MaxLineLength: %d" settings.MaxLineLength;
-            sprintf ", MultiLineSearch: %b" settings.MultiLineSearch;
-            sprintf ", OutArchiveExtensions: %s" (Common.list_to_string(settings.OutArchiveExtensions));
-            sprintf ", OutArchiveFilePatterns: %s" (Common.list_to_string(settings.OutArchiveFilePatterns));
-            sprintf ", OutDirPatterns: %s" (Common.list_to_string(settings.OutDirPatterns));
-            sprintf ", OutExtensions: %s" (Common.list_to_string(settings.OutExtensions));
-            sprintf ", OutFilePatterns: %s" (Common.list_to_string(settings.OutFilePatterns));
-            sprintf ", OutFileTypes: %s" (FileTypesListToString settings.OutFileTypes);
-            sprintf ", OutLinesAfterPatterns: %s" (Common.list_to_string(settings.OutLinesAfterPatterns));
-            sprintf ", OutLinesBeforePatterns: %s" (Common.list_to_string(settings.OutLinesBeforePatterns));
-            sprintf ", PrintResults: %b" settings.PrintResults;
-            sprintf ", PrintUsage: %b" settings.PrintUsage;
-            sprintf ", PrintVersion: %b" settings.PrintVersion;
-            sprintf ", Recursive: %b" settings.Recursive;
-            sprintf ", SearchArchives: %b" settings.SearchArchives;
-            sprintf ", SearchPatterns: %s" (Common.list_to_string(settings.SearchPatterns));
-            sprintf ", StartPath: \"%s\"" settings.StartPath;
-            sprintf ", TextFileEncoding: \"%s\"" settings.TextFileEncoding;
-            sprintf ", UniqueLines: %b" settings.UniqueLines;
-            sprintf ", Verbose: %b" settings.Verbose;
+            $"ArchivesOnly: %b{settings.ArchivesOnly}";
+            $", Colorize: %b{settings.Colorize}";
+            $", Debug: %b{settings.Debug}";
+            $", ExcludeHidden: %b{settings.ExcludeHidden}";
+            $", FirstMatch: %b{settings.FirstMatch}";
+            $", InArchiveExtensions: %s{Common.list_to_string(settings.InArchiveExtensions)}";
+            $", InArchiveFilePatterns: %s{Common.list_to_string(settings.InArchiveFilePatterns)}";
+            $", InDirPatterns: %s{Common.list_to_string(settings.InDirPatterns)}";
+            $", InExtensions: %s{Common.list_to_string(settings.InExtensions)}";
+            $", InFilePatterns: %s{Common.list_to_string(settings.InFilePatterns)}";
+            $", InFileTypes: %s{FileTypesListToString settings.InFileTypes}";
+            $", InLinesAfterPatterns: %s{Common.list_to_string(settings.InLinesAfterPatterns)}";
+            $", InLinesBeforePatterns: %s{Common.list_to_string(settings.InLinesBeforePatterns)}";
+            $", LinesAfter: %d{settings.LinesAfter}";
+            $", LinesAfterToPatterns: %s{Common.list_to_string(settings.LinesAfterToPatterns)}";
+            $", LinesAfterUntilPatterns: %s{Common.list_to_string(settings.LinesAfterUntilPatterns)}";
+            $", LinesBefore: %d{settings.LinesBefore}";
+            $", ListDirs: %b{settings.ListDirs}";
+            $", ListFiles: %b{settings.ListFiles}";
+            $", ListLines: %b{settings.ListLines}";
+            $", MaxLineLength: %d{settings.MaxLineLength}";
+            $", MultiLineSearch: %b{settings.MultiLineSearch}";
+            $", OutArchiveExtensions: %s{Common.list_to_string(settings.OutArchiveExtensions)}";
+            $", OutArchiveFilePatterns: %s{Common.list_to_string(settings.OutArchiveFilePatterns)}";
+            $", OutDirPatterns: %s{Common.list_to_string(settings.OutDirPatterns)}";
+            $", OutExtensions: %s{Common.list_to_string(settings.OutExtensions)}";
+            $", OutFilePatterns: %s{Common.list_to_string(settings.OutFilePatterns)}";
+            $", OutFileTypes: %s{FileTypesListToString settings.OutFileTypes}";
+            $", OutLinesAfterPatterns: %s{Common.list_to_string(settings.OutLinesAfterPatterns)}";
+            $", OutLinesBeforePatterns: %s{Common.list_to_string(settings.OutLinesBeforePatterns)}";
+            $", PrintResults: %b{settings.PrintResults}";
+            $", PrintUsage: %b{settings.PrintUsage}";
+            $", PrintVersion: %b{settings.PrintVersion}";
+            $", Recursive: %b{settings.Recursive}";
+            $", SearchArchives: %b{settings.SearchArchives}";
+            $", SearchPatterns: %s{Common.list_to_string(settings.SearchPatterns)}";
+            $", StartPath: \"%s{settings.StartPath}\"";
+            $", TextFileEncoding: \"%s{settings.TextFileEncoding}\"";
+            $", UniqueLines: %b{settings.UniqueLines}";
+            $", Verbose: %b{settings.Verbose}";
             ")"
         ]
 ;;
