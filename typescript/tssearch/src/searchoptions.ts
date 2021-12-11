@@ -79,6 +79,8 @@ export class SearchOptions {
                 (x: string, settings: SearchSettings) => { settings.addOutLinesAfterPatterns(x); },
             'out-linesbeforepattern':
                 (x: string, settings: SearchSettings) => { settings.addOutLinesBeforePatterns(x); },
+            'path':
+                (x: string, settings: SearchSettings) => { settings.paths.push(x); },
             'searchpattern':
                 (x: string, settings: SearchSettings) => { settings.addSearchPatterns(x); },
             'settings-file':
@@ -196,8 +198,8 @@ export class SearchOptions {
                     }
                 } else if (this.boolFlagActionMap[k]) {
                     this.boolFlagActionMap[k](obj[k], settings);
-                } else if (k == 'startpath') {
-                    settings.startPath = obj[k];
+                } else if (k == 'path') {
+                    settings.paths.push(obj[k]);
                 } else {
                     err = new Error("Invalid option: "+k);
                 }
@@ -233,11 +235,8 @@ export class SearchOptions {
                     err = new Error("Invalid option: " + arg);
                 }
             } else {
-                settings.startPath = arg;
+                settings.paths.push(arg);
             }
-        }
-        if (settings.debug) {
-            settings.verbose = true;
         }
         cb(err, settings);
     }
@@ -253,7 +252,7 @@ export class SearchOptions {
 
     private getUsageString(): string {
         let usage: string = 'Usage:\n tssearch [options] -s <searchpattern>' +
-            ' <startpath>\n\nOptions:\n';
+            ' <path> [<path> ...]\n\nOptions:\n';
         const optStrings: string[] = [];
         const optDescs: string[] = [];
         let longest = 0;

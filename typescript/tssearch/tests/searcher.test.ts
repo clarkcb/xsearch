@@ -14,8 +14,8 @@ const testFile = config.SHAREDPATH + '/testFiles/testFile2.txt';
 
 const getSettings = function() {
     const settings: SearchSettings = new SearchSettings();
-    settings.startPath = '.';
     settings.addSearchPatterns('Searcher');
+    settings.paths.push('.');
     return settings;
 };
 

@@ -40,13 +40,13 @@ export class SearchSettings {
     outFileTypes: FileType[] = [];
     outLinesAfterPatterns: RegExp[] = [];
     outLinesBeforePatterns: RegExp[] = [];
+    paths: string[] = [];
     printResults = false;
     printUsage = false;
     printVersion = false;
     recursive = true;
     searchArchives = false;
     searchPatterns: RegExp[] = [];
-    startPath = "";
     textFileEncoding = "utf-8";
     uniqueLines = false;
     verbose = false;
@@ -211,12 +211,12 @@ export class SearchSettings {
             + ', ' + SearchSettings.fileTypesToString('outFileTypes', this.outFileTypes)
             + ', ' + SearchSettings.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
             + ', ' + SearchSettings.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
+            + ', ' + SearchSettings.listToString('paths', this.paths)
             + ', printResults=' + this.printResults
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive
             + ', searchArchives=' + this.searchArchives
             + ', ' + SearchSettings.listToString('searchPatterns', this.searchPatterns)
-            + ', startPath="' + this.startPath + '"'
             + ', textFileEncoding="' + this.textFileEncoding + '"'
             + ', uniqueLines=' + this.uniqueLines
             + ', verbose=' + this.verbose

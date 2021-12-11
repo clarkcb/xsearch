@@ -6,9 +6,10 @@
 
 "use strict";
 
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
+import * as assert from 'assert';
+import * as fs from 'fs';
+import { access, lstat, stat } from 'fs/promises';
+import * as path from 'path';
 
 import * as common from './common';
 import {FileType} from './filetype';
@@ -36,21 +37,22 @@ export class Searcher {
 
     private validateSettings(): void {
         try {
-            assert.ok(!!this._settings.startPath, 'Startpath not defined');
+            assert.ok(this._settings.paths.length > 0, 'Startpath not defined');
+            for (const p of this._settings.paths) {
+                fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
 
-            fs.accessSync(this._settings.startPath, fs.constants.F_OK | fs.constants.R_OK);
-
-            const stat = fs.lstatSync(this._settings.startPath);
-
-            if (stat.isDirectory()) {
-                assert.ok(this.isSearchDir(this._settings.startPath),
-                    'Startpath does not match search settings');
-            } else if (stat.isFile()) {
-                assert.ok(this.filterFile(this._settings.startPath),
-                    'Startpath does not match search settings');
-            } else {
-                assert.ok(false, 'Startpath not searchable file type');
+                const stat = fs.lstatSync(p);
+                if (stat.isDirectory()) {
+                    assert.ok(this.isSearchDir(p),
+                        'Startpath does not match search settings');
+                } else if (stat.isFile()) {
+                    assert.ok(this.filterFile(p),
+                        'Startpath does not match search settings');
+                } else {
+                    assert.ok(false, 'Startpath not searchable file type');
+                }
             }
+
             assert.ok(this._settings.searchPatterns.length, 'No search patterns defined');
             assert.ok(this._supportedEncodings.indexOf(this._settings.textFileEncoding) > -1,
                 'Invalid encoding');
@@ -58,7 +60,7 @@ export class Searcher {
             assert.ok(this._settings.linesAfter > -1, 'Invalid linesafter');
             assert.ok(this._settings.maxLineLength > -1, 'Invalid maxlinelength');
 
-        } catch (err) {
+        } catch (err: Error | any) {
             let msg = err.message;
             if (err.code === 'ENOENT') {
                 msg = 'Startpath not found';
@@ -156,9 +158,9 @@ export class Searcher {
         return (!this._settings.archivesOnly && this.isSearchFile(f));
     }
 
-    private getSearchFiles(startPath: string): SearchFile[] {
+    private async getSearchFiles(startPath: string): Promise<SearchFile[]> {
         let searchFiles: SearchFile[] = [];
-        const stats = fs.statSync(startPath);
+        const stats = await stat(startPath);
         if (stats.isDirectory()) {
             if (this.isSearchDir(startPath)) {
                 searchFiles = searchFiles.concat(this.recGetSearchFiles(startPath));
@@ -202,9 +204,14 @@ export class Searcher {
         return searchFiles;
     }
 
-    public search() {
+    public async search() {
         // get the search files
-        const searchfiles: SearchFile[] = this.getSearchFiles(this._settings.startPath);
+        let searchfiles: SearchFile[] = [];
+
+        const pathSearchFilesArrays = await Promise.all(this._settings.paths.map(d => this.getSearchFiles(d)));
+        pathSearchFilesArrays.forEach(pathSearchFiles => {
+            searchfiles = searchfiles.concat(pathSearchFiles);
+        });
 
         if (this._settings.verbose) {
             let dirs = searchfiles.map(sf => sf.pathname);

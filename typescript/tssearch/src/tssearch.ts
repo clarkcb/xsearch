@@ -11,7 +11,7 @@ import {SearchOptions} from './searchoptions';
 import {SearchSettings} from './searchsettings';
 import {Searcher} from './searcher';
 
-function handleError(err: Error, searchOptions: SearchOptions) {
+function handleError(err: Error | any, searchOptions: SearchOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
     common.log('\n' + errMsg + '\n');
     searchOptions.usageWithCode(1);
@@ -21,7 +21,7 @@ function searchMain() {
     const searchOptions = new SearchOptions();
     const args = process.argv.slice(2);
 
-    searchOptions.settingsFromArgs(args, (err: Error | void, settings: SearchSettings) => {
+    searchOptions.settingsFromArgs(args, async (err: Error | void, settings: SearchSettings) => {
         if (err) {
             handleError(err, searchOptions);
         }
@@ -41,7 +41,7 @@ function searchMain() {
 
         try {
             const searcher: Searcher = new Searcher(settings);
-            searcher.search();
+            await searcher.search();
 
             if (settings.printResults) {
                 searcher.printSearchResults();
@@ -64,6 +64,6 @@ function searchMain() {
 }
 
 // node.js equivalent of python's if __name__ == '__main__'
-if (!module.parent) {
+if (require.main === module) {
     searchMain();
 }
