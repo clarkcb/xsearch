@@ -13,7 +13,7 @@ const testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 
 const getSettings = () => {
     let settings = new SearchSettings();
-    settings.startPath = '.';
+    settings.paths = ['.'];
     settings.addSearchPatterns('Searcher');
     return settings;
 };

@@ -44,9 +44,9 @@ class SearchSettings {
         this.printUsage = false;
         this.printVersion = false;
         this.recursive = true;
+        this.paths = [];
         this.searchArchives = false;
         this.searchPatterns = [];
-        this.startPath = "";
         this.textFileEncoding = "utf-8";
         this.uniqueLines = false;
         this.verbose = false;
@@ -213,12 +213,12 @@ class SearchSettings {
             ', ' + this.fileTypesToString('outFileTypes', this.outFileTypes) +
             ', ' + this.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns) +
             ', ' + this.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns) +
+            ', ' + this.listToString('paths', this.paths) +
             ', printResults=' + this.printResults +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
             ', searchArchives=' + this.searchArchives +
             ', ' + this.listToString('searchPatterns', this.searchPatterns) +
-            ', startPath="' + this.startPath + '"' +
             ', textFileEncoding="' + this.textFileEncoding + '"' +
             ', uniqueLines=' + this.uniqueLines +
             ', verbose=' + this.verbose +

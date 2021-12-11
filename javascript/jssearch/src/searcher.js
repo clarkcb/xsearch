@@ -36,21 +36,21 @@ class Searcher {
 
     validateSettings() {
         try {
-            assert.ok(!!this.settings.startPath, 'Startpath not defined');
+            assert.ok(this.settings.paths.length > 0, 'Startpath not defined');
+            this.settings.paths.forEach(p => {
+                fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
 
-            fs.accessSync(this.settings.startPath, fs.constants.F_OK | fs.constants.R_OK);
-
-            const stat = fs.lstatSync(this.settings.startPath);
-
-            if (stat.isDirectory()) {
-                assert.ok(this.isSearchDir(this.settings.startPath),
-                    'Startpath does not match search settings');
-            } else if (stat.isFile()) {
-                assert.ok(this.filterFile(this.settings.startPath),
-                    'Startpath does not match search settings');
-            } else {
-                assert.ok(false, 'Startpath not searchable file type');
-            }
+                const stat = fs.lstatSync(p);
+                if (stat.isDirectory()) {
+                    assert.ok(this.isSearchDir(p),
+                        'Startpath does not match search settings');
+                } else if (stat.isFile()) {
+                    assert.ok(this.filterFile(p),
+                        'Startpath does not match search settings');
+                } else {
+                    assert.ok(false, 'Startpath not searchable file type');
+                }
+            });
             assert.ok(this.settings.searchPatterns.length, 'No search patterns defined');
             assert.ok(this.supportedEncodings.indexOf(this.settings.textFileEncoding) > -1,
                 'Invalid encoding');
@@ -210,8 +210,13 @@ class Searcher {
     async search() {
         try {
             // get the search files
-            let searchfiles = await this.getSearchFiles(this.settings.startPath);
-
+            const pathSearchFilesArrays = await Promise.all(this.settings.paths.map(d => this.getSearchFiles(d)));
+            // let searchfiles = await this.getSearchFiles(this.settings.startPath);
+            let searchfiles = [];
+            pathSearchFilesArrays.forEach(pathSearchFiles => {
+                searchfiles = searchfiles.concat(pathSearchFiles);
+            });
+    
             if (this.settings.verbose) {
                 let dirs = searchfiles.map(sf => sf.pathname);
                 dirs = common.setFromArray(dirs);

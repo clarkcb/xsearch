@@ -25,7 +25,6 @@ describe('testing searchsettings', () => {
         expect(settings.printVersion).toBeFalsy();
         expect(settings.recursive).toBeTruthy();
         expect(settings.searchArchives).toBeFalsy();
-        expect(settings.startPath).toEqual('');
         expect(settings.uniqueLines).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
     });

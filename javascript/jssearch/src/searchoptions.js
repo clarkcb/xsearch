@@ -62,6 +62,8 @@ class SearchOptions {
                 (x, settings) => { settings.addOutLinesAfterPatterns(x); },
             'out-linesbeforepattern':
                 (x, settings) => { settings.addOutLinesBeforePatterns(x); },
+            'path':
+                (x, settings) => { settings.paths.push(x); },
             'searchpattern':
                 (x, settings) => { settings.addSearchPatterns(x); },
             'settings-file':
@@ -187,8 +189,8 @@ class SearchOptions {
                     }
                 } else if (this.boolFlagActionMap[longKey]) {
                     this.boolFlagActionMap[longKey](obj[k], settings);
-                } else if (k === 'startpath') {
-                    settings.startPath = obj[k];
+                } else if (k === 'path') {
+                    settings.paths.push(obj[k]);
                 } else {
                     err = new SearchError("Invalid option: " + k);
                 }
@@ -224,7 +226,7 @@ class SearchOptions {
                     err = new Error("Invalid option: " + arg);
                 }
             } else {
-                settings.startPath = arg;
+                settings.paths.push(arg);
             }
         }
         cb(err, settings);
@@ -240,7 +242,7 @@ class SearchOptions {
     }
 
     getUsageString() {
-        let usage = 'Usage:\n jssearch [options] -s <searchpattern> <startpath>\n\n';
+        let usage = 'Usage:\n jssearch [options] -s <searchpattern> <path> [<path> ...]\n\n';
         usage += 'Options:\n';
         let optStrings = [];
         let optDescs = [];

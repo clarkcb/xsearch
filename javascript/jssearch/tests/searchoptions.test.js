@@ -31,7 +31,6 @@ describe('testing searchoptions', () => {
             expect(settings.printVersion).toBeFalsy();
             expect(settings.recursive).toBeTruthy();
             expect(settings.searchArchives).toBeFalsy();
-            expect(settings.startPath).toEqual('');
             expect(settings.uniqueLines).toBeFalsy();
             expect(settings.verbose).toBeFalsy();
         });
@@ -50,6 +49,8 @@ describe('testing searchoptions', () => {
             expect(settings.inExtensions[1]).toEqual('java');
             expect(settings.searchPatterns.length).toEqual(1);
             expect(settings.searchPatterns[0].source).toEqual('Searcher');
+            expect(settings.paths.length).toEqual(1);
+            expect(settings.paths[0]).toEqual('.');
         });
     });
 
@@ -111,7 +112,7 @@ describe('testing searchoptions', () => {
         const searchOptions = new SearchOptions();
         const settings = new SearchSettings();
         const json = '{\n' +
-            '  "startpath": "~/src/xsearch/",\n' +
+            '  "path": "~/src/xsearch/",\n' +
             '  "in-ext": ["js","ts"],\n' +
             '  "out-dirpattern": "node_module",\n' +
             '  "out-filepattern": ["temp"],\n' +
@@ -124,7 +125,6 @@ describe('testing searchoptions', () => {
             '}';
         const err = searchOptions.settingsFromJson(json, settings);
         expect(err).toBeNull();
-        expect(settings.startPath).toEqual('~/src/xsearch/');
         expect(settings.inExtensions.length).toEqual(2);
         expect(settings.outDirPatterns.length).toEqual(1);
         expect(settings.outDirPatterns[0].source).toEqual('node_module');
@@ -132,6 +132,8 @@ describe('testing searchoptions', () => {
         expect(settings.outFilePatterns[0].source).toEqual('temp');
         expect(settings.searchPatterns.length).toEqual(1);
         expect(settings.searchPatterns[0].source).toEqual('Searcher');
+        expect(settings.paths.length).toEqual(1);
+        expect(settings.paths[0]).toEqual('~/src/xsearch/');
         expect(settings.linesBefore).toEqual(2);
         expect(settings.linesAfter).toEqual(2);
         expect(settings.debug).toBeTruthy();
