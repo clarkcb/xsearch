@@ -30,7 +30,7 @@ private const val xml = "xml"
 private const val unknown = "unknown"
 
 fun fromName(name: String) : FileType {
-    when (name.trim().toLowerCase()) {
+    when (name.trim().lowercase()) {
         text -> {
             return FileType.TEXT
         }
@@ -120,31 +120,31 @@ class FileTypes {
     }
 
     fun isArchiveFile(file: File): Boolean {
-        return (fileTypeMap[archive] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[archive] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isBinaryFile(file: File): Boolean {
-        return (fileTypeMap[binary] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[binary] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isCodeFile(file: File): Boolean {
-        return (fileTypeMap[code] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[code] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isSearchableFile(file: File): Boolean {
-        return (fileTypeMap[searchable] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[searchable] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isTextFile(file: File): Boolean {
-        return (fileTypeMap[text] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[text] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isUnknownFile(file: File): Boolean {
-        return (fileTypeMap[unknown] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[unknown] ?: setOf()).contains(file.extension.lowercase())
                 || !isSearchableFile(file)
     }
 
     fun isXmlFile(file: File): Boolean {
-        return (fileTypeMap[xml] ?: setOf()).contains(file.extension.toLowerCase())
+        return (fileTypeMap[xml] ?: setOf()).contains(file.extension.lowercase())
     }
 }

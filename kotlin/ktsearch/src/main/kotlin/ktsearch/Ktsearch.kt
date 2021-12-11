@@ -25,11 +25,11 @@ private fun signum(num: Int): Int {
 
 class SearchResultComparator : Comparator<SearchResult> {
     override fun compare(r1: SearchResult, r2: SearchResult): Int {
-        val pathCmp = (r1.file!!.file.parent ?: "").toLowerCase().
-                compareTo((r2.file!!.file.parent ?: "").toLowerCase())
+        val pathCmp = (r1.file!!.file.parent ?: "").lowercase().
+                compareTo((r2.file!!.file.parent ?: "").lowercase())
         if (pathCmp == 0) {
-            val fileCmp = r1.file.file.name.toLowerCase().
-                    compareTo(r2.file.file.name.toLowerCase())
+            val fileCmp = r1.file.file.name.lowercase().
+                    compareTo(r2.file.file.name.lowercase())
             if (fileCmp == 0) {
                 val lineNumCmp = signum(r1.lineNum - r2.lineNum)
                 if (lineNumCmp == 0) {

@@ -11,7 +11,7 @@ import java.io.File
  */
 class SearcherTest {
     private fun getSettings(): SearchSettings {
-        return getDefaultSettings().copy(startPath=".", searchPatterns=setOf(Regex("Searcher")))
+        return getDefaultSettings().copy(paths=setOf("."), searchPatterns=setOf(Regex("Searcher")))
     }
 
     private val testFilePath = "/testFile2.txt"

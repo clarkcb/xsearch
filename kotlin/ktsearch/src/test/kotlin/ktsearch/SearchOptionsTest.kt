@@ -26,6 +26,8 @@ class SearchOptionsTest {
         assertFalse(settings.listLines)
         assertEquals(150, settings.maxLineLength)
         assertFalse(settings.multiLineSearch)
+        assertEquals(1, settings.paths.size)
+        assertEquals(".", settings.paths.first())
         assertTrue(settings.printResults)
         assertFalse(settings.printUsage)
         assertFalse(settings.printVersion)
@@ -44,12 +46,14 @@ class SearchOptionsTest {
         assertTrue(settings.inExtensions.contains("scala"))
         assertEquals(1, settings.searchPatterns.size)
         assertEquals("Search", settings.searchPatterns.first().toString())
+        assertEquals(1, settings.paths.size)
+        assertEquals(".", settings.paths.first())
     }
 
     @Test
     fun testSettingsFromJson() {
         val json = """{
-                 |  "startpath": "~/src/xsearch/",
+                 |  "path": "~/src/xsearch/",
                  |  "in-ext": ["js","ts"],
                  |  "out-dirpattern": ["build", "node_module", "tests", "typings"],
                  |  "out-filepattern": ["gulpfile", "\\.min\\."],
@@ -63,7 +67,8 @@ class SearchOptionsTest {
         val searchOptions = SearchOptions()
         val settings = searchOptions.settingsFromJson(json, getDefaultSettings())
 
-        assertTrue(settings.startPath == "~/src/xsearch/")
+        assertEquals(1, settings.paths.size)
+        assertEquals("~/src/xsearch/", settings.paths.first())
 
         assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("js"))

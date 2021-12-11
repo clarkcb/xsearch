@@ -16,9 +16,9 @@ import java.io.InputStreamReader
 data class SearchOption(val shortarg: String?, val longarg: String, val desc: String) {
     val sortarg =
             if (shortarg == null) {
-                longarg.toLowerCase()
+                longarg.lowercase()
             } else {
-                shortarg.toLowerCase() + "@" + longarg.toLowerCase()
+                shortarg.lowercase() + "@" + longarg.lowercase()
             }
 }
 
@@ -190,8 +190,8 @@ class SearchOptions {
             this.argActionMap.containsKey(key) -> {
                 this.argActionMap[key]!!.invoke(s, settings)
             }
-            key == "startpath" -> {
-                settings.copy(startPath = s)
+            key == "path" -> {
+                settings.copy(paths = settings.paths.plus(s))
             }
             else -> {
                 throw SearchException("Invalid option: $key")
@@ -241,7 +241,7 @@ class SearchOptions {
                     throw SearchException("Invalid option: $arg")
                 }
             } else {
-                return recSettingsFromArgs(args.drop(1), settings.copy(startPath = nextArg))
+                return recSettingsFromArgs(args.drop(1), settings.copy(paths = settings.paths.plus(nextArg)))
             }
         }
         return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printResults = true))
@@ -254,13 +254,13 @@ class SearchOptions {
     private fun getUsageString() : String {
         val sb = StringBuilder()
         sb.append("Usage:\n")
-        sb.append(" ktsearch [options] -s <searchpattern> <startpath>\n\n")
+        sb.append(" ktsearch [options] -s <searchpattern> <path> [<path> ...]\n\n")
         sb.append("Options:\n")
         fun getOptString(so: SearchOption): String {
             return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"
         }
         val optPairs = searchOptions.map { Pair(getOptString(it), it.desc) }
-        val longest = optPairs.map { it.first.length }.max()
+        val longest = optPairs.map { it.first.length }.maxOrNull()
         val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {
             sb.append(String.format(format, o.first, o.second))

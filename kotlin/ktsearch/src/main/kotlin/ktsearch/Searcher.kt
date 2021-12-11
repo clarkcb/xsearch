@@ -18,16 +18,19 @@ class Searcher(val settings: SearchSettings) {
     }
 
     private fun validateSettings(settings: SearchSettings) {
-        if (settings.startPath.isNullOrEmpty()) {
+        if (settings.paths.isEmpty()) {
             throw SearchException("Startpath not defined")
         }
-        val startPathFile = File(settings.startPath)
-        if (!startPathFile.exists()) {
-            throw SearchException("Startpath not found")
+        for (p in settings.paths) {
+            val pFile = File(p)
+            if (!pFile.exists()) {
+                throw SearchException("Startpath not found")
+            }
+            if (!pFile.canRead()) {
+                throw SearchException("Startpath not readable")
+            }
         }
-        if (!startPathFile.canRead()) {
-            throw SearchException("Startpath not readable")
-        }
+
         if (settings.searchPatterns.isEmpty()) {
             throw SearchException("No search patterns defined")
         }
@@ -131,19 +134,25 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun search(): List<SearchResult> {
-        val startPathFile = File(settings.startPath!!)
-        return if (startPathFile.isDirectory) {
-            searchPath(startPathFile)
-        } else if (startPathFile.isFile) {
-            val sf = filterToSearchFile(startPathFile)
-            if (sf != null) {
-                searchFile(sf)
+        val results: MutableList<SearchResult> = mutableListOf()
+
+        for (p in settings.paths) {
+            val startPathFile = File(p)
+            if (startPathFile.isDirectory) {
+                results.addAll(searchPath(startPathFile))
+            } else if (startPathFile.isFile) {
+                val sf = filterToSearchFile(startPathFile)
+                if (sf != null) {
+                    results.addAll(searchFile(sf))
+                } else {
+                    throw SearchException("Startpath does not match search settings")
+                }
             } else {
-                throw SearchException("Startpath does not match search settings")
+                throw SearchException("startPath is invalid file type: $p")
             }
-        } else {
-            throw SearchException("startPath is invalid file type: " + settings.startPath)
         }
+
+        return results
     }
 
     private fun searchPath(filePath: File): List<SearchResult> {
@@ -218,7 +227,7 @@ class Searcher(val settings: SearchSettings) {
                 val matches = findAnyMatches(s, startIndex,
                         settings.linesAfterToPatterns)
                 if (matches.isNotEmpty()) {
-                    val firstMatch = matches.minBy { it.range.first }
+                    val firstMatch = matches.minByOrNull { it.range.first }
                     val count = afterNewlineIndices.count { it <= firstMatch!!.range.first }
                     getLinesFromMultiLineString(s, afterNewlineIndices.take(count + 1))
                 } else listOf()
@@ -226,7 +235,7 @@ class Searcher(val settings: SearchSettings) {
                 val matches = findAnyMatches(s, startIndex,
                         settings.linesAfterUntilPatterns)
                 if (matches.isNotEmpty()) {
-                    val firstMatch = matches.minBy { it.range.first }
+                    val firstMatch = matches.minByOrNull { it.range.first }
                     val count = afterNewlineIndices.count { it <= firstMatch!!.range.first }
                     getLinesFromMultiLineString(s, afterNewlineIndices.take(count))
                 } else listOf()
