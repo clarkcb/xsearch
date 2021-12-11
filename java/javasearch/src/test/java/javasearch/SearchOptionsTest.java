@@ -23,13 +23,15 @@ public class SearchOptionsTest {
             assertFalse(settings.getDebug());
             assertTrue(settings.getExcludeHidden());
             assertFalse(settings.getFirstMatch());
-            assertEquals(settings.getLinesAfter(), 0);
-            assertEquals(settings.getLinesBefore(), 0);
+            assertEquals(0, settings.getLinesAfter());
+            assertEquals(0, settings.getLinesBefore());
             assertFalse(settings.getListDirs());
             assertFalse(settings.getListFiles());
             assertFalse(settings.getListLines());
-            assertEquals(settings.getMaxLineLength(), 150);
+            assertEquals(150, settings.getMaxLineLength());
             assertFalse(settings.getMultiLineSearch());
+            assertEquals(1, settings.getPaths().size());
+            assertTrue(settings.getPaths().contains("."));
             assertTrue(settings.getPrintResults());
             assertFalse(settings.getPrintUsage());
             assertFalse(settings.getPrintVersion());
@@ -51,10 +53,10 @@ public class SearchOptionsTest {
         try {
             SearchOptions searchOptions = new SearchOptions();
             SearchSettings settings = searchOptions.settingsFromArgs(args);
-            assertEquals(settings.getInExtensions().size(), 2);
+            assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("java"));
             assertTrue(settings.getInExtensions().contains("scala"));
-            assertEquals(settings.getSearchPatterns().size(), 1);
+            assertEquals(1, settings.getSearchPatterns().size());
             assertEquals("Search", settings.getSearchPatterns().toArray()[0].toString());
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
@@ -68,7 +70,7 @@ public class SearchOptionsTest {
     @Test
     public final void testSettingsFromJson() {
         StringBuilder json = new StringBuilder("{\n")
-                .append("  \"startpath\": \"~/src/xsearch/\",\n")
+                .append("  \"path\": \"~/src/xsearch/\",\n")
                 .append("  \"in-ext\": [\"js\",\"ts\"],\n")
                 .append("  \"out-dirpattern\": \"node_module\",\n")
                 .append("  \"out-filepattern\": [\"temp\"],\n")
@@ -84,7 +86,8 @@ public class SearchOptionsTest {
             SearchSettings settings = new SearchSettings();
             searchOptions.settingsFromJson(json.toString(), settings);
 
-            assertEquals("~/src/xsearch/", settings.getStartPath());
+            assertEquals(1, settings.getPaths().size());
+            assertTrue(settings.getPaths().contains("~/src/xsearch/"));
 
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("js"));

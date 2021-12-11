@@ -1,6 +1,5 @@
 package javasearch;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -16,7 +15,7 @@ public class SearcherTest {
 
     private static SearchSettings getSettings() {
         SearchSettings settings = new SearchSettings();
-        settings.setStartPath(".");
+        settings.addPath(".");
         settings.addSearchPattern("Searcher");
         return settings;
     }

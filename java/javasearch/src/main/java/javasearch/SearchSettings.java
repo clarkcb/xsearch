@@ -50,13 +50,13 @@ public class SearchSettings {
     private Set<FileType> outFileTypes;
     private Set<Pattern> outLinesAfterPatterns;
     private Set<Pattern> outLinesBeforePatterns;
+    private Set<String> paths;
     private boolean printResults;
     private boolean printUsage;
     private boolean printVersion;
     private boolean recursive;
     private boolean searchArchives;
     private Set<Pattern> searchPatterns;
-    private String startPath;
     private String textFileEncoding;
     private boolean uniqueLines;
     private boolean verbose;
@@ -92,6 +92,7 @@ public class SearchSettings {
         this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.paths = new HashSet<>(INITIAL_SET_CAPACITY);
         this.printResults = DefaultSettings.PRINTRESULTS;
         this.printUsage = DefaultSettings.PRINTUSAGE;
         this.printVersion = DefaultSettings.PRINTVERSION;
@@ -101,14 +102,6 @@ public class SearchSettings {
         this.textFileEncoding = DefaultSettings.TEXTFILEENCODING;
         this.uniqueLines = DefaultSettings.UNIQUELINES;
         this.verbose = DefaultSettings.VERBOSE;
-    }
-
-    public final String getStartPath() {
-        return this.startPath;
-    }
-
-    public final void setStartPath(final String startPath) {
-        this.startPath = startPath;
     }
 
     public final boolean getArchivesOnly() {
@@ -431,6 +424,14 @@ public class SearchSettings {
         addPattern(this.linesAfterUntilPatterns, pattern);
     }
 
+    public final Set<String> getPaths() {
+        return this.paths;
+    }
+
+    public final void addPath(final String path) {
+        this.paths.add(path);
+    }
+
     public final void addSearchPattern(final String pattern) {
         addPattern(this.searchPatterns, pattern);
     }
@@ -501,12 +502,6 @@ public class SearchSettings {
     }
 
     public final String toString() {
-        String startPath;
-        if (null == this.startPath) {
-            startPath = "\"\"";
-        } else {
-            startPath = "\"" + this.startPath + "\"";
-        }
         return "SearchSettings("
                 + "archivesOnly: " + this.archivesOnly
                 + ", colorize: " + this.colorize
@@ -536,13 +531,13 @@ public class SearchSettings {
                 + ", outFilePatterns: " + patternSetToString(this.outFilePatterns)
                 + ", outLinesAfterPatterns: " + patternSetToString(this.outLinesAfterPatterns)
                 + ", outLinesBeforePatterns: " + patternSetToString(this.outLinesBeforePatterns)
+                + ", paths: " + stringSetToString(this.paths)
                 + ", printResults: " + this.printResults
                 + ", printUsage: " + this.printUsage
                 + ", printVersion: " + this.printVersion
                 + ", recursive: " + this.recursive
                 + ", searchArchives: " + this.searchArchives
                 + ", searchPatterns: " + patternSetToString(this.searchPatterns)
-                + ", startPath: " + startPath
                 + ", textFileEncoding: " + textFileEncoding
                 + ", uniqueLines: " + this.uniqueLines
                 + ", verbose: " + this.verbose

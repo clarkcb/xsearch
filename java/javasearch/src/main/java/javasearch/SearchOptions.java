@@ -57,6 +57,7 @@ public class SearchOptions {
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
             put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
             put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
+            put("path", (s, settings) -> settings.addPath(s));
             put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
             put("settings-file", (s, settings) -> settingsFromFile(s, settings));
         }
@@ -192,8 +193,6 @@ public class SearchOptions {
             throws SearchException{
         if (this.argActionMap.containsKey(arg)) {
             this.argActionMap.get(arg).set(val, settings);
-        } else if (arg.equals("startpath")) {
-            settings.setStartPath(val);
         } else {
             throw new SearchException("Invalid option: " + arg);
         }
@@ -242,7 +241,7 @@ public class SearchOptions {
                     throw new SearchException("Invalid option: " + arg);
                 }
             } else {
-                settings.setStartPath(arg);
+                settings.addPath(arg);
             }
         }
         return settings;
@@ -256,7 +255,7 @@ public class SearchOptions {
     public final String getUsageString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Usage:\n");
-        sb.append(" javasearch [options] -s <searchpattern> <startpath>\n\n");
+        sb.append(" javasearch [options] -s <searchpattern> <path> [<path> ...]\n\n");
         sb.append("Options:\n");
 
         this.options.sort(Comparator.comparing(SearchOption::getSortArg));

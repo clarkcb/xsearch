@@ -45,17 +45,19 @@ public class Searcher {
     }
 
     final void validateSettings() throws SearchException {
-        String startPath = settings.getStartPath();
-        if (null == startPath || startPath.isEmpty()) {
-            throw new SearchException("Startpath not defined");
+        for (String path : settings.getPaths()) {
+            if (null == path || path.isEmpty()) {
+                throw new SearchException("Startpath not defined");
+            }
+            File startPathFile = new File(path);
+            if (!startPathFile.exists()) {
+                throw new SearchException("Startpath not found");
+            }
+            if (!startPathFile.canRead()) {
+                throw new SearchException("Startpath not readable");
+            }
         }
-        File startPathFile = new File(startPath);
-        if (!startPathFile.exists()) {
-            throw new SearchException("Startpath not found");
-        }
-        if (!startPathFile.canRead()) {
-            throw new SearchException("Startpath not readable");
-        }
+
         if (settings.getSearchPatterns().isEmpty()) {
             throw new SearchException("No search patterns defined");
         }
@@ -178,24 +180,25 @@ public class Searcher {
     }
 
     public final List<SearchResult> search() throws SearchException {
-        // figure out if startPath is a directory or a file and search accordingly
         List<SearchResult> results = new ArrayList<>();
-        File startPathFile = new File(settings.getStartPath());
-        if (startPathFile.isDirectory()) {
-            if (isSearchDir(startPathFile)) {
-                results.addAll(searchPath(startPathFile));
+        for (String path : settings.getPaths()) {
+            File startPathFile = new File(path);
+            if (startPathFile.isDirectory()) {
+                if (isSearchDir(startPathFile)) {
+                    results.addAll(searchPath(startPathFile));
+                } else {
+                    throw new SearchException("Startpath does not match search settings");
+                }
+            } else if (startPathFile.isFile()) {
+                SearchFile searchFile = filterToSearchFile(startPathFile);
+                if (searchFile != null) {
+                    results.addAll(searchFile(searchFile));
+                } else {
+                    throw new SearchException("Startpath does not match search settings");
+                }
             } else {
-                throw new SearchException("Startpath does not match search settings");
+                throw new SearchException("Startpath is not a searchable file type");
             }
-        } else if (startPathFile.isFile()) {
-            SearchFile searchFile = filterToSearchFile(startPathFile);
-            if (searchFile != null) {
-                results.addAll(searchFile(searchFile));
-            } else {
-                throw new SearchException("Startpath does not match search settings");
-            }
-        } else {
-            throw new SearchException("Startpath is not a searchable file type");
         }
         if (settings.getVerbose()) {
             log("\nFile search complete.\n");
