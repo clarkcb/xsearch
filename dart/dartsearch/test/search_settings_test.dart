@@ -16,6 +16,7 @@ void main() {
     expect(settings.listLines, false);
     expect(settings.maxLineLength, 150);
     expect(settings.multiLineSearch, false);
+    expect(settings.paths.length, 0);
     expect(settings.printResults, false);
     expect(settings.printUsage, false);
     expect(settings.printVersion, false);

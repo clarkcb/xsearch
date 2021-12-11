@@ -1,7 +1,7 @@
 import 'dart:convert' show json;
 import 'dart:io' show File;
 
-import 'package:dartsearch/src/config.dart' show FILETYPESPATH;
+import 'package:dartsearch/src/config.dart' show fileTypesPath;
 import 'package:dartsearch/src/file_util.dart';
 
 enum FileType {
@@ -49,19 +49,19 @@ class FileTypes {
   }
 
   Future<void> loadFileTypesFromJson() async {
-    var contents = await File(FILETYPESPATH).readAsString();
+    var contents = await File(fileTypesPath).readAsString();
     Map jsonFileTypesMap = json.decode(contents);
     if (jsonFileTypesMap.containsKey('filetypes')) {
       var ftList = jsonFileTypesMap['filetypes'] as List;
-      ftList.forEach((ft) {
+      for (var ft in ftList) {
         var typeName = (ft as Map)['type'];
         var extensions = (ft as Map)['extensions'].toSet();
         fileTypeMap[typeName] = extensions;
-      });
+      }
       fileTypeMap[text] =
           fileTypeMap[text].union(fileTypeMap[code].union(fileTypeMap[xml]));
-      fileTypeMap[searchable] =
-          fileTypeMap[text].union(fileTypeMap[binary].union(fileTypeMap[archive]));
+      fileTypeMap[searchable] = fileTypeMap[text]
+          .union(fileTypeMap[binary].union(fileTypeMap[archive]));
     }
   }
 

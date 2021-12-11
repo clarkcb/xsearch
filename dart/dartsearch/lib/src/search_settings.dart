@@ -9,6 +9,7 @@ class SearchSettings {
       searchArchives = value;
     }
   }
+
   bool colorize = true;
   bool _debug = false;
   bool get debug => _debug;
@@ -18,6 +19,7 @@ class SearchSettings {
       verbose = value;
     }
   }
+
   bool excludeHidden = true;
   bool firstMatch = false;
 
@@ -32,15 +34,15 @@ class SearchSettings {
   var inLinesAfterPatterns = <Pattern>{};
   var inLinesBeforePatterns = <Pattern>{};
 
-  int linesAfter  = 0;
+  int linesAfter = 0;
   var linesAfterToPatterns = <Pattern>{};
   var linesAfterUntilPatterns = <Pattern>{};
-  int linesBefore  = 0;
-  bool listDirs  = false;
-  bool listFiles  = false;
-  bool listLines  = false;
-  int maxLineLength  = 150;
-  bool multiLineSearch  = false;
+  int linesBefore = 0;
+  bool listDirs = false;
+  bool listFiles = false;
+  bool listLines = false;
+  int maxLineLength = 150;
+  bool multiLineSearch = false;
 
   var outArchiveExtensions = <String>{};
   var outArchiveFilePatterns = <Pattern>{};
@@ -53,18 +55,19 @@ class SearchSettings {
   var outLinesAfterPatterns = <Pattern>{};
   var outLinesBeforePatterns = <Pattern>{};
 
-  bool printResults  = false;
-  bool printUsage  = false;
-  bool printVersion  = false;
-  bool recursive  = true;
-  bool searchArchives  = false;
+  var paths = <String>{};
+
+  bool printResults = false;
+  bool printUsage = false;
+  bool printVersion = false;
+  bool recursive = true;
+  bool searchArchives = false;
 
   var searchPatterns = <Pattern>{};
 
-  String startPath  = '';
-  String textFileEncoding  = 'UTF-8';
-  bool uniqueLines  = false;
-  bool verbose  = false;
+  String textFileEncoding = 'UTF-8';
+  bool uniqueLines = false;
+  bool verbose = false;
 
   void addExtensions(String exts, Set<String> extensions) {
     var extList = exts.split(',').where((ext) => ext.isNotEmpty).toList();
@@ -72,9 +75,9 @@ class SearchSettings {
   }
 
   void addExtensionsList(List<String> exts, Set<String> extensions) {
-    exts.forEach((ext) {
+    for (var ext in exts) {
       extensions.add(ext);
-    });
+    }
   }
 
   void addPattern(Pattern pattern, Set<Pattern> patterns) {
@@ -82,7 +85,9 @@ class SearchSettings {
   }
 
   String patternSetToString(Set<Pattern> patterns) {
-    return '{' + patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ') + '}';
+    return '{' +
+        patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ') +
+        '}';
   }
 
   String stringSetToString(Set<String> set) {
@@ -120,13 +125,13 @@ class SearchSettings {
       ', outFileTypes: $outFileTypes'
       ', outLinesAfterPatterns: ${patternSetToString(outLinesAfterPatterns)}'
       ', outLinesBeforePatterns: ${patternSetToString(outLinesBeforePatterns)}'
+      ', paths: ${stringSetToString(paths)}'
       ', printResults: $printResults'
       ', printUsage: $printUsage'
       ', printVersion: $printVersion'
       ', recursive: $recursive'
       ', searchArchives: $searchArchives'
       ', searchPatterns: ${patternSetToString(searchPatterns)}'
-      ', startPath: "$startPath"'
       ', textFileEncoding: "$textFileEncoding"'
       ', uniqueLines: $uniqueLines'
       ', verbose: $verbose'

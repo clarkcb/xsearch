@@ -31,13 +31,16 @@ class Searcher {
   }
 
   Future<void> _validateSettings() async {
-    if (settings.startPath == null || settings.startPath.isEmpty) {
+    if (settings.paths.isEmpty) {
       throw SearchException('Startpath not defined');
     }
-    var startPath = FileUtil.expandPath(settings.startPath);
-    if (await FileSystemEntity.type(startPath) == FileSystemEntityType.notFound) {
-      throw SearchException('Startpath not found');
-    }
+    settings.paths.forEach((p) async {
+      var startPath = FileUtil.expandPath(p);
+      if (await FileSystemEntity.type(startPath) ==
+          FileSystemEntityType.notFound) {
+        throw SearchException('Startpath not found');
+      }
+    });
     if (settings.searchPatterns.isEmpty) {
       throw SearchException('No search patterns defined');
     }
@@ -52,7 +55,8 @@ class Searcher {
     }
     _encoding = Encoding.getByName(settings.textFileEncoding);
     if (_encoding == null) {
-      throw SearchException('Invalid or unsupported encoding: ${settings.textFileEncoding}');
+      throw SearchException(
+          'Invalid or unsupported encoding: ${settings.textFileEncoding}');
     } else if (allowInvalid) {
       if (_encoding == utf8) {
         _encoding = Utf8Codec(allowMalformed: true);
@@ -74,30 +78,31 @@ class Searcher {
 
   bool isSearchDir(Directory dir) {
     var elems = path.split(dir.path).where((e) => e.isNotEmpty).toSet();
-    if (settings.excludeHidden && elems.any((elem) => FileUtil.isHidden(elem))) {
+    if (settings.excludeHidden &&
+        elems.any((elem) => FileUtil.isHidden(elem))) {
       return false;
     }
-    return (settings.inDirPatterns.isEmpty
-        || _anyMatchesAnyPattern(elems, settings.inDirPatterns))
-        && (settings.outDirPatterns.isEmpty
-            || !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
+    return (settings.inDirPatterns.isEmpty ||
+            _anyMatchesAnyPattern(elems, settings.inDirPatterns)) &&
+        (settings.outDirPatterns.isEmpty ||
+            !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
   }
 
   bool isSearchFile(SearchFile sf) {
     var fileName = path.basename(sf.file.path);
     var ext = FileUtil.extension(fileName);
-    return (settings.inExtensions.isEmpty
-        || settings.inExtensions.contains(ext))
-        && (settings.outExtensions.isEmpty
-        || !settings.outExtensions.contains(ext))
-        && (settings.inFilePatterns.isEmpty
-        || _matchesAnyPattern(fileName, settings.inFilePatterns))
-        && (settings.outFilePatterns.isEmpty
-            || !_matchesAnyPattern(fileName, settings.outFilePatterns))
-        && (settings.inFileTypes.isEmpty
-            || settings.inFileTypes.contains(sf.fileType))
-        && (settings.outFileTypes.isEmpty
-            || !settings.outFileTypes.contains(sf.fileType));
+    return (settings.inExtensions.isEmpty ||
+            settings.inExtensions.contains(ext)) &&
+        (settings.outExtensions.isEmpty ||
+            !settings.outExtensions.contains(ext)) &&
+        (settings.inFilePatterns.isEmpty ||
+            _matchesAnyPattern(fileName, settings.inFilePatterns)) &&
+        (settings.outFilePatterns.isEmpty ||
+            !_matchesAnyPattern(fileName, settings.outFilePatterns)) &&
+        (settings.inFileTypes.isEmpty ||
+            settings.inFileTypes.contains(sf.fileType)) &&
+        (settings.outFileTypes.isEmpty ||
+            !settings.outFileTypes.contains(sf.fileType));
   }
 
   bool isArchiveSearchFile(SearchFile sf) {
@@ -106,21 +111,23 @@ class Searcher {
       return false;
     }
     var ext = FileUtil.extension(fileName);
-    return (settings.inArchiveExtensions.isEmpty
-        || settings.inArchiveExtensions.contains(ext))
-        && (settings.outArchiveExtensions.isEmpty
-        || !settings.outArchiveExtensions.contains(ext))
-        && (settings.inArchiveFilePatterns.isEmpty
-        || _matchesAnyPattern(fileName, settings.inArchiveFilePatterns))
-        && (settings.outArchiveFilePatterns.isEmpty
-            || !_matchesAnyPattern(fileName, settings.outArchiveFilePatterns));
+    return (settings.inArchiveExtensions.isEmpty ||
+            settings.inArchiveExtensions.contains(ext)) &&
+        (settings.outArchiveExtensions.isEmpty ||
+            !settings.outArchiveExtensions.contains(ext)) &&
+        (settings.inArchiveFilePatterns.isEmpty ||
+            _matchesAnyPattern(fileName, settings.inArchiveFilePatterns)) &&
+        (settings.outArchiveFilePatterns.isEmpty ||
+            !_matchesAnyPattern(fileName, settings.outArchiveFilePatterns));
   }
 
   Future<List<SearchResult>> _searchBinaryFile(SearchFile sf) async {
     if (settings.debug) {
       log('Searching binary file $sf');
     }
-    return sf.file.readAsString(encoding: _binaryEncoding).then((String contents) {
+    return sf.file
+        .readAsString(encoding: _binaryEncoding)
+        .then((String contents) {
       var results = <SearchResult>[];
       for (var p in settings.searchPatterns) {
         var matches = [];
@@ -133,18 +140,20 @@ class Searcher {
           matches = p.allMatches(contents).toList();
         }
         for (var m in matches) {
-          results.add(SearchResult(p, sf, 0, m.start + 1, m.end + 1, null, [], []));
+          results.add(
+              SearchResult(p, sf, 0, m.start + 1, m.end + 1, null, [], []));
         }
       }
       return results;
     });
   }
 
-  bool _linesMatch(List<String> lines, Set<Pattern> inPatterns, Set<Pattern> outPatterns) {
+  bool _linesMatch(
+      List<String> lines, Set<Pattern> inPatterns, Set<Pattern> outPatterns) {
     return lines.isEmpty ||
-        ((inPatterns.isEmpty || _anyMatchesAnyPattern(lines, inPatterns))
-            &&
-            (outPatterns.isEmpty || !_anyMatchesAnyPattern(lines, outPatterns)));
+        ((inPatterns.isEmpty || _anyMatchesAnyPattern(lines, inPatterns)) &&
+            (outPatterns.isEmpty ||
+                !_anyMatchesAnyPattern(lines, outPatterns)));
   }
 
   Future<List<SearchResult>> searchLineStream(Stream<String> stream) async {
@@ -165,7 +174,7 @@ class Searcher {
 
       while (true) {
         lineNum++;
-        var line;
+        String line;
         if (linesAfter.isNotEmpty) {
           line = linesAfter.removeAt(0);
         } else if (await it.moveNext()) {
@@ -174,7 +183,8 @@ class Searcher {
           break;
         }
         if (settings.linesAfter > 0) {
-          while (linesAfter.length < settings.linesAfter && await it.moveNext()) {
+          while (
+              linesAfter.length < settings.linesAfter && await it.moveNext()) {
             linesAfter.add(it.current);
           }
         }
@@ -182,7 +192,8 @@ class Searcher {
         var searchPatterns = <Pattern>{};
         if (settings.firstMatch) {
           searchPatterns = settings.searchPatterns
-              .where((elem) => !matchedPatterns.containsKey(elem)).toSet();
+              .where((elem) => !matchedPatterns.containsKey(elem))
+              .toSet();
         } else {
           searchPatterns = settings.searchPatterns;
         }
@@ -201,10 +212,10 @@ class Searcher {
             matches = p.allMatches(line).toList();
           }
 
-          if (matches.isEmpty
-              || !_linesMatch(linesBefore, settings.inLinesBeforePatterns,
-                  settings.outLinesBeforePatterns)
-              || !_linesMatch(linesAfter, settings.inLinesAfterPatterns,
+          if (matches.isEmpty ||
+              !_linesMatch(linesBefore, settings.inLinesBeforePatterns,
+                  settings.outLinesBeforePatterns) ||
+              !_linesMatch(linesAfter, settings.inLinesAfterPatterns,
                   settings.outLinesAfterPatterns)) {
             continue;
           }
@@ -223,13 +234,13 @@ class Searcher {
             linesBefore.add(line);
           }
         }
-        if (settings.firstMatch && matchedPatterns.length == settings.searchPatterns.length) {
+        if (settings.firstMatch &&
+            matchedPatterns.length == settings.searchPatterns.length) {
           break;
         }
       }
 
       return results;
-
     } catch (e) {
       log(e.toString());
       return [];
@@ -241,14 +252,14 @@ class Searcher {
     var inputStream = sf.file.openRead();
     try {
       var lineStream =
-        _encoding.decoder.bind(inputStream).transform(LineSplitter());
+          _encoding.decoder.bind(inputStream).transform(LineSplitter());
       return searchLineStream(lineStream).then((results) {
         return results.map((r) {
           r.file = sf;
           return r;
         }).toList();
       });
-    } on FormatException catch(e) {
+    } on FormatException catch (e) {
       log('Error reading ${sf.file}: ${e.message}');
     } catch (e) {
       log(e.toString());
@@ -256,10 +267,11 @@ class Searcher {
     return results;
   }
 
-  List<String> _getLinesFromMultilineString(String s, List<int> newLineIndices) {
+  List<String> _getLinesFromMultilineString(
+      String s, List<int> newLineIndices) {
     var lines = <String>[];
-    for (var i=0; i < newLineIndices.length - 1; ++i) {
-      lines.add(s.substring(newLineIndices[i] + 1, newLineIndices[i+1]));
+    for (var i = 0; i < newLineIndices.length - 1; ++i) {
+      lines.add(s.substring(newLineIndices[i] + 1, newLineIndices[i + 1]));
     }
     return lines;
   }
@@ -288,25 +300,28 @@ class Searcher {
       }
       for (var m in matches) {
         var beforeNewlineIndices =
-          newLineIndices.takeWhile((i) => i <= m.start).toList();
+            newLineIndices.takeWhile((i) => i <= m.start).toList();
         var linesBefore = <String>[];
         if (settings.linesBefore > 0) {
           var linesBeforeIndices = beforeNewlineIndices.reversed
-              .take(settings.linesBefore + 1).toList().reversed.toList();
+              .take(settings.linesBefore + 1)
+              .toList()
+              .reversed
+              .toList();
           linesBefore = _getLinesFromMultilineString(s, linesBeforeIndices);
         }
         var afterNewlineIndices =
-          newLineIndices.skipWhile((i) => i <= m.start).toList();
+            newLineIndices.skipWhile((i) => i <= m.start).toList();
         var linesAfter = <String>[];
         if (settings.linesAfter > 0) {
           var linesAfterIndices =
-            afterNewlineIndices.take(settings.linesAfter + 1).toList();
+              afterNewlineIndices.take(settings.linesAfter + 1).toList();
           linesAfter = _getLinesFromMultilineString(s, linesAfterIndices);
         }
 
         if (!_linesMatch(linesBefore, settings.inLinesBeforePatterns,
-                settings.outLinesBeforePatterns)
-            || !_linesMatch(linesAfter, settings.inLinesAfterPatterns,
+                settings.outLinesBeforePatterns) ||
+            !_linesMatch(linesAfter, settings.inLinesAfterPatterns,
                 settings.outLinesAfterPatterns)) {
           continue;
         }
@@ -362,57 +377,7 @@ class Searcher {
     return results;
   }
 
-  Future<List<SearchResult>> _searchFiles(List<SearchFile> searchFiles) async {
-    if (settings.verbose) {
-      searchFiles.sort((sf1, sf2) {
-        if (sf1.file.parent.path == sf2.file.parent.path) {
-          return sf1.file.path.compareTo(sf2.file.path);
-        }
-        return sf1.file.parent.path.compareTo(sf2.file.parent.path);
-      });
-      var searchDirs = searchFiles.map((sf) => sf.file.parent.path).toSet().toList();
-      log('\nDirectories to be searched (${searchDirs.length}):');
-      searchDirs.forEach((d) => log(FileUtil.contractPath(d)));
-      log('\nFiles to be searched (${searchFiles.length}):');
-      searchFiles.forEach((sf) => log(FileUtil.contractPath(sf.file.path)));
-    }
-    // this is the (almost) largest batch size you can have before you get the
-    // "too many files open" errors
-    var _batchSize = 245;
-    var _offset = 0;
-
-    var results = <SearchResult>[];
-
-    while (_offset < searchFiles.length) {
-      var toIndex = min(_offset + _batchSize, searchFiles.length);
-      var fileResultsFutures = searchFiles.sublist(_offset, toIndex)
-          .map((sf) => _searchFile(sf));
-      await Future.wait(fileResultsFutures).then((filesResults) {
-        for (var fileResults in filesResults) {
-          results.addAll(fileResults);
-        }
-      });
-      _offset += _batchSize;
-    }
-
-    return results;
-  }
-
-  Future<SearchFile> filterToSearchFile(File f) {
-    if (settings.excludeHidden && FileUtil.isHidden(path.basename(f.path))) {
-      return null;
-    }
-    return _fileTypes.getFileType(f.path).then((fileType) {
-      var searchFile = SearchFile(f, fileType);
-      if ((searchFile.fileType == FileType.archive && settings.searchArchives)
-          || (!settings.archivesOnly && isSearchFile(searchFile))) {
-        return searchFile;
-      }
-      return null;
-    });
-  }
-
-  Future<List<SearchFile>> _getSearchFiles(String startPath) async {
+  Future<List<SearchFile>> _getSearchFilesForPath(String startPath) async {
     var isDir = FileSystemEntity.isDirectory(startPath);
     var isFile = FileSystemEntity.isFile(startPath);
     return Future.wait([isDir, isFile]).then((res) {
@@ -445,10 +410,78 @@ class Searcher {
     });
   }
 
+  Future<List<SearchFile>> _getSearchFiles() async {
+    var searchFiles = <SearchFile>[];
+    var pathsSearchFilesFutures =
+        settings.paths.map((p) => _getSearchFilesForPath(p));
+    await Future.wait(pathsSearchFilesFutures).then((pathsSearchFiles) {
+      for (var pathSearchFiles in pathsSearchFiles) {
+        searchFiles.addAll(pathSearchFiles);
+      }
+    });
+    return searchFiles;
+  }
+
+  Future<List<SearchResult>> _searchFiles() async {
+    var searchFiles = await _getSearchFiles();
+    if (settings.verbose) {
+      searchFiles.sort((sf1, sf2) {
+        if (sf1.file.parent.path == sf2.file.parent.path) {
+          return sf1.file.path.compareTo(sf2.file.path);
+        }
+        return sf1.file.parent.path.compareTo(sf2.file.parent.path);
+      });
+      var searchDirs =
+          searchFiles.map((sf) => sf.file.parent.path).toSet().toList();
+      log('\nDirectories to be searched (${searchDirs.length}):');
+      for (var d in searchDirs) {
+        log(FileUtil.contractPath(d));
+      }
+      log('\nFiles to be searched (${searchFiles.length}):');
+      for (var sf in searchFiles) {
+        log(FileUtil.contractPath(sf.file.path));
+      }
+    }
+    // this is the (almost) largest batch size you can have before you get the
+    // "too many files open" errors
+    var _batchSize = 245;
+    var _offset = 0;
+
+    var results = <SearchResult>[];
+
+    while (_offset < searchFiles.length) {
+      var toIndex = min(_offset + _batchSize, searchFiles.length);
+      var fileResultsFutures =
+          searchFiles.sublist(_offset, toIndex).map((sf) => _searchFile(sf));
+      await Future.wait(fileResultsFutures).then((filesResults) {
+        for (var fileResults in filesResults) {
+          results.addAll(fileResults);
+        }
+      });
+      _offset += _batchSize;
+    }
+
+    return results;
+  }
+
+  Future<SearchFile> filterToSearchFile(File f) {
+    if (settings.excludeHidden && FileUtil.isHidden(path.basename(f.path))) {
+      return null;
+    }
+    return _fileTypes.getFileType(f.path).then((fileType) {
+      var searchFile = SearchFile(f, fileType);
+      if ((searchFile.fileType == FileType.archive &&
+              settings.searchArchives) ||
+          (!settings.archivesOnly && isSearchFile(searchFile))) {
+        return searchFile;
+      }
+      return null;
+    });
+  }
+
   Future<List<SearchResult>> search() async {
     return Future.wait([_fileTypes.ready, validated]).then((res) {
-      return _getSearchFiles(FileUtil.expandPath(settings.startPath))
-          .then((searchFiles) => _searchFiles(searchFiles));
+      return _searchFiles();
     });
   }
 }

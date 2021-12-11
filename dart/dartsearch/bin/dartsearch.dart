@@ -44,11 +44,7 @@ void printMatchingDirs(List<SearchResult> results, SearchSettings settings) {
   var dirs = getMatchingDirs(results);
   if (dirs.isNotEmpty) {
     log('\nDirectories with matches (${dirs.length}):');
-    if (settings.startPath.startsWith('~')) {
-      dirs.forEach((d) { log(FileUtil.contractPath(d)); });
-    } else {
-      dirs.forEach(log);
-    }
+    dirs.forEach(log);
   }
 }
 
@@ -60,7 +56,8 @@ int sortFiles(File f1, File f2) {
   }
 }
 
-List<String> getMatchingFiles(List<SearchResult> results, SearchSettings settings) {
+List<String> getMatchingFiles(
+    List<SearchResult> results, SearchSettings settings) {
   var files = results.map((r) => r.file.file).toSet().toList();
   files.sort(sortFiles);
   return files.map((f) => FileUtil.contractPath(f.path)).toList();
@@ -70,18 +67,12 @@ void printMatchingFiles(List<SearchResult> results, SearchSettings settings) {
   var files = getMatchingFiles(results, settings);
   if (files.isNotEmpty) {
     log('\nFiles with matches (${files.length}):');
-    if (settings.startPath.startsWith('~')) {
-      files.forEach((f) { log(FileUtil.contractPath(f)); });
-    } else {
-      files.forEach(log);
-    }
-    for (var f in files) {
-      log(f);
-    }
+    files.forEach(log);
   }
 }
 
-List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {
+List<String> getMatchingLines(
+    List<SearchResult> results, SearchSettings settings) {
   var lines = results.map((r) => r.line.trim()).toList();
   if (settings.uniqueLines) {
     lines = lines.toSet().toList();
@@ -111,9 +102,9 @@ Future<void> search(SearchSettings settings, SearchOptions options) async {
   try {
     var searcher = Searcher(settings);
     results = await searcher.search();
-  } on FormatException catch(e) {
+  } on FormatException catch (e) {
     logError(e.message);
-  } on SearchException catch(e) {
+  } on SearchException catch (e) {
     _handleError(e, options);
   } catch (e) {
     print(e);
@@ -133,7 +124,7 @@ Future<void> search(SearchSettings settings, SearchOptions options) async {
       printMatchingFiles(results, settings);
     }
 
-    if (settings.listFiles) {
+    if (settings.listLines) {
       printMatchingLines(results, settings);
     }
   }

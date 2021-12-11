@@ -1,6 +1,9 @@
+import 'dart:io' show Platform;
 
-// TODO: figure out how to read local package data files
-const String XSEARCHPATH = '/Users/cary/src/xsearch';
-const String SHAREDPATH = '$XSEARCHPATH/shared';
-const String FILETYPESPATH = '$SHAREDPATH/filetypes.json';
-const String SEARCHOPTIONSPATH = '$SHAREDPATH/searchoptions.json';
+// TODO: switch fallback path to invalid path to force setting env var
+String xSearchPath = Platform.environment.containsKey('XSEARCH_PATH')
+    ? Platform.environment['XSEARCH_PATH']
+    : '/Users/cary/src/xsearch';
+String sharedPath = '$xSearchPath/shared';
+String fileTypesPath = '$sharedPath/filetypes.json';
+String searchOptionsPath = '$sharedPath/searchoptions.json';

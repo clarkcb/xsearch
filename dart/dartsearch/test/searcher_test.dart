@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 void main() {
   SearchSettings getSettings() {
     var settings = SearchSettings();
-    settings.startPath = '.';
+    settings.paths.add('.');
     settings.addPattern('Searcher', settings.searchPatterns);
     return settings;
   }
@@ -164,7 +164,8 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), true);
     });
 
-    test('test isArchiveSearchFile file extension matches inArchiveExtensions', () {
+    test('test isArchiveSearchFile file extension matches inArchiveExtensions',
+        () {
       var settings = getSettings();
       settings.addExtensions('zip', settings.inArchiveExtensions);
       var searcher = Searcher(settings);
@@ -172,7 +173,9 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), true);
     });
 
-    test('test isArchiveSearchFile file extension does not match inArchiveExtensions', () {
+    test(
+        'test isArchiveSearchFile file extension does not match inArchiveExtensions',
+        () {
       var settings = getSettings();
       settings.addExtensions('gz', settings.inArchiveExtensions);
       var searcher = Searcher(settings);
@@ -180,7 +183,8 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), false);
     });
 
-    test('test isArchiveSearchFile file extension matches outArchiveExtensions', () {
+    test('test isArchiveSearchFile file extension matches outArchiveExtensions',
+        () {
       var settings = getSettings();
       settings.addExtensions('zip', settings.outArchiveExtensions);
       var searcher = Searcher(settings);
@@ -188,7 +192,9 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), false);
     });
 
-    test('test isArchiveSearchFile file extension does not match outArchiveExtensions', () {
+    test(
+        'test isArchiveSearchFile file extension does not match outArchiveExtensions',
+        () {
       var settings = getSettings();
       settings.addExtensions('gz', settings.outArchiveExtensions);
       var searcher = Searcher(settings);
@@ -196,7 +202,8 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), true);
     });
 
-    test('test isArchiveSearchFile file name matches inArchiveFilePatterns', () {
+    test('test isArchiveSearchFile file name matches inArchiveFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('arch', settings.inArchiveFilePatterns);
       var searcher = Searcher(settings);
@@ -204,7 +211,9 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), true);
     });
 
-    test('test isArchiveSearchFile file name does not match inArchiveFilePatterns', () {
+    test(
+        'test isArchiveSearchFile file name does not match inArchiveFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('archives', settings.inArchiveFilePatterns);
       var searcher = Searcher(settings);
@@ -212,7 +221,8 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), false);
     });
 
-    test('test isArchiveSearchFile file name matches outArchiveFilePatterns', () {
+    test('test isArchiveSearchFile file name matches outArchiveFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('arch', settings.outArchiveFilePatterns);
       var searcher = Searcher(settings);
@@ -220,7 +230,9 @@ void main() {
       expect(searcher.isArchiveSearchFile(searchFile), false);
     });
 
-    test('test isArchiveSearchFile file name does not match outArchiveFilePatterns', () {
+    test(
+        'test isArchiveSearchFile file name does not match outArchiveFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('archives', settings.outArchiveFilePatterns);
       var searcher = Searcher(settings);
@@ -235,12 +247,11 @@ void main() {
   test('test searchLineStream testFile2.txt', () async {
     var settings = getSettings();
     var searcher = Searcher(settings);
-    var testFilePath = '$SHAREDPATH/testFiles/testFile2.txt';
+    var testFilePath = '$sharedPath/testFiles/testFile2.txt';
     var inputStream = File(testFilePath).openRead();
     var results = [];
     try {
-      var lineStream =
-        utf8.decoder.bind(inputStream).transform(LineSplitter());
+      var lineStream = utf8.decoder.bind(inputStream).transform(LineSplitter());
       results = await searcher.searchLineStream(lineStream);
     } catch (e) {
       log(e.toString());
@@ -265,7 +276,7 @@ void main() {
   test('test searchMultiLineString testFile2.txt', () async {
     var settings = getSettings();
     var searcher = Searcher(settings);
-    var testFilePath = '$SHAREDPATH/testFiles/testFile2.txt';
+    var testFilePath = '$sharedPath/testFiles/testFile2.txt';
 
     var contents = await File(testFilePath).readAsString();
     var results = searcher.searchMultilineString(contents);

@@ -2,7 +2,7 @@ import 'dart:convert' show json;
 import 'dart:io' show File;
 
 import 'package:dartsearch/src/common.dart';
-import 'package:dartsearch/src/config.dart' show SEARCHOPTIONSPATH;
+import 'package:dartsearch/src/config.dart' show searchOptionsPath;
 import 'package:dartsearch/src/file_types.dart';
 import 'package:dartsearch/src/search_exception.dart';
 import 'package:dartsearch/src/search_settings.dart';
@@ -43,50 +43,72 @@ class SearchOptions {
   }
 
   Future<void> loadSearchOptionsFromJson() async {
-    var contents = await File(SEARCHOPTIONSPATH).readAsString();
+    var contents = await File(searchOptionsPath).readAsString();
     Map soMap = json.decode(contents);
     if (soMap.containsKey('searchoptions')) {
       var soList = soMap['searchoptions'] as List;
-      soList.forEach((so) {
+      for (var so in soList) {
         var longArg = (so as Map)['long'];
         longArgMap[longArg] = longArg;
         var desc = (so as Map)['desc'];
-        var shortArg;
+        String shortArg;
         if ((so as Map).containsKey('short')) {
           shortArg = (so as Map)['short'];
           longArgMap[shortArg] = longArg;
         }
         searchOptions.add(SearchOption(shortArg, longArg, desc));
-      });
+      }
     }
   }
 
   void setMaps() {
     stringArgMap = {
       'encoding': (String s, SearchSettings ss) => ss.textFileEncoding = s,
-      'in-archiveext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.inArchiveExtensions),
-      'in-archivefilepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inArchiveFilePatterns),
-      'in-dirpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inDirPatterns),
-      'in-ext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.inExtensions),
-      'in-filepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inFilePatterns),
-      'in-filetype': (String s, SearchSettings ss) => ss.inFileTypes.add(FileTypes.fromName(s)),
-      'in-linesafterpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inLinesAfterPatterns),
-      'in-linesbeforepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inLinesBeforePatterns),
-      'linesafter': (String s, SearchSettings ss) => ss.linesAfter = int.parse(s),
-      'linesaftertopattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.linesAfterToPatterns),
-      'linesafteruntilpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.linesAfterUntilPatterns),
-      'linesbefore': (String s, SearchSettings ss) => ss.linesBefore = int.parse(s),
-      'maxlinelength': (String s, SearchSettings ss) => ss.maxLineLength = int.parse(s),
-      'out-archiveext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.outArchiveExtensions),
-      'out-archivefilepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outArchiveFilePatterns),
-      'out-dirpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outDirPatterns),
-      'out-ext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.outExtensions),
-      'out-filepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outFilePatterns),
-      'out-filetype': (String s, SearchSettings ss) => ss.outFileTypes.add(FileTypes.fromName(s)),
-      'out-linesafterpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outLinesAfterPatterns),
-      'out-linesbeforepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outLinesBeforePatterns),
-      'searchpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.searchPatterns),
-      'startpath': (String s, SearchSettings ss) => ss.startPath = s,
+      'in-archiveext': (String s, SearchSettings ss) =>
+          ss.addExtensions(s, ss.inArchiveExtensions),
+      'in-archivefilepattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.inArchiveFilePatterns),
+      'in-dirpattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.inDirPatterns),
+      'in-ext': (String s, SearchSettings ss) =>
+          ss.addExtensions(s, ss.inExtensions),
+      'in-filepattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.inFilePatterns),
+      'in-filetype': (String s, SearchSettings ss) =>
+          ss.inFileTypes.add(FileTypes.fromName(s)),
+      'in-linesafterpattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.inLinesAfterPatterns),
+      'in-linesbeforepattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.inLinesBeforePatterns),
+      'linesafter': (String s, SearchSettings ss) =>
+          ss.linesAfter = int.parse(s),
+      'linesaftertopattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.linesAfterToPatterns),
+      'linesafteruntilpattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.linesAfterUntilPatterns),
+      'linesbefore': (String s, SearchSettings ss) =>
+          ss.linesBefore = int.parse(s),
+      'maxlinelength': (String s, SearchSettings ss) =>
+          ss.maxLineLength = int.parse(s),
+      'out-archiveext': (String s, SearchSettings ss) =>
+          ss.addExtensions(s, ss.outArchiveExtensions),
+      'out-archivefilepattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.outArchiveFilePatterns),
+      'out-dirpattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.outDirPatterns),
+      'out-ext': (String s, SearchSettings ss) =>
+          ss.addExtensions(s, ss.outExtensions),
+      'out-filepattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.outFilePatterns),
+      'out-filetype': (String s, SearchSettings ss) =>
+          ss.outFileTypes.add(FileTypes.fromName(s)),
+      'out-linesafterpattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.outLinesAfterPatterns),
+      'out-linesbeforepattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.outLinesBeforePatterns),
+      'path': (String s, SearchSettings ss) => ss.paths.add(s),
+      'searchpattern': (String s, SearchSettings ss) =>
+          ss.addPattern(s, ss.searchPatterns),
     };
 
     boolArgMap = {
@@ -112,7 +134,8 @@ class SearchOptions {
     };
   }
 
-  Future<void> settingsFromJson(String jsonString, SearchSettings settings) async {
+  Future<void> settingsFromJson(
+      String jsonString, SearchSettings settings) async {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
       jsonMap.forEach((key, value) {
@@ -137,7 +160,8 @@ class SearchOptions {
     });
   }
 
-  Future<void> settingsFromFile(String filePath, SearchSettings settings) async {
+  Future<void> settingsFromFile(
+      String filePath, SearchSettings settings) async {
     var contents = await File(filePath).readAsString();
     await settingsFromJson(contents, settings);
   }
@@ -179,7 +203,7 @@ class SearchOptions {
             throw SearchException('Invalid option: $arg');
           }
         } else {
-          settings.startPath = arg;
+          settings.paths.add(arg);
         }
       }
       return settings;
@@ -193,11 +217,12 @@ class SearchOptions {
   Future<String> getUsageString() async {
     return await ready.then((_) {
       var s = 'Usage:\n'
-          ' dartsearch [options] -s <searchpattern> <startpath>\n\n'
+          ' dartsearch [options] -s <searchpattern> <path> [<path> ...]\n\n'
           'Options:\n';
       var optStrings = searchOptions.map((so) => so.optString()).toList();
-      var longest = optStrings.reduce((value, optString) => (optString.length > value.length) ? optString : value);
-      for (var i=0; i < searchOptions.length; i++) {
+      var longest = optStrings.reduce((value, optString) =>
+          (optString.length > value.length) ? optString : value);
+      for (var i = 0; i < searchOptions.length; i++) {
         s += ' ' + optStrings[i].padRight(longest.length + 2, ' ');
         s += searchOptions[i].desc + '\n';
       }

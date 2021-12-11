@@ -1,5 +1,4 @@
 import 'package:dartsearch/src/console_color.dart';
-import 'package:dartsearch/src/file_util.dart';
 import 'package:dartsearch/src/search_file.dart';
 import 'package:dartsearch/src/search_settings.dart';
 
@@ -50,35 +49,41 @@ class SearchResultFormatter {
     String filePath;
     if (result.file == null) {
       filePath = noSearchFileText;
-    } else if (settings.startPath.startsWith('~')) {
-      filePath = FileUtil.contractPath(result.file.file.path);
+      // TODO: associate path parameters with results
+      // } else if (settings.startPath.startsWith('~')) {
+      //   filePath = FileUtil.contractPath(result.file.file.path);
     } else {
       filePath = result.file.file.path;
     }
-    var s = ('=' * lineSepLength) + '\n' + filePath + ': ' +
+    var s = ('=' * lineSepLength) +
+        '\n' +
+        filePath +
+        ': ' +
         '${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]\n' +
-        ('-' * lineSepLength) + '\n';
+        ('-' * lineSepLength) +
+        '\n';
     var currentLineNum = result.lineNum;
     var lineNumPadding = _lineNumPadding(result);
     if (result.linesBefore.isNotEmpty) {
       currentLineNum -= result.linesBefore.length;
       for (var lineBefore in result.linesBefore) {
         var lineNumString = '$currentLineNum'.padLeft(lineNumPadding);
-        s += '  ${lineNumString} | ${lineBefore}\n';
+        s += '  $lineNumString | $lineBefore\n';
         currentLineNum++;
       }
     }
     var line = result.line;
     if (settings.colorize) {
-      line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
+      line =
+          colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
     }
     var lineNumString = '$currentLineNum'.padLeft(lineNumPadding);
-    s += '> ${lineNumString} | ${line}\n';
+    s += '> $lineNumString | $line\n';
     if (result.linesAfter.isNotEmpty) {
       currentLineNum++;
       for (var lineAfter in result.linesAfter) {
         var lineNumString = '$currentLineNum'.padLeft(lineNumPadding);
-        s += '  ${lineNumString} | ${lineAfter}\n';
+        s += '  $lineNumString | $lineAfter\n';
         currentLineNum++;
       }
     }
@@ -87,7 +92,8 @@ class SearchResultFormatter {
 
   String _formatMatchingLine(SearchResult result) {
     var formatted = result.line.trim();
-    var leadingWhitespaceCount = result.line.trimRight().length - formatted.length;
+    var leadingWhitespaceCount =
+        result.line.trimRight().length - formatted.length;
     var formattedLength = formatted.length;
     var maxLineEndIndex = formattedLength - 1;
     var matchLength = result.matchEndIndex - result.matchStartIndex;
@@ -114,7 +120,8 @@ class SearchResultFormatter {
           matchEndIndex++;
           formattedLength = lineEndIndex - lineStartIndex;
         }
-        if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
+        if (formattedLength < settings.maxLineLength &&
+            lineEndIndex < maxLineEndIndex) {
           lineEndIndex++;
         }
         formattedLength = lineEndIndex - lineStartIndex;
@@ -141,22 +148,25 @@ class SearchResultFormatter {
     String s;
     if (result.file == null) {
       s = noSearchFileText;
-    } else if (settings.startPath.startsWith('~')) {
-      s = FileUtil.contractPath(result.file.file.path);
+      // TODO: associate path parameters with results
+      // } else if (settings.startPath.startsWith('~')) {
+      //   s = FileUtil.contractPath(result.file.file.path);
     } else {
       s = result.file.file.path;
     }
     if (result.lineNum == 0) {
       s += ' matches at [${result.matchStartIndex}:${result.matchEndIndex}]';
     } else {
-      s += ': ${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]: ';
+      s +=
+          ': ${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]: ';
       s += _formatMatchingLine(result);
     }
     return s;
   }
 
   String format(SearchResult result) {
-    if ((settings.linesBefore > 0 || settings.linesAfter > 0) && result.lineNum > 0) {
+    if ((settings.linesBefore > 0 || settings.linesAfter > 0) &&
+        result.lineNum > 0) {
       return _multiLineFormat(result);
     }
     return _singleLineFormat(result);

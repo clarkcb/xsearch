@@ -1,9 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-SCRIPTPATH=$(readlink "${BASH_SOURCE[0]}")
-SCRIPTDIR=$(dirname "$SCRIPTPATH")
-PROJECTDIR=$(dirname "$SCRIPTDIR")
-PACKAGESPATH=$PROJECTDIR/.packages
-DARTSEARCHPATH=$SCRIPTDIR/dartsearch.dart
+if [ -z "$XSEARCH_PATH" ]
+then
+    XSEARCH_PATH=$HOME/src/xsearch
+fi
 
-dart --packages="$PACKAGESPATH" "$DARTSEARCHPATH" "$@"
+DARTSEARCH_PATH=$XSEARCH_PATH/dart/dartsearch
+PACKAGES_PATH=$DARTSEARCH_PATH/.packages
+DARTSEARCH_EXE=$DARTSEARCH_PATH/bin/dartsearch.dart
+
+dart --packages="$PACKAGES_PATH" "$DARTSEARCH_EXE" "$@"
