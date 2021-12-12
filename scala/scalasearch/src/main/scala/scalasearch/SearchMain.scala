@@ -85,7 +85,7 @@ object SearchMain {
     lines.foreach(Common.log)
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     try {
       val settings = SearchOptions.settingsFromArgs(args)
 

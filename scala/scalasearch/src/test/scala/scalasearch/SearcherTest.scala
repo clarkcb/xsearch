@@ -14,7 +14,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
 
   def getSearchSettings: SearchSettings = {
     val startPath = System.getProperty("user.home") + "/src/xsearch/scala/scalasearch/src/test/resources"
-    SearchSettings(startPath = Some(startPath), searchPatterns = Set("\\bSearcher\\b".r))
+    SearchSettings(paths = Set(startPath), searchPatterns = Set("\\bSearcher\\b".r))
   }
 
   def getFileLines(file: File): Iterator[String] = {
@@ -24,12 +24,12 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
     lines
   }
 
-  override def beforeEach() {
+  override def beforeEach(): Unit = {
     contents1 = FileUtil.getFileContents(testFile1)
     lines1 = getFileLines(testFile1)
   }
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     beforeEach()
   }
 

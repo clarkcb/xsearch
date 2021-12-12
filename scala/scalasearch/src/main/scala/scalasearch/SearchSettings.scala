@@ -17,12 +17,12 @@ object DefaultSettings {
   val listLines = false
   val maxLineLength = 150
   var multiLineSearch = false
+  var paths: Set[String] = Set.empty[String]
   var printResults = false
   var printUsage = false
   var printVersion = false
   var recursive = true
   var searchArchives = false
-  var startPath: Option[String] = None
   var textFileEncoding: String = "UTF-8"
   var uniqueLines = false
   var verbose = false
@@ -58,13 +58,13 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           outFileTypes: Set[FileType] = Set.empty[FileType],
                           outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
                           outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
+                          paths: Set[String] = DefaultSettings.paths,
                           printResults: Boolean = DefaultSettings.printResults,
                           printUsage: Boolean = DefaultSettings.printUsage,
                           printVersion: Boolean = DefaultSettings.printVersion,
                           recursive: Boolean = DefaultSettings.recursive,
                           var searchArchives: Boolean = DefaultSettings.searchArchives,
                           searchPatterns: Set[Regex] = Set.empty[Regex],
-                          startPath: Option[String] = DefaultSettings.startPath,
                           textFileEncoding: String = DefaultSettings.textFileEncoding,
                           uniqueLines: Boolean = DefaultSettings.uniqueLines,
                           var verbose: Boolean = DefaultSettings.verbose) {
@@ -122,13 +122,13 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", outExtensions: " + outExtensions +
       ", outFilePatterns: " + outFilePatterns +
       ", outFileTypes: " + outFileTypes +
+      ", paths: " + paths  +
       ", printResults: " + printResults +
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +
       ", recursive: " + recursive +
       ", searchArchives: " + searchArchives +
       ", searchPatterns: " + searchPatterns +
-      ", startpath: " + startPath  +
       ", textFileEncoding: " + textFileEncoding  +
       ", uniqueLines: " + uniqueLines +
       ", verbose: " + verbose +

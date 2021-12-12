@@ -28,7 +28,7 @@ object FileTypes {
   private val unknown = "unknown"
   private val xml = "xml"
 
-  private def fileTypeMap: Map[String, Set[String]] = {
+  private val fileTypeMap: Map[String, Set[String]] = {
     if (_fileTypeMap.isEmpty) {
       val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
       try {

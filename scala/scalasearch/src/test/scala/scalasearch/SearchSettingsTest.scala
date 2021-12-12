@@ -5,7 +5,7 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class SearchSettingsTest extends AnyFunSuite with BeforeAndAfterAll {
 
-  def assertDefaultSettings(settings:SearchSettings) {
+  def assertDefaultSettings(settings:SearchSettings): Unit = {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
     assert(settings.excludeHidden == DefaultSettings.excludeHidden)

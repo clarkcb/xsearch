@@ -27,7 +27,7 @@ object SearchOptions {
     List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
   }
 
-  private def loadSearchOptionsFromJson() {
+  private def loadSearchOptionsFromJson(): Unit = {
     try {
       val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
       val obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream))
@@ -105,6 +105,8 @@ object SearchOptions {
       ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
     "out-linesbeforepattern" ->
       ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
+    "path" ->
+      ((s, ss) => ss.copy(paths = ss.paths + s)),
     "searchpattern" ->
       ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
     "settings-file" ->
@@ -166,8 +168,8 @@ object SearchOptions {
     case s: String =>
       if (this.argActionMap.contains(arg)) {
         argActionMap(arg)(s, ss)
-      } else if (arg == "startpath") {
-        ss.copy(startPath = Some(s))
+      } else if (arg == "path") {
+        ss.copy(paths = ss.paths + arg)
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
@@ -226,7 +228,7 @@ object SearchOptions {
               throw new SearchException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
-          nextArg(tail, ss.copy(startPath = Some(arg)))
+          nextArg(tail, ss.copy(paths = ss.paths + arg))
       }
     }
     nextArg(args.toList, SearchSettings(printResults = true))
@@ -240,7 +242,7 @@ object SearchOptions {
   def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
-    sb.append(" scalasearch [options] -s <searchpattern> <startpath>\n\n")
+    sb.append(" scalasearch [options] -s <searchpattern> <path> [<path> ...]\n\n")
     sb.append("Options:\n")
     val optPairs = searchOptions.map { so =>
       val opts = so.shortarg match {

@@ -1,23 +1,25 @@
-name := "scalasearch"
+val scala3Version = "3.0.1"
 
-version := "0.1.0"
+ThisBuild / scalaVersion := scala3Version
+ThisBuild / organization := "xsearch"
 
-scalaVersion := "2.13.3"
+// not sure the right syntax for this
+// test / assembly := {}
 
-scalacOptions += "-target:jvm-1.8"
+lazy val scalaSearch = (project in file("."))
+  .settings(
+    name := "scalasearch",
+    version := "0.1.0",
 
-initialize := {
-  val _ = initialize.value // run the previous initialization
-  val required = VersionNumber("1.8")
-  val current = VersionNumber(sys.props("java.specification.version"))
-  assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
-}
+    scalaVersion := scala3Version,
 
-libraryDependencies ++= Seq(
-  "com.googlecode.json-simple" % "json-simple" % "1.1.1",
-  "org.apache.commons" % "commons-compress" % "1.20",
-  "org.scala-lang.modules" % "scala-xml_2.13" % "1.3.0",
-  "org.scalatest" % "scalatest_2.13" % "3.2.2" % Test,
-  "junit" % "junit" % "4.13.1" % Test
-)
+    libraryDependencies ++= Seq(
+      "com.googlecode.json-simple" % "json-simple" % "1.1.1",
+      "org.apache.commons" % "commons-compress" % "1.21",
+      "org.scalactic" %% "scalactic" % "3.2.9",
+      "org.scalatest" %% "scalatest" % "3.2.9" % Test,
+      "com.novocode" % "junit-interface" % "0.11" % Test
+    )
 
+
+  )

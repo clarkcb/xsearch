@@ -10,7 +10,7 @@ class FileTypesTest extends AnyFunSuite {
     """7z arj bz2 cpio ear gz hqx jar pax rar sit sitx tar tgz war zip zipx Z""".
       split("\\s+").foreach { ext =>
         val archiveFile = new File("archive." + ext).getName
-        println("archiveFile: " + archiveFile)
+        // println("archiveFile: " + archiveFile)
         assert(!FileTypes.isBinaryFile(archiveFile))
         assert(!FileTypes.isCodeFile(archiveFile))
         assert(FileTypes.isArchiveFile(archiveFile))
@@ -23,12 +23,12 @@ class FileTypesTest extends AnyFunSuite {
   }
 
   test("test binary extensions") {
-    """a ai beam bin chm class com dat dbmdl dcr dir dll dms doc dot dxr dylib
+    """a ai beam chm class com dat dbmdl dcr dir dll dms doc dot dxr dylib
       |epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm odt ott
       |pages pdb ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt wri
       |xls xlt""".stripMargin.split("\\s+").foreach { ext =>
         val binFile = new File("binfile." + ext).getName
-        println("binFile: " + binFile)
+        // println("binFile: " + binFile)
         assert(FileTypes.isBinaryFile(binFile))
         assert(!FileTypes.isCodeFile(binFile))
         assert(!FileTypes.isArchiveFile(binFile))
@@ -41,14 +41,14 @@ class FileTypesTest extends AnyFunSuite {
   }
 
   test("test code extensions") {
-    """ada adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl cc cfm cgi
+    """adb ads applejs as asm au3 bas bash bat boo bsh c c++ cbl cc cfm cgi
       |clj cls cmd cob coffee cpp cs csh cxx d e el elm erl es ex exs frm fs fth
       |fx go groovy h h++ hh hpp hs java js js2 jsf json jsp jspf kt lhs lisp
       |lua m ml pas php php3 php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi py pyw
       |pyx r rb rkt rs s sass sbt sc scm scss scala sh swift tcl ts vb vbs""".
       stripMargin.split("\\s+").foreach { ext =>
         val codeFile = new File("codefile." + ext).getName
-        println("codeFile: " + codeFile)
+        // println("codeFile: " + codeFile)
         assert(!FileTypes.isBinaryFile(codeFile))
         assert(FileTypes.isCodeFile(codeFile))
         assert(!FileTypes.isArchiveFile(codeFile))
@@ -61,13 +61,13 @@ class FileTypesTest extends AnyFunSuite {
   }
 
   test("test nosearch extensions") {
-    """aif aifc aiff au avi bmp cab cur db dib dmg eot gif icns ico
-      |idlk ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu
-      |ogg otf pdf pict png qt ra ram rm rpm snd suo tif tiff tte ttf wav
+    """aif aifc aiff au avi bmp cur db dib eot gif icns ico
+      |idlk ief jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu
+      |ogg otf pict png qt ra ram snd suo tif tiff tte ttf wav
       |woff""".
       stripMargin.split("\\s+").foreach { ext =>
         val nosearchFile = new File("nosearch." + ext).getName
-        println("nosearchFile: " + nosearchFile)
+        // println("nosearchFile: " + nosearchFile)
         assert(!FileTypes.isBinaryFile(nosearchFile))
         assert(!FileTypes.isArchiveFile(nosearchFile))
         assert(!FileTypes.isSearchableFile(nosearchFile))
@@ -88,10 +88,10 @@ class FileTypesTest extends AnyFunSuite {
       |po pot properties ps pt rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml sht
       |shtm shtml sln smi smil spec sqc sql st str strings sty suml sxw t tex
       |text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml vssscc
-      |vxml wbxml webinfo wml wmls wrl wsc wsd wsdd xlf xsp yaml
+      |vxml wbxml webinfo wml wmls wsc wsd wsdd xlf xsp yaml
       |yml""".stripMargin.split("\\s+").foreach { ext =>
         val textFile = new File("textFile." + ext).getName
-        println("textFile: " + textFile)
+        // println("textFile: " + textFile)
         assert(!FileTypes.isBinaryFile(textFile))
         assert(!FileTypes.isArchiveFile(textFile))
         assert(FileTypes.isSearchableFile(textFile))
@@ -103,10 +103,10 @@ class FileTypesTest extends AnyFunSuite {
   }
 
   test("test unknown extensions") {
-    """adm aps cli clw def df2 ncb nt nt2 orig pc plg roff sun texinfo tr xwd""".
+    """adm aps cli clw df2 ncb nt nt2 orig pc plg sun xwd""".
       split("\\s+").foreach { ext =>
         val unknownFile = new File("unknown." + ext).getName
-        println("unknownFile: " + unknownFile)
+        // println("unknownFile: " + unknownFile)
         assert(!FileTypes.isBinaryFile(unknownFile))
         assert(!FileTypes.isArchiveFile(unknownFile))
         assert(!FileTypes.isSearchableFile(unknownFile))
@@ -124,7 +124,7 @@ class FileTypesTest extends AnyFunSuite {
       |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xhtml xht xjb xlsx xltx xml
       |xps xsd xsl xslt xspf xul""".stripMargin.split("\\s+").foreach { ext =>
         val xmlFile = new File("xmlfile." + ext).getName
-        println("xmlFile: " + xmlFile)
+        // println("xmlFile: " + xmlFile)
         assert(!FileTypes.isBinaryFile(xmlFile))
         assert(!FileTypes.isCodeFile(xmlFile))
         assert(!FileTypes.isArchiveFile(xmlFile))

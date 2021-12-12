@@ -8,7 +8,7 @@ import java.io.File
 class SearcherFilteringTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   def getSearchSettings: SearchSettings = {
-    SearchSettings(startPath = Some("."), searchPatterns = Set("Searcher".r))
+    SearchSettings(paths = Set("."), searchPatterns = Set("Searcher".r))
   }
 
   /** ***********************************************************

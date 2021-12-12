@@ -125,23 +125,27 @@ class Searcher (settings: SearchSettings) {
   }
 
   def search(): Seq[SearchResult] = {
-    val startPathFile = new File(settings.startPath.get)
-    if (startPathFile.isDirectory) {
-      if (isSearchDir(startPathFile)) {
-        searchPath(startPathFile)
+    val results = mutable.ListBuffer.empty[SearchResult]
+    settings.paths.foreach { p =>
+      val startPathFile = new File(p)
+      if (startPathFile.isDirectory) {
+        if (isSearchDir(startPathFile)) {
+          results ++= searchPath(startPathFile)
+        } else {
+          throw new SearchException("Startpath does not match search settings")
+        }
+      } else if (startPathFile.isFile) {
+        if (filterFile(startPathFile)) {
+          val fileType = FileTypes.getFileType(startPathFile.getName)
+          results ++= searchFile(new SearchFile(startPathFile, fileType))
+        } else {
+          throw new SearchException("Startpath does not match search settings")
+        }
       } else {
-        throw new SearchException("Startpath does not match search settings")
+        throw new SearchException("Startpath not searchable")
       }
-    } else if (startPathFile.isFile) {
-      if (filterFile(startPathFile)) {
-        val fileType = FileTypes.getFileType(startPathFile.getName)
-        searchFile(new SearchFile(startPathFile, fileType))
-      } else {
-        throw new SearchException("Startpath does not match search settings")
-      }
-    } else {
-      throw new SearchException("Startpath not searchable")
     }
+    Seq.empty[SearchResult] ++ results
   }
 
   def searchPath(startPath: File): Seq[SearchResult] = {
@@ -481,9 +485,9 @@ class Searcher (settings: SearchSettings) {
         } else {
           p.findAllMatchIn(contents)
         }
-      for (m <- matchIterator) {
+      matchIterator.iterator.foreach(m => {
         results += new SearchResult(p, Some(sf), 0, m.start + 1, m.end + 1, None)
-      }
+      })
     }
     Seq.empty[SearchResult] ++ results
   }
@@ -631,9 +635,9 @@ object Searcher {
   val tarExtension = "tar"
 
   val settingsTests: Seq[SearchSettings => Option[String]] = Seq[SearchSettings => Option[String]](
-    ss => if (ss.startPath.isDefined && ss.startPath.get.nonEmpty) None else Some("Startpath not defined"),
-    ss => if (new File(ss.startPath.get).exists()) None else Some("Startpath not found"),
-    ss => if (new File(ss.startPath.get).canRead) None else Some("Startpath not readable"),
+    ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
+    ss => if (ss.paths.forall { p => new File(p).exists() }) None else Some("Startpath not found"),
+    ss => if (ss.paths.forall { p => new File(p).canRead }) None else Some("Startpath not readable"),
     ss => if (ss.searchPatterns.nonEmpty) None else Some("No search patterns defined"),
     ss => if (ss.linesAfter >= 0) None else Some("Invalid linesafter"),
     ss => if (ss.linesBefore >= 0) None else Some("Invalid linesbefore"),
