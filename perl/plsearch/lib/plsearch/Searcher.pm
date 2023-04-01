@@ -36,23 +36,35 @@ sub new {
 sub validate_settings {
     my $self = shift;
     my $errs = [];
-    if (!defined($self->{settings}->{startpath}) || length($self->{settings}->{startpath}) == 0) {
+    unless (scalar @{$self->{settings}->{paths}}) {
         push(@{$errs}, 'Startpath not defined');
+        return $errs;
     }
-    unless (-e $self->{settings}->{startpath}) {
-        push(@{$errs}, 'Startpath not found');
-    }
-    unless (-r $self->{settings}->{startpath}) {
-        push(@{$errs}, 'Startpath not readable');
+    foreach my $path (@{$self->{settings}->{paths}}) {
+        if (!defined($path) || length($path) == 0) {
+            push(@{$errs}, 'Startpath not defined');
+            return $errs;
+        }
+        unless (-e $path) {
+            push(@{$errs}, 'Startpath not found');
+            return $errs;
+        }
+        unless (-r $path) {
+            push(@{$errs}, 'Startpath not readable');
+            return $errs;
+        }
     }
     unless (scalar @{$self->{settings}->{searchpatterns}}) {
         push(@{$errs}, 'No search patterns defined');
+        return $errs;
     }
     if ($self->{settings}->{linesafter} < 0) {
         push(@{$errs}, 'Invalid linesafter');
+        return $errs;
     }
     if ($self->{settings}->{linesbefore} < 0) {
         push(@{$errs}, 'Invalid linesbefore');
+        return $errs;
     }
     if ($self->{settings}->{maxlinelength} < 0) {
         push(@{$errs}, 'Invalid maxlinelength');
@@ -220,15 +232,19 @@ sub rec_get_search_files {
 sub get_search_files {
     my $self = shift;
     my $searchfiles = [];
-    if (-d $self->{settings}->{startpath}) {
-        push(@{$searchfiles}, @{$self->rec_get_search_files($self->{settings}->{startpath})});
-    } elsif (-f $self->{settings}->{startpath}) {
-        if ($self->filter_file($self->{settings}->{startpath})) {
-            push(@{$searchfiles}, $self->{settings}->{startpath});
-        } else {
-            plsearch::common::log("ERROR: Startpath does not match search settings");
+
+    foreach my $path (@{$self->{settings}->{paths}}) {
+        if (-d $path) {
+            push(@{$searchfiles}, @{$self->rec_get_search_files($path)});
+        } elsif (-f $path) {
+            if ($self->filter_file($path)) {
+                push(@{$searchfiles}, $path);
+            } else {
+                plsearch::common::log("ERROR: Startpath does not match search settings");
+            }
         }
     }
+
     return $searchfiles;
 }
 

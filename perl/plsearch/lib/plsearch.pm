@@ -2,10 +2,11 @@ package plsearch;
 
 use 5.005;
 use strict;
+use warnings FATAL => 'all';
 
 require Exporter;
 use AutoLoader qw(AUTOLOAD);
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
+our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 @ISA = qw(Exporter);
 
 # Items to export into callers namespace by default. Note: do not export

@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 53;
+use Test::Simple tests => 55;
 
 use plsearch::SearchOptions;
 
@@ -38,12 +38,12 @@ sub test_no_args {
     ok(!$settings->{listlines}, 'listlines is false by default');
     ok($settings->{maxlinelength} == 150, 'maxlinelength == 150 by default');
     ok(!$settings->{multilinesearch}, 'multilinesearch is false by default');
+    ok(scalar @{$settings->{paths}} == 0, 'paths is empty by default');
     ok($settings->{printresults}, 'printresults is true by default');
     ok(!$settings->{printusage}, 'printusage is false by default');
     ok(!$settings->{printversion}, 'printversion is false by default');
     ok($settings->{recursive}, 'recursive is true by default');
     ok(!$settings->{searcharchives}, 'searcharchives is false by default');
-    ok($settings->{startpath} eq '', 'startpath is empty by default');
     ok(!$settings->{uniquelines}, 'uniquelines is false by default');
     ok(!$settings->{verbose}, 'verbose is false by default');
 }
@@ -55,9 +55,10 @@ sub test_valid_args {
     ok(scalar @{$settings->{in_extensions}} == 2, 'in_extensions has two extensions');
     ok($settings->{in_extensions}->[0] eq 'pl', 'in_extensions has "pl" extension');
     ok($settings->{in_extensions}->[1] eq 'py', 'in_extensions has "py" extension');
+    ok(scalar @{$settings->{paths}} == 1, 'paths has one path');
+    ok($settings->{paths}->[0] eq '.', 'paths has "." path');
     ok(scalar @{$settings->{searchpatterns}} == 1, 'searchpatterns has one pattern');
     ok($settings->{searchpatterns}->[0] eq 'Search', 'searchpatterns has "Search" pattern');
-    ok($settings->{startpath} eq '.', 'startpath eq '.'');
 }
 
 sub test_archivesonly_arg {
@@ -94,7 +95,7 @@ sub test_settings_from_json {
     my $settings = new plsearch::SearchSettings();
     my $json = <<"END_JSON";
 {
-  "startpath": "~/src/xsearch/",
+  "path": "~/src/xsearch/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
@@ -107,7 +108,8 @@ sub test_settings_from_json {
 }
 END_JSON
     $searchoptions->settings_from_json($json, $settings);
-    ok($settings->{startpath} eq '~/src/xsearch/', "startpath is set to ~/src/xsearch/");
+    ok(scalar @{$settings->{paths}} == 1, "paths has one paths");
+    ok($settings->{paths}->[0] eq '~/src/xsearch/', 'paths has "~/src/xsearch/" path');
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");
     ok($settings->{in_extensions}->[1] eq 'ts', "in_extensions contains ts extension");

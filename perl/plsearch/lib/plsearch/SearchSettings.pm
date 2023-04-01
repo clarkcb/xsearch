@@ -46,13 +46,13 @@ sub new {
         out_filetypes => [],
         out_linesafterpatterns => [],
         out_linesbeforepatterns => [],
+        paths => [],
         printresults => 1,
         printusage => 0,
         printversion => 0,
         recursive => 1,
         searcharchives => 0,
         searchpatterns => [],
-        startpath => '',
         textfileencoding => 'UTF-8',
         uniquelines => 0,
         verbose => 0,
@@ -165,13 +165,13 @@ sub to_string {
     $s .= ', out_filetypes=' . $self->aref_to_string($self->{out_filetypes});
     $s .= ', out_linesafterpatterns=' . $self->aref_to_string($self->{out_linesafterpatterns});
     $s .= ', out_linesbeforepatterns=' . $self->aref_to_string($self->{out_linesbeforepatterns});
+    $s .= ', paths=' . $self->aref_to_string($self->{paths});
     $s .= ', printresults=' . $self->bool_to_string($self->{printresults});
     $s .= ', printusage=' . $self->bool_to_string($self->{printusage});
     $s .= ', printversion=' . $self->bool_to_string($self->{printversion});
     $s .= ', recursive=' . $self->bool_to_string($self->{recursive});
     $s .= ', searcharchives=' . $self->bool_to_string($self->{searcharchives});
     $s .= ', searchpatterns=' . $self->aref_to_string($self->{searchpatterns});
-    $s .= ', startpath="' . $self->{startpath} . '"';
     $s .= ', textfileencoding="' . $self->{textfileencoding} . '"';
     $s .= ', uniquelines=' . $self->bool_to_string($self->{uniquelines});
     $s .= ', verbose=' . $self->bool_to_string($self->{verbose});

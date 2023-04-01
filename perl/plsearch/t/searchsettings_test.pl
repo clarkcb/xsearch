@@ -40,7 +40,7 @@ sub test_default_settings {
     ok(!$settings->{printversion}, "printversion is false by default");
     ok($settings->{recursive}, "recursive is true by default");
     ok(!$settings->{searcharchives}, "searcharchives is false by default");
-    ok($settings->{startpath} eq '', "startpath is empty by default");
+    ok(scalar @{$settings->{paths}} == 0, "paths is empty by default");
     ok(!$settings->{uniquelines}, "uniquelines is false by default");
     ok(!$settings->{verbose}, "verbose is false by default");
 }

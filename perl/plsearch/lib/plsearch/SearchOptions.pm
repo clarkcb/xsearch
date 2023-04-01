@@ -110,6 +110,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{out_linesbeforepatterns});
     },
+    'path' => sub {
+        my ($s, $settings) = @_;
+        push (@{$settings->{paths}}, $s);
+    },
     'searchpattern' => sub {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{searchpatterns});
@@ -117,10 +121,6 @@ my $arg_action_hash = {
     'settings-file' => sub {
         my ($s, $settings) = @_;
         settings_from_file($s, $settings);
-    },
-    'startpath' => sub {
-        my ($s, $settings) = @_;
-        $settings->{startpath} = $s;
     }
 };
 
@@ -293,8 +293,6 @@ sub __from_json {
             &{$arg_action_hash->{$o}}($json_hash->{$o}, $settings);
         } elsif (exists $bool_flag_action_hash->{$o}) {
             &{$bool_flag_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif ($o eq 'startpath') {
-            $settings->{startpath} = $json_hash->{$o};
         } else {
             push(@{$errs}, 'Invalid option: ' . $o);
         }
@@ -334,7 +332,7 @@ sub settings_from_args {
                 push(@errs, "Invalid option: $arg");
             }
         } else {
-            $settings->{startpath} = $arg;
+            push (@{$settings->{paths}}, $arg);
         }
     }
     return ($settings, \@errs);
@@ -347,7 +345,7 @@ sub usage {
 
 sub get_usage_string {
     my $self = shift;
-    my $usage = "Usage:\n plsearch.pl [options] -s <searchpattern> <startpath>\n\nOptions:\n";
+    my $usage = "Usage:\n plsearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n";
     my $longest = 0;
     my $options_with_sortkey = {};
     my @opt_strs_with_descs;
