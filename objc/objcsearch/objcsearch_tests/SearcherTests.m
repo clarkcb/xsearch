@@ -332,7 +332,7 @@
  *************************************************************/
 - (void)testSearchMultiLineString {
     SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings setStartPath:@"."];
+    [settings addPath:@"."];
     [settings addSearchPattern:@"Searcher"];
     NSError *error = nil;
     Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];

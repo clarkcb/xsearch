@@ -27,7 +27,6 @@
 @property(nonatomic) BOOL printVersion;
 @property(nonatomic) BOOL recursive;
 @property(nonatomic) BOOL searchArchives;
-@property(nonatomic) NSMutableString *startPath;
 @property(nonatomic) NSString *textFileEncoding;
 @property(nonatomic) BOOL uniqueLines;
 @property(nonatomic) BOOL verbose;
@@ -50,6 +49,7 @@
 @property(nonatomic) NSMutableArray<NSNumber*> *outFileTypes;
 @property(nonatomic) NSMutableArray<Regex*> *outLinesAfterPatterns;
 @property(nonatomic) NSMutableArray<Regex*> *outLinesBeforePatterns;
+@property(nonatomic) NSMutableArray<NSString*> *paths;
 @property(nonatomic) NSMutableArray<Regex*> *searchPatterns;
 
 -(NSString *) description;
@@ -65,6 +65,7 @@
 - (void) addOutDirPattern: (NSString*)pattern;
 - (void) addOutExtension: (NSString*)ext;
 - (void) addOutFilePattern: (NSString*)pattern;
+- (void) addPath: (NSString*)path;
 - (void) addSearchPattern: (NSString*)pattern;
 
 - (void) addFileType:(NSString*)typeName toArr:(NSMutableArray *)arr;

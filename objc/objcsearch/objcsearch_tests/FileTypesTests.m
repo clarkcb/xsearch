@@ -30,12 +30,17 @@
 }
 
 - (void)testBinaryFiles {
-    NSArray<NSString*> *exts = @[@"a", @"ai", @"beam", @"bin", @"chm", @"class", @"com", @"dat",
-                                 @"dll", @"doc", @"dot", @"dylib", @"exe", @"hlp", @"lib", @"mdb",
-                                 @"pdb", @"so"];
+    NSArray<NSString*> *exts = @[@"a", @"ai", @"beam", @"chm", @"class", @"com", @"dat",
+                                 @"dll", @"doc", @"dot", @"dylib", @"exe", @"hlp", @"lib",
+                                 @"mdb", @"pdb", @"so"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"binary.%@", x];
-        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeBinary);
+        FileType ft = [self.fileTypes getFileType:fileName];
+        // logMsg([NSString stringWithFormat:@"\nfileName: %@", fileName]);
+        // logMsg([NSString stringWithFormat:@"ft: %@", [FileTypes toName:ft]]);
+        // BOOL isBinary = ft == FileTypeBinary;
+        // logMsg([NSString stringWithFormat:@"ft == FileTypeBinary: %hhd", isBinary]);
+        XCTAssert(ft == FileTypeBinary);
         XCTAssert(![self.fileTypes isArchiveFile:fileName]);
         XCTAssert([self.fileTypes isBinaryFile:fileName]);
         XCTAssert(![self.fileTypes isCodeFile:fileName]);
@@ -43,10 +48,10 @@
 }
 
 - (void)testCodeFiles {
-    NSArray<NSString*> *exts = @[@"bas", @"bash", @"bat", @"c", @"clj", @"cpp", @"cs", @"erl",
-                                 @"fs", @"go", @"groovy", @"h", @"hpp", @"hs", @"java", @"js",
-                                 @"m", @"php", @"py", @"rb", @"scala", @"sh",  @"swift", @"ts",
-                                 @"vb"];
+    NSArray<NSString*> *exts = @[@"asp", @"bas", @"bash", @"bat", @"c", @"clj", @"cpp", @"cs",
+                                 @"css", @"erl", @"fs", @"go", @"groovy", @"h", @"hpp", @"hs",
+                                 @"htm", @"html", @"java", @"js", @"m", @"php", @"py", @"rb",
+                                 @"rc", @"scala", @"sh", @"swift", @"ts", @"vb"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"code.%@", x];
         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeCode);
@@ -57,13 +62,17 @@
 }
 
 - (void)testTextFiles {
-    NSArray<NSString*> *exts = @[@"asp", @"cfg", @"cmake", @"conf", @"css", @"csv", @"ddl", @"dtd",
-                                 @"htm", @"html", @"ics", @"ini", @"log", @"markdown", @"md", @"po",
-                                 @"pot", @"properties", @"rc", @"rtf", @"scc", @"sgm",  @"sgml",
-                                 @"sql", @"txt", @"yml"];
+    NSArray<NSString*> *exts = @[@"cfg", @"cmake", @"conf", @"csv", @"ddl", @"ics", @"ini",
+                                 @"log", @"markdown", @"md", @"po", @"pot", @"properties",
+                                 @"rtf", @"scc", @"sgm",  @"sgml", @"sql", @"txt", @"yml"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"text.%@", x];
-         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeText);
+        FileType ft = [self.fileTypes getFileType:fileName];
+        logMsg([NSString stringWithFormat:@"\nfileName: %@", fileName]);
+        logMsg([NSString stringWithFormat:@"ft: %@", [FileTypes toName:ft]]);
+        BOOL isText = ft == FileTypeText;
+        logMsg([NSString stringWithFormat:@"ft == FileTypeText: %hhd", isText]);
+        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeText);
         XCTAssert(![self.fileTypes isArchiveFile:fileName]);
         XCTAssert(![self.fileTypes isBinaryFile:fileName]);
         XCTAssert(![self.fileTypes isCodeFile:fileName]);

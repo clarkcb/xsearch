@@ -65,8 +65,8 @@
 
 - (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(SearchSettings *)settings {
     if ([obj isKindOfClass:[NSString class]]) {
-        if ([name isEqualToString:@"startpath"]) {
-            [settings setStartPath:(NSMutableString*)obj];
+        if ([name isEqualToString:@"path"]) {
+            [settings addPath:(NSMutableString*)obj];
         } else if (self.argActionDict[name]) {
             void(^block)() = self.argActionDict[name];
             block(obj, settings);
@@ -204,6 +204,9 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
                 [ss.outLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
             }, @"out-linesbeforepattern",
             ^void (NSString* s, SearchSettings *ss) {
+                [ss addPath:s];
+            }, @"path",
+            ^void (NSString* s, SearchSettings *ss) {
                 [ss.searchPatterns addObject:[[Regex alloc] initWithPattern:s]];
             }, @"searchpattern",
 //            ^void (NSString* s, SearchSettings *ss) {
@@ -283,7 +286,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, SearchSettings*);
                 return nil;
             }
         } else {
-            settings.startPath = [NSMutableString stringWithString:args[i]];
+            [settings addPath:args[i]];
         }
         i++;
     }
@@ -293,7 +296,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, SearchSettings*);
 
 - (NSString*) getUsageString {
     NSMutableString *s = [[NSMutableString alloc] initWithString:@"\nUsage:\n"];
-    [s appendString:@" objcsearch [options] -s <searchpattern> <startpath>\n\n"];
+    [s appendString:@" objcsearch [options] -s <searchpattern> <path> [<path> ...]\n\n"];
     [s appendString:@"Options:\n"];
     NSMutableArray *optStrings = [NSMutableArray array];
     long longest = 0;

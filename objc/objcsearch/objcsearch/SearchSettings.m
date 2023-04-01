@@ -6,7 +6,6 @@
 
 @synthesize archivesOnly = _archivesOnly;
 @synthesize debug = _debug;
-@synthesize startPath = _startPath;
 
 - (instancetype) init {
     self = [super init];
@@ -28,7 +27,6 @@
         self.printVersion = false;
         self.recursive = true;
         self.searchArchives = false;
-        self.startPath = [NSMutableString string];
         self.textFileEncoding = @"UTF-8";
         self.uniqueLines = false;
         self.verbose = false;
@@ -51,6 +49,7 @@
         self.outFileTypes = [[NSMutableArray alloc] init];
         self.outLinesAfterPatterns = [[NSMutableArray alloc] init];
         self.outLinesBeforePatterns = [[NSMutableArray alloc] init];
+        self.paths = [[NSMutableArray alloc] init];
         self.searchPatterns = [[NSMutableArray alloc] init];
     }
     return self;
@@ -87,13 +86,13 @@
     [d appendFormat:@", outFileTypes=%@", fileTypesArrayToNSString(self.outFileTypes)];
     [d appendFormat:@", outLinesAfterPatterns=%@", arrayToNSString(self.outLinesAfterPatterns)];
     [d appendFormat:@", outLinesBeforePatterns=%@", arrayToNSString(self.outLinesBeforePatterns)];
+    [d appendFormat:@", paths=%@", arrayToNSString(self.paths)];
     [d appendFormat:@", printResults=%@", boolToNSString(self.printResults)];
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
     [d appendFormat:@", recursive=%@", boolToNSString(self.recursive)];
     [d appendFormat:@", searchArchives=%@", boolToNSString(self.searchArchives)];
     [d appendFormat:@", searchPatterns=%@", arrayToNSString(self.searchPatterns)];
-    [d appendFormat:@", startPath=\"%@\"", self.startPath];
     [d appendFormat:@", textFileEncoding=\"%@\"", self.textFileEncoding];
     [d appendFormat:@", uniqueLines=%@", boolToNSString(self.uniqueLines)];
     [d appendFormat:@", verbose=%@", boolToNSString(self.verbose)];
@@ -168,6 +167,10 @@
     [self addFileType:typeName toArr:self.outFileTypes];
 }
 
+- (void) addPath:(NSString *)path {
+    [self.paths addObject:path];
+}
+
 - (void) addSearchPattern:(NSString *)pattern {
     [self addPattern:pattern toArr:self.searchPatterns];
 }
@@ -192,15 +195,6 @@
     if (b) {
         [self setVerbose:b];
     }
-}
-
-- (NSString*) startPath {
-    //return [NSString stringWithString:_startPath];
-    return (NSString*)_startPath;
-}
-
-- (void)setStartPath:(NSString*)startPath {
-    _startPath = [NSMutableString stringWithString:startPath];
 }
 
 NSString* fileTypesArrayToNSString(NSArray<NSNumber*> *arr) {

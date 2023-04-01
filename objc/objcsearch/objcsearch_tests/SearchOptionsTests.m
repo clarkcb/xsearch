@@ -43,10 +43,12 @@
     XCTAssert(![settings searchArchives]);
     XCTAssert(![settings uniqueLines]);
     XCTAssert(![settings verbose]);
-    
+
+    XCTAssert([[settings paths] count] == 1);
+    XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"."]);
+
     XCTAssert([[settings searchPatterns] count] == 1);
     XCTAssert([[[[settings searchPatterns] objectAtIndex:0] pattern] isEqual:@"Searcher"]);
-    XCTAssert([[settings startPath] isEqual:@"."]);
 }
 
 - (void)testSettingsFromValidArgs {
@@ -58,9 +60,12 @@
     XCTAssert([[settings inExtensions] count] == 2);
     XCTAssert([[[settings inExtensions] objectAtIndex:0] isEqual:@"java"]);
     XCTAssert([[[settings inExtensions] objectAtIndex:1] isEqual:@"scala"]);
+
+    XCTAssert([[settings paths] count] == 1);
+    XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"."]);
+
     XCTAssert([[settings searchPatterns] count] == 1);
     XCTAssert([[[[settings searchPatterns] objectAtIndex:0] pattern] isEqual:@"Search"]);
-    XCTAssert([[settings startPath] isEqual:@"."]);
 }
 
 - (void)testSettingsFromJson {
@@ -68,7 +73,7 @@
 
     NSString *startPath = @"~/src/xsearch";
     NSString *json = [NSString stringWithFormat:@"{\n"
-                      "\"startpath\": \"%@\",\n"
+                      "\"path\": \"%@\",\n"
                       "\"in-ext\": [\"js\", \"ts\"],\n"
                       "\"out-dirpattern\": \"node_module\",\n"
                       "\"out-filepattern\": [\"temp\"],\n"
@@ -85,6 +90,8 @@
     SearchOptions *options = [[SearchOptions alloc] init];
     [options settingsFromData:data settings:settings];
 
+    XCTAssert([[settings paths] count] == 1);
+    XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"~/src/xsearch"]);
     XCTAssert([[settings inExtensions] count] == 2);
     XCTAssert([[[settings inExtensions] objectAtIndex:0] isEqual:@"js"]);
     XCTAssert([[[settings inExtensions] objectAtIndex:1] isEqual:@"ts"]);
@@ -99,8 +106,6 @@
     XCTAssert([settings debug]);
     XCTAssert([settings firstMatch]);
     XCTAssert([settings excludeHidden]);
-    //NSString *sp = [settings startPath];
-    //XCTAssert([[settings startPath] isEqual:startPath]);
 }
 
 @end

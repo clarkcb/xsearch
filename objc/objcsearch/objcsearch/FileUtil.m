@@ -115,6 +115,15 @@
     return [[self getFileManager] fileExistsAtPath:filePath];
 }
 
++ (BOOL) allExist:(NSArray<NSString*>*)filePaths {
+    for (NSString *fp in filePaths) {
+        if (![self exists:fp] && ![self exists:[self expandPath:fp]]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 + (BOOL) isDirectory:(NSString*)filePath {
     if ([[self dotDirs] containsObject:filePath]) {
         return true;
@@ -145,6 +154,15 @@
 
 + (BOOL) isReadableFile:(NSString*)filePath {
     return [[self getFileManager] isReadableFileAtPath:filePath];
+}
+
++ (BOOL) allReadable:(NSArray<NSString*>*)filePaths {
+    for (NSString *fp in filePaths) {
+        if (![self isReadableFile:fp] && ![self isReadableFile:[self expandPath:fp]]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath {

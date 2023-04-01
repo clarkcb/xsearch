@@ -23,11 +23,11 @@
 - (void) validateSettings:(SearchSettings*)settings error:(NSError**)error {
     if (settings == nil) {
         setError(error, @"Settings not defined");
-    } else if (settings.startPath == nil || [settings.startPath length] == 0) {
+    } else if ([settings.paths count] == 0) {
         setError(error, @"Startpath not defined");
-    } else if (![FileUtil exists:settings.startPath] && ![FileUtil exists:[FileUtil expandPath:settings.startPath]]) {
+    } else if (![FileUtil allExist:settings.paths]) {
         setError(error, @"Startpath not found");
-    } else if (![FileUtil isReadableFile:settings.startPath] && ![FileUtil isReadableFile:[FileUtil expandPath:settings.startPath]]) {
+    } else if (![FileUtil allReadable:settings.paths]) {
         setError(error, @"Startpath not readable");
     } else if ([settings.searchPatterns count] == 0) {
         setError(error, @"No search patterns defined");
@@ -149,15 +149,17 @@
 - (NSArray<SearchResult*>*) search:(NSError**)error {
     //logMsg(@"Searching...");
     NSMutableArray<SearchResult*> *results = [NSMutableArray array];
-    if ([FileUtil isDirectory:self.settings.startPath]) {
-        [results addObjectsFromArray:[self searchDirPath:self.settings.startPath error:error]];
-    } else {
-        // TODO: looks like we need to do filterFile on this
-        FileType fileType = [self.fileTypes getFileType:self.settings.startPath];
-        SearchFile *sf = [[SearchFile alloc]
-                                initWithFilePath:self.settings.startPath
-                                fileType:fileType];
-        [results addObjectsFromArray:[self searchFile:sf error:error]];
+    for (NSString *p in self.settings.paths) {
+        if ([FileUtil isDirectory:p]) {
+            [results addObjectsFromArray:[self searchDirPath:p error:error]];
+        } else {
+            // TODO: looks like we need to do filterFile on this
+            FileType fileType = [self.fileTypes getFileType:p];
+            SearchFile *sf = [[SearchFile alloc]
+                                    initWithFilePath:p
+                                    fileType:fileType];
+            [results addObjectsFromArray:[self searchFile:sf error:error]];
+        }
     }
     return [NSArray arrayWithArray:results];
 }
@@ -177,12 +179,12 @@
 
         logMsg([NSString stringWithFormat:@"\nDirectories to be searched (%lu):", [searchDirs count]]);
         for (NSString *d in searchDirs) {
-            logMsg([FileUtil relativePath:d to:self.settings.startPath]);
+            logMsg([FileUtil relativePath:d to:filePath]);
         }
 
         logMsg([NSString stringWithFormat:@"\nFiles to be searched (%lu):", [searchFiles count]]);
         for (SearchFile *sf in searchFiles) {
-            logMsg([FileUtil relativePath:[sf description] to:self.settings.startPath]);
+            logMsg([FileUtil relativePath:[sf description] to:filePath]);
         }
     }
 

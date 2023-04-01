@@ -22,11 +22,13 @@
 + (NSArray<NSString*>*) contentsForPath:(NSString*)filePath error:(NSError**)error;
 + (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath settings:(SearchSettings*)settings;
 + (BOOL) exists:(NSString*)filePath;
++ (BOOL) allExist:(NSArray<NSString*>*)filePaths;
 + (BOOL) isDirectory:(NSString*)filePath;
 + (BOOL) isDotDir:(NSString*)filePath;
 + (BOOL) isHidden:(NSString*)filePath;
 + (BOOL) isHiddenFile:(NSString*)fileName;
 + (BOOL) isReadableFile:(NSString*)filePath;
++ (BOOL) allReadable:(NSArray<NSString*>*)filePaths;
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath;
 + (NSString*) normalizePath:(NSString*)path;
 + (NSDirectoryEnumerationOptions) optionsForSettings:(SearchSettings*)settings;
