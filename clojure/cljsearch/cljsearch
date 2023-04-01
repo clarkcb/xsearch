@@ -1,6 +1,0 @@
-#!/bin/sh
-
-CLJSEARCH_PATH=$HOME/src/xsearch/clojure/cljsearch
-CLJSEARCHJAR=$CLJSEARCH_PATH/target/uberjar/cljsearch-0.1.0-SNAPSHOT-standalone.jar
-
-java -jar "$CLJSEARCHJAR" "$@"

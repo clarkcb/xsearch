@@ -14,13 +14,13 @@
     (if (empty? errs)
       (do
         (if (:printusage settings) (usage))
-        (let [errs (search settings)]
+        (let [[results errs] (search settings)]
           (if (empty? errs)
             (do
-              (if (:printresults settings) (print-search-results settings))
-              (if (:listdirs settings) (print-matching-dirs))
-              (if (:listfiles settings) (print-matching-files))
-              (if (:listlines settings) (print-matching-lines settings)))
+              (if (:printresults settings) (print-search-results results settings))
+              (if (:listdirs settings) (print-matching-dirs results))
+              (if (:listfiles settings) (print-matching-files results))
+              (if (:listlines settings) (print-matching-lines results settings)))
             (do
               (log-errors errs)
               (usage)))))

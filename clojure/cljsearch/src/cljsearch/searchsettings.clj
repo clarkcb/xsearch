@@ -45,13 +45,13 @@
     out-filetypes
     out-linesafterpatterns
     out-linesbeforepatterns
+    paths
     printresults
     printusage
     printversion
     recursive
     searcharchives
     searchpatterns
-    startpath
     textfileencoding
     uniquelines
     verbose
@@ -88,13 +88,13 @@
     #{}     ; out-filetypes
     #{}     ; out-linesafterpatterns
     #{}     ; out-linesbeforepatterns
+    #{}     ; paths
     true    ; printresults
     false   ; printusage
     false   ; printversion
     true    ; recursive
     false   ; searcharchives
     #{}     ; searchpatterns
-    nil     ; startpath
     "utf-8" ; textfileencoding
     false   ; uniquelines
     false   ; verbose
@@ -130,6 +130,20 @@
       (add-filetypes settings typ typesname)
       :else
       (add-filetypes settings (str/split typ #",") typesname))))
+
+(defn add-paths [settings paths]
+  (if (empty? paths)
+    settings
+    (add-paths
+      (update-in settings [:paths] #(add-element (first paths) %)) (rest paths))))
+
+(defn add-path [settings path]
+  (let [t (type path)]
+    (cond
+      (= t (type []))
+        (add-paths settings path)
+      :else
+        (add-paths settings [path]))))
 
 (defn add-patterns [settings pats patname]
   (if (empty? pats)

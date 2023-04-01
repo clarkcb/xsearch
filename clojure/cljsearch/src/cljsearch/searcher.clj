@@ -20,15 +20,6 @@
         [cljsearch.searchresult :only
           (->SearchResult search-result-to-string)]))
 
-; ref to contain the seq of SearchResult records
-(def search-results (ref []))
-
-(defn save-search-result
-  "Saves a SearchResult to the search-results vector ref"
-  [r]
-  (dosync
-    (alter search-results conj r)))
-
 (defn is-search-dir? [d settings]
   (or
     (is-dot-dir? (get-name d))
@@ -46,62 +37,74 @@
 (defn print-search-result [r settings]
   (log-msg (search-result-to-string r settings)))
 
-(defn print-search-results [settings]
-  (log-msg (format "\nSearch results (%d):" (count (deref search-results))))
-  (doseq [r (deref search-results)] (print-search-result r settings)))
+(defn print-search-results [results settings]
+  (log-msg (format "\nSearch results (%d):" (count results)))
+  (doseq [r results] (print-search-result r settings)))
 
-(defn get-matching-dirs []
-  (sort (distinct (map #(.getParent (:file %)) (deref search-results)))))
+(defn get-matching-dirs [results]
+  (sort (distinct (map #(.getParent (:file %)) (map #(:file %) results)))))
 
-(defn print-matching-dirs []
-  (let [dirs (get-matching-dirs)]
+(defn print-matching-dirs [results]
+  (let [dirs (get-matching-dirs results)]
     (log-msg (format "\nDirectories with matches (%d):" (count dirs)))
     (doseq [d dirs] (log-msg d))))
 
-(defn get-matching-files []
-  (sort (distinct (map #(.getPath (:file %)) (deref search-results)))))
+(defn get-matching-files [results]
+  (sort (distinct (map #(.getPath (:file %)) (map #(:file %) results)))))
 
-(defn print-matching-files []
-  (let [files (get-matching-files)]
+(defn print-matching-files [results]
+  (let [files (get-matching-files results)]
     (log-msg (format "\nFiles with matches (%d):" (count files)))
     (doseq [f files] (log-msg f))))
 
-(defn get-matching-lines [settings]
-  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) (deref search-results)))]
+(defn get-matching-lines [results settings]
+  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) results))]
     (if (:uniquelines settings)
       (distinct lines)
       lines)))
 
-(defn print-matching-lines [settings]
-  (let [lines (get-matching-lines settings)]
+(defn print-matching-lines [results settings]
+  (let [lines (get-matching-lines results settings)]
     (log-msg
       (if (:uniquelines settings)
         (format "\nUnique lines with matches (%d):" (count lines))
         (format "\nLines with matches (%d):" (count lines))))
     (doseq [l lines] (log-msg l))))
 
+(defn validate-path [path]
+  (if (not path)
+    "Startpath not defined"
+    (let [filepath (if path (file path) nil)]
+      (if (or (not filepath) (not (.exists filepath)))
+        "Startpath not found"
+        (if (not (.canRead filepath))
+          "Startpath not readable"
+          nil)))))
+
+(defn validate-paths [paths]
+  (if (or (not paths) (empty? paths))
+    ["Startpath not defined"]
+    (take 1 (filter #(not (= % nil)) (map validate-path paths)))))
+
 (defn validate-settings [settings]
-  (let [startpath (:startpath settings)
-        startdir (if startpath (file startpath) nil)
-        tests [(fn [ss] (if (not startpath) "Startpath not defined" nil))
-               (fn [ss] (if (or (not startdir) (not (.exists startdir))) "Startpath not found" nil))
-               (fn [ss] (if (and startdir (not (.canRead startdir))) "Startpath not readable" nil))
-               (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns defined" nil))
-               (fn [ss]
-                 (if
-                   (not
-                     (=
-                       (try
-                         (java.nio.charset.Charset/forName (:textfileencoding ss))
-                         (catch IllegalArgumentException e nil))
-                       nil)
-                   ) nil (format "Invalid encoding: %s" (:textfileencoding ss))))
-               (fn [ss] (if (< (:linesafter ss) 0) "Invalid linesafter" nil))
-               (fn [ss] (if (< (:linesbefore ss) 0) "Invalid linesbefore" nil))
-               (fn [ss] (if (< (:maxlinelength ss) 0) "Invalid maxlinelength" nil))
-              ]
-       ]
-    (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
+  (let [path-errs (take 1 (filter #(not (= % nil)) (validate-paths (:paths settings))))]
+    (if (not (empty? path-errs))
+      path-errs
+      (let [tests [(fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns defined" nil))
+                   (fn [ss]
+                     (if
+                       (not
+                         (=
+                           (try
+                             (java.nio.charset.Charset/forName (:textfileencoding ss))
+                             (catch IllegalArgumentException e nil))
+                           nil)
+                       ) nil (format "Invalid encoding: %s" (:textfileencoding ss))))
+                   (fn [ss] (if (< (:linesafter ss) 0) "Invalid linesafter" nil))
+                   (fn [ss] (if (< (:linesbefore ss) 0) "Invalid linesbefore" nil))
+                   (fn [ss] (if (< (:maxlinelength ss) 0) "Invalid maxlinelength" nil))
+                  ]]
+        (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))))
 
 (defn is-archive-search-file? [f settings]
   (and
@@ -120,6 +123,7 @@
 
 (defn is-search-file? [f settings]
   (and
+    (is-search-dir? (.getParentFile f) settings)
     (or
      (empty? (:in-extensions settings))
      (some #(= % (get-ext f)) (:in-extensions settings)))
@@ -152,17 +156,31 @@
         (not (:archivesonly settings))
         (is-search-file? f settings)))))
 
-(defn get-search-files [settings]
-  (let [startdir (file (:startpath settings))]
-    (if (:recursive settings)
+(defn get-search-files-for-path [settings path]
+  (let [pathfile (file path)]
+    (if (.isFile pathfile)
       (vec
        (map
         #(new-search-file % (get-filetype %))
-        (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq startdir)))))
-      (vec
-       (map
-        #(new-search-file % (get-filetype %))
-        (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles startdir))))))))
+        (filter #(filter-file? % settings) [pathfile])))
+      (if (:recursive settings)
+        (vec
+         (map
+          #(new-search-file % (get-filetype %))
+          (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq pathfile)))))
+        (vec
+         (map
+          #(new-search-file % (get-filetype %))
+          (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles pathfile)))))))))
+
+(defn get-search-files
+  ([settings]
+    (get-search-files settings (:paths settings) []))
+  ([settings paths searchfiles]
+    (if (empty? paths)
+      searchfiles
+      (let [nextsearchfiles (get-search-files-for-path settings (first paths))]
+        (get-search-files settings (rest paths) (concat searchfiles nextsearchfiles))))))
 
 (defn search-archive-file [f settings]
   (if (:verbose settings)
@@ -206,7 +224,7 @@
   (let [contents (slurp (:file sf) :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
         search-results (search-binary-string contents settings)
         with-file-results (map #(assoc-in % [:file] sf) search-results)]
-    (doseq [r with-file-results] (save-search-result r))))
+    with-file-results))
 
 (defn matches-any-pattern? [s pp]
   (some #(re-find % s) pp))
@@ -312,7 +330,7 @@
   (let [contents (slurp (:file sf) :encoding (:textfileencoding settings))
         search-results (search-multiline-string contents settings)
         with-file-results (map #(assoc-in % [:file] sf) search-results)]
-    (doseq [r with-file-results] (save-search-result r))))
+    with-file-results))
 
 (defn search-line-for-pattern
   ([linenum line linesbefore linesafter p settings]
@@ -382,7 +400,7 @@
   (with-open [rdr (reader (:file sf) :encoding (:textfileencoding settings))]
     (let [search-results (search-lines (line-seq rdr) settings)
           with-file-results (map #(assoc-in % [:file] sf) search-results)]
-      (doseq [r with-file-results] (save-search-result r)))))
+      with-file-results)))
 
 (defn search-text-file [sf settings]
   (if (:verbose settings)
@@ -404,9 +422,13 @@
       (= filetype :archive)
         (if (:searcharchives settings)
           (search-archive-file sf settings)
-          (if verbose (log-msg (format "Skipping archive file %s" filepath))))
+          (do
+            (if verbose (log-msg (format "Skipping archive file %s" filepath))
+            [])))
       :else
-        (if verbose (log-msg (format "Skipping file of unknown type: %s" filepath))))))
+        (do
+          (if verbose (log-msg (format "Skipping file of unknown type: %s" filepath))
+          [])))))
 
 (defn search-files [searchfiles settings]
   (if (:verbose settings)
@@ -414,15 +436,10 @@
       (log-msg (format "\nFiles to be searched (%d):" (count searchfiles)))
       (doseq [sf searchfiles] (log-msg (search-file-path sf)))
       (log-msg "")))
-  (doseq [sf searchfiles] (search-file sf settings)))
+  (apply concat (map #(search-file % settings) searchfiles)))
 
 (defn search [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
-      (let [startfile (file (:startpath settings))
-            searchfiles (if
-                          (.isFile startfile) [(new-search-file startfile (get-filetype startfile))]
-                          (get-search-files settings))]
-        (search-files searchfiles settings))
-        [])
-      errs))
+      [(search-files (get-search-files settings) settings) []]
+      [[] errs])))
