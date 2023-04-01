@@ -11,9 +11,10 @@ module HsSearch.Searcher
     , searchLines
     ) where
 
+import Control.Monad (forM)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromJust, isJust)
 import Text.Regex.PCRE
 
 import HsSearch.FileTypes
@@ -96,9 +97,28 @@ filterFile settings sf | isArchiveFile sf = includeArchiveFile sf
         includeFile f = not (archivesOnly settings) &&
                         isSearchFile settings (searchFilePath f)
 
-getSearchFiles :: SearchSettings -> IO [FilePath]
+filterToSearchFile :: SearchSettings -> (FilePath,FileType) -> Maybe SearchFile
+filterToSearchFile settings ft =
+  if (null inTypes || snd ft `elem` inTypes) && (null outTypes || notElem (snd ft) outTypes)
+  then Just blankSearchFile { searchFilePath=fst ft
+                            , searchFileType=snd ft
+                            }
+  else Nothing
+  where inTypes = inFileTypes settings
+        outTypes = outFileTypes settings
+
+-- getSearchFilesOLD :: SearchSettings -> IO [FilePath]
+-- getSearchFilesOLD settings = do
+--   getRecursiveFilteredContents (startPath settings) (isSearchDir settings) (isSearchFile settings)
+
+getSearchFiles :: SearchSettings -> IO [SearchFile]
 getSearchFiles settings = do
-  getRecursiveFilteredContents (startPath settings) (isSearchDir settings) (isSearchFile settings)
+  paths <- forM (paths settings) $ \path ->
+    getRecursiveFilteredContents path (isSearchDir settings) (isSearchFile settings)
+  let allPaths = concat paths
+  allFileTypes <- getFileTypes allPaths
+  let justSearchFiles = filter isJust (map (filterToSearchFile settings) (zip allPaths allFileTypes))
+  return $ map fromJust justSearchFiles
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do
@@ -305,17 +325,16 @@ searchLineForPattern settings num bs l as = patternResults
                             , afterLines=as
                             }
 
-doSearchFile :: SearchSettings -> (FilePath,FileType) -> IO [SearchResult]
-doSearchFile settings ft =
-  case snd ft of
-    Binary -> searchBinaryFile settings $ fst ft
-    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings $ fst ft
+doSearchFile :: SearchSettings -> SearchFile -> IO [SearchResult]
+doSearchFile settings sf =
+  case searchFileType sf of
+    Binary -> searchBinaryFile settings $ searchFilePath sf
+    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings $ searchFilePath sf
     _ -> return []
 
-doSearchFiles :: SearchSettings -> [FilePath] -> IO [SearchResult]
+doSearchFiles :: SearchSettings -> [SearchFile] -> IO [SearchResult]
 doSearchFiles settings searchFiles = do
-  fileTypes <- getFileTypes searchFiles
-  results <- mapM (doSearchFile settings) (zip searchFiles fileTypes)
+  results <- mapM (doSearchFile settings) searchFiles
   return $ concat results
 
 doSearch :: SearchSettings -> IO [SearchResult]

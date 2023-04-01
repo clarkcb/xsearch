@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Control.Monad (filterM)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (isSpace, toUpper)
@@ -8,6 +9,7 @@ import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 
 import HsSearch.FileUtil (getParentPath, pathExists)
+import HsSearch.SearchFile
 import HsSearch.SearchOptions
 import HsSearch.Searcher (getSearchFiles, doSearchFiles)
 import HsSearch.SearchResult
@@ -16,7 +18,7 @@ import HsSearch.SearchSettings
 
 validateSettings :: SearchSettings -> [String]
 validateSettings settings = concatMap ($settings) validators
-  where validators = [ \s -> ["Startpath not defined" | startPath s == ""]
+  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
                      , \s -> ["No search patterns defined" | null (searchPatterns s)]
                      , \s -> ["Invalid lines after" | linesAfter s < 0]
                      , \s -> ["Invalid lines before" | linesBefore s < 0]
@@ -89,11 +91,20 @@ formatSearchDirs dirs =
   "\nDirectories to be searched (" ++ show (length dirs) ++ "):\n" ++
   unlines (sort dirs)
 
-formatSearchFiles :: [FilePath] -> String
-formatSearchFiles files =
-  formatSearchDirs (nub (map getParentPath files)) ++
-  "\nFiles to be searched (" ++ show (length files) ++ "):\n" ++
-  unlines (sort files)
+-- formatSearchFiles :: [FilePath] -> String
+-- formatSearchFiles files =
+--   formatSearchDirs (nub (map getParentPath files)) ++
+--   "\nFiles to be searched (" ++ show (length files) ++ "):\n" ++
+--   unlines (sort files)
+
+formatSearchFiles :: [SearchFile] -> String
+formatSearchFiles searchFiles =
+  if not (null filePaths) then
+    formatSearchDirs (nub (map getParentPath filePaths)) ++
+    "\nFiles to be searched (" ++ show (length filePaths) ++ "):\n" ++
+    unlines (sort filePaths)
+  else "\nFiles to be searched: 0\n"
+  where filePaths = map searchFilePath searchFiles
 
 logMsg :: String -> IO ()
 logMsg = putStr
@@ -111,8 +122,8 @@ main = do
       case errsOrUsage searchOptions settings of
         Just usage -> logMsg $ usage ++ "\n"
         Nothing -> do
-          foundPath <- pathExists (startPath settings)
-          if foundPath then do
+          foundPaths <- filterM pathExists (paths settings)
+          if length foundPaths == length (paths settings) then do
             searchFiles <- getSearchFiles settings
             logMsg $ if verbose settings
                      then formatSearchFiles searchFiles

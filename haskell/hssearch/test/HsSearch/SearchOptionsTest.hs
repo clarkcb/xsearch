@@ -47,7 +47,7 @@ getSettingsFromArgsTests = do
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
     Right settings ->
-      return [ testCase "startpath ." (startPath settings @?= ".")
+      return [ testCase "paths ." (paths settings @?= ["."])
              , testCase "-s Searcher" (searchPatterns settings @?= ["Searcher"])
              , testCase "-x hs" (inExtensions settings @?= [".hs"])
              , testCase "-X hi,o" (outExtensions settings @?= [".hi", ".o"])

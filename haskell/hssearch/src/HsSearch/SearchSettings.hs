@@ -40,13 +40,13 @@ data SearchSettings = SearchSettings {
                                      , outFileTypes :: [FileType]
                                      , outLinesAfterPatterns :: [String]
                                      , outLinesBeforePatterns :: [String]
+                                     , paths :: [String]
                                      , printResults :: Bool
                                      , printUsage :: Bool
                                      , printVersion :: Bool
                                      , recursive :: Bool
                                      , searchArchives :: Bool
                                      , searchPatterns :: [String]
-                                     , startPath :: String
                                      , textFileEncoding :: String
                                      , uniqueLines :: Bool
                                      , verbose :: Bool
@@ -84,13 +84,13 @@ defaultSearchSettings = SearchSettings {
                                        , outFileTypes=[]
                                        , outLinesAfterPatterns=[]
                                        , outLinesBeforePatterns=[]
-                                       , printResults=True
+                                       , paths=[]
+                                       , printResults=False
                                        , printUsage=False
                                        , printVersion=False
                                        , recursive=True
                                        , searchArchives=False
                                        , searchPatterns=[]
-                                       , startPath=""
                                        , textFileEncoding="utf-8"
                                        , uniqueLines=False
                                        , verbose=False

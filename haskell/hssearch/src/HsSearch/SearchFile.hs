@@ -1,5 +1,6 @@
 module HsSearch.SearchFile
   ( SearchFile(..)
+  , blankSearchFile
   , isArchiveFile
   , isSearchableFile
   ) where
@@ -12,6 +13,13 @@ data SearchFile = SearchFile {
                               , searchFilePath :: FilePath
                               , searchFileType :: FileType
                               } deriving (Show, Eq)
+
+blankSearchFile :: SearchFile
+blankSearchFile = SearchFile {
+                               searchFileContainers=[]
+                             , searchFilePath=""
+                             , searchFileType=Unknown
+                             }
 
 isArchiveFile :: SearchFile -> Bool
 isArchiveFile sf = searchFileType sf == Archive

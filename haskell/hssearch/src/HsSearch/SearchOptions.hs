@@ -49,7 +49,7 @@ getSearchOptions = do
 
 getUsage :: [SearchOption] -> String
 getUsage searchOptions =
-  "Usage:\n hssearch [options] -s <searchpattern> <startpath>\n\nOptions:\n" ++
+  "Usage:\n hssearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n" ++
   searchOptionsToString searchOptions
 
 getOptStrings :: [SearchOption] -> [String]
@@ -120,6 +120,7 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
              , ("out-linesafterpattern", \ss s -> ss {outLinesAfterPatterns = outLinesAfterPatterns ss ++ [s]})
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
+             , ("path", \ss s -> ss {paths = paths ss ++ [s]})
              , ("searchpattern", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
              ]
 
@@ -190,7 +191,7 @@ settingsFromArgs opts arguments =
   if any isLeft longArgs
   then (Left . head . lefts) longArgs
   else
-    recSettingsFromArgs defaultSearchSettings $ rights longArgs
+    recSettingsFromArgs defaultSearchSettings{printResults=True} $ rights longArgs
   where recSettingsFromArgs :: SearchSettings -> [String] -> Either String SearchSettings
         recSettingsFromArgs settings args =
           case args of
@@ -207,7 +208,7 @@ settingsFromArgs opts arguments =
               BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) as
               FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
-          a:as -> recSettingsFromArgs (settings {startPath=a}) as
+          a:as -> recSettingsFromArgs (settings {paths = paths settings ++ [a]}) as
         longArgs :: [Either String String]
         longArgs = map (shortToLong opts) arguments
         getActionType :: String -> ActionType
