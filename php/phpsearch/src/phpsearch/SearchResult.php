@@ -16,6 +16,15 @@ namespace phpsearch;
  */
 class SearchResult
 {
+    public string $pattern;
+    public ?SearchFile $file;
+    public int $linenum;
+    public int $match_start_index;
+    public int $match_end_index;
+    public ?string $line;
+    public array $lines_before;
+    public array $lines_after;
+
     public function __construct(
         string $pattern,
         ?SearchFile $file,

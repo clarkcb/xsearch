@@ -40,7 +40,6 @@ class SearchOptionsTest extends TestCase
         $this->assertFalse($settings->printversion);
         $this->assertTrue($settings->recursive);
         $this->assertFalse($settings->searcharchives);
-        $this->assertFalse(isset($settings->startpath));
         $this->assertFalse($settings->uniquelines);
         $this->assertFalse($settings->verbose);
     }
@@ -54,7 +53,8 @@ class SearchOptionsTest extends TestCase
         $this->assertTrue(in_array('py', $settings->in_extensions));
         $this->assertCount(1, $settings->searchpatterns);
         $this->assertEquals('Search', $settings->searchpatterns[0]);
-        $this->assertEquals('.', $settings->startpath);
+        $this->assertCount(1, $settings->paths);
+        $this->assertEquals('.', $settings->paths[0]);
     }
 
     public function test_archivesonly_arg()
@@ -92,7 +92,7 @@ class SearchOptionsTest extends TestCase
         $settings = new SearchSettings();
         $json = <<<"END_JSON"
 {
-  "startpath": "~/src/xsearch/",
+  "path": "~/src/xsearch/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
@@ -105,7 +105,8 @@ class SearchOptionsTest extends TestCase
 }
 END_JSON;
         $this->searchoptions->settings_from_json($json, $settings);
-        $this->assertEquals('~/src/xsearch/', $settings->startpath);
+        $this->assertCount(1, $settings->paths);
+        $this->assertTrue(in_array('~/src/xsearch/', $settings->paths));
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('js', $settings->in_extensions));
         $this->assertTrue(in_array('ts', $settings->in_extensions));

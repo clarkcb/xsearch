@@ -3,14 +3,14 @@
 namespace phpsearch;
 
 /**
- * Class FileType
+ * Enum FileType
  */
-abstract class FileType
+enum FileType
 {
-    const Unknown = -1;
-    const Archive = 1;
-    const Binary  = 2;
-    const Code    = 3;
-    const Text    = 4;
-    const Xml     = 5;
+    case Unknown;
+    case Archive;
+    case Binary;
+    case Code;
+    case Text;
+    case Xml;
 }

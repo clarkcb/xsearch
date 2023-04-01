@@ -36,7 +36,6 @@ class SearchSettingsTest extends TestCase
         $this->assertFalse($this->settings->printversion);
         $this->assertTrue($this->settings->recursive);
         $this->assertFalse($this->settings->searcharchives);
-        $this->assertFalse(isset($this->settings->startpath));
         $this->assertFalse($this->settings->uniquelines);
         $this->assertFalse($this->settings->verbose);
     }

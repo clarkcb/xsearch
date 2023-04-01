@@ -11,6 +11,8 @@ class SearchResultFormatter
 {
     const SEPARATOR_LEN = 80;
 
+    private SearchSettings $settings;
+
     public function __construct(SearchSettings $settings)
     {
         $this->settings = $settings;
@@ -33,9 +35,9 @@ class SearchResultFormatter
     {
         $match_length = $match_end_index - $match_start_index;
         return substr($s, 0, $match_start_index) .
-            Color::Green .
+            Color::Green->value .
             substr($s, $match_start_index, $match_length) .
-            Color::Reset .
+            Color::Reset->value .
             substr($s, $match_start_index + $match_length);
     }
 

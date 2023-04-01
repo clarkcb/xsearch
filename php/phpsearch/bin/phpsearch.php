@@ -9,7 +9,7 @@ use \phpsearch\SearchOptions;
 use \phpsearch\Searcher;
 use \phpsearch\SearchException;
 
-function main($argv)
+function main($argv): void
 {
     $searchoptions = new SearchOptions();
     try {

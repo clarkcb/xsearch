@@ -7,11 +7,11 @@ namespace phpsearch;
  */
 class FileUtil
 {
-    public static $DOT_PATHS = array('.', '..');
+    public static array $DOT_PATHS = array('.', '..');
 
     public static function expand_user_home_path(string $path): string
     {
-        if (strpos($path, '~') === 0) {
+        if (str_starts_with($path, '~')) {
             return str_replace('~', getenv('HOME'), $path);
         }
         return $path;
@@ -36,7 +36,7 @@ class FileUtil
     public static function is_hidden(string $file): bool
     {
         $f = basename($file);
-        return strlen($f) > 1 && $f{0}==='.' && !self::is_dot_dir($f);
+        return strlen($f) > 1 && $f[0] ==='.' && !self::is_dot_dir($f);
     }
 
     public static function join_path(string $path, string $file): string
@@ -47,8 +47,8 @@ class FileUtil
     public static function get_separator(string $path): string
     {
         $sep = '/';
-        if (strpos($path, $sep) === false) {
-            if (strpos($path, '\\') === false) {
+        if (!str_contains($path, $sep)) {
+            if (!str_contains($path, '\\')) {
                 return $sep;
             } else {
                 return '\\';

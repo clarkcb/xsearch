@@ -17,7 +17,7 @@
         "ext-json": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5.2"
+        "phpunit/phpunit": "^9.6.6"
     },
-    "bin": ["bin/phpsearch"]
+    "bin": ["bin/phpsearch.php"]
 }

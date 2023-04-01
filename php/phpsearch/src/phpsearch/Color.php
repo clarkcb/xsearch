@@ -3,14 +3,14 @@
 namespace phpsearch;
 
 /**
- * Class Color
+ * Enum Color
  */
-abstract class Color
+enum Color: string
 {
-    const Grey = "\033[30m";
-    const Red = "\033[31m";
-    const Green = "\033[32m";
-    const Yellow = "\033[33m";
-    const Blue = "\033[34m";
-    const Reset = "\033[0m";
+    case Grey = "\033[30m";
+    case Red = "\033[31m";
+    case Green = "\033[32m";
+    case Yellow = "\033[33m";
+    case Blue = "\033[34m";
+    case Reset = "\033[0m";
 }

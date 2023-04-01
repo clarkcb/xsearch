@@ -13,7 +13,7 @@ class SearcherTest extends TestCase
     private function get_settings()
     {
         $settings = new SearchSettings();
-        $settings->startpath = '.';
+        $settings->paths = ['.'];
         array_push($settings->searchpatterns, "Searcher");
         return $settings;
     }

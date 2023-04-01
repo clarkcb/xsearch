@@ -12,6 +12,11 @@ namespace phpsearch;
  */
 class SearchFile
 {
+    public array $containers;
+    public string $path;
+    public string $filename;
+    public FileType $filetype;
+
     const CONTAINER_SEPARATOR = '!';
 
     public function __construct(string $path, string $filename, $filetype)

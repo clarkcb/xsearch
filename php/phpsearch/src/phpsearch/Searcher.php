@@ -7,22 +7,19 @@ namespace phpsearch;
 
 /**
  * Class Searcher
+ *
+ * @property SearchSettings $settings
+ * @property FileTypes $filetypes
  */
 class Searcher
 {
-    /**
-     * @var SearchSettings
-     */
-    private $settings;
-    /**
-     * @var FileTypes
-     */
-    private $filetypes;
-    /**
-     * @var array
-     */
+    private readonly SearchSettings $settings;
+    private readonly FileTypes $filetypes;
     private $results;
 
+    /**
+     * @throws SearchException
+     */
     public function __construct(SearchSettings $settings)
     {
         $this->settings = $settings;
@@ -31,16 +28,21 @@ class Searcher
         $this->validate_settings();
     }
 
-    private function validate_settings()
+    /**
+     * @throws SearchException
+     */
+    private function validate_settings(): void
     {
-        if (is_null($this->settings->startpath) || strlen($this->settings->startpath) == 0) {
+        if (!$this->settings->paths) {
             throw new SearchException('Startpath not defined');
         }
-        if (!file_exists($this->settings->startpath)) {
-            throw new SearchException('Startpath not found');
-        }
-        if (!is_readable($this->settings->startpath)) {
-            throw new SearchException('Startpath not readable');
+        foreach ($this->settings->paths as $p) {
+            if (!file_exists($p)) {
+                throw new SearchException('Startpath not found');
+            }
+            if (!is_readable($p)) {
+                throw new SearchException('Startpath not readable');
+            }
         }
         if (count($this->settings->searchpatterns) == 0) {
             throw new SearchException('No search patterns defined');
@@ -188,24 +190,29 @@ class Searcher
         return $searchfiles;
     }
 
+    /**
+     * @throws SearchException
+     */
     private function get_search_files(): array
     {
         $searchfiles = array();
-        if (is_dir($this->settings->startpath)) {
-            if ($this->is_search_dir($this->settings->startpath)) {
-                if ($this->settings->recursive) {
-                    $searchfiles = $this->rec_get_search_files($this->settings->startpath);
+        foreach ($this->settings->paths as $p) {
+            if (is_dir($p)) {
+                if ($this->is_search_dir($p)) {
+                    if ($this->settings->recursive) {
+                        $searchfiles = array_merge($searchfiles, $this->rec_get_search_files($p));
+                    } else {
+                        $searchfiles = array_merge($searchfiles, $this->get_dir_search_files($p));
+                    }
                 } else {
-                    $searchfiles = $this->get_dir_search_files($this->settings->startpath);
+                    throw new SearchException("Startpath does not match search settings");
                 }
-            } else {
-                throw new SearchException("Startpath does not match search settings");
-            }
-        } elseif (is_file($this->settings->startpath)) {
-            if ($this->filter_file($this->settings->startpath)) {
-                $searchfiles[] = $this->settings->startpath;
-            } else {
-                throw new SearchException("Startpath does not match search settings");
+            } elseif (is_file($p)) {
+                if ($this->filter_file($p)) {
+                    $searchfiles[] = $p;
+                } else {
+                    throw new SearchException("Startpath does not match search settings");
+                }
             }
         }
         sort($searchfiles);
@@ -223,6 +230,9 @@ class Searcher
         return !$this->settings->archivesonly && $this->is_search_file($f);
     }
 
+    /**
+     * @throws SearchException
+     */
     public function search()
     {
         $searchfiles = $this->get_search_files();
@@ -237,11 +247,12 @@ class Searcher
             }
             Logger::log_msg(sprintf("\n\nFiles to be searched (%d):", count($searchfiles)));
             foreach ($searchfiles as $f) {
-                Logger::log_msg($f);
+                Logger::log_msg((string)$f);
             }
         }
 
         // search the files
+        // TODO: use Fiber?
         foreach ($searchfiles as $f) {
             $this->search_file($f);
         }
@@ -274,7 +285,7 @@ class Searcher
         $indices = array();
         $i = 0;
         while ($i < strlen($s)) {
-            if ($s{$i} == "\n") {
+            if ($s[$i] == "\n") {
                 $indices[] = $i;
             }
             $i++;
@@ -476,7 +487,7 @@ class Searcher
         );
     }
 
-    public function search_lines(array $lines)
+    public function search_lines(array $lines): array
     {
         $linenum = 0;
         $line = '';
@@ -602,7 +613,7 @@ class Searcher
         return $r1->linenum - $r2->linenum;
     }
 
-    public function printresults()
+    public function printresults(): void
     {
         $sorted_results = $this->results;
         usort($sorted_results, array($this, 'cmp_searchresults'));
@@ -626,7 +637,7 @@ class Searcher
         return $dirs;
     }
 
-    public function print_matching_dirs()
+    public function print_matching_dirs(): void
     {
         $dirs = $this->get_matching_dirs();
         Logger::log_msg(sprintf("\nDirectories with matches (%d):", count($dirs)));
@@ -648,12 +659,12 @@ class Searcher
         return $files;
     }
 
-    public function print_matching_files()
+    public function print_matching_files(): void
     {
         $files = $this->get_matching_files();
         Logger::log_msg(sprintf("\nFiles with matches (%d):", count($files)));
         foreach ($files as $f) {
-            Logger::log_msg($f);
+            Logger::log_msg((string)$f);
         }
     }
 
@@ -670,7 +681,7 @@ class Searcher
         return $lines;
     }
 
-    public function print_matching_lines()
+    public function print_matching_lines(): void
     {
         $lines = $this->get_matching_lines();
         $msg = "\nLines with matches (%d):";
