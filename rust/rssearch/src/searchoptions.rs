@@ -117,8 +117,8 @@ impl SearchOptions {
                 }
             },
             Value::String(s) => match name.as_str() {
-                "startpath" => {
-                    settings.startpath = String::from(s);
+                "path" => {
+                    settings.add_path(String::from(s));
                 },
                 _ => {
                     if let Err(error) = self.apply_arg(name, &s, settings) {
@@ -203,7 +203,7 @@ impl SearchOptions {
                     }
                 },
                 Some(nextarg) => {
-                    settings.startpath = String::from(nextarg);
+                    settings.add_path(String::from(nextarg));
                 },
                 None => break,
             }
@@ -226,7 +226,7 @@ impl SearchOptions {
 
     fn get_usage_string(&self) -> String {
         let mut usage = String::from("\nUsage:\n rssearch [options] -s <searchpattern>");
-        usage.push_str(" <startpath>\n\nOptions:\n");
+        usage.push_str(" <path> [<path> ...]\n\nOptions:\n");
         let sort_opt_map = self.get_sort_opt_map();
         let mut sortkeys: Vec<String> = Vec::with_capacity(self.searchoptions.len());
         for key in sort_opt_map.keys() {
@@ -595,7 +595,9 @@ mod tests {
         assert_eq!(settings.in_file_types[0], FileType::Code);
         assert!(settings.debug);
         assert!(settings.verbose);
-        assert_eq!(settings.startpath, String::from("."));
+
+        assert_eq!(settings.paths.len(), 1);
+        assert_eq!(settings.paths[0], String::from("."));
     }
 
     #[test]
@@ -620,8 +622,8 @@ mod tests {
               "linesbefore": 2,
               "out-dirpattern": "node_module",
               "out-filepattern": ["temp"],
-              "searchpattern": "Searcher",
-              "startpath": "~/src/xsearch/"
+              "path": "~/src/xsearch/",
+              "searchpattern": "Searcher"
             }"#;
 
         match options.settings_from_json(&json.to_string()) {
@@ -649,7 +651,8 @@ mod tests {
                     settings.search_patterns[0].to_string(),
                     String::from("Searcher")
                 );
-                assert_eq!(settings.startpath, String::from("~/src/xsearch/"));
+                assert_eq!(settings.paths.len(), 1);
+                assert_eq!(settings.paths[0], String::from("~/src/xsearch/"));
                 assert!(settings.verbose);
             },
             Err(error) => {
@@ -699,7 +702,8 @@ mod tests {
                     settings.search_patterns[0].to_string(),
                     String::from("Searcher")
                 );
-                assert_eq!(settings.startpath, String::from("/Users/cary/src/xsearch/"));
+                assert_eq!(settings.paths.len(), 1);
+                assert_eq!(settings.paths[0], String::from("~/src/xsearch/"));
                 assert!(settings.verbose);
             },
             Err(error) => {

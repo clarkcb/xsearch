@@ -48,23 +48,27 @@ impl Searcher {
     }
 
     fn validate_settings(settings: &SearchSettings) -> Result<(), SearchError> {
-        if settings.startpath == "" {
+        if settings.paths.is_empty() {
             return Err(SearchError::new("Startpath not defined"));
         }
-        let metadata = fs::metadata(&settings.startpath);
-        if metadata.is_err() {
-            match metadata.err().unwrap().kind() {
-                io::ErrorKind::NotFound => return Err(SearchError::new("Startpath not found")),
-                io::ErrorKind::PermissionDenied => {
-                    return Err(SearchError::new("Startpath not readable"))
-                },
-                _ => {
-                    return Err(SearchError::new(
-                        "An unknown error occurred trying to read startpath",
-                    ))
+
+        for p in settings.paths.iter() {
+            let metadata = fs::metadata(&p);
+            if metadata.is_err() {
+                match metadata.err().unwrap().kind() {
+                    io::ErrorKind::NotFound => return Err(SearchError::new("Startpath not found")),
+                    io::ErrorKind::PermissionDenied => {
+                        return Err(SearchError::new("Startpath not readable"))
+                    },
+                    _ => {
+                        return Err(SearchError::new(
+                            "An unknown error occurred trying to read startpath",
+                        ))
+                    }
                 }
             }
         }
+
         if settings.search_patterns.is_empty() {
             return Err(SearchError::new("No search patterns defined"));
         }
@@ -161,26 +165,43 @@ impl Searcher {
         !self.settings.archives_only && self.is_search_file(searchfile)
     }
 
+    fn get_search_files(&self) -> Result<Vec<SearchFile>, SearchError> {
+        let mut searchfiles: Vec<SearchFile> = Vec::new();
+        for path in self.settings.paths.iter() {
+            for entry in WalkDir::new(&path)
+                .into_iter()
+                .filter_map(|e| e.ok())
+                .filter(|e| e.file_type().is_file())
+            {
+                let filepath = match entry.path().parent() {
+                    Some(parent) => parent.to_str().unwrap().to_string(),
+                    None => ".".to_string(),
+                };
+                let filename = entry.file_name().to_str().unwrap().to_string();
+                let filetype = self.filetypes.get_file_type(&filename);
+                if filetype == FileType::Unknown {
+                    continue;
+                }
+                let searchfile = SearchFile::new(filepath, filename, filetype);
+                if self.filter_file(&searchfile) {
+                    searchfiles.push(searchfile)
+                }
+            }
+        }
+        Ok(searchfiles)
+    }
+
     /// Initiate a searcher search for the given settings and get the results
     pub fn search(&self) -> Result<Vec<SearchResult>, SearchError> {
         let mut searchfiles: Vec<SearchFile> = Vec::new();
-        for entry in WalkDir::new(&self.settings.startpath)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.file_type().is_file())
-        {
-            let path = match entry.path().parent() {
-                Some(parent) => parent.to_str().unwrap().to_string(),
-                None => ".".to_string(),
-            };
-            let filename = entry.file_name().to_str().unwrap().to_string();
-            let filetype = self.filetypes.get_file_type(&filename);
-            if filetype == FileType::Unknown {
-                continue;
-            }
-            let searchfile = SearchFile::new(path, filename, filetype);
-            if self.filter_file(&searchfile) {
-                searchfiles.push(searchfile)
+
+        match self.get_search_files() {
+            Ok(mut search_files) => {
+                searchfiles.append(&mut search_files);
+            },
+            Err(error) => {
+                log(format!("{}", error).as_str());
+                return Err(error);
             }
         }
 

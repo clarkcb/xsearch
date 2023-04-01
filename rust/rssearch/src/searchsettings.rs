@@ -34,13 +34,13 @@ pub struct SearchSettings {
     pub out_file_types: Vec<filetypes::FileType>,
     pub out_lines_after_patterns: Vec<Regex>,
     pub out_lines_before_patterns: Vec<Regex>,
+    pub paths: Vec<String>,
     pub print_results: bool,
     pub print_usage: bool,
     pub print_version: bool,
     pub recursive: bool,
     pub search_archives: bool,
     pub search_patterns: Vec<Regex>,
-    pub startpath: String,
     pub text_file_encoding: String,
     pub unique_lines: bool,
     pub verbose: bool,
@@ -79,13 +79,13 @@ impl SearchSettings {
             out_file_types: Vec::new(),
             out_lines_after_patterns: Vec::new(),
             out_lines_before_patterns: Vec::new(),
+            paths: Vec::new(),
             print_results: false,
             print_usage: false,
             print_version: false,
             recursive: true,
             search_archives: false,
             search_patterns: Vec::new(),
-            startpath: String::from(""),
             text_file_encoding: String::from("utf-8"),
             unique_lines: false,
             verbose: false,
@@ -178,6 +178,10 @@ impl SearchSettings {
         add_pattern(pattern, &mut self.lines_after_until_patterns);
     }
 
+    pub fn add_path(&mut self, path: String) {
+        self.paths.push(path);
+    }
+    
     pub fn add_search_pattern(&mut self, pattern: String) {
         add_pattern(pattern, &mut self.search_patterns);
     }
@@ -227,12 +231,12 @@ mod tests {
         assert!(settings.out_extensions.is_empty());
         assert!(settings.out_file_patterns.is_empty());
         assert!(settings.out_file_types.is_empty());
+        assert!(settings.paths.is_empty());
         assert_eq!(settings.print_results, false);
         assert_eq!(settings.print_usage, false);
         assert_eq!(settings.print_version, false);
         assert_eq!(settings.recursive, true);
         assert_eq!(settings.search_archives, false);
-        assert_eq!(settings.startpath, String::from(""));
         assert_eq!(settings.text_file_encoding, String::from("utf-8"));
         assert_eq!(settings.unique_lines, false);
         assert_eq!(settings.verbose, false);
