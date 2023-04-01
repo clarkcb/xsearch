@@ -41,7 +41,7 @@ module RbSearch
             raise SearchError, "Invalid option: #{arg}"
           end
         else
-          settings.startpath = arg
+          settings.paths.push(arg)
         end
       end
       settings
@@ -70,8 +70,8 @@ module RbSearch
         elsif @bool_flag_action_dict.key?(arg_sym)
           @bool_flag_action_dict[arg_sym].call(json_hash[arg], settings)
           return if %w[h help V version].include?(arg)
-        elsif arg == 'startpath'
-          settings.startpath = json_hash[arg]
+        elsif arg == 'path'
+          settings.paths.push(json_hash[arg])
         else
           raise SearchError, "Invalid option: #{arg}"
         end
@@ -85,7 +85,7 @@ module RbSearch
 
     def get_usage_string
       usage = "Usage:\n"
-      usage << " rbsearch [options] -s <searchpattern> <startpath>\n\n"
+      usage << " rbsearch [options] -s <searchpattern> <path> [<path> ...]\n\n"
       usage << "Options:\n"
       opt_strings = []
       opt_descs = []

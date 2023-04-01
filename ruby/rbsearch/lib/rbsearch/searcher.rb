@@ -107,15 +107,15 @@ module RbSearch
       searchfiles = get_search_files.sort_by(&:relativepath)
       if @settings.verbose
         searchdirs = searchfiles.map(&:path).uniq.sort
-        log("\nDirectories to be searched (#{searchdirs.size}):")
+        RbSearch::log("\nDirectories to be searched (#{searchdirs.size}):")
         searchdirs.each do |d|
-          log(d)
+          RbSearch::log(d)
         end
-        log("\nFiles to be searched (#{searchfiles.size}):")
+        RbSearch::log("\nFiles to be searched (#{searchfiles.size}):")
         searchfiles.each do |sf|
-          log(sf.to_s)
+          RbSearch::log(sf.to_s)
         end
-        log("\n")
+        RbSearch::log("\n")
       end
       searchfiles.each do |sf|
         search_file(sf)
@@ -278,9 +278,11 @@ module RbSearch
     private
 
     def validate_settings
-      raise SearchError, 'Startpath not defined' unless @settings.startpath
-      raise SearchError, 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
-      raise SearchError, 'Startpath not readable' unless File.readable?(@settings.startpath)
+      raise SearchError, 'Startpath not defined' if @settings.paths.empty?
+      @settings.paths.each do |p|
+        raise SearchError, 'Startpath not found' unless Pathname.new(p).exist?
+        raise SearchError, 'Startpath not readable' unless File.readable?(p)
+      end
       raise SearchError, 'No search patterns defined' if @settings.searchpatterns.empty?
       raise SearchError, 'Invalid linesbefore' if @settings.linesbefore < 0
       raise SearchError, 'Invalid linesafter' if @settings.linesafter < 0
@@ -312,29 +314,31 @@ module RbSearch
 
     def get_search_files
       searchfiles = []
-      if FileTest.directory?(@settings.startpath)
-        if @settings.recursive
-          Find.find(@settings.startpath) do |f|
-            if FileTest.directory?(f)
-              Find.prune unless search_dir?(f)
-            elsif filter_file?(f)
-              searchfile = file_to_searchfile(f)
-              searchfiles.push(searchfile)
+      @settings.paths.each do |p|
+        if FileTest.directory?(p)
+          if @settings.recursive
+            Find.find(p) do |f|
+              if FileTest.directory?(f)
+                Find.prune unless search_dir?(f)
+              elsif filter_file?(f)
+                searchfile = file_to_searchfile(f)
+                searchfiles.push(searchfile)
+              end
+            end
+          else
+            Find.find(p) do |f|
+              if FileTest.directory?(f)
+                Find.prune
+              elsif filter_file?(f)
+                searchfile = file_to_searchfile(f)
+                searchfiles.push(searchfile)
+              end
             end
           end
-        else
-          Find.find(@settings.startpath) do |f|
-            if FileTest.directory?(f)
-              Find.prune
-            elsif filter_file?(f)
-              searchfile = file_to_searchfile(f)
-              searchfiles.push(searchfile)
-            end
-          end
+        elsif FileTest.file?(p)
+          searchfile = file_to_searchfile(p)
+          searchfiles.push(searchfile)
         end
-      elsif FileTest.file?(@settings.startpath)
-        searchfile = file_to_searchfile(@settings.startpath)
-        searchfiles.push(searchfile)
       end
       searchfiles
     end
@@ -342,7 +346,7 @@ module RbSearch
     def search_file(sf)
       unless @filetypes.searchable_file?(sf.filename)
         if @settings.verbose || @settings.debug
-          log("Skipping unsearchable file: #{sf}")
+          RbSearch::log("Skipping unsearchable file: #{sf}")
           return 0
         end
       end
@@ -352,7 +356,7 @@ module RbSearch
       when FileType::BINARY
         search_binary_file(sf)
       else
-        log("Searching currently unsupported for FileType #{sf.filetype}")
+        RbSearch::log("Searching currently unsupported for FileType #{sf.filetype}")
       end
     end
 
@@ -394,7 +398,7 @@ module RbSearch
     end
 
     def search_text_file(sf)
-      log("Searching text file #{sf}") if @settings.debug
+      RbSearch::log("Searching text file #{sf}") if @settings.debug
       if @settings.multilinesearch
         search_text_file_contents(sf)
       else

@@ -34,7 +34,6 @@ module RbSearch
       assert_equal(false, settings.printversion)
       assert_equal(true, settings.recursive)
       assert_equal(false, settings.searcharchives)
-      assert_equal(nil, settings.startpath)
       assert_equal(false, settings.uniquelines)
       assert_equal(false, settings.verbose)
       assert(settings.in_archiveextensions.empty?)
@@ -51,16 +50,18 @@ module RbSearch
       assert(settings.out_filepatterns.empty?)
       assert(settings.out_linesafterpatterns.empty?)
       assert(settings.out_linesbeforepatterns.empty?)
+      assert(settings.paths.empty?)
       assert(settings.searchpatterns.empty?)
     end
 
     def test_valid_args
       args = %w[-x py,rb -s Search .]
       settings = @searchoptions.search_settings_from_args(args)
-      assert_equal('.', settings.startpath)
       assert_equal(2, settings.in_extensions.length)
       assert(settings.in_extensions.include?('py'))
       assert(settings.in_extensions.include?('rb'))
+      assert_equal(1, settings.paths.length)
+      assert(settings.paths.include?('.'))
       assert_equal(1, settings.searchpatterns.length)
       assert_equal('Search', settings.searchpatterns.first.source)
     end
@@ -93,7 +94,7 @@ module RbSearch
       settings = SearchSettings.new
       json = <<~JSON
       {
-        "startpath": "~/src/xsearch/",
+        "path": "~/src/xsearch/",
         "in-ext": ["js","ts"],
         "out-dirpattern": "node_module",
         "out-filepattern": ["temp"],

@@ -15,7 +15,7 @@ module RbSearch
 
     def get_settings
       settings = SearchSettings.new
-      settings.startpath = '.'
+      settings.paths = ['.']
       settings.add_pattern('Searcher', settings.searchpatterns)
       settings
     end

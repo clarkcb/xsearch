@@ -35,13 +35,13 @@ module RbSearch
     attr_accessor :out_filetypes
     attr_accessor :out_linesafterpatterns
     attr_accessor :out_linesbeforepatterns
+    attr_accessor :paths
     attr_accessor :printresults
     attr_accessor :printusage
     attr_accessor :printversion
     attr_accessor :recursive
     attr_accessor :searcharchives
     attr_accessor :searchpatterns
-    attr_accessor :startpath
     attr_accessor :textfileencoding
     attr_accessor :uniquelines
     attr_accessor :verbose
@@ -64,7 +64,6 @@ module RbSearch
       @printversion = false
       @recursive = true
       @searcharchives = false
-      @startpath = nil
       @textfileencoding = 'utf-8'
       @uniquelines = false
       @verbose = false
@@ -87,6 +86,7 @@ module RbSearch
       @out_filetypes = []
       @out_linesafterpatterns = []
       @out_linesbeforepatterns = []
+      @paths = []
       @searchpatterns = []
     end
 
@@ -169,13 +169,13 @@ module RbSearch
       s << ', ' + filetypes_to_s('out_filetypes', @out_filetypes)
       s << ', ' + list_to_s('out_linesafterpatterns', @out_linesafterpatterns)
       s << ', ' + list_to_s('out_linesbeforepatterns', @out_linesbeforepatterns)
+      s << ', ' + list_to_s('paths', @paths)
       s << ", printresults: #{@printresults}"
       s << ", printusage: #{@printusage}"
       s << ", printversion: #{@printversion}"
       s << ", recursive: #{@recursive}"
       s << ", searcharchives: #{@searcharchives}"
       s << ', ' + list_to_s('searchpatterns', @searchpatterns)
-      s << ", startpath: \"#{@startpath}\""
       s << ", textfileencoding: \"#{@textfileencoding}\""
       s << ", uniquelines: #{@uniquelines}"
       s << ", verbose: #{@verbose}"
