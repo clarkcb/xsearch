@@ -40,8 +40,8 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     REQUIRE(searchpatterns->size() == 1);
     REQUIRE(searchpatterns->at(0)->pattern() == "Searcher");
 
-    auto* startpath = settings->startpath();
-    REQUIRE(*startpath == ".");
+    REQUIRE(!settings->paths()->empty());
+    REQUIRE(settings->paths()->at(0) == ".");
 }
 
 TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
@@ -87,14 +87,14 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     REQUIRE(searchpatterns->size() == 1);
     REQUIRE(searchpatterns->at(0)->pattern() == "Searcher");
 
-    auto* startpath = settings->startpath();
-    REQUIRE(*startpath == ".");
+    REQUIRE(!settings->paths()->empty());
+    REQUIRE(settings->paths()->at(0) == ".");
 }
 
 TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
     std::string json = R"(
 {
-    "startpath": "~/src/xsearch/",
+    "path": "~/src/xsearch/",
     "in-ext": ["js","ts"],
     "out-dirpattern": ["build", "node_module", "tests", "typings"],
     "out-filepattern": ["gulpfile", "\\.min\\."],
@@ -111,7 +111,8 @@ TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
     auto *settings = new cppsearch::SearchSettings();
     options->settings_from_json(json, settings);
 
-    REQUIRE(*(settings->startpath()) == "~/src/xsearch/");
+    REQUIRE(!settings->paths()->empty());
+    REQUIRE(settings->paths()->at(0) == "~/src/xsearch/");
     REQUIRE(settings->in_extensions()->size() == 2);
     REQUIRE(settings->in_extensions()->at(0) == "js");
     REQUIRE(settings->in_extensions()->at(1) == "ts");

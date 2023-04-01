@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z "$XSEARCH_PATH" ]
+then
+    XSEARCH_PATH=$HOME/src/xsearch
+fi
+
+CPPSEARCH_PATH=$XSEARCH_PATH/cpp/cppsearch
+CONFIGURATION=debug
+# CONFIGURATION=release
+CMAKE_BUILD_DIR=$CPPSEARCH_PATH/cmake-build-$CONFIGURATION
+CPPSEARCH_EXE=$CMAKE_BUILD_DIR/cppsearch
+
+$CPPSEARCH_EXE "$@"

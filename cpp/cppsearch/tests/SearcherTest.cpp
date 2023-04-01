@@ -8,7 +8,7 @@
 TEST_CASE("Test filter_file hidden file should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -18,7 +18,7 @@ TEST_CASE("Test filter_file hidden file should be false", "[Searcher]") {
 TEST_CASE("Test filter_file hidden file include-hidden should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->excludehidden(false);
     auto *searcher = new cppsearch::Searcher(settings);
@@ -29,7 +29,7 @@ TEST_CASE("Test filter_file hidden file include-hidden should be true", "[Search
 TEST_CASE("Test filter_file archive file should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -39,7 +39,7 @@ TEST_CASE("Test filter_file archive file should be false", "[Searcher]") {
 TEST_CASE("Test filter_file archive file search-archives should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->searcharchives(true);
     auto *searcher = new cppsearch::Searcher(settings);
@@ -50,7 +50,7 @@ TEST_CASE("Test filter_file archive file search-archives should be true", "[Sear
 TEST_CASE("Test filter_file archive file is_archive_file should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->searcharchives(true);
     settings->add_in_archiveextension("zip");
@@ -62,7 +62,7 @@ TEST_CASE("Test filter_file archive file is_archive_file should be true", "[Sear
 TEST_CASE("Test filter_file archive file !is_archive_file should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->searcharchives(true);
     settings->add_out_archiveextension("zip");
@@ -74,7 +74,7 @@ TEST_CASE("Test filter_file archive file !is_archive_file should be false", "[Se
 TEST_CASE("Test filter_file archive file archives-only should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->archivesonly(true);
     auto *searcher = new cppsearch::Searcher(settings);
@@ -85,7 +85,7 @@ TEST_CASE("Test filter_file archive file archives-only should be true", "[Search
 TEST_CASE("Test filter_file non-archive file archives-only should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->archivesonly(true);
     auto *searcher = new cppsearch::Searcher(settings);
@@ -96,7 +96,7 @@ TEST_CASE("Test filter_file non-archive file archives-only should be false", "[S
 TEST_CASE("Test filter_file no exts no patterns should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -106,7 +106,7 @@ TEST_CASE("Test filter_file no exts no patterns should be true", "[Searcher]") {
 TEST_CASE("Test filter_file matching in-ext should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_extension("cs");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -117,7 +117,7 @@ TEST_CASE("Test filter_file matching in-ext should be true", "[Searcher]") {
 TEST_CASE("Test filter_file not matching in-ext should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_extension("cpp");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -128,7 +128,7 @@ TEST_CASE("Test filter_file not matching in-ext should be false", "[Searcher]") 
 TEST_CASE("Test filter_file matching out-ext should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_extension("cs");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -139,7 +139,7 @@ TEST_CASE("Test filter_file matching out-ext should be false", "[Searcher]") {
 TEST_CASE("Test filter_file not matching out-ext should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_extension("cpp");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -153,7 +153,7 @@ TEST_CASE("Test filter_file not matching out-ext should be true", "[Searcher]") 
 TEST_CASE("Test is_search_dir single dot should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -163,7 +163,7 @@ TEST_CASE("Test is_search_dir single dot should be true", "[Searcher]") {
 TEST_CASE("Test is_search_dir double dot should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -173,7 +173,7 @@ TEST_CASE("Test is_search_dir double dot should be true", "[Searcher]") {
 TEST_CASE("Test is_search_dir hidden dir should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -183,7 +183,7 @@ TEST_CASE("Test is_search_dir hidden dir should be false", "[Searcher]") {
 TEST_CASE("Test is_search_dir hidden dir include hidden should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->excludehidden(false);
     auto *searcher = new cppsearch::Searcher(settings);
@@ -194,7 +194,7 @@ TEST_CASE("Test is_search_dir hidden dir include hidden should be true", "[Searc
 TEST_CASE("Test is_search_dir no patterns should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -204,7 +204,7 @@ TEST_CASE("Test is_search_dir no patterns should be true", "[Searcher]") {
 TEST_CASE("Test is_search_dir matches in-pattern should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_dirpattern("Search");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -215,7 +215,7 @@ TEST_CASE("Test is_search_dir matches in-pattern should be true", "[Searcher]") 
 TEST_CASE("Test is_search_dir matches out-pattern should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_dirpattern("Search");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -226,7 +226,7 @@ TEST_CASE("Test is_search_dir matches out-pattern should be false", "[Searcher]"
 TEST_CASE("Test is_search_dir doesn't match in-pattern should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_dirpattern("SearchFiles");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -237,7 +237,7 @@ TEST_CASE("Test is_search_dir doesn't match in-pattern should be false", "[Searc
 TEST_CASE("Test is_search_dir doesn't match out-pattern should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_dirpattern("SearchFiles");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -251,7 +251,7 @@ TEST_CASE("Test is_search_dir doesn't match out-pattern should be true", "[Searc
 TEST_CASE("Test is_search_file no exts no patterns should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -261,7 +261,7 @@ TEST_CASE("Test is_search_file no exts no patterns should be true", "[Searcher]"
 TEST_CASE("Test is_search_file matches in-ext should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_extension("cs");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -272,7 +272,7 @@ TEST_CASE("Test is_search_file matches in-ext should be true", "[Searcher]") {
 TEST_CASE("Test is_search_file does not match in-ext should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_extension("java");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -283,7 +283,7 @@ TEST_CASE("Test is_search_file does not match in-ext should be false", "[Searche
 TEST_CASE("Test is_search_file matches out-ext should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_extension("cs");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -294,7 +294,7 @@ TEST_CASE("Test is_search_file matches out-ext should be false", "[Searcher]") {
 TEST_CASE("Test is_search_file does not match out-ext should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_extension("java");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -305,7 +305,7 @@ TEST_CASE("Test is_search_file does not match out-ext should be true", "[Searche
 TEST_CASE("Test is_search_file matches in-pattern should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_filepattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -316,7 +316,7 @@ TEST_CASE("Test is_search_file matches in-pattern should be true", "[Searcher]")
 TEST_CASE("Test is_search_file does not match in-pattern should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_filepattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -327,7 +327,7 @@ TEST_CASE("Test is_search_file does not match in-pattern should be false", "[Sea
 TEST_CASE("Test is_search_file matches out-pattern should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_filepattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -338,7 +338,7 @@ TEST_CASE("Test is_search_file matches out-pattern should be false", "[Searcher]
 TEST_CASE("Test is_search_file does not match out-pattern should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_filepattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -352,7 +352,7 @@ TEST_CASE("Test is_search_file does not match out-pattern should be true", "[Sea
 TEST_CASE("Test is_archive_search_file no exts no patterns should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -362,7 +362,7 @@ TEST_CASE("Test is_archive_search_file no exts no patterns should be true", "[Se
 TEST_CASE("Test is_archive_search_file matches in-ext should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_archiveextension("zip");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -373,7 +373,7 @@ TEST_CASE("Test is_archive_search_file matches in-ext should be true", "[Searche
 TEST_CASE("Test is_archive_search_file does not match in-ext should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_archiveextension("gz");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -384,7 +384,7 @@ TEST_CASE("Test is_archive_search_file does not match in-ext should be false", "
 TEST_CASE("Test is_archive_search_file matches out-ext should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_archiveextension("zip");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -395,7 +395,7 @@ TEST_CASE("Test is_archive_search_file matches out-ext should be false", "[Searc
 TEST_CASE("Test is_archive_search_file does not match out-ext should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_archiveextension("gz");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -406,7 +406,7 @@ TEST_CASE("Test is_archive_search_file does not match out-ext should be true", "
 TEST_CASE("Test is_archive_search_file matches in-pattern should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_archivefilepattern("arch");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -417,7 +417,7 @@ TEST_CASE("Test is_archive_search_file matches in-pattern should be true", "[Sea
 TEST_CASE("Test is_archive_search_file does not match in-pattern should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_in_archivefilepattern("archives");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -428,7 +428,7 @@ TEST_CASE("Test is_archive_search_file does not match in-pattern should be false
 TEST_CASE("Test is_archive_search_file matches out-pattern should be false", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_archivefilepattern("arch");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -439,7 +439,7 @@ TEST_CASE("Test is_archive_search_file matches out-pattern should be false", "[S
 TEST_CASE("Test is_archive_search_file does not match out-pattern should be true", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = ".";
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->add_out_archivefilepattern("archives");
     auto *searcher = new cppsearch::Searcher(settings);
@@ -454,7 +454,7 @@ TEST_CASE("Test search with test file startpath", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     auto *searcher = new cppsearch::Searcher(settings);
 
@@ -473,7 +473,7 @@ TEST_CASE("Test search with in lines before matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->linesbefore(2);
     settings->add_in_linesbeforepattern("FileUtil");
@@ -491,7 +491,7 @@ TEST_CASE("Test search with out lines before matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->linesbefore(2);
     settings->add_out_linesbeforepattern("FileUtil");
@@ -509,7 +509,7 @@ TEST_CASE("Test search with in lines after matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->linesafter(2);
     settings->add_in_linesafterpattern("Settings");
@@ -527,7 +527,7 @@ TEST_CASE("Test search with out lines after matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->linesafter(2);
     settings->add_out_linesafterpattern("Settings");
@@ -545,7 +545,7 @@ TEST_CASE("Test multiline search with test file startpath", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->multilinesearch(true);
     auto *searcher = new cppsearch::Searcher(settings);
@@ -565,7 +565,7 @@ TEST_CASE("Test multiline search with in lines before matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->multilinesearch(true);
     settings->linesbefore(2);
@@ -584,7 +584,7 @@ TEST_CASE("Test multiline search with out lines before matching", "[Searcher]") 
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->multilinesearch(true);
     settings->linesbefore(2);
@@ -603,7 +603,7 @@ TEST_CASE("Test multiline search with in lines after matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->multilinesearch(true);
     settings->linesafter(2);
@@ -622,7 +622,7 @@ TEST_CASE("Test multiline search with out lines after matching", "[Searcher]") {
     auto *settings = new cppsearch::SearchSettings();
     std::string startpath = std::string(XSEARCHPATH);
     startpath.append("/shared/testFiles/testFile2.txt");
-    settings->startpath(startpath);
+    settings->add_path(startpath);
     settings->add_searchpattern("Searcher");
     settings->multilinesearch(true);
     settings->linesafter(2);

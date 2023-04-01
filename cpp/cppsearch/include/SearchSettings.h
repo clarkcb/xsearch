@@ -45,6 +45,8 @@ namespace cppsearch {
         std::vector<SearchPattern*> m_out_linesafterpatterns;
         std::vector<SearchPattern*> m_out_linesbeforepatterns;
 
+        std::vector<std::string> m_paths;
+
         bool m_printresults = false;
         bool m_printusage = false;
         bool m_printversion = false;
@@ -52,7 +54,6 @@ namespace cppsearch {
         bool m_searcharchives = false;
 
         std::vector<SearchPattern*> m_searchpatterns;
-        std::string* m_startpath;
 
         bool m_uniquelines = false;
         bool m_verbose = false;
@@ -84,6 +85,7 @@ namespace cppsearch {
         void add_out_filetype(FileType filetype);
         void add_out_linesafterpattern(const std::string& pattern);
         void add_out_linesbeforepattern(const std::string& pattern);
+        void add_path(const std::string& path);
         void add_searchpattern(const std::string& searchpattern);
 
         bool archivesonly() const;
@@ -103,7 +105,6 @@ namespace cppsearch {
         bool printversion() const;
         bool recursive() const;
         bool searcharchives() const;
-        std::string* startpath();
         bool uniquelines() const;
         bool verbose() const;
 
@@ -123,6 +124,7 @@ namespace cppsearch {
         std::vector<SearchPattern*>* out_linesafterpatterns();
         std::vector<SearchPattern*>* out_linesbeforepatterns();
 
+        std::vector<std::string>* paths();
         std::vector<SearchPattern*>* searchpatterns();
 
         // bool is_in_archiveextension(const std::string* ext);
@@ -148,7 +150,6 @@ namespace cppsearch {
         void printversion(bool b);
         void recursive(bool b);
         void searcharchives(bool b);
-        void startpath(std::string& startpath);
         void uniquelines(bool b);
         void verbose(bool b);
         std::string string();

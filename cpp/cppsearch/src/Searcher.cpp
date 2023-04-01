@@ -15,13 +15,17 @@ namespace cppsearch {
     }
 
     void Searcher::validate_settings(SearchSettings* ss) {
-        std::string* startpath = ss->startpath();
-        if (startpath == nullptr || startpath->empty()) {
+        if (ss->paths()->empty()) {
             throw SearchException("Startpath not defined");
         }
-        std::string expanded = FileUtil::expand_path(*startpath);
-        if (!FileUtil::file_exists(*startpath) && !FileUtil::file_exists(expanded)) {
-            throw SearchException("Startpath not found");
+        for (auto& p : *ss->paths()) {
+            if (p.empty()) {
+                throw SearchException("Startpath not defined");
+            }
+            std::string expanded = FileUtil::expand_path(p);
+            if (!FileUtil::file_exists(p) && !FileUtil::file_exists(expanded)) {
+                throw SearchException("Startpath not found");
+            }
         }
         if (ss->searchpatterns()->empty()) {
             throw SearchException("No search patterns defined");
@@ -37,25 +41,40 @@ namespace cppsearch {
     }
 
     std::vector<SearchResult*> Searcher::search() {
-        std::string* startpath = m_settings->startpath();
-        std::string expanded = FileUtil::expand_path(*startpath);
-        if (FileUtil::is_directory(*startpath)) {
-            return search_path(*startpath);
 
-        } else if (FileUtil::is_directory(expanded)) {
-            return search_path(expanded);
+        std::vector<SearchResult*> results{};
 
-        } else if (FileUtil::is_regular_file(*startpath)) {
-            auto* sf = get_searchfile(*startpath);
-            return search_file(sf);
+        for (auto& p : *m_settings->paths()) {
+            std::string expanded = FileUtil::expand_path(p);
 
-        } else if (FileUtil::is_regular_file(expanded)) {
-            auto* sf = get_searchfile(expanded);
-            return search_file(sf);
+            if (FileUtil::is_directory(p) || FileUtil::is_directory(expanded)
+                || FileUtil::is_regular_file(p) || FileUtil::is_regular_file(expanded)) {
 
-        } else {
-            throw SearchException("m_startpath is an unsupported file type");
+                std::vector<SearchResult*> p_results{};
+
+                if (FileUtil::is_directory(p)) {
+                    p_results = search_path(p);
+
+                } else if (FileUtil::is_directory(expanded)) {
+                    p_results = search_path(expanded);
+
+                } else if (FileUtil::is_regular_file(p)) {
+                    auto* sf = get_searchfile(p);
+                    p_results = search_file(sf);
+
+                } else if (FileUtil::is_regular_file(expanded)) {
+                    auto* sf = get_searchfile(expanded);
+                    p_results = search_file(sf);
+                }
+
+                results.insert(results.end(), p_results.begin(), p_results.end());
+
+            } else {
+                throw SearchException("path is an unsupported file type");
+            }
         }
+
+        return results;
     }
 
     bool matches_any_pattern(const std::string& s, const std::vector<SearchPattern*>& patterns) {

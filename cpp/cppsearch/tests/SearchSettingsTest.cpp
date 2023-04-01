@@ -22,8 +22,6 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(!settings->uniquelines());
     REQUIRE(!settings->verbose());
 
-    REQUIRE(settings->startpath() == nullptr);
-
     REQUIRE(settings->in_archiveextensions()->empty());
     REQUIRE(settings->in_archivefilepatterns()->empty());
     REQUIRE(settings->in_dirpatterns()->empty());
@@ -34,6 +32,7 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->out_dirpatterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_filepatterns()->empty());
+    REQUIRE(settings->paths()->empty());
     REQUIRE(settings->searchpatterns()->empty());
 }
 

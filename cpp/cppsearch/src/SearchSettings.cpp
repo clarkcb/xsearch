@@ -16,8 +16,8 @@ namespace cppsearch {
         m_out_extensions = {};
         m_out_filepatterns = {};
         m_out_filetypes = {};
+        m_paths = {};
         m_searchpatterns = {};
-        m_startpath = nullptr;
     }
 
     void SearchSettings::add_pattern(const std::string& p, std::vector<SearchPattern*>* ps) {
@@ -103,6 +103,10 @@ namespace cppsearch {
 
     void SearchSettings::add_out_linesbeforepattern(const std::string& p) {
         add_pattern(p, &m_out_linesbeforepatterns);
+    }
+
+    void SearchSettings::add_path(const std::string& p) {
+        m_paths.push_back(p);
     }
 
     void SearchSettings::add_searchpattern(const std::string& p) {
@@ -233,13 +237,12 @@ namespace cppsearch {
         return &m_out_linesbeforepatterns;
     }
 
-    std::vector<SearchPattern*>* SearchSettings::searchpatterns() {
-        return &m_searchpatterns;
+    std::vector<std::string>* SearchSettings::paths() {
+        return &m_paths;
     }
 
-
-    std::string* SearchSettings::startpath() {
-        return m_startpath;
+    std::vector<SearchPattern*>* SearchSettings::searchpatterns() {
+        return &m_searchpatterns;
     }
 
     bool SearchSettings::uniquelines() const {
@@ -320,10 +323,6 @@ namespace cppsearch {
         m_searcharchives = b;
     }
 
-    void SearchSettings::startpath(std::string& s) {
-        m_startpath = &s;
-    }
-
     void SearchSettings::uniquelines(const bool b) {
         m_uniquelines = b;
     }
@@ -365,10 +364,6 @@ namespace cppsearch {
     }
 
     std::string SearchSettings::string() {
-        std::string path = "\"\"";
-        if (m_startpath != nullptr) {
-            path = std::string("\"") + *m_startpath + "\"";
-        }
         auto settings_str =
                 std::string("SearchSettings(")
                 + "archivesonly: " + bool_to_string(m_archivesonly)
@@ -399,13 +394,13 @@ namespace cppsearch {
                 + ", out_filepatterns: " + searchpatterns_to_string(&m_out_filepatterns)
                 + ", out_linesafterpatterns: " + searchpatterns_to_string(&m_out_linesafterpatterns)
                 + ", out_linesbeforepatterns: " + searchpatterns_to_string(&m_out_linesbeforepatterns)
+                + ", paths: " + string_vector_to_string(&m_paths)
                 + ", printresults: " + bool_to_string(m_printresults)
                 + ", printusage: " + bool_to_string(m_printusage)
                 + ", printversion: " + bool_to_string(m_printversion)
                 + ", recursive: " + bool_to_string(m_recursive)
                 + ", searcharchives: " + bool_to_string(m_searcharchives)
                 + ", searchpatterns: " + searchpatterns_to_string(&m_searchpatterns)
-                + ", startpath: " + path
                 + ", uniquelines: " + bool_to_string(m_uniquelines)
                 + ", verbose: " + bool_to_string(m_verbose)
                 + ")";

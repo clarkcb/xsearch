@@ -32,8 +32,8 @@ namespace cppsearch {
                 {"out-filetype", [](std::string& s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(t); }},
                 {"out-linesafterpattern", [](std::string& s, SearchSettings* ss) { ss->add_out_linesafterpattern(s); }},
                 {"out-linesbeforepattern", [](std::string& s, SearchSettings* ss) { ss->add_out_linesbeforepattern(s); }},
-                {"searchpattern", [](std::string& s, SearchSettings* ss) { ss->add_searchpattern(s); }},
-                {"settings-file", [this](std::string& s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
+                {"path", [](std::string& s, SearchSettings* ss) { ss->add_path(s); }},
+                {"searchpattern", [](std::string& s, SearchSettings* ss) { ss->add_searchpattern(s); }}
         };
 
         m_int_arg_map = {
@@ -43,7 +43,6 @@ namespace cppsearch {
         };
 
         m_str_arg_map = {
-                {"startpath", [](std::string& s, SearchSettings* ss) { ss->startpath(s); }},
                 {"settings-file", [this](std::string& s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
         };
 
@@ -264,7 +263,7 @@ namespace cppsearch {
                     throw SearchException(msg);
                 }
             } else {
-                settings->startpath(*next_arg);
+                settings->add_path(*next_arg);
             }
         }
         return settings;
@@ -277,7 +276,7 @@ namespace cppsearch {
     }
 
     std::string SearchOptions::get_usage_string() {
-        auto* usage_string = new std::string("\nUsage:\n cppsearch [options] -s <searchpattern> <startpath>\n\nOptions:\n");
+        auto* usage_string = new std::string("\nUsage:\n cppsearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n");
 
         std::vector<std::string> opt_strings = {};
         std::vector<std::string> opt_descs = {};
