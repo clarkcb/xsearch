@@ -12,12 +12,17 @@ public enum FileUtil {
     fileprivate static let dotDirs = Set<String>([".", "..", "./", "../"])
     fileprivate static let separator = "/"
 
-    // this formats filePath according to forPath, which means that it will become relative
-    // if forPath is, or the the HOME prefix will be replaced with tilde if forPath.hasPrefix("~")
-    public static func formatPath(_ filePath: String, forPath: String) -> String {
-        if forPath.hasPrefix("~") {
-            return (filePath as NSString).abbreviatingWithTildeInPath
+    public static func contractPath(_ filePath: String) -> String {
+        // NOTE: I get this error for the following line when trying to build on linux:
+        //       value of type 'NSString' has no member 'abbreviatingWithTildeInPath'
+        // (filePath as NSString).abbreviatingWithTildeInPath
+        if filePath.hasPrefix(NSHomeDirectory()) {
+            return filePath.replacingOccurrences(of: NSHomeDirectory(), with: "~")
         }
+        return filePath
+    }
+
+    public static func relativePath(_ filePath: String, forPath: String) -> String {
         if forPath == "." || forPath.hasPrefix("./") {
             let fullForPath = URL(fileURLWithPath: ".").path
             return filePath.replacingOccurrences(of: fullForPath, with: ".")
@@ -25,6 +30,25 @@ public enum FileUtil {
         if forPath == ".." || forPath.hasPrefix("../") {
             let fullForPath = URL(fileURLWithPath: "..").path
             return filePath.replacingOccurrences(of: fullForPath, with: "..")
+        }
+        return filePath
+    }
+
+    // this formats filePath according to forPath, which means that it will become relative
+    // if forPath is, or the the HOME prefix will be replaced with tilde if forPath.hasPrefix("~")
+    public static func formatPath(_ filePath: String, forPath: String) -> String {
+        if forPath.hasPrefix("~") {
+            return contractPath(filePath)
+        }
+        return relativePath(filePath, forPath: forPath)
+    }
+
+    public static func formatPath(_ filePath: String, forPaths: [String]) -> String {
+        for p in forPaths {
+            let formatted: String = formatPath(filePath, forPath: p)
+            if formatted.count < filePath.count {
+                return formatted
+            }
         }
         return filePath
     }

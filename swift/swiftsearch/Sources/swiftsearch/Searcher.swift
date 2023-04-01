@@ -26,9 +26,9 @@ public class Searcher {
     private var results = [SearchResult]()
     private var textFileEncoding: String.Encoding?
 
-    public init(settings: SearchSettings, error: NSErrorPointer) {
+    public init(settings: SearchSettings) throws {
         self.settings = settings
-        validateSettings(error)
+        try validateSettings()
     }
 
     private func strToEncoding(_ encName: String) -> String.Encoding? {
@@ -42,25 +42,30 @@ public class Searcher {
         return encoding
     }
 
-    private func validateSettings(_ error: NSErrorPointer) {
-        if settings.startPath == nil || settings.startPath!.isEmpty {
-            setError(error, msg: "Startpath not defined")
-        } else if !FileUtil.exists(settings.startPath!) {
-            setError(error, msg: "Startpath not found")
-        } else if !FileUtil.isReadableFile(settings.startPath!) {
-            setError(error, msg: "Startpath not readable")
+    private func validateSettings() throws {
+        if settings.paths.isEmpty {
+            throw SearchError(msg: "Startpath not defined")
+        } else if !settings.paths.allSatisfy({ FileUtil.exists($0) }) {
+            throw SearchError(msg: "Startpath not found")
+        } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) }) {
+            throw SearchError(msg: "Startpath not readable")
         } else if settings.searchPatterns.isEmpty {
-            setError(error, msg: "No search patterns defined")
+//            setError(error, msg: "No search patterns defined")
+            throw SearchError(msg: "No search patterns defined")
         } else if settings.linesAfter < 0 {
-            setError(error, msg: "Invalid linesafter")
+//            setError(error, msg: "Invalid linesafter")
+            throw SearchError(msg: "Invalid linesafter")
         } else if settings.linesBefore < 0 {
-            setError(error, msg: "Invalid linesbefore")
+//            setError(error, msg: "Invalid linesbefore")
+            throw SearchError(msg: "Invalid linesbefore")
         } else if settings.maxLineLength < 0 {
-            setError(error, msg: "Invalid maxlinelength")
+//            setError(error, msg: "Invalid maxlinelength")
+            throw SearchError(msg: "Invalid maxlinelength")
         } else {
             let textFileEncoding = strToEncoding(settings.textFileEncoding)
             if textFileEncoding == nil {
-                setError(error, msg: "Invalid textfileencoding")
+//                setError(error, msg: "Invalid textfileencoding")
+                throw SearchError(msg: "Invalid textfileencoding")
             } else {
                 self.textFileEncoding = textFileEncoding
             }
@@ -134,24 +139,22 @@ public class Searcher {
                                     outPatterns: settings.outArchiveFilePatterns))
     }
 
-    public func search(_ error: NSErrorPointer) {
-        let startPath = settings.startPath!
-        if FileUtil.isDirectory(startPath) {
-            if isSearchDir(startPath) {
-                searchPath(startPath)
+    public func search() throws {
+//        var results = [SearchResult]()
+        for p in settings.paths {
+            if FileUtil.isDirectory(p) {
+                if isSearchDir(p) {
+                    searchPath(p)
+                } else {
+//                    setError(error, msg: "Startpath does not match search settings")
+                    throw SearchError(msg: "Startpath does not match search settings")
+                }
             } else {
-                setError(error, msg: "Startpath does not match search settings")
+                let fileType = fileTypes.getFileType(p)
+                searchFile(SearchFile(filePath: p, fileType: fileType))
             }
-        } else if FileUtil.isReadableFile(startPath) {
-            let fileType = fileTypes.getFileType(startPath)
-            if isSearchFile(startPath, fileType: fileType) {
-                searchFile(SearchFile(filePath: startPath, fileType: fileType))
-            } else {
-                setError(error, msg: "Startpath does not match search settings")
-            }
-        } else {
-            setError(error, msg: "Startpath not readable")
         }
+//        return findFiles
     }
 
     private func searchPath(_ filePath: String) {
@@ -164,12 +167,12 @@ public class Searcher {
             }.sorted().unique()
             logMsg("\nDirectories to be searched (\(searchDirs.count)):")
             for dir in searchDirs {
-                logMsg(FileUtil.formatPath(dir, forPath: settings.startPath!))
+                logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
             }
 
             logMsg("\nFiles to be searched (\(searchFiles.count)):")
             for file in searchFiles {
-                logMsg(FileUtil.formatPath(file.filePath, forPath: settings.startPath!))
+                logMsg(FileUtil.formatPath(file.filePath, forPaths: Array(settings.paths)))
             }
             logMsg("")
         }

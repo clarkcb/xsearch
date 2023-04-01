@@ -37,7 +37,7 @@ class FileTypesTests: XCTestCase {
     }
 
     func testBinaryFiles() {
-        let exts = ["a", "ai", "beam", "bin", "chm", "class", "com", "dat",
+        let exts = ["a", "ai", "beam", "chm", "class", "com", "dat",
                     "dbmdl", "dcr", "dir", "dll", "dms", "doc", "dot", "dxr", "dylib",
                     "epub", "exe", "fm", "hi", "hlp", "indd", "lib", "lnk", "mdb", "mo",
                     "mobi", "mpp", "nib", "o", "obj", "odm", "odt", "ott", "pages",

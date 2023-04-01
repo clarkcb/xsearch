@@ -13,6 +13,8 @@ import XCTest
 import swiftsearch
 
 class FileUtilTests: XCTestCase {
+    let config = Config()
+
     override func setUp() {
         super.setUp()
     }
@@ -39,12 +41,12 @@ class FileUtilTests: XCTestCase {
      * exist tests
      ========================================================================= */
     func testExistsExistingFile() {
-        let fileTypesFile = FileUtil.joinPath(Config.sharedPath, childPath: "filetypes.json")
+        let fileTypesFile = FileUtil.joinPath(config.sharedPath, childPath: "filetypes.json")
         XCTAssertTrue(FileUtil.exists(fileTypesFile))
     }
 
     func testExistsNonexistingFile() {
-        let fileTypesFile = FileUtil.joinPath(Config.sharedPath, childPath: "filetypes.ZZZ")
+        let fileTypesFile = FileUtil.joinPath(config.sharedPath, childPath: "filetypes.ZZZ")
         XCTAssertFalse(FileUtil.exists(fileTypesFile))
     }
 

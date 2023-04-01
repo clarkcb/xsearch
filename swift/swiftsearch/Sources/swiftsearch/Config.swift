@@ -8,12 +8,20 @@
 
 import Foundation
 
-public enum Config {
-    // static let xsearchPath = NSString(string: "~/src/xsearch").stringByExpandingTildeInPath
-    public static let xsearchPath = "\(NSHomeDirectory())/src/xsearch"
-    public static let sharedPath = "\(xsearchPath)/shared"
-    // public static let fileTypesPath = "\(sharedPath)/filetypes.xml"
-    public static let fileTypesPath = "\(sharedPath)/filetypes.json"
-    // public static let searchOptionsPath = "\(sharedPath)/searchoptions.xml"
-    public static let searchOptionsPath = "\(sharedPath)/searchoptions.json"
+public struct Config {
+    public let xsearchPath: String
+    public let sharedPath: String
+    public let fileTypesPath: String
+    public let searchOptionsPath: String
+
+    public init() {
+        if let xsearchEnvPath = ProcessInfo.processInfo.environment["XSEARCH_PATH"] {
+            self.xsearchPath = xsearchEnvPath
+        } else {
+            self.xsearchPath = "\(NSHomeDirectory())/src/xsearch"
+        }
+        self.sharedPath = "\(xsearchPath)/shared"
+        self.fileTypesPath = "\(sharedPath)/filetypes.json"
+        self.searchOptionsPath = "\(sharedPath)/searchoptions.json"
+    }
 }

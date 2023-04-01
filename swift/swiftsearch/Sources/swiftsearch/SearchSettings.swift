@@ -26,7 +26,6 @@ public enum DefaultSettings {
     public static let printVersion = false
     public static let recursive = true
     public static let searchArchives = false
-    public static let startPath: String? = ""
     public static let textFileEncoding: String = "UTF-8"
     public static let uniqueLines = false
     public static let verbose = false
@@ -50,7 +49,6 @@ public class SearchSettings: CustomStringConvertible {
     public var printVersion: Bool = DefaultSettings.printVersion
     public var recursive: Bool = DefaultSettings.recursive
     public var searchArchives: Bool = DefaultSettings.searchArchives
-    public var startPath = DefaultSettings.startPath
     public var textFileEncoding = DefaultSettings.textFileEncoding
     public var uniqueLines: Bool = DefaultSettings.uniqueLines
     public var verbose: Bool = DefaultSettings.verbose
@@ -73,6 +71,7 @@ public class SearchSettings: CustomStringConvertible {
     public var outFileTypes = [FileType]()
     public var outLinesAfterPatterns = [Regex]()
     public var outLinesBeforePatterns = [Regex]()
+    public var paths = Set<String>()
     public var searchPatterns = [Regex]()
 
     public init() {}
@@ -173,6 +172,10 @@ public class SearchSettings: CustomStringConvertible {
         outLinesBeforePatterns.append(Regex(pattern))
     }
 
+    public func addPath(_ path: String) {
+        paths.insert(path)
+    }
+
     public func addSearchPattern(_ pattern: String) {
         searchPatterns.append(Regex(pattern))
     }
@@ -232,13 +235,13 @@ public class SearchSettings: CustomStringConvertible {
             ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }))" +
             ", outLinesAfterPatterns=\(arrayToString(outLinesAfterPatterns))" +
             ", outLinesBeforePatterns=\(arrayToString(outLinesBeforePatterns))" +
+            ", paths=\(setToString(paths))" +
             ", printResults=\(printResults)" +
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +
             ", searchArchives=\(searchArchives)" +
             ", searchPatterns=\(arrayToString(searchPatterns))" +
-            ", startPath=\"\(startPath!)\"" +
             ", textFileEncoding=\"\(textFileEncoding)\"" +
             ", uniqueLines=\(uniqueLines)" +
             ", verbose=\(verbose)" +

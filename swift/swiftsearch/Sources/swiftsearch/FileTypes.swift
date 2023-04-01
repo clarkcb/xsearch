@@ -12,64 +12,6 @@ public enum FileType {
     case unknown, archive, binary, code, text, xml
 }
 
-class FileTypesXmlParser: NSObject, XMLParserDelegate {
-    var fileTypeDict: [String: Set<String>] = [:]
-    let fileTypeNodeName = "filetype"
-    let extensionsNodeName = "extensions"
-    let nameAttributeName = "name"
-    var element = ""
-    var fileTypeName = ""
-    var extensions = NSMutableString()
-
-    func parseFile(_ filepath: String) -> [String: Set<String>] {
-        if FileManager.default.fileExists(atPath: filepath) {
-            let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
-            let inputStream: InputStream? = InputStream(data: data!)
-
-            let parser: XMLParser? = XMLParser(stream: inputStream!)
-            if parser != nil {
-                parser!.delegate = self
-                parser!.parse()
-            }
-        } else {
-            print("ERROR: filepath not found: \(filepath)")
-        }
-
-        return fileTypeDict
-    }
-
-    func parser(_: XMLParser, didStartElement elementName: String,
-                namespaceURI _: String?, qualifiedName _: String?,
-                attributes attributeDict: [String: String])
-    {
-        element = elementName
-        if (elementName as NSString).isEqual(to: fileTypeNodeName) {
-            if attributeDict.index(forKey: nameAttributeName) != nil {
-                fileTypeName = (attributeDict[nameAttributeName]!)
-            }
-            extensions = NSMutableString()
-            extensions = ""
-        }
-    }
-
-    func parser(_: XMLParser, foundCharacters string: String) {
-        if element == extensionsNodeName {
-            extensions.append(string)
-        }
-    }
-
-    func parser(_: XMLParser, didEndElement elementName: String,
-                namespaceURI _: String?, qualifiedName _: String?)
-    {
-        if (elementName as NSString).isEqual(to: fileTypeNodeName) {
-            if !extensions.isEqual(nil) {
-                let exts = extensions.components(separatedBy: whitespace)
-                fileTypeDict[fileTypeName] = Set(exts)
-            }
-        }
-    }
-}
-
 public class FileTypes {
     fileprivate static let archive = "archive"
     fileprivate static let binary = "binary"
@@ -79,26 +21,18 @@ public class FileTypes {
     fileprivate static let unknown = "unknown"
     fileprivate static let xml = "xml"
 
+    private var config: Config
     private var fileTypesDict = [String: Set<String>]()
 
     public init() {
+        self.config = Config()
         // setFileTypesFromXml()
         setFileTypesFromJson()
     }
 
-    private func setFileTypesFromXml() {
-        let parser = FileTypesXmlParser()
-        fileTypesDict = parser.parseFile(Config.fileTypesPath)
-        fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
-            .union(fileTypesDict[FileTypes.xml]!)
-        fileTypesDict[FileTypes.searchable] =
-            fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
-                .union(fileTypesDict[FileTypes.archive]!)
-    }
-
     private func setFileTypesFromJson() {
         do {
-            let fileUrl = URL(fileURLWithPath: Config.fileTypesPath)
+            let fileUrl = URL(fileURLWithPath: config.fileTypesPath)
             let data = try Data(contentsOf: fileUrl, options: .mappedIfSafe)
             if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 if let filetypes = json["filetypes"] as? [[String: Any]] {

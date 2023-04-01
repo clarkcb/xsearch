@@ -27,8 +27,7 @@ class SearchOptionsTests: XCTestCase {
     }
 
     func testSettingsEqualDefaultSettings() {
-        var error: NSError?
-        let settings: SearchSettings = options.settingsFromArgs(requiredArgs, error: &error)
+        let settings: SearchSettings = try! options.settingsFromArgs(requiredArgs)
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
@@ -48,9 +47,8 @@ class SearchOptionsTests: XCTestCase {
     }
 
     func testSettingsFromArgs() {
-        var error: NSError?
         let otherArgs: [String] = ["--in-ext", "scala,swift", "--debug"]
-        let settings: SearchSettings = options.settingsFromArgs(requiredArgs + otherArgs, error: &error)
+        let settings: SearchSettings = try! options.settingsFromArgs(requiredArgs + otherArgs)
         print("settings: \(settings)")
         XCTAssert(settings.debug, "debug == true")
         XCTAssert(settings.verbose, "verbose == true")
@@ -58,14 +56,14 @@ class SearchOptionsTests: XCTestCase {
         XCTAssertTrue(settings.inExtensions.contains("scala"))
         XCTAssertTrue(settings.inExtensions.contains("swift"))
         XCTAssertEqual(1, settings.searchPatterns.count)
-        XCTAssertEqual(".", settings.startPath)
+        XCTAssertEqual(1, settings.paths.count)
+        XCTAssertTrue(settings.paths.contains("."))
     }
 
     func testSettingsFromJson() {
-        var error: NSError?
         let jsonString = """
 {
-  "startpath": "/Users/cary/src/xsearch/",
+  "path": "/Users/cary/src/xsearch/",
   "in-ext": ["js", "ts"],
   "out-dirpattern": ["_", "ansible", "bak", "build", "chef", "node_module", "target", "test", "typings"],
   "out-filepattern": ["gulpfile", ".min."],
@@ -79,7 +77,7 @@ class SearchOptionsTests: XCTestCase {
   "listfiles": true
 }
 """
-        let settings = options.settingsFromJson(jsonString, error: &error)
+        let settings = try! options.settingsFromJson(jsonString)
         print("settings: \(settings)")
         XCTAssertTrue(settings.debug, "debug == true")
         XCTAssertTrue(settings.excludeHidden, "excludeHidden == true")
@@ -93,7 +91,9 @@ class SearchOptionsTests: XCTestCase {
         XCTAssertTrue(settings.listFiles)
         XCTAssertEqual(9, settings.outDirPatterns.count)
         XCTAssertEqual(1, settings.searchPatterns.count)
-        XCTAssertEqual("/Users/cary/src/xsearch/", settings.startPath)
+
+        XCTAssertEqual(1, settings.paths.count)
+        XCTAssertTrue(settings.paths.contains("/Users/cary/src/xsearch/"))
         XCTAssertTrue(settings.verbose, "verbose == true")
     }
 }
