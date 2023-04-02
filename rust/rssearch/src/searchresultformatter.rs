@@ -1,9 +1,5 @@
-use std::cmp::Ordering;
-use std::path::Path;
-
 use crate::color::{GREEN, RESET};
 use crate::searchresult::SearchResult;
-use crate::searchsettings::SearchSettings;
 
 pub struct SearchResultFormatter {
     pub colorize: bool,

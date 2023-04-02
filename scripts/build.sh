@@ -20,31 +20,67 @@ source "$DIR/common.sh"
 # Utility Functions
 ########################################
 
+usage () {
+    echo -e "\nUsage: build.sh [-h|--help] [--debug] [--release] [--venv] {\"all\" | langcode}\n"
+    exit
+}
+
 # copy_resources
 copy_json_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/config.json $resources_path/"
-    cp $SHARED_PATH/config.json $resources_path/
+    cp "$SHARED_PATH/config.json" "$resources_path/"
     log "cp $SHARED_PATH/filetypes.json $resources_path/"
-    cp $SHARED_PATH/filetypes.json $resources_path/
+    cp "$SHARED_PATH/filetypes.json" "$resources_path/"
     log "cp $SHARED_PATH/searchoptions.json $resources_path/"
-    cp $SHARED_PATH/searchoptions.json $resources_path/
+    cp "$SHARED_PATH/searchoptions.json" "$resources_path/"
 }
 
 # copy_resources
 copy_xml_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/filetypes.xml $resources_path/"
-    cp $SHARED_PATH/filetypes.xml $resources_path/
+    cp "$SHARED_PATH/filetypes.xml" "$resources_path/"
     log "cp $SHARED_PATH/searchoptions.xml $resources_path/"
-    cp $SHARED_PATH/searchoptions.xml $resources_path/
+    cp "$SHARED_PATH/searchoptions.xml" "$resources_path/"
 }
 
 # copy_resources
 copy_test_resources () {
     local test_resources_path="$1"
     log "cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/"
-    cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/
+    cp "$TEST_FILE_PATH/testFile*.txt" "$test_resources_path/"
+}
+
+# add_to_bin
+add_to_bin () {
+    local script_path="$1"
+    local script_name=$(basename "$1")
+    if [ ! -d "$BIN_PATH" ]
+    then
+        log "Creating bin path"
+        log "mkdir -p $BIN_PATH"
+        mkdir -p "$BIN_PATH"
+    fi
+
+    cd "$BIN_PATH"
+
+    if [[ $script_name == *.sh ]]
+    then
+        script_name=${script_name%%.*}
+    fi
+
+    # echo "script_name: $script_name"
+    # if [ -L "$script_name" ]
+    # then
+    #     log "rm $script_name"
+    #     rm "$script_name"
+    # fi
+
+    log "ln -sf $script_path $script_name"
+    ln -sf "$script_path" "$script_name"
+
+    cd -
 }
 
 ########################################
@@ -54,17 +90,23 @@ copy_test_resources () {
 build_c () {
     echo
     log "build_c"
-    CSEARCH_PATH=$C_PATH/csearch
-    log "cd $CSEARCH_PATH"
-    cd $CSEARCH_PATH
 
-    # clean
-    log "make clean"
-    make clean
+    # ensure make is installed
+    if [ -z "$(which make)" ]
+    then
+        echo "You need to install make"
+        return
+    fi
+
+    cd "$CSEARCH_PATH"
 
     # make
+    log "Building csearch"
     log "make"
     make
+
+    # add to bin
+    add_to_bin "$CSEARCH_PATH/csearch"
 
     cd -
 }
@@ -72,49 +114,103 @@ build_c () {
 build_clojure () {
     echo
     log "build_clojure"
-    CLJSEARCH_PATH=$CLOJURE_PATH/cljsearch
-    RESOURCES_PATH=$CLJSEARCH_PATH/resources
 
-    # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    # ensure leiningen is installed
+    if [ -z "$(which lein)" ]
+    then
+        echo "You need to install leiningen"
+        return
+    fi
+
+    # copy the shared json files to the local resource location
+    RESOURCES_PATH=$CLJSEARCH_PATH/resources
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
+
+    cd "$CLJSEARCH_PATH"
 
     # Create uberjar with lein
     log "Building cljsearch"
-    cd $CLJSEARCH_PATH
     log "lein clean"
     lein clean
     log "lein uberjar"
     lein uberjar
+
+    # add to bin
+    add_to_bin "$CLJSEARCH_PATH/bin/cljsearch.sh"
+
     cd -
 }
 
 build_cpp () {
     echo
     log "build_cpp"
-    CPPSEARCH_PATH=$CPP_PATH/cppsearch
-    log "cd $CPPSEARCH_PATH"
-    cd $CPPSEARCH_PATH
 
-    CONFIGURATIONS=(debug release)
+    # ensure cmake is installed
+    if [ -z "$(which cmake)" ]
+    then
+        echo "You need to install cmake"
+        return
+    fi
+
+    cd "$CPPSEARCH_PATH"
+
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(debug release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(release)
+    fi
+
     for c in ${CONFIGURATIONS[*]}
     do
         CMAKE_BUILD_DIR="cmake-build-$c"
-        CMAKE_BUILD_PATH=$CPPSEARCH_PATH/$CMAKE_BUILD_DIR
-        if [ -d "$CMAKE_BUILD_PATH" ]; then
-            # clean
-            log "/usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target clean -- -W -Wall -Werror"
-            /usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target clean -- -W -Wall -Werror
+        CMAKE_BUILD_PATH="$CPPSEARCH_PATH/$CMAKE_BUILD_DIR"
 
-            # build
-            log "/usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch -- -W -Wall -Werror"
-            /usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch -- -W -Wall -Werror
+        if [ ! -d "$CMAKE_BUILD_PATH" ]
+        then
+            log "mkdir -p $CMAKE_BUILD_PATH"
+            mkdir -p "$CMAKE_BUILD_PATH"
 
-            # build tests
-            log "/usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch-tests -- -W -Wall -Werror"
-            /usr/local/bin/cmake --build $CMAKE_BUILD_DIR --target cppsearch-tests -- -W -Wall -Werror
+            log "cd $CMAKE_BUILD_PATH"
+            cd "$CMAKE_BUILD_PATH"
+
+            log "cmake -G \"Unix Makefiles\" .."
+            cmake -G "Unix Makefiles" ..
+
+            # exec 5>&1
+            log "make -f Makefile"
+            # OUTPUT=$(make -f Makefile | tee >(cat - >&5))
+            # I=$(echo "$OUTPUT" | grep "\[100%\] Built target ")
+            make -f Makefile
+
+            cd -
+        fi
+
+        if [ -d "$CMAKE_BUILD_PATH" ]
+        then
+            TARGETS=(clean cppsearch cppsearch-tests)
+            for t in ${TARGETS[*]}
+            do
+                log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
+                cmake --build "$CMAKE_BUILD_DIR" --target "$t" -- -W -Wall -Werror
+                [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
+            done
         fi
     done
+
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$CPPSEARCH_PATH/bin/cppsearch.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$CPPSEARCH_PATH/bin/cppsearch.debug.sh"
+    fi
 
     cd -
 }
@@ -122,75 +218,150 @@ build_cpp () {
 build_csharp () {
     echo
     log "build_csharp"
-    CSSEARCH_PATH=$CSHARP_PATH/CsSearch
-    RESOURCES_PATH=$CSSEARCH_PATH/CsSearch/Resources
-    TEST_RESOURCES_PATH=$CSSEARCH_PATH/CsSearchTests/Resources
-    CONFIGURATIONS=(Debug Release)
+
+    # ensure dotnet is installed
+    if [ -z "$(which dotnet)" ]
+    then
+        echo "You need to install dotnet"
+        return
+    fi
+
+    RESOURCES_PATH="$CSSEARCH_PATH/CsSearch/Resources"
+    TEST_RESOURCES_PATH="$CSSEARCH_PATH/CsSearchTests/Resources"
 
     # copy the shared json, xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # run dotnet build for both configurations
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Debug Release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(Debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Release)
+    fi
+
+    # run dotnet build for selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building cssearch for $c configuration"
         log "dotnet build $CSSEARCH_PATH/CsSearch.sln --configuration $c"
-        dotnet build $CSSEARCH_PATH/CsSearch.sln --configuration $c
+        dotnet build "$CSSEARCH_PATH/CsSearch.sln" --configuration "$c"
     done
+
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$CSSEARCH_PATH/bin/cssearch.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$CSSEARCH_PATH/bin/cssearch.debug.sh"
+    fi
 }
 
 build_dart () {
     echo
     log "build_dart"
-    DARTSEARCH_PATH=$DART_PATH/dartsearch
-    cd $DARTSEARCH_PATH
+
+    # ensure dart is installed
+    if [ -z "$(which dart)" ]
+    then
+        echo "You need to install dart"
+        return
+    fi
+
+    cd "$DARTSEARCH_PATH"
+
     # RESOURCES_PATH=$DARTSEARCH_PATH/lib/data
 
-    # # copy the shared xml files to the local resource location
-    # mkdir -p $RESOURCES_PATH
-    # copy_json_resources $RESOURCES_PATH
+    # TODO: move resources to local location, for now read relative to XSEARCH_PATH
+    # mkdir -p "$RESOURCES_PATH"
+    # copy_json_resources "$RESOURCES_PATH"
 
     log "Building dartsearch"
-    log "pub install"
-    pub install
+    if [ ! -f "$DARTSEARCH_PATH/.dart_tool/package_config.json" ] && [ ! -f "$DARTSEARCH_PATH/.packages" ]
+    then
+        log "dart pub get"
+        dart pub get
+    else
+        log "dart pub upgrade"
+        dart pub upgrade
+    fi
+
+    # add to bin
+    add_to_bin "$DARTSEARCH_PATH/bin/dartsearch.sh"
+
     cd -
 }
 
 build_fsharp () {
     echo
     log "build_fsharp"
-    FSSEARCH_PATH=$FSHARP_PATH/FsSearch
-    RESOURCES_PATH=$FSSEARCH_PATH/FsSearch/Resources
-    TEST_RESOURCES_PATH=$FSSEARCH_PATH/FsSearchTests/Resources
-    CONFIGURATIONS=(Debug Release)
+
+    # ensure dotnet is installed
+    if [ -z "$(which dotnet)" ]
+    then
+        echo "You need to install dotnet"
+        return
+    fi
+
+    RESOURCES_PATH="$FSSEARCH_PATH/FsSearch/Resources"
+    TEST_RESOURCES_PATH="$FSSEARCH_PATH/FsSearchTests/Resources"
 
     # copy the shared json, xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
-    copy_xml_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # run dotnet for both configurations
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Debug Release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(Debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Release)
+    fi
+
+    # run dotnet for selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building fssearch for $c configuration"
         log "dotnet build $FSSEARCH_PATH/FsSearch.sln --configuration $c"
-        dotnet build $FSSEARCH_PATH/FsSearch.sln --configuration $c
+        dotnet build "$FSSEARCH_PATH/FsSearch.sln" --configuration "$c"
     done
+
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$FSSEARCH_PATH/bin/fssearch.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$FSSEARCH_PATH/bin/fssearch.debug.sh"
+    fi
 }
 
 build_go () {
     echo
     log "build_go"
-    export GOSEARCH_PATH=$GO_PATH/gosearch
+
+    # ensure go is installed
+    if [ -z "$(which go)" ]
+    then
+        echo "You need to install go"
+        return
+    fi
 
     # build the code to generate the dynamic code for gosearch
     #log "Building gengosearchcode"
@@ -202,169 +373,330 @@ build_go () {
     #log "gengosearchcode"
     #gengosearchcode
 
+    cd "$GOSEARCH_PATH"
+
     # go fmt the gosearch source (for auto-generated code)
     log "Auto-formatting gosearch"
-    cd $GOSEARCH_PATH
     log "go fmt ./..."
     go fmt ./...
 
-    # now build gosearch
+    # create the bin dir if it doesn't already exist
+    if [ ! -d "$BIN_PATH" ]
+    then
+        mkdir -p "$BIN_PATH"
+    fi
+
+    # if GOBIN not defined, set to BIN_PATH
+    # if [ ! -d "$GOBIN" ]
+    # then
+    #     export GOBIN="$BIN_PATH"
+    # fi
+
+    # now build/install gosearch
     log "Building gosearch"
     log "go install ./..."
-    go install ./...
+    GOBIN="$BIN_PATH" go install ./...
+
     cd -
 }
 
 build_haskell () {
     echo
     log "build_haskell"
-    HSSEARCH_PATH=$HASKELL_PATH/hssearch
-    RESOURCES_PATH=$HSSEARCH_PATH/data
 
-    # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    # ensure stack is installed
+    if [ -z "$(which stack)" ]
+    then
+        echo "You need to install stack"
+        return
+    fi
+
+    # set the default stack settings, e.g. use system ghc
+    STACK_DIR=$HOME/.stack
+    if [ ! -d "$STACK_DIR" ]
+    then
+        mkdir -p "$STACK_DIR"
+    fi
+    if [ ! -f "$STACK_DIR/config.yaml" ]
+    then
+        touch "$STACK_DIR/config.yaml"
+    fi
+    INSTALL_GHC=$(grep '^install-ghc:' "$STACK_DIR"/config.yaml)
+    if [ -z "$INSTALL_GHC" ]
+    then
+        echo 'install-ghc: false' >> "$STACK_DIR/config.yaml"
+    fi
+    SYSTEM_GHC=$(grep '^system-ghc:' "$STACK_DIR"/config.yaml)
+    if [ -z "$SYSTEM_GHC" ]
+    then
+        echo 'system-ghc: true' >> "$STACK_DIR/config.yaml"
+    fi
+
+    # copy the shared json files to the local resource location
+    RESOURCES_PATH="$HSSEARCH_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
+
+    cd "$HSSEARCH_PATH/"
 
     # build with stack (via make)
     log "Building hssearch"
-    cd $HSSEARCH_PATH/
     log "stack setup"
     make setup
+
     log "stack build"
     make build
-    log "stack install"
-    stack install
+
+    log "stack install --local-bin-path $BIN_PATH"
+    stack install --local-bin-path "$BIN_PATH"
+
     cd -
 }
 
 build_java () {
     echo
     log "build_java"
-    JAVASEARCH_PATH=$JAVA_PATH/javasearch
-    RESOURCES_PATH=$JAVASEARCH_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$JAVASEARCH_PATH/src/test/resources
+
+    # ensure mvn is installed
+    if [ -z "$(which mvn)" ]
+    then
+        echo "You need to install maven"
+        return
+    fi
+
+    RESOURCES_PATH="$JAVASEARCH_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$JAVASEARCH_PATH/src/test/resources"
 
     # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     # run a maven clean build
     log "Building javasearch"
-    log "mvn -f $JAVASEARCH_PATH/pom.xml clean package"
-    mvn -f $JAVASEARCH_PATH/pom.xml clean package
+    log "mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true"
+    mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true
+
+    # add to bin
+    add_to_bin "$JAVASEARCH_PATH/bin/javasearch.sh"
 }
 
 build_javascript () {
     echo
     log "build_javascript"
-    JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
-    cd $JSSEARCH_PATH
+
+    # ensure npm is installed
+    if [ -z "$(which npm)" ]
+    then
+        echo "You need to install node.js/npm"
+        return
+    fi
+
+    # copy the shared json files to the local resource location
+    RESOURCES_PATH="$JSSEARCH_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
+
+    cd "$JSSEARCH_PATH"
+
+    # run npm install and build
+    log "Building jssearch"
     log "npm install"
     npm install
+
     log "npm run build"
     npm run build
+
+    # add to bin
+    add_to_bin "$JSSEARCH_PATH/bin/jssearch.sh"
+
     cd -
 }
 
 build_kotlin () {
     echo
     log "build_kotlin"
-    KTSEARCH_PATH=$KOTLIN_PATH/ktsearch
-    RESOURCES_PATH=$KTSEARCH_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$KTSEARCH_PATH/src/test/resources
+
+    # ensure gradle is installed
+    if [ -z "$(which gradle)" ]
+    then
+        echo "You need to install gradle"
+        return
+    fi
+
+    RESOURCES_PATH="$KTSEARCH_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$KTSEARCH_PATH/src/test/resources"
 
     # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     # run a maven clean build
     log "Building ktsearch"
 
-    cd $KTSEARCH_PATH/
-    log "gradle -b build.gradle clean jar"
-    gradle -b build.gradle clean jar
+    cd "$KTSEARCH_PATH/"
+
+    log "gradle --warning-mode all clean jar"
+    gradle --warning-mode all clean jar
+
+    # add to bin
+    add_to_bin "$KTSEARCH_PATH/bin/ktsearch.sh"
+
     cd -
 }
 
 build_objc () {
     echo
     log "build_objc"
-    OBJCSEARCH_PATH=$OBJC_PATH/objcsearch
-    # TARGET=objcsearch.xcodeproj
+
+    # ensure xcode is installed
+    if [ -z "$(which xcodebuild)" ]
+    then
+        echo "You need to install Xcode"
+        return
+    fi
+
     TARGET=alltargets
 
     # TODO: copy resource files locally?
 
-    # run xcodebuild
-    log "Building objcsearch"
-    cd $OBJCSEARCH_PATH
-    if [ $TARGET == "alltargets" ]; then
-        log "xcodebuild -alltargets"
-        xcodebuild -alltargets
-    else
-        log "xcodebuild -project $TARGET"
-        xcodebuild -project $TARGET
+    cd "$OBJCSEARCH_PATH"
+
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Debug Release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(Debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Release)
     fi
+
+    # run xcodebuild for selected configurations
+    for c in ${CONFIGURATIONS[*]}
+    do
+        if [ $TARGET == "alltargets" ]
+        then
+            log "xcodebuild -alltargets -configuration $c"
+            xcodebuild -alltargets -configuration "$c"
+        else
+            log "xcodebuild -target $TARGET -configuration $c"
+            xcodebuild -target "$TARGET" -configuration "$c"
+        fi
+    done
+
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$OBJCSEARCH_PATH/bin/objcsearch.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$OBJCSEARCH_PATH/bin/objcsearch.debug.sh"
+    fi
+
     cd -
 }
 
 build_ocaml () {
     echo
     log "build_ocaml"
-    MLSEARCH_PATH=$OCAML_PATH/mlsearch
-    cd $MLSEARCH_PATH
+
+    cd "$MLSEARCH_PATH"
     ./build.sh
-    if [ -L ~/bin/mlsearch ]; then
-        rm ~/bin/mlsearch
-    fi
-    ln -s $MLSEARCH_PATH/_build/src/mlsearch.native ~/bin/mlsearch
+    # if [ -L ~/bin/mlsearch ]
+    # then
+    #     rm ~/bin/mlsearch
+    # fi
+    ln -s "$MLSEARCH_PATH/_build/src/mlsearch.native" ~/bin/mlsearch
     cd -
 }
 
 build_perl () {
     echo
     log "build_perl"
-    log "Nothing to do for perl"
+
+    # ensure perl is installed
+    if [ -z "$(which perl)" ]
+    then
+        echo "You need to install perl"
+        return
+    fi
+
+    if [ -z "$(perl -v | grep 'This is perl 5')" ]
+    then
+        echo "A 5.x version of perl is required"
+        return
+    fi
+
+    # copy the shared json files to the local resource location
+    RESOURCES_PATH="$PLSEARCH_PATH/share"
+    mkdir -p "$RESOURCES_PATH"
+    log "cp $SHARED_PATH/config.json $RESOURCES_PATH/"
+    cp "$SHARED_PATH/config.json" "$RESOURCES_PATH/"
+    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
+    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
+    log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
+    cp "$SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
+
+    # add to bin
+    add_to_bin "$PLSEARCH_PATH/bin/plsearch.sh"
 }
 
 build_php () {
     echo
     log "build_php"
-    PHPSEARCH_PATH=$PHP_PATH/phpsearch
-    CONFIG_PATH=$PHPSEARCH_PATH/config
-    RESOURCES_PATH=$PHPSEARCH_PATH/resources
 
-    # copy the shared config json file to the local config location
-    mkdir -p $CONFIG_PATH
-    log "cp $SHARED_PATH/config.json $CONFIG_PATH/"
-    cp $SHARED_PATH/config.json $CONFIG_PATH/
-
-    # copy the shared json files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/
-    log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/
-
-    COMPOSER=$(which composer)
-    if [ -z "$COMPOSER" ]; then
-        echo "Need to install composer to continue"
+    # ensure php is installed
+    if [ -z "$(which php)" ]
+    then
+        echo "You need to install PHP"
         return
     fi
+
+    # TODO: do a real version check
+    if [ -z "$(php -v | grep 'cli')" ]
+    then
+        echo "A version of PHP >= 7.x is required"
+        return
+    fi
+
+    # ensure composer is installed
+    if [ -z "$(which composer)" ]
+    then
+        echo "Need to install composer"
+        return
+    fi
+
+    CONFIG_PATH="$PHPSEARCH_PATH/config"
+    RESOURCES_PATH="$PHPSEARCH_PATH/resources"
+
+    # copy the shared config json file to the local config location
+    mkdir -p "$CONFIG_PATH"
+    log "cp $SHARED_PATH/config.json $CONFIG_PATH/"
+    cp "$SHARED_PATH/config.json" "$CONFIG_PATH/"
+
+    # copy the shared json files to the local resource location
+    mkdir -p "$RESOURCES_PATH"
+    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
+    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
+    log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
+    cp "$SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
+
+    cd "$PHPSEARCH_PATH/"
 
     # run a composer build
     log "Building phpsearch"
 
-    cd $PHPSEARCH_PATH/
-    if [ -d "$PHPSEARCH_PATH/vendor" ]; then
+    if [ -d "$PHPSEARCH_PATH/vendor" ]
+    then
         log "composer update"
         composer update
     else
@@ -372,94 +704,260 @@ build_php () {
         composer install
     fi
 
+    # add to bin
+    add_to_bin "$PHPSEARCH_PATH/bin/phpsearch.sh"
+
     cd -
 }
 
 build_python () {
     echo
     log "build_python"
-    PYSEARCH_PATH=$PYTHON_PATH/pysearch
-    RESOURCES_PATH=$PYSEARCH_PATH/data
 
-    # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    # ensure python3.7+ is installed
+    PYTHON_VERSIONS=(python3.11 python3.10 python3.9 python3.8 python3.7)
+    PYTHON=
+    for p in ${PYTHON_VERSIONS[*]}
+    do
+        PYTHON=$(which "$p")
+        if [ -f "$PYTHON" ]
+        then
+            break
+        fi
+    done
+
+    if [ -z "$PYTHON" ]
+    then
+        log "A version of python >= 3.7 is required"
+        return
+    else
+        PYTHON=$(basename "$PYTHON")
+        log "Using $PYTHON"
+    fi
+
+    # Set to Yes to use venv
+    USE_VENV=$VENV
+
+
+    # copy the shared json files to the local resource location
+    RESOURCES_PATH="$PYSEARCH_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
+
+    cd "$PYSEARCH_PATH"
+
+    if [ "$USE_VENV" == 'yes' ]
+    then
+        # create a virtual env to run from and install to
+        if [ ! -d "$PYSEARCH_PATH/venv" ]
+        then
+            log "$PYTHON -m venv venv"
+            "$PYTHON" -m venv venv
+        fi
+
+        # if venv isn't active, activate it
+        if [ -z "$VIRTUAL_ENV" ]
+        then
+            log "source $PYSEARCH_PATH/venv/bin/activate"
+            source $PYSEARCH_PATH/venv/bin/activate
+        fi
+    fi
+
+    # install dependencies in requirements.txt
+    log "pip3 install -r requirements.txt"
+    pip3 install -r requirements.txt
+
+    if [ "$USE_VENV" == 'yes' ]
+    then
+        # deactivate at end of setup process
+        log "deactivate"
+        deactivate
+    fi
+
+    # TODO: change the !# line in pysearch to use the determined python version
+
+    # add to bin
+    add_to_bin "$PYSEARCH_PATH/bin/pysearch.sh"
+
+    cd -
 }
 
 build_ruby () {
     echo
     log "build_ruby"
-    RBSEARCH_PATH=$RUBY_PATH/rbsearch
-    RESOURCES_PATH=$RBSEARCH_PATH/data
-    TEST_RESOURCES_PATH=$RBSEARCH_PATH/lib/test/fixtures
+
+    # ensure ruby2.x+ is installed
+    if [ -z "$(which ruby)" ]
+    then
+        echo "You need to install ruby"
+        return
+    fi
+
+    # TODO: do a real version check (first determine minimum needed version)
+    if [ -z "$(ruby -v | grep 'ruby 2')" ]
+    then
+        echo "A version of ruby >= 2.x is required"
+        return
+    fi
+
+    # if [ -z "$(which bundle)" ]
+    # then
+    #     echo "You need to install bundler: https://bundler.io/"
+    #     return
+    # fi
+
+    RESOURCES_PATH="$RBSEARCH_PATH/data"
+    TEST_RESOURCES_PATH="$RBSEARCH_PATH/lib/test/fixtures"
 
     # copy the shared json files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
+
+    # TODO: figure out how to install dependencies without installing rbsearch (which is what bundler does)
+    # cd "$RBSEARCH_PATH"
+    # log "bundle"
+    # bundle
+    # cd -
+
+    # add to bin
+    add_to_bin "$RBSEARCH_PATH/bin/rbsearch.sh"
 }
 
 build_rust () {
     echo
     log "build_rust"
-    RSSEARCH_PATH=$RUST_PATH/rssearch
-    cd $RSSEARCH_PATH
-    log "cargo build"
-    cargo build
-    log "cargo build --release"
-    cargo build --release
+
+    # ensure cargo/rust is installed
+    if [ -z "$(which cargo)" ]
+    then
+        echo "You need to install rust"
+        return
+    fi
+
+    cd "$RSSEARCH_PATH"
+
+    log "Building rssearch"
+    if [ -n "$DEBUG" ]
+    then
+        log "cargo build"
+        cargo build
+    fi
+    if [ -n "$RELEASE" ]
+    then
+        log "cargo build --release"
+        cargo build --release
+
+        # add release to bin
+        add_to_bin "$RSSEARCH_PATH/bin/rssearch.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$RSSEARCH_PATH/bin/rssearch.debug.sh"
+    fi
+
     cd -
 }
 
 build_scala () {
     echo
     log "build_scala"
-    SCALASEARCH_PATH=$SCALA_PATH/scalasearch
-    RESOURCES_PATH=$SCALASEARCH_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$SCALASEARCH_PATH/src/test/resources
 
-    # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    # ensure sbt is installed
+    if [ -z "$(which sbt)" ]
+    then
+        echo "You need to install scala + sbt"
+        return
+    fi
+
+    RESOURCES_PATH="$SCALASEARCH_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$SCALASEARCH_PATH/src/test/resources"
+
+    # copy the shared json files to the local resource location
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
+
+    cd "$SCALASEARCH_PATH"
 
     # run sbt assembly
-    cd $SCALASEARCH_PATH
     log "Building scalasearch"
-    log "sbt assembly"
-    sbt assembly
+
+    # log "sbt clean assembly"
+    # sbt clean assembly
+    # to build without testing, changed to this:
+    log "sbt 'set test in assembly := {}' clean assembly"
+    sbt 'set test in assembly := {}' clean assembly
+
+    # add to bin
+    add_to_bin "$SCALASEARCH_PATH/bin/scalasearch.sh"
+
     cd -
 }
 
 build_swift () {
     echo
     log "build_swift"
-    SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
-    # CONFIGURATIONS=(debug release)
 
-    # TODO: copy resource files locally?
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        echo "You need to install swift"
+        return
+    fi
+
+    # TODO: copy resource files locally? - embedded resources not currently supported apparently
+
+    cd "$SWIFTSEARCH_PATH"
 
     # run swift build
     log "Building swiftsearch"
-    cd $SWIFTSEARCH_PATH
-    log "swift build"
-    swift build
-    log "swift build --configuration release"
-    swift build --configuration release
+
+    if [ -n "$DEBUG" ]
+    then
+        log "swift build"
+        swift build
+    fi
+    if [ -n "$RELEASE" ]
+    then
+        log "swift build --configuration release"
+        swift build --configuration release
+
+        # add release to bin
+        add_to_bin "$SWIFTSEARCH_PATH/bin/swiftsearch.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$SWIFTSEARCH_PATH/bin/swiftsearch.debug.sh"
+    fi
+
     cd -
 }
 
 build_typescript () {
     echo
     log "build_typescript"
-    TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
-    cd $TSSEARCH_PATH
+
+    # ensure npm is installed
+    if [ -z "$(which npm)" ]
+    then
+        echo "You need to install node.js/npm"
+        return
+    fi
+
+    # copy the shared json files to the local resource location
+    RESOURCES_PATH="$TSSEARCH_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
+
+    cd "$TSSEARCH_PATH"
+
+    # run npm install and build
+    log "Building tssearch"
     log "npm install"
     npm install
     log "npm run build"
@@ -467,105 +965,213 @@ build_typescript () {
     cd -
 }
 
+build_linux () {
+    hdr "build_linux"
+
+    # time build_c
+
+    # time build_clojure
+
+    # time build_cpp
+
+    time build_csharp
+
+    time build_dart
+
+    time build_fsharp
+
+    time build_go
+
+    time build_java
+
+    time build_javascript
+
+    # time build_kotlin
+
+    time build_perl
+
+    time build_php
+
+    time build_python
+
+    time build_ruby
+
+    time build_rust
+
+    # time build_scala
+
+    time build_swift
+
+    time build_typescript
+}
+
 build_all () {
     log "build_all"
 
-    build_cpp
+    # time build_c
 
-    build_clojure
+    time build_clojure
 
-    build_csharp
+    time build_cpp
 
-    build_dart
+    time build_csharp
 
-    build_fsharp
+    time build_dart
 
-    build_go
+    time build_fsharp
 
-    build_haskell
+    time build_go
 
-    build_java
+    time build_haskell
 
-    build_javascript
+    time build_java
 
-    build_kotlin
+    time build_javascript
 
-    build_objc
+    time build_kotlin
 
-    build_ocaml
+    time build_objc
 
-    build_perl
+    # time build_ocaml
 
-    build_php
+    time build_perl
 
-    build_python
+    time build_php
 
-    build_ruby
+    time build_python
 
-    build_rust
+    time build_ruby
 
-    build_scala
+    time build_rust
 
-    build_swift
+    time build_scala
 
-    build_typescript
+    time build_swift
+
+    time build_typescript
 }
 
 
 ########################################
-# Build Steps
+# Build Main
 ########################################
+HELP=
+DEBUG=
+RELEASE=
+VENV=
+ARG=all
 
-if [ $# == 0 ]; then
-    ARG="all"
-else
-    ARG=$1
+if [ $# == 0 ]
+then
+    HELP=yes
 fi
 
-if [ "$ARG" == "all" ]; then
-    build_all
-elif [ "$ARG" == "c" ]; then
-    build_c
-elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]; then
-    build_clojure
-elif [ "$ARG" == "cpp" ]; then
-    build_cpp
-elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]; then
-    build_csharp
-elif [ "$ARG" == "dart" ]; then
-    build_dart
-elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]; then
-    build_fsharp
-elif [ "$ARG" == "go" ]; then
-    build_go
-elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]; then
-    build_haskell
-elif [ "$ARG" == "java" ]; then
-    build_java
-elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]; then
-    build_javascript
-elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]; then
-    build_kotlin
-elif [ "$ARG" == "objc" ]; then
-    build_objc
-elif [ "$ARG" == "ocaml" ]; then
-    build_ocaml
-elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]; then
-    build_perl
-elif [ "$ARG" == "php" ]; then
-    build_php
-elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]; then
-    build_python
-elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]; then
-    build_ruby
-elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]; then
-    build_rust
-elif [ "$ARG" == "scala" ]; then
-    build_scala
-elif [ "$ARG" == "swift" ]; then
-    build_swift
-elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]; then
-    build_typescript
-else
-    echo "ERROR: unknown build argument: $ARG"
+while [ -n "$1" ]
+do
+    case "$1" in
+        -h | --help)
+            HELP=yes
+            ;;
+        --debug)
+            DEBUG=yes
+            ;;
+        --release)
+            RELEASE=yes
+            ;;
+        --venv)
+            VENV=yes
+            ;;
+        *)
+            ARG=$1
+            ;;
+    esac
+    shift || true
+done
+
+if [ -n "$HELP" ]
+then
+    usage
 fi
+
+if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
+then
+    DEBUG=yes
+fi
+
+case $ARG in
+    all)
+        build_all
+        ;;
+    linux)
+        build_linux
+        ;;
+    # c)
+    #     build_c
+    #     ;;
+    clj | clojure)
+        build_clojure
+        ;;
+    cpp)
+        build_cpp
+        ;;
+    cs | csharp)
+        build_csharp
+        ;;
+    dart)
+        build_dart
+        ;;
+    fs | fsharp)
+        build_fsharp
+        ;;
+    go)
+        build_go
+        ;;
+    haskell | hs)
+        build_haskell
+        ;;
+    java)
+        build_java
+        ;;
+    javascript | js)
+        build_javascript
+        ;;
+    kotlin | kt)
+        build_kotlin
+        ;;
+    objc)
+        build_objc
+        ;;
+    # ocaml | ml)
+    #     build_ocaml
+    #     ;;
+    perl | pl)
+        build_perl
+        ;;
+    php)
+        build_php
+        ;;
+    # ps1 | powershell)
+    #     build_powershell
+    #     ;;
+    py | python)
+        build_python
+        ;;
+    rb | ruby)
+        build_ruby
+        ;;
+    rs | rust)
+        build_rust
+        ;;
+    scala)
+        build_scala
+        ;;
+    swift)
+        build_swift
+        ;;
+    ts | typescript)
+        build_typescript
+        ;;
+    *)
+        echo -n "ERROR: unknown xsearch build argument: $ARG"
+        ;;
+esac

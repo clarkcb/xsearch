@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::error::Error;
 use std::fs;
 use std::io;
 use std::io::BufReader;
@@ -55,13 +54,13 @@ impl Searcher {
         for p in settings.paths.iter() {
             let metadata = fs::metadata(&p);
             if metadata.is_err() {
-                match metadata.err().unwrap().kind() {
-                    io::ErrorKind::NotFound => return Err(SearchError::new("Startpath not found")),
+                return match metadata.err().unwrap().kind() {
+                    io::ErrorKind::NotFound => Err(SearchError::new("Startpath not found")),
                     io::ErrorKind::PermissionDenied => {
-                        return Err(SearchError::new("Startpath not readable"))
+                        Err(SearchError::new("Startpath not readable"))
                     },
                     _ => {
-                        return Err(SearchError::new(
+                        Err(SearchError::new(
                             "An unknown error occurred trying to read startpath",
                         ))
                     }
@@ -303,12 +302,12 @@ impl Searcher {
                 let reader = BufReader::new(f);
                 let mut archive = match zip::ZipArchive::new(reader) {
                     Ok(archive) => archive,
-                    Err(error) => return Err(SearchError::new(error.description())),
+                    Err(error) => return Err(SearchError::new(&error.to_string())),
                 };
                 for i in 0..archive.len() {
                     let mut zipfile = match archive.by_index(i) {
                         Ok(zipfile) => zipfile,
-                        Err(error) => return Err(SearchError::new(error.description())),
+                        Err(error) => return Err(SearchError::new(&error.to_string())),
                     };
                     if zipfile.is_file() {
                         match self.search_zip_file(searchfile, &mut zipfile) {
@@ -319,7 +318,7 @@ impl Searcher {
                 }
             },
             Err(error) => {
-                return Err(SearchError::new(error.description()));
+                return Err(SearchError::new(&error.to_string()));
             }
         }
         Ok(results)
@@ -423,7 +422,7 @@ impl Searcher {
                 Err(cow) => return Err(SearchError::new(&cow.to_string())),
             },
             Err(error) => {
-                return Err(SearchError::new(error.description()));
+                return Err(SearchError::new(&error.to_string()));
             }
         }
     }
@@ -435,7 +434,7 @@ impl Searcher {
     ) -> Result<String, SearchError> {
         match fs::File::open(searchfile.filepath()) {
             Ok(mut f) => self.get_encoded_byte_string_for_reader(&mut f, enc),
-            Err(error) => Err(SearchError::new(error.description())),
+            Err(error) => Err(SearchError::new(&error.to_string())),
         }
     }
 
@@ -527,7 +526,7 @@ impl Searcher {
                 },
                 Err(error) => {
                     //let msg = format!("{} (file: {}", error.description(), searchfile.filepath());
-                    return Err(SearchError::new(error.description()));
+                    return Err(SearchError::new(&error.to_string()));
                 }
             },
             _ => match self.get_encoded_byte_string_for_reader(reader, encoding) {
@@ -546,7 +545,7 @@ impl Searcher {
     ) -> Result<String, SearchError> {
         match fs::File::open(searchfile.filepath()) {
             Ok(mut f) => self.get_text_reader_contents(&mut f, encoding),
-            Err(error) => Err(SearchError::new(error.description())),
+            Err(error) => Err(SearchError::new(&error.to_string())),
         }
     }
 
@@ -1075,7 +1074,7 @@ mod tests {
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
-        let mut lines: std::str::Lines = contents.lines();
+        let mut lines: Lines = contents.lines();
 
         let results = searcher.search_text_lines(&mut lines);
 
@@ -1104,7 +1103,7 @@ mod tests {
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
-        let mut lines: std::str::Lines = contents.lines();
+        let mut lines: Lines = contents.lines();
 
         let results = searcher.search_text_lines(&mut lines);
 

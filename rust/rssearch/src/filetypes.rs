@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use crate::config::{Config, CONFIG_FILE_PATH};
 use crate::fileutil::FileUtil;
 use crate::searcherror::SearchError;
-use std::error::Error;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FileType {
@@ -40,11 +39,11 @@ impl FileTypes {
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents: String = match fs::read_to_string(config.filetypes_path) {
             Ok(contents) => contents,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(SearchError::new(&error.to_string())),
         };
         let jft: JsonFileTypes = match serde_json::from_str(&contents) {
             Ok(deserialized) => deserialized,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(SearchError::new(&error.to_string())),
         };
         let mut filetypes = FileTypes {
             filetypemap: HashMap::new(),

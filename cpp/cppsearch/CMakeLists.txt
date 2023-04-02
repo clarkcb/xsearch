@@ -1,18 +1,26 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.15)
 project(cppsearch)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
 
+if (DEFINED ENV{XSEARCH_PATH})
+        set(XSEARCH_PATH $ENV{XFIND_PATH})
+        message("XSEARCH_PATH: ${XSEARCH_PATH}")
+else()
+        set(XSEARCH_PATH $ENV{HOME}/src/xsearch)
+        message("XSEARCH_PATH: ${XSEARCH_PATH}")
+endif()
+
 include_directories(/Users/cary/src/xsearch/cpp/cppsearch/include)
 include_directories(${Boost_INCLUDE_DIRS})
 
-set(SOURCE_FILES include/common.h src/common.cpp include/config.h
+set(SOURCE_FILES include/common.h src/common.cpp
+        include/config.h
         include/FileTypes.h src/FileTypes.cpp
         include/FileUtil.h src/FileUtil.cpp
         include/StringUtil.h src/StringUtil.cpp
@@ -34,9 +42,30 @@ add_executable(cppsearch cppsearch.cpp)
 
 target_link_libraries(cppsearch xsearch)
 
-set(TEST_FILES tests/FileTypesTest.cpp tests/FileUtilTest.cpp tests/SearcherTest.cpp tests/SearchFileTest.cpp
-        tests/SearchOptionsTest.cpp tests/SearchResultTest.cpp tests/SearchSettingsTest.cpp tests/tests-main.cpp)
+
+## Testing section
+
+Include(FetchContent)
+
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v2.13.4
+)
+
+FetchContent_MakeAvailable(Catch2)
+
+set(TEST_FILES tests/FileTypesTest.cpp
+        tests/FileUtilTest.cpp
+        tests/SearcherTest.cpp
+        tests/SearchFileTest.cpp
+        tests/SearchOptionsTest.cpp
+        tests/SearchResultTest.cpp
+        tests/SearchSettingsTest.cpp
+        tests/tests-main.cpp)
 
 add_executable(cppsearch-tests ${TEST_FILES})
 
-target_link_libraries(cppsearch-tests xsearch)
+target_link_libraries(cppsearch-tests xsearch Catch2::Catch2)
+
+unset(XSEARCH_PATH CACHE)

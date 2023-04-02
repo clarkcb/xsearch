@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
+#include <fstream>
 #include <iostream>
 #include "common.h"
 #include "FileTypes.h"
@@ -301,7 +302,8 @@ namespace cppsearch {
                     }
                 }
 
-                auto matches_begin = std::sregex_iterator(line.begin(), line.end(), p->r());
+                std::regex r = p->r();
+                auto matches_begin = std::sregex_iterator(line.begin(), line.end(), r);
                 auto matches_end = std::sregex_iterator();
 
                 for (std::sregex_iterator it = matches_begin; it != matches_end; ++it) {
@@ -435,7 +437,8 @@ namespace cppsearch {
 
         for (const auto& p : *(m_settings->searchpatterns())) {
             // ---------------------------------------------------------------------
-            auto matches_begin = std::sregex_iterator(s.begin(), s.end(), p->r());
+            std::regex r = p->r();
+            auto matches_begin = std::sregex_iterator(s.begin(), s.end(), r);
             auto matches_end = std::sregex_iterator();
 
             for (std::sregex_iterator it = matches_begin; it != matches_end; ++it) {

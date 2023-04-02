@@ -1,6 +1,5 @@
 use core::slice::Iter;
 use std::collections::HashMap;
-use std::error::Error;
 use std::fs;
 
 use regex::Regex;
@@ -40,11 +39,11 @@ impl SearchOptions {
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents: String = match fs::read_to_string(config.searchoptions_path) {
             Ok(contents) => contents,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(SearchError::new(&error.to_string())),
         };
         let jso: JsonSearchOptions = match serde_json::from_str(&contents) {
             Ok(deserialized) => deserialized,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(SearchError::new(&error.to_string())),
         };
         Ok(SearchOptions {
             searchoptions: jso.searchoptions,
@@ -68,7 +67,7 @@ impl SearchOptions {
     pub fn settings_from_file(&self, json_file: &str) -> Result<SearchSettings, SearchError> {
         match fs::read_to_string(json_file) {
             Ok(json) => self.settings_from_json(&json),
-            Err(error) => Err(SearchError::new(error.description())),
+            Err(error) => Err(SearchError::new(&error.to_string())),
         }
     }
 
@@ -81,7 +80,7 @@ impl SearchOptions {
                     return Err(error);
                 }
             },
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(SearchError::new(&error.to_string())),
         }
         Ok(settings)
     }

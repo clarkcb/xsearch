@@ -3,7 +3,7 @@
 namespace cppsearch {
     SearchPattern::SearchPattern(const std::string& pattern) {
         m_pattern = pattern;
-        m_regex = std::regex(pattern);
+        m_regex = pattern;
     }
 
     std::string SearchPattern::pattern() const {

@@ -11,8 +11,8 @@ namespace cppsearch {
 
     public:
         explicit SearchPattern(const std::string& pattern);
-        std::string pattern() const;
-        std::regex r() const;
+        [[nodiscard]] std::string pattern() const;
+        [[nodiscard]] std::regex r() const;
     };
 }
 

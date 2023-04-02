@@ -1,7 +1,5 @@
 use std::cmp::Ordering;
-use std::fmt;
 
-use crate::color::{GREEN, RESET};
 use crate::searchfile::SearchFile;
 
 #[derive(Debug, Eq)]
@@ -28,14 +26,14 @@ impl SearchResult {
         lines_after: Vec<String>,
     ) -> SearchResult {
         SearchResult {
-            pattern: pattern,
-            file: file,
-            line_num: line_num,
-            match_start_index: match_start_index,
-            match_end_index: match_end_index,
-            line: line,
-            lines_before: lines_before,
-            lines_after: lines_after,
+            pattern,
+            file,
+            line_num,
+            match_start_index,
+            match_end_index,
+            line,
+            lines_before,
+            lines_after,
         }
     }
 }
@@ -79,6 +77,7 @@ mod tests {
     use crate::common::log;
     use crate::filetypes::FileType;
     use crate::searchresultformatter::SearchResultFormatter;
+    use crate::color::{GREEN, RESET};
 
     use super::*;
 

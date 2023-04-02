@@ -7,6 +7,16 @@
 ################################################################################
 
 ########################################
+# Configuration
+########################################
+
+# Unset this variable to terminate color usage
+$useColor=$TRUE
+
+$lineSep="--------------------------------------------------------------------------------"
+
+
+########################################
 # Utility Functions
 ########################################
 
@@ -22,8 +32,14 @@ function GetLogString
 function Log
 {
 	param([string]$msg)
-	$s = (GetLogString $msg)
-	Write-Host $s
+	# $s = (GetLogString $msg)
+	$ds = '{0:yyyy-MM-dd hh:mm:ss tt}' -f (Get-Date)
+	if ($useColor) {
+		Write-Host "[$ds]" -ForegroundColor Green -NoNewline
+		Write-Host " $msg"
+	} else {
+		Write-Host "[$ds] $msg"
+	}
 }
 
 # Write an error to the console (colorized)
@@ -31,7 +47,11 @@ function PrintError
 {
 	param([string]$msg)
 	$s = (GetLogString ('ERROR: ' + $msg))
-	Write-Host $s -BackgroundColor Black -ForegroundColor Red
+	if ($useColor) {
+		Write-Host $s -BackgroundColor Black -ForegroundColor Red
+	} else {
+		Write-Host $s
+	}
 }
 
 # Write an error to the console and exit
@@ -40,4 +60,17 @@ function ExitWithError
 	param([string]$errmsg)
 	PrintError "$errmsg`n"
 	exit
+}
+
+function Hdr {
+	param ([string]$title)
+	if ($useColor) {
+		Write-Host $lineSep -ForegroundColor Cyan
+		Write-Host $title -ForegroundColor Cyan
+		Write-Host $lineSep -ForegroundColor Cyan
+	} else {
+		Write-Host $lineSep
+		Write-Host $title
+		Write-Host $lineSep
+	}
 }
