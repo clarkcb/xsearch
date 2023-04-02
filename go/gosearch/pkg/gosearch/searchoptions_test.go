@@ -43,8 +43,12 @@ func TestSearchSettingsFromValidArgs(t *testing.T) {
 		t.Errorf("SearchSettingsFromArgs: err: %v", err)
 	}
 
-	if settings.StartPath != "." {
-		t.Errorf("settings.StartPath (%s) != \".\"", settings.StartPath)
+	if len(settings.Paths) != 1 {
+		t.Errorf("settings.Paths is empty")
+	}
+
+	if settings.Paths[0] != "." {
+		t.Errorf("settings.Paths[0] != \".\"")
 	}
 
 	if len(settings.InExtensions) != 1 {
@@ -52,9 +56,9 @@ func TestSearchSettingsFromValidArgs(t *testing.T) {
 			len(settings.InExtensions))
 	}
 	expectedExt := "go"
-	if *settings.InExtensions[0] != expectedExt {
+	if settings.InExtensions[0] != expectedExt {
 		t.Errorf("settings.InExtensions[0] (\"%s\") != \"%s\"",
-			*settings.InExtensions[0], expectedExt)
+			settings.InExtensions[0], expectedExt)
 	}
 }
 
@@ -62,7 +66,7 @@ func TestSearchSettingsFromJson(t *testing.T) {
 	searchOptions := NewSearchOptions()
 
 	jsonSettings := []byte(`{
-  "startpath": "~/src/xsearch/",
+  "path": "~/src/xsearch/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
@@ -81,8 +85,12 @@ func TestSearchSettingsFromJson(t *testing.T) {
 		t.Errorf("TestSearchSettingsFromJson: err: %v", err)
 	}
 
-	if settings.StartPath != "~/src/xsearch/" {
-		t.Errorf("settings.StartPath (%s) != \"~/src/xsearch/\"", settings.StartPath)
+	if len(settings.Paths) != 1 {
+		t.Errorf("settings.Paths is empty")
+	}
+
+	if settings.Paths[0] != "~/src/xsearch/" {
+		t.Errorf("settings.Paths[0] != \"~/src/xsearch/\"")
 	}
 
 	if len(settings.InExtensions) != 2 {
@@ -91,9 +99,9 @@ func TestSearchSettingsFromJson(t *testing.T) {
 	}
 	expectedInExts := []string{"js", "ts"}
 	for i, _ := range expectedInExts {
-		if *settings.InExtensions[i] != expectedInExts[i] {
+		if settings.InExtensions[i] != expectedInExts[i] {
 			t.Errorf("settings.InExtensions[%d] (\"%s\") != \"%s\"",
-				i, *settings.InExtensions[i], expectedInExts[i])
+				i, settings.InExtensions[i], expectedInExts[i])
 		}
 	}
 

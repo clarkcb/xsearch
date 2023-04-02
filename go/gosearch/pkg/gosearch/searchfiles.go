@@ -20,6 +20,13 @@ func NewSearchItemsIterator(sf *SearchItems) *SearchItemsIterator {
 	}
 }
 
+func (i *SearchItemsIterator) HasNext() bool {
+	if i.idx >= len(i.items.items) {
+		return false
+	}
+	return true
+}
+
 func (i *SearchItemsIterator) Next() bool {
 	i.idx++
 	if i.idx >= len(i.items.items) {
@@ -30,6 +37,16 @@ func (i *SearchItemsIterator) Next() bool {
 
 func (i *SearchItemsIterator) Value() *SearchItem {
 	return i.items.items[i.idx]
+}
+
+func (i *SearchItemsIterator) Take(count int) []*SearchItem {
+	if i.idx < 0 {
+		i.idx = 0
+	}
+	maxCount := getMinInt(count, len(i.items.items)-i.idx)
+	searchItems := i.items.items[i.idx : maxCount+i.idx]
+	i.idx += maxCount
+	return searchItems
 }
 
 type SearchItems struct {
@@ -58,8 +75,8 @@ func (si *SearchItems) getStrPtr(s *string) *string {
 func (si *SearchItems) AddItem(i *SearchItem) {
 	si.items = append(si.items, &SearchItem{
 		i.Containers,
-		si.getStrPtr(i.Path),
-		si.getStrPtr(i.Name),
+		i.Path,
+		i.Name,
 		i.fileType,
 	})
 }
@@ -78,12 +95,12 @@ func (si *SearchItems) Iterator() *SearchItemsIterator {
 
 type SearchItem struct {
 	Containers []string
-	Path       *string
-	Name       *string
+	Path       string
+	Name       string
 	fileType   FileType
 }
 
-func NewSearchItem(path *string, name *string, fileType FileType) *SearchItem {
+func NewSearchItem(path string, name string, fileType FileType) *SearchItem {
 	return &SearchItem{
 		[]string{},
 		path,
@@ -104,11 +121,11 @@ func (si *SearchItem) String() string {
 		buffer.WriteString(strings.Join(si.Containers, containerSeparator))
 		buffer.WriteString(containerSeparator)
 	}
-	path := normalizePath(*si.Path)
+	path := normalizePath(si.Path)
 	if isDotDir(path) {
-		buffer.WriteString(fmt.Sprintf("%s%c%s", path, os.PathSeparator, *si.Name))
+		buffer.WriteString(fmt.Sprintf("%s%c%s", path, os.PathSeparator, si.Name))
 	} else {
-		buffer.WriteString(filepath.Join(*si.Path, *si.Name))
+		buffer.WriteString(filepath.Join(si.Path, si.Name))
 	}
 	return buffer.String()
 }

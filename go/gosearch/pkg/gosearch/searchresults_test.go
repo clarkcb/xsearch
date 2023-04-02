@@ -23,9 +23,9 @@ func TestAddSearchResult(t *testing.T) {
 		6,
 		1,
 		25,
-		&line,
-		[]*string{},
-		[]*string{},
+		line,
+		[]string{},
+		[]string{},
 	}
 	searchResults.AddSearchResult(searchResult)
 

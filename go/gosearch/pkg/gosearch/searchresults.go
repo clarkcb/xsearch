@@ -7,55 +7,71 @@ import (
 	"sort"
 	"strings"
 	"unicode"
-
-	"github.com/pmylund/sortutil"
 )
 
-type SearchResults struct {
-	Settings      *SearchSettings
-	SearchResults []*SearchResult
+type SearchResultsStats struct {
 	DirCounts     map[string]int
 	FileCounts    map[string]int
 	LineCounts    map[string]int
 	PatternCounts map[string]int
 }
 
+func NewSearchResultsStats() *SearchResultsStats {
+	return &SearchResultsStats{
+		make(map[string]int),
+		make(map[string]int),
+		make(map[string]int),
+		make(map[string]int),
+	}
+}
+
+func (s *SearchResultsStats) Clear() {
+	s.DirCounts = make(map[string]int)
+	s.FileCounts = make(map[string]int)
+	s.LineCounts = make(map[string]int)
+	s.PatternCounts = make(map[string]int)
+}
+
+type SearchResults struct {
+	Settings      *SearchSettings
+	SearchResults []*SearchResult
+	Stats         *SearchResultsStats
+}
+
 func NewSearchResults(settings *SearchSettings) *SearchResults {
 	return &SearchResults{
 		settings,
 		[]*SearchResult{},
-		make(map[string]int),
-		make(map[string]int),
-		make(map[string]int),
-		make(map[string]int),
+		NewSearchResultsStats(),
 	}
 }
 
-func (rs *SearchResults) AddSearchResult(r *SearchResult) {
-	rs.SearchResults = append(rs.SearchResults, r)
-	rs.DirCounts[*r.File.Path]++
-	rs.FileCounts[r.File.String()]++
-	if strings.TrimSpace(*r.Line) != "" {
-		rs.LineCounts[strings.TrimSpace(*r.Line)]++
+func (srs *SearchResults) AddSearchResultStats(r *SearchResult) {
+	srs.Stats.DirCounts[r.File.Path]++
+	srs.Stats.FileCounts[r.File.String()]++
+	if strings.TrimSpace(r.Line) != "" {
+		srs.Stats.LineCounts[strings.TrimSpace(r.Line)]++
 	}
-	rs.PatternCounts[r.Pattern.String()]++
+	srs.Stats.PatternCounts[r.Pattern.String()]++
 }
 
-func (rs *SearchResults) Clear() {
-	rs.DirCounts = make(map[string]int)
-	rs.FileCounts = make(map[string]int)
-	rs.LineCounts = make(map[string]int)
-	rs.PatternCounts = make(map[string]int)
-	rs.SearchResults = nil
+func (srs *SearchResults) AddSearchResult(r *SearchResult) {
+	srs.SearchResults = append(srs.SearchResults, r)
+	srs.AddSearchResultStats(r)
 }
 
-func (rs *SearchResults) IsEmpty() bool {
-	return len(rs.SearchResults) == 0
+func (srs *SearchResults) Clear() {
+	srs.SearchResults = nil
+	srs.Stats.Clear()
 }
 
-func (rs *SearchResults) HasResultForFileAndPattern(si *SearchItem,
+func (srs *SearchResults) IsEmpty() bool {
+	return len(srs.SearchResults) == 0
+}
+
+func (srs *SearchResults) HasResultForFileAndPattern(si *SearchItem,
 	pattern *regexp.Regexp) bool {
-	for _, r := range rs.SearchResults {
+	for _, r := range srs.SearchResults {
 		if pattern.String() == r.Pattern.String() && si.String() == r.File.String() {
 			return true
 		}
@@ -65,19 +81,19 @@ func (rs *SearchResults) HasResultForFileAndPattern(si *SearchItem,
 
 // methods for the sort.Interface interface (so you can call sort.Sort on
 // SearchResults instances)
-func (rs *SearchResults) Len() int {
-	return len(rs.SearchResults)
+func (srs *SearchResults) Len() int {
+	return len(srs.SearchResults)
 }
 
 func (srs *SearchResults) Less(i, j int) bool {
 	sr1, sr2 := srs.SearchResults[i], srs.SearchResults[j]
-	path1, path2 := strings.ToLower(*sr1.File.Path), strings.ToLower(*sr2.File.Path)
+	path1, path2 := strings.ToLower(sr1.File.Path), strings.ToLower(sr2.File.Path)
 	pathCmp := bytes.Compare([]byte(path1), []byte(path2))
 	if pathCmp > 0 {
 		return false
 	}
 	if pathCmp == 0 {
-		file1, file2 := strings.ToLower(*sr1.File.Name), strings.ToLower(*sr2.File.Name)
+		file1, file2 := strings.ToLower(sr1.File.Name), strings.ToLower(sr2.File.Name)
 		fileCmp := bytes.Compare([]byte(file1), []byte(file2))
 		if fileCmp > 0 {
 			return false
@@ -97,56 +113,91 @@ func (srs *SearchResults) Swap(i, j int) {
 	srs.SearchResults[j], srs.SearchResults[i] = srs.SearchResults[i], srs.SearchResults[j]
 }
 
-func getSortedCountKeys(m map[string]int) []string {
-	mk := make([]string, len(m))
-	i := 0
-	for k, _ := range m {
-		mk[i] = k
-		i++
+func (srs *SearchResults) GetPathCountMap() map[string]int {
+	pathCountMap := make(map[string]int)
+	for _, r := range srs.SearchResults {
+		pathCountMap[r.File.Path]++
 	}
-	sort.Strings(mk)
-	return mk
+	return pathCountMap
 }
 
-func getCaseInsensitiveSortedCountKeys(m map[string]int) []string {
-	mk := make([]string, len(m))
-	i := 0
-	for k, _ := range m {
-		mk[i] = k
-		i++
-	}
-	sortutil.CiAsc(mk)
-	return mk
+func (srs *SearchResults) GetMatchingDirs() []string {
+	pathCountMap := srs.GetPathCountMap()
+	paths := getSortedCountKeys(pathCountMap)
+	return paths
 }
 
-func getHighestMapVal(m map[string]int) int {
-	highestVal := 0
-	for _, v := range m {
-		if v > highestVal {
-			highestVal = v
+func (srs *SearchResults) PrintMatchingDirs() {
+	paths := srs.GetMatchingDirs()
+	if len(paths) > 0 {
+		log(fmt.Sprintf("\nMatching directories (%d):", len(paths)))
+		for _, p := range paths {
+			log(p)
+		}
+	} else {
+		log("\nMatching directories: 0")
+	}
+}
+
+func (srs *SearchResults) GetFileCountMap() map[string]int {
+	fileCountMap := make(map[string]int)
+	for _, r := range srs.SearchResults {
+		fileCountMap[r.File.String()]++
+	}
+	return fileCountMap
+}
+
+func (srs *SearchResults) GetMatchingFiles() []string {
+	fileCountMap := srs.GetFileCountMap()
+	files := getSortedCountKeys(fileCountMap)
+	return files
+}
+
+func (srs *SearchResults) PrintMatchingFiles() {
+	files := srs.GetMatchingFiles()
+	if len(files) > 0 {
+		log(fmt.Sprintf("\nMatching files (%d):", len(files)))
+		for _, p := range files {
+			log(p)
+		}
+	} else {
+		log("\nMatching files: 0")
+	}
+}
+
+func (srs *SearchResults) PrintMatchingLines() {
+	countMap := srs.Stats.LineCounts
+	totalCount := 0
+	for _, v := range countMap {
+		totalCount += v
+	}
+	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
+
+	if srs.Settings.UniqueLines {
+		log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
+		for _, k := range countKeys {
+			log(fmt.Sprintf("%s", k))
+		}
+	} else {
+		log(fmt.Sprintf("Lines with matches (%d):", totalCount))
+		for _, k := range countKeys {
+			for i := 0; i < countMap[k]; i++ {
+				log(fmt.Sprintf("%s", k))
+			}
 		}
 	}
-	return highestVal
 }
 
-func getNumLen(num int) int {
-	numStr := fmt.Sprintf("%d", num)
-	return len(numStr)
-}
-
-// just for fun, a strictly numeric way to get number length
-func getNumLen2(num int) int {
-	next, mult := 10, 10
-	count, maxcount := 1, 10
-	for count < maxcount {
-		if num < next {
-			return count
-		}
-		next = next * mult
-		count++
-	}
-	return count
-}
+//func getSortedCountKeys(m map[string]int) []string {
+//	mk := make([]string, len(m))
+//	i := 0
+//	for k, _ := range m {
+//		mk[i] = k
+//		i++
+//	}
+//	sort.Strings(mk)
+//	return mk
+//}
 
 // func printCounts(singName string, pluralName string, countKeys []string,
 // 	countMap map[string]int) {
@@ -164,8 +215,7 @@ func getNumLen2(num int) int {
 // 	}
 // }
 
-func printCounts(pluralName string, countKeys []string,
-	countMap map[string]int) {
+func printCounts(pluralName string, countKeys []string) {
 	log(fmt.Sprintf("%s with matches (%d):", strings.Title(pluralName),
 		len(countKeys)))
 	for _, k := range countKeys {
@@ -173,20 +223,20 @@ func printCounts(pluralName string, countKeys []string,
 	}
 }
 
-func (rs *SearchResults) PrintDirCounts() {
-	countMap := rs.DirCounts
+func (srs *SearchResults) PrintDirCounts() {
+	countMap := srs.Stats.DirCounts
 	countKeys := getSortedCountKeys(countMap)
-	printCounts("directories", countKeys, countMap)
+	printCounts("directories", countKeys)
 }
 
-func (rs *SearchResults) PrintFileCounts() {
-	countMap := rs.FileCounts
+func (srs *SearchResults) PrintFileCounts() {
+	countMap := srs.Stats.FileCounts
 	countKeys := getSortedCountKeys(countMap)
-	printCounts("files", countKeys, countMap)
+	printCounts("files", countKeys)
 }
 
-func (rs *SearchResults) PrintLineCounts() {
-	countMap := rs.LineCounts
+func (srs *SearchResults) PrintLineCounts() {
+	countMap := srs.Stats.LineCounts
 	totalCount := 0
 	for _, v := range countMap {
 		totalCount += v
@@ -200,8 +250,8 @@ func (rs *SearchResults) PrintLineCounts() {
 	}
 }
 
-func (rs *SearchResults) PrintUniqueLineCounts() {
-	countMap := rs.LineCounts
+func (srs *SearchResults) PrintUniqueLineCounts() {
+	countMap := srs.Stats.LineCounts
 	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
 	log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
 	for _, k := range countKeys {
@@ -209,18 +259,17 @@ func (rs *SearchResults) PrintUniqueLineCounts() {
 	}
 }
 
-func (rs *SearchResults) PrintPatternCounts(patterns []string) {
-	countMap := rs.PatternCounts
-	printCounts("patterns", patterns, countMap)
+func (srs *SearchResults) PrintPatternCounts(patterns []string) {
+	printCounts("patterns", patterns)
 }
 
-func (rs *SearchResults) PrintSearchResults() {
+func (srs *SearchResults) PrintSearchResults() {
 	// sort them first
-	sort.Sort(rs)
-	formatter := NewSearchResultFormatter(rs.Settings)
-	log(fmt.Sprintf("Search results (%d):", len(rs.SearchResults)))
-	for _, r := range rs.SearchResults {
-		if len(rs.PatternCounts) > 1 {
+	sort.Sort(srs)
+	formatter := NewSearchResultFormatter(srs.Settings)
+	log(fmt.Sprintf("Search results (%d):", len(srs.SearchResults)))
+	for _, r := range srs.SearchResults {
+		if len(srs.Stats.PatternCounts) > 1 {
 			log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
 		}
 		log(formatter.Format(r))
@@ -271,11 +320,11 @@ func (f *SearchResultFormatter) multiLineFormat(r *SearchResult) string {
 	if len(r.LinesBefore) > 0 {
 		currentLineNum -= len(r.LinesBefore)
 		for _, l := range r.LinesBefore {
-			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
+			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, l))
 			currentLineNum++
 		}
 	}
-	line := *r.Line
+	line := r.Line
 	if f.Settings.Colorize {
 		line = colorize(line, r.MatchStartIndex-1, r.MatchEndIndex-1)
 	}
@@ -283,7 +332,7 @@ func (f *SearchResultFormatter) multiLineFormat(r *SearchResult) string {
 	if len(r.LinesAfter) > 0 {
 		currentLineNum++
 		for _, l := range r.LinesAfter {
-			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, *l))
+			buffer.WriteString(" " + fmt.Sprintf(lineFormat, currentLineNum, l))
 			currentLineNum++
 		}
 	}
@@ -301,7 +350,7 @@ func (f *SearchResultFormatter) singleLineFormat(r *SearchResult) string {
 }
 
 func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
-	formatted := *r.Line
+	formatted := r.Line
 	leadingWhitespaceCount := 0
 
 	for _, c := range formatted {
@@ -366,19 +415,19 @@ type SearchResult struct {
 	LineNum         int
 	MatchStartIndex int
 	MatchEndIndex   int
-	Line            *string
-	LinesBefore     []*string
-	LinesAfter      []*string
+	Line            string
+	LinesBefore     []string
+	LinesAfter      []string
 }
 
 func (r *SearchResult) Text() string {
 	var buffer bytes.Buffer
 	for _, l := range r.LinesBefore {
-		buffer.WriteString(fmt.Sprintf("%s\n", *l))
+		buffer.WriteString(fmt.Sprintf("%s\n", l))
 	}
-	buffer.WriteString(fmt.Sprintf("%s\n", *r.Line))
+	buffer.WriteString(fmt.Sprintf("%s\n", r.Line))
 	for _, l := range r.LinesAfter {
-		buffer.WriteString(fmt.Sprintf("%s\n", *l))
+		buffer.WriteString(fmt.Sprintf("%s\n", l))
 	}
 	return buffer.String()
 }

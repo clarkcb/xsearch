@@ -1,10 +1,10 @@
 package gosearch
 
 import (
-	"encoding/xml"
 	"fmt"
-	"os"
 	"sort"
+
+	"github.com/pmylund/sortutil"
 )
 
 func log(message string) {
@@ -44,9 +44,9 @@ func union(s1, s2 set) set {
 	return s
 }
 
-func contains(slice []*string, s string) bool {
+func contains(slice []string, s string) bool {
 	for _, as := range slice {
-		if s == *as {
+		if s == as {
 			return true
 		}
 	}
@@ -82,7 +82,7 @@ func getLongestLen(slice []string) int {
 }
 
 func getMapKeys(m map[string]string) []string {
-	keys := []string{}
+	var keys []string
 	for k := range m {
 		keys = append(keys, k)
 	}
@@ -90,7 +90,7 @@ func getMapKeys(m map[string]string) []string {
 }
 
 func getMapValues(m map[string]string) []string {
-	values := []string{}
+	var values []string
 	for _, v := range m {
 		values = append(values, v)
 	}
@@ -103,23 +103,70 @@ func getSortedKeys(m map[string]string) []string {
 	return keys
 }
 
-func loadXmlFile(xmlFilePath string, targetStruct interface{}) error {
-	file, err := os.Open(xmlFilePath)
-	if err != nil {
-		panic(err.Error())
+func getCountMapKeys(m map[string]int) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
 	}
+	return keys
+}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			panic(err.Error())
+func getSortedCountKeys(m map[string]int) []string {
+	keys := getCountMapKeys(m)
+	sort.Strings(keys)
+	return keys
+}
+
+func getCaseInsensitiveSortedCountKeys(m map[string]int) []string {
+	mk := make([]string, len(m))
+	i := 0
+	for k, _ := range m {
+		mk[i] = k
+		i++
+	}
+	sortutil.CiAsc(mk)
+	return mk
+}
+
+func getHighestMapVal(m map[string]int) int {
+	highestVal := 0
+	for _, v := range m {
+		if v > highestVal {
+			highestVal = v
 		}
-	}()
-
-	decoder := xml.NewDecoder(file)
-
-	if err := decoder.Decode(targetStruct); err != nil {
-		return err
 	}
-	return nil
+	return highestVal
+}
+
+func getNumLen(num int) int {
+	numStr := fmt.Sprintf("%d", num)
+	return len(numStr)
+}
+
+// just for fun, a strictly numeric way to get number length
+func getNumLen2(num int) int {
+	next, mult := 10, 10
+	count, maxcount := 1, 10
+	for count < maxcount {
+		if num < next {
+			return count
+		}
+		next = next * mult
+		count++
+	}
+	return count
+}
+
+func getMaxInt(x int, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+func getMinInt(x int, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }

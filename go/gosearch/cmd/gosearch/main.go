@@ -42,22 +42,21 @@ func main() {
 		searcher.PrintSearchResults()
 	}
 
+	// print matching dirs
 	if settings.ListDirs {
 		fmt.Println()
-		searcher.PrintDirCounts()
+		searcher.PrintMatchingDirs()
 	}
 
+	// print matching files
 	if settings.ListFiles {
 		fmt.Println()
-		searcher.PrintFileCounts()
+		searcher.PrintMatchingFiles()
 	}
 
+	// print matching lines (unique or not, sorted alphabetically)
 	if settings.ListLines {
 		fmt.Println()
-		if settings.UniqueLines {
-			searcher.PrintUniqueLineCounts()
-		} else {
-			searcher.PrintLineCounts()
-		}
+		searcher.PrintMatchingLines()
 	}
 }

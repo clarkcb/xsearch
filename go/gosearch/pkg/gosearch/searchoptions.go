@@ -87,9 +87,9 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 			} else {
 				log(fmt.Sprintf("value for %v is invalid", k))
 			}
-		} else if k == "startpath" {
+		} else if k == "path" {
 			if sp, hasStartPath := jsonSettings[k]; hasStartPath {
-				settings.StartPath = sp.(string)
+				settings.AddPath(sp.(string))
 			} else {
 				log("startpath value is invalid")
 			}
@@ -130,7 +130,7 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 				return nil, fmt.Errorf("Invalid option: %s", k)
 			}
 		} else {
-			settings.StartPath = args[i]
+			settings.AddPath(args[i])
 		}
 		i++
 	}
@@ -143,7 +143,7 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 func (so *SearchOptions) getUsageString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("\nUsage:\n")
-	buffer.WriteString(" gosearch [options] -s <searchpattern> <startpath>\n\nOptions:\n")
+	buffer.WriteString(" gosearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n")
 	sortKeyMap := so.getSortKeyMap()
 	optStringMap := so.getOptStringMap()
 	optDescMap := so.getOptDescMap()
@@ -290,6 +290,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		"out-linesbeforepattern": func(s string, settings *SearchSettings) {
 			settings.AddOutLinesBeforePattern(s)
 		},
+		"path": func(s string, settings *SearchSettings) {
+			settings.AddPath(s)
+		},
 		"searchpattern": func(s string, settings *SearchSettings) {
 			settings.AddSearchPattern(s)
 		},
@@ -380,30 +383,4 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		}
 	}
 	return m
-}
-
-type XmlSearchOptions struct {
-	XmlSearchOptions []XmlSearchOption `xml:"searchoption"`
-}
-
-type XmlSearchOption struct {
-	Short string `xml:"short,attr"`
-	Long  string `xml:"long,attr"`
-	Desc  string `xml:",chardata"`
-}
-
-func searchOptionsFromXml() (*SearchOptions, error) {
-	searchOptionsXmlPath := fmt.Sprintf("%s/shared/searchoptions.xml", XSEARCHPATH)
-	var searchOptions []*SearchOption
-	xmlSearchOptions := &XmlSearchOptions{}
-
-	if err := loadXmlFile(expandPath(searchOptionsXmlPath), xmlSearchOptions); err != nil {
-		return nil, err
-	}
-
-	for _, x := range xmlSearchOptions.XmlSearchOptions {
-		searchOption := &SearchOption{x.Short, x.Long, strings.TrimSpace(x.Desc)}
-		searchOptions = append(searchOptions, searchOption)
-	}
-	return &SearchOptions{searchOptions}, nil
 }

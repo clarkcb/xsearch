@@ -1,6 +1,6 @@
 module gosearch
 
-go 1.15
+go 1.20
 
 require (
 	github.com/pmylund/sortutil v0.0.0-20120526081524-abeda66eb583
