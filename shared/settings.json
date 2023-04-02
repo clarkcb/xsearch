@@ -1,5 +1,5 @@
 {
-  "startpath": "~/src/xsearch/",
+  "path": "~/src/xsearch/",
   "in-ext": ["js", "ts"],
   "out-dirpattern": [
     "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor"

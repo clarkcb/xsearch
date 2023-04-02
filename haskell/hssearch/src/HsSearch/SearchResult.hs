@@ -72,7 +72,7 @@ formatMatchingLine settings result =
           then recGetIndicesToMaxLen msi mei (maxLineLength settings)
           else (0, maxLineEndIndex)
         trimWhitespace :: B.ByteString -> B.ByteString
-        trimWhitespace bs = B.drop leadingSpaceCount bs
+        trimWhitespace = B.drop leadingSpaceCount
         doFormatLine :: B.ByteString -> String
         doFormatLine bs | colorize settings = BC.unpack (colorizeBS msi mei (subByteString lsi lei (trimWhitespace bs)))
                         | otherwise = BC.unpack (subByteString lsi lei (trimWhitespace bs))

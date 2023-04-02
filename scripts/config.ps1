@@ -11,7 +11,7 @@
 ########################################
 
 # XSEARCH_PATH defaults to $HOME/src/xsearch if not defined
-if (-not (Test-Path env:XSEARCH_PATH)) { $env:XSEARCH_PATH = Join-Path $HOME 'src' 'xsearch' }
+if (-not (Test-Path env:XSEARCH_PATH)) { $env:XSEARCH_PATH = Join-Path $env:HOME 'src' 'xsearch' }
 $xsearchPath = $env:XSEARCH_PATH
 $binPath = Join-Path $xsearchPath 'bin'
 $sharedPath = Join-Path $xsearchPath 'shared'

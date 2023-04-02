@@ -16,10 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -45,15 +42,16 @@ public class Searcher {
     }
 
     final void validateSettings() throws SearchException {
-        for (String path : settings.getPaths()) {
-            if (null == path || path.isEmpty()) {
-                throw new SearchException("Startpath not defined");
-            }
-            File startPathFile = new File(path);
-            if (!startPathFile.exists()) {
+        Set<String> paths = settings.getPaths();
+        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
+            throw new SearchException("Startpath not defined");
+        }
+        for (String p : paths) {
+            Path path = Paths.get(p);
+            if (!Files.exists(path)) {
                 throw new SearchException("Startpath not found");
             }
-            if (!startPathFile.canRead()) {
+            if (!Files.isReadable(path)) {
                 throw new SearchException("Startpath not readable");
             }
         }

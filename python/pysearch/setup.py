@@ -1,10 +1,10 @@
 from setuptools import setup
-from pysearch import VERSION
+from pysearch import __version__
 
 #long_description = open('README.md').read()
 
 setup(name='pysearch',
-      version=VERSION,
+      version=__version__,
       description='Python version of xsearch',
       # long_description=long_description,
       url='https://github.com/clarkcb/xsearch.git',
@@ -14,11 +14,11 @@ setup(name='pysearch',
       install_requires=[],
       license='MIT',
       packages=['pysearch'],
-      python_requires='>=3',
-      scripts=[
-          'bin/pysearch',
-          # 'bin/pysearch.bat'
-      ],
+      package_data={'': ['data/*.json']},
+      python_requires='>=3.9',
+    #   scripts=[
+    #       'bin/pysearch',
+    #   ],
       tests_require=[
           'nose',
       ])

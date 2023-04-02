@@ -1,2 +1,0 @@
-#!/bin/sh
-node ~/src/xsearch/typescript/tssearch/dist/tssearch.js $@

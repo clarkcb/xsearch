@@ -1,5 +1,0 @@
-#!/bin/sh
-KTSEARCH_PATH=$HOME/src/xsearch/kotlin/ktsearch
-KTSEARCHJAR=$KTSEARCH_PATH/build/libs/ktsearch.jar
-
-java -Xms1G -Xmx4G -cp $KTSEARCHJAR ktsearch.KtsearchKt $@

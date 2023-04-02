@@ -25,26 +25,51 @@ class SearchSettings(object):
         'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
         'listfiles', 'listlines', 'maxlinelength', 'multilinesearch', 'out_archivefilepatterns',
         'out_archiveextensions', 'out_dirpatterns', 'out_extensions', 'out_filepatterns',
-        'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'printresults',
-        'printusage', 'printversion', 'recursive', 'searcharchives', 'searchpatterns', 'startpath',
-        'textfileencoding', 'uniquelines', 'verbose'
+        'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'paths',
+        'printresults', 'printusage', 'printversion', 'recursive', 'searcharchives',
+        'searchpatterns', 'textfileencoding', 'uniquelines', 'verbose'
     ]
 
-    def __init__(self, archivesonly: bool = False, colorize: bool = True, debug: bool = False,
-                 excludehidden: bool = True, firstmatch: bool = False, in_archiveextensions: Set[str] = None,
-                 in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
-                 in_extensions: Set[str] = None, in_filepatterns: PatternSet = None, in_filetypes: Set[str] = None,
-                 in_linesafterpatterns: PatternSet = None, in_linesbeforepatterns: PatternSet = None,
-                 linesafter: int = 0, linesaftertopatterns: PatternSet = None,
-                 linesafteruntilpatterns: PatternSet = None, linesbefore: int = 0, listdirs: bool = False,
-                 listfiles: bool = False, listlines: bool = False, maxlinelength: int = 150,
-                 multilinesearch: bool = False, out_archivefilepatterns: PatternSet = None,
-                 out_archiveextensions: Set[str] = None, out_dirpatterns: PatternSet = None,
-                 out_extensions: Set[str] = None, out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
-                 out_linesafterpatterns: PatternSet = None, out_linesbeforepatterns: PatternSet = None,
-                 printresults: bool = True, printusage: bool = False, printversion: bool = False,
-                 recursive: bool = True, searcharchives: bool = False, searchpatterns: PatternSet = None,
-                 startpath: str = '', textfileencoding: str = 'UTF-8', uniquelines: bool = False,
+    def __init__(self,
+                 archivesonly: bool = False,
+                 colorize: bool = True,
+                 debug: bool = False,
+                 excludehidden: bool = True,
+                 firstmatch: bool = False,
+                 in_archiveextensions: Set[str] = None,
+                 in_archivefilepatterns: PatternSet = None,
+                 in_dirpatterns: PatternSet = None,
+                 in_extensions: Set[str] = None,
+                 in_filepatterns: PatternSet = None,
+                 in_filetypes: Set[str] = None,
+                 in_linesafterpatterns: PatternSet = None,
+                 in_linesbeforepatterns: PatternSet = None,
+                 linesafter: int = 0,
+                 linesaftertopatterns: PatternSet = None,
+                 linesafteruntilpatterns: PatternSet = None,
+                 linesbefore: int = 0,
+                 listdirs: bool = False,
+                 listfiles: bool = False,
+                 listlines: bool = False,
+                 maxlinelength: int = 150,
+                 multilinesearch: bool = False,
+                 out_archivefilepatterns: PatternSet = None,
+                 out_archiveextensions: Set[str] = None,
+                 out_dirpatterns: PatternSet = None,
+                 out_extensions: Set[str] = None,
+                 out_filepatterns: PatternSet = None,
+                 out_filetypes: Set[str] = None,
+                 out_linesafterpatterns: PatternSet = None,
+                 out_linesbeforepatterns: PatternSet = None,
+                 paths: Set[str] = None,
+                 printresults: bool = True,
+                 printusage: bool = False,
+                 printversion: bool = False,
+                 recursive: bool = True,
+                 searcharchives: bool = False,
+                 searchpatterns: PatternSet = None,
+                 textfileencoding: str = 'UTF-8',
+                 uniquelines: bool = False,
                  verbose: bool = False):
         self.archivesonly = archivesonly
         self.colorize = colorize
@@ -76,14 +101,13 @@ class SearchSettings(object):
         self.out_filetypes = out_filetypes if out_filetypes else set()
         self.out_linesafterpatterns: PatternSet = out_linesafterpatterns if out_linesafterpatterns else set()
         self.out_linesbeforepatterns: PatternSet = out_linesbeforepatterns if out_linesbeforepatterns else set()
+        self.paths = paths if paths else set()
         self.recursive = recursive
         self.printresults = printresults
         self.printusage = printusage
         self.printversion = printversion
-        # self.searchpatterns: PatternSet = searchpatterns if searchpatterns else set()
         self.searchpatterns = searchpatterns if searchpatterns else set()
         self.searcharchives = searcharchives
-        self.startpath = startpath
         self.textfileencoding = textfileencoding
         self.uniquelines = uniquelines
         self.verbose = verbose

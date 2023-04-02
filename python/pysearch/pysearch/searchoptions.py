@@ -10,13 +10,12 @@
 import json
 import os
 import sys
-import xml.dom.minidom as minidom
 from collections import deque
 from io import StringIO
 from typing import List
 
-from .common import get_text
-from .config import SEARCHOPTIONSPATH
+import pkg_resources
+
 from .searchexception import SearchException
 from .searchoption import SearchOption
 from .searchsettings import SearchSettings
@@ -155,6 +154,9 @@ class SearchOptions(object):
             'out-linesbeforepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'out_linesbeforepatterns'),
+            'path':
+                lambda x, settings:
+                settings.paths.add(x),
             'searchpattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'searchpatterns')
@@ -176,9 +178,6 @@ class SearchOptions(object):
             'encoding':
                 lambda x, settings:
                 settings.set_property('textfileencoding', x),
-            'startpath':
-                lambda x, settings:
-                settings.set_property('startpath', x),
         }
 
         self.__longarg_dict = {}
@@ -205,8 +204,10 @@ class SearchOptions(object):
                 raise SearchException('Invalid option: {0}'.format(arg))
 
     def __set_options_from_json(self):
-        with open(SEARCHOPTIONSPATH, mode='r') as f:
-            searchoptions_dict = json.load(f)
+        # with open(SEARCHOPTIONSPATH, mode='r') as f:
+        #     searchoptions_dict = json.load(f)
+        stream = pkg_resources.resource_stream(__name__, 'data/searchoptions.json')
+        searchoptions_dict = json.load(stream)
         for searchoption_obj in searchoptions_dict['searchoptions']:
             longarg = searchoption_obj['long']
             shortarg = ''
@@ -221,32 +222,6 @@ class SearchOptions(object):
                 func = self.__int_arg_dict[longarg]
             elif longarg in self.__str_arg_dict:
                 func = self.__str_arg_dict[longarg]
-            elif longarg in self.__str_arg_dict:
-                func = self.__str_arg_dict[longarg]
-            elif longarg == 'settings-file':
-                func = self.settings_from_file
-            else:
-                raise SearchException(
-                    'Unknown search option: {0:s}'.format(longarg))
-            self.options.append(SearchOption(shortarg, longarg, desc, func))
-            self.__longarg_dict[longarg] = longarg
-            if shortarg:
-                self.__longarg_dict[shortarg] = longarg
-
-    def __set_options_from_xml(self):
-        searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
-        searchoptionnodes = searchoptionsdom.getElementsByTagName(
-            'searchoption')
-        for searchoptionnode in searchoptionnodes:
-            longarg = searchoptionnode.getAttribute('long')
-            shortarg = searchoptionnode.getAttribute('short')
-            desc = get_text(searchoptionnode.childNodes).strip()
-            if longarg in self.__bool_arg_dict:
-                func = self.__bool_arg_dict[longarg]
-            elif longarg in self.__coll_arg_dict:
-                func = self.__coll_arg_dict[longarg]
-            elif longarg in self.__int_arg_dict:
-                func = self.__int_arg_dict[longarg]
             elif longarg in self.__str_arg_dict:
                 func = self.__str_arg_dict[longarg]
             elif longarg == 'settings-file':
@@ -311,7 +286,7 @@ class SearchOptions(object):
                 else:
                     raise SearchException('Invalid option: {0}'.format(arg))
             else:
-                settings.startpath = arg
+                settings.paths.add(arg)
         return settings
 
     def usage(self):
@@ -322,7 +297,7 @@ class SearchOptions(object):
         sio = StringIO()
         sio.write('Usage:\n')
         sio.write(
-            ' pysearch [options] -s <searchpattern> <startpath>\n\nOptions:\n')
+            ' pysearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n')
         opt_pairs = []
         longest = 0
         for opt in sorted(self.options, key=lambda o: o.sortarg):

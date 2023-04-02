@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "clean": "rm -rf ./dist ./node_modules ./package-lock.json",
+    "clean": "rm -rf ./dist ./node_modules",
     "create": "npm run build && npm run test",
     "refresh": "npm run clean && npm install",
     "lint": "eslint . --ext .ts",

@@ -121,12 +121,11 @@ getRecursiveFilteredContents dir dirFilter fileFilter = do
     case (d, f) of
       (True, False) ->
         if dirFilter path
-          then do getRecursiveFilteredContents path dirFilter fileFilter
+          then getRecursiveFilteredContents path dirFilter fileFilter
         else return []
       (False, True) ->
         if fileFilter path
-          then do
-            return [path]
+          then return [path]
         else return []
       (_, _) -> return []
   return (concat paths)

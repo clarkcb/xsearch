@@ -25,7 +25,7 @@ usage () {
     exit
 }
 
-# copy_resources
+# copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/config.json $resources_path/"
@@ -36,7 +36,7 @@ copy_json_resources () {
     cp "$SHARED_PATH/searchoptions.json" "$resources_path/"
 }
 
-# copy_resources
+# copy_xml_resources
 copy_xml_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/filetypes.xml $resources_path/"
@@ -45,7 +45,7 @@ copy_xml_resources () {
     cp "$SHARED_PATH/searchoptions.xml" "$resources_path/"
 }
 
-# copy_resources
+# copy_test_resources
 copy_test_resources () {
     local test_resources_path="$1"
     log "cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/"
@@ -89,7 +89,7 @@ add_to_bin () {
 
 build_c () {
     echo
-    log "build_c"
+    hdr "build_c"
 
     # ensure make is installed
     if [ -z "$(which make)" ]
@@ -113,7 +113,7 @@ build_c () {
 
 build_clojure () {
     echo
-    log "build_clojure"
+    hdr "build_clojure"
 
     # ensure leiningen is installed
     if [ -z "$(which lein)" ]
@@ -123,7 +123,7 @@ build_clojure () {
     fi
 
     # copy the shared json files to the local resource location
-    RESOURCES_PATH=$CLJSEARCH_PATH/resources
+    RESOURCES_PATH="$CLJSEARCH_PATH/resources"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -144,7 +144,7 @@ build_clojure () {
 
 build_cpp () {
     echo
-    log "build_cpp"
+    hdr "build_cpp"
 
     # ensure cmake is installed
     if [ -z "$(which cmake)" ]
@@ -217,7 +217,7 @@ build_cpp () {
 
 build_csharp () {
     echo
-    log "build_csharp"
+    hdr "build_csharp"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -226,10 +226,10 @@ build_csharp () {
         return
     fi
 
-    RESOURCES_PATH="$CSSEARCH_PATH/CsSearch/Resources"
+    RESOURCES_PATH="$CSSEARCH_PATH/CsSearchLib/Resources"
     TEST_RESOURCES_PATH="$CSSEARCH_PATH/CsSearchTests/Resources"
 
-    # copy the shared json, xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -268,7 +268,7 @@ build_csharp () {
 
 build_dart () {
     echo
-    log "build_dart"
+    hdr "build_dart"
 
     # ensure dart is installed
     if [ -z "$(which dart)" ]
@@ -303,7 +303,7 @@ build_dart () {
 
 build_fsharp () {
     echo
-    log "build_fsharp"
+    hdr "build_fsharp"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -312,10 +312,10 @@ build_fsharp () {
         return
     fi
 
-    RESOURCES_PATH="$FSSEARCH_PATH/FsSearch/Resources"
+    RESOURCES_PATH="$FSSEARCH_PATH/FsSearchLib/Resources"
     TEST_RESOURCES_PATH="$FSSEARCH_PATH/FsSearchTests/Resources"
 
-    # copy the shared json, xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -334,7 +334,7 @@ build_fsharp () {
         CONFIGURATIONS=(Release)
     fi
 
-    # run dotnet for selected configurations
+    # run dotnet build for selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building fssearch for $c configuration"
@@ -354,7 +354,7 @@ build_fsharp () {
 
 build_go () {
     echo
-    log "build_go"
+    hdr "build_go"
 
     # ensure go is installed
     if [ -z "$(which go)" ]
@@ -402,7 +402,7 @@ build_go () {
 
 build_haskell () {
     echo
-    log "build_haskell"
+    hdr "build_haskell"
 
     # ensure stack is installed
     if [ -z "$(which stack)" ]
@@ -455,7 +455,7 @@ build_haskell () {
 
 build_java () {
     echo
-    log "build_java"
+    hdr "build_java"
 
     # ensure mvn is installed
     if [ -z "$(which mvn)" ]
@@ -467,7 +467,7 @@ build_java () {
     RESOURCES_PATH="$JAVASEARCH_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$JAVASEARCH_PATH/src/test/resources"
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -478,7 +478,7 @@ build_java () {
     # run a maven clean build
     log "Building javasearch"
     log "mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true"
-    mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true
+    mvn -f "$JAVASEARCH_PATH/pom.xml" clean package -Dmaven.test.skip=true
 
     # add to bin
     add_to_bin "$JAVASEARCH_PATH/bin/javasearch.sh"
@@ -486,7 +486,7 @@ build_java () {
 
 build_javascript () {
     echo
-    log "build_javascript"
+    hdr "build_javascript"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
@@ -518,7 +518,7 @@ build_javascript () {
 
 build_kotlin () {
     echo
-    log "build_kotlin"
+    hdr "build_kotlin"
 
     # ensure gradle is installed
     if [ -z "$(which gradle)" ]
@@ -530,7 +530,7 @@ build_kotlin () {
     RESOURCES_PATH="$KTSEARCH_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$KTSEARCH_PATH/src/test/resources"
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -538,7 +538,7 @@ build_kotlin () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # run a maven clean build
+    # run a gradle build
     log "Building ktsearch"
 
     cd "$KTSEARCH_PATH/"
@@ -554,7 +554,7 @@ build_kotlin () {
 
 build_objc () {
     echo
-    log "build_objc"
+    hdr "build_objc"
 
     # ensure xcode is installed
     if [ -z "$(which xcodebuild)" ]
@@ -607,7 +607,7 @@ build_objc () {
 
 build_ocaml () {
     echo
-    log "build_ocaml"
+    hdr "build_ocaml"
 
     cd "$MLSEARCH_PATH"
     ./build.sh
@@ -621,7 +621,7 @@ build_ocaml () {
 
 build_perl () {
     echo
-    log "build_perl"
+    hdr "build_perl"
 
     # ensure perl is installed
     if [ -z "$(which perl)" ]
@@ -652,7 +652,7 @@ build_perl () {
 
 build_php () {
     echo
-    log "build_php"
+    hdr "build_php"
 
     # ensure php is installed
     if [ -z "$(which php)" ]
@@ -712,7 +712,7 @@ build_php () {
 
 build_python () {
     echo
-    log "build_python"
+    hdr "build_python"
 
     # ensure python3.7+ is installed
     PYTHON_VERSIONS=(python3.11 python3.10 python3.9 python3.8 python3.7)
@@ -737,7 +737,6 @@ build_python () {
 
     # Set to Yes to use venv
     USE_VENV=$VENV
-
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PYSEARCH_PATH/data"
@@ -784,7 +783,7 @@ build_python () {
 
 build_ruby () {
     echo
-    log "build_ruby"
+    hdr "build_ruby"
 
     # ensure ruby2.x+ is installed
     if [ -z "$(which ruby)" ]
@@ -829,7 +828,7 @@ build_ruby () {
 
 build_rust () {
     echo
-    log "build_rust"
+    hdr "build_rust"
 
     # ensure cargo/rust is installed
     if [ -z "$(which cargo)" ]
@@ -863,7 +862,7 @@ build_rust () {
 
 build_scala () {
     echo
-    log "build_scala"
+    hdr "build_scala"
 
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
@@ -887,7 +886,6 @@ build_scala () {
 
     # run sbt assembly
     log "Building scalasearch"
-
     # log "sbt clean assembly"
     # sbt clean assembly
     # to build without testing, changed to this:
@@ -902,7 +900,7 @@ build_scala () {
 
 build_swift () {
     echo
-    log "build_swift"
+    hdr "build_swift"
 
     # ensure swift is installed
     if [ -z "$(which swift)" ]
@@ -940,7 +938,7 @@ build_swift () {
 
 build_typescript () {
     echo
-    log "build_typescript"
+    hdr "build_typescript"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
@@ -962,9 +960,32 @@ build_typescript () {
     npm install
     log "npm run build"
     npm run build
+
+    # add to bin
+    add_to_bin "$TSSEARCH_PATH/bin/tssearch.sh"
+
     cd -
 }
 
+# build_linux - builds the versions that are currently supported in the linux container
+# Notes about some of the builds:
+# - build_clojure    - this build is _really_ slow (10+ minutes?), so call its build directly if you want to try it
+# - build_cpp        - this build takes a decent amount of time to complete (though nowhere near as much as clojure)
+# - build_go         - go is known for having very fast builds, and it's true, the only builds that are faster here
+#                      are the ones that do nothing except copy over resources files (e.g. perl)
+# - build_haskell    - having some dependency issues that need to work through to get it buildling again
+# - build_javascript - this fails to build in the vscode terminal right now due to some debug plugin issue; building
+#                      in an external terminal fixes the problem
+# - build_kotlin     - This build can sometimes be quite slow, other times fairly fast. In particular, the first
+#                      time will likely be quite slow, and I think it will also be slow when a build hasn't been run
+#                      in a while
+# - build_objc       - not sure if it's even possible to build this on linux, but excluding for now
+# - build_ocaml      - had a number of different issues trying to get this version building again, finally
+#                      gave up for now after it appeared that there were a lot of changes to the main API, etc.
+# - build_rust       - the first time this build is run it will pretty time-consuming, particularly for release
+#                      target, but intermittent builds should be pretty fast
+# - build_scala      - this build isn't as slow as the clojure version's, but it's slow enough to run separately
+# - build_typescript - this build has the same problem as build_javascript; run the build in an external terminal
 build_linux () {
     hdr "build_linux"
 
@@ -1006,7 +1027,7 @@ build_linux () {
 }
 
 build_all () {
-    log "build_all"
+    hdr "build_all"
 
     # time build_c
 

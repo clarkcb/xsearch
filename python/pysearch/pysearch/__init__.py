@@ -11,3 +11,6 @@ from .searchfile import SearchFile
 from .searchoptions import SearchOptions
 from .searchresult import SearchResult, SearchResultFormatter
 from .searchsettings import SearchSettings
+
+__version__ = '0.1.0'
+__author__ = 'Cary Clark'

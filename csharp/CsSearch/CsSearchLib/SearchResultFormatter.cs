@@ -19,7 +19,7 @@ namespace CsSearchLib
             }
             return SingleLineFormat(result);
         }
-        
+
         private string GetRelativeFilePath(SearchResult result)
         {
 			// TODO: figure out how to match settings path to result

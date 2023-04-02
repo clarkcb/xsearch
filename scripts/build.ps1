@@ -276,7 +276,7 @@ function BuildCpp
 function BuildCsharp
 {
     Write-Host
-    Log("BuildCsharp")
+    Hdr('BuildCsharp')
 
     # ensure dotnet is installed
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
@@ -494,7 +494,7 @@ function BuildGo
 function BuildHaskell
 {
     Write-Host
-    Log("BuildHaskell")
+    Hdr('BuildHaskell')
 
     # ensure stack is installed
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
@@ -1147,7 +1147,7 @@ function BuildLinux
 function BuildAll
 {
     Write-Host
-    Log("BuildAll")
+    Hdr('BuildAll')
 
     # Measure-Command { BuildC }
 

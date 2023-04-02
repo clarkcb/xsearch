@@ -55,6 +55,7 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertFalse(self.settings.out_linesafterpatterns)
         self.assertFalse(self.settings.out_linesbeforepatterns)
         self.assertFalse(self.settings.searchpatterns)
+        self.assertEqual(0, len(self.settings.paths))
 
     def test_set_properties(self):
         props = {

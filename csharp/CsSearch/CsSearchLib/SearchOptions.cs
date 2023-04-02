@@ -15,8 +15,8 @@ namespace CsSearchLib
 		private readonly string _searchOptionsResource;
 
 		private static readonly Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
-			new Dictionary<string, Action<string,SearchSettings>>
-				{
+			new()
+			{
 					{ "encoding", (s, settings) => settings.TextFileEncoding = s },
 					{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
 					{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },

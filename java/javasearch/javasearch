@@ -1,5 +1,0 @@
-#!/bin/sh
-JAVASEARCH_PATH=$HOME/src/xsearch/java/javasearch
-JAVASEARCHJAR=$JAVASEARCH_PATH/target/javasearch-1.0-SNAPSHOT.jar
-
-java -cp $JAVASEARCHJAR javasearch.SearchMain $@
