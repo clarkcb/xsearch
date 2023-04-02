@@ -12,7 +12,7 @@ import os
 from io import StringIO
 from typing import List
 
-from .filetypes import FileType
+from pyfind import FileType
 
 
 class SearchFile(object):

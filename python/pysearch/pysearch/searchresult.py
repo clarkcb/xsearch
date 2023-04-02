@@ -11,8 +11,9 @@
 from io import StringIO
 from typing import List
 
+from pyfind import FileResult
+
 from .color import Color
-from .searchfile import SearchFile
 from .searchsettings import SearchSettings
 
 
@@ -40,7 +41,7 @@ class SearchResult(object):
     __slots__ = ['pattern', 'file', 'line_num', 'line', 'contained', 'lines_before', 'lines_after',
                  'match_start_index', 'match_end_index']
 
-    def __init__(self, pattern: str = '', file: SearchFile = None, line_num: int = 0, line: str = '',
+    def __init__(self, pattern: str = '', file: FileResult = None, line_num: int = 0, line: str = '',
                  contained: str = '', lines_before: List[str] = None, lines_after: List[str] = None,
                  match_start_index: int = 0, match_end_index: int = 0):
         self.pattern = pattern

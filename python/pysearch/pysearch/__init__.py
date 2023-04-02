@@ -2,9 +2,7 @@
 
 from .color import Color
 from .common import log
-from .config import SHAREDPATH, XSEARCHPATH, VERSION
-from .filetypes import FileType, FileTypes
-from .fileutil import FileUtil
+from .config import XSEARCHPATH, SHAREDPATH
 from .searcher import Searcher
 from .searchexception import SearchException
 from .searchfile import SearchFile
