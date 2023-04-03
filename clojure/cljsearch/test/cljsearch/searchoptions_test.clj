@@ -36,7 +36,8 @@
       (is (contains? (:in-extensions ss) "scala"))
       (is (= (count (:searchpatterns ss)) 1))
       (is (= (.pattern (first (:searchpatterns ss))) "Search"))
-      (is (= (:startpath ss) ".")))))
+      (is (= (count (:paths ss)) 1))
+      (is (contains? (:paths ss) ".")))))
 
 (deftest test-missing-arg
   (let [[ss errs] (settings-from-args ["-x" "clj" "-s" "Search" "." "-D"])]
@@ -64,7 +65,7 @@
 
 (deftest test-settings-from-json
   (let [settings-json "{
-  \"startpath\": \"~/src/xsearch\",
+  \"path\": \"~/src/xsearch\",
   \"in-ext\": [\"js\",\"ts\"],
   \"out-dirpattern\": \"node_module\",
   \"out-filepattern\": [\"temp\"],
@@ -78,7 +79,7 @@
         [ss errs] (settings-from-json settings-json)
         ]
     (testing "test-debug"
-      (is (= (:startpath ss) "~/src/xsearch"))
+      (is (contains? (:paths ss) "~/src/xsearch"))
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "js"))
       (is (contains? (:in-extensions ss) "ts"))

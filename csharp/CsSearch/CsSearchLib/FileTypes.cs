@@ -44,10 +44,15 @@ namespace CsSearchLib
 		private void PopulateFileTypesFromJson()
 		{
 			var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
+			if (filetypesDict == null || !filetypesDict.ContainsKey("filetypes"))
+			{
+				throw new SearchException("Missing or invalid file types resource");
+			}
 			var filetypeDicts = filetypesDict["filetypes"];
 			foreach (var filetypeDict in filetypeDicts)
 			{
 				var name = ((JsonElement)filetypeDict["type"]).GetString();
+				if (name == null) continue;
 				var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
 					.Select(x => "." + x.GetString());
 				var extensionSet = new HashSet<string>(extensions);

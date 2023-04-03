@@ -11,13 +11,7 @@ type SearchResultFormatter (settings : SearchSettings.t) =
             s.Substring(matchStartIndex + matchLength)
 
     let GetRelativeFilePath (result : SearchResult.t) : string =
-//		 TODO: figure out how to match settings path to result
-//        if settings.StartPath <> null then
-//            if settings.StartPath = "~"
-//            then FileUtil.ContractPath result.File.File.FullName
-//            else FileUtil.GetRelativePath result.File.File.FullName settings.StartPath
-//        else result.File.File.FullName
-        result.File.File.ToString()
+        FileUtil.ContractPath (result.File.File.ToString())
 
     let FormatMatchingLine (result : SearchResult.t) : string =
         let mutable formatted : string = result.Line.Trim()

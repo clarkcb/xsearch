@@ -51,7 +51,7 @@
     NSArray<NSString*> *exts = @[@"asp", @"bas", @"bash", @"bat", @"c", @"clj", @"cpp", @"cs",
                                  @"css", @"erl", @"fs", @"go", @"groovy", @"h", @"hpp", @"hs",
                                  @"htm", @"html", @"java", @"js", @"m", @"php", @"py", @"rb",
-                                 @"rc", @"scala", @"sh", @"swift", @"ts", @"vb"];
+                                 @"rc", @"scala", @"sh", @"sql", @"swift", @"ts", @"vb"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"code.%@", x];
         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeCode);
@@ -63,8 +63,8 @@
 
 - (void)testTextFiles {
     NSArray<NSString*> *exts = @[@"cfg", @"cmake", @"conf", @"csv", @"ddl", @"ics", @"ini",
-                                 @"log", @"markdown", @"md", @"po", @"pot", @"properties",
-                                 @"rtf", @"scc", @"sgm",  @"sgml", @"sql", @"txt", @"yml"];
+                                 @"log", @"markdown", @"md", @"po", @"properties",
+                                 @"rtf", @"scc", @"sgm",  @"sgml", @"txt", @"yml"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"text.%@", x];
         FileType ft = [self.fileTypes getFileType:fileName];

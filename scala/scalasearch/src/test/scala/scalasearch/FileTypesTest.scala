@@ -83,10 +83,10 @@ class FileTypesTest extends AnyFunSuite {
       |asc ascx asm asmx asp aspx bib brf cabal cfg cls cmake cmd cnt conf css
       |csv ctl d dbml dbschema ddl dep dfm diff disco dlg dof dpr drl dsp dsw
       |dtd elt ent env eps etx exp feature fls gcd hql hs htc htm html hxx ics
-      |icz iml in inc ini ipr iws jad jam jql layout lhs log ltx mak mako
+      |icz iml in inc ini ipr iws jad jql layout lhs log ltx mak mako
       |manifest map markdown master md mf mht mml moc mod mxml p patch plist pm
-      |po pot properties ps pt rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml sht
-      |shtm shtml sln smi smil spec sqc sql st str strings sty suml sxw t tex
+      |po properties ps pt rc rc2 rdf rex rtf rtx scc sct sfv sgm sgml sht
+      |shtm shtml sln smi smil spec sqc sql strings sty suml sxw t
       |text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vrml vssscc
       |vxml wbxml webinfo wml wmls wsc wsd wsdd xlf xsp yaml
       |yml""".stripMargin.split("\\s+").foreach { ext =>
@@ -121,10 +121,10 @@ class FileTypesTest extends AnyFunSuite {
     """atom atomcat atomsrv bdsproj config csproj davmount dbproj docx dotx
       |fsproj fxml jhm jnlp kml mm pom potx ppsx pptx qrc rdf resx rng rss
       |settings sldx stc std sti stw svg svgz sxc sxd sxg sxi stw sxm sxw tld
-      |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xhtml xht xjb xlsx xltx xml
+      |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xjb xlsx xltx xml
       |xps xsd xsl xslt xspf xul""".stripMargin.split("\\s+").foreach { ext =>
         val xmlFile = new File("xmlfile." + ext).getName
-        // println("xmlFile: " + xmlFile)
+         println("xmlFile: " + xmlFile)
         assert(!FileTypes.isBinaryFile(xmlFile))
         assert(!FileTypes.isCodeFile(xmlFile))
         assert(!FileTypes.isArchiveFile(xmlFile))

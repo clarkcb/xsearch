@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ################################################################################
 #
@@ -15,29 +14,45 @@ import re
 # Configuration
 ########################################
 xsearch_dict = {
-    # 'clojure':    'cljsearch',
-    # 'cpp':        'cppsearch',
-    'csharp':     'cssearch',
-    'dart':     'dartsearch',
-    # 'fsharp':     'fssearch',
-    'go':         'gosearch',
-    # 'haskell':    'hssearch',
-    # 'java':       'javasearch',
-    # 'javascript': 'jssearch',
+    # 'c':           'csearch',
+    'clj':         'cljsearch',
+    'clojure':     'cljsearch',
+    'cpp':         'cppsearch',
+    'cs':          'cssearch',
+    'csharp':      'cssearch',
+    'dart':        'dartsearch',
+    'fs':          'fssearch',
+    'fsharp':      'fssearch',
+    'go':          'gosearch',
+    'haskell':     'hssearch',
+    'hs':          'hssearch',
+    'java':        'javasearch',
+    'javascript':  'jssearch',
+    'js':          'jssearch',
     'kotlin':     'ktsearch',
+    'kt':         'ktsearch',
     'objc':       'objcsearch',
     # 'ocaml':      'mlsearch',
-    # 'perl':       'plsearch',
-    # 'php':        'phpsearch',
+    # 'ml':         'mlsearch',
+    'perl':       'plsearch',
+    'pl':         'plsearch',
+    'php':        'phpsearch',
     'python':     'pysearch',
-    # 'ruby':       'rbsearch',
+    'py':         'pysearch',
+    'ruby':       'rbsearch',
+    'rb':         'rbsearch',
+    'rs':         'rssearch',
     'rust':       'rssearch',
-    # 'scala':      'scalasearch',
+    'scala':      'scalasearch',
     'swift':      'swiftsearch',
-    # 'typescript': 'tssearch',
+    'ts':         'tssearch',
+    'typescript': 'tssearch',
 }
-win_supported = ['csharp', 'fsharp', 'go', 'haskell', 'javascript', 'perl', 'python', 'ruby']
-all_xsearch_names = sorted(xsearch_dict.values())
+win_supported = [
+    'cs', 'csharp', 'fs', 'fsharp', 'go', 'haskell', 'javascript', 'js',
+    'perl', 'pl', 'py', 'python', 'rb', 'ruby'
+]
+all_xsearch_names = sorted(list(set(xsearch_dict.values())))
 HOME_NAME = 'HOME'
 if platform.system() == 'Windows':
     HOME_NAME = 'USERPROFILE'
@@ -48,7 +63,13 @@ xsearch_name_regex = re.compile(r'\b({})(\.exe)?\b'.format('|'.join(all_xsearch_
 default_runs = 10
 
 HOME = os.environ[HOME_NAME]
+
+# set XSEARCHPATH, default to $HOME/src/xsearch but override with env var if defined
 XSEARCHPATH = os.path.join(HOME, 'src', 'xsearch')
+if 'XSEARCH_PATH' in os.environ:
+    XSEARCHPATH = os.environ['XSEARCH_PATH']
+elif 'XSEARCHPATH' in os.environ:
+    XSEARCHPATH = os.environ['XSEARCHPATH']
 
 default_startpath = XSEARCHPATH
 

@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
-
 using SearchOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>;
 
 namespace CsSearchLib
@@ -88,6 +86,10 @@ namespace CsSearchLib
 		private void SetOptionsFromJson()
 		{
 			var searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(_searchOptionsResource);
+			if (searchOptionsDict == null || !searchOptionsDict.ContainsKey("searchoptions"))
+			{
+				throw new SearchException("Missing or invalid search options resource");
+			}
 			var optionDicts = searchOptionsDict["searchoptions"];
 			foreach (var optionDict in optionDicts)
 			{
@@ -129,6 +131,7 @@ namespace CsSearchLib
 		public static void SettingsFromJson(string jsonString, SearchSettings settings)
 		{
 			var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+			if (settingsDict == null) return;
 			foreach (var (key, value) in settingsDict)
 			{
 				var obj = (JsonElement)value;
@@ -141,7 +144,11 @@ namespace CsSearchLib
 			switch (obj.ValueKind)
 			{
 				case JsonValueKind.String:
-					ApplySetting(arg, obj.GetString(), settings);
+					var str = obj.GetString();
+					if (str != null)
+					{
+						ApplySetting(arg, str, settings);
+					}
 					break;
 				case JsonValueKind.True:
 					ApplySetting(arg, true, settings);

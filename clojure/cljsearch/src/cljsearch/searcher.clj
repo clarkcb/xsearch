@@ -22,6 +22,7 @@
 
 (defn is-search-dir? [d settings]
   (or
+    (nil? d)
     (is-dot-dir? (get-name d))
     (and
       (or

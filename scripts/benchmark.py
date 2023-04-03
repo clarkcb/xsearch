@@ -13,9 +13,11 @@ from collections import namedtuple
 from io import StringIO
 from typing import Dict, List, Union
 
+from tabulate import tabulate
+
 from xsearch import *
 
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'], verbose=False)
+Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'])
 
 
 ########################################
@@ -24,11 +26,16 @@ Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'], verb
 #exts = ','.join('clj cpp cs dart fs go hs java js kt pl php py rb rs scala swift ts'.split())
 exts = ','.join('py rb'.split())
 
-startpath = os.path.join(XSEARCHPATH, 'python')
+startpaths = [os.path.join(XSEARCHPATH, d) for d in ('python', 'ruby')]
 
 default_runs = 10
 
-common_args = ['-D', 'venv', '-x', exts, '-s', 'Searcher', startpath]
+ignore_dirs = ['node_modules', 'vendor', 'venv']
+ignore_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
+search_args = ['-s', 'Searcher']
+core_args = ignore_args + search_args
+ext_args = ['-x', exts]
+common_args = core_args + ext_args + startpaths
 
 # Scenarios to add:
 #     -x js,ts -s "Searcher" /Users/cary/src/xsearch/typescript
@@ -39,6 +46,14 @@ scenarios = [
     Scenario('search contents #1', common_args + ['-m'], replace_xsearch_name=False),
     Scenario('search lines #2 - first match', common_args + ['-1'], replace_xsearch_name=False),
     Scenario('search contents #2 - first match', common_args + ['-m', '-1'], replace_xsearch_name=False),
+    Scenario('search with "find" in filename', common_args + ['-f', 'find'], replace_xsearch_name=False),
+    Scenario('search with "find" not in filename', common_args + ['-F', 'find'], replace_xsearch_name=False),
+    # Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths, replace_xsearch_name=False),
+    # Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths, replace_xsearch_name=False),
+    # Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs'], replace_xsearch_name=False),
+    # Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
+    #     replace_xsearch_name=False),
+
     # Scenario('search lines #3', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript')], replace_xsearch_name=False),
     # Scenario('search lines #3 - first match', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript'), '-1'], replace_xsearch_name=False),
 ]
@@ -256,34 +271,14 @@ class Benchmarker(object):
         self.xsearch_names = all_xsearch_names
         self.scenarios = []
         self.runs = default_runs
+        self.break_on_diff = True
         self.debug = True
         self.diff_outputs = []
         self.__dict__.update(kwargs)
 
     def __print_data_table(self, title: str, hdr: List[str], data: List[List[Union[float, int]]], col_types: List[type]):
-        sio = StringIO()
-        sio.write('\n{}'.format(title))
-        longest = max([len(x) for x in self.xsearch_names])
-        col_width = max([len(h) for h in hdr]) + 1
-        hdr_place = ' %' + str(col_width) + 's'
-        hdr_places = hdr_place * len(hdr)
-        hdr_format = ' %%-%ds %s' % (longest, hdr_places)
-        hdr_line = hdr_format % tuple(['xsearch'] + hdr)
-        sep_line = '-' * len(hdr_line)
-        sio.write("\n")
-        sio.write("{}\n".format(hdr_line))
-        sio.write("{}\n".format(sep_line))
-        data_format = ''
-        for t in col_types:
-            if t == float:
-                data_format += ' %' + str(col_width) + '.2f'
-            elif t == int:
-                data_format += ' %' + str(col_width) + 'd'
-        line_format = ' %%-%ds %s' % (longest, data_format)
-        for row in data:
-            line = line_format % tuple(row)
-            sio.write("{}\n".format(line))
-        print(sio.getvalue())
+        print('\n{}'.format(title))
+        print(tabulate(data, headers=hdr))
 
     def print_scenario_summary(self, scenario_results: ScenarioResults):
         title = "\nScenario results summary for {} out of {} scenarios with {} out of {} total runs\n".\
@@ -385,16 +380,44 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def times_from_lines(self, lines: List[str]) -> Dict[str,float]:
+        time_dict = {}
         times = lines[0].split()
-        times.reverse()
-        try:
-            time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
-            time_dict['total'] = sum(time_dict.values())
-        except Exception as e:
-            print("Exception: {}".format(str(e)))
-            print("Invalid times line: \"{}\"".format(lines[0]))
-            time_dict = {s: 0 for s in time_keys}
+        time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
+        if time_name_matches and all(time_name_matches):
+            for time_name_match in time_name_matches:
+                n = time_name_match.group(3)
+                t = time_name_match.group(1)
+                # print('name: "{}", time: {}'.format(n, t))
+                if n == 'elapsed':
+                    colon_idx = t.find(':')
+                    # print('colon_idx: {}'.format(colon_idx))
+                    time_dict['real'] = float(t[colon_idx+1:])
+                else:
+                    if n == 'system':
+                        n = 'sys'
+                    time_dict[n] = float(time_name_match.group(1)[2:])
+        else:
+            times.reverse()
+            try:
+                time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
+                time_dict['total'] = sum(time_dict.values())
+            except Exception as e:
+                print("Exception: {}".format(str(e)))
+                print("Invalid times line: \"{}\"".format(lines[0]))
+                time_dict = {s: 0 for s in time_keys}
+        # print('time_dict: {}'.format(time_dict))
         return time_dict
+    # def times_from_lines(self, lines: List[str]) -> Dict[str,float]:
+    #     times = lines[0].split()
+    #     times.reverse()
+    #     try:
+    #         time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
+    #         time_dict['total'] = sum(time_dict.values())
+    #     except Exception as e:
+    #         print("Exception: {}".format(str(e)))
+    #         print("Invalid times line: \"{}\"".format(lines[0]))
+    #         time_dict = {s: 0 for s in time_keys}
+    #     return time_dict
 
     def compare_outputs(self, sn: int, xsearch_output) -> bool:
         nonmatching = nonmatching_outputs(xsearch_output)
@@ -447,7 +470,11 @@ class Benchmarker(object):
                 if output_line:
                     output_lines.append(output_line.decode().strip())
                 if time_line:
-                    time_lines.append(time_line.decode().strip())
+                    time_line = time_line.decode().strip()
+                    if time_line == 'Command exited with non-zero status 1':
+                        continue
+                    # print('time_line: "{}"'.format(time_line))
+                    time_lines.append(time_line)
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
@@ -459,8 +486,12 @@ class Benchmarker(object):
                 print('{} output:\n"{}"'.format(x, output))
             xsearch_times[x] = self.times_from_lines(time_lines)
             time_dict = xsearch_times[x]
-            lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
-        self.compare_outputs(sn, xsearch_output)
+            treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
+            tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
+            lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
+        matching = self.compare_outputs(sn, xsearch_output)
+        if not matching and self.break_on_diff:
+            sys.exit(1)
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
     def do_run_seq(self, s: Scenario, sn: int, rn: int) -> RunResult:
@@ -495,10 +526,20 @@ class Benchmarker(object):
             xsearch_times[x] = self.times_from_lines(time_lines)
             time_dict = xsearch_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
-        self.compare_outputs(sn, xsearch_output)
+        matching = self.compare_outputs(sn, xsearch_output)
+        if not matching and self.break_on_diff:
+            sys.exit(1)
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
+    def activate_pyvenv(self):
+        if 'VIRTUAL_ENV' not in os.environ:
+            print('ERROR: venv must be activated to run pysearch')
+            print('Run "source ./pyvenv_setup.sh" before this script')
+            sys.exit(1)
+
     def run(self):
+        if 'pysearch' in self.xsearch_names:
+            self.activate_pyvenv()
         scenario_results = ScenarioResults()
         runs = 0
         try:
@@ -524,7 +565,7 @@ class Benchmarker(object):
             print('\nOutputs of all versions in all scenarios match')
 
         self.print_scenario_results(scenario_results)
-        self.print_scenario_summary(scenario_results)
+        # self.print_scenario_summary(scenario_results)
 
 
 ########################################
@@ -534,6 +575,7 @@ def get_args(args):
     xsearch_names = all_xsearch_names
     runs = default_runs
     debug = False
+    break_on_diff = False
     while args:
         arg = args.pop(0)
         if arg.startswith('-'):
@@ -555,6 +597,8 @@ def get_args(args):
                 else:
                     print('ERROR: missing runs value for -r arg')
                     sys.exit(1)
+            elif arg == '-b':
+                break_on_diff = True
             elif arg == '--debug':
                 debug = True
             else:
@@ -563,15 +607,17 @@ def get_args(args):
         else:
             print('ERROR: unknown arg: {}'.format(arg))
             sys.exit(1)
-    return xsearch_names, runs, debug
+    return xsearch_names, runs, break_on_diff, debug
 
 
 def main():
-    xsearch_names, runs, debug = get_args(sys.argv[1:])
+    xsearch_names, runs, break_on_diff, debug = get_args(sys.argv[1:])
     print('xsearch_names: {}'.format(str(xsearch_names)))
     print('runs: {}'.format(runs))
+    print('break_on_diff: {}'.format(break_on_diff))
+    print('debug: {}'.format(debug))
     benchmarker = Benchmarker(xsearch_names=xsearch_names, runs=runs,
-        scenarios=scenarios, debug=debug)
+        scenarios=scenarios, break_on_diff=break_on_diff, debug=debug)
     benchmarker.run()
 
 

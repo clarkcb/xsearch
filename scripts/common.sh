@@ -31,13 +31,13 @@ LINESEP="-----------------------------------------------------------------------
 log () {
     local msg="$1" dt=$(date +"%Y-%m-%d %H:%M:%S")
     local color="$GREEN"
-    echo -e "${color}[$dt]${COLOR_RESET} $msg"
+    echo "${color}[$dt]${COLOR_RESET} $msg"
 }
 
 hdr () {
     local text="$1"
     local color="$BICYAN"
-    echo -e "${color}${LINESEP}${COLOR_RESET}"
-    echo -e "${color}${text}${COLOR_RESET}"
-    echo -e "${color}${LINESEP}${COLOR_RESET}"
+    echo "${color}${LINESEP}${COLOR_RESET}"
+    echo "${color}${text}${COLOR_RESET}"
+    echo "${color}${LINESEP}${COLOR_RESET}"
 }

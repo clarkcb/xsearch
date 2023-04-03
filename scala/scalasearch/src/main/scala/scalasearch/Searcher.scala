@@ -14,6 +14,7 @@ import scala.concurrent.Future
 import scala.io.Source
 import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
+import scala.util.control.NonLocalReturns.*
 
 class Searcher (settings: SearchSettings) {
   import FileUtil._
@@ -360,15 +361,15 @@ class Searcher (settings: SearchSettings) {
   }
 
   private def matchLinesAfterToOrUntil(linesAfter: mutable.ListBuffer[String],
-                                       lines: Iterator[String]): Boolean = {
+                                       lines: Iterator[String]): Boolean = returning {
     if (settings.hasLinesAfterToOrUntilPatterns) {
       linesAfter.zipWithIndex.foreach { li =>
         if (matchesAnyPattern(li._1, settings.linesAfterToPatterns)) {
           while (li._2 + 1 < linesAfter.size) linesAfter.remove(li._2 + 1)
-          return true
+          throwReturn(true)
         } else if (matchesAnyPattern(li._1, settings.linesAfterUntilPatterns)) {
           while (li._2 < linesAfter.size) linesAfter.remove(li._2)
-          return true
+          throwReturn(true)
         }
       }
       var foundMatch = false

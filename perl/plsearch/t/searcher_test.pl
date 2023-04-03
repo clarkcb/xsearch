@@ -27,7 +27,7 @@ use plsearch::Searcher;
 
 sub get_settings {
     my $settings = new plsearch::SearchSettings();
-    $settings->{startpath} = '.';
+    push(@{$settings->{paths}}, ".");
     push(@{$settings->{searchpatterns}}, "Searcher");
     return $settings;
 }

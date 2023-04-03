@@ -542,7 +542,6 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
 
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
     use std::path::Path;
     use std::process;
 
@@ -555,7 +554,7 @@ mod tests {
         let options = match SearchOptions::new() {
             Ok(options) => options,
             Err(error) => {
-                log(error.description());
+                log(&error.to_string());
                 assert!(false);
                 process::exit(1);
             }
@@ -604,7 +603,7 @@ mod tests {
         let options = match SearchOptions::new() {
             Ok(options) => options,
             Err(error) => {
-                log(error.description());
+                log(&error.to_string());
                 assert!(false);
                 process::exit(1);
             }
@@ -655,7 +654,7 @@ mod tests {
                 assert!(settings.verbose);
             },
             Err(error) => {
-                log(error.description());
+                log(&error.to_string());
                 assert!(false)
             }
         }
@@ -666,7 +665,7 @@ mod tests {
         let options = match SearchOptions::new() {
             Ok(options) => options,
             Err(error) => {
-                log(error.description());
+                log(&error.to_string());
                 assert!(false);
                 process::exit(1);
             }
@@ -689,7 +688,7 @@ mod tests {
                 assert_eq!(settings.in_extensions[1], String::from("ts"));
                 assert_eq!(settings.lines_after, 2);
                 assert_eq!(settings.lines_before, 2);
-                assert_eq!(settings.out_dir_patterns.len(), 8);
+                assert_eq!(settings.out_dir_patterns.len(), 11);
                 assert_eq!(settings.out_dir_patterns[0].to_string(), String::from("_"));
                 assert_eq!(settings.out_file_patterns.len(), 2);
                 assert_eq!(
@@ -706,7 +705,7 @@ mod tests {
                 assert!(settings.verbose);
             },
             Err(error) => {
-                log(error.description());
+                log(&error.to_string());
                 assert!(false)
             }
         }

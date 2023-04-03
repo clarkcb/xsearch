@@ -47,10 +47,10 @@ class Searcher(object):
 
     def __validate_settings(self):
         """Assert required settings in SearchSettings instance"""
-        assert self.settings.startpath, 'Startpath not defined'
-        assert os.path.exists(self.settings.startpath), 'Startpath not found'
-        assert os.access(self.settings.startpath,
-                         os.R_OK), 'Startpath not readable'
+        assert self.settings.paths, 'Startpath not defined'
+        for p in self.settings.paths:
+            assert os.path.exists(p), 'Startpath not found'
+            assert os.access(p, os.R_OK), 'Startpath not readable'
         assert self.settings.searchpatterns, 'No search patterns defined'
         assert self.settings.linesafter >= 0, 'Invalid linesafter'
         assert self.settings.linesbefore >= 0, 'Invalid linesafter'
@@ -113,25 +113,26 @@ class Searcher(object):
         if self.settings.debug:
             log('get_search_files()')
         searchfiles = []
-        if os.path.isdir(self.settings.startpath):
-            if self.is_search_dir(os.path.abspath(self.settings.startpath)):
-                if self.settings.recursive:
-                    for root, dirs, files in os.walk(self.settings.startpath):
-                        if self.is_search_dir(root):
-                            new_searchfiles = [
-                                SearchFile(path=root,
-                                           filename=f,
-                                           filetype=self.filetypes.get_filetype(f))
-                                for f in files
-                            ]
-                            searchfiles.extend(
-                                [sf for sf in new_searchfiles if self.filter_file(sf)])
-        elif os.path.isfile(self.settings.startpath):
-            d, f = os.path.split(self.settings.startpath)
-            sf = SearchFile(path=d, filename=f,
-                            filetype=self.filetypes.get_filetype(f))
-            if self.filter_file(sf):
-                searchfiles.append(sf)
+        for p in self.settings.paths:
+            if os.path.isdir(p):
+                if self.is_search_dir(os.path.abspath(p)):
+                    if self.settings.recursive:
+                        for root, dirs, files in os.walk(p):
+                            if self.is_search_dir(root):
+                                new_searchfiles = [
+                                    SearchFile(path=root,
+                                               filename=f,
+                                               filetype=self.filetypes.get_filetype(f))
+                                    for f in files
+                                ]
+                                searchfiles.extend(
+                                    [sf for sf in new_searchfiles if self.filter_file(sf)])
+            elif os.path.isfile(p):
+                d, f = os.path.split(p)
+                sf = SearchFile(path=d, filename=f,
+                                filetype=self.filetypes.get_filetype(f))
+                if self.filter_file(sf):
+                    searchfiles.append(sf)
         return sorted(searchfiles, key=lambda sf: (sf.path, sf.filename))
 
     def filter_file(self, sf: SearchFile) -> bool:

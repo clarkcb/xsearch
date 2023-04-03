@@ -1,65 +1,175 @@
-﻿################################################################################
+#!/usr/bin/env pwsh
+################################################################################
 #
 # unittest.ps1
 #
 # Runs unit tests for specified language version of xsearch, or all versions
 #
 ################################################################################
-param([string]$lang="all")
+param([switch]$help = $false,
+      [string]$lang='')
 
 ########################################
 # Configuration
 ########################################
 
-. $PSScriptRoot\config.ps1
-. $PSScriptRoot\common.ps1
+$scriptPath = $MyInvocation.MyCommand.Path
+$scriptDir = Split-Path $scriptPath -Parent
+
+. (Join-Path $scriptDir 'config.ps1')
+. (Join-Path $scriptDir 'common.ps1')
+
+# check for help switch
+$help = $help.IsPresent
+
+
+########################################
+# Utility Functions
+########################################
+
+function Usage
+{
+    Write-Host "`nUsage: unittest.ps1 [-help] {""all"" | langcode}`n"
+    exit
+}
 
 
 ################################################################################
 # Unit Test functions
 ################################################################################
 
+function UnitTestC
+{
+    Write-Host
+    Hdr('UnitTestC')
+
+    $oldPwd = Get-Location
+    Set-Location $csearchPath
+
+    Log('Unit-testing cfind')
+    Log('make run_tests')
+    make run_tests
+
+    Set-Location $oldPwd
+}
+
 function UnitTestClojure
 {
     Write-Host
-    Log("UnitTestClojure - currently unsupported")
+    Hdr('UnitTestClojure')
+
+    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install leiningen')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $cljsearchPath
+
+    # Test with lein
+    Log('Unit-testing cljsearch')
+    Log('lein test')
+    lein test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestCpp
+{
+    Write-Host
+    Hdr('UnitTestCpp')
+
+    $configurations = @('debug', 'release')
+    ForEach ($c in $configurations)
+    {
+        $cmakeBuildDir = "$cppsearchPath/cmake-build-$c"
+
+        if (Test-Path $cmakeBuildDir)
+        {
+            $cppsearchTestExe = Join-Path $cmakeBuildDir 'cppsearch-tests'
+            Log($cppsearchTestExe)
+            & $cppsearchTestExe
+        }
+    }
 }
 
 function UnitTestCsharp
 {
     Write-Host
-    Log("UnitTestCsharp")
+    Hdr('UnitTestCsharp')
 
-    $csharpPath = Join-Path -Path $xsearchPath -ChildPath "csharp"
-    $cssearchSolutionPath = Join-Path -Path $csharpPath -ChildPath "CsSearch"
-    $cssearchTestsPath = Join-Path -Path $cssearchSolutionPath -ChildPath "CsSearchTests"
-    $configuration = "Debug";
-    #$configuration = "Release";
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dotnet')
+        return
+    }
 
-    Log("Unit-testing cssearch")
-    Write-Host "$cssearchTestsPath\bin\$configuration\CsSearchTests.exe"
-    &$cssearchTestsPath\bin\$configuration\CsSearchTests.exe
+    $cssearchSolutionPath = Join-Path $cssearchPath 'CsSearch.sln'
+    # $verbosity = 'quiet'
+    # $verbosity = 'minimal'
+    $verbosity = 'normal'
+    # $verbosity = 'detailed'
+
+    Log('Unit-testing cssearch')
+    Write-Host "dotnet test $cssearchSolutionPath --verbosity $verbosity"
+    dotnet test $cssearchSolutionPath --verbosity $verbosity
+}
+
+function UnitTestDart
+{
+    Write-Host
+    Hdr('UnitTestDart')
+
+    $oldPwd = Get-Location
+    Set-Location $dartsearchPath
+
+    Log('Unit-testing dartsearch')
+    Log('dart run test')
+    dart run test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestFsharp
 {
     Write-Host
-    Log("UnitTestFsharp - currently unsupported")
+    Hdr('UnitTestFsharp')
+
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dotnet')
+        return
+    }
+
+    $fssearchSolutionPath = Join-Path $fssearchPath 'FsSearch.sln'
+    # $verbosity = 'quiet'
+    # $verbosity = 'minimal'
+    $verbosity = 'normal'
+    # $verbosity = 'detailed'
+
+    Log('Unit-testing fssearch')
+    Write-Host "dotnet test $fssearchSolutionPath --verbosity $verbosity"
+    dotnet test $fssearchSolutionPath --verbosity $verbosity
 }
 
 function UnitTestGo
 {
     Write-Host
-    Log("UnitTestGo")
-    $goPath = Join-Path -Path $xsearchPath -ChildPath "go"
-    $gosearchPath = "$goPath\src\elocale.com\clarkcb\xsearch"
+    Hdr('UnitTestGo')
+
+    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install go')
+        return
+    }
 
     $oldPwd = Get-Location
     Set-Location $gosearchPath
 
-    Log("Unit-testing gosearch")
-    Write-Host "go test"
-    go test
+    Log('Unit-testing gosearch')
+    Log('go test --cover ./...')
+    go test --cover ./...
 
     Set-Location $oldPwd
 }
@@ -67,16 +177,21 @@ function UnitTestGo
 function UnitTestHaskell
 {
     Write-Host
-    Log("UnitTestHaskell")
-    $haskellPath = Join-Path -Path $xsearchPath -ChildPath "haskell"
-    $hssearchPath = Join-Path -Path $haskellPath -ChildPath "hssearch"
+    Hdr('UnitTestHaskell')
+
+    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install stack')
+        return
+    }
 
     $oldPwd = Get-Location
     Set-Location $hssearchPath
 
-    Log("Unit-testing hssearch")
-    Write-Host "cabal test"
-    cabal test
+    # test with stack
+    Log('Unit-testing hssearch')
+    Log('stack test')
+    stack test
 
     Set-Location $oldPwd
 }
@@ -84,89 +199,162 @@ function UnitTestHaskell
 function UnitTestJava
 {
     Write-Host
-    Log("UnitTestJava - currently unsupported")
+    Hdr('UnitTestJava')
+
+    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install mvn')
+        return
+    }
+
+    # run tests via maven
+    Log('Unit-testing javasearch')
+    $pomPath = Join-Path $javasearchPath 'pom.xml'
+    Log("mvn -f $pomPath test")
+    mvn -f $pomPath test
 }
 
 function UnitTestJavaScript
 {
     Write-Host
-    Log("UnitTestJavaScript")
-    $javascriptPath = Join-Path -Path $xsearchPath -ChildPath "javascript"
-    $jssearchPath = Join-Path -Path $javascriptPath -ChildPath "jssearch"
-    $testsPath = Join-Path -Path $jssearchPath -ChildPath "tests"
-    $nodeUnitPath = "$jssearchPath\node_modules\nodeunit"
-    $nodeUnit = "$javascriptUnitPath\bin\nodeunit"
+    Hdr('UnitTestJavaScript')
+
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install npm')
+        return
+    }
 
     $oldPwd = Get-Location
+    Set-Location $jssearchPath
 
-    if (!(Test-Path $nodeUnitPath))
-    {
-        Log("nodeunit not installed, installing")
-        Set-Location $jssearchPath
-        Write-Host "npm install nodeunit"
-        npm install nodeunit
-    }
-
-    Set-Location $testsPath
-
-    Log("Unit-testing nodesearch")
-    $tests = @(Get-ChildItem $testsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.js' })
-    ForEach ($test in $tests)
-    {
-        Write-Host "`nnodeunit $test"
-        node $nodeUnit $test
-    }
+    # run tests via npm
+    Log('Unit-testing jssearch')
+    Log('npm test')
+    npm test
 
     Set-Location $oldPwd
+}
+
+function UnitTestKotlin
+{
+    Write-Host
+    Hdr('UnitTestKotlin')
+
+    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $ktsearchPath
+
+    # run tests via gradle
+    Log('Unit-testing ktfind')
+    # $buildGradlePath = Join-Path $ktfindPath 'build.gradle'
+    Log('gradle --warning-mode all test')
+    gradle --warning-mode all test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestObjc
+{
+    Write-Host
+    Hdr('UnitTestObjc')
+
+    if (-not (Get-Command 'xcodebuild' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install xcode')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $objcsearchPath
+
+    Log('Unit-testing objcsearch')
+    Log('xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests')
+    xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests
+
+    Set-Location $oldPwd
+}
+
+function UnitTestOcaml
+{
+    Write-Host
+    Hdr('UnitTestOcaml - currently unimplemented')
 }
 
 function UnitTestPerl
 {
     Write-Host
-    Log("UnitTestPerl")
-    $perlPath = Join-Path -Path $xsearchPath -ChildPath "perl"
-    $plTestsPath = Join-Path -Path $perlPath -ChildPath "tests"
+    Hdr('UnitTestPerl')
 
-    $oldPwd = Get-Location
-    Set-Location $plTestsPath
-
-    Log("Unit-testing plsearch")
-    $pltests = @(Get-ChildItem $plTestsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
-    ForEach ($pltest in $pltests)
+    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
-        Write-Host "`nperl $pltest"
-        perl $pltest
+        PrintError('You need to install perl')
+        return
     }
 
-    Set-Location $oldPwd
+    $plTestsPath = Join-Path $plsearchPath 't'
+
+    Log('Unit-testing plsearch')
+    $pltests = @(Get-ChildItem $plTestsPath |
+        Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
+    ForEach ($pltest in $pltests)
+    {
+        Log("perl $pltest")
+        perl $pltest
+    }
 }
 
 function UnitTestPhp
 {
     Write-Host
-    Log("UnitTestPhp - currently unsupported")
+    Hdr('UnitTestPhp')
+
+    if (-not (Get-Command 'phpunit' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install phpunit')
+        return
+    }
+
+    $phpTestsPath = Join-Path $phpsearchPath 'tests'
+
+    Log('Unit-testing phpsearch')
+    Log("phpunit $phpTestsPath")
+    phpunit $phpTestsPath
 }
 
 function UnitTestPython
 {
     Write-Host
-    Log("UnitTestPython")
-    $pythonPath = Join-Path -Path $xsearchPath -ChildPath "python"
-    $pyTestsPath = Join-Path -Path $pythonPath -ChildPath "tests"
+    Hdr('UnitTestPython')
+
+    $venvPath = Join-Path $pysearchPath 'venv'
+    if (-not (Test-Path $venvPath))
+    {  
+        Log('venv path not found, you probably need to run the python build (./build.ps1 python)')
+        return
+    }
 
     $oldPwd = Get-Location
-    Set-Location $pyTestsPath
+    Set-Location $pysearchPath
 
-    Log("Unit-testing pysearch")
-    $pytests = @(Get-ChildItem $pyTestsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.py' })
-    ForEach ($pytest in $pytests)
-    {
-        Write-Host "`npython $pytest"
-        python $pytest
-    }
+    # activate the virtual env
+    $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+    Log("$activatePath")
+    & $activatePath
+
+    Log('Unit-testing pysearch')
+    # Run the individual tests
+    Log('pytest')
+    pytest
+
+    # deactivate at end of setup process
+    Log('deactivate')
+    deactivate
 
     Set-Location $oldPwd
 }
@@ -174,21 +362,41 @@ function UnitTestPython
 function UnitTestRuby
 {
     Write-Host
-    Log("UnitTestRuby")
-    $rubyPath = Join-Path -Path $xsearchPath -ChildPath "ruby"
-    $rbTestsPath = Join-Path -Path $rubyPath -ChildPath "tests"
+    Hdr('UnitTestRuby')
+
+    if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install rake')
+        return
+    }
 
     $oldPwd = Get-Location
-    Set-Location $rbTestsPath
+    Set-Location $rbsearchPath
 
-    Log("Unit-testing rbsearch")
-    $rbtests = @(Get-ChildItem $rbTestsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.rb' })
-    ForEach ($rbtest in $rbtests)
+    Log('Unit-testing rbsearch')
+    Log('rake test')
+    rake test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestRust
+{
+    Write-Host
+    Hdr('UnitTestRust')
+
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
-        Write-Host "`nruby $rbtest"
-        ruby $rbtest
+        PrintError('You need to install cargo/rust')
+        return
     }
+
+    $oldPwd = Get-Location
+    Set-Location $rssearchPath
+
+    Log('Unit-testing rssearch')
+    Log('cargo test')
+    cargo test
 
     Set-Location $oldPwd
 }
@@ -196,23 +404,80 @@ function UnitTestRuby
 function UnitTestScala
 {
     Write-Host
-    Log("UnitTestScala - currently unsupported")
+    Hdr('UnitTestScala')
+
+    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install sbt')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $scalasearchPath
+
+    Log('Unit-testing scalasearch')
+    Log('sbt test')
+    sbt test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestSwift
+{
+    Write-Host
+    Hdr('UnitTestSwift')
+
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install swift')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $swiftsearchPath
+
+    Log('Unit-testing swiftsearch')
+    Log('swift test')
+    swift test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestTypeScript
 {
     Write-Host
-    Log("UnitTestTypeScript - currently unsupported")
+    Hdr('UnitTestTypeScript')
+
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install npm')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $tssearchPath
+
+    Log('Unit-testing tssearch')
+    Log('npm test')
+    npm test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestAll
 {
     Write-Host
-    Log("UnitTestAll")
+    Hdr('UnitTestAll')
+
+    # UnitTestC
 
     UnitTestClojure
 
+    UnitTestCpp
+
     UnitTestCsharp
+
+    UnitTestDart
 
     UnitTestFsharp
 
@@ -224,6 +489,12 @@ function UnitTestAll
 
     UnitTestJavaScript
 
+    UnitTestKotlin
+
+    UnitTestObjc
+
+    # UnitTestOcaml
+
     UnitTestPerl
 
     UnitTestPhp
@@ -232,7 +503,11 @@ function UnitTestAll
 
     UnitTestRuby
 
+    UnitTestRust
+
     UnitTestScala
+
+    UnitTestSwift
 
     UnitTestTypeScript
 }
@@ -243,26 +518,49 @@ function UnitTestAll
 
 function UnitTestMain
 {
-    param($lang="all")
+    param($lang='all')
 
     switch ($lang)
     {
-        "all"        { UnitTestAll }
-        "clojure"    { UnitTestClojure }
-        "csharp"     { UnitTestCsharp }
-        "fsharp"     { UnitTestFsharp }
-        "go"         { UnitTestGo }
-        "haskell"    { UnitTestHaskell }
-        "java"       { UnitTestJava }
-        "javascript" { UnitTestJavaScript }
-        "perl"       { UnitTestPerl }
-        "php"        { UnitTestPhp }
-        "python"     { UnitTestPython }
-        "ruby"       { UnitTestRuby }
-        "scala"      { UnitTestScala }
-        "typescript" { UnitTestTypeScript }
+        'all'        { UnitTestAll }
+        # 'c'          { UnitTestC }
+        'clj'        { UnitTestClojure }
+        'clojure'    { UnitTestClojure }
+        'cpp'        { UnitTestCpp }
+        'cs'         { UnitTestCsharp }
+        'csharp'     { UnitTestCsharp }
+        'dart'       { UnitTestDart }
+        'fs'         { UnitTestFsharp }
+        'fsharp'     { UnitTestFsharp }
+        'go'         { UnitTestGo }
+        'haskell'    { UnitTestHaskell }
+        'hs'         { UnitTestHaskell }
+        'java'       { UnitTestJava }
+        'javascript' { UnitTestJavaScript }
+        'js'         { UnitTestJavaScript }
+        'kotlin'     { UnitTestKotlin }
+        'kt'         { UnitTestKotlin }
+        'objc'       { UnitTestObjc }
+        # 'ocaml'      { UnitTestOcaml }
+        'perl'       { UnitTestPerl }
+        'php'        { UnitTestPhp }
+        'py'         { UnitTestPython }
+        'python'     { UnitTestPython }
+        'rb'         { UnitTestRuby }
+        'ruby'       { UnitTestRuby }
+        'rs'         { UnitTestRust }
+        'rust'       { UnitTestRust }
+        'scala'      { UnitTestScala }
+        'swift'      { UnitTestSwift }
+        'ts'         { UnitTestTypeScript }
+        'typescript' { UnitTestTypeScript }
         default      { ExitWithError("Unknown option: $lang") }
     }
+}
+
+if ($help -or $lang -eq '')
+{
+    Usage
 }
 
 UnitTestMain $lang

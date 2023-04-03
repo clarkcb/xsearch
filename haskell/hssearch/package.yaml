@@ -4,7 +4,7 @@ github:              "clarkcb/xsearch"
 license:             MIT
 author:              "Cary Clark"
 maintainer:          "clarkcb@gmail.com"
-copyright:           "2019 Cary Clark"
+copyright:           "2021 Cary Clark"
 
 extra-source-files:
 - README.md
@@ -25,16 +25,12 @@ dependencies:
 - bytestring
 - directory
 - filepath
-- hxt
 - regex-pcre-builtin >=0.94.4
 - split >=0.2.2
 - text
-- timeit
 
 data-files:
   - data/*.json
-  - data/*.xml
-
 
 library:
   source-dirs: src

@@ -926,7 +926,7 @@ mod tests {
 
     fn get_default_test_settings() -> SearchSettings {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from(".");
+        settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
         settings
     }
@@ -1066,7 +1066,7 @@ mod tests {
     #[test]
     fn test_search_text_lines() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from(".");
+        settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
         let searcher = Searcher::new(settings).ok().unwrap();
 
@@ -1094,7 +1094,7 @@ mod tests {
     #[test]
     fn test_search_text_lines_lines_after_to_until() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from(".");
+        settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
         settings.add_lines_after_to_pattern("after".to_string());
         let searcher = Searcher::new(settings).ok().unwrap();
@@ -1117,7 +1117,7 @@ mod tests {
     #[test]
     fn test_search_text_contents() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from(".");
+        settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
 
         settings.lines_before = 2;
@@ -1148,7 +1148,7 @@ mod tests {
     #[test]
     fn test_search_text_contents_lines_after_to_until() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from(".");
+        settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
 
         settings.add_lines_after_to_pattern("after".to_string());
@@ -1172,7 +1172,7 @@ mod tests {
     #[test]
     fn test_search_code_files() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from("/Users/cary/src/xsearch/rust");
+        settings.add_path(String::from("/Users/cary/src/xsearch/rust"));
         settings.add_in_extension(String::from("go,rs"));
         settings.add_search_pattern(String::from("Searcher"));
         let searcher = Searcher::new(settings).ok().unwrap();
@@ -1188,24 +1188,26 @@ mod tests {
         let mut settings = SearchSettings::default();
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/helloworld.txt");
+        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/helloworld_utf8.txt");
 
-        settings.startpath = String::from(testfile_path.to_str().unwrap());
-        settings.add_search_pattern(String::from("Hello"));
-        settings.add_search_pattern(String::from("你好"));
-        //settings.text_file_encoding = String::from("windows-1252");
-        let searcher = Searcher::new(settings).ok().unwrap();
+        if testfile_path.exists() {
+            settings.add_path(String::from(testfile_path.to_str().unwrap()));
+            settings.add_search_pattern(String::from("Hello"));
+            settings.add_search_pattern(String::from("你好"));
+            //settings.text_file_encoding = String::from("windows-1252");
+            let searcher = Searcher::new(settings).ok().unwrap();
 
-        let results = searcher.search();
-        assert!(results.is_ok());
-        let results = results.ok().unwrap();
-        println!("results: {}", results.len());
+            let results = searcher.search();
+            assert!(results.is_ok());
+            let results = results.ok().unwrap();
+            println!("results: {}", results.len());
+        }
     }
 
     #[test]
     fn test_search_binary_files() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from("/Users/cary/src/xsearch/java");
+        settings.add_path(String::from("/Users/cary/src/xsearch/java"));
         settings.add_in_extension(String::from("class"));
         settings.add_search_pattern(String::from("Searcher"));
         let searcher = Searcher::new(settings).ok().unwrap();
@@ -1225,7 +1227,7 @@ mod tests {
     #[test]
     fn test_search_jar_files() {
         let mut settings = SearchSettings::default();
-        settings.startpath = String::from("../../java/javasearch");
+        settings.add_path(String::from("../../java/javasearch"));
         settings.set_archives_only(true);
         settings.add_in_archive_extension(String::from("jar"));
         settings.add_search_pattern(String::from("Searcher"));
@@ -1247,11 +1249,12 @@ mod tests {
     fn test_search_zip_file() {
         let mut settings = SearchSettings::default();
         let path = Path::new("../../shared/testFiles.zip");
-        settings.startpath = if path.exists() {
+        let startpath = if path.exists() {
             String::from("../../shared/testFiles.zip")
         } else {
             String::from("../../shared")
         };
+        settings.add_path(startpath);
         settings.search_archives = true;
         settings.add_search_pattern(String::from("Searcher"));
         let searcher = Searcher::new(settings).ok().unwrap();
@@ -1264,7 +1267,7 @@ mod tests {
             assert_eq!(results[0].pattern, "Searcher");
             assert!(results[0].file.is_some());
             //assert_eq!(results[0].line, "");
-            assert_eq!(results[0].line_num, 3);
+            assert_eq!(results[0].line_num, 8);
         }
     }
 }

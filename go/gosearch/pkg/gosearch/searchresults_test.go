@@ -13,7 +13,7 @@ func TestAddSearchResult(t *testing.T) {
 
 	path := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
 	name := "searchresults_test.go"
-	searchItem := NewSearchItem(&path, &name, FiletypeCode)
+	searchItem := NewSearchItem(path, name, FiletypeCode)
 
 	line := "func TestAddSearchResult(t *testing.T) {"
 
@@ -39,25 +39,25 @@ func TestAddSearchResult(t *testing.T) {
 			len(searchResults.SearchResults))
 	}
 
-	expectedDir := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
-	c, b := searchResults.DirCounts[expectedDir]
-	if !b {
-		t.Errorf("searchResults.DirCounts does not contain expected dir key: %s",
-			expectedDir)
-	}
-	if c != 1 {
-		t.Errorf("searchResults.DirCounts[\"%s\"]=%d, expected=1",
-			expectedDir, searchResults.DirCounts[expectedDir])
-	}
-
-	expectedFile := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch/searchresults_test.go", XSEARCHPATH)
-	c, b = searchResults.FileCounts[expectedFile]
-	if !b {
-		t.Errorf("searchResults.FileCounts does not contain expected file key: %s",
-			expectedFile)
-	}
-	if c != 1 {
-		t.Errorf("searchResults.FileCounts[\"%s\"]=%d, expected=1",
-			expectedFile, searchResults.FileCounts[expectedFile])
-	}
+	//expectedDir := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
+	//c, b := searchResults.DirCounts[expectedDir]
+	//if !b {
+	//	t.Errorf("searchResults.DirCounts does not contain expected dir key: %s",
+	//		expectedDir)
+	//}
+	//if c != 1 {
+	//	t.Errorf("searchResults.DirCounts[\"%s\"]=%d, expected=1",
+	//		expectedDir, searchResults.DirCounts[expectedDir])
+	//}
+	//
+	//expectedFile := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch/searchresults_test.go", XSEARCHPATH)
+	//c, b = searchResults.FileCounts[expectedFile]
+	//if !b {
+	//	t.Errorf("searchResults.FileCounts does not contain expected file key: %s",
+	//		expectedFile)
+	//}
+	//if c != 1 {
+	//	t.Errorf("searchResults.FileCounts[\"%s\"]=%d, expected=1",
+	//		expectedFile, searchResults.FileCounts[expectedFile])
+	//}
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ################################################################################
 #
 # test.sh
@@ -18,130 +18,124 @@ source "$DIR/common.sh"
 SEARCHSTRING="Searcher"
 EXTS="-x py"
 DEBUG=""
-DOTIMING=""
 MULTILINE=""
-PRINT="-p"
-SEARCHARCHIVES="-Z"
+# SEARCHARCHIVES="-Z"
 
-SEARCH_PARAMS="-s \"$SEARCHSTRING\" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH"
+SEARCH_PARAMS="-s \"$SEARCHSTRING\" $EXTS $DEBUG $MULTILINE -D test $XSEARCH_PATH/python"
 
 
 ########################################
 # Build Functions
 ########################################
 
+test_lang_version () {
+    local lang_version="$1"
+    log "$lang_version $SEARCH_PARAMS"
+    time "$lang_version" -s "$SEARCHSTRING" $EXTS $DEBUG $MULTILINE -D test "$XSEARCH_PATH/python"
+}
+
 test_clojure () {
-    echo -e "\n################################################################################"
-    log "test_clojure"
-    log "cljsearch $SEARCH_PARAMS"
-    time cljsearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_clojure"
+    test_lang_version "cljsearch"
+}
+
+test_cpp () {
+    hdr "test_cpp"
+    test_lang_version "cppsearch"
 }
 
 test_csharp () {
-    echo -e "\n################################################################################"
-    log "test_csharp"
-    log "cssearch $SEARCH_PARAMS"
-    time cssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_csharp"
+    test_lang_version "cssearch"
 }
 
 test_fsharp () {
-    echo -e "\n################################################################################"
-    log "test_fsharp"
-    time fssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_fsharp"
+    test_lang_version "fssearch"
 }
 
 test_go () {
-    echo -e "\n################################################################################"
-    log "test_go"
-    log "gosearch $SEARCH_PARAMS"
-    time gosearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_go"
+    test_lang_version "gosearch"
 }
 
 test_haskell () {
-    echo -e "\n################################################################################"
-    log "test_haskell"
-    log "hssearch $SEARCH_PARAMS"
-    time hssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_haskell"
+    test_lang_version "hssearch"
 }
 
 test_java () {
-    echo -e "\n################################################################################"
-    log "test_java"
-    log "javasearch $SEARCH_PARAMS"
-    time javasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_java"
+    test_lang_version "javasearch"
 }
 
 test_javascript () {
-    echo -e "\n################################################################################"
-    log "test_javascript"
-    log "jssearch $SEARCH_PARAMS"
-    time jssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_javascript"
+    test_lang_version "jssearch"
+}
+
+test_kotlin () {
+    hdr "test_kotlin"
+    test_lang_version "ktsearch"
+}
+
+test_objc () {
+    hdr "test_objc"
+    test_lang_version "objcsearch"
 }
 
 test_perl () {
-    echo -e "\n################################################################################"
-    log "test_perl"
-    log "plsearch.pl $SEARCH_PARAMS"
-    time plsearch.pl -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_perl"
+    test_lang_version "plsearch"
 }
 
 test_php () {
-    echo -e "\n################################################################################"
-    log "test_php"
-    log "phpsearch.php $SEARCH_PARAMS"
-    time phpsearch.php -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_php"
+    test_lang_version "phpsearch"
 }
 
 test_python () {
-    echo -e "\n################################################################################"
-    log "test_python"
-    log "pysearch.py $SEARCH_PARAMS"
-    time pysearch.py -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_python"
+    test_lang_version "pysearch"
 }
 
 test_ruby () {
-    echo -e "\n################################################################################"
-    log "test_ruby"
-    log "rbsearch.rb $SEARCH_PARAMS"
-    time rbsearch.rb -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_ruby"
+    test_lang_version "rbsearch"
 }
 
 test_rust () {
-    echo -e "\n################################################################################"
-    log "test_rust"
-    log "rssearch $SEARCH_PARAMS"
-    time rssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_rust"
+    test_lang_version "rssearch"
 }
 
 test_scala () {
-    echo -e "\n################################################################################"
-    log "test_scala"
-    log "scalasearch $SEARCH_PARAMS"
-    time scalasearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_scala"
+    test_lang_version "scalasearch"
 }
 
 test_swift () {
-    echo -e "\n################################################################################"
-    log "test_swift"
-    log "swiftsearch $SEARCH_PARAMS"
-    time swiftsearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_swift"
+    test_lang_version "swiftsearch"
 }
 
 test_typescript () {
-    echo -e "\n################################################################################"
-    log "test_typescript"
-    log "tssearch $SEARCH_PARAMS"
-    time tssearch -s "$SEARCHSTRING" $EXTS $DEBUG $DOTIMING $MULTILINE $PRINT $SEARCHARCHIVES $XSEARCH_PATH
+    hdr "test_typescript"
+    test_lang_version "tssearch"
 }
 
 test_all () {
-    log "test_all"
+    hdr "test_all"
 
-    test_clojure
+    # test_clojure
+
+    test_cpp
 
     test_csharp
 
-    #test_fsharp
+    test_dart
+
+    test_fsharp
 
     test_go
 
@@ -151,6 +145,12 @@ test_all () {
 
     test_javascript
 
+    test_kotlin
+
+    test_objc
+
+    # test_ocaml
+
     test_perl
 
     test_php
@@ -158,6 +158,8 @@ test_all () {
     test_python
 
     test_ruby
+
+    test_rust
 
     test_scala
 
@@ -171,41 +173,75 @@ test_all () {
 # Test Steps
 ########################################
 
-if [ $# == 0 ]; then
+if [ $# == 0 ]
+then
     ARG="all"
 else
     ARG=$1
 fi
 
-if [ "$ARG" == "all" ]; then
+if [ "$ARG" == "all" ]
+then
     test_all
-elif [ "$ARG" == "clojure" ]; then
+elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
+then
     test_clojure
-elif [ "$ARG" == "csharp" ]; then
+elif [ "$ARG" == "cpp" ]
+then
+    test_cpp
+elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
+then
     test_csharp
-elif [ "$ARG" == "fsharp" ]; then
+elif [ "$ARG" == "dart" ]
+then
+    test_dart
+elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
+then
     test_fsharp
-elif [ "$ARG" == "go" ]; then
+elif [ "$ARG" == "go" ]
+then
     test_go
-elif [ "$ARG" == "haskell" ]; then
+elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
+then
     test_haskell
-elif [ "$ARG" == "java" ]; then
+elif [ "$ARG" == "java" ]
+then
     test_java
-elif [ "$ARG" == "javascript" ]; then
+elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
+then
     test_javascript
-elif [ "$ARG" == "perl" ]; then
+elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
+then
+    test_kotlin
+elif [ "$ARG" == "objc" ]
+then
+    test_objc
+elif [ "$ARG" == "ocaml" ]
+then
+    test_ocaml
+elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
+then
     test_perl
-elif [ "$ARG" == "php" ]; then
+elif [ "$ARG" == "php" ]
+then
     test_php
-elif [ "$ARG" == "python" ]; then
+elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
+then
     test_python
-elif [ "$ARG" == "ruby" ]; then
+elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
+then
     test_ruby
-elif [ "$ARG" == "scala" ]; then
+elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
+then
+    test_rust
+elif [ "$ARG" == "scala" ]
+then
     test_scala
-elif [ "$ARG" == "swift" ]; then
+elif [ "$ARG" == "swift" ]
+then
     test_swift
-elif [ "$ARG" == "typescript" ]; then
+elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
+then
     test_typescript
 else
     echo "ERROR: unknown test argument: $ARG"

@@ -10,7 +10,7 @@ import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__))[:-6])
 
 from pysearch import FileType, Searcher, SearchFile, SearchSettings, SHAREDPATH
 
@@ -19,7 +19,7 @@ class SearcherTest(unittest.TestCase):
 
     def get_settings(self):
         settings = SearchSettings()
-        settings.startpath = '.'
+        settings.paths.add('.')
         settings.add_patterns('Searcher', 'searchpatterns')
         settings.debug = True
         return settings

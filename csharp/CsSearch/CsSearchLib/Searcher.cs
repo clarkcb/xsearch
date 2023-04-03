@@ -481,7 +481,7 @@ namespace CsSearchLib
 				{
 					foreach (var p in Settings.SearchPatterns)
 					{
-						foreach (Match match in p.Matches(line).Where(m => m != null))
+						foreach (var match in p.Matches(line).Where(m => m != null))
 						{
 							if (Settings.FirstMatch && patternMatches.ContainsKey(p))
 							{
@@ -577,6 +577,7 @@ namespace CsSearchLib
 				Results.Where(r => r.File?.File.Directory != null)
 					.Select(r => r.File!.File.Directory)
 					.Distinct()
+					.Where(d => d != null)
 					.OrderBy(d => d.FullName));
 		}
 
