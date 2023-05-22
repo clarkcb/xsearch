@@ -18,8 +18,6 @@ from typing import Deque, List, TextIO
 from pyfind import FileResult, FileType, FileTypes, FileUtil, Finder
 
 from .common import log
-# from .filetypes import FileTypes
-from .searchfile import SearchFile
 from .searchresult import SearchResult
 from .searchsettings import SearchSettings, PatternSet
 
@@ -67,17 +65,15 @@ class Searcher(object):
     async def search(self) -> List[SearchResult]:
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
-        # get the searchfiles (now a single walkthrough)
-        # searchfiles = self.get_search_files()
-        findfiles = await self.finder.find()
+        # get the matching files via finder
+        file_results = await self.finder.find()
         if self.settings.verbose:
-            # searchdirs = sorted(list({sf.path for sf in searchfiles}))
-            find_dirs = sorted(list({sf.path for sf in findfiles}))
+            find_dirs = sorted(list({sf.path for sf in file_results}))
             log('\nDirectories to be searched ({0}):'.format(len(find_dirs)))
             for d in find_dirs:
                 log(d)
-            log('\n\nFiles to be searched ({0}):'.format(len(findfiles)))
-            for f in findfiles:
+            log('\n\nFiles to be searched ({0}):'.format(len(file_results)))
+            for f in file_results:
                 log(str(f))
             log("")
 
@@ -85,10 +81,10 @@ class Searcher(object):
         batch_size = 250
         offset = 0
         search_results = []
-        while offset < len(findfiles):
-            to_index = min(offset + batch_size, len(findfiles))
+        while offset < len(file_results):
+            to_index = min(offset + batch_size, len(file_results))
             tasks = []
-            for sf in findfiles[offset:to_index]:
+            for sf in file_results[offset:to_index]:
                 tasks.append(asyncio.create_task(self.search_file(sf)))
             for coroutine in asyncio.as_completed(tasks):
                 search_results.extend(await coroutine)
@@ -126,9 +122,8 @@ class Searcher(object):
             log('IOError: {0!s}: {1!s}'.format(e, fr))
         return search_results
 
-    def __search_binary_file_obj(
-            self, fr: FileResult, fo: TextIO) -> List[SearchResult]:
-        """Search a binary file file object"""
+    def __search_binary_file_obj(self, fr: FileResult, fo: TextIO) -> List[SearchResult]:
+        """Search a binary file object"""
         contents = fo.read()
         search_results = []
         for p in self.settings.search_patterns:
@@ -165,7 +160,7 @@ class Searcher(object):
 
     def __search_text_file_obj(self, fr: FileResult,
                                fo: TextIO) -> List[SearchResult]:
-        """Search a text file file object"""
+        """Search a text file object"""
         if self.settings.multi_line_search:
             return self.__search_text_file_contents(fr, fo)
         return self.__search_text_file_lines(fr, fo)
@@ -190,10 +185,10 @@ class Searcher(object):
         end_line_indices = new_line_indices + [len(s) - 1]
         for p in self.settings.search_patterns:
             search_results.extend(
-                self.search_multiline_string_for_pattern(s,
-                                                         p,
-                                                         start_line_indices,
-                                                         end_line_indices))
+                self.search_multi_line_string_for_pattern(s,
+                                                          p,
+                                                          start_line_indices,
+                                                          end_line_indices))
         return search_results
 
     def get_lines_after_to_or_until(
@@ -234,8 +229,8 @@ class Searcher(object):
     def do_lines_after(self) -> bool:
         return self.settings.lines_after > 0 or self.do_lines_after_or_until()
 
-    def search_multiline_string_for_pattern(self, s: str, p, start_line_indices: List[int],
-                                            end_line_indices: List[int]) -> List[SearchResult]:
+    def search_multi_line_string_for_pattern(self, s: str, p, start_line_indices: List[int],
+                                             end_line_indices: List[int]) -> List[SearchResult]:
         """Search a given searchable string possibly containing multiple newlines
            and a specific pattern and return a list of SearchResult instances
            (without file_name)
@@ -451,9 +446,8 @@ class Searcher(object):
         search_results = []
         zipinfos = zfo.infolist()
         for zipinfo in zipinfos:
-            # if zipinfo.file_size and self.is_search_file(zipinfo.file_name):
-            if zipinfo.file_size and self.finder.is_matching_file(zipinfo.file_name):
-                zio = StringIO(zfo.read(zipinfo.file_name))
+            if zipinfo.file_size and self.finder.is_matching_file(zipinfo.filename):
+                zio = StringIO(zfo.read(zipinfo.filename))
                 zio.seek(0)
                 nfr = FileResult(containers=fr.containers + [fr.relative_path])
                 nfr.path, nfr.filename = os.path.split(zipinfo.filename)
@@ -486,7 +480,6 @@ class Searcher(object):
         """Search a tarfile object"""
         search_results = []
         for tarinfo in tar:
-            # if tarinfo.isfile() and self.is_search_file(tarinfo.name):
             if tarinfo.isfile() and self.finder.is_matching_file(tarinfo.name):
                 tio = StringIO(tar.extractfile(tarinfo).read())
                 tio.seek(0)
