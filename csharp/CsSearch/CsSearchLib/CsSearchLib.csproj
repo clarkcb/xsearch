@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <Reference Include="CsFindLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\xfind\csharp\CsFind\CsFindLib\bin\Debug\net6.0\CsFindLib.dll</HintPath>
+            <HintPath>$(XFIND_PATH)\csharp\CsFind\CsFindLib\bin\$(Configuration)\$(TargetFramework)\CsFindLib.dll</HintPath>
         </Reference>
     </ItemGroup>
 

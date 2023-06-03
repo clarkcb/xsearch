@@ -1,71 +1,70 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using CsFind;
+using CsFindLib;
 
-namespace CsSearchLib
+namespace CsSearchLib;
+
+public class SearchResult
 {
-	public class SearchResult
+	public Regex SearchPattern { get; private set; }
+	public FileResult? File { get; set; }
+	public int LineNum { get; }
+	public int MatchStartIndex { get; }
+	public int MatchEndIndex { get; private set; }
+	public string? Line { get; private set; }
+	public IList<string> LinesBefore { get; private set; }
+	public IList<string> LinesAfter { get; private set; }
+
+	public SearchResult(Regex searchPattern, FileResult? file, int lineNum,
+		int matchStartIndex, int matchEndIndex, string? line)
+		: this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
+			new List<string>(), new List<string>())
 	{
-		public Regex SearchPattern { get; private set; }
-		public FindFile? File { get; set; }
-		public int LineNum { get; private set; }
-		public int MatchStartIndex { get; private set; }
-		public int MatchEndIndex { get; private set; }
-		public string? Line { get; private set; }
-		public IList<string> LinesBefore { get; private set; }
-		public IList<string> LinesAfter { get; private set; }
-
-		public SearchResult(Regex searchPattern, FindFile? file, int lineNum,
-			int matchStartIndex, int matchEndIndex, string? line)
-			: this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
-				new List<string>(), new List<string>())
-		{
-		}
-
-		public SearchResult(Regex searchPattern, FindFile? file, int lineNum, int matchStartIndex,
-			int matchEndIndex, string? line, IList<string> linesBefore, IList<string> linesAfter)
-		{
-			SearchPattern = searchPattern;
-			File = file;
-			LineNum = lineNum;
-			MatchStartIndex = matchStartIndex;
-			MatchEndIndex = matchEndIndex;
-			Line = line;
-			LinesBefore = linesBefore;
-			LinesAfter = linesAfter;
-		}
-
-		public static int Compare(SearchResult? r1, SearchResult? r2)
-		{
-			if (r1 == null && r2 == null)
-				return 0;
-			if (r1 == null)
-				return -1;
-			if (r2 == null)
-				return 1;
-			if (r1.File != null && r2.File != null)
-			{
-				var sfCmp = FindFile.Compare(r1.File, r2.File);
-				if (sfCmp != 0)
-				{
-					return sfCmp;
-				}
-			}
-			if (r1.LineNum == r2.LineNum)
-			{
-				return r1.MatchStartIndex - r2.MatchStartIndex;
-			}
-			return r1.LineNum - r2.LineNum;
-		}
-
 	}
 
-	public class SearchResultsComparer : IComparer<SearchResult>
+	public SearchResult(Regex searchPattern, FileResult? file, int lineNum, int matchStartIndex,
+		int matchEndIndex, string? line, IList<string> linesBefore, IList<string> linesAfter)
 	{
-		public int Compare(SearchResult? r1, SearchResult? r2)
+		SearchPattern = searchPattern;
+		File = file;
+		LineNum = lineNum;
+		MatchStartIndex = matchStartIndex;
+		MatchEndIndex = matchEndIndex;
+		Line = line;
+		LinesBefore = linesBefore;
+		LinesAfter = linesAfter;
+	}
+
+	public static int Compare(SearchResult? r1, SearchResult? r2)
+	{
+		if (r1 == null && r2 == null)
+			return 0;
+		if (r1 == null)
+			return -1;
+		if (r2 == null)
+			return 1;
+		if (r1.File != null && r2.File != null)
 		{
-			return SearchResult.Compare(r1, r2);
+			var sfCmp = FileResult.Compare(r1.File, r2.File);
+			if (sfCmp != 0)
+			{
+				return sfCmp;
+			}
 		}
+		if (r1.LineNum == r2.LineNum)
+		{
+			return r1.MatchStartIndex - r2.MatchStartIndex;
+		}
+		return r1.LineNum - r2.LineNum;
+	}
+
+}
+
+public class SearchResultsComparer : IComparer<SearchResult>
+{
+	public int Compare(SearchResult? r1, SearchResult? r2)
+	{
+		return SearchResult.Compare(r1, r2);
 	}
 }

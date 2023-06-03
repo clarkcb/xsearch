@@ -19,6 +19,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="CsFindLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>$(XFIND_PATH)\csharp\CsFind\CsFindLib\bin\$(Configuration)\$(TargetFramework)\CsFindLib.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
         <None Remove="Resources\testFile2.txt" />
         <EmbeddedResource Include="Resources\testFile2.txt" />
     </ItemGroup>

@@ -1,48 +1,47 @@
 ﻿using System;
 
-namespace CsSearchLib
+namespace CsSearchLib;
+
+public class SearchOption
 {
-	public class SearchOption
+	public string? ShortArg { get; }
+	public string LongArg { get; }
+	public string SortArg
 	{
-		public string? ShortArg { get; }
-		public string LongArg { get; }
-		public string SortArg
+		get
 		{
-			get
-			{
-				var longArg = LongArg.Replace("in-", "ina");
-				if (!string.IsNullOrWhiteSpace(ShortArg))
-					return ShortArg.ToLower() + "a" + longArg;
-				return longArg;
-			}
-		}
-		public string Description { get; }
-
-		public SearchOption(string? shortArg, string longArg, string description)
-		{
-			ShortArg = shortArg;
-			LongArg = longArg;
-			Description = description;
+			var longArg = LongArg.Replace("in-", "ina");
+			if (!string.IsNullOrWhiteSpace(ShortArg))
+				return ShortArg.ToLower() + "a" + longArg;
+			return longArg;
 		}
 	}
+	public string Description { get; }
 
-	internal class SearchArgOption : SearchOption
+	public SearchOption(string? shortArg, string longArg, string description)
 	{
-		public Action<string, SearchSettings> Action { get; private set; }
-		public SearchArgOption(string? shortArg, string longArg, Action<string, SearchSettings> action, string description) :
-			base(shortArg, longArg, description)
-		{
-			Action = action;
-		}
+		ShortArg = shortArg;
+		LongArg = longArg;
+		Description = description;
 	}
+}
 
-	internal class SearchFlagOption : SearchOption
+internal class SearchArgOption : SearchOption
+{
+	public Action<string, SearchSettings> Action { get; private set; }
+	public SearchArgOption(string? shortArg, string longArg, Action<string, SearchSettings> action, string description) :
+		base(shortArg, longArg, description)
 	{
-		public Action<bool, SearchSettings> Action { get; private set; }
-		public SearchFlagOption(string? shortArg, string longArg, Action<bool, SearchSettings> action, string description) :
-			base(shortArg, longArg, description)
-		{
-			Action = action;
-		}
+		Action = action;
+	}
+}
+
+internal class SearchFlagOption : SearchOption
+{
+	public Action<bool, SearchSettings> Action { get; private set; }
+	public SearchFlagOption(string? shortArg, string longArg, Action<bool, SearchSettings> action, string description) :
+		base(shortArg, longArg, description)
+	{
+		Action = action;
 	}
 }

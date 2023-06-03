@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace CsSearchLib
+namespace CsSearchLib;
+
+public class SearchException : Exception
 {
-	public class SearchException : Exception
+	public SearchException(string message) : base(message)
 	{
-		public SearchException(string message) : base(message)
-		{
-		}
 	}
 }
