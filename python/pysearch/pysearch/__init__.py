@@ -5,7 +5,6 @@ from .common import log
 from .config import XSEARCHPATH, SHAREDPATH
 from .searcher import Searcher
 from .searchexception import SearchException
-from .searchfile import SearchFile
 from .searchoptions import SearchOptions
 from .searchresult import SearchResult, SearchResultFormatter
 from .searchsettings import SearchSettings

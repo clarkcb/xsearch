@@ -97,7 +97,7 @@ class SearchOptionsTest(unittest.TestCase):
         json = '''{
   "path": "~/src/xsearch/",
   "in-ext": ["js","ts"],
-  "out-dirpattern": "node_module",
+  "out-dirpattern": ["node_module", "dist"],
   "out-filepattern": ["temp"],
   "searchpattern": "Searcher",
   "linesbefore": 2,
@@ -113,6 +113,7 @@ class SearchOptionsTest(unittest.TestCase):
             self.assertIn(x, settings.in_extensions)
         self.assertEqual(list(settings.search_patterns)[0].pattern, 'Searcher')
         self.assertEqual(list(settings.out_dir_patterns)[0].pattern, 'node_module')
+        self.assertEqual(list(settings.out_dir_patterns)[1].pattern, 'dist')
         self.assertEqual(list(settings.out_file_patterns)[0].pattern, 'temp')
         self.assertEqual(settings.lines_before, 2)
         self.assertEqual(settings.lines_after, 2)

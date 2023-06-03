@@ -71,28 +71,49 @@ class SearchSettings(FindSettings):
                  text_file_encoding: str = 'UTF-8',
                  unique_lines: bool = False,
                  verbose: bool = False):
-        FindSettings.__init__(self, archives_only=archives_only, debug=debug,
-                              exclude_hidden=exclude_hidden, in_archiveextensions=in_archive_extensions,
-                              in_archive_file_patterns=in_archive_file_patterns, in_dirpatterns=in_dir_patterns,
-                              in_extensions=in_extensions, in_filepatterns=in_file_patterns, in_filetypes=in_file_types,
-                              listdirs=list_dirs, listfiles=list_files, out_archiveextensions=out_archive_extensions,
-                              out_archivefilepatterns=out_archive_file_patterns, out_dirpatterns=out_dir_patterns,
-                              out_extensions=out_extensions, out_filepatterns=out_file_patterns,
-                              out_filetypes=out_file_types, paths=paths, printusage=print_usage,
-                              printversion=print_version, recursive=recursive, verbose=verbose)
+        FindSettings.__init__(self,
+                              archives_only=archives_only,
+                              debug=debug,
+                              exclude_hidden=exclude_hidden,
+                              in_archive_extensions=in_archive_extensions,
+                              in_archive_file_patterns=in_archive_file_patterns,
+                              in_dir_patterns=in_dir_patterns,
+                              in_extensions=in_extensions,
+                              in_file_patterns=in_file_patterns,
+                              in_file_types=in_file_types,
+                              list_dirs=list_dirs,
+                              list_files=list_files,
+                              out_archive_extensions=out_archive_extensions,
+                              out_archive_file_patterns=out_archive_file_patterns,
+                              out_dir_patterns=out_dir_patterns,
+                              out_extensions=out_extensions,
+                              out_file_patterns=out_file_patterns,
+                              out_file_types=out_file_types,
+                              paths=paths,
+                              print_results=print_results,
+                              print_usage=print_usage,
+                              print_version=print_version,
+                              recursive=recursive,
+                              verbose=verbose)
         self.colorize = colorize
         self.first_match = first_match
-        self.in_lines_after_patterns: PatternSet = in_lines_after_patterns if in_lines_after_patterns else set()
-        self.in_lines_before_patterns: PatternSet = in_lines_before_patterns if in_lines_before_patterns else set()
+        self.in_lines_after_patterns: PatternSet = \
+            in_lines_after_patterns if in_lines_after_patterns else set()
+        self.in_lines_before_patterns: PatternSet = \
+            in_lines_before_patterns if in_lines_before_patterns else set()
         self.lines_after = lines_after
-        self.lines_after_to_patterns: PatternSet = lines_after_to_patterns if lines_after_to_patterns else set()
-        self.lines_after_until_patterns: PatternSet = lines_after_until_patterns if lines_after_until_patterns else set()
+        self.lines_after_to_patterns: PatternSet = \
+            lines_after_to_patterns if lines_after_to_patterns else set()
+        self.lines_after_until_patterns: PatternSet = \
+            lines_after_until_patterns if lines_after_until_patterns else set()
         self.lines_before = lines_before
         self.list_lines = list_lines
         self.max_line_length = max_line_length
         self.multi_line_search = multi_line_search
-        self.out_lines_after_patterns: PatternSet = out_lines_after_patterns if out_lines_after_patterns else set()
-        self.out_lines_before_patterns: PatternSet = out_lines_before_patterns if out_lines_before_patterns else set()
+        self.out_lines_after_patterns: PatternSet = \
+            out_lines_after_patterns if out_lines_after_patterns else set()
+        self.out_lines_before_patterns: PatternSet = \
+            out_lines_before_patterns if out_lines_before_patterns else set()
         self.search_patterns = search_patterns if search_patterns else set()
         self.search_archives = search_archives
         self.text_file_encoding = text_file_encoding
@@ -110,7 +131,7 @@ class SearchSettings(FindSettings):
         except FindException as e:
             raise SearchException(str(e))
 
-    def add_filetypes(self, file_types, filetype_set_name: str):
+    def add_file_types(self, file_types, filetype_set_name: str):
         try:
             FindSettings.add_file_types(self, file_types, filetype_set_name)
         except FindException as e:
