@@ -13,81 +13,81 @@ module RbSearch
 
   class SearchOptionsTest < Minitest::Test
     def setup
-      @searchoptions = RbSearch::SearchOptions.new
+      @search_options = RbSearch::SearchOptions.new
     end
 
     def test_no_args
-      settings = @searchoptions.search_settings_from_args([])
-      assert_equal(false, settings.archivesonly)
+      settings = @search_options.search_settings_from_args([])
+      assert_equal(false, settings.archives_only)
       assert_equal(false, settings.debug)
-      assert_equal(true, settings.excludehidden)
-      assert_equal(false, settings.firstmatch)
-      assert_equal(0, settings.linesafter)
-      assert_equal(0, settings.linesbefore)
-      assert_equal(false, settings.listdirs)
-      assert_equal(false, settings.listfiles)
-      assert_equal(false, settings.listlines)
-      assert_equal(150, settings.maxlinelength)
-      assert_equal(false, settings.multilinesearch)
-      assert_equal(true, settings.printresults)
-      assert_equal(false, settings.printusage)
-      assert_equal(false, settings.printversion)
+      assert_equal(true, settings.exclude_hidden)
+      assert_equal(false, settings.first_match)
+      assert_equal(0, settings.lines_after)
+      assert_equal(0, settings.lines_before)
+      assert_equal(false, settings.list_dirs)
+      assert_equal(false, settings.list_files)
+      assert_equal(false, settings.list_lines)
+      assert_equal(150, settings.max_line_length)
+      assert_equal(false, settings.multi_line_search)
+      assert_equal(true, settings.print_results)
+      assert_equal(false, settings.print_usage)
+      assert_equal(false, settings.print_version)
       assert_equal(true, settings.recursive)
-      assert_equal(false, settings.searcharchives)
-      assert_equal(false, settings.uniquelines)
+      assert_equal(false, settings.search_archives)
+      assert_equal(false, settings.unique_lines)
       assert_equal(false, settings.verbose)
-      assert(settings.in_archiveextensions.empty?)
-      assert(settings.in_archivefilepatterns.empty?)
-      assert(settings.in_dirpatterns.empty?)
-      assert(settings.in_filepatterns.empty?)
-      assert(settings.in_linesafterpatterns.empty?)
-      assert(settings.in_linesbeforepatterns.empty?)
-      assert(settings.linesaftertopatterns.empty?)
-      assert(settings.linesafteruntilpatterns.empty?)
-      assert(settings.out_archiveextensions.empty?)
-      assert(settings.out_archivefilepatterns.empty?)
-      assert(settings.out_dirpatterns.empty?)
-      assert(settings.out_filepatterns.empty?)
-      assert(settings.out_linesafterpatterns.empty?)
-      assert(settings.out_linesbeforepatterns.empty?)
+      assert(settings.in_archive_extensions.empty?)
+      assert(settings.in_archive_file_patterns.empty?)
+      assert(settings.in_dir_patterns.empty?)
+      assert(settings.in_file_patterns.empty?)
+      assert(settings.in_lines_after_patterns.empty?)
+      assert(settings.in_lines_before_patterns.empty?)
+      assert(settings.lines_after_to_patterns.empty?)
+      assert(settings.lines_after_until_patterns.empty?)
+      assert(settings.out_archive_extensions.empty?)
+      assert(settings.out_archive_file_patterns.empty?)
+      assert(settings.out_dir_patterns.empty?)
+      assert(settings.out_file_patterns.empty?)
+      assert(settings.out_lines_after_patterns.empty?)
+      assert(settings.out_lines_before_patterns.empty?)
       assert(settings.paths.empty?)
-      assert(settings.searchpatterns.empty?)
+      assert(settings.search_patterns.empty?)
     end
 
     def test_valid_args
       args = %w[-x py,rb -s Search .]
-      settings = @searchoptions.search_settings_from_args(args)
+      settings = @search_options.search_settings_from_args(args)
       assert_equal(2, settings.in_extensions.length)
       assert(settings.in_extensions.include?('py'))
       assert(settings.in_extensions.include?('rb'))
       assert_equal(1, settings.paths.length)
       assert(settings.paths.include?('.'))
-      assert_equal(1, settings.searchpatterns.length)
-      assert_equal('Search', settings.searchpatterns.first.source)
+      assert_equal(1, settings.search_patterns.length)
+      assert_equal('Search', settings.search_patterns.first.source)
     end
 
-    def test_archivesonly_arg
+    def test_archives_only_arg
       args = ['--archivesonly']
-      settings = @searchoptions.search_settings_from_args(args)
-      assert(settings.archivesonly)
-      assert(settings.searcharchives)
+      settings = @search_options.search_settings_from_args(args)
+      assert(settings.archives_only)
+      assert(settings.search_archives)
     end
 
     def test_debug_arg
       args = ['--debug']
-      settings = @searchoptions.search_settings_from_args(args)
+      settings = @search_options.search_settings_from_args(args)
       assert(settings.debug)
       assert(settings.verbose)
     end
 
     def test_missing_arg
       args = %w[-x py,rb -s Search . -D]
-      assert_raises(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
+      assert_raises(SearchError) { _settings = @search_options.search_settings_from_args(args) }
     end
 
     def test_invalid_arg
       args = %w[-x py,rb -s Search . -Q]
-      assert_raises(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
+      assert_raises(SearchError) { _settings = @search_options.search_settings_from_args(args) }
     end
 
     def test_settings_from_json
@@ -106,7 +106,7 @@ module RbSearch
         "includehidden": true
       }
       JSON
-      @searchoptions.settings_from_json(json, settings)
+      @search_options.settings_from_json(json, settings)
       assert(settings.debug)
       assert(settings.verbose)
     end

@@ -4,17 +4,17 @@
 namespace cppsearch {
     class SearchOption {
     private:
-        const std::string* m_shortarg;
-        std::string m_longarg;
+        const std::string* m_short_arg;
+        std::string m_long_arg;
         std::string m_description;
-        std::string m_sortarg;
+        std::string m_sort_arg;
 
     public:
-        SearchOption(const std::string* shortarg, const std::string& longarg, const std::string& description);
-        const std::string* shortarg() const;
-        std::string longarg() const;
-        std::string description() const;
-        std::string sortarg() const;
+        SearchOption(const std::string* short_arg, const std::string& long_arg, const std::string& description);
+        [[nodiscard]] const std::string* short_arg() const;
+        [[nodiscard]] std::string long_arg() const;
+        [[nodiscard]] std::string description() const;
+        [[nodiscard]] std::string sort_arg() const;
     };
 }
 

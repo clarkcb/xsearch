@@ -8,13 +8,13 @@
 namespace cppsearch {
     class Searcher {
     private:
-        FileTypes* m_filetypes;
+        FileTypes* m_file_types;
         SearchSettings* m_settings;
         static void validate_settings(SearchSettings* settings);
-        std::vector<SearchResult*> search_path(const std::string& filepath);
+        std::vector<SearchResult*> search_path(const std::string& file_path);
         std::vector<SearchResult*> search_file(SearchFile* sf);
-        SearchFile* get_searchfile(std::string& filepath);
-        std::vector<SearchFile*> get_search_files(const std::string& filepath);
+        SearchFile* get_search_file(std::string& file_path);
+        std::vector<SearchFile*> get_search_files(const std::string& file_path);
 
         std::vector<SearchResult*> search_text_file(SearchFile* sf);
         std::vector<SearchResult*> search_ifstream(std::ifstream& fin);
@@ -26,10 +26,10 @@ namespace cppsearch {
 
     public:
         explicit Searcher(SearchSettings* settings);
-        bool filter_file(std::string filepath);
-        bool is_archive_search_file(const std::string& filepath);
-        bool is_search_dir(const std::string& filepath);
-        bool is_search_file(const std::string& filepath);
+        bool filter_file(const std::string& file_path);
+        bool is_archive_search_file(const std::string& file_path);
+        bool is_search_dir(const std::string& file_path);
+        bool is_search_file(const std::string& file_path);
         std::vector<SearchResult*> search();
     };
 }

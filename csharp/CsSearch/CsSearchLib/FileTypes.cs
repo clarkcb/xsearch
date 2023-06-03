@@ -34,10 +34,8 @@ namespace CsSearchLib
 
 		public FileTypes()
 		{
-			// _fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
 			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
-			// PopulateFileTypesFromXml();
 			PopulateFileTypesFromJson();
 		}
 
@@ -56,23 +54,6 @@ namespace CsSearchLib
 				var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
 					.Select(x => "." + x.GetString());
 				var extensionSet = new HashSet<string>(extensions);
-				_fileTypesDictionary[name] = extensionSet;
-			}
-			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
-			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-			_fileTypesDictionary[Searchable] = new HashSet<string>(_fileTypesDictionary[Text]);
-			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Binary]);
-			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Archive]);
-		}
-
-		private void PopulateFileTypesFromXml()
-		{
-			var doc = XDocument.Parse(_fileTypesResource);
-			foreach (var f in doc.Descendants("filetype"))
-			{
-				var name = f.Attributes("name").First().Value;
-				var extensions = f.Descendants("extensions").First().Value;
-				var extensionSet = new HashSet<string>(extensions.Split(new[]{' ', '\n'}).Select(x => "." + x));
 				_fileTypesDictionary[name] = extensionSet;
 			}
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);

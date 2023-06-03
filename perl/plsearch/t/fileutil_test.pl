@@ -25,87 +25,87 @@ use plsearch::FileUtil;
 # get_extension tests
 ################################################################################
 sub test_get_extension_has_txt_extension {
-    my $filename = 'filename.txt';
-    my $ext = plsearch::FileUtil::get_extension($filename);
-    ok($ext eq "txt", "$filename has extension txt");
+    my $file_name = 'file_name.txt';
+    my $ext = plsearch::FileUtil::get_extension($file_name);
+    ok($ext eq "txt", "$file_name has extension txt");
 }
 
 sub test_get_extension_missing_extension {
-    my $filename = 'filename.';
-    my $ext = plsearch::FileUtil::get_extension($filename);
-    ok($ext eq "", "$filename has missing extension");
+    my $file_name = 'file_name.';
+    my $ext = plsearch::FileUtil::get_extension($file_name);
+    ok($ext eq "", "$file_name has missing extension");
 }
 
 sub test_get_extension_no_extension {
-    my $filename = 'filename';
-    my $ext = plsearch::FileUtil::get_extension($filename);
-    ok($ext eq "", "$filename has no extension");
+    my $file_name = 'file_name';
+    my $ext = plsearch::FileUtil::get_extension($file_name);
+    ok($ext eq "", "$file_name has no extension");
 }
 
 sub test_get_extension_hidden_txt_extension {
-    my $filename = '.filename.txt';
-    my $ext = plsearch::FileUtil::get_extension($filename);
-    ok($ext eq "txt", "$filename has extension txt");
+    my $file_name = '.file_name.txt';
+    my $ext = plsearch::FileUtil::get_extension($file_name);
+    ok($ext eq "txt", "$file_name has extension txt");
 }
 
 sub test_get_extension_hidden_missing_extension {
-    my $filename = '.filename.';
-    my $ext = plsearch::FileUtil::get_extension($filename);
-    ok($ext eq "", "$filename has missing extension");
+    my $file_name = '.file_name.';
+    my $ext = plsearch::FileUtil::get_extension($file_name);
+    ok($ext eq "", "$file_name has missing extension");
 }
 
 sub test_get_extension_hidden_no_extension {
-    my $filename = '.filename';
-    my $ext = plsearch::FileUtil::get_extension($filename);
-    ok($ext eq "", "$filename has no extension");
+    my $file_name = '.file_name';
+    my $ext = plsearch::FileUtil::get_extension($file_name);
+    ok($ext eq "", "$file_name has no extension");
 }
 
 ################################################################################
 # is_dot_dir tests
 ################################################################################
 sub test_is_dot_dir_single_dot {
-    my $filename = '.';
-    my $ok = plsearch::FileUtil::is_dot_dir($filename);
-    ok($ok > 0, "$filename is dot dir");
+    my $file_name = '.';
+    my $ok = plsearch::FileUtil::is_dot_dir($file_name);
+    ok($ok > 0, "$file_name is dot dir");
 }
 
 sub test_is_dot_dir_double_dot {
-    my $filename = '..';
-    my $ok = plsearch::FileUtil::is_dot_dir($filename);
-    ok($ok > 0, "$filename is dot dir");
+    my $file_name = '..';
+    my $ok = plsearch::FileUtil::is_dot_dir($file_name);
+    ok($ok > 0, "$file_name is dot dir");
 }
 
 sub test_is_dot_dir_non_dot_dir {
-    my $filename = '.git';
-    my $ok = plsearch::FileUtil::is_dot_dir($filename);
-    ok($ok == 0, "$filename is not dot dir");
+    my $file_name = '.git';
+    my $ok = plsearch::FileUtil::is_dot_dir($file_name);
+    ok($ok == 0, "$file_name is not dot dir");
 }
 
 ################################################################################
 # is_hidden tests
 ################################################################################
 sub test_is_hidden_hidden_file {
-    my $filename = '.filename.txt';
-    my $ok = plsearch::FileUtil::is_hidden($filename);
-    ok($ok > 0, "$filename is hidden file");
+    my $file_name = '.file_name.txt';
+    my $ok = plsearch::FileUtil::is_hidden($file_name);
+    ok($ok > 0, "$file_name is hidden file");
 }
 
 sub test_is_hidden_not_hidden_file {
-    my $filename = 'filename.txt';
-    my $ok = plsearch::FileUtil::is_hidden($filename);
-    ok($ok == 0, "$filename is not hidden file");
+    my $file_name = 'file_name.txt';
+    my $ok = plsearch::FileUtil::is_hidden($file_name);
+    ok($ok == 0, "$file_name is not hidden file");
 }
 
 sub test_is_hidden_single_dot {
-    my $filename = '.';
-    my $ok = plsearch::FileUtil::is_hidden($filename);
-    ok($ok == 0, "$filename is not hidden file");
+    my $file_name = '.';
+    my $ok = plsearch::FileUtil::is_hidden($file_name);
+    ok($ok == 0, "$file_name is not hidden file");
 }
 
 sub test_is_hidden_double_dot {
-    my $filename = '..';
-    my $ok = plsearch::FileUtil::is_hidden($filename);
-    ok($ok == 0, "$filename is not hidden file");
+    my $file_name = '..';
+    my $ok = plsearch::FileUtil::is_hidden($file_name);
+    ok($ok == 0, "$file_name is not hidden file");
 }
 
 ################################################################################

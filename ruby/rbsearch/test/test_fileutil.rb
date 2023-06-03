@@ -16,74 +16,74 @@ module RbSearch
     # get_extension tests
     ################################################################################
     def test_get_extension_has_txt_extension
-      filename = 'filename.txt'
-      assert_equal(FileUtil.get_extension(filename), 'txt')
+      file_name = 'filename.txt'
+      assert_equal(FileUtil.get_extension(file_name), 'txt')
     end
 
     def test_get_extension_missing_extension
-      filename = 'filename.'
-      assert_equal(FileUtil.get_extension(filename), '')
+      file_name = 'filename.'
+      assert_equal(FileUtil.get_extension(file_name), '')
     end
 
     def test_get_extension_no_extension
-      filename = 'filename'
-      assert_equal(FileUtil.get_extension(filename), '')
+      file_name = 'filename'
+      assert_equal(FileUtil.get_extension(file_name), '')
     end
 
     def test_get_extension_hidden_txt_file
-      filename = '.hidden.txt'
-      assert_equal(FileUtil.get_extension(filename), 'txt')
+      file_name = '.hidden.txt'
+      assert_equal(FileUtil.get_extension(file_name), 'txt')
     end
 
     def test_get_extension_hidden_file_missing_extension
-      filename = '.hidden.'
-      assert_equal(FileUtil.get_extension(filename), '')
+      file_name = '.hidden.'
+      assert_equal(FileUtil.get_extension(file_name), '')
     end
 
     def test_get_extension_hidden_file_no_extension
-      filename = '.hidden'
-      assert_equal(FileUtil.get_extension(filename), '')
+      file_name = '.hidden'
+      assert_equal(FileUtil.get_extension(file_name), '')
     end
 
     ################################################################################
     # is_dot_dir tests
     ################################################################################
     def test_is_dot_dir_single_dot
-      filename = '.'
-      assert(FileUtil.dot_dir?(filename))
+      file_name = '.'
+      assert(FileUtil.dot_dir?(file_name))
     end
 
     def test_is_dot_dir_double_dot
-      filename = '..'
-      assert(FileUtil.dot_dir?(filename))
+      file_name = '..'
+      assert(FileUtil.dot_dir?(file_name))
     end
 
     def test_is_dot_dir_non_dot_dir
-      filename = '.git'
-      assert(!FileUtil.dot_dir?(filename))
+      file_name = '.git'
+      assert(!FileUtil.dot_dir?(file_name))
     end
 
     ################################################################################
     # is_hidden tests
     ################################################################################
     def test_is_hidden_hidden_file
-      filename = '.filename.txt'
-      assert(FileUtil.hidden?(filename))
+      file_name = '.filename.txt'
+      assert(FileUtil.hidden?(file_name))
     end
 
     def test_is_hidden_not_hidden_file
-      filename = 'filename.txt'
-      assert(!FileUtil.hidden?(filename))
+      file_name = 'filename.txt'
+      assert(!FileUtil.hidden?(file_name))
     end
 
     def test_is_hidden_single_dot
-      filename = '.'
-      assert(!FileUtil.hidden?(filename))
+      file_name = '.'
+      assert(!FileUtil.hidden?(file_name))
     end
 
     def test_is_hidden_double_dot
-      filename = '..'
-      assert(!FileUtil.hidden?(filename))
+      file_name = '..'
+      assert(!FileUtil.hidden?(file_name))
     end
   end
 end

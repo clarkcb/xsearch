@@ -1,4 +1,4 @@
-(ns cljsearch.searchoptions-test
+(ns cljsearch.search-options-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
         [cljsearch.searchoptions :only (settings-from-args settings-from-json)]))
@@ -6,25 +6,25 @@
 (deftest test-no-args
   (let [[ss errs] (settings-from-args [])]
     (testing "test-no-args"
-      (is (not (:archivesonly ss)))
+      (is (not (:archives-only ss)))
       (is (:colorize ss))
       (is (not (:debug ss)))
-      (is (:excludehidden ss))
-      (is (not (:firstmatch ss)))
-      (is (= (:linesafter ss) 0))
-      (is (= (:linesbefore ss) 0))
-      (is (not (:listdirs ss)))
-      (is (not (:listfiles ss)))
-      (is (not (:listlines ss)))
-      (is (= (:maxlinelength ss) 150))
-      (is (not (:multilinesearch ss)))
-      (is (:printresults ss))
-      (is (not (:printusage ss)))
-      (is (not (:printversion ss)))
+      (is (:exclude-hidden ss))
+      (is (not (:first-match ss)))
+      (is (= (:lines-after ss) 0))
+      (is (= (:lines-before ss) 0))
+      (is (not (:list-dirs ss)))
+      (is (not (:list-files ss)))
+      (is (not (:list-lines ss)))
+      (is (= (:max-line-length ss) 150))
+      (is (not (:multi-line-search ss)))
+      (is (:print-results ss))
+      (is (not (:print-usage ss)))
+      (is (not (:print-version ss)))
       (is (:recursive ss))
-      (is (not (:searcharchives ss)))
+      (is (not (:search-archives ss)))
       (is (= (:startpath ss) nil))
-      (is (not (:uniquelines ss)))
+      (is (not (:unique-lines ss)))
       (is (not (:verbose ss))))))
 
 (deftest test-valid-args
@@ -34,8 +34,8 @@
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "clj"))
       (is (contains? (:in-extensions ss) "scala"))
-      (is (= (count (:searchpatterns ss)) 1))
-      (is (= (.pattern (first (:searchpatterns ss))) "Search"))
+      (is (= (count (:search-patterns ss)) 1))
+      (is (= (.pattern (first (:search-patterns ss))) "Search"))
       (is (= (count (:paths ss)) 1))
       (is (contains? (:paths ss) ".")))))
 
@@ -51,11 +51,11 @@
       (is (= (count errs) 1))
       (is (= (first errs) "Invalid option: Q")))))
 
-(deftest test-archivesonly
+(deftest test-archives-only
   (let [[ss errs] (settings-from-args ["--archivesonly"])]
-    (testing "test-archivesonly"
-      (is (= (:archivesonly ss) true))
-      (is (= (:searcharchives ss) true)))))
+    (testing "test-archives-only"
+      (is (= (:archives-only ss) true))
+      (is (= (:search-archives ss) true)))))
 
 (deftest test-debug
   (let [[ss errs] (settings-from-args ["--debug"])]
@@ -83,12 +83,12 @@
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "js"))
       (is (contains? (:in-extensions ss) "ts"))
-      (is (= (count (:out-dirpatterns ss)) 1))
-      (is (= (count (:out-filepatterns ss)) 1))
-      (is (= (count (:searchpatterns ss)) 1))
-      (is (= (:linesbefore ss) 2))
-      (is (= (:linesafter ss) 2))
+      (is (= (count (:out-dir-patterns ss)) 1))
+      (is (= (count (:out-file-patterns ss)) 1))
+      (is (= (count (:search-patterns ss)) 1))
+      (is (= (:lines-before ss) 2))
+      (is (= (:lines-after ss) 2))
       (is (= (:debug ss) true))
       (is (= (:verbose ss) true))
-      (is (= (:firstmatch ss) true))
-      (is (= (:excludehidden ss) false)))))
+      (is (= (:first-match ss) true))
+      (is (= (:exclude-hidden ss) false)))))

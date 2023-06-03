@@ -105,6 +105,15 @@ build_c () {
     log "make"
     make
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$CSEARCH_PATH/csearch"
 
@@ -135,6 +144,15 @@ build_clojure () {
     lein clean
     log "lein uberjar"
     lein uberjar
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$CLJSEARCH_PATH/bin/cljsearch.sh"
@@ -198,7 +216,16 @@ build_cpp () {
             do
                 log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
                 cmake --build "$CMAKE_BUILD_DIR" --target "$t" -- -W -Wall -Werror
-                [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
+
+                # check for success/failure
+                # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
+                if [ "$?" -eq 0 ]
+                then
+                    log "Build succeeded"
+                else
+                    log_error "Build failed"
+                    return
+                fi
             done
         fi
     done
@@ -397,6 +424,15 @@ build_go () {
     log "go install ./..."
     GOBIN="$BIN_PATH" go install ./...
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     cd -
 }
 
@@ -477,8 +513,17 @@ build_java () {
 
     # run a maven clean build
     log "Building javasearch"
-    log "mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true"
-    mvn -f "$JAVASEARCH_PATH/pom.xml" clean package -Dmaven.test.skip=true
+    log "mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT"
+    mvn -f "$JAVASEARCH_PATH/pom.xml" clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$JAVASEARCH_PATH/bin/javasearch.sh"
@@ -509,6 +554,15 @@ build_javascript () {
 
     log "npm run build"
     npm run build
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$JSSEARCH_PATH/bin/jssearch.sh"
@@ -545,6 +599,15 @@ build_kotlin () {
 
     log "gradle --warning-mode all clean jar"
     gradle --warning-mode all clean jar
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$KTSEARCH_PATH/bin/ktsearch.sh"
@@ -590,6 +653,15 @@ build_objc () {
         else
             log "xcodebuild -target $TARGET -configuration $c"
             xcodebuild -target "$TARGET" -configuration "$c"
+        fi
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
         fi
     done
 
@@ -704,6 +776,15 @@ build_php () {
         composer install
     fi
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$PHPSEARCH_PATH/bin/phpsearch.sh"
 
@@ -747,7 +828,13 @@ build_python () {
 
     if [ "$USE_VENV" == 'yes' ]
     then
-        # create a virtual env to run from and install to
+        # if venv is active, deactivate it (in case it happens to be another venv that is active)
+        if [ -n "$VIRTUAL_ENV" ]
+        then
+            deactivate
+        fi
+
+        # create a virtual env to run from and install to if it doesn't already exist
         if [ ! -d "$PYSEARCH_PATH/venv" ]
         then
             log "$PYTHON -m venv venv"
@@ -755,6 +842,7 @@ build_python () {
         fi
 
         # if venv isn't active, activate it
+        # (TODO: this is probably always true because of earlier deactivation)
         if [ -z "$VIRTUAL_ENV" ]
         then
             log "source $PYSEARCH_PATH/venv/bin/activate"
@@ -844,11 +932,29 @@ build_rust () {
     then
         log "cargo build"
         cargo build
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     fi
     if [ -n "$RELEASE" ]
     then
         log "cargo build --release"
         cargo build --release
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
 
         # add release to bin
         add_to_bin "$RSSEARCH_PATH/bin/rssearch.release.sh"
@@ -892,6 +998,15 @@ build_scala () {
     log "sbt 'set test in assembly := {}' clean assembly"
     sbt 'set test in assembly := {}' clean assembly
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$SCALASEARCH_PATH/bin/scalasearch.sh"
 
@@ -920,11 +1035,29 @@ build_swift () {
     then
         log "swift build"
         swift build
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     fi
     if [ -n "$RELEASE" ]
     then
         log "swift build --configuration release"
         swift build --configuration release
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
 
         # add release to bin
         add_to_bin "$SWIFTSEARCH_PATH/bin/swiftsearch.release.sh"
@@ -960,6 +1093,15 @@ build_typescript () {
     npm install
     log "npm run build"
     npm run build
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$TSSEARCH_PATH/bin/tssearch.sh"

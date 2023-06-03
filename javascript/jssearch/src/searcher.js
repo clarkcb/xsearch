@@ -29,7 +29,7 @@ class Searcher {
         // from https://github.com/nodejs/node/blob/master/lib/buffer.js
         this.supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
             'binary', 'base64', 'hex'];
-        this.filetypes = new FileTypes();
+        this.fileTypes = new FileTypes();
         this.results = [];
         this.validateSettings();
     }
@@ -117,11 +117,11 @@ class Searcher {
                 this.matchesAnyPattern(file, this.settings.outFilePatterns))) {
             return false;
         }
-        let filetype = this.filetypes.getFileType(file);
+        let fileType = this.fileTypes.getFileType(file);
         return !((this.settings.inFileTypes.length &&
-            !this.matchesAnyElement(filetype, this.settings.inFileTypes))
+            !this.matchesAnyElement(fileType, this.settings.inFileTypes))
             || (this.settings.outFileTypes.length &&
-                this.matchesAnyElement(filetype, this.settings.outFileTypes)));
+                this.matchesAnyElement(fileType, this.settings.outFileTypes)));
     }
 
     isArchiveSearchFile(file) {
@@ -156,11 +156,11 @@ class Searcher {
                     throw new SearchError("startPath does not match search criteria");
                 }
             } else if (stats.isFile()) {
-                const dirname = path.dirname(startPath) || '.';
-                if (this.isSearchDir(dirname) && this.filterFile(startPath)) {
-                    const filename = path.basename(startPath);
-                    const filetype = this.filetypes.getFileType(filename);
-                    const sf = new SearchFile(dirname, filename, filetype);
+                const dirName = path.dirname(startPath) || '.';
+                if (this.isSearchDir(dirName) && this.filterFile(startPath)) {
+                    const fileName = path.basename(startPath);
+                    const fileType = this.fileTypes.getFileType(fileName);
+                    const sf = new SearchFile(dirName, fileName, fileType);
                     searchFiles.push(sf);
                 } else {
                     throw new SearchError("startPath does not match search criteria");
@@ -185,10 +185,10 @@ class Searcher {
             if (stats.isDirectory() && this.settings.recursive && this.isSearchDir(f)) {
                 searchDirs.push(f);
             } else if (stats.isFile() && this.filterFile(f)) {
-                const dirname = path.dirname(f) || '.';
-                const filename = path.basename(f);
-                const filetype = this.filetypes.getFileType(filename);
-                const sf = new SearchFile(dirname, filename, filetype);
+                const dirName = path.dirname(f) || '.';
+                const fileName = path.basename(f);
+                const fileType = this.fileTypes.getFileType(fileName);
+                const sf = new SearchFile(dirName, fileName, fileType);
                 searchFiles.push(sf);
             }
         });
@@ -201,7 +201,7 @@ class Searcher {
     }
 
     filterFile(f) {
-        if (this.filetypes.isArchiveFile(f)) {
+        if (this.fileTypes.isArchiveFile(f)) {
             return (this.settings.searchArchives && this.isArchiveSearchFile(f));
         }
         return (!this.settings.archivesOnly && this.isSearchFile(f));
@@ -212,26 +212,26 @@ class Searcher {
             // get the search files
             const pathSearchFilesArrays = await Promise.all(this.settings.paths.map(d => this.getSearchFiles(d)));
             // let searchfiles = await this.getSearchFiles(this.settings.startPath);
-            let searchfiles = [];
+            let searchFiles = [];
             pathSearchFilesArrays.forEach(pathSearchFiles => {
-                searchfiles = searchfiles.concat(pathSearchFiles);
+                searchFiles = searchFiles.concat(pathSearchFiles);
             });
     
             if (this.settings.verbose) {
-                let dirs = searchfiles.map(sf => sf.pathname);
+                let dirs = searchFiles.map(sf => sf.pathname);
                 dirs = common.setFromArray(dirs);
                 dirs.sort();
                 common.log("\nDirectories to be searched " + `(${dirs.length}):`);
                 dirs.forEach(d => common.log(d));
 
-                common.log("\nFiles to be searched " + `(${searchfiles.length}):`);
-                searchfiles.forEach(sf => common.log(sf.relativePath()));
+                common.log("\nFiles to be searched " + `(${searchFiles.length}):`);
+                searchFiles.forEach(sf => common.log(sf.relativePath()));
                 common.log("");
             }
 
             // search the files
             let results = [];
-            const searchFileResultsArrays = await Promise.all(searchfiles.map(sf => this.searchFile(sf)));
+            const searchFileResultsArrays = await Promise.all(searchFiles.map(sf => this.searchFile(sf)));
             searchFileResultsArrays.forEach(searchFileResults => {
                 results = results.concat(searchFileResults);
             });
@@ -249,7 +249,7 @@ class Searcher {
 
     async searchFile(searchfile) {
         let results = [];
-        switch (searchfile.filetype) {
+        switch (searchfile.fileType) {
             case FileType.CODE:
             case FileType.TEXT:
             case FileType.XML:
@@ -259,7 +259,7 @@ class Searcher {
                 results = await this.searchBinaryFile(searchfile);
                 break;
             default:
-                // TODO: add message about unsupported filetype
+                // TODO: add message about unsupported fileType
                 break;
         }
         return results;

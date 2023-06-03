@@ -51,9 +51,7 @@ type FileTypes() =
         fileTypesDictionary.Add(searchable, searchableSet)
         fileTypesDictionary
 
-//    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.xml")
     let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearchLib.Resources.filetypes.json")
-//    let _fileTypesDictionary = PopulateFileTypesFromXml(_fileTypesResource)
     let _fileTypesDictionary = PopulateFileTypesFromJson(_fileTypesResource)
 
     // read-only member properties

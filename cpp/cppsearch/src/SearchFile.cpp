@@ -20,20 +20,20 @@ namespace cppsearch {
                           const FileType ft) {
         m_containers = cs;
         m_path = p;
-        m_filename = f;
-        m_filetype = ft;
+        m_file_name = f;
+        m_file_type = ft;
     }
 
     std::string SearchFile::path() const {
         return m_path;
     }
 
-    std::string SearchFile::filename() const {
-        return m_filename;
+    std::string SearchFile::file_name() const {
+        return m_file_name;
     }
 
-    FileType SearchFile::filetype() {
-        return m_filetype;
+    FileType SearchFile::file_type() {
+        return m_file_type;
     }
 
     const std::string SearchFile::string() const {
@@ -42,7 +42,7 @@ namespace cppsearch {
             fullpath.append(c).append(CONTAINER_SEPARATOR);
         }
         boost::filesystem::path p(m_path);
-        p.append(m_filename);
+        p.append(m_file_name);
         fullpath.append(p.string());
         return fullpath;
     }

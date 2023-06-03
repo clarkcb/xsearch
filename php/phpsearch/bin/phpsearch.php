@@ -11,16 +11,16 @@ use \phpsearch\SearchException;
 
 function main($argv): void
 {
-    $searchoptions = new SearchOptions();
+    $search_options = new SearchOptions();
     try {
-        $settings = $searchoptions->settings_from_args(array_slice($argv, 1));
+        $settings = $search_options->settings_from_args(array_slice($argv, 1));
         if ($settings->debug) {
             Logger::log_msg("settings: $settings");
         }
 
-        if ($settings->printusage) {
+        if ($settings->print_usage) {
             Logger::log_msg('');
-            $searchoptions->usage();
+            $search_options->usage();
             exit;
         }
 
@@ -28,27 +28,27 @@ function main($argv): void
         $searcher->search();
 
         // print the results
-        if ($settings->printresults) {
-            $searcher->printresults();
+        if ($settings->print_results) {
+            $searcher->print_results();
         }
 
         // print matching dirs
-        if ($settings->listdirs) {
+        if ($settings->list_dirs) {
             $searcher->print_matching_dirs();
         }
 
         // print matching files
-        if ($settings->listfiles) {
+        if ($settings->list_files) {
             $searcher->print_matching_files();
         }
 
         // print matching lines
-        if ($settings->listlines) {
+        if ($settings->list_lines) {
             $searcher->print_matching_lines();
         }
     } catch (SearchException $e) {
         Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");
-        $searchoptions->usage();
+        $search_options->usage();
     }
 }
 

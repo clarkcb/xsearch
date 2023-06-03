@@ -28,7 +28,7 @@ use plsearch::Searcher;
 sub get_settings {
     my $settings = new plsearch::SearchSettings();
     push(@{$settings->{paths}}, ".");
-    push(@{$settings->{searchpatterns}}, "Searcher");
+    push(@{$settings->{search_patterns}}, "Searcher");
     return $settings;
 }
 
@@ -55,38 +55,38 @@ sub test_is_search_dir_no_patterns {
 
 sub test_is_search_dir_matches_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_dirpatterns}}, 'plsearch');
+    push(@{$settings->{in_dir_patterns}}, 'plsearch');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'plsearch';
-    ok($searcher->is_search_dir($dir), "$dir matches in_dirpatterns");
+    ok($searcher->is_search_dir($dir), "$dir matches in_dir_patterns");
 }
 
 sub test_is_search_dir_no_match_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_dirpatterns}}, 'plsearch');
+    push(@{$settings->{in_dir_patterns}}, 'plsearch');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'pysearch';
-    ok(!$searcher->is_search_dir($dir), "$dir does not match in_dirpatterns");
+    ok(!$searcher->is_search_dir($dir), "$dir does not match in_dir_patterns");
 }
 
 sub test_is_search_dir_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_dirpatterns}}, 'pysearch');
+    push(@{$settings->{out_dir_patterns}}, 'pysearch');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'pysearch';
-    ok(!$searcher->is_search_dir($dir), "$dir matches out_dirpatterns");
+    ok(!$searcher->is_search_dir($dir), "$dir matches out_dir_patterns");
 }
 
 sub test_is_search_dir_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_dirpatterns}}, 'pysearch');
+    push(@{$settings->{out_dir_patterns}}, 'pysearch');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'plsearch';
-    ok($searcher->is_search_dir($dir), "$dir does not match out_dirpatterns");
+    ok($searcher->is_search_dir($dir), "$dir does not match out_dir_patterns");
 }
 
 sub test_is_search_dir_single_dot {
@@ -115,12 +115,12 @@ sub test_is_search_dir_hidden_dir {
 
 sub test_is_search_dir_hidden_dir_include_hidden {
     my $settings = get_settings();
-    $settings->{excludehidden} = 0;
+    $settings->{exclude_hidden} = 0;
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = '.git';
     ok($searcher->is_search_dir($dir),
-        "Hidden dir $dir is search dir with excludehidden set to false");
+        "Hidden dir $dir is search dir with exclude_hidden set to false");
 }
 
 ################################################################################
@@ -172,38 +172,38 @@ sub test_is_search_file_no_match_out_extension {
 
 sub test_is_search_file_matches_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_filepatterns}}, 'Search');
+    push(@{$settings->{in_file_patterns}}, 'Search');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'Searcher.pm';
-    ok($searcher->is_search_file($file), "$file matches in_filepatterns");
+    ok($searcher->is_search_file($file), "$file matches in_file_patterns");
 }
 
 sub test_is_search_file_no_match_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_filepatterns}}, 'Search');
+    push(@{$settings->{in_file_patterns}}, 'Search');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
-    ok(!$searcher->is_search_file($file), "$file does not match in_filepatterns");
+    ok(!$searcher->is_search_file($file), "$file does not match in_file_patterns");
 }
 
 sub test_is_search_file_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_filepatterns}}, 'Search');
+    push(@{$settings->{out_file_patterns}}, 'Search');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'Searcher.pm';
-    ok(!$searcher->is_search_file($file), "$file matches out_filepatterns");
+    ok(!$searcher->is_search_file($file), "$file matches out_file_patterns");
 }
 
 sub test_is_search_file_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_filepatterns}}, 'Search');
+    push(@{$settings->{out_file_patterns}}, 'Search');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
-    ok($searcher->is_search_file($file), "$file does not match out_filepatterns");
+    ok($searcher->is_search_file($file), "$file does not match out_file_patterns");
 }
 
 ################################################################################
@@ -219,74 +219,74 @@ sub test_is_archive_search_file_matches_by_default {
 
 sub test_is_archive_search_file_matches_in_extension {
     my $settings = get_settings();
-    push(@{$settings->{in_archiveextensions}}, 'zip');
+    push(@{$settings->{in_archive_extensions}}, 'zip');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($searcher->is_archive_search_file($file), "$file matches in_archiveextensions");
+    ok($searcher->is_archive_search_file($file), "$file matches in_archive_extensions");
 }
 
 sub test_is_archive_search_file_no_match_in_extension {
     my $settings = get_settings();
-    push(@{$settings->{in_archiveextensions}}, 'gz');
+    push(@{$settings->{in_archive_extensions}}, 'gz');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$searcher->is_archive_search_file($file), "$file does not match in_archiveextensions");
+    ok(!$searcher->is_archive_search_file($file), "$file does not match in_archive_extensions");
 }
 
 sub test_is_archive_search_file_matches_out_extension {
     my $settings = get_settings();
-    push(@{$settings->{out_archiveextensions}}, 'zip');
+    push(@{$settings->{out_archive_extensions}}, 'zip');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$searcher->is_archive_search_file($file), "$file matches out_archiveextensions");
+    ok(!$searcher->is_archive_search_file($file), "$file matches out_archive_extensions");
 }
 
 sub test_is_archive_search_file_no_match_out_extension {
     my $settings = get_settings();
-    push(@{$settings->{out_archiveextensions}}, 'gz');
+    push(@{$settings->{out_archive_extensions}}, 'gz');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($searcher->is_archive_search_file($file), "$file does not match out_archiveextensions");
+    ok($searcher->is_archive_search_file($file), "$file does not match out_archive_extensions");
 }
 
 sub test_is_archive_search_file_matches_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_archivefilepatterns}}, 'arch');
+    push(@{$settings->{in_archive_file_patterns}}, 'arch');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($searcher->is_archive_search_file($file), "$file matches in_archivefilepatterns");
+    ok($searcher->is_archive_search_file($file), "$file matches in_archive_file_patterns");
 }
 
 sub test_is_archive_search_file_no_match_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_archivefilepatterns}}, 'archives');
+    push(@{$settings->{in_archive_file_patterns}}, 'archives');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$searcher->is_archive_search_file($file), "$file does not match in_archivefilepatterns");
+    ok(!$searcher->is_archive_search_file($file), "$file does not match in_archive_file_patterns");
 }
 
 sub test_is_archive_search_file_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_archivefilepatterns}}, 'arch');
+    push(@{$settings->{out_archive_file_patterns}}, 'arch');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$searcher->is_archive_search_file($file), "$file matches out_archivefilepatterns");
+    ok(!$searcher->is_archive_search_file($file), "$file matches out_archive_file_patterns");
 }
 
 sub test_is_archive_search_file_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_archivefilepatterns}}, 'archives');
+    push(@{$settings->{out_archive_file_patterns}}, 'archives');
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($searcher->is_archive_search_file($file), "$file does not match out_archivefilepatterns");
+    ok($searcher->is_archive_search_file($file), "$file does not match out_archive_file_patterns");
 }
 
 ################################################################################
@@ -323,57 +323,57 @@ sub test_filter_file_is_hidden_file {
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok(!$searcher->filter_file($file), "$file does not pass filter_file when excludehidden=1");
+    ok(!$searcher->filter_file($file), "$file does not pass filter_file when exclude_hidden=1");
 }
 
 sub test_filter_file_hidden_includehidden {
     my $settings = get_settings();
-    $settings->{excludehidden} = 0;
+    $settings->{exclude_hidden} = 0;
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok($searcher->filter_file($file), "$file passes filter_file when hidden and excludehidden=0");
+    ok($searcher->filter_file($file), "$file passes filter_file when hidden and exclude_hidden=0");
 }
 
-sub test_filter_file_archive_no_searcharchives {
+sub test_filter_file_archive_no_search_archives {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
     #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
-    ok(!$searcher->filter_file($file), "$file does not pass filter_file when searcharchives=0");
+    ok(!$searcher->filter_file($file), "$file does not pass filter_file when search_archives=0");
 }
 
-sub test_filter_file_archive_searcharchives {
+sub test_filter_file_archive_search_archives {
     my $settings = get_settings();
-    $settings->{searcharchives} = 1;
+    $settings->{search_archives} = 1;
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
     #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
-    ok($searcher->filter_file($file), "$file passes filter_file when searcharchives=1");
+    ok($searcher->filter_file($file), "$file passes filter_file when search_archives=1");
 }
 
-sub test_filter_file_archive_archivesonly {
+sub test_filter_file_archive_archives_only {
     my $settings = get_settings();
-    $settings->{archivesonly} = 1;
-    $settings->{searcharchives} = 1;
+    $settings->{archives_only} = 1;
+    $settings->{search_archives} = 1;
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
     #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
-    ok($searcher->filter_file($file), "$file passes filter_file when archivesonly=1");
+    ok($searcher->filter_file($file), "$file passes filter_file when archives_only=1");
 }
 
-sub test_filter_file_nonarchive_archivesonly {
+sub test_filter_file_nonarchive_archives_only {
     my $settings = get_settings();
-    $settings->{archivesonly} = 1;
-    $settings->{searcharchives} = 1;
+    $settings->{archives_only} = 1;
+    $settings->{search_archives} = 1;
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
     #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
-    ok(!$searcher->filter_file($file), "$file does not pass filter_file when archivesonly=1");
+    ok(!$searcher->filter_file($file), "$file does not pass filter_file when archives_only=1");
 }
 
 ################################################################################
@@ -383,19 +383,19 @@ sub test_search_lines {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $testfile = get_test_file();
-    my $contents = plsearch::FileUtil::get_file_contents($testfile);
+    my $test_file = get_test_file();
+    my $contents = plsearch::FileUtil::get_file_contents($test_file);
     my $results = $searcher->search_multiline_string($contents);
     ok(scalar @{$results} == 2, 'Two search results');
-    my $firstResult = $results->[0];
-    ok($firstResult->{linenum} == 29, "First result on line 23");
-    ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
-    ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
+    my $first_result = $results->[0];
+    ok($first_result->{line_num} == 29, "First result on line 23");
+    ok($first_result->{match_start_index} == 3, "First result match_start_index == 3");
+    ok($first_result->{match_end_index} == 11, "First result match_start_index == 11");
 
-    my $secondResult = $results->[1];
-    ok($secondResult->{linenum} == 35, "Second result on line 29");
-    ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
-    ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
+    my $second_result = $results->[1];
+    ok($second_result->{line_num} == 35, "Second result on line 29");
+    ok($second_result->{match_start_index} == 24, "Second result match_start_index == 24");
+    ok($second_result->{match_end_index} == 32, "Second result match_start_index == 32");
 }
 
 ################################################################################
@@ -405,19 +405,19 @@ sub test_search_multiline_string {
     my $settings = get_settings();
     my ($searcher, $errs) = new plsearch::Searcher($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $testfile = get_test_file();
-    my $lines = plsearch::FileUtil::get_file_lines($testfile);
+    my $test_file = get_test_file();
+    my $lines = plsearch::FileUtil::get_file_lines($test_file);
     my $results = $searcher->search_lines($lines);
     ok(scalar @{$results} == 2, 'Two search results');
-    my $firstResult = $results->[0];
-    ok($firstResult->{linenum} == 29, "First result on line 23");
-    ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
-    ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
+    my $first_result = $results->[0];
+    ok($first_result->{line_num} == 29, "First result on line 23");
+    ok($first_result->{match_start_index} == 3, "First result match_start_index == 3");
+    ok($first_result->{match_end_index} == 11, "First result match_start_index == 11");
 
-    my $secondResult = $results->[1];
-    ok($secondResult->{linenum} == 35, "Second result on line 29");
-    ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
-    ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
+    my $second_result = $results->[1];
+    ok($second_result->{line_num} == 35, "Second result on line 29");
+    ok($second_result->{match_start_index} == 24, "Second result match_start_index == 24");
+    ok($second_result->{match_end_index} == 32, "Second result match_start_index == 32");
 }
 
 ################################################################################
@@ -466,10 +466,10 @@ sub main {
     test_filter_file_not_is_search_file();                # 2 tests
     test_filter_file_is_hidden_file();                    # 2 tests
     test_filter_file_hidden_includehidden();              # 2 tests
-    test_filter_file_archive_no_searcharchives();         # 2 tests
-    test_filter_file_archive_searcharchives();            # 2 tests
-    test_filter_file_archive_archivesonly();              # 2 tests
-    test_filter_file_nonarchive_archivesonly();           # 2 tests
+    test_filter_file_archive_no_search_archives();         # 2 tests
+    test_filter_file_archive_search_archives();            # 2 tests
+    test_filter_file_archive_archives_only();              # 2 tests
+    test_filter_file_nonarchive_archives_only();           # 2 tests
 
     # search_lines tests
     test_search_lines();                                  # 8 tests

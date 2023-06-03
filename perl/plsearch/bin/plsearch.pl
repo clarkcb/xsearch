@@ -27,14 +27,14 @@ sub log_error {
 }
 
 sub main {
-    my $searchoptions = new plsearch::SearchOptions();
-    my ($settings, $errs) = $searchoptions->settings_from_args(\@ARGV);
+    my $search_options = new plsearch::SearchOptions();
+    my ($settings, $errs) = $search_options->settings_from_args(\@ARGV);
 
     if (scalar @{$errs}) {
         plsearch::common::log('');
         log_error($errs->[0]);
         plsearch::common::log('');
-        $searchoptions->usage();
+        $search_options->usage();
         plsearch::common::log('');
         exit;
     }
@@ -43,9 +43,9 @@ sub main {
         print 'settings: ' . $settings->to_string() . "\n";
     }
 
-    if ($settings->{printusage}) {
+    if ($settings->{print_usage}) {
         plsearch::common::log('');
-        $searchoptions->usage();
+        $search_options->usage();
         plsearch::common::log('');
         exit;
     }
@@ -56,30 +56,30 @@ sub main {
         plsearch::common::log('');
         log_error($errs2->[0]);
         plsearch::common::log('');
-        $searchoptions->usage();
+        $search_options->usage();
         plsearch::common::log('');
         exit;
     }
 
     $searcher->search();
 
-    if ($settings->{printresults}) {
+    if ($settings->{print_results}) {
         plsearch::common::log('');
         $searcher->print_results();
     }
 
     # print matching dirs
-    if ($settings->{listdirs}) {
+    if ($settings->{list_dirs}) {
         $searcher->print_matching_dirs();
     }
 
     # print matching files
-    if ($settings->{listfiles}) {
+    if ($settings->{list_files}) {
         $searcher->print_matching_files();
     }
 
     # print matching lines
-    if ($settings->{listlines}) {
+    if ($settings->{list_lines}) {
         $searcher->print_matching_lines();
     }
 }

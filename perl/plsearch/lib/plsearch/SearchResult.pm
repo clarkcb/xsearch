@@ -18,7 +18,7 @@ sub new {
     my $self = {
         pattern => shift,
         file => shift,
-        linenum => shift,
+        line_num => shift,
         match_start_index => shift,
         match_end_index => shift,
         line => shift,

@@ -19,7 +19,7 @@ namespace cppsearch {
         std::unordered_map<std::string, std::string> m_long_arg_map;
         std::vector<SearchOption*> m_options;
         void load_options();
-        void settings_from_file(std::string& filepath, SearchSettings* ss);
+        void settings_from_file(std::string& file_path, SearchSettings* ss);
         void settings_from_document(Document* document, SearchSettings* settings);
 
     public:

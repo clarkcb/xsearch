@@ -16,7 +16,7 @@ class SearchOption
     public string $shortarg;
     public string $longarg;
     public string $desc;
-    public object $func;
+    public ?object $func;
     public string $sortarg;
 
     public function __construct(string $shortarg, string $longarg, string $desc, $func)

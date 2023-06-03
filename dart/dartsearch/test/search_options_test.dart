@@ -43,6 +43,14 @@ void main() {
     expect(settings.paths.first, '.');
   });
 
+  test('test get settings with archives-only', () async {
+    var options = SearchOptions();
+    var args = ['-x', 'dart,kt', '-s', 'Search', '--archivesonly', '.'];
+    var settings = await options.settingsFromArgs(args);
+    expect(settings.archivesOnly, true);
+    expect(settings.searchArchives, true);
+  });
+
   test('test get settings from json', () async {
     var json = '{'
         '"path": "~/src/xsearch/",'

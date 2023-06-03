@@ -1,23 +1,23 @@
-(ns cljsearch.searchfile-test
+(ns cljsearch.search-file-test
   (:use [clojure.java.io :only (file reader)])
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
         [cljsearch.searchfile :only (new-search-file search-file-path)]))
 
-(deftest test-searchfile-abs-path
-  (let [filepath "~/src/xsearch/clojure/cljsearch/src/cljsearch/searchfile.clj"
-        searchfile (new-search-file (file filepath) :code)]
-    (testing "test-searchfile-abs-path"
-             (is (= (search-file-path searchfile) filepath)))))
+(deftest test-search-file-abs-path
+  (let [file-path "~/src/xsearch/clojure/cljsearch/src/cljsearch/searchfile.clj"
+        search-file (new-search-file (file file-path) :code)]
+    (testing "test-search-file-abs-path"
+             (is (= (search-file-path search-file) file-path)))))
 
-(deftest test-searchfile-rel-path-1
-  (let [filepath "./searchfile.clj"
-        searchfile (new-search-file (file filepath) :code)]
-    (testing "test-searchfile-rel-path-1"
-             (is (= (search-file-path searchfile) filepath)))))
+(deftest test-search-file-rel-path-1
+  (let [file-path "./searchfile.clj"
+        search-file (new-search-file (file file-path) :code)]
+    (testing "test-search-file-rel-path-1"
+             (is (= (search-file-path search-file) file-path)))))
 
-(deftest test-searchfile-rel-path-2
-  (let [filepath "../searchfile.clj"
-        searchfile (new-search-file (file filepath) :code)]
-    (testing "test-searchfile-rel-path-2"
-             (is (= (search-file-path searchfile) filepath)))))
+(deftest test-search-file-rel-path-2
+  (let [file-path "../searchfile.clj"
+        search-file (new-search-file (file file-path) :code)]
+    (testing "test-search-file-rel-path-2"
+             (is (= (search-file-path search-file) file-path)))))

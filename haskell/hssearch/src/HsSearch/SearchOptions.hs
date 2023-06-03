@@ -89,7 +89,6 @@ searchOptionsToString searchOptions =
 
 data ActionType = ArgActionType
                 | BoolFlagActionType
-                | FlagActionType
                 | UnknownActionType
   deriving (Show, Eq)
 
@@ -123,32 +122,6 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("path", \ss s -> ss {paths = paths ss ++ [s]})
              , ("searchpattern", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
              ]
-
-flagActions :: [(String, FlagAction)]
-flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
-              , ("archivesonly", \ss -> ss {archivesOnly=True,
-                                            searchArchives=True})
-              , ("colorize", \ss -> ss {colorize=True})
-              , ("debug", \ss -> ss {debug=True, verbose=True})
-              , ("excludehidden", \ss -> ss {excludeHidden=True})
-              , ("firstmatch", \ss -> ss {firstMatch=True})
-              , ("help", \ss -> ss {printUsage=True})
-              , ("includehidden", \ss -> ss {excludeHidden=False})
-              , ("listdirs", \ss -> ss {listDirs=True})
-              , ("listfiles", \ss -> ss {listFiles=True})
-              , ("listlines", \ss -> ss {listLines=True})
-              , ("multilinesearch", \ss -> ss {multiLineSearch=True})
-              , ("nocolorize", \ss -> ss {colorize=False})
-              , ("noprintmatches", \ss -> ss {printResults=False})
-              , ("norecursive", \ss -> ss {recursive=False})
-              , ("nosearcharchives", \ss -> ss {searchArchives=False})
-              , ("printmatches", \ss -> ss {printResults=True})
-              , ("recursive", \ss -> ss {recursive=True})
-              , ("searcharchives", \ss -> ss {searchArchives=True})
-              , ("uniquelines", \ss -> ss {uniqueLines=True})
-              , ("verbose", \ss -> ss {verbose=True})
-              , ("version", \ss -> ss {printVersion=True})
-              ]
 
 boolFlagActions :: [(String, BoolFlagAction)]
 boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
@@ -200,13 +173,11 @@ settingsFromArgs opts arguments =
             case getActionType (argName a) of
               ArgActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
               BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) []
-              FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) []
               UnknownActionType -> Left $ "Invalid option: " ++ a ++ "\n"
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               ArgActionType -> recSettingsFromArgs (getArgAction (argName a) settings (head as)) (tail as)
               BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) as
-              FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
           a:as -> recSettingsFromArgs (settings {paths = paths settings ++ [a]}) as
         longArgs :: [Either String String]
@@ -215,7 +186,6 @@ settingsFromArgs opts arguments =
         getActionType a
           | isArgAction a = ArgActionType
           | isBoolFlagAction a = BoolFlagActionType
-          | isFlagAction a = FlagActionType
           | otherwise = UnknownActionType
         argName :: String -> String
         argName = dropWhile (=='-')
@@ -223,11 +193,7 @@ settingsFromArgs opts arguments =
         getArgAction a = snd $ head $ filter (\(x,_) -> a==x) argActions
         getBoolFlagAction :: String -> BoolFlagAction
         getBoolFlagAction a = snd $ head $ filter (\(x,_) -> a==x) boolFlagActions
-        getFlagAction :: String -> FlagAction
-        getFlagAction a = snd $ head $ filter (\(x,_) -> a==x) flagActions
         isArgAction :: String -> Bool
         isArgAction a = isJust $ lookup a argActions
         isBoolFlagAction :: String -> Bool
         isBoolFlagAction a = isJust $ lookup a boolFlagActions
-        isFlagAction :: String -> Bool
-        isFlagAction a = isJust $ lookup a flagActions

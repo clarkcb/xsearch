@@ -7,29 +7,29 @@ namespace phpsearch;
  *
  * @property array containers
  * @property string path
- * @property string filename
- * @property FileType filetype
+ * @property string file_name
+ * @property FileType file_type
  */
 class SearchFile
 {
     public array $containers;
     public string $path;
-    public string $filename;
-    public FileType $filetype;
+    public string $file_name;
+    public FileType $file_type;
 
     const CONTAINER_SEPARATOR = '!';
 
-    public function __construct(string $path, string $filename, $filetype)
+    public function __construct(string $path, string $file_name, $file_type)
     {
         $this->containers = array();
         $this->path = $path;
-        $this->filename = $filename;
-        $this->filetype = $filetype;
+        $this->file_name = $file_name;
+        $this->file_type = $file_type;
     }
 
-    public function filepath(): string
+    public function file_path(): string
     {
-        return FileUtil::join_path($this->path, $this->filename);
+        return FileUtil::join_path($this->path, $this->file_name);
     }
 
     public function __toString(): string
@@ -39,7 +39,7 @@ class SearchFile
             $s = join(SearchFile::CONTAINER_SEPARATOR, $this->containers) .
                 SearchFile::CONTAINER_SEPARATOR;
         }
-        $s .= FileUtil::join_path($this->path, $this->filename);
+        $s .= FileUtil::join_path($this->path, $this->file_name);
         return $s;
     }
 }

@@ -12,63 +12,63 @@ class SearchOptionsTest extends TestCase
     /**
      * @var SearchOptions
      */
-    private $searchoptions;
+    private SearchOptions $search_options;
 
     public function __construct()
     {
         parent::__construct();
-        $this->searchoptions = new SearchOptions();
+        $this->search_options = new SearchOptions();
     }
 
     public function test_no_args()
     {
-        $settings = $this->searchoptions->settings_from_args([]);
-        $this->assertFalse($settings->archivesonly);
+        $settings = $this->search_options->settings_from_args([]);
+        $this->assertFalse($settings->archives_only);
         $this->assertTrue($settings->colorize);
         $this->assertFalse($settings->debug);
-        $this->assertTrue($settings->excludehidden);
-        $this->assertFalse($settings->firstmatch);
-        $this->assertEquals(0, $settings->linesafter);
-        $this->assertEquals(0, $settings->linesbefore);
-        $this->assertFalse($settings->listdirs);
-        $this->assertFalse($settings->listfiles);
-        $this->assertFalse($settings->listlines);
-        $this->assertEquals(150, $settings->maxlinelength);
-        $this->assertFalse($settings->multilinesearch);
-        $this->assertTrue($settings->printresults);
-        $this->assertFalse($settings->printusage);
-        $this->assertFalse($settings->printversion);
+        $this->assertTrue($settings->exclude_hidden);
+        $this->assertFalse($settings->first_match);
+        $this->assertEquals(0, $settings->lines_after);
+        $this->assertEquals(0, $settings->lines_before);
+        $this->assertFalse($settings->list_dirs);
+        $this->assertFalse($settings->list_files);
+        $this->assertFalse($settings->list_lines);
+        $this->assertEquals(150, $settings->max_line_length);
+        $this->assertFalse($settings->multi_line_search);
+        $this->assertTrue($settings->print_results);
+        $this->assertFalse($settings->print_usage);
+        $this->assertFalse($settings->print_version);
         $this->assertTrue($settings->recursive);
-        $this->assertFalse($settings->searcharchives);
-        $this->assertFalse($settings->uniquelines);
+        $this->assertFalse($settings->search_archives);
+        $this->assertFalse($settings->unique_lines);
         $this->assertFalse($settings->verbose);
     }
 
     public function test_valid_args()
     {
         $args = ['-x', 'php,py', '-s', 'Search', '.'];
-        $settings = $this->searchoptions->settings_from_args($args);
+        $settings = $this->search_options->settings_from_args($args);
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('php', $settings->in_extensions));
         $this->assertTrue(in_array('py', $settings->in_extensions));
-        $this->assertCount(1, $settings->searchpatterns);
-        $this->assertEquals('Search', $settings->searchpatterns[0]);
+        $this->assertCount(1, $settings->search_patterns);
+        $this->assertEquals('Search', $settings->search_patterns[0]);
         $this->assertCount(1, $settings->paths);
         $this->assertEquals('.', $settings->paths[0]);
     }
 
-    public function test_archivesonly_arg()
+    public function test_archives_only_arg()
     {
         $args = ['--archivesonly'];
-        $settings = $this->searchoptions->settings_from_args($args);
-        $this->assertTrue($settings->archivesonly);
-        $this->assertTrue($settings->searcharchives);
+        $settings = $this->search_options->settings_from_args($args);
+        $this->assertTrue($settings->archives_only);
+        $this->assertTrue($settings->search_archives);
     }
 
     public function test_debug_arg()
     {
         $args = ['--debug'];
-        $settings = $this->searchoptions->settings_from_args($args);
+        $settings = $this->search_options->settings_from_args($args);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
     }
@@ -77,14 +77,14 @@ class SearchOptionsTest extends TestCase
     {
         $this->expectException(SearchException::class);
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-D'];
-        $this->searchoptions->settings_from_args($args);
+        $this->search_options->settings_from_args($args);
     }
 
     public function test_invalid_arg()
     {
         $this->expectException(SearchException::class);
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-Q'];
-        $this->searchoptions->settings_from_args($args);
+        $this->search_options->settings_from_args($args);
     }
 
     public function test_settings_from_json()
@@ -104,23 +104,23 @@ class SearchOptionsTest extends TestCase
   "includehidden": true
 }
 END_JSON;
-        $this->searchoptions->settings_from_json($json, $settings);
+        $this->search_options->settings_from_json($json, $settings);
         $this->assertCount(1, $settings->paths);
         $this->assertTrue(in_array('~/src/xsearch/', $settings->paths));
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('js', $settings->in_extensions));
         $this->assertTrue(in_array('ts', $settings->in_extensions));
-        $this->assertCount(1, $settings->out_dirpatterns);
-        $this->assertEquals('node_module', $settings->out_dirpatterns[0]);
-        $this->assertCount(1, $settings->out_filepatterns);
-        $this->assertEquals('temp', $settings->out_filepatterns[0]);
-        $this->assertCount(1, $settings->searchpatterns);
-        $this->assertEquals('Searcher', $settings->searchpatterns[0]);
-        $this->assertEquals(2, $settings->linesbefore);
-        $this->assertEquals(2, $settings->linesafter);
+        $this->assertCount(1, $settings->out_dir_patterns);
+        $this->assertEquals('node_module', $settings->out_dir_patterns[0]);
+        $this->assertCount(1, $settings->out_file_patterns);
+        $this->assertEquals('temp', $settings->out_file_patterns[0]);
+        $this->assertCount(1, $settings->search_patterns);
+        $this->assertEquals('Searcher', $settings->search_patterns[0]);
+        $this->assertEquals(2, $settings->lines_before);
+        $this->assertEquals(2, $settings->lines_after);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
-        $this->assertTrue($settings->firstmatch);
-        $this->assertTrue(!$settings->excludehidden);
+        $this->assertTrue($settings->first_match);
+        $this->assertTrue(!$settings->exclude_hidden);
     }
 }

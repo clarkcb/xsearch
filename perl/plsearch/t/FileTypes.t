@@ -20,63 +20,63 @@ ok(1); # If we made it this far, we're ok.
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
 
-my $filetypes = new plsearch::FileTypes();
+my $file_types = new plsearch::FileTypes();
 
-sub test_getfiletype_archive_file {
-    my $filename = 'archive.zip';
-    my $ok = $filetypes->is_archive($filename);
-    ok($ok > 0, "$filename is archive file");
-    my $type = $filetypes->get_filetype($filename);
-    ok($type eq plsearch::FileType->ARCHIVE, "FileType of $filename is $type");
+sub test_get_file_type_archive_file {
+    my $file_name = 'archive.zip';
+    my $ok = $file_types->is_archive($file_name);
+    ok($ok > 0, "$file_name is archive file");
+    my $type = $file_types->get_file_type($file_name);
+    ok($type eq plsearch::FileType->ARCHIVE, "FileType of $file_name is $type");
 }
 
-sub test_getfiletype_binary_file {
-    my $filename = 'binary.exe';
-    my $ok = $filetypes->is_binary($filename);
-    ok($ok > 0, "$filename is binary file");
-    my $type = $filetypes->get_filetype($filename);
-    ok($type eq plsearch::FileType->BINARY, "FileType of $filename is $type");
+sub test_get_file_type_binary_file {
+    my $file_name = 'binary.exe';
+    my $ok = $file_types->is_binary($file_name);
+    ok($ok > 0, "$file_name is binary file");
+    my $type = $file_types->get_file_type($file_name);
+    ok($type eq plsearch::FileType->BINARY, "FileType of $file_name is $type");
 }
 
-sub test_getfiletype_code_file {
-    my $filename = 'code.pl';
-    my $ok = $filetypes->is_code($filename);
-    ok($ok > 0, "$filename is code file");
-    my $type = $filetypes->get_filetype($filename);
-    ok($type eq plsearch::FileType->CODE, "FileType of $filename is $type");
+sub test_get_file_type_code_file {
+    my $file_name = 'code.pl';
+    my $ok = $file_types->is_code($file_name);
+    ok($ok > 0, "$file_name is code file");
+    my $type = $file_types->get_file_type($file_name);
+    ok($type eq plsearch::FileType->CODE, "FileType of $file_name is $type");
 }
 
-sub test_getfiletype_text_file {
-    my $filename = 'text.txt';
-    my $ok = $filetypes->is_text($filename);
-    ok($ok > 0, "$filename is text file");
-    my $type = $filetypes->get_filetype($filename);
-    ok($type eq plsearch::FileType->TEXT, "FileType of $filename is $type");
+sub test_get_file_type_text_file {
+    my $file_name = 'text.txt';
+    my $ok = $file_types->is_text($file_name);
+    ok($ok > 0, "$file_name is text file");
+    my $type = $file_types->get_file_type($file_name);
+    ok($type eq plsearch::FileType->TEXT, "FileType of $file_name is $type");
 }
 
-sub test_getfiletype_xml_file {
-    my $filename = 'markup.xml';
-    my $ok = $filetypes->is_xml($filename);
-    ok($ok > 0, "$filename is xml file");
-    my $type = $filetypes->get_filetype($filename);
-    ok($type eq plsearch::FileType->XML, "FileType of $filename is $type");
+sub test_get_file_type_xml_file {
+    my $file_name = 'markup.xml';
+    my $ok = $file_types->is_xml($file_name);
+    ok($ok > 0, "$file_name is xml file");
+    my $type = $file_types->get_file_type($file_name);
+    ok($type eq plsearch::FileType->XML, "FileType of $file_name is $type");
 }
 
-sub test_getfiletype_unknown_file {
-    my $filename = 'unknown.xyz';
-    my $ok = $filetypes->is_unknown($filename);
-    ok($ok > 0, "$filename is unknown file");
-    my $type = $filetypes->get_filetype($filename);
-    ok($type eq plsearch::FileType->UNKNOWN, "FileType of $filename is $type");
+sub test_get_file_type_unknown_file {
+    my $file_name = 'unknown.xyz';
+    my $ok = $file_types->is_unknown($file_name);
+    ok($ok > 0, "$file_name is unknown file");
+    my $type = $file_types->get_file_type($file_name);
+    ok($type eq plsearch::FileType->UNKNOWN, "FileType of $file_name is $type");
 }
 
 sub main {
-    test_getfiletype_archive_file();
-    test_getfiletype_binary_file();
-    test_getfiletype_code_file();
-    test_getfiletype_text_file();
-    test_getfiletype_xml_file();
-    test_getfiletype_unknown_file();
+    test_get_file_type_archive_file();
+    test_get_file_type_binary_file();
+    test_get_file_type_code_file();
+    test_get_file_type_text_file();
+    test_get_file_type_xml_file();
+    test_get_file_type_unknown_file();
 }
 
 main();

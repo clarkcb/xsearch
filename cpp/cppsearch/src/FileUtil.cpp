@@ -6,15 +6,15 @@
 
 namespace cppsearch {
     // TODO: find lib function for this, current implementation is incomplete
-    std::string FileUtil::expand_path(const std::string& filepath) {
-        if (filepath.at(0) == '~') {
+    std::string FileUtil::expand_path(const std::string& file_path) {
+        if (file_path.at(0) == '~') {
             std::string expanded = getenv("HOME");
-            if (filepath.length() > 1) {
-                expanded.append(filepath.substr(1));
+            if (file_path.length() > 1) {
+                expanded.append(file_path.substr(1));
             }
             return expanded;
         }
-        return filepath;
+        return file_path;
     }
 
     bool FileUtil::file_exists(const std::string& name) {
@@ -22,15 +22,15 @@ namespace cppsearch {
         return (stat(name.c_str(), &st) == 0);
     }
 
-    uint64_t FileUtil::file_size(const std::string& filepath) {
+    uint64_t FileUtil::file_size(const std::string& file_path) {
         struct stat st;
-        if (stat(filepath.c_str(), &st)) /*failure*/
+        if (stat(file_path.c_str(), &st)) /*failure*/
             return -1; // when file does not exist or is not accessible
         return (uint64_t) st.st_size;
     }
 
-    std::string FileUtil::get_contents(const std::string& filepath) {
-        std::ifstream fin(filepath);
+    std::string FileUtil::get_contents(const std::string& file_path) {
+        std::ifstream fin(file_path);
         std::string contents = get_contents(fin);
         fin.close();
         return contents;
@@ -57,10 +57,10 @@ namespace cppsearch {
         return ext;
     }
 
-    std::string FileUtil::get_filename(const std::string& filepath) {
-        boost::filesystem::path path(filepath);
-        std::string filename = path.filename().string();
-        return filename;
+    std::string FileUtil::get_file_name(const std::string& file_path) {
+        boost::filesystem::path path(file_path);
+        std::string file_name = path.filename().string();
+        return file_name;
     }
 
     bool FileUtil::is_directory(const std::string& name) {
@@ -91,10 +91,10 @@ namespace cppsearch {
         return fullpath.string();
     }
 
-    std::vector<std::string> FileUtil::split_path(const std::string& filepath) {
+    std::vector<std::string> FileUtil::split_path(const std::string& file_path) {
         std::vector<std::string> parts;
-        boost::filesystem::path path(filepath);
-        if (FileUtil::is_dot_dir(filepath)) {
+        boost::filesystem::path path(file_path);
+        if (FileUtil::is_dot_dir(file_path)) {
             if (path.filename_is_dot()) {
                 parts.emplace_back(".");
             } else if (path.filename_is_dot_dot()) {

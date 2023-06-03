@@ -1,6 +1,6 @@
 ;;; ############################################################################
 ;;;
-;;; filetypes.clj
+;;; file-types.clj
 ;;;
 ;;; Utility functions for getting file extension and determining file type
 ;;;
@@ -23,44 +23,25 @@
 (def TEXT "text")
 (def XML "xml")
 
-(defn get-filetypemap-from-xml []
-  (let [ftcontents (slurp (io/resource "filetypes.xml"))
-        ftstream (java.io.ByteArrayInputStream. (.getBytes ftcontents))
-        filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse ftstream)))
-        typenames (map :name (map :attrs filetypes))
-        extension-nodes (map first (map :content (map first (map :content filetypes))))
-        extension-sets (map #(set %) (map #(split % #"\s+") extension-nodes))
-        filetypemap (zipmap typenames extension-sets)
-        textmap (hash-map "all-text"
-                  (union (get filetypemap TEXT)
-                         (get filetypemap CODE)
-                         (get filetypemap XML)))
-        searchablemap (hash-map "searchable"
-                        (union (get filetypemap ARCHIVE)
-                               (get filetypemap BINARY)
-                               (get filetypemap TEXT)))
-        ]
-  (merge filetypemap textmap searchablemap)))
-
-(defn get-filetypemap-from-json []
+(defn get-file-type-map-from-json []
   (let [contents (slurp (io/resource "filetypes.json"))
-        filetypes-objs (:filetypes (json/read-str contents :key-fn keyword))
-        typenames (map :type filetypes-objs)
-        extension-sets (map #(set %) (map :extensions filetypes-objs))
-        filetypemap (zipmap typenames extension-sets)
-        textmap (hash-map "all-text"
-                  (union (get filetypemap TEXT)
-                         (get filetypemap CODE)
-                         (get filetypemap XML)))
-        searchablemap (hash-map "searchable"
-                        (union (get filetypemap ARCHIVE)
-                               (get filetypemap BINARY)
-                               (get filetypemap TEXT)))
-        fullmap (merge filetypemap textmap searchablemap)
+        file-types-objs (:filetypes (json/read-str contents :key-fn keyword))
+        typenames (map :type file-types-objs)
+        extension-sets (map #(set %) (map :extensions file-types-objs))
+        file-type-map (zipmap typenames extension-sets)
+        text-map (hash-map "all-text"
+                   (union (get file-type-map TEXT)
+                          (get file-type-map CODE)
+                          (get file-type-map XML)))
+        searchable-map (hash-map "searchable"
+                         (union (get file-type-map ARCHIVE)
+                                (get file-type-map BINARY)
+                                (get file-type-map TEXT)))
+        fullmap (merge file-type-map text-map searchable-map)
         ]
     fullmap))
 
-(def FILETYPEMAP (get-filetypemap-from-json))
+(def FILETYPEMAP (get-file-type-map-from-json))
 
 (defn archive-ext? [ext]
   (contains? (get FILETYPEMAP ARCHIVE) ext))
@@ -95,7 +76,7 @@
 (defn xml-file? [f]
   (contains? (get FILETYPEMAP XML) (get-ext f)))
 
-(defn get-filetype [f]
+(defn get-file-type [f]
   (let [ext (get-ext f)]
     (cond
       (text-ext? ext) :text
@@ -106,7 +87,7 @@
       :else :unknown)))
 
 (defn unknown-file? [f]
-  (= :unknown (get-filetype f)))
+  (= :unknown (get-file-type f)))
 
 (defn from-name [name]
   (cond

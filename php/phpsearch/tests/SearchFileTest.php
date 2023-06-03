@@ -8,36 +8,36 @@ use phpsearch\SearchFile;
 
 class SearchFileTest extends TestCase
 {
-    public function test_searchfile_abs_path()
+    public function test_search_file_abs_path()
     {
         $path = '/Users/cary/src/xsearch/php/phpsearch/src';
-        $filename = 'searchfile.php';
-        $searchfile = new SearchFile($path, $filename, FileType::Code);
-        $this->assertEquals('/Users/cary/src/xsearch/php/phpsearch/src/searchfile.php',
-            $searchfile->filepath());
+        $file_name = 'searchfile.php';
+        $search_file = new SearchFile($path, $file_name, FileType::Code);
+        $this->assertEquals('/Users/cary/src/xsearch/php/phpsearch/src/search_file.php',
+            $search_file->file_path());
     }
 
-    public function test_searchfile_rel_path1()
+    public function test_search_file_rel_path1()
     {
         $path = '.';
-        $filename = 'searchfile.php';
-        $searchfile = new SearchFile($path, $filename, FileType::Code);
-        $this->assertEquals('./searchfile.php', $searchfile->filepath());
+        $file_name = 'searchfile.php';
+        $search_file = new SearchFile($path, $file_name, FileType::Code);
+        $this->assertEquals('./search_file.php', $search_file->file_path());
     }
 
-    public function test_searchfile_rel_path2()
+    public function test_search_file_rel_path2()
     {
         $path = './';
-        $filename = 'searchfile.php';
-        $searchfile = new SearchFile($path, $filename, FileType::Code);
-        $this->assertEquals('./searchfile.php', $searchfile->filepath());
+        $file_name = 'searchfile.php';
+        $search_file = new SearchFile($path, $file_name, FileType::Code);
+        $this->assertEquals('./search_file.php', $search_file->file_path());
     }
 
-    public function test_searchfile_rel_path3()
+    public function test_search_file_rel_path3()
     {
         $path = '..';
-        $filename = 'searchfile.php';
-        $searchfile = new SearchFile($path, $filename, FileType::Code);
-        $this->assertEquals('../searchfile.php', $searchfile->filepath());
+        $file_name = 'searchfile.php';
+        $search_file = new SearchFile($path, $file_name, FileType::Code);
+        $this->assertEquals('../search_file.php', $search_file->file_path());
     }
 }

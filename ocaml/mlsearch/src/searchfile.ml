@@ -3,16 +3,16 @@ open Core.Std
 type t = {
   containers : string list;
   path : string;
-  filename : string;
-  filetype : Filetypes.filetype;
+  file_name : string;
+  file_type : Filetypes.file_type;
 }
 
-let create (path : string) (filetype : Filetypes.filetype) : t =
+let create (path : string) (file_type : Filetypes.file_type) : t =
   {
     containers=[];
     path=(Filename.dirname path);
-    filename=(Filename.basename path);
-    filetype=filetype;
+    file_name=(Filename.basename path);
+    file_type=file_type;
   }
 
 let to_string (sf : t) : string = 
@@ -20,5 +20,5 @@ let to_string (sf : t) : string =
     match sf.containers with
     | [] -> ""
     | _  -> sprintf "%s!" (String.concat sf.containers ~sep:"!") in
-  sprintf "%s%s" container_str (Filename.concat sf.path sf.filename) 
+  sprintf "%s%s" container_str (Filename.concat sf.path sf.file_name) 
 ;;

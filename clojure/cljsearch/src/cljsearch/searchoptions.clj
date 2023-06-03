@@ -1,6 +1,6 @@
 ;;; ############################################################################
 ;;;
-;;; searchoptions.clj
+;;; search-options.clj
 ;;;
 ;;; Defines the available command-line options and utility functions
 ;;;
@@ -19,42 +19,29 @@
         [cljsearch.common :only (log-msg)]
         [cljsearch.fileutil :only (expand-path)]
         [cljsearch.searchsettings :only
-         (->SearchSettings DEFAULT-SETTINGS add-extension add-filetype add-pattern
-            add-path set-archivesonly set-debug set-num)]))
+         (->SearchSettings DEFAULT-SETTINGS add-extension add-file-type add-pattern
+            add-path set-archives-only set-debug set-num)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
-(defn get-sortarg [so]
+(defn get-sort-arg [so]
   (if (= "" (:short-arg so))
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
 
-;; (defn get-searchoptions-from-xml []
-;;   (let [socontents (slurp (io/resource "searchoptions.xml"))
-;;         sostream (java.io.ByteArrayInputStream. (.getBytes socontents))
-;;         searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse sostream)))
-;;         longnames (map :long (map :attrs searchoptions))
-;;         shortnames (map :short (map :attrs searchoptions))
-;;         longshortmap (zipmap longnames shortnames)
-;;         descs (map #(.trim (first %)) (map :content searchoptions))
-;;         longdescmap (zipmap longnames descs)
-;;         get-short (fn [l] (get longshortmap l))
-;;         get-desc (fn [l] (get longdescmap l))]
-;;     (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
-
-(defn get-searchoptions-from-json []
+(defn get-search-options-from-json []
   (let [contents (slurp (io/resource "searchoptions.json"))
-        searchoptions-objs (:searchoptions (json/read-str contents :key-fn keyword))
-        longnames (map #(get % :long) searchoptions-objs)
-        shortnames (map #(get % :short "") searchoptions-objs)
-        longshortmap (zipmap longnames shortnames)
-        descs (map #(.trim %) (map :desc searchoptions-objs))
-        longdescmap (zipmap longnames descs)
-        get-short (fn [l] (get longshortmap l))
-        get-desc (fn [l] (get longdescmap l))]
-    (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
+        search-options-objs (:searchoptions (json/read-str contents :key-fn keyword))
+        long-names (map #(get % :long) search-options-objs)
+        short-names (map #(get % :short "") search-options-objs)
+        long-short-map (zipmap long-names short-names)
+        descs (map #(.trim %) (map :desc search-options-objs))
+        long-desc-map (zipmap long-names descs)
+        get-short (fn [l] (get long-short-map l))
+        get-desc (fn [l] (get long-desc-map l))]
+    (sort-by get-sort-arg (map #(SearchOption. (get-short %) % (get-desc %)) long-names))))
 
-(def OPTIONS (get-searchoptions-from-json))
+(def OPTIONS (get-search-options-from-json))
 
 (defn print-option [opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
@@ -65,65 +52,65 @@
   (doseq [o OPTIONS] (print-option o)))
 
 (def arg-action-map
-  { :encoding (fn [settings s] (assoc settings :textfileencoding s))
-    :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
-    :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archivefilepatterns))
-    :in-dirpattern (fn [settings s] (add-pattern settings s :in-dirpatterns))
+  { :encoding (fn [settings s] (assoc settings :text-file-encoding s))
+    :in-archiveext (fn [settings s] (add-extension settings s :in-archive-extensions))
+    :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archive-file-patterns))
+    :in-dirpattern (fn [settings s] (add-pattern settings s :in-dir-patterns))
     :in-ext (fn [settings s] (add-extension settings s :in-extensions))
-    :in-filepattern (fn [settings s] (add-pattern settings s :in-filepatterns))
-    :in-filetype (fn [settings s] (add-filetype settings s :in-filetypes))
-    :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-linesafterpatterns))
-    :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-linesbeforepatterns))
-    :linesafter (fn [settings s] (set-num settings s :linesafter))
-    :linesaftertopattern (fn [settings s] (add-pattern settings s :linesaftertopatterns))
-    :linesafteruntilpattern (fn [settings s] (add-pattern settings s :linesafteruntilpatterns))
-    :linesbefore (fn [settings s] (set-num settings s :linesbefore))
-    :maxlinelength (fn [settings s] (assoc settings :maxlinelength (read-string s)))
-    :out-archiveext (fn [settings s] (add-extension settings s :out-archiveextensions))
-    :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archivefilepattern))
-    :out-dirpattern (fn [settings s] (add-pattern settings s :out-dirpatterns))
+    :in-filepattern (fn [settings s] (add-pattern settings s :in-file-patterns))
+    :in-filetype (fn [settings s] (add-file-type settings s :in-file-types))
+    :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-lines-after-patterns))
+    :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-lines-before-patterns))
+    :linesafter (fn [settings s] (set-num settings s :lines-after))
+    :linesaftertopattern (fn [settings s] (add-pattern settings s :lines-after-to-patterns))
+    :linesafteruntilpattern (fn [settings s] (add-pattern settings s :lines-after-until-patterns))
+    :linesbefore (fn [settings s] (set-num settings s :lines-before))
+    :maxlinelength (fn [settings s] (assoc settings :max-line-length (read-string s)))
+    :out-archiveext (fn [settings s] (add-extension settings s :out-archive-extensions))
+    :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archive-file-patterns))
+    :out-dirpattern (fn [settings s] (add-pattern settings s :out-dir-patterns))
     :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
-    :out-filepattern (fn [settings s] (add-pattern settings s :out-filepatterns))
-    :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
-    :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-linesafterpatterns))
-    :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-linesbeforepatterns))
+    :out-filepattern (fn [settings s] (add-pattern settings s :out-file-patterns))
+    :out-filetype (fn [settings s] (add-file-type settings s :out-file-types))
+    :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-lines-after-patterns))
+    :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-lines-before-patterns))
     :path (fn [settings s] (add-path settings s))
-    :searchpattern (fn [settings s] (add-pattern settings s :searchpatterns))
+    :searchpattern (fn [settings s] (add-pattern settings s :search-patterns))
   })
 
 (def bool-flag-action-map
-  { :allmatches (fn [settings b] (assoc settings :firstmatch (not b)))
-    :archivesonly (fn [settings b] (set-archivesonly settings b))
+  { :allmatches (fn [settings b] (assoc settings :first-match (not b)))
+    :archivesonly (fn [settings b] (set-archives-only settings b))
     :colorize (fn [settings b] (assoc settings :colorize b))
     :debug (fn [settings b] (set-debug settings b))
-    :excludehidden (fn [settings b] (assoc settings :excludehidden b))
-    :firstmatch (fn [settings b] (assoc settings :firstmatch b))
-    :help (fn [settings b] (assoc settings :printusage b))
-    :includehidden (fn [settings b] (assoc settings :excludehidden (not b)))
-    :listdirs (fn [settings b] (assoc settings :listdirs b))
-    :listfiles (fn [settings b] (assoc settings :listfiles b))
-    :listlines (fn [settings b] (assoc settings :listlines b))
-    :multilinesearch (fn [settings b] (assoc settings :multilinesearch b))
+    :excludehidden (fn [settings b] (assoc settings :exclude-hidden b))
+    :firstmatch (fn [settings b] (assoc settings :first-match b))
+    :help (fn [settings b] (assoc settings :print-usage b))
+    :includehidden (fn [settings b] (assoc settings :exclude-hidden (not b)))
+    :listdirs (fn [settings b] (assoc settings :list-dirs b))
+    :listfiles (fn [settings b] (assoc settings :list-files b))
+    :listlines (fn [settings b] (assoc settings :list-lines b))
+    :multilinesearch (fn [settings b] (assoc settings :multi-line-search b))
     :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
-    :noprintmatches (fn [settings b] (assoc settings :printresults (not b)))
+    :noprintmatches (fn [settings b] (assoc settings :print-results (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
-    :nosearcharchives (fn [settings b] (assoc settings :searcharchives (not b)))
-    :printmatches (fn [settings b] (assoc settings :printresults b))
+    :nosearcharchives (fn [settings b] (assoc settings :search-archives (not b)))
+    :printmatches (fn [settings b] (assoc settings :print-results b))
     :recursive (fn [settings b] (assoc settings :recursive b))
-    :searcharchives (fn [settings b] (assoc settings :searcharchives b))
-    :uniquelines (fn [settings b] (assoc settings :uniquelines b))
+    :searcharchives (fn [settings b] (assoc settings :search-archives b))
+    :uniquelines (fn [settings b] (assoc settings :unique-lines b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))
   })
 
 (defn get-long-arg [arg]
-  (let [longnames (map :long-arg OPTIONS)
-        longmap (zipmap longnames (repeat 1))
-        shortoptions (remove #(= (:short-arg %) "") OPTIONS)
-        shortlongmap (zipmap (map :short-arg shortoptions) (map :long-arg shortoptions))]
+  (let [long-names (map :long-arg OPTIONS)
+        long-map (zipmap long-names (repeat 1))
+        short-options (remove #(= (:short-arg %) "") OPTIONS)
+        short-long-map (zipmap (map :short-arg short-options) (map :long-arg short-options))]
     (cond
-      (contains? longmap arg) (keyword arg)
-      (contains? shortlongmap arg) (keyword (get shortlongmap arg))
+      (contains? long-map arg) (keyword arg)
+      (contains? short-long-map arg) (keyword (get short-long-map arg))
       :else nil)))
 
 (defn settings-from-map [settings ks m errs]
@@ -201,5 +188,8 @@
       (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
 
 (defn usage []
-  (log-msg "" (usage-string) "")
-  (System/exit 0))
+  ([exit-code]
+    (log-msg "" (usage-string) "")
+    (System/exit 0))
+  ([]
+    (usage 0)))

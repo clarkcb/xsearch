@@ -22,7 +22,7 @@ use plsearch::FileUtil;
 sub get_xml_file_type_hash {
     my $file_type_hash = {};
     my $file_type_xml_hash = XMLin($FILETYPESPATH);
-    $file_type_xml_hash = $file_type_xml_hash->{filetype};
+    $file_type_xml_hash = $file_type_xml_hash->{file_type};
     my @types = keys %{$file_type_xml_hash};
     foreach my $t (@types) {
         my @exts = split(/\s+/, $file_type_xml_hash->{$t}->{extensions});
@@ -84,7 +84,7 @@ sub from_name {
     return plsearch::FileType->UNKNOWN;
 }
 
-sub get_filetype {
+sub get_file_type {
     my ($self, $file) = @_;
     if ($self->is_code($file)) {
         return plsearch::FileType->CODE;

@@ -10,7 +10,7 @@ using namespace cppsearch;
 std::vector<std::string> get_result_dirs(std::vector<SearchResult*>* results) {
     std::set<std::string> result_dir_set = {};
     for (const auto& result : *results) {
-        result_dir_set.insert(result->searchfile()->path());
+        result_dir_set.insert(result->search_file()->path());
     }
     std::vector<std::string> result_dirs(result_dir_set.begin(), result_dir_set.end());
     return result_dirs;
@@ -19,7 +19,7 @@ std::vector<std::string> get_result_dirs(std::vector<SearchResult*>* results) {
 std::vector<std::string> get_result_files(std::vector<SearchResult*>* results) {
     std::set<std::string> result_file_set = {};
     for (const auto& result : *results) {
-        result_file_set.insert(result->searchfile()->string());
+        result_file_set.insert(result->search_file()->string());
     }
     std::vector<std::string> result_files(result_file_set.begin(), result_file_set.end());
     return result_files;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
             log(settings->string());
         }
 
-        if (settings->printusage()) {
+        if (settings->print_usage()) {
             options->usage();
         }
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 
         std::vector<SearchResult*> results = searcher->search();
 
-        if (settings->printresults()) {
+        if (settings->print_results()) {
             auto* formatter = new SearchResultFormatter(settings);
             std::string msg = "\nSearch results (";
             msg.append(std::to_string(results.size())).append("):");
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->listdirs()) {
+        if (settings->list_dirs()) {
             std::vector<std::string> result_dirs = get_result_dirs(&results);
             std::string msg = "\nDirectories with matches";
             if (result_dirs.empty()) {
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->listfiles()) {
+        if (settings->list_files()) {
             std::vector<std::string> result_files = get_result_files(&results);
             std::string msg = "\nFiles with matches";
             if (result_files.empty()) {
@@ -101,10 +101,10 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->listlines()) {
-            std::vector<std::string> result_lines = get_result_lines(&results, settings->uniquelines());
+        if (settings->list_lines()) {
+            std::vector<std::string> result_lines = get_result_lines(&results, settings->unique_lines());
             std::string msg;
-            if (settings->uniquelines()) {
+            if (settings->unique_lines()) {
                 msg = "\nUnique lines with matches";
             } else {
                 msg = "\nLines with matches";

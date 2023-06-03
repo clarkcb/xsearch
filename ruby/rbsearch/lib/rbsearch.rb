@@ -31,12 +31,12 @@ def main
 
   RbSearch::log("settings: #{settings}") if settings.debug
 
-  if settings.printusage
+  if settings.print_usage
     RbSearch::log("\n")
     options.usage
   end
 
-  if settings.printversion
+  if settings.print_version
     RbSearch::log("Version: #{RbSearch::VERSION}")
     abort
   end
@@ -54,12 +54,12 @@ def search(options, settings)
   searcher.search
 
   # print the results
-  if settings.printresults
+  if settings.print_results
     RbSearch::log("\n")
     searcher.print_results
   end
 
-  if settings.listdirs
+  if settings.list_dirs
     RbSearch::log("\n")
     dirs = searcher.get_matching_dirs
     RbSearch::log("Directories with matches (#{dirs.size}):")
@@ -68,7 +68,7 @@ def search(options, settings)
     end
   end
 
-  if settings.listfiles
+  if settings.list_files
     RbSearch::log("\n")
     files = searcher.get_matching_files
     RbSearch::log("Files with matches (#{files.size}):")
@@ -77,11 +77,11 @@ def search(options, settings)
     end
   end
 
-  if settings.listlines
+  if settings.list_lines
     RbSearch::log("\n")
     lines = searcher.get_matching_lines
     hdr_text =
-      if settings.uniquelines
+      if settings.unique_lines
         'Unique lines with matches'
       else
         'Lines with matches'

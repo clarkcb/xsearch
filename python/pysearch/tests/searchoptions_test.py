@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ################################################################################
 #
 # searchoptions_test.py
@@ -6,88 +7,89 @@
 # class SearchOptionsTest: testing of SearchOptions class
 #
 ################################################################################
+"""
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__))[:-6])
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
 from pysearch import SearchException, SearchOptions, SearchSettings
 
 
 class SearchOptionsTest(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
-        self.searchoptions = SearchOptions()
+    def setUpClass(cls):
+        cls.search_options = SearchOptions()
 
     def test_no_args(self):
         # test the props
-        settings = self.searchoptions.search_settings_from_args([])
-        self.assertFalse(settings.archivesonly)
+        settings = self.search_options.search_settings_from_args([])
+        self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
-        self.assertFalse(settings.firstmatch)
-        self.assertTrue(settings.excludehidden)
-        self.assertEqual(settings.linesafter, 0)
-        self.assertEqual(settings.linesbefore, 0)
-        self.assertFalse(settings.listdirs)
-        self.assertFalse(settings.listfiles)
-        self.assertFalse(settings.listlines)
-        self.assertEqual(settings.maxlinelength, 150)
-        self.assertFalse(settings.multilinesearch)
-        self.assertTrue(settings.printresults)
-        self.assertFalse(settings.printusage)
-        self.assertFalse(settings.printversion)
+        self.assertFalse(settings.first_match)
+        self.assertTrue(settings.exclude_hidden)
+        self.assertEqual(settings.lines_after, 0)
+        self.assertEqual(settings.lines_before, 0)
+        self.assertFalse(settings.list_dirs)
+        self.assertFalse(settings.list_files)
+        self.assertFalse(settings.list_lines)
+        self.assertEqual(settings.max_line_length, 150)
+        self.assertFalse(settings.multi_line_search)
+        self.assertTrue(settings.print_results)
+        self.assertFalse(settings.print_usage)
+        self.assertFalse(settings.print_version)
         self.assertTrue(settings.recursive)
-        self.assertFalse(settings.searcharchives)
-        self.assertFalse(settings.uniquelines)
+        self.assertFalse(settings.search_archives)
+        self.assertFalse(settings.unique_lines)
         self.assertFalse(settings.verbose)
         # test the extension and pattern sets
-        self.assertFalse(settings.in_archiveextensions)
-        self.assertFalse(settings.in_archivefilepatterns)
-        self.assertFalse(settings.in_dirpatterns)
-        self.assertFalse(settings.in_filepatterns)
-        self.assertFalse(settings.in_linesafterpatterns)
-        self.assertFalse(settings.in_linesbeforepatterns)
-        self.assertFalse(settings.linesaftertopatterns)
-        self.assertFalse(settings.linesafteruntilpatterns)
-        self.assertFalse(settings.out_archiveextensions)
-        self.assertFalse(settings.out_archivefilepatterns)
-        self.assertFalse(settings.out_dirpatterns)
-        self.assertFalse(settings.out_filepatterns)
-        self.assertFalse(settings.out_linesafterpatterns)
-        self.assertFalse(settings.out_linesbeforepatterns)
-        self.assertFalse(settings.searchpatterns)
+        self.assertFalse(settings.in_archive_extensions)
+        self.assertFalse(settings.in_archive_file_patterns)
+        self.assertFalse(settings.in_dir_patterns)
+        self.assertFalse(settings.in_file_patterns)
+        self.assertFalse(settings.in_lines_after_patterns)
+        self.assertFalse(settings.in_lines_before_patterns)
+        self.assertFalse(settings.lines_after_to_patterns)
+        self.assertFalse(settings.lines_after_until_patterns)
+        self.assertFalse(settings.out_archive_extensions)
+        self.assertFalse(settings.out_archive_file_patterns)
+        self.assertFalse(settings.out_dir_patterns)
+        self.assertFalse(settings.out_file_patterns)
+        self.assertFalse(settings.out_lines_after_patterns)
+        self.assertFalse(settings.out_lines_before_patterns)
+        self.assertFalse(settings.search_patterns)
 
     def test_valid_args(self):
         args = ['-x', 'py,rb', '-s', 'Search', '.']
-        settings = self.searchoptions.search_settings_from_args(args)
+        settings = self.search_options.search_settings_from_args(args)
         self.assertEqual(1, len(settings.paths))
         for x in {'py', 'rb'}:
             self.assertIn(x, settings.in_extensions)
-        self.assertEqual('Search', list(settings.searchpatterns)[0].pattern)
+        self.assertEqual('Search', list(settings.search_patterns)[0].pattern)
 
-    def test_archivesonly_arg(self):
+    def test_archives_only_arg(self):
         args = ['--archivesonly']
-        settings = self.searchoptions.search_settings_from_args(args)
-        self.assertTrue(settings.archivesonly)
-        self.assertTrue(settings.searcharchives)
+        settings = self.search_options.search_settings_from_args(args)
+        self.assertTrue(settings.archives_only)
+        self.assertTrue(settings.search_archives)
 
     def test_debug_arg(self):
         args = ['--debug']
-        settings = self.searchoptions.search_settings_from_args(args)
+        settings = self.search_options.search_settings_from_args(args)
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
 
     def test_missing_arg(self):
         args = ['-x', 'py,rb', '-s', 'Search', '.', '-D']
         with self.assertRaises(SearchException) as cm:
-            settings = self.searchoptions.search_settings_from_args(args)
+            settings = self.search_options.search_settings_from_args(args)
         self.assertEqual(str(cm.exception), 'Missing value for option D')
 
     def test_invalid_arg(self):
         args = ['-x', 'py,rb', '-s', 'Search', '.', '-Q']
         with self.assertRaises(SearchException) as cm:
-            settings = self.searchoptions.search_settings_from_args(args)
+            settings = self.search_options.search_settings_from_args(args)
         self.assertEqual(str(cm.exception), 'Invalid option: Q')
 
     def test_settings_from_json(self):
@@ -104,20 +106,20 @@ class SearchOptionsTest(unittest.TestCase):
   "allmatches": false,
   "includehidden": true
 }'''
-        self.searchoptions.settings_from_json(json, settings)
+        self.search_options.settings_from_json(json, settings)
         self.assertEqual(1, len(settings.paths))
         self.assertIn('~/src/xsearch/', settings.paths)
         for x in {'js', 'ts'}:
             self.assertIn(x, settings.in_extensions)
-        self.assertEqual(list(settings.searchpatterns)[0].pattern, 'Searcher')
-        self.assertEqual(list(settings.out_dirpatterns)[0].pattern, 'node_module')
-        self.assertEqual(list(settings.out_filepatterns)[0].pattern, 'temp')
-        self.assertEqual(settings.linesbefore, 2)
-        self.assertEqual(settings.linesafter, 2)
+        self.assertEqual(list(settings.search_patterns)[0].pattern, 'Searcher')
+        self.assertEqual(list(settings.out_dir_patterns)[0].pattern, 'node_module')
+        self.assertEqual(list(settings.out_file_patterns)[0].pattern, 'temp')
+        self.assertEqual(settings.lines_before, 2)
+        self.assertEqual(settings.lines_after, 2)
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
-        self.assertTrue(settings.firstmatch)
-        self.assertFalse(settings.excludehidden)
+        self.assertTrue(settings.first_match)
+        self.assertFalse(settings.exclude_hidden)
 
 
 if __name__ == '__main__':

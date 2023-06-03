@@ -2,29 +2,29 @@
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
         [cljsearch.searchsettings :only
-    (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly set-debug)]))
+    (DEFAULT-SETTINGS add-extension add-pattern set-archives-only set-debug)]))
 
 (deftest test-default-settings
   (let [settings DEFAULT-SETTINGS]
     (testing "test-default-settings"
-      (is (not (:archivesonly settings)))
+      (is (not (:archives-only settings)))
       (is (not (:debug settings)))
-      (is (:excludehidden settings))
-      (is (not (:firstmatch settings)))
-      (is (= (:linesafter settings) 0))
-      (is (= (:linesbefore settings) 0))
-      (is (not (:listdirs settings)))
-      (is (not (:listfiles settings)))
-      (is (not (:listlines settings)))
-      (is (= (:maxlinelength settings) 150))
-      (is (not (:multilinesearch settings)))
-      (is (:printresults settings))
-      (is (not (:printusage settings)))
-      (is (not (:printversion settings)))
+      (is (:exclude-hidden settings))
+      (is (not (:first-match settings)))
+      (is (= (:lines-after settings) 0))
+      (is (= (:lines-before settings) 0))
+      (is (not (:list-dirs settings)))
+      (is (not (:list-files settings)))
+      (is (not (:list-lines settings)))
+      (is (= (:max-line-length settings) 150))
+      (is (not (:multi-line-search settings)))
+      (is (:print-results settings))
+      (is (not (:print-usage settings)))
+      (is (not (:print-version settings)))
       (is (:recursive settings))
-      (is (not (:searcharchives settings)))
+      (is (not (:search-archives settings)))
       (is (= (:startpath settings) nil))
-      (is (not (:uniquelines settings)))
+      (is (not (:unique-lines settings)))
       (is (not (:verbose settings))))))
 
 (deftest test-add-extensions
@@ -37,16 +37,16 @@
 
 (deftest test-add-pattern
   (let [settings DEFAULT-SETTINGS
-        with-pattern (add-pattern settings "Search" :searchpatterns)]
+        with-pattern (add-pattern settings "Search" :search-patterns)]
     (testing "test-add-pattern"
-      (is (= (count (:searchpatterns with-pattern)) 1)))))
+      (is (= (count (:search-patterns with-pattern)) 1)))))
 
-(deftest test-set-archivesonly
+(deftest test-set-archives-only
   (let [settings DEFAULT-SETTINGS
-        with-archivesonly (set-archivesonly settings true)]
-    (testing "test-set-archivesonly"
-      (is (:archivesonly with-archivesonly))
-      (is (:searcharchives with-archivesonly)))))
+        with-archives-only (set-archives-only settings true)]
+    (testing "test-set-archives-only"
+      (is (:archives-only with-archives-only))
+      (is (:search-archives with-archives-only)))))
 
 (deftest test-set-debug
   (let [settings DEFAULT-SETTINGS

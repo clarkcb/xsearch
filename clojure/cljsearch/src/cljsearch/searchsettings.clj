@@ -15,88 +15,88 @@
 
 (defrecord SearchSettings
   [
-    archivesonly
+    archives-only
     colorize
     debug
-    excludehidden
-    firstmatch
-    in-archiveextensions
-    in-archivefilepatterns
-    in-dirpatterns
+    exclude-hidden
+    first-match
+    in-archive-extensions
+    in-archive-file-patterns
+    in-dir-patterns
     in-extensions
-    in-filepatterns
-    in-filetypes
-    in-linesafterpatterns
-    in-linesbeforepatterns
-    linesafter
-    linesaftertopatterns
-    linesafteruntilpatterns
-    linesbefore
-    listdirs
-    listfiles
-    listlines
-    maxlinelength
-    multilinesearch
-    out-archiveextensions
-    out-archivefilepatterns
-    out-dirpatterns
+    in-file-patterns
+    in-file-types
+    in-lines-after-patterns
+    in-lines-before-patterns
+    lines-after
+    lines-after-to-patterns
+    lines-after-until-patterns
+    lines-before
+    list-dirs
+    list-files
+    list-lines
+    max-line-length
+    multi-line-search
+    out-archive-extensions
+    out-archive-file-patterns
+    out-dir-patterns
     out-extensions
-    out-filepatterns
-    out-filetypes
-    out-linesafterpatterns
-    out-linesbeforepatterns
+    out-file-patterns
+    out-file-types
+    out-lines-after-patterns
+    out-lines-before-patterns
     paths
-    printresults
-    printusage
-    printversion
+    print-results
+    print-usage
+    print-version
     recursive
-    searcharchives
-    searchpatterns
-    textfileencoding
-    uniquelines
+    search-archives
+    search-patterns
+    text-file-encoding
+    unique-lines
     verbose
   ])
 
 (def DEFAULT-SETTINGS (->SearchSettings
-    false   ; archivesonly
+    false   ; archives-only
     true    ; colorize
     false   ; debug
-    true    ; excludehidden
-    false   ; firstmatch
-    #{}     ; in-archiveextensions
-    #{}     ; in-archivefilepatterns
-    #{}     ; in-dirpatterns
+    true    ; exclude-hidden
+    false   ; first-match
+    #{}     ; in-archive-extensions
+    #{}     ; in-archive-file-patterns
+    #{}     ; in-dir-patterns
     #{}     ; in-extensions
-    #{}     ; in-filepatterns
-    #{}     ; in-filetypes
-    #{}     ; in-linesafterpatterns
-    #{}     ; in-linesbeforepatterns
-    0       ; linesafter
-    #{}     ; linesaftertopatterns
-    #{}     ; linesafteruntilpatterns
-    0       ; linesbefore
-    false   ; listdirs
-    false   ; listfiles
-    false   ; listlines
-    150     ; maxlinelength
-    false   ; multilinesearch
-    #{}     ; out-archiveextensions
-    #{}     ; out-archivefilepatterns
-    #{}     ; out-dirpatterns
+    #{}     ; in-file-patterns
+    #{}     ; in-file-types
+    #{}     ; in-lines-after-patterns
+    #{}     ; in-lines-before-patterns
+    0       ; lines-after
+    #{}     ; lines-after-to-patterns
+    #{}     ; lines-after-until-patterns
+    0       ; lines-before
+    false   ; list-dirs
+    false   ; list-files
+    false   ; list-lines
+    150     ; max-line-length
+    false   ; multi-line-search
+    #{}     ; out-archive-extensions
+    #{}     ; out-archive-file-patterns
+    #{}     ; out-dir-patterns
     #{}     ; out-extensions
-    #{}     ; out-filepatterns
-    #{}     ; out-filetypes
-    #{}     ; out-linesafterpatterns
-    #{}     ; out-linesbeforepatterns
+    #{}     ; out-file-patterns
+    #{}     ; out-file-types
+    #{}     ; out-lines-after-patterns
+    #{}     ; out-lines-before-patterns
     #{}     ; paths
-    true    ; printresults
-    false   ; printusage
-    false   ; printversion
+    true    ; print-results
+    false   ; print-usage
+    false   ; print-version
     true    ; recursive
-    false   ; searcharchives
-    #{}     ; searchpatterns
-    "utf-8" ; textfileencoding
-    false   ; uniquelines
+    false   ; search-archives
+    #{}     ; search-patterns
+    "utf-8" ; text-file-encoding
+    false   ; unique-lines
     false   ; verbose
   ))
 
@@ -117,19 +117,19 @@
       :else
         (add-extensions settings (str/split ext #",") extname))))
 
-(defn add-filetypes [settings types typesname]
+(defn add-file-types [settings types typesname]
   (if (empty? types)
     settings
-    (add-filetypes
+    (add-file-types
      (update-in settings [typesname] #(add-element (from-name (first types)) %)) (rest types) typesname)))
 
-(defn add-filetype [settings typ typesname]
+(defn add-file-type [settings typ typesname]
   (let [t (type typ)]
     (cond
       (= t (type []))
-      (add-filetypes settings typ typesname)
+      (add-file-types settings typ typesname)
       :else
-      (add-filetypes settings (str/split typ #",") typesname))))
+      (add-file-types settings (str/split typ #",") typesname))))
 
 (defn add-paths [settings paths]
   (if (empty? paths)
@@ -167,11 +167,11 @@
       :else
         (assoc settings numname (read-string n)))))
 
-(defn set-archivesonly [settings b]
-  (let [with-searcharchives (assoc settings :searcharchives b)]
+(defn set-archives-only [settings b]
+  (let [with-search-archives (assoc settings :search-archives b)]
     (if b
-      (assoc with-searcharchives :archivesonly true)
-      with-searcharchives)))
+      (assoc with-search-archives :archives-only true)
+      with-search-archives)))
 
 (defn set-debug [settings b]
   (let [with-debug (assoc settings :debug true)]

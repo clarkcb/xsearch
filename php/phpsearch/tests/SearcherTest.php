@@ -10,15 +10,15 @@ use phpsearch\SearchSettings;
 
 class SearcherTest extends TestCase
 {
-    private function get_settings()
+    private function get_settings(): SearchSettings
     {
         $settings = new SearchSettings();
         $settings->paths = ['.'];
-        array_push($settings->searchpatterns, "Searcher");
+        $settings->search_patterns[] = "Searcher";
         return $settings;
     }
 
-    private function get_test_file()
+    private function get_test_file(): string
     {
         return FileUtil::expand_user_home_path(Config::SHAREDPATH . '/testFiles/testFile2.txt');
     }
@@ -37,7 +37,7 @@ class SearcherTest extends TestCase
     public function test_is_search_dir_matches_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_dirpatterns, 'plsearch');
+        $settings->in_dir_patterns[] = 'plsearch';
         $searcher = new Searcher($settings);
         $dir = 'plsearch';
         $this->assertTrue($searcher->is_search_dir($dir));
@@ -46,7 +46,7 @@ class SearcherTest extends TestCase
     public function test_is_search_dir_no_match_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_dirpatterns, 'plsearch');
+        $settings->in_dir_patterns[] = 'plsearch';
         $searcher = new Searcher($settings);
         $dir = 'pysearch';
         $this->assertFalse($searcher->is_search_dir($dir));
@@ -55,7 +55,7 @@ class SearcherTest extends TestCase
     public function test_is_search_dir_matches_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_dirpatterns, 'pysearch');
+        $settings->out_dir_patterns[] = 'pysearch';
         $searcher = new Searcher($settings);
         $dir = 'pysearch';
         $this->assertFalse($searcher->is_search_dir($dir));
@@ -64,7 +64,7 @@ class SearcherTest extends TestCase
     public function test_is_search_dir_no_match_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_dirpatterns, 'pysearch');
+        $settings->out_dir_patterns[] = 'pysearch';
         $searcher = new Searcher($settings);
         $dir = 'plsearch';
         $this->assertTrue($searcher->is_search_dir($dir));
@@ -97,7 +97,7 @@ class SearcherTest extends TestCase
     public function test_is_search_dir_hidden_dir_include_hidden()
     {
         $settings = $this->get_settings();
-        $settings->excludehidden = 0;
+        $settings->exclude_hidden = false;
         $searcher = new Searcher($settings);
         $dir = '.git';
         $this->assertTrue($searcher->is_search_dir($dir));
@@ -117,7 +117,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_matches_in_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_extensions, 'pm');
+        $settings->in_extensions[] = 'pm';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertTrue($searcher->is_search_file($file));
@@ -126,7 +126,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_no_match_in_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_extensions, 'pl');
+        $settings->in_extensions[] = 'pl';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertFalse($searcher->is_search_file($file));
@@ -135,7 +135,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_matches_out_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_extensions, 'pm');
+        $settings->out_extensions[] = 'pm';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertFalse($searcher->is_search_file($file));
@@ -144,7 +144,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_no_match_out_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_extensions, 'py');
+        $settings->out_extensions[] = 'py';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertTrue($searcher->is_search_file($file));
@@ -153,7 +153,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_matches_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_filepatterns, 'Search');
+        $settings->in_file_patterns[] = 'Search';
         $searcher = new Searcher($settings);
         $file = 'Searcher.pm';
         $this->assertTrue($searcher->is_search_file($file));
@@ -162,7 +162,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_no_match_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_filepatterns, 'Search');
+        $settings->in_file_patterns[] = 'Search';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertFalse($searcher->is_search_file($file));
@@ -171,7 +171,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_matches_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_filepatterns, 'Search');
+        $settings->out_file_patterns[] = 'Search';
         $searcher = new Searcher($settings);
         $file = 'Searcher.pm';
         $this->assertFalse($searcher->is_search_file($file));
@@ -180,7 +180,7 @@ class SearcherTest extends TestCase
     public function test_is_search_file_no_match_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_filepatterns, 'Search');
+        $settings->out_file_patterns[] = 'Search';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertTrue($searcher->is_search_file($file));
@@ -200,7 +200,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_matches_in_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_archiveextensions, 'zip');
+        $settings->in_archive_extensions[] = 'zip';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertTrue($searcher->is_archive_search_file($file));
@@ -209,7 +209,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_no_match_in_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_archiveextensions, 'gz');
+        $settings->in_archive_extensions[] = 'gz';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertFalse($searcher->is_archive_search_file($file));
@@ -218,7 +218,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_matches_out_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_archiveextensions, 'zip');
+        $settings->out_archive_extensions[] = 'zip';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertFalse($searcher->is_archive_search_file($file));
@@ -227,7 +227,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_no_match_out_extension()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_archiveextensions, 'gz');
+        $settings->out_archive_extensions[] = 'gz';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertTrue($searcher->is_archive_search_file($file));
@@ -236,7 +236,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_matches_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_archivefilepatterns, 'arch');
+        $settings->in_archive_file_patterns[] = 'arch';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertTrue($searcher->is_archive_search_file($file));
@@ -245,7 +245,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_no_match_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_archivefilepatterns, 'archives');
+        $settings->in_archive_file_patterns[] = 'archives';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertFalse($searcher->is_archive_search_file($file));
@@ -254,7 +254,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_matches_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_archivefilepatterns, 'arch');
+        $settings->out_archive_file_patterns[] = 'arch';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertFalse($searcher->is_archive_search_file($file));
@@ -263,7 +263,7 @@ class SearcherTest extends TestCase
     public function test_is_archive_search_file_no_match_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_archivefilepatterns, 'archives');
+        $settings->out_archive_file_patterns[] = 'archives';
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertTrue($searcher->is_archive_search_file($file));
@@ -283,7 +283,7 @@ class SearcherTest extends TestCase
     public function test_filter_file_is_search_file()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_extensions, 'pm');
+        $settings->in_extensions[] = 'pm';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertTrue($searcher->filter_file($file));
@@ -292,7 +292,7 @@ class SearcherTest extends TestCase
     public function test_filter_file_not_is_search_file()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_extensions, 'pl');
+        $settings->in_extensions[] = 'pl';
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertFalse($searcher->filter_file($file));
@@ -309,13 +309,13 @@ class SearcherTest extends TestCase
     public function test_filter_file_hidden_includehidden()
     {
         $settings = $this->get_settings();
-        $settings->excludehidden = 0;
+        $settings->exclude_hidden = false;
         $searcher = new Searcher($settings);
         $file = '.gitignore';
         $this->assertTrue($searcher->filter_file($file));
     }
 
-    public function test_filter_file_archive_no_searcharchives()
+    public function test_filter_file_archive_no_search_archives()
     {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
@@ -324,31 +324,31 @@ class SearcherTest extends TestCase
         $this->assertFalse($searcher->filter_file($file));
     }
 
-    public function test_filter_file_archive_searcharchives()
+    public function test_filter_file_archive_search_archives()
     {
         $settings = $this->get_settings();
-        $settings->searcharchives = 1;
+        $settings->search_archives = true;
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
         $this->assertTrue($searcher->filter_file($file));
     }
 
-    public function test_filter_file_archive_archivesonly()
+    public function test_filter_file_archive_archives_only()
     {
         $settings = $this->get_settings();
-        $settings->archivesonly = 1;
-        $settings->searcharchives = 1;
+        $settings->archives_only = true;
+        $settings->search_archives = true;
         $searcher = new Searcher($settings);
         $file = 'archive.zip';
         $this->assertTrue($searcher->filter_file($file));
     }
 
-    public function test_filter_file_nonarchive_archivesonly()
+    public function test_filter_file_nonarchive_archives_only()
     {
         $settings = $this->get_settings();
-        $settings->archivesonly = 1;
-        $settings->searcharchives = 1;
+        $settings->archives_only = true;
+        $settings->search_archives = true;
         $searcher = new Searcher($settings);
         $file = 'FileUtil.pm';
         $this->assertFalse($searcher->filter_file($file));
@@ -361,9 +361,9 @@ class SearcherTest extends TestCase
     {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
-        $testfile = $this->get_test_file();
-        $contents = file_get_contents($testfile);
-        $results = $searcher->search_multiline_string($contents);
+        $test_file = $this->get_test_file();
+        $contents = file_get_contents($test_file);
+        $results = $searcher->search_multi_line_string($contents);
         $this->assertCount(2, $results);
 
         $firstResult = $results[0];
@@ -378,14 +378,14 @@ class SearcherTest extends TestCase
     }
 
     ################################################################################
-    # search_multiline_string tests
+    # search_multi_line_string tests
     ################################################################################
-    public function test_search_multiline_string()
+    public function test_search_multi_line_string()
     {
         $settings = $this->get_settings();
         $searcher = new Searcher($settings);
-        $testfile = $this->get_test_file();
-        $lines = file($testfile);
+        $test_file = $this->get_test_file();
+        $lines = file($test_file);
         $results = $searcher->search_lines($lines);
         $this->assertCount(2, $results);
 

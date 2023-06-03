@@ -1,6 +1,6 @@
 ################################################################################
 #
-# searchfile_test.rb
+# search_file_test.rb
 #
 # Test the SearchFile class
 #
@@ -12,32 +12,32 @@ require 'minitest/autorun'
 module RbSearch
 
   class SearchFileTest < Minitest::Test
-    def test_searchfile_abs_path
+    def test_search_file_abs_path
       path = '/Users/cary/src/xsearch/ruby/rbsearch'
-      filename = 'searchfile.rb'
-      searchfile = SearchFile.new(path, filename, FileType::CODE)
-      assert_equal('/Users/cary/src/xsearch/ruby/rbsearch/searchfile.rb', searchfile.relativepath)
+      file_name = 'searchfile.rb'
+      search_file = SearchFile.new(path, file_name, FileType::CODE)
+      assert_equal('/Users/cary/src/xsearch/ruby/rbsearch/searchfile.rb', search_file.relative_path)
     end
 
-    def test_searchfile_rel_path1
+    def test_search_file_rel_path1
       path = '.'
-      filename = 'searchfile.rb'
-      searchfile = SearchFile.new(path, filename, FileType::CODE)
-      assert_equal('./searchfile.rb', searchfile.relativepath)
+      file_name = 'searchfile.rb'
+      search_file = SearchFile.new(path, file_name, FileType::CODE)
+      assert_equal('./searchfile.rb', search_file.relative_path)
     end
 
-    def test_searchfile_rel_path2
+    def test_search_file_rel_path2
       path = './'
-      filename = 'searchfile.rb'
-      searchfile = SearchFile.new(path, filename, FileType::CODE)
-      assert_equal('./searchfile.rb', searchfile.relativepath)
+      file_name = 'searchfile.rb'
+      search_file = SearchFile.new(path, file_name, FileType::CODE)
+      assert_equal('./searchfile.rb', search_file.relative_path)
     end
 
-    def test_searchfile_rel_path3
+    def test_search_file_rel_path3
       path = '..'
-      filename = 'searchfile.rb'
-      searchfile = SearchFile.new(path, filename, FileType::CODE)
-      assert_equal('../searchfile.rb', searchfile.relativepath)
+      file_name = 'searchfile.rb'
+      search_file = SearchFile.new(path, file_name, FileType::CODE)
+      assert_equal('../searchfile.rb', search_file.relative_path)
     end
   end
 end

@@ -25,7 +25,7 @@ sub new {
     my $class = shift;
     my $self = {
         settings => shift,
-        filetypes => new plsearch::FileTypes(),
+        file_types => new plsearch::FileTypes(),
         results => [],
     };
     bless $self, $class;
@@ -54,20 +54,20 @@ sub validate_settings {
             return $errs;
         }
     }
-    unless (scalar @{$self->{settings}->{searchpatterns}}) {
+    unless (scalar @{$self->{settings}->{search_patterns}}) {
         push(@{$errs}, 'No search patterns defined');
         return $errs;
     }
-    if ($self->{settings}->{linesafter} < 0) {
-        push(@{$errs}, 'Invalid linesafter');
+    if ($self->{settings}->{lines_after} < 0) {
+        push(@{$errs}, 'Invalid lines_after');
         return $errs;
     }
-    if ($self->{settings}->{linesbefore} < 0) {
-        push(@{$errs}, 'Invalid linesbefore');
+    if ($self->{settings}->{lines_before} < 0) {
+        push(@{$errs}, 'Invalid lines_before');
         return $errs;
     }
-    if ($self->{settings}->{maxlinelength} < 0) {
-        push(@{$errs}, 'Invalid maxlinelength');
+    if ($self->{settings}->{max_line_length} < 0) {
+        push(@{$errs}, 'Invalid max_line_length');
     }
     return $errs;
 }
@@ -98,19 +98,19 @@ sub is_search_dir {
         return 1;
     }
     my @path_elems = grep {$_ ne ''} File::Spec->splitdir($d);
-    if ($self->{settings}->{excludehidden}) {
+    if ($self->{settings}->{exclude_hidden}) {
         foreach my $p (@path_elems) {
             if (plsearch::FileUtil::is_hidden($p)) {
                 return 0;
             }
         }
     }
-    if (scalar @{$self->{settings}->{in_dirpatterns}} &&
-        !$self->any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dirpatterns})) {
+    if (scalar @{$self->{settings}->{in_dir_patterns}} &&
+        !$self->any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_dirpatterns}} &&
-        $self->any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dirpatterns})) {
+    if (scalar @{$self->{settings}->{out_dir_patterns}} &&
+        $self->any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})) {
         return 0;
     }
     return 1;
@@ -127,21 +127,21 @@ sub is_search_file {
         (grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{in_filepatterns}} &&
-        !$self->matches_any_pattern($f, $self->{settings}->{in_filepatterns})) {
+    if (scalar @{$self->{settings}->{in_file_patterns}} &&
+        !$self->matches_any_pattern($f, $self->{settings}->{in_file_patterns})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_filepatterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_filepatterns})) {
+    if (scalar @{$self->{settings}->{out_file_patterns}} &&
+        $self->matches_any_pattern($f, $self->{settings}->{out_file_patterns})) {
         return 0;
     }
-    my $type = $self->{filetypes}->get_filetype($f);
-    if (scalar @{$self->{settings}->{in_filetypes}} &&
-        !(grep {$_ eq $type} @{$self->{settings}->{in_filetypes}})) {
+    my $type = $self->{file_types}->get_file_type($f);
+    if (scalar @{$self->{settings}->{in_file_types}} &&
+        !(grep {$_ eq $type} @{$self->{settings}->{in_file_types}})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_filetypes}} &&
-        (grep {$_ eq $type} @{$self->{settings}->{out_filetypes}})) {
+    if (scalar @{$self->{settings}->{out_file_types}} &&
+        (grep {$_ eq $type} @{$self->{settings}->{out_file_types}})) {
         return 0;
     }
     return 1;
@@ -150,20 +150,20 @@ sub is_search_file {
 sub is_archive_search_file {
     my ($self, $f) = @_;
     my $ext = plsearch::FileUtil::get_extension($f);
-    if (scalar @{$self->{settings}->{in_archiveextensions}} &&
-        !(grep {$_ eq $ext} @{$self->{settings}->{in_archiveextensions}})) {
+    if (scalar @{$self->{settings}->{in_archive_extensions}} &&
+        !(grep {$_ eq $ext} @{$self->{settings}->{in_archive_extensions}})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_archiveextensions}} &&
-        (grep {$_ eq $ext} @{$self->{settings}->{out_archiveextensions}})) {
+    if (scalar @{$self->{settings}->{out_archive_extensions}} &&
+        (grep {$_ eq $ext} @{$self->{settings}->{out_archive_extensions}})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{in_archivefilepatterns}} &&
-        !$self->matches_any_pattern($f, $self->{settings}->{in_archivefilepatterns})) {
+    if (scalar @{$self->{settings}->{in_archive_file_patterns}} &&
+        !$self->matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_archivefilepatterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_archivefilepatterns})) {
+    if (scalar @{$self->{settings}->{out_archive_file_patterns}} &&
+        $self->matches_any_pattern($f, $self->{settings}->{out_archive_file_patterns})) {
         return 0;
     }
     return 1;
@@ -171,113 +171,113 @@ sub is_archive_search_file {
 
 sub rec_get_search_dirs {
     my ($self, $d) = @_;
-    my $searchdirs = [];
+    my $search_dirs = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
         my $subfile = File::Spec->join($d, $f);
         if (-d $subfile && !plsearch::FileUtil::is_dot_dir($f) && $self->is_search_dir($subfile)) {
-            push(@{$searchdirs}, $subfile);
+            push(@{$search_dirs}, $subfile);
         }
     }
     closedir(DIR);
-    foreach my $searchdir (@{$searchdirs}) {
-        my @merged = (@{$searchdirs}, @{$self->rec_get_search_dirs($searchdir)});
-        $searchdirs = \@merged;
+    foreach my $search_dir (@{$search_dirs}) {
+        my @merged = (@{$search_dirs}, @{$self->rec_get_search_dirs($search_dir)});
+        $search_dirs = \@merged;
     }
-    return $searchdirs;
+    return $search_dirs;
 }
 
 sub filter_file {
     my ($self, $f) = @_;
-    if ($self->{settings}->{excludehidden} && plsearch::FileUtil::is_hidden(basename($f))) {
+    if ($self->{settings}->{exclude_hidden} && plsearch::FileUtil::is_hidden(basename($f))) {
         return 0;
     }
-    if ($self->{filetypes}->is_archive($f)) {
-        if ($self->{settings}->{searcharchives} && $self->is_archive_search_file($f)) {
+    if ($self->{file_types}->is_archive($f)) {
+        if ($self->{settings}->{search_archives} && $self->is_archive_search_file($f)) {
             return 1;
         }
         return 0;
     }
-    return !$self->{settings}->{archivesonly} && $self->is_search_file($f);
+    return !$self->{settings}->{archives_only} && $self->is_search_file($f);
 }
 
 sub rec_get_search_files {
     # print "rec_get_search_files\n";
     my ($self, $d) = @_;
     # print "d: $d\n";
-    my $searchdirs = [];
-    my $searchfiles = [];
+    my $search_dirs = [];
+    my $search_files = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
-        my $subfile = File::Spec->join($d, $f);
-        if ($subfile !~ m[/\.{1,2}$]) {
-            if (-d $subfile && $self->is_search_dir($f)) {
-                # print "-d $subfile\n";
-                push(@{$searchdirs}, $subfile);
-            } elsif (-f $subfile && $self->filter_file($f)) {
-                # print "-f $subfile\n";
-                push(@{$searchfiles}, $subfile);
+        my $sub_file = File::Spec->join($d, $f);
+        if ($sub_file !~ m[/\.{1,2}$]) {
+            if (-d $sub_file && $self->is_search_dir($f)) {
+                # print "-d $sub_file\n";
+                push(@{$search_dirs}, $sub_file);
+            } elsif (-f $sub_file && $self->filter_file($f)) {
+                # print "-f $sub_file\n";
+                push(@{$search_files}, $sub_file);
             }
         }
     }
     closedir(DIR);
-    foreach my $searchdir (@{$searchdirs}) {
-        my $subsearchfiles = $self->rec_get_search_files($searchdir);
-        push(@{$searchfiles}, @{$subsearchfiles});
+    foreach my $search_dir (@{$search_dirs}) {
+        my $sub_search_files = $self->rec_get_search_files($search_dir);
+        push(@{$search_files}, @{$sub_search_files});
     }
 
-    return $searchfiles;
+    return $search_files;
 }
 
 sub get_search_files {
     my $self = shift;
-    my $searchfiles = [];
+    my $search_files = [];
 
     foreach my $path (@{$self->{settings}->{paths}}) {
         if (-d $path) {
-            push(@{$searchfiles}, @{$self->rec_get_search_files($path)});
+            push(@{$search_files}, @{$self->rec_get_search_files($path)});
         } elsif (-f $path) {
             if ($self->filter_file($path)) {
-                push(@{$searchfiles}, $path);
+                push(@{$search_files}, $path);
             } else {
                 plsearch::common::log("ERROR: Startpath does not match search settings");
             }
         }
     }
 
-    return $searchfiles;
+    return $search_files;
 }
 
 sub search {
     my $self = shift;
-    my $searchfiles = $self->get_search_files();
+    my $search_files = $self->get_search_files();
     if ($self->{settings}->{verbose}) {
-        my @sortedfiles = sort @{$searchfiles};
+        my @sorted_files = sort @{$search_files};
         my $sorted_dir_hash = {};
-        foreach my $f (@sortedfiles) {
+        foreach my $f (@sorted_files) {
             $sorted_dir_hash->{dirname($f)} = 1;
         }
-        my @sorteddirs = sort (keys %{$sorted_dir_hash});
-        plsearch::common::log(sprintf("\nDirectories to be searched (%d):", scalar @sorteddirs));
-        foreach my $d (@sorteddirs) {
+        my @sorted_dirs = sort (keys %{$sorted_dir_hash});
+        plsearch::common::log(sprintf("\nDirectories to be searched (%d):", scalar @sorted_dirs));
+        foreach my $d (@sorted_dirs) {
             plsearch::common::log($d);
         }
-        plsearch::common::log(sprintf("\nFiles to be searched (%d):", scalar @sortedfiles));
-        foreach my $f (@sortedfiles) {
+        plsearch::common::log(sprintf("\nFiles to be searched (%d):", scalar @sorted_files));
+        foreach my $f (@sorted_files) {
             plsearch::common::log($f);
         }
         plsearch::common::log('');
     }
 
     # search the files
-    foreach my $f (@{$searchfiles}) {
+    foreach my $f (@{$search_files}) {
         $self->search_file($f);
     }
 }
 
 sub search_file {
     my ($self, $f) = @_;
-    my $type = $self->{filetypes}->get_filetype($f);
+    my $type = $self->{file_types}->get_file_type($f);
     if ($type eq plsearch::FileType->TEXT || $type eq plsearch::FileType->CODE || $type eq plsearch::FileType->XML) {
         $self->search_text_file($f);
     } elsif ($type eq plsearch::FileType->BINARY) {
@@ -290,7 +290,7 @@ sub search_text_file {
     if ($self->{settings}->{debug}) {
         plsearch::common::log("Searching text file $f");
     }
-    if ($self->{settings}->{multilinesearch}) {
+    if ($self->{settings}->{multi_line_search}) {
         $self->search_text_file_contents($f);
     } else {
         $self->search_text_file_lines($f);
@@ -329,7 +329,7 @@ sub print_array {
     print "@{$aref}\n";
 }
 
-sub firstindex {
+sub first_index {
     my ($self, $val, $aref) = @_;
     my $i = 0;
     my $len = scalar @{$aref};
@@ -358,9 +358,9 @@ sub get_lines_before {
     my ($self, $s, $before_start_indices, $start_line_indices, $end_line_indices) = @_;
     my $lines_before = [];
     my $i = 0;
-    while ($i < scalar @{$before_start_indices} && $i < $self->{settings}->{linesbefore}) {
+    while ($i < scalar @{$before_start_indices} && $i < $self->{settings}->{lines_before}) {
         my $start_index = $before_start_indices->[$i];
-        my $end_index = $end_line_indices->[$self->firstindex($start_index, $start_line_indices)];
+        my $end_index = $end_line_indices->[$self->first_index($start_index, $start_line_indices)];
         my $line = substr($s, $start_index, $end_index - $start_index);
         push(@{$lines_before}, $line);
         $i++;
@@ -372,9 +372,9 @@ sub get_lines_after {
     my ($self, $s, $after_start_indices, $start_line_indices, $end_line_indices) = @_;
     my $lines_after = [];
     my $i = 0;
-    while ($i < scalar @{$after_start_indices} && $i < $self->{settings}->{linesafter}) {
+    while ($i < scalar @{$after_start_indices} && $i < $self->{settings}->{lines_after}) {
         my $start_index = $after_start_indices->[$i];
-        my $end_index = $end_line_indices->[$self->firstindex($start_index, $start_line_indices)];
+        my $end_index = $end_line_indices->[$self->first_index($start_index, $start_line_indices)];
         my $line = substr($s, $start_index, $end_index - $start_index);
         push(@{$lines_after}, $line);
         $i++;
@@ -392,7 +392,7 @@ sub search_multiline_string {
     #$self->print_array('start_line_indices', \@start_line_indices);
     my @end_line_indices = (@{$new_line_indices}, (length($s)-1));
     #$self->print_array('end_line_indices', \@end_line_indices);
-    foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
+    foreach my $pattern (@{$self->{settings}->{search_patterns}}) {
         while ($s =~ /$pattern/go) {
             my $start_index = $-[0];
             my $end_index = $+[0];
@@ -407,12 +407,12 @@ sub search_multiline_string {
             }
             #print "before_line_count: $before_line_count\n";
             #print "m_line_start_index: $m_line_start_index\n";
-            my $m_line_end_index = $end_line_indices[$self->firstindex($m_line_start_index, \@start_line_indices)];
+            my $m_line_end_index = $end_line_indices[$self->first_index($m_line_start_index, \@start_line_indices)];
             #print "m_line_end_index: $m_line_end_index\n";
             my $line = substr($s, $m_line_start_index, $m_line_end_index - $m_line_start_index);
             my $lines_before = [];
-            if ($self->{settings}->{linesbefore}) {
-                my $before_first_index = ($self->{settings}->{linesbefore} + 1) * -1;
+            if ($self->{settings}->{lines_before}) {
+                my $before_first_index = ($self->{settings}->{lines_before} + 1) * -1;
                 my @before_indices = @before_start_indices[$before_first_index .. -1];
                 #$self->print_array('before_indices', \@before_indices);
                 $lines_before = $self->get_lines_before(
@@ -423,9 +423,9 @@ sub search_multiline_string {
             }
             #print "start_index: $start_index\n";
             my $lines_after = [];
-            if ($self->{settings}->{linesafter}) {
+            if ($self->{settings}->{lines_after}) {
                 my $after_start_indices = $self->get_after_indices(\@start_line_indices, $start_index);
-                my @after_indices = @{$after_start_indices}[0 .. $self->{settings}->{linesafter}];
+                my @after_indices = @{$after_start_indices}[0 .. $self->{settings}->{lines_after}];
                 #$self->print_array('after_indices', \@after_indices);
                 $lines_after = $self->get_lines_after(
                     $s,
@@ -448,7 +448,7 @@ sub search_multiline_string {
                 $lines_before,
                 $lines_after);
             push(@{$results}, $r);
-            if ($self->{settings}->{firstmatch}) {
+            if ($self->{settings}->{first_match}) {
                 last;
             }
         }
@@ -478,19 +478,19 @@ sub lines_match {
 
 sub lines_before_match {
     my ($self, $lines_before) = @_;
-    return $self->lines_match($lines_before, $self->{settings}->{in_linesbeforepatterns},
-        $self->{settings}->{out_linesbeforepatterns});
+    return $self->lines_match($lines_before, $self->{settings}->{in_lines_before_patterns},
+        $self->{settings}->{out_lines_before_patterns});
 }
 
 sub lines_after_match {
     my ($self, $lines_after) = @_;
-    return $self->lines_match($lines_after, $self->{settings}->{in_linesafterpatterns},
-        $self->{settings}->{out_linesafterpatterns});
+    return $self->lines_match($lines_after, $self->{settings}->{in_lines_after_patterns},
+        $self->{settings}->{out_lines_after_patterns});
 }
 
 sub search_lines {
     my ($self, $lines) = @_;
-    my $linenum = 0;
+    my $line_num = 0;
     my $line = '';
     my $lines_before = [];
     my $lines_after = [];
@@ -507,9 +507,9 @@ sub search_lines {
         if (!$line) {
             last SEARCHLINES;
         }
-        $linenum++;
-        if ($self->{settings}->{linesafter}) {
-            while(scalar @{$lines_after} < $self->{settings}->{linesafter}) {
+        $line_num++;
+        if ($self->{settings}->{lines_after}) {
+            while(scalar @{$lines_after} < $self->{settings}->{lines_after}) {
                 my $line_after = shift(@{$lines});
                 if (!$line_after) {
                     last SEARCHLINES;
@@ -518,8 +518,8 @@ sub search_lines {
                 }
             }
         }
-        foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
-            if ($self->{settings}->{firstmatch} && $pattern_match_hash->{$pattern}) {
+        foreach my $pattern (@{$self->{settings}->{search_patterns}}) {
+            if ($self->{settings}->{first_match} && $pattern_match_hash->{$pattern}) {
                 next;
             }
             if ($line =~ /$pattern/) {
@@ -537,7 +537,7 @@ sub search_lines {
                     my $r = new plsearch::SearchResult(
                         $pattern,
                         '',
-                        $linenum,
+                        $line_num,
                         $start_index + 1,
                         $end_index + 1,
                         $line,
@@ -548,11 +548,11 @@ sub search_lines {
                 }
             }
         }
-        if ($self->{settings}->{linesbefore}) {
-            if (scalar @{$lines_before} == $self->{settings}->{linesbefore}) {
+        if ($self->{settings}->{lines_before}) {
+            if (scalar @{$lines_before} == $self->{settings}->{lines_before}) {
                 shift(@{$lines_before});
             }
-            if (scalar @{$lines_before} < $self->{settings}->{linesbefore}) {
+            if (scalar @{$lines_before} < $self->{settings}->{lines_before}) {
                 push(@{$lines_before}, $line);
             }
         }
@@ -581,7 +581,7 @@ sub search_binary_file {
 sub search_binary_string {
     my ($self, $s) = @_;
     my $results = [];
-    foreach my $pattern (@{$self->{settings}->{searchpatterns}}) {
+    foreach my $pattern (@{$self->{settings}->{search_patterns}}) {
         if ($s =~ /$pattern/s) {
             while ($s =~ /$pattern/go) {
                 my $start_index = $-[0];
@@ -596,7 +596,7 @@ sub search_binary_string {
                     [],
                     []);
                 push(@{$results}, $r);
-                if ($self->{settings}->{firstmatch}) {
+                if ($self->{settings}->{first_match}) {
                     last;
                 }
             }
@@ -615,10 +615,10 @@ sub sort_results ($$) {
     my $a = $_[0];
     my $b = $_[1];
     if ($a->{file} eq $b->{file}) {
-        if ($a->{linenum} == $b->{linenum}) {
+        if ($a->{line_num} == $b->{line_num}) {
             $a->{match_start_index} <=> $b->{match_start_index}
         } else {
-            $a->{linenum} <=> $b->{linenum}
+            $a->{line_num} <=> $b->{line_num}
         }
     } else {
         $a->{file} cmp $b->{file}
@@ -690,7 +690,7 @@ sub get_matching_lines {
         $line_hash->{$l}++;
         push(@lines, $l);
     }
-    if ($self->{settings}->{uniquelines}) {
+    if ($self->{settings}->{unique_lines}) {
         @lines = keys %{$line_hash};
     }
     @lines = sort {uc($a) cmp uc($b)} @lines;
@@ -701,7 +701,7 @@ sub print_matching_lines {
     my ($self) = @_;
     my $lines = $self->get_matching_lines();
     my $msg = "\nLines with matches (%d):";
-    if ($self->{settings}->{uniquelines}) {
+    if ($self->{settings}->{unique_lines}) {
         $msg = "\nUnique lines with matches (%d):";
     }
     plsearch::common::log(sprintf($msg, scalar @{$lines}));

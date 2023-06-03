@@ -16,9 +16,9 @@ module RbSearch
 
     def format(result)
       if result.lines_before.empty? && result.lines_after.empty?
-        singleline_format(result)
+        single_line_format(result)
       else
-        multiline_format(result)
+        multi_line_format(result)
       end
     end
 
@@ -50,7 +50,7 @@ module RbSearch
       match_start_index = result.match_start_index - 1 - leading_ws_count
       match_end_index = match_start_index + match_length
 
-      if formatted_length > @settings.maxlinelength
+      if formatted_length > @settings.max_line_length
         line_start_index = match_start_index
         line_end_index = line_start_index + match_length
         match_start_index = 0
@@ -64,14 +64,14 @@ module RbSearch
         end
 
         formatted_length = line_end_index - line_start_index
-        while formatted_length < @settings.maxlinelength
+        while formatted_length < @settings.max_line_length
           if line_start_index.positive?
             line_start_index -= 1
             match_start_index += 1
             match_end_index += 1
             formatted_length = line_end_index - line_start_index
           end
-          if formatted_length < @settings.maxlinelength && line_end_index < max_line_end_index
+          if formatted_length < @settings.max_line_length && line_end_index < max_line_end_index
             line_end_index += 1
           end
           formatted_length = line_end_index - line_start_index
@@ -93,10 +93,10 @@ module RbSearch
       formatted
     end
 
-    def singleline_format(result)
+    def single_line_format(result)
       s = result.file.to_s
-      if result.linenum.positive? && !result.line.empty?
-        s << ": #{result.linenum}: [#{result.match_start_index}:#{result.match_end_index}]"
+      if result.line_num.positive? && !result.line.empty?
+        s << ": #{result.line_num}: [#{result.match_start_index}:#{result.match_end_index}]"
         s << ": #{format_matching_line(result)}"
       else
         s << " matches at [#{result.match_start_index}:#{result.match_end_index}]"
@@ -104,34 +104,34 @@ module RbSearch
       s
     end
 
-    def linenum_padding(result)
-      max_linenum = result.linenum + result.lines_after.length
-      max_linenum.to_s.length
+    def line_num_padding(result)
+      max_line_num = result.line_num + result.lines_after.length
+      max_line_num.to_s.length
     end
 
-    def multiline_format(result)
+    def multi_line_format(result)
       s = '=' * SEPARATOR_LEN + "\n"
-      s << "#{result.file}: #{result.linenum}: [#{result.match_start_index}:#{result.match_end_index}]\n"
+      s << "#{result.file}: #{result.line_num}: [#{result.match_start_index}:#{result.match_end_index}]\n"
       s << '-' * SEPARATOR_LEN + "\n"
-      line_format = " %%%dd | %%s\n" % [linenum_padding(result)]
-      current_linenum = result.linenum
+      line_format = " %%%dd | %%s\n" % [line_num_padding(result)]
+      current_line_num = result.line_num
       unless result.lines_before.empty?
-        current_linenum -= result.lines_before.length
+        current_line_num -= result.lines_before.length
         result.lines_before.each do |line_before|
-          s << ' ' + line_format % [current_linenum, strip_newlines(line_before)]
-          current_linenum += 1
+          s << ' ' + line_format % [current_line_num, strip_newlines(line_before)]
+          current_line_num += 1
         end
       end
       line = strip_newlines(result.line)
       if @settings.colorize
         line = colorize(line, result.match_start_index - 1, result.match_end_index - 1)
       end
-      s << '>' + line_format % [current_linenum, line]
+      s << '>' + line_format % [current_line_num, line]
       unless result.lines_after.empty?
-        current_linenum += 1
+        current_line_num += 1
         result.lines_after.each do |line_after|
-          s << ' ' + line_format % [current_linenum, strip_newlines(line_after)]
-          current_linenum += 1
+          s << ' ' + line_format % [current_line_num, strip_newlines(line_after)]
+          current_line_num += 1
         end
       end
       s + "\n"

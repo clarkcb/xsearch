@@ -52,6 +52,15 @@ namespace CsSearchTests
 		}
 
 		[Test]
+		public void SettingsFromArgs_ArchivesOnly_SearchArchives()
+		{
+			var args = new List<string>() { "-x", "cs", "-s", "Search", "--archivesonly", "." };
+			var settings = _searchOptions.SettingsFromArgs(args);
+			Assert.IsTrue(settings.ArchivesOnly);
+			Assert.IsTrue(settings.SearchArchives);
+		}
+
+		[Test]
 		public void SettingsFromArgs_InValidArgs_ThrowsSearchException()
 		{
 			var args = new List<string>() { "-x", "cs", "-s", "Search", ".", "-Q" };

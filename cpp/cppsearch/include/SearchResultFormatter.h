@@ -14,7 +14,7 @@ namespace cppsearch {
         std::string format_matching_line(const SearchResult* result) const;
         std::string single_line_format(const SearchResult* result);
         std::string multi_line_format(const SearchResult* result);
-        static long linenum_padding(const SearchResult* result);
+        static long line_num_padding(const SearchResult* result);
         static std::string colorize(const std::string& s, unsigned long start_idx, unsigned long length);
         static const int line_sep_length = 80;
 

@@ -27,9 +27,9 @@ class FileTypes
     private function get_file_type_map_from_json(): array
     {
         $file_type_map = array();
-        $filetypespath = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
-        if (file_exists($filetypespath)) {
-            $json_obj = json_decode(file_get_contents($filetypespath), true);
+        $file_types_path = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
+        if (file_exists($file_types_path)) {
+            $json_obj = json_decode(file_get_contents($file_types_path), true);
             foreach ($json_obj['filetypes'] as $ft) {
                 $type = (string)$ft['type'];
                 $exts = $ft['extensions'];
@@ -46,7 +46,7 @@ class FileTypes
                 $file_type_map['binary']
             );
         } else {
-            throw new SearchException('File not found: ' . $filetypespath);
+            throw new SearchException('File not found: ' . $file_types_path);
         }
         return $file_type_map;
     }
@@ -72,7 +72,7 @@ class FileTypes
         return FileType::Unknown;
     }
 
-    public function get_filetype(string $file): FileType
+    public function get_file_type(string $file): FileType
     {
         if ($this->is_code($file)) {
             return FileType::Code;

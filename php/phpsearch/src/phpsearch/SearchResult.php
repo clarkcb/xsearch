@@ -7,7 +7,7 @@ namespace phpsearch;
  *
  * @property string pattern
  * @property ?SearchFile file
- * @property int linenum
+ * @property int line_num
  * @property int match_start_index
  * @property int match_end_index
  * @property ?string line
@@ -18,7 +18,7 @@ class SearchResult
 {
     public string $pattern;
     public ?SearchFile $file;
-    public int $linenum;
+    public int $line_num;
     public int $match_start_index;
     public int $match_end_index;
     public ?string $line;
@@ -28,7 +28,7 @@ class SearchResult
     public function __construct(
         string $pattern,
         ?SearchFile $file,
-        int $linenum,
+        int $line_num,
         int $match_start_index,
         int $match_end_index,
         ?string $line,
@@ -37,7 +37,7 @@ class SearchResult
     ) {
         $this->pattern = $pattern;
         $this->file = $file;
-        $this->linenum = $linenum;
+        $this->line_num = $line_num;
         $this->match_start_index = $match_start_index;
         $this->match_end_index = $match_end_index;
         $this->line = $line;

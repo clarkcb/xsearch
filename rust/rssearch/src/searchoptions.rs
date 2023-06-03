@@ -23,7 +23,7 @@ type ArgAction = Box<dyn Fn(&str, &mut SearchSettings) -> Result<(), SearchError
 type FlagAction = Box<dyn Fn(bool, &mut SearchSettings) -> Result<(), SearchError>>;
 
 pub struct SearchOptions {
-    pub searchoptions: Vec<SearchOption>,
+    pub search_options: Vec<SearchOption>,
     pub version: String,
     pub arg_map: HashMap<String, ArgAction>,
     pub flag_map: HashMap<String, FlagAction>,
@@ -37,7 +37,7 @@ pub struct JsonSearchOptions {
 impl SearchOptions {
     pub fn new() -> Result<SearchOptions, SearchError> {
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let contents: String = match fs::read_to_string(config.searchoptions_path) {
+        let contents: String = match fs::read_to_string(config.search_options_path) {
             Ok(contents) => contents,
             Err(error) => return Err(SearchError::new(&error.to_string())),
         };
@@ -46,7 +46,7 @@ impl SearchOptions {
             Err(error) => return Err(SearchError::new(&error.to_string())),
         };
         Ok(SearchOptions {
-            searchoptions: jso.searchoptions,
+            search_options: jso.searchoptions,
             version: config.version.clone(),
             arg_map: get_arg_map(),
             flag_map: get_flag_map(),
@@ -55,7 +55,7 @@ impl SearchOptions {
 
     fn get_long_map(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
-        for so in self.searchoptions.iter() {
+        for so in self.search_options.iter() {
             map.insert(so.long.to_string(), so.long.to_string());
             if so.short.is_some() {
                 map.insert(so.short.as_ref().unwrap().to_string(), so.long.to_string());
@@ -212,8 +212,8 @@ impl SearchOptions {
     }
 
     fn get_sort_opt_map(&self) -> HashMap<String, &SearchOption> {
-        let mut map = HashMap::with_capacity(self.searchoptions.len());
-        for so in self.searchoptions.iter() {
+        let mut map = HashMap::with_capacity(self.search_options.len());
+        for so in self.search_options.iter() {
             let sortkey = match &so.short {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
@@ -227,12 +227,12 @@ impl SearchOptions {
         let mut usage = String::from("\nUsage:\n rssearch [options] -s <searchpattern>");
         usage.push_str(" <path> [<path> ...]\n\nOptions:\n");
         let sort_opt_map = self.get_sort_opt_map();
-        let mut sortkeys: Vec<String> = Vec::with_capacity(self.searchoptions.len());
+        let mut sortkeys: Vec<String> = Vec::with_capacity(self.search_options.len());
         for key in sort_opt_map.keys() {
             sortkeys.push(key.clone());
         }
         let mut maxlen: usize = 0;
-        for so in self.searchoptions.iter() {
+        for so in self.search_options.iter() {
             let len = match &so.short {
                 Some(_) => so.long.len() + 4,
                 None => so.long.len() + 2,
@@ -559,7 +559,7 @@ mod tests {
                 process::exit(1);
             }
         };
-        assert!(!options.searchoptions.is_empty());
+        assert!(!options.search_options.is_empty());
 
         let args: Vec<String> = vec![
             "rssearch", "-x", "php,rs", "-D", "debug", "-f", "search", "-s", "Searcher", "-t",
@@ -599,6 +599,31 @@ mod tests {
     }
 
     #[test]
+    fn test_settings_with_archives_only() {
+        let options = match SearchOptions::new() {
+            Ok(options) => options,
+            Err(error) => {
+                log(&error.to_string());
+                assert!(false);
+                process::exit(1);
+            }
+        };
+        assert!(!options.search_options.is_empty());
+
+        let args: Vec<String> = vec![
+            "rssearch", "-x", "php,rs","-s", "Searcher", "--archivesonly", ".",
+        ]
+        .into_iter()
+        .map(|a| a.to_string())
+        .collect();
+        let result = options.settings_from_args(args.iter());
+        assert!(result.is_ok());
+        let settings = result.ok().unwrap();
+        assert!(settings.archives_only);
+        assert!(settings.search_archives);
+    }
+
+    #[test]
     fn test_settings_from_json() {
         let options = match SearchOptions::new() {
             Ok(options) => options,
@@ -608,7 +633,7 @@ mod tests {
                 process::exit(1);
             }
         };
-        assert!(!options.searchoptions.is_empty());
+        assert!(!options.search_options.is_empty());
 
         let json = r#"
             {
@@ -670,7 +695,7 @@ mod tests {
                 process::exit(1);
             }
         };
-        assert!(!options.searchoptions.is_empty());
+        assert!(!options.search_options.is_empty());
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let path = Path::new(config.shared_path.as_str()).join("settings.json");

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ################################################################################
 #
 # searchsettings_test.py
@@ -6,11 +7,12 @@
 # class SearchSettingsTest: testing of SearchSettings class
 #
 ################################################################################
+"""
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__))[:-6])
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
 from pysearch import SearchSettings
 
@@ -21,81 +23,81 @@ class SearchSettingsTest(unittest.TestCase):
 
     def test_default_settings(self):
         # test the props
-        self.assertFalse(self.settings.archivesonly)
+        self.assertFalse(self.settings.archives_only)
         self.assertFalse(self.settings.debug)
-        self.assertFalse(self.settings.firstmatch)
-        self.assertTrue(self.settings.excludehidden)
-        self.assertEqual(0, self.settings.linesafter)
-        self.assertEqual(0, self.settings.linesbefore)
-        self.assertFalse(self.settings.listdirs)
-        self.assertFalse(self.settings.listfiles)
-        self.assertFalse(self.settings.listlines)
-        self.assertEqual(150, self.settings.maxlinelength)
-        self.assertFalse(self.settings.multilinesearch)
-        self.assertTrue(self.settings.printresults)
-        self.assertFalse(self.settings.printusage)
-        self.assertFalse(self.settings.printversion)
+        self.assertFalse(self.settings.first_match)
+        self.assertTrue(self.settings.exclude_hidden)
+        self.assertEqual(0, self.settings.lines_after)
+        self.assertEqual(0, self.settings.lines_before)
+        self.assertFalse(self.settings.list_dirs)
+        self.assertFalse(self.settings.list_files)
+        self.assertFalse(self.settings.list_lines)
+        self.assertEqual(150, self.settings.max_line_length)
+        self.assertFalse(self.settings.multi_line_search)
+        self.assertTrue(self.settings.print_results)
+        self.assertFalse(self.settings.print_usage)
+        self.assertFalse(self.settings.print_version)
         self.assertTrue(self.settings.recursive)
-        self.assertFalse(self.settings.searcharchives)
-        self.assertFalse(self.settings.uniquelines)
+        self.assertFalse(self.settings.search_archives)
+        self.assertFalse(self.settings.unique_lines)
         self.assertFalse(self.settings.verbose)
         # test the extension and pattern sets
-        self.assertFalse(self.settings.in_archiveextensions)
-        self.assertFalse(self.settings.in_archivefilepatterns)
-        self.assertFalse(self.settings.in_dirpatterns)
-        self.assertFalse(self.settings.in_filepatterns)
-        self.assertFalse(self.settings.in_linesafterpatterns)
-        self.assertFalse(self.settings.in_linesbeforepatterns)
-        self.assertFalse(self.settings.linesaftertopatterns)
-        self.assertFalse(self.settings.linesafteruntilpatterns)
-        self.assertFalse(self.settings.out_archiveextensions)
-        self.assertFalse(self.settings.out_archivefilepatterns)
-        self.assertFalse(self.settings.out_dirpatterns)
-        self.assertFalse(self.settings.out_filepatterns)
-        self.assertFalse(self.settings.out_linesafterpatterns)
-        self.assertFalse(self.settings.out_linesbeforepatterns)
-        self.assertFalse(self.settings.searchpatterns)
+        self.assertFalse(self.settings.in_archive_extensions)
+        self.assertFalse(self.settings.in_archive_file_patterns)
+        self.assertFalse(self.settings.in_dir_patterns)
+        self.assertFalse(self.settings.in_file_patterns)
+        self.assertFalse(self.settings.in_lines_after_patterns)
+        self.assertFalse(self.settings.in_lines_before_patterns)
+        self.assertFalse(self.settings.lines_after_to_patterns)
+        self.assertFalse(self.settings.lines_after_until_patterns)
+        self.assertFalse(self.settings.out_archive_extensions)
+        self.assertFalse(self.settings.out_archive_file_patterns)
+        self.assertFalse(self.settings.out_dir_patterns)
+        self.assertFalse(self.settings.out_file_patterns)
+        self.assertFalse(self.settings.out_lines_after_patterns)
+        self.assertFalse(self.settings.out_lines_before_patterns)
+        self.assertFalse(self.settings.search_patterns)
         self.assertEqual(0, len(self.settings.paths))
 
     def test_set_properties(self):
         props = {
-            'archivesonly': True,
+            'archives_only': True,
             'debug': True,
-            'firstmatch': True,
-            'excludehidden': False,
-            'linesafter': 5,
-            'linesbefore': 5,
-            'listdirs': True,
-            'listfiles': True,
-            'listlines': True,
-            'maxlinelength': 155,
-            'multilinesearch': True,
-            'printresults': False,
-            'printusage': True,
-            'printversion': True,
+            'first_match': True,
+            'exclude_hidden': False,
+            'lines_after': 5,
+            'lines_before': 5,
+            'list_dirs': True,
+            'list_files': True,
+            'list_lines': True,
+            'max_line_length': 155,
+            'multi_line_search': True,
+            'print_results': False,
+            'print_usage': True,
+            'print_version': True,
             'recursive': False,
-            'searcharchives': True,
-            'uniquelines': True,
+            'search_archives': True,
+            'unique_lines': True,
             'verbose': True,
         }
         self.settings.set_properties(props)
-        self.assertEqual(True, self.settings.archivesonly)
+        self.assertEqual(True, self.settings.archives_only)
         self.assertEqual(True, self.settings.debug)
-        self.assertEqual(True, self.settings.firstmatch)
-        self.assertEqual(False, self.settings.excludehidden)
-        self.assertEqual(5, self.settings.linesafter)
-        self.assertEqual(5, self.settings.linesbefore)
-        self.assertEqual(True, self.settings.listdirs)
-        self.assertEqual(True, self.settings.listfiles)
-        self.assertEqual(True, self.settings.listlines)
-        self.assertEqual(155, self.settings.maxlinelength)
-        self.assertEqual(True, self.settings.multilinesearch)
-        self.assertEqual(False, self.settings.printresults)
-        self.assertEqual(True, self.settings.printusage,)
-        self.assertEqual(True, self.settings.printversion)
+        self.assertEqual(True, self.settings.first_match)
+        self.assertEqual(False, self.settings.exclude_hidden)
+        self.assertEqual(5, self.settings.lines_after)
+        self.assertEqual(5, self.settings.lines_before)
+        self.assertEqual(True, self.settings.list_dirs)
+        self.assertEqual(True, self.settings.list_files)
+        self.assertEqual(True, self.settings.list_lines)
+        self.assertEqual(155, self.settings.max_line_length)
+        self.assertEqual(True, self.settings.multi_line_search)
+        self.assertEqual(False, self.settings.print_results)
+        self.assertEqual(True, self.settings.print_usage,)
+        self.assertEqual(True, self.settings.print_version)
         self.assertEqual(False, self.settings.recursive)
-        self.assertEqual(True, self.settings.searcharchives)
-        self.assertEqual(True, self.settings.uniquelines)
+        self.assertEqual(True, self.settings.search_archives)
+        self.assertEqual(True, self.settings.unique_lines)
         self.assertEqual(True, self.settings.verbose)
 
     def test_add_single_extension(self):
@@ -118,15 +120,15 @@ class SearchSettingsTest(unittest.TestCase):
 
     def test_add_single_pattern(self):
         p = 'Search'
-        self.settings.add_patterns(p, 'searchpatterns')
-        self.assertEqual(1, len(self.settings.searchpatterns))
-        self.assertEqual(p, list(self.settings.searchpatterns)[0].pattern)
+        self.settings.add_patterns(p, 'search_patterns')
+        self.assertEqual(1, len(self.settings.search_patterns))
+        self.assertEqual(p, list(self.settings.search_patterns)[0].pattern)
 
     def test_add_patterns_set(self):
         patterns_set = {'Search', 'Test'}
-        self.settings.add_patterns(patterns_set, 'searchpatterns')
-        self.assertEqual(len(patterns_set), len(self.settings.searchpatterns))
-        for p in self.settings.searchpatterns:
+        self.settings.add_patterns(patterns_set, 'search_patterns')
+        self.assertEqual(len(patterns_set), len(self.settings.search_patterns))
+        for p in self.settings.search_patterns:
             self.assertIn(p.pattern, patterns_set)
 
 

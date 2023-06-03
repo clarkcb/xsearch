@@ -1,33 +1,33 @@
-(ns cljsearch.filetypes-test
+(ns cljsearch.file-types-test
   (:require [clojure.test :refer :all])
-  (:use [cljsearch.filetypes :only (get-filetype)]))
+  (:use [cljsearch.filetypes :only (get-file-type)]))
 
-(deftest test-get-filetype-archive-file
+(deftest test-get-file-type-archive-file
   (let [f "archive.zip"]
-    (testing "test-get-filetype-archive-file"
-      (is (= (get-filetype f) :archive)))))
+    (testing "test-get-file-type-archive-file"
+      (is (= (get-file-type f) :archive)))))
 
-(deftest test-get-filetype-binary-file
+(deftest test-get-file-type-binary-file
   (let [f "binary.exe"]
-    (testing "test-get-filetype-binary-file"
-      (is (= (get-filetype f) :binary)))))
+    (testing "test-get-file-type-binary-file"
+      (is (= (get-file-type f) :binary)))))
 
-(deftest test-get-filetype-text-file
+(deftest test-get-file-type-text-file
   (let [f "text.txt"]
-    (testing "test-get-filetype-text-file"
-      (is (= (get-filetype f) :text)))))
+    (testing "test-get-file-type-text-file"
+      (is (= (get-file-type f) :text)))))
 
-(deftest test-get-filetype-code-file
+(deftest test-get-file-type-code-file
   (let [f "code.clj"]
-    (testing "test-get-filetype-code-file"
-      (is (= (get-filetype f) :code)))))
+    (testing "test-get-file-type-code-file"
+      (is (= (get-file-type f) :code)))))
 
-(deftest test-get-filetype-xml-file
+(deftest test-get-file-type-xml-file
   (let [f "markup.xml"]
-    (testing "test-get-filetype-xml-file"
-      (is (= (get-filetype f) :xml)))))
+    (testing "test-get-file-type-xml-file"
+      (is (= (get-file-type f) :xml)))))
 
-(deftest test-get-filetype-unknown-file
+(deftest test-get-file-type-unknown-file
   (let [f "unknown.xyz"]
-    (testing "test-get-filetype-unknown-file"
-      (is (= (get-filetype f) :unknown)))))
+    (testing "test-get-file-type-unknown-file"
+      (is (= (get-file-type f) :unknown)))))

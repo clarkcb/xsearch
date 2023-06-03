@@ -5,89 +5,89 @@ module RbSearch
   # SearchSettings - encapsulates search settings
   class SearchSettings
 
-    attr_reader :archivesonly
+    attr_reader :archives_only
     attr_accessor :colorize
     attr_reader :debug
-    attr_accessor :excludehidden
-    attr_accessor :firstmatch
-    attr_accessor :in_archiveextensions
-    attr_accessor :in_archivefilepatterns
-    attr_accessor :in_dirpatterns
+    attr_accessor :exclude_hidden
+    attr_accessor :first_match
+    attr_accessor :in_archive_extensions
+    attr_accessor :in_archive_file_patterns
+    attr_accessor :in_dir_patterns
     attr_accessor :in_extensions
-    attr_accessor :in_filepatterns
-    attr_accessor :in_filetypes
-    attr_accessor :in_linesafterpatterns
-    attr_accessor :in_linesbeforepatterns
-    attr_accessor :linesafter
-    attr_accessor :linesaftertopatterns
-    attr_accessor :linesafteruntilpatterns
-    attr_accessor :linesbefore
-    attr_accessor :listdirs
-    attr_accessor :listfiles
-    attr_accessor :listlines
-    attr_accessor :maxlinelength
-    attr_accessor :multilinesearch
-    attr_accessor :out_archiveextensions
-    attr_accessor :out_archivefilepatterns
-    attr_accessor :out_dirpatterns
+    attr_accessor :in_file_patterns
+    attr_accessor :in_file_types
+    attr_accessor :in_lines_after_patterns
+    attr_accessor :in_lines_before_patterns
+    attr_accessor :lines_after
+    attr_accessor :lines_after_to_patterns
+    attr_accessor :lines_after_until_patterns
+    attr_accessor :lines_before
+    attr_accessor :list_dirs
+    attr_accessor :list_files
+    attr_accessor :list_lines
+    attr_accessor :max_line_length
+    attr_accessor :multi_line_search
+    attr_accessor :out_archive_extensions
+    attr_accessor :out_archive_file_patterns
+    attr_accessor :out_dir_patterns
     attr_accessor :out_extensions
-    attr_accessor :out_filepatterns
-    attr_accessor :out_filetypes
-    attr_accessor :out_linesafterpatterns
-    attr_accessor :out_linesbeforepatterns
+    attr_accessor :out_file_patterns
+    attr_accessor :out_file_types
+    attr_accessor :out_lines_after_patterns
+    attr_accessor :out_lines_before_patterns
     attr_accessor :paths
-    attr_accessor :printresults
-    attr_accessor :printusage
-    attr_accessor :printversion
+    attr_accessor :print_results
+    attr_accessor :print_usage
+    attr_accessor :print_version
     attr_accessor :recursive
-    attr_accessor :searcharchives
-    attr_accessor :searchpatterns
-    attr_accessor :textfileencoding
-    attr_accessor :uniquelines
+    attr_accessor :search_archives
+    attr_accessor :search_patterns
+    attr_accessor :text_file_encoding
+    attr_accessor :unique_lines
     attr_accessor :verbose
 
     def initialize
-      @archivesonly = false
+      @archives_only = false
       @colorize = true
       @debug = false
-      @excludehidden = true
-      @firstmatch = false
-      @linesafter = 0
-      @linesbefore = 0
-      @listdirs = false
-      @listfiles = false
-      @listlines = false
-      @maxlinelength = 150
-      @multilinesearch = false
-      @printresults = true
-      @printusage = false
-      @printversion = false
+      @exclude_hidden = true
+      @first_match = false
+      @lines_after = 0
+      @lines_before = 0
+      @list_dirs = false
+      @list_files = false
+      @list_lines = false
+      @max_line_length = 150
+      @multi_line_search = false
+      @print_results = true
+      @print_usage = false
+      @print_version = false
       @recursive = true
-      @searcharchives = false
-      @textfileencoding = 'utf-8'
-      @uniquelines = false
+      @search_archives = false
+      @text_file_encoding = 'utf-8'
+      @unique_lines = false
       @verbose = false
 
-      @in_archiveextensions = []
-      @in_archivefilepatterns = []
-      @in_dirpatterns = []
+      @in_archive_extensions = []
+      @in_archive_file_patterns = []
+      @in_dir_patterns = []
       @in_extensions = []
-      @in_filepatterns = []
-      @in_filetypes = []
-      @in_linesafterpatterns = []
-      @in_linesbeforepatterns = []
-      @linesaftertopatterns = []
-      @linesafteruntilpatterns = []
-      @out_archiveextensions = []
-      @out_archivefilepatterns = []
-      @out_dirpatterns = []
+      @in_file_patterns = []
+      @in_file_types = []
+      @in_lines_after_patterns = []
+      @in_lines_before_patterns = []
+      @lines_after_to_patterns = []
+      @lines_after_until_patterns = []
+      @out_archive_extensions = []
+      @out_archive_file_patterns = []
+      @out_dir_patterns = []
       @out_extensions = []
-      @out_filepatterns = []
-      @out_filetypes = []
-      @out_linesafterpatterns = []
-      @out_linesbeforepatterns = []
+      @out_file_patterns = []
+      @out_file_types = []
+      @out_lines_after_patterns = []
+      @out_lines_before_patterns = []
       @paths = []
-      @searchpatterns = []
+      @search_patterns = []
     end
 
     def add_exts(exts, ext_set)
@@ -116,21 +116,21 @@ module RbSearch
       pattern_set.push(Regexp.new(pattern))
     end
 
-    def add_filetypes(filetypes, filetypes_set)
-      if filetypes.instance_of? String
-        filetypes.split(',').each do |t|
-          filetypes_set.push(FileTypes.from_name(t))
+    def add_file_types(file_types, file_types_set)
+      if file_types.instance_of? String
+        file_types.split(',').each do |t|
+          file_types_set.push(FileTypes.from_name(t))
         end
-      elsif filetypes.instance_of? Array
-        filetypes.each do |t|
-          filetypes_set.push(FileTypes.from_name(t))
+      elsif file_types.instance_of? Array
+        file_types.each do |t|
+          file_types_set.push(FileTypes.from_name(t))
         end
       end
     end
 
-    def archivesonly=(bool)
-      @archivesonly = bool
-      @searcharchives = bool if bool
+    def archives_only=(bool)
+      @archives_only = bool
+      @search_archives = bool if bool
     end
 
     def debug=(bool)
@@ -140,44 +140,44 @@ module RbSearch
 
     def to_s
       s = 'SearchSettings('
-      s << "archivesonly: #{@archivesonly}"
+      s << "archives_only: #{@archives_only}"
       s << ", debug: #{@debug}"
-      s << ", firstmatch: #{@firstmatch}"
-      s << ", excludehidden: #{@excludehidden}"
-      s << ', ' + list_to_s('in_archiveextensions', @in_archiveextensions)
-      s << ', ' + list_to_s('in_archivefilepatterns', @in_archivefilepatterns)
-      s << ', ' + list_to_s('in_dirpatterns', @in_dirpatterns)
+      s << ", first_match: #{@first_match}"
+      s << ", exclude_hidden: #{@exclude_hidden}"
+      s << ', ' + list_to_s('in_archive_extensions', @in_archive_extensions)
+      s << ', ' + list_to_s('in_archive_file_patterns', @in_archive_file_patterns)
+      s << ', ' + list_to_s('in_dir_patterns', @in_dir_patterns)
       s << ', ' + list_to_s('in_extensions', @in_extensions)
-      s << ', ' + list_to_s('in_filepatterns', @in_filepatterns)
-      s << ', ' + filetypes_to_s('in_filetypes', @in_filetypes)
-      s << ', ' + list_to_s('in_linesafterpatterns', @in_linesafterpatterns)
-      s << ', ' + list_to_s('in_linesbeforepatterns', @in_linesbeforepatterns)
-      s << ", linesafter: #{@linesafter}"
-      s << ', ' + list_to_s('linesaftertopatterns', @linesaftertopatterns)
-      s << ', ' + list_to_s('linesafteruntilpatterns', @linesafteruntilpatterns)
-      s << ", linesbefore: #{@linesbefore}"
-      s << ", listdirs: #{@listdirs}"
-      s << ", listfiles: #{@listfiles}"
-      s << ", listlines: #{@listlines}"
-      s << ", maxlinelength: #{@maxlinelength}"
-      s << ", multilinesearch: #{@multilinesearch}"
-      s << ', ' + list_to_s('out_archiveextensions', @out_archiveextensions)
-      s << ', ' + list_to_s('out_archivefilepatterns', @out_archivefilepatterns)
-      s << ', ' + list_to_s('out_dirpatterns', @out_dirpatterns)
+      s << ', ' + list_to_s('in_file_patterns', @in_file_patterns)
+      s << ', ' + file_types_to_s('in_file_types', @in_file_types)
+      s << ', ' + list_to_s('in_lines_after_patterns', @in_lines_after_patterns)
+      s << ', ' + list_to_s('in_lines_before_patterns', @in_lines_before_patterns)
+      s << ", lines_after: #{@lines_after}"
+      s << ', ' + list_to_s('lines_after_to_patterns', @lines_after_to_patterns)
+      s << ', ' + list_to_s('lines_after_until_patterns', @lines_after_until_patterns)
+      s << ", lines_before: #{@lines_before}"
+      s << ", list_dirs: #{@list_dirs}"
+      s << ", list_files: #{@list_files}"
+      s << ", list_lines: #{@list_lines}"
+      s << ", max_line_length: #{@max_line_length}"
+      s << ", multi_line_search: #{@multi_line_search}"
+      s << ', ' + list_to_s('out_archive_extensions', @out_archive_extensions)
+      s << ', ' + list_to_s('out_archive_file_patterns', @out_archive_file_patterns)
+      s << ', ' + list_to_s('out_dir_patterns', @out_dir_patterns)
       s << ', ' + list_to_s('out_extensions', @out_extensions)
-      s << ', ' + list_to_s('out_filepatterns', @out_filepatterns)
-      s << ', ' + filetypes_to_s('out_filetypes', @out_filetypes)
-      s << ', ' + list_to_s('out_linesafterpatterns', @out_linesafterpatterns)
-      s << ', ' + list_to_s('out_linesbeforepatterns', @out_linesbeforepatterns)
+      s << ', ' + list_to_s('out_file_patterns', @out_file_patterns)
+      s << ', ' + file_types_to_s('out_file_types', @out_file_types)
+      s << ', ' + list_to_s('out_lines_after_patterns', @out_lines_after_patterns)
+      s << ', ' + list_to_s('out_lines_before_patterns', @out_lines_before_patterns)
       s << ', ' + list_to_s('paths', @paths)
-      s << ", printresults: #{@printresults}"
-      s << ", printusage: #{@printusage}"
-      s << ", printversion: #{@printversion}"
+      s << ", print_results: #{@print_results}"
+      s << ", print_usage: #{@print_usage}"
+      s << ", print_version: #{@print_version}"
       s << ", recursive: #{@recursive}"
-      s << ", searcharchives: #{@searcharchives}"
-      s << ', ' + list_to_s('searchpatterns', @searchpatterns)
-      s << ", textfileencoding: \"#{@textfileencoding}\""
-      s << ", uniquelines: #{@uniquelines}"
+      s << ", search_archives: #{@search_archives}"
+      s << ', ' + list_to_s('search_patterns', @search_patterns)
+      s << ", text_file_encoding: \"#{@text_file_encoding}\""
+      s << ", unique_lines: #{@unique_lines}"
       s << ", verbose: #{@verbose}"
       s << ')'
       s
@@ -189,10 +189,10 @@ module RbSearch
       "#{name}=[\"#{lst.join('", "')}\"]"
     end
 
-    def filetypes_to_s(name, filetypes)
+    def file_types_to_s(name, file_types)
       s = "#{name}=["
       count = 0
-      filetypes.each do |ft|
+      file_types.each do |ft|
         s << ', ' if count.positive?
         s << "\"#{FileTypes.to_name(ft)}\""
         count += 1

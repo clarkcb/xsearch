@@ -24,19 +24,19 @@ use plsearch::SearchSettings;
 my $arg_action_hash = {
     'encoding' => sub {
         my ($s, $settings) = @_;
-        $settings->{textfileencoding} = $s;
+        $settings->{text_file_encoding} = $s;
     },
     'in-archiveext' => sub {
         my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{in_archiveextensions});
+        $settings->add_exts($s, $settings->{in_archive_extensions});
     },
     'in-archivefilepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{n_archivefilepatterns});
+        $settings->add_patterns($s, $settings->{in_archive_file_patterns});
     },
     'in-dirpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_dirpatterns});
+        $settings->add_patterns($s, $settings->{in_dir_patterns});
     },
     'in-ext' => sub {
         my ($s, $settings) = @_;
@@ -44,51 +44,51 @@ my $arg_action_hash = {
     },
     'in-filepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_filepatterns});
+        $settings->add_patterns($s, $settings->{in_file_patterns});
     },
     'in-filetype' => sub {
         my ($s, $settings) = @_;
-        $settings->add_filetypes($s, $settings->{in_filetypes});
+        $settings->add_file_types($s, $settings->{in_file_types});
     },
     'in-linesafterpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_linesafterpatterns});
+        $settings->add_patterns($s, $settings->{in_lines_after_patterns});
     },
     'in-linesbeforepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_linesbeforepatterns});
+        $settings->add_patterns($s, $settings->{in_lines_before_patterns});
     },
     'linesafter' => sub {
         my ($s, $settings) = @_;
-        $settings->{linesafter} = int($s);
+        $settings->{lines_after} = int($s);
     },
     'linesaftertopattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{linesaftertopatterns});
+        $settings->add_patterns($s, $settings->{lines_aftertopatterns});
     },
     'linesafteruntilpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{linesafteruntilpatterns});
+        $settings->add_patterns($s, $settings->{lines_afteruntilpatterns});
     },
     'linesbefore' => sub {
         my ($s, $settings) = @_;
-        $settings->{linesbefore} = int($s);
+        $settings->{lines_before} = int($s);
     },
     'maxlinelength' => sub {
         my ($s, $settings) = @_;
-        $settings->{maxlinelength} = int($s);
+        $settings->{max_line_length} = int($s);
     },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{out_archiveextensions});
+        $settings->add_exts($s, $settings->{out_archive_extensions});
     },
     'out-archivefilepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_archivefilepatterns});
+        $settings->add_patterns($s, $settings->{out_archive_file_patterns});
     },
     'out-dirpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_dirpatterns});
+        $settings->add_patterns($s, $settings->{out_dir_patterns});
     },
     'out-ext' => sub {
         my ($s, $settings) = @_;
@@ -96,19 +96,19 @@ my $arg_action_hash = {
     },
     'out-filepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_filepatterns});
+        $settings->add_patterns($s, $settings->{out_file_patterns});
     },
     'out-filetype' => sub {
         my ($s, $settings) = @_;
-        $settings->add_filetypes($s, $settings->{out_filetypes});
+        $settings->add_file_types($s, $settings->{out_file_types});
     },
     'out-linesafterpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_linesafterpatterns});
+        $settings->add_patterns($s, $settings->{out_lines_after_patterns});
     },
     'out-linesbeforepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_linesbeforepatterns});
+        $settings->add_patterns($s, $settings->{out_lines_before_patterns});
     },
     'path' => sub {
         my ($s, $settings) = @_;
@@ -116,7 +116,7 @@ my $arg_action_hash = {
     },
     'searchpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{searchpatterns});
+        $settings->add_patterns($s, $settings->{search_patterns});
     },
     'settings-file' => sub {
         my ($s, $settings) = @_;
@@ -127,11 +127,11 @@ my $arg_action_hash = {
 my $bool_flag_action_hash = {
     'allmatches' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('firstmatch', !$b);
+        $settings->set_property('first_match', !$b);
     },
     'archivesonly' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('archivesonly', $b);
+        $settings->set_property('archives_only', $b);
     },
     'colorize' => sub {
         my ($b, $settings) = @_;
@@ -143,35 +143,35 @@ my $bool_flag_action_hash = {
     },
     'excludehidden' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('excludehidden', $b);
+        $settings->set_property('exclude_hidden', $b);
     },
     'firstmatch' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('firstmatch', $b);
+        $settings->set_property('first_match', $b);
     },
     'help' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('printusage', $b);
+        $settings->set_property('print_usage', $b);
     },
     'includehidden' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('excludehidden', !$b);
+        $settings->set_property('exclude_hidden', !$b);
     },
     'listdirs' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('listdirs', $b);
+        $settings->set_property('list_dirs', $b);
     },
     'listfiles' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('listfiles', $b);
+        $settings->set_property('list_files', $b);
     },
     'listlines' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('listlines', $b);
+        $settings->set_property('list_lines', $b);
     },
     'multilinesearch' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('multilinesearch', $b);
+        $settings->set_property('multi_line_search', $b);
     },
     'nocolorize' => sub {
         my ($b, $settings) = @_;
@@ -179,7 +179,7 @@ my $bool_flag_action_hash = {
     },
     'noprintmatches' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('printresults', !$b);
+        $settings->set_property('print_results', !$b);
     },
     'norecursive' => sub {
         my ($b, $settings) = @_;
@@ -187,11 +187,11 @@ my $bool_flag_action_hash = {
     },
     'nosearcharchives' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('searcharchives', !$b);
+        $settings->set_property('search_archives', !$b);
     },
     'printmatches' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('printresults', $b);
+        $settings->set_property('print_results', $b);
     },
     'recursive' => sub {
         my ($b, $settings) = @_;
@@ -199,11 +199,11 @@ my $bool_flag_action_hash = {
     },
     'searcharchives' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('searcharchives', $b);
+        $settings->set_property('search_archives', $b);
     },
     'uniquelines' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('uniquelines', $b);
+        $settings->set_property('unique_lines', $b);
     },
     'verbose' => sub {
         my ($b, $settings) = @_;
@@ -211,50 +211,26 @@ my $bool_flag_action_hash = {
     },
     'version' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('printversion', $b);
+        $settings->set_property('print_version', $b);
     }
 };
 
 sub new {
     my $class = shift;
     my $self = {
-        # options => set_options_from_xml(),
         options => set_options_from_json(),
     };
     bless $self, $class;
     return $self;
 }
 
-sub set_options_from_xml {
-    my $options_hash = {};
-    my $options_xml_hash = XMLin($SEARCHOPTIONSPATH);
-    foreach my $i (0..$#{$options_xml_hash->{searchoption}}) {
-        my $short = $options_xml_hash->{searchoption}->[$i]->{short};
-        my $long = $options_xml_hash->{searchoption}->[$i]->{long};
-        my $desc = $options_xml_hash->{searchoption}->[$i]->{content};
-        $desc = plsearch::common::trim($desc);
-        my $func = sub {};
-        if (exists $arg_action_hash->{$long}) {
-            $func = $arg_action_hash->{$long};
-        } elsif (exists $bool_flag_action_hash->{$long}) {
-            $func = $bool_flag_action_hash->{$long};
-        }
-        my $opt = new plsearch::SearchOption($short, $long, $desc, $func);
-        $options_hash->{$long} = $opt;
-        if ($short) {
-            $options_hash->{$short} = $options_hash->{$long};
-        }
-    }
-    return $options_hash;
-}
-
 sub set_options_from_json {
     my $options_hash = {};
     my $options_json_hash = decode_json plsearch::FileUtil::get_file_contents($SEARCHOPTIONSPATH);
-    foreach my $searchoption (@{$options_json_hash->{searchoptions}}) {
-        my $short = $searchoption->{short};
-        my $long = $searchoption->{long};
-        my $desc = $searchoption->{desc};
+    foreach my $search_option (@{$options_json_hash->{searchoptions}}) {
+        my $short = $search_option->{short};
+        my $long = $search_option->{long};
+        my $desc = $search_option->{desc};
         my $func = sub {};
         if (exists $arg_action_hash->{$long}) {
             $func = $arg_action_hash->{$long};
@@ -271,13 +247,13 @@ sub set_options_from_json {
 }
 
 sub settings_from_file {
-    my ($filepath, $settings) = @_;
+    my ($file_path, $settings) = @_;
     my $errs = [];
-    unless (-e $filepath) {
-        push(@{$errs}, 'Settings file not found: ' . $filepath);
+    unless (-e $file_path) {
+        push(@{$errs}, 'Settings file not found: ' . $file_path);
         return $errs;
     }
-    my $json = plsearch::FileUtil::get_file_contents($filepath);
+    my $json = plsearch::FileUtil::get_file_contents($file_path);
     return __from_json($json, $settings);
 }
 

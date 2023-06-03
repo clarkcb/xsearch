@@ -74,12 +74,10 @@ namespace CsSearchLib
 
 		public SearchOptions()
 		{
-			// _searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.xml");
 			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.searchoptions.json");
 			Options = new List<SearchOption>();
 			ArgDictionary = new Dictionary<string, SearchOption>();
 			FlagDictionary = new Dictionary<string, SearchOption>();
-			// SetOptionsFromXml();
 			SetOptionsFromJson();
 		}
 

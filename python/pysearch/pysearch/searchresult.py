@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # searchresult.py
@@ -6,6 +7,7 @@
 # class SearchResult: encapsulates a search result
 #
 ###############################################################################
+"""
 from io import StringIO
 from typing import List
 
@@ -14,16 +16,16 @@ from .searchfile import SearchFile
 from .searchsettings import SearchSettings
 
 
-def _atmost_before_index(s, maxlen, start_index):
-    if start_index >= maxlen:
-        return '...' + s[start_index - maxlen - 3:start_index]
+def _at_most_before_index(s, max_len, start_index):
+    if start_index >= max_len:
+        return '...' + s[start_index - max_len - 3:start_index]
     else:
         return s[:start_index]
 
 
-def _atmost_after_index(s, maxlen, start_index):
-    if len(s[start_index:]) > maxlen:
-        return s[start_index:maxlen - 3] + '...'
+def _at_most_after_index(s, max_len, start_index):
+    if len(s[start_index:]) > max_len:
+        return s[start_index:max_len - 3] + '...'
     else:
         return s[start_index:]
 
@@ -35,15 +37,15 @@ def strip_newlines(s):
 class SearchResult(object):
     """encapsulates a search result"""
 
-    __slots__ = ['pattern', 'file', 'linenum', 'line', 'contained', 'lines_before', 'lines_after',
+    __slots__ = ['pattern', 'file', 'line_num', 'line', 'contained', 'lines_before', 'lines_after',
                  'match_start_index', 'match_end_index']
 
-    def __init__(self, pattern: str = '', file: SearchFile = None, linenum: int = 0, line: str = '',
+    def __init__(self, pattern: str = '', file: SearchFile = None, line_num: int = 0, line: str = '',
                  contained: str = '', lines_before: List[str] = None, lines_after: List[str] = None,
                  match_start_index: int = 0, match_end_index: int = 0):
         self.pattern = pattern
         self.file = file
-        self.linenum = linenum
+        self.line_num = line_num
         self.line = line
         self.contained = contained
         self.lines_before = lines_before
@@ -52,10 +54,10 @@ class SearchResult(object):
         self.match_end_index = match_end_index
 
     @property
-    def sortkey(self):
+    def sort_key(self):
         path = self.file.path.lower()
-        filename = self.file.filename.lower()
-        return path, filename, self.linenum, self.match_start_index
+        filename = self.file.file_name.lower()
+        return path, filename, self.line_num, self.match_start_index
 
 
 class SearchResultFormatter(object):
@@ -89,11 +91,11 @@ class SearchResultFormatter(object):
         match_start_index = result.match_start_index - 1 - leading_ws_count
         match_end_index = match_start_index + match_length
 
-        # If longer than maxlinelength, walk out from match indices
-        if formatted_length > self.settings.maxlinelength:
+        # If longer than max_line_length, walk out from match indices
+        if formatted_length > self.settings.max_line_length:
             line_start_index = match_start_index
             line_end_index = line_start_index + match_length
-            # NOTE: these are tracked so we can colorize at correct indices
+            # NOTE: these are tracked so that we can colorize at correct indices
             match_start_index = 0
             match_end_index = match_length
 
@@ -104,13 +106,13 @@ class SearchResultFormatter(object):
                 match_end_index += 1
 
             formatted_length = line_end_index - line_start_index
-            while formatted_length < self.settings.maxlinelength:
+            while formatted_length < self.settings.max_line_length:
                 if line_start_index > 0:
                     line_start_index -= 1
                     match_start_index += 1
                     match_end_index += 1
                     formatted_length = line_end_index - line_start_index
-                if formatted_length < self.settings.maxlinelength and \
+                if formatted_length < self.settings.max_line_length and \
                         line_end_index < max_line_end_index:
                     line_end_index += 1
                 formatted_length = line_end_index - line_start_index
@@ -124,11 +126,11 @@ class SearchResultFormatter(object):
                 formatted, match_start_index, match_end_index)
         return formatted
 
-    def __singleline_format(self, result: SearchResult) -> str:
+    def __single_line_format(self, result: SearchResult) -> str:
         sio = StringIO()
         sio.write(str(result.file))
-        if result.linenum and result.line:
-            sio.write(': {0:d}: [{1:d}:{2:d}]'.format(result.linenum,
+        if result.line_num and result.line:
+            sio.write(': {0:d}: [{1:d}:{2:d}]'.format(result.line_num,
                                                       result.match_start_index,
                                                       result.match_end_index))
             sio.write(': {0:s}'.format(self.__format_matching_line(result)))
@@ -139,47 +141,47 @@ class SearchResultFormatter(object):
         sio.close()
         return s
 
-    def __linenum_padding(self, result: SearchResult) -> int:
-        max_linenum = result.linenum + len(result.lines_after)
-        return len(str(max_linenum))
+    def __line_num_padding(self, result: SearchResult) -> int:
+        max_line_num = result.line_num + len(result.lines_after)
+        return len(str(max_line_num))
 
-    def __multiline_format(self, result: SearchResult) -> str:
+    def __multi_line_format(self, result: SearchResult) -> str:
         sio = StringIO()
         sio.write('{0}\n{1}:'.format(
             '=' * self.SEPARATOR_LEN, str(result.file)))
-        sio.write(' {0:d}: [{1:d}:{2:d}]'.format(result.linenum, result.match_start_index,
+        sio.write(' {0:d}: [{1:d}:{2:d}]'.format(result.line_num, result.match_start_index,
                                                  result.match_end_index))
         if result.contained:
             sio.write(': {0}'.format(result.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
         line_format = ' {0:>' + \
-            str(self.__linenum_padding(result)) + 'd} | {1:s}\n'
-        current_linenum = result.linenum
+                      str(self.__line_num_padding(result)) + 'd} | {1:s}\n'
+        current_line_num = result.line_num
         if result.lines_before:
-            current_linenum -= len(result.lines_before)
+            current_line_num -= len(result.lines_before)
             for line_before in result.lines_before:
-                sio.write(' ' + line_format.format(current_linenum,
+                sio.write(' ' + line_format.format(current_line_num,
                                                    strip_newlines(line_before)))
-                current_linenum += 1
+                current_line_num += 1
         if self.settings.colorize:
             line = self.colorize(result.line, result.match_start_index - 1,
                                  result.match_end_index - 1)
         else:
             line = result.line
-        sio.write('>' + line_format.format(result.linenum,
+        sio.write('>' + line_format.format(result.line_num,
                                            strip_newlines(line)))
         if result.lines_after:
-            current_linenum = result.linenum + 1
+            current_line_num = result.line_num + 1
             for line_after in result.lines_after:
-                sio.write(' ' + line_format.format(current_linenum,
+                sio.write(' ' + line_format.format(current_line_num,
                                                    strip_newlines(line_after)))
-                current_linenum += 1
+                current_line_num += 1
         s = sio.getvalue()
         sio.close()
         return s
 
     def format(self, result: SearchResult) -> str:
         if result.lines_before or result.lines_after:
-            return self.__multiline_format(result)
+            return self.__multi_line_format(result)
         else:
-            return self.__singleline_format(result)
+            return self.__single_line_format(result)

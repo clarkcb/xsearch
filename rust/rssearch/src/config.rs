@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub xsearch_path: String,
     pub shared_path: String,
-    pub filetypes_path: String,
-    pub searchoptions_path: String,
+    pub file_types_path: String,
+    pub search_options_path: String,
     pub version: String,
 }
 
@@ -33,9 +33,9 @@ impl Config {
         Config {
             xsearch_path: xsearch_path.clone(),
             shared_path: shared_path.clone(),
-            filetypes_path: shared_path.clone() + "/filetypes.json",
-            searchoptions_path: shared_path.clone() + "/searchoptions.json",
-            version: version,
+            file_types_path: shared_path.clone() + "/filetypes.json",
+            search_options_path: shared_path.clone() + "/searchoptions.json",
+            version,
         }
     }
 

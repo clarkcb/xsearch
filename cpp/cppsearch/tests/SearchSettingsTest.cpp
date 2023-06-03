@@ -4,48 +4,48 @@
 TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     auto* settings = new cppsearch::SearchSettings();
 
-    REQUIRE(!settings->archivesonly());
+    REQUIRE(!settings->archives_only());
     REQUIRE(!settings->debug());
-    REQUIRE(settings->excludehidden());
-    REQUIRE(!settings->firstmatch());
-    REQUIRE((settings->linesafter() == 0));
-    REQUIRE((settings->linesbefore() == 0));
-    REQUIRE(!settings->listdirs());
-    REQUIRE(!settings->listfiles());
-    REQUIRE(!settings->listlines());
-    REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilinesearch());
-    REQUIRE(!settings->printresults());
-    REQUIRE(!settings->printusage());
-    REQUIRE(!settings->printversion());
-    REQUIRE(!settings->searcharchives());
-    REQUIRE(!settings->uniquelines());
+    REQUIRE(settings->exclude_hidden());
+    REQUIRE(!settings->first_match());
+    REQUIRE((settings->lines_after() == 0));
+    REQUIRE((settings->lines_before() == 0));
+    REQUIRE(!settings->list_dirs());
+    REQUIRE(!settings->list_files());
+    REQUIRE(!settings->list_lines());
+    REQUIRE((settings->max_line_length() == 150));
+    REQUIRE(!settings->multi_line_search());
+    REQUIRE(!settings->print_results());
+    REQUIRE(!settings->print_usage());
+    REQUIRE(!settings->print_version());
+    REQUIRE(!settings->search_archives());
+    REQUIRE(!settings->unique_lines());
     REQUIRE(!settings->verbose());
 
-    REQUIRE(settings->in_archiveextensions()->empty());
-    REQUIRE(settings->in_archivefilepatterns()->empty());
-    REQUIRE(settings->in_dirpatterns()->empty());
+    REQUIRE(settings->in_archive_extensions()->empty());
+    REQUIRE(settings->in_archive_file_patterns()->empty());
+    REQUIRE(settings->in_dir_patterns()->empty());
     REQUIRE(settings->in_extensions()->empty());
-    REQUIRE(settings->in_filepatterns()->empty());
-    REQUIRE(settings->out_archiveextensions()->empty());
-    REQUIRE(settings->out_archivefilepatterns()->empty());
-    REQUIRE(settings->out_dirpatterns()->empty());
+    REQUIRE(settings->in_file_patterns()->empty());
+    REQUIRE(settings->out_archive_extensions()->empty());
+    REQUIRE(settings->out_archive_file_patterns()->empty());
+    REQUIRE(settings->out_dir_patterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
-    REQUIRE(settings->out_filepatterns()->empty());
+    REQUIRE(settings->out_file_patterns()->empty());
     REQUIRE(settings->paths()->empty());
-    REQUIRE(settings->searchpatterns()->empty());
+    REQUIRE(settings->search_patterns()->empty());
 }
 
 TEST_CASE("Add extensions to SearchSettings", "[SearchSettings]") {
     auto *settings = new cppsearch::SearchSettings();
 
-    REQUIRE(settings->in_archiveextensions()->empty());
-    settings->add_in_archiveextension("zip,gz");
-    REQUIRE(settings->in_archiveextensions()->size() == 2);
+    REQUIRE(settings->in_archive_extensions()->empty());
+    settings->add_in_archive_extension("zip,gz");
+    REQUIRE(settings->in_archive_extensions()->size() == 2);
 
-    REQUIRE(settings->out_archiveextensions()->empty());
-    settings->add_out_archiveextension("rar,");
-    REQUIRE(settings->out_archiveextensions()->size() == 1);
+    REQUIRE(settings->out_archive_extensions()->empty());
+    settings->add_out_archive_extension("rar,");
+    REQUIRE(settings->out_archive_extensions()->size() == 1);
 
     REQUIRE(settings->in_extensions()->empty());
     settings->add_in_extension("cpp,h");
@@ -59,39 +59,39 @@ TEST_CASE("Add extensions to SearchSettings", "[SearchSettings]") {
 TEST_CASE("Add patterns to SearchSettings", "[SearchSettings]") {
     auto *settings = new cppsearch::SearchSettings();
 
-    REQUIRE(settings->in_archivefilepatterns()->empty());
-    settings->add_in_archivefilepattern("archive");
-    REQUIRE(settings->in_archivefilepatterns()->size() == 1);
+    REQUIRE(settings->in_archive_file_patterns()->empty());
+    settings->add_in_archive_file_pattern("archive");
+    REQUIRE(settings->in_archive_file_patterns()->size() == 1);
 
-    REQUIRE(settings->out_archivefilepatterns()->empty());
-    settings->add_out_archivefilepattern("old");
-    REQUIRE(settings->out_archivefilepatterns()->size() == 1);
+    REQUIRE(settings->out_archive_file_patterns()->empty());
+    settings->add_out_archive_file_pattern("old");
+    REQUIRE(settings->out_archive_file_patterns()->size() == 1);
 
-    REQUIRE(settings->in_dirpatterns()->empty());
-    settings->add_in_dirpattern("dir");
-    REQUIRE(settings->in_dirpatterns()->size() == 1);
+    REQUIRE(settings->in_dir_patterns()->empty());
+    settings->add_in_dir_pattern("dir");
+    REQUIRE(settings->in_dir_patterns()->size() == 1);
 
-    REQUIRE(settings->out_dirpatterns()->empty());
-    settings->add_out_dirpattern("tmp");
-    REQUIRE(settings->out_dirpatterns()->size() == 1);
+    REQUIRE(settings->out_dir_patterns()->empty());
+    settings->add_out_dir_pattern("tmp");
+    REQUIRE(settings->out_dir_patterns()->size() == 1);
 
-    REQUIRE(settings->in_filepatterns()->empty());
-    settings->add_in_filepattern("file");
-    REQUIRE(settings->in_filepatterns()->size() == 1);
+    REQUIRE(settings->in_file_patterns()->empty());
+    settings->add_in_file_pattern("file");
+    REQUIRE(settings->in_file_patterns()->size() == 1);
 
-    REQUIRE(settings->out_filepatterns()->empty());
-    settings->add_out_filepattern("stream");
-    REQUIRE(settings->out_filepatterns()->size() == 1);
+    REQUIRE(settings->out_file_patterns()->empty());
+    settings->add_out_file_pattern("stream");
+    REQUIRE(settings->out_file_patterns()->size() == 1);
 }
 
 TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
     auto *settings = new cppsearch::SearchSettings();
 
-    REQUIRE(!settings->archivesonly());
-    REQUIRE(!settings->searcharchives());
-    settings->archivesonly(true);
-    REQUIRE(settings->archivesonly());
-    REQUIRE(settings->searcharchives());
+    REQUIRE(!settings->archives_only());
+    REQUIRE(!settings->search_archives());
+    settings->archives_only(true);
+    REQUIRE(settings->archives_only());
+    REQUIRE(settings->search_archives());
 
     REQUIRE(!settings->debug());
     REQUIRE(!settings->verbose());
@@ -99,67 +99,67 @@ TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->debug());
     REQUIRE(settings->verbose());
 
-    REQUIRE(settings->excludehidden());
-    settings->excludehidden(false);
-    REQUIRE(!settings->excludehidden());
+    REQUIRE(settings->exclude_hidden());
+    settings->exclude_hidden(false);
+    REQUIRE(!settings->exclude_hidden());
 
-    REQUIRE(!settings->firstmatch());
-    settings->firstmatch(true);
-    REQUIRE(settings->firstmatch());
+    REQUIRE(!settings->first_match());
+    settings->first_match(true);
+    REQUIRE(settings->first_match());
 
-    REQUIRE(!settings->multilinesearch());
-    settings->multilinesearch(true);
-    REQUIRE(settings->multilinesearch());
+    REQUIRE(!settings->multi_line_search());
+    settings->multi_line_search(true);
+    REQUIRE(settings->multi_line_search());
 
-    REQUIRE(!settings->listdirs());
-    settings->listdirs(true);
-    REQUIRE(settings->listdirs());
+    REQUIRE(!settings->list_dirs());
+    settings->list_dirs(true);
+    REQUIRE(settings->list_dirs());
 
-    REQUIRE(!settings->listfiles());
-    settings->listfiles(true);
-    REQUIRE(settings->listfiles());
+    REQUIRE(!settings->list_files());
+    settings->list_files(true);
+    REQUIRE(settings->list_files());
 
-    REQUIRE(!settings->listlines());
-    settings->listlines(true);
-    REQUIRE(settings->listlines());
+    REQUIRE(!settings->list_lines());
+    settings->list_lines(true);
+    REQUIRE(settings->list_lines());
 
-    REQUIRE(!settings->printresults());
-    settings->printresults(true);
-    REQUIRE(settings->printresults());
+    REQUIRE(!settings->print_results());
+    settings->print_results(true);
+    REQUIRE(settings->print_results());
 
-    REQUIRE(!settings->printusage());
-    settings->printusage(true);
-    REQUIRE(settings->printusage());
+    REQUIRE(!settings->print_usage());
+    settings->print_usage(true);
+    REQUIRE(settings->print_usage());
 
-    REQUIRE(!settings->printversion());
-    settings->printversion(true);
-    REQUIRE(settings->printversion());
+    REQUIRE(!settings->print_version());
+    settings->print_version(true);
+    REQUIRE(settings->print_version());
 
     REQUIRE(settings->recursive());
     settings->recursive(false);
     REQUIRE(!settings->recursive());
 
-    REQUIRE(!settings->uniquelines());
-    settings->uniquelines(true);
-    REQUIRE(settings->uniquelines());
+    REQUIRE(!settings->unique_lines());
+    settings->unique_lines(true);
+    REQUIRE(settings->unique_lines());
 }
 
 TEST_CASE("Alter ints in SearchSettings", "[SearchSettings]") {
     auto *settings = new cppsearch::SearchSettings();
 
-    REQUIRE(settings->linesbefore() == 0);
-    settings->linesbefore(5);
-    REQUIRE(settings->linesbefore() == 5);
+    REQUIRE(settings->lines_before() == 0);
+    settings->lines_before(5);
+    REQUIRE(settings->lines_before() == 5);
 
     // TODO: fix handling of negative values
-    //m_settings->linesbefore(-5);
-    //REQUIRE(m_settings->linesbefore() == 5);
+    //m_settings->lines_before(-5);
+    //REQUIRE(m_settings->lines_before() == 5);
 
-    REQUIRE(settings->linesafter() == 0);
-    settings->linesafter(5);
-    REQUIRE(settings->linesafter() == 5);
+    REQUIRE(settings->lines_after() == 0);
+    settings->lines_after(5);
+    REQUIRE(settings->lines_after() == 5);
 
     // TODO: fix handling of negative values
-    //m_settings->linesafter(-5);
-    //REQUIRE(m_settings->linesafter() == 5);
+    //m_settings->lines_after(-5);
+    //REQUIRE(m_settings->lines_after() == 5);
 }

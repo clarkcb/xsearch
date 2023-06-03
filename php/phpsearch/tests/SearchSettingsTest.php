@@ -20,23 +20,23 @@ class SearchSettingsTest extends TestCase
 
     public function test_default_settings()
     {
-        $this->assertFalse($this->settings->archivesonly);
+        $this->assertFalse($this->settings->archives_only);
         $this->assertFalse($this->settings->debug);
-        $this->assertTrue($this->settings->excludehidden);
-        $this->assertFalse($this->settings->firstmatch);
-        $this->assertEquals(0, $this->settings->linesafter);
-        $this->assertEquals(0, $this->settings->linesbefore);
-        $this->assertFalse($this->settings->listdirs);
-        $this->assertFalse($this->settings->listfiles);
-        $this->assertFalse($this->settings->listlines);
-        $this->assertEquals(150, $this->settings->maxlinelength);
-        $this->assertFalse($this->settings->multilinesearch);
-        $this->assertTrue($this->settings->printresults);
-        $this->assertFalse($this->settings->printusage);
-        $this->assertFalse($this->settings->printversion);
+        $this->assertTrue($this->settings->exclude_hidden);
+        $this->assertFalse($this->settings->first_match);
+        $this->assertEquals(0, $this->settings->lines_after);
+        $this->assertEquals(0, $this->settings->lines_before);
+        $this->assertFalse($this->settings->list_dirs);
+        $this->assertFalse($this->settings->list_files);
+        $this->assertFalse($this->settings->list_lines);
+        $this->assertEquals(150, $this->settings->max_line_length);
+        $this->assertFalse($this->settings->multi_line_search);
+        $this->assertTrue($this->settings->print_results);
+        $this->assertFalse($this->settings->print_usage);
+        $this->assertFalse($this->settings->print_version);
         $this->assertTrue($this->settings->recursive);
-        $this->assertFalse($this->settings->searcharchives);
-        $this->assertFalse($this->settings->uniquelines);
+        $this->assertFalse($this->settings->search_archives);
+        $this->assertFalse($this->settings->unique_lines);
         $this->assertFalse($this->settings->verbose);
     }
 
@@ -65,15 +65,15 @@ class SearchSettingsTest extends TestCase
 
     public function test_add_patterns_string()
     {
-        $this->settings->add_patterns('Searcher', $this->settings->searchpatterns);
-        $this->assertCount(1, $this->settings->searchpatterns);
-        $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
+        $this->settings->add_patterns('Searcher', $this->settings->search_patterns);
+        $this->assertCount(1, $this->settings->search_patterns);
+        $this->assertTrue(in_array('Searcher', $this->settings->search_patterns));
     }
 
     public function test_add_patterns_array()
     {
-        $this->settings->add_patterns(['Searcher'], $this->settings->searchpatterns);
-        $this->assertCount(1, $this->settings->searchpatterns);
-        $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
+        $this->settings->add_patterns(['Searcher'], $this->settings->search_patterns);
+        $this->assertCount(1, $this->settings->search_patterns);
+        $this->assertTrue(in_array('Searcher', $this->settings->search_patterns));
     }
 }

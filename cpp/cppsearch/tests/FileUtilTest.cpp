@@ -16,7 +16,7 @@ TEST_CASE("Detect file existence", "[FileUtil]") {
     REQUIRE(!cppsearch::FileUtil::file_exists(std::string(XSEARCHPATH) + "/nonexistant.txt"));
 }
 
-TEST_CASE("Get extensions from filenames", "[FileUtil]") {
+TEST_CASE("Get extensions from file names", "[FileUtil]") {
     REQUIRE(cppsearch::FileUtil::get_extension("filename.txt") == "txt");
     REQUIRE(cppsearch::FileUtil::get_extension("filename.").empty());
     REQUIRE(cppsearch::FileUtil::get_extension("filename").empty());
@@ -52,7 +52,7 @@ TEST_CASE("Detect hidden files", "[FileUtil]") {
 //    REQUIRE(!cppsearch::FileUtil::is_hidden("./path"));
 //    REQUIRE(!cppsearch::FileUtil::is_hidden("../path"));
     REQUIRE(cppsearch::FileUtil::is_hidden(".gitignore"));
-    REQUIRE(!cppsearch::FileUtil::is_hidden("filename.txt"));
+    REQUIRE(!cppsearch::FileUtil::is_hidden("file_name.txt"));
 }
 
 TEST_CASE("Split paths", "[FileUtil]") {

@@ -20,7 +20,7 @@ module RbSearch
     FILE_TYPE_NAMES = %w[UNKNOWN ARCHIVE BINARY CODE TEXT XML].freeze
 
     def initialize
-      set_filetype_map_from_json
+      set_file_type_map_from_json
     end
 
     def self.from_name(name)
@@ -28,14 +28,14 @@ module RbSearch
       idx.nil? ? 0 : idx
     end
 
-    def self.to_name(filetype)
-      filetype < FILE_TYPE_NAMES.size ? FILE_TYPE_NAMES[filetype] : 0
+    def self.to_name(file_type)
+      file_type < FILE_TYPE_NAMES.size ? FILE_TYPE_NAMES[file_type] : 0
     end
 
-    def set_filetype_map_from_json
+    def set_file_type_map_from_json
       @file_type_map = {}
-      filetypes_json_path = File.join(File.dirname(__FILE__), "../../data/filetypes.json")
-      f = File.open(filetypes_json_path, mode: 'r')
+      file_types_json_path = File.join(File.dirname(__FILE__), "../../data/filetypes.json")
+      f = File.open(file_types_json_path, mode: 'r')
       json = f.read
       json_hash = JSON.parse(json)
       json_hash['filetypes'].each do |ft|
@@ -54,44 +54,44 @@ module RbSearch
       f&.close
     end
 
-    def get_filetype(filename)
-      if code_file?(filename)
+    def get_file_type(file_name)
+      if code_file?(file_name)
         FileType::CODE
-      elsif xml_file?(filename)
+      elsif xml_file?(file_name)
         FileType::XML
-      elsif text_file?(filename)
+      elsif text_file?(file_name)
         FileType::TEXT
-      elsif binary_file?(filename)
+      elsif binary_file?(file_name)
         FileType::BINARY
-      elsif archive_file?(filename)
+      elsif archive_file?(file_name)
         FileType::ARCHIVE
       else
         FileType::UNKNOWN
       end
     end
 
-    def archive_file?(filename)
-      @file_type_map['archive'].include?(FileUtil.get_extension(filename))
+    def archive_file?(file_name)
+      @file_type_map['archive'].include?(FileUtil.get_extension(file_name))
     end
 
-    def binary_file?(filename)
-      @file_type_map['binary'].include?(FileUtil.get_extension(filename))
+    def binary_file?(file_name)
+      @file_type_map['binary'].include?(FileUtil.get_extension(file_name))
     end
 
-    def code_file?(filename)
-      @file_type_map['code'].include?(FileUtil.get_extension(filename))
+    def code_file?(file_name)
+      @file_type_map['code'].include?(FileUtil.get_extension(file_name))
     end
 
-    def searchable_file?(filename)
-      @file_type_map['searchable'].include?(FileUtil.get_extension(filename))
+    def searchable_file?(file_name)
+      @file_type_map['searchable'].include?(FileUtil.get_extension(file_name))
     end
 
-    def text_file?(filename)
-      @file_type_map['text'].include?(FileUtil.get_extension(filename))
+    def text_file?(file_name)
+      @file_type_map['text'].include?(FileUtil.get_extension(file_name))
     end
 
-    def xml_file?(filename)
-      @file_type_map['xml'].include?(FileUtil.get_extension(filename))
+    def xml_file?(file_name)
+      @file_type_map['xml'].include?(FileUtil.get_extension(file_name))
     end
   end
 end

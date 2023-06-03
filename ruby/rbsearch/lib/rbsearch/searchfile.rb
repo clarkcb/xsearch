@@ -6,22 +6,22 @@ module RbSearch
 
     attr_accessor :containers
     attr_reader :path
-    attr_reader :filename
-    attr_reader :filetype
+    attr_reader :file_name
+    attr_reader :file_type
 
     CONTAINER_SEPARATOR = '!'
 
-    def initialize(path, filename, filetype)
+    def initialize(path, file_name, file_type)
       @containers = []
       @path = path
-      @filename = filename
-      @filetype = filetype # FileType
+      @file_name = file_name
+      @file_type = file_type # FileType
     end
 
-    def relativepath
-      return '.' + File::SEPARATOR + @filename if @path == '.' || @path == './'
+    def relative_path
+      return '.' + File::SEPARATOR + @file_name if @path == '.' || @path == './'
 
-      Pathname.new(@path).join(@filename).to_s
+      Pathname.new(@path).join(@file_name).to_s
     end
 
     def to_s
@@ -29,7 +29,7 @@ module RbSearch
       unless @containers.empty?
         s += @containers.join(CONTAINER_SEPARATOR) + CONTAINER_SEPARATOR
       end
-      s + relativepath
+      s + relative_path
     end
   end
 end

@@ -33,8 +33,8 @@ sub format {
 sub singleline_format {
     my ($self, $result) = @_;
     my $s = $result->{file};
-    if ($result->{linenum}) {
-        $s .= ': ' . $result->{linenum} . ': ';
+    if ($result->{line_num}) {
+        $s .= ': ' . $result->{line_num} . ': ';
         $s .= '[' . $result->{match_start_index} . ':' . $result->{match_end_index};
         $s .= ']: ' . $self->format_matching_line($result);
     } else {
@@ -61,8 +61,8 @@ sub format_matching_line {
     my $match_start_index = $result->{match_start_index} - 1 - $leading_whitespace_count;
     my $match_end_index = $match_start_index + $match_length;
 
-    # if longer than maxlinelength, walk out from matching indices
-    if ($formatted_length > $self->{settings}->{maxlinelength}) {
+    # if longer than max_line_length, walk out from matching indices
+    if ($formatted_length > $self->{settings}->{max_line_length}) {
         my $line_start_index = $match_start_index;
         my $line_end_index = $line_start_index + $match_length;
         $match_start_index = 0;
@@ -78,14 +78,14 @@ sub format_matching_line {
 
         $formatted_length = $line_end_index - $line_start_index;
 
-        while ($formatted_length < $self->{settings}->{maxlinelength}) {
+        while ($formatted_length < $self->{settings}->{max_line_length}) {
             if ($line_start_index > 0) {
                 $line_start_index--;
                 $match_start_index++;
                 $match_end_index++;
                 $formatted_length = $line_end_index - $line_start_index;
             }
-            if ($formatted_length < $self->{settings}->{maxlinelength} && $line_end_index < $max_line_end_index) {
+            if ($formatted_length < $self->{settings}->{max_line_length} && $line_end_index < $max_line_end_index) {
                 $line_end_index++;
             }
             $formatted_length = $line_end_index - $line_start_index;
@@ -117,9 +117,9 @@ sub colorize {
     return $c;
 }
 
-sub linenum_padding {
+sub line_num_padding {
     my ($self, $result) = @_;
-    return length(sprintf("%d", $result->{linenum} + (scalar @{$result->{lines_after}})));
+    return length(sprintf("%d", $result->{line_num} + (scalar @{$result->{lines_after}})));
 }
 
 sub trim_newline {
@@ -130,28 +130,28 @@ sub trim_newline {
 
 sub multiline_format {
     my ($self, $result) = @_;
-    my $s = ('=' x 80) . "\n$result->{file}: $result->{linenum}: ";
+    my $s = ('=' x 80) . "\n$result->{file}: $result->{line_num}: ";
     $s .= "[$result->{match_start_index}:$result->{match_end_index}]\n";
     $s .= ('-' x 80) . "\n";
-    my $lineformat = sprintf(" %%%dd | %%s\n", $self->linenum_padding($result));
-    my $current_linenum = $result->{linenum};
+    my $lines_format = sprintf(" %%%dd | %%s\n", $self->line_num_padding($result));
+    my $current_line_num = $result->{line_num};
     if (scalar @{$result->{lines_before}}) {
-        $current_linenum -= (scalar @{$result->{lines_before}});
+        $current_line_num -= (scalar @{$result->{lines_before}});
         foreach my $line_before (@{$result->{lines_before}}) {
-            $s .= sprintf(' '.$lineformat, $current_linenum, $self->trim_newline($line_before));
-            $current_linenum++;
+            $s .= sprintf(' '.$lines_format, $current_line_num, $self->trim_newline($line_before));
+            $current_line_num++;
         }
     }
     my $line = $self->trim_newline($result->{line});
     if ($self->{settings}->{colorize}) {
         $line = $self->colorize($line, $result->{match_start_index} - 1, $result->{match_end_index} - 1);
     }
-    $s .= sprintf('>'.$lineformat, $current_linenum, $line);
+    $s .= sprintf('>'.$lines_format, $current_line_num, $line);
     if (scalar @{$result->{lines_after}}) {
-        $current_linenum++;
+        $current_line_num++;
         foreach my $line_after (@{$result->{lines_after}}) {
-            $s .= sprintf(' '.$lineformat, $current_linenum, $self->trim_newline($line_after));
-            $current_linenum++;
+            $s .= sprintf(' '.$lines_format, $current_line_num, $self->trim_newline($line_after));
+            $current_line_num++;
         }
     }
     return $s;

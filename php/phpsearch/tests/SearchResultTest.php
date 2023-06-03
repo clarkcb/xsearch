@@ -12,7 +12,7 @@ require_once __DIR__ . '/../src/autoload.php';
 class SearchResultTest extends TestCase
 {
     const CSSEARCHPATH = '~/src/xsearch/csharp/CsSearch/CsSearch';
-    public function test_singleline_searchresult()
+    public function test_single_line_search_result()
     {
         $settings = new SearchSettings();
         $settings->colorize = false;
@@ -23,17 +23,17 @@ class SearchResultTest extends TestCase
         $match_start_index = 15;
         $match_end_index = 23;
         $line = "\tpublic class Searcher\n";
-        $linesbefore = [];
-        $linesafter = [];
-        $searchresult = new SearchResult(
+        $lines_before = [];
+        $lines_after = [];
+        $search_result = new SearchResult(
             $pattern,
             $file,
             $linenum,
             $match_start_index,
             $match_end_index,
             $line,
-            $linesbefore,
-            $linesafter
+            $lines_before,
+            $lines_after
         );
         $expectedoutput = sprintf(
             "%s: %d: [%d:%d]: %s",
@@ -43,15 +43,15 @@ class SearchResultTest extends TestCase
             $match_end_index,
             trim($line)
         );
-        $output = $formatter->format($searchresult);
+        $output = $formatter->format($search_result);
         $this->assertEquals($expectedoutput, $output);
     }
 
-    public function test_singleline_longer_than_maxlength_searchresult()
+    public function test_single_line_longer_than_maxlength_search_result()
     {
         $settings = new SearchSettings();
         $settings->colorize = false;
-        $settings->maxlinelength = 100;
+        $settings->max_line_length = 100;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "maxlen";
         $file = new SearchFile('.', "maxlen.txt", FileType::Text);
@@ -59,17 +59,17 @@ class SearchResultTest extends TestCase
         $match_start_index = 53;
         $match_end_index = 59;
         $line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
-        $linesbefore = [];
-        $linesafter = [];
-        $searchresult = new SearchResult(
+        $lines_before = [];
+        $lines_after = [];
+        $search_result = new SearchResult(
             $pattern,
             $file,
             $linenum,
             $match_start_index,
             $match_end_index,
             $line,
-            $linesbefore,
-            $linesafter
+            $lines_before,
+            $lines_after
         );
         $expectedline = '...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...';
         $expectedoutput = sprintf(
@@ -80,11 +80,11 @@ class SearchResultTest extends TestCase
             $match_end_index,
             $expectedline
         );
-        $output = $formatter->format($searchresult);
+        $output = $formatter->format($search_result);
         $this->assertEquals($expectedoutput, $output);
     }
 
-    public function test_binaryfile_searchresult()
+    public function test_binary_file_search_result()
     {
         $settings = new SearchSettings();
         $formatter = new SearchResultFormatter($settings);
@@ -94,24 +94,24 @@ class SearchResultTest extends TestCase
         $match_start_index = 0;
         $match_end_index = 0;
         $line = null;
-        $linesbefore = [];
-        $linesafter = [];
-        $searchresult = new SearchResult(
+        $lines_before = [];
+        $lines_after = [];
+        $search_result = new SearchResult(
             $pattern,
             $file,
             $linenum,
             $match_start_index,
             $match_end_index,
             $line,
-            $linesbefore,
-            $linesafter
+            $lines_before,
+            $lines_after
         );
         $expectedoutput = sprintf("%s matches at [%d:%d]", $file, $match_start_index, $match_end_index);
-        $output = $formatter->format($searchresult);
+        $output = $formatter->format($search_result);
         $this->assertEquals($expectedoutput, $output);
     }
 
-    public function test_multiline_searchresult()
+    public function test_multi_line_search_result()
     {
         $settings = new SearchSettings();
         $settings->colorize = false;
@@ -122,17 +122,17 @@ class SearchResultTest extends TestCase
         $match_start_index = 15;
         $match_end_index = 23;
         $line = "\tpublic class Searcher\n";
-        $linesbefore = ["namespace CsSearch\n", "{\n"];
-        $linesafter = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"];
-        $searchresult = new SearchResult(
+        $lines_before = ["namespace CsSearch\n", "{\n"];
+        $lines_after = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"];
+        $search_result = new SearchResult(
             $pattern,
             $file,
             $linenum,
             $match_start_index,
             $match_end_index,
             $line,
-            $linesbefore,
-            $linesafter
+            $lines_before,
+            $lines_after
         );
         $outputtemplate =
             "================================================================================\n" .
@@ -150,7 +150,7 @@ class SearchResultTest extends TestCase
             $match_start_index,
             $match_end_index
         );
-        $output = $formatter->format($searchresult);
+        $output = $formatter->format($search_result);
         $this->assertEquals($expectedoutput, $output);
     }
 }
