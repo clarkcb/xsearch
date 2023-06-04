@@ -1,13 +1,15 @@
 package scalasearch
 
+import scalafind.FileResult
+
 import scala.util.matching.Regex
 
-case class SearchResult(searchPattern: Regex, file: Option[SearchFile],
+case class SearchResult(searchPattern: Regex, file: Option[FileResult],
                         lineNum: Int, matchStartIndex: Int,
                         matchEndIndex: Int, line: Option[String],
                         linesBefore: Seq[String], linesAfter: Seq[String]) {
 
-  def this(searchPattern: Regex, file: Option[SearchFile], lineNum: Int,
+  def this(searchPattern: Regex, file: Option[FileResult], lineNum: Int,
            matchStartIndex: Int, matchEndIndex: Int, line: Option[String]) = {
     this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       Seq.empty[String], Seq.empty[String])
@@ -92,7 +94,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
   }
 
   def singleLineFormat(result: SearchResult): String = {
-    val filepath = if (result.file.isDefined) result.file.get.getPathWithContainers else "<text>"
+    val filepath = if (result.file.isDefined) result.file.get.toString else "<text>"
     val matchString =
       if (result.lineNum > 0) {
         ": %d: [%d:%d]: %s".format(result.lineNum, result.matchStartIndex, result.matchEndIndex,
@@ -124,7 +126,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
     result.line match {
       case Some(resultLine) =>
         val sb = new StringBuilder
-        val filepath = if (result.file.isDefined) result.file.get.getPathWithContainers else "<text>"
+        val filepath = if (result.file.isDefined) result.file.get.toString else "<text>"
         sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
           result.lineNum, result.matchStartIndex, result.matchEndIndex, "-" * sepLen))
         val lineFormat = " %1$" + lineNumPadding(result) + "d | %2$s\n"

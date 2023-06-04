@@ -1,58 +1,35 @@
 package scalasearch
 
+import scalafind.{Common, FileUtil}
+
 import java.io.File
 
 object SearchMain {
 
-  private def cmpSearchResults(r1: SearchResult, r2: SearchResult): Boolean = {
-    val (path1, fileName1) = r1.file match {
-      case Some(file1) =>
-        (FileUtil.pathOrCurrent(file1.file.getParentFile).getPath, file1.file.getName.toLowerCase)
-      case None => ("", "")
-    }
-    val (path2, fileName2) = r2.file match {
-      case Some(file2) =>
-        (FileUtil.pathOrCurrent(file2.file.getParentFile).getPath, file2.file.getName.toLowerCase)
-      case None => ("", "")
-    }
-    if (path1 == path2) {
-      if (fileName1 == fileName2) {
-        if (r1.lineNum == r2.lineNum) {
-          r1.matchStartIndex < r2.matchStartIndex
-        } else {
-          r1.lineNum < r2.lineNum
-        }
-      } else {
-        fileName1 < fileName2
-      }
-    } else {
-      path1 < path2
-    }
-  }
-
-  def printSearchResults(results: Seq[SearchResult], settings: SearchSettings): Unit = {
+  private def printSearchResults(results: Seq[SearchResult], searcher: Searcher): Unit = {
     // TODO: add includePattern setting in formatted output
-    val formatter = new SearchResultFormatter(settings)
-    results.sortWith(cmpSearchResults).foreach(r => Common.log(formatter.format(r)))
+    val formatter = new SearchResultFormatter(searcher.settings)
+    results.sortWith((sr1, sr2) => searcher.compareResults(sr1, sr2))
+      .foreach(r => Common.log(formatter.format(r)))
   }
 
-  def getMatchingDirs(results: Seq[SearchResult]): Seq[File] = {
+  private def getMatchingDirs(results: Seq[SearchResult]): Seq[String] = {
     results
       .filter(_.file.isDefined)
-      .map(r => FileUtil.pathOrCurrent(r.file.get.file.getParentFile))
+      .map(r => FileUtil.pathOrCurrent(r.file.get.path.getParent).toString)
       .distinct
       .toVector
   }
 
-  def getMatchingFiles(results: Seq[SearchResult]): Seq[File] = {
+  private def getMatchingFiles(results: Seq[SearchResult]): Seq[String] = {
     results
       .filter(_.file.isDefined)
-      .map(_.file.get.file)
+      .map(_.file.get.path.getFileName.toString)
       .distinct
       .toVector
   }
 
-  def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
+  private def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
     val allLines = results.flatMap(r => r.line).map(_.trim)
     if (settings.uniqueLines) {
       allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
@@ -61,19 +38,19 @@ object SearchMain {
     }
   }
 
-  def printMatchingDirs(results: Seq[SearchResult]): Unit = {
+  private def printMatchingDirs(results: Seq[SearchResult]): Unit = {
     val dirs = getMatchingDirs(results)
     Common.log("\nDirectories with matches (%d):".format(dirs.length))
-    dirs.foreach(f => Common.log(f.toString))
+    dirs.foreach(f => Common.log(f))
   }
 
-  def printMatchingFiles(results: Seq[SearchResult]): Unit = {
+  private def printMatchingFiles(results: Seq[SearchResult]): Unit = {
     val files = getMatchingFiles(results)
     Common.log("\nFiles with matches (%d):".format(files.length))
-    files.foreach(f => Common.log(f.toString))
+    files.foreach(f => Common.log(f))
   }
 
-  def printMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Unit = {
+  private def printMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Unit = {
     val lines = getMatchingLines(results, settings)
     val hdr =
       if (settings.uniqueLines) {
@@ -103,7 +80,7 @@ object SearchMain {
 
       if (settings.printResults) {
         Common.log("\nSearch results (%d):".format(results.length))
-        printSearchResults(results, settings)
+        printSearchResults(results, searcher)
       }
       if (settings.listDirs) { printMatchingDirs(results) }
       if (settings.listFiles) { printMatchingFiles(results) }

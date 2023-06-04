@@ -5,7 +5,7 @@ if (-not (Test-Path Env:XSEARCH_PATH))
     $env:XSEARCH_PATH = Join-Path $HOME 'src' 'xsearch'
 }
 
-$scalaVersion = '2.13'
+$scalaVersion = '3.2.2'
 $scalaSearchJarPath = Join-Path $env:XSEARCH_PATH 'scala' 'scalasearch' 'target' "scala-$scalaVersion"
 
 $scalaSearchJars = @(Get-ChildItem $scalaSearchJarPath) |

@@ -2,11 +2,12 @@ package scalasearch
 
 import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
+import scalafind.{Common, FileTypes, FileUtil}
 
 import java.io.{File, IOException, InputStreamReader}
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 case class SearchOption(shortarg: Option[String], longarg: String, desc: String) {
   val sortarg: String = shortarg match {
@@ -16,7 +17,6 @@ case class SearchOption(shortarg: Option[String], longarg: String, desc: String)
 }
 
 object SearchOptions {
-  // TODO: move to config file
   private val _searchOptionsJsonPath = "/searchoptions.json"
   private val _searchOptions = mutable.ListBuffer.empty[SearchOption]
 
@@ -164,7 +164,7 @@ object SearchOptions {
   }
 
   @tailrec
-  def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = obj match {
+  private def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = obj match {
     case s: String =>
       if (this.argActionMap.contains(arg)) {
         argActionMap(arg)(s, ss)
@@ -188,7 +188,7 @@ object SearchOptions {
   }
 
   @tailrec
-  def applySettings(arg: String, lst: List[String], ss: SearchSettings): SearchSettings = lst match {
+  private def applySettings(arg: String, lst: List[String], ss: SearchSettings): SearchSettings = lst match {
     case Nil => ss
     case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
   }
