@@ -6,15 +6,16 @@
   (:use [clojure.string :only (join)]))
 
 (def XSEARCHPATH
-    (let [configjson (slurp (io/resource "config.json"))
-          config (json/read-str configjson :key-fn keyword)]
-      (config :xsearchpath)))
+  (let [xsearchpath-env (System/getenv "XSEARCH_PATH")]
+    (if (nil? xsearchpath-env)
+      (clojure.string/join java.io.File/separator [(System/getenv "HOME") "src" "xsearch"])
+      xsearchpath-env)))
 
 (def SHAREDPATH
   (clojure.string/join java.io.File/separator [XSEARCHPATH "shared"]))
 
 (def FILETYPESPATH
-  (clojure.string/join java.io.File/separator [SHAREDPATH "filetypes.xml"]))
+  (clojure.string/join java.io.File/separator [SHAREDPATH "filetypes.json"]))
 
 (def SEARCHOPTIONSPATH
-  (clojure.string/join java.io.File/separator [SHAREDPATH "searchoptions.xml"]))
+  (clojure.string/join java.io.File/separator [SHAREDPATH "searchoptions.json"]))

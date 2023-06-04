@@ -1,9 +1,9 @@
-(ns cljsearch.search-result-test
+(ns cljsearch.searchresult-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (trim)]
         [clojure.java.io :only (file)]
         [cljsearch.config :only (XSEARCHPATH)]
-        [cljsearch.searchfile :only (new-search-file search-file-path)]
+        [cljfind.fileresult :only (new-file-result file-result-path)]
         [cljsearch.searchresult :only (->SearchResult search-result-to-string)]
         [cljsearch.searchsettings :only (DEFAULT-SETTINGS)]
         [cljsearch.color :only (RESET GREEN)]))
@@ -15,7 +15,7 @@
   (testing "test-singleline-search-result"
     (let [settings (assoc DEFAULT-SETTINGS :colorize false)
           file (file (str CSSEARCHPATH "/Searcher.cs"))
-          search-file (new-search-file file :code)
+          file-result (new-file-result file :code)
           line-num 10
           match-start-index 15
           match-end-index 23
@@ -24,14 +24,14 @@
           lines-after []
           r (->SearchResult
               (re-pattern "Search")
-              search-file 
+              file-result
               line-num
               match-start-index
               match-end-index
               line
               lines-before
               lines-after)
-          expected (format "%s: %d: [%d:%d]: %s" (search-file-path search-file) line-num
+          expected (format "%s: %d: [%d:%d]: %s" (file-result-path file-result) line-num
             match-start-index match-end-index (str/trim line))]
       (is (= (search-result-to-string r settings) expected)))))
 
@@ -39,7 +39,7 @@
   (testing "test-singleline-longer-than-maxlength-search-result"
     (let [settings (assoc DEFAULT-SETTINGS :colorize false :max-line-length 100)
           file (file "./maxlen.txt")
-          search-file (new-search-file file :text)
+          file-result (new-file-result file :text)
           line-num 1
           match-start-index 53
           match-end-index 59
@@ -48,7 +48,7 @@
           lines-after []
           r (->SearchResult
               (re-pattern "maxlen")
-              search-file
+              file-result
               line-num
               match-start-index
               match-end-index
@@ -56,7 +56,7 @@
               lines-before
               lines-after)
           expected-line "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
-          expected (format "%s: %d: [%d:%d]: %s" (search-file-path search-file) line-num
+          expected (format "%s: %d: [%d:%d]: %s" (file-result-path file-result) line-num
             match-start-index match-end-index expected-line)]
       (is (= (search-result-to-string r settings) expected)))))
 
@@ -64,7 +64,7 @@
   (testing "test-singleline-longer-than-maxlength-search-result"
     (let [settings (assoc DEFAULT-SETTINGS :colorize true :max-line-length 100)
           file (file "./maxlen.txt")
-          search-file (new-search-file file :text)
+          file-result (new-file-result file :text)
           line-num 1
           match-start-index 53
           match-end-index 59
@@ -73,7 +73,7 @@
           lines-after []
           r (->SearchResult
               (re-pattern "maxlen")
-              search-file
+              file-result
               line-num
               match-start-index
               match-end-index
@@ -81,7 +81,7 @@
               lines-before
               lines-after)
           expected-line (str "...89012345678901234567890123456789012345678901" GREEN "maxlen" RESET "89012345678901234567890123456789012345678901...")
-          expected (format "%s: %d: [%d:%d]: %s" (search-file-path search-file) line-num
+          expected (format "%s: %d: [%d:%d]: %s" (file-result-path file-result) line-num
             match-start-index match-end-index expected-line)]
       (is (= (search-result-to-string r settings) expected)))))
 
@@ -89,7 +89,7 @@
   (testing "test-binaryfile-search-result"
     (let [settings DEFAULT-SETTINGS
           file (file (str CSSEARCHPATH "/Searcher.exe"))
-          search-file (new-search-file file :binary)
+          file-result (new-file-result file :binary)
           line-num 0
           match-start-index 0
           match-end-index 0
@@ -98,14 +98,14 @@
           lines-after []
           r (->SearchResult
               (re-pattern "Search")
-              search-file 
+              file-result
               line-num
               match-start-index
               match-end-index
               line
               lines-before
               lines-after)
-          expected (format "%s matches at [%d:%d]" (search-file-path search-file) match-start-index
+          expected (format "%s matches at [%d:%d]" (file-result-path file-result) match-start-index
             match-end-index)]
       (is (= (search-result-to-string r settings) expected)))))
 
@@ -113,7 +113,7 @@
   (testing "test-multiline-search-result"
     (let [settings DEFAULT-SETTINGS
           file (file (str CSSEARCHPATH "/Searcher.cs"))
-          search-file (new-search-file file :binary)
+          file-result (new-file-result file :binary)
           line-num 10
           match-start-index 15
           match-end-index 23
@@ -122,7 +122,7 @@
           lines-after ["\t{\n" "\t\tprivate readonly FileTypes _fileTypes;\n"]
           r (->SearchResult
               (re-pattern "Search")
-              search-file 
+              file-result
               line-num
               match-start-index
               match-end-index
@@ -139,6 +139,6 @@
   11 | \t{
   12 | \t\tprivate readonly FileTypes _fileTypes;
 "
-          expected (format outputformat (search-file-path search-file) line-num
+          expected (format outputformat (file-result-path file-result) line-num
             match-start-index match-end-index)]
       (is (= (search-result-to-string r settings) expected)))))

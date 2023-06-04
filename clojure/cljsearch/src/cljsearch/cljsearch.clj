@@ -1,6 +1,6 @@
 (ns cljsearch.cljsearch
   (:gen-class)
-  (:use [cljsearch.common :only (log-msg log-errors)]
+  (:use [cljfind.common :only (log-msg log-errors)]
         [cljsearch.searcher :only
           (search print-search-results print-matching-dirs print-matching-files
             print-matching-lines)]

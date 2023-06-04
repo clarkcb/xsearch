@@ -1,4 +1,4 @@
-(ns cljsearch.search-options-test
+(ns cljsearch.searchoptions-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
         [cljsearch.searchoptions :only (settings-from-args settings-from-json)]))

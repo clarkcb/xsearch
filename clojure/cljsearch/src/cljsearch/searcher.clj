@@ -11,29 +11,13 @@
            (java.util.zip ZipFile))
   (:use [clojure.java.io :only (file reader)]
         [clojure.string :as str :only (join trim upper-case)]
-        [cljsearch.common :only (log-msg)]
-        [cljsearch.filetypes :only (archive-file? get-file-type)]
-        [cljsearch.fileutil :only
-          (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
-            is-dot-dir?)]
-        [cljsearch.searchfile :only (new-search-file search-file-path)]
+        [cljfind.common :only (log-msg)]
+        [cljfind.fileresult :only (file-result-path)]
+        [cljfind.finder :only (find-files)]
         [cljsearch.searchresult :only
-          (->SearchResult search-result-to-string)]))
-
-(defn is-search-dir? [d settings]
-  (or
-    (nil? d)
-    (is-dot-dir? (get-name d))
-    (and
-      (or
-        (not (:exclude-hidden settings))
-        (not (hidden-dir? d)))
-      (or
-       (empty? (:in-dir-patterns settings))
-        (some #(re-find % (.getPath d)) (:in-dir-patterns settings)))
-      (or
-       (empty? (:out-dir-patterns settings))
-        (not-any? #(re-find % (.getPath d)) (:out-dir-patterns settings))))))
+          (->SearchResult search-result-to-string)]
+        [cljsearch.searchsettings]
+        ))
 
 (defn print-search-result [r settings]
   (log-msg (search-result-to-string r settings)))
@@ -107,82 +91,6 @@
                   ]]
         (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))))
 
-(defn is-archive-search-file? [f settings]
-  (and
-    (or
-     (empty? (:in-archive-extensions settings))
-     (some #(= % (get-ext f)) (:in-archive-extensions settings)))
-    (or
-     (empty? (:out-archive-extensions settings))
-     (not-any? #(= % (get-ext f)) (:out-archive-extensions settings)))
-    (or
-     (empty? (:in-archive-file-patterns settings))
-     (some #(re-find % (.getName f)) (:in-archive-file-patterns settings)))
-    (or
-     (empty? (:out-archive-file-patterns settings))
-     (not-any? #(re-find % (.getName f)) (:out-archive-file-patterns settings)))))
-
-(defn is-search-file? [f settings]
-  (and
-    (is-search-dir? (.getParentFile f) settings)
-    (or
-     (empty? (:in-extensions settings))
-     (some #(= % (get-ext f)) (:in-extensions settings)))
-    (or
-     (empty? (:out-extensions settings))
-     (not-any? #(= % (get-ext f)) (:out-extensions settings)))
-    (or
-     (empty? (:in-file-patterns settings))
-     (some #(re-find % (.getName f)) (:in-file-patterns settings)))
-    (or
-     (empty? (:out-file-patterns settings))
-     (not-any? #(re-find % (.getName f)) (:out-file-patterns settings)))
-    (or
-     (empty? (:in-file-types settings))
-     (contains? (:in-file-types settings) (get-file-type f)))
-    (or
-     (empty? (:out-file-types settings))
-     (not (contains? (:out-file-types settings) (get-file-type f))))))
-
-(defn filter-file? [f settings]
-  (and
-    (or
-      (not (hidden-file? f))
-      (not (:exclude-hidden settings)))
-    (if (archive-file? f)
-      (and
-        (:search-archives settings)
-        (is-archive-search-file? f settings))
-      (and
-        (not (:archives-only settings))
-        (is-search-file? f settings)))))
-
-(defn get-search-files-for-path [settings path]
-  (let [pathfile (file path)]
-    (if (.isFile pathfile)
-      (vec
-       (map
-        #(new-search-file % (get-file-type %))
-        (filter #(filter-file? % settings) [pathfile])))
-      (if (:recursive settings)
-        (vec
-         (map
-          #(new-search-file % (get-file-type %))
-          (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq pathfile)))))
-        (vec
-         (map
-          #(new-search-file % (get-file-type %))
-          (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles pathfile)))))))))
-
-(defn get-search-files
-  ([settings]
-    (get-search-files settings (:paths settings) []))
-  ([settings paths search-files]
-    (if (empty? paths)
-      search-files
-      (let [nextsearch-files (get-search-files-for-path settings (first paths))]
-        (get-search-files settings (rest paths) (concat search-files nextsearch-files))))))
-
 (defn search-archive-file [f settings]
   (if (:verbose settings)
     (log-msg (format "Searching archive file %s" f))))
@@ -219,12 +127,12 @@
   (apply concat
     (map #(search-binary-string-for-pattern b % settings) (:search-patterns settings))))
 
-(defn search-binary-file [sf settings]
+(defn search-binary-file [fr settings]
   (if (:verbose settings)
-    (log-msg (format "Searching binary file %s" (search-file-path sf))))
-  (let [contents (slurp (:file sf) :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
+    (log-msg (format "Searching binary file %s" (file-result-path fr))))
+  (let [contents (slurp (:file fr) :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
         search-results (search-binary-string contents settings)
-        with-file-results (map #(assoc-in % [:file] sf) search-results)]
+        with-file-results (map #(assoc-in % [:file] fr) search-results)]
     with-file-results))
 
 (defn matches-any-pattern? [s pp]
@@ -327,10 +235,10 @@
   (apply concat
     (map #(search-multiline-string-for-pattern s % settings) (:search-patterns settings))))
 
-(defn search-text-file-contents [sf settings]
-  (let [contents (slurp (:file sf) :encoding (:text-file-encoding settings))
+(defn search-text-file-contents [fr settings]
+  (let [contents (slurp (:file fr) :encoding (:text-file-encoding settings))
         search-results (search-multiline-string contents settings)
-        with-file-results (map #(assoc-in % [:file] sf) search-results)]
+        with-file-results (map #(assoc-in % [:file] fr) search-results)]
     with-file-results))
 
 (defn search-line-for-pattern
@@ -397,32 +305,32 @@
         (take 1 results)
         results))))
 
-(defn search-text-file-lines [sf settings]
-  (with-open [rdr (reader (:file sf) :encoding (:text-file-encoding settings))]
+(defn search-text-file-lines [fr settings]
+  (with-open [rdr (reader (:file fr) :encoding (:text-file-encoding settings))]
     (let [search-results (search-lines (line-seq rdr) settings)
-          with-file-results (map #(assoc-in % [:file] sf) search-results)]
+          with-file-results (map #(assoc-in % [:file] fr) search-results)]
       with-file-results)))
 
-(defn search-text-file [sf settings]
+(defn search-text-file [fr settings]
   (if (:verbose settings)
-    (log-msg (format "Searching text file %s" (search-file-path sf))))
+    (log-msg (format "Searching text file %s" (file-result-path fr))))
   (if (:multi-line-search settings)
-    (search-text-file-contents sf settings)
-    (search-text-file-lines sf settings)))
+    (search-text-file-contents fr settings)
+    (search-text-file-lines fr settings)))
 
-(defn search-file [sf settings]
-  (let [file-type (:file-type sf)
+(defn search-file [fr settings]
+  (let [file-type (:file-type fr)
         verbose (:verbose settings)
-        file-path (search-file-path sf)]
+        file-path (file-result-path fr)]
     (cond
       (or
         (= file-type :code)
         (= file-type :text)
-        (= file-type :xml)) (search-text-file sf settings)
-      (= file-type :binary) (search-binary-file sf settings)
+        (= file-type :xml)) (search-text-file fr settings)
+      (= file-type :binary) (search-binary-file fr settings)
       (= file-type :archive)
         (if (:search-archives settings)
-          (search-archive-file sf settings)
+          (search-archive-file fr settings)
           (do
             (if verbose (log-msg (format "Skipping archive file %s" file-path))
             [])))
@@ -435,12 +343,16 @@
   (if (:verbose settings)
     (do
       (log-msg (format "\nFiles to be searched (%d):" (count search-files)))
-      (doseq [sf search-files] (log-msg (search-file-path sf)))
+      (doseq [fr search-files] (log-msg (file-result-path fr)))
       (log-msg "")))
   (apply concat (map #(search-file % settings) search-files)))
 
 (defn search [settings]
-  (let [errs (validate-settings settings)]
-    (if (empty? errs)
-      [(search-files (get-search-files settings) settings) []]
-      [[] errs])))
+  (let [validation-errs (validate-settings settings)]
+    (if (empty? validation-errs)
+      (let [find-settings (to-find-settings settings)
+            [file-results find-errs] (find-files find-settings)]
+        (if (empty? find-errs)
+          [(search-files file-results settings) []]
+          [[] find-errs]))
+      [[] validation-errs])))

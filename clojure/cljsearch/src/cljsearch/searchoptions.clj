@@ -8,23 +8,23 @@
 
 (ns cljsearch.searchoptions
   #^{:author "Cary Clark",
-     :doc "Module to provide file-related utility functions"}
+     :doc "Defines the available command-line options utility functions"}
   (:import (java.io File))
   (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
-        [clojure.xml :only (parse)]
-        [cljsearch.common :only (log-msg)]
-        [cljsearch.fileutil :only (expand-path)]
+        [cljfind.common :only (log-msg)]
+        [cljfind.fileutil :only (expand-path)]
+        [cljfind.findsettings :only (sort-by-from-name)]
         [cljsearch.searchsettings :only
          (->SearchSettings DEFAULT-SETTINGS add-extension add-file-type add-pattern
             add-path set-archives-only set-debug set-num)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
-(defn get-sort-arg [so]
+(defn get-sort-arg [^SearchOption so]
   (if (= "" (:short-arg so))
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
@@ -65,7 +65,11 @@
     :linesaftertopattern (fn [settings s] (add-pattern settings s :lines-after-to-patterns))
     :linesafteruntilpattern (fn [settings s] (add-pattern settings s :lines-after-until-patterns))
     :linesbefore (fn [settings s] (set-num settings s :lines-before))
+    :maxlastmod (fn [settings s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
     :maxlinelength (fn [settings s] (assoc settings :max-line-length (read-string s)))
+    :maxsize (fn [settings s] (assoc settings :max-size (Integer/parseInt s)))
+    :minlastmod (fn [settings s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
+    :minsize (fn [settings s] (assoc settings :min-size (Integer/parseInt s)))
     :out-archiveext (fn [settings s] (add-extension settings s :out-archive-extensions))
     :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archive-file-patterns))
     :out-dirpattern (fn [settings s] (add-pattern settings s :out-dir-patterns))
@@ -76,6 +80,7 @@
     :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-lines-before-patterns))
     :path (fn [settings s] (add-path settings s))
     :searchpattern (fn [settings s] (add-pattern settings s :search-patterns))
+    :sort-by (fn [settings s] (assoc settings :sort-by (sort-by-from-name s)))
   })
 
 (def bool-flag-action-map
@@ -98,6 +103,10 @@
     :printmatches (fn [settings b] (assoc settings :print-results b))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :searcharchives (fn [settings b] (assoc settings :search-archives b))
+    :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
+    :sort-caseinsensitive (fn [settings b] (assoc settings :sort-case-insensitive b))
+    :sort-casesensitive (fn [settings b] (assoc settings :sort-case-insensitive (not b)))
+    :sort-descending (fn [settings b] (assoc settings :sort-descending b))
     :uniquelines (fn [settings b] (assoc settings :unique-lines b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))
@@ -187,9 +196,9 @@
       "Options:\n "
       (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
 
-(defn usage []
+(defn usage
   ([exit-code]
     (log-msg "" (usage-string) "")
-    (System/exit 0))
+    (System/exit exit-code))
   ([]
     (usage 0)))

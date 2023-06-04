@@ -11,7 +11,8 @@
      :doc "Defines the settings for a given search instance"}
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (split)]
-        [cljsearch.filetypes :only (from-name)]))
+        [cljfind.filetypes :only (from-name)]
+        [cljfind.findsettings :only (->FindSettings)]))
 
 (defrecord SearchSettings
   [
@@ -35,7 +36,11 @@
     list-dirs
     list-files
     list-lines
+    max-last-mod
     max-line-length
+    max-size
+    min-last-mod
+    min-size
     multi-line-search
     out-archive-extensions
     out-archive-file-patterns
@@ -52,53 +57,98 @@
     recursive
     search-archives
     search-patterns
+    sort-by
+    sort-case-insensitive
+    sort-descending
     text-file-encoding
     unique-lines
     verbose
   ])
 
-(def DEFAULT-SETTINGS (->SearchSettings
-    false   ; archives-only
-    true    ; colorize
-    false   ; debug
-    true    ; exclude-hidden
-    false   ; first-match
-    #{}     ; in-archive-extensions
-    #{}     ; in-archive-file-patterns
-    #{}     ; in-dir-patterns
-    #{}     ; in-extensions
-    #{}     ; in-file-patterns
-    #{}     ; in-file-types
-    #{}     ; in-lines-after-patterns
-    #{}     ; in-lines-before-patterns
-    0       ; lines-after
-    #{}     ; lines-after-to-patterns
-    #{}     ; lines-after-until-patterns
-    0       ; lines-before
-    false   ; list-dirs
-    false   ; list-files
-    false   ; list-lines
-    150     ; max-line-length
-    false   ; multi-line-search
-    #{}     ; out-archive-extensions
-    #{}     ; out-archive-file-patterns
-    #{}     ; out-dir-patterns
-    #{}     ; out-extensions
-    #{}     ; out-file-patterns
-    #{}     ; out-file-types
-    #{}     ; out-lines-after-patterns
-    #{}     ; out-lines-before-patterns
-    #{}     ; paths
-    true    ; print-results
-    false   ; print-usage
-    false   ; print-version
-    true    ; recursive
-    false   ; search-archives
-    #{}     ; search-patterns
-    "utf-8" ; text-file-encoding
-    false   ; unique-lines
-    false   ; verbose
-  ))
+(def DEFAULT-SETTINGS
+  (->SearchSettings
+   false     ; archives-only
+   true      ; colorize
+   false     ; debug
+   true      ; exclude-hidden
+   false     ; first-match
+   #{}       ; in-archive-extensions
+   #{}       ; in-archive-file-patterns
+   #{}       ; in-dir-patterns
+   #{}       ; in-extensions
+   #{}       ; in-file-patterns
+   #{}       ; in-file-types
+   #{}       ; in-lines-after-patterns
+   #{}       ; in-lines-before-patterns
+   0         ; lines-after
+   #{}       ; lines-after-to-patterns
+   #{}       ; lines-after-until-patterns
+   0         ; lines-before
+   false     ; list-dirs
+   false     ; list-files
+   false     ; list-lines
+   nil       ; max-last-mod
+   150       ; max-line-length
+   0         ; max-size
+   nil       ; min-last-mod
+   0         ; min-size
+   false     ; multi-line-search
+   #{}       ; out-archive-extensions
+   #{}       ; out-archive-file-patterns
+   #{}       ; out-dir-patterns
+   #{}       ; out-extensions
+   #{}       ; out-file-patterns
+   #{}       ; out-file-types
+   #{}       ; out-lines-after-patterns
+   #{}       ; out-lines-before-patterns
+   #{}       ; paths
+   true      ; print-results
+   false     ; print-usage
+   false     ; print-version
+   true      ; recursive
+   false     ; search-archives
+   #{}       ; search-patterns
+   :filepath ; sort-by
+   false     ; sort-case-insensitive
+   false     ; sort-descending
+   "utf-8"   ; text-file-encoding
+   false     ; unique-lines
+   false     ; verbose
+   ))
+
+(defn to-find-settings [^SearchSettings search-settings]
+  (->FindSettings
+   (:archives-only search-settings)             ; archives-only
+   (:debug search-settings)                     ; debug
+   (:exclude-hidden search-settings)            ; exclude-hidden
+   (:search-archives search-settings)           ; include-archives
+   (:in-archive-extensions search-settings)     ; in-archive-extensions
+   (:in-archive-file-patterns search-settings)  ; in-archive-file-patterns
+   (:in-dir-patterns search-settings)           ; in-dir-patterns
+   (:in-extensions search-settings)             ; in-extensions
+   (:in-file-patterns search-settings)          ; in-file-patterns
+   (:in-file-types search-settings)             ; in-file-types
+   (:list-dirs search-settings)                 ; list-dirs
+   (:list-files search-settings)                ; list-files
+   (:max-last-mod search-settings)              ; max-last-mod
+   (:max-size search-settings)                  ; max-size
+   (:min-last-mod search-settings)              ; min-last-mod
+   (:min-size search-settings)                  ; min-size
+   (:out-archive-extensions search-settings)    ; out-archive-extensions
+   (:out-archive-file-patterns search-settings) ; out-archive-file-patterns
+   (:out-dir-patterns search-settings)          ; out-dir-patterns
+   (:out-extensions search-settings)            ; out-extensions
+   (:out-file-patterns search-settings)         ; out-file-patterns
+   (:out-file-types search-settings)            ; out-file-types
+   (:paths search-settings)                     ; paths
+   (:print-usage search-settings)               ; print-usage
+   (:print-version search-settings)             ; print-version
+   (:sort-by search-settings)                   ; sort-by
+   (:sort-case-insensitive search-settings)     ; sort-case-insensitive
+   (:sort-descending search-settings)           ; sort-descending
+   (:recursive search-settings)                 ; recursive
+   (:verbose search-settings)                   ; verbose
+   ))
 
 (defn add-element [x coll]
   (conj coll x))

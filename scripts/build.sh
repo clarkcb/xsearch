@@ -25,6 +25,13 @@ usage () {
     exit
 }
 
+# copy_searchoptions_resources
+copy_searchoptions_resources () {
+    local resources_path="$1"
+    log "cp $SHARED_PATH/searchoptions.json $resources_path/"
+    cp "$SHARED_PATH/searchoptions.json" "$resources_path/"
+}
+
 # copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
@@ -134,7 +141,7 @@ build_clojure () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$CLJSEARCH_PATH/resources"
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_resources "$RESOURCES_PATH"
 
     cd "$CLJSEARCH_PATH"
 
@@ -990,7 +997,7 @@ build_scala () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
