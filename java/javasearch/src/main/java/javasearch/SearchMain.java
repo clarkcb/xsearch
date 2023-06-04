@@ -31,36 +31,14 @@ public class SearchMain {
         options.usage(1);
     }
 
-    private static int signum(final int num) {
-        return Integer.compare(num, 0);
-    }
-
-    private static int compareResults(final SearchResult r1, final SearchResult r2) {
-        int pathCmp = r1.getSearchFile().getPath().toLowerCase()
-                .compareTo(r2.getSearchFile().getPath().toLowerCase());
-        if (pathCmp == 0) {
-            int fileCmp = r1.getSearchFile().getFileName().toLowerCase()
-                    .compareTo(r2.getSearchFile().getFileName().toLowerCase());
-            if (fileCmp == 0) {
-                int lineNumCmp = signum(r1.getLineNum() - r2.getLineNum());
-                if (lineNumCmp == 0) {
-                    return signum(r1.getMatchStartIndex() - r2.getMatchStartIndex());
-                }
-                return lineNumCmp;
-            }
-            return fileCmp;
-        }
-        return pathCmp;
-    }
-
-    private static List<SearchResult> getSortedSearchResults(List<SearchResult> results) {
-        return results.stream().sorted(SearchMain::compareResults)
+    private static List<SearchResult> getSortedSearchResults(List<SearchResult> results, Searcher searcher) {
+        return results.stream().sorted(searcher::compareResults)
                 .collect(Collectors.toList());
     }
 
-    private static void printSearchResults(List<SearchResult> results, SearchSettings settings) {
-        List<SearchResult> sortedResults = getSortedSearchResults(results);
-        SearchResultFormatter formatter = new SearchResultFormatter(settings);
+    private static void printSearchResults(List<SearchResult> results, Searcher searcher) {
+        List<SearchResult> sortedResults = getSortedSearchResults(results, searcher);
+        SearchResultFormatter formatter = new SearchResultFormatter(searcher.getSettings());
         log(String.format("Search results (%d):", sortedResults.size()));
         for (SearchResult r : sortedResults) {
             log(formatter.format(r));
@@ -68,7 +46,9 @@ public class SearchMain {
     }
 
     private static List<String> getMatchingDirs(List<SearchResult> results) {
-        return results.stream().map(r -> r.getSearchFile().getPath()).distinct()
+        return results.stream().map(r -> r.getFileResult().getPath().getParent())
+                .map(p -> p == null ? "." : p.toString())
+                .distinct()
                 .sorted().collect(Collectors.toList());
     }
 
@@ -81,7 +61,7 @@ public class SearchMain {
     }
 
     private static List<String> getMatchingFiles(List<SearchResult> results) {
-        return results.stream().map(r -> r.getSearchFile().toString()).distinct()
+        return results.stream().map(r -> r.getFileResult().toString()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
@@ -146,7 +126,7 @@ public class SearchMain {
                 // print the results
                 if (settings.getPrintResults()) {
                     log("");
-                    printSearchResults(results, settings);
+                    printSearchResults(results, searcher);
                 }
                 if (settings.getListDirs()) {
                     printMatchingDirs(results);

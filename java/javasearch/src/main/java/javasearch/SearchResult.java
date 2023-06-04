@@ -10,6 +10,8 @@ Class to encapsulate a command line search option
 
 package javasearch;
 
+import javafind.FileResult;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -17,7 +19,7 @@ import java.util.regex.Pattern;
 public class SearchResult {
 
     final private Pattern searchPattern;
-    private SearchFile searchFile;
+    private FileResult fileResult;
     final private int lineNum;
     final private int matchStartIndex;
     final private int matchEndIndex;
@@ -26,7 +28,7 @@ public class SearchResult {
     final private List<String> linesAfter;
 
     public SearchResult(final Pattern searchPattern,
-                        final SearchFile file,
+                        final FileResult file,
                         final int lineNum,
                         final int matchStartIndex,
                         final int matchEndIndex,
@@ -36,7 +38,7 @@ public class SearchResult {
     }
 
     public SearchResult(final Pattern searchPattern,
-                        final SearchFile file,
+                        final FileResult file,
                         final int lineNum,
                         final int matchStartIndex,
                         final int matchEndIndex,
@@ -44,7 +46,7 @@ public class SearchResult {
                         final List<String> linesBefore,
                         final List<String> linesAfter) {
         this.searchPattern = searchPattern;
-        this.searchFile = file;
+        this.fileResult = file;
         this.lineNum = lineNum;
         this.matchStartIndex = matchStartIndex;
         this.matchEndIndex = matchEndIndex;
@@ -57,12 +59,12 @@ public class SearchResult {
         return this.searchPattern;
     }
 
-    public final SearchFile getSearchFile() {
-        return this.searchFile;
+    public final FileResult getFileResult() {
+        return this.fileResult;
     }
 
-    protected final void setSearchFile(final SearchFile sf) {
-        this.searchFile = sf;
+    protected final void setFileResult(final FileResult sf) {
+        this.fileResult = sf;
     }
 
     public final int getLineNum() {

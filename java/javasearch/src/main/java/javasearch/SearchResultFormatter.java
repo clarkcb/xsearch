@@ -42,7 +42,7 @@ public class SearchResultFormatter {
     }
 
     public final String multiLineToString(SearchResult result) {
-        String fileString = result.getSearchFile() == null ? noSearchFileText : result.getSearchFile().toString();
+        String fileString = result.getFileResult() == null ? noSearchFileText : result.getFileResult().toString();
         final int lineSepLength = 80;
         StringBuilder sb = new StringBuilder()
                 .append(StringUtil.repeatString("=", lineSepLength)).append("\n")
@@ -141,7 +141,7 @@ public class SearchResultFormatter {
     public final String singleLineToString(SearchResult result) {
         StringBuilder sb = new StringBuilder();
         try {
-            sb.append(result.getSearchFile().toString());
+            sb.append(result.getFileResult().toString());
         } catch (NullPointerException e) {
             sb.append(noSearchFileText);
         }

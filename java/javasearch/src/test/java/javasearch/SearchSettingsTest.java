@@ -15,25 +15,18 @@ public class SearchSettingsTest {
     }
 
     @Test
-    public final void testDefaultSettings() {
+    public final void testDefaultSearchSettings() {
         SearchSettings settings = new SearchSettings();
-        assertEquals(DefaultSettings.ARCHIVESONLY, settings.getArchivesOnly());
-        assertEquals(DefaultSettings.DEBUG, settings.getDebug());
-        assertEquals(DefaultSettings.EXCLUDEHIDDEN, settings.getExcludeHidden());
-        assertEquals(DefaultSettings.FIRSTMATCH, settings.getFirstMatch());
-        assertEquals(DefaultSettings.LINESAFTER, settings.getLinesAfter());
-        assertEquals(DefaultSettings.LINESBEFORE, settings.getLinesBefore());
-        assertEquals(DefaultSettings.LISTDIRS, settings.getListDirs());
-        assertEquals(DefaultSettings.LISTFILES, settings.getListFiles());
-        assertEquals(DefaultSettings.LISTLINES, settings.getListLines());
-        assertEquals(DefaultSettings.MAXLINELENGTH, settings.getMaxLineLength());
-        assertEquals(DefaultSettings.MULTILINESEARCH, settings.getMultiLineSearch());
-        assertEquals(DefaultSettings.PRINTRESULTS, settings.getPrintResults());
-        assertEquals(DefaultSettings.PRINTUSAGE, settings.getPrintUsage());
-        assertEquals(DefaultSettings.PRINTVERSION, settings.getPrintVersion());
-        assertEquals(DefaultSettings.SEARCHARCHIVES, settings.getSearchArchives());
-        assertEquals(DefaultSettings.UNIQUELINES, settings.getUniqueLines());
-        assertEquals(DefaultSettings.VERBOSE, settings.getVerbose());
+        assertEquals(DefaultSearchSettings.COLORIZE, settings.getColorize());
+        assertEquals(DefaultSearchSettings.FIRSTMATCH, settings.getFirstMatch());
+        assertEquals(DefaultSearchSettings.LINESAFTER, settings.getLinesAfter());
+        assertEquals(DefaultSearchSettings.LINESBEFORE, settings.getLinesBefore());
+        assertEquals(DefaultSearchSettings.LISTLINES, settings.getListLines());
+        assertEquals(DefaultSearchSettings.MAXLINELENGTH, settings.getMaxLineLength());
+        assertEquals(DefaultSearchSettings.MULTILINESEARCH, settings.getMultiLineSearch());
+        assertEquals(DefaultSearchSettings.PRINTRESULTS, settings.getPrintResults());
+        assertEquals(DefaultSearchSettings.SEARCHARCHIVES, settings.getSearchArchives());
+        assertEquals(DefaultSearchSettings.UNIQUELINES, settings.getUniqueLines());
     }
 
     @Test

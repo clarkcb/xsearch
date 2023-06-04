@@ -10,13 +10,20 @@ Class to encapsulate all command line search options
 
 package javasearch;
 
+import javafind.FileUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class SearchOptions {
@@ -104,7 +111,7 @@ public class SearchOptions {
         JSONArray searchoptionsArray = (JSONArray) jsonObj.get("searchoptions");
 
         for (Object o : searchoptionsArray) {
-            Map searchoptionMap = (Map) o;
+            Map<String, String> searchoptionMap = (Map<String, String>) o;
             String longArg = (String) searchoptionMap.get("long");
             String desc = (String) searchoptionMap.get("desc");
             String shortArg = "";
@@ -124,9 +131,9 @@ public class SearchOptions {
     }
 
     private void settingsFromFile(String filePath, SearchSettings settings) {
-        File file = new File(filePath);
+        Path path = Paths.get(filePath);
         try {
-            if (!file.exists()) {
+            if (Files.exists(path)) {
                 Logger.log("Settings file not found: " + filePath);
                 System.exit(1);
             }
@@ -134,7 +141,7 @@ public class SearchOptions {
                 Logger.log("Invalid settings file type (just be JSON): " + filePath);
                 System.exit(1);
             }
-            settingsFromJson(FileUtil.getFileContents(file), settings);
+            settingsFromJson(FileUtil.getFileContents(path), settings);
         } catch (FileNotFoundException e) {
             Logger.log("Settings file not found: " + filePath);
             System.exit(1);

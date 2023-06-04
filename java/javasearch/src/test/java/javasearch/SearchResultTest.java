@@ -1,8 +1,12 @@
 package javasearch;
 
+import javafind.FileResult;
+import javafind.FileType;
 import org.junit.Test;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,18 +23,18 @@ public class SearchResultTest {
     @Test
     public final void testSingleLineSearchResult() {
         SearchSettings settings = new SearchSettings();
-        settings.setMaxLineLength(DefaultSettings.MAXLINELENGTH);
+        settings.setMaxLineLength(DefaultSearchSettings.MAXLINELENGTH);
         settings.setColorize(false);
         SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");
-        final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-            "Searcher.cs", FileType.CODE);
+        final Path path = Paths.get("~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs");
+        final FileResult fileResult = new FileResult(path, FileType.CODE);
         final int lineNum = 10;
         final int matchStartIndex = 15;
         final int matchEndIndex = 21;
         final String line = "\tpublic class Searcher\n";
         final List<String> beforeAfterLines = new ArrayList<>();
-        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum, matchStartIndex,
+        final SearchResult searchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex,
                 matchEndIndex, line, beforeAfterLines, beforeAfterLines);
         final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.cs";
         final String expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
@@ -46,13 +50,14 @@ public class SearchResultTest {
         settings.setColorize(false);
         SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("maxlen");
-        final SearchFile searchFile = new SearchFile(".", "maxlen.txt", FileType.TEXT);
+        final Path path = Paths.get("./maxlen.txt");
+        final FileResult fileResult = new FileResult(path, FileType.TEXT);
         final int lineNum = 1;
         final int matchStartIndex = 53;
         final int matchEndIndex = 59;
         final String line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
         final List<String> linesBeforeAfter = new ArrayList<>();
-        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final SearchResult searchResult = new SearchResult(pattern, fileResult, lineNum,
             matchStartIndex, matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
         final String expectedPath = "." + File.separator + "maxlen.txt";
         final String expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...";
@@ -69,13 +74,14 @@ public class SearchResultTest {
         settings.setColorize(true);
         SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("maxlen");
-        final SearchFile searchFile = new SearchFile(".", "maxlen.txt", FileType.TEXT);
+        final Path path = Paths.get("./maxlen.txt");
+        final FileResult fileResult = new FileResult(path, FileType.TEXT);
         final int lineNum = 10;
         final int matchStartIndex = 53;
         final int matchEndIndex = 59;
         final String line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
         final List<String> linesBeforeAfter = new ArrayList<>();
-        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final SearchResult searchResult = new SearchResult(pattern, fileResult, lineNum,
             matchStartIndex, matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
         final String expectedPath = "." + File.separator + "maxlen.txt";
         final String expectedLine = "...89012345678901234567890123456789012345678901" +
@@ -94,12 +100,12 @@ public class SearchResultTest {
         SearchSettings settings = new SearchSettings();
         SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");
-        final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-            "Searcher.exe", FileType.BINARY);
+        final Path path = Paths.get("~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe");
+        final FileResult fileResult = new FileResult(path, FileType.BINARY);
         final int lineNum = 0;
         final int matchStartIndex = 0;
         final int matchEndIndex = 0;
-        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final SearchResult searchResult = new SearchResult(pattern, fileResult, lineNum,
             matchStartIndex, matchEndIndex, null);
         final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.exe";
         final String expectedOutput = String.format("%s matches at [0:0]", expectedPath);
@@ -113,15 +119,15 @@ public class SearchResultTest {
         settings.setColorize(false);
         SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");
-        final SearchFile searchFile = new SearchFile("~/src/git/xsearch/csharp/CsSearch/CsSearch",
-                "Searcher.cs", FileType.CODE);
+        final Path path = Paths.get("~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs");
+        final FileResult fileResult = new FileResult(path, FileType.CODE);
         final int lineNum = 10;
         final int matchStartIndex = 15;
         final int matchEndIndex = 23;
         final String line = "\tpublic class Searcher\n";
         final List<String> linesBefore = Arrays.asList("namespace CsSearch\n", "{\n");
         final List<String> linesAfter = Arrays.asList("\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n");
-        final SearchResult searchResult = new SearchResult(pattern, searchFile, lineNum,
+        final SearchResult searchResult = new SearchResult(pattern, fileResult, lineNum,
                 matchStartIndex, matchEndIndex, line, linesBefore, linesAfter);
         final String expectedPath = "~/src/git/xsearch/csharp/CsSearch/CsSearch" + File.separator + "Searcher.cs";
         final String expectedOutput = String.format(
