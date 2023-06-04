@@ -1,10 +1,12 @@
 package ktsearch
 
+import ktfind.FileResult
+
 /**
  * @author cary on 7/25/16.
  */
 data class SearchResult(val searchPattern: Regex,
-                        val file: SearchFile?,
+                        val file: FileResult?,
                         val lineNum: Int,
                         val matchStartIndex: Int,
                         val matchEndIndex: Int,
@@ -13,7 +15,7 @@ data class SearchResult(val searchPattern: Regex,
                         val linesAfter: List<String>) {
 
     constructor(searchPattern: Regex,
-                file: SearchFile?,
+                file: FileResult?,
                 lineNum: Int,
                 matchStartIndex: Int,
                 matchEndIndex: Int,

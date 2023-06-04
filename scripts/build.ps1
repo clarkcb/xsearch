@@ -644,6 +644,15 @@ function BuildKotlin
     }
     CopyTestResources($testResourcesPath)
 
+    $ktLibDir = Join-Path $env:XSEARCH_PATH 'kotlin' 'ktsearch' 'lib'
+    $ktFindJars = @(Get-ChildItem -Path $ktLibDir -File) |
+                    Where-Object { $_.Name.StartsWith('ktfind') }
+    if ($ktFindJars.count -eq 0)
+    {
+        PrintError("You need to copy the ktfind jar into $ktLibDir")
+        return
+    }
+
     $oldPwd = Get-Location
     Set-Location $ktsearchPath
 

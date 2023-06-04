@@ -592,6 +592,14 @@ build_kotlin () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
+    # copy over latest ktfind dependency if not found
+    KTFIND_JAR=$(find $KTSEARCH_PATH/lib -name "ktfind*.jar" | head -n 1)
+    if [ -z "$KTFIND_JAR" ]
+    then
+        log_error "You need to copy the ktfind jar into $KTSEARCH_PATH/lib/"
+        return
+    fi
+
     # run a gradle build
     log "Building ktsearch"
 
