@@ -2,93 +2,34 @@
 
 namespace phpsearch;
 
+use phpfind\FileTypes;
+use phpfind\FindSettings;
+use phpfind\StringUtil;
+
 /**
  * Class SearchSettings
- *
- * @property bool archives_only
- * @property bool colorize
- * @property bool debug
- * @property bool exclude_hidden
- * @property bool first_match
- * @property array in_archive_extensions
- * @property array in_archive_file_patterns
- * @property array in_dir_patterns
- * @property array in_extensions
- * @property array in_file_patterns
- * @property array in_file_types
- * @property array in_lines_after_patterns
- * @property array in_lines_before_patterns
- * @property int lines_after
- * @property array lines_after_to_patterns
- * @property array lines_after_until_patterns
- * @property int lines_before
- * @property bool list_dirs
- * @property bool list_files
- * @property bool list_lines
- * @property int max_line_length
- * @property bool multi_line_search
- * @property array out_archive_extensions
- * @property array out_archive_file_patterns
- * @property array out_dir_patterns
- * @property array out_extensions
- * @property array out_file_patterns
- * @property array out_file_types
- * @property array out_lines_after_patterns
- * @property array out_lines_before_patterns
- * @property array paths
- * @property bool print_results
- * @property bool print_usage
- * @property bool print_version
- * @property bool recursive
- * @property bool search_archives
- * @property array search_patterns
- * @property string text_file_encoding
- * @property bool unique_lines
- * @property bool verbose
  */
-class SearchSettings
+class SearchSettings extends FindSettings
 {
-    public bool $archives_only = false;
     public bool $colorize = true;
-    public bool $debug = false;
-    public bool $exclude_hidden = true;
     public bool $first_match = false;
+    public array $in_lines_after_patterns = array();
+    public array $in_lines_before_patterns = array();
     public int $lines_after = 0;
+    public array $lines_after_to_patterns = array();
+    public array $lines_after_until_patterns = array();
     public int $lines_before = 0;
-    public bool $list_dirs = false;
-    public bool $list_files = false;
     public bool $list_lines = false;
     public int $max_line_length = 150;
     public bool $multi_line_search = false;
-    public bool $print_results = true;
-    public bool $print_usage = false;
-    public bool $print_version = false;
-    public bool $recursive = true;
-    public bool $search_archives = false;
-    public string $text_file_encoding = 'utf-8';
-    public bool $unique_lines = false;
-    public bool $verbose = false;
-
-    public array $in_archive_extensions = array();
-    public array $in_archive_file_patterns = array();
-    public array $in_dir_patterns = array();
-    public array $in_extensions = array();
-    public array $in_file_patterns = array();
-    public array $in_file_types = array();
-    public array $in_lines_after_patterns = array();
-    public array $in_lines_before_patterns = array();
-    public array $lines_after_to_patterns = array();
-    public array $lines_after_until_patterns = array();
-    public array $out_archive_extensions = array();
-    public array $out_archive_file_patterns = array();
-    public array $out_dir_patterns = array();
-    public array $out_extensions = array();
-    public array $out_file_patterns = array();
-    public array $out_file_types = array();
     public array $out_lines_after_patterns = array();
     public array $out_lines_before_patterns = array();
     public array $paths = array();
+    public bool $print_results = true;
+    public bool $search_archives = false;
     public array $search_patterns = array();
+    public string $text_file_encoding = 'utf-8';
+    public bool $unique_lines = false;
 
     public function add_exts($ext, &$exts): void
     {
@@ -145,6 +86,14 @@ class SearchSettings
         }
     }
 
+    public function set_search_archives(bool $b): void
+    {
+        $this->search_archives = $b;
+        if ($b) {
+            $this->include_archives = $b;
+        }
+    }
+
     private function arr_to_string(array $arr): string
     {
         $s = '["' . implode('","', $arr) . '"]';
@@ -158,7 +107,7 @@ class SearchSettings
 
     public function __toString(): string
     {
-        return sprintf('FindSettings(' .
+        return sprintf('SearchSettings(' .
             'archives_only: %s' .
             ', colorize: %s' .
             ', debug: %s' .
@@ -179,7 +128,11 @@ class SearchSettings
             ', list_dirs: %s' .
             ', list_files: %s' .
             ', list_lines: %s' .
+            ', max_last_mod: %s' .
             ', max_line_length: %d' .
+            ', max_size: %d' .
+            ', min_last_mod: %s' .
+            ', min_size: %d' .
             ', multi_line_search: %s' .
             ', out_archive_extensions: %s' .
             ', out_archive_file_patterns: %s' .
@@ -196,6 +149,9 @@ class SearchSettings
             ', recursive: %s' .
             ', search_archives: %s' .
             ', search_patterns: %s' .
+            ', sort_by: %s' .
+            ', sort_case_insensitive: %s' .
+            ', sort_descending: %s' .
             ', text_file_encoding: "%s"' .
             ', unique_lines: %s' .
             ', verbose: %s' .
@@ -210,7 +166,7 @@ class SearchSettings
             StringUtil::string_array_to_string($this->in_dir_patterns),
             StringUtil::string_array_to_string($this->in_extensions),
             StringUtil::string_array_to_string($this->in_file_patterns),
-            StringUtil::string_array_to_string($this->in_file_types),
+            StringUtil::file_type_array_to_string($this->in_file_types),
             StringUtil::string_array_to_string($this->in_lines_after_patterns),
             StringUtil::string_array_to_string($this->in_lines_before_patterns),
             $this->lines_after,
@@ -220,14 +176,18 @@ class SearchSettings
             StringUtil::bool_to_string($this->list_dirs),
             StringUtil::bool_to_string($this->list_files),
             StringUtil::bool_to_string($this->list_lines),
+            StringUtil::datetime_to_string($this->max_last_mod),
             $this->max_line_length,
+            $this->max_size,
+            StringUtil::datetime_to_string($this->min_last_mod),
+            $this->min_size,
             StringUtil::bool_to_string($this->multi_line_search),
             StringUtil::string_array_to_string($this->out_archive_extensions),
             StringUtil::string_array_to_string($this->out_archive_file_patterns),
             StringUtil::string_array_to_string($this->out_dir_patterns),
             StringUtil::string_array_to_string($this->out_extensions),
             StringUtil::string_array_to_string($this->out_file_patterns),
-            StringUtil::string_array_to_string($this->out_file_types),
+            StringUtil::file_type_array_to_string($this->out_file_types),
             StringUtil::string_array_to_string($this->out_lines_after_patterns),
             StringUtil::string_array_to_string($this->out_lines_before_patterns),
             StringUtil::string_array_to_string($this->paths),
@@ -237,6 +197,9 @@ class SearchSettings
             StringUtil::bool_to_string($this->recursive),
             StringUtil::bool_to_string($this->search_archives),
             StringUtil::string_array_to_string($this->search_patterns),
+            $this->sort_by->name,
+            StringUtil::bool_to_string($this->sort_case_insensitive),
+            StringUtil::bool_to_string($this->sort_descending),
             $this->text_file_encoding,
             StringUtil::bool_to_string($this->unique_lines),
             StringUtil::bool_to_string($this->verbose)

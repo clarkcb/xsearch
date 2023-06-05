@@ -2,19 +2,19 @@
 
 namespace phpsearch;
 
-//require_once __DIR__ . '/../autoload.php';
-//require_once __DIR__ . '/common.php';
+use phpfind\FileResult;
+use phpfind\FileType;
+use phpfind\Finder;
+use phpfind\FindException;
+use phpfind\Logger;
 
 /**
  * Class Searcher
- *
- * @property SearchSettings $settings
- * @property FileTypes $file_types
  */
 class Searcher
 {
     private readonly SearchSettings $settings;
-    private readonly FileTypes $file_types;
+    private readonly Finder $finder;
     private array $results;
 
     /**
@@ -23,7 +23,11 @@ class Searcher
     public function __construct(SearchSettings $settings)
     {
         $this->settings = $settings;
-        $this->file_types = new FileTypes();
+        try {
+            $this->finder = new Finder($settings);
+        } catch (FindException $e) {
+            throw new SearchException($e->getMessage());
+        }
         $this->results = array();
         $this->validate_settings();
     }
@@ -79,186 +83,39 @@ class Searcher
         return false;
     }
 
-    public function is_search_dir(string $d): bool
-    {
-        if (FileUtil::is_dot_dir($d)) {
-            return true;
-        }
-        if ($this->settings->exclude_hidden && FileUtil::is_hidden($d)) {
-            return false;
-        }
-        $path_elems = FileUtil::split_path($d);
-        if ($this->settings->in_dir_patterns &&
-            !$this->any_matches_any_pattern($path_elems, $this->settings->in_dir_patterns)) {
-            return false;
-        }
-        if ($this->settings->out_dir_patterns &&
-            $this->any_matches_any_pattern($path_elems, $this->settings->out_dir_patterns)) {
-            return false;
-        }
-        return true;
-    }
-
-    public function is_search_file(string $f): bool
-    {
-        $ext = FileUtil::get_extension($f);
-        if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions)) {
-            return false;
-        }
-        if ($this->settings->out_extensions && in_array($ext, $this->settings->out_extensions)) {
-            return false;
-        }
-        if ($this->settings->in_file_patterns &&
-            !$this->matches_any_pattern($f, $this->settings->in_file_patterns)) {
-            return false;
-        }
-        if ($this->settings->out_file_patterns &&
-            $this->matches_any_pattern($f, $this->settings->out_file_patterns)) {
-            return false;
-        }
-        $type = $this->file_types->get_file_type($f);
-        if ($this->settings->in_file_types && !in_array($type, $this->settings->in_file_types)) {
-            return false;
-        }
-        if ($this->settings->out_file_types && in_array($type, $this->settings->out_file_types)) {
-            return false;
-        }
-        return true;
-    }
-
-    public function is_archive_search_file(string $f): bool
-    {
-        $ext = FileUtil::get_extension($f);
-        if ($this->settings->in_archive_extensions &&
-            !in_array($ext, $this->settings->in_archive_extensions)) {
-            return false;
-        }
-        if ($this->settings->out_archive_extensions &&
-            in_array($ext, $this->settings->out_archive_extensions)) {
-            return false;
-        }
-        if ($this->settings->in_archive_file_patterns &&
-            !$this->matches_any_pattern($f, $this->settings->in_archive_file_patterns)) {
-            return false;
-        }
-        if ($this->settings->out_archive_file_patterns &&
-            $this->matches_any_pattern($f, $this->settings->out_archive_file_patterns)) {
-            return false;
-        }
-        return true;
-    }
-
-    private function get_non_dot_dirs(string $d): array
-    {
-        $filter_non_dot_dirs = function ($f) use ($d) {
-            return (is_dir(FileUtil::join_path($d, $f)) && !FileUtil::is_dot_dir($f));
-        };
-        return array_filter(scandir($d), $filter_non_dot_dirs);
-    }
-
-    private function get_dir_search_dirs(string $d): array
-    {
-        $filter_dirs = function ($f) use ($d) {
-            return is_dir(FileUtil::join_path($d, $f)) && $this->is_search_dir($f);
-        };
-        $join_path = function ($f) use ($d) {
-            return FileUtil::join_path($d, $f);
-        };
-        $searchdirs = array_filter($this->get_non_dot_dirs($d), $filter_dirs);
-        return array_map($join_path, $searchdirs);
-    }
-
-    private function get_dir_search_files(string $d): array
-    {
-        $filter_files = function ($f) use ($d) {
-            return is_file(FileUtil::join_path($d, $f)) && $this->filter_file($f);
-        };
-        $to_search_file = function ($f) use ($d) {
-            return new SearchFile($d, $f, $this->file_types->get_file_type($f));
-        };
-        $search_files = array_filter(scandir($d), $filter_files);
-        return array_map($to_search_file, $search_files);
-    }
-
-    private function rec_get_search_files(string $d): array
-    {
-        $searchdirs = $this->get_dir_search_dirs($d);
-        $search_files = $this->get_dir_search_files($d);
-        foreach ($searchdirs as $searchdir) {
-            $search_files = array_merge($search_files, $this->rec_get_search_files($searchdir));
-        }
-        return $search_files;
-    }
-
-    /**
-     * @throws SearchException
-     */
-    private function get_search_files(): array
-    {
-        $search_files = array();
-        foreach ($this->settings->paths as $p) {
-            if (is_dir($p)) {
-                if ($this->is_search_dir($p)) {
-                    if ($this->settings->recursive) {
-                        $search_files = array_merge($search_files, $this->rec_get_search_files($p));
-                    } else {
-                        $search_files = array_merge($search_files, $this->get_dir_search_files($p));
-                    }
-                } else {
-                    throw new SearchException("Startpath does not match search settings");
-                }
-            } elseif (is_file($p)) {
-                if ($this->filter_file($p)) {
-                    $search_files[] = $p;
-                } else {
-                    throw new SearchException("Startpath does not match search settings");
-                }
-            }
-        }
-        sort($search_files);
-        return $search_files;
-    }
-
-    public function filter_file(string $f): bool
-    {
-        if ($this->settings->exclude_hidden && FileUtil::is_hidden($f)) {
-            return false;
-        }
-        if ($this->file_types->is_archive($f)) {
-            return $this->settings->search_archives && $this->is_archive_search_file($f);
-        }
-        return !$this->settings->archives_only && $this->is_search_file($f);
-    }
-
     /**
      * @throws SearchException
      */
     public function search(): void
     {
-        $search_files = $this->get_search_files();
+        try {
+            $file_results = $this->finder->find();
+        } catch (FindException $e) {
+            throw new SearchException($e->getMessage());
+        }
         if ($this->settings->verbose) {
             $get_path = function ($sf) {
                 return $sf->path;
             };
-            $searchdirs = array_unique(array_map($get_path, $search_files));
-            Logger::log_msg(sprintf("\nDirectories to be searched (%d):", count($searchdirs)));
-            foreach ($searchdirs as $d) {
+            $dir_results = array_unique(array_map($get_path, $file_results));
+            Logger::log_msg(sprintf("\nDirectories to be searched (%d):", count($dir_results)));
+            foreach ($dir_results as $d) {
                 Logger::log_msg($d);
             }
-            Logger::log_msg(sprintf("\n\nFiles to be searched (%d):", count($search_files)));
-            foreach ($search_files as $f) {
+            Logger::log_msg(sprintf("\n\nFiles to be searched (%d):", count($file_results)));
+            foreach ($file_results as $f) {
                 Logger::log_msg((string)$f);
             }
         }
 
         // search the files
         // TODO: use Fiber?
-        foreach ($search_files as $f) {
+        foreach ($file_results as $f) {
             $this->search_file($f);
         }
     }
 
-    public function search_file(SearchFile $f): void
+    public function search_file(FileResult $f): void
     {
         if ($f->file_type == FileType::Text || $f->file_type == FileType::Code ||
             $f->file_type == FileType::Xml) {
@@ -268,7 +125,7 @@ class Searcher
         }
     }
 
-    private function search_text_file(SearchFile $f): void
+    private function search_text_file(FileResult $f): void
     {
         if ($this->settings->debug) {
             Logger::log_msg("Searching text file $f");
@@ -293,7 +150,7 @@ class Searcher
         return $indices;
     }
 
-    private function search_text_file_contents(SearchFile $f): void
+    private function search_text_file_contents(FileResult $f): void
     {
         $contents = file_get_contents($f->file_path());
         $results = $this->search_multiline_string($contents);
@@ -364,7 +221,7 @@ class Searcher
         return $lines_after;
     }
 
-    public function search_multiline_string(string $s): array
+    public function search_multi_line_string(string $s): array
     {
         $results = array();
         $new_line_indices = $this->get_new_line_indices($s);
@@ -440,7 +297,7 @@ class Searcher
         return $results;
     }
 
-    private function search_text_file_lines(SearchFile $f): void
+    private function search_text_file_lines(FileResult $f): void
     {
         $lines = file($f->file_path());
         $results = $this->search_lines($lines);
@@ -556,7 +413,7 @@ class Searcher
         return $results;
     }
 
-    private function search_binary_file(SearchFile $f): void
+    private function search_binary_file(FileResult $f): void
     {
         if ($this->settings->debug) {
             Logger::log_msg("Searching binary file $f");

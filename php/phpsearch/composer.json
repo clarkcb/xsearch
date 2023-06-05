@@ -13,8 +13,18 @@
             "src/"
         ]
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../../xfind/php/phpfind",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "require": {
-        "ext-json": "*"
+        "ext-json": "*",
+        "clarkcb/phpfind": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.6.6"

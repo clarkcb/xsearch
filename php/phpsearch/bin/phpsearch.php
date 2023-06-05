@@ -2,12 +2,11 @@
 <?php
 
 require_once __DIR__ . '/../src/autoload.php';
-//require_once __DIR__ . '/../src/phpsearch/common.php';
 
-use \phpsearch\Logger;
-use \phpsearch\SearchOptions;
-use \phpsearch\Searcher;
-use \phpsearch\SearchException;
+use phpfind\Logger;
+use phpsearch\Searcher;
+use phpsearch\SearchException;
+use phpsearch\SearchOptions;
 
 function main($argv): void
 {
@@ -21,7 +20,7 @@ function main($argv): void
         if ($settings->print_usage) {
             Logger::log_msg('');
             $search_options->usage();
-            exit;
+            exit(0);
         }
 
         $searcher = new Searcher($settings);
@@ -49,6 +48,7 @@ function main($argv): void
     } catch (SearchException $e) {
         Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");
         $search_options->usage();
+        exit(1);
     }
 }
 

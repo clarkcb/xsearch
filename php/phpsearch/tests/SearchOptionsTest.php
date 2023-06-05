@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
-use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../src/autoload.php';
 
 use phpsearch\SearchException;
 use phpsearch\SearchOptions;
 use phpsearch\SearchSettings;
+use PHPUnit\Framework\TestCase;
+
+require_once __DIR__ . '/../src/autoload.php';
 
 class SearchOptionsTest extends TestCase
 {
@@ -22,7 +22,11 @@ class SearchOptionsTest extends TestCase
 
     public function test_no_args()
     {
-        $settings = $this->search_options->settings_from_args([]);
+        try {
+            $settings = $this->search_options->settings_from_args([]);
+        } catch (SearchException $e) {
+            $this->fail($e->getMessage());
+        }
         $this->assertFalse($settings->archives_only);
         $this->assertTrue($settings->colorize);
         $this->assertFalse($settings->debug);
@@ -47,7 +51,11 @@ class SearchOptionsTest extends TestCase
     public function test_valid_args()
     {
         $args = ['-x', 'php,py', '-s', 'Search', '.'];
-        $settings = $this->search_options->settings_from_args($args);
+        try {
+            $settings = $this->search_options->settings_from_args($args);
+        } catch (SearchException $e) {
+            $this->fail($e->getMessage());
+        }
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('php', $settings->in_extensions));
         $this->assertTrue(in_array('py', $settings->in_extensions));

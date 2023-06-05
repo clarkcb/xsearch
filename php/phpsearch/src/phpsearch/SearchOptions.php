@@ -2,23 +2,17 @@
 
 namespace phpsearch;
 
-require_once __DIR__ . '/../autoload.php';
-//include_once __DIR__ . '/common.php';
+use phpfind\FileUtil;
 
 /**
  * Class SearchOptions
- *
- * @property array options
- * @property array arg_action_map
- * @property array bool_flag_action_map
- * @property array longarg_map
  */
 class SearchOptions
 {
     private array $options;
     private readonly array $arg_action_map;
     private readonly array $bool_flag_action_map;
-    private array $longarg_map;
+    private array $long_arg_map;
 
 
     /**
@@ -49,7 +43,11 @@ class SearchOptions
             'linesafteruntilpattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->lines_after_until_patterns),
             'linesbefore' => fn (string $s, SearchSettings $ss) => $ss->lines_before = intval($s),
+            'maxlastmod' => fn (string $s, SearchSettings $ss) => $ss->max_last_mod = new \DateTime($s),
             'maxlinelength' => fn (string $s, SearchSettings $ss) => $ss->max_line_length = intval($s),
+            'maxsize' => fn (string $s, SearchSettings $ss) => $ss->max_size = intval($s),
+            'minlastmod' => fn (string $s, SearchSettings $ss) => $ss->min_last_mod = new \DateTime($s),
+            'minsize' => fn (string $s, SearchSettings $ss) => $ss->min_size = intval($s),
             'out-archiveext' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->out_archive_extensions),
             'out-archivefilepattern' =>
@@ -67,7 +65,8 @@ class SearchOptions
             'path' => fn (string $s, SearchSettings $ss) => $ss->paths[] = $s,
             'searchpattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->search_patterns),
-            'settings-file' => fn (string $s, SearchSettings $ss) => $this->settings_from_file($s, $ss)
+            'settings-file' => fn (string $s, SearchSettings $ss) => $this->settings_from_file($s, $ss),
+            'sort-by' => fn (string $s, SearchSettings $ss) => $ss->set_sort_by($s)
         ];
 
         $this->bool_flag_action_map = [
@@ -86,22 +85,26 @@ class SearchOptions
             'nocolorize' => fn (bool $b, SearchSettings $ss) => $ss->colorize = !$b,
             'noprintmatches' => fn (bool $b, SearchSettings $ss) => $ss->print_results = !$b,
             'norecursive' => fn (bool $b, SearchSettings $ss) => $ss->recursive = !$b,
-            'nosearcharchives' => fn (bool $b, SearchSettings $ss) => $ss->search_archives = !$b,
+            'nosearcharchives' => fn (bool $b, SearchSettings $ss) => $ss->set_search_archives(!$b),
             'printmatches' => fn (bool $b, SearchSettings $ss) => $ss->print_results = $b,
             'recursive' => fn (bool $b, SearchSettings $ss) => $ss->recursive = $b,
-            'searcharchives' => fn (bool $b, SearchSettings $ss) => $ss->search_archives = $b,
+            'searcharchives' => fn (bool $b, SearchSettings $ss) => $ss->set_search_archives($b),
+            'sort-ascending' => fn (bool $b, SearchSettings $ss) => $ss->sort_descending = !$b,
+            'sort-caseinsensitive' => fn (bool $b, SearchSettings $ss) => $ss->sort_case_insensitive = $b,
+            'sort-casesensitive' => fn (bool $b, SearchSettings $ss) => $ss->sort_case_insensitive = !$b,
+            'sort-descending' => fn (bool $b, SearchSettings $ss) => $ss->sort_descending = $b,
             'uniquelines' => fn (bool $b, SearchSettings $ss) => $ss->unique_lines = $b,
             'verbose' => fn (bool $b, SearchSettings $ss) => $ss->verbose = $b,
             'version' => fn (bool $b, SearchSettings $ss) => $ss->print_version = $b
         ];
-        $this->longarg_map = array();
+        $this->long_arg_map = array();
         $this->set_options_from_json();
     }
 
     /**
      * @throws SearchException
      */
-    private function set_options_from_json()
+    private function set_options_from_json(): void
     {
         $search_options_path = FileUtil::expand_user_home_path(Config::SEARCHOPTIONSPATH);
         if (file_exists($search_options_path)) {
@@ -118,9 +121,9 @@ class SearchOptions
                 }
                 $option = new SearchOption($short, $long, $desc, $func);
                 $this->options[] = $option;
-                $this->longarg_map[$long] = $long;
+                $this->long_arg_map[$long] = $long;
                 if ($short) {
-                    $this->longarg_map[$short] = $long;
+                    $this->long_arg_map[$short] = $long;
                 }
             }
             usort($this->options, array('phpsearch\SearchOptions', 'cmp_search_options'));
@@ -132,7 +135,7 @@ class SearchOptions
     /**
      * @throws SearchException
      */
-    private function settings_from_file(string $file_path, SearchSettings $settings)
+    private function settings_from_file(string $file_path, SearchSettings $settings): void
     {
         if (!file_exists($file_path)) {
             throw new SearchException('Settings file not found');
@@ -144,7 +147,7 @@ class SearchOptions
     /**
      * @throws SearchException
      */
-    public function settings_from_json(string $json, SearchSettings $settings)
+    public function settings_from_json(string $json, SearchSettings $settings): void
     {
         $json_obj = json_decode($json, true);
         foreach (array_keys($json_obj) as $k) {
@@ -180,20 +183,20 @@ class SearchOptions
                 while ($arg[0] == '-') {
                     $arg = substr($arg, 1);
                 }
-                if (!array_key_exists($arg, $this->longarg_map)) {
+                if (!array_key_exists($arg, $this->long_arg_map)) {
                     throw new SearchException("Invalid option: $arg");
                 }
-                $longarg = $this->longarg_map[$arg];
-                if (array_key_exists($longarg, $this->arg_action_map)) {
+                $long_arg = $this->long_arg_map[$arg];
+                if (array_key_exists($long_arg, $this->arg_action_map)) {
                     if (count($args) > 0) {
                         $val = array_shift($args);
-                        $this->arg_action_map[$longarg]($val, $settings);
+                        $this->arg_action_map[$long_arg]($val, $settings);
                     } else {
                         throw new SearchException("Missing value for $arg");
                     }
-                } elseif (array_key_exists($longarg, $this->bool_flag_action_map)) {
-                    $this->bool_flag_action_map[$longarg](true, $settings);
-                    if (in_array($longarg, array("help", "version"))) {
+                } elseif (array_key_exists($long_arg, $this->bool_flag_action_map)) {
+                    $this->bool_flag_action_map[$long_arg](true, $settings);
+                    if (in_array($long_arg, array("help", "version"))) {
                         break;
                     }
                 } else {
@@ -219,10 +222,10 @@ class SearchOptions
         $longest = 0;
         foreach ($this->options as $option) {
             $opt_str = '';
-            if ($option->shortarg) {
-                $opt_str = '-' . $option->shortarg . ',';
+            if ($option->short_arg) {
+                $opt_str = '-' . $option->short_arg . ',';
             }
-            $opt_str .= '--' . $option->longarg;
+            $opt_str .= '--' . $option->long_arg;
             if (strlen($opt_str) > $longest) {
                 $longest = strlen($opt_str);
             }
@@ -237,6 +240,6 @@ class SearchOptions
 
     private static function cmp_search_options(SearchOption $o1, SearchOption $o2): int
     {
-        return strcmp($o1->sortarg, $o2->sortarg);
+        return strcmp($o1->sort_arg, $o2->sort_arg);
     }
 }

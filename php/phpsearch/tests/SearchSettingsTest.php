@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
+
+use phpsearch\SearchSettings;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
-
-use phpsearch\SearchSettings;
 
 class SearchSettingsTest extends TestCase
 {
     /**
      * @var SearchSettings
      */
-    private $settings;
+    private SearchSettings $settings;
 
     public function __construct()
     {

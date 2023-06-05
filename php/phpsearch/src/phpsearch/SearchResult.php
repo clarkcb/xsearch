@@ -2,22 +2,15 @@
 
 namespace phpsearch;
 
+use phpfind\FileResult;
+
 /**
  * Class SearchResult
- *
- * @property string pattern
- * @property ?SearchFile file
- * @property int line_num
- * @property int match_start_index
- * @property int match_end_index
- * @property ?string line
- * @property array lines_before
- * @property array lines_after
  */
 class SearchResult
 {
     public string $pattern;
-    public ?SearchFile $file;
+    public ?FileResult $file;
     public int $line_num;
     public int $match_start_index;
     public int $match_end_index;
@@ -27,7 +20,7 @@ class SearchResult
 
     public function __construct(
         string $pattern,
-        ?SearchFile $file,
+        ?FileResult $file,
         int $line_num,
         int $match_start_index,
         int $match_end_index,
