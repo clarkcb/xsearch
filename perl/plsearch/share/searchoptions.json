@@ -108,9 +108,29 @@
       "desc": "Generate a list of the matching lines after searching"
     },
     {
+      "long": "maxlastmod",
+      "arg": "datetime",
+      "desc": "Find files with lastmod less than or equal to maxlastmod"
+    },
+    {
       "long": "maxlinelength",
       "short": "w",
       "desc": "Max length of line of result to print out (default: 150)"
+    },
+    {
+      "long": "maxsize",
+      "arg": "size",
+      "desc": "Find files with size <= maxsize"
+    },
+    {
+      "long": "minlastmod",
+      "arg": "datetime",
+      "desc": "Find files with lastmod greater than or equal to minlastmod"
+    },
+    {
+      "long": "minsize",
+      "arg": "size",
+      "desc": "Find files with size >= minsize"
     },
     {
       "long": "multilinesearch",
@@ -196,6 +216,27 @@
     {
       "long": "settings-file",
       "desc": "A path to a JSON file with specified search settings"
+    },
+    {
+      "long": "sort-by",
+      "arg": "sort",
+      "desc": "Sort by: PATH, NAME, TYPE, SIZE, LASTMOD"
+    },
+    {
+      "long": "sort-ascending",
+      "desc": "Sort results in ascending order*"
+    },
+    {
+      "long": "sort-casesensitive",
+      "desc": "Sort results case-sensitive*"
+    },
+    {
+      "long": "sort-caseinsensitive",
+      "desc": "Sort results case-insensitive"
+    },
+    {
+      "long": "sort-descending",
+      "desc": "Sort results in descending order"
     },
     {
       "long": "uniquelines",

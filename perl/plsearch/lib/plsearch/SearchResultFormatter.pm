@@ -11,6 +11,10 @@ package plsearch::SearchResultFormatter;
 use strict;
 use warnings;
 
+use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
+
+use plfind::common;
+
 use plsearch::Color;
 
 sub new {
@@ -25,14 +29,14 @@ sub new {
 sub format {
     my ($self, $result) = @_;
     if (scalar @{$result->{lines_before}} || scalar @{$result->{lines_after}}) {
-        return $self->multiline_format($result);
+        return $self->multi_line_format($result);
     }
-    return $self->singleline_format($result);
+    return $self->single_line_format($result);
 }
 
-sub singleline_format {
+sub single_line_format {
     my ($self, $result) = @_;
-    my $s = $result->{file};
+    my $s = $result->{file}->to_string();
     if ($result->{line_num}) {
         $s .= ': ' . $result->{line_num} . ': ';
         $s .= '[' . $result->{match_start_index} . ':' . $result->{match_end_index};
@@ -48,7 +52,7 @@ sub format_matching_line {
     my ($self, $result) = @_;
     my $formatted = $result->{line};
     # print "formatted: \"$formatted\"\n";
-    my $leading_whitespace_count = plsearch::common::leading_whitespace_chars($formatted);
+    my $leading_whitespace_count = plfind::common::leading_whitespace_chars($formatted);
     # remove leading and trailing whitespace
     $formatted =~ s/^\s+|\s+$//g;
     my $formatted_length = length($formatted);
@@ -128,9 +132,10 @@ sub trim_newline {
     return $s;
 }
 
-sub multiline_format {
+sub multi_line_format {
     my ($self, $result) = @_;
-    my $s = ('=' x 80) . "\n$result->{file}: $result->{line_num}: ";
+    my $file = $result->{file}->to_string();
+    my $s = ('=' x 80) . "\n$file: $result->{line_num}: ";
     $s .= "[$result->{match_start_index}:$result->{match_end_index}]\n";
     $s .= ('-' x 80) . "\n";
     my $lines_format = sprintf(" %%%dd | %%s\n", $self->line_num_padding($result));

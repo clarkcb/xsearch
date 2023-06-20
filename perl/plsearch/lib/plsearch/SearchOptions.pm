@@ -11,13 +11,16 @@ package plsearch::SearchOptions;
 use strict;
 use warnings;
 
-# use XML::Simple;
 use Data::Dumper;
 use JSON::PP qw(decode_json);
 
-use plsearch::common;
+use lib $ENV{'XFIND_PATH'} . '/perl/plfind/lib';
+
+use plfind::FileType;
+use plfind::FileTypes;
+use plfind::FileUtil;
+
 use plsearch::config;
-use plsearch::FileUtil;
 use plsearch::SearchOption;
 use plsearch::SearchSettings;
 
@@ -74,9 +77,25 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->{lines_before} = int($s);
     },
+    'maxlastmod' => sub {
+        my ($s, $settings) = @_;
+        $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
+    },
     'maxlinelength' => sub {
         my ($s, $settings) = @_;
         $settings->{max_line_length} = int($s);
+    },
+    'maxsize' => sub {
+        my ($s, $settings) = @_;
+        $settings->{max_size} = int($s);
+    },
+    'minlastmod' => sub {
+        my ($s, $settings) = @_;
+        $settings->{min_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
+    },
+    'minsize' => sub {
+        my ($s, $settings) = @_;
+        $settings->{min_size} = int($s);
     },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;
@@ -121,7 +140,11 @@ my $arg_action_hash = {
     'settings-file' => sub {
         my ($s, $settings) = @_;
         settings_from_file($s, $settings);
-    }
+    },
+    'sort-by' => sub {
+        my ($s, $settings) = @_;
+        $settings->set_sort_by($s);
+    },
 };
 
 my $bool_flag_action_hash = {
@@ -201,6 +224,22 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('search_archives', $b);
     },
+    'sort-ascending' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_descending', !$b);
+    },
+    'sort-caseinsensitive' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_case_insensitive', $b);
+    },
+    'sort-casesensitive' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_case_insensitive', !$b);
+    },
+    'sort-descending' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_descending', $b);
+    },
     'uniquelines' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('unique_lines', $b);
@@ -226,7 +265,7 @@ sub new {
 
 sub set_options_from_json {
     my $options_hash = {};
-    my $options_json_hash = decode_json plsearch::FileUtil::get_file_contents($SEARCHOPTIONSPATH);
+    my $options_json_hash = decode_json plfind::FileUtil::get_file_contents($SEARCHOPTIONSPATH);
     foreach my $search_option (@{$options_json_hash->{searchoptions}}) {
         my $short = $search_option->{short};
         my $long = $search_option->{long};
@@ -253,7 +292,7 @@ sub settings_from_file {
         push(@{$errs}, 'Settings file not found: ' . $file_path);
         return $errs;
     }
-    my $json = plsearch::FileUtil::get_file_contents($file_path);
+    my $json = plfind::FileUtil::get_file_contents($file_path);
     return __from_json($json, $settings);
 }
 

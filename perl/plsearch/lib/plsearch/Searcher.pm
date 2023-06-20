@@ -14,10 +14,12 @@ use warnings;
 use File::Spec;
 use File::Basename;
 
-use plsearch::common;
-use plsearch::FileType;
-use plsearch::FileTypes;
-use plsearch::FileUtil;
+use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
+
+use plfind::FileType;
+use plfind::FileUtil;
+use plfind::Finder;
+
 use plsearch::SearchResult;
 use plsearch::SearchResultFormatter;
 
@@ -25,12 +27,18 @@ sub new {
     my $class = shift;
     my $self = {
         settings => shift,
-        file_types => new plsearch::FileTypes(),
         results => [],
     };
+    my ($finder, $finder_errs) = plfind::Finder->new($self->{settings});
+    if (scalar @$finder_errs) {
+        return ($self, $finder_errs);
+    }
+
+    $self->{finder} = $finder;
+
     bless $self, $class;
-    my $errs = $self->validate_settings();
-    return ($self, $errs);
+    my $validation_errs = $self->validate_settings();
+    return ($self, $validation_errs);
 }
 
 sub validate_settings {
@@ -92,219 +100,68 @@ sub any_matches_any_pattern {
     return 0;
 }
 
-sub is_search_dir {
-    my ($self, $d) = @_;
-    if (plsearch::FileUtil::is_dot_dir($d)) {
-        return 1;
-    }
-    my @path_elems = grep {$_ ne ''} File::Spec->splitdir($d);
-    if ($self->{settings}->{exclude_hidden}) {
-        foreach my $p (@path_elems) {
-            if (plsearch::FileUtil::is_hidden($p)) {
-                return 0;
-            }
-        }
-    }
-    if (scalar @{$self->{settings}->{in_dir_patterns}} &&
-        !$self->any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_dir_patterns}} &&
-        $self->any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})) {
-        return 0;
-    }
-    return 1;
-}
-
-sub is_search_file {
-    my ($self, $f) = @_;
-    my $ext = plsearch::FileUtil::get_extension($f);
-    if (scalar @{$self->{settings}->{in_extensions}} &&
-        !(grep {$_ eq $ext} @{$self->{settings}->{in_extensions}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_extensions}} &&
-        (grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{in_file_patterns}} &&
-        !$self->matches_any_pattern($f, $self->{settings}->{in_file_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_file_patterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_file_patterns})) {
-        return 0;
-    }
-    my $type = $self->{file_types}->get_file_type($f);
-    if (scalar @{$self->{settings}->{in_file_types}} &&
-        !(grep {$_ eq $type} @{$self->{settings}->{in_file_types}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_file_types}} &&
-        (grep {$_ eq $type} @{$self->{settings}->{out_file_types}})) {
-        return 0;
-    }
-    return 1;
-}
-
-sub is_archive_search_file {
-    my ($self, $f) = @_;
-    my $ext = plsearch::FileUtil::get_extension($f);
-    if (scalar @{$self->{settings}->{in_archive_extensions}} &&
-        !(grep {$_ eq $ext} @{$self->{settings}->{in_archive_extensions}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_archive_extensions}} &&
-        (grep {$_ eq $ext} @{$self->{settings}->{out_archive_extensions}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{in_archive_file_patterns}} &&
-        !$self->matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_archive_file_patterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_archive_file_patterns})) {
-        return 0;
-    }
-    return 1;
-}
-
-sub rec_get_search_dirs {
-    my ($self, $d) = @_;
-    my $search_dirs = [];
-    opendir(DIR, $d) or die $!;
-    while (my $f = readdir(DIR)) {
-        my $subfile = File::Spec->join($d, $f);
-        if (-d $subfile && !plsearch::FileUtil::is_dot_dir($f) && $self->is_search_dir($subfile)) {
-            push(@{$search_dirs}, $subfile);
-        }
-    }
-    closedir(DIR);
-    foreach my $search_dir (@{$search_dirs}) {
-        my @merged = (@{$search_dirs}, @{$self->rec_get_search_dirs($search_dir)});
-        $search_dirs = \@merged;
-    }
-    return $search_dirs;
-}
-
-sub filter_file {
-    my ($self, $f) = @_;
-    if ($self->{settings}->{exclude_hidden} && plsearch::FileUtil::is_hidden(basename($f))) {
-        return 0;
-    }
-    if ($self->{file_types}->is_archive($f)) {
-        if ($self->{settings}->{search_archives} && $self->is_archive_search_file($f)) {
-            return 1;
-        }
-        return 0;
-    }
-    return !$self->{settings}->{archives_only} && $self->is_search_file($f);
-}
-
-sub rec_get_search_files {
-    # print "rec_get_search_files\n";
-    my ($self, $d) = @_;
-    # print "d: $d\n";
-    my $search_dirs = [];
-    my $search_files = [];
-    opendir(DIR, $d) or die $!;
-    while (my $f = readdir(DIR)) {
-        my $sub_file = File::Spec->join($d, $f);
-        if ($sub_file !~ m[/\.{1,2}$]) {
-            if (-d $sub_file && $self->is_search_dir($f)) {
-                # print "-d $sub_file\n";
-                push(@{$search_dirs}, $sub_file);
-            } elsif (-f $sub_file && $self->filter_file($f)) {
-                # print "-f $sub_file\n";
-                push(@{$search_files}, $sub_file);
-            }
-        }
-    }
-    closedir(DIR);
-    foreach my $search_dir (@{$search_dirs}) {
-        my $sub_search_files = $self->rec_get_search_files($search_dir);
-        push(@{$search_files}, @{$sub_search_files});
-    }
-
-    return $search_files;
-}
-
-sub get_search_files {
-    my $self = shift;
-    my $search_files = [];
-
-    foreach my $path (@{$self->{settings}->{paths}}) {
-        if (-d $path) {
-            push(@{$search_files}, @{$self->rec_get_search_files($path)});
-        } elsif (-f $path) {
-            if ($self->filter_file($path)) {
-                push(@{$search_files}, $path);
-            } else {
-                plsearch::common::log("ERROR: Startpath does not match search settings");
-            }
-        }
-    }
-
-    return $search_files;
-}
-
 sub search {
     my $self = shift;
-    my $search_files = $self->get_search_files();
+    my $file_results = $self->{finder}->find();
+
     if ($self->{settings}->{verbose}) {
-        my @sorted_files = sort @{$search_files};
-        my $sorted_dir_hash = {};
-        foreach my $f (@sorted_files) {
-            $sorted_dir_hash->{dirname($f)} = 1;
-        }
-        my @sorted_dirs = sort (keys %{$sorted_dir_hash});
-        plsearch::common::log(sprintf("\nDirectories to be searched (%d):", scalar @sorted_dirs));
+        my @dirs = map {$_->{path}} @{$file_results};
+        my $uniq_dirs = plfind::common::uniq(\@dirs);
+        my @sorted_dirs = sort @{$uniq_dirs};
+        plfind::common::log_msg(sprintf("\nDirectories to be searched (%d):", scalar @sorted_dirs));
         foreach my $d (@sorted_dirs) {
-            plsearch::common::log($d);
+            plfind::common::log_msg($d);
         }
-        plsearch::common::log(sprintf("\nFiles to be searched (%d):", scalar @sorted_files));
-        foreach my $f (@sorted_files) {
-            plsearch::common::log($f);
+        my @file_paths = map {$_->to_string()} @{$file_results};
+        plfind::common::log_msg(sprintf("\nFiles to be searched (%d):", scalar @file_paths));
+        foreach my $f (@file_paths) {
+            plfind::common::log_msg($f);
         }
-        plsearch::common::log('');
+        plfind::common::log_msg('');
     }
 
     # search the files
-    foreach my $f (@{$search_files}) {
-        $self->search_file($f);
+    my $results = [];
+    foreach my $fr (@{$file_results}) {
+        my $file_search_results = $self->search_file($fr);
+        push(@$results, @$file_search_results);
     }
+
+    return $results;
 }
 
 sub search_file {
-    my ($self, $f) = @_;
-    my $type = $self->{file_types}->get_file_type($f);
-    if ($type eq plsearch::FileType->TEXT || $type eq plsearch::FileType->CODE || $type eq plsearch::FileType->XML) {
-        $self->search_text_file($f);
-    } elsif ($type eq plsearch::FileType->BINARY) {
-        $self->search_binary_file($f);
+    my ($self, $fr) = @_;
+    my $type = $fr->{file_type};
+    my $results = [];
+    if ($type eq plfind::FileType->TEXT || $type eq plfind::FileType->CODE || $type eq plfind::FileType->XML) {
+        $results = $self->search_text_file($fr);
+    } elsif ($type eq plfind::FileType->BINARY) {
+        $results = $self->search_binary_file($fr);
     }
+    return $results;
 }
 
 sub search_text_file {
-    my ($self, $f) = @_;
+    my ($self, $fr) = @_;
     if ($self->{settings}->{debug}) {
-        plsearch::common::log("Searching text file $f");
+        plfind::common::log_msg("Searching text file " .  $fr->to_string());
     }
     if ($self->{settings}->{multi_line_search}) {
-        $self->search_text_file_contents($f);
+        return $self->search_text_file_contents($fr);
     } else {
-        $self->search_text_file_lines($f);
+        return $self->search_text_file_lines($fr);
     }
 }
 
 sub search_text_file_contents {
-    my ($self, $f) = @_;
-    my $contents = plsearch::FileUtil::get_file_contents($f);
+    my ($self, $fr) = @_;
+    my $contents = plsearch::FileUtil::get_file_contents($fr->to_string());
     my $results = $self->search_multiline_string($contents);
     foreach my $r (@{$results}) {
-        $r->{file} = $f;
-        $self->add_search_result($r);
+        $r->{file} = $fr;
     }
+    return $results;
 }
 
 sub get_new_line_indices {
@@ -457,13 +314,13 @@ sub search_multiline_string {
 }
 
 sub search_text_file_lines {
-    my ($self, $f) = @_;
-    my $lines = plsearch::FileUtil::get_file_lines($f);
+    my ($self, $fr) = @_;
+    my $lines = plfind::FileUtil::get_file_lines($fr->to_string());
     my $results = $self->search_lines($lines);
     foreach my $r (@{$results}) {
-        $r->{file} = $f;
-        $self->add_search_result($r);
+        $r->{file} = $fr;
     }
+    return $results;
 }
 
 sub lines_match {
@@ -528,7 +385,8 @@ sub search_lines {
                     (scalar @{$lines_after} > 0  && !$self->lines_after_match($lines_after))) {
                     next;
                 }
-                while ($line =~ /$pattern/go) {
+                my $keep_matching = 1;
+                while ($keep_matching && $line =~ /$pattern/go) {
                     my $start_index = $-[0];
                     my $end_index = $+[0];
                     # make copies of lines_before and lines_after
@@ -545,6 +403,9 @@ sub search_lines {
                         \@la);
                     push(@{$results}, $r);
                     $pattern_match_hash->{$pattern} = 1;
+                    if ($self->{settings}->{first_match}) {
+                        $keep_matching = 0;
+                    }
                 }
             }
         }
@@ -566,16 +427,16 @@ sub search_lines {
 }
 
 sub search_binary_file {
-    my ($self, $f) = @_;
+    my ($self, $fr) = @_;
     if ($self->{settings}->{debug}) {
-        plsearch::common::log("Searching binary file $f");
+        plfind::common::log_msg("Searching binary file " . $fr->to_string());
     }
-    my $contents = plsearch::FileUtil::get_file_contents($f);
+    my $contents = plfind::FileUtil::get_file_contents($fr->to_string());
     my $results = $self->search_binary_string($contents);
     foreach my $r (@{$results}) {
-        $r->{file} = $f;
-        $self->add_search_result($r);
+        $r->{file} = $fr;
     }
+    return $results;
 }
 
 sub search_binary_string {
@@ -603,111 +464,6 @@ sub search_binary_string {
         }
     }
     return $results;
-}
-
-
-sub add_search_result {
-    my ($self, $r) = @_;
-    push(@{$self->{results}}, $r);
-}
-
-sub sort_results ($$) {
-    my $a = $_[0];
-    my $b = $_[1];
-    if ($a->{file} eq $b->{file}) {
-        if ($a->{line_num} == $b->{line_num}) {
-            $a->{match_start_index} <=> $b->{match_start_index}
-        } else {
-            $a->{line_num} <=> $b->{line_num}
-        }
-    } else {
-        $a->{file} cmp $b->{file}
-    }
-}
-
-sub print_results {
-    my ($self) = @_;
-    my $len = scalar @{$self->{results}};
-    my @sorted = sort sort_results @{$self->{results}};
-    my $formatter = new plsearch::SearchResultFormatter($self->{settings});
-
-    plsearch::common::log("Search results ($len):");
-    # foreach my $r (@{$self->{results}}) {
-    foreach my $r (@sorted) {
-        # plsearch::common::log($r->to_string());
-        plsearch::common::log($formatter->format($r));
-    }
-}
-
-sub get_matching_dirs {
-    my ($self) = @_;
-    my $dir_hash = {};
-    foreach my $r (@{$self->{results}}) {
-        my $d = dirname($r->{file});
-        $dir_hash->{$d}++;
-    }
-    my @dirs = keys %{$dir_hash};
-    @dirs = sort(@dirs);
-    return \@dirs;
-}
-
-sub print_matching_dirs {
-    my ($self) = @_;
-    my $dirs = $self->get_matching_dirs();
-    plsearch::common::log(sprintf("\nDirectories with matches (%d):", scalar @{$dirs}));
-    foreach my $d (@{$dirs}) {
-        plsearch::common::log($d);
-    }
-}
-
-sub get_matching_files {
-    my ($self) = @_;
-    my $file_hash = {};
-    foreach my $r (@{$self->{results}}) {
-        my $f = $r->{file};
-        $file_hash->{$f}++;
-    }
-    my @files = keys %{$file_hash};
-    @files = sort(@files);
-    return \@files;
-}
-
-sub print_matching_files {
-    my ($self) = @_;
-    my $files = $self->get_matching_files();
-    plsearch::common::log(sprintf("\nFiles with matches (%d):", scalar @{$files}));
-    foreach my $f (@{$files}) {
-        plsearch::common::log($f);
-    }
-}
-
-sub get_matching_lines {
-    my ($self) = @_;
-    my $line_hash = {};
-    my @lines;
-    foreach my $r (@{$self->{results}}) {
-        my $l = plsearch::common::trim($r->{line});
-        $line_hash->{$l}++;
-        push(@lines, $l);
-    }
-    if ($self->{settings}->{unique_lines}) {
-        @lines = keys %{$line_hash};
-    }
-    @lines = sort {uc($a) cmp uc($b)} @lines;
-    return \@lines;
-}
-
-sub print_matching_lines {
-    my ($self) = @_;
-    my $lines = $self->get_matching_lines();
-    my $msg = "\nLines with matches (%d):";
-    if ($self->{settings}->{unique_lines}) {
-        $msg = "\nUnique lines with matches (%d):";
-    }
-    plsearch::common::log(sprintf($msg, scalar @{$lines}));
-    foreach my $l (@{$lines}) {
-        plsearch::common::log($l);
-    }
 }
 
 1;

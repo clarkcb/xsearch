@@ -7,7 +7,8 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'plsearch',
     VERSION_FROM      => 'lib/plsearch.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
-    PREREQ_PM         => {'Test'        =>  0, }, # e.g., Module::Name => 1.1
+    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+    TEST_REQUIRES     => {'Test' => 0},
     ABSTRACT_FROM     => 'lib/plsearch.pm', # retrieve abstract from module
     AUTHOR            => 'Cary Clark <clarkcb@gmail.com>',
     #LICENSE           => 'perl',
