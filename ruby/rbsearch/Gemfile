@@ -1,7 +1,10 @@
-# source "https://rubygems.org"
+source "https://rubygems.org"
+
+gem "rake", "~> 13.0.6"
+gem "minitest", "~> 5.16.3"
+
+# https://stackoverflow.com/a/19363523/1002072
+gem 'rbfind', :path => '../../../xfind/ruby/rbfind'
 
 # Specify your gem's dependencies in rbsearch.gemspec
 gemspec
-
-gem "rake", "~> 12.0"
-gem "minitest", "~> 5.0"

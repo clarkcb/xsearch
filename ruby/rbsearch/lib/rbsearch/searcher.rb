@@ -3,11 +3,13 @@
 require 'find'
 require 'pathname'
 require 'set'
-require_relative 'common'
-require_relative 'filetypes'
-require_relative 'fileutil'
+
+require 'rbfind/common'
+require 'rbfind/filetypes'
+require 'rbfind/fileutil'
+require 'rbfind/fileresult'
+require 'rbfind/finder'
 require_relative 'searcherror'
-require_relative 'searchfile'
 require_relative 'searchresult'
 require_relative 'searchresultformatter'
 
@@ -16,110 +18,33 @@ module RbSearch
   # Searcher - finds files to search and searches them according to settings
   class Searcher
     attr_reader :settings
-    attr_reader :results
 
     def initialize(settings)
       @settings = settings
       validate_settings
-      @file_types = FileTypes.new
-      @results = []
-    end
-
-    def search_dir?(dirname)
-      path_elems = dirname.split(File::SEPARATOR) - FileUtil.dot_dirs
-      if @settings.exclude_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
-        return false
-      end
-      if !@settings.in_dir_patterns.empty? &&
-        !any_matches_any_pattern(path_elems, @settings.in_dir_patterns)
-        return false
-      end
-      if !@settings.out_dir_patterns.empty? &&
-        any_matches_any_pattern(path_elems, @settings.out_dir_patterns)
-        return false
-      end
-      true
-    end
-
-    def search_file?(file_name)
-      ext = FileUtil.get_extension(file_name)
-      if !@settings.in_extensions.empty? &&
-        !@settings.in_extensions.include?(ext)
-        return false
-      end
-      if !@settings.out_extensions.empty? &&
-        @settings.out_extensions.include?(ext)
-        return false
-      end
-      if !@settings.in_file_patterns.empty? &&
-        !matches_any_pattern(file_name, @settings.in_file_patterns)
-        return false
-      end
-      if !@settings.out_file_patterns.empty? &&
-        matches_any_pattern(file_name, @settings.out_file_patterns)
-        return false
-      end
-      file_type = @file_types.get_file_type(file_name)
-      if !@settings.in_file_types.empty? &&
-        !@settings.in_file_types.include?(file_type)
-        return false
-      end
-      if !@settings.out_file_types.empty? &&
-        @settings.out_file_types.include?(file_type)
-        return false
-      end
-      true
-    end
-
-    def archive_search_file?(file_name)
-      ext = FileUtil.get_extension(file_name)
-      if !@settings.in_archive_extensions.empty? &&
-        !@settings.in_archive_extensions.include?(ext)
-        return false
-      end
-      if !@settings.out_archive_extensions.empty? &&
-        @settings.out_archive_extensions.include?(ext)
-        return false
-      end
-      if !@settings.in_archive_file_patterns.empty? &&
-        !matches_any_pattern(file_name, @settings.in_archive_file_patterns)
-        return false
-      end
-      if !@settings.out_archive_file_patterns.empty? &&
-        matches_any_pattern(file_name, @settings.out_archive_file_patterns)
-        return false
-      end
-      true
-    end
-
-    def filter_file?(file_name)
-      if @settings.exclude_hidden && FileUtil.hidden?(file_name)
-        return false
-      end
-      if @file_types.archive_file?(file_name)
-        return @settings.search_archives && archive_search_file?(file_name)
-      end
-      !@settings.archives_only && search_file?(file_name)
+      @finder = RbFind::Finder.new(settings)
     end
 
     def search
-      # get the search_files
-      search_files = get_search_files.sort_by(&:relative_path)
+      # get the file results
+      file_results = @finder.find
       if @settings.verbose
-        search_dirs = search_files.map(&:path).uniq.sort
-        RbSearch::log("\nDirectories to be searched (#{search_dirs.size}):")
-        search_dirs.each do |d|
-          RbSearch::log(d)
+        dir_results = file_results.map(&:path).uniq.sort
+        RbFind::log("\nDirectories to be searched (#{dir_results.size}):")
+        dir_results.each do |d|
+          RbFind::log(d)
         end
-        RbSearch::log("\nFiles to be searched (#{search_files.size}):")
-        search_files.each do |sf|
-          RbSearch::log(sf.to_s)
+        RbFind::log("\nFiles to be searched (#{file_results.size}):")
+        file_results.each do |fr|
+          RbFind::log(fr.to_s)
         end
-        RbSearch::log("\n")
+        RbFind::log("\n")
       end
-      search_files.each do |sf|
-        search_file(sf)
+      results = []
+      file_results.each do |fr|
+        results.concat(search_file(fr))
       end
+      results
     end
 
     def search_multi_line_string(str)
@@ -245,35 +170,6 @@ module RbSearch
       end
     end
 
-    def print_results
-      formatter = SearchResultFormatter.new(@settings)
-      RbSearch::log("Search results (#{@results.size}):")
-      @results.each do |r|
-        # print_result(r)
-        RbSearch::log(formatter.format(r))
-      end
-    end
-
-    def print_result(search_result)
-      s = ''
-      s += "#{search_result.pattern}: " if @settings.search_patterns.size > 1
-      s += search_result.to_s
-      RbSearch::log(s)
-    end
-
-    def get_matching_dirs
-      @results.map { |r| r.file.path }.uniq.sort
-    end
-
-    def get_matching_files
-      @results.map { |r| r.file.to_s }.uniq.sort
-    end
-
-    def get_matching_lines
-      lines = @results.map { |r| r.line.strip }.sort { |l1, l2| l1.upcase <=> l2.upcase }
-      lines.uniq! if @settings.unique_lines
-      lines
-    end
 
     private
 
@@ -305,69 +201,27 @@ module RbSearch
       false
     end
 
-    def file_to_search_file(f)
-      d = File.dirname(f) || '.'
-      file_name = File.basename(f)
-      file_type = @file_types.get_file_type(file_name)
-      SearchFile.new(d, file_name, file_type)
-    end
-
-    def get_search_files
-      search_files = []
-      @settings.paths.each do |p|
-        if FileTest.directory?(p)
-          if @settings.recursive
-            Find.find(p) do |f|
-              if FileTest.directory?(f)
-                Find.prune unless search_dir?(f)
-              elsif filter_file?(f)
-                search_file = file_to_search_file(f)
-                search_files.push(search_file)
-              end
-            end
-          else
-            Find.find(p) do |f|
-              if FileTest.directory?(f)
-                Find.prune
-              elsif filter_file?(f)
-                search_file = file_to_search_file(f)
-                search_files.push(search_file)
-              end
-            end
-          end
-        elsif FileTest.file?(p)
-          search_file = file_to_search_file(p)
-          search_files.push(search_file)
-        end
-      end
-      search_files
-    end
-
-    def search_file(sf)
-      unless @file_types.searchable_file?(sf.file_name)
-        if @settings.verbose || @settings.debug
-          RbSearch::log("Skipping unsearchable file: #{sf}")
-          return 0
-        end
-      end
-      case sf.file_type
-      when FileType::CODE, FileType::TEXT, FileType::XML
-        search_text_file(sf)
-      when FileType::BINARY
-        search_binary_file(sf)
+    def search_file(fr)
+      case fr.file_type
+      when RbFind::FileType::CODE, RbFind::FileType::TEXT, RbFind::FileType::XML
+        return search_text_file(fr)
+      when RbFind::FileType::BINARY
+        return search_binary_file(fr)
       else
-        RbSearch::log("Searching currently unsupported for FileType #{sf.file_type}")
+        RbFind::log("Searching currently unsupported for FileType #{fr.file_type}")
       end
+      []
     end
 
-    def search_binary_file(sf)
-      f = File.open(sf.relative_path, 'rb')
+    def search_binary_file(fr)
+      f = File.open(fr.relative_path, 'rb')
       contents = f.read
       results = search_binary_string(contents)
       results.each do |r|
-        r.file = sf
-        add_search_result(r)
+        r.file = fr
+        # add_search_result(r)
       end
+      return results
     rescue StandardError => e
       raise SearchError, e
     ensure
@@ -397,12 +251,12 @@ module RbSearch
       results
     end
 
-    def search_text_file(sf)
-      RbSearch::log("Searching text file #{sf}") if @settings.debug
+    def search_text_file(fr)
+      RbFind::log("Searching text file #{fr}") if @settings.debug
       if @settings.multi_line_search
-        search_text_file_contents(sf)
+        search_text_file_contents(fr)
       else
-        search_text_file_lines(sf)
+        search_text_file_lines(fr)
       end
     end
 
@@ -410,16 +264,17 @@ module RbSearch
       s.scan(/(\r\n|\n)/m).size
     end
 
-    def search_text_file_contents(sf)
-      f = File.open(sf.relative_path, mode: "r:#{@settings.text_file_encoding}")
+    def search_text_file_contents(fr)
+      f = File.open(fr.relative_path, mode: "r:#{@settings.text_file_encoding}")
       contents = f.read
       results = search_multi_line_string(contents)
       results.each do |r|
-        r.file = sf
-        add_search_result(r)
+        r.file = fr
+        # add_search_result(r)
       end
+      return results
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{sf})"
+      raise SearchError, "#{e} (file: #{fr})"
     ensure
       f&.close
     end
@@ -476,22 +331,19 @@ module RbSearch
                   @settings.out_lines_after_patterns)
     end
 
-    def search_text_file_lines(sf)
-      f = File.open(sf.relative_path, mode: "r:#{@settings.text_file_encoding}")
+    def search_text_file_lines(fr)
+      f = File.open(fr.relative_path, mode: "r:#{@settings.text_file_encoding}")
       line_iterator = f.each_line
       results = search_line_iterator(line_iterator)
       results.each do |r|
-        r.file = sf
-        add_search_result(r)
+        r.file = fr
+        # add_search_result(r)
       end
+      return results
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{sf})"
+      raise SearchError, "#{e} (file: #{fr})"
     ensure
       f&.close
-    end
-
-    def add_search_result(search_result)
-      @results.push(search_result)
     end
   end
 end

@@ -1,7 +1,7 @@
 # SearchOptions - generate help, create settings from CLI args
 require 'json'
 
-require_relative 'common'
+require 'rbfind/common'
 require_relative 'searcherror'
 require_relative 'searchoption'
 require_relative 'searchsettings'
@@ -18,7 +18,6 @@ module RbSearch
       @long_arg_dict = {}
       set_actions
       set_options_from_json
-      # set_options_from_xml
       @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
     end
 
@@ -150,8 +149,20 @@ module RbSearch
         'linesbefore': lambda { |x, settings|
           settings.lines_before = x.to_i
         },
+        'maxlastmod': lambda { |x, settings|
+          settings.max_last_mod = DateTime.parse(x)
+        },
         'maxlinelength': lambda { |x, settings|
           settings.max_line_length = x.to_i
+        },
+        'maxsize': lambda { |x, settings|
+          settings.max_size = x.to_i
+        },
+        'minlastmod': lambda { |x, settings|
+          settings.min_last_mod = DateTime.parse(x)
+        },
+        'minsize': lambda { |x, settings|
+          settings.min_size = x.to_i
         },
         'out-archiveext': lambda { |x, settings|
           settings.add_exts(x, settings.out_archive_extensions)
@@ -177,11 +188,17 @@ module RbSearch
         'out-linesbeforepattern': lambda { |x, settings|
           settings.add_patterns(x, settings.out_lines_before_patterns)
         },
+        'path': lambda { |x, settings|
+          settings.paths.push(x)
+        },
         'searchpattern': lambda { |x, settings|
           settings.add_patterns(x, settings.search_patterns)
         },
         'settings-file': lambda { |x, settings|
           settings_from_file(x, settings)
+        },
+        'sort-by': lambda { |x, settings|
+          settings.set_sort_by(x)
         }
       }
       @bool_flag_action_dict = {
@@ -204,6 +221,10 @@ module RbSearch
         printmatches: ->(b, settings) { settings.print_results = b },
         recursive: ->(b, settings) { settings.recursive = b },
         searcharchives: ->(b, settings) { settings.search_archives = b },
+        'sort-ascending': ->(b, settings) { settings.sort_descending = !b },
+        'sort-caseinsensitive': ->(b, settings) { settings.sort_case_insensitive = b },
+        'sort-casesensitive': ->(b, settings) { settings.sort_case_insensitive = !b },
+        'sort-descending': ->(b, settings) { settings.sort_descending = b },
         uniquelines: ->(b, settings) { settings.unique_lines = b },
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.print_version = b }

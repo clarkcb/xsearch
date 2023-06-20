@@ -9,14 +9,18 @@
 #
 ################################################################################
 
-require_relative 'rbsearch/common'
-require_relative 'rbsearch/filetypes'
-require_relative 'rbsearch/fileutil'
+require 'rbfind/common'
+require 'rbfind/filetypes'
+require 'rbfind/fileutil'
+
+# require_relative 'rbsearch/common'
+# require_relative 'rbsearch/filetypes'
+# require_relative 'rbsearch/fileutil'
 require_relative 'rbsearch/searcher'
-require_relative 'rbsearch/searchfile'
 require_relative 'rbsearch/searchoption'
 require_relative 'rbsearch/searchoptions'
 require_relative 'rbsearch/searchresult'
+require_relative 'rbsearch/searchresultformatter'
 require_relative 'rbsearch/searchsettings'
 
 def main
@@ -29,15 +33,15 @@ def main
       handle_error(e, options)
     end
 
-  RbSearch::log("settings: #{settings}") if settings.debug
+  RbFind::log("settings: #{settings}") if settings.debug
 
   if settings.print_usage
-    RbSearch::log("\n")
+    RbFind::log("\n")
     options.usage
   end
 
   if settings.print_version
-    RbSearch::log("Version: #{RbSearch::VERSION}")
+    RbFind::log("Version: #{RbSearch::VERSION}")
     abort
   end
 
@@ -45,50 +49,79 @@ def main
 end
 
 def handle_error(err, options)
-  RbSearch::log("\nERROR: #{err.message}\n\n")
+  RbFind::log("\nERROR: #{err.message}\n\n")
   options.usage
+end
+
+def print_results(results, settings)
+  formatter = RbSearch::SearchResultFormatter.new(settings)
+  RbFind::log("Search results (#{results.size}):")
+  results.each do |r|
+    RbFind::log(formatter.format(r))
+  end
+end
+
+def print_result(search_result, settings)
+  s = ''
+  s += "#{search_result.pattern}: " if settings.search_patterns.size > 1
+  s += search_result.to_s
+  RbFind::log(s)
+end
+
+def get_matching_dirs(results)
+  results.map { |r| r.file.path }.uniq.sort
+end
+
+def get_matching_files(results)
+  results.map { |r| r.file.to_s }.uniq.sort
+end
+
+def get_matching_lines(results, settings)
+  lines = results.map { |r| r.line.strip }.sort { |l1, l2| l1.upcase <=> l2.upcase }
+  lines.uniq! if settings.unique_lines
+  lines
 end
 
 def search(options, settings)
   searcher = RbSearch::Searcher.new(settings)
-  searcher.search
+  results = searcher.search
 
   # print the results
   if settings.print_results
-    RbSearch::log("\n")
-    searcher.print_results
+    RbFind::log("\n")
+    print_results(results, settings)
   end
 
   if settings.list_dirs
-    RbSearch::log("\n")
-    dirs = searcher.get_matching_dirs
-    RbSearch::log("Directories with matches (#{dirs.size}):")
+    RbFind::log("\n")
+    dirs = get_matching_dirs(results)
+    RbFind::log("Directories with matches (#{dirs.size}):")
     dirs.each do |d|
-      RbSearch::log("#{d}\n")
+      RbFind::log("#{d}\n")
     end
   end
 
   if settings.list_files
-    RbSearch::log("\n")
-    files = searcher.get_matching_files
-    RbSearch::log("Files with matches (#{files.size}):")
+    RbFind::log("\n")
+    files = get_matching_files(results)
+    RbFind::log("Files with matches (#{files.size}):")
     files.each do |f|
-      RbSearch::log("#{f}\n")
+      RbFind::log("#{f}\n")
     end
   end
 
   if settings.list_lines
-    RbSearch::log("\n")
-    lines = searcher.get_matching_lines
+    RbFind::log("\n")
+    lines = get_matching_lines(results, settings)
     hdr_text =
       if settings.unique_lines
         'Unique lines with matches'
       else
         'Lines with matches'
       end
-    RbSearch::log("#{hdr_text} (#{lines.size}):")
+    RbFind::log("#{hdr_text} (#{lines.size}):")
     lines.each do |line|
-      RbSearch::log("#{line}\n")
+      RbFind::log("#{line}\n")
     end
   end
 
