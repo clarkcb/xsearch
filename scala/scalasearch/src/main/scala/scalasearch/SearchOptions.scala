@@ -2,9 +2,12 @@ package scalasearch
 
 import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
-import scalafind.{Common, FileTypes, FileUtil}
+import scalafind.{Common, FileTypes, FileUtil, SortBy}
 
 import java.io.{File, IOException, InputStreamReader}
+import java.time.{LocalDateTime, LocalDate}
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
@@ -58,6 +61,20 @@ object SearchOptions {
     extensions ++ exts.split(",").filterNot(_.isEmpty)
   }
 
+  private def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
+    try {
+      Some(LocalDateTime.parse(lastModString))
+    } catch {
+      _ =>
+        try {
+          val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+          Some(maxLastModDate.atTime(0, 0, 0))
+        } catch {
+          _ => None
+        }
+    }
+  }
+
   type ArgAction = (String, SearchSettings) => SearchSettings
 
   private val argActionMap = Map[String, ArgAction](
@@ -87,8 +104,16 @@ object SearchOptions {
       ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
     "linesbefore" ->
       ((s, ss) => ss.copy(linesBefore = s.toInt)),
+    "maxlastmod" ->
+      ((s, ss) => ss.copy(maxLastMod = getLastModFromString(s))),
     "maxlinelength" ->
       ((s, ss) => ss.copy(maxLineLength = s.toInt)),
+    "maxsize" ->
+      ((s, ss) => ss.copy(maxSize = s.toInt)),
+    "minlastmod" ->
+      ((s, ss) => ss.copy(minLastMod = getLastModFromString(s))),
+    "minsize" ->
+      ((s, ss) => ss.copy(minSize = s.toInt)),
     "out-archiveext" ->
       ((s, ss) => ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions))),
     "out-archivefilepattern" ->
@@ -110,7 +135,9 @@ object SearchOptions {
     "searchpattern" ->
       ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
     "settings-file" ->
-      ((s, ss) => settingsFromFile(s, ss))
+      ((s, ss) => settingsFromFile(s, ss)),
+    "sort-by" ->
+      ((s, ss) => ss.copy(sortBy = SortBy.fromName(s))),
   )
 
   type FlagAction = (Boolean, SearchSettings) => SearchSettings
@@ -136,6 +163,10 @@ object SearchOptions {
     "printmatches" -> ((b, ss) => ss.copy(printResults = b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
     "searcharchives" -> ((b, ss) => ss.copy(searchArchives = b)),
+    "sort-ascending" -> ((b, ss) => ss.copy(sortDescending = !b)),
+    "sort-caseinsensitive" -> ((b, ss) => ss.copy(sortCaseInsensitive = b)),
+    "sort-casesensitive" -> ((b, ss) => ss.copy(sortCaseInsensitive = !b)),
+    "sort-descending" -> ((b, ss) => ss.copy(sortDescending = b)),
     "uniquelines" -> ((b, ss) => ss.copy(uniqueLines = b)),
     "verbose" -> ((b, ss) => ss.copy(verbose = b)),
     "version" -> ((b, ss) => ss.copy(printVersion = b))
