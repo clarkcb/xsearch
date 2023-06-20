@@ -312,7 +312,8 @@ class Searcher(object):
         lines_before = deque()
         lines_after = deque()
         results = []
-        while True:
+        stop_lines = False
+        while not stop_lines:
             if lines_after:
                 line = lines_after.popleft()
             else:
@@ -335,12 +336,16 @@ class Searcher(object):
                         lines_after.append(line_after.rstrip('\r\n'))
                     except StopIteration:
                         break
+            if self.settings.first_match and \
+                len(pattern_match_dict.keys()) == len(self.settings.search_patterns):
+                stop_lines = True
             for p in self.settings.search_patterns:
                 if self.settings.first_match and p in pattern_match_dict:
                     continue
                 # find all matches for the line
                 matchiter = p.finditer(line)
-                while True:
+                stop_matches = False
+                while not stop_matches:
                     try:
                         match = next(matchiter)
                     except StopIteration:
@@ -401,6 +406,8 @@ class Searcher(object):
                                          lines_after=sr_lines_after)
                         results.append(search_result)
                         pattern_match_dict[p] = 1
+                        if self.settings.first_match:
+                            stop_matches = True
             if self.settings.lines_before:
                 if len(lines_before) == self.settings.lines_before:
                     lines_before.popleft()

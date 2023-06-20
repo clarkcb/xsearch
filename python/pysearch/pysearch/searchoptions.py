@@ -17,6 +17,7 @@ from collections import deque
 from io import StringIO
 from typing import List
 
+from pyfind import common
 from .searchexception import SearchException
 from .searchoption import SearchOption
 from .searchsettings import SearchSettings
@@ -89,6 +90,18 @@ class SearchOptions(object):
             'searcharchives':
                 lambda b, settings:
                 settings.set_property('search_archives', b),
+            'sort-ascending':
+                lambda b, settings:
+                settings.set_property('sort_descending', not b),
+            'sort-caseinsensitive':
+                lambda b, settings:
+                settings.set_property('sort_case_insensitive', b),
+            'sort-casesensitive':
+                lambda b, settings:
+                settings.set_property('sort_case_insensitive', not b),
+            'sort-descending':
+                lambda b, settings:
+                settings.set_property('sort_descending', b),
             'uniquelines':
                 lambda b, settings:
                 settings.set_property('unique_lines', b),
@@ -160,7 +173,19 @@ class SearchOptions(object):
                 settings.paths.add(x),
             'searchpattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'search_patterns')
+                settings.add_patterns(x, 'search_patterns'),
+            'sort-by':
+                lambda x, settings:
+                settings.set_sort_by(x),
+        }
+
+        self.__dt_arg_dict = {
+            'maxlastmod':
+                lambda x, settings:
+                settings.set_property('max_last_mod', x),
+            'minlastmod':
+                lambda x, settings:
+                settings.set_property('min_last_mod', x),
         }
 
         self.__int_arg_dict = {
@@ -173,12 +198,21 @@ class SearchOptions(object):
             'maxlinelength':
                 lambda x, settings:
                 settings.set_property('max_line_length', int(x)),
+            'maxsize':
+                lambda x, settings:
+                settings.set_property('max_size', int(x)),
+            'minsize':
+                lambda x, settings:
+                settings.set_property('min_size', int(x)),
         }
 
         self.__str_arg_dict = {
             'encoding':
                 lambda x, settings:
                 settings.set_property('text_file_encoding', x),
+            'path':
+                lambda x, settings:
+                settings.paths.add(x),
         }
 
         self.__long_arg_dict = {}
@@ -197,6 +231,8 @@ class SearchOptions(object):
                 self.__bool_arg_dict[arg](json_dict[arg], settings)
             elif arg in self.__coll_arg_dict:
                 self.__coll_arg_dict[arg](json_dict[arg], settings)
+            elif arg in self.__dt_arg_dict:
+                self.__dt_arg_dict[arg](json_dict[arg], settings)
             elif arg in self.__int_arg_dict:
                 self.__int_arg_dict[arg](json_dict[arg], settings)
             elif arg in self.__str_arg_dict:
@@ -218,6 +254,8 @@ class SearchOptions(object):
                 func = self.__bool_arg_dict[long_arg]
             elif long_arg in self.__coll_arg_dict:
                 func = self.__coll_arg_dict[long_arg]
+            elif long_arg in self.__dt_arg_dict:
+                func = self.__dt_arg_dict[long_arg]
             elif long_arg in self.__int_arg_dict:
                 func = self.__int_arg_dict[long_arg]
             elif long_arg in self.__str_arg_dict:
@@ -254,6 +292,7 @@ class SearchOptions(object):
                         if long_arg in ('help', 'version'):
                             return settings
                     elif long_arg in self.__coll_arg_dict or \
+                            long_arg in self.__dt_arg_dict or \
                             long_arg in self.__int_arg_dict or \
                             long_arg in self.__str_arg_dict or \
                             long_arg == 'settings-file':
@@ -261,6 +300,9 @@ class SearchOptions(object):
                             arg_val = arg_deque.popleft()
                             if long_arg in self.__coll_arg_dict:
                                 self.__coll_arg_dict[long_arg](arg_val, settings)
+                            elif long_arg in self.__dt_arg_dict:
+                                self.__dt_arg_dict[long_arg](
+                                    common.parse_datetime_str(arg_val), settings)
                             elif long_arg in self.__int_arg_dict:
                                 invalid_int = False
                                 try:
