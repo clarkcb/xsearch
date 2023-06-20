@@ -4,181 +4,364 @@
  * represents the settings to use when performing the search
  */
 
-const {FileTypes} = require('./filetypes');
+const {FindSettings, FileTypes, sortByToName, StringUtil} = require('jsfind');
 
 class SearchSettings {
     'use strict'
 
+    #findSettings = null;
+
+    colorize = true;
+    firstMatch = false;
+    inLinesAfterPatterns = [];
+    inLinesBeforePatterns = [];
+    linesAfter = 0;
+    linesAfterToPatterns = [];
+    linesAfterUntilPatterns = [];
+    linesBefore = 0;
+    listLines = false;
+    maxLineLength = 150;
+    multilineSearch = false;
+    outLinesAfterPatterns = [];
+    outLinesBeforePatterns = [];
+    printResults = false;
+    searchArchives = false;
+    searchPatterns = [];
+    textFileEncoding = "utf-8";
+    uniqueLines = false;
+
     constructor() {
-        this.archivesOnly = false;
-        this.colorize = true;
-        this.debug = false;
-        this.excludeHidden = true;
-        this.firstMatch = false;
-        this.inArchiveExtensions = [];
-        this.inArchiveFilePatterns = [];
-        this.inDirPatterns = [];
-        this.inExtensions = [];
-        this.inFilePatterns = [];
-        this.inFileTypes = [];
-        this.inLinesAfterPatterns = [];
-        this.inLinesBeforePatterns = [];
-        this.linesAfter = 0;
-        this.linesAfterToPatterns = [];
-        this.linesAfterUntilPatterns = [];
-        this.linesBefore = 0;
-        this.listDirs = false;
-        this.listFiles = false;
-        this.listLines = false;
-        this.maxLineLength = 150;
-        this.multilineSearch = false;
-        this.outArchiveExtensions = [];
-        this.outArchiveFilePatterns = [];
-        this.outDirPatterns = [];
-        this.outExtensions = [];
-        this.outFilePatterns = [];
-        this.outFileTypes = [];
-        this.outLinesAfterPatterns = [];
-        this.outLinesBeforePatterns = [];
-        this.printResults = false;
-        this.printUsage = false;
-        this.printVersion = false;
-        this.recursive = true;
-        this.paths = [];
-        this.searchArchives = false;
-        this.searchPatterns = [];
-        this.textFileEncoding = "utf-8";
-        this.uniqueLines = false;
-        this.verbose = false;
+        this.#findSettings = new FindSettings();
     }
 
-    addExtensions(exts, arr) {
-        let xs = exts;
-        if (typeof(exts) === 'string') {
-            xs = exts.split(/,/);
-        }
-        xs.filter(x => x !== '').forEach(x => arr.push(x));
+    get findSettings() {
+        return this.#findSettings;
     }
 
-    addInExtensions(ext) {
-        this.addExtensions(ext, this.inExtensions);
+    get archivesOnly() {
+        return this.#findSettings.archivesOnly;
     }
 
-    addOutExtensions(ext) {
-        this.addExtensions(ext, this.outExtensions);
+    set archivesOnly(value) {
+        this.#findSettings.archivesOnly = value;
+        if (value) this.#findSettings.includeArchives = value;
+        if (value) this.searchArchives = value;
     }
 
-    addPatterns(patterns, arr) {
-        if (typeof(patterns) === 'string') {
-            arr.push(new RegExp(patterns));
-        } else if (patterns.constructor === Array) {
-            patterns.forEach(p => arr.push(new RegExp(p)));
-        }
+    get debug() {
+        return this.#findSettings.debug;
     }
 
-    addInDirPatterns(pattern) {
-        this.addPatterns(pattern, this.inDirPatterns);
+    set debug(value) {
+        this.#findSettings.debug = value;
     }
 
-    addOutDirPatterns(pattern) {
-        this.addPatterns(pattern, this.outDirPatterns);
+    get excludeHidden() {
+        return this.#findSettings.excludeHidden;
     }
 
-    addInFilePatterns(pattern) {
-        this.addPatterns(pattern, this.inFilePatterns);
+    set excludeHidden(b) {
+        this.#findSettings.excludeHidden = b;
     }
 
-    addOutFilePatterns(pattern) {
-        this.addPatterns(pattern, this.outFilePatterns);
+    get inArchiveExtensions() {
+        return this.#findSettings.inArchiveExtensions;
     }
 
-    addSearchPatterns(pattern) {
-        this.addPatterns(pattern, this.searchPatterns);
+    set inArchiveExtensions(value) {
+        this.#findSettings.inArchiveExtensions = value;
     }
 
     addInArchiveExtensions(ext) {
-        this.addExtensions(ext, this.inArchiveExtensions);
+        this.#findSettings.addInArchiveExtensions(ext);
     }
 
-    addOutArchiveExtensions(ext) {
-        this.addExtensions(ext, this.outArchiveExtensions);
+    get inArchiveFilePatterns() {
+        return this.#findSettings.inArchiveFilePatterns;
+    }
+
+    set inArchiveFilePatterns(value) {
+        this.#findSettings.inArchiveFilePatterns = value;
     }
 
     addInArchiveFilePatterns(pattern) {
-        this.addPatterns(pattern, this.inArchiveFilePatterns);
+        this.#findSettings.addInArchiveFilePatterns(pattern);
     }
 
-    addOutArchiveFilePatterns(pattern) {
-        this.addPatterns(pattern, this.outArchiveFilePatterns);
+    get inDirPatterns() {
+        return this.#findSettings.inDirPatterns;
     }
 
-    addInLinesAfterPatterns(pattern) {
-        this.addPatterns(pattern, this.inLinesAfterPatterns);
+    set inDirPatterns(value) {
+        this.#findSettings.inDirPatterns = value;
     }
 
-    addOutLinesAfterPatterns(pattern) {
-        this.addPatterns(pattern, this.outLinesAfterPatterns);
+    addInDirPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.#findSettings.inDirPatterns);
     }
 
-    addInLinesBeforePatterns(pattern) {
-        this.addPatterns(pattern, this.inLinesBeforePatterns);
+    get includeArchives() {
+        return this.#findSettings.includeArchives;
     }
 
-    addOutLinesBeforePatterns(pattern) {
-        this.addPatterns(pattern, this.outLinesBeforePatterns);
+    set includeArchives(value) {
+        this.#findSettings.includeArchives = value;
     }
 
-    addLinesAfterToPatterns(pattern) {
-        this.addPatterns(pattern, this.linesAfterToPatterns);
+    get inExtensions() {
+        return this.#findSettings.inExtensions;
     }
 
-    addLinesAfterUntilPatterns(pattern) {
-        this.addPatterns(pattern, this.linesAfterUntilPatterns);
+    set inExtensions(value) {
+        this.#findSettings.inExtensions = value;
     }
 
-    addFileTypes(filetypes, arr) {
-        if (typeof(filetypes) === 'string') {
-            filetypes.split(/,/).filter(ft => ft !== '').
-            forEach(ft => arr.push(FileTypes.fromName(ft)));
-        } else if (filetypes.constructor === Array) {
-            filetypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
-        }
+    addInExtensions(ext) {
+        this.#findSettings.addExtensions(ext, this.#findSettings.inExtensions);
+    }
+
+    get inFilePatterns() {
+        return this.#findSettings.inFilePatterns;
+    }
+
+    set inFilePatterns(value) {
+        this.#findSettings.inFilePatterns = value;
+    }
+
+    addInFilePatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.#findSettings.inFilePatterns);
+    }
+
+    get inFileTypes() {
+        return this.#findSettings.inFileTypes;
+    }
+
+    set inFileTypes(value) {
+        this.#findSettings.inFileTypes = value;
     }
 
     addInFileTypes(filetype) {
-        this.addFileTypes(filetype, this.inFileTypes);
+        this.#findSettings.addInFileTypes(filetype);
+    }
+
+    addInLinesAfterPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.inLinesAfterPatterns);
+    }
+
+    addInLinesBeforePatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.inLinesBeforePatterns);
+    }
+
+    addLinesAfterToPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.linesAfterToPatterns);
+    }
+
+    addLinesAfterUntilPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
+    }
+
+    get listDirs() {
+        return this.#findSettings.listDirs;
+    }
+
+    set listDirs(value) {
+        this.#findSettings.listDirs = value;
+    }
+
+    get listFiles() {
+        return this.#findSettings.listFiles;
+    }
+
+    set listFiles(value) {
+        this.#findSettings.listFiles = value;
+    }
+
+    get maxLastMod() {
+        return this.#findSettings.maxLastMod;
+    }
+
+    set maxLastMod(value) {
+        this.#findSettings.maxLastMod = value;
+    }
+
+    maxLastModForString(s) {
+        this.#findSettings.maxLastMod = StringUtil.getDateForString(s);
+    }
+
+    get maxSize() {
+        return this.#findSettings.maxSize;
+    }
+
+    set maxSize(value) {
+        this.#findSettings.maxSize = value;
+    }
+
+    get minLastMod() {
+        return this.#findSettings.minLastMod;
+    }
+
+    set minLastMod(value) {
+        this.#findSettings.minLastMod = value;
+    }
+
+    minLastModFromString(s) {
+        this.#findSettings.minLastMod = StringUtil.getDateForString(s);
+    }
+
+    get minSize() {
+        return this.#findSettings.minSize;
+    }
+
+    set minSize(value) {
+        this.#findSettings.minSize = value;
+    }
+
+    get outArchiveExtensions() {
+        return this.#findSettings.outArchiveExtensions;
+    }
+
+    set outArchiveExtensions(value) {
+        this.#findSettings.outArchiveExtensions = value;
+    }
+
+    addOutArchiveExtensions(ext) {
+        this.#findSettings.addOutArchiveExtensions(ext);
+    }
+
+    get outArchiveFilePatterns() {
+        return this.#findSettings.outArchiveFilePatterns;
+    }
+
+    set outArchiveFilePatterns(value) {
+        this.#findSettings.outArchiveFilePatterns = value;
+    }
+
+    addOutArchiveFilePatterns(pattern) {
+        this.#findSettings.addOutArchiveFilePatterns(pattern);
+    }
+
+    get outExtensions() {
+        return this.#findSettings.outExtensions;
+    }
+
+    set outExtensions(value) {
+        this.#findSettings.outExtensions = value;
+    }
+
+    addOutExtensions(ext) {
+        this.#findSettings.addExtensions(ext, this.#findSettings.outExtensions);
+    }
+
+    get outDirPatterns() {
+        return this.#findSettings.outDirPatterns;
+    }
+
+    set outDirPatterns(value) {
+        this.#findSettings.outDirPatterns = value;
+    }
+
+    addOutDirPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.#findSettings.outDirPatterns);
+    }
+
+    get outFilePatterns() {
+        return this.#findSettings.outFilePatterns;
+    }
+
+    set outFilePatterns(value) {
+        this.#findSettings.outFilePatterns = value;
+    }
+
+    addOutFilePatterns(pattern) {
+        this.#findSettings.addOutFilePatterns(pattern);
+    }
+
+    get outFileTypes() {
+        return this.#findSettings.outFileTypes;
+    }
+
+    set outFileTypes(value) {
+        this.#findSettings.outFileTypes = value;
     }
 
     addOutFileTypes(filetype) {
-        this.addFileTypes(filetype, this.outFileTypes);
+        this.#findSettings.addOutFileTypes(filetype);
     }
 
-    setArchivesOnly(b = true) {
-        this.archivesOnly = b;
-        if (b) this.searchArchives = b;
+    addOutLinesAfterPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.outLinesAfterPatterns);
     }
 
-    setDebug(b = true) {
-        this.debug = b;
-        if (b) this.verbose = b;
+    addOutLinesBeforePatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.outLinesBeforePatterns);
     }
 
-    listToString(name, lst) {
-        if (lst.length) return `${name}=["${lst.join('","')}"]`;
-        return `${name}=[]`;
+    get paths() {
+        return this.#findSettings.paths;
     }
 
-    fileTypesToString(name, fileTypes) {
-        if (fileTypes.length) {
-            var s = `${name}=[`;
-            for (var i=0; i < fileTypes.length; i++) {
-                if (i > 0) s += ', ';
-                s += '"' + FileTypes.toName(fileTypes[i]) + '"';
-            }
-            s += ']';
-            return s;
-        }
-        return `${name}=[]`;
+    set paths(value) {
+        this.#findSettings.paths = value;
+    }
+
+    get printUsage() {
+        return this.#findSettings.printUsage;
+    }
+
+    set printUsage(value) {
+        this.#findSettings.printUsage = value;
+    }
+
+    get printVersion() {
+        return this.#findSettings.printVersion;
+    }
+
+    set printVersion(value) {
+        this.#findSettings.printVersion = value;
+    }
+
+    get recursive() {
+        return this.#findSettings.recursive;
+    }
+
+    set recursive(value) {
+        this.#findSettings.recursive = value;
+    }
+
+    addSearchPatterns(pattern) {
+        this.#findSettings.addPatterns(pattern, this.searchPatterns);
+    }
+
+    get sortBy() {
+        return this.#findSettings.sortBy;
+    }
+
+    set sortBy(value) {
+        this.#findSettings.sortBy = value;
+    }
+
+    get sortCaseInsensitive() {
+        return this.#findSettings.sortCaseInsensitive;
+    }
+
+    set sortCaseInsensitive(value) {
+        this.#findSettings.sortCaseInsensitive = value;
+    }
+
+    get sortDescending() {
+        return this.#findSettings.sortDescending;
+    }
+
+    set sortDescending(value) {
+        this.#findSettings.sortDescending = value;
+    }
+
+    get verbose() {
+        return this.#findSettings.verbose;
+    }
+
+    set verbose(value) {
+        this.#findSettings.verbose = value;
     }
 
     toString() {
@@ -188,37 +371,45 @@ class SearchSettings {
             ', debug=' + this.debug +
             ', excludeHidden=' + this.excludeHidden +
             ', firstMatch=' + this.firstMatch +
-            ', ' + this.listToString('inArchiveExtensions', this.inArchiveExtensions) +
-            ', ' + this.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
-            ', ' + this.listToString('inDirPatterns', this.inDirPatterns) +
-            ', ' + this.listToString('inExtensions', this.inExtensions) +
-            ', ' + this.listToString('inFilePatterns', this.inFilePatterns) +
-            ', ' + this.fileTypesToString('inFileTypes', this.inFileTypes) +
-            ', ' + this.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns) +
-            ', ' + this.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns) +
+            ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions) +
+            ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
+            ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns) +
+            ', ' + StringUtil.listToString('inExtensions', this.inExtensions) +
+            ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns) +
+            ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
+            ', ' + StringUtil.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns) +
+            ', ' + StringUtil.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns) +
             ', linesAfter=' + this.linesAfter +
-            ', ' + this.listToString('linesAfterToPatterns', this.linesAfterToPatterns) +
-            ', ' + this.listToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns) +
+            ', ' + StringUtil.listToString('linesAfterToPatterns', this.linesAfterToPatterns) +
+            ', ' + StringUtil.listToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns) +
             ', linesBefore=' + this.linesBefore +
             ', listDirs=' + this.listDirs +
             ', listFiles=' + this.listFiles +
             ', listLines=' + this.listLines +
+            ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
             ', maxLineLength=' + this.maxLineLength +
+            ', maxSize=' + this.maxSize +
+            ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
+            ', minSize=' + this.minSize +
             ', multilineSearch=' + this.multilineSearch +
-            ', ' + this.listToString('outArchiveExtensions', this.outArchiveExtensions) +
-            ', ' + this.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
-            ', ' + this.listToString('outDirPatterns', this.outDirPatterns) +
-            ', ' + this.listToString('outExtensions', this.outExtensions) +
-            ', ' + this.listToString('outFilePatterns', this.outFilePatterns) +
-            ', ' + this.fileTypesToString('outFileTypes', this.outFileTypes) +
-            ', ' + this.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns) +
-            ', ' + this.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns) +
-            ', ' + this.listToString('paths', this.paths) +
+            ', ' + StringUtil.listToString('outArchiveExtensions', this.outArchiveExtensions) +
+            ', ' + StringUtil.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
+            ', ' + StringUtil.listToString('outDirPatterns', this.outDirPatterns) +
+            ', ' + StringUtil.listToString('outExtensions', this.outExtensions) +
+            ', ' + StringUtil.listToString('outFilePatterns', this.outFilePatterns) +
+            ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
+            ', ' + StringUtil.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns) +
+            ', ' + StringUtil.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns) +
+            ', ' + StringUtil.listToString('paths', this.paths) +
             ', printResults=' + this.printResults +
+            ', printUsage=' + this.printUsage +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
             ', searchArchives=' + this.searchArchives +
-            ', ' + this.listToString('searchPatterns', this.searchPatterns) +
+            ', ' + StringUtil.listToString('searchPatterns', this.searchPatterns) +
+            ', sortBy=' + sortByToName(this.sortBy) +
+            ', sortCaseInsensitive=' + this.sortCaseInsensitive +
+            ', sortDescending=' + this.sortDescending +
             ', textFileEncoding="' + this.textFileEncoding + '"' +
             ', uniqueLines=' + this.uniqueLines +
             ', verbose=' + this.verbose +

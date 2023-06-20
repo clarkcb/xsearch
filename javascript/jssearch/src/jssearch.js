@@ -8,10 +8,9 @@
 
 const path = require('path');
 
-const common = require('./common');
-const {Searcher} = require('./searcher');
-const {SearchError} = require('./searcherror');
+const {common} = require('jsfind');
 const {SearchOptions} = require('./searchoptions');
+const {Searcher} = require('./searcher');
 const {SearchResultFormatter} = require('./searchresultformatter');
 
 function handleError(err, searchOptions) {
@@ -21,14 +20,14 @@ function handleError(err, searchOptions) {
 }
 
 function cmpSearchResults(r1, r2) {
-    const pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
+    const pathCmp = r1.file.path.localeCompare(r2.file.path);
     if (pathCmp === 0) {
-        const fileCmp = path.basename(r1.file.filename).localeCompare(path.basename(r2.file.filename));
+        const fileCmp = path.basename(r1.file.fileName).localeCompare(path.basename(r2.file.fileName));
         if (fileCmp === 0) {
-            if (r1.linenum === r2.linenum) {
+            if (r1.lineNum === r2.lineNum) {
                 return r1.matchStartIndex - r2.matchStartIndex;
             }
-            return r1.linenum - r2.linenum;
+            return r1.lineNum - r2.lineNum;
         }
         return fileCmp;
     }
@@ -66,7 +65,7 @@ function printMatchingFiles(results) {
 }
 
 function getMatchingLines(results, uniqueLines) {
-    let lines = results.filter(r => r.linenum > 0).map(r => r.line.trim());
+    let lines = results.filter(r => r.lineNum > 0).map(r => r.line.trim());
     if (uniqueLines) {
         lines = common.setFromArray(lines);
     }
@@ -136,6 +135,6 @@ const searchMain = async () => {
 };
 
 // node.js equivalent of python's if __name__ == '__main__'
-if (!module.parent) {
-    searchMain();
+if (require.main === module) {
+    searchMain().catch((err) => common.log(err));
 }

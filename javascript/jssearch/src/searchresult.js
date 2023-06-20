@@ -7,11 +7,11 @@
 class SearchResult {
     'use strict'
 
-    constructor(pattern, file, linenum, matchStartIndex, matchEndIndex, line, linesBefore, linesAfter) {
+    constructor(pattern, file, lineNum, matchStartIndex, matchEndIndex, line, linesBefore, linesAfter) {
         this.pattern = pattern;
-        // file is SearchFile instance
+        // file is FileResult instance (jsfind)
         this.file = file;
-        this.linenum = linenum;
+        this.lineNum = lineNum;
         this.matchStartIndex = matchStartIndex;
         this.matchEndIndex = matchEndIndex;
         this.line = line;

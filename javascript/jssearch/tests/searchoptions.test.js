@@ -4,8 +4,8 @@
  * Some tests of searchoptions.js
  */
 
-const SearchOptions = require('../src/searchoptions').SearchOptions;
-const SearchSettings = require('../src/searchsettings').SearchSettings;
+const {SearchOptions} = require('../src/searchoptions');
+const {SearchSettings} = require('../src/searchsettings');
 
 describe('testing searchoptions', () => {
     it('testNoArgs', () => {
@@ -19,12 +19,15 @@ describe('testing searchoptions', () => {
             expect(settings.debug).toBeFalsy();
             expect(settings.excludeHidden).toBeTruthy();
             expect(settings.firstMatch).toBeFalsy();
+            expect(settings.includeArchives).toBeFalsy();
             expect(settings.linesAfter).toEqual(0);
             expect(settings.linesBefore).toEqual(0);
             expect(settings.listDirs).toBeFalsy();
             expect(settings.listFiles).toBeFalsy();
             expect(settings.listLines).toBeFalsy();
             expect(settings.maxLineLength).toEqual(150);
+            expect(settings.maxSize).toEqual(0);
+            expect(settings.minSize).toEqual(0);
             expect(settings.multilineSearch).toBeFalsy();
             expect(settings.printResults).toBeTruthy();
             expect(settings.printUsage).toBeFalsy();
@@ -63,6 +66,7 @@ describe('testing searchoptions', () => {
                 expect(false).toEqual(true);
             }
             expect(settings.archivesOnly).toEqual(true);
+            expect(settings.includeArchives).toEqual(true);
             expect(settings.searchArchives).toEqual(true);
         });
     });

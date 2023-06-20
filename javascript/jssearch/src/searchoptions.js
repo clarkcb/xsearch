@@ -4,11 +4,12 @@
  * defines the set of search options and provides functionality to define search settings from them
  */
 
+const {FileUtil} = require('jsfind');
 const config = require('./config');
-const {expandPath} = require('./fileutil');
 const {SearchError} = require('./searcherror');
 const {SearchOption} = require('./searchoption');
 const {SearchSettings} = require('./searchsettings');
+const {nameToSortBy} = require("../../../../xfind/javascript/jsfind/src/sortby");
 
 class SearchOptions {
     'use strict'
@@ -44,8 +45,20 @@ class SearchOptions {
                 (x, settings) => { settings.addLinesAfterUntilPatterns(x); },
             'linesbefore':
                 (x, settings) => { settings.linesBefore = parseInt(x); },
+            'maxlastmod':
+                (x, settings) => { settings.maxLastModFromString(x); },
             'maxlinelength':
                 (x, settings) => { settings.maxLineLength = parseInt(x); },
+            'maxsize':
+                (x, settings) => {
+                    settings.maxSize = parseInt(x, 10);
+                },
+            'minlastmod':
+                (x, settings) => { settings.minLastModFromString(x); },
+            'minsize':
+                (x, settings) => {
+                    settings.minSize = parseInt(x, 10);
+                },
             'out-dirpattern':
                 (x, settings) => { settings.addOutDirPatterns(x); },
             'out-archiveext':
@@ -67,18 +80,20 @@ class SearchOptions {
             'searchpattern':
                 (x, settings) => { settings.addSearchPatterns(x); },
             'settings-file':
-                (x, settings) => { return settingsFromFile(x, settings); }
+                (x, settings) => { return settingsFromFile(x, settings); },
+            'sort-by':
+                (x, settings) => { settings.sortBy = nameToSortBy(x); }
 
         };
         this.boolFlagActionMap = {
             'allmatches':
                 (b, settings) => { settings.firstMatch = !b; },
             'archivesonly':
-                (b, settings) => { settings.setArchivesOnly(b); },
+                (b, settings) => { settings.archivesOnly = b; },
             'colorize':
                 (b, settings) => { settings.colorize = b; },
             'debug':
-                (b, settings) => { settings.setDebug(b); },
+                (b, settings) => { settings.debug = b; },
             'excludehidden':
                 (b, settings) => { settings.excludeHidden = b; },
             'firstmatch':
@@ -109,6 +124,14 @@ class SearchOptions {
                 (b, settings) => { settings.recursive = b; },
             'searcharchives':
                 (b, settings) => { settings.searchArchives = b; },
+            'sort-ascending':
+                (b, settings) => { settings.sortDescending = !b; },
+            'sort-caseinsensitive':
+                (b, settings) => { settings.sortCaseInsensitive = b; },
+            'sort-casesensitive':
+                (b, settings) => { settings.sortCaseInsensitive = !b; },
+            'sort-descending':
+                (b, settings) => { settings.sortDescending = b; },
             'uniquelines':
                 (b, settings) => { settings.uniqueLines = b; },
             'verbose':
@@ -122,8 +145,8 @@ class SearchOptions {
             const fs = require('fs');
 
             let json = '';
-            if (fs.existsSync(expandPath(config.SEARCHOPTIONSJSONPATH))) {
-                json = fs.readFileSync(expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
+            if (fs.existsSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH))) {
+                json = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
             } else {
                 throw new SearchError('File not found: ' + config.SEARCHOPTIONSJSONPATH);
             }

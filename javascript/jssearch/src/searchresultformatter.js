@@ -3,7 +3,7 @@
  *
  * SearchResultFormatter class provides formatting of search result instances
  */
-const {COLORS} = require('./common');
+const {COLORS} = require('./color');
 
 const SEPARATOR_LEN = 80;
 
@@ -21,8 +21,8 @@ class SearchResultFormatter {
 
     singleLineFormat(result) {
         let s = result.file ? result.file.toString() : '<text>';
-        if (result.linenum && result.line) {
-            s += `: ${result.linenum}: [${result.matchStartIndex}:` +
+        if (result.lineNum && result.line) {
+            s += `: ${result.lineNum}: [${result.matchStartIndex}:` +
                 `${result.matchEndIndex}]: ` + this.formatMatchingLine(result);
         } else {
             s += ` matches at [${result.matchStartIndex}:${result.matchEndIndex}]`;
@@ -31,7 +31,7 @@ class SearchResultFormatter {
     }
 
     lineNumPadding(result) {
-        let maxLineNum = result.linenum + result.linesAfter.length;
+        let maxLineNum = result.lineNum + result.linesAfter.length;
         return ("" + maxLineNum).length;
     }
 
@@ -58,9 +58,9 @@ class SearchResultFormatter {
     multiLineFormat(result) {
         const filename = result.file ? result.file.toString() : '<text>';
         let s = new Array(SEPARATOR_LEN + 1).join("=") + "\n" + `${filename}: ` +
-            `${result.linenum}: [${result.matchStartIndex}:${result.matchEndIndex}]` +
+            `${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]` +
             "\n" + new Array(SEPARATOR_LEN + 1).join("-") + "\n";
-        let currentLineNum = result.linenum;
+        let currentLineNum = result.lineNum;
         let numPadding = this.lineNumPadding(result);
         if (result.linesBefore.length > 0) {
             currentLineNum = currentLineNum - result.linesBefore.length;
