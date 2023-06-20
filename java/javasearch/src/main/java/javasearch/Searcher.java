@@ -99,7 +99,8 @@ public class Searcher {
 
         if (settings.getVerbose()) {
             List<String> dirResults = fileResults.stream()
-                    .map(fr -> fr.getPath().toString())
+                    .map(fr -> fr.getPath().getParent())
+                    .map(p -> p == null ? "." : p.toString())
                     .distinct()
                     .sorted(String::compareTo)
                     .collect(Collectors.toList());

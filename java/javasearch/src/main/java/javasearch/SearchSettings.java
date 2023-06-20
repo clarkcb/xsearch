@@ -63,6 +63,14 @@ public class SearchSettings extends FindSettings {
         this.uniqueLines = DefaultSearchSettings.UNIQUELINES;
     }
 
+    @Override
+    public void setArchivesOnly(boolean archivesOnly) {
+        super.setArchivesOnly(archivesOnly);
+        if (archivesOnly) {
+            this.searchArchives = true;
+        }
+    }
+
     public boolean getColorize() {
         return colorize;
     }

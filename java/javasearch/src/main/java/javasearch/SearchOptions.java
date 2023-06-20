@@ -11,6 +11,7 @@ Class to encapsulate all command line search options
 package javasearch;
 
 import javafind.FileUtil;
+import javafind.SortByUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -39,7 +40,7 @@ public class SearchOptions {
         void set(String s, SearchSettings settings);
     }
 
-    private final int actionMapSize = 24;
+    private final int actionMapSize = 30;
     private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
         {
             put("encoding", (s, settings) -> settings.setTextFileEncoding(s));
@@ -55,7 +56,11 @@ public class SearchOptions {
             put("linesaftertopattern", (s, settings) -> settings.addLinesAfterToPattern(s));
             put("linesafteruntilpattern", (s, settings) -> settings.addLinesAfterUntilPattern(s));
             put("linesbefore", (s, settings) -> settings.setLinesBefore(Integer.parseInt(s)));
+            put("maxlastmod", (s, settings) -> settings.setMaxLastMod(s));
             put("maxlinelength", (s, settings) -> settings.setMaxLineLength(Integer.parseInt(s)));
+            put("maxsize", (s, settings) -> settings.setMaxSize(Integer.parseInt(s)));
+            put("minlastmod", (s, settings) -> settings.setMinLastMod(s));
+            put("minsize", (s, settings) -> settings.setMinSize(Integer.parseInt(s)));
             put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
             put("out-archivefilepattern", (s, settings) -> settings.addOutArchiveFilePattern(s));
             put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));
@@ -67,6 +72,7 @@ public class SearchOptions {
             put("path", (s, settings) -> settings.addPath(s));
             put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
             put("settings-file", (s, settings) -> settingsFromFile(s, settings));
+            put("sort-by", (s, settings) -> settings.setSortBy(SortByUtil.fromName(s)));
         }
     };
 
@@ -75,7 +81,7 @@ public class SearchOptions {
         void set(Boolean b, SearchSettings settings);
     }
 
-    private final int flagMapSize = 22;
+    private final int flagMapSize = 26;
     private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
@@ -97,6 +103,10 @@ public class SearchOptions {
             put("printmatches", (b, settings) -> settings.setPrintResults(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("searcharchives", (b, settings) -> settings.setSearchArchives(b));
+            put("sort-ascending", (b, settings) -> settings.setSortDescending(!b));
+            put("sort-caseinsensitive", (b, settings) -> settings.setSortCaseInsensitive(b));
+            put("sort-casesensitive", (b, settings) -> settings.setSortCaseInsensitive(!b));
+            put("sort-descending", (b, settings) -> settings.setSortDescending(b));
             put("uniquelines", (b, settings) -> settings.setUniqueLines(b));
             put("verbose", (b, settings) -> settings.setVerbose(b));
             put("version", (b, settings) -> settings.setPrintVersion(b));
