@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"gofind/pkg/gofind"
 	"os"
 	"reflect"
 	"strconv"
@@ -18,11 +18,13 @@ type SearchOption struct {
 }
 
 type SearchOptions struct {
+	//SearchConfig  *SearchConfig
 	SearchOptions []*SearchOption
 }
 
 func SearchOptionsFromJson() (*SearchOptions, error) {
-	data, err := ioutil.ReadFile(SEARCHOPTIONSPATH)
+	config := NewSearchConfig()
+	data, err := os.ReadFile(config.SEARCHOPTIONSPATH)
 	if err != nil {
 		return &SearchOptions{}, err
 	}
@@ -30,6 +32,10 @@ func SearchOptionsFromJson() (*SearchOptions, error) {
 	if err = json.Unmarshal(data, &searchOptions); err != nil {
 		return &SearchOptions{}, err
 	}
+
+	// TEMPORARY
+	//searchOptions.generateCodeFile("/Users/cary/src/xsearch/go/gosearch/pkg/gosearch/searchoptionsgen.go")
+
 	return &searchOptions, nil
 }
 
@@ -42,7 +48,7 @@ func NewSearchOptions() *SearchOptions {
 }
 
 func (so *SearchOptions) SettingsFromFile(filepath string, settings *SearchSettings) error {
-	if data, err := ioutil.ReadFile(filepath); err != nil {
+	if data, err := os.ReadFile(filepath); err != nil {
 		return err
 	} else {
 		return so.SettingsFromJson(data, settings)
@@ -72,26 +78,26 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 						af(v[i].(string), settings)
 					}
 				default:
-					log(fmt.Sprintf("k: %v", k))
-					log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					gofind.Log(fmt.Sprintf("k: %v", k))
+					gofind.Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
 					errMsg := fmt.Sprintf("Unknown data type in settings file")
-					log(errMsg)
+					gofind.Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				log(fmt.Sprintf("value for %v is invalid", k))
+				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if ff, isFlag := boolFlagActionMap[k]; isFlag {
 			if v, hasVal := jsonSettings[k]; hasVal {
 				ff(v.(bool), settings)
 			} else {
-				log(fmt.Sprintf("value for %v is invalid", k))
+				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if k == "path" {
 			if sp, hasStartPath := jsonSettings[k]; hasStartPath {
 				settings.AddPath(sp.(string))
 			} else {
-				log("startpath value is invalid")
+				gofind.Log("startpath value is invalid")
 			}
 		} else {
 			return fmt.Errorf("Invalid option: %s", k)
@@ -107,15 +113,15 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 	flagActionMap := so.getBoolFlagActionMap()
 
 	if false {
-		log(fmt.Sprintf("argActionMap: %v", argActionMap))
-		log(fmt.Sprintf("flagActionMap: %v", flagActionMap))
+		gofind.Log(fmt.Sprintf("argActionMap: %v", argActionMap))
+		gofind.Log(fmt.Sprintf("flagActionMap: %v", flagActionMap))
 	}
 
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
 			k := strings.TrimLeft(args[i], "-")
 			if false {
-				log(fmt.Sprintf("k: %s\n", k))
+				gofind.Log(fmt.Sprintf("k: %s\n", k))
 			}
 			if af, isAction := argActionMap[k]; isAction {
 				i++
@@ -134,8 +140,8 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 		}
 		i++
 	}
-	if settings.Debug {
-		settings.Verbose = true
+	if settings.Debug() {
+		settings.SetVerbose(true)
 	}
 	return settings, nil
 }
@@ -147,9 +153,9 @@ func (so *SearchOptions) getUsageString() string {
 	sortKeyMap := so.getSortKeyMap()
 	optStringMap := so.getOptStringMap()
 	optDescMap := so.getOptDescMap()
-	sortedKeys := getSortedKeys(sortKeyMap)
-	optStrings := getMapValues(optStringMap)
-	longestLen := getLongestLen(optStrings)
+	sortedKeys := gofind.GetSortedKeys(sortKeyMap)
+	optStrings := gofind.GetMapValues(optStringMap)
+	longestLen := gofind.GetLongestLen(optStrings)
 	optFormat := fmt.Sprintf(" %%-%ds  %%s\n", longestLen)
 	for _, k := range sortedKeys {
 		o := optStringMap[sortKeyMap[k]]
@@ -160,12 +166,13 @@ func (so *SearchOptions) getUsageString() string {
 }
 
 func (so *SearchOptions) PrintUsage() {
-	log(so.getUsageString())
+	gofind.Log(so.getUsageString())
 	os.Exit(0)
 }
 
 func (so *SearchOptions) PrintVersion() {
-	log(fmt.Sprintf("xsearch version %s", VERSION))
+	config := NewSearchConfig()
+	gofind.Log(fmt.Sprintf("xsearch version %s", config.VERSION))
 	os.Exit(0)
 }
 
@@ -210,7 +217,7 @@ type argAction func(s string, settings *SearchSettings)
 func (so *SearchOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
 		"encoding": func(s string, settings *SearchSettings) {
-			settings.TextFileEncoding = s
+			settings.SetTextFileEncoding(s)
 		},
 		"in-archiveext": func(s string, settings *SearchSettings) {
 			settings.AddInArchiveExtension(s)
@@ -228,7 +235,7 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			settings.AddInFilePattern(s)
 		},
 		"in-filetype": func(s string, settings *SearchSettings) {
-			settings.AddInFileType(getFileTypeForName(s))
+			settings.AddInFileType(gofind.GetFileTypeForName(s))
 		},
 		"in-linesafterpattern": func(s string, settings *SearchSettings) {
 			settings.AddInLinesAfterPattern(s)
@@ -239,9 +246,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		"linesafter": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
 			if err == nil {
-				settings.LinesAfter = num
+				settings.SetLinesAfter(num)
 			} else {
-				log(fmt.Sprintf("Invalid value for linesafter: %s\n", s))
+				gofind.Log(fmt.Sprintf("Invalid value for linesafter: %s\n", s))
 			}
 		},
 		"linesaftertopattern": func(s string, settings *SearchSettings) {
@@ -253,17 +260,17 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		"linesbefore": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
 			if err == nil {
-				settings.LinesBefore = num
+				settings.SetLinesBefore(num)
 			} else {
-				log(fmt.Sprintf("Invalid value for linesbefore: %s\n", s))
+				gofind.Log(fmt.Sprintf("Invalid value for linesbefore: %s\n", s))
 			}
 		},
 		"maxlinelength": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
 			if err == nil {
-				settings.MaxLineLength = num
+				settings.SetMaxLineLength(num)
 			} else {
-				log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
+				gofind.Log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
 			}
 		},
 		"out-archiveext": func(s string, settings *SearchSettings) {
@@ -282,7 +289,7 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			settings.AddOutFilePattern(s)
 		},
 		"out-filetype": func(s string, settings *SearchSettings) {
-			settings.AddOutFileType(getFileTypeForName(s))
+			settings.AddOutFileType(gofind.GetFileTypeForName(s))
 		},
 		"out-linesafterpattern": func(s string, settings *SearchSettings) {
 			settings.AddOutLinesAfterPattern(s)
@@ -297,7 +304,10 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			settings.AddSearchPattern(s)
 		},
 		"settings-file": func(s string, settings *SearchSettings) {
-			so.SettingsFromFile(s, settings)
+			err := so.SettingsFromFile(s, settings)
+			if err != nil {
+				return
+			}
 		},
 	}
 	for _, o := range so.SearchOptions {
@@ -315,7 +325,7 @@ type boolFlagAction func(b bool, settings *SearchSettings)
 func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 	m := map[string]boolFlagAction{
 		"allmatches": func(b bool, settings *SearchSettings) {
-			settings.FirstMatch = !b
+			settings.SetFirstMatch(!b)
 		},
 		"archivesonly": func(b bool, settings *SearchSettings) {
 			settings.SetArchivesOnly(b)
@@ -324,55 +334,55 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.SetDebug(b)
 		},
 		"excludehidden": func(b bool, settings *SearchSettings) {
-			settings.ExcludeHidden = b
+			settings.SetExcludeHidden(b)
 		},
 		"firstmatch": func(b bool, settings *SearchSettings) {
-			settings.FirstMatch = b
+			settings.SetFirstMatch(b)
 		},
 		"help": func(b bool, settings *SearchSettings) {
-			settings.PrintUsage = b
+			settings.SetPrintUsage(b)
 		},
 		"includehidden": func(b bool, settings *SearchSettings) {
-			settings.ExcludeHidden = !b
+			settings.SetExcludeHidden(!b)
 		},
 		"listdirs": func(b bool, settings *SearchSettings) {
-			settings.ListDirs = b
+			settings.SetListDirs(b)
 		},
 		"listfiles": func(b bool, settings *SearchSettings) {
-			settings.ListFiles = b
+			settings.SetListFiles(b)
 		},
 		"listlines": func(b bool, settings *SearchSettings) {
-			settings.ListLines = b
+			settings.SetListLines(b)
 		},
 		"multilinesearch": func(b bool, settings *SearchSettings) {
-			settings.MultiLineSearch = b
+			settings.SetMultiLineSearch(b)
 		},
 		"noprintmatches": func(b bool, settings *SearchSettings) {
-			settings.PrintResults = !b
+			settings.SetPrintResults(!b)
 		},
 		"norecursive": func(b bool, settings *SearchSettings) {
-			settings.Recursive = !b
+			settings.SetRecursive(!b)
 		},
 		"nosearcharchives": func(b bool, settings *SearchSettings) {
-			settings.SearchArchives = !b
+			settings.SetSearchArchives(!b)
 		},
 		"printmatches": func(b bool, settings *SearchSettings) {
-			settings.PrintResults = b
+			settings.SetPrintResults(b)
 		},
 		"recursive": func(b bool, settings *SearchSettings) {
-			settings.Recursive = b
+			settings.SetRecursive(b)
 		},
 		"searcharchives": func(b bool, settings *SearchSettings) {
-			settings.SearchArchives = b
+			settings.SetSearchArchives(b)
 		},
 		"uniquelines": func(b bool, settings *SearchSettings) {
-			settings.UniqueLines = b
+			settings.SetUniqueLines(b)
 		},
 		"verbose": func(b bool, settings *SearchSettings) {
-			settings.Verbose = b
+			settings.SetVerbose(b)
 		},
 		"version": func(b bool, settings *SearchSettings) {
-			settings.PrintVersion = b
+			settings.SetPrintVersion(b)
 		},
 	}
 	for _, o := range so.SearchOptions {
@@ -383,4 +393,25 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		}
 	}
 	return m
+}
+
+func (so *SearchOptions) generateCodeFile(filePath string) {
+	var buffer bytes.Buffer
+	depth := 0
+	buffer.WriteString("package gosearch\n\n")
+	buffer.WriteString("func GetSearchOptions() *SearchOptions {\n")
+	depth++
+	buffer.WriteString(fmt.Sprintf("%sreturn &SearchOptions{\n", strings.Repeat("\t", depth)))
+	depth++
+	buffer.WriteString(fmt.Sprintf("%s[]*SearchOption{\n", strings.Repeat("\t", depth)))
+	depth++
+	for _, so := range so.SearchOptions {
+		buffer.WriteString(fmt.Sprintf("%s{\"%s\", \"%s\", \"%s\"},\n",
+			strings.Repeat("\t", depth), so.Short, so.Long, gofind.EscapeQuotes(so.Desc)))
+	}
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s}\n}\n", strings.Repeat("\t", depth)))
+	os.WriteFile(filePath, buffer.Bytes(), 0644)
 }

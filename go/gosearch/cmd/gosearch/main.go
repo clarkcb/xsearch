@@ -18,15 +18,15 @@ func main() {
 		errorAndExit(err, searchOptions)
 	}
 
-	if settings.PrintUsage {
+	if settings.PrintUsage() {
 		searchOptions.PrintUsage()
 	}
 
-	if settings.PrintVersion {
+	if settings.PrintVersion() {
 		searchOptions.PrintVersion()
 	}
 
-	if settings.Debug {
+	if settings.Debug() {
 		fmt.Printf("settings: %s\n", settings.String())
 	}
 
@@ -37,25 +37,25 @@ func main() {
 	}
 
 	// if there are results and PrintResults is true then print them out
-	if settings.PrintResults {
+	if settings.PrintResults() {
 		fmt.Println()
 		searcher.PrintSearchResults()
 	}
 
 	// print matching dirs
-	if settings.ListDirs {
+	if settings.ListDirs() {
 		fmt.Println()
 		searcher.PrintMatchingDirs()
 	}
 
 	// print matching files
-	if settings.ListFiles {
+	if settings.ListFiles() {
 		fmt.Println()
 		searcher.PrintMatchingFiles()
 	}
 
 	// print matching lines (unique or not, sorted alphabetically)
-	if settings.ListLines {
+	if settings.ListLines() {
 		fmt.Println()
 		searcher.PrintMatchingLines()
 	}

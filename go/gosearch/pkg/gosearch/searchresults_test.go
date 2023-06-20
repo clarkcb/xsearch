@@ -2,24 +2,27 @@ package gosearch
 
 import (
 	"fmt"
+	"gofind/pkg/gofind"
 	"regexp"
 	"testing"
 )
 
 func TestAddSearchResult(t *testing.T) {
+	config := NewSearchConfig()
 	settings := GetDefaultSearchSettings()
-	settings.Colorize = false
+	settings.SetColorize(false)
 	searchResults := NewSearchResults(settings)
 
-	path := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
+	path := fmt.Sprintf("%s/go/gosearch/pkg/gosearch", config.XSEARCHPATH)
 	name := "searchresults_test.go"
-	searchItem := NewSearchItem(path, name, FiletypeCode)
+	//searchItem := NewSearchItem(path, name, FiletypeCode)
+	fileResult := gofind.NewFileResult(path, name, gofind.FiletypeCode, nil)
 
 	line := "func TestAddSearchResult(t *testing.T) {"
 
 	searchResult := &SearchResult{
 		regexp.MustCompile("^func\\s+TestAddSearchResult"),
-		searchItem,
+		fileResult,
 		6,
 		1,
 		25,
@@ -39,7 +42,7 @@ func TestAddSearchResult(t *testing.T) {
 			len(searchResults.SearchResults))
 	}
 
-	//expectedDir := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch", XSEARCHPATH)
+	//expectedDir := fmt.Sprintf("%s/go/gosearch/pkg/gosearch", XSEARCHPATH)
 	//c, b := searchResults.DirCounts[expectedDir]
 	//if !b {
 	//	t.Errorf("searchResults.DirCounts does not contain expected dir key: %s",
@@ -50,7 +53,7 @@ func TestAddSearchResult(t *testing.T) {
 	//		expectedDir, searchResults.DirCounts[expectedDir])
 	//}
 	//
-	//expectedFile := fmt.Sprintf("%s/go/src/github.com/clarkcb/gosearch/searchresults_test.go", XSEARCHPATH)
+	//expectedFile := fmt.Sprintf("%s/go/gosearch/pkg/gosearch/searchresults_test.go", XSEARCHPATH)
 	//c, b = searchResults.FileCounts[expectedFile]
 	//if !b {
 	//	t.Errorf("searchResults.FileCounts does not contain expected file key: %s",

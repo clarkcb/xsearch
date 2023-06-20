@@ -3,6 +3,7 @@ package gosearch
 import (
 	"bytes"
 	"fmt"
+	"gofind/pkg/gofind"
 	"regexp"
 	"sort"
 	"strings"
@@ -69,10 +70,10 @@ func (srs *SearchResults) IsEmpty() bool {
 	return len(srs.SearchResults) == 0
 }
 
-func (srs *SearchResults) HasResultForFileAndPattern(si *SearchItem,
+func (srs *SearchResults) HasResultForFileAndPattern(fr *gofind.FileResult,
 	pattern *regexp.Regexp) bool {
 	for _, r := range srs.SearchResults {
-		if pattern.String() == r.Pattern.String() && si.String() == r.File.String() {
+		if pattern.String() == r.Pattern.String() && fr.String() == r.File.String() {
 			return true
 		}
 	}
@@ -123,19 +124,19 @@ func (srs *SearchResults) GetPathCountMap() map[string]int {
 
 func (srs *SearchResults) GetMatchingDirs() []string {
 	pathCountMap := srs.GetPathCountMap()
-	paths := getSortedCountKeys(pathCountMap)
+	paths := gofind.GetSortedCountKeys(pathCountMap)
 	return paths
 }
 
 func (srs *SearchResults) PrintMatchingDirs() {
 	paths := srs.GetMatchingDirs()
 	if len(paths) > 0 {
-		log(fmt.Sprintf("\nMatching directories (%d):", len(paths)))
+		gofind.Log(fmt.Sprintf("\nMatching directories (%d):", len(paths)))
 		for _, p := range paths {
-			log(p)
+			gofind.Log(p)
 		}
 	} else {
-		log("\nMatching directories: 0")
+		gofind.Log("\nMatching directories: 0")
 	}
 }
 
@@ -149,19 +150,19 @@ func (srs *SearchResults) GetFileCountMap() map[string]int {
 
 func (srs *SearchResults) GetMatchingFiles() []string {
 	fileCountMap := srs.GetFileCountMap()
-	files := getSortedCountKeys(fileCountMap)
+	files := gofind.GetSortedCountKeys(fileCountMap)
 	return files
 }
 
 func (srs *SearchResults) PrintMatchingFiles() {
 	files := srs.GetMatchingFiles()
 	if len(files) > 0 {
-		log(fmt.Sprintf("\nMatching files (%d):", len(files)))
+		gofind.Log(fmt.Sprintf("\nMatching files (%d):", len(files)))
 		for _, p := range files {
-			log(p)
+			gofind.Log(p)
 		}
 	} else {
-		log("\nMatching files: 0")
+		gofind.Log("\nMatching files: 0")
 	}
 }
 
@@ -171,18 +172,18 @@ func (srs *SearchResults) PrintMatchingLines() {
 	for _, v := range countMap {
 		totalCount += v
 	}
-	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
+	countKeys := gofind.GetCaseInsensitiveSortedCountKeys(countMap)
 
-	if srs.Settings.UniqueLines {
-		log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
+	if srs.Settings.UniqueLines() {
+		gofind.Log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
 		for _, k := range countKeys {
-			log(fmt.Sprintf("%s", k))
+			gofind.Log(fmt.Sprintf("%s", k))
 		}
 	} else {
-		log(fmt.Sprintf("Lines with matches (%d):", totalCount))
+		gofind.Log(fmt.Sprintf("Lines with matches (%d):", totalCount))
 		for _, k := range countKeys {
 			for i := 0; i < countMap[k]; i++ {
-				log(fmt.Sprintf("%s", k))
+				gofind.Log(fmt.Sprintf("%s", k))
 			}
 		}
 	}
@@ -205,33 +206,33 @@ func (srs *SearchResults) PrintMatchingLines() {
 // 	if len(countKeys) == 1 {
 // 		countName = singName
 // 	}
-// 	log(fmt.Sprintf("%s match counts (%d %s):\n", strings.Title(singName),
+// 	gofind.Log(fmt.Sprintf("%s match counts (%d %s):\n", strings.Title(singName),
 // 		len(countKeys), countName))
 // 	longestKeyLen := getLongestLen(countKeys) + 1
 // 	longestNumLen := getNumLen2(getHighestMapVal(countMap))
 // 	lineFormat := fmt.Sprintf("%%-%ds %%%dd", longestKeyLen, longestNumLen)
 // 	for _, k := range countKeys {
-// 		log(fmt.Sprintf(lineFormat, k+":", countMap[k]))
+// 		gofind.Log(fmt.Sprintf(lineFormat, k+":", countMap[k]))
 // 	}
 // }
 
 func printCounts(pluralName string, countKeys []string) {
-	log(fmt.Sprintf("%s with matches (%d):", strings.Title(pluralName),
+	gofind.Log(fmt.Sprintf("%s with matches (%d):", strings.Title(pluralName),
 		len(countKeys)))
 	for _, k := range countKeys {
-		log(fmt.Sprintf("%s", k))
+		gofind.Log(fmt.Sprintf("%s", k))
 	}
 }
 
 func (srs *SearchResults) PrintDirCounts() {
 	countMap := srs.Stats.DirCounts
-	countKeys := getSortedCountKeys(countMap)
+	countKeys := gofind.GetSortedCountKeys(countMap)
 	printCounts("directories", countKeys)
 }
 
 func (srs *SearchResults) PrintFileCounts() {
 	countMap := srs.Stats.FileCounts
-	countKeys := getSortedCountKeys(countMap)
+	countKeys := gofind.GetSortedCountKeys(countMap)
 	printCounts("files", countKeys)
 }
 
@@ -241,21 +242,21 @@ func (srs *SearchResults) PrintLineCounts() {
 	for _, v := range countMap {
 		totalCount += v
 	}
-	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
-	log(fmt.Sprintf("Lines with matches (%d):", totalCount))
+	countKeys := gofind.GetCaseInsensitiveSortedCountKeys(countMap)
+	gofind.Log(fmt.Sprintf("Lines with matches (%d):", totalCount))
 	for _, k := range countKeys {
 		for i := 0; i < countMap[k]; i++ {
-			log(fmt.Sprintf("%s", k))
+			gofind.Log(fmt.Sprintf("%s", k))
 		}
 	}
 }
 
 func (srs *SearchResults) PrintUniqueLineCounts() {
 	countMap := srs.Stats.LineCounts
-	countKeys := getCaseInsensitiveSortedCountKeys(countMap)
-	log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
+	countKeys := gofind.GetCaseInsensitiveSortedCountKeys(countMap)
+	gofind.Log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
 	for _, k := range countKeys {
-		log(fmt.Sprintf("%s", k))
+		gofind.Log(fmt.Sprintf("%s", k))
 	}
 }
 
@@ -267,12 +268,12 @@ func (srs *SearchResults) PrintSearchResults() {
 	// sort them first
 	sort.Sort(srs)
 	formatter := NewSearchResultFormatter(srs.Settings)
-	log(fmt.Sprintf("Search results (%d):", len(srs.SearchResults)))
+	gofind.Log(fmt.Sprintf("Search results (%d):", len(srs.SearchResults)))
 	for _, r := range srs.SearchResults {
 		if len(srs.Stats.PatternCounts) > 1 {
-			log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
+			gofind.Log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
 		}
-		log(formatter.Format(r))
+		gofind.Log(formatter.Format(r))
 	}
 }
 
@@ -325,7 +326,7 @@ func (f *SearchResultFormatter) multiLineFormat(r *SearchResult) string {
 		}
 	}
 	line := r.Line
-	if f.Settings.Colorize {
+	if f.Settings.Colorize() {
 		line = colorize(line, r.MatchStartIndex-1, r.MatchEndIndex-1)
 	}
 	buffer.WriteString(">" + fmt.Sprintf(lineFormat, currentLineNum, line))
@@ -367,7 +368,7 @@ func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
 	matchStartIndex := r.MatchStartIndex - 1 - leadingWhitespaceCount
 	matchEndIndex := matchStartIndex + matchLength
 
-	if formattedLength > f.Settings.MaxLineLength {
+	if formattedLength > f.Settings.MaxLineLength() {
 		lineStartIndex := matchStartIndex
 		lineEndIndex := lineStartIndex + matchLength
 		matchStartIndex = 0
@@ -381,14 +382,14 @@ func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
 		}
 
 		formattedLength = lineEndIndex - lineStartIndex
-		for formattedLength < f.Settings.MaxLineLength {
+		for formattedLength < f.Settings.MaxLineLength() {
 			if lineStartIndex > 0 {
 				lineStartIndex -= 1
 				matchStartIndex += 1
 				matchEndIndex += 1
 				formattedLength = lineEndIndex - lineStartIndex
 			}
-			if formattedLength < f.Settings.MaxLineLength && lineEndIndex < maxLineEndIndex {
+			if formattedLength < f.Settings.MaxLineLength() && lineEndIndex < maxLineEndIndex {
 				lineEndIndex += 1
 			}
 			formattedLength = lineEndIndex - lineStartIndex
@@ -403,7 +404,7 @@ func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
 		}
 	}
 
-	if f.Settings.Colorize {
+	if f.Settings.Colorize() {
 		formatted = colorize(formatted, matchStartIndex, matchEndIndex)
 	}
 	return formatted
@@ -411,7 +412,7 @@ func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
 
 type SearchResult struct {
 	Pattern         *regexp.Regexp
-	File            *SearchItem
+	File            *gofind.FileResult
 	LineNum         int
 	MatchStartIndex int
 	MatchEndIndex   int

@@ -2,211 +2,425 @@ package gosearch
 
 import (
 	"fmt"
-	"strings"
+	"gofind/pkg/gofind"
+	"time"
 )
 
 type SearchSettings struct {
-	ArchivesOnly            bool
-	Colorize                bool
-	Debug                   bool
-	ExcludeHidden           bool
-	FirstMatch              bool
-	InArchiveExtensions     []string
-	InArchiveFilePatterns   *SearchPatterns
-	InDirPatterns           *SearchPatterns
-	InExtensions            []string
-	InFilePatterns          *SearchPatterns
-	InFileTypes             []FileType
-	InLinesAfterPatterns    *SearchPatterns
-	InLinesBeforePatterns   *SearchPatterns
-	LinesAfter              int
-	LinesAfterToPatterns    *SearchPatterns
-	LinesAfterUntilPatterns *SearchPatterns
-	LinesBefore             int
-	ListDirs                bool
-	ListFiles               bool
-	ListLines               bool
-	MaxLineLength           int
-	MultiLineSearch         bool
-	OutArchiveExtensions    []string
-	OutArchiveFilePatterns  *SearchPatterns
-	OutDirPatterns          *SearchPatterns
-	OutExtensions           []string
-	OutFilePatterns         *SearchPatterns
-	OutFileTypes            []FileType
-	OutLinesAfterPatterns   *SearchPatterns
-	OutLinesBeforePatterns  *SearchPatterns
-	Paths                   []string
-	PrintResults            bool
-	PrintUsage              bool
-	PrintVersion            bool
-	Recursive               bool
-	SearchArchives          bool
-	SearchPatterns          *SearchPatterns
-	TextFileEncoding        string
-	UniqueLines             bool
-	Verbose                 bool
+	FindSettings            *gofind.FindSettings
+	colorize                bool
+	firstMatch              bool
+	inLinesAfterPatterns    *gofind.Patterns
+	inLinesBeforePatterns   *gofind.Patterns
+	linesAfter              int
+	linesAfterToPatterns    *gofind.Patterns
+	linesAfterUntilPatterns *gofind.Patterns
+	linesBefore             int
+	listLines               bool
+	maxLineLength           int
+	multiLineSearch         bool
+	outLinesAfterPatterns   *gofind.Patterns
+	outLinesBeforePatterns  *gofind.Patterns
+	printResults            bool
+	searchArchives          bool
+	searchPatterns          *gofind.Patterns
+	textFileEncoding        string
+	uniqueLines             bool
 }
 
 func GetDefaultSearchSettings() *SearchSettings {
 	return &SearchSettings{
-		false,               // ArchivesOnly
-		true,                // Colorize
-		false,               // Debug
-		true,                // ExcludeHidden
-		false,               // FirstMatch
-		[]string{},          // InArchiveExtensions
-		NewSearchPatterns(), // InArchiveFilePatterns
-		NewSearchPatterns(), // InDirPatterns
-		[]string{},          // InExtensions
-		NewSearchPatterns(), // InFilePatterns
-		[]FileType{},        // InFileTypes
-		NewSearchPatterns(), // InLinesAfterPatterns
-		NewSearchPatterns(), // InLinesBeforePatterns
-		0,                   // LinesAfter
-		NewSearchPatterns(), // LinesAfterToPatterns
-		NewSearchPatterns(), // LinesAfterUntilPatterns
-		0,                   // LinesBefore
-		false,               // ListDirs
-		false,               // ListFiles
-		false,               // ListLines
-		150,                 // MaxLineLength
-		false,               // MultiLineSearch
-		[]string{},          // OutArchiveExtensions
-		NewSearchPatterns(), // OutArchiveFilePatterns
-		NewSearchPatterns(), // OutDirPatterns
-		[]string{},          // OutExtensions
-		NewSearchPatterns(), // OutFilePatterns
-		[]FileType{},        // OutFileTypes
-		NewSearchPatterns(), // OutLinesAfterPatterns
-		NewSearchPatterns(), // OutLinesBeforePatterns
-		[]string{},          // Paths
-		true,                // PrintResults
-		false,               // PrintUsage
-		false,               // PrintVersion
-		true,                // Recursive
-		false,               // SearchArchives
-		NewSearchPatterns(), // SearchPatterns
-		"utf-8",             // TextFileEncoding
-		false,               // UniqueLines
-		false,               // Verbose
+		gofind.GetDefaultFindSettings(),
+		true,                 // Colorize
+		false,                // FirstMatch
+		gofind.NewPatterns(), // InLinesAfterPatterns
+		gofind.NewPatterns(), // InLinesBeforePatterns
+		0,                    // LinesAfter
+		gofind.NewPatterns(), // LinesAfterToPatterns
+		gofind.NewPatterns(), // LinesAfterUntilPatterns
+		0,                    // LinesBefore
+		false,                // ListLines
+		150,                  // MaxLineLength
+		false,                // MultiLineSearch
+		gofind.NewPatterns(), // OutLinesAfterPatterns
+		gofind.NewPatterns(), // OutLinesBeforePatterns
+		true,                 // PrintResults
+		false,                // SearchArchives
+		gofind.NewPatterns(), // SearchPatterns
+		"utf-8",              // TextFileEncoding
+		false,                // UniqueLines
 	}
 }
 
-func (s *SearchSettings) AddInExtension(xs string) {
-	for _, x := range strings.Split(xs, ",") {
-		if x != "" {
-			ext := strings.ToLower(x)
-			s.InExtensions = append(s.InExtensions, ext)
-		}
-	}
-}
-
-func (s *SearchSettings) AddOutExtension(xs string) {
-	for _, x := range strings.Split(xs, ",") {
-		if x != "" {
-			ext := strings.ToLower(x)
-			s.OutExtensions = append(s.OutExtensions, ext)
-		}
-	}
-}
-
-func addPattern(p string, sp *SearchPatterns) {
-	sp.AddPattern(p)
-}
-
-func (s *SearchSettings) AddInDirPattern(p string) {
-	addPattern(p, s.InDirPatterns)
-}
-
-func (s *SearchSettings) AddOutDirPattern(p string) {
-	addPattern(p, s.OutDirPatterns)
-}
-
-func (s *SearchSettings) AddInFilePattern(p string) {
-	addPattern(p, s.InFilePatterns)
-}
-
-func (s *SearchSettings) AddOutFilePattern(p string) {
-	addPattern(p, s.OutFilePatterns)
-}
-
-// func (s *SearchSettings) AddInFileType(t gofind.FileType) {
-func (s *SearchSettings) AddInFileType(t FileType) {
-	s.InFileTypes = append(s.InFileTypes, t)
-}
-
-// func (s *SearchSettings) AddOutFileType(t gofind.FileType) {
-func (s *SearchSettings) AddOutFileType(t FileType) {
-	s.OutFileTypes = append(s.OutFileTypes, t)
-}
-
-func (s *SearchSettings) AddInArchiveExtension(xs string) {
-	for _, x := range strings.Split(xs, ",") {
-		ext := strings.ToLower(x)
-		s.InArchiveExtensions = append(s.InArchiveExtensions, ext)
-	}
-}
-
-func (s *SearchSettings) AddOutArchiveExtension(xs string) {
-	for _, x := range strings.Split(xs, ",") {
-		ext := strings.ToLower(x)
-		s.OutArchiveExtensions = append(s.OutArchiveExtensions, ext)
-	}
-}
-
-func (s *SearchSettings) AddInArchiveFilePattern(p string) {
-	addPattern(p, s.InArchiveFilePatterns)
-}
-
-func (s *SearchSettings) AddOutArchiveFilePattern(p string) {
-	addPattern(p, s.OutArchiveFilePatterns)
-}
-
-func (s *SearchSettings) AddInLinesBeforePattern(p string) {
-	addPattern(p, s.InLinesBeforePatterns)
-}
-
-func (s *SearchSettings) AddOutLinesBeforePattern(p string) {
-	addPattern(p, s.OutLinesBeforePatterns)
-}
-
-func (s *SearchSettings) AddInLinesAfterPattern(p string) {
-	addPattern(p, s.InLinesAfterPatterns)
-}
-
-func (s *SearchSettings) AddOutLinesAfterPattern(p string) {
-	addPattern(p, s.OutLinesAfterPatterns)
-}
-
-func (s *SearchSettings) AddLinesAfterToPattern(p string) {
-	addPattern(p, s.LinesAfterToPatterns)
-}
-
-func (s *SearchSettings) AddLinesAfterUntilPattern(p string) {
-	addPattern(p, s.LinesAfterUntilPatterns)
-}
-
-func (s *SearchSettings) AddPath(p string) {
-	s.Paths = append(s.Paths, p)
-}
-
-func (s *SearchSettings) AddSearchPattern(p string) {
-	addPattern(p, s.SearchPatterns)
+func (s *SearchSettings) ArchivesOnly() bool {
+	return s.FindSettings.ArchivesOnly()
 }
 
 func (s *SearchSettings) SetArchivesOnly(archivesOnly bool) {
-	s.ArchivesOnly = archivesOnly
+	s.FindSettings.SetArchivesOnly(archivesOnly)
 	if archivesOnly {
-		s.SearchArchives = true
+		s.searchArchives = true
 	}
 }
 
-func (s *SearchSettings) SetDebug(debug bool) {
-	s.Debug = debug
-	if debug {
-		s.Verbose = true
-	}
+func (s *SearchSettings) Colorize() bool {
+	return s.colorize
+}
+
+func (s *SearchSettings) SetColorize(b bool) {
+	s.colorize = b
+}
+
+func (s *SearchSettings) Debug() bool {
+	return s.FindSettings.Debug()
+}
+
+func (s *SearchSettings) SetDebug(b bool) {
+	s.FindSettings.SetDebug(b)
+}
+
+func (s *SearchSettings) ExcludeHidden() bool {
+	return s.FindSettings.ExcludeHidden()
+}
+
+func (s *SearchSettings) SetExcludeHidden(b bool) {
+	s.FindSettings.SetExcludeHidden(b)
+}
+
+func (s *SearchSettings) FirstMatch() bool {
+	return s.firstMatch
+}
+
+func (s *SearchSettings) SetFirstMatch(b bool) {
+	s.firstMatch = b
+}
+
+func (s *SearchSettings) InArchiveExtensions() []string {
+	return s.FindSettings.InArchiveExtensions()
+}
+
+func (s *SearchSettings) AddInArchiveExtension(xs string) {
+	s.FindSettings.AddInArchiveExtension(xs)
+}
+
+func (s *SearchSettings) InArchiveFilePatterns() *gofind.Patterns {
+	return s.FindSettings.InArchiveFilePatterns()
+}
+
+func (s *SearchSettings) AddInArchiveFilePattern(p string) {
+	s.FindSettings.AddInArchiveFilePattern(p)
+}
+
+func (s *SearchSettings) InDirPatterns() *gofind.Patterns {
+	return s.FindSettings.InDirPatterns()
+}
+
+func (s *SearchSettings) AddInDirPattern(p string) {
+	s.FindSettings.AddInDirPattern(p)
+}
+
+func (s *SearchSettings) InExtensions() []string {
+	return s.FindSettings.InExtensions()
+}
+
+func (s *SearchSettings) AddInExtension(xs string) {
+	s.FindSettings.AddInExtension(xs)
+}
+
+func (s *SearchSettings) InFilePatterns() *gofind.Patterns {
+	return s.FindSettings.InFilePatterns()
+}
+
+func (s *SearchSettings) AddInFilePattern(p string) {
+	s.FindSettings.AddInFilePattern(p)
+}
+
+func (s *SearchSettings) InFileTypes() []gofind.FileType {
+	return s.FindSettings.InFileTypes()
+}
+
+func (s *SearchSettings) AddInFileType(t gofind.FileType) {
+	s.FindSettings.AddInFileType(t)
+}
+
+func (s *SearchSettings) IncludeArchives() bool {
+	return s.FindSettings.IncludeArchives()
+}
+
+func (s *SearchSettings) SetIncludeArchives(b bool) {
+	s.FindSettings.SetIncludeArchives(b)
+}
+
+func (s *SearchSettings) InLinesAfterPatterns() *gofind.Patterns {
+	return s.inLinesAfterPatterns
+}
+
+func (s *SearchSettings) AddInLinesAfterPattern(p string) {
+	s.inLinesAfterPatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) InLinesBeforePatterns() *gofind.Patterns {
+	return s.inLinesBeforePatterns
+}
+
+func (s *SearchSettings) AddInLinesBeforePattern(p string) {
+	s.inLinesBeforePatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) LinesAfter() int {
+	return s.linesAfter
+}
+
+func (s *SearchSettings) SetLinesAfter(i int) {
+	s.linesAfter = i
+}
+
+func (s *SearchSettings) LinesAfterToPatterns() *gofind.Patterns {
+	return s.linesAfterToPatterns
+}
+
+func (s *SearchSettings) AddLinesAfterToPattern(p string) {
+	s.linesAfterToPatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) LinesAfterUntilPatterns() *gofind.Patterns {
+	return s.linesAfterUntilPatterns
+}
+
+func (s *SearchSettings) AddLinesAfterUntilPattern(p string) {
+	s.linesAfterUntilPatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) LinesBefore() int {
+	return s.linesBefore
+}
+
+func (s *SearchSettings) SetLinesBefore(i int) {
+	s.linesBefore = i
+}
+
+func (s *SearchSettings) ListDirs() bool {
+	return s.FindSettings.ListDirs()
+}
+
+func (s *SearchSettings) SetListDirs(b bool) {
+	s.FindSettings.SetListDirs(b)
+}
+
+func (s *SearchSettings) ListFiles() bool {
+	return s.FindSettings.ListFiles()
+}
+
+func (s *SearchSettings) SetListFiles(b bool) {
+	s.FindSettings.SetListFiles(b)
+}
+
+func (s *SearchSettings) ListLines() bool {
+	return s.listLines
+}
+
+func (s *SearchSettings) SetListLines(b bool) {
+	s.listLines = b
+}
+
+func (s *SearchSettings) MaxLastMod() time.Time {
+	return s.FindSettings.MaxLastMod()
+}
+
+func (s *SearchSettings) SetMaxLastMod(t time.Time) {
+	s.FindSettings.SetMaxLastMod(t)
+}
+
+func (s *SearchSettings) SetMaxLastModFromString(timeStr string) {
+	s.FindSettings.SetMaxLastModFromString(timeStr)
+}
+
+func (s *SearchSettings) MaxLineLength() int {
+	return s.maxLineLength
+}
+
+func (s *SearchSettings) SetMaxLineLength(i int) {
+	s.maxLineLength = i
+}
+
+func (s *SearchSettings) MaxSize() int64 {
+	return s.FindSettings.MaxSize()
+}
+
+func (s *SearchSettings) SetMaxSize(i int64) {
+	s.FindSettings.SetMaxSize(i)
+}
+
+func (s *SearchSettings) MinLastMod() time.Time {
+	return s.FindSettings.MinLastMod()
+}
+
+func (s *SearchSettings) SetMinLastMod(t time.Time) {
+	s.FindSettings.SetMinLastMod(t)
+}
+
+func (s *SearchSettings) SetMinLastModFromString(timeStr string) {
+	s.FindSettings.SetMinLastModFromString(timeStr)
+}
+
+func (s *SearchSettings) MinSize() int64 {
+	return s.FindSettings.MinSize()
+}
+
+func (s *SearchSettings) SetMinSize(i int64) {
+	s.FindSettings.SetMinSize(i)
+}
+
+func (s *SearchSettings) MultiLineSearch() bool {
+	return s.multiLineSearch
+}
+
+func (s *SearchSettings) SetMultiLineSearch(b bool) {
+	s.multiLineSearch = b
+}
+
+func (s *SearchSettings) OutArchiveExtensions() []string {
+	return s.FindSettings.OutArchiveExtensions()
+}
+
+func (s *SearchSettings) AddOutArchiveExtension(xs string) {
+	s.FindSettings.AddOutArchiveExtension(xs)
+}
+
+func (s *SearchSettings) OutArchiveFilePatterns() *gofind.Patterns {
+	return s.FindSettings.OutArchiveFilePatterns()
+}
+
+func (s *SearchSettings) AddOutArchiveFilePattern(p string) {
+	s.FindSettings.AddOutArchiveFilePattern(p)
+}
+
+func (s *SearchSettings) OutDirPatterns() *gofind.Patterns {
+	return s.FindSettings.OutDirPatterns()
+}
+
+func (s *SearchSettings) AddOutDirPattern(p string) {
+	s.FindSettings.AddOutDirPattern(p)
+}
+
+func (s *SearchSettings) OutExtensions() []string {
+	return s.FindSettings.OutExtensions()
+}
+
+func (s *SearchSettings) AddOutExtension(xs string) {
+	s.FindSettings.AddOutExtension(xs)
+}
+
+func (s *SearchSettings) OutFilePatterns() *gofind.Patterns {
+	return s.FindSettings.OutFilePatterns()
+}
+
+func (s *SearchSettings) AddOutFilePattern(p string) {
+	s.FindSettings.AddOutFilePattern(p)
+}
+
+func (s *SearchSettings) OutFileTypes() []gofind.FileType {
+	return s.FindSettings.OutFileTypes()
+}
+
+func (s *SearchSettings) AddOutFileType(t gofind.FileType) {
+	s.FindSettings.AddOutFileType(t)
+}
+
+func (s *SearchSettings) OutLinesAfterPatterns() *gofind.Patterns {
+	return s.outLinesAfterPatterns
+}
+
+func (s *SearchSettings) AddOutLinesAfterPattern(p string) {
+	s.outLinesAfterPatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) OutLinesBeforePatterns() *gofind.Patterns {
+	return s.outLinesBeforePatterns
+}
+
+func (s *SearchSettings) AddOutLinesBeforePattern(p string) {
+	s.outLinesBeforePatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) Paths() []string {
+	return s.FindSettings.Paths()
+}
+
+func (s *SearchSettings) AddPath(p string) {
+	s.FindSettings.AddPath(p)
+}
+
+func (s *SearchSettings) PrintResults() bool {
+	return s.printResults
+}
+
+func (s *SearchSettings) SetPrintResults(b bool) {
+	s.printResults = b
+}
+
+func (s *SearchSettings) PrintUsage() bool {
+	return s.FindSettings.PrintUsage()
+}
+
+func (s *SearchSettings) SetPrintUsage(b bool) {
+	s.FindSettings.SetPrintUsage(b)
+}
+
+func (s *SearchSettings) PrintVersion() bool {
+	return s.FindSettings.PrintVersion()
+}
+
+func (s *SearchSettings) SetPrintVersion(b bool) {
+	s.FindSettings.SetPrintVersion(b)
+}
+
+func (s *SearchSettings) Recursive() bool {
+	return s.FindSettings.Recursive()
+}
+
+func (s *SearchSettings) SetRecursive(b bool) {
+	s.FindSettings.SetRecursive(b)
+}
+
+func (s *SearchSettings) SearchArchives() bool {
+	return s.searchArchives
+}
+
+func (s *SearchSettings) SetSearchArchives(b bool) {
+	s.searchArchives = b
+}
+
+func (s *SearchSettings) SearchPatterns() *gofind.Patterns {
+	return s.searchPatterns
+}
+
+func (s *SearchSettings) AddSearchPattern(p string) {
+	s.searchPatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) TextFileEncoding() string {
+	return s.textFileEncoding
+}
+
+func (s *SearchSettings) SetTextFileEncoding(enc string) {
+	s.textFileEncoding = enc
+}
+
+func (s *SearchSettings) UniqueLines() bool {
+	return s.uniqueLines
+}
+
+func (s *SearchSettings) SetUniqueLines(b bool) {
+	s.uniqueLines = b
+}
+
+func (s *SearchSettings) Verbose() bool {
+	return s.FindSettings.Verbose()
+}
+
+func (s *SearchSettings) SetVerbose(b bool) {
+	s.FindSettings.SetVerbose(b)
 }
 
 func (s *SearchSettings) String() string {
@@ -231,7 +445,11 @@ func (s *SearchSettings) String() string {
 		", ListDirs: %t" +
 		", ListFiles: %t" +
 		", ListLines: %t" +
+		", MaxLastMod: %s" +
 		", MaxLineLength: %d" +
+		", MaxSize: %d" +
+		", MinLastMod: %s" +
+		", MinSize: %d" +
 		", MultiLineSearch: %t" +
 		", OutArchiveExtensions: %s" +
 		", OutArchiveFilePatterns: %s" +
@@ -248,49 +466,59 @@ func (s *SearchSettings) String() string {
 		", Recursive: %t" +
 		", SearchArchives: %t" +
 		", SearchPatterns: %s" +
+		", SortBy: %s" +
+		", SortCaseInsensitive: %t" +
+		", SortDescending: %t" +
 		", TextFileEncoding: \"%s\"" +
 		", UniqueLines: %t" +
 		", Verbose: %t}"
 	return fmt.Sprintf(template,
-		s.ArchivesOnly,
-		s.Colorize,
-		s.Debug,
-		s.ExcludeHidden,
-		s.FirstMatch,
-		stringListToString(s.InArchiveExtensions),
-		searchPatternsToString(s.InArchiveFilePatterns),
-		searchPatternsToString(s.InDirPatterns),
-		stringListToString(s.InExtensions),
-		searchPatternsToString(s.InFilePatterns),
-		fileTypeListToString(s.InFileTypes),
-		searchPatternsToString(s.InLinesAfterPatterns),
-		searchPatternsToString(s.InLinesBeforePatterns),
-		s.LinesAfter,
-		searchPatternsToString(s.LinesAfterToPatterns),
-		searchPatternsToString(s.LinesAfterUntilPatterns),
-		s.LinesBefore,
-		s.ListDirs,
-		s.ListFiles,
-		s.ListLines,
-		s.MaxLineLength,
-		s.MultiLineSearch,
-		stringListToString(s.OutArchiveExtensions),
-		searchPatternsToString(s.OutArchiveFilePatterns),
-		searchPatternsToString(s.OutDirPatterns),
-		stringListToString(s.OutExtensions),
-		searchPatternsToString(s.OutFilePatterns),
-		fileTypeListToString(s.OutFileTypes),
-		searchPatternsToString(s.OutLinesAfterPatterns),
-		searchPatternsToString(s.OutLinesBeforePatterns),
-		stringListToString(s.Paths),
-		s.PrintResults,
-		s.PrintUsage,
-		s.PrintVersion,
-		s.Recursive,
-		s.SearchArchives,
-		searchPatternsToString(s.SearchPatterns),
-		s.TextFileEncoding,
-		s.UniqueLines,
-		s.Verbose,
+		s.ArchivesOnly(),
+		s.Colorize(),
+		s.Debug(),
+		s.ExcludeHidden(),
+		s.FirstMatch(),
+		gofind.StringListToString(s.InArchiveExtensions()),
+		gofind.PatternsToString(s.InArchiveFilePatterns()),
+		gofind.PatternsToString(s.InDirPatterns()),
+		gofind.StringListToString(s.InExtensions()),
+		gofind.PatternsToString(s.InFilePatterns()),
+		gofind.FileTypeListToString(s.InFileTypes()),
+		gofind.PatternsToString(s.InLinesAfterPatterns()),
+		gofind.PatternsToString(s.InLinesBeforePatterns()),
+		s.LinesAfter(),
+		gofind.PatternsToString(s.LinesAfterToPatterns()),
+		gofind.PatternsToString(s.LinesAfterUntilPatterns()),
+		s.LinesBefore(),
+		s.ListDirs(),
+		s.ListFiles(),
+		s.ListLines(),
+		gofind.LastModToString(s.MaxLastMod()),
+		s.MaxLineLength(),
+		s.MaxSize(),
+		gofind.LastModToString(s.MinLastMod()),
+		s.MinSize(),
+		s.MultiLineSearch(),
+		gofind.StringListToString(s.OutArchiveExtensions()),
+		gofind.PatternsToString(s.OutArchiveFilePatterns()),
+		gofind.PatternsToString(s.OutDirPatterns()),
+		gofind.StringListToString(s.OutExtensions()),
+		gofind.PatternsToString(s.OutFilePatterns()),
+		gofind.FileTypeListToString(s.OutFileTypes()),
+		gofind.PatternsToString(s.OutLinesAfterPatterns()),
+		gofind.PatternsToString(s.OutLinesBeforePatterns()),
+		gofind.StringListToString(s.Paths()),
+		s.PrintResults(),
+		s.FindSettings.PrintUsage(),
+		s.FindSettings.PrintVersion(),
+		s.FindSettings.Recursive(),
+		s.SearchArchives(),
+		gofind.PatternsToString(s.SearchPatterns()),
+		s.FindSettings.SortBy(),
+		s.FindSettings.SortCaseInsensitive(),
+		s.FindSettings.SortDescending(),
+		s.TextFileEncoding(),
+		s.UniqueLines(),
+		s.FindSettings.Verbose(),
 	)
 }
