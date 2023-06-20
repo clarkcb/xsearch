@@ -51,6 +51,7 @@ public class SearchOptions
 			{ "path", (s, settings) => settings.Paths.Add(s) },
 			{ "searchpattern", (s, settings) => settings.AddSearchPattern(s) },
 			{ "settings-file", SettingsFromFile },
+			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
 		};
 
 	private static readonly Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
@@ -75,6 +76,10 @@ public class SearchOptions
 			{ "printmatches", (b, settings) => settings.PrintResults = b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
 			{ "searcharchives", (b, settings) => settings.SearchArchives = b },
+			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },
+			{ "sort-caseinsensitive", (b, settings) => settings.SortCaseInsensitive = b },
+			{ "sort-casesensitive", (b, settings) => settings.SortCaseInsensitive = !b },
+			{ "sort-descending", (b, settings) => settings.SortDescending = b },
 			{ "uniquelines", (b, settings) => settings.UniqueLines = b },
 			{ "verbose", (b, settings) => settings.Verbose = b },
 			{ "version", (b, settings) => settings.PrintVersion = b },
