@@ -1,14 +1,14 @@
+import 'package:dartfind/dartfind.dart' show FileResult;
 import 'package:dartsearch/src/console_color.dart';
-import 'package:dartsearch/src/search_file.dart';
 import 'package:dartsearch/src/search_settings.dart';
 
 class SearchResult {
   final Pattern searchPattern;
-  SearchFile file;
+  FileResult? file;
   final int lineNum;
   final int matchStartIndex;
   final int matchEndIndex;
-  final String line;
+  final String? line;
   final List<String> linesBefore;
   final List<String> linesAfter;
 
@@ -53,15 +53,12 @@ class SearchResultFormatter {
       // } else if (settings.startPath.startsWith('~')) {
       //   filePath = FileUtil.contractPath(result.file.file.path);
     } else {
-      filePath = result.file.file.path;
+      filePath = result.file!.file.path;
     }
-    var s = ('=' * lineSepLength) +
-        '\n' +
-        filePath +
-        ': ' +
-        '${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]\n' +
-        ('-' * lineSepLength) +
-        '\n';
+    var s = '${'=' * lineSepLength}\n';
+    s += '$filePath: ${result.lineNum}:';
+    s += ' [${result.matchStartIndex}:${result.matchEndIndex}]\n';
+    s += '${'-' * lineSepLength}\n';
     var currentLineNum = result.lineNum;
     var lineNumPadding = _lineNumPadding(result);
     if (result.linesBefore.isNotEmpty) {
@@ -72,7 +69,10 @@ class SearchResultFormatter {
         currentLineNum++;
       }
     }
-    var line = result.line;
+    var line = '';
+    if (result.line != null) {
+      line = result.line!;
+    }
     if (settings.colorize) {
       line =
           colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
@@ -91,9 +91,9 @@ class SearchResultFormatter {
   }
 
   String _formatMatchingLine(SearchResult result) {
-    var formatted = result.line.trim();
+    var formatted = result.line!.trim();
     var leadingWhitespaceCount =
-        result.line.trimRight().length - formatted.length;
+        result.line!.trimRight().length - formatted.length;
     var formattedLength = formatted.length;
     var maxLineEndIndex = formattedLength - 1;
     var matchLength = result.matchEndIndex - result.matchStartIndex;
@@ -130,10 +130,10 @@ class SearchResultFormatter {
       formatted = formatted.substring(lineStartIndex, lineEndIndex);
 
       if (lineStartIndex > 2) {
-        formatted = '...' + formatted.substring(3);
+        formatted = '...${formatted.substring(3)}';
       }
       if (lineEndIndex < maxLineEndIndex - 3) {
-        formatted = formatted.substring(0, formattedLength - 3) + '...';
+        formatted = '${formatted.substring(0, formattedLength - 3)}...';
       }
     }
 
@@ -152,7 +152,7 @@ class SearchResultFormatter {
       // } else if (settings.startPath.startsWith('~')) {
       //   s = FileUtil.contractPath(result.file.file.path);
     } else {
-      s = result.file.file.path;
+      s = result.file!.file.path;
     }
     if (result.lineNum == 0) {
       s += ' matches at [${result.matchStartIndex}:${result.matchEndIndex}]';

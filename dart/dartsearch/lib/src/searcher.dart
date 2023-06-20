@@ -3,44 +3,39 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:dartsearch/src/common.dart';
-import 'package:dartsearch/src/file_types.dart';
-import 'package:dartsearch/src/file_util.dart';
+import 'package:dartfind/dartfind.dart';
+
 import 'package:dartsearch/src/search_exception.dart';
-import 'package:dartsearch/src/search_file.dart';
 import 'package:dartsearch/src/search_result.dart';
 import 'package:dartsearch/src/search_settings.dart';
-import 'package:path/path.dart' as path;
+// import 'package:path/path.dart' as path;
 
 class Searcher {
   final SearchSettings settings;
-  FileTypes _fileTypes;
-  Future validated;
+  late final FileTypes _fileTypes;
+  late final Finder _finder;
   // whether to allow invalid/malformed characters in encoding/decoding
   // setting to false means search will end once an attempt is made to read
   // a file in an incompatible encoding
   final bool allowInvalid = true;
-  Encoding _encoding;
-  Encoding _binaryEncoding;
+  late final Encoding _binaryEncoding;
+  Encoding? _textEncoding = systemEncoding;
 
   Searcher(this.settings) {
     _fileTypes = FileTypes();
-    validated = _validateSettings();
-    _encoding = systemEncoding;
-    _binaryEncoding = Latin1Codec(allowInvalid: true);
+    try {
+      _finder = Finder(settings);
+    } on FindException catch (e) {
+      throw SearchException(e.message);
+    } catch (e) {
+      throw SearchException(
+          'Unknown error occurred trying to instantiate finder');
+    }
+    _validateSettings();
+    _binaryEncoding = Latin1Codec(allowInvalid: allowInvalid);
   }
 
-  Future<void> _validateSettings() async {
-    if (settings.paths.isEmpty) {
-      throw SearchException('Startpath not defined');
-    }
-    settings.paths.forEach((p) async {
-      var startPath = FileUtil.expandPath(p);
-      if (await FileSystemEntity.type(startPath) ==
-          FileSystemEntityType.notFound) {
-        throw SearchException('Startpath not found');
-      }
-    });
+  void _validateSettings() {
     if (settings.searchPatterns.isEmpty) {
       throw SearchException('No search patterns defined');
     }
@@ -53,17 +48,17 @@ class Searcher {
     if (settings.maxLineLength < 0) {
       throw SearchException('Invalid maxlinelength');
     }
-    _encoding = Encoding.getByName(settings.textFileEncoding);
-    if (_encoding == null) {
+    _textEncoding = Encoding.getByName(settings.textFileEncoding)!;
+    if (_textEncoding == null) {
       throw SearchException(
           'Invalid or unsupported encoding: ${settings.textFileEncoding}');
     } else if (allowInvalid) {
-      if (_encoding == utf8) {
-        _encoding = Utf8Codec(allowMalformed: true);
-      } else if (_encoding == latin1) {
-        _encoding = Latin1Codec(allowInvalid: true);
-      } else if (_encoding == ascii) {
-        _encoding = AsciiCodec(allowInvalid: true);
+      if (_textEncoding == utf8) {
+        _textEncoding = Utf8Codec(allowMalformed: true);
+      } else if (_textEncoding == latin1) {
+        _textEncoding = Latin1Codec(allowInvalid: true);
+      } else if (_textEncoding == ascii) {
+        _textEncoding = AsciiCodec(allowInvalid: true);
       }
     }
   }
@@ -76,56 +71,11 @@ class Searcher {
     return patterns.any((p) => p.allMatches(s).isNotEmpty);
   }
 
-  bool isSearchDir(Directory dir) {
-    var elems = path.split(dir.path).where((e) => e.isNotEmpty).toSet();
-    if (settings.excludeHidden &&
-        elems.any((elem) => FileUtil.isHidden(elem))) {
-      return false;
-    }
-    return (settings.inDirPatterns.isEmpty ||
-            _anyMatchesAnyPattern(elems, settings.inDirPatterns)) &&
-        (settings.outDirPatterns.isEmpty ||
-            !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
-  }
-
-  bool isSearchFile(SearchFile sf) {
-    var fileName = path.basename(sf.file.path);
-    var ext = FileUtil.extension(fileName);
-    return (settings.inExtensions.isEmpty ||
-            settings.inExtensions.contains(ext)) &&
-        (settings.outExtensions.isEmpty ||
-            !settings.outExtensions.contains(ext)) &&
-        (settings.inFilePatterns.isEmpty ||
-            _matchesAnyPattern(fileName, settings.inFilePatterns)) &&
-        (settings.outFilePatterns.isEmpty ||
-            !_matchesAnyPattern(fileName, settings.outFilePatterns)) &&
-        (settings.inFileTypes.isEmpty ||
-            settings.inFileTypes.contains(sf.fileType)) &&
-        (settings.outFileTypes.isEmpty ||
-            !settings.outFileTypes.contains(sf.fileType));
-  }
-
-  bool isArchiveSearchFile(SearchFile sf) {
-    var fileName = sf.file.path.split(Platform.pathSeparator).last;
-    if (settings.excludeHidden && FileUtil.isHidden(fileName)) {
-      return false;
-    }
-    var ext = FileUtil.extension(fileName);
-    return (settings.inArchiveExtensions.isEmpty ||
-            settings.inArchiveExtensions.contains(ext)) &&
-        (settings.outArchiveExtensions.isEmpty ||
-            !settings.outArchiveExtensions.contains(ext)) &&
-        (settings.inArchiveFilePatterns.isEmpty ||
-            _matchesAnyPattern(fileName, settings.inArchiveFilePatterns)) &&
-        (settings.outArchiveFilePatterns.isEmpty ||
-            !_matchesAnyPattern(fileName, settings.outArchiveFilePatterns));
-  }
-
-  Future<List<SearchResult>> _searchBinaryFile(SearchFile sf) async {
+  Future<List<SearchResult>> _searchBinaryFile(FileResult fr) async {
     if (settings.debug) {
-      log('Searching binary file $sf');
+      logMsg('Searching binary file $fr');
     }
-    return sf.file
+    return fr.file
         .readAsString(encoding: _binaryEncoding)
         .then((String contents) {
       var results = <SearchResult>[];
@@ -141,7 +91,7 @@ class Searcher {
         }
         for (var m in matches) {
           results.add(
-              SearchResult(p, sf, 0, m.start + 1, m.end + 1, null, [], []));
+              SearchResult(p, fr, 0, m.start + 1, m.end + 1, null, [], []));
         }
       }
       return results;
@@ -242,27 +192,27 @@ class Searcher {
 
       return results;
     } catch (e) {
-      log(e.toString());
+      logMsg(e.toString());
       return [];
     }
   }
 
-  Future<List<SearchResult>> _searchTextFileLines(SearchFile sf) async {
+  Future<List<SearchResult>> _searchTextFileLines(FileResult fr) async {
     var results = <SearchResult>[];
-    var inputStream = sf.file.openRead();
+    var inputStream = fr.file.openRead();
     try {
       var lineStream =
-          _encoding.decoder.bind(inputStream).transform(LineSplitter());
+          _textEncoding!.decoder.bind(inputStream).transform(LineSplitter());
       return searchLineStream(lineStream).then((results) {
         return results.map((r) {
-          r.file = sf;
+          r.file = fr;
           return r;
         }).toList();
       });
     } on FormatException catch (e) {
-      log('Error reading ${sf.file}: ${e.message}');
+      logMsg('Error reading ${fr.file}: ${e.message}');
     } catch (e) {
-      log(e.toString());
+      logMsg(e.toString());
     }
     return results;
   }
@@ -346,100 +296,51 @@ class Searcher {
     return results;
   }
 
-  Future<List<SearchResult>> _searchTextFileContents(SearchFile sf) async {
-    return sf.file.readAsString(encoding: _encoding).then((String contents) {
+  Future<List<SearchResult>> _searchTextFileContents(FileResult fr) async {
+    return fr.file
+        .readAsString(encoding: _textEncoding!)
+        .then((String contents) {
       var results = searchMultilineString(contents);
       return results.map((r) {
-        r.file = sf;
+        r.file = fr;
         return r;
       }).toList();
     });
   }
 
-  Future<List<SearchResult>> _searchTextFile(SearchFile sf) async {
+  Future<List<SearchResult>> _searchTextFile(FileResult fr) async {
     if (settings.debug) {
-      log('Searching text file $sf');
+      logMsg('Searching text file $fr');
     }
     if (settings.multiLineSearch) {
-      return _searchTextFileContents(sf);
+      return _searchTextFileContents(fr);
     } else {
-      return _searchTextFileLines(sf);
+      return _searchTextFileLines(fr);
     }
   }
 
-  Future<List<SearchResult>> _searchFile(SearchFile sf) async {
+  Future<List<SearchResult>> _searchFile(FileResult fr) async {
     var results = <SearchResult>[];
-    if ({FileType.text, FileType.code, FileType.xml}.contains(sf.fileType)) {
-      return _searchTextFile(sf);
-    } else if (sf.fileType == FileType.binary) {
-      return _searchBinaryFile(sf);
+    if ({FileType.text, FileType.code, FileType.xml}.contains(fr.fileType)) {
+      return _searchTextFile(fr);
+    } else if (fr.fileType == FileType.binary) {
+      return _searchBinaryFile(fr);
     }
     return results;
   }
 
-  Future<List<SearchFile>> _getSearchFilesForPath(String startPath) async {
-    var isDir = FileSystemEntity.isDirectory(startPath);
-    var isFile = FileSystemEntity.isFile(startPath);
-    return Future.wait([isDir, isFile]).then((res) {
-      var searchFiles = <SearchFile>[];
-      if (res.first) {
-        var dir = Directory(startPath);
-        return dir.list(recursive: settings.recursive).listen((f) async {
-          if (f is File && isSearchDir(f.parent)) {
-            var searchFile = await filterToSearchFile(f);
-            if (searchFile != null) {
-              searchFiles.add(searchFile);
-            }
-          }
-        }).asFuture(searchFiles);
-      } else if (res.last) {
-        var startFile = File(startPath);
-        if (isSearchDir(startFile.parent)) {
-          return _fileTypes.getFileType(startPath).then((fileType) {
-            var searchFile = SearchFile(startFile, fileType);
-            if (isSearchFile(searchFile)) {
-              return [searchFile];
-            }
-            return [];
-          });
-        }
-        return [];
-      } else {
-        throw SearchException('Startpath is not a searchable file type');
-      }
-    });
-  }
-
-  Future<List<SearchFile>> _getSearchFiles() async {
-    var searchFiles = <SearchFile>[];
-    var pathsSearchFilesFutures =
-        settings.paths.map((p) => _getSearchFilesForPath(p));
-    await Future.wait(pathsSearchFilesFutures).then((pathsSearchFiles) {
-      for (var pathSearchFiles in pathsSearchFiles) {
-        searchFiles.addAll(pathSearchFiles);
-      }
-    });
-    return searchFiles;
-  }
-
   Future<List<SearchResult>> _searchFiles() async {
-    var searchFiles = await _getSearchFiles();
+    var fileResults = await _finder.find();
     if (settings.verbose) {
-      searchFiles.sort((sf1, sf2) {
-        if (sf1.file.parent.path == sf2.file.parent.path) {
-          return sf1.file.path.compareTo(sf2.file.path);
-        }
-        return sf1.file.parent.path.compareTo(sf2.file.parent.path);
-      });
       var searchDirs =
-          searchFiles.map((sf) => sf.file.parent.path).toSet().toList();
-      log('\nDirectories to be searched (${searchDirs.length}):');
+          fileResults.map((fr) => fr.file.parent.path).toSet().toList();
+      logMsg('\nDirectories to be searched (${searchDirs.length}):');
       for (var d in searchDirs) {
-        log(FileUtil.contractPath(d));
+        logMsg(FileUtil.contractPath(d));
       }
-      log('\nFiles to be searched (${searchFiles.length}):');
-      for (var sf in searchFiles) {
-        log(FileUtil.contractPath(sf.file.path));
+      logMsg('\nFiles to be searched (${fileResults.length}):');
+      for (var fr in fileResults) {
+        logMsg(FileUtil.contractPath(fr.file.path));
       }
     }
     // this is the (almost) largest batch size you can have before you get the
@@ -449,10 +350,10 @@ class Searcher {
 
     var results = <SearchResult>[];
 
-    while (_offset < searchFiles.length) {
-      var toIndex = min(_offset + _batchSize, searchFiles.length);
+    while (_offset < fileResults.length) {
+      var toIndex = min(_offset + _batchSize, fileResults.length);
       var fileResultsFutures =
-          searchFiles.sublist(_offset, toIndex).map((sf) => _searchFile(sf));
+          fileResults.sublist(_offset, toIndex).map((sf) => _searchFile(sf));
       await Future.wait(fileResultsFutures).then((filesResults) {
         for (var fileResults in filesResults) {
           results.addAll(fileResults);
@@ -464,23 +365,8 @@ class Searcher {
     return results;
   }
 
-  Future<SearchFile> filterToSearchFile(File f) {
-    if (settings.excludeHidden && FileUtil.isHidden(path.basename(f.path))) {
-      return null;
-    }
-    return _fileTypes.getFileType(f.path).then((fileType) {
-      var searchFile = SearchFile(f, fileType);
-      if ((searchFile.fileType == FileType.archive &&
-              settings.searchArchives) ||
-          (!settings.archivesOnly && isSearchFile(searchFile))) {
-        return searchFile;
-      }
-      return null;
-    });
-  }
-
   Future<List<SearchResult>> search() async {
-    return Future.wait([_fileTypes.ready, validated]).then((res) {
+    return Future.wait([_fileTypes.ready]).then((res) {
       return _searchFiles();
     });
   }

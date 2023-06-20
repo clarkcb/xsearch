@@ -1,24 +1,23 @@
 import 'dart:convert' show json;
 import 'dart:io' show File;
 
-import 'package:dartsearch/src/common.dart';
+import 'package:dartfind/dartfind.dart';
 import 'package:dartsearch/src/config.dart' show searchOptionsPath;
-import 'package:dartsearch/src/file_types.dart';
 import 'package:dartsearch/src/search_exception.dart';
 import 'package:dartsearch/src/search_settings.dart';
 
 class SearchOption {
-  final String shortArg;
+  final String? shortArg;
   final String longArg;
   final String desc;
 
   const SearchOption(this.shortArg, this.longArg, this.desc);
 
-  String sortarg() {
+  String sortArg() {
     if (shortArg == null) {
       return longArg.toLowerCase();
     } else {
-      return shortArg.toLowerCase() + '@' + longArg.toLowerCase();
+      return '${shortArg!.toLowerCase()}@${longArg.toLowerCase()}';
     }
   }
 
@@ -36,7 +35,7 @@ class SearchOptions {
   var stringArgMap = {};
   var boolArgMap = {};
   var longArgMap = {};
-  Future ready;
+  late Future ready;
 
   SearchOptions() {
     ready = loadSearchOptionsFromJson().then((f) => setMaps());
@@ -50,10 +49,10 @@ class SearchOptions {
       for (var so in soList) {
         var longArg = (so as Map)['long'];
         longArgMap[longArg] = longArg;
-        var desc = (so as Map)['desc'];
-        String shortArg;
-        if ((so as Map).containsKey('short')) {
-          shortArg = (so as Map)['short'];
+        var desc = (so)['desc']!;
+        String? shortArg;
+        if ((so).containsKey('short')) {
+          shortArg = (so)['short'];
           longArgMap[shortArg] = longArg;
         }
         searchOptions.add(SearchOption(shortArg, longArg, desc));
@@ -88,8 +87,14 @@ class SearchOptions {
           ss.addPattern(s, ss.linesAfterUntilPatterns),
       'linesbefore': (String s, SearchSettings ss) =>
           ss.linesBefore = int.parse(s),
+      'maxlastmod': (String s, FindSettings ss) =>
+          ss.maxLastMod = DateTime.parse(s),
       'maxlinelength': (String s, SearchSettings ss) =>
           ss.maxLineLength = int.parse(s),
+      'maxsize': (String s, FindSettings ss) => ss.maxSize = int.parse(s),
+      'minlastmod': (String s, FindSettings ss) =>
+          ss.minLastMod = DateTime.parse(s),
+      'minsize': (String s, FindSettings ss) => ss.minSize = int.parse(s),
       'out-archiveext': (String s, SearchSettings ss) =>
           ss.addExtensions(s, ss.outArchiveExtensions),
       'out-archivefilepattern': (String s, SearchSettings ss) =>
@@ -109,6 +114,7 @@ class SearchOptions {
       'path': (String s, SearchSettings ss) => ss.paths.add(s),
       'searchpattern': (String s, SearchSettings ss) =>
           ss.addPattern(s, ss.searchPatterns),
+      'sort-by': (String s, FindSettings ss) => ss.sortBy = nameToSortBy(s),
     };
 
     boolArgMap = {
@@ -128,6 +134,12 @@ class SearchOptions {
       'printusage': (bool b, SearchSettings ss) => ss.printUsage = b,
       'recursive': (bool b, SearchSettings ss) => ss.recursive = b,
       'searcharchives': (bool b, SearchSettings ss) => ss.searchArchives = b,
+      'sort-ascending': (bool b, FindSettings ss) => ss.sortDescending = !b,
+      'sort-caseinsensitive': (bool b, FindSettings ss) =>
+          ss.sortCaseInsensitive = b,
+      'sort-casesensitive': (bool b, FindSettings ss) =>
+          ss.sortCaseInsensitive = !b,
+      'sort-descending': (bool b, FindSettings ss) => ss.sortDescending = b,
       'uniquelines': (bool b, SearchSettings ss) => ss.uniqueLines = b,
       'verbose': (bool b, SearchSettings ss) => ss.verbose = b,
       'version': (bool b, SearchSettings ss) => ss.printVersion = b,
@@ -211,7 +223,7 @@ class SearchOptions {
   }
 
   void usage() async {
-    log(await getUsageString());
+    logMsg(await getUsageString());
   }
 
   Future<String> getUsageString() async {
@@ -219,12 +231,13 @@ class SearchOptions {
       var s = 'Usage:\n'
           ' dartsearch [options] -s <searchpattern> <path> [<path> ...]\n\n'
           'Options:\n';
+      searchOptions.sort((o1, o2) => o1.sortArg().compareTo(o2.sortArg()));
       var optStrings = searchOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) =>
           (optString.length > value.length) ? optString : value);
       for (var i = 0; i < searchOptions.length; i++) {
-        s += ' ' + optStrings[i].padRight(longest.length + 2, ' ');
-        s += searchOptions[i].desc + '\n';
+        s += ' ${optStrings[i].padRight(longest.length + 2, ' ')}';
+        s += '${searchOptions[i].desc}\n';
       }
       return s;
     });
