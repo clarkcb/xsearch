@@ -6,8 +6,7 @@
 
 import {COLORS} from "../src/common";
 import * as config from '../src/config';
-import {FileType} from '../src/filetype';
-import {SearchFile} from '../src/searchfile';
+import {FileType, FileResult} from 'tsfind';
 import {SearchResult} from '../src/searchresult';
 import {SearchResultFormatter} from '../src/searchresultformatter';
 import {SearchSettings} from '../src/searchsettings';
@@ -20,17 +19,16 @@ describe('testing searchresult', () => {
         settings.colorize = false;
         const formatter = new SearchResultFormatter(settings);
         const pattern = /Search/;
-        const linenum = 10;
+        const fileResult = new FileResult(cssearch_path, 'Searcher.cs', FileType.Code, null);
+        const lineNum = 10;
         const matchStartIndex = 15;
         const matchEndIndex = 23;
         const line = "\tpublic class Searcher\n";
         const linesBefore: string[] = [];
         const linesAfter: string[] = [];
-        const result: SearchResult = new SearchResult(pattern, linenum, matchStartIndex, matchEndIndex,
+        const result: SearchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
             line, linesBefore, linesAfter);
-        const searchfile = new SearchFile(cssearch_path, 'Searcher.cs', FileType.Code);
-        result.file = searchfile;
-        const expectedOutput: string = searchfile.toString() + ": " + linenum + ": [" + matchStartIndex + ":" +
+        const expectedOutput: string = fileResult.toString() + ": " + lineNum + ": [" + matchStartIndex + ":" +
             matchEndIndex + "]: " + line.trim();
         const output: string = formatter.format(result)
         expect(output).toEqual(expectedOutput);
@@ -42,7 +40,8 @@ describe('testing searchresult', () => {
         settings.maxLineLength = 100;
         const formatter = new SearchResultFormatter(settings);
         const pattern = /maxlen/;
-        const linenum = 1;
+        const fileResult = new FileResult('.', 'maxlen.txt', FileType.Text, null);
+        const lineNum = 1;
         const matchStartIndex = 53;
         const matchEndIndex = 59;
         const line = '0123456789012345678901234567890123456789012345678901' +
@@ -50,14 +49,12 @@ describe('testing searchresult', () => {
             '8901234567890123456789012345678901234567890123456789';
         const linesBefore: string[] = [];
         const linesAfter: string[] = [];
-        const result: SearchResult = new SearchResult(pattern, linenum, matchStartIndex, matchEndIndex,
+        const result: SearchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
             line, linesBefore, linesAfter);
-        const searchfile = new SearchFile('.', 'maxlen.txt', FileType.Text);
-        result.file = searchfile;
         const expectedLine = '...89012345678901234567890123456789012345678901' +
             'maxlen' +
             '89012345678901234567890123456789012345678901...';
-        const expectedOutput: string = searchfile.toString() + ": " + linenum + ": [" + matchStartIndex + ":" +
+        const expectedOutput: string = fileResult.toString() + ": " + lineNum + ": [" + matchStartIndex + ":" +
             matchEndIndex + "]: " + expectedLine;
         const output: string = formatter.format(result);
         expect(output).toEqual(expectedOutput);
@@ -68,7 +65,8 @@ describe('testing searchresult', () => {
         const formatter = new SearchResultFormatter(settings);
         settings.maxLineLength = 100;
         const pattern = /maxlen/;
-        const linenum = 1;
+        const fileResult = new FileResult('.', 'maxlen.txt', FileType.Text, null);
+        const lineNum = 1;
         const matchStartIndex = 53;
         const matchEndIndex = 59;
         const line = '0123456789012345678901234567890123456789012345678901' +
@@ -76,16 +74,14 @@ describe('testing searchresult', () => {
             '8901234567890123456789012345678901234567890123456789';
         const linesBefore: string[] = [];
         const linesAfter: string[] = [];
-        const result: SearchResult = new SearchResult(pattern, linenum, matchStartIndex, matchEndIndex,
+        const result: SearchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
             line, linesBefore, linesAfter);
-        const searchfile = new SearchFile('.', 'maxlen.txt', FileType.Text);
-        result.file = searchfile;
         const expectedLine = '...89012345678901234567890123456789012345678901' +
             COLORS.GREEN +
             'maxlen' +
             COLORS.RESET +
             '89012345678901234567890123456789012345678901...';
-        const expectedOutput: string = searchfile.toString() + ": " + linenum + ": [" + matchStartIndex + ":" +
+        const expectedOutput: string = fileResult.toString() + ": " + lineNum + ": [" + matchStartIndex + ":" +
             matchEndIndex + "]: " + expectedLine;
         const output: string = formatter.format(result);
         expect(output).toEqual(expectedOutput);
@@ -95,17 +91,17 @@ describe('testing searchresult', () => {
         const settings = new SearchSettings();
         const formatter = new SearchResultFormatter(settings);
         const pattern = /Search/;
-        const linenum = 0;
+        const fileResult = new FileResult(cssearch_path + 'bin/Debug', 'CsSearch.exe',
+            FileType.Binary, null);
+        const lineNum = 0;
         const matchStartIndex = 5;
         const matchEndIndex = 10;
         const line = "";
         const linesBefore: string[] = [];
         const linesAfter: string[] = [];
-        const result: SearchResult = new SearchResult(pattern, linenum, matchStartIndex, matchEndIndex,
+        const result: SearchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
             line, linesBefore, linesAfter);
-        const searchfile = new SearchFile(cssearch_path + 'bin/Debug', 'CsSearch.exe', FileType.Binary);
-        result.file = searchfile;
-        const expectedOutput: string = searchfile.toString() + " matches at [5:10]";
+        const expectedOutput: string = fileResult.toString() + " matches at [5:10]";
         const output: string = formatter.format(result);
         expect(output).toEqual(expectedOutput);
     });
@@ -115,19 +111,18 @@ describe('testing searchresult', () => {
         settings.colorize = false;
         const formatter = new SearchResultFormatter(settings);
         const pattern = /Search/;
-        const linenum = 10;
+        const fileResult = new FileResult(cssearch_path, 'Searcher.cs', FileType.Code, null);
+        const lineNum = 10;
         const matchStartIndex = 15;
         const matchEndIndex = 23;
         const line = "\tpublic class Searcher\n";
         const linesBefore: string[] = ["namespace CsSearch\n", "{\n"];
         const linesAfter: string[] = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"];
-        const result: SearchResult = new SearchResult(pattern, linenum, matchStartIndex,
+        const result: SearchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex,
             matchEndIndex, line, linesBefore, linesAfter);
-        const searchfile = new SearchFile(cssearch_path, 'Searcher.cs', FileType.Code);
-        result.file = searchfile;
         const expectedOutput = '' +
             "================================================================================\n" +
-            `${searchfile.toString()}: ${linenum}: [${matchStartIndex}:${matchEndIndex}]\n` +
+            `${fileResult.toString()}: ${lineNum}: [${matchStartIndex}:${matchEndIndex}]\n` +
             "--------------------------------------------------------------------------------\n" +
             "   8 | namespace CsSearch\n" +
             "   9 | {\n" +

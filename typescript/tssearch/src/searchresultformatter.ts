@@ -4,7 +4,7 @@
  * SearchResult class represents a search result
  */
 
-import {COLORS} from './common';
+import {COLORS} from './color';
 import {SearchResult} from './searchresult';
 import {SearchSettings} from './searchsettings';
 
@@ -26,8 +26,8 @@ export class SearchResultFormatter {
 
     private singleLineFormat(result: SearchResult): string {
         let s = result.file ? result.file.toString() : '<text>';
-        if (result.linenum && result.line) {
-            s += ': ' + result.linenum + ': [' + result.matchStartIndex + ':' +
+        if (result.lineNum && result.line) {
+            s += ': ' + result.lineNum + ': [' + result.matchStartIndex + ':' +
                 result.matchEndIndex +']: ' + this.formatMatchingLine(result);
         } else {
             s += ' matches at [' + result.matchStartIndex + ':' +
@@ -37,7 +37,7 @@ export class SearchResultFormatter {
     }
 
     private static lineNumPadding(result: SearchResult): number {
-        const maxLineNum: number = result.linenum + result.linesAfter.length;
+        const maxLineNum: number = result.lineNum + result.linesAfter.length;
         return ("" + maxLineNum).length;
     }
 
@@ -64,9 +64,9 @@ export class SearchResultFormatter {
     private multiLineFormat(result: SearchResult): string {
         const filename = result.file ? result.file.toString() : '<text>';
         let s: string = Array(SEPARATOR_LEN + 1).join("=") + "\n" + `${filename}: ` +
-            `${result.linenum}: [${result.matchStartIndex}:${result.matchEndIndex}]` +
+            `${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]` +
              "\n" + Array(SEPARATOR_LEN + 1).join("-") + "\n";
-        let currentLineNum: number = result.linenum;
+        let currentLineNum: number = result.lineNum;
         const numPadding: number = SearchResultFormatter.lineNumPadding(result);
         if (result.linesBefore.length > 0) {
             currentLineNum = currentLineNum - result.linesBefore.length;

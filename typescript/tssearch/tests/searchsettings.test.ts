@@ -65,7 +65,7 @@ describe('testing searchsettings', () => {
         const settings: SearchSettings = new SearchSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.searchArchives).toBeFalsy();
-        settings.setArchivesOnly(true);
+        settings.archivesOnly = true;
         expect(settings.archivesOnly).toBeTruthy();
         expect(settings.searchArchives).toBeTruthy();
     });
@@ -74,7 +74,7 @@ describe('testing searchsettings', () => {
         const settings: SearchSettings = new SearchSettings();
         expect(settings.debug).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
-        settings.setDebug(true);
+        settings.debug = true;
         expect(settings.debug).toBeTruthy();
         expect(settings.verbose).toBeTruthy();
     });

@@ -7,7 +7,7 @@
 "use strict";
 
 import * as config from './config';
-import {FileUtil} from './fileutil';
+import {FileUtil, SortUtil} from 'tsfind';
 import {SearchOption} from './searchoption';
 import {SearchSettings} from './searchsettings';
 
@@ -61,8 +61,16 @@ export class SearchOptions {
                 (x: string, settings: SearchSettings) => { settings.addLinesAfterUntilPatterns(x); },
             'linesbefore':
                 (x: string, settings: SearchSettings) => { settings.linesBefore = parseInt(x); },
+            'maxlastmod':
+                (x: string, settings: SearchSettings) => { settings.maxLastModFromString(x); },
             'maxlinelength':
                 (x: string, settings: SearchSettings) => { settings.maxLineLength = parseInt(x); },
+            'maxsize':
+                (x: string, settings: SearchSettings) => { settings.maxSize = parseInt(x, 10); },
+            'minlastmod':
+                (x: string, settings: SearchSettings) => { settings.minLastModFromString(x); },
+            'minsize':
+                (x: string, settings: SearchSettings) => { settings.minSize = parseInt(x, 10); },
             'out-dirpattern':
                 (x: string, settings: SearchSettings) => { settings.addOutDirPatterns(x); },
             'out-archiveext':
@@ -84,16 +92,19 @@ export class SearchOptions {
             'searchpattern':
                 (x: string, settings: SearchSettings) => { settings.addSearchPatterns(x); },
             'settings-file':
-                (x: string, settings: SearchSettings) => { this.settingsFromFile(x, settings); }
+                (x: string, settings: SearchSettings) => { this.settingsFromFile(x, settings); },
+            'sort-by':
+                (x: string, settings: SearchSettings) => { settings.sortBy = SortUtil.nameToSortBy(x); }
+
         };
 
         this.boolFlagActionMap = {
             'allmatches':
                 (b: boolean, settings: SearchSettings) => { settings.firstMatch = !b; },
             'archivesonly':
-                (b: boolean, settings: SearchSettings) => { settings.setArchivesOnly(b); },
+                (b: boolean, settings: SearchSettings) => { settings.archivesOnly = b; },
             'debug':
-                (b: boolean, settings: SearchSettings) => { settings.setDebug(b); },
+                (b: boolean, settings: SearchSettings) => { settings.debug = b; },
             'excludehidden':
                 (b: boolean, settings: SearchSettings) => { settings.excludeHidden = b; },
             'firstmatch':
@@ -122,6 +133,14 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.recursive = b; },
             'searcharchives':
                 (b: boolean, settings: SearchSettings) => { settings.searchArchives = b; },
+            'sort-ascending':
+                (b: boolean, settings: SearchSettings) => { settings.sortDescending = !b; },
+            'sort-caseinsensitive':
+                (b: boolean, settings: SearchSettings) => { settings.sortCaseInsensitive = b; },
+            'sort-casesensitive':
+                (b: boolean, settings: SearchSettings) => { settings.sortCaseInsensitive = !b; },
+            'sort-descending':
+                (b: boolean, settings: SearchSettings) => { settings.sortDescending = b; },
             'uniquelines':
                 (b: boolean, settings: SearchSettings) => { settings.uniqueLines = b; },
             'verbose':
@@ -133,9 +152,9 @@ export class SearchOptions {
         this.setOptionsFromJsonFile();
     }
 
-    private static optcmp(o1: SearchOption, o2: SearchOption) {
-        const a: string = o1.sortarg;
-        const b: string = o2.sortarg;
+    private static optCmp(o1: SearchOption, o2: SearchOption) {
+        const a: string = o1.sortArg;
+        const b: string = o2.sortArg;
         return a.localeCompare(b);
     }
 
@@ -171,7 +190,7 @@ export class SearchOptions {
                 }
             });
         } else throw new Error("Invalid searchoptions file: " + config.SEARCHOPTIONSJSONPATH);
-        this.options.sort(SearchOptions.optcmp);
+        this.options.sort(SearchOptions.optCmp);
     }
 
     private settingsFromFile(filepath: string, settings: SearchSettings): Error | undefined {
@@ -222,15 +241,15 @@ export class SearchOptions {
                 while (arg && arg.charAt(0) === '-') {
                     arg = arg.substring(1);
                 }
-                const longarg = this.argNameMap[arg];
-                if (this.argMap[longarg]) {
+                const longArg = this.argNameMap[arg];
+                if (this.argMap[longArg]) {
                     if (args.length > 0) {
-                        err = this.argActionMap[longarg](args.shift(), settings);
+                        err = this.argActionMap[longArg](args.shift(), settings);
                     } else {
                         err = new Error("Missing argument for option " + arg);
                     }
-                } else if (this.flagMap[longarg]) {
-                    this.boolFlagActionMap[longarg](true, settings);
+                } else if (this.flagMap[longArg]) {
+                    this.boolFlagActionMap[longArg](true, settings);
                 } else {
                     err = new Error("Invalid option: " + arg);
                 }
@@ -258,9 +277,9 @@ export class SearchOptions {
         let longest = 0;
         this.options.forEach((opt: SearchOption) => {
             let optString = ' ';
-            if (opt.shortarg)
-                optString += '-' + opt.shortarg + ',';
-            optString += '--' + opt.longarg;
+            if (opt.shortArg)
+                optString += '-' + opt.shortArg + ',';
+            optString += '--' + opt.longArg;
             if (optString.length > longest)
                 longest = optString.length;
             optStrings.push(optString);
