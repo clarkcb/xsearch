@@ -1,11 +1,11 @@
 use std::cmp::Ordering;
-
-use crate::searchfile::SearchFile;
+use rsfind::fileresult::FileResult;
+use rsfind::filetypes::FileType;
 
 #[derive(Debug, Eq)]
 pub struct SearchResult {
     pub pattern: String,
-    pub file: Option<SearchFile>,
+    pub file: Option<FileResult>,
     pub line_num: usize,
     pub match_start_index: usize,
     pub match_end_index: usize,
@@ -17,7 +17,7 @@ pub struct SearchResult {
 impl SearchResult {
     pub fn new(
         pattern: String,
-        file: Option<SearchFile>,
+        file: Option<FileResult>,
         line_num: usize,
         match_start_index: usize,
         match_end_index: usize,
@@ -41,7 +41,7 @@ impl SearchResult {
 impl Ord for SearchResult {
     fn cmp(&self, other: &Self) -> Ordering {
         match (&self.file, &other.file) {
-            (Some(f), Some(o)) => match f.filepath().cmp(&o.filepath()) {
+            (Some(f), Some(o)) => match f.file_path().cmp(&o.file_path()) {
                 Ordering::Equal => match self.line_num.cmp(&other.line_num) {
                     Ordering::Equal => self.match_start_index.cmp(&other.match_start_index),
                     other => other,
@@ -65,7 +65,7 @@ impl PartialOrd for SearchResult {
 impl PartialEq for SearchResult {
     fn eq(&self, other: &Self) -> bool {
         match (&self.file, &other.file) {
-            (Some(f), Some(o)) => f.filepath() == o.filepath(),
+            (Some(f), Some(o)) => f.file_path() == o.file_path(),
             (None, None) => true,
             _ => false,
         }
@@ -75,20 +75,19 @@ impl PartialEq for SearchResult {
 #[cfg(test)]
 mod tests {
     use crate::common::log;
-    use crate::filetypes::FileType;
     use crate::searchresultformatter::SearchResultFormatter;
     use crate::color::{GREEN, RESET};
 
     use super::*;
 
     #[test]
-    fn test_singleline_searchresult() {
+    fn test_single_line_search_result() {
         let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("Searcher");
         let path = String::from("~/src/xsearch/csharp/CsSearch/CsSearch");
         let filename = String::from("Searcher.cs");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        let linenum = 10;
+        let file = FileResult::new(path, filename, FileType::Code, 0, 0);
+        let line_num = 10;
         let match_start_index = 15;
         let match_end_index = 23;
         let line = String::from("\tpublic class Searcher\n");
@@ -97,7 +96,7 @@ mod tests {
         let result = SearchResult::new(
             pattern,
             Some(file.clone()),
-            linenum,
+            line_num,
             match_start_index,
             match_end_index,
             line.clone(),
@@ -106,8 +105,8 @@ mod tests {
         );
         let expected_output = format!(
             "{}: {}: [{}:{}]: {}",
-            &file.filepath(),
-            linenum,
+            &file.file_path(),
+            line_num,
             match_start_index,
             match_end_index,
             line.trim()
@@ -117,13 +116,13 @@ mod tests {
     }
 
     #[test]
-    fn test_singleline_longer_than_maxlinelength_searchresult() {
+    fn test_single_line_longer_than_max_line_length_search_result() {
         let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("maxlen");
         let path = String::from(".");
         let filename = String::from("maxlen.txt");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        let linenum = 1;
+        let file = FileResult::new(path, filename, FileType::Code, 0, 0);
+        let line_num = 1;
         let match_start_index = 53;
         let match_end_index = 59;
         let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
@@ -132,7 +131,7 @@ mod tests {
         let result = SearchResult::new(
             pattern,
             Some(file.clone()),
-            linenum,
+            line_num,
             match_start_index,
             match_end_index,
             line.clone(),
@@ -142,8 +141,8 @@ mod tests {
         let expected_line = String::from("...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...");
         let expected_output = format!(
             "{}: {}: [{}:{}]: {}",
-            &file.filepath(),
-            linenum,
+            &file.file_path(),
+            line_num,
             match_start_index,
             match_end_index,
             expected_line
@@ -153,13 +152,13 @@ mod tests {
     }
 
     #[test]
-    fn test_singleline_colorize_searchresult() {
+    fn test_single_line_colorize_search_result() {
         let formatter = SearchResultFormatter::new(true, 100);
         let pattern = String::from("maxlen");
         let path = String::from(".");
         let filename = String::from("maxlen.txt");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        let linenum = 1;
+        let file = FileResult::new(path, filename, FileType::Code, 0, 0);
+        let line_num = 1;
         let match_start_index = 53;
         let match_end_index = 59;
         let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
@@ -168,7 +167,7 @@ mod tests {
         let result = SearchResult::new(
             pattern,
             Some(file.clone()),
-            linenum,
+            line_num,
             match_start_index,
             match_end_index,
             line.clone(),
@@ -178,8 +177,8 @@ mod tests {
         let expected_line = String::from(format!("...89012345678901234567890123456789012345678901{}maxlen{}89012345678901234567890123456789012345678901...", GREEN, RESET));
         let expected_output = format!(
             "{}: {}: [{}:{}]: {}",
-            &file.filepath(),
-            linenum,
+            &file.file_path(),
+            line_num,
             match_start_index,
             match_end_index,
             expected_line
@@ -189,13 +188,13 @@ mod tests {
     }
 
     #[test]
-    fn test_binary_searchresult() {
+    fn test_binary_search_result() {
         let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("Searcher");
         let path = String::from("~/src/xsearch/csharp/CsSearch/CsSearch");
         let filename = String::from("Searcher.exe");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        let linenum = 0;
+        let file = FileResult::new(path, filename, FileType::Code, 0, 0);
+        let line_num = 0;
         let match_start_index = 15;
         let match_end_index = 23;
         let line = String::from("");
@@ -204,7 +203,7 @@ mod tests {
         let result = SearchResult::new(
             pattern,
             Some(file.clone()),
-            linenum,
+            line_num,
             match_start_index,
             match_end_index,
             line.clone(),
@@ -213,7 +212,7 @@ mod tests {
         );
         let expected_output = format!(
             "{} matches at [{}:{}]",
-            &file.filepath(),
+            &file.file_path(),
             match_start_index,
             match_end_index
         );
@@ -222,13 +221,13 @@ mod tests {
     }
 
     #[test]
-    fn test_multiline_searchresult() {
+    fn test_multi_line_search_result() {
         let formatter = SearchResultFormatter::new(false, 100);
         let pattern = String::from("Searcher");
         let path = String::from("~/src/xsearch/csharp/CsSearch/CsSearch");
         let filename = String::from("Searcher.cs");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        let linenum = 10;
+        let file = FileResult::new(path, filename, FileType::Code, 0, 0);
+        let line_num = 10;
         let match_start_index = 15;
         let match_end_index = 23;
         let line = String::from("\tpublic class Searcher");
@@ -243,7 +242,7 @@ mod tests {
         let result = SearchResult::new(
             pattern,
             Some(file.clone()),
-            linenum,
+            line_num,
             match_start_index,
             match_end_index,
             line.clone(),

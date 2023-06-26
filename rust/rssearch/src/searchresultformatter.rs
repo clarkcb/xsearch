@@ -93,9 +93,9 @@ impl SearchResultFormatter {
         formatted
     }
 
-    fn singleline_format(&self, result: &SearchResult) -> String {
+    fn single_line_format(&self, result: &SearchResult) -> String {
         let file_prefix = match &result.file {
-            Some(f) => f.fullpath(),
+            Some(f) => f.full_path(),
             None => "<text>".to_string(),
         };
         if result.line_num > 0 {
@@ -116,11 +116,11 @@ impl SearchResultFormatter {
         ))
     }
 
-    fn linenum_padding(&self, result: &SearchResult) -> usize {
+    fn line_num_padding(&self, result: &SearchResult) -> usize {
         format!("{}", result.line_num + result.lines_after.len()).len()
     }
 
-    fn multiline_format(&self, result: &SearchResult) -> String {
+    fn multi_line_format(&self, result: &SearchResult) -> String {
         let mut buffer = String::new();
         buffer.push_str("=".repeat(SEPARATOR_LEN).as_str());
         match &result.file {
@@ -128,7 +128,7 @@ impl SearchResultFormatter {
                 buffer.push_str(
                     format!(
                         "\n{}: {}: [{}:{}]\n",
-                        f.fullpath(),
+                        f.full_path(),
                         result.line_num,
                         result.match_start_index,
                         result.match_end_index
@@ -148,7 +148,7 @@ impl SearchResultFormatter {
         }
         buffer.push_str("-".repeat(SEPARATOR_LEN).as_str());
         buffer.push_str("\n");
-        let linenum_padding = self.linenum_padding(result);
+        let linenum_padding = self.line_num_padding(result);
         let mut current_linenum = result.line_num;
         if !result.lines_before.is_empty() {
             current_linenum -= result.lines_before.len();
@@ -193,9 +193,9 @@ impl SearchResultFormatter {
 
     pub fn format(&self, result: &SearchResult) -> String {
         if !result.lines_before.is_empty() || !result.lines_after.is_empty() {
-            self.multiline_format(result)
+            self.multi_line_format(result)
         } else {
-            self.singleline_format(result)
+            self.single_line_format(result)
         }
     }
 }

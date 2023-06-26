@@ -2,6 +2,8 @@ use core::slice::Iter;
 use std::env;
 use std::process;
 
+extern crate rsfind;
+
 use crate::common::log;
 use crate::searcher::{get_result_dirs, get_result_files, get_result_lines};
 use crate::searcherror::SearchError;
@@ -10,11 +12,8 @@ use crate::searchresultformatter::SearchResultFormatter;
 pub mod color;
 pub mod common;
 pub mod config;
-pub mod filetypes;
-pub mod fileutil;
 pub mod searcher;
 pub mod searcherror;
-pub mod searchfile;
 pub mod searchoptions;
 pub mod searchresult;
 pub mod searchsettings;
@@ -66,14 +65,14 @@ fn search(args: Iter<String>) {
 
     match options.settings_from_args(args) {
         Ok(settings) => {
-            if settings.debug {
+            if settings.debug() {
                 log(format!("settings: {:?}", settings).as_str());
             }
-            if settings.print_usage {
+            if settings.print_usage() {
                 options.print_usage();
                 process::exit(0);
             }
-            if settings.print_version {
+            if settings.print_version() {
                 options.print_version();
                 process::exit(0);
             }
@@ -88,22 +87,22 @@ fn search(args: Iter<String>) {
 
             match searcher.search() {
                 Ok(results) => {
-                    if searcher.settings.print_results {
+                    if searcher.settings.print_results() {
                         let formatter = SearchResultFormatter::new(
-                            searcher.settings.colorize, searcher.settings.max_line_length);
+                            searcher.settings.colorize(), searcher.settings.max_line_length());
                         log(format!("\nSearch results ({}):", results.len()).as_str());
                         for r in results.iter() {
                             log(formatter.format(r).as_str());
                         }
                     }
-                    if searcher.settings.list_dirs {
+                    if searcher.settings.list_dirs() {
                         print_result_dirs(&results);
                     }
-                    if searcher.settings.list_files {
+                    if searcher.settings.list_files() {
                         print_result_files(&results);
                     }
-                    if searcher.settings.list_lines {
-                        print_result_lines(&results, searcher.settings.unique_lines);
+                    if searcher.settings.list_lines() {
+                        print_result_lines(&results, searcher.settings.unique_lines());
                     }
                 },
                 Err(error) => error_and_exit(error, &options),
