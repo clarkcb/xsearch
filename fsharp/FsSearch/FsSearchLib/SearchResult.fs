@@ -1,11 +1,12 @@
 ﻿namespace FsSearchLib
 
 open System.Text.RegularExpressions
+open FsFind
 
 module SearchResult =
     type t = {
         SearchPattern : Regex;
-        File : SearchFile.t;
+        File : FileResult.t;
         LineNum : int;
         MatchStartIndex : int;
         MatchEndIndex : int;

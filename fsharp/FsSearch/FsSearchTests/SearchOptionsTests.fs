@@ -41,8 +41,6 @@ type SearchOptionsTests () =
     member this.SettingsFromArgs_ValidArgs_HasArgValues () =
         let args = [| "-x"; "cs"; "-s"; "Search"; "." |]
         let settings, _ = SearchOptions.SettingsFromArgs(args)
-        //let startFile = FileInfo(".")
-        //Assert.AreEqual(settings.StartPath, startFile.FullName)
         Assert.AreEqual(1, settings.InExtensions.Length)
         Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".cs"))
         Assert.AreEqual(1, settings.SearchPatterns.Length)

@@ -1,6 +1,8 @@
 namespace FsSearchLib
 
-type SearchResultFormatter (settings : SearchSettings.t) =
+open FsFind
+
+type SearchResultFormatter (settings : SearchSettings) =
 
     let Colorize (s : string) (matchStartIndex : int) (matchEndIndex : int) : string =
         let matchLength = matchEndIndex - matchStartIndex
@@ -62,7 +64,7 @@ type SearchResultFormatter (settings : SearchSettings.t) =
                 $": %d{result.LineNum}: [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]: %s{line}"
         (GetRelativeFilePath result) + matchString
 
-    let MultLineFormat (result : SearchResult.t) : string =
+    let MultiLineFormat (result : SearchResult.t) : string =
         let hdr = 
             String.concat "\n" [
                 $"%s{new string('=', 80)}";
@@ -90,7 +92,7 @@ type SearchResultFormatter (settings : SearchSettings.t) =
 
     member this.Format (result : SearchResult.t) : string =
         if (not (List.isEmpty result.LinesBefore)) || (not (List.isEmpty result.LinesAfter)) then
-            MultLineFormat result
+            MultiLineFormat result
         else
             SingleLineFormat result
 ;;

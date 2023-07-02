@@ -1,2 +1,2 @@
 @echo off
-%~dp0\FsSearch\bin\Release\netcoreapp3.1\FsSearch.dll %*
+%~dp0\FsSearch\bin\Release\net6.0\FsSearch.dll %*

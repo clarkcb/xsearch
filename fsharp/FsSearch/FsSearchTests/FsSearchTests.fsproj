@@ -14,10 +14,7 @@
 
     <ItemGroup>
         <Compile Include="EmbeddedTestResource.fs" />
-        <Compile Include="FileTypesTests.fs" />
-        <Compile Include="FileUtilTests.fs" />
         <Compile Include="SearcherTests.fs" />
-        <Compile Include="SearchFileTests.fs" />
         <Compile Include="SearchOptionsTests.fs" />
         <Compile Include="SearchResultTests.fs" />
         <Compile Include="SearchSettingTests.fs" />
