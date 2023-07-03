@@ -31,11 +31,8 @@ library
   exposed-modules:
       HsSearch.Color
       HsSearch.Config
-      HsSearch.FileTypes
-      HsSearch.FileUtil
       HsSearch.Paths_hssearch
       HsSearch.Searcher
-      HsSearch.SearchFile
       HsSearch.SearchOptions
       HsSearch.SearchResult
       HsSearch.SearchSettings
@@ -49,9 +46,11 @@ library
     , bytestring
     , directory
     , filepath
+    , hsfind
     , regex-pcre-builtin >=0.94.4
     , split >=0.2.2
     , text
+    , time
   default-language: Haskell2010
 
 executable hssearch
@@ -67,18 +66,18 @@ executable hssearch
     , bytestring
     , directory
     , filepath
+    , hsfind
     , hssearch
     , regex-pcre-builtin >=0.94.4
     , split >=0.2.2
     , text
+    , time
   default-language: Haskell2010
 
 test-suite hssearch-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      HsSearch.FileTypesTest
-      HsSearch.FileUtilTest
       HsSearch.SearcherTest
       HsSearch.SearchOptionsTest
       HsSearch.SearchResultTest
@@ -94,10 +93,12 @@ test-suite hssearch-test
     , bytestring
     , directory
     , filepath
+    , hsfind
     , hssearch
     , regex-pcre-builtin >=0.94.4
     , split >=0.2.2
     , test-framework ==0.8.*
     , test-framework-hunit ==0.3.*
     , text
+    , time
   default-language: Haskell2010

@@ -14,9 +14,12 @@ import Data.Maybe (isJust)
 import GHC.Generics
 import Data.Aeson
 
+import HsFind.FileTypes (getFileTypeForName)
+import HsFind.FileUtil (getFileString)
+import HsFind.FindOptions (parseDateToUtc)
+import HsFind.SortBy (getSortByForName)
+
 import HsSearch.Paths_hssearch (getDataFileName)
-import HsSearch.FileTypes (getFileTypeForName)
-import HsSearch.FileUtil (getFileString)
 import HsSearch.SearchSettings
 
 data SearchOption = SearchOption
@@ -110,7 +113,11 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("linesaftertopattern", \ss s -> ss {linesAfterToPatterns = linesAfterToPatterns ss ++ [s]})
              , ("linesafteruntilpattern", \ss s -> ss {linesAfterUntilPatterns = linesAfterUntilPatterns ss ++ [s]})
              , ("linesbefore", \ss s -> ss {linesBefore = read s})
+             , ("maxlastmod", \ss s -> ss {maxLastMod = parseDateToUtc s})
              , ("maxlinelength", \ss s -> ss {maxLineLength = read s})
+             , ("maxsize", \ss s -> ss {maxSize = read s})
+             , ("minlastmod", \ss s -> ss {minLastMod = parseDateToUtc s})
+             , ("minsize", \ss s -> ss {minSize = read s})
              , ("out-archiveext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ newExtensions s})
              , ("out-archivefilepattern", \ss s -> ss {outArchiveFilePatterns = outArchiveFilePatterns ss ++ [s]})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})
@@ -121,6 +128,7 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
              , ("path", \ss s -> ss {paths = paths ss ++ [s]})
              , ("searchpattern", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
+             , ("sort-by", \ss s -> ss {sortResultsBy = getSortByForName s})
              ]
 
 boolFlagActions :: [(String, BoolFlagAction)]
@@ -144,6 +152,10 @@ boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                   , ("printmatches", \ss b -> ss {printResults=b})
                   , ("recursive", \ss b -> ss {recursive=b})
                   , ("searcharchives", \ss b -> ss {searchArchives=b})
+                  , ("sort-ascending", \ss b -> ss {sortDescending=not b})
+                  , ("sort-caseinsensitive", \ss b -> ss {sortCaseInsensitive=b})
+                  , ("sort-casesensitive", \ss b -> ss {sortCaseInsensitive=not b})
+                  , ("sort-descending", \ss b -> ss {sortDescending=b})
                   , ("uniquelines", \ss b -> ss {uniqueLines=b})
                   , ("verbose", \ss b -> ss {verbose=b})
                   , ("version", \ss b -> ss {printVersion=b})

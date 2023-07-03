@@ -4,7 +4,7 @@ module HsSearch.Config
     , getDataPath
   ) where
 
-import System.Environment (getEnv)
+import System.Environment (getEnv, lookupEnv)
 import System.FilePath ((</>))
 import System.Info (os)
 
@@ -15,15 +15,17 @@ getHome :: IO FilePath
 getHome = getEnv homeName
   where homeName = if isWin then "HOMEPATH" else "HOME"
 
-xsearchPath :: FilePath
-xsearchPath = "/Users/cary/src/xsearch"
-
 getXsearchPath :: IO FilePath
-getXsearchPath =
-  return xsearchPath
+getXsearchPath = do
+  home <- getHome
+  maybeXsearchPath <- lookupEnv "XSEARCH_PATH"
+  case maybeXsearchPath of
+    Just xsearchPath -> return xsearchPath
+    Nothing -> return $ home ++ "/src/xsearch"
 
 getDataPath :: IO FilePath
 getDataPath = do
+  xsearchPath <- getXsearchPath
   let elems = ["haskell", "hssearch", "data"]
   return $ foldl concatPath xsearchPath elems
   where concatPath path p = path </> p  

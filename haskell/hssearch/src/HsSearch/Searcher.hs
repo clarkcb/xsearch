@@ -2,13 +2,10 @@ module HsSearch.Searcher
     (
       doSearch
     , doSearchFiles
-    , filterFile
     , getSearchFiles
-    , isArchiveSearchFile
-    , isSearchDir
-    , isSearchFile
     , searchContents
     , searchLines
+    , validateSettings
     ) where
 
 import Control.Monad (forM)
@@ -17,108 +14,29 @@ import qualified Data.ByteString.Char8 as BC
 import Data.Maybe (catMaybes, fromJust, isJust)
 import Text.Regex.PCRE
 
-import HsSearch.FileTypes
-import HsSearch.FileUtil
-import HsSearch.SearchFile
+import HsFind.FileResult
+import HsFind.FileTypes
+import HsFind.FileUtil
+import HsFind.Finder (doFind)
+
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
 
-isSearchDir :: SearchSettings -> FilePath -> Bool
-isSearchDir settings d = all ($d) tests
-  where tests :: [FilePath -> Bool]
-        tests = [ \x -> null inPatterns
-                         || any (\p -> x =~ p :: Bool) inPatterns
-                , \x -> null outPatterns
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns
-                , \x -> not (isHiddenFilePath x) || includeHidden
-                ]
-        inPatterns = inDirPatterns settings
-        outPatterns = outDirPatterns settings
-        includeHidden = not $ excludeHidden settings
+validateSettings :: SearchSettings -> [String]
+validateSettings settings = concatMap ($settings) validators
+  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
+                     , \s -> ["No search patterns defined" | null (searchPatterns s)]
+                     , \s -> ["Invalid lines after" | linesAfter s < 0]
+                     , \s -> ["Invalid lines before" | linesBefore s < 0]
+                     , \s -> ["Invalid max line length" | maxLineLength s < 0]
+                     , \s -> ["Invalid max size" | maxSize s < 0]
+                     , \s -> ["Invalid min size" | minSize s < 0]
+                     ]
 
-isSearchFile :: SearchSettings -> FilePath -> Bool
-isSearchFile settings fp = all ($fp) tests
-  where tests :: [FilePath -> Bool]
-        tests = [ \x -> null inExts
-                         || hasInExt x
-                , \x -> null outExts
-                         || not (hasOutExt x)
-                , \x -> null inPatterns
-                         || any (\p -> x =~ p :: Bool) inPatterns
-                , \x -> null outPatterns
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns
-                , \x -> null inTypes
-                         || getFileTypeForName x `elem` inTypes
-                , \x -> null outTypes
-                         || getFileTypeForName x `elem` outTypes
-                , \x -> not (isHiddenFilePath x) || includeHidden
-                ]
-        inExts = inExtensions settings
-        hasInExt f | null inExts = True
-                   | otherwise   = any (hasExtension f) inExts
-        outExts = outExtensions settings
-        hasOutExt f | null outExts = False
-                    | otherwise    = any (hasExtension f) outExts
-        inPatterns = inFilePatterns settings
-        outPatterns = outFilePatterns settings
-        inTypes = inFileTypes settings
-        outTypes = outFileTypes settings
-        includeHidden = not $ excludeHidden settings
-
-isArchiveSearchFile :: SearchSettings -> FilePath -> Bool
-isArchiveSearchFile settings fp = all ($fp) tests
-  where tests :: [FilePath -> Bool]
-        tests = [ \x -> null inExts
-                         || hasInExt x
-                , \x -> null outExts
-                         || not (hasOutExt x)
-                , \x -> null inPatterns
-                         || any (\p -> x =~ p :: Bool) inPatterns
-                , \x -> null outPatterns
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns
-                , \x -> not (isHiddenFilePath x) || includeHidden
-                ]
-        inExts = inArchiveExtensions settings
-        hasInExt f | null inExts = True
-                   | otherwise   = any (hasExtension f) inExts
-        outExts = outArchiveExtensions settings
-        hasOutExt f | null outExts = False
-                    | otherwise    = any (hasExtension f) outExts
-        inPatterns = inArchiveFilePatterns settings
-        outPatterns = outArchiveFilePatterns settings
-        includeHidden = not $ excludeHidden settings
-
-filterFile :: SearchSettings -> SearchFile -> Bool
-filterFile settings sf | isArchiveFile sf = includeArchiveFile sf
-                       | otherwise        = includeFile sf
-  where includeArchiveFile f = searchArchives settings &&
-                               isArchiveSearchFile settings (searchFilePath f)
-        includeFile f = not (archivesOnly settings) &&
-                        isSearchFile settings (searchFilePath f)
-
-filterToSearchFile :: SearchSettings -> (FilePath,FileType) -> Maybe SearchFile
-filterToSearchFile settings ft =
-  if (null inTypes || snd ft `elem` inTypes) && (null outTypes || notElem (snd ft) outTypes)
-  then Just blankSearchFile { searchFilePath=fst ft
-                            , searchFileType=snd ft
-                            }
-  else Nothing
-  where inTypes = inFileTypes settings
-        outTypes = outFileTypes settings
-
--- getSearchFilesOLD :: SearchSettings -> IO [FilePath]
--- getSearchFilesOLD settings = do
---   getRecursiveFilteredContents (startPath settings) (isSearchDir settings) (isSearchFile settings)
-
-getSearchFiles :: SearchSettings -> IO [SearchFile]
+getSearchFiles :: SearchSettings -> IO [FileResult]
 getSearchFiles settings = do
-  paths <- forM (paths settings) $ \path ->
-    getRecursiveFilteredContents path (isSearchDir settings) (isSearchFile settings)
-  let allPaths = concat paths
-  allFileTypes <- getFileTypes allPaths
-  let justSearchFiles = filter isJust (map (filterToSearchFile settings) (zip allPaths allFileTypes))
-  return $ map fromJust justSearchFiles
+  doFind $ toFindSettings settings
 
 searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile settings f = do
@@ -325,19 +243,19 @@ searchLineForPattern settings num bs l as = patternResults
                             , afterLines=as
                             }
 
-doSearchFile :: SearchSettings -> SearchFile -> IO [SearchResult]
-doSearchFile settings sf =
-  case searchFileType sf of
-    Binary -> searchBinaryFile settings $ searchFilePath sf
-    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings $ searchFilePath sf
+doSearchFile :: SearchSettings -> FileResult -> IO [SearchResult]
+doSearchFile settings fr =
+  case fileResultType fr of
+    Binary -> searchBinaryFile settings $ fileResultPath fr
+    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings $ fileResultPath fr
     _ -> return []
 
-doSearchFiles :: SearchSettings -> [SearchFile] -> IO [SearchResult]
-doSearchFiles settings searchFiles = do
-  results <- mapM (doSearchFile settings) searchFiles
+doSearchFiles :: SearchSettings -> [FileResult] -> IO [SearchResult]
+doSearchFiles settings files = do
+  results <- mapM (doSearchFile settings) files
   return $ concat results
 
 doSearch :: SearchSettings -> IO [SearchResult]
 doSearch settings = do
-  searchFiles <- getSearchFiles settings
-  doSearchFiles settings searchFiles
+  files <- getSearchFiles settings
+  doSearchFiles settings files

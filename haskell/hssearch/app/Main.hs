@@ -8,22 +8,14 @@ import Data.List (nub, sort, sortBy)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 
-import HsSearch.FileUtil (getParentPath, pathExists)
-import HsSearch.SearchFile
+import HsFind.FileResult
+import HsFind.FileUtil (getParentPath, pathExists)
+
 import HsSearch.SearchOptions
-import HsSearch.Searcher (getSearchFiles, doSearchFiles)
+import HsSearch.Searcher (getSearchFiles, doSearchFiles, validateSettings)
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
-
-validateSettings :: SearchSettings -> [String]
-validateSettings settings = concatMap ($settings) validators
-  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
-                     , \s -> ["No search patterns defined" | null (searchPatterns s)]
-                     , \s -> ["Invalid lines after" | linesAfter s < 0]
-                     , \s -> ["Invalid lines before" | linesBefore s < 0]
-                     , \s -> ["Invalid max line length" | maxLineLength s < 0]
-                     ]
 
 errsOrUsage :: [SearchOption] -> SearchSettings -> Maybe String
 errsOrUsage searchOptions settings =
@@ -68,13 +60,13 @@ formatMatchingFiles results =
 byteStringToUpper :: B.ByteString -> B.ByteString
 byteStringToUpper = BC.pack . map toUpper . BC.unpack
 
-sortCaseInsensitive :: [B.ByteString] -> [B.ByteString]
-sortCaseInsensitive = sortBy compareCaseInsensitive
+doSortCaseInsensitive :: [B.ByteString] -> [B.ByteString]
+doSortCaseInsensitive = sortBy compareCaseInsensitive
   where compareCaseInsensitive a b = byteStringToUpper a `compare` byteStringToUpper b
 
 getMatchingLines :: [SearchResult] -> Bool -> [B.ByteString]
-getMatchingLines results unique | unique = (sortCaseInsensitive . nub . map trimLine) results
-                                | otherwise = (sortCaseInsensitive . map trimLine) results
+getMatchingLines results unique | unique = (doSortCaseInsensitive . nub . map trimLine) results
+                                | otherwise = (doSortCaseInsensitive . map trimLine) results
   where trimLine = BC.dropWhile isSpace . line
 
 formatMatchingLines :: [SearchResult] -> Bool -> String
@@ -91,20 +83,14 @@ formatSearchDirs dirs =
   "\nDirectories to be searched (" ++ show (length dirs) ++ "):\n" ++
   unlines (sort dirs)
 
--- formatSearchFiles :: [FilePath] -> String
--- formatSearchFiles files =
---   formatSearchDirs (nub (map getParentPath files)) ++
---   "\nFiles to be searched (" ++ show (length files) ++ "):\n" ++
---   unlines (sort files)
-
-formatSearchFiles :: [SearchFile] -> String
+formatSearchFiles :: [FileResult] -> String
 formatSearchFiles searchFiles =
   if not (null filePaths) then
     formatSearchDirs (nub (map getParentPath filePaths)) ++
     "\nFiles to be searched (" ++ show (length filePaths) ++ "):\n" ++
     unlines (sort filePaths)
   else "\nFiles to be searched: 0\n"
-  where filePaths = map searchFilePath searchFiles
+  where filePaths = map fileResultPath searchFiles
 
 logMsg :: String -> IO ()
 logMsg = putStr

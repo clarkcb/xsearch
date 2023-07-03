@@ -16,7 +16,6 @@ import Test.HUnit hiding (Test)
 getSettingsFromNoArgsTests :: IO [Test]
 getSettingsFromNoArgsTests = do
   searchOptions <- getSearchOptions
-  --let settings = settingsFromArgs searchOptions []
   case settingsFromArgs searchOptions [] of
     Left errMsg -> return []
     Right settings ->
@@ -29,12 +28,16 @@ getSettingsFromNoArgsTests = do
              , testCase "listDirs" (listDirs settings @?= False)
              , testCase "listFiles" (listFiles settings @?= False)
              , testCase "listLines" (listLines settings @?= False)
+             , testCase "maxSize" (maxSize settings @?= 0)
+             , testCase "minSize" (minSize settings @?= 0)
              , testCase "multiLineSearch" (multiLineSearch settings @?= False)
              , testCase "printResults" (printResults settings @?= True)
              , testCase "printUsage" (printUsage settings @?= False)
              , testCase "printVersion" (printVersion settings @?= False)
              , testCase "recursive" (recursive settings @?= True)
              , testCase "searchArchives" (searchArchives settings @?= False)
+             , testCase "sortCaseInsensitive" (sortCaseInsensitive settings @?= False)
+             , testCase "sortDescending" (sortDescending settings @?= False)
              , testCase "uniqueLines" (uniqueLines settings @?= False)
              , testCase "verbose" (verbose settings @?= False)
              ]
@@ -43,7 +46,6 @@ getSettingsFromArgsTests :: IO [Test]
 getSettingsFromArgsTests = do
   let args = ["-x","hs","-X","hi,o","-s","Searcher","-b","2","-B","2","."]
   searchOptions <- getSearchOptions
-  --let settings = settingsFromArgs searchOptions args
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
     Right settings ->
@@ -59,7 +61,6 @@ getArchivesOnlyTests :: IO [Test]
 getArchivesOnlyTests = do
   let args = ["--archivesonly"]
   searchOptions <- getSearchOptions
-  --let settings = settingsFromArgs searchOptions args
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
     Right settings ->
@@ -71,7 +72,6 @@ getDebugTests :: IO [Test]
 getDebugTests = do
   let args = ["--debug"]
   searchOptions <- getSearchOptions
-  --let settings = settingsFromArgs searchOptions args
   case settingsFromArgs searchOptions args of
     Left errMsg -> return []
     Right settings ->
