@@ -5,7 +5,7 @@ if (-not (Test-Path Env:XSEARCH_PATH))
     $env:XSEARCH_PATH = Join-Path $HOME 'src' 'xsearch'
 }
 
-$objcSearchExe = Join-Path $env:XSEARCH_PATH 'objc' 'objcsearch' 'build' 'Release' 'objcsearch'
+$objcSearchExe = Join-Path $env:XSEARCH_PATH 'objc' 'objcsearch' '.build' 'release' 'objcsearchApp'
 
 if (Test-Path $objcSearchExe -PathType Leaf)
 {

@@ -634,41 +634,25 @@ build_objc () {
     echo
     hdr "build_objc"
 
-    # ensure xcode is installed
-    if [ -z "$(which xcodebuild)" ]
-    then
-        echo "You need to install Xcode"
-        return
-    fi
-
     TARGET=alltargets
 
     # TODO: copy resource files locally?
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        log_error "You need to install swift"
+        return
+    fi
 
     cd "$OBJCSEARCH_PATH"
 
-    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Debug Release)
-    elif [ -n "$DEBUG" ]
-    then
-        CONFIGURATIONS=(Debug)
-    elif [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Release)
-    fi
+    # run swift build
+    log "Building objcsearch"
 
-    # run xcodebuild for selected configurations
-    for c in ${CONFIGURATIONS[*]}
-    do
-        if [ $TARGET == "alltargets" ]
-        then
-            log "xcodebuild -alltargets -configuration $c"
-            xcodebuild -alltargets -configuration "$c"
-        else
-            log "xcodebuild -target $TARGET -configuration $c"
-            xcodebuild -target "$TARGET" -configuration "$c"
-        fi
+    if [ -n "$DEBUG" ]
+    then
+        log "swift build"
+        swift build
 
         # check for success/failure
         if [ "$?" -eq 0 ]
@@ -678,10 +662,21 @@ build_objc () {
             log_error "Build failed"
             return
         fi
-    done
-
+    fi
     if [ -n "$RELEASE" ]
     then
+        log "swift build --configuration release"
+        swift build --configuration release
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
+
         # add release to bin
         add_to_bin "$OBJCSEARCH_PATH/bin/objcsearch.release.sh"
     else
