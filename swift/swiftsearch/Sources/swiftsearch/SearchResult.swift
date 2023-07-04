@@ -7,10 +7,11 @@
 //
 
 import Foundation
+import swiftfind
 
 public struct SearchResult {
     public let searchPattern: String
-    public var file: SearchFile?
+    public var file: FileResult?
     public let lineNum: Int
     public let matchStartIndex: Int
     public let matchEndIndex: Int
@@ -18,7 +19,7 @@ public struct SearchResult {
     public let linesBefore: [String]
     public let linesAfter: [String]
 
-    public init(searchPattern: String, file: SearchFile?, lineNum: Int,
+    public init(searchPattern: String, file: FileResult?, lineNum: Int,
                 matchStartIndex: Int, matchEndIndex: Int, line: String,
                 linesBefore: [String], linesAfter: [String])
     {

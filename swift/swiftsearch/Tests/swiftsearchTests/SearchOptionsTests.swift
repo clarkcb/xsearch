@@ -10,6 +10,7 @@ import Cocoa
 import XCTest
 
 import swiftsearch
+import swiftfind
 
 class SearchOptionsTests: XCTestCase {
     let options = SearchOptions()
@@ -28,22 +29,26 @@ class SearchOptionsTests: XCTestCase {
 
     func testSettingsEqualDefaultSettings() {
         let settings: SearchSettings = try! options.settingsFromArgs(requiredArgs)
-        XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
-        XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
-        XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
-        XCTAssert(settings.firstMatch == DefaultSettings.firstMatch, "firstMatch == false")
-        XCTAssert(settings.listDirs == DefaultSettings.listDirs, "listDirs == false")
-        XCTAssert(settings.listFiles == DefaultSettings.listFiles, "listFiles == false")
-        XCTAssert(settings.listLines == DefaultSettings.listLines, "listLines == false")
-        XCTAssert(settings.multiLineSearch == DefaultSettings.multiLineSearch,
+        XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
+        XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
+        XCTAssert(settings.excludeHidden == DefaultFindSettings.excludeHidden, "excludeHidden == true")
+        XCTAssert(settings.firstMatch == DefaultSearchSettings.firstMatch, "firstMatch == false")
+        XCTAssert(settings.listDirs == DefaultFindSettings.listDirs, "listDirs == false")
+        XCTAssert(settings.listFiles == DefaultFindSettings.listFiles, "listFiles == false")
+        XCTAssert(settings.listLines == DefaultSearchSettings.listLines, "listLines == false")
+        XCTAssert(settings.maxSize == DefaultFindSettings.maxSize, "maxSize == 0")
+        XCTAssert(settings.minSize == DefaultFindSettings.minSize, "maxSize == 0")
+        XCTAssert(settings.multiLineSearch == DefaultSearchSettings.multiLineSearch,
                   "multiLineSearch == false")
-        XCTAssert(settings.printResults == DefaultSettings.printResults, "printResults == true")
-        XCTAssert(settings.printUsage == DefaultSettings.printUsage, "printUsage == false")
-        XCTAssert(settings.printVersion == DefaultSettings.printVersion, "printVersion == false")
-        XCTAssert(settings.searchArchives == DefaultSettings.searchArchives,
+        XCTAssert(settings.printResults == DefaultSearchSettings.printResults, "printResults == true")
+        XCTAssert(settings.printUsage == DefaultFindSettings.printUsage, "printUsage == false")
+        XCTAssert(settings.printVersion == DefaultFindSettings.printVersion, "printVersion == false")
+        XCTAssert(settings.searchArchives == DefaultSearchSettings.searchArchives,
                   "searchArchives == false")
-        XCTAssert(settings.uniqueLines == DefaultSettings.uniqueLines, "uniqueLines == false")
-        XCTAssert(settings.verbose == DefaultSettings.verbose, "verbose == false")
+        XCTAssert(settings.sortCaseInsensitive == DefaultFindSettings.sortCaseInsensitive, "sortCaseInsensitive == false")
+        XCTAssert(settings.sortDescending == DefaultFindSettings.sortDescending, "sortDescending == false")
+        XCTAssert(settings.uniqueLines == DefaultSearchSettings.uniqueLines, "uniqueLines == false")
+        XCTAssert(settings.verbose == DefaultFindSettings.verbose, "verbose == false")
     }
 
     func testSettingsFromArgs() {

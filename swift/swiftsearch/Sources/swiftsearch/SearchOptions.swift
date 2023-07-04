@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import swiftfind
 
 struct SearchOption {
     let short: String
@@ -19,12 +20,12 @@ struct SearchOption {
 }
 
 public class SearchOptions {
-    private var config: Config
+    private var config: SearchConfig
     private var searchOptions = [SearchOption]()
     private var longArgDict: [String: String] = [:]
 
     public init() {
-        self.config = Config()
+        self.config = SearchConfig()
         setSearchOptionsFromJson()
     }
 
@@ -96,8 +97,20 @@ public class SearchOptions {
             "linesbefore": { (str: String, settings: SearchSettings) -> Void in
                 settings.linesBefore = Int(str)!
             },
+            "maxlastmod": { (str: String, settings: SearchSettings) -> Void in
+                settings.setMaxLastModFromString(str)
+            },
             "maxlinelength": { (str: String, settings: SearchSettings) -> Void in
                 settings.maxLineLength = Int(str)!
+            },
+            "maxsize": { (str: String, settings: SearchSettings) -> Void in
+                settings.setMaxSizeFromString(str)
+            },
+            "minlastmod": { (str: String, settings: SearchSettings) -> Void in
+                settings.setMinSizeFromString(str)
+            },
+            "minsize": { (str: String, settings: SearchSettings) -> Void in
+                settings.setMinSizeFromString(str)
             },
             "out-archiveext": { (str: String, settings: SearchSettings) -> Void in
                 settings.addOutArchiveExtension(str)
@@ -131,6 +144,9 @@ public class SearchOptions {
             },
             "settings-file": { (str: String, settings: SearchSettings) -> Void in
                 try? self.addSettingsFromFile(str, settings: settings)
+            },
+            "sort-by": { (str: String, settings: SearchSettings) -> Void in
+                settings.setSortBy(str)
             },
         ]
     }
@@ -192,6 +208,18 @@ public class SearchOptions {
         },
         "searcharchives": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.searchArchives = bool
+        },
+        "sort-ascending": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.sortDescending = !bool
+        },
+        "sort-caseinsensitive": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.sortCaseInsensitive = bool
+        },
+        "sort-casesensitive": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.sortCaseInsensitive = !bool
+        },
+        "sort-descending": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.sortDescending = bool
         },
         "uniquelines": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.uniqueLines = bool

@@ -10,6 +10,7 @@ import Cocoa
 import XCTest
 
 import swiftsearch
+import swiftfind
 
 class SearchResultTests: XCTestCase {
     func testSingleLineSearchResult() {
@@ -18,14 +19,14 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "Search"
         let filepath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        let searchFile = SearchFile(filePath: filepath, fileType: FileType.code)
+        let fileResult = FileResult(filePath: filepath, fileType: FileType.code)
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
         let line = "\tpublic class Searcher\n"
         let searchResult = SearchResult(
             searchPattern: pattern,
-            file: searchFile,
+            file: fileResult,
             lineNum: lineNum,
             matchStartIndex: matchStartIndex,
             matchEndIndex: matchEndIndex,
@@ -46,7 +47,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "maxlen"
         let file = "./maxlen.txt"
-        let searchFile = SearchFile(filePath: file, fileType: FileType.text)
+        let fileResult = FileResult(filePath: file, fileType: FileType.text)
         let lineNum = 1
         let matchStartIndex = 53
         let matchEndIndex = 59
@@ -54,7 +55,7 @@ class SearchResultTests: XCTestCase {
         let linesBeforeAfter: [String] = []
         let searchResult = SearchResult(
             searchPattern: pattern,
-            file: searchFile,
+            file: fileResult,
             lineNum: lineNum,
             matchStartIndex: matchStartIndex,
             matchEndIndex: matchEndIndex,
@@ -75,7 +76,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "maxlen"
         let file = "./maxlen.txt"
-        let searchFile = SearchFile(filePath: file, fileType: FileType.text)
+        let fileResult = FileResult(filePath: file, fileType: FileType.text)
         let lineNum = 1
         let matchStartIndex = 53
         let matchEndIndex = 59
@@ -83,7 +84,7 @@ class SearchResultTests: XCTestCase {
         let linesBeforeAfter: [String] = []
         let searchResult = SearchResult(
             searchPattern: pattern,
-            file: searchFile,
+            file: fileResult,
             lineNum: lineNum,
             matchStartIndex: matchStartIndex,
             matchEndIndex: matchEndIndex,
@@ -106,13 +107,13 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "Search"
         let file = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
-        let searchFile = SearchFile(filePath: file, fileType: FileType.binary)
+        let fileResult = FileResult(filePath: file, fileType: FileType.binary)
         let lineNum = 0
         let matchStartIndex = 0
         let matchEndIndex = 0
         let searchResult = SearchResult(
             searchPattern: pattern,
-            file: searchFile,
+            file: fileResult,
             lineNum: lineNum,
             matchStartIndex: matchStartIndex,
             matchEndIndex: matchEndIndex,
@@ -131,7 +132,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "Search"
         let file = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        let searchFile = SearchFile(filePath: file, fileType: FileType.text)
+        let fileResult = FileResult(filePath: file, fileType: FileType.text)
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
@@ -140,7 +141,7 @@ class SearchResultTests: XCTestCase {
         let linesAfter = ["\t{", "\t\tprivate readonly FileTypes _fileTypes;"]
         let searchResult = SearchResult(
             searchPattern: pattern,
-            file: searchFile,
+            file: fileResult,
             lineNum: lineNum,
             matchStartIndex: matchStartIndex,
             matchEndIndex: matchEndIndex,

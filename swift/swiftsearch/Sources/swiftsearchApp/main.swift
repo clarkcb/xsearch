@@ -8,15 +8,16 @@
 
 import Foundation
 import swiftsearch
-
-func getMatchingFiles(_ results: [SearchResult]) -> [String] {
-    results.compactMap(\.file).map(\.filePath).sorted().unique()
-}
+import swiftfind
 
 func getMatchingDirs(_ results: [SearchResult]) -> [String] {
     results.compactMap(\.file).map {
         URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
     }.sorted().unique()
+}
+
+func getMatchingFiles(_ results: [SearchResult]) -> [String] {
+    results.compactMap(\.file).map(\.filePath).sorted().unique()
 }
 
 func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [String] {
@@ -28,10 +29,18 @@ func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [S
     return lines.sorted { $0.lowercased() < $1.lowercased() }
 }
 
-func handleError(_ error: SearchError, _ options: SearchOptions) {
+func handleError(_ errorMsg: String, _ options: SearchOptions) {
     logMsg("")
-    logError(error.msg)
+    logError(errorMsg)
     options.usage(1)
+}
+
+func handleSearchError(_ error: SearchError, _ options: SearchOptions) {
+    handleError(error.msg, options)
+}
+
+func handleFindError(_ error: FindError, _ options: SearchOptions) {
+    handleError(error.msg, options)
 }
 
 func main() {
@@ -52,9 +61,7 @@ func main() {
 
         let searcher = try Searcher(settings: settings)
 
-        try searcher.search()
-
-        let results = searcher.getSearchResults()
+        let results = try searcher.search()
 
         if settings.printResults {
             let formatter = SearchResultFormatter(settings: settings)
@@ -91,7 +98,9 @@ func main() {
         }
 
     } catch let error as SearchError {
-        handleError(error, options)
+        handleSearchError(error, options)
+    } catch let error as FindError {
+        handleFindError(error, options)
     } catch {
         logError("Unknown error occurred")
     }

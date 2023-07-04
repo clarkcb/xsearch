@@ -8,10 +8,9 @@
 
 import Foundation
 
-public struct Config {
+public struct SearchConfig {
     public let xsearchPath: String
     public let sharedPath: String
-    public let fileTypesPath: String
     public let searchOptionsPath: String
 
     public init() {
@@ -21,7 +20,6 @@ public struct Config {
             self.xsearchPath = "\(NSHomeDirectory())/src/xsearch"
         }
         self.sharedPath = "\(xsearchPath)/shared"
-        self.fileTypesPath = "\(sharedPath)/filetypes.json"
         self.searchOptionsPath = "\(sharedPath)/searchoptions.json"
     }
 }
