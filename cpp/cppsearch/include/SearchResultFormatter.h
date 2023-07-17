@@ -5,8 +5,7 @@
 #include "color.h"
 #include "SearchResult.h"
 #include "SearchSettings.h"
-#include "SearchFile.h"
-#include "StringUtil.h"
+#include "cppfind.h"
 
 namespace cppsearch {
     class SearchResultFormatter {

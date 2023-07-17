@@ -7,7 +7,8 @@ namespace cppsearch {
     class SearchException : public std::exception {
     public:
         explicit SearchException(const std::string& message);
-        const char *what() const throw();
+        [[nodiscard]] std::string msg() const noexcept;
+        [[nodiscard]] const char *what() const noexcept override;
 
     private:
         std::string m_message;

@@ -1,16 +1,15 @@
-#include "common.h"
 #include "Searcher.h"
-#include "StringUtil.h"
 #include "SearchException.h"
 #include "SearchResultFormatter.h"
 #include "SearchOptions.h"
+#include "cppfind.h"
 
 using namespace cppsearch;
 
 std::vector<std::string> get_result_dirs(std::vector<SearchResult*>* results) {
     std::set<std::string> result_dir_set = {};
     for (const auto& result : *results) {
-        result_dir_set.insert(result->search_file()->path());
+        result_dir_set.insert(result->file()->path());
     }
     std::vector<std::string> result_dirs(result_dir_set.begin(), result_dir_set.end());
     return result_dirs;
@@ -19,7 +18,7 @@ std::vector<std::string> get_result_dirs(std::vector<SearchResult*>* results) {
 std::vector<std::string> get_result_files(std::vector<SearchResult*>* results) {
     std::set<std::string> result_file_set = {};
     for (const auto& result : *results) {
-        result_file_set.insert(result->search_file()->string());
+        result_file_set.insert(result->file()->string());
     }
     std::vector<std::string> result_files(result_file_set.begin(), result_file_set.end());
     return result_files;
@@ -41,8 +40,8 @@ int main(int argc, char *argv[]) {
     try {
         options = new SearchOptions();
     } catch (const SearchException& e) {
-        log("");
-        log_error(e.what());
+        cppfind::log("");
+        cppfind::log_error(e.msg());
         exit(1);
     }
 
@@ -50,7 +49,7 @@ int main(int argc, char *argv[]) {
         auto* settings = options->settings_from_args(argc, argv);
 
         if (settings->debug()) {
-            log(settings->string());
+            cppfind::log(settings->string());
         }
 
         if (settings->print_usage()) {
@@ -65,9 +64,9 @@ int main(int argc, char *argv[]) {
             auto* formatter = new SearchResultFormatter(settings);
             std::string msg = "\nSearch results (";
             msg.append(std::to_string(results.size())).append("):");
-            log(msg);
+            cppfind::log(msg);
             for (const auto& result : results) {
-                log(formatter->format(result));
+                cppfind::log(formatter->format(result));
             }
         }
 
@@ -76,12 +75,12 @@ int main(int argc, char *argv[]) {
             std::string msg = "\nDirectories with matches";
             if (result_dirs.empty()) {
                 msg.append(": 0");
-                log(msg);
+                cppfind::log(msg);
             } else {
                 msg.append(" (").append(std::to_string(result_dirs.size())).append("):");
-                log(msg);
+                cppfind::log(msg);
                 for (const auto& d : result_dirs) {
-                    log(d);
+                    cppfind::log(d);
                 }
             }
         }
@@ -91,12 +90,12 @@ int main(int argc, char *argv[]) {
             std::string msg = "\nFiles with matches";
             if (result_files.empty()) {
                 msg.append(": 0");
-                log(msg);
+                cppfind::log(msg);
             } else {
                 msg.append(" (").append(std::to_string(result_files.size())).append("):");
-                log(msg);
+                cppfind::log(msg);
                 for (const auto& f : result_files) {
-                    log(f);
+                    cppfind::log(f);
                 }
             }
         }
@@ -111,18 +110,18 @@ int main(int argc, char *argv[]) {
             }
             if (result_lines.empty()) {
                 msg.append(": 0");
-                log(msg);
+                cppfind::log(msg);
             } else {
                 msg.append(" (").append(std::to_string(result_lines.size())).append("):");
-                log(msg);
+                cppfind::log(msg);
                 for (const auto& l : result_lines) {
-                    log(l);
+                    cppfind::log(l);
                 }
             }
         }
     } catch (const SearchException& e) {
-        log("");
-        log_error(e.what());
+        cppfind::log("");
+        cppfind::log_error(e.msg());
         options->usage();
     }
 

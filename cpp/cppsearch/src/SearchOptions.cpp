@@ -5,11 +5,10 @@
 #include <boost/format.hpp>
 #include "rapidjson/filereadstream.h"
 #include "config.h"
-#include "FileTypes.h"
-#include "FileUtil.h"
 #include "SearchException.h"
 #include "SearchOption.h"
 #include "SearchOptions.h"
+#include "cppfind.h"
 
 namespace cppsearch {
     SearchOptions::SearchOptions() {
@@ -19,7 +18,7 @@ namespace cppsearch {
                 {"in-dirpattern", [](std::string& s, SearchSettings* ss) { ss->add_in_dir_pattern(s); }},
                 {"in-ext", [](std::string& s, SearchSettings* ss) { ss->add_in_extension(s); }},
                 {"in-filepattern", [](std::string& s, SearchSettings* ss) { ss->add_in_file_pattern(s); }},
-                {"in-filetype", [](std::string& s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_file_type(t); }},
+                {"in-filetype", [](std::string& s, SearchSettings* ss) { auto t = cppfind::FileTypes::from_name(s); ss->add_in_file_type(t); }},
                 {"in-linesafterpattern", [](std::string& s, SearchSettings* ss) { ss->add_in_lines_after_pattern(s); }},
                 {"in-linesbeforepattern", [](std::string& s, SearchSettings* ss) { ss->add_in_lines_before_pattern(s); }},
                 {"linesaftertopattern", [](std::string& s, SearchSettings* ss) { ss->add_lines_after_to_pattern(s); }},
@@ -29,11 +28,12 @@ namespace cppsearch {
                 {"out-dirpattern", [](std::string& s, SearchSettings* ss) { ss->add_out_dir_pattern(s); }},
                 {"out-ext", [](std::string& s, SearchSettings* ss) { ss->add_out_extension(s); }},
                 {"out-filepattern", [](std::string& s, SearchSettings* ss) { ss->add_out_file_pattern(s); }},
-                {"out-filetype", [](std::string& s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_file_type(t); }},
+                {"out-filetype", [](std::string& s, SearchSettings* ss) { auto t = cppfind::FileTypes::from_name(s); ss->add_out_file_type(t); }},
                 {"out-linesafterpattern", [](std::string& s, SearchSettings* ss) { ss->add_out_lines_after_pattern(s); }},
                 {"out-linesbeforepattern", [](std::string& s, SearchSettings* ss) { ss->add_out_lines_before_pattern(s); }},
                 {"path", [](std::string& s, SearchSettings* ss) { ss->add_path(s); }},
-                {"searchpattern", [](std::string& s, SearchSettings* ss) { ss->add_search_pattern(s); }}
+                {"searchpattern", [](std::string& s, SearchSettings* ss) { ss->add_search_pattern(s); }},
+                {"sort-by", [](std::string& s, SearchSettings* ss) { ss->set_sort_by(s); }}
         };
 
         m_int_arg_map = {
@@ -43,6 +43,10 @@ namespace cppsearch {
         };
 
         m_str_arg_map = {
+                {"maxlastmod", [](std::string& s, SearchSettings* ss) { ss->max_last_mod(cppfind::datestr_to_long(s)); }},
+                {"maxsize", [](std::string& s, SearchSettings* ss) { ss->max_size(std::stol(s)); }},
+                {"minlastmod", [](std::string& s, SearchSettings* ss) { ss->min_last_mod(cppfind::datestr_to_long(s)); }},
+                {"minsize", [](std::string& s, SearchSettings* ss) { ss->min_size(std::stol(s)); }},
                 {"settings-file", [this](std::string& s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
         };
 
@@ -51,9 +55,11 @@ namespace cppsearch {
                 {"allmatches", [](bool b, SearchSettings* ss) { ss->first_match(!b); }},
                 {"colorize", [](bool b, SearchSettings* ss) { ss->colorize(b); }},
                 {"debug", [](bool b, SearchSettings* ss) { ss->debug(b); }},
+                {"excludearchives", [](bool b, SearchSettings* ss) { ss->include_archives(!b); }},
                 {"excludehidden", [](bool b, SearchSettings* ss) { ss->exclude_hidden(b); }},
                 {"firstmatch", [](bool b, SearchSettings* ss) { ss->first_match(b); }},
                 {"help", [](bool b, SearchSettings* ss) { ss->print_usage(b); }},
+                {"includearchives", [](bool b, SearchSettings* ss) { ss->include_archives(b); }},
                 {"includehidden", [](bool b, SearchSettings* ss) { ss->exclude_hidden(!b); }},
                 {"listdirs", [](bool b, SearchSettings* ss) { ss->list_dirs(b); }},
                 {"listfiles", [](bool b, SearchSettings* ss) { ss->list_files(b); }},
@@ -66,6 +72,10 @@ namespace cppsearch {
                 {"printmatches", [](bool b, SearchSettings* ss) { ss->print_results(b); }},
                 {"recursive", [](bool b, SearchSettings* ss) { ss->recursive(b); }},
                 {"searcharchives", [](bool b, SearchSettings* ss) { ss->search_archives(b); }},
+                {"sort-ascending", [](bool b, SearchSettings* ss) { ss->sort_descending(!b); }},
+                {"sort-caseinsensitive", [](bool b, SearchSettings* ss) { ss->sort_case_insensitive(b); }},
+                {"sort-casesensitive", [](bool b, SearchSettings* ss) { ss->sort_case_insensitive(!b); }},
+                {"sort-descending", [](bool b, SearchSettings* ss) { ss->sort_descending(b); }},
                 {"uniquelines", [](bool b, SearchSettings* ss) { ss->unique_lines(b); }},
                 {"verbose", [](bool b, SearchSettings* ss) { ss->verbose(b); }},
                 {"version", [](bool b, SearchSettings* ss) { ss->print_version(b); }},
@@ -77,7 +87,7 @@ namespace cppsearch {
     }
 
     void SearchOptions::settings_from_file(std::string& file_path, SearchSettings* settings) {
-        if (!FileUtil::file_exists(file_path)) {
+        if (!cppfind::FileUtil::file_exists(file_path)) {
             std::string msg = "Settings file not found: ";
             msg.append(file_path);
             throw SearchException(msg);
@@ -149,7 +159,7 @@ namespace cppsearch {
         auto search_options_path = std::string(XSEARCHPATH);
         search_options_path.append("/shared/searchoptions.json");
 
-        if (!FileUtil::file_exists(search_options_path)) {
+        if (!cppfind::FileUtil::file_exists(search_options_path)) {
             std::string msg = "Searchoptions file not found: ";
             msg.append(search_options_path);
             throw SearchException(msg);

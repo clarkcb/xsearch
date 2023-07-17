@@ -1,18 +1,19 @@
 #include <catch2/catch.hpp>
-#include "SearchFile.h"
-#include "SearchPattern.h"
 #include "SearchResult.h"
 #include "SearchResultFormatter.h"
 #include "SearchSettings.h"
+#include "cppfind.h"
 
 TEST_CASE("Verify single-line result equals expected", "[SearchResult]") {
     auto *settings = new cppsearch::SearchSettings();
     settings->colorize(false);
     auto *formatter = new cppsearch::SearchResultFormatter(settings);
-    auto *pattern = new cppsearch::SearchPattern("Search");
+    auto *pattern = new cppfind::RegexPattern("Search");
     std::string path = "~/src/xsearch/csharp/CsSearch/CsSearch";
     std::string file_name = "Searcher.cs";
-    auto *search_file = new cppsearch::SearchFile(path, file_name, cppsearch::FileType::CODE);
+    uint64_t file_size = 0;
+    long mod_time = 0;
+    auto *search_file = new cppfind::FileResult(path, file_name, cppfind::FileType::CODE, file_size, mod_time);
     unsigned long line_num = 10;
     unsigned long match_start_idx = 15;
     unsigned long match_end_idx = 23;
@@ -32,10 +33,12 @@ TEST_CASE("Verify single-line-longer-than-max_line_length result equals expected
     settings->colorize(false);
     settings->max_line_length(100);
     auto *formatter = new cppsearch::SearchResultFormatter(settings);
-    auto *pattern = new cppsearch::SearchPattern("maxlen");
+    auto *pattern = new cppfind::RegexPattern("maxlen");
     std::string path = ".";
     std::string file_name = "maxlen.txt";
-    auto *search_file = new cppsearch::SearchFile(path, file_name, cppsearch::FileType::TEXT);
+    uint64_t file_size = 0;
+    long mod_time = 0;
+    auto *search_file = new cppfind::FileResult(path, file_name, cppfind::FileType::TEXT, file_size, mod_time);
     unsigned long line_num = 1;
     unsigned long match_start_idx = 53;
     unsigned long match_end_idx = 59;
@@ -55,10 +58,12 @@ TEST_CASE("Verify single-line-longer-and-colorize result equals expected", "[Sea
     settings->colorize(true);
     settings->max_line_length(100);
     auto *formatter = new cppsearch::SearchResultFormatter(settings);
-    auto *pattern = new cppsearch::SearchPattern("maxlen");
+    auto *pattern = new cppfind::RegexPattern("maxlen");
     std::string path = ".";
     std::string file_name = "maxlen.txt";
-    auto *search_file = new cppsearch::SearchFile(path, file_name, cppsearch::FileType::TEXT);
+    uint64_t file_size = 0;
+    long mod_time = 0;
+    auto *search_file = new cppfind::FileResult(path, file_name, cppfind::FileType::TEXT, file_size, mod_time);
     unsigned long line_num = 1;
     unsigned long match_start_idx = 53;
     unsigned long match_end_idx = 59;
@@ -80,10 +85,12 @@ TEST_CASE("Verify single-line-longer-and-colorize result equals expected", "[Sea
 TEST_CASE("Verify binary result equals expected", "[SearchResult]") {
     auto *settings = new cppsearch::SearchSettings();
     auto *formatter = new cppsearch::SearchResultFormatter(settings);
-    auto *pattern = new cppsearch::SearchPattern("Search");
+    auto *pattern = new cppfind::RegexPattern("Search");
     std::string path = "~/src/xsearch/csharp/CsSearch/CsSearch";
     std::string file_name = "Searcher.exe";
-    auto *search_file = new cppsearch::SearchFile(path, file_name, cppsearch::FileType::BINARY);
+    uint64_t file_size = 0;
+    long mod_time = 0;
+    auto *search_file = new cppfind::FileResult(path, file_name, cppfind::FileType::BINARY, file_size, mod_time);
     unsigned long line_num = 0;
     unsigned long match_start_idx = 0;
     unsigned long match_end_idx = 0;
@@ -101,10 +108,12 @@ TEST_CASE("Verify multiline result equals expected", "[SearchResult]") {
     settings->lines_before(2);
     settings->lines_after(2);
     auto *formatter = new cppsearch::SearchResultFormatter(settings);
-    auto *pattern = new cppsearch::SearchPattern("Search");
+    auto *pattern = new cppfind::RegexPattern("Search");
     std::string path = "~/src/xsearch/csharp/CsSearch/CsSearch";
     std::string file_name = "Searcher.cs";
-    auto *search_file = new cppsearch::SearchFile(path, file_name, cppsearch::FileType::CODE);
+    uint64_t file_size = 0;
+    long mod_time = 0;
+    auto *search_file = new cppfind::FileResult(path, file_name, cppfind::FileType::CODE, file_size, mod_time);
     unsigned long line_num = 10;
     unsigned long match_start_idx = 15;
     unsigned long match_end_idx = 23;

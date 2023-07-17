@@ -7,9 +7,9 @@ namespace cppsearch {
     }
 
     std::string SearchResultFormatter::format_matching_line(const SearchResult* result) const {
-        std::string formatted = StringUtil::trim_copy(result->line());
+        std::string formatted = cppfind::StringUtil::trim_copy(result->line());
         size_t formatted_length = formatted.length();
-        size_t leading_ws_count = StringUtil::rtrim_copy(result->line()).length() - formatted_length;
+        size_t leading_ws_count = cppfind::StringUtil::rtrim_copy(result->line()).length() - formatted_length;
         size_t max_line_end_index = formatted_length - 1;
         size_t match_length = result->match_end_idx() - result->match_start_idx();
         size_t match_start_index = result->match_start_idx() - 1 - leading_ws_count;
@@ -74,7 +74,7 @@ namespace cppsearch {
     }
 
     std::string SearchResultFormatter::single_line_format(const SearchResult* result) {
-        std::string result_string = std::string(result->search_file()->string());
+        std::string result_string = std::string(result->file()->string());
         if (result->line_num() == 0) {
             result_string.append(" matches at [")
                     .append(std::to_string(result->match_start_idx()))
@@ -102,10 +102,10 @@ namespace cppsearch {
     std::string SearchResultFormatter::multi_line_format(const SearchResult* result) {
         //const int line_sep_length = 80;
         std::string result_string = std::string("================================================================================\n");
-        if (result->search_file() == nullptr) {
+        if (result->file() == nullptr) {
             result_string.append("<text>");
         } else {
-            result_string.append(result->search_file()->string());
+            result_string.append(result->file()->string());
         }
         result_string.append(": ")
                 .append(std::to_string(result->line_num()))

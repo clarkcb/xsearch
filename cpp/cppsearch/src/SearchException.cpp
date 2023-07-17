@@ -5,7 +5,11 @@ namespace cppsearch {
         m_message = message;
     }
 
-    const char *SearchException::what() const throw() {
+    std::string SearchException::msg() const noexcept {
+        return m_message;
+    }
+
+    const char *SearchException::what() const noexcept {
         return m_message.c_str();
     }
 }

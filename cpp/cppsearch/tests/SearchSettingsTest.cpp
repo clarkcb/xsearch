@@ -8,17 +8,25 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(!settings->debug());
     REQUIRE(settings->exclude_hidden());
     REQUIRE(!settings->first_match());
+    REQUIRE(!settings->include_archives());
     REQUIRE((settings->lines_after() == 0));
     REQUIRE((settings->lines_before() == 0));
     REQUIRE(!settings->list_dirs());
     REQUIRE(!settings->list_files());
     REQUIRE(!settings->list_lines());
+    REQUIRE(settings->max_last_mod() == 0);
     REQUIRE((settings->max_line_length() == 150));
+    REQUIRE(settings->max_size() == 0);
+    REQUIRE(settings->min_last_mod() == 0);
+    REQUIRE(settings->min_size() == 0);
     REQUIRE(!settings->multi_line_search());
     REQUIRE(!settings->print_results());
     REQUIRE(!settings->print_usage());
     REQUIRE(!settings->print_version());
     REQUIRE(!settings->search_archives());
+    REQUIRE(settings->sort_by() == cppfind::SortBy::FILEPATH);
+    REQUIRE(!settings->sort_case_insensitive());
+    REQUIRE(!settings->sort_descending());
     REQUIRE(!settings->unique_lines());
     REQUIRE(!settings->verbose());
 
@@ -27,11 +35,13 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->in_dir_patterns()->empty());
     REQUIRE(settings->in_extensions()->empty());
     REQUIRE(settings->in_file_patterns()->empty());
+    REQUIRE(settings->in_file_types()->empty());
     REQUIRE(settings->out_archive_extensions()->empty());
     REQUIRE(settings->out_archive_file_patterns()->empty());
     REQUIRE(settings->out_dir_patterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_file_patterns()->empty());
+    REQUIRE(settings->out_file_types()->empty());
     REQUIRE(settings->paths()->empty());
     REQUIRE(settings->search_patterns()->empty());
 }

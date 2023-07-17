@@ -10,7 +10,7 @@ $cppSearchPath = Join-Path $env:XSEARCH_PATH 'cpp' 'cppsearch'
 # $configuration = 'debug'
 $configuration = 'release'
 $cmakeBuildPath = Join-Path $cppSearchPath "cmake-build-$configuration"
-$cppSearchExe = Join-Path $cmakeBuildPath 'cppsearch'
+$cppSearchExe = Join-Path $cmakeBuildPath 'cppsearchapp'
 
 if (Test-Path $cppSearchExe -PathType Leaf)
 {

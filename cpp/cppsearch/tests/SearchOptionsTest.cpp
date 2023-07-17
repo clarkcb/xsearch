@@ -36,7 +36,7 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_file_patterns()->empty());
 
-    std::vector<cppsearch::SearchPattern*>* search_patterns = settings->search_patterns();
+    std::vector<cppfind::RegexPattern*>* search_patterns = settings->search_patterns();
     REQUIRE(search_patterns->size() == 1);
     REQUIRE(search_patterns->at(0)->pattern() == "Searcher");
 
@@ -83,7 +83,7 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     REQUIRE(in_exts->at(0) == "java");
     REQUIRE(in_exts->at(1) == "scala");
 
-    std::vector<cppsearch::SearchPattern*>* search_patterns = settings->search_patterns();
+    std::vector<cppfind::RegexPattern*>* search_patterns = settings->search_patterns();
     REQUIRE(search_patterns->size() == 1);
     REQUIRE(search_patterns->at(0)->pattern() == "Searcher");
 
