@@ -33,11 +33,15 @@
     XCTAssert(![settings listDirs]);
     XCTAssert(![settings listFiles]);
     XCTAssert(![settings listLines]);
+    XCTAssert([settings maxSize] == 0);
+    XCTAssert([settings minSize] == 0);
     XCTAssert(![settings multiLineSearch]);
     XCTAssert([settings printResults]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
     XCTAssert(![settings searchArchives]);
+    XCTAssert(![settings sortCaseInsensitive]);
+    XCTAssert(![settings sortDescending]);
     XCTAssert(![settings uniqueLines]);
     XCTAssert(![settings verbose]);
 }

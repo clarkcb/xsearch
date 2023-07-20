@@ -1,3 +1,6 @@
+#ifndef SearchOption_h
+#define SearchOption_h
+
 #import <Foundation/Foundation.h>
 
 @interface SearchOption : NSObject
@@ -11,3 +14,5 @@
 - (NSString *) sortArg;
 
 @end
+
+#endif /* SearchOption_h */

@@ -1,5 +1,7 @@
+//#import <objcfind/common.h>
 #import "common.h"
 #import "FileUtil.h"
+#import "Regex.h"
 #import "Searcher.h"
 
 @implementation Searcher
@@ -7,7 +9,7 @@
 - (instancetype) initWithSettings:(SearchSettings*)settings error:(NSError**)error {
     self = [super init];
     if (self) {
-        self.fileTypes = [[FileTypes alloc] init];
+        self.finder = [[Finder alloc] initWithSettings:settings error:error];
         self.settings = settings;
         [self validateSettings:settings error:error];
     }
@@ -81,176 +83,25 @@
             ([outTypes count] == 0 || ![outTypes containsObject:num]));
 }
 
-- (BOOL) isSearchDir:(NSString*)dirPath {
-    if ([FileUtil isHidden:dirPath] && self.settings.excludeHidden) {
-        return false;
-    }
-    return [self filterByPatterns:dirPath inPatterns:self.settings.inDirPatterns outPatterns:self.settings.outDirPatterns];
-}
-
-- (BOOL) isSearchFile:(NSString*)filePath {
-    return [self filterByExtensions:[FileUtil getExtension:filePath]
-                       inExtensions:self.settings.inExtensions
-                      outExtensions:self.settings.outExtensions] &&
-    [self filterByPatterns:filePath
-                inPatterns:self.settings.inFilePatterns
-               outPatterns:self.settings.outFilePatterns];
-}
-
-- (BOOL) isSearchSearchFile:(SearchFile*)searchFile {
-    return [self filterByExtensions:[FileUtil getExtension:[searchFile filePath]]
-                       inExtensions:self.settings.inExtensions
-                      outExtensions:self.settings.outExtensions] &&
-    [self filterByPatterns:[searchFile filePath]
-                inPatterns:self.settings.inFilePatterns
-               outPatterns:self.settings.outFilePatterns] &&
-    [self filterByTypes:[searchFile fileType]
-                inTypes:self.settings.inFileTypes
-               outTypes:self.settings.outFileTypes]
-;
-}
-
-- (BOOL) isArchiveSearchFile:(NSString*)filePath {
-    return [self filterByExtensions:[FileUtil getExtension:filePath]
-                       inExtensions:self.settings.inArchiveExtensions
-                      outExtensions:self.settings.outArchiveExtensions] &&
-    [self filterByPatterns:filePath
-                inPatterns:self.settings.inArchiveFilePatterns
-               outPatterns:self.settings.outArchiveFilePatterns];
-}
-
-- (BOOL) filterFile:(NSString*)filePath {
-    if ([FileUtil isHidden:filePath] && self.settings.excludeHidden) {
-        return false;
-    }
-    FileType fileType = [self.fileTypes getFileType:filePath];
-    if (fileType == FileTypeArchive) {
-        return self.settings.searchArchives && [self isArchiveSearchFile:filePath];
-    }
-    return !self.settings.archivesOnly && [self isSearchFile:filePath];
-}
-
-- (SearchFile*) filterToSearchFile:(NSString*)filePath {
-    if ([FileUtil isHidden:filePath] && self.settings.excludeHidden) {
-        return false;
-    }
-    FileType fileType = [self.fileTypes getFileType:filePath];
-    if (fileType == FileTypeUnknown) {
-        return nil;
-    }
-    SearchFile *sf = [[SearchFile alloc] initWithFilePath:filePath fileType:fileType];
-    if ((fileType == FileTypeArchive && self.settings.searchArchives && [self isArchiveSearchFile:filePath]) ||
-        (!self.settings.archivesOnly && [self isSearchSearchFile:sf])) {
-        return sf;
-    }
-    return nil;
-}
-
 - (NSArray<SearchResult*>*) search:(NSError**)error {
     //logMsg(@"Searching...");
     NSMutableArray<SearchResult*> *results = [NSMutableArray array];
-    for (NSString *p in self.settings.paths) {
-        if ([FileUtil isDirectory:p]) {
-            [results addObjectsFromArray:[self searchDirPath:p error:error]];
-        } else {
-            // TODO: looks like we need to do filterFile on this
-            FileType fileType = [self.fileTypes getFileType:p];
-            SearchFile *sf = [[SearchFile alloc]
-                                    initWithFilePath:p
-                                    fileType:fileType];
-            [results addObjectsFromArray:[self searchFile:sf error:error]];
-        }
+    NSArray<FileResult*> *fileResults = [self.finder find:error];
+    for (FileResult *fr in fileResults) {
+        [results addObjectsFromArray:[self searchFile:fr error:error]];
     }
     return [NSArray arrayWithArray:results];
 }
 
-- (NSArray<SearchResult*>*) searchDirPath:(NSString*)filePath error:(NSError**)error {
-    //logMsg(@"Searching path...");
-    NSArray<SearchFile*> *searchFiles = [self getSearchFiles:filePath];
-
-    if (self.settings.verbose) {
-        NSMutableSet<NSString*> *dirSet = [NSMutableSet set];
-        for (SearchFile *sf in searchFiles) {
-            [dirSet addObject:[[sf description] stringByDeletingLastPathComponent]];
-        }
-        NSArray *searchDirs = [[NSArray arrayWithArray:[dirSet allObjects]] sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
-            return [s1 compare:s2];
-        }];
-
-        logMsg([NSString stringWithFormat:@"\nDirectories to be searched (%lu):", [searchDirs count]]);
-        for (NSString *d in searchDirs) {
-            logMsg([FileUtil relativePath:d to:filePath]);
-        }
-
-        logMsg([NSString stringWithFormat:@"\nFiles to be searched (%lu):", [searchFiles count]]);
-        for (SearchFile *sf in searchFiles) {
-            logMsg([FileUtil relativePath:[sf description] to:filePath]);
-        }
-    }
-
-    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
-    for (SearchFile *sf in searchFiles) {
-        [results addObjectsFromArray:[self searchFile:sf error:error]];
-        if (*error != nil) {
-            return [NSArray array];
-        }
-    }
-    return [NSArray arrayWithArray:results];
-}
-
-- (NSArray<SearchFile*>*) getSearchFiles:(NSString*)filePath {
-    NSMutableArray *searchFiles = [NSMutableArray array];
-    NSDirectoryEnumerator *enumerator = [FileUtil enumeratorForPath:filePath settings:self.settings];
-    NSURL *element = (NSURL*)[enumerator nextObject];
-    while (element != nil) {
-        NSNumber *isDirectory = nil;
-        [element getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:nil];
-        if ([isDirectory boolValue]) {
-            if (![self isSearchDir:[element path]]) {
-                [enumerator skipDescendants];
-            }
-        } else {
-            NSNumber *isRegularFile = nil;
-            [element getResourceValue:&isRegularFile forKey:NSURLIsRegularFileKey error:nil];
-            if ([isRegularFile boolValue]) {
-                NSString *filePath = [element path];
-                SearchFile *searchFile = [self filterToSearchFile:filePath];
-                if (searchFile != nil) {
-                    [searchFiles addObject:searchFile];
-                }
-            }
-        }
-        element = (NSURL*)[enumerator nextObject];
-    }
-    return [[NSArray arrayWithArray:searchFiles] sortedArrayUsingComparator:^NSComparisonResult(SearchFile *sf1, SearchFile *sf2) {
-        NSString *p1 = [[sf1 description] stringByDeletingLastPathComponent];
-        NSString *p2 = [[sf2 description] stringByDeletingLastPathComponent];
-        if ([p1 isEqualToString:p2]) {
-            NSString *f1 = [[sf1 description] lastPathComponent];
-            NSString *f2 = [[sf2 description] lastPathComponent];
-            return [f1 compare:f2];
-        }
-        return [p1 compare:p2];
-    }];
-
-}
-
-
-- (NSArray<SearchResult*>*) searchFilePath:(NSString*)filePath error:(NSError**)error {
-    FileType fileType = [self.fileTypes getFileType:filePath];
-    SearchFile *sf = [[SearchFile alloc] initWithFilePath:filePath fileType:fileType];
-    return [self searchFile:sf error:error];
-}
-
-- (NSArray<SearchResult*>*) searchFile:(SearchFile*)sf error:(NSError**)error {
-    switch (sf.fileType) {
+- (NSArray<SearchResult*>*) searchFile:(FileResult*)fr error:(NSError**)error {
+    switch (fr.fileType) {
         case FileTypeCode:
         case FileTypeText:
         case FileTypeXml:
-            return [self searchTextFile:sf error:error];
+            return [self searchTextFile:fr error:error];
             break;
         case FileTypeBinary:
-            return [self searchBinaryFile:sf error:error];
+            return [self searchBinaryFile:fr error:error];
             break;
         case FileTypeArchive:
         default:
@@ -259,8 +110,8 @@
     }
 }
 
-- (NSArray<SearchResult*>*) searchBinaryFile:(SearchFile*)sf error:(NSError**)error {
-    NSString *contents = [[NSString alloc] initWithContentsOfFile:sf.filePath
+- (NSArray<SearchResult*>*) searchBinaryFile:(FileResult*)fr error:(NSError**)error {
+    NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
                                                          encoding:NSISOLatin1StringEncoding
                                                             error:error];
     if (*error != nil) {
@@ -275,7 +126,7 @@
             }
             for (NSTextCheckingResult *m in matches) {
                 SearchResult *r = [[SearchResult alloc] initWithPattern:p.pattern
-                                                                   file:sf
+                                                                   file:fr
                                                                 lineNum:0
                                                         matchStartIndex:m.range.location + 1
                                                           matchEndIndex:m.range.location + m.range.length + 1
@@ -289,21 +140,19 @@
     return results;
 }
 
-- (NSArray<SearchResult*>*) searchTextFile:(SearchFile*)sf error:(NSError**)error {
-    NSArray<SearchResult*> *results = [NSArray array];
+- (NSArray<SearchResult*>*) searchTextFile:(FileResult*)fr error:(NSError**)error {
     if (self.settings.multiLineSearch) {
-        results = [self searchTextFileContents:sf error:error];
+        return [self searchTextFileContents:fr error:error];
     } else {
         // there is no line reader in ObjC, might not bother
         // implementing line-based searching
         //[self searchTextFileLines:sf error:error];
-        results = [self searchTextFileContents:sf error:error];
+        return [self searchTextFileContents:fr error:error];
     }
-    return results;
 }
 
-- (NSArray<SearchResult*>*) searchTextFileContents:(SearchFile*)sf error:(NSError**)error {
-    NSString *contents = [[NSString alloc] initWithContentsOfFile:sf.filePath
+- (NSArray<SearchResult*>*) searchTextFileContents:(FileResult*)fr error:(NSError**)error {
+    NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
                                                          encoding:self.textFileEncoding
                                                             error:error];
     if (*error != nil) {
@@ -318,7 +167,7 @@
     if (contents != nil) {
         results = [self searchMultiLineString:contents error:error];
         for (SearchResult *r in results) {
-            r.file = sf;
+            r.file = fr;
         }
     }
     return results;

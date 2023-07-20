@@ -1,3 +1,6 @@
+#ifndef SearchOptions_h
+#define SearchOptions_h
+
 #import <Foundation/Foundation.h>
 #import "SearchOption.h"
 #import "SearchSettings.h"
@@ -11,3 +14,5 @@
 - (void) usage:(int)code;
 
 @end
+
+#endif /* SearchOptions_h */

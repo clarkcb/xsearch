@@ -4,7 +4,7 @@
 @implementation SearchResult
 
 - (instancetype) initWithPattern:(NSString*)pattern
-                            file:(SearchFile*)file
+                            file:(FileResult*)file
                          lineNum:(unsigned long)lineNum
                  matchStartIndex:(unsigned long)matchStartIndex
                    matchEndIndex:(unsigned long)matchEndIndex

@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import "common.h"
 #import "Searcher.h"
 #import "SearchOptions.h"
 #import "SearchResult.h"

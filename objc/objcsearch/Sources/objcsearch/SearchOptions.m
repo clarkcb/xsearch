@@ -1,4 +1,4 @@
-#import "config.h"
+#import "SearchConfig.h"
 #import "Regex.h"
 #import "SearchOptions.h"
 
@@ -25,7 +25,7 @@
 }
 
 - (NSArray<SearchOption*>*) searchOptionsFromJson {
-    NSMutableString *searchOptionsJsonPath = [NSMutableString stringWithUTF8String:SHAREDPATH];
+    NSMutableString *searchOptionsJsonPath = [NSMutableString stringWithString:getXsearchSharedPath()];
     [searchOptionsJsonPath appendString:@"/searchoptions.json"];
     
     if (![[NSFileManager defaultManager] fileExistsAtPath:searchOptionsJsonPath]) {
@@ -176,9 +176,21 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
             ^void (NSString* s, SearchSettings *ss) {
                 ss.linesBefore = [s intValue];
             }, @"linesbefore",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setMaxLastModFromString:s];
+            }, @"maxlastmod",
             ^void (NSString* s, SearchSettings *ss) {
                 ss.maxLineLength = [s intValue];
             }, @"maxlinelength",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setMaxSizeFromString:s];
+            }, @"maxsize",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setMinLastModFromString:s];
+            }, @"minlastmod",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setMinSizeFromString:s];
+            }, @"minsize",
             ^void (NSString* s, SearchSettings *ss) {
                 [ss addOutArchiveExtension:s];
             }, @"out-archiveext",
@@ -209,6 +221,9 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
             ^void (NSString* s, SearchSettings *ss) {
                 [ss.searchPatterns addObject:[[Regex alloc] initWithPattern:s]];
             }, @"searchpattern",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setSortByFromName:s];
+            }, @"sort-by",
 //            ^void (NSString* s, SearchSettings *ss) {
 //                [self settingsFromFile:s settings:ss];
 //            }, @"settings-file",
@@ -242,6 +257,10 @@ typedef void (^BoolFlagActionBlockType)(BOOL, SearchSettings*);
             [^void (BOOL b, SearchSettings *ss) { ss.printResults = b; } copy], @"printmatches",
             [^void (BOOL b, SearchSettings *ss) { ss.recursive = b; } copy], @"recursive",
             [^void (BOOL b, SearchSettings *ss) { ss.searchArchives = b; } copy], @"searcharchives",
+            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
+            [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = b; } copy], @"sort-caseinsensitive",
+            [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = !b; } copy], @"sort-casesensitive",
+            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
             [^void (BOOL b, SearchSettings *ss) { ss.uniqueLines = b; } copy], @"uniquelines",
             [^void (BOOL b, SearchSettings *ss) { ss.verbose = b; } copy], @"verbose",
             [^void (BOOL b, SearchSettings *ss) { ss.printVersion = b; } copy], @"version",

@@ -12,7 +12,7 @@
     return self;
 }
 
--(NSString *) sortArg {
+- (NSString *) sortArg {
     if (self.shortArg) {
         return [NSString stringWithFormat:@"%@@%@", [self.shortArg lowercaseString], [self.longArg lowercaseString]];
     }
