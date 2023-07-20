@@ -345,21 +345,21 @@ class Searcher {
     }
     // this is the (almost) largest batch size you can have before you get the
     // "too many files open" errors
-    var _batchSize = 245;
-    var _offset = 0;
+    var batchSize = 245;
+    var offset = 0;
 
     var results = <SearchResult>[];
 
-    while (_offset < fileResults.length) {
-      var toIndex = min(_offset + _batchSize, fileResults.length);
+    while (offset < fileResults.length) {
+      var toIndex = min(offset + batchSize, fileResults.length);
       var fileResultsFutures =
-          fileResults.sublist(_offset, toIndex).map((sf) => _searchFile(sf));
+          fileResults.sublist(offset, toIndex).map((sf) => _searchFile(sf));
       await Future.wait(fileResultsFutures).then((filesResults) {
         for (var fileResults in filesResults) {
           results.addAll(fileResults);
         }
       });
-      _offset += _batchSize;
+      offset += batchSize;
     }
 
     return results;

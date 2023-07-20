@@ -204,25 +204,25 @@ build_cpp () {
             log "cd $CMAKE_BUILD_PATH"
             cd "$CMAKE_BUILD_PATH"
 
-            log "cmake -G \"Unix Makefiles\" .."
-            cmake -G "Unix Makefiles" ..
+            log "cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=$c .."
+            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
 
             # exec 5>&1
-            log "make -f Makefile"
+            # log "make -f Makefile"
             # OUTPUT=$(make -f Makefile | tee >(cat - >&5))
             # I=$(echo "$OUTPUT" | grep "\[100%\] Built target ")
-            make -f Makefile
+            # make -f Makefile
 
             cd -
         fi
 
         if [ -d "$CMAKE_BUILD_PATH" ]
         then
-            TARGETS=(clean cppsearch cppsearch-tests)
+            TARGETS=(clean cppsearch cppsearchapp cppsearch-tests)
             for t in ${TARGETS[*]}
             do
-                log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
-                cmake --build "$CMAKE_BUILD_DIR" --target "$t" -- -W -Wall -Werror
+                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- -W -Wall -Werror"
+                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- -W -Wall -Werror
 
                 # check for success/failure
                 # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
@@ -265,7 +265,7 @@ build_csharp () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -351,7 +351,7 @@ build_fsharp () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -723,8 +723,6 @@ build_perl () {
     mkdir -p "$RESOURCES_PATH"
     log "cp $SHARED_PATH/config.json $RESOURCES_PATH/"
     cp "$SHARED_PATH/config.json" "$RESOURCES_PATH/"
-    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
     log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
     cp "$SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
 
@@ -767,8 +765,6 @@ build_php () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
     log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
     cp "$SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
 
@@ -823,7 +819,7 @@ build_python () {
         return
     else
         PYTHON=$(basename "$PYTHON")
-        log "Using $PYTHON"
+        log "Using $PYTHON ($(which $PYTHON))"
     fi
 
     # Set to Yes to use venv
@@ -838,6 +834,8 @@ build_python () {
 
     if [ "$USE_VENV" == 'yes' ]
     then
+        log "Using venv"
+
         # if venv is active, deactivate it (in case it happens to be another venv that is active)
         if [ -n "$VIRTUAL_ENV" ]
         then
@@ -858,7 +856,17 @@ build_python () {
             log "source $PYSEARCH_PATH/venv/bin/activate"
             source $PYSEARCH_PATH/venv/bin/activate
         fi
+
+        # get the path to the venv version
+        PYTHON=$(which python3)
+        PYTHON=$(basename "$PYTHON")
+        log "Using $PYTHON ($(which $PYTHON))"
     fi
+
+    # install wheel - this seems to fix problems with installing local dependencies,
+    # which pyfind will be for pysearch
+    log "pip3 install wheel"
+    pip3 install wheel
 
     # install dependencies in requirements.txt
     log "pip3 install -r requirements.txt"
@@ -908,7 +916,7 @@ build_ruby () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"

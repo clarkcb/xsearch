@@ -13,9 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="CsFindLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>$(XFIND_PATH)\csharp\CsFind\CsFindLib\bin\$(Configuration)\$(TargetFramework)\CsFindLib.dll</HintPath>
-        </Reference>
+        <ProjectReference Include="..\..\..\..\xfind\csharp\CsFind\CsFindLib\CsFindLib.csproj" />
     </ItemGroup>
 
 </Project>

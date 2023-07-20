@@ -1,6 +1,5 @@
 import 'dart:io' show File;
 
-import 'package:dartsearch/dartsearch.dart' show FileType, SearchFile;
 import 'package:test/test.dart';
 
 void main() {

@@ -243,10 +243,10 @@ unittest_objc () {
         return
     fi
 
-    cd "$OBJCSEARCH_PATH"
     log "Unit-testing objcsearch"
-    log "xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests"
-    xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests
+    cd "$OBJCSEARCH_PATH"
+    log "swift test"
+    swift test
     cd -
 }
 

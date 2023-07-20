@@ -60,11 +60,7 @@ void main() {
     var line = '0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789';
     var result = SearchResult(pattern, searchFile, lineNum, matchStartIndex,
         matchEndIndex, line, [], []);
-    var expectedLine = '...89012345678901234567890123456789012345678901' +
-        ConsoleColor.GREEN +
-        'maxlen' +
-        ConsoleColor.RESET +
-        '89012345678901234567890123456789012345678901...';
+    var expectedLine = '...89012345678901234567890123456789012345678901${ConsoleColor.GREEN}maxlen${ConsoleColor.RESET}89012345678901234567890123456789012345678901...';
     var expectedOutput = '$path: $lineNum: [$matchStartIndex:$matchEndIndex]: $expectedLine';
     var output = formatter.format(result);
     expect(output, expectedOutput);

@@ -1,4 +1,3 @@
-import 'package:dartsearch/dartsearch.dart' show FileTypes, FileType;
 import 'package:test/test.dart';
 
 void main() {

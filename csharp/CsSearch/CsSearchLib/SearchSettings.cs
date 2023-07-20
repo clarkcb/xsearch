@@ -135,13 +135,13 @@ public class SearchSettings : FindSettings
 			if (elemCount > 0)
 				sb.Append(", ");
 			if (t == typeof(string))
-				sb.Append("\"");
+				sb.Append('"');
 			sb.Append(x);
 			if (t == typeof(string))
-				sb.Append("\"");
+				sb.Append('"');
 			elemCount++;
 		}
-		sb.Append("]");
+		sb.Append(']');
 		return sb.ToString();
 	}
 

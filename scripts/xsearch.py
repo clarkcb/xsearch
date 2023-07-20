@@ -37,6 +37,8 @@ xsearch_dict = {
     'perl':       'plsearch',
     'pl':         'plsearch',
     'php':        'phpsearch',
+    # 'powershell': 'ps1search',
+    # 'ps1':        'ps1search',
     'python':     'pysearch',
     'py':         'pysearch',
     'ruby':       'rbsearch',

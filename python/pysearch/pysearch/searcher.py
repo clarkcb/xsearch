@@ -175,6 +175,10 @@ class Searcher(object):
             search_result.file = fr
         return search_results
 
+    def search_string(self, s: str) -> List[SearchResult]:
+        """An alias for search_multi_line_string"""
+        return self.search_multi_line_string(s)
+
     def search_multi_line_string(self, s: str) -> List[SearchResult]:
         """Search a given searchable string possibly containing multiple newlines
            and return a list of SearchResult instances (without file_name)

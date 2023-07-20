@@ -286,7 +286,7 @@ namespace cppsearch {
     }
 
     std::string SearchOptions::get_usage_string() {
-        auto* usage_string = new std::string("\nUsage:\n cppsearch [options] -s <search_pattern> <path> [<path> ...]\n\nOptions:\n");
+        auto* usage_string = new std::string("\nUsage:\n cppsearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n");
 
         std::vector<std::string> opt_strings = {};
         std::vector<std::string> opt_descs = {};
