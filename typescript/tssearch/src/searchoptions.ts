@@ -7,7 +7,7 @@
 "use strict";
 
 import * as config from './config';
-import {FileUtil, SortUtil} from 'tsfind';
+import {FileUtil, FindSettings, SortUtil} from 'tsfind';
 import {SearchOption} from './searchoption';
 import {SearchSettings} from './searchsettings';
 
@@ -61,12 +61,16 @@ export class SearchOptions {
                 (x: string, settings: SearchSettings) => { settings.addLinesAfterUntilPatterns(x); },
             'linesbefore':
                 (x: string, settings: SearchSettings) => { settings.linesBefore = parseInt(x); },
+            'maxdepth':
+                (x: string, settings: SearchSettings) => { settings.maxDepth = parseInt(x, 10); },
             'maxlastmod':
                 (x: string, settings: SearchSettings) => { settings.maxLastModFromString(x); },
             'maxlinelength':
                 (x: string, settings: SearchSettings) => { settings.maxLineLength = parseInt(x); },
             'maxsize':
                 (x: string, settings: SearchSettings) => { settings.maxSize = parseInt(x, 10); },
+            'mindepth':
+                (x: string, settings: SearchSettings) => { settings.minDepth = parseInt(x, 10); },
             'minlastmod':
                 (x: string, settings: SearchSettings) => { settings.minLastModFromString(x); },
             'minsize':
