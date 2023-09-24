@@ -149,6 +149,9 @@ module RbSearch
         'linesbefore': lambda { |x, settings|
           settings.lines_before = x.to_i
         },
+        'maxdepth': lambda { |x, settings|
+          settings.max_depth = x.to_i
+        },
         'maxlastmod': lambda { |x, settings|
           settings.max_last_mod = DateTime.parse(x)
         },
@@ -157,6 +160,9 @@ module RbSearch
         },
         'maxsize': lambda { |x, settings|
           settings.max_size = x.to_i
+        },
+        'mindepth': lambda { |x, settings|
+          settings.min_depth = x.to_i
         },
         'minlastmod': lambda { |x, settings|
           settings.min_last_mod = DateTime.parse(x)

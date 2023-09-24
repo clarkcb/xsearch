@@ -79,7 +79,9 @@ module RbSearch
       s << ", list_dirs: #{@list_dirs}"
       s << ", list_files: #{@list_files}"
       s << ", list_lines: #{@list_lines}"
+      s << ", max_depth: #{@max_depth}"
       s << ", max_line_length: #{@max_line_length}"
+      s << ", min_depth: #{@min_depth}"
       s << ", multi_line_search: #{@multi_line_search}"
       s << ', ' + list_to_s('out_archive_extensions', @out_archive_extensions)
       s << ', ' + list_to_s('out_archive_file_patterns', @out_archive_file_patterns)
