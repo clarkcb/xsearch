@@ -79,12 +79,16 @@ class SearchOptions {
                 { s, ss -> ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns.plus(Regex(s))) },
         "linesbefore" to
                 { s, ss -> ss.copy(linesBefore = s.toInt()) },
+        "maxdepth" to
+                { s, ss -> ss.copy(maxDepth = Integer.parseInt(s)) },
         "maxlastmod" to
                 { s, ss -> ss.copy(maxLastMod = getLastModFromString(s)) },
         "maxlinelength" to
                 { s, ss -> ss.copy(maxLineLength = s.toInt()) },
         "maxsize" to
                 { s, ss -> ss.copy(maxSize = Integer.parseInt(s)) },
+        "mindepth" to
+                { s, ss -> ss.copy(minDepth = Integer.parseInt(s)) },
         "minlastmod" to
                 { s, ss -> ss.copy(minLastMod = getLastModFromString(s)) },
         "minsize" to
