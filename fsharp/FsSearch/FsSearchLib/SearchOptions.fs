@@ -28,9 +28,11 @@ module SearchOptions =
             ("linesaftertopattern", (fun (s : string) (settings : SearchSettings) -> settings.LinesAfterToPatterns <- settings.AddPattern s settings.LinesAfterToPatterns))
             ("linesafteruntilpattern", (fun (s : string) (settings : SearchSettings) -> settings.LinesAfterUntilPatterns <- settings.AddPattern s settings.LinesAfterUntilPatterns))
             ("linesbefore", (fun (s : string) (settings : SearchSettings) -> settings.LinesBefore <- Int32.Parse(s)))
+            ("maxdepth", (fun (s : string) (settings : SearchSettings) -> settings.MaxDepth <- int s));
             ("maxlastmod", (fun (s : string) (settings : SearchSettings) -> settings.MaxLastMod <- Some(DateTime.Parse(s))));
             ("maxlinelength", (fun (s : string) (settings : SearchSettings) -> settings.MaxLineLength <- Int32.Parse(s)))
             ("maxsize", (fun (s : string) (settings : SearchSettings) -> settings.MaxSize <- int s));
+            ("mindepth", (fun (s : string) (settings : SearchSettings) -> settings.MinDepth <- int s));
             ("minlastmod", (fun (s : string) (settings : SearchSettings) -> settings.MinLastMod <- Some(DateTime.Parse(s))));
             ("minsize", (fun (s : string) (settings : SearchSettings) -> settings.MinSize <- int s));
             ("out-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.OutArchiveExtensions <- settings.AddExtensions s settings.OutArchiveExtensions))

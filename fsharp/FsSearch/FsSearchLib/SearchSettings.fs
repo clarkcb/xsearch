@@ -54,9 +54,11 @@ type SearchSettings() =
             $", ListDirs: %b{this.ListDirs}";
             $", ListFiles: %b{this.ListFiles}";
             $", ListLines: %b{this.ListLines}";
+            $", MaxDepth: %i{this.MaxDepth}";
             $", MaxLastMod: %s{this.DateTimeOptionListToString this.MaxLastMod}";
             $", MaxLineLength: %d{this.MaxLineLength}";
             $", MaxSize: %i{this.MaxSize}";
+            $", MinDepth: %i{this.MinDepth}";
             $", MinLastMod: %s{this.DateTimeOptionListToString this.MinLastMod}";
             $", MinSize: %i{this.MinSize}";
             $", MultiLineSearch: %b{this.MultiLineSearch}";
