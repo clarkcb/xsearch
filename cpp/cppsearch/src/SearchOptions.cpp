@@ -43,8 +43,10 @@ namespace cppsearch {
         };
 
         m_str_arg_map = {
+                {"maxdepth", [](std::string& s, SearchSettings* ss) { ss->max_depth(std::stoi(s)); }},
                 {"maxlastmod", [](std::string& s, SearchSettings* ss) { ss->max_last_mod(cppfind::datestr_to_long(s)); }},
                 {"maxsize", [](std::string& s, SearchSettings* ss) { ss->max_size(std::stol(s)); }},
+                {"mindepth", [](std::string& s, SearchSettings* ss) { ss->min_depth(std::stoi(s)); }},
                 {"minlastmod", [](std::string& s, SearchSettings* ss) { ss->min_last_mod(cppfind::datestr_to_long(s)); }},
                 {"minsize", [](std::string& s, SearchSettings* ss) { ss->min_size(std::stol(s)); }},
                 {"settings-file", [this](std::string& s, SearchSettings* ss) { this->settings_from_file(s, ss); }}

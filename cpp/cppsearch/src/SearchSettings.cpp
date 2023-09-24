@@ -190,9 +190,11 @@ namespace cppsearch {
                 + ", list_dirs: " + bool_to_string(list_dirs())
                 + ", list_files: " + bool_to_string(list_files())
                 + ", list_lines: " + bool_to_string(m_list_lines)
+                + ", max_depth: " + std::to_string(m_max_depth)
                 + ", max_last_mod: \"" + cppfind::long_to_datestr(m_max_last_mod) + "\""
                 + ", max_line_length: " + std::to_string(m_max_line_length)
                 + ", max_size: " + std::to_string(m_max_size)
+                + ", min_depth: " + std::to_string(m_min_depth)
                 + ", min_last_mod: \"" + cppfind::long_to_datestr(m_min_last_mod) + "\""
                 + ", min_size: " + std::to_string(m_min_size)
                 + ", multi_line_search: " + bool_to_string(m_multi_line_search)
