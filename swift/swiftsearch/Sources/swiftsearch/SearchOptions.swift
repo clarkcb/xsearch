@@ -97,6 +97,9 @@ public class SearchOptions {
             "linesbefore": { (str: String, settings: SearchSettings) -> Void in
                 settings.linesBefore = Int(str)!
             },
+            "maxdepth": { (str: String, settings: SearchSettings) -> Void in
+                settings.setMaxDepthFromString(str)
+            },
             "maxlastmod": { (str: String, settings: SearchSettings) -> Void in
                 settings.setMaxLastModFromString(str)
             },
@@ -105,6 +108,9 @@ public class SearchOptions {
             },
             "maxsize": { (str: String, settings: SearchSettings) -> Void in
                 settings.setMaxSizeFromString(str)
+            },
+            "mindepth": { (str: String, settings: SearchSettings) -> Void in
+                settings.setMinDepthFromString(str)
             },
             "minlastmod": { (str: String, settings: SearchSettings) -> Void in
                 settings.setMinSizeFromString(str)

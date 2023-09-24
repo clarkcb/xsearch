@@ -107,9 +107,11 @@ public class SearchSettings: FindSettings {
             ", listDirs=\(listDirs)" +
             ", listFiles=\(listFiles)" +
             ", listLines=\(listLines)" +
+            ", maxDepth=\(maxDepth)" +
             ", maxLastMod=\(dateToString(maxLastMod))" +
             ", maxLineLength=\(maxLineLength)" +
             ", maxSize=\(maxSize)" +
+            ", minDepth=\(minDepth)" +
             ", minLastMod=\(dateToString(minLastMod))" +
             ", minSize=\(minSize)" +
             ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
