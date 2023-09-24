@@ -43,9 +43,11 @@ class SearchOptions
             'linesafteruntilpattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->lines_after_until_patterns),
             'linesbefore' => fn (string $s, SearchSettings $ss) => $ss->lines_before = intval($s),
+            'maxdepth' => fn (string $s, SearchSettings $ss) => $ss->max_depth = intval($s),
             'maxlastmod' => fn (string $s, SearchSettings $ss) => $ss->max_last_mod = new \DateTime($s),
             'maxlinelength' => fn (string $s, SearchSettings $ss) => $ss->max_line_length = intval($s),
             'maxsize' => fn (string $s, SearchSettings $ss) => $ss->max_size = intval($s),
+            'mindepth' => fn (string $s, SearchSettings $ss) => $ss->min_depth = intval($s),
             'minlastmod' => fn (string $s, SearchSettings $ss) => $ss->min_last_mod = new \DateTime($s),
             'minsize' => fn (string $s, SearchSettings $ss) => $ss->min_size = intval($s),
             'out-archiveext' =>

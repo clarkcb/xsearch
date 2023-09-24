@@ -108,6 +108,11 @@
       "desc": "Generate a list of the matching lines after searching"
     },
     {
+      "long": "maxdepth",
+      "arg": "size",
+      "desc": "Find files at most maxdepth levels below startpath"
+    },
+    {
       "long": "maxlastmod",
       "arg": "datetime",
       "desc": "Find files with lastmod less than or equal to maxlastmod"
@@ -121,6 +126,11 @@
       "long": "maxsize",
       "arg": "size",
       "desc": "Find files with size <= maxsize"
+    },
+    {
+      "long": "mindepth",
+      "arg": "size",
+      "desc": "Find files at least mindepth levels below startpath"
     },
     {
       "long": "minlastmod",

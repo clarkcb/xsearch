@@ -128,9 +128,11 @@ class SearchSettings extends FindSettings
             ', list_dirs: %s' .
             ', list_files: %s' .
             ', list_lines: %s' .
+            ', max_depth: %d' .
             ', max_last_mod: %s' .
             ', max_line_length: %d' .
             ', max_size: %d' .
+            ', min_depth: %d' .
             ', min_last_mod: %s' .
             ', min_size: %d' .
             ', multi_line_search: %s' .
@@ -177,8 +179,10 @@ class SearchSettings extends FindSettings
             StringUtil::bool_to_string($this->list_files),
             StringUtil::bool_to_string($this->list_lines),
             StringUtil::datetime_to_string($this->max_last_mod),
+            $this->max_depth,
             $this->max_line_length,
             $this->max_size,
+            $this->min_depth,
             StringUtil::datetime_to_string($this->min_last_mod),
             $this->min_size,
             StringUtil::bool_to_string($this->multi_line_search),

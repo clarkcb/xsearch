@@ -27,7 +27,7 @@
         "clarkcb/phpfind": "@dev"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.6.6"
+        "phpunit/phpunit": "^9.6.13"
     },
     "bin": ["bin/phpsearch.php"]
 }
