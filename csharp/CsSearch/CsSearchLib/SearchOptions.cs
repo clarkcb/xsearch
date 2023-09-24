@@ -29,12 +29,14 @@ public class SearchOptions
 			{ "linesaftertopattern", (s, settings) => settings.AddLinesAfterToPattern(s) },
 			{ "linesafteruntilpattern", (s, settings) => settings.AddLinesAfterUntilPattern(s) },
 			{ "linesbefore", (s, settings) => settings.LinesBefore = int.Parse(s) },
+			{ "maxdepth", (s, settings) => settings.MaxDepth = int.Parse(s) },
 			{ "maxlastmod", (s, settings) => {
 					settings.MaxLastMod = DateTime.Parse(s);
 				}
 			},
 			{ "maxlinelength", (s, settings) => settings.MaxLineLength = int.Parse(s) },
 			{ "maxsize", (s, settings) => settings.MaxSize = int.Parse(s) },
+			{ "mindepth", (s, settings) => settings.MinDepth = int.Parse(s) },
 			{ "minlastmod", (s, settings) => {
 					settings.MinLastMod = DateTime.Parse(s);
 				}

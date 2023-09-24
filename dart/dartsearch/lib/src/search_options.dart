@@ -87,11 +87,13 @@ class SearchOptions {
           ss.addPattern(s, ss.linesAfterUntilPatterns),
       'linesbefore': (String s, SearchSettings ss) =>
           ss.linesBefore = int.parse(s),
+      'maxdepth': (String s, FindSettings ss) => ss.maxDepth = int.parse(s),
       'maxlastmod': (String s, FindSettings ss) =>
           ss.maxLastMod = DateTime.parse(s),
       'maxlinelength': (String s, SearchSettings ss) =>
           ss.maxLineLength = int.parse(s),
       'maxsize': (String s, FindSettings ss) => ss.maxSize = int.parse(s),
+      'mindepth': (String s, FindSettings ss) => ss.minDepth = int.parse(s),
       'minlastmod': (String s, FindSettings ss) =>
           ss.minLastMod = DateTime.parse(s),
       'minsize': (String s, FindSettings ss) => ss.minSize = int.parse(s),

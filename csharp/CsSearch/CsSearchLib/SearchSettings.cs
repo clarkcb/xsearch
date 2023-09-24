@@ -168,9 +168,11 @@ public class SearchSettings : FindSettings
 		       ", ListDirs: " + ListDirs +
 		       ", ListFiles: " + ListFiles +
 		       ", ListLines: " + ListLines +
+		       ", MaxDepth: " + MaxDepth +
 		       ", MaxLastMod: " + DateTimeToString(MaxLastMod) +
 		       ", MaxLineLength: " + MaxLineLength +
 		       ", MaxSize: " + MaxSize +
+		       ", MinDepth: " + MinDepth +
 		       ", MinLastMod: " + DateTimeToString(MinLastMod) +
 		       ", MinSize: " + MinSize +
 		       ", MultiLineSearch: " + MultiLineSearch +
