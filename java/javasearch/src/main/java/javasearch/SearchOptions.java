@@ -56,9 +56,11 @@ public class SearchOptions {
             put("linesaftertopattern", (s, settings) -> settings.addLinesAfterToPattern(s));
             put("linesafteruntilpattern", (s, settings) -> settings.addLinesAfterUntilPattern(s));
             put("linesbefore", (s, settings) -> settings.setLinesBefore(Integer.parseInt(s)));
+            put("maxdepth", (s, settings) -> settings.setMaxDepth(Integer.parseInt(s)));
             put("maxlastmod", (s, settings) -> settings.setMaxLastMod(s));
             put("maxlinelength", (s, settings) -> settings.setMaxLineLength(Integer.parseInt(s)));
             put("maxsize", (s, settings) -> settings.setMaxSize(Integer.parseInt(s)));
+            put("mindepth", (s, settings) -> settings.setMinDepth(Integer.parseInt(s)));
             put("minlastmod", (s, settings) -> settings.setMinLastMod(s));
             put("minsize", (s, settings) -> settings.setMinSize(Integer.parseInt(s)));
             put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
