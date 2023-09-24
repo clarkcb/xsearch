@@ -19,7 +19,9 @@ object DefaultSettings {
   val listDirs = false
   val listFiles = false
   val listLines = false
+  val maxDepth: Int = -1
   val maxLineLength = 150
+  val minDepth: Int = -1
   var multiLineSearch = false
   var paths: Set[String] = Set.empty[String]
   var printResults = false
@@ -52,9 +54,11 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           listDirs: Boolean = DefaultSettings.listDirs,
                           listFiles: Boolean = DefaultSettings.listFiles,
                           listLines: Boolean = DefaultSettings.listLines,
+                          maxDepth: Int = DefaultSettings.maxDepth,
                           maxLastMod: Option[LocalDateTime] = None,
                           maxLineLength: Int = DefaultSettings.maxLineLength,
                           maxSize: Int = 0,
+                          minDepth: Int = DefaultSettings.minDepth,
                           minLastMod: Option[LocalDateTime] = None,
                           minSize: Int = 0,
                           multiLineSearch: Boolean = DefaultSettings.multiLineSearch,
@@ -96,8 +100,10 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
     includeArchives = searchArchives,
     listDirs = listDirs,
     listFiles = listFiles,
+    maxDepth = maxDepth,
     maxLastMod = maxLastMod,
     maxSize = maxSize,
+    minDepth = minDepth,
     minLastMod = minLastMod,
     minSize = minSize,
     outArchiveExtensions = outArchiveExtensions,
@@ -157,9 +163,11 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", listDirs: " + listDirs +
       ", listFiles: " + listFiles +
       ", listLines: " + listLines +
+      ", maxDepth: " + maxDepth +
       ", maxLastMod: " + maxLastMod +
       ", maxLineLength: " + maxLineLength +
       ", maxSize: " + maxSize +
+      ", minDepth: " + minDepth +
       ", minLastMod: " + minLastMod +
       ", minSize: " + minSize +
       ", multiLineSearch: " + multiLineSearch +

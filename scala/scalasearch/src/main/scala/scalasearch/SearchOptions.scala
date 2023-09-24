@@ -104,12 +104,16 @@ object SearchOptions {
       ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
     "linesbefore" ->
       ((s, ss) => ss.copy(linesBefore = s.toInt)),
+    "maxdepth" ->
+      ((s, ss) => ss.copy(maxDepth = s.toInt)),
     "maxlastmod" ->
       ((s, ss) => ss.copy(maxLastMod = getLastModFromString(s))),
     "maxlinelength" ->
       ((s, ss) => ss.copy(maxLineLength = s.toInt)),
     "maxsize" ->
       ((s, ss) => ss.copy(maxSize = s.toInt)),
+    "mindepth" ->
+      ((s, ss) => ss.copy(minDepth = s.toInt)),
     "minlastmod" ->
       ((s, ss) => ss.copy(minLastMod = getLastModFromString(s))),
     "minsize" ->
