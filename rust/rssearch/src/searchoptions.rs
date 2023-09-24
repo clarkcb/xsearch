@@ -307,7 +307,7 @@ impl SearchOptions {
 }
 
 fn get_arg_map() -> HashMap<String, ArgAction> {
-    let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(23);
+    let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(28);
     arg_map.insert(
         "encoding".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
@@ -394,6 +394,18 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
         ),
     );
     arg_map.insert(
+        "maxdepth".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            Ok(settings.set_max_depth(s.parse::<i64>().unwrap()))
+        }),
+    );
+    arg_map.insert(
+        "mindepth".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            Ok(settings.set_min_depth(s.parse::<i64>().unwrap()))
+        }),
+    );
+    arg_map.insert(
         "out-archiveext".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_archive_extension(s.to_string()))
@@ -452,7 +464,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
 }
 
 fn get_flag_map() -> HashMap<String, FlagAction> {
-    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(19);
+    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(21);
     flag_map.insert(
         "allmatches".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_first_match(!b))),

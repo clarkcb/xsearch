@@ -226,6 +226,14 @@ impl SearchSettings {
         self._list_lines = b
     }
 
+    pub fn max_depth(&self) -> i64 {
+        self._find_settings.max_depth()
+    }
+
+    pub fn set_max_depth(&mut self, m: i64) {
+        self._find_settings.set_max_depth(m)
+    }
+
     pub fn max_last_mod(&self) -> u64 {
         self._find_settings.max_last_mod()
     }
@@ -242,13 +250,20 @@ impl SearchSettings {
         self._max_line_length = u
     }
 
-
     pub fn max_size(&self) -> u64 {
         self._find_settings.max_size()
     }
 
     pub fn set_max_size(&mut self, u: u64) {
         self._find_settings.set_max_size(u)
+    }
+
+    pub fn min_depth(&self) -> i64 {
+        self._find_settings.min_depth()
+    }
+
+    pub fn set_min_depth(&mut self, m: i64) {
+        self._find_settings.set_min_depth(m)
     }
 
     pub fn min_last_mod(&self) -> u64 {
@@ -473,9 +488,11 @@ mod tests {
         assert_eq!(settings.list_dirs(), false);
         assert_eq!(settings.list_files(), false);
         assert_eq!(settings.list_lines(), false);
+        assert_eq!(settings.max_depth(), -1);
         assert_eq!(settings.max_last_mod(), 0);
         assert_eq!(settings.max_line_length(), 150);
         assert_eq!(settings.max_size(), 0);
+        assert_eq!(settings.min_depth(), -1);
         assert_eq!(settings.min_last_mod(), 0);
         assert_eq!(settings.min_size(), 0);
         assert_eq!(settings.multi_line_search(), false);
