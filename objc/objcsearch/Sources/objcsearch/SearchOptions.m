@@ -177,6 +177,9 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
                 ss.linesBefore = [s intValue];
             }, @"linesbefore",
             ^void (NSString* s, FindSettings *ss) {
+                [ss setMaxDepthFromString:s];
+            }, @"maxdepth",
+            ^void (NSString* s, FindSettings *ss) {
                 [ss setMaxLastModFromString:s];
             }, @"maxlastmod",
             ^void (NSString* s, SearchSettings *ss) {
@@ -185,6 +188,9 @@ typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
             ^void (NSString* s, FindSettings *ss) {
                 [ss setMaxSizeFromString:s];
             }, @"maxsize",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setMinDepthFromString:s];
+            }, @"mindepth",
             ^void (NSString* s, FindSettings *ss) {
                 [ss setMinLastModFromString:s];
             }, @"minlastmod",
