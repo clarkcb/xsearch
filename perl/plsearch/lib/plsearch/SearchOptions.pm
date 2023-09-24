@@ -77,6 +77,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->{lines_before} = int($s);
     },
+    'maxdepth' => sub {
+        my ($s, $settings) = @_;
+        $settings->{max_depth} = int($s);
+    },
     'maxlastmod' => sub {
         my ($s, $settings) = @_;
         $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
@@ -88,6 +92,10 @@ my $arg_action_hash = {
     'maxsize' => sub {
         my ($s, $settings) = @_;
         $settings->{max_size} = int($s);
+    },
+    'mindepth' => sub {
+        my ($s, $settings) = @_;
+        $settings->{min_depth} = int($s);
     },
     'minlastmod' => sub {
         my ($s, $settings) = @_;
