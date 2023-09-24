@@ -223,6 +223,18 @@ func (s *SearchSettings) SetListLines(b bool) {
 	s.listLines = b
 }
 
+func (s *SearchSettings) MaxDepth() int {
+	return s.FindSettings.MaxDepth()
+}
+
+func (s *SearchSettings) SetMaxDepth(i int) {
+	s.FindSettings.SetMaxDepth(i)
+}
+
+func (s *SearchSettings) SetMaxDepthFromString(depthStr string) {
+	s.FindSettings.SetMaxDepthFromString(depthStr)
+}
+
 func (s *SearchSettings) MaxLastMod() time.Time {
 	return s.FindSettings.MaxLastMod()
 }
@@ -249,6 +261,18 @@ func (s *SearchSettings) MaxSize() int64 {
 
 func (s *SearchSettings) SetMaxSize(i int64) {
 	s.FindSettings.SetMaxSize(i)
+}
+
+func (s *SearchSettings) MinDepth() int {
+	return s.FindSettings.MinDepth()
+}
+
+func (s *SearchSettings) SetMinDepth(i int) {
+	s.FindSettings.SetMinDepth(i)
+}
+
+func (s *SearchSettings) SetMinDepthFromString(depthStr string) {
+	s.FindSettings.SetMinDepthFromString(depthStr)
 }
 
 func (s *SearchSettings) MinLastMod() time.Time {
@@ -445,9 +469,11 @@ func (s *SearchSettings) String() string {
 		", ListDirs: %t" +
 		", ListFiles: %t" +
 		", ListLines: %t" +
+		", MaxDepth: %s" +
 		", MaxLastMod: %s" +
 		", MaxLineLength: %d" +
 		", MaxSize: %d" +
+		", MinDepth: %s" +
 		", MinLastMod: %s" +
 		", MinSize: %d" +
 		", MultiLineSearch: %t" +
@@ -493,9 +519,11 @@ func (s *SearchSettings) String() string {
 		s.ListDirs(),
 		s.ListFiles(),
 		s.ListLines(),
+		s.MaxDepth(),
 		gofind.LastModToString(s.MaxLastMod()),
 		s.MaxLineLength(),
 		s.MaxSize(),
+		s.MinDepth(),
 		gofind.LastModToString(s.MinLastMod()),
 		s.MinSize(),
 		s.MultiLineSearch(),

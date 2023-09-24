@@ -265,6 +265,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 				gofind.Log(fmt.Sprintf("Invalid value for linesbefore: %s\n", s))
 			}
 		},
+		"maxdepth": func(s string, settings *SearchSettings) {
+			settings.SetMaxDepthFromString(s)
+		},
 		"maxlinelength": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
 			if err == nil {
@@ -272,6 +275,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			} else {
 				gofind.Log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
 			}
+		},
+		"mindepth": func(s string, settings *SearchSettings) {
+			settings.SetMinDepthFromString(s)
 		},
 		"out-archiveext": func(s string, settings *SearchSettings) {
 			settings.AddOutArchiveExtension(s)
