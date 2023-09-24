@@ -36,9 +36,11 @@
     list-dirs
     list-files
     list-lines
+    max-depth
     max-last-mod
     max-line-length
     max-size
+    min-depth
     min-last-mod
     min-size
     multi-line-search
@@ -87,9 +89,11 @@
    false     ; list-dirs
    false     ; list-files
    false     ; list-lines
+   -1        ; max-depth
    nil       ; max-last-mod
    150       ; max-line-length
    0         ; max-size
+   -1        ; min-depth
    nil       ; min-last-mod
    0         ; min-size
    false     ; multi-line-search
@@ -130,8 +134,10 @@
    (:in-file-types search-settings)             ; in-file-types
    (:list-dirs search-settings)                 ; list-dirs
    (:list-files search-settings)                ; list-files
+   (:max-depth search-settings)                 ; max-depth
    (:max-last-mod search-settings)              ; max-last-mod
    (:max-size search-settings)                  ; max-size
+   (:min-depth search-settings)                 ; min-depth
    (:min-last-mod search-settings)              ; min-last-mod
    (:min-size search-settings)                  ; min-size
    (:out-archive-extensions search-settings)    ; out-archive-extensions
