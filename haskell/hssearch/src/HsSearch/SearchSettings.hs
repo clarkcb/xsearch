@@ -34,9 +34,11 @@ data SearchSettings = SearchSettings {
                                      , listDirs :: Bool
                                      , listFiles :: Bool
                                      , listLines :: Bool
+                                     , maxDepth :: Integer
                                      , maxLastMod :: Maybe UTCTime
                                      , maxLineLength :: Int
                                      , maxSize :: Integer
+                                     , minDepth :: Integer
                                      , minLastMod :: Maybe UTCTime
                                      , minSize :: Integer
                                      , multiLineSearch :: Bool
@@ -85,9 +87,11 @@ defaultSearchSettings = SearchSettings {
                                        , listDirs=False
                                        , listFiles=False
                                        , listLines=False
+                                       , maxDepth = -1
                                        , maxLineLength=200
                                        , maxLastMod=Nothing
                                        , maxSize=0
+                                       , minDepth = -1
                                        , minLastMod=Nothing
                                        , minSize=0
                                        , multiLineSearch=False
@@ -135,8 +139,10 @@ toFindSettings searchSettings = FS.FindSettings {
                                    , FS.includeArchives=searchArchives searchSettings
                                    , FS.listDirs=listDirs searchSettings
                                    , FS.listFiles=listFiles searchSettings
+                                   , FS.maxDepth=maxDepth searchSettings
                                    , FS.maxLastMod=maxLastMod searchSettings
                                    , FS.maxSize=maxSize searchSettings
+                                   , FS.minDepth=minDepth searchSettings
                                    , FS.minLastMod=minLastMod searchSettings
                                    , FS.minSize=minSize searchSettings
                                    , FS.outArchiveExtensions=outArchiveExtensions searchSettings
