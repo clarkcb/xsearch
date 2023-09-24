@@ -45,6 +45,8 @@ class SearchOptions {
                 (x, settings) => { settings.addLinesAfterUntilPatterns(x); },
             'linesbefore':
                 (x, settings) => { settings.linesBefore = parseInt(x); },
+            'maxdepth':
+                (x, settings) => { settings.maxDepth = parseInt(x, 10); },
             'maxlastmod':
                 (x, settings) => { settings.maxLastModFromString(x); },
             'maxlinelength':
@@ -53,6 +55,8 @@ class SearchOptions {
                 (x, settings) => {
                     settings.maxSize = parseInt(x, 10);
                 },
+            'mindepth':
+                (x, settings) => { settings.minDepth = parseInt(x, 10); },
             'minlastmod':
                 (x, settings) => { settings.minLastModFromString(x); },
             'minsize':

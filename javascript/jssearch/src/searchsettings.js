@@ -176,6 +176,14 @@ class SearchSettings {
         this.#findSettings.listFiles = value;
     }
 
+    get maxDepth() {
+        return this.#findSettings.maxDepth;
+    }
+
+    set maxDepth(value) {
+        this.#findSettings.maxDepth = value;
+    }
+
     get maxLastMod() {
         return this.#findSettings.maxLastMod;
     }
@@ -194,6 +202,14 @@ class SearchSettings {
 
     set maxSize(value) {
         this.#findSettings.maxSize = value;
+    }
+
+    get minDepth() {
+        return this.#findSettings.minDepth;
+    }
+
+    set minDepth(value) {
+        this.#findSettings.minDepth = value;
     }
 
     get minLastMod() {
@@ -386,9 +402,11 @@ class SearchSettings {
             ', listDirs=' + this.listDirs +
             ', listFiles=' + this.listFiles +
             ', listLines=' + this.listLines +
+            ', maxDepth=' + this.maxDepth +
             ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
             ', maxLineLength=' + this.maxLineLength +
             ', maxSize=' + this.maxSize +
+            ', minDepth=' + this.minDepth +
             ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
             ', minSize=' + this.minSize +
             ', multilineSearch=' + this.multilineSearch +
