@@ -195,12 +195,18 @@ class SearchOptions(object):
             'linesbefore':
                 lambda x, settings:
                 settings.set_property('lines_before', int(x)),
+            'maxdepth':
+                lambda x, settings:
+                settings.set_property('max_depth', int(x)),
             'maxlinelength':
                 lambda x, settings:
                 settings.set_property('max_line_length', int(x)),
             'maxsize':
                 lambda x, settings:
                 settings.set_property('max_size', int(x)),
+            'mindepth':
+                lambda x, settings:
+                settings.set_property('min_depth', int(x)),
             'minsize':
                 lambda x, settings:
                 settings.set_property('min_size', int(x)),
