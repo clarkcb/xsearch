@@ -400,9 +400,51 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
         }),
     );
     arg_map.insert(
+        "maxlastmod".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            let res = rsfind::common::timestamp_from_date_string(s);
+            match res {
+                Ok(t) => {
+                    settings.set_max_last_mod(t as u64);
+                    Ok(())
+                },
+                Err(_) => {
+                    res.map(|_t| ()).map_err(|_e| SearchError {description: String::from("Unable to get timestamp from string")})
+                }
+            }
+        }),
+    );
+    arg_map.insert(
+        "maxsize".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            Ok(settings.set_max_size(s.parse::<u64>().unwrap()))
+        }),
+    );
+    arg_map.insert(
         "mindepth".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.set_min_depth(s.parse::<i64>().unwrap()))
+        }),
+    );
+    arg_map.insert(
+        "minlastmod".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            let res = rsfind::common::timestamp_from_date_string(s);
+            match res {
+                Ok(t) => {
+                    settings.set_min_last_mod(t as u64);
+                    Ok(())
+                },
+                Err(_) => {
+                    res.map(|_t| ()).map_err(|_e| SearchError {description: String::from("Unable to get timestamp from string")})
+                }
+            }
+        }),
+    );
+    arg_map.insert(
+        "minsize".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            Ok(settings.set_min_size(s.parse::<u64>().unwrap()))
         }),
     );
     arg_map.insert(
