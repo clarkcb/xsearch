@@ -3,6 +3,7 @@ package gosearch
 import (
 	"fmt"
 	"gofind/pkg/gofind"
+	"golang.org/x/text/encoding/ianaindex"
 	"time"
 )
 
@@ -50,6 +51,30 @@ func GetDefaultSearchSettings() *SearchSettings {
 		"utf-8",              // TextFileEncoding
 		false,                // UniqueLines
 	}
+}
+
+func (s *SearchSettings) Validate() error {
+	err := s.FindSettings.Validate()
+	if err != nil {
+		return err
+	}
+	if s.SearchPatterns().IsEmpty() {
+		return fmt.Errorf("No search patterns defined")
+	}
+	if s.LinesAfter() < 0 {
+		return fmt.Errorf("Invalid linesafter")
+	}
+	if s.LinesBefore() < 0 {
+		return fmt.Errorf("Invalid linesbefore")
+	}
+	if s.MaxLineLength() < 0 {
+		return fmt.Errorf("Invalid maxlinelength")
+	}
+	enc, err := ianaindex.IANA.Encoding(s.TextFileEncoding())
+	if err != nil && enc == nil {
+		return fmt.Errorf("Invalid or unsupported text file encoding")
+	}
+	return nil
 }
 
 func (s *SearchSettings) ArchivesOnly() bool {
@@ -263,6 +288,10 @@ func (s *SearchSettings) SetMaxSize(i int64) {
 	s.FindSettings.SetMaxSize(i)
 }
 
+func (s *SearchSettings) SetMaxSizeFromString(sizeStr string) {
+	s.FindSettings.SetMaxSizeFromString(sizeStr)
+}
+
 func (s *SearchSettings) MinDepth() int {
 	return s.FindSettings.MinDepth()
 }
@@ -293,6 +322,10 @@ func (s *SearchSettings) MinSize() int64 {
 
 func (s *SearchSettings) SetMinSize(i int64) {
 	s.FindSettings.SetMinSize(i)
+}
+
+func (s *SearchSettings) SetMinSizeFromString(sizeStr string) {
+	s.FindSettings.SetMinSizeFromString(sizeStr)
 }
 
 func (s *SearchSettings) MultiLineSearch() bool {
@@ -421,6 +454,34 @@ func (s *SearchSettings) SearchPatterns() *gofind.Patterns {
 
 func (s *SearchSettings) AddSearchPattern(p string) {
 	s.searchPatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) SortBy() gofind.SortBy {
+	return s.FindSettings.SortBy()
+}
+
+func (s *SearchSettings) SetSortBy(sortBy gofind.SortBy) {
+	s.FindSettings.SetSortBy(sortBy)
+}
+
+func (s *SearchSettings) SetSortByFromString(sortByStr string) {
+	s.FindSettings.SetSortBy(gofind.SortByForName(sortByStr))
+}
+
+func (s *SearchSettings) SortCaseInsensitive() bool {
+	return s.FindSettings.SortCaseInsensitive()
+}
+
+func (s *SearchSettings) SetSortCaseInsensitive(b bool) {
+	s.FindSettings.SetSortCaseInsensitive(b)
+}
+
+func (s *SearchSettings) SortDescending() bool {
+	return s.FindSettings.SortDescending()
+}
+
+func (s *SearchSettings) SetSortDescending(b bool) {
+	s.FindSettings.SetSortDescending(b)
 }
 
 func (s *SearchSettings) TextFileEncoding() string {

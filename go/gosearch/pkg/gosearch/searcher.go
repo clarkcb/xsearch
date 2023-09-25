@@ -31,26 +31,35 @@ type Searcher struct {
 	fileSearchedChan   chan string
 	errChan            chan error
 	addSearchFilesDone bool
-	searchDone         bool
+	//searchDone         bool
 	searchResults      *SearchResults
-	resultChan         chan *SearchResult
+	addResultChan      chan *SearchResult
+	addResultsDoneChan chan bool
+	searchDoneChan     chan bool
 	textDecoder        *encoding.Decoder
 }
 
 func NewSearcher(settings *SearchSettings) *Searcher {
+	enc, err := ianaindex.IANA.Encoding(settings.TextFileEncoding())
+	var textDecoder *encoding.Decoder = nil
+	if err == nil {
+		textDecoder = enc.NewDecoder()
+	}
 	return &Searcher{
 		gofind.NewFinder(settings.FindSettings),
-		settings,                   // Settings
-		[]string{},                 // searchDirs
-		gofind.NewFileResults(),    // fileResults
-		[]error{},                  // errors
-		make(chan string, 1),       // fileSearchedChan
-		make(chan error, 1),        // errChan
-		false,                      // addSearchFilesDone
-		false,                      // searchDone
+		settings,                // Settings
+		[]string{},              // searchDirs
+		gofind.NewFileResults(), // fileResults
+		[]error{},               // errors
+		make(chan string, 1),    // fileSearchedChan
+		make(chan error, 1),     // errChan
+		false,                   // addSearchFilesDone
+		//false,                      // searchDone
 		NewSearchResults(settings), // searchResults
-		make(chan *SearchResult),   // resultChan
-		nil,
+		make(chan *SearchResult),   // addResultChan
+		make(chan bool),            // addResultsDoneChan
+		make(chan bool),            // searchDoneChan
+		textDecoder,
 	}
 }
 
@@ -217,7 +226,7 @@ func (s *Searcher) searchTextFileReaderContents(r io.Reader, fr *gofind.FileResu
 	results := s.searchTextBytes(bytes)
 	for _, sr := range results {
 		sr.File = fr
-		s.resultChan <- sr
+		s.addResultChan <- sr
 	}
 }
 
@@ -289,7 +298,7 @@ func (s *Searcher) searchTextFileReaderLines(r io.Reader, fr *gofind.FileResult)
 	results := s.SearchTextReaderLines(r)
 	for _, sr := range results {
 		sr.File = fr
-		s.resultChan <- sr
+		s.addResultChan <- sr
 	}
 }
 
@@ -453,7 +462,7 @@ func (s *Searcher) searchBinaryFileReader(r io.Reader, fr *gofind.FileResult) {
 					[]string{},
 					[]string{},
 				}
-				s.resultChan <- sr
+				s.addResultChan <- sr
 			}
 		}
 	}
@@ -696,44 +705,6 @@ func (s *Searcher) batchSearchFiles(files []*gofind.FileResult) {
 	wg.Wait()
 }
 
-func (s *Searcher) searchFiles(fileResults *gofind.FileResults) error {
-	const batchSize = 240 // max files to search at one time
-
-	// start the activateSearchChannels goroutine
-	go s.activateSearchChannels()
-
-	fri := fileResults.Iterator()
-	var files []*gofind.FileResult
-	for fri.Next() && len(s.errors) == 0 {
-		files = fri.Take(batchSize)
-		s.batchSearchFiles(files)
-	}
-
-	if len(s.errors) > 0 {
-		return s.errors[0]
-	}
-	return nil
-}
-
-func (s *Searcher) activateSearchChannels() {
-	// get the results from the results channel
-	searchedFiles := map[string]bool{}
-	for !s.searchDone {
-		select {
-		case r := <-s.resultChan:
-			s.addSearchResult(r)
-		case f := <-s.fileSearchedChan:
-			searchedFiles[f] = true
-			if len(searchedFiles) == s.fileResults.Len() {
-				s.searchDone = true
-			}
-		case e := <-s.errChan:
-			s.errors = append(s.errors, e)
-			s.searchDone = true
-		}
-	}
-}
-
 func (s *Searcher) printToBeSearched(fileResults *gofind.FileResults) {
 	var dirs []string
 	var files []string
@@ -761,65 +732,85 @@ func (s *Searcher) printToBeSearched(fileResults *gofind.FileResults) {
 	}
 }
 
-func (s *Searcher) Search() error {
-	// get search file list + validate find settings
-	fileResults, err := s.Finder.Find()
+func (s *Searcher) activateSearchChannels() {
+	// get the results from the results channel
+	searchedFiles := map[string]bool{}
+	searchingDone := false
+	for !searchingDone {
+		select {
+		case r := <-s.addResultChan:
+			s.addSearchResult(r)
+		case f := <-s.fileSearchedChan:
+			searchedFiles[f] = true
+			if len(searchedFiles) == s.fileResults.Len() {
+				s.searchDoneChan <- true
+				searchingDone = true
+			}
+		case e := <-s.errChan:
+			s.errors = append(s.errors, e)
+			s.searchDoneChan <- true
+			searchingDone = true
+		}
+	}
+}
 
-	if err != nil {
-		return err
+func (s *Searcher) searchFiles(fileResults *gofind.FileResults) error {
+	const batchSize = 240 // max files to search at one time
+
+	// start the activateSearchChannels goroutine
+	go s.activateSearchChannels()
+
+	fri := fileResults.Iterator()
+	var files []*gofind.FileResult
+	for fri.Next() && len(s.errors) == 0 {
+		files = fri.Take(batchSize)
+		s.batchSearchFiles(files)
 	}
 
-	// validate the search settings
-	if err := s.validateSettings(); err != nil {
-		return err
+	//searchDone := false
+	//for !searchDone {
+	//	select {
+	//	case b := <-s.searchDoneChan:
+	//		searchDone = b
+	//	}
+	//}
+
+	if len(s.errors) > 0 {
+		return s.errors[0]
+	}
+	return nil
+}
+
+func (s *Searcher) Search() (*SearchResults, error) {
+	if err := s.Settings.Validate(); err != nil {
+		return nil, err
+	}
+
+	// get search file list + validate find settings
+	var err error
+	s.searchResults.FileResults, err = s.Finder.Find()
+
+	if err != nil {
+		return nil, err
 	}
 
 	if s.Settings.Verbose() {
-		s.printToBeSearched(fileResults)
+		s.printToBeSearched(s.searchResults.FileResults)
 	}
 
 	// search the files
 	if s.Settings.Verbose() {
 		gofind.Log("\nStarting file search...\n")
 	}
-	if err := s.searchFiles(fileResults); err != nil {
-		return err
+	if err := s.searchFiles(s.searchResults.FileResults); err != nil {
+		return nil, err
 	}
 	if s.Settings.Verbose() {
 		gofind.Log("\nFile search complete.\n")
 	}
 
-	return nil
-}
+	// sort the SearchResults
+	s.searchResults.Sort()
 
-func (s *Searcher) PrintSearchResults() {
-	s.searchResults.PrintSearchResults()
-}
-
-func (s *Searcher) PrintMatchingDirs() {
-	s.searchResults.PrintMatchingDirs()
-}
-
-func (s *Searcher) PrintMatchingFiles() {
-	s.searchResults.PrintMatchingFiles()
-}
-
-func (s *Searcher) PrintMatchingLines() {
-	s.searchResults.PrintMatchingLines()
-}
-
-func (s *Searcher) PrintDirCounts() {
-	s.searchResults.PrintDirCounts()
-}
-
-func (s *Searcher) PrintFileCounts() {
-	s.searchResults.PrintFileCounts()
-}
-
-func (s *Searcher) PrintLineCounts() {
-	s.searchResults.PrintLineCounts()
-}
-
-func (s *Searcher) PrintUniqueLineCounts() {
-	s.searchResults.PrintUniqueLineCounts()
+	return s.searchResults, nil
 }

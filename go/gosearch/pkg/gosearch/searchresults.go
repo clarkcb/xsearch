@@ -35,6 +35,7 @@ func (s *SearchResultsStats) Clear() {
 
 type SearchResults struct {
 	Settings      *SearchSettings
+	FileResults   *gofind.FileResults
 	SearchResults []*SearchResult
 	Stats         *SearchResultsStats
 }
@@ -42,10 +43,20 @@ type SearchResults struct {
 func NewSearchResults(settings *SearchSettings) *SearchResults {
 	return &SearchResults{
 		settings,
+		gofind.NewFileResults(),
 		[]*SearchResult{},
 		NewSearchResultsStats(),
 	}
 }
+
+//func NewSearchResults(settings *SearchSettings, fileResults *gofind.FileResults) *SearchResults {
+//	return &SearchResults{
+//		settings,
+//		fileResults,
+//		[]*SearchResult{},
+//		NewSearchResultsStats(),
+//	}
+//}
 
 func (srs *SearchResults) AddSearchResultStats(r *SearchResult) {
 	srs.Stats.DirCounts[r.File.Path]++
@@ -62,6 +73,7 @@ func (srs *SearchResults) AddSearchResult(r *SearchResult) {
 }
 
 func (srs *SearchResults) Clear() {
+	srs.FileResults = nil
 	srs.SearchResults = nil
 	srs.Stats.Clear()
 }
@@ -87,27 +99,23 @@ func (srs *SearchResults) Len() int {
 }
 
 func (srs *SearchResults) Less(i, j int) bool {
-	sr1, sr2 := srs.SearchResults[i], srs.SearchResults[j]
-	path1, path2 := strings.ToLower(sr1.File.Path), strings.ToLower(sr2.File.Path)
-	pathCmp := bytes.Compare([]byte(path1), []byte(path2))
-	if pathCmp > 0 {
-		return false
+	sri, srj := srs.SearchResults[i], srs.SearchResults[j]
+	// file results should already be in the right order, so we check their indices
+	fri := srs.FileResults.Index(sri.File)
+	frj := srs.FileResults.Index(srj.File)
+	if fri != frj {
+		return fri < frj
 	}
-	if pathCmp == 0 {
-		file1, file2 := strings.ToLower(sr1.File.Name), strings.ToLower(sr2.File.Name)
-		fileCmp := bytes.Compare([]byte(file1), []byte(file2))
-		if fileCmp > 0 {
-			return false
+	if srs.Settings.FindSettings.SortDescending() {
+		if sri.LineNum != srj.LineNum {
+			return sri.LineNum > srj.LineNum
 		}
-		if fileCmp == 0 {
-			if sr1.LineNum == sr2.LineNum {
-				return sr1.MatchStartIndex < sr2.MatchStartIndex
-			}
-			return sr1.LineNum < sr2.LineNum
-		}
-		return true
+		return sri.MatchStartIndex > srj.MatchStartIndex
 	}
-	return true
+	if sri.LineNum != srj.LineNum {
+		return sri.LineNum < srj.LineNum
+	}
+	return sri.MatchStartIndex < srj.MatchStartIndex
 }
 
 func (srs *SearchResults) Swap(i, j int) {
@@ -189,33 +197,6 @@ func (srs *SearchResults) PrintMatchingLines() {
 	}
 }
 
-//func getSortedCountKeys(m map[string]int) []string {
-//	mk := make([]string, len(m))
-//	i := 0
-//	for k, _ := range m {
-//		mk[i] = k
-//		i++
-//	}
-//	sort.Strings(mk)
-//	return mk
-//}
-
-// func printCounts(singName string, pluralName string, countKeys []string,
-// 	countMap map[string]int) {
-// 	countName := pluralName
-// 	if len(countKeys) == 1 {
-// 		countName = singName
-// 	}
-// 	gofind.Log(fmt.Sprintf("%s match counts (%d %s):\n", strings.Title(singName),
-// 		len(countKeys), countName))
-// 	longestKeyLen := getLongestLen(countKeys) + 1
-// 	longestNumLen := getNumLen2(getHighestMapVal(countMap))
-// 	lineFormat := fmt.Sprintf("%%-%ds %%%dd", longestKeyLen, longestNumLen)
-// 	for _, k := range countKeys {
-// 		gofind.Log(fmt.Sprintf(lineFormat, k+":", countMap[k]))
-// 	}
-// }
-
 func printCounts(pluralName string, countKeys []string) {
 	gofind.Log(fmt.Sprintf("%s with matches (%d):", strings.Title(pluralName),
 		len(countKeys)))
@@ -265,16 +246,18 @@ func (srs *SearchResults) PrintPatternCounts(patterns []string) {
 }
 
 func (srs *SearchResults) PrintSearchResults() {
-	// sort them first
-	sort.Sort(srs)
 	formatter := NewSearchResultFormatter(srs.Settings)
-	gofind.Log(fmt.Sprintf("Search results (%d):", len(srs.SearchResults)))
+	gofind.Log(fmt.Sprintf("Search results (%d):", srs.Len()))
 	for _, r := range srs.SearchResults {
 		if len(srs.Stats.PatternCounts) > 1 {
 			gofind.Log(fmt.Sprintf("\"%s\": ", r.Pattern.String()))
 		}
 		gofind.Log(formatter.Format(r))
 	}
+}
+
+func (srs *SearchResults) Sort() {
+	sort.Slice(srs.SearchResults, srs.Less)
 }
 
 type SearchResultFormatter struct {

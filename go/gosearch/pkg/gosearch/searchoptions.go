@@ -268,6 +268,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 		"maxdepth": func(s string, settings *SearchSettings) {
 			settings.SetMaxDepthFromString(s)
 		},
+		"maxlastmod": func(s string, settings *SearchSettings) {
+			settings.SetMaxLastModFromString(s)
+		},
 		"maxlinelength": func(s string, settings *SearchSettings) {
 			num, err := strconv.Atoi(s)
 			if err == nil {
@@ -276,8 +279,17 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 				gofind.Log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
 			}
 		},
+		"maxsize": func(s string, settings *SearchSettings) {
+			settings.SetMaxSizeFromString(s)
+		},
 		"mindepth": func(s string, settings *SearchSettings) {
 			settings.SetMinDepthFromString(s)
+		},
+		"minlastmod": func(s string, settings *SearchSettings) {
+			settings.SetMinLastModFromString(s)
+		},
+		"minsize": func(s string, settings *SearchSettings) {
+			settings.SetMinSizeFromString(s)
 		},
 		"out-archiveext": func(s string, settings *SearchSettings) {
 			settings.AddOutArchiveExtension(s)
@@ -314,6 +326,9 @@ func (so *SearchOptions) getArgActionMap() map[string]argAction {
 			if err != nil {
 				return
 			}
+		},
+		"sort-by": func(s string, settings *SearchSettings) {
+			settings.SetSortByFromString(s)
 		},
 	}
 	for _, o := range so.SearchOptions {
@@ -380,6 +395,18 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"searcharchives": func(b bool, settings *SearchSettings) {
 			settings.SetSearchArchives(b)
+		},
+		"sort-ascending": func(b bool, settings *SearchSettings) {
+			settings.SetSortDescending(!b)
+		},
+		"sort-caseinsensitive": func(b bool, settings *SearchSettings) {
+			settings.SetSortCaseInsensitive(b)
+		},
+		"sort-casesensitive": func(b bool, settings *SearchSettings) {
+			settings.SetSortCaseInsensitive(!b)
+		},
+		"sort-descending": func(b bool, settings *SearchSettings) {
+			settings.SetSortDescending(b)
 		},
 		"uniquelines": func(b bool, settings *SearchSettings) {
 			settings.SetUniqueLines(b)

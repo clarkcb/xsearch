@@ -31,7 +31,7 @@ func main() {
 	}
 
 	searcher := gosearch.NewSearcher(settings)
-	err = searcher.Search()
+	searchResults, err := searcher.Search()
 	if err != nil {
 		errorAndExit(err, searchOptions)
 	}
@@ -39,24 +39,24 @@ func main() {
 	// if there are results and PrintResults is true then print them out
 	if settings.PrintResults() {
 		fmt.Println()
-		searcher.PrintSearchResults()
+		searchResults.PrintSearchResults()
 	}
 
 	// print matching dirs
 	if settings.ListDirs() {
 		fmt.Println()
-		searcher.PrintMatchingDirs()
+		searchResults.PrintMatchingDirs()
 	}
 
 	// print matching files
 	if settings.ListFiles() {
 		fmt.Println()
-		searcher.PrintMatchingFiles()
+		searchResults.PrintMatchingFiles()
 	}
 
 	// print matching lines (unique or not, sorted alphabetically)
 	if settings.ListLines() {
 		fmt.Println()
-		searcher.PrintMatchingLines()
+		searchResults.PrintMatchingLines()
 	}
 }
