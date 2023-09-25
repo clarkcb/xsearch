@@ -7,19 +7,23 @@
 # A simple benchmarking tool for the various xsearch language versions
 #
 ################################################################################
+from dataclasses import dataclass
 import os
 import re
 import subprocess
 import sys
-from collections import namedtuple
-from io import StringIO
-from typing import Dict, List, Union
+from typing import Union
 
 from tabulate import tabulate
 
 from xsearch import *
 
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'])
+@dataclass
+class Scenario:
+    """Class to define a test scenario"""
+    name: str
+    args: list
+    replace_xsearch_name: bool = False
 
 
 ########################################
@@ -41,29 +45,50 @@ core_args = ignore_args + search_args
 ext_args = ['-x', exts]
 common_args = core_args + ext_args + startpaths
 
-# Scenarios to add:
-#     -x js,ts -s "Searcher" /Users/cary/src/xsearch/typescript
+# Scenarios
 scenarios = [
     Scenario('no args', [], replace_xsearch_name=True),
     Scenario('help', ['-h'], replace_xsearch_name=True),
 
-    Scenario('search lines #1', common_args, replace_xsearch_name=False),
-    Scenario('search contents #1', common_args + ['-m'], replace_xsearch_name=False),
+    # search matching extensions
+    Scenario('search lines #1', common_args),
+    Scenario('search contents #1', common_args + ['-m']),
+    # Scenario('search lines #3', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript')]),
+    # Scenario('search lines #3 - first match', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript'), '-1']),
 
-    Scenario('search lines #2 - first match', common_args + ['-1'], replace_xsearch_name=False),
-    Scenario('search contents #2 - first match', common_args + ['-m', '-1'], replace_xsearch_name=False),
+    # search matching extensions - first match only
+    Scenario('search lines #2 - first match', common_args + ['-1']),
+    Scenario('search contents #2 - first match', common_args + ['-m', '-1']),
 
-    Scenario('search with "find" in filename', common_args + ['-f', 'find'], replace_xsearch_name=False),
-    Scenario('search with "find" not in filename', common_args + ['-F', 'find'], replace_xsearch_name=False),
+    # # search matching filenames
+    # Scenario('search with "find" in filename', common_args + ['-f', 'find']),
+    # Scenario('search with "find" not in filename', common_args + ['-F', 'find']),
 
-    # Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths, replace_xsearch_name=False),
-    # Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths, replace_xsearch_name=False),
-    # Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs'], replace_xsearch_name=False),
-    # Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
-    #     replace_xsearch_name=False),
+    # # search matching filetypes
+    # Scenario('search "code" filetype', core_args + ['-t', 'code'] + startpaths),
+    # Scenario('search not "code" filetype', core_args + ['-T', 'code'] + startpaths),
 
-    # Scenario('search lines #3', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript')], replace_xsearch_name=False),
-    # Scenario('search lines #3 - first match', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript'), '-1'], replace_xsearch_name=False),
+    # # list dirs
+    # Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs']),
+    # Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths),
+
+    # # filter by maxdepth/mindepth
+    # Scenario('filter files with depth <= maxdepth', core_args + ['--maxdepth', '3', scriptpath]),
+    # Scenario('filter files with depth >= mindepth', core_args + ['--mindepth', '2', scriptpath]),
+    # Scenario('filter files by maxdepth and mindepth', core_args + ['--maxdepth', '3', '--mindepth', '2', scriptpath]),
+    # Scenario('filter files by invalid range maxdepth and mindepth', ignore_args + ['--maxdepth', '2', '--mindepth', '3', scriptpath], replace_xsearch_name=True),
+
+    # # filter by maxlastmod/minlastmod
+    # Scenario('filter files with lastmod <= maxlastmod', core_args + ['--maxlastmod', '2022-12-30', scriptpath]),
+    # Scenario('filter files with lastmod >= minlastmod', core_args + ['--minlastmod', '2020-01-01', scriptpath]),
+    # Scenario('filter files by maxlastmod and minlastmod', core_args + ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath]),
+    # Scenario('filter files by invalid range maxlastmod and minlastmod', core_args + ['--maxlastmod', '2020-01-01', '--minlastmod', '2022-12-30', scriptpath], replace_xsearch_name=True),
+
+    # # filter by maxsize/minsize
+    # Scenario('filter files with size < maxsize', core_args + ['--maxsize', '10000', scriptpath]),
+    # Scenario('filter files with size > minsize', core_args + ['--minsize', '1000', scriptpath]),
+    # Scenario('filter files by maxsize and minsize', core_args + ['--maxsize', '10000', '--minsize', '5000', scriptpath]),
+    # Scenario('filter files by invalid range maxsize and minsize', core_args + ['--maxsize', '5000', '--minsize', '10000', scriptpath], replace_xsearch_name=True),
 ]
 
 time_keys = {'real', 'sys', 'user', 'total'}
@@ -86,7 +111,7 @@ class LangResult(object):
 
 
 class RunResult(object):
-    def __init__(self, scenario: Scenario, run: int, lang_results: List[LangResult], **kwargs):
+    def __init__(self, scenario: Scenario, run: int, lang_results: list[LangResult], **kwargs):
         self.scenario = scenario
         self.run = run
         self.lang_results = lang_results
@@ -120,7 +145,7 @@ class RunResult(object):
 
 
 class ScenarioResult(object):
-    def __init__(self, scenario: Scenario, index: int, run_results: List[RunResult], **kwargs):
+    def __init__(self, scenario: Scenario, index: int, run_results: list[RunResult], **kwargs):
         self.scenario = scenario
         self.index = index
         self.run_results = run_results
@@ -192,7 +217,7 @@ class ScenarioResult(object):
 
 
 class ScenarioResults(object):
-    def __init__(self, scenario_results: List[ScenarioResult] = None, **kwargs):
+    def __init__(self, scenario_results: list[ScenarioResult] = None, **kwargs):
         self.scenario_results = []
         if scenario_results:
             self.scenario_results = scenario_results
@@ -285,7 +310,7 @@ class Benchmarker(object):
         self.diff_outputs = []
         self.__dict__.update(kwargs)
 
-    def __print_data_table(self, title: str, hdr: List[str], data: List[List[Union[float, int]]], col_types: List[type]):
+    def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print('\n{}'.format(title))
         print(tabulate(data, headers=hdr))
 
@@ -388,7 +413,7 @@ class Benchmarker(object):
             data.append([x, xr, xrr, xs, xsr, xu, xur, xt, xtr])
         self.__print_data_table(title, hdr, data, col_types)
 
-    def times_from_lines(self, lines: List[str]) -> Dict[str,float]:
+    def times_from_lines(self, lines: list[str]) -> dict[str,float]:
         time_dict = {}
         times = lines[0].split()
         time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
@@ -416,7 +441,7 @@ class Benchmarker(object):
                 time_dict = {s: 0 for s in time_keys}
         # print('time_dict: {}'.format(time_dict))
         return time_dict
-    # def times_from_lines(self, lines: List[str]) -> Dict[str,float]:
+    # def times_from_lines(self, lines: list[str]) -> dict[str,float]:
     #     times = lines[0].split()
     #     times.reverse()
     #     try:
