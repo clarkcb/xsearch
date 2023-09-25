@@ -21,7 +21,9 @@ object DefaultSettings {
   val listLines = false
   val maxDepth: Int = -1
   val maxLineLength = 150
+  val maxSize = 0
   val minDepth: Int = -1
+  val minSize = 0
   var multiLineSearch = false
   var paths: Set[String] = Set.empty[String]
   var printResults = false
