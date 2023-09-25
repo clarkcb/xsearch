@@ -180,6 +180,12 @@ class SearchOptions(object):
         }
 
         self.__dt_arg_dict = {
+            'lastmod-after':
+                lambda x, settings:
+                settings.set_property('lastmod_after', x),
+            'lastmod-before':
+                lambda x, settings:
+                settings.set_property('lastmod_before', x),
             'maxlastmod':
                 lambda x, settings:
                 settings.set_property('max_last_mod', x),

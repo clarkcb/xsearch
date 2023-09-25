@@ -12,7 +12,7 @@ from datetime import datetime
 import re
 from typing import Optional, Pattern, Set
 
-from pyfind import FindSettings, FindException
+from pyfind import FindSettings, FindException, SortBy
 
 from .searchexception import SearchException
 
@@ -52,8 +52,12 @@ class SearchSettings(FindSettings):
                  list_files: bool = False,
                  list_lines: bool = False,
                  max_depth: int = -1,
+                 max_last_mod: Optional[datetime] = None,
                  max_line_length: int = 150,
+                 max_size: int = 0,
                  min_depth: int = -1,
+                 min_last_mod: Optional[datetime] = None,
+                 min_size: int = 0,
                  multi_line_search: bool = False,
                  out_archive_file_patterns: PatternSet = None,
                  out_archive_extensions: Set[str] = None,
@@ -70,6 +74,9 @@ class SearchSettings(FindSettings):
                  recursive: bool = True,
                  search_archives: bool = False,
                  search_patterns: PatternSet = None,
+                 sort_by: SortBy = SortBy.FILEPATH,
+                 sort_case_insensitive: bool = False,
+                 sort_descending: bool = False,
                  text_file_encoding: str = 'UTF-8',
                  unique_lines: bool = False,
                  verbose: bool = False):
@@ -86,7 +93,11 @@ class SearchSettings(FindSettings):
                               list_dirs=list_dirs,
                               list_files=list_files,
                               max_depth=max_depth,
+                              max_last_mod=max_last_mod,
+                              max_size=max_size,
                               min_depth=min_depth,
+                              min_last_mod=min_last_mod,
+                              min_size=min_size,
                               out_archive_extensions=out_archive_extensions,
                               out_archive_file_patterns=out_archive_file_patterns,
                               out_dir_patterns=out_dir_patterns,
@@ -98,6 +109,9 @@ class SearchSettings(FindSettings):
                               print_usage=print_usage,
                               print_version=print_version,
                               recursive=recursive,
+                              sort_by=sort_by,
+                              sort_case_insensitive=sort_case_insensitive,
+                              sort_descending=sort_descending,
                               verbose=verbose)
         self.colorize = colorize
         self.first_match = first_match
