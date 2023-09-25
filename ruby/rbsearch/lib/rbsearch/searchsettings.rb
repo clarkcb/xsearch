@@ -80,8 +80,12 @@ module RbSearch
       s << ", list_files: #{@list_files}"
       s << ", list_lines: #{@list_lines}"
       s << ", max_depth: #{@max_depth}"
+      s << ", max_last_mod: #{@max_last_mod}"
       s << ", max_line_length: #{@max_line_length}"
+      s << ", max_size: #{@max_size}"
       s << ", min_depth: #{@min_depth}"
+      s << ", min_last_mod: #{@min_last_mod}"
+      s << ", min_size: #{@min_size}"
       s << ", multi_line_search: #{@multi_line_search}"
       s << ', ' + list_to_s('out_archive_extensions', @out_archive_extensions)
       s << ', ' + list_to_s('out_archive_file_patterns', @out_archive_file_patterns)
@@ -98,6 +102,9 @@ module RbSearch
       s << ", recursive: #{@recursive}"
       s << ", search_archives: #{@search_archives}"
       s << ', ' + list_to_s('search_patterns', @search_patterns)
+      s << ", sort_by: #{@sort_by}"
+      s << ", sort_case_insensitive: #{@sort_case_insensitive}"
+      s << ", sort_descending: #{@sort_descending}"
       s << ", text_file_encoding: \"#{@text_file_encoding}\""
       s << ", unique_lines: #{@unique_lines}"
       s << ", verbose: #{@verbose}"
