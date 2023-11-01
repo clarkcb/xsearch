@@ -2,10 +2,10 @@
 
 if [ -z "$XSEARCH_PATH" ]
 then
-    XSEARCH_PATH=$HOME/src/xsearch
+    XSEARCH_PATH="$HOME/src/xsearch"
 fi
 
-RSSEARCH_PATH=$XSEARCH_PATH/rust/rssearch
+RSSEARCH_PATH="$XSEARCH_PATH/rust/rssearch"
 PROFILE=debug
 # PROFILE=release
 

@@ -2,9 +2,9 @@
 
 if [ -z "$XSEARCH_PATH" ]
 then
-    XSEARCH_PATH=$HOME/src/xsearch
+    XSEARCH_PATH="$HOME/src/xsearch"
 fi
 
-JSSEARCH_PATH=$XSEARCH_PATH/javascript/jssearch
+JSSEARCH_PATH="$XSEARCH_PATH/javascript/jssearch"
 
-node $JSSEARCH_PATH/dist/jssearch.js "$@"
+node "$JSSEARCH_PATH/dist/jssearch.js" "$@"
