@@ -82,14 +82,6 @@ impl SearchSettings {
         self._find_settings.set_debug(b);
     }
 
-    pub fn exclude_hidden(&self) -> bool {
-        self._find_settings.exclude_hidden()
-    }
-
-    pub fn set_exclude_hidden(&mut self, b: bool) {
-        self._find_settings.set_exclude_hidden(b)
-    }
-
     pub fn first_match(&self) -> bool {
         self._first_match
     }
@@ -112,6 +104,14 @@ impl SearchSettings {
 
     pub fn add_in_archive_file_pattern(&mut self, pattern: String) {
         self._find_settings.add_in_archive_file_pattern(pattern)
+    }
+
+    pub fn include_hidden(&self) -> bool {
+        self._find_settings.include_hidden()
+    }
+
+    pub fn set_include_hidden(&mut self, b: bool) {
+        self._find_settings.set_include_hidden(b)
     }
 
     pub fn in_dir_patterns(&self) -> &Vec<Regex> {
@@ -473,10 +473,10 @@ mod tests {
         assert_eq!(settings.archives_only(), false);
         assert_eq!(settings.colorize(), true);
         assert_eq!(settings.debug(), false);
-        assert_eq!(settings.exclude_hidden(), true);
         assert_eq!(settings.first_match(), false);
         assert!(settings.in_archive_extensions().is_empty());
         assert!(settings.in_archive_file_patterns().is_empty());
+        assert_eq!(settings.include_hidden(), false);
         assert!(settings.in_dir_patterns().is_empty());
         assert!(settings.in_extensions().is_empty());
         assert!(settings.in_file_patterns().is_empty());

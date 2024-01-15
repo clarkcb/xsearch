@@ -3,8 +3,9 @@ package gosearch
 import (
 	"fmt"
 	"gofind/pkg/gofind"
-	"golang.org/x/text/encoding/ianaindex"
 	"time"
+
+	"golang.org/x/text/encoding/ianaindex"
 )
 
 type SearchSettings struct {
@@ -104,14 +105,6 @@ func (s *SearchSettings) SetDebug(b bool) {
 	s.FindSettings.SetDebug(b)
 }
 
-func (s *SearchSettings) ExcludeHidden() bool {
-	return s.FindSettings.ExcludeHidden()
-}
-
-func (s *SearchSettings) SetExcludeHidden(b bool) {
-	s.FindSettings.SetExcludeHidden(b)
-}
-
 func (s *SearchSettings) FirstMatch() bool {
 	return s.firstMatch
 }
@@ -174,6 +167,14 @@ func (s *SearchSettings) IncludeArchives() bool {
 
 func (s *SearchSettings) SetIncludeArchives(b bool) {
 	s.FindSettings.SetIncludeArchives(b)
+}
+
+func (s *SearchSettings) IncludeHidden() bool {
+	return s.FindSettings.IncludeHidden()
+}
+
+func (s *SearchSettings) SetIncludeHidden(b bool) {
+	s.FindSettings.SetIncludeHidden(b)
 }
 
 func (s *SearchSettings) InLinesAfterPatterns() *gofind.Patterns {
@@ -513,10 +514,10 @@ func (s *SearchSettings) String() string {
 		"ArchivesOnly: %t" +
 		", Colorize: %t" +
 		", Debug: %t" +
-		", ExcludeHidden: %t" +
 		", FirstMatch: %t" +
 		", InArchiveExtensions: %s" +
 		", InArchiveFilePatterns: %s" +
+		", IncludeHidden: %t" +
 		", InDirPatterns: %s" +
 		", InExtensions: %s" +
 		", InFilePatterns: %s" +
@@ -563,10 +564,10 @@ func (s *SearchSettings) String() string {
 		s.ArchivesOnly(),
 		s.Colorize(),
 		s.Debug(),
-		s.ExcludeHidden(),
 		s.FirstMatch(),
 		gofind.StringListToString(s.InArchiveExtensions()),
 		gofind.PatternsToString(s.InArchiveFilePatterns()),
+		s.IncludeHidden(),
 		gofind.PatternsToString(s.InDirPatterns()),
 		gofind.StringListToString(s.InExtensions()),
 		gofind.PatternsToString(s.InFilePatterns()),

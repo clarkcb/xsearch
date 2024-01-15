@@ -90,10 +90,10 @@ public class SearchSettings: FindSettings {
             "archivesOnly=\(archivesOnly)" +
             ", colorize=\(colorize)" +
             ", debug=\(debug)" +
-            ", excludeHidden=\(excludeHidden)" +
             ", firstMatch=\(firstMatch)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
+            ", includeHidden=\(includeHidden)" +
             ", inDirPatterns=\(arrayToString(inDirPatterns))" +
             ", inExtensions=\(setToString(inExtensions))" +
             ", inFilePatterns=\(arrayToString(inFilePatterns))" +

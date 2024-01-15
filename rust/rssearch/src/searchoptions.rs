@@ -525,7 +525,7 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     );
     flag_map.insert(
         "excludehidden".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_exclude_hidden(b))),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(!b))),
     );
     flag_map.insert(
         "firstmatch".to_string(),
@@ -537,7 +537,7 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     );
     flag_map.insert(
         "includehidden".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_exclude_hidden(!b))),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(b))),
     );
     flag_map.insert(
         "listdirs".to_string(),

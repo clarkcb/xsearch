@@ -64,12 +64,12 @@ export class SearchSettings {
         if (value) this.findSettings.verbose = value;
     }
 
-    get excludeHidden(): boolean {
-        return this.findSettings.excludeHidden;
+    get includeHidden(): boolean {
+        return this.findSettings.includeHidden;
     }
 
-    set excludeHidden(value: boolean) {
-        this.findSettings.excludeHidden = value;
+    set includeHidden(value: boolean) {
+        this.findSettings.includeHidden = value;
     }
 
     get inArchiveExtensions(): string[] {
@@ -393,10 +393,10 @@ export class SearchSettings {
             + 'archivesOnly=' + this.archivesOnly
             + ', colorize=' + this.colorize
             + ', debug=' + this.debug
-            + ', excludeHidden=' + this.excludeHidden
             + ', firstMatch=' + this.firstMatch
             + ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions)
             + ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', includeHidden=' + this.includeHidden
             + ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns)
             + ', ' + StringUtil.listToString('inExtensions', this.inExtensions)
             + ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns)

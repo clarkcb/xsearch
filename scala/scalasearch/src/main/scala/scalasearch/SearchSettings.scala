@@ -12,8 +12,8 @@ object DefaultSettings {
   val archivesOnly = false
   val colorize = true
   val debug = false
-  val excludeHidden = true
   val firstMatch = false
+  val includeHidden = false
   val linesAfter = 0
   val linesBefore = 0
   val listDirs = false
@@ -39,10 +39,10 @@ object DefaultSettings {
 case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           colorize: Boolean = DefaultSettings.colorize,
                           debug: Boolean = DefaultSettings.debug,
-                          excludeHidden: Boolean = DefaultSettings.excludeHidden,
                           firstMatch: Boolean = DefaultSettings.firstMatch,
                           inArchiveExtensions: Set[String] = Set.empty[String],
                           inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
+                          includeHidden: Boolean = DefaultSettings.includeHidden,
                           inDirPatterns: Set[Regex] = Set.empty[Regex],
                           inExtensions: Set[String] = Set.empty[String],
                           inFilePatterns: Set[Regex] = Set.empty[Regex],
@@ -92,9 +92,9 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
   val findSettings: FindSettings = FindSettings(
     archivesOnly = archivesOnly,
     debug = debug,
-    excludeHidden = excludeHidden,
     inArchiveExtensions = inArchiveExtensions,
     inArchiveFilePatterns = inArchiveFilePatterns,
+    includeHidden = includeHidden,
     inDirPatterns = inDirPatterns,
     inExtensions = inExtensions,
     inFilePatterns = inFilePatterns,
@@ -152,10 +152,10 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       "archivesOnly: " + archivesOnly +
       ", colorize: " + colorize +
       ", debug: " + debug +
-      ", excludeHidden: " + excludeHidden +
       ", firstMatch: " + firstMatch +
       ", inArchiveExtensions: " + inArchiveExtensions +
       ", inArchiveFilePatterns: " + inArchiveFilePatterns +
+      ", includeHidden: " + includeHidden +
       ", inDirPatterns: " + inDirPatterns +
       ", inExtensions: " + inExtensions +
       ", inFilePatterns: " + inFilePatterns +

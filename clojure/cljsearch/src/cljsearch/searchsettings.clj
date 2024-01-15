@@ -19,7 +19,6 @@
     archives-only
     colorize
     debug
-    exclude-hidden
     first-match
     in-archive-extensions
     in-archive-file-patterns
@@ -29,6 +28,7 @@
     in-file-types
     in-lines-after-patterns
     in-lines-before-patterns
+    include-hidden
     lines-after
     lines-after-to-patterns
     lines-after-until-patterns
@@ -72,7 +72,6 @@
    false     ; archives-only
    true      ; colorize
    false     ; debug
-   true      ; exclude-hidden
    false     ; first-match
    #{}       ; in-archive-extensions
    #{}       ; in-archive-file-patterns
@@ -82,6 +81,7 @@
    #{}       ; in-file-types
    #{}       ; in-lines-after-patterns
    #{}       ; in-lines-before-patterns
+   false     ; include-hidden
    0         ; lines-after
    #{}       ; lines-after-to-patterns
    #{}       ; lines-after-until-patterns
@@ -124,8 +124,8 @@
   (->FindSettings
    (:archives-only search-settings)             ; archives-only
    (:debug search-settings)                     ; debug
-   (:exclude-hidden search-settings)            ; exclude-hidden
    (:search-archives search-settings)           ; include-archives
+   (:include-hidden search-settings)            ; include-hidden
    (:in-archive-extensions search-settings)     ; in-archive-extensions
    (:in-archive-file-patterns search-settings)  ; in-archive-file-patterns
    (:in-dir-patterns search-settings)           ; in-dir-patterns

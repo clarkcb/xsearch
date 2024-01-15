@@ -111,10 +111,10 @@ class SearchSettings extends FindSettings
             'archives_only: %s' .
             ', colorize: %s' .
             ', debug: %s' .
-            ', exclude_hidden: %s' .
             ', first_match: %s' .
             ', in_archive_extensions: %s' .
             ', in_archive_file_patterns: %s' .
+            ', include_hidden: %s' .
             ', in_dir_patterns: %s' .
             ', in_extensions: %s' .
             ', in_file_patterns: %s' .
@@ -161,10 +161,10 @@ class SearchSettings extends FindSettings
             StringUtil::bool_to_string($this->archives_only),
             StringUtil::bool_to_string($this->colorize),
             StringUtil::bool_to_string($this->debug),
-            StringUtil::bool_to_string($this->exclude_hidden),
             StringUtil::bool_to_string($this->first_match),
             StringUtil::string_array_to_string($this->in_archive_extensions),
             StringUtil::string_array_to_string($this->in_archive_file_patterns),
+            StringUtil::bool_to_string($this->include_hidden),
             StringUtil::string_array_to_string($this->in_dir_patterns),
             StringUtil::string_array_to_string($this->in_extensions),
             StringUtil::string_array_to_string($this->in_file_patterns),

@@ -17,10 +17,10 @@ data SearchSettings = SearchSettings {
                                        archivesOnly :: Bool
                                      , colorize :: Bool
                                      , debug :: Bool
-                                     , excludeHidden :: Bool
                                      , firstMatch :: Bool
                                      , inArchiveExtensions :: [String]
                                      , inArchiveFilePatterns :: [String]
+                                     , includeHidden :: Bool
                                      , inDirPatterns :: [String]
                                      , inExtensions :: [String]
                                      , inFilePatterns :: [String]
@@ -70,10 +70,10 @@ defaultSearchSettings = SearchSettings {
                                          archivesOnly=False
                                        , colorize=True
                                        , debug=False
-                                       , excludeHidden=True
                                        , firstMatch=False
                                        , inArchiveExtensions=[]
                                        , inArchiveFilePatterns=[]
+                                       , includeHidden=False
                                        , inDirPatterns=[]
                                        , inExtensions=[]
                                        , inFilePatterns=[]
@@ -129,9 +129,9 @@ toFindSettings :: SearchSettings -> FS.FindSettings
 toFindSettings searchSettings = FS.FindSettings {
                                      FS.archivesOnly=archivesOnly searchSettings
                                    , FS.debug=debug searchSettings
-                                   , FS.excludeHidden=excludeHidden searchSettings
                                    , FS.inArchiveExtensions=inArchiveExtensions searchSettings
                                    , FS.inArchiveFilePatterns=inArchiveFilePatterns searchSettings
+                                   , FS.includeHidden=includeHidden searchSettings
                                    , FS.inDirPatterns=inDirPatterns searchSettings
                                    , FS.inExtensions=inExtensions searchSettings
                                    , FS.inFilePatterns=inFilePatterns searchSettings

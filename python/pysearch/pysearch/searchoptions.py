@@ -47,7 +47,7 @@ class SearchOptions(object):
                 settings.set_property('debug', b),
             'excludehidden':
                 lambda b, settings:
-                settings.set_property('exclude_hidden', b),
+                settings.set_property('include_hidden', not b),
             'firstmatch':
                 lambda b, settings:
                 settings.set_property('first_match', b),
@@ -56,7 +56,7 @@ class SearchOptions(object):
                 settings.set_property('print_usage', b),
             'includehidden':
                 lambda b, settings:
-                settings.set_property('exclude_hidden', not b),
+                settings.set_property('include_hidden', b),
             'listdirs':
                 lambda b, settings:
                 settings.set_property('list_dirs', b),

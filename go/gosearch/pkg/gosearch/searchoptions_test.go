@@ -14,8 +14,8 @@ func TestSearchSettingsFromNoArgs(t *testing.T) {
 
 	if settings.ArchivesOnly() ||
 		settings.Debug() ||
-		!settings.ExcludeHidden() ||
 		settings.FirstMatch() ||
+		settings.IncludeHidden() ||
 		settings.ListDirs() ||
 		settings.ListFiles() ||
 		settings.ListLines() ||
@@ -148,7 +148,7 @@ func TestSearchSettingsFromJson(t *testing.T) {
 		t.Errorf("settings.FirstMatch (%t) != true", settings.FirstMatch)
 	}
 
-	if settings.ExcludeHidden() {
-		t.Errorf("settings.ExcludeHidden (%t) != false", settings.ExcludeHidden)
+	if !settings.IncludeHidden() {
+		t.Errorf("settings.IncludeHidden (%t) != true", settings.IncludeHidden)
 	}
 }

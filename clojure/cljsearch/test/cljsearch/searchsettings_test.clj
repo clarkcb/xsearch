@@ -9,8 +9,8 @@
     (testing "test-default-settings"
       (is (not (:archives-only settings)))
       (is (not (:debug settings)))
-      (is (:exclude-hidden settings))
       (is (not (:first-match settings)))
+      (is (not (:include-hidden settings)))
       (is (= (:lines-after settings) 0))
       (is (= (:lines-before settings) 0))
       (is (not (:list-dirs settings)))

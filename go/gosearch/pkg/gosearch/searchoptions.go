@@ -355,7 +355,7 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.SetDebug(b)
 		},
 		"excludehidden": func(b bool, settings *SearchSettings) {
-			settings.SetExcludeHidden(b)
+			settings.SetIncludeHidden(!b)
 		},
 		"firstmatch": func(b bool, settings *SearchSettings) {
 			settings.SetFirstMatch(b)
@@ -364,7 +364,7 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.SetPrintUsage(b)
 		},
 		"includehidden": func(b bool, settings *SearchSettings) {
-			settings.SetExcludeHidden(!b)
+			settings.SetIncludeHidden(b)
 		},
 		"listdirs": func(b bool, settings *SearchSettings) {
 			settings.SetListDirs(b)

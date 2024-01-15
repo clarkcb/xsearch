@@ -37,10 +37,10 @@ type SearchSettings() =
             $"ArchivesOnly: %b{this.ArchivesOnly}";
             $", Colorize: %b{this.Colorize}";
             $", Debug: %b{this.Debug}";
-            $", ExcludeHidden: %b{this.ExcludeHidden}";
             $", FirstMatch: %b{this.FirstMatch}";
             $", InArchiveExtensions: %s{Common.ListToString(this.InArchiveExtensions)}";
             $", InArchiveFilePatterns: %s{Common.ListToString(this.InArchiveFilePatterns)}";
+            $", IncludeHidden: %b{this.IncludeHidden}";
             $", InDirPatterns: %s{Common.ListToString(this.InDirPatterns)}";
             $", InExtensions: %s{Common.ListToString(this.InExtensions)}";
             $", InFilePatterns: %s{Common.ListToString(this.InFilePatterns)}";

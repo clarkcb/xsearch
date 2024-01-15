@@ -54,10 +54,10 @@ module SearchOptions =
             ("archivesonly", (fun (b : bool) (settings : SearchSettings) -> settings.ArchivesOnly <- b));
             ("colorize", (fun (b : bool) (settings : SearchSettings) -> settings.Colorize <- b));
             ("debug", (fun (b : bool) (settings : SearchSettings) -> settings.Debug <- b));
-            ("excludehidden", (fun (b : bool) (settings : SearchSettings) -> settings.ExcludeHidden <- b));
+            ("excludehidden", (fun (b : bool) (settings : SearchSettings) -> settings.IncludeHidden <- not b));
             ("firstmatch", (fun (b : bool) (settings : SearchSettings) -> settings.FirstMatch <- b));
             ("help", (fun (b : bool) (settings : SearchSettings) -> settings.PrintUsage <- b));
-            ("includehidden", (fun (b : bool) (settings : SearchSettings) -> settings.ExcludeHidden <- not b));
+            ("includehidden", (fun (b : bool) (settings : SearchSettings) -> settings.IncludeHidden <- b));
             ("listdirs", (fun (b : bool) (settings : SearchSettings) -> settings.ListDirs <- b));
             ("listfiles", (fun (b : bool) (settings : SearchSettings) -> settings.ListFiles <- b));
             ("listlines", (fun (b : bool) (settings : SearchSettings) -> settings.ListLines <- b));

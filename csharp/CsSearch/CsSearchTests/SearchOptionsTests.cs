@@ -18,8 +18,9 @@ public class SearchOptionsTests
 		Assert.IsFalse(settings.ArchivesOnly);
 		Assert.IsTrue(settings.Colorize);
 		Assert.IsFalse(settings.Debug);
-		Assert.IsTrue(settings.ExcludeHidden);
 		Assert.IsFalse(settings.FirstMatch);
+		Assert.IsFalse(settings.IncludeArchives);
+		Assert.IsFalse(settings.IncludeHidden);
 		Assert.AreEqual(0, settings.LinesAfter);
 		Assert.AreEqual(0, settings.LinesBefore);
 		Assert.IsFalse(settings.ListDirs);
@@ -67,7 +68,7 @@ public class SearchOptionsTests
 		var ex = Assert.Throws<SearchException>(() => _searchOptions.SettingsFromArgs(args));
 		Assert.AreEqual("Invalid option: Q", ex?.Message);
 	}
-		
+
 	[Test]
 	public void SettingsFromJson_EqualsExpected()
 	{
@@ -81,7 +82,7 @@ public class SearchOptionsTests
   ""linesafter"": 2,
   ""debug"": true,
   ""allmatches"": false,
-  ""includehidden"": false
+  ""includehidden"": true
 }";
 		var settings = new SearchSettings();
 		SearchOptions.SettingsFromJson(json, settings);
@@ -107,6 +108,6 @@ public class SearchOptionsTests
 
 		Assert.True(settings.Debug);
 		Assert.True(settings.FirstMatch);
-		Assert.True(settings.ExcludeHidden);
+		Assert.True(settings.IncludeHidden);
 	}
 }

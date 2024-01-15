@@ -110,11 +110,11 @@ export class SearchOptions {
             'debug':
                 (b: boolean, settings: SearchSettings) => { settings.debug = b; },
             'excludehidden':
-                (b: boolean, settings: SearchSettings) => { settings.excludeHidden = b; },
+                (b: boolean, settings: SearchSettings) => { settings.includeHidden = !b; },
             'firstmatch':
                 (b: boolean, settings: SearchSettings) => { settings.firstMatch = b; },
             'includehidden':
-                (b: boolean, settings: SearchSettings) => { settings.excludeHidden = !b; },
+                (b: boolean, settings: SearchSettings) => { settings.includeHidden = b; },
             'help':
                 (b: boolean, settings: SearchSettings) => { settings.printUsage = b; },
             'listdirs':

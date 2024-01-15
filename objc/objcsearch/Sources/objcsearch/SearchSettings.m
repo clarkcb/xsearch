@@ -33,10 +33,10 @@
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
     [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
-    [d appendFormat:@", excludeHidden=%@", boolToNSString(self.excludeHidden)];
     [d appendFormat:@", firstMatch=%@", boolToNSString(self.firstMatch)];
     [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];
     [d appendFormat:@", inArchiveFilePatterns=%@", arrayToNSString(self.inArchiveFilePatterns)];
+    [d appendFormat:@", includeHidden=%@", boolToNSString(self.includeHidden)];
     [d appendFormat:@", inDirPatterns=%@", arrayToNSString(self.inDirPatterns)];
     [d appendFormat:@", inExtensions=%@", arrayToNSString(self.inExtensions)];
     [d appendFormat:@", inFilePatterns=%@", arrayToNSString(self.inFilePatterns)];

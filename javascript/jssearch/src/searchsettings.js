@@ -56,14 +56,6 @@ class SearchSettings {
         this.#findSettings.debug = value;
     }
 
-    get excludeHidden() {
-        return this.#findSettings.excludeHidden;
-    }
-
-    set excludeHidden(b) {
-        this.#findSettings.excludeHidden = b;
-    }
-
     get inArchiveExtensions() {
         return this.#findSettings.inArchiveExtensions;
     }
@@ -86,6 +78,14 @@ class SearchSettings {
 
     addInArchiveFilePatterns(pattern) {
         this.#findSettings.addInArchiveFilePatterns(pattern);
+    }
+
+    get includeHidden() {
+        return this.#findSettings.includeHidden;
+    }
+
+    set includeHidden(b) {
+        this.#findSettings.includeHidden = b;
     }
 
     get inDirPatterns() {
@@ -385,10 +385,10 @@ class SearchSettings {
             'archivesOnly=' + this.archivesOnly +
             ', colorize=' + this.colorize +
             ', debug=' + this.debug +
-            ', excludeHidden=' + this.excludeHidden +
             ', firstMatch=' + this.firstMatch +
             ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions) +
             ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
+            ', includeHidden=' + this.includeHidden +
             ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns) +
             ', ' + StringUtil.listToString('inExtensions', this.inExtensions) +
             ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns) +

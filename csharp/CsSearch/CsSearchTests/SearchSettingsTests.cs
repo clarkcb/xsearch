@@ -14,8 +14,8 @@ public class SearchSettingsTests
 		Assert.IsFalse(settings.ArchivesOnly);
 		Assert.IsTrue(settings.Colorize);
 		Assert.IsFalse(settings.Debug);
-		Assert.IsTrue(settings.ExcludeHidden);
 		Assert.IsFalse(settings.FirstMatch);
+		Assert.IsFalse(settings.IncludeHidden);
 		Assert.AreEqual(0, settings.LinesAfter);
 		Assert.AreEqual(0, settings.LinesBefore);
 		Assert.IsFalse(settings.ListDirs);

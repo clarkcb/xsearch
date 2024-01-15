@@ -52,10 +52,10 @@ sub to_string {
         'archives_only=' . plfind::common::bool_to_string($self->{archives_only}) .
         ', colorize=' . plfind::common::bool_to_string($self->{colorize}) .
         ', debug=' . plfind::common::bool_to_string($self->{debug}) .
-        ', exclude_hidden=' . plfind::common::bool_to_string($self->{exclude_hidden}) .
         ', first_match=' . plfind::common::bool_to_string($self->{first_match}) .
         ', in_archive_extensions=' . plfind::common::strings_aref_to_string($self->{in_archive_extensions}) .
         ', in_archive_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_archive_file_patterns}) .
+        ', include_hidden=' . plfind::common::bool_to_string($self->{include_hidden}) .
         ', in_dir_patterns=' . plfind::common::strings_aref_to_string($self->{in_dir_patterns}) .
         ', in_extensions=' . plfind::common::strings_aref_to_string($self->{in_extensions}) .
         ', in_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_file_patterns}) .

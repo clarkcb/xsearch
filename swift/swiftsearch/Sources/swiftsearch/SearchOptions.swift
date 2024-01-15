@@ -171,7 +171,7 @@ public class SearchOptions {
             settings.debug = bool
         },
         "excludehidden": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.excludeHidden = bool
+            settings.includeHidden = !bool
         },
         "firstmatch": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.firstMatch = bool
@@ -180,7 +180,7 @@ public class SearchOptions {
             settings.printUsage = bool
         },
         "includehidden": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.excludeHidden = !bool
+            settings.includeHidden = bool
         },
         "listdirs": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.listDirs = bool

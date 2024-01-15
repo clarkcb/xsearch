@@ -124,10 +124,10 @@ class SearchOptions {
         "colorize" to { b, ss -> ss.copy(colorize = b) },
         "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
             ss.copy(debug = b) },
-        "excludehidden" to { b, ss -> ss.copy(excludeHidden = b) },
+        "excludehidden" to { b, ss -> ss.copy(includeHidden = !b) },
         "firstmatch" to { b, ss -> ss.copy(firstMatch = b) },
         "help" to { b, ss -> ss.copy(printUsage = b) },
-        "includehidden" to { b, ss -> ss.copy(excludeHidden = !b) },
+        "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
         "listdirs" to { b, ss -> ss.copy(listDirs = b) },
         "listfiles" to { b, ss -> ss.copy(listFiles = b) },
         "listlines" to { b, ss -> ss.copy(listLines = b) },

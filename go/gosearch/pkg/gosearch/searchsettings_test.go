@@ -6,8 +6,8 @@ func TestDefaultSearchSettings(t *testing.T) {
 	settings := GetDefaultSearchSettings()
 	if settings.ArchivesOnly() ||
 		settings.Debug() ||
-		!settings.ExcludeHidden() ||
 		settings.FirstMatch() ||
+		settings.IncludeHidden() ||
 		settings.ListDirs() ||
 		settings.ListFiles() ||
 		settings.ListLines() ||

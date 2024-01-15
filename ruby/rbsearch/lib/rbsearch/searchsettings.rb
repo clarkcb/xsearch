@@ -63,9 +63,9 @@ module RbSearch
       s << "archives_only: #{@archives_only}"
       s << ", debug: #{@debug}"
       s << ", first_match: #{@first_match}"
-      s << ", exclude_hidden: #{@exclude_hidden}"
       s << ', ' + list_to_s('in_archive_extensions', @in_archive_extensions)
       s << ', ' + list_to_s('in_archive_file_patterns', @in_archive_file_patterns)
+      s << ", include_hidden: #{@include_hidden}"
       s << ', ' + list_to_s('in_dir_patterns', @in_dir_patterns)
       s << ', ' + list_to_s('in_extensions', @in_extensions)
       s << ', ' + list_to_s('in_file_patterns', @in_file_patterns)

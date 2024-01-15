@@ -99,11 +99,11 @@ class SearchOptions {
             'debug':
                 (b, settings) => { settings.debug = b; },
             'excludehidden':
-                (b, settings) => { settings.excludeHidden = b; },
+                (b, settings) => { settings.includeHidden = !b; },
             'firstmatch':
                 (b, settings) => { settings.firstMatch = b; },
             'includehidden':
-                (b, settings) => { settings.excludeHidden = !b; },
+                (b, settings) => { settings.includeHidden = b; },
             'help':
                 (b, settings) => { settings.printUsage = b; },
             'listdirs':

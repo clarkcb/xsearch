@@ -151,10 +151,10 @@ public class SearchSettings : FindSettings
 		       "ArchivesOnly: " + ArchivesOnly +
 		       ", Colorize: " + Colorize +
 		       ", Debug: " + Debug +
-		       ", ExcludeHidden: " + ExcludeHidden +
 		       ", FirstMatch: " + FirstMatch +
 		       ", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions) +
 		       ", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns) +
+		       ", IncludeHidden: " + IncludeHidden +
 		       ", InDirPatterns: " + EnumerableToString(InDirPatterns) +
 		       ", InExtensions: " + EnumerableToString(InExtensions) +
 		       ", InFilePatterns: " + EnumerableToString(InFilePatterns) +

@@ -249,10 +249,10 @@ typedef void (^BoolFlagActionBlockType)(BOOL, SearchSettings*);
                 ss.debug = b;
                 if (b) ss.verbose = true;
             } copy], @"debug",
-            [^void (BOOL b, SearchSettings *ss) { ss.excludeHidden = b; } copy], @"excludehidden",
+            [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = !b; } copy], @"excludehidden",
             [^void (BOOL b, SearchSettings *ss) { ss.firstMatch = b; } copy], @"firstmatch",
             [^void (BOOL b, SearchSettings *ss) { ss.printUsage = b; } copy], @"help",
-            [^void (BOOL b, SearchSettings *ss) { ss.excludeHidden = !b; } copy], @"includehidden",
+            [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = b; } copy], @"includehidden",
             [^void (BOOL b, SearchSettings *ss) { ss.listDirs = b; } copy], @"listdirs",
             [^void (BOOL b, SearchSettings *ss) { ss.listFiles = b; } copy], @"listfiles",
             [^void (BOOL b, SearchSettings *ss) { ss.listLines = b; } copy], @"listlines",
