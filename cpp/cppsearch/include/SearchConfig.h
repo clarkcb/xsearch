@@ -1,6 +1,10 @@
 #ifndef CPPSEARCH_CONFIG_H
 #define CPPSEARCH_CONFIG_H
 
-#define XSEARCHPATH "/Users/cary/src/xsearch"
+#include <string>
+
+namespace cppsearch {
+    std::string xsearchpath();
+}
 
 #endif //CPPSEARCH_CONFIG_H
