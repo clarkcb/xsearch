@@ -14,11 +14,15 @@ lazy val scalaSearch = (project in file("."))
     scalaVersion := scala3Version,
 
     libraryDependencies ++= Seq(
-      "com.googlecode.json-simple" % "json-simple" % "1.1.1",
-      "org.apache.commons" % "commons-compress" % "1.21",
+      "org.json" % "json" % "20240205",
+      "org.apache.commons" % "commons-compress" % "1.26.0",
       "org.scalactic" %% "scalactic" % "3.2.17",
       "org.scalatest" %% "scalatest" % "3.2.17" % Test,
+      "com.github.sbt" % "junit-interface" % "0.13.3" % Test
     )
-
-
   )
+
+assembly / assemblyMergeStrategy := {
+  case PathList("META-INF", _*) => MergeStrategy.discard
+  case _                        => MergeStrategy.first
+}

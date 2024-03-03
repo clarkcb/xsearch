@@ -1,6 +1,7 @@
 package ktsearch
 
-import java.util.Comparator
+import ktfind.log
+import ktfind.logError
 
 fun printUsage(searchOptions: SearchOptions) {
     log("")

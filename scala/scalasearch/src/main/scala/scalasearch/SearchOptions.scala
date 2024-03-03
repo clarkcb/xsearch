@@ -1,11 +1,10 @@
 package scalasearch
 
-import org.json.simple.parser.{JSONParser, ParseException}
-import org.json.simple.{JSONArray, JSONObject, JSONValue}
-import scalafind.{Common, FileTypes, FileUtil, SortBy}
+import org.json.{JSONArray, JSONObject, JSONTokener}
+import scalafind.{Common, FileType, FileTypes, FileUtil, FindOptions, SortBy}
 
 import java.io.{File, IOException, InputStreamReader}
-import java.time.{LocalDateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import scala.annotation.tailrec
@@ -33,45 +32,25 @@ object SearchOptions {
   private def loadSearchOptionsFromJson(): Unit = {
     try {
       val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
-      val obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream))
-      val jsonObj = obj.asInstanceOf[JSONObject]
-      val soIt = jsonObj.get("searchoptions").asInstanceOf[JSONArray].iterator()
-      while (soIt.hasNext) {
-        val soObj = soIt.next().asInstanceOf[JSONObject]
-        val longArg = soObj.get("long").asInstanceOf[String]
+
+      val jsonObj = new JSONObject(new JSONTokener(new InputStreamReader(searchOptionsInputStream)))
+      val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
+      while (searchOptionsArray.hasNext) {
+        val searchOptionObj = searchOptionsArray.next().asInstanceOf[JSONObject]
+        val longArg = searchOptionObj.getString("long")
         val shortArg =
-          if (soObj.containsKey("short")) {
-            Some(soObj.get("short").asInstanceOf[String])
+          if (searchOptionObj.has("short")) {
+            Some(searchOptionObj.getString("short"))
           } else {
             None
           }
-        val desc = soObj.get("desc").asInstanceOf[String]
+        val desc = searchOptionObj.getString("desc")
         val option = SearchOption(shortArg, longArg, desc)
         _searchOptions += option
       }
     } catch {
-      case e: ParseException =>
-        print(e.getMessage)
       case e: IOException =>
         print(e.getMessage)
-    }
-  }
-
-  private def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
-    extensions ++ exts.split(",").filterNot(_.isEmpty)
-  }
-
-  private def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
-    try {
-      Some(LocalDateTime.parse(lastModString))
-    } catch {
-      _ =>
-        try {
-          val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
-          Some(maxLastModDate.atTime(0, 0, 0))
-        } catch {
-          _ => None
-        }
     }
   }
 
@@ -81,17 +60,17 @@ object SearchOptions {
     "encoding" ->
       ((s, ss) => ss.copy(textFileEncoding = s)),
     "in-archiveext" ->
-      ((s, ss) => ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions))),
+      ((s, ss) => ss.copy(inArchiveExtensions = ss.addExtensions(s, ss.inArchiveExtensions))),
     "in-archivefilepattern" ->
       ((s, ss) => ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns + s.r)),
     "in-dirpattern" ->
       ((s, ss) => ss.copy(inDirPatterns = ss.inDirPatterns + s.r)),
     "in-ext" ->
-      ((s, ss) => ss.copy(inExtensions = addExtensions(s, ss.inExtensions))),
+      ((s, ss) => ss.copy(inExtensions = ss.addExtensions(s, ss.inExtensions))),
     "in-filepattern" ->
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
-      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileTypes.fromName(s))),
+      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileType.forName(s))),
     "in-linesafterpattern" ->
       ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
     "in-linesbeforepattern" ->
@@ -107,7 +86,7 @@ object SearchOptions {
     "maxdepth" ->
       ((s, ss) => ss.copy(maxDepth = s.toInt)),
     "maxlastmod" ->
-      ((s, ss) => ss.copy(maxLastMod = getLastModFromString(s))),
+      ((s, ss) => ss.copy(maxLastMod = ss.getLastModFromString(s))),
     "maxlinelength" ->
       ((s, ss) => ss.copy(maxLineLength = s.toInt)),
     "maxsize" ->
@@ -115,21 +94,21 @@ object SearchOptions {
     "mindepth" ->
       ((s, ss) => ss.copy(minDepth = s.toInt)),
     "minlastmod" ->
-      ((s, ss) => ss.copy(minLastMod = getLastModFromString(s))),
+      ((s, ss) => ss.copy(minLastMod = ss.getLastModFromString(s))),
     "minsize" ->
       ((s, ss) => ss.copy(minSize = s.toInt)),
     "out-archiveext" ->
-      ((s, ss) => ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions))),
+      ((s, ss) => ss.copy(outArchiveExtensions = ss.addExtensions(s, ss.outArchiveExtensions))),
     "out-archivefilepattern" ->
       ((s, ss) => ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns + s.r)),
     "out-dirpattern" ->
       ((s, ss) => ss.copy(outDirPatterns = ss.outDirPatterns + s.r)),
     "out-ext" ->
-      ((s, ss) => ss.copy(outExtensions = addExtensions(s, ss.outExtensions))),
+      ((s, ss) => ss.copy(outExtensions = ss.addExtensions(s, ss.outExtensions))),
     "out-filepattern" ->
       ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
     "out-filetype" ->
-      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileTypes.fromName(s))),
+      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileType.forName(s))),
     "out-linesafterpattern" ->
       ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
     "out-linesbeforepattern" ->
@@ -141,7 +120,7 @@ object SearchOptions {
     "settings-file" ->
       ((s, ss) => settingsFromFile(s, ss)),
     "sort-by" ->
-      ((s, ss) => ss.copy(sortBy = SortBy.fromName(s))),
+      ((s, ss) => ss.copy(sortBy = SortBy.forName(s))),
   )
 
   type FlagAction = (Boolean, SearchSettings) => SearchSettings
@@ -189,8 +168,7 @@ object SearchOptions {
   }
 
   def settingsFromJson(json: String, ss: SearchSettings): SearchSettings = {
-    val obj: AnyRef = JSONValue.parseWithException(json)
-    val jsonObject: JSONObject = obj.asInstanceOf[JSONObject]
+    val jsonObject = new JSONObject(new JSONTokener(json))
     @tailrec
     def recSettingsFromJson(keys: List[String], settings: SearchSettings): SearchSettings = keys match {
       case Nil => settings
@@ -198,7 +176,7 @@ object SearchOptions {
         val v = jsonObject.get(k)
         recSettingsFromJson(ks, applySetting(k, v, settings))
     }
-    recSettingsFromJson(jsonObject.keySet().asScala.map(_.toString).toList, ss)
+    recSettingsFromJson(jsonObject.keySet().asScala.toList, ss)
   }
 
   @tailrec
@@ -220,7 +198,7 @@ object SearchOptions {
     case l: Long =>
       applySetting(arg, l.toString, ss)
     case a: JSONArray =>
-      applySettings(arg, a.toArray.toList.map(_.toString), ss)
+      applySettings(arg, a.toList.asScala.map(_.toString).toList, ss)
     case _ =>
       throw new SearchException("Unsupported data type")
   }

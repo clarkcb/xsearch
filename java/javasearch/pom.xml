@@ -43,20 +43,20 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>com.googlecode.json-simple:json-simple</include>
                                     <include>commons-io:commons-io</include>
+                                    <include>org.json:json</include>
                                     <include>xfind:javafind</include>
                                 </includes>
                             </artifactSet>
                             <filters>
                                 <filter>
-                                    <artifact>com.googlecode.json-simple:json-simple</artifact>
+                                    <artifact>commons-io:commons-io</artifact>
                                     <excludes>
                                         <exclude>META-INF/MANIFEST.MF</exclude>
                                     </excludes>
                                 </filter>
                                 <filter>
-                                    <artifact>commons-io:commons-io</artifact>
+                                    <artifact>org.json:json</artifact>
                                     <excludes>
                                         <exclude>META-INF/MANIFEST.MF</exclude>
                                     </excludes>
@@ -76,9 +76,9 @@
             <version>2.15.1</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240205</version>
         </dependency>
 
         <dependency>
@@ -89,9 +89,9 @@
 
         <!-- testing -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

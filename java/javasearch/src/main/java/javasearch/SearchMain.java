@@ -10,38 +10,30 @@ Main class for initiating javasearch from command line
 
 package javasearch;
 
-import org.json.simple.parser.ParseException;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static javasearch.Logger.log;
+import javafind.Logger;
 
 public class SearchMain {
 
     private static void handleError(final String message) {
-        log("");
+        Logger.log("");
         Logger.logError(message);
     }
 
     private static void handleError(final String message, SearchOptions options) {
-        log("");
+        Logger.log("");
         Logger.logError(message + "\n");
         options.usage(1);
     }
 
-    private static List<SearchResult> getSortedSearchResults(List<SearchResult> results, Searcher searcher) {
-        return results.stream().sorted(searcher::compareResults)
-                .collect(Collectors.toList());
-    }
-
-    private static void printSearchResults(List<SearchResult> results, Searcher searcher) {
-        List<SearchResult> sortedResults = getSortedSearchResults(results, searcher);
-        SearchResultFormatter formatter = new SearchResultFormatter(searcher.getSettings());
-        log(String.format("Search results (%d):", sortedResults.size()));
-        for (SearchResult r : sortedResults) {
-            log(formatter.format(r));
+    private static void printSearchResults(List<SearchResult> results, SearchSettings settings) {
+        SearchResultFormatter formatter = new SearchResultFormatter(settings);
+        Logger.log(String.format("Search results (%d):", results.size()));
+        for (SearchResult r : results) {
+            Logger.log(formatter.format(r));
         }
     }
 
@@ -54,9 +46,9 @@ public class SearchMain {
 
     private static void printMatchingDirs(List<SearchResult> results) {
         List<String> dirs = getMatchingDirs(results);
-        log(String.format("\nDirectories with matches (%d):", dirs.size()));
+        Logger.log(String.format("\nDirectories with matches (%d):", dirs.size()));
         for (String d : dirs) {
-            log(d);
+            Logger.log(d);
         }
     }
 
@@ -67,9 +59,9 @@ public class SearchMain {
 
     private static void printMatchingFiles(List<SearchResult> results) {
         List<String> files = getMatchingFiles(results);
-        log(String.format("\nFiles with matches (%d):", files.size()));
+        Logger.log(String.format("\nFiles with matches (%d):", files.size()));
         for (String f : files) {
-            log(f);
+            Logger.log(f);
         }
     }
 
@@ -94,9 +86,9 @@ public class SearchMain {
         } else {
             hdr = "\nLines with matches (%d):";
         }
-        log(String.format(hdr, lines.size()));
+        Logger.log(String.format(hdr, lines.size()));
         for (String line : lines) {
-            log(line);
+            Logger.log(line);
         }
     }
 
@@ -109,12 +101,12 @@ public class SearchMain {
                 SearchSettings settings = options.settingsFromArgs(args);
 
                 if (settings.getDebug()) {
-                    log("\nsettings:");
-                    log(settings.toString() + "\n");
+                    Logger.log("\nsettings:");
+                    Logger.log(settings.toString() + "\n");
                 }
 
                 if (settings.getPrintUsage()) {
-                    log("");
+                    Logger.log("");
                     options.usage(0);
                 }
 
@@ -125,8 +117,8 @@ public class SearchMain {
 
                 // print the results
                 if (settings.getPrintResults()) {
-                    log("");
-                    printSearchResults(results, searcher);
+                    Logger.log("");
+                    printSearchResults(results, settings);
                 }
                 if (settings.getPrintDirs()) {
                     printMatchingDirs(results);
@@ -142,7 +134,7 @@ public class SearchMain {
                 handleError(e.getMessage(), options);
             }
 
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             handleError(e.getMessage());
         }
     }

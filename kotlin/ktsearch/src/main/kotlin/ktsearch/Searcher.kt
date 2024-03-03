@@ -1,12 +1,10 @@
 package ktsearch
 
-import ktfind.FileResult
-import ktfind.FileType
-import ktfind.Finder
+import ktfind.*
 import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset
-import java.util.*
+import kotlin.streams.toList
 
 /**
  * @author cary on 7/23/16.
@@ -84,9 +82,7 @@ class Searcher(val settings: SearchSettings) {
             log("")
         }
 
-        val results: List<SearchResult> = searchFiles(fileResults)
-
-        return results
+        return searchFiles(fileResults)
     }
 
     private fun searchFiles(frs: List<FileResult>): List<SearchResult> {

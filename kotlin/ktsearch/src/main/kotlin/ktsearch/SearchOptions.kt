@@ -1,15 +1,12 @@
 package ktsearch
 
-import com.beust.klaxon.JsonArray
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.KlaxonException
-import com.beust.klaxon.Parser
-import ktfind.getLastModFromString
-import ktfind.sortByFromName
+import ktfind.*
+import org.json.JSONArray
+import org.json.JSONObject
+import org.json.JSONTokener
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStreamReader
 
 /**
  * @author cary on 7/23/16.
@@ -24,6 +21,7 @@ data class SearchOption(val shortArg: String?, val longArg: String, val desc: St
 }
 
 class SearchOptions {
+    private val searchOptionsJsonPath = "/searchoptions.json"
     private val searchOptions : List<SearchOption>
 
     init {
@@ -31,19 +29,23 @@ class SearchOptions {
     }
 
     private fun loadSearchOptionsFromJson() : List<SearchOption> {
-        val searchOptionsJsonPath = "/searchoptions.json"
         val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsJsonPath)
-        val jsonObj: JsonObject = Parser.default().parse(InputStreamReader(searchOptionsInputStream!!)) as JsonObject
-        val searchOptionsArray = jsonObj.array<JsonObject>("searchoptions")
-
+        val jsonObj = JSONObject(JSONTokener(searchOptionsInputStream))
+        val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
         val options : MutableList<SearchOption> = mutableListOf()
-        searchOptionsArray!!.forEach {
-            val longArg = it.string("long")!!
-            val desc = it.string("desc")!!
-            val shortArg: String? = it.string("short")
+        while (searchOptionsArray.hasNext()) {
+            val searchOptionObj = searchOptionsArray.next() as JSONObject
+            val longArg = searchOptionObj.getString("long")
+            val shortArg =
+                if (searchOptionObj.has("short")) {
+                    searchOptionObj.getString("short")
+                } else {
+                    null
+                }
+            val desc = searchOptionObj.getString("desc")
             options.add(SearchOption(shortArg, longArg, desc))
         }
-        return options.toList().sortedBy { it.sortarg }
+        return options.toList().sortedBy { it.sortArg }
     }
 
     private fun getArgMap() : Map<String, String> {
@@ -160,26 +162,24 @@ class SearchOptions {
             throw SearchException("Settings file not found: $filePath")
         } catch (e: IOException) {
             throw SearchException("IOException reading settings file: $filePath")
-        } catch (e: KlaxonException) {
-            throw SearchException("KlaxonException trying to parse the JSON in $filePath")
         }
     }
 
     fun settingsFromJson(json: String, settings: SearchSettings): SearchSettings {
-        val jsonObject = Parser.default().parse(StringBuilder(json)) as JsonObject
-        fun recSettingsFromJson(keys: List<Any?>, settings: SearchSettings) : SearchSettings {
+        val jsonObject = JSONObject(JSONTokener(json))
+        fun recSettingsFromJson(keys: List<String>, settings: SearchSettings) : SearchSettings {
             return if (keys.isEmpty()) settings
             else {
                 val ko = keys.first()
-                val vo = jsonObject[ko]
-                if (ko != null && ko is String && vo != null) {
+                val vo = jsonObject.get(ko)
+                if (vo != null) {
                     recSettingsFromJson(keys.drop(1), applySetting(ko, vo, settings))
                 } else {
                     recSettingsFromJson(keys.drop(1), settings)
                 }
             }
         }
-        return recSettingsFromJson(jsonObject.keys.toList(), settings)
+        return recSettingsFromJson(jsonObject.keySet().toList(), settings)
     }
 
     private fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
@@ -190,10 +190,13 @@ class SearchOptions {
             is Boolean -> {
                 return applySetting(key, obj, settings)
             }
+            is Int -> {
+                return applySetting(key, obj.toString(), settings)
+            }
             is Long -> {
                 return applySetting(key, obj.toString(), settings)
             }
-            is JsonArray<*> -> {
+            is JSONArray -> {
                 return applySetting(key, obj.toList().map { it as String }, settings)
             }
             else -> {

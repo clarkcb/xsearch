@@ -1,8 +1,10 @@
 package ktsearch
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import ktfind.addExtensions
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * @author cary on 7/30/16.
@@ -11,25 +13,25 @@ class SearchSettingsTest {
     @Test
     fun testDefaultSettings() {
         val settings = getDefaultSettings()
-        assertEquals(false, settings.archivesOnly)
-        assertEquals(true, settings.colorize)
-        assertEquals(false, settings.debug)
-        assertEquals(true, settings.excludeHidden)
-        assertEquals(false, settings.firstMatch)
+        assertFalse(settings.archivesOnly)
+        assertTrue(settings.colorize)
+        assertFalse(settings.debug)
+        assertFalse(settings.firstMatch)
+        assertFalse(settings.includeHidden)
         assertEquals(0, settings.linesAfter)
         assertEquals(0, settings.linesBefore)
-        assertEquals(false, settings.listDirs)
-        assertEquals(false, settings.listFiles)
-        assertEquals(false, settings.listLines)
         assertEquals(150, settings.maxLineLength)
-        assertEquals(false, settings.multiLineSearch)
-        assertEquals(false, settings.printResults)
-        assertEquals(false, settings.printUsage)
-        assertEquals(false, settings.printVersion)
-        assertEquals(false, settings.searchArchives)
-        assertEquals(true, settings.recursive)
-        assertEquals(false, settings.uniqueLines)
-        assertEquals(false, settings.verbose)
+        assertFalse(settings.multiLineSearch)
+        assertFalse(settings.printDirs)
+        assertFalse(settings.printFiles)
+        assertFalse(settings.printLines)
+        assertFalse(settings.printResults)
+        assertFalse(settings.printUsage)
+        assertFalse(settings.printVersion)
+        assertFalse(settings.searchArchives)
+        assertTrue(settings.recursive)
+        assertFalse(settings.uniqueLines)
+        assertFalse(settings.verbose)
     }
 
     @Test

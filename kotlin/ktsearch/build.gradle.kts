@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("com.beust:klaxon:5.5")
+    implementation("org.json:json:20240205")
     implementation("xfind:ktfind:0.1.0-SNAPSHOT")
     testImplementation(kotlin("test"))
 }

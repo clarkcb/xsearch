@@ -123,6 +123,14 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
     sortDescending = sortDescending,
     verbose = verbose)
 
+  def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
+    findSettings.addExtensions(exts, extensions)
+  }
+
+  def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
+    findSettings.getLastModFromString(lastModString)
+  }
+
   def hasLinesBefore: Boolean = {
     linesBefore > 0 || hasLinesBeforePatterns
   }

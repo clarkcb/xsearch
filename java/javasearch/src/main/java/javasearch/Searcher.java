@@ -26,6 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static javafind.Logger.log;
+
 public class Searcher {
 
     final private SearchSettings settings;
@@ -39,10 +41,6 @@ public class Searcher {
 
     public SearchSettings getSettings() {
         return this.settings;
-    }
-
-    private void log(final String message) {
-        System.out.println(message);
     }
 
     final void validateSettings() throws SearchException {
@@ -355,9 +353,9 @@ public class Searcher {
     private boolean linesMatch(final List<String> lines,
                                final Set<Pattern> inPatterns,
                                final Set<Pattern> outPatterns) {
-        return ((inPatterns.size() == 0 || anyMatchesAnyPattern(lines, inPatterns))
+        return ((inPatterns.isEmpty() || anyMatchesAnyPattern(lines, inPatterns))
                 &&
-                (outPatterns.size() == 0 || !anyMatchesAnyPattern(lines, outPatterns)));
+                (outPatterns.isEmpty() || !anyMatchesAnyPattern(lines, outPatterns)));
     }
 
     private boolean linesBeforeMatch(final List<String> linesBefore) {
