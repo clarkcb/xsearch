@@ -32,7 +32,7 @@ class SearchResultTests
 		var expectedPath = CsSearchPath + "/Searcher.cs";
 		var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {line.Trim()}";
 
-		Assert.AreEqual(expectedOutput, formatter.Format(searchResult));
+		Assert.That(formatter.Format(searchResult), Is.EqualTo(expectedOutput));
 	}
 
 	[Test]
@@ -58,7 +58,7 @@ class SearchResultTests
 		const string expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...";
 		var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {expectedLine}";
 
-		Assert.AreEqual(expectedOutput, formatter.Format(searchResult));
+		Assert.That(formatter.Format(searchResult), Is.EqualTo(expectedOutput));
 	}
 
 	[Test]
@@ -89,7 +89,7 @@ class SearchResultTests
 		var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {expectedLine}";
 
 		var output = formatter.Format(searchResult);
-		Assert.AreEqual(expectedOutput, output);
+		Assert.That(output, Is.EqualTo(expectedOutput));
 	}
 
 	[Test]
@@ -122,7 +122,7 @@ class SearchResultTests
 		                                   "  12 | 		private readonly FileTypes _fileTypes;\n",
 			expectedPath, lineNum, matchStartIndex, matchEndIndex);
 		var output = formatter.Format(searchResult);
-		Assert.AreEqual(expectedOutput, output);
+		Assert.That(output, Is.EqualTo(expectedOutput));
 	}
 
 	[Test]
@@ -142,6 +142,6 @@ class SearchResultTests
 		var expectedOutput = $"{expectedPath} matches at [0:0]";
 
 		var output = formatter.Format(searchResult);
-		Assert.AreEqual(expectedOutput, output);
+		Assert.That(output, Is.EqualTo(expectedOutput));
 	}
 }

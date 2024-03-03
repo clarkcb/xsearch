@@ -39,25 +39,25 @@ type SearcherTests () =
         let enumerableLines = this.GetTestFileContent().Split([|'\n'; '\r'|]) |> Array.toList
         let results = searcher.SearchLines(enumerableLines)
 
-        Assert.AreEqual(results.Length, 2)
+        Assert.That(results.Length, Is.EqualTo(2))
 
         let firstResult = results[0]
         let expectedFirstLineNum = 29
-        Assert.AreEqual(firstResult.LineNum, expectedFirstLineNum)
+        Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum))
 
         let expectedFirstMatchStartIndex = 3
-        Assert.AreEqual(firstResult.MatchStartIndex, expectedFirstMatchStartIndex)
+        Assert.That(firstResult.MatchStartIndex, Is.EqualTo(expectedFirstMatchStartIndex))
 
         let expectedFirstMatchEndIndex = 11
-        Assert.AreEqual(firstResult.MatchEndIndex, expectedFirstMatchEndIndex)
+        Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex))
 
         let secondResult = results[1]
         let expectedSecondLineNum = 35
-        Assert.AreEqual(secondResult.LineNum, expectedSecondLineNum)
+        Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum))
         let expectedSecondMatchStartIndex = 24
-        Assert.AreEqual(secondResult.MatchStartIndex, expectedSecondMatchStartIndex)
+        Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex))
         let expectedSecondMatchEndIndex = 32
-        Assert.AreEqual(secondResult.MatchEndIndex, expectedSecondMatchEndIndex)
+        Assert.That(secondResult.MatchEndIndex, Is.EqualTo(expectedSecondMatchEndIndex))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -70,25 +70,25 @@ type SearcherTests () =
         let contents = this.GetTestFileContent()
         let results = searcher.SearchContents(contents)
 
-        Assert.AreEqual(results.Length, 2)
+        Assert.That(results.Length, Is.EqualTo(2))
 
         let firstResult = results[0]
         let expectedFirstLineNum = 29
-        Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum)
+        Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum))
 
         let expectedFirstMatchStartIndex = 3
-        Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex)
+        Assert.That(firstResult.MatchStartIndex, Is.EqualTo(expectedFirstMatchStartIndex))
 
         let expectedFirstMatchEndIndex = 11
-        Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex)
+        Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex))
 
         let secondResult = results[1]
         let expectedSecondLineNum = 35
-        Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum)
+        Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum))
 
         let expectedSecondMatchStartIndex = 24
-        Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex)
+        Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex))
 
         let expectedSecondMatchEndIndex = 32
-        Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex)
+        Assert.That(secondResult.MatchEndIndex, Is.EqualTo(expectedSecondMatchEndIndex))
         ()

@@ -33,7 +33,7 @@ type SearchResultTests () =
         let expectedPath = this.CsSearchPath + "/Searcher.cs"
         let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{line.Trim()}"
         let output = formatter.Format searchResult
-        Assert.AreEqual(expectedOutput, output)
+        Assert.That(output, Is.EqualTo(expectedOutput))
         ()
 
     [<Test>]
@@ -55,7 +55,7 @@ type SearchResultTests () =
         let expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
         let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{expectedLine}"
         let output = formatter.Format searchResult
-        Assert.AreEqual(expectedOutput, output)
+        Assert.That(output, Is.EqualTo(expectedOutput))
         ()
 
     [<Test>]
@@ -88,7 +88,7 @@ type SearchResultTests () =
             ]
         let expectedOutput = String.concat "\n" expectedLines
         let output = formatter.Format searchResult
-        Assert.AreEqual(expectedOutput, output)
+        Assert.That(output, Is.EqualTo(expectedOutput))
         ()
 
     [<Test>]
@@ -108,5 +108,5 @@ type SearchResultTests () =
         let expectedPath = this.CsSearchPath + "/Searcher.exe"
         let expectedOutput = $"%s{expectedPath} matches at [0:0]"
         let output = formatter.Format searchResult
-        Assert.AreEqual(expectedOutput, output)
+        Assert.That(output, Is.EqualTo(expectedOutput))
         ()

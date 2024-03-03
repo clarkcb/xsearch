@@ -46,23 +46,23 @@ class SearcherTests
 		var enumerableLines = GetTestFileLines();
 		var results = searcher.SearchLines(enumerableLines).ToList();
 
-		Assert.True(results.Count == 2);
+		Assert.That(results.Count == 2);
 
 		var firstResult = results[0];
 		const int expectedFirstLineNum = 29;
-		Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum);
+		Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum));
 		const int expectedFirstMatchStartIndex = 3;
-		Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex);
+		Assert.That(firstResult.MatchStartIndex, Is.EqualTo(expectedFirstMatchStartIndex));
 		const int expectedFirstMatchEndIndex = 11;
-		Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex);
+		Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex));
 
 		var secondResult = results[1];
 		const int expectedSecondLineNum = 35;
-		Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum);
+		Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum));
 		const int expectedSecondMatchStartIndex = 24;
-		Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex);
+		Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex));
 		const int expectedSecondMatchEndIndex = 32;
-		Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex);
+		Assert.That(secondResult.MatchEndIndex, Is.EqualTo(expectedSecondMatchEndIndex));
 	}
 
 	/*************************************************************
@@ -76,22 +76,22 @@ class SearcherTests
 		var contents = GetTestFileContent();
 		var results = searcher.SearchContents(contents).ToList();
 
-		Assert.True(results.Count == 2);
+		Assert.That(results.Count == 2);
 
 		var firstResult = results[0];
 		const int expectedFirstLineNum = 29;
-		Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum);
+		Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum));
 		const int expectedFirstMatchStartIndex = 3;
-		Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex);
+		Assert.That(firstResult.MatchStartIndex, Is.EqualTo(expectedFirstMatchStartIndex));
 		const int expectedFirstMatchEndIndex = 11;
-		Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex);
+		Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex));
 
 		var secondResult = results[1];
 		const int expectedSecondLineNum = 35;
-		Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum);
+		Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum));
 		const int expectedSecondMatchStartIndex = 24;
-		Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex);
+		Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex));
 		const int expectedSecondMatchEndIndex = 32;
-		Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex);
+		Assert.That(secondResult.MatchEndIndex, Is.EqualTo(expectedSecondMatchEndIndex));
 	}
 }

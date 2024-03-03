@@ -15,27 +15,27 @@ public class SearchOptionsTests
 	public void SettingsFromArgs_NoArgs_HasDefaultValues()
 	{
 		var settings = _searchOptions.SettingsFromArgs(new List<string>());
-		Assert.IsFalse(settings.ArchivesOnly);
-		Assert.IsTrue(settings.Colorize);
-		Assert.IsFalse(settings.Debug);
-		Assert.IsFalse(settings.FirstMatch);
-		Assert.IsFalse(settings.IncludeArchives);
-		Assert.IsFalse(settings.IncludeHidden);
-		Assert.AreEqual(0, settings.LinesAfter);
-		Assert.AreEqual(0, settings.LinesBefore);
-		Assert.IsFalse(settings.ListDirs);
-		Assert.IsFalse(settings.ListFiles);
-		Assert.IsFalse(settings.ListLines);
-		Assert.AreEqual(150, settings.MaxLineLength);
-		Assert.IsFalse(settings.MultiLineSearch);
-		Assert.IsEmpty(settings.Paths);
-		Assert.IsTrue(settings.PrintResults);
-		Assert.IsFalse(settings.PrintUsage);
-		Assert.IsFalse(settings.PrintVersion);
-		Assert.IsTrue(settings.Recursive);
-		Assert.IsFalse(settings.SearchArchives);
-		Assert.IsFalse(settings.UniqueLines);
-		Assert.IsFalse(settings.Verbose);
+		Assert.That(settings.ArchivesOnly, Is.False);
+		Assert.That(settings.Colorize);
+		Assert.That(settings.Debug, Is.False);
+		Assert.That(settings.FirstMatch, Is.False);
+		Assert.That(settings.IncludeArchives, Is.False);
+		Assert.That(settings.IncludeHidden, Is.False);
+		Assert.That(settings.LinesAfter, Is.EqualTo(0));
+		Assert.That(settings.LinesBefore, Is.EqualTo(0));
+		Assert.That(settings.MaxLineLength, Is.EqualTo(150));
+		Assert.That(settings.MultiLineSearch, Is.False);
+		Assert.That(settings.Paths.Count, Is.EqualTo(0));
+		Assert.That(settings.PrintDirs, Is.False);
+		Assert.That(settings.PrintFiles, Is.False);
+		Assert.That(settings.PrintLines, Is.False);
+		Assert.That(settings.PrintResults);
+		Assert.That(settings.PrintUsage, Is.False);
+		Assert.That(settings.PrintVersion, Is.False);
+		Assert.That(settings.Recursive);
+		Assert.That(settings.SearchArchives, Is.False);
+		Assert.That(settings.UniqueLines, Is.False);
+		Assert.That(settings.Verbose, Is.False);
 	}
 
 	[Test]
@@ -44,12 +44,13 @@ public class SearchOptionsTests
 		var args = new List<string>() { "-x", "cs", "-s", "Search", "." };
 		var settings = _searchOptions.SettingsFromArgs(args);
 		var startInfo = new DirectoryInfo(".");
-		Assert.AreEqual(1, settings.Paths.Count);
-		Assert.AreEqual(startInfo.ToString(), settings.Paths.First());
-		Assert.AreEqual(1, settings.InExtensions.Count);
-		Assert.IsTrue(settings.InExtensions.Contains(".cs"));
-		Assert.AreEqual(1, settings.SearchPatterns.Count);
-		Assert.IsTrue(settings.SearchPatterns.First().ToString() == "Search");
+		Assert.That(settings.Paths.Count, Is.EqualTo(1));
+		Assert.That(settings.Paths.Count, Is.EqualTo(1));
+		Assert.That(settings.Paths.First(), Is.EqualTo(startInfo.ToString()));
+		Assert.That(settings.InExtensions.Count, Is.EqualTo(1));
+		Assert.That(settings.InExtensions.Contains(".cs"));
+		Assert.That(settings.SearchPatterns.Count, Is.EqualTo(1));
+		Assert.That(settings.SearchPatterns.First().ToString() == "Search");
 	}
 
 	[Test]
@@ -57,8 +58,8 @@ public class SearchOptionsTests
 	{
 		var args = new List<string>() { "-x", "cs", "-s", "Search", "--archivesonly", "." };
 		var settings = _searchOptions.SettingsFromArgs(args);
-		Assert.IsTrue(settings.ArchivesOnly);
-		Assert.IsTrue(settings.SearchArchives);
+		Assert.That(settings.ArchivesOnly);
+		Assert.That(settings.SearchArchives);
 	}
 
 	[Test]
@@ -66,7 +67,7 @@ public class SearchOptionsTests
 	{
 		var args = new List<string>() { "-x", "cs", "-s", "Search", ".", "-Q" };
 		var ex = Assert.Throws<SearchException>(() => _searchOptions.SettingsFromArgs(args));
-		Assert.AreEqual("Invalid option: Q", ex?.Message);
+		Assert.That(ex?.Message, Is.EqualTo("Invalid option: Q"));
 	}
 
 	[Test]
@@ -87,27 +88,27 @@ public class SearchOptionsTests
 		var settings = new SearchSettings();
 		SearchOptions.SettingsFromJson(json, settings);
 
-		Assert.AreEqual(1, settings.Paths.Count);
-		Assert.AreEqual("~/src/xsearch/", settings.Paths.First());
+		Assert.That(settings.Paths.Count, Is.EqualTo(1));
+		Assert.That(settings.Paths.First(), Is.EqualTo("~/src/xsearch/"));
 
-		Assert.AreEqual(2, settings.InExtensions.Count);
-		Assert.True(settings.InExtensions.Contains(".js"));
-		Assert.True(settings.InExtensions.Contains(".ts"));
+		Assert.That(settings.InExtensions.Count, Is.EqualTo(2));
+		Assert.That(settings.InExtensions.Contains(".js"));
+		Assert.That(settings.InExtensions.Contains(".ts"));
 
-		Assert.AreEqual(1, settings.OutDirPatterns.Count);
-		Assert.AreEqual("node_module", settings.OutDirPatterns.First().ToString());
+		Assert.That(settings.OutDirPatterns.Count, Is.EqualTo(1));
+		Assert.That(settings.OutDirPatterns.First().ToString(), Is.EqualTo("node_module"));
 
-		Assert.AreEqual(1, settings.OutFilePatterns.Count);
-		Assert.AreEqual("temp", settings.OutFilePatterns.First().ToString());
+		Assert.That(settings.OutFilePatterns.Count, Is.EqualTo(1));
+		Assert.That(settings.OutFilePatterns.First().ToString(), Is.EqualTo("temp"));
 
-		Assert.AreEqual(1, settings.SearchPatterns.Count);
-		Assert.AreEqual("Searcher", settings.SearchPatterns.First().ToString());
+		Assert.That(settings.SearchPatterns.Count, Is.EqualTo(1));
+		Assert.That(settings.SearchPatterns.First().ToString(), Is.EqualTo("Searcher"));
 
-		Assert.AreEqual(2, settings.LinesBefore);
-		Assert.AreEqual(2, settings.LinesAfter);
+		Assert.That(settings.LinesBefore, Is.EqualTo(2));
+		Assert.That(settings.LinesAfter, Is.EqualTo(2));
 
-		Assert.True(settings.Debug);
-		Assert.True(settings.FirstMatch);
-		Assert.True(settings.IncludeHidden);
+		Assert.That(settings.Debug);
+		Assert.That(settings.FirstMatch);
+		Assert.That(settings.IncludeHidden);
 	}
 }
