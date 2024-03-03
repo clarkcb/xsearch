@@ -122,6 +122,7 @@ impl Searcher {
                 }
             }
         }
+        // TODO: implement custom sorting of [SearchResult]
         results.sort_unstable();
         Ok(results)
     }

@@ -16,55 +16,55 @@
 
 (defrecord SearchSettings
   [
-    archives-only
-    colorize
-    debug
-    first-match
-    in-archive-extensions
-    in-archive-file-patterns
-    in-dir-patterns
-    in-extensions
-    in-file-patterns
-    in-file-types
-    in-lines-after-patterns
-    in-lines-before-patterns
-    include-hidden
-    lines-after
-    lines-after-to-patterns
-    lines-after-until-patterns
-    lines-before
-    list-dirs
-    list-files
-    list-lines
-    max-depth
-    max-last-mod
-    max-line-length
-    max-size
-    min-depth
-    min-last-mod
-    min-size
-    multi-line-search
-    out-archive-extensions
-    out-archive-file-patterns
-    out-dir-patterns
-    out-extensions
-    out-file-patterns
-    out-file-types
-    out-lines-after-patterns
-    out-lines-before-patterns
-    paths
-    print-results
-    print-usage
-    print-version
-    recursive
-    search-archives
-    search-patterns
-    sort-by
-    sort-case-insensitive
-    sort-descending
-    text-file-encoding
-    unique-lines
-    verbose
+    ^Boolean archives-only
+    ^Boolean colorize
+    ^Boolean debug
+    ^Boolean first-match
+    ^clojure.lang.PersistentHashSet in-archive-extensions
+    ^clojure.lang.PersistentHashSet in-archive-file-patterns
+    ^clojure.lang.PersistentHashSet in-dir-patterns
+    ^clojure.lang.PersistentHashSet in-extensions
+    ^clojure.lang.PersistentHashSet in-file-patterns
+    ^clojure.lang.PersistentHashSet in-file-types
+    ^clojure.lang.PersistentHashSet in-lines-after-patterns
+    ^clojure.lang.PersistentHashSet in-lines-before-patterns
+    ^Boolean include-hidden
+    ^Integer lines-after
+    ^clojure.lang.PersistentHashSet lines-after-to-patterns
+    ^clojure.lang.PersistentHashSet lines-after-until-patterns
+    ^Integer lines-before
+    ^Integer max-depth
+    ^java.util.Date max-last-mod
+    ^Integer max-line-length
+    ^Integer max-size
+    ^Integer min-depth
+    ^java.util.Date min-last-mod
+    ^Integer min-size
+    ^Boolean multi-line-search
+    ^clojure.lang.PersistentHashSet out-archive-extensions
+    ^clojure.lang.PersistentHashSet out-archive-file-patterns
+    ^clojure.lang.PersistentHashSet out-dir-patterns
+    ^clojure.lang.PersistentHashSet out-extensions
+    ^clojure.lang.PersistentHashSet out-file-patterns
+    ^clojure.lang.PersistentHashSet out-file-types
+    ^clojure.lang.PersistentHashSet out-lines-after-patterns
+    ^clojure.lang.PersistentHashSet out-lines-before-patterns
+    ^clojure.lang.PersistentHashSet paths
+    ^Boolean print-dirs
+    ^Boolean print-files
+    ^Boolean print-lines
+    ^Boolean print-results
+    ^Boolean print-usage
+    ^Boolean print-version
+    ^Boolean recursive
+    ^Boolean search-archives
+    ^clojure.lang.PersistentHashSet search-patterns
+    ^clojure.lang.Keyword sort-by
+    ^Boolean sort-case-insensitive
+    ^Boolean sort-descending
+    ^String text-file-encoding
+    ^Boolean unique-lines
+    ^Boolean verbose
   ])
 
 (def DEFAULT-SETTINGS
@@ -86,9 +86,6 @@
    #{}       ; lines-after-to-patterns
    #{}       ; lines-after-until-patterns
    0         ; lines-before
-   false     ; list-dirs
-   false     ; list-files
-   false     ; list-lines
    -1        ; max-depth
    nil       ; max-last-mod
    150       ; max-line-length
@@ -106,6 +103,9 @@
    #{}       ; out-lines-after-patterns
    #{}       ; out-lines-before-patterns
    #{}       ; paths
+   false     ; print-dirs
+   false     ; print-files
+   false     ; print-lines
    true      ; print-results
    false     ; print-usage
    false     ; print-version
@@ -124,16 +124,14 @@
   (->FindSettings
    (:archives-only search-settings)             ; archives-only
    (:debug search-settings)                     ; debug
-   (:search-archives search-settings)           ; include-archives
-   (:include-hidden search-settings)            ; include-hidden
    (:in-archive-extensions search-settings)     ; in-archive-extensions
    (:in-archive-file-patterns search-settings)  ; in-archive-file-patterns
    (:in-dir-patterns search-settings)           ; in-dir-patterns
    (:in-extensions search-settings)             ; in-extensions
    (:in-file-patterns search-settings)          ; in-file-patterns
    (:in-file-types search-settings)             ; in-file-types
-   (:list-dirs search-settings)                 ; list-dirs
-   (:list-files search-settings)                ; list-files
+   (:search-archives search-settings)           ; include-archives
+   (:include-hidden search-settings)            ; include-hidden
    (:max-depth search-settings)                 ; max-depth
    (:max-last-mod search-settings)              ; max-last-mod
    (:max-size search-settings)                  ; max-size
@@ -147,90 +145,19 @@
    (:out-file-patterns search-settings)         ; out-file-patterns
    (:out-file-types search-settings)            ; out-file-types
    (:paths search-settings)                     ; paths
+   (:print-dirs search-settings)                ; print-dirs
+   (:print-files search-settings)               ; print-files
    (:print-usage search-settings)               ; print-usage
    (:print-version search-settings)             ; print-version
+   (:recursive search-settings)                 ; recursive
    (:sort-by search-settings)                   ; sort-by
    (:sort-case-insensitive search-settings)     ; sort-case-insensitive
    (:sort-descending search-settings)           ; sort-descending
-   (:recursive search-settings)                 ; recursive
    (:verbose search-settings)                   ; verbose
    ))
-
-(defn add-element [x coll]
-  (conj coll x))
-
-(defn add-extensions [settings exts extname]
-  (if (empty? exts)
-    settings
-    (add-extensions
-      (update-in settings [extname] #(add-element (first exts) %)) (rest exts) extname)))
-
-(defn add-extension [settings ext extname]
-  (let [t (type ext)]
-    (cond
-      (= t (type []))
-        (add-extensions settings ext extname)
-      :else
-        (add-extensions settings (str/split ext #",") extname))))
-
-(defn add-file-types [settings types typesname]
-  (if (empty? types)
-    settings
-    (add-file-types
-     (update-in settings [typesname] #(add-element (from-name (first types)) %)) (rest types) typesname)))
-
-(defn add-file-type [settings typ typesname]
-  (let [t (type typ)]
-    (cond
-      (= t (type []))
-      (add-file-types settings typ typesname)
-      :else
-      (add-file-types settings (str/split typ #",") typesname))))
-
-(defn add-paths [settings paths]
-  (if (empty? paths)
-    settings
-    (add-paths
-      (update-in settings [:paths] #(add-element (first paths) %)) (rest paths))))
-
-(defn add-path [settings path]
-  (let [t (type path)]
-    (cond
-      (= t (type []))
-        (add-paths settings path)
-      :else
-        (add-paths settings [path]))))
-
-(defn add-patterns [settings pats patname]
-  (if (empty? pats)
-    settings
-    (add-patterns
-      (update-in settings [patname] #(add-element (re-pattern (first pats)) %)) (rest pats) patname)))
-
-(defn add-pattern [settings p patname]
-  (let [t (type p)]
-    (cond
-      (= t (type []))
-        (add-patterns settings p patname)
-      :else
-        (add-patterns settings [p] patname))))
-
-(defn set-num [settings n numname]
-  (let [t (type n)]
-    (cond
-      (= t java.lang.Long)
-        (assoc settings numname n)
-      :else
-        (assoc settings numname (read-string n)))))
 
 (defn set-archives-only [settings b]
   (let [with-search-archives (assoc settings :search-archives b)]
     (if b
       (assoc with-search-archives :archives-only true)
       with-search-archives)))
-
-(defn set-debug [settings b]
-  (let [with-debug (assoc settings :debug true)]
-    (if b
-      (assoc with-debug :verbose true)
-      with-debug)))

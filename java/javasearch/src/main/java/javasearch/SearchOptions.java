@@ -28,9 +28,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class SearchOptions {
+    private static final String SEARCH_OPTIONS_JSON_PATH = "/searchoptions.json";
     private final List<SearchOption> options;
 
-    public SearchOptions() throws IOException, ParseException {
+    public SearchOptions() throws IOException {
         options = new ArrayList<>();
         setOptionsFromJson();
     }
@@ -40,8 +41,8 @@ public class SearchOptions {
         void set(String s, SearchSettings settings);
     }
 
-    private final int actionMapSize = 30;
-    private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
+    private final int actionMapSize = 32;
+    private final Map<String, ArgSetter> argActionMap = new HashMap<>(actionMapSize) {
         {
             put("encoding", (s, settings) -> settings.setTextFileEncoding(s));
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
@@ -73,8 +74,8 @@ public class SearchOptions {
             put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
             put("path", (s, settings) -> settings.addPath(s));
             put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
-            put("settings-file", (s, settings) -> settingsFromFile(s, settings));
-            put("sort-by", (s, settings) -> settings.setSortBy(SortByUtil.fromName(s)));
+            put("settings-file", (s, settings) -> settingsFromFilePath(s, settings));
+            put("sort-by", (s, settings) -> settings.setSortBy(SortBy.forName(s)));
         }
     };
 
@@ -83,8 +84,8 @@ public class SearchOptions {
         void set(Boolean b, SearchSettings settings);
     }
 
-    private final int flagMapSize = 26;
-    private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
+    private final int flagMapSize = 29;
+    private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
@@ -94,14 +95,17 @@ public class SearchOptions {
             put("firstmatch", (b, settings) -> settings.setFirstMatch(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
-            put("listdirs", (b, settings) -> settings.setListDirs(b));
-            put("listfiles", (b, settings) -> settings.setListFiles(b));
-            put("listlines", (b, settings) -> settings.setListLines(b));
             put("multilinesearch", (b, settings) -> settings.setMultiLineSearch(b));
             put("nocolorize", (b, settings) -> settings.setColorize(!b));
+            put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
+            put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
+            put("noprintlines", (b, settings) -> settings.setPrintLines(!b));
             put("noprintmatches", (b, settings) -> settings.setPrintResults(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("nosearcharchives", (b, settings) -> settings.setSearchArchives(!b));
+            put("printdirs", (b, settings) -> settings.setPrintDirs(b));
+            put("printfiles", (b, settings) -> settings.setPrintFiles(b));
+            put("printlines", (b, settings) -> settings.setPrintLines(b));
             put("printmatches", (b, settings) -> settings.setPrintResults(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("searcharchives", (b, settings) -> settings.setSearchArchives(b));

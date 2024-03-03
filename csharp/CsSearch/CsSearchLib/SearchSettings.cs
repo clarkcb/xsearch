@@ -31,11 +31,11 @@ public class SearchSettings : FindSettings
 	public ISet<Regex> LinesAfterToPatterns { get; }
 	public ISet<Regex> LinesAfterUntilPatterns { get; }
 	public int LinesBefore { get; set; }
-	public bool ListLines { get; set; }
 	public int MaxLineLength { get; set; }
 	public bool MultiLineSearch { get; set; }
 	public ISet<Regex> OutLinesAfterPatterns { get; }
 	public ISet<Regex> OutLinesBeforePatterns { get; }
+	public bool PrintLines { get; set; }
 	public bool PrintResults { get; set; }
 
 	public bool SearchArchives
@@ -64,11 +64,11 @@ public class SearchSettings : FindSettings
 		LinesAfterToPatterns = new HashSet<Regex>();
 		LinesAfterUntilPatterns = new HashSet<Regex>();
 		LinesBefore = 0;
-		ListLines = false;
 		MaxLineLength = 150;
 		MultiLineSearch = false;
 		OutLinesAfterPatterns = new HashSet<Regex>();
 		OutLinesBeforePatterns = new HashSet<Regex>();
+        PrintLines = false;
 		PrintResults = false;
 		SearchArchives = false;
 		SearchPatterns = new HashSet<Regex>();
@@ -165,9 +165,6 @@ public class SearchSettings : FindSettings
 		       ", LinesAfterToPatterns: " + EnumerableToString(LinesAfterToPatterns) +
 		       ", LinesAfterUntilPatterns: " + EnumerableToString(LinesAfterUntilPatterns) +
 		       ", LinesBefore: " + LinesBefore +
-		       ", ListDirs: " + ListDirs +
-		       ", ListFiles: " + ListFiles +
-		       ", ListLines: " + ListLines +
 		       ", MaxDepth: " + MaxDepth +
 		       ", MaxLastMod: " + DateTimeToString(MaxLastMod) +
 		       ", MaxLineLength: " + MaxLineLength +
@@ -185,6 +182,9 @@ public class SearchSettings : FindSettings
 		       ", OutLinesAfterPatterns: " + EnumerableToString(OutLinesAfterPatterns) +
 		       ", OutLinesBeforePatterns: " + EnumerableToString(OutLinesBeforePatterns) +
 		       ", Paths: " + EnumerableToString(Paths) +
+		       ", PrintDirs: " + PrintDirs +
+		       ", PrintFiles: " + PrintFiles +
+		       ", PrintLines: " + PrintLines +
 		       ", PrintResults: " + PrintResults +
 		       ", PrintUsage: " + PrintUsage +
 		       ", PrintVersion: " + PrintVersion +

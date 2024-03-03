@@ -18,11 +18,11 @@ type SearchSettings struct {
 	linesAfterToPatterns    *gofind.Patterns
 	linesAfterUntilPatterns *gofind.Patterns
 	linesBefore             int
-	listLines               bool
 	maxLineLength           int
 	multiLineSearch         bool
 	outLinesAfterPatterns   *gofind.Patterns
 	outLinesBeforePatterns  *gofind.Patterns
+	printLines              bool
 	printResults            bool
 	searchArchives          bool
 	searchPatterns          *gofind.Patterns
@@ -41,12 +41,12 @@ func GetDefaultSearchSettings() *SearchSettings {
 		gofind.NewPatterns(), // LinesAfterToPatterns
 		gofind.NewPatterns(), // LinesAfterUntilPatterns
 		0,                    // LinesBefore
-		false,                // ListLines
 		150,                  // MaxLineLength
 		false,                // MultiLineSearch
 		gofind.NewPatterns(), // OutLinesAfterPatterns
 		gofind.NewPatterns(), // OutLinesBeforePatterns
-		true,                 // PrintResults
+		false,                // PrintLines
+		false,                // PrintResults
 		false,                // SearchArchives
 		gofind.NewPatterns(), // SearchPatterns
 		"utf-8",              // TextFileEncoding
@@ -225,30 +225,6 @@ func (s *SearchSettings) SetLinesBefore(i int) {
 	s.linesBefore = i
 }
 
-func (s *SearchSettings) ListDirs() bool {
-	return s.FindSettings.ListDirs()
-}
-
-func (s *SearchSettings) SetListDirs(b bool) {
-	s.FindSettings.SetListDirs(b)
-}
-
-func (s *SearchSettings) ListFiles() bool {
-	return s.FindSettings.ListFiles()
-}
-
-func (s *SearchSettings) SetListFiles(b bool) {
-	s.FindSettings.SetListFiles(b)
-}
-
-func (s *SearchSettings) ListLines() bool {
-	return s.listLines
-}
-
-func (s *SearchSettings) SetListLines(b bool) {
-	s.listLines = b
-}
-
 func (s *SearchSettings) MaxDepth() int {
 	return s.FindSettings.MaxDepth()
 }
@@ -409,6 +385,30 @@ func (s *SearchSettings) AddPath(p string) {
 	s.FindSettings.AddPath(p)
 }
 
+func (s *SearchSettings) PrintDirs() bool {
+	return s.FindSettings.PrintDirs()
+}
+
+func (s *SearchSettings) SetPrintDirs(b bool) {
+	s.FindSettings.SetPrintDirs(b)
+}
+
+func (s *SearchSettings) PrintFiles() bool {
+	return s.FindSettings.PrintFiles()
+}
+
+func (s *SearchSettings) SetPrintFiles(b bool) {
+	s.FindSettings.SetPrintFiles(b)
+}
+
+func (s *SearchSettings) PrintLines() bool {
+	return s.printLines
+}
+
+func (s *SearchSettings) SetPrintLines(b bool) {
+	s.printLines = b
+}
+
 func (s *SearchSettings) PrintResults() bool {
 	return s.printResults
 }
@@ -528,9 +528,6 @@ func (s *SearchSettings) String() string {
 		", LinesAfterToPatterns: %s" +
 		", LinesAfterUntilPatterns: %s" +
 		", LinesBefore: %d" +
-		", ListDirs: %t" +
-		", ListFiles: %t" +
-		", ListLines: %t" +
 		", MaxDepth: %s" +
 		", MaxLastMod: %s" +
 		", MaxLineLength: %d" +
@@ -548,6 +545,9 @@ func (s *SearchSettings) String() string {
 		", OutLinesAfterPatterns: %s" +
 		", OutLinesBeforePatterns: %s" +
 		", Paths: %s" +
+		", PrintDirs: %t" +
+		", PrintFiles: %t" +
+		", PrintLines: %t" +
 		", PrintResults: %t" +
 		", PrintUsage: %t" +
 		", PrintVersion: %t" +
@@ -578,9 +578,6 @@ func (s *SearchSettings) String() string {
 		gofind.PatternsToString(s.LinesAfterToPatterns()),
 		gofind.PatternsToString(s.LinesAfterUntilPatterns()),
 		s.LinesBefore(),
-		s.ListDirs(),
-		s.ListFiles(),
-		s.ListLines(),
 		s.MaxDepth(),
 		gofind.LastModToString(s.MaxLastMod()),
 		s.MaxLineLength(),
@@ -598,6 +595,9 @@ func (s *SearchSettings) String() string {
 		gofind.PatternsToString(s.OutLinesAfterPatterns()),
 		gofind.PatternsToString(s.OutLinesBeforePatterns()),
 		gofind.StringListToString(s.Paths()),
+		s.PrintDirs(),
+		s.PrintFiles(),
+		s.PrintLines(),
 		s.PrintResults(),
 		s.FindSettings.PrintUsage(),
 		s.FindSettings.PrintVersion(),

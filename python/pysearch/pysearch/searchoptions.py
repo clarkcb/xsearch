@@ -57,21 +57,21 @@ class SearchOptions(object):
             'includehidden':
                 lambda b, settings:
                 settings.set_property('include_hidden', b),
-            'listdirs':
-                lambda b, settings:
-                settings.set_property('list_dirs', b),
-            'listfiles':
-                lambda b, settings:
-                settings.set_property('list_files', b),
-            'listlines':
-                lambda b, settings:
-                settings.set_property('list_lines', b),
             'multilinesearch':
                 lambda b, settings:
                 settings.set_property('multi_line_search', b),
             'nocolorize':
                 lambda b, settings:
                 settings.set_property('colorize', not b),
+            'noprintdirs':
+                lambda b, settings:
+                settings.set_property('print_dirs', not b),
+            'noprintfiles':
+                lambda b, settings:
+                settings.set_property('print_files', not b),
+            'noprintlines':
+                lambda b, settings:
+                settings.set_property('print_lines', not b),
             'noprintmatches':
                 lambda b, settings:
                 settings.set_property('print_results', not b),
@@ -81,6 +81,15 @@ class SearchOptions(object):
             'nosearcharchives':
                 lambda b, settings:
                 settings.set_property('search_archives', not b),
+            'printdirs':
+                lambda b, settings:
+                settings.set_property('print_dirs', b),
+            'printfiles':
+                lambda b, settings:
+                settings.set_property('print_files', b),
+            'printlines':
+                lambda b, settings:
+                settings.set_property('print_lines', b),
             'printmatches':
                 lambda b, settings:
                 settings.set_property('print_results', b),
@@ -116,7 +125,7 @@ class SearchOptions(object):
         self.__coll_arg_dict = {
             'in-archiveext':
                 lambda x, settings:
-                settings.add_exts(x, 'in_archive_extensions'),
+                settings.add_strs_to_set(x, 'in_archive_extensions'),
             'in-archivefilepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'in_archive_file_patterns'),
@@ -125,7 +134,7 @@ class SearchOptions(object):
                 settings.add_patterns(x, 'in_dir_patterns'),
             'in-ext':
                 lambda x, settings:
-                settings.add_exts(x, 'in_extensions'),
+                settings.add_strs_to_set(x, 'in_extensions'),
             'in-filepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'in_file_patterns'),
@@ -146,7 +155,7 @@ class SearchOptions(object):
                 settings.add_patterns(x, 'lines_after_until_patterns'),
             'out-archiveext':
                 lambda x, settings:
-                settings.add_exts(x, 'out_archive_extensions'),
+                settings.add_strs_to_set(x, 'out_archive_extensions'),
             'out-archivefilepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'out_archive_file_patterns'),
@@ -155,7 +164,7 @@ class SearchOptions(object):
                 settings.add_patterns(x, 'out_dir_patterns'),
             'out-ext':
                 lambda x, settings:
-                settings.add_exts(x, 'out_extensions'),
+                settings.add_strs_to_set(x, 'out_extensions'),
             'out-filepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'out_file_patterns'),
@@ -170,7 +179,7 @@ class SearchOptions(object):
                 settings.add_patterns(x, 'out_lines_before_patterns'),
             'path':
                 lambda x, settings:
-                settings.paths.add(x),
+                settings.add_path(x),
             'searchpattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'search_patterns'),
@@ -339,7 +348,7 @@ class SearchOptions(object):
                 else:
                     raise SearchException(f'Invalid option: {arg}')
             else:
-                settings.paths.add(arg)
+                settings.add_path(arg)
         return settings
 
     def usage(self, exit_code: int = 0):

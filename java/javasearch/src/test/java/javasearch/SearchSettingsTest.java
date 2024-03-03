@@ -18,15 +18,15 @@ public class SearchSettingsTest {
     public final void testDefaultSearchSettings() {
         SearchSettings settings = new SearchSettings();
         assertEquals(DefaultSearchSettings.COLORIZE, settings.getColorize());
-        assertEquals(DefaultSearchSettings.FIRSTMATCH, settings.getFirstMatch());
-        assertEquals(DefaultSearchSettings.LINESAFTER, settings.getLinesAfter());
-        assertEquals(DefaultSearchSettings.LINESBEFORE, settings.getLinesBefore());
-        assertEquals(DefaultSearchSettings.LISTLINES, settings.getListLines());
-        assertEquals(DefaultSearchSettings.MAXLINELENGTH, settings.getMaxLineLength());
-        assertEquals(DefaultSearchSettings.MULTILINESEARCH, settings.getMultiLineSearch());
-        assertEquals(DefaultSearchSettings.PRINTRESULTS, settings.getPrintResults());
-        assertEquals(DefaultSearchSettings.SEARCHARCHIVES, settings.getSearchArchives());
-        assertEquals(DefaultSearchSettings.UNIQUELINES, settings.getUniqueLines());
+        assertEquals(DefaultSearchSettings.FIRST_MATCH, settings.getFirstMatch());
+        assertEquals(DefaultSearchSettings.LINES_AFTER, settings.getLinesAfter());
+        assertEquals(DefaultSearchSettings.LINES_BEFORE, settings.getLinesBefore());
+        assertEquals(DefaultSearchSettings.MAX_LINE_LENGTH, settings.getMaxLineLength());
+        assertEquals(DefaultSearchSettings.MULTI_LINE_SEARCH, settings.getMultiLineSearch());
+        assertEquals(DefaultSearchSettings.PRINT_LINES, settings.getPrintLines());
+        assertEquals(DefaultSearchSettings.PRINT_RESULTS, settings.getPrintResults());
+        assertEquals(DefaultSearchSettings.SEARCH_ARCHIVES, settings.getSearchArchives());
+        assertEquals(DefaultSearchSettings.UNIQUE_LINES, settings.getUniqueLines());
     }
 
     @Test

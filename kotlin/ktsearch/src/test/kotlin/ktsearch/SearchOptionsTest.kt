@@ -17,13 +17,13 @@ class SearchOptionsTest {
         val settings = searchOptions.settingsFromArgs(args)
         assertFalse(settings.archivesOnly)
         assertFalse(settings.debug)
-        assertTrue(settings.excludeHidden)
         assertFalse(settings.firstMatch)
+        assertFalse(settings.includeHidden)
         assertEquals(0, settings.linesAfter)
         assertEquals(0, settings.linesBefore)
-        assertFalse(settings.listDirs)
-        assertFalse(settings.listFiles)
-        assertFalse(settings.listLines)
+        assertFalse(settings.printDirs)
+        assertFalse(settings.printFiles)
+        assertFalse(settings.printLines)
         assertEquals(150, settings.maxLineLength)
         assertFalse(settings.multiLineSearch)
         assertEquals(1, settings.paths.size)
@@ -88,6 +88,6 @@ class SearchOptionsTest {
 
         assertTrue(settings.debug)
         assertTrue(settings.firstMatch)
-        assertTrue(settings.excludeHidden)
+        assertFalse(settings.includeHidden)
     }
 }

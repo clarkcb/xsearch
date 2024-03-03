@@ -9,14 +9,15 @@
 ###############################################################################
 """
 from datetime import datetime
+from io import StringIO
 import re
-from typing import Optional, Pattern, Set
+from typing import Optional, Pattern
 
-from pyfind import FindSettings, FindException, SortBy
+from pyfind import FindSettings, FindException, SortBy, list_to_str, FileType
 
 from .searchexception import SearchException
 
-PatternSet = Set[Pattern]
+PatternSet = set[Pattern]
 
 
 class SearchSettings(FindSettings):
@@ -25,9 +26,9 @@ class SearchSettings(FindSettings):
     __slots__ = FindSettings.__slots__ + [
         'colorize', 'first_match', 'in_lines_after_patterns', 'in_lines_before_patterns',
         'lines_after', 'lines_after_to_patterns', 'lines_after_until_patterns', 'lines_before',
-        'list_lines', 'max_line_length', 'multi_line_search', 'out_lines_after_patterns',
-        'out_lines_before_patterns', 'search_archives', 'search_patterns', 'text_file_encoding',
-        'unique_lines'
+        'max_line_length', 'multi_line_search', 'out_lines_after_patterns',
+        'out_lines_before_patterns', 'print_lines', 'print_results', 'search_archives',
+        'search_patterns', 'text_file_encoding', 'unique_lines'
     ]
 
     def __init__(self,
@@ -35,22 +36,19 @@ class SearchSettings(FindSettings):
                  colorize: bool = True,
                  debug: bool = False,
                  first_match: bool = False,
-                 in_archive_extensions: Set[str] = None,
+                 in_archive_extensions: list[str] | set[str] | str = None,
                  in_archive_file_patterns: PatternSet = None,
                  include_hidden: bool = False,
                  in_dir_patterns: PatternSet = None,
-                 in_extensions: Set[str] = None,
+                 in_extensions: list[str] | set[str] | str = None,
                  in_file_patterns: PatternSet = None,
-                 in_file_types: Set[str] = None,
+                 in_file_types: list | set | str | FileType = None,
                  in_lines_after_patterns: PatternSet = None,
                  in_lines_before_patterns: PatternSet = None,
                  lines_after: int = 0,
                  lines_after_to_patterns: PatternSet = None,
                  lines_after_until_patterns: PatternSet = None,
                  lines_before: int = 0,
-                 list_dirs: bool = False,
-                 list_files: bool = False,
-                 list_lines: bool = False,
                  max_depth: int = -1,
                  max_last_mod: Optional[datetime] = None,
                  max_line_length: int = 150,
@@ -60,14 +58,17 @@ class SearchSettings(FindSettings):
                  min_size: int = 0,
                  multi_line_search: bool = False,
                  out_archive_file_patterns: PatternSet = None,
-                 out_archive_extensions: Set[str] = None,
+                 out_archive_extensions: list[str] | set[str] | str = None,
                  out_dir_patterns: PatternSet = None,
-                 out_extensions: Set[str] = None,
+                 out_extensions: list[str] | set[str] | str = None,
                  out_file_patterns: PatternSet = None,
-                 out_file_types: Set[str] = None,
+                 out_file_types: list | set | str | FileType = None,
                  out_lines_after_patterns: PatternSet = None,
                  out_lines_before_patterns: PatternSet = None,
-                 paths: Set[str] = None,
+                 paths: list[str] | set[str] | str = None,
+                 print_dirs: bool = False,
+                 print_files: bool = False,
+                 print_lines: bool = False,
                  print_results: bool = True,
                  print_usage: bool = False,
                  print_version: bool = False,
@@ -90,8 +91,6 @@ class SearchSettings(FindSettings):
                               in_extensions=in_extensions,
                               in_file_patterns=in_file_patterns,
                               in_file_types=in_file_types,
-                              list_dirs=list_dirs,
-                              list_files=list_files,
                               max_depth=max_depth,
                               max_last_mod=max_last_mod,
                               max_size=max_size,
@@ -105,7 +104,8 @@ class SearchSettings(FindSettings):
                               out_file_patterns=out_file_patterns,
                               out_file_types=out_file_types,
                               paths=paths,
-                              print_results=print_results,
+                              print_dirs=print_dirs,
+                              print_files=print_files,
                               print_usage=print_usage,
                               print_version=print_version,
                               recursive=recursive,
@@ -125,33 +125,28 @@ class SearchSettings(FindSettings):
         self.lines_after_until_patterns: PatternSet = \
             lines_after_until_patterns if lines_after_until_patterns else set()
         self.lines_before = lines_before
-        self.list_lines = list_lines
         self.max_line_length = max_line_length
         self.multi_line_search = multi_line_search
         self.out_lines_after_patterns: PatternSet = \
             out_lines_after_patterns if out_lines_after_patterns else set()
         self.out_lines_before_patterns: PatternSet = \
             out_lines_before_patterns if out_lines_before_patterns else set()
+        self.print_lines = print_lines
+        self.print_results = print_results
         self.search_patterns = search_patterns if search_patterns else set()
         self.search_archives = search_archives
         self.text_file_encoding = text_file_encoding
         self.unique_lines = unique_lines
 
-    def add_exts(self, exts, ext_set_name: str):
+    def add_strs_to_set(self, strs: list[str] | set[str] | str, set_name: str):
         try:
-            FindSettings.add_exts(self, exts, ext_set_name)
+            FindSettings.add_strs_to_set(self, strs, set_name)
         except FindException as e:
             raise SearchException(str(e))
 
     def add_patterns(self, patterns, pattern_set_name: str, compile_flag=re.S | re.U):
         try:
             FindSettings.add_patterns(self, patterns, pattern_set_name, compile_flag)
-        except FindException as e:
-            raise SearchException(str(e))
-
-    def add_file_types(self, file_types, filetype_set_name: str):
-        try:
-            FindSettings.add_file_types(self, file_types, filetype_set_name)
         except FindException as e:
             raise SearchException(str(e))
 
@@ -163,32 +158,4 @@ class SearchSettings(FindSettings):
                 self.search_archives = True
 
     def __str__(self):
-        print_dict = {}
-        s = f'{self.__class__.__name__}('
-        for p in sorted(self.__slots__):
-            val = getattr(self, p)
-            if isinstance(val, set):
-                if len(val) > 0 and hasattr(list(val)[0], 'pattern'):
-                    print_dict[p] = str([x.pattern for x in val])
-                else:
-                    print_dict[p] = str(list(val))
-            elif isinstance(val, str):
-                if val:
-                    print_dict[p] = f'"{val}"'
-                else:
-                    print_dict[p] = '""'
-            elif isinstance(val, Optional[datetime]):
-                if val:
-                    print_dict[p] = f'"{val}"'
-                else:
-                    print_dict[p] = '0'
-            else:
-                print_dict[p] = f'{val}'
-        next_elem = 0
-        for p in sorted(print_dict.keys()):
-            if next_elem:
-                s += ', '
-            s += f'{p}: {print_dict[p]}'
-            next_elem += 1
-        s += ')'
-        return s
+        return FindSettings.__str__(self)

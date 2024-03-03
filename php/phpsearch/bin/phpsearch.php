@@ -32,21 +32,21 @@ function main($argv): void
         }
 
         // print matching dirs
-        if ($settings->list_dirs) {
+        if ($settings->print_dirs) {
             $searcher->print_matching_dirs();
         }
 
         // print matching files
-        if ($settings->list_files) {
+        if ($settings->print_files) {
             $searcher->print_matching_files();
         }
 
         // print matching lines
-        if ($settings->list_lines) {
+        if ($settings->print_lines) {
             $searcher->print_matching_lines();
         }
     } catch (SearchException $e) {
-        Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");
+        Logger::log_err($e->getMessage());
         $search_options->usage();
         exit(1);
     }

@@ -31,15 +31,15 @@ class SearchOptionsTests: XCTestCase {
         let settings: SearchSettings = try! options.settingsFromArgs(requiredArgs)
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
-        XCTAssert(settings.excludeHidden == DefaultFindSettings.excludeHidden, "excludeHidden == true")
         XCTAssert(settings.firstMatch == DefaultSearchSettings.firstMatch, "firstMatch == false")
-        XCTAssert(settings.listDirs == DefaultFindSettings.listDirs, "listDirs == false")
-        XCTAssert(settings.listFiles == DefaultFindSettings.listFiles, "listFiles == false")
-        XCTAssert(settings.listLines == DefaultSearchSettings.listLines, "listLines == false")
+        XCTAssert(settings.includeHidden == DefaultFindSettings.includeHidden, "includeHidden == true")
         XCTAssert(settings.maxSize == DefaultFindSettings.maxSize, "maxSize == 0")
         XCTAssert(settings.minSize == DefaultFindSettings.minSize, "maxSize == 0")
         XCTAssert(settings.multiLineSearch == DefaultSearchSettings.multiLineSearch,
                   "multiLineSearch == false")
+        XCTAssert(settings.printDirs == DefaultFindSettings.printDirs, "printDirs == false")
+        XCTAssert(settings.printFiles == DefaultFindSettings.printFiles, "printFiles == false")
+        XCTAssert(settings.printLines == DefaultSearchSettings.printLines, "printLines == false")
         XCTAssert(settings.printResults == DefaultSearchSettings.printResults, "printResults == true")
         XCTAssert(settings.printUsage == DefaultFindSettings.printUsage, "printUsage == false")
         XCTAssert(settings.printVersion == DefaultFindSettings.printVersion, "printVersion == false")
@@ -60,9 +60,9 @@ class SearchOptionsTests: XCTestCase {
         XCTAssertEqual(2, settings.inExtensions.count)
         XCTAssertTrue(settings.inExtensions.contains("scala"))
         XCTAssertTrue(settings.inExtensions.contains("swift"))
-        XCTAssertEqual(1, settings.searchPatterns.count)
         XCTAssertEqual(1, settings.paths.count)
         XCTAssertTrue(settings.paths.contains("."))
+        XCTAssertEqual(1, settings.searchPatterns.count)
     }
 
     func testSettingsFromJson() {
@@ -78,27 +78,26 @@ class SearchOptionsTests: XCTestCase {
   "debug": true,
   "allmatches": false,
   "includehidden": false,
-  "listdirs": true,
-  "listfiles": true
+  "printdirs": true,
+  "printfiles": true
 }
 """
         let settings = try! options.settingsFromJson(jsonString)
         print("settings: \(settings)")
         XCTAssertTrue(settings.debug, "debug == true")
-        XCTAssertTrue(settings.excludeHidden, "excludeHidden == true")
         XCTAssertTrue(settings.firstMatch, "firstMatch == true")
         XCTAssertEqual(2, settings.inExtensions.count)
         XCTAssertTrue(settings.inExtensions.contains("js"))
         XCTAssertTrue(settings.inExtensions.contains("ts"))
+        XCTAssertTrue(settings.includeHidden, "includeHidden == true")
         XCTAssertEqual(2, settings.linesBefore)
         XCTAssertEqual(2, settings.linesAfter)
-        XCTAssertTrue(settings.listDirs)
-        XCTAssertTrue(settings.listFiles)
         XCTAssertEqual(9, settings.outDirPatterns.count)
         XCTAssertEqual(1, settings.searchPatterns.count)
-
         XCTAssertEqual(1, settings.paths.count)
         XCTAssertTrue(settings.paths.contains("/Users/cary/src/xsearch/"))
+        XCTAssertTrue(settings.printDirs)
+        XCTAssertTrue(settings.printFiles)
         XCTAssertTrue(settings.verbose, "verbose == true")
     }
 }

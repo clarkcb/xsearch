@@ -13,9 +13,9 @@ public enum DefaultSearchSettings {
     public static let firstMatch = false
     public static let linesAfter = 0
     public static let linesBefore = 0
-    public static let listLines = false
     public static let maxLineLength = 150
     public static let multiLineSearch = false
+    public static let printLines = false
     public static let printResults = true
     public static let searchArchives = false
     public static let textFileEncoding: String = "UTF-8"
@@ -27,9 +27,9 @@ public class SearchSettings: FindSettings {
     public var firstMatch: Bool = DefaultSearchSettings.firstMatch
     public var linesAfter = DefaultSearchSettings.linesAfter
     public var linesBefore = DefaultSearchSettings.linesBefore
-    public var listLines: Bool = DefaultSearchSettings.listLines
     public var maxLineLength = DefaultSearchSettings.maxLineLength
     public var multiLineSearch: Bool = DefaultSearchSettings.multiLineSearch
+    public var printLines: Bool = DefaultSearchSettings.printLines
     public var printResults: Bool = DefaultSearchSettings.printResults
     public var searchArchives: Bool = DefaultSearchSettings.searchArchives
     public var textFileEncoding = DefaultSearchSettings.textFileEncoding
@@ -104,9 +104,6 @@ public class SearchSettings: FindSettings {
             ", linesAfterUntilPatterns=\(arrayToString(linesAfterUntilPatterns))" +
             ", linesAfter=\(linesAfter)" +
             ", linesBefore=\(linesBefore)" +
-            ", listDirs=\(listDirs)" +
-            ", listFiles=\(listFiles)" +
-            ", listLines=\(listLines)" +
             ", maxDepth=\(maxDepth)" +
             ", maxLastMod=\(dateToString(maxLastMod))" +
             ", maxLineLength=\(maxLineLength)" +
@@ -123,6 +120,9 @@ public class SearchSettings: FindSettings {
             ", outLinesAfterPatterns=\(arrayToString(outLinesAfterPatterns))" +
             ", outLinesBeforePatterns=\(arrayToString(outLinesBeforePatterns))" +
             ", paths=\(setToString(paths))" +
+            ", printDirs=\(printDirs)" +
+            ", printFiles=\(printFiles)" +
+            ", printLines=\(printLines)" +
             ", printResults=\(printResults)" +
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +

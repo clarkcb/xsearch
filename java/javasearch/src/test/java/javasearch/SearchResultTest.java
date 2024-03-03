@@ -23,7 +23,7 @@ public class SearchResultTest {
     @Test
     public final void testSingleLineSearchResult() {
         SearchSettings settings = new SearchSettings();
-        settings.setMaxLineLength(DefaultSearchSettings.MAXLINELENGTH);
+        settings.setMaxLineLength(DefaultSearchSettings.MAX_LINE_LENGTH);
         settings.setColorize(false);
         SearchResultFormatter formatter = new SearchResultFormatter(settings);
         final Pattern pattern = Pattern.compile("Search");

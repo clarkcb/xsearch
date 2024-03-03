@@ -109,6 +109,8 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 
 func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings, error) {
 	settings := GetDefaultSearchSettings()
+	// default printFiles to true since running as cli
+	settings.SetPrintResults(true)
 	argActionMap := so.getArgActionMap()
 	flagActionMap := so.getBoolFlagActionMap()
 
@@ -366,17 +368,17 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"includehidden": func(b bool, settings *SearchSettings) {
 			settings.SetIncludeHidden(b)
 		},
-		"listdirs": func(b bool, settings *SearchSettings) {
-			settings.SetListDirs(b)
-		},
-		"listfiles": func(b bool, settings *SearchSettings) {
-			settings.SetListFiles(b)
-		},
-		"listlines": func(b bool, settings *SearchSettings) {
-			settings.SetListLines(b)
-		},
 		"multilinesearch": func(b bool, settings *SearchSettings) {
 			settings.SetMultiLineSearch(b)
+		},
+		"noprintdirs": func(b bool, settings *SearchSettings) {
+			settings.SetPrintDirs(!b)
+		},
+		"noprintfiles": func(b bool, settings *SearchSettings) {
+			settings.SetPrintFiles(!b)
+		},
+		"noprintlines": func(b bool, settings *SearchSettings) {
+			settings.SetPrintLines(!b)
 		},
 		"noprintmatches": func(b bool, settings *SearchSettings) {
 			settings.SetPrintResults(!b)
@@ -386,6 +388,15 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"nosearcharchives": func(b bool, settings *SearchSettings) {
 			settings.SetSearchArchives(!b)
+		},
+		"printdirs": func(b bool, settings *SearchSettings) {
+			settings.SetPrintDirs(b)
+		},
+		"printfiles": func(b bool, settings *SearchSettings) {
+			settings.SetPrintFiles(b)
+		},
+		"printlines": func(b bool, settings *SearchSettings) {
+			settings.SetPrintLines(b)
 		},
 		"printmatches": func(b bool, settings *SearchSettings) {
 			settings.SetPrintResults(b)

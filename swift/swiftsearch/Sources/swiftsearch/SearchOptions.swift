@@ -182,20 +182,20 @@ public class SearchOptions {
         "includehidden": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.includeHidden = bool
         },
-        "listdirs": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.listDirs = bool
-        },
-        "listfiles": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.listFiles = bool
-        },
-        "listlines": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.listLines = bool
-        },
         "multilinesearch": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.multiLineSearch = bool
         },
         "nocolorize": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.colorize = !bool
+        },
+        "noprintdirs": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printDirs = !bool
+        },
+        "noprintfiles": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printFiles = !bool
+        },
+        "noprintlines": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printLines = !bool
         },
         "noprintmatches": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printResults = !bool
@@ -205,6 +205,15 @@ public class SearchOptions {
         },
         "nosearcharchives": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.searchArchives = !bool
+        },
+        "printdirs": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printDirs = bool
+        },
+        "printfiles": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printFiles = bool
+        },
+        "printlines": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printLines = bool
         },
         "printmatches": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printResults = bool

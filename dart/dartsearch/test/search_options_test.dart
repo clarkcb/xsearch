@@ -8,15 +8,15 @@ void main() {
     expect(settings.archivesOnly, false);
     expect(settings.colorize, true);
     expect(settings.debug, false);
-    expect(settings.excludeHidden, true);
     expect(settings.firstMatch, false);
+    expect(settings.includeHidden, true);
     expect(settings.linesAfter, 0);
     expect(settings.linesBefore, 0);
-    expect(settings.listDirs, false);
-    expect(settings.listFiles, false);
-    expect(settings.listLines, false);
     expect(settings.maxLineLength, 150);
     expect(settings.multiLineSearch, false);
+    expect(settings.printDirs, false);
+    expect(settings.printFiles, false);
+    expect(settings.printLines, false);
     expect(settings.printResults, true);
     expect(settings.printUsage, false);
     expect(settings.printVersion, false);
@@ -62,7 +62,7 @@ void main() {
         '"linesafter": 2,'
         '"debug": true,'
         '"allmatches": false,'
-        '"includehidden": false'
+        '"includehidden": true'
         '}';
     var options = SearchOptions();
     var settings = SearchSettings();
@@ -95,6 +95,6 @@ void main() {
     expect(settings.debug, true);
     expect(settings.verbose, true);
     expect(settings.firstMatch, true);
-    expect(settings.excludeHidden, true);
+    expect(settings.includeHidden, true);
   });
 }

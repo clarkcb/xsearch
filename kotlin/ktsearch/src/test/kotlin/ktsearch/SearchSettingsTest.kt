@@ -56,11 +56,4 @@ class SearchSettingsTest {
         assertTrue(settings.archivesOnly)
         assertTrue(settings.searchArchives)
     }
-
-    @Test
-    fun testSetDebug() {
-        val settings = setDebug(getDefaultSettings(), true)
-        assertTrue(settings.debug)
-        assertTrue(settings.verbose)
-    }
 }

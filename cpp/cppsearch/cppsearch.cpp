@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->list_dirs()) {
+        if (settings->print_dirs()) {
             std::vector<std::string> result_dirs = get_result_dirs(&results);
             std::string msg = "\nDirectories with matches";
             if (result_dirs.empty()) {
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->list_files()) {
+        if (settings->print_files()) {
             std::vector<std::string> result_files = get_result_files(&results);
             std::string msg = "\nFiles with matches";
             if (result_files.empty()) {
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->list_lines()) {
+        if (settings->print_lines()) {
             std::vector<std::string> result_lines = get_result_lines(&results, settings->unique_lines());
             std::string msg;
             if (settings->unique_lines()) {

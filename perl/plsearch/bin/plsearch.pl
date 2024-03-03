@@ -131,7 +131,7 @@ sub main {
 
     if (scalar @{$errs}) {
         plfind::common::log_msg('');
-        log_error($errs->[0]);
+        plfind::common::log_err($errs->[0]);
         plfind::common::log_msg('');
         $search_options->usage();
         plfind::common::log_msg('');
@@ -153,7 +153,7 @@ sub main {
 
     if (scalar @{$errs2}) {
         plfind::common::log_msg('');
-        log_error($errs2->[0]);
+        plfind::common::log_err($errs2->[0]);
         plfind::common::log_msg('');
         $search_options->usage();
         plfind::common::log_msg('');
@@ -168,17 +168,17 @@ sub main {
     }
 
     # print matching dirs
-    if ($settings->{list_dirs}) {
+    if ($settings->{print_dirs}) {
         print_matching_dirs($results);
     }
 
     # print matching files
-    if ($settings->{list_files}) {
+    if ($settings->{print_files}) {
         print_matching_files($results);
     }
 
     # print matching lines
-    if ($settings->{list_lines}) {
+    if ($settings->{print_lines}) {
         print_matching_lines($results, $settings);
     }
 }

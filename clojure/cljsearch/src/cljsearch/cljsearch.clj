@@ -18,9 +18,9 @@
           (if (empty? errs)
             (do
               (if (:print-results settings) (print-search-results results settings))
-              (if (:list-dirs settings) (print-matching-dirs results))
-              (if (:list-files settings) (print-matching-files results))
-              (if (:list-lines settings) (print-matching-lines results settings)))
+              (if (:print-dirs settings) (print-matching-dirs results))
+              (if (:print-files settings) (print-matching-files results))
+              (if (:print-lines settings) (print-matching-lines results settings)))
             (do
               (log-errors errs)
               (usage)))))

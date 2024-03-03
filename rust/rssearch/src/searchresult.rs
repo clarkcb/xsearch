@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 use rsfind::fileresult::FileResult;
-use rsfind::filetypes::FileType;
 
 #[derive(Debug, Eq)]
 pub struct SearchResult {
@@ -77,6 +76,8 @@ mod tests {
     use crate::common::log;
     use crate::searchresultformatter::SearchResultFormatter;
     use crate::color::{GREEN, RESET};
+
+    use rsfind::filetypes::FileType;
 
     use super::*;
 

@@ -31,9 +31,6 @@ data SearchSettings = SearchSettings {
                                      , linesAfterToPatterns :: [String]
                                      , linesAfterUntilPatterns :: [String]
                                      , linesBefore :: Int
-                                     , listDirs :: Bool
-                                     , listFiles :: Bool
-                                     , listLines :: Bool
                                      , maxDepth :: Integer
                                      , maxLastMod :: Maybe UTCTime
                                      , maxLineLength :: Int
@@ -51,6 +48,9 @@ data SearchSettings = SearchSettings {
                                      , outLinesAfterPatterns :: [String]
                                      , outLinesBeforePatterns :: [String]
                                      , paths :: [String]
+                                     , printDirs :: Bool
+                                     , printFiles :: Bool
+                                     , printLines :: Bool
                                      , printResults :: Bool
                                      , printUsage :: Bool
                                      , printVersion :: Bool
@@ -84,9 +84,6 @@ defaultSearchSettings = SearchSettings {
                                        , linesAfterToPatterns=[]
                                        , linesAfterUntilPatterns=[]
                                        , linesBefore=0
-                                       , listDirs=False
-                                       , listFiles=False
-                                       , listLines=False
                                        , maxDepth = -1
                                        , maxLineLength=200
                                        , maxLastMod=Nothing
@@ -104,6 +101,9 @@ defaultSearchSettings = SearchSettings {
                                        , outLinesAfterPatterns=[]
                                        , outLinesBeforePatterns=[]
                                        , paths=[]
+                                       , printDirs=False
+                                       , printFiles=False
+                                       , printLines=False
                                        , printResults=False
                                        , printUsage=False
                                        , printVersion=False
@@ -137,8 +137,6 @@ toFindSettings searchSettings = FS.FindSettings {
                                    , FS.inFilePatterns=inFilePatterns searchSettings
                                    , FS.inFileTypes=inFileTypes searchSettings
                                    , FS.includeArchives=searchArchives searchSettings
-                                   , FS.listDirs=listDirs searchSettings
-                                   , FS.listFiles=listFiles searchSettings
                                    , FS.maxDepth=maxDepth searchSettings
                                    , FS.maxLastMod=maxLastMod searchSettings
                                    , FS.maxSize=maxSize searchSettings
@@ -152,6 +150,8 @@ toFindSettings searchSettings = FS.FindSettings {
                                    , FS.outFilePatterns=outFilePatterns searchSettings
                                    , FS.outFileTypes=outFileTypes searchSettings
                                    , FS.paths=paths searchSettings
+                                   , FS.printDirs=printDirs searchSettings
+                                   , FS.printFiles=printFiles searchSettings
                                    , FS.printUsage=printUsage searchSettings
                                    , FS.printVersion=printVersion searchSettings
                                    , FS.recursive=recursive searchSettings

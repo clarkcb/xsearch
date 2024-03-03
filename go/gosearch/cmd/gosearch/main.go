@@ -43,20 +43,17 @@ func main() {
 	}
 
 	// print matching dirs
-	if settings.ListDirs() {
-		fmt.Println()
+	if settings.PrintDirs() {
 		searchResults.PrintMatchingDirs()
 	}
 
 	// print matching files
-	if settings.ListFiles() {
-		fmt.Println()
+	if settings.PrintFiles() {
 		searchResults.PrintMatchingFiles()
 	}
 
 	// print matching lines (unique or not, sorted alphabetically)
-	if settings.ListLines() {
-		fmt.Println()
+	if settings.PrintLines() {
 		searchResults.PrintMatchingLines()
 	}
 }

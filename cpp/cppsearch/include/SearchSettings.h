@@ -51,8 +51,8 @@ namespace cppsearch {
         [[nodiscard]] bool multi_line_search() const;
         [[nodiscard]] unsigned int lines_after() const;
         [[nodiscard]] unsigned int lines_before() const;
-        [[nodiscard]] bool list_lines() const;
         [[nodiscard]] size_t max_line_length() const;
+        [[nodiscard]] bool print_lines() const;
         [[nodiscard]] bool print_results() const;
         [[nodiscard]] bool search_archives() const;
         [[nodiscard]] bool unique_lines() const;
@@ -65,17 +65,17 @@ namespace cppsearch {
 
         std::vector<cppfind::RegexPattern*>* search_patterns();
 
-        void archives_only(bool b);
-        void colorize(bool b);
-        void first_match(bool b);
-        void multi_line_search(bool b);
+        // property setters
+        void colorize(bool colorize);
+        void first_match(bool first_match);
+        void multi_line_search(bool multi_line_search);
         void lines_after(unsigned int line_count);
         void lines_before(unsigned int line_count);
-        void list_lines(bool b);
         void max_line_length(size_t max);
-        void print_results(bool b);
-        void search_archives(bool b);
-        void unique_lines(bool b);
+        void print_lines(bool print_lines);
+        void print_results(bool print_results);
+        void search_archives(bool search_archives);
+        void unique_lines(bool unique_lines);
         std::string string();
     };
 }

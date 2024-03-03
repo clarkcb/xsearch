@@ -118,13 +118,13 @@ const searchMain = async () => {
                 printSearchResults(results, settings);
             }
 
-            if (settings.listDirs) {
+            if (settings.printDirs) {
                 printMatchingDirs(results);
             }
-            if (settings.listFiles) {
+            if (settings.printFiles) {
                 printMatchingFiles(results);
             }
-            if (settings.listLines) {
+            if (settings.printLines) {
                 printMatchingLines(results, settings.uniqueLines);
             }
 

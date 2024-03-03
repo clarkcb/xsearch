@@ -17,10 +17,10 @@
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path)]
-        [cljfind.findsettings :only (sort-by-from-name)]
+        [cljfind.findsettings :only (add-extension add-file-type add-path add-pattern set-debug
+                                     sort-by-from-name)]
         [cljsearch.searchsettings :only
-         (->SearchSettings DEFAULT-SETTINGS add-extension add-file-type add-pattern
-            add-path set-archives-only set-debug set-num)]))
+         (->SearchSettings DEFAULT-SETTINGS set-archives-only)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
@@ -61,10 +61,10 @@
     :in-filetype (fn [settings s] (add-file-type settings s :in-file-types))
     :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-lines-after-patterns))
     :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-lines-before-patterns))
-    :linesafter (fn [settings s] (set-num settings s :lines-after))
+    :linesafter (fn [settings s] (assoc settings :lines-after (Integer/parseInt s)))
     :linesaftertopattern (fn [settings s] (add-pattern settings s :lines-after-to-patterns))
     :linesafteruntilpattern (fn [settings s] (add-pattern settings s :lines-after-until-patterns))
-    :linesbefore (fn [settings s] (set-num settings s :lines-before))
+    :linesbefore (fn [settings s] (assoc settings :lines-before (Integer/parseInt s)))
     :maxdepth (fn [settings s] (assoc settings :max-depth (Integer/parseInt s)))
     :maxlastmod (fn [settings s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
     :maxlinelength (fn [settings s] (assoc settings :max-line-length (read-string s)))
@@ -94,14 +94,14 @@
     :firstmatch (fn [settings b] (assoc settings :first-match b))
     :help (fn [settings b] (assoc settings :print-usage b))
     :includehidden (fn [settings b] (assoc settings :exclude-hidden (not b)))
-    :listdirs (fn [settings b] (assoc settings :list-dirs b))
-    :listfiles (fn [settings b] (assoc settings :list-files b))
-    :listlines (fn [settings b] (assoc settings :list-lines b))
     :multilinesearch (fn [settings b] (assoc settings :multi-line-search b))
     :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
     :noprintmatches (fn [settings b] (assoc settings :print-results (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :nosearcharchives (fn [settings b] (assoc settings :search-archives (not b)))
+    :printdirs (fn [settings b] (assoc settings :print-dirs b))
+    :printfiles (fn [settings b] (assoc settings :print-files b))
+    :printlines (fn [settings b] (assoc settings :print-lines b))
     :printmatches (fn [settings b] (assoc settings :print-results b))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :searcharchives (fn [settings b] (assoc settings :search-archives b))

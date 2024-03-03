@@ -71,7 +71,7 @@ public class Searcher {
         strs.filter { self.matchesAnyPattern($0, patterns) }.count > 0
     }
 
-    public func search() throws -> [SearchResult] {
+    public func search() -> [SearchResult] {
         let fileResults: [FileResult] = finder.find()
         var searchResults = [SearchResult]()
 

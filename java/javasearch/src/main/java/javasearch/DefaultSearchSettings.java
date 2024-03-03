@@ -1,21 +1,19 @@
 package javasearch;
 
-import javafind.DefaultFindSettings;
-
 public final class DefaultSearchSettings {
     private DefaultSearchSettings() {
         // inaccessible constructor for utility class
     }
 
     public static final boolean COLORIZE = true;
-    public static final boolean FIRSTMATCH = false;
-    public static final int LINESAFTER = 0;
-    public static final int LINESBEFORE = 0;
-    public static final boolean LISTLINES = false;
-    public static final int MAXLINELENGTH = 150;
-    public static final boolean MULTILINESEARCH = false;
-    public static final boolean PRINTRESULTS = true;
-    public static final boolean SEARCHARCHIVES = false;
-    public static final String TEXTFILEENCODING = "UTF-8";
-    public static final boolean UNIQUELINES = false;
+    public static final boolean FIRST_MATCH = false;
+    public static final int LINES_AFTER = 0;
+    public static final int LINES_BEFORE = 0;
+    public static final boolean PRINT_LINES = false;
+    public static final int MAX_LINE_LENGTH = 150;
+    public static final boolean MULTI_LINE_SEARCH = false;
+    public static final boolean PRINT_RESULTS = true;
+    public static final boolean SEARCH_ARCHIVES = false;
+    public static final String TEXT_FILE_ENCODING = "UTF-8";
+    public static final boolean UNIQUE_LINES = false;
 }

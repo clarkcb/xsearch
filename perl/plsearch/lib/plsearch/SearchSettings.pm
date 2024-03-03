@@ -31,11 +31,11 @@ sub new {
     $self->{lines_after_to_patterns} = [];
     $self->{lines_after_until_patterns} = [];
     $self->{lines_before} = 0;
-    $self->{list_lines} = 0;
     $self->{max_line_length} = 150;
     $self->{multi_line_search} = 0;
     $self->{out_lines_after_patterns} = [];
     $self->{out_lines_before_patterns} = [];
+    $self->{print_lines} = 0;
     $self->{print_results} = 1;
     $self->{search_archives} = 0;
     $self->{search_patterns} = [];
@@ -66,9 +66,6 @@ sub to_string {
         ', lines_after_to_patterns=' . plfind::common::strings_aref_to_string($self->{lines_after_to_patterns}) .
         ', lines_after_until_patterns=' . plfind::common::strings_aref_to_string($self->{lines_after_until_patterns}) .
         ', lines_before=' . $self->{lines_before} .
-        ', list_dirs=' . plfind::common::bool_to_string($self->{list_dirs}) .
-        ', list_files=' . plfind::common::bool_to_string($self->{list_files}) .
-        ', list_lines=' . plfind::common::bool_to_string($self->{list_lines}) .
         ', max_depth=' . $self->{max_depth} .
         ', max_last_mod=' . plfind::common::datetime_to_string($self->{max_last_mod}) .
         ', max_line_length=' . $self->{max_line_length} .
@@ -86,6 +83,9 @@ sub to_string {
         ', out_lines_after_patterns=' . plfind::common::strings_aref_to_string($self->{out_lines_after_patterns}) .
         ', out_lines_before_patterns=' . plfind::common::strings_aref_to_string($self->{out_lines_before_patterns}) .
         ', paths=' . plfind::common::strings_aref_to_string($self->{paths}) .
+        ', print_dirs=' . plfind::common::bool_to_string($self->{print_dirs}) .
+        ', print_files=' . plfind::common::bool_to_string($self->{print_files}) .
+        ', print_lines=' . plfind::common::bool_to_string($self->{print_lines}) .
         ', print_results=' . plfind::common::bool_to_string($self->{print_results}) .
         ', print_usage=' . plfind::common::bool_to_string($self->{print_usage}) .
         ', print_version=' . plfind::common::bool_to_string($self->{print_version}) .

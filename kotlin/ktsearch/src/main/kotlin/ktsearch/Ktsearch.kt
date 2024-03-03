@@ -13,14 +13,10 @@ fun printErrorWithUsage(err: String, searchOptions: SearchOptions) {
     searchOptions.usage()
 }
 
-fun getSearchResultComparator(searcher: Searcher): Comparator<SearchResult> {
-    return Comparator { sr1: SearchResult, sr2: SearchResult -> searcher.compareResults(sr1, sr2) }
-}
-
-fun printResults(results: List<SearchResult>, searcher: Searcher) {
+fun printResults(results: List<SearchResult>, settings: SearchSettings) {
     log("\nSearch results (${results.size}):")
-    val formatter = SearchResultFormatter(searcher.settings)
-    for (r in results.sortedWith(getSearchResultComparator(searcher))) {
+    val formatter = SearchResultFormatter(settings)
+    for (r in results) {
         log(formatter.format(r))
     }
 }
@@ -63,15 +59,15 @@ fun search(settings: SearchSettings) {
     val results: List<SearchResult> = searcher.search()
 
     if (settings.printResults) {
-        printResults(results, searcher)
+        printResults(results, settings)
     }
-    if (settings.listDirs) {
+    if (settings.printDirs) {
         printMatchingDirs(results)
     }
-    if (settings.listFiles) {
+    if (settings.printFiles) {
         printMatchingFiles(results)
     }
-    if (settings.listLines) {
+    if (settings.printLines) {
         printMatchingLines(settings, results)
     }
 }

@@ -102,7 +102,7 @@ int main(int argc, const char * argv[]) {
             }
         }
 
-        if (settings.listDirs) {
+        if (settings.printDirs) {
             NSArray<NSString*> *dirPaths = getMatchingDirs(results);
             logMsg([NSString stringWithFormat:@"\nDirectories with matches (%lu):", [dirPaths count]]);
             for (NSString *d in dirPaths) {
@@ -110,7 +110,7 @@ int main(int argc, const char * argv[]) {
             }
         }
 
-        if (settings.listFiles) {
+        if (settings.printFiles) {
             NSArray<NSString*> *filePaths = getMatchingFiles(results);
             logMsg([NSString stringWithFormat:@"\nFiles with matches (%lu):", [filePaths count]]);
             for (NSString *f in filePaths) {
@@ -118,7 +118,7 @@ int main(int argc, const char * argv[]) {
             }
         }
 
-        if (settings.listLines) {
+        if (settings.printLines) {
             NSArray<NSString*> *lines = getMatchingLines(results, settings);
             NSString *linesHdr;
             if (settings.uniqueLines) {

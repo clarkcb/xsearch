@@ -109,15 +109,15 @@ Future<void> search(SearchSettings settings, SearchOptions options) async {
         printResults(results, settings);
       }
 
-      if (settings.listDirs) {
+      if (settings.printDirs) {
         printMatchingDirs(results, settings);
       }
 
-      if (settings.listFiles) {
+      if (settings.printFiles) {
         printMatchingFiles(results, settings);
       }
 
-      if (settings.listLines) {
+      if (settings.printLines) {
         printMatchingLines(results, settings);
       }
     }

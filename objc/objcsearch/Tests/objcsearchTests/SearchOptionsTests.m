@@ -31,12 +31,12 @@
     SearchSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
-    XCTAssert([settings excludeHidden]);
     XCTAssert(![settings firstMatch]);
-    XCTAssert(![settings listDirs]);
-    XCTAssert(![settings listFiles]);
-    XCTAssert(![settings listLines]);
+    XCTAssert([settings includeHidden]);
     XCTAssert(![settings multiLineSearch]);
+    XCTAssert(![settings printDirs]);
+    XCTAssert(![settings printFiles]);
+    XCTAssert(![settings printLines]);
     XCTAssert([settings printResults]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
@@ -105,7 +105,7 @@
     XCTAssert([settings linesAfter] == 2);
     XCTAssert([settings debug]);
     XCTAssert([settings firstMatch]);
-    XCTAssert([settings excludeHidden]);
+    XCTAssert([settings includeHidden]);
 }
 
 @end

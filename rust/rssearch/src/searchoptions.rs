@@ -218,7 +218,7 @@ impl SearchOptions {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
             };
-            map.insert(sortkey, so.clone());
+            map.insert(sortkey, so);
         }
         map
     }
@@ -506,7 +506,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
 }
 
 fn get_flag_map() -> HashMap<String, FlagAction> {
-    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(21);
+    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(24);
     flag_map.insert(
         "allmatches".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_first_match(!b))),
@@ -540,16 +540,16 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(b))),
     );
     flag_map.insert(
-        "listdirs".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_list_dirs(b))),
+        "printdirs".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(b))),
     );
     flag_map.insert(
-        "listfiles".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_list_files(b))),
+        "printfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(b))),
     );
     flag_map.insert(
-        "listlines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_list_lines(b))),
+        "printlines".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(b))),
     );
     flag_map.insert(
         "multilinesearch".to_string(),
@@ -558,6 +558,18 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     flag_map.insert(
         "nocolorize".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_colorize(!b))),
+    );
+    flag_map.insert(
+        "noprintdirs".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(!b))),
+    );
+    flag_map.insert(
+        "noprintfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(!b))),
+    );
+    flag_map.insert(
+        "noprintlines".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(!b))),
     );
     flag_map.insert(
         "noprintmatches".to_string(),
@@ -708,7 +720,7 @@ mod tests {
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
-                assert!(!settings.exclude_hidden());
+                assert!(settings.include_hidden());
                 assert_eq!(settings.lines_after(), 2);
                 assert_eq!(settings.lines_before(), 2);
                 assert_eq!(settings.out_dir_patterns().len(), 1);
@@ -758,11 +770,11 @@ mod tests {
         match options.settings_from_args(args.iter()) {
             Ok(settings) => {
                 assert!(settings.debug());
-                assert!(settings.exclude_hidden());
                 assert!(settings.first_match());
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
+                assert!(settings.include_hidden());
                 assert_eq!(settings.lines_after(), 2);
                 assert_eq!(settings.lines_before(), 2);
                 assert_eq!(settings.out_dir_patterns().len(), 11);

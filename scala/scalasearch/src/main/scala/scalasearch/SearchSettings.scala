@@ -16,9 +16,6 @@ object DefaultSettings {
   val includeHidden = false
   val linesAfter = 0
   val linesBefore = 0
-  val listDirs = false
-  val listFiles = false
-  val listLines = false
   val maxDepth: Int = -1
   val maxLineLength = 150
   val maxSize = 0
@@ -26,6 +23,9 @@ object DefaultSettings {
   val minSize = 0
   var multiLineSearch = false
   var paths: Set[String] = Set.empty[String]
+  val printDirs = false
+  val printFiles = false
+  val printLines = false
   var printResults = false
   var printUsage = false
   var printVersion = false
@@ -53,9 +53,6 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           linesAfterToPatterns: Set[Regex] = Set.empty[Regex],
                           linesAfterUntilPatterns: Set[Regex] = Set.empty[Regex],
                           linesBefore: Int = DefaultSettings.linesBefore,
-                          listDirs: Boolean = DefaultSettings.listDirs,
-                          listFiles: Boolean = DefaultSettings.listFiles,
-                          listLines: Boolean = DefaultSettings.listLines,
                           maxDepth: Int = DefaultSettings.maxDepth,
                           maxLastMod: Option[LocalDateTime] = None,
                           maxLineLength: Int = DefaultSettings.maxLineLength,
@@ -73,6 +70,9 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
                           outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
                           paths: Set[String] = DefaultSettings.paths,
+                          printDirs: Boolean = DefaultSettings.printDirs,
+                          printFiles: Boolean = DefaultSettings.printFiles,
+                          printLines: Boolean = DefaultSettings.printLines,
                           printResults: Boolean = DefaultSettings.printResults,
                           printUsage: Boolean = DefaultSettings.printUsage,
                           printVersion: Boolean = DefaultSettings.printVersion,
@@ -100,8 +100,6 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
     inFilePatterns = inFilePatterns,
     inFileTypes = inFileTypes,
     includeArchives = searchArchives,
-    listDirs = listDirs,
-    listFiles = listFiles,
     maxDepth = maxDepth,
     maxLastMod = maxLastMod,
     maxSize = maxSize,
@@ -115,6 +113,8 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
     outFilePatterns = outFilePatterns,
     outFileTypes = outFileTypes,
     paths = paths,
+    printDirs = printDirs,
+    printFiles = printFiles,
     printUsage = printUsage,
     printVersion = printVersion,
     recursive = recursive,
@@ -162,9 +162,6 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", inFileTypes: " + inFileTypes +
       ", linesAfter: " + linesAfter +
       ", linesBefore: " + linesBefore +
-      ", listDirs: " + listDirs +
-      ", listFiles: " + listFiles +
-      ", listLines: " + listLines +
       ", maxDepth: " + maxDepth +
       ", maxLastMod: " + maxLastMod +
       ", maxLineLength: " + maxLineLength +
@@ -180,6 +177,9 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", outFilePatterns: " + outFilePatterns +
       ", outFileTypes: " + outFileTypes +
       ", paths: " + paths  +
+      ", printDirs: " + printDirs +
+      ", printFiles: " + printFiles +
+      ", printLines: " + printLines +
       ", printResults: " + printResults +
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +

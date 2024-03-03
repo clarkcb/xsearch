@@ -118,13 +118,13 @@ main = do
             logMsg $ if printResults settings
                      then formatResults settings results
                      else ""
-            logMsg $ if listDirs settings
+            logMsg $ if printDirs settings
                      then formatMatchingDirs results
                      else ""
-            logMsg $ if listFiles settings
+            logMsg $ if printFiles settings
                      then formatMatchingFiles results
                      else ""
-            logMsg $ if listLines settings
+            logMsg $ if printLines settings
                      then formatMatchingLines results (uniqueLines settings)
                      else ""
             logMsg ""

@@ -92,7 +92,7 @@ def search(options, settings)
     print_results(results, settings)
   end
 
-  if settings.list_dirs
+  if settings.print_dirs
     RbFind::log("\n")
     dirs = get_matching_dirs(results)
     RbFind::log("Directories with matches (#{dirs.size}):")
@@ -101,7 +101,7 @@ def search(options, settings)
     end
   end
 
-  if settings.list_files
+  if settings.print_files
     RbFind::log("\n")
     files = get_matching_files(results)
     RbFind::log("Files with matches (#{files.size}):")
@@ -110,7 +110,7 @@ def search(options, settings)
     end
   end
 
-  if settings.list_lines
+  if settings.print_lines
     RbFind::log("\n")
     lines = get_matching_lines(results, settings)
     hdr_text =

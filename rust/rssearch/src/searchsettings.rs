@@ -13,11 +13,11 @@ pub struct SearchSettings {
     _lines_after_to_patterns: Vec<Regex>,
     _lines_after_until_patterns: Vec<Regex>,
     _lines_before: usize,
-    _list_lines: bool,
     _max_line_length: usize,
     _multi_line_search: bool,
     _out_lines_after_patterns: Vec<Regex>,
     _out_lines_before_patterns: Vec<Regex>,
+    _print_lines: bool,
     _print_results: bool,
     _search_archives: bool,
     _search_patterns: Vec<Regex>,
@@ -37,11 +37,11 @@ impl SearchSettings {
             _lines_after_to_patterns: Vec::new(),
             _lines_after_until_patterns: Vec::new(),
             _lines_before: 0usize,
-            _list_lines: false,
             _max_line_length: 150usize,
             _multi_line_search: false,
             _out_lines_after_patterns: Vec::new(),
             _out_lines_before_patterns: Vec::new(),
+            _print_lines: false,
             _print_results: false,
             _search_archives: false,
             _search_patterns: Vec::new(),
@@ -202,30 +202,6 @@ impl SearchSettings {
         self._lines_before = u
     }
 
-    pub fn list_dirs(&self) -> bool {
-        self._find_settings.list_dirs()
-    }
-
-    pub fn set_list_dirs(&mut self, b: bool) {
-        self._find_settings.set_list_dirs(b)
-    }
-
-    pub fn list_files(&self) -> bool {
-        self._find_settings.list_files()
-    }
-
-    pub fn set_list_files(&mut self, b: bool) {
-        self._find_settings.set_list_files(b)
-    }
-
-    pub fn list_lines(&self) -> bool {
-        self._list_lines
-    }
-
-    pub fn set_list_lines(&mut self, b: bool) {
-        self._list_lines = b
-    }
-
     pub fn max_depth(&self) -> i64 {
         self._find_settings.max_depth()
     }
@@ -362,6 +338,30 @@ impl SearchSettings {
         self._find_settings.add_path(path)
     }
 
+    pub fn print_dirs(&self) -> bool {
+        self._find_settings.print_dirs()
+    }
+
+    pub fn set_print_dirs(&mut self, b: bool) {
+        self._find_settings.set_print_dirs(b)
+    }
+
+    pub fn print_files(&self) -> bool {
+        self._find_settings.print_files()
+    }
+
+    pub fn set_print_files(&mut self, b: bool) {
+        self._find_settings.set_print_files(b)
+    }
+
+    pub fn print_lines(&self) -> bool {
+        self._print_lines
+    }
+
+    pub fn set_print_lines(&mut self, b: bool) {
+        self._print_lines = b
+    }
+
     pub fn print_results(&self) -> bool {
         self._print_results
     }
@@ -485,9 +485,6 @@ mod tests {
         assert!(settings.lines_after_to_patterns().is_empty());
         assert!(settings.lines_after_until_patterns().is_empty());
         assert_eq!(settings.lines_before(), 0);
-        assert_eq!(settings.list_dirs(), false);
-        assert_eq!(settings.list_files(), false);
-        assert_eq!(settings.list_lines(), false);
         assert_eq!(settings.max_depth(), -1);
         assert_eq!(settings.max_last_mod(), 0);
         assert_eq!(settings.max_line_length(), 150);
@@ -503,6 +500,9 @@ mod tests {
         assert!(settings.out_file_patterns().is_empty());
         assert!(settings.out_file_types().is_empty());
         assert!(settings.paths().is_empty());
+        assert_eq!(settings.print_dirs(), false);
+        assert_eq!(settings.print_files(), false);
+        assert_eq!(settings.print_lines(), false);
         assert_eq!(settings.print_results(), false);
         assert_eq!(settings.print_usage(), false);
         assert_eq!(settings.print_version(), false);

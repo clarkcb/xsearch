@@ -188,18 +188,6 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('include_hidden', $b);
     },
-    'listdirs' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_dirs', $b);
-    },
-    'listfiles' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_files', $b);
-    },
-    'listlines' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_lines', $b);
-    },
     'multilinesearch' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('multi_line_search', $b);
@@ -219,6 +207,18 @@ my $bool_flag_action_hash = {
     'nosearcharchives' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('search_archives', !$b);
+    },
+    'printdirs' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('list_dirs', $b);
+    },
+    'printfiles' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('list_files', $b);
+    },
+    'printlines' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('list_lines', $b);
     },
     'printmatches' => sub {
         my ($b, $settings) = @_;
@@ -370,39 +370,39 @@ sub get_usage_string {
     my $self = shift;
     my $usage = "Usage:\n plsearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n";
     my $longest = 0;
-    my $options_with_sortkey = {};
+    my $options_with_sort_key = {};
     my @opt_strs_with_descs;
     foreach my $opt_key (keys %{$self->{options}}) {
         my $option = $self->{options}->{$opt_key};
-        my $long = $option->{longarg};
-        my $short = $option->{shortarg};
-        my $sortkey = $long;
-        if ($short) {
-            $sortkey = lc($short) . 'a' . $long;
+        my $long_arg = $option->{long_arg};
+        my $short_arg = $option->{short_arg};
+        my $sort_key = $long_arg;
+        if ($short_arg) {
+            $sort_key = lc($short_arg) . 'a' . $long_arg;
         }
-        $options_with_sortkey->{$sortkey} = $option;
+        $options_with_sort_key->{$sort_key} = $option;
     }
-    my @sortkeys = keys %{$options_with_sortkey};
-    @sortkeys = sort {$plsearch::SearchOptions::a cmp $plsearch::SearchOptions::b} @sortkeys;
+    my @sort_keys = keys %{$options_with_sort_key};
+    @sort_keys = sort {$plsearch::SearchOptions::a cmp $plsearch::SearchOptions::b} @sort_keys;
     my $opt_strs_with_key = {};
     my $opt_descs_with_key = {};
-    foreach my $sortkey (@sortkeys) {
-        my $option = $options_with_sortkey->{$sortkey};
+    foreach my $sort_key (@sort_keys) {
+        my $option = $options_with_sort_key->{$sort_key};
         my $opt_str = '';
-        if ($option->{shortarg}) {
-            $opt_str = '-' . $option->{shortarg} . ',';
+        if ($option->{short_arg}) {
+            $opt_str = '-' . $option->{short_arg} . ',';
         }
-        $opt_str .= '--' . $option->{longarg};
+        $opt_str .= '--' . $option->{long_arg};
         if (length($opt_str) > $longest) {
             $longest = length($opt_str);
         }
-        $opt_strs_with_key->{$sortkey} = $opt_str;
-        $opt_descs_with_key->{$sortkey} = $option->{desc};
+        $opt_strs_with_key->{$sort_key} = $opt_str;
+        $opt_descs_with_key->{$sort_key} = $option->{desc};
     }
     my $format_str = " %-" . $longest . "s  %s\n";
-    foreach my $sortkey (@sortkeys) {
-       $usage .= sprintf($format_str, $opt_strs_with_key->{$sortkey},
-        $opt_descs_with_key->{$sortkey});
+    foreach my $sort_key (@sort_keys) {
+       $usage .= sprintf($format_str, $opt_strs_with_key->{$sort_key},
+        $opt_descs_with_key->{$sort_key});
     }
     return $usage;
 }

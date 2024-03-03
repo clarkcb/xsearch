@@ -10,6 +10,8 @@ Class to provide formatting of search result instances
 
 package javasearch;
 
+import javafind.StringUtil;
+
 public class SearchResultFormatter {
 
     private final SearchSettings settings;
@@ -21,7 +23,7 @@ public class SearchResultFormatter {
     }
 
     public final String format(SearchResult result) {
-        if (result.getLinesBefore().size() > 0 || result.getLinesAfter().size() > 0) {
+        if (!result.getLinesBefore().isEmpty() || !result.getLinesAfter().isEmpty()) {
             return multiLineToString(result);
         } else {
             return singleLineToString(result);

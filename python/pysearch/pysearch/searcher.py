@@ -15,9 +15,8 @@ from collections import deque
 from io import StringIO
 from typing import Deque, List, TextIO
 
-from pyfind import FileResult, FileType, FileTypes, FileUtil, Finder
+from pyfind import FileResult, FileType, FileTypes, FileUtil, Finder, log, log_error
 
-from .common import log
 from .searchresult import SearchResult
 from .searchsettings import SearchSettings, PatternSet
 
@@ -102,7 +101,7 @@ class Searcher(object):
             try:
                 search_results = self.search_archive_file(fr)
             except IOError as e:
-                log('IOError: {0!s}: {1!s}'.format(e, fr))
+                log_error('IOError: {0!s}: {1!s}'.format(e, fr))
         else:
             # it's UNKNOWN
             if self.settings.verbose:
@@ -119,7 +118,7 @@ class Searcher(object):
             search_results = self.__search_binary_file_obj(fr, fo)
             fo.close()
         except IOError as e:
-            log('IOError: {0!s}: {1!s}'.format(e, fr))
+            log_error('IOError: {0!s}: {1!s}'.format(e, fr))
         return search_results
 
     def __search_binary_file_obj(self, fr: FileResult, fo: TextIO) -> List[SearchResult]:
@@ -153,9 +152,9 @@ class Searcher(object):
             search_results = self.__search_text_file_obj(fr, fo)
             fo.close()
         except IOError as e:
-            log('IOError: {0!s}: {1}'.format(e, fr))
+            log_error('IOError: {0!s}: {1}'.format(e, fr))
         except UnicodeDecodeError as e:
-            log('UnicodeDecodeError: {0!s}: {1}'.format(e, fr))
+            log_error('UnicodeDecodeError: {0!s}: {1}'.format(e, fr))
         return search_results
 
     def __search_text_file_obj(self, fr: FileResult,
@@ -325,12 +324,12 @@ class Searcher(object):
                     line = next(lines)
                     line = line.rstrip('\r\n')
                 except UnicodeDecodeError as e:
-                    log('UnicodeDecodeError: {0!s}: {1}'.format(e, fr))
+                    log_error('UnicodeDecodeError: {0!s}: {1}'.format(e, fr))
                     break
                 except StopIteration:
                     break
                 except AttributeError as e:
-                    log('AttributeError: {0!s}'.format(e))
+                    log_error('AttributeError: {0!s}'.format(e))
                     break
             line_num += 1
             if self.settings.lines_after:
@@ -433,7 +432,7 @@ class Searcher(object):
                 search_results = self.search_zip_file(fr)
             except zipfile.BadZipfile as e:
                 if not ext == 'ear':
-                    log('BadZipfile: {0!s}: {1}'.format(e, fr))
+                    log_error('BadZipfile: {0!s}: {1}'.format(e, fr))
         elif ext in ('bz2', 'tar', 'tgz', 'gz') and \
                 tarfile.is_tarfile(fr.relative_path):
             # handle tar files
@@ -441,7 +440,7 @@ class Searcher(object):
                 search_results = self.search_tar_file(fr, ext)
             except Exception as e:
                 msg = 'Exception while searching a tar file {0}: {1!s}'
-                log(msg.format(fr, e))
+                log_error(msg.format(fr, e))
         else:
             msg = 'Searching archive file type "{0}" is unsupported at this time'
             log(msg.format(ext))
@@ -484,7 +483,7 @@ class Searcher(object):
         except tarfile.CompressionError as e:
             if not ext == 'tgz':
                 msg = 'CompressionError while trying to open {0}: {1!s}'
-                log(msg.format(fr, e))
+                log_error(msg.format(fr, e))
         return search_results
 
     def __search_tarfile_obj(self, fr: FileResult, tar) -> List[SearchResult]:

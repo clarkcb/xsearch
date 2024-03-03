@@ -106,22 +106,28 @@ class SearchOptions {
                 (b, settings) => { settings.includeHidden = b; },
             'help':
                 (b, settings) => { settings.printUsage = b; },
-            'listdirs':
-                (b, settings) => { settings.listDirs = b; },
-            'listfiles':
-                (b, settings) => { settings.listFiles = b; },
-            'listlines':
-                (b, settings) => { settings.listLines = b; },
             'multilinesearch':
                 (b, settings) => { settings.multilineSearch = b; },
             'nocolorize':
                 (b, settings) => { settings.colorize = !b; },
+            'noprintdirs':
+                (b, settings) => { settings.printDirs = !b; },
+            'noprintfiles':
+                (b, settings) => { settings.printFiles = !b; },
+            'noprintlines':
+                (b, settings) => { settings.printLines = !b; },
             'noprintmatches':
                 (b, settings) => { settings.printResults = !b; },
             'norecursive':
                 (b, settings) => { settings.recursive = !b; },
             'nosearcharchives':
                 (b, settings) => { settings.searchArchives = !b; },
+            'printdirs':
+                (b, settings) => { settings.printDirs = b; },
+            'printfiles':
+                (b, settings) => { settings.printFiles = b; },
+            'printlines':
+                (b, settings) => { settings.printLines = b; },
             'printmatches':
                 (b, settings) => { settings.printResults = b; },
             'recursive':

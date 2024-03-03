@@ -14,12 +14,12 @@ import java.io.InputStreamReader
 /**
  * @author cary on 7/23/16.
  */
-data class SearchOption(val shortarg: String?, val longarg: String, val desc: String) {
-    val sortarg =
-            if (shortarg == null) {
-                longarg.lowercase()
+data class SearchOption(val shortArg: String?, val longArg: String, val desc: String) {
+    val sortArg =
+            if (shortArg == null) {
+                longArg.lowercase()
             } else {
-                shortarg.lowercase() + "@" + longarg.lowercase()
+                shortArg.lowercase() + "@" + longArg.lowercase()
             }
 }
 
@@ -47,8 +47,8 @@ class SearchOptions {
     }
 
     private fun getArgMap() : Map<String, String> {
-        val longOpts = searchOptions.map { Pair(it.longarg, it.longarg) }.toMap()
-        val shortOpts = searchOptions.filter { it.shortarg != null }.map { Pair(it.shortarg!!, it.longarg) }.toMap()
+        val longOpts = searchOptions.map { Pair(it.longArg, it.longArg) }.toMap()
+        val shortOpts = searchOptions.filter { it.shortArg != null }.map { Pair(it.shortArg!!, it.longArg) }.toMap()
         return longOpts.plus(shortOpts)
     }
 
@@ -114,7 +114,7 @@ class SearchOptions {
         "settings-file" to
                 { s, ss -> settingsFromFile(s, ss) },
         "sort-by" to
-                { s, ss -> ss.copy(sortBy = sortByFromName(s)) },
+                { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
     )
 
     private val boolFlagActionMap: Map<String, ((Boolean, SearchSettings) -> SearchSettings)> = mapOf(
@@ -128,13 +128,17 @@ class SearchOptions {
         "firstmatch" to { b, ss -> ss.copy(firstMatch = b) },
         "help" to { b, ss -> ss.copy(printUsage = b) },
         "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
-        "listdirs" to { b, ss -> ss.copy(listDirs = b) },
-        "listfiles" to { b, ss -> ss.copy(listFiles = b) },
-        "listlines" to { b, ss -> ss.copy(listLines = b) },
         "multilinesearch" to { b, ss -> ss.copy(multiLineSearch = b) },
+        "nocolorize" to { b, ss -> ss.copy(colorize = !b) },
+        "noprintdirs" to { b, ss -> ss.copy(printDirs = !b) },
+        "noprintfiles" to { b, ss -> ss.copy(printFiles = !b) },
+        "noprintlines" to { b, ss -> ss.copy(printLines = !b) },
         "noprintmatches" to { b, ss -> ss.copy(printResults = !b) },
         "norecursive" to { b, ss -> ss.copy(recursive = !b) },
         "nosearcharchives" to { b, ss -> ss.copy(searchArchives = !b) },
+        "printdirs" to { b, ss -> ss.copy(printDirs = b) },
+        "printfiles" to { b, ss -> ss.copy(printFiles = b) },
+        "printlines" to { b, ss -> ss.copy(printLines = b) },
         "printmatches" to { b, ss -> ss.copy(printResults = b) },
         "recursive" to { b, ss -> ss.copy(recursive = b) },
         "searcharchives" to { b, ss -> ss.copy(searchArchives = b) },
@@ -270,7 +274,7 @@ class SearchOptions {
         sb.append(" ktsearch [options] -s <searchpattern> <path> [<path> ...]\n\n")
         sb.append("Options:\n")
         fun getOptString(so: SearchOption): String {
-            return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"
+            return (if (so.shortArg == null) "" else "-${so.shortArg},") + "--${so.longArg}"
         }
         val optPairs = searchOptions.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.map { it.first.length }.maxOrNull()

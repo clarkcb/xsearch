@@ -95,13 +95,13 @@ fn search(args: Iter<String>) {
                             log(formatter.format(r).as_str());
                         }
                     }
-                    if searcher.settings.list_dirs() {
+                    if searcher.settings.print_dirs() {
                         print_result_dirs(&results);
                     }
-                    if searcher.settings.list_files() {
+                    if searcher.settings.print_files() {
                         print_result_files(&results);
                     }
-                    if searcher.settings.list_lines() {
+                    if searcher.settings.print_lines() {
                         print_result_lines(&results, searcher.settings.unique_lines());
                     }
                 },

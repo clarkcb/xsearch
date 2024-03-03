@@ -1,4 +1,4 @@
-﻿using CsSearchLib;
+using CsSearchLib;
 
 namespace CsSearch
 {
@@ -30,17 +30,17 @@ namespace CsSearch
 					searcher.PrintResults();
 				}
 
-				if (settings.ListDirs)
+				if (settings.PrintDirs)
 				{
 					searcher.PrintMatchingDirs();
 				}
 
-				if (settings.ListFiles)
+				if (settings.PrintFiles)
 				{
 					searcher.PrintMatchingFiles();
 				}
 
-				if (settings.ListLines)
+				if (settings.PrintLines)
 				{
 					searcher.PrintMatchingLines();
 				}

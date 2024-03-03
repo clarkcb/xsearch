@@ -9,9 +9,9 @@
         self.firstMatch = false;
         self.linesAfter = 0;
         self.linesBefore = 0;
-        self.listLines = false;
         self.maxLineLength = 150;
         self.multiLineSearch = false;
+        self.printLines = false;
         self.printResults = true;
         self.searchArchives = false;
         self.textFileEncoding = @"UTF-8";
@@ -47,9 +47,6 @@
     [d appendFormat:@", linesAfterUntilPatterns=%@", arrayToNSString(self.linesAfterUntilPatterns)];
     [d appendFormat:@", linesAfter=%d", self.linesAfter];
     [d appendFormat:@", linesBefore=%d", self.linesBefore];
-    [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
-    [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
-    [d appendFormat:@", listLines=%@", boolToNSString(self.listLines)];
     [d appendFormat:@", maxDepth=%ld", (long)self.maxDepth];
     [d appendFormat:@", maxLastMod=%@", [FindSettings lastModToNSString:self.maxLastMod]];
     [d appendFormat:@", maxLineLength=%d", self.maxLineLength];
@@ -66,6 +63,9 @@
     [d appendFormat:@", outLinesAfterPatterns=%@", arrayToNSString(self.outLinesAfterPatterns)];
     [d appendFormat:@", outLinesBeforePatterns=%@", arrayToNSString(self.outLinesBeforePatterns)];
     [d appendFormat:@", paths=%@", arrayToNSString(self.paths)];
+    [d appendFormat:@", printDirs=%@", boolToNSString(self.printDirs)];
+    [d appendFormat:@", printFiles=%@", boolToNSString(self.printFiles)];
+    [d appendFormat:@", printLines=%@", boolToNSString(self.printLines)];
     [d appendFormat:@", printResults=%@", boolToNSString(self.printResults)];
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];

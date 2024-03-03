@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .color import Color
-from .common import log
 from .config import XSEARCHPATH, SHAREDPATH
 from .searcher import Searcher
 from .searchexception import SearchException

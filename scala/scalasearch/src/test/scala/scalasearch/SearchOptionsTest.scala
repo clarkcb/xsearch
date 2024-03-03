@@ -17,9 +17,9 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.firstMatch == DefaultSettings.firstMatch)
     assert(settings.linesAfter == DefaultSettings.linesAfter)
     assert(settings.linesBefore == DefaultSettings.linesBefore)
-    assert(settings.listDirs == DefaultSettings.listDirs)
-    assert(settings.listFiles == DefaultSettings.listFiles)
-    assert(settings.listLines == DefaultSettings.listLines)
+    assert(settings.printDirs == DefaultSettings.printDirs)
+    assert(settings.printFiles == DefaultSettings.printFiles)
+    assert(settings.printLines == DefaultSettings.printLines)
     assert(settings.multiLineSearch == DefaultSettings.multiLineSearch)
     //assert(settings.printResults == DefaultSettings.printResults)
     assert(settings.printUsage == DefaultSettings.printUsage)
@@ -266,7 +266,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val args = Array("--listdirs") ++ requiredArgs
 //    println("args: " + args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.listDirs)
+    assert(settings.printDirs)
   }
 
   // test --listfiles
@@ -274,7 +274,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val args = Array("--listfiles") ++ requiredArgs
 //    println("args: " + args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.listFiles)
+    assert(settings.printFiles)
   }
 
   // test --listlines
@@ -282,7 +282,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val args = Array("--listlines") ++ requiredArgs
 //    println("args: " + args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.listLines)
+    assert(settings.printLines)
   }
 
   // test -m / --multilinesearch

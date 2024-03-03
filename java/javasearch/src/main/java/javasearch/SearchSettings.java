@@ -11,9 +11,7 @@ Class to encapsulate search settings
 package javasearch;
 
 import javafind.FindSettings;
-import javafind.SortByUtil;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -30,11 +28,11 @@ public class SearchSettings extends FindSettings {
     private final Set<Pattern> linesAfterToPatterns;
     private final Set<Pattern> linesAfterUntilPatterns;
     private int linesBefore;
-    private boolean listLines;
     private int maxLineLength;
     private boolean multiLineSearch;
     private final Set<Pattern> outLinesAfterPatterns;
     private final Set<Pattern> outLinesBeforePatterns;
+    private boolean printLines;
     private boolean printResults;
     private boolean searchArchives;
     private final Set<Pattern> searchPatterns;
@@ -44,23 +42,23 @@ public class SearchSettings extends FindSettings {
     public SearchSettings() {
         super();
         this.colorize = DefaultSearchSettings.COLORIZE;
-        this.firstMatch = DefaultSearchSettings.FIRSTMATCH;
+        this.firstMatch = DefaultSearchSettings.FIRST_MATCH;
         this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesAfter = DefaultSearchSettings.LINESAFTER;
+        this.linesAfter = DefaultSearchSettings.LINES_AFTER;
         this.linesAfterToPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.linesAfterUntilPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesBefore = DefaultSearchSettings.LINESBEFORE;
-        this.listLines = DefaultSearchSettings.LISTLINES;
-        this.maxLineLength = DefaultSearchSettings.MAXLINELENGTH;
-        this.multiLineSearch = DefaultSearchSettings.MULTILINESEARCH;
+        this.linesBefore = DefaultSearchSettings.LINES_BEFORE;
+        this.maxLineLength = DefaultSearchSettings.MAX_LINE_LENGTH;
+        this.multiLineSearch = DefaultSearchSettings.MULTI_LINE_SEARCH;
         this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.printResults = DefaultSearchSettings.PRINTRESULTS;
-        this.searchArchives = DefaultSearchSettings.SEARCHARCHIVES;
+        this.printLines = DefaultSearchSettings.PRINT_LINES;
+        this.printResults = DefaultSearchSettings.PRINT_RESULTS;
+        this.searchArchives = DefaultSearchSettings.SEARCH_ARCHIVES;
         this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.textFileEncoding = DefaultSearchSettings.TEXTFILEENCODING;
-        this.uniqueLines = DefaultSearchSettings.UNIQUELINES;
+        this.textFileEncoding = DefaultSearchSettings.TEXT_FILE_ENCODING;
+        this.uniqueLines = DefaultSearchSettings.UNIQUE_LINES;
     }
 
     @Override
@@ -103,14 +101,6 @@ public class SearchSettings extends FindSettings {
         this.linesBefore = linesBefore;
     }
 
-    public final boolean getListLines() {
-        return this.listLines;
-    }
-
-    public final void setListLines(final boolean listLines) {
-        this.listLines = listLines;
-    }
-
     public final int getMaxLineLength() {
         return this.maxLineLength;
     }
@@ -125,6 +115,14 @@ public class SearchSettings extends FindSettings {
 
     public final void setMultiLineSearch(final boolean multiLineSearch) {
         this.multiLineSearch = multiLineSearch;
+    }
+
+    public final boolean getPrintLines() {
+        return this.printLines;
+    }
+
+    public final void setPrintLines(final boolean printLines) {
+        this.printLines = printLines;
     }
 
     public boolean getPrintResults() {
@@ -213,11 +211,11 @@ public class SearchSettings extends FindSettings {
     }
 
     public final boolean hasLinesAfterToPatterns() {
-        return linesAfterToPatterns.size() > 0;
+        return !linesAfterToPatterns.isEmpty();
     }
 
     public final boolean hasLinesAfterUntilPatterns() {
-        return linesAfterUntilPatterns.size() > 0;
+        return !linesAfterUntilPatterns.isEmpty();
     }
 
     public final boolean hasLinesAfterToOrUntilPatterns() {
@@ -230,41 +228,6 @@ public class SearchSettings extends FindSettings {
 
     public final Set<Pattern> getSearchPatterns() {
         return this.searchPatterns;
-    }
-
-    private static String stringSetToString(final Set<String> set) {
-        StringBuilder sb = new StringBuilder("[");
-        int elemCount = 0;
-        for (String s : set) {
-            if (elemCount > 0) {
-                sb.append(", ");
-            }
-            sb.append("\"").append(s).append("\"");
-            elemCount++;
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    private static String patternSetToString(final Set<Pattern> set) {
-        StringBuilder sb = new StringBuilder("[");
-        int elemCount = 0;
-        for (Pattern p : set) {
-            if (elemCount > 0) {
-                sb.append(", ");
-            }
-            sb.append("\"").append(p.toString()).append("\"");
-            elemCount++;
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    private static String localDateTimeToString(final LocalDateTime dt) {
-        if (dt == null) {
-            return "0";
-        }
-        return String.format("\"%s\"", dt);
     }
 
     @Override
@@ -286,9 +249,6 @@ public class SearchSettings extends FindSettings {
                 + ", linesAfterToPatterns: " + patternSetToString(this.getLinesAfterToPatterns())
                 + ", linesAfterUntilPatterns: " + patternSetToString(this.getLinesAfterUntilPatterns())
                 + ", linesBefore: " + this.getLinesBefore()
-                + ", listDirs: " + this.getListDirs()
-                + ", listFiles: " + this.getListFiles()
-                + ", listLines: " + this.getListLines()
                 + ", maxDepth: " + this.getMaxDepth()
                 + ", maxLastMod: " + localDateTimeToString(this.getMaxLastMod())
                 + ", maxLineLength: " + this.getMaxLineLength()
@@ -305,13 +265,16 @@ public class SearchSettings extends FindSettings {
                 + ", outLinesAfterPatterns: " + patternSetToString(this.getOutLinesAfterPatterns())
                 + ", outLinesBeforePatterns: " + patternSetToString(this.getOutLinesBeforePatterns())
                 + ", paths: " + stringSetToString(this.getPaths())
+                + ", printDirs: " + this.getPrintDirs()
+                + ", printFiles: " + this.getPrintFiles()
+                + ", printLines: " + this.getPrintLines()
                 + ", printResults: " + this.getPrintResults()
                 + ", printUsage: " + this.getPrintUsage()
                 + ", printVersion: " + this.getPrintVersion()
                 + ", recursive: " + this.getRecursive()
                 + ", searchArchives: " + this.getSearchArchives()
                 + ", searchPatterns: " + patternSetToString(this.getSearchPatterns())
-                + ", sortBy: " + SortByUtil.toName(this.getSortBy())
+                + ", sortBy: " + this.getSortBy().toName()
                 + ", sortCaseInsensitive: " + this.getSortCaseInsensitive()
                 + ", sortDescending: " + this.getSortDescending()
                 + ", textFileEncoding: " + getTextFileEncoding()

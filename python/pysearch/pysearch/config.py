@@ -8,16 +8,14 @@
 #
 ###############################################################################
 """
-import json
 import os
 
 cwd = os.path.dirname(os.path.realpath(__file__))
 data_path = os.path.join(cwd, 'data')
-config_json_path = os.path.join(data_path, 'config.json')
-config = json.load(open(config_json_path))
 
-XSEARCHPATH = config['xsearchpath']
+XSEARCHPATH = os.getenv('XSEARCH_PATH')
+if not XSEARCHPATH:
+    HOME = os.getenv('HOME')
+    XSEARCHPATH = os.path.join(HOME, 'src/xsearch')
 SHAREDPATH = os.path.join(XSEARCHPATH, 'shared')
-FILETYPESPATH = os.path.join(data_path, 'filetypes.json')
 SEARCHOPTIONSPATH = os.path.join(data_path, 'searchoptions.json')
-VERSION = config['version']

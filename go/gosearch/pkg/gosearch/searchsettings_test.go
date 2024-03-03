@@ -8,10 +8,10 @@ func TestDefaultSearchSettings(t *testing.T) {
 		settings.Debug() ||
 		settings.FirstMatch() ||
 		settings.IncludeHidden() ||
-		settings.ListDirs() ||
-		settings.ListFiles() ||
-		settings.ListLines() ||
 		settings.MultiLineSearch() ||
+		settings.PrintDirs() ||
+		settings.PrintFiles() ||
+		settings.PrintLines() ||
 		!settings.PrintResults() ||
 		settings.PrintUsage() ||
 		settings.PrintVersion() ||
@@ -47,16 +47,5 @@ func TestSetArchivesOnly(t *testing.T) {
 	}
 	if !settings.SearchArchives() {
 		t.Errorf("SearchArchives should be true")
-	}
-}
-
-func TestSetDebug(t *testing.T) {
-	settings := GetDefaultSearchSettings()
-	settings.SetDebug(true)
-	if !settings.Debug() {
-		t.Errorf("Debug should be true")
-	}
-	if !settings.Verbose() {
-		t.Errorf("Verbose should be true")
 	}
 }

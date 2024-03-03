@@ -14,8 +14,8 @@ use warnings;
 sub new {
     my $class = shift;
     my $self = {
-        shortarg => shift,
-        longarg => shift,
+        short_arg => shift,
+        long_arg => shift,
         desc => shift,
         func => shift,
     };

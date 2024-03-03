@@ -30,12 +30,12 @@
     XCTAssert(![settings debug]);
     XCTAssert([settings excludeHidden]);
     XCTAssert(![settings firstMatch]);
-    XCTAssert(![settings listDirs]);
-    XCTAssert(![settings listFiles]);
-    XCTAssert(![settings listLines]);
     XCTAssert([settings maxSize] == 0);
     XCTAssert([settings minSize] == 0);
     XCTAssert(![settings multiLineSearch]);
+    XCTAssert(![settings printDirs]);
+    XCTAssert(![settings printFiles]);
+    XCTAssert(![settings printLines]);
     XCTAssert([settings printResults]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);

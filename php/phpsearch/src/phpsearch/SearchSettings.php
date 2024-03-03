@@ -19,12 +19,12 @@ class SearchSettings extends FindSettings
     public array $lines_after_to_patterns = array();
     public array $lines_after_until_patterns = array();
     public int $lines_before = 0;
-    public bool $list_lines = false;
     public int $max_line_length = 150;
     public bool $multi_line_search = false;
     public array $out_lines_after_patterns = array();
     public array $out_lines_before_patterns = array();
     public array $paths = array();
+    public bool $print_lines = false;
     public bool $print_results = true;
     public bool $search_archives = false;
     public array $search_patterns = array();
@@ -125,9 +125,6 @@ class SearchSettings extends FindSettings
             ', lines_after_to_patterns: %s' .
             ', lines_after_until_patterns: %s' .
             ', lines_before: %d' .
-            ', list_dirs: %s' .
-            ', list_files: %s' .
-            ', list_lines: %s' .
             ', max_depth: %d' .
             ', max_last_mod: %s' .
             ', max_line_length: %d' .
@@ -145,6 +142,9 @@ class SearchSettings extends FindSettings
             ', out_lines_after_patterns: %s' .
             ', out_lines_before_patterns: %s' .
             ', paths: %s' .
+            ', print_dirs: %s' .
+            ', print_files: %s' .
+            ', print_lines: %s' .
             ', print_results: %s' .
             ', print_usage: %s' .
             ', print_version: %s' .
@@ -175,9 +175,6 @@ class SearchSettings extends FindSettings
             StringUtil::string_array_to_string($this->lines_after_to_patterns),
             StringUtil::string_array_to_string($this->lines_after_until_patterns),
             $this->lines_before,
-            StringUtil::bool_to_string($this->list_dirs),
-            StringUtil::bool_to_string($this->list_files),
-            StringUtil::bool_to_string($this->list_lines),
             StringUtil::datetime_to_string($this->max_last_mod),
             $this->max_depth,
             $this->max_line_length,
@@ -195,6 +192,9 @@ class SearchSettings extends FindSettings
             StringUtil::string_array_to_string($this->out_lines_after_patterns),
             StringUtil::string_array_to_string($this->out_lines_before_patterns),
             StringUtil::string_array_to_string($this->paths),
+            StringUtil::bool_to_string($this->print_dirs),
+            StringUtil::bool_to_string($this->print_files),
+            StringUtil::bool_to_string($this->print_lines),
             StringUtil::bool_to_string($this->print_results),
             StringUtil::bool_to_string($this->print_usage),
             StringUtil::bool_to_string($this->print_version),

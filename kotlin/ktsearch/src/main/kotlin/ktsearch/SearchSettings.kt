@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 
 import ktfind.FindSettings
 import ktfind.SortBy
-import ktfind.fileTypeFromName
 
 /**
  * @author cary on 7/23/16.
@@ -27,9 +26,6 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val linesAfterToPatterns: Set<Regex>,
                           val linesAfterUntilPatterns: Set<Regex>,
                           val linesBefore: Int,
-                          val listDirs: Boolean,
-                          val listFiles: Boolean,
-                          val listLines: Boolean,
                           val maxLastMod: LocalDateTime?,
                           val maxDepth: Int,
                           val maxLineLength: Int,
@@ -47,6 +43,9 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val outLinesAfterPatterns: Set<Regex>,
                           val outLinesBeforePatterns: Set<Regex>,
                           val paths: Set<String>,
+                          val printDirs: Boolean,
+                          val printFiles: Boolean,
+                          val printLines: Boolean,
                           val printResults: Boolean,
                           val printUsage: Boolean,
                           val printVersion: Boolean,
@@ -63,14 +62,12 @@ data class SearchSettings(val archivesOnly: Boolean,
         debug,
         inArchiveExtensions,
         inArchiveFilePatterns,
-        includeHidden,
         inDirPatterns,
         inExtensions,
         inFilePatterns,
         inFileTypes,
         searchArchives,
-        listDirs,
-        listFiles,
+        includeHidden,
         maxDepth,
         maxLastMod,
         maxSize,
@@ -84,6 +81,8 @@ data class SearchSettings(val archivesOnly: Boolean,
         outFilePatterns,
         outFileTypes,
         paths,
+        printDirs,
+        printFiles,
         printUsage,
         printVersion,
         recursive,
@@ -113,9 +112,6 @@ fun getDefaultSettings() : SearchSettings {
         linesAfterToPatterns = setOf(),
         linesAfterUntilPatterns = setOf(),
         linesBefore = 0,
-        listDirs = false,
-        listFiles = false,
-        listLines = false,
         maxDepth = -1,
         maxLastMod = null,
         maxLineLength = 150,
@@ -133,6 +129,9 @@ fun getDefaultSettings() : SearchSettings {
         outLinesAfterPatterns = setOf(),
         outLinesBeforePatterns = setOf(),
         paths = setOf(),
+        printDirs = false,
+        printFiles = false,
+        printLines = false,
         printResults = false,
         printUsage = false,
         printVersion = false,
@@ -147,20 +146,6 @@ fun getDefaultSettings() : SearchSettings {
         verbose = false)
 }
 
-fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
-    val exts = ext.split(',').filter { it.isNotEmpty() }
-    return extensions.plus(exts)
-}
-
-fun addFileTypes(ft: String, filetypes: Set<FileType>): Set<FileType> {
-    val fts = ft.split(',').filter { it.isNotEmpty() }.map { fileTypeFromName(it) }
-    return filetypes.plus(fts)
-}
-
 fun setArchivesOnly(ss: SearchSettings, archivesOnly: Boolean): SearchSettings {
     return ss.copy(archivesOnly = archivesOnly, searchArchives = archivesOnly || ss.searchArchives)
-}
-
-fun setDebug(ss: SearchSettings, debug: Boolean): SearchSettings {
-    return ss.copy(debug = debug, verbose = debug || ss.verbose)
 }

@@ -82,9 +82,9 @@ object SearchMain {
         Common.log("\nSearch results (%d):".format(results.length))
         printSearchResults(results, searcher)
       }
-      if (settings.listDirs) { printMatchingDirs(results) }
-      if (settings.listFiles) { printMatchingFiles(results) }
-      if (settings.listLines) { printMatchingLines(results, settings) }
+      if (settings.printDirs) { printMatchingDirs(results) }
+      if (settings.printFiles) { printMatchingFiles(results) }
+      if (settings.printLines) { printMatchingLines(results, settings) }
 
     } catch {
       case e: SearchException =>

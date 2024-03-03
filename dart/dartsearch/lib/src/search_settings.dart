@@ -9,11 +9,11 @@ class SearchSettings extends FindSettings {
   var linesAfterToPatterns = <Pattern>{};
   var linesAfterUntilPatterns = <Pattern>{};
   int linesBefore = 0;
-  bool listLines = false;
   int maxLineLength = 150;
   bool multiLineSearch = false;
   var outLinesAfterPatterns = <Pattern>{};
   var outLinesBeforePatterns = <Pattern>{};
+  bool printLines = false;
   bool printResults = false;
   bool searchArchives = false;
   var searchPatterns = <Pattern>{};
@@ -38,9 +38,6 @@ class SearchSettings extends FindSettings {
       ', linesAfterToPatterns: ${patternSetToString(linesAfterToPatterns)}'
       ', linesAfterUntilPatterns: ${patternSetToString(linesAfterUntilPatterns)}'
       ', linesBefore: $linesBefore'
-      ', listDirs: $listDirs'
-      ', listFiles: $listFiles'
-      ', listLines: $listLines'
       ', maxDepth=$maxDepth'
       ', maxLastMod=${dateTimeToString(maxLastMod)}'
       ', maxLineLength: $maxLineLength'
@@ -58,6 +55,9 @@ class SearchSettings extends FindSettings {
       ', outLinesAfterPatterns: ${patternSetToString(outLinesAfterPatterns)}'
       ', outLinesBeforePatterns: ${patternSetToString(outLinesBeforePatterns)}'
       ', paths: ${stringSetToString(paths)}'
+      ', printDirs: $printDirs'
+      ', printFiles: $printFiles'
+      ', printLines: $printLines'
       ', printResults: $printResults'
       ', printUsage: $printUsage'
       ', printVersion: $printVersion'

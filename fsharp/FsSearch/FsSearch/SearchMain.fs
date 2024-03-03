@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+namespace FsSearch
 
 open FsFind
 open FsSearchLib
@@ -21,13 +21,13 @@ module Main =
         if settings.PrintResults then
             searcher.PrintResults results
 
-        if settings.ListDirs then
+        if settings.PrintDirs then
             searcher.PrintMatchingDirs results
 
-        if settings.ListFiles then
+        if settings.PrintFiles then
             searcher.PrintMatchingFiles results
 
-        if settings.ListLines then
+        if settings.PrintLines then
             searcher.PrintMatchingLines results
 
 

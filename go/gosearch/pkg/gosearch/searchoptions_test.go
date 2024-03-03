@@ -16,10 +16,10 @@ func TestSearchSettingsFromNoArgs(t *testing.T) {
 		settings.Debug() ||
 		settings.FirstMatch() ||
 		settings.IncludeHidden() ||
-		settings.ListDirs() ||
-		settings.ListFiles() ||
-		settings.ListLines() ||
 		settings.MultiLineSearch() ||
+		settings.PrintDirs() ||
+		settings.PrintFiles() ||
+		settings.PrintLines() ||
 		!settings.PrintResults() ||
 		settings.PrintUsage() ||
 		settings.PrintVersion() ||

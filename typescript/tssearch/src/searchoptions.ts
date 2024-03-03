@@ -117,20 +117,26 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.includeHidden = b; },
             'help':
                 (b: boolean, settings: SearchSettings) => { settings.printUsage = b; },
-            'listdirs':
-                (b: boolean, settings: SearchSettings) => { settings.listDirs = b; },
-            'listfiles':
-                (b: boolean, settings: SearchSettings) => { settings.listFiles = b; },
-            'listlines':
-                (b: boolean, settings: SearchSettings) => { settings.listLines = b; },
             'multilinesearch':
                 (b: boolean, settings: SearchSettings) => { settings.multilineSearch = b; },
+            'noprintdirs':
+                (b: boolean, settings: SearchSettings) => { settings.printDirs = !b; },
+            'noprintfiles':
+                (b: boolean, settings: SearchSettings) => { settings.printFiles = !b; },
+            'noprintlines':
+                (b: boolean, settings: SearchSettings) => { settings.printLines = !b; },
             'noprintmatches':
                 (b: boolean, settings: SearchSettings) => { settings.printResults = !b; },
             'norecursive':
                 (b: boolean, settings: SearchSettings) => { settings.recursive = !b; },
             'nosearcharchives':
                 (b: boolean, settings: SearchSettings) => { settings.searchArchives = !b; },
+            'printdirs':
+                (b: boolean, settings: SearchSettings) => { settings.printDirs = b; },
+            'printfiles':
+                (b: boolean, settings: SearchSettings) => { settings.printFiles = b; },
+            'printlines':
+                (b: boolean, settings: SearchSettings) => { settings.printLines = b; },
             'printmatches':
                 (b: boolean, settings: SearchSettings) => { settings.printResults = b; },
             'recursive':

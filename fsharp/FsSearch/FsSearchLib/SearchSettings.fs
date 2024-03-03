@@ -20,11 +20,11 @@ type SearchSettings() =
     member val LinesAfterToPatterns : Regex list = [] with get, set
     member val LinesAfterUntilPatterns : Regex list = [] with get, set
     member val LinesBefore = 0 with get, set
-    member val ListLines : bool = false with get, set
     member val MaxLineLength = 150 with get, set
     member val MultiLineSearch : bool = false with get, set
     member val OutLinesAfterPatterns : Regex list = [] with get, set
     member val OutLinesBeforePatterns : Regex list = [] with get, set
+    member val PrintLines : bool = false with get, set
     member val PrintResults : bool = false with get, set
     member val SearchArchives : bool = false with get, set
     member val SearchPatterns : Regex list = [] with get, set
@@ -51,9 +51,6 @@ type SearchSettings() =
             $", LinesAfterToPatterns: %s{Common.ListToString(this.LinesAfterToPatterns)}";
             $", LinesAfterUntilPatterns: %s{Common.ListToString(this.LinesAfterUntilPatterns)}";
             $", LinesBefore: %d{this.LinesBefore}";
-            $", ListDirs: %b{this.ListDirs}";
-            $", ListFiles: %b{this.ListFiles}";
-            $", ListLines: %b{this.ListLines}";
             $", MaxDepth: %i{this.MaxDepth}";
             $", MaxLastMod: %s{this.DateTimeOptionListToString this.MaxLastMod}";
             $", MaxLineLength: %d{this.MaxLineLength}";
@@ -71,6 +68,9 @@ type SearchSettings() =
             $", OutLinesAfterPatterns: %s{Common.ListToString(this.OutLinesAfterPatterns)}";
             $", OutLinesBeforePatterns: %s{Common.ListToString(this.OutLinesBeforePatterns)}";
             $", Paths: %s{Common.ListToString(this.Paths)}";
+            $", PrintDirs: %b{this.PrintDirs}";
+            $", PrintFiles: %b{this.PrintFiles}";
+            $", PrintLines: %b{this.PrintLines}";
             $", PrintResults: %b{this.PrintResults}";
             $", PrintUsage: %b{this.PrintUsage}";
             $", PrintVersion: %b{this.PrintVersion}";

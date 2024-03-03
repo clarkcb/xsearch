@@ -216,14 +216,17 @@ module RbSearch
         firstmatch: ->(b, settings) { settings.first_match = b },
         help: ->(b, settings) { settings.print_usage = b },
         includehidden: ->(b, settings) { settings.include_hidden = b },
-        listdirs: ->(b, settings) { settings.list_dirs = b },
-        listfiles: ->(b, settings) { settings.list_files = b },
-        listlines: ->(b, settings) { settings.list_lines = b },
         multilinesearch: ->(b, settings) { settings.multi_line_search = b },
         nocolorize: ->(b, settings) { settings.colorize = !b },
+        noprintdirs: ->(b, settings) { settings.print_dirs = !b },
+        noprintfiles: ->(b, settings) { settings.print_files = !b },
+        noprintlines: ->(b, settings) { settings.print_lines = !b },
         noprintmatches: ->(b, settings) { settings.print_results = !b },
         norecursive: ->(b, settings) { settings.recursive = !b },
         nosearcharchives: ->(b, settings) { settings.search_archives = !b },
+        printdirs: ->(b, settings) { settings.print_dirs = b },
+        printfiles: ->(b, settings) { settings.print_files = b },
+        printlines: ->(b, settings) { settings.print_lines = b },
         printmatches: ->(b, settings) { settings.print_results = b },
         recursive: ->(b, settings) { settings.recursive = b },
         searcharchives: ->(b, settings) { settings.search_archives = b },
@@ -266,7 +269,7 @@ module RbSearch
         @long_arg_dict[short] = long_sym if short
       end
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{SEARCHOPTIONSJSONPATH})"
+      raise SearchError, "#{e} (file: #{search_options_json_path})"
     ensure
       f&.close
     end

@@ -25,13 +25,13 @@ public class SearchOptionsTest {
             assertFalse(settings.getIncludeHidden());
             assertEquals(0, settings.getLinesAfter());
             assertEquals(0, settings.getLinesBefore());
-            assertFalse(settings.getListDirs());
-            assertFalse(settings.getListFiles());
-            assertFalse(settings.getListLines());
             assertEquals(150, settings.getMaxLineLength());
             assertFalse(settings.getMultiLineSearch());
             assertEquals(1, settings.getPaths().size());
             assertTrue(settings.getPaths().contains("."));
+            assertFalse(settings.getPrintDirs());
+            assertFalse(settings.getPrintFiles());
+            assertFalse(settings.getPrintLines());
             assertTrue(settings.getPrintResults());
             assertFalse(settings.getPrintUsage());
             assertFalse(settings.getPrintVersion());
@@ -41,7 +41,7 @@ public class SearchOptionsTest {
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
             fail();
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
             fail();
         }
@@ -61,7 +61,7 @@ public class SearchOptionsTest {
         } catch (SearchException e) {
             System.out.println("SearchException: " + e.getMessage());
             fail();
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
             fail();
         }
@@ -79,7 +79,7 @@ public class SearchOptionsTest {
                 .append("  \"linesafter\": 2,\n")
                 .append("  \"debug\": true,\n")
                 .append("  \"allmatches\": false,\n")
-                .append("  \"includehidden\": false,\n")
+                .append("  \"includehidden\": false\n")
                 .append("}");
         try {
             SearchOptions searchOptions = new SearchOptions();
@@ -107,10 +107,7 @@ public class SearchOptionsTest {
 
             assertTrue(settings.getDebug());
             assertTrue(settings.getFirstMatch());
-            assertTrue(settings.getExcludeHidden());
-        } catch (ParseException e) {
-            System.out.println("ParseException: " + e.getMessage());
-            fail();
+            assertFalse(settings.getIncludeHidden());
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
             fail();

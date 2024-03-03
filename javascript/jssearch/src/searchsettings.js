@@ -19,11 +19,11 @@ class SearchSettings {
     linesAfterToPatterns = [];
     linesAfterUntilPatterns = [];
     linesBefore = 0;
-    listLines = false;
     maxLineLength = 150;
     multilineSearch = false;
     outLinesAfterPatterns = [];
     outLinesBeforePatterns = [];
+    printLines = false;
     printResults = false;
     searchArchives = false;
     searchPatterns = [];
@@ -160,22 +160,6 @@ class SearchSettings {
         this.#findSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
-    get listDirs() {
-        return this.#findSettings.listDirs;
-    }
-
-    set listDirs(value) {
-        this.#findSettings.listDirs = value;
-    }
-
-    get listFiles() {
-        return this.#findSettings.listFiles;
-    }
-
-    set listFiles(value) {
-        this.#findSettings.listFiles = value;
-    }
-
     get maxDepth() {
         return this.#findSettings.maxDepth;
     }
@@ -192,7 +176,7 @@ class SearchSettings {
         this.#findSettings.maxLastMod = value;
     }
 
-    maxLastModForString(s) {
+    maxLastModFromString(s) {
         this.#findSettings.maxLastMod = StringUtil.getDateForString(s);
     }
 
@@ -320,6 +304,22 @@ class SearchSettings {
         this.#findSettings.paths = value;
     }
 
+    get printDirs() {
+        return this.#findSettings.printDirs;
+    }
+
+    set printDirs(value) {
+        this.#findSettings.printDirs = value;
+    }
+
+    get printFiles() {
+        return this.#findSettings.printFiles;
+    }
+
+    set printFiles(value) {
+        this.#findSettings.printFiles = value;
+    }
+
     get printUsage() {
         return this.#findSettings.printUsage;
     }
@@ -386,22 +386,19 @@ class SearchSettings {
             ', colorize=' + this.colorize +
             ', debug=' + this.debug +
             ', firstMatch=' + this.firstMatch +
-            ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions) +
-            ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
+            ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +
+            ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
             ', includeHidden=' + this.includeHidden +
-            ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns) +
-            ', ' + StringUtil.listToString('inExtensions', this.inExtensions) +
-            ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns) +
+            ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns) +
+            ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions) +
+            ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns) +
             ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
-            ', ' + StringUtil.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns) +
-            ', ' + StringUtil.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns) +
+            ', ' + StringUtil.patternListToString('inLinesAfterPatterns', this.inLinesAfterPatterns) +
+            ', ' + StringUtil.patternListToString('inLinesBeforePatterns', this.inLinesBeforePatterns) +
             ', linesAfter=' + this.linesAfter +
-            ', ' + StringUtil.listToString('linesAfterToPatterns', this.linesAfterToPatterns) +
-            ', ' + StringUtil.listToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns) +
+            ', ' + StringUtil.patternListToString('linesAfterToPatterns', this.linesAfterToPatterns) +
+            ', ' + StringUtil.patternListToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns) +
             ', linesBefore=' + this.linesBefore +
-            ', listDirs=' + this.listDirs +
-            ', listFiles=' + this.listFiles +
-            ', listLines=' + this.listLines +
             ', maxDepth=' + this.maxDepth +
             ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
             ', maxLineLength=' + this.maxLineLength +
@@ -410,21 +407,24 @@ class SearchSettings {
             ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
             ', minSize=' + this.minSize +
             ', multilineSearch=' + this.multilineSearch +
-            ', ' + StringUtil.listToString('outArchiveExtensions', this.outArchiveExtensions) +
-            ', ' + StringUtil.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
-            ', ' + StringUtil.listToString('outDirPatterns', this.outDirPatterns) +
-            ', ' + StringUtil.listToString('outExtensions', this.outExtensions) +
-            ', ' + StringUtil.listToString('outFilePatterns', this.outFilePatterns) +
+            ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions) +
+            ', ' + StringUtil.patternListToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
+            ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns) +
+            ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions) +
+            ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns) +
             ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
-            ', ' + StringUtil.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns) +
-            ', ' + StringUtil.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns) +
-            ', ' + StringUtil.listToString('paths', this.paths) +
+            ', ' + StringUtil.patternListToString('outLinesAfterPatterns', this.outLinesAfterPatterns) +
+            ', ' + StringUtil.patternListToString('outLinesBeforePatterns', this.outLinesBeforePatterns) +
+            ', ' + StringUtil.stringListToString('paths', this.paths) +
+            ', printDirs=' + this.printDirs +
+            ', printFiles=' + this.printFiles +
+            ', printLines=' + this.printLines +
             ', printResults=' + this.printResults +
             ', printUsage=' + this.printUsage +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
             ', searchArchives=' + this.searchArchives +
-            ', ' + StringUtil.listToString('searchPatterns', this.searchPatterns) +
+            ', ' + StringUtil.patternListToString('searchPatterns', this.searchPatterns) +
             ', sortBy=' + sortByToName(this.sortBy) +
             ', sortCaseInsensitive=' + this.sortCaseInsensitive +
             ', sortDescending=' + this.sortDescending +

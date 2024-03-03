@@ -61,7 +61,7 @@ func main() {
 
         let searcher = try Searcher(settings: settings)
 
-        let results = try searcher.search()
+        let results = searcher.search()
 
         if settings.printResults {
             let formatter = SearchResultFormatter(settings: settings)
@@ -71,7 +71,7 @@ func main() {
             }
         }
 
-        if settings.listDirs {
+        if settings.printDirs {
             let dirs = getMatchingDirs(results)
             logMsg("\nDirectories with matches (\(dirs.count)):")
             for dir in dirs {
@@ -79,7 +79,7 @@ func main() {
             }
         }
 
-        if settings.listFiles {
+        if settings.printFiles {
             let files = getMatchingFiles(results)
             logMsg("\nFiles with matches (\(files.count)):")
             for file in files {
@@ -87,7 +87,7 @@ func main() {
             }
         }
 
-        if settings.listLines {
+        if settings.printLines {
             let lines = getMatchingLines(results, settings: settings)
             let hdr = settings.uniqueLines ? "\nUnique lines with matches (\(lines.count)):"
                 : "\nLines with matches (\(lines.count)):"

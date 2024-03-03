@@ -30,7 +30,7 @@
     {
       "long": "firstmatch",
       "short": "1",
-      "desc": "Capture only the first file+pattern match"
+      "desc": "Capture only the first file + searchpattern match"
     },
     {
       "long": "help",
@@ -96,18 +96,6 @@
       "desc": "Number of lines to include before every matched line (default: 0)"
     },
     {
-      "long": "listdirs",
-      "desc": "Generate a list of the matching directories after searching"
-    },
-    {
-      "long": "listfiles",
-      "desc": "Generate a list of the matching files after searching"
-    },
-    {
-      "long": "listlines",
-      "desc": "Generate a list of the matching lines after searching"
-    },
-    {
       "long": "maxdepth",
       "arg": "size",
       "desc": "Find files at most maxdepth levels below startpath"
@@ -151,6 +139,18 @@
       "long": "nocolorize",
       "short": "C",
       "desc": "Do not colorize console output"
+    },
+    {
+      "long": "noprintdirs",
+      "desc": "Do not print matching directories after searching*"
+    },
+    {
+      "long": "noprintfiles",
+      "desc": "Do not print matching files after searching*"
+    },
+    {
+      "long": "noprintlines",
+      "desc": "Do not print matching lines after searching*"
     },
     {
       "long": "noprintmatches",
@@ -204,6 +204,18 @@
       "desc": "Specify pattern to filter the \"lines-before\" lines on"
     },
     {
+      "long": "printdirs",
+      "desc": "Print matching directories after searching"
+    },
+    {
+      "long": "printfiles",
+      "desc": "Print matching files after searching"
+    },
+    {
+      "long": "printlines",
+      "desc": "Print matching lines after searching"
+    },
+    {
       "long": "printmatches",
       "short": "p",
       "desc": "Print search results to stdout*"
@@ -251,7 +263,7 @@
     {
       "long": "uniquelines",
       "short": "u",
-      "desc": "Save only search results with unique lines from previous results"
+      "desc": "Save only search results with unique lines to previous results"
     },
     {
       "long": "verbose",

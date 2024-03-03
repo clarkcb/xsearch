@@ -128,13 +128,13 @@ public class SearchMain {
                     log("");
                     printSearchResults(results, searcher);
                 }
-                if (settings.getListDirs()) {
+                if (settings.getPrintDirs()) {
                     printMatchingDirs(results);
                 }
-                if (settings.getListFiles()) {
+                if (settings.getPrintFiles()) {
                     printMatchingFiles(results);
                 }
-                if (settings.getListLines()) {
+                if (settings.getPrintLines()) {
                     printMatchingLines(results, settings);
                 }
 
