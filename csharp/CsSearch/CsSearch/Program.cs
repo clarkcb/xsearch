@@ -1,3 +1,4 @@
+﻿using CsFindLib;
 using CsSearchLib;
 
 namespace CsSearch
@@ -13,7 +14,7 @@ namespace CsSearch
 
 				if (settings.Debug)
 				{
-					Common.Log("settings: " + settings + "\n");
+					Logger.Log("settings: " + settings + "\n");
 				}
 
 				if (settings.PrintUsage)
@@ -26,7 +27,7 @@ namespace CsSearch
 
 				if (settings.PrintResults)
 				{
-					Common.Log("");
+					Logger.Log("");
 					searcher.PrintResults();
 				}
 
@@ -47,7 +48,7 @@ namespace CsSearch
 			}
 			catch (SearchException e)
 			{
-				Common.Log($"\nERROR: {e.Message}");
+				Logger.LogError(e.Message);
 				options.Usage(1);
 			}
 		}

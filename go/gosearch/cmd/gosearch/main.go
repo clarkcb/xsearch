@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"gofind/pkg/gofind"
 	"gosearch/pkg/gosearch"
 	"os"
 )
 
 func errorAndExit(err error, searchOptions *gosearch.SearchOptions) {
-	fmt.Printf("\nERROR: %s\n", err)
+	gofind.Log("")
+	gofind.LogError(fmt.Sprintf("%s", err))
 	searchOptions.PrintUsage()
 }
 
@@ -27,7 +29,7 @@ func main() {
 	}
 
 	if settings.Debug() {
-		fmt.Printf("settings: %s\n", settings.String())
+		gofind.Log(fmt.Sprintf("settings: %s\n", settings.String()))
 	}
 
 	searcher := gosearch.NewSearcher(settings)
@@ -38,7 +40,7 @@ func main() {
 
 	// if there are results and PrintResults is true then print them out
 	if settings.PrintResults() {
-		fmt.Println()
+		gofind.Log("")
 		searchResults.PrintSearchResults()
 	}
 

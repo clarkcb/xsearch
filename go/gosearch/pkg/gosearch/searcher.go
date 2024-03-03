@@ -637,11 +637,11 @@ func (s *Searcher) searchArchiveFileReader(r io.Reader, fr *gofind.FileResult) {
 
 func (s *Searcher) searchFileReader(r io.Reader, fr *gofind.FileResult) {
 	switch fr.FileType {
-	case gofind.FiletypeCode, gofind.FiletypeXml, gofind.FiletypeText:
+	case gofind.FileTypeCode, gofind.FileTypeXml, gofind.FileTypeText:
 		s.searchTextFileReader(transform.NewReader(r, s.textDecoder), fr)
-	case gofind.FiletypeBinary:
+	case gofind.FileTypeBinary:
 		s.searchBinaryFileReader(r, fr)
-	case gofind.FiletypeArchive:
+	case gofind.FileTypeArchive:
 		if s.Settings.SearchArchives() {
 			s.searchArchiveFileReader(r, fr)
 		} else {
@@ -655,7 +655,7 @@ func (s *Searcher) searchFileReader(r io.Reader, fr *gofind.FileResult) {
 }
 
 func (s *Searcher) searchFileResult(fr *gofind.FileResult) {
-	if fr.FileType == gofind.FiletypeUnknown {
+	if fr.FileType == gofind.FileTypeUnknown {
 		if gofind.Contains(s.Settings.InExtensions(), gofind.GetExtension(fr.Name)) {
 			if s.Settings.Debug() {
 				gofind.Log(fmt.Sprintf("File made searchable by passing in-ext: %s",
@@ -810,7 +810,7 @@ func (s *Searcher) Search() (*SearchResults, error) {
 	}
 
 	// sort the SearchResults
-	s.searchResults.Sort()
+	//s.searchResults.Sort(s.Settings)
 
 	return s.searchResults, nil
 }

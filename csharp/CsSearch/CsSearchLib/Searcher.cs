@@ -68,16 +68,16 @@ public class Searcher
 				.Select(sf => sf.File.Directory!.ToString())
 				.Distinct()
 				.OrderBy(d => d).ToArray();
-			Common.Log($"Directories to be searched ({findDirs.Length}):");
+			Logger.Log($"Directories to be searched ({findDirs.Length}):");
 			foreach (var d in findDirs)
 			{
-				Common.Log(FileUtil.ContractOrRelativePath(d, Settings.Paths));
+				Logger.Log(FileUtil.ContractOrRelativePath(d, Settings.Paths));
 			}
 				
-			Common.Log($"\nFiles to be searched ({fileResults.Count}):");
+			Logger.Log($"\nFiles to be searched ({fileResults.Count}):");
 			foreach (var f in fileResults)
 			{
-				Common.Log(FileUtil.ContractOrRelativePath(f.FullName, Settings.Paths));
+				Logger.Log(FileUtil.ContractOrRelativePath(f.FullName, Settings.Paths));
 			}
 		}
 
@@ -132,13 +132,13 @@ public class Searcher
 				SearchBinaryFile(f);
 				break;
 			case FileType.Archive:
-				Common.Log($"Skipping archive file {FileUtil.ContractPath(f.FullName)}");
+				Logger.Log($"Skipping archive file {FileUtil.ContractPath(f.FullName)}");
 				break;
 			default:
 			{
 				if (Settings.Verbose)
 				{
-					Common.Log($"Skipping file {FileUtil.ContractPath(f.FullName)}");
+					Logger.Log($"Skipping file {FileUtil.ContractPath(f.FullName)}");
 				}
 
 				break;
@@ -149,7 +149,7 @@ public class Searcher
 	private void SearchTextFile(FileResult f)
 	{
 		if (Settings.Debug)
-			Common.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.Paths)}");
+			Logger.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.Paths)}");
 		if (Settings.MultiLineSearch)
 			SearchTextFileContents(f);
 		else
@@ -170,7 +170,7 @@ public class Searcher
 		}
 		catch (IOException e)
 		{
-			Common.Log(e.Message);
+			Logger.Log(e.Message);
 		}
 	}
 
@@ -296,7 +296,7 @@ public class Searcher
 		}
 		catch (IOException e)
 		{
-			Common.Log(e.Message);
+			Logger.Log(e.Message);
 		}
 	}
 
@@ -396,7 +396,7 @@ public class Searcher
 	private void SearchBinaryFile(FileResult sf)
 	{
 		if (Settings.Verbose)
-			Common.Log($"Searching binary file {FileUtil.ContractPath(sf.FullName)}");
+			Logger.Log($"Searching binary file {FileUtil.ContractPath(sf.FullName)}");
 		try
 		{
 			using var sr = new StreamReader(sf.FullName, _binaryEncoding);
@@ -422,7 +422,7 @@ public class Searcher
 		}
 		catch (IOException e)
 		{
-			Common.Log(e.Message);
+			Logger.Log(e.Message);
 		}
 	}
 
@@ -442,10 +442,10 @@ public class Searcher
 	{
 		var sortedResults = GetSortedSearchResults();
 		var formatter = new SearchResultFormatter(Settings);
-		Common.Log($"Search results ({sortedResults.Count}):");
+		Logger.Log($"Search results ({sortedResults.Count}):");
 		foreach (var searchResult in sortedResults)
 		{
-			Common.Log(formatter.Format(searchResult));
+			Logger.Log(formatter.Format(searchResult));
 		}
 	}
 
@@ -453,9 +453,8 @@ public class Searcher
 	{
 		return new List<DirectoryInfo>(
 			Results.Where(r => r.File?.File.Directory != null)
-				.Select(r => r.File!.File.Directory)
-				.Distinct()
-				.Where(d => d != null)
+				.Select(r => r.File!.File.Directory!)
+  				.Distinct()
 				.OrderBy(d => d.FullName));
 	}
 
@@ -465,10 +464,10 @@ public class Searcher
 			.Select(d => FileUtil.GetRelativePath(d.FullName, Settings.Paths))
 			.Distinct()
 			.OrderBy(d => d).ToList();
-		Common.Log($"\nDirectories with matches ({matchingDirs.Count}):");
+		Logger.Log($"\nDirectories with matches ({matchingDirs.Count}):");
 		foreach (var d in matchingDirs)
 		{
-			Common.Log(d);
+			Logger.Log(d);
 		}
 	}
 
@@ -487,10 +486,10 @@ public class Searcher
 			.Select(f => FileUtil.GetRelativePath(f.FullName, Settings.Paths))
 			.Distinct()
 			.OrderBy(f => f).ToList();
-		Common.Log($"\nFiles with matches ({matchingFiles.Count()}):");
+		Logger.Log($"\nFiles with matches ({matchingFiles.Count()}):");
 		foreach (var f in matchingFiles)
 		{
-			Common.Log(f);
+			Logger.Log(f);
 		}
 	}
 
@@ -510,10 +509,10 @@ public class Searcher
 	{
 		var matchingLines = GetMatchingLines().ToList();
 		var hdrText = Settings.UniqueLines ? "Unique lines with matches" : "Lines with matches";
-		Common.Log($"\n{hdrText} ({matchingLines.Count()}):");
+		Logger.Log($"\n{hdrText} ({matchingLines.Count()}):");
 		foreach (var m in matchingLines)
 		{
-			Common.Log(m);
+			Logger.Log(m);
 		}
 	}
 }

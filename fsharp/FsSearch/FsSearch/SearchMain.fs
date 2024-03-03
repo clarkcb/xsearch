@@ -1,4 +1,4 @@
-namespace FsSearch
+﻿namespace FsSearch
 
 open FsFind
 open FsSearchLib
@@ -6,7 +6,7 @@ open FsSearchLib
 module Main =
 
     let HandleError (err : string) : unit =
-        Common.Log $"\nERROR: %s{err}"
+        Logger.Log $"\nERROR: %s{err}"
         SearchOptions.Usage(1)
 
     let Search (settings : SearchSettings) : unit =
@@ -42,7 +42,7 @@ module Main =
                 HandleError err
 
             if settings.Debug then
-                Common.Log $"settings: %s{settings.ToString}"
+                Logger.Log $"settings: %s{settings.ToString}"
 
             if settings.PrintUsage then
                 SearchOptions.Usage(0)

@@ -183,12 +183,12 @@ func (srs *SearchResults) PrintMatchingLines() {
 	countKeys := gofind.GetCaseInsensitiveSortedCountKeys(countMap)
 
 	if srs.Settings.UniqueLines() {
-		gofind.Log(fmt.Sprintf("Unique lines with matches (%d):", len(countKeys)))
+		gofind.Log(fmt.Sprintf("\nUnique lines with matches (%d):", len(countKeys)))
 		for _, k := range countKeys {
 			gofind.Log(fmt.Sprintf("%s", k))
 		}
 	} else {
-		gofind.Log(fmt.Sprintf("Lines with matches (%d):", totalCount))
+		gofind.Log(fmt.Sprintf("\nLines with matches (%d):", totalCount))
 		for _, k := range countKeys {
 			for i := 0; i < countMap[k]; i++ {
 				gofind.Log(fmt.Sprintf("%s", k))
