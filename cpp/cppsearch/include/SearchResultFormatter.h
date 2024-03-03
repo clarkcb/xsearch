@@ -3,25 +3,25 @@
 
 #include <cstdlib>
 #include "color.h"
-#include "SearchResult.h"
+#include "SearchFileResult.h"
 #include "SearchSettings.h"
 #include "cppfind.h"
 
 namespace cppsearch {
     class SearchResultFormatter {
     private:
-        std::string format_matching_line(const SearchResult* result) const;
-        std::string single_line_format(const SearchResult* result);
-        std::string multi_line_format(const SearchResult* result);
-        static long line_num_padding(const SearchResult* result);
+        std::string format_matching_line(const SearchFileResult& result) const;
+        std::string single_line_format(const SearchFileResult& result);
+        std::string multi_line_format(const SearchFileResult& result) const;
+        static unsigned long line_num_padding(const SearchFileResult& result);
         static std::string colorize(const std::string& s, unsigned long start_idx, unsigned long length);
         static const int line_sep_length = 80;
 
     public:
-        const SearchSettings* settings;
+        const SearchSettings settings;
 
-        explicit SearchResultFormatter(const SearchSettings* settings);
-        std::string format(const SearchResult* result);
+        explicit SearchResultFormatter(const SearchSettings& settings);
+        std::string format(const SearchFileResult& result);
     };
 }
 

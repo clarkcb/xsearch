@@ -22,7 +22,45 @@ endif()
 include_directories(${XSEARCH_PATH}/cpp/cppsearch/include)
 include_directories(${Boost_INCLUDE_DIRS})
 
-find_package(cppfind CONFIG REQUIRED)
+#find_package(cppfind CONFIG REQUIRED)
+
+
+################################################################################
+# cppfind Library section
+################################################################################
+
+add_subdirectory(cppfind)
+#if (DEFINED ENV{XFIND_PATH})
+#        set(XFIND_PATH $ENV{XFIND_PATH})
+#        message("XFIND_PATH (from env): ${XFIND_PATH}")
+#else()
+#        set(XFIND_PATH $ENV{HOME}/src/xfind)
+#        message("XFIND_PATH (from home): ${XFIND_PATH}")
+#endif()
+#set(CPPFIND_PATH ${XFIND_PATH}/cpp/cppfind)
+#
+#add_directory(${CPPFIND_PATH})
+#
+#add_library(cppfind STATIC)
+#
+#target_sources(cppfind
+#        PUBLIC
+#        ${CPPFIND_PATH}/public/include/cppfind.h
+#        PRIVATE
+#        ${CPPFIND_PATH}/include/common.h ${CPPFIND_PATH}/src/common.cpp
+#        ${CPPFIND_PATH}/include/config.h ${CPPFIND_PATH}/src/config.cpp
+#        ${CPPFIND_PATH}/include/FileTypes.h ${CPPFIND_PATH}/src/FileTypes.cpp
+#        ${CPPFIND_PATH}/include/FileUtil.h ${CPPFIND_PATH}/src/FileUtil.cpp
+#        ${CPPFIND_PATH}/include/StringUtil.h ${CPPFIND_PATH}/src/StringUtil.cpp
+#        ${CPPFIND_PATH}/include/FindException.h ${CPPFIND_PATH}/src/FindException.cpp
+#        ${CPPFIND_PATH}/include/FindSettings.h ${CPPFIND_PATH}/src/FindSettings.cpp
+#        ${CPPFIND_PATH}/include/FileResult.h ${CPPFIND_PATH}/src/FileResult.cpp
+#        ${CPPFIND_PATH}/include/FindOption.h ${CPPFIND_PATH}/src/FindOption.cpp
+#        ${CPPFIND_PATH}/include/FindOptions.h ${CPPFIND_PATH}/src/FindOptions.cpp
+#        ${CPPFIND_PATH}/include/RegexPattern.h ${CPPFIND_PATH}/src/RegexPattern.cpp
+#        ${CPPFIND_PATH}/include/Finder.h ${CPPFIND_PATH}/src/Finder.cpp)
+#
+#target_link_libraries(cppfind ${Boost_LIBRARIES})
 
 
 ################################################################################
@@ -34,12 +72,13 @@ add_library(${PROJECT_NAME} STATIC)
 # https://crascit.com/2016/01/31/enhanced-source-file-handling-with-target_sources/
 target_sources(${PROJECT_NAME}
         PRIVATE
-        include/config.h
+        include/SearchConfig.h src/SearchConfig.cpp
         include/SearchException.h src/SearchException.cpp
         include/SearchSettings.h src/SearchSettings.cpp
         include/SearchOption.h src/SearchOption.cpp
         include/SearchOptions.h src/SearchOptions.cpp
-        include/SearchResult.h src/SearchResult.cpp
+        include/SearchTextResult.h src/SearchTextResult.cpp
+        include/SearchFileResult.h src/SearchFileResult.cpp
         include/SearchResultFormatter.h src/SearchResultFormatter.cpp
         include/Searcher.h src/Searcher.cpp)
 
