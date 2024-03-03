@@ -2,11 +2,11 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <PackageVersion>0.1.0</PackageVersion>
         <Authors>Cary Clark</Authors>
-        <Description>C# implementation of xsearch in dotnet 6.0</Description>
+        <Description>C# implementation of xsearch in dotnet 8.0</Description>
         <RootNamespace>CsSearch</RootNamespace>
     </PropertyGroup>
 

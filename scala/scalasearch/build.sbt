@@ -16,9 +16,8 @@ lazy val scalaSearch = (project in file("."))
     libraryDependencies ++= Seq(
       "com.googlecode.json-simple" % "json-simple" % "1.1.1",
       "org.apache.commons" % "commons-compress" % "1.21",
-      "org.scalactic" %% "scalactic" % "3.2.16",
-      "org.scalatest" %% "scalatest" % "3.2.15" % Test,
-      "com.novocode" % "junit-interface" % "0.11" % Test
+      "org.scalactic" %% "scalactic" % "3.2.17",
+      "org.scalatest" %% "scalatest" % "3.2.17" % Test,
     )
 
 

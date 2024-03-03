@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.27.8)
 project(cppsearch VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")
 #message("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
