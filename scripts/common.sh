@@ -34,6 +34,13 @@ log () {
     echo "${color}[$dt]${COLOR_RESET} $msg"
 }
 
+# log_error(msg)
+log_error () {
+    local msg="$1" dt=$(date +"%Y-%m-%d %H:%M:%S")
+    local color="$RED"
+    echo "${color}[$dt] $msg${COLOR_RESET}"
+}
+
 hdr () {
     local text="$1"
     local color="$BICYAN"

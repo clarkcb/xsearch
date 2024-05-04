@@ -13,6 +13,14 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
+
+# Adding xfind so we can copy over dependencies as necessary
+if [ -z "$XFIND_PATH" ]
+then
+    XFIND_PATH="$HOME/src/xfind"
+fi
+source "$XFIND_PATH/scripts/config.sh"
+
 source "$DIR/common.sh"
 
 
@@ -28,49 +36,49 @@ usage () {
 # copy_searchoptions_resources
 copy_searchoptions_resources () {
     local resources_path="$1"
-    log "cp $SHARED_PATH/searchoptions.json $resources_path/"
-    cp "$SHARED_PATH/searchoptions.json" "$resources_path/"
+    log "cp $XSEARCH_SHARED_PATH/searchoptions.json $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$resources_path/"
 }
 
 # copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
-    log "cp $SHARED_PATH/config.json $resources_path/"
-    cp "$SHARED_PATH/config.json" "$resources_path/"
-    log "cp $SHARED_PATH/filetypes.json $resources_path/"
-    cp "$SHARED_PATH/filetypes.json" "$resources_path/"
-    log "cp $SHARED_PATH/searchoptions.json $resources_path/"
-    cp "$SHARED_PATH/searchoptions.json" "$resources_path/"
+    log "cp $XSEARCH_SHARED_PATH/config.json $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/config.json" "$resources_path/"
+    log "cp $XSEARCH_SHARED_PATH/filetypes.json $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/filetypes.json" "$resources_path/"
+    log "cp $XSEARCH_SHARED_PATH/searchoptions.json $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$resources_path/"
 }
 
 # copy_xml_resources
 copy_xml_resources () {
     local resources_path="$1"
-    log "cp $SHARED_PATH/filetypes.xml $resources_path/"
-    cp "$SHARED_PATH/filetypes.xml" "$resources_path/"
-    log "cp $SHARED_PATH/searchoptions.xml $resources_path/"
-    cp "$SHARED_PATH/searchoptions.xml" "$resources_path/"
+    log "cp $XSEARCH_SHARED_PATH/filetypes.xml $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/filetypes.xml" "$resources_path/"
+    log "cp $XSEARCH_SHARED_PATH/searchoptions.xml $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/searchoptions.xml" "$resources_path/"
 }
 
 # copy_test_resources
 copy_test_resources () {
     local test_resources_path="$1"
-    log "cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/"
-    cp "$TEST_FILE_PATH/testFile*.txt" "$test_resources_path/"
+    log "cp $XSEARCH_TEST_FILE_PATH/testFile*.txt $test_resources_path/"
+    cp "$XSEARCH_TEST_FILE_PATH/testFile*.txt" "$test_resources_path/"
 }
 
 # add_to_bin
 add_to_bin () {
     local script_path="$1"
     local script_name=$(basename "$1")
-    if [ ! -d "$BIN_PATH" ]
+    if [ ! -d "$XSEARCH_BIN_PATH" ]
     then
         log "Creating bin path"
-        log "mkdir -p $BIN_PATH"
-        mkdir -p "$BIN_PATH"
+        log "mkdir -p $XSEARCH_BIN_PATH"
+        mkdir -p "$XSEARCH_BIN_PATH"
     fi
 
-    cd "$BIN_PATH"
+    cd "$XSEARCH_BIN_PATH"
 
     if [[ $script_name == *.sh ]]
     then
@@ -101,7 +109,7 @@ build_c () {
     # ensure make is installed
     if [ -z "$(which make)" ]
     then
-        echo "You need to install make"
+        log_error "You need to install make"
         return
     fi
 
@@ -134,7 +142,7 @@ build_clojure () {
     # ensure leiningen is installed
     if [ -z "$(which lein)" ]
     then
-        echo "You need to install leiningen"
+        log_error "You need to install leiningen"
         return
     fi
 
@@ -174,11 +182,17 @@ build_cpp () {
     # ensure cmake is installed
     if [ -z "$(which cmake)" ]
     then
-        echo "You need to install cmake"
+        log_error "You need to install cmake"
         return
     fi
 
     cd "$CPPSEARCH_PATH"
+
+    # CMAKE_CXX_FLAGS="-W -Wall -Werror"
+    CMAKE_CXX_FLAGS="-W -Wall -Werror -Wextra -Wshadow -Wnon-virtual-dtor -pedantic"
+
+    # Add AddressSanitizer
+    # CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fsanitize=address -fno-omit-frame-pointer"
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
@@ -195,6 +209,7 @@ build_cpp () {
     do
         CMAKE_BUILD_DIR="cmake-build-$c"
         CMAKE_BUILD_PATH="$CPPSEARCH_PATH/$CMAKE_BUILD_DIR"
+        CMAKE_BUILD_TYPE="$c"
 
         if [ ! -d "$CMAKE_BUILD_PATH" ]
         then
@@ -221,16 +236,16 @@ build_cpp () {
             TARGETS=(clean cppsearch cppsearchapp cppsearch-tests)
             for t in ${TARGETS[*]}
             do
-                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- -W -Wall -Werror"
-                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- -W -Wall -Werror
+                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- $CMAKE_CXX_FLAGS"
+                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- "$CMAKE_CXX_FLAGS"
 
                 # check for success/failure
                 # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
                 if [ "$?" -eq 0 ]
                 then
-                    log "Build succeeded"
+                    log "Build target $t succeeded"
                 else
-                    log_error "Build failed"
+                    log_error "Build target $t failed"
                     return
                 fi
             done
@@ -256,7 +271,7 @@ build_csharp () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
         return
     fi
 
@@ -288,6 +303,15 @@ build_csharp () {
         log "Building cssearch for $c configuration"
         log "dotnet build $CSSEARCH_PATH/CsSearch.sln --configuration $c"
         dotnet build "$CSSEARCH_PATH/CsSearch.sln" --configuration "$c"
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     done
 
     if [ -n "$RELEASE" ]
@@ -307,7 +331,7 @@ build_dart () {
     # ensure dart is installed
     if [ -z "$(which dart)" ]
     then
-        echo "You need to install dart"
+        log_error "You need to install dart"
         return
     fi
 
@@ -329,6 +353,15 @@ build_dart () {
         dart pub upgrade
     fi
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$DARTSEARCH_PATH/bin/dartsearch.sh"
 
@@ -342,7 +375,7 @@ build_fsharp () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
         return
     fi
 
@@ -374,6 +407,15 @@ build_fsharp () {
         log "Building fssearch for $c configuration"
         log "dotnet build $FSSEARCH_PATH/FsSearch.sln --configuration $c"
         dotnet build "$FSSEARCH_PATH/FsSearch.sln" --configuration "$c"
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     done
 
     if [ -n "$RELEASE" ]
@@ -393,7 +435,7 @@ build_go () {
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
-        echo "You need to install go"
+        log_error "You need to install go"
         return
     fi
 
@@ -415,21 +457,21 @@ build_go () {
     go fmt ./...
 
     # create the bin dir if it doesn't already exist
-    if [ ! -d "$BIN_PATH" ]
+    if [ ! -d "$XSEARCH_BIN_PATH" ]
     then
-        mkdir -p "$BIN_PATH"
+        mkdir -p "$XSEARCH_BIN_PATH"
     fi
 
-    # if GOBIN not defined, set to BIN_PATH
+    # if GOBIN not defined, set to XSEARCH_BIN_PATH
     # if [ ! -d "$GOBIN" ]
     # then
-    #     export GOBIN="$BIN_PATH"
+    #     export GOBIN="$XSEARCH_BIN_PATH"
     # fi
 
     # now build/install gosearch
     log "Building gosearch"
     log "go install ./..."
-    GOBIN="$BIN_PATH" go install ./...
+    GOBIN="$XSEARCH_BIN_PATH" go install ./...
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -450,7 +492,7 @@ build_haskell () {
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
-        echo "You need to install stack"
+        log_error "You need to install stack"
         return
     fi
 
@@ -490,8 +532,17 @@ build_haskell () {
     log "stack build"
     make build
 
-    log "stack install --local-bin-path $BIN_PATH"
-    stack install --local-bin-path "$BIN_PATH"
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
+    log "stack install --local-bin-path $XSEARCH_BIN_PATH"
+    stack install --local-bin-path "$XSEARCH_BIN_PATH"
 
     cd -
 }
@@ -503,7 +554,7 @@ build_java () {
     # ensure mvn is installed
     if [ -z "$(which mvn)" ]
     then
-        echo "You need to install maven"
+        log_error "You need to install maven"
         return
     fi
 
@@ -543,7 +594,7 @@ build_javascript () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install node.js/npm"
+        log_error "You need to install node.js/npm"
         return
     fi
 
@@ -584,7 +635,7 @@ build_kotlin () {
     # ensure gradle is installed
     if [ -z "$(which gradle)" ]
     then
-        echo "You need to install gradle"
+        log_error "You need to install gradle"
         return
     fi
 
@@ -599,12 +650,12 @@ build_kotlin () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # copy over latest ktfind dependency if not found
-    KTFIND_JAR=$(find $KTSEARCH_PATH/lib -name "ktfind*.jar" | head -n 1)
-    if [ -z "$KTFIND_JAR" ]
+    # TEMP(?): copy the jar file for the local ktfind dependency to lib
+    KTFIND_JAR=$(find "$KTFIND_PATH/build/libs" -maxdepth 1 -name "ktfind*.jar" | head -n 1)
+    if [ -f "$KTFIND_JAR" ]
     then
-        log_error "You need to copy the ktfind jar into $KTSEARCH_PATH/lib/"
-        return
+        log "cp $KTFIND_JAR $KTSEARCH_PATH/lib/"
+        cp "$KTFIND_JAR" "$KTSEARCH_PATH/lib/"
     fi
 
     # run a gradle build
@@ -708,7 +759,7 @@ build_perl () {
     # ensure perl is installed
     if [ -z "$(which perl)" ]
     then
-        echo "You need to install perl"
+        log_error "You need to install perl"
         return
     fi
 
@@ -721,10 +772,19 @@ build_perl () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLSEARCH_PATH/share"
     mkdir -p "$RESOURCES_PATH"
-    log "cp $SHARED_PATH/config.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/config.json" "$RESOURCES_PATH/"
-    log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
+    log "cp $XSEARCH_SHARED_PATH/config.json $RESOURCES_PATH/"
+    cp "$XSEARCH_SHARED_PATH/config.json" "$RESOURCES_PATH/"
+    log "cp $XSEARCH_SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
+    cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$PLSEARCH_PATH/bin/plsearch.sh"
@@ -737,21 +797,21 @@ build_php () {
     # ensure php is installed
     if [ -z "$(which php)" ]
     then
-        echo "You need to install PHP"
+        log_error "You need to install PHP"
         return
     fi
 
     # TODO: do a real version check
     if [ -z "$(php -v | grep 'cli')" ]
     then
-        echo "A version of PHP >= 7.x is required"
+        log_error "A version of PHP >= 7.x is required"
         return
     fi
 
     # ensure composer is installed
     if [ -z "$(which composer)" ]
     then
-        echo "Need to install composer"
+        log_error "Need to install composer"
         return
     fi
 
@@ -760,13 +820,13 @@ build_php () {
 
     # copy the shared config json file to the local config location
     mkdir -p "$CONFIG_PATH"
-    log "cp $SHARED_PATH/config.json $CONFIG_PATH/"
-    cp "$SHARED_PATH/config.json" "$CONFIG_PATH/"
+    log "cp $XSEARCH_SHARED_PATH/config.json $CONFIG_PATH/"
+    cp "$XSEARCH_SHARED_PATH/config.json" "$CONFIG_PATH/"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    log "cp $SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
+    log "cp $XSEARCH_SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
+    cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
 
     cd "$PHPSEARCH_PATH/"
 
@@ -801,8 +861,8 @@ build_python () {
     echo
     hdr "build_python"
 
-    # ensure python3.7+ is installed
-    PYTHON_VERSIONS=(python3.11 python3.10 python3.9 python3.8 python3.7)
+    # ensure python3.9+ is installed
+    PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
     PYTHON=
     for p in ${PYTHON_VERSIONS[*]}
     do
@@ -815,7 +875,7 @@ build_python () {
 
     if [ -z "$PYTHON" ]
     then
-        log "A version of python >= 3.7 is required"
+        log_error "A version of python >= 3.9 is required"
         return
     else
         PYTHON=$(basename "$PYTHON")
@@ -829,6 +889,10 @@ build_python () {
     RESOURCES_PATH="$PYSEARCH_PATH/data"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
+    # TODO: this next path is the *real* resource path, need to remove the other one
+    RESOURCES_PATH="$PYFIND_PATH/pyfind/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     cd "$PYSEARCH_PATH"
 
@@ -839,6 +903,7 @@ build_python () {
         # if venv is active, deactivate it (in case it happens to be another venv that is active)
         if [ -n "$VIRTUAL_ENV" ]
         then
+            log "Deactivating current venv"
             deactivate
         fi
 
@@ -865,18 +930,33 @@ build_python () {
 
     # install wheel - this seems to fix problems with installing local dependencies,
     # which pyfind will be for pysearch
-    log "pip3 install wheel"
-    pip3 install wheel
+    # log "pip3 install wheel"
+    # pip3 install wheel
 
     # install dependencies in requirements.txt
     log "pip3 install -r requirements.txt"
     pip3 install -r requirements.txt
+
+    # check for success/failure
+    ERROR=
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        ERROR=yes
+    fi
 
     if [ "$USE_VENV" == 'yes' ]
     then
         # deactivate at end of setup process
         log "deactivate"
         deactivate
+    fi
+
+    if [ -n "$ERROR" ]
+    then
+        return
     fi
 
     # TODO: change the !# line in pysearch to use the determined python version
@@ -894,20 +974,20 @@ build_ruby () {
     # ensure ruby2.x+ is installed
     if [ -z "$(which ruby)" ]
     then
-        echo "You need to install ruby"
+        log_error "You need to install ruby"
         return
     fi
 
     # TODO: do a real version check (first determine minimum needed version)
-    if [ -z "$(ruby -v | grep 'ruby 2')" ]
+    if [ -z "$(ruby -v | grep 'ruby 3')" ]
     then
-        echo "A version of ruby >= 2.x is required"
+        log_error "A version of ruby >= 3.x is required"
         return
     fi
 
     # if [ -z "$(which bundle)" ]
     # then
-    #     echo "You need to install bundler: https://bundler.io/"
+    #     log_error "You need to install bundler: https://bundler.io/"
     #     return
     # fi
 
@@ -939,7 +1019,7 @@ build_rust () {
     # ensure cargo/rust is installed
     if [ -z "$(which cargo)" ]
     then
-        echo "You need to install rust"
+        log_error "You need to install rust"
         return
     fi
 
@@ -991,7 +1071,7 @@ build_scala () {
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        echo "You need to install scala + sbt"
+        log_error "You need to install scala + sbt"
         return
     fi
 
@@ -1005,6 +1085,18 @@ build_scala () {
     # copy the test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
+
+    # TEMP(?): copy the jar file for the local scalafind dependency to lib
+    if [ -z "$SCALA_VERSION" ]
+    then
+        SCALA_VERSION=3.4.1
+    fi
+    SCALAFIND_JAR=$(find "$SCALAFIND_PATH/target/scala-$SCALA_VERSION" -maxdepth 1 -name "scalafind*.jar" | grep -v assembly | head -n 1)
+    if [ -f "$SCALAFIND_JAR" ]
+    then
+        log "cp $SCALAFIND_JAR $SCALASEARCH_PATH/lib/"
+        cp "$SCALAFIND_JAR" "$SCALASEARCH_PATH/lib/"
+    fi
 
     cd "$SCALASEARCH_PATH"
 
@@ -1038,7 +1130,7 @@ build_swift () {
     # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
-        echo "You need to install swift"
+        log_error "You need to install swift"
         return
     fi
 
@@ -1094,7 +1186,7 @@ build_typescript () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install node.js/npm"
+        log_error "You need to install node.js/npm"
         return
     fi
 
@@ -1240,7 +1332,7 @@ HELP=
 DEBUG=
 RELEASE=
 VENV=
-ARG=all
+LANG=all
 
 if [ $# == 0 ]
 then
@@ -1263,23 +1355,30 @@ do
             VENV=yes
             ;;
         *)
-            ARG=$1
+            LANG=$1
             ;;
     esac
     shift || true
 done
-
-if [ -n "$HELP" ]
-then
-    usage
-fi
 
 if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
 then
     DEBUG=yes
 fi
 
-case $ARG in
+# log the settings
+log "HELP: $HELP"
+log "DEBUG: $DEBUG"
+log "RELEASE: $RELEASE"
+log "VENV: $VENV"
+log "LANG: $LANG"
+
+if [ -n "$HELP" ]
+then
+    usage
+fi
+
+case $LANG in
     all)
         build_all
         ;;
@@ -1307,6 +1406,9 @@ case $ARG in
     go)
         build_go
         ;;
+    # groovy)
+    #     build_groovy
+    #     ;;
     haskell | hs)
         build_haskell
         ;;
@@ -1353,6 +1455,6 @@ case $ARG in
         build_typescript
         ;;
     *)
-        echo -n "ERROR: unknown xsearch build argument: $ARG"
+        log_error -n "ERROR: unknown xsearch build argument: $LANG"
         ;;
 esac
