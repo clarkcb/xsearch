@@ -6,8 +6,6 @@ then
 fi
 
 DARTSEARCH_PATH=$XSEARCH_PATH/dart/dartsearch
-PACKAGES_PATH=$DARTSEARCH_PATH/.packages
-DARTSEARCH_EXE=$DARTSEARCH_PATH/bin/dartsearch.dart
+DARTSEARCH_EXE=$DARTSEARCH_PATH/bin/dartsearch.exe
 
-# dart --packages="$PACKAGES_PATH" "$DARTSEARCH_EXE" "$@"
-dart "$DARTSEARCH_EXE" "$@"
+"$DARTSEARCH_EXE" "$@"

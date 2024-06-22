@@ -426,6 +426,11 @@ function BuildDart
         dart pub upgrade
     }
 
+    Log('Compiling dartsearch')
+    $dartsearchDart = Join-Path $dartsearchPath 'bin' 'dartsearch.dart'
+    Log("dart compile exe $dartsearchDart")
+    dart compile exe $dartsearchDart
+
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
