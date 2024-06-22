@@ -1,10 +1,10 @@
 module gosearch
 
-go 1.22.0
+go 1.22.4
 
 require (
 	gofind v1.0.0
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.16.0
 )
 
 require github.com/pmylund/sortutil v0.0.0-20120526081524-abeda66eb583 // indirect

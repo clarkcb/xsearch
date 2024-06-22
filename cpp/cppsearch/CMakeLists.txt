@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27.8)
+cmake_minimum_required(VERSION 3.28.1)
 project(cppsearch VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")

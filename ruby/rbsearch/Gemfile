@@ -1,10 +1,19 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 
-gem "rake", "~> 13.0.6"
-gem "minitest", "~> 5.16.3"
+# Specify your gem's dependencies in rbsearch.gemspec
+gemspec
+
+gem "rake", "~> 13.1"
+
+gem "rbs", "~> 3.4.3"
 
 # https://stackoverflow.com/a/19363523/1002072
 gem 'rbfind', :path => '../../../xfind/ruby/rbfind'
 
-# Specify your gem's dependencies in rbsearch.gemspec
-gemspec
+gem "minitest", "~> 5.20"
+
+gem "rubocop", "~> 1.60"
+
+ruby "3.3.0"
