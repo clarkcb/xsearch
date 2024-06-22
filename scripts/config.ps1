@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 #
 # config.ps1
 #
@@ -23,6 +23,7 @@ $xsearchClojurePath = Join-Path $xsearchPath 'clojure'
 $xsearchCppPath = Join-Path $xsearchPath 'cpp'
 $xsearchCsharpPath = Join-Path $xsearchPath 'csharp'
 $xsearchDartPath = Join-Path $xsearchPath 'dart'
+$xsearchElixirPath = Join-Path $xsearchPath 'elixir'
 $xsearchFsharpPath = Join-Path $xsearchPath 'fsharp'
 $xsearchGoPath = Join-Path $xsearchPath 'go'
 # $xsearchGroovyPath = Join-Path $xsearchPath 'groovy'
@@ -48,6 +49,7 @@ $cljsearchPath = Join-Path $xsearchClojurePath 'cljsearch'
 $cppsearchPath = Join-Path $xsearchCppPath 'cppsearch'
 $cssearchPath = Join-Path $xsearchCsharpPath 'cssearch'
 $dartsearchPath = Join-Path $xsearchDartPath 'dartsearch'
+$exsearchPath = Join-Path $xsearchElixirPath 'exsearch'
 $fssearchPath = Join-Path $xsearchFsharpPath 'fssearch'
 $gosearchPath = Join-Path $xsearchGoPath 'gosearch'
 # $groovysearchPath = Join-Path $xsearchGroovyPath 'groovysearch'

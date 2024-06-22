@@ -368,6 +368,52 @@ build_dart () {
     cd -
 }
 
+build_elixir () {
+    echo
+    hdr "build_elixir"
+
+    # ensure elixir is installed
+    if [ -z "$(which elixir)" ]
+    then
+        log_error "You need to install elixir"
+        return
+    fi
+
+    # ensure mix is installed
+    if [ -z "$(which mix)" ]
+    then
+        log_error "You need to install mix"
+        return
+    fi
+
+    cd "$EXSEARCH_PATH"
+
+    log "Building exsearch"
+    if [ ! -f "$EXSEARCH_PATH/mix.lock" ]
+    then
+        log "mix deps.get"
+        mix deps.get
+    fi
+
+    log "Creating exsearch executable"
+    log "mix escript.build"
+    mix escript.build
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
+    # add to bin
+    add_to_bin "$EXSEARCH_PATH/bin/exsearch"
+
+    cd -
+}
+
 build_fsharp () {
     echo
     hdr "build_fsharp"
@@ -1332,7 +1378,7 @@ HELP=
 DEBUG=
 RELEASE=
 VENV=
-LANG=all
+TARGET_LANG=all
 
 if [ $# == 0 ]
 then
@@ -1355,7 +1401,7 @@ do
             VENV=yes
             ;;
         *)
-            LANG=$1
+            TARGET_LANG=$1
             ;;
     esac
     shift || true
@@ -1371,14 +1417,14 @@ log "HELP: $HELP"
 log "DEBUG: $DEBUG"
 log "RELEASE: $RELEASE"
 log "VENV: $VENV"
-log "LANG: $LANG"
+log "TARGET_LANG: $TARGET_LANG"
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $LANG in
+case $TARGET_LANG in
     all)
         build_all
         ;;
@@ -1399,6 +1445,9 @@ case $LANG in
         ;;
     dart)
         build_dart
+        ;;
+    ex | elixir)
+        build_elixir
         ;;
     fs | fsharp)
         build_fsharp
@@ -1455,6 +1504,6 @@ case $LANG in
         build_typescript
         ;;
     *)
-        log_error -n "ERROR: unknown xsearch build argument: $LANG"
+        log_error -n "ERROR: unknown xsearch build argument: $TARGET_LANG"
         ;;
 esac

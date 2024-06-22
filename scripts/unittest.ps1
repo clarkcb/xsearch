@@ -131,6 +131,21 @@ function UnitTestDart
     Set-Location $oldPwd
 }
 
+function UnitTestElixir
+{
+    Write-Host
+    Hdr('UnitTestElixir')
+
+    $oldPwd = Get-Location
+    Set-Location $exsearchPath
+
+    Log('Unit-testing exsearch')
+    Log('mix test')
+    mix test
+
+    Set-Location $oldPwd
+}
+
 function UnitTestFsharp
 {
     Write-Host
@@ -479,6 +494,8 @@ function UnitTestAll
 
     UnitTestDart
 
+    UnitTestElixir
+
     UnitTestFsharp
 
     UnitTestGo
@@ -530,6 +547,8 @@ function UnitTestMain
         'cs'         { UnitTestCsharp }
         'csharp'     { UnitTestCsharp }
         'dart'       { UnitTestDart }
+        'elixir'     { UnitTestElixir }
+        'ex'         { UnitTestElixir }
         'fs'         { UnitTestFsharp }
         'fsharp'     { UnitTestFsharp }
         'go'         { UnitTestGo }
