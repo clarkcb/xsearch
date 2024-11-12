@@ -31,26 +31,38 @@ fn error_and_exit(error: SearchError, options: &searchoptions::SearchOptions) {
 
 fn print_result_dirs(results: &Vec<searchresult::SearchResult>) {
     let dirs = get_result_dirs(results);
-    log(format!("\nDirectories with matches ({}):", dirs.len()).as_str());
-    for dir in dirs.iter() {
-        log(format!("{}", dir).as_str());
+    if dirs.is_empty() {
+        log("\nMatching directories: 0");
+    } else {
+        log(format!("\nMatching directories ({}):", dirs.len()).as_str());
+        for dir in dirs.iter() {
+            log(format!("{}", dir).as_str());
+        }
     }
 }
 
 fn print_result_files(results: &Vec<searchresult::SearchResult>) {
     let files = get_result_files(results);
-    log(format!("\nFiles with matches ({}):", files.len()).as_str());
-    for file in files.iter() {
-        log(format!("{}", file).as_str());
+    if files.is_empty() {
+        log("\nMatching files: 0");
+    } else {
+        log(format!("\nMatching files ({}):", files.len()).as_str());
+        for file in files.iter() {
+            log(format!("{}", file).as_str());
+        }
     }
 }
 
 fn print_result_lines(results: &Vec<searchresult::SearchResult>, unique: bool) {
     let lines = get_result_lines(results, unique);
-    let lines_title = if unique { "Unique lines" } else { "Lines" };
-    log(format!("\n{} with matches ({}):", lines_title, lines.len()).as_str());
-    for line in lines.iter() {
-        log(format!("{}", line).as_str());
+    let lines_title = if unique { "Unique matching lines" } else { "Matching lines" };
+    if lines.is_empty() {
+        log(format!("\n{}: 0", lines_title).as_str());
+    } else {
+        log(format!("\n{} ({}):", lines_title, lines.len()).as_str());
+        for line in lines.iter() {
+            log(format!("{}", line).as_str());
+        }
     }
 }
 

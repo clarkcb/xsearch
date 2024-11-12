@@ -91,7 +91,7 @@ impl Searcher {
         }
 
         if self.settings.verbose() && !file_results.is_empty() {
-            let mut dirs: Vec<String> = file_results.iter().map(|f| f.path.clone()).collect();
+            let mut dirs: Vec<String> = file_results.iter().map(|f| String::from(f.parent())).collect();
             dirs.sort_unstable();
             dirs.dedup();
             log(format!("\nDirectories to be searched ({}):", dirs.len()).as_str());
@@ -106,13 +106,13 @@ impl Searcher {
             }
         }
 
-        self.search_files(&file_results)
+        self.search_files(file_results)
     }
 
-    fn search_files(&self, searchfiles: &[FileResult]) -> Result<Vec<SearchResult>, SearchError> {
+    fn search_files(&self, files: Vec<FileResult>) -> Result<Vec<SearchResult>, SearchError> {
         let mut results: Vec<SearchResult> = Vec::new();
-        for fr in searchfiles.iter() {
-            match self.search_file(&fr) {
+        for fr in files.into_iter() {
+            match self.search_file(fr) {
                 Ok(mut file_results) => {
                     results.append(&mut file_results);
                 },
@@ -128,7 +128,7 @@ impl Searcher {
     }
 
     /// Search an individual file and get the results
-    pub fn search_file(&self, file: &FileResult) -> Result<Vec<SearchResult>, SearchError> {
+    pub fn search_file(&self, file: FileResult) -> Result<Vec<SearchResult>, SearchError> {
         match file.file_type {
             FileType::Text | FileType::Code | FileType::Xml => self.search_text_file(file),
             FileType::Binary => self.search_binary_file(file),
@@ -149,13 +149,13 @@ impl Searcher {
 
     fn search_archive_file(
         &self,
-        file: &FileResult,
+        file: FileResult,
     ) -> Result<Vec<SearchResult>, SearchError> {
         if self.settings.verbose() {
             log(format!("Searching archive file {}", file.file_path()).as_str());
         }
 
-        match FileUtil::get_extension(&file.file_name) {
+        match FileUtil::get_extension(&file.file_name()) {
             // TODO: what other extensions are zip format?
             Some(ext) if ["zip", "zipx", "jar", "war", "ear", "whl"].contains(&ext) => {
                 // self.search_archive_zip_file(file)
@@ -339,16 +339,16 @@ impl Searcher {
 
     fn search_binary_file(
         &self,
-        file: &FileResult,
+        file: FileResult,
     ) -> Result<Vec<SearchResult>, SearchError> {
         if self.settings.verbose() {
             log(format!("Searching binary file {}", file.file_path()).as_str());
         }
         let mut results: Vec<SearchResult> = Vec::new();
-        match self.get_byte_string(file) {
+        match self.get_byte_string(&file) {
             Ok(byte_string) => match self.search_binary_byte_string(&byte_string) {
                 Ok(rs) => {
-                    for r in rs.iter() {
+                    for r in rs.into_iter() {
                         results.push(SearchResult::new(
                             r.pattern.clone(),
                             Some(file.clone()),
@@ -440,7 +440,7 @@ impl Searcher {
         }
     }
 
-    fn search_text_file(&self, file: &FileResult) -> Result<Vec<SearchResult>, SearchError> {
+    fn search_text_file(&self, file: FileResult) -> Result<Vec<SearchResult>, SearchError> {
         let encoding = self.get_text_file_encoding();
         if self.settings.verbose() {
             log(format!("Searching text file {}", file.file_path()).as_str());
@@ -453,10 +453,11 @@ impl Searcher {
 
     fn search_text_file_lines<'a>(
         &self,
-        file: &'a FileResult,
+        // file: &'a FileResult,
+        file: FileResult,
         encoding: &'static dyn Encoding,
     ) -> Result<Vec<SearchResult>, SearchError> {
-        let contents = match self.get_text_file_contents(file, encoding) {
+        let contents = match self.get_text_file_contents(&file, encoding) {
             Ok(contents) => contents,
             Err(error) => return Err(error),
         };
@@ -606,10 +607,10 @@ impl Searcher {
 
     fn search_text_file_contents(
         &self,
-        file: &FileResult,
+        file: FileResult,
         encoding: &'static dyn Encoding,
     ) -> Result<Vec<SearchResult>, SearchError> {
-        let contents = match self.get_text_file_contents(file, encoding) {
+        let contents = match self.get_text_file_contents(&file, encoding) {
             Ok(contents) => contents,
             Err(error) => return Err(error),
         };
@@ -767,11 +768,11 @@ impl Searcher {
 }
 
 /// Get the unique list of directories for which search results were found
-pub fn get_result_dirs(results: &[SearchResult]) -> Vec<&String> {
-    let mut dirs: Vec<&String> = Vec::new();
+pub fn get_result_dirs(results: &[SearchResult]) -> Vec<String> {
+    let mut dirs: Vec<String> = Vec::new();
     for r in results.iter() {
         if let Some(f) = &r.file {
-            dirs.push(&f.path);
+            dirs.push(String::from(f.parent()));
         }
     }
     dirs.sort_unstable();
