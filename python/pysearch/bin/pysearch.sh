@@ -9,4 +9,4 @@ PYSEARCH_PATH="$XSEARCH_PATH/python/pysearch"
 
 PYSEARCH_EXE="$PYSEARCH_PATH/bin/pysearch.py"
 
-python3.11 "$PYSEARCH_EXE" "$@"
+python3 "$PYSEARCH_EXE" "$@"

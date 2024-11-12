@@ -9,7 +9,7 @@ $pySearchExe = Join-Path $env:XSEARCH_PATH 'python' 'pysearch' 'bin' 'pysearch.p
 
 if (Test-Path $pySearchExe -PathType Leaf)
 {
-    & python3.11 $pySearchExe $Args
+    & python3 $pySearchExe $Args
 }
 else
 {

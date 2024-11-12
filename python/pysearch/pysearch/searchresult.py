@@ -56,8 +56,8 @@ class SearchResult(object):
 
     @property
     def sort_key(self):
-        path = self.file.path.lower()
-        filename = self.file.file_name.lower()
+        path = str(self.file.path.parent).lower()
+        filename = self.file.path.name.lower()
         return path, filename, self.line_num, self.match_start_index
 
 

@@ -9,6 +9,7 @@
 ################################################################################
 """
 import os
+from pathlib import Path
 import sys
 import unittest
 
@@ -18,7 +19,7 @@ from pyfind import FileType, FileResult
 from pysearch import Searcher, SearchSettings, SHAREDPATH
 
 
-def get_settings(self):
+def get_settings():
     settings = SearchSettings()
     settings.add_paths('.')
     settings.add_patterns('Searcher', 'search_patterns')
@@ -33,8 +34,8 @@ class SearcherTest(unittest.TestCase):
     def test_search_lines(self):
         settings = get_settings()
         searcher = Searcher(settings)
-        fr = FileResult(path=os.path.join(SHAREDPATH, 'testFiles'),
-                        file_name='testFile2.txt', file_type=FileType.TEXT)
+        fr = FileResult(path=Path(SHAREDPATH, 'testFiles','testFile2.txt'),
+                        file_type=FileType.TEXT)
         results = []
         try:
             fo = open(fr.relative_path, 'r')
@@ -61,8 +62,8 @@ class SearcherTest(unittest.TestCase):
     def test_search_multi_line_string(self):
         settings = get_settings()
         searcher = Searcher(settings)
-        fr = FileResult(path=os.path.join(SHAREDPATH, 'testFiles'),
-                        file_name='testFile2.txt', file_type=FileType.TEXT)
+        fr = FileResult(path=Path(SHAREDPATH, 'testFiles','testFile2.txt'),
+                        file_type=FileType.TEXT)
         results = []
         try:
             fo = open(fr.relative_path, 'r')

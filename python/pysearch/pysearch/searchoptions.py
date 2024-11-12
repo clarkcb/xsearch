@@ -51,6 +51,9 @@ class SearchOptions(object):
             'firstmatch':
                 lambda b, settings:
                 settings.set_property('first_match', b),
+            'followsymlinks':
+                lambda b, settings:
+                settings.set_property('follow_symlinks', b),
             'help':
                 lambda b, settings:
                 settings.set_property('print_usage', b),
@@ -63,6 +66,9 @@ class SearchOptions(object):
             'nocolorize':
                 lambda b, settings:
                 settings.set_property('colorize', not b),
+            'nofollowsymlinks':
+                lambda b, settings:
+                settings.set_property('follow_symlinks', not b),
             'noprintdirs':
                 lambda b, settings:
                 settings.set_property('print_dirs', not b),

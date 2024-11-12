@@ -9,6 +9,7 @@
 ################################################################################
 """
 import os
+from pathlib import Path
 import sys
 import unittest
 
@@ -28,12 +29,12 @@ class SearchOptionsTest(unittest.TestCase):
         self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
         self.assertFalse(settings.first_match)
-        self.assertTrue(settings.exclude_hidden)
+        self.assertFalse(settings.include_hidden)
         self.assertEqual(settings.lines_after, 0)
         self.assertEqual(settings.lines_before, 0)
-        self.assertFalse(settings.list_dirs)
-        self.assertFalse(settings.list_files)
-        self.assertFalse(settings.list_lines)
+        self.assertFalse(settings.print_dirs)
+        self.assertFalse(settings.print_files)
+        self.assertFalse(settings.print_lines)
         self.assertEqual(settings.max_line_length, 150)
         self.assertFalse(settings.multi_line_search)
         self.assertTrue(settings.print_results)
@@ -108,19 +109,19 @@ class SearchOptionsTest(unittest.TestCase):
 }'''
         self.search_options.settings_from_json(json, settings)
         self.assertEqual(1, len(settings.paths))
-        self.assertIn('~/src/xsearch/', settings.paths)
+        self.assertIn(Path('~/src/xsearch/'), settings.paths)
         for x in {'js', 'ts'}:
             self.assertIn(x, settings.in_extensions)
-        self.assertEqual(list(settings.search_patterns)[0].pattern, 'Searcher')
-        self.assertEqual(list(settings.out_dir_patterns)[0].pattern, 'node_module')
-        self.assertEqual(list(settings.out_dir_patterns)[1].pattern, 'dist')
-        self.assertEqual(list(settings.out_file_patterns)[0].pattern, 'temp')
+        self.assertTrue(any([p.pattern == 'Searcher' for p in settings.search_patterns]))
+        self.assertTrue(any([p.pattern == 'node_module' for p in settings.out_dir_patterns]))
+        self.assertTrue(any([p.pattern == 'dist' for p in settings.out_dir_patterns]))
+        self.assertTrue(any([p.pattern == 'temp' for p in settings.out_file_patterns]))
         self.assertEqual(settings.lines_before, 2)
         self.assertEqual(settings.lines_after, 2)
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
         self.assertTrue(settings.first_match)
-        self.assertFalse(settings.exclude_hidden)
+        self.assertTrue(settings.include_hidden)
 
 
 if __name__ == '__main__':

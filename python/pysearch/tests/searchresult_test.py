@@ -9,6 +9,7 @@
 ################################################################################
 """
 import os
+from pathlib import Path
 import sys
 import unittest
 
@@ -29,7 +30,8 @@ class SearchResultTest(unittest.TestCase):
         formatter = get_formatter(colorize=False)
         pattern = "Search"
         file_name = 'Searcher.cs'
-        fr = FileResult(path=self.cssearch_path, file_name=file_name, file_type=FileType.CODE)
+        path = Path(XSEARCHPATH, 'csharp/CsSearch/CsSearch', file_name)
+        fr = FileResult(path=path, file_type=FileType.CODE)
         line_num = 10
         match_start_index = 15
         match_end_index = 23
@@ -54,7 +56,8 @@ class SearchResultTest(unittest.TestCase):
         formatter = SearchResultFormatter(SearchSettings(colorize=False, max_line_length=100))
         pattern = 'maxlen'
         file_name = 'maxlen.txt'
-        fr = FileResult(path='.', file_name=file_name, file_type=FileType.TEXT)
+        path = Path('.', file_name)
+        fr = FileResult(path=path, file_type=FileType.TEXT)
         line_num = 1
         match_start_index = 53
         match_end_index = 59
@@ -73,8 +76,9 @@ class SearchResultTest(unittest.TestCase):
                                      lines_after=lines_after)
         expected_line = '...89012345678901234567890123456789012345678901' + \
                         'maxlen89012345678901234567890123456789012345678901...'
+        # NOTE: removed "./" from expected path since it is not included when converting Path to str
         expected_output = \
-            f'{os.path.join(".", file_name)}: {line_num}: ' + \
+            f'{file_name}: {line_num}: ' + \
             f'[{match_start_index}:{match_end_index}]: {expected_line}'
         output = formatter.format(search_result)
         self.assertEqual(expected_output, output)
@@ -83,7 +87,8 @@ class SearchResultTest(unittest.TestCase):
         formatter = SearchResultFormatter(SearchSettings(colorize=True, max_line_length=100))
         pattern = 'maxlen'
         file_name = 'maxlen.txt'
-        fr = FileResult(path='.', file_name=file_name, file_type=FileType.TEXT)
+        path = Path('.', file_name)
+        fr = FileResult(path=path, file_type=FileType.TEXT)
         line_num = 10
         match_start_index = 53
         match_end_index = 59
@@ -104,7 +109,7 @@ class SearchResultTest(unittest.TestCase):
                         Color.GREEN + 'maxlen' + Color.RESET + \
                         '89012345678901234567890123456789012345678901...'
         expected_output = \
-            f'{os.path.join(".", file_name)}: {line_num}: ' + \
+            f'{file_name}: {line_num}: ' + \
             f'[{match_start_index}:{match_end_index}]: {expected_line}'
         output = formatter.format(search_result)
         self.assertEqual(expected_output, output)
@@ -113,7 +118,8 @@ class SearchResultTest(unittest.TestCase):
         formatter = get_formatter(colorize=True)
         pattern = "Search"
         file_name = 'Searcher.exe'
-        fr = FileResult(path=self.cssearch_path, file_name=file_name, file_type=FileType.BINARY)
+        path = Path(XSEARCHPATH, 'csharp/CsSearch/CsSearch', file_name)
+        fr = FileResult(path=path, file_type=FileType.BINARY)
         line_num = 0
         match_start_index = 0
         match_end_index = 0
@@ -138,7 +144,8 @@ class SearchResultTest(unittest.TestCase):
         formatter = get_formatter(colorize=False)
         pattern = "Search"
         file_name = 'Searcher.cs'
-        fr = FileResult(path=self.cssearch_path, file_name=file_name, file_type=FileType.TEXT)
+        path = Path(XSEARCHPATH, 'csharp/CsSearch/CsSearch', file_name)
+        fr = FileResult(path=path, file_type=FileType.TEXT)
         line_num = 10
         match_start_index = 15
         match_end_index = 23

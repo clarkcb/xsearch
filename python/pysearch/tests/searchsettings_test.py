@@ -26,12 +26,12 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertFalse(self.settings.archives_only)
         self.assertFalse(self.settings.debug)
         self.assertFalse(self.settings.first_match)
-        self.assertTrue(self.settings.exclude_hidden)
+        self.assertFalse(self.settings.include_hidden)
         self.assertEqual(0, self.settings.lines_after)
         self.assertEqual(0, self.settings.lines_before)
-        self.assertFalse(self.settings.list_dirs)
-        self.assertFalse(self.settings.list_files)
-        self.assertFalse(self.settings.list_lines)
+        self.assertFalse(self.settings.print_dirs)
+        self.assertFalse(self.settings.print_files)
+        self.assertFalse(self.settings.print_lines)
         self.assertEqual(150, self.settings.max_line_length)
         self.assertFalse(self.settings.multi_line_search)
         self.assertTrue(self.settings.print_results)
@@ -64,12 +64,12 @@ class SearchSettingsTest(unittest.TestCase):
             'archives_only': True,
             'debug': True,
             'first_match': True,
-            'exclude_hidden': False,
+            'include_hidden': True,
             'lines_after': 5,
             'lines_before': 5,
-            'list_dirs': True,
-            'list_files': True,
-            'list_lines': True,
+            'print_dirs': True,
+            'print_files': True,
+            'print_lines': True,
             'max_line_length': 155,
             'multi_line_search': True,
             'print_results': False,
@@ -84,12 +84,12 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertEqual(True, self.settings.archives_only)
         self.assertEqual(True, self.settings.debug)
         self.assertEqual(True, self.settings.first_match)
-        self.assertEqual(False, self.settings.exclude_hidden)
+        self.assertEqual(True, self.settings.include_hidden)
         self.assertEqual(5, self.settings.lines_after)
         self.assertEqual(5, self.settings.lines_before)
-        self.assertEqual(True, self.settings.list_dirs)
-        self.assertEqual(True, self.settings.list_files)
-        self.assertEqual(True, self.settings.list_lines)
+        self.assertEqual(True, self.settings.print_dirs)
+        self.assertEqual(True, self.settings.print_files)
+        self.assertEqual(True, self.settings.print_lines)
         self.assertEqual(155, self.settings.max_line_length)
         self.assertEqual(True, self.settings.multi_line_search)
         self.assertEqual(False, self.settings.print_results)
@@ -101,19 +101,19 @@ class SearchSettingsTest(unittest.TestCase):
         self.assertEqual(True, self.settings.verbose)
 
     def test_add_single_extension(self):
-        self.settings.add_exts('py', 'in_extensions')
+        self.settings.add_strs_to_set('py', 'in_extensions')
         self.assertEqual(1, len(self.settings.in_extensions))
         self.assertIn('py', self.settings.in_extensions)
 
     def test_add_comma_delimited_extensions(self):
-        self.settings.add_exts('py,rb,scala', 'in_extensions')
+        self.settings.add_strs_to_set('py,rb,scala', 'in_extensions')
         self.assertEqual(3, len(self.settings.in_extensions))
         for x in {'py', 'rb', 'scala'}:
             self.assertIn(x, self.settings.in_extensions)
 
     def test_add_extensions_set(self):
         extensions_set = {'py','rb','scala'}
-        self.settings.add_exts(extensions_set, 'in_extensions')
+        self.settings.add_strs_to_set(extensions_set, 'in_extensions')
         self.assertEqual(3, len(self.settings.in_extensions))
         for x in extensions_set:
             self.assertIn(x, self.settings.in_extensions)
