@@ -33,7 +33,7 @@
     settings.colorize = false;
     SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
     Regex *regex = [[Regex alloc] initWithPattern:@"Search"];
-    FileResult *sf = [[FileResult alloc] initWithFilePath:@"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs" fileType:FileTypeCode stat:nil];
+    FileResult *sf = [[FileResult alloc] initWithFilePath:@"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs" fileType:FileTypeCode fileSize:0 lastMod:nil];
     long lineNum = 10;
     long matchStartIndex = 15;
     long matchEndIndex = 23;
@@ -59,7 +59,7 @@
     SearchSettings *settings = [[SearchSettings alloc] init];
     SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
     Regex *regex = [[Regex alloc] initWithPattern:@"Search"];
-    FileResult *sf = [[FileResult alloc] initWithFilePath:@"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe" fileType:FileTypeBinary stat:nil];
+    FileResult *sf = [[FileResult alloc] initWithFilePath:@"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe" fileType:FileTypeBinary fileSize:0 lastMod:nil];
     long lineNum = 0;
     long matchStartIndex = 0;
     long matchEndIndex = 0;
@@ -84,7 +84,7 @@
     SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
     Regex *regex = [[Regex alloc] initWithPattern:@"Search"];
     NSString *filePath = @"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
-    FileResult *sf = [[FileResult alloc] initWithFilePath:filePath fileType:FileTypeText stat:nil];
+    FileResult *sf = [[FileResult alloc] initWithFilePath:filePath fileType:FileTypeText fileSize:0 lastMod:nil];
     long lineNum = 10;
     long matchStartIndex = 15;
     long matchEndIndex = 23;

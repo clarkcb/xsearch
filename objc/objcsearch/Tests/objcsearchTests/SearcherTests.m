@@ -19,7 +19,7 @@
 
 - (void)setUp {
     [super setUp];
-    self.testFilePath = [FileUtil joinPath:[NSString stringWithUTF8String:SHAREDPATH] childPath:@"testFiles/testFile2.txt"];
+    self.testFilePath = [FileUtil joinPath:[NSString stringWithString:getXfindSharedPath()] childPath:@"testFiles/testFile2.txt"];
 }
 
 - (void)tearDown {

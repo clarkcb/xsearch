@@ -28,8 +28,9 @@
     XCTAssert(![settings archivesOnly]);
     XCTAssert([settings colorize]);
     XCTAssert(![settings debug]);
-    XCTAssert([settings excludeHidden]);
     XCTAssert(![settings firstMatch]);
+    XCTAssert(![settings followSymlinks]);
+    XCTAssert(![settings includeHidden]);
     XCTAssert([settings maxSize] == 0);
     XCTAssert([settings minSize] == 0);
     XCTAssert(![settings multiLineSearch]);

@@ -32,7 +32,8 @@
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
     XCTAssert(![settings firstMatch]);
-    XCTAssert([settings includeHidden]);
+    XCTAssert(![settings followSymlinks]);
+    XCTAssert(![settings includeHidden]);
     XCTAssert(![settings multiLineSearch]);
     XCTAssert(![settings printDirs]);
     XCTAssert(![settings printFiles]);
@@ -82,7 +83,8 @@
                       "\"linesafter\": 2,\n"
                       "\"debug\": true,\n"
                       "\"allmatches\": false,\n"
-                      "\"includehidden\": false\n"
+                      "\"followsymlinks\": true,\n"
+                      "\"includehidden\": true\n"
                       "}", startPath];
 
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
@@ -105,6 +107,7 @@
     XCTAssert([settings linesAfter] == 2);
     XCTAssert([settings debug]);
     XCTAssert([settings firstMatch]);
+    XCTAssert([settings followSymlinks]);
     XCTAssert([settings includeHidden]);
 }
 

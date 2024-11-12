@@ -34,6 +34,7 @@
     [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
     [d appendFormat:@", firstMatch=%@", boolToNSString(self.firstMatch)];
+    [d appendFormat:@", followSymlinks=%@", boolToNSString(self.followSymlinks)];
     [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];
     [d appendFormat:@", inArchiveFilePatterns=%@", arrayToNSString(self.inArchiveFilePatterns)];
     [d appendFormat:@", includeHidden=%@", boolToNSString(self.includeHidden)];
