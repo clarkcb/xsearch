@@ -53,6 +53,7 @@ sub to_string {
         ', colorize=' . plfind::common::bool_to_string($self->{colorize}) .
         ', debug=' . plfind::common::bool_to_string($self->{debug}) .
         ', first_match=' . plfind::common::bool_to_string($self->{first_match}) .
+        ', follow_symlinks=' . plfind::common::bool_to_string($self->{follow_symlinks}) .
         ', in_archive_extensions=' . plfind::common::strings_aref_to_string($self->{in_archive_extensions}) .
         ', in_archive_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_archive_file_patterns}) .
         ', include_hidden=' . plfind::common::bool_to_string($self->{include_hidden}) .

@@ -139,7 +139,7 @@ my $arg_action_hash = {
     },
     'path' => sub {
         my ($s, $settings) = @_;
-        push (@{$settings->{paths}}, $s);
+        $settings->add_path($s);
     },
     'searchpattern' => sub {
         my ($s, $settings) = @_;
@@ -147,7 +147,7 @@ my $arg_action_hash = {
     },
     'settings-file' => sub {
         my ($s, $settings) = @_;
-        settings_from_file($s, $settings);
+        settings_from_file(file($s), $settings);
     },
     'sort-by' => sub {
         my ($s, $settings) = @_;
@@ -180,6 +180,10 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('first_match', $b);
     },
+    'followsymlinks' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('follow_symlinks', $b);
+    },
     'help' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('print_usage', $b);
@@ -195,6 +199,10 @@ my $bool_flag_action_hash = {
     'nocolorize' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('colorize', !$b);
+    },
+    'nofollowsymlinks' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('follow_symlinks', !$b);
     },
     'noprintmatches' => sub {
         my ($b, $settings) = @_;
@@ -340,7 +348,7 @@ sub settings_from_args {
             $arg =~ s/^\-+//;
             if (exists $self->{options}->{$arg}) {
                 my $opt = $self->{options}->{$arg};
-                my $long = $opt->{longarg};
+                my $long = $opt->{long_arg};
                 if (exists $arg_action_hash->{$long}) {
                     if (scalar @{$args}) {
                         my $val = shift @{$args};
@@ -355,7 +363,7 @@ sub settings_from_args {
                 push(@errs, "Invalid option: $arg");
             }
         } else {
-            push (@{$settings->{paths}}, $arg);
+            $settings->add_path($arg);
         }
     }
     return ($settings, \@errs);

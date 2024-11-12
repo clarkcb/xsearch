@@ -19,29 +19,9 @@ BEGIN {
 use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
 use plfind::common;
-
 use plsearch::config;
 use plsearch::Searcher;
 use plsearch::SearchOptions;
-
-sub log_error {
-    my $err = shift;
-    plfind::common::log_msg('ERROR: '.$err);
-}
-
-sub sort_results ($$) {
-    my $a = $_[0];
-    my $b = $_[1];
-    if ($a->{file} eq $b->{file}) {
-        if ($a->{line_num} == $b->{line_num}) {
-            $a->{match_start_index} <=> $b->{match_start_index}
-        } else {
-            $a->{line_num} <=> $b->{line_num}
-        }
-    } else {
-        $a->{file} cmp $b->{file}
-    }
-}
 
 sub print_results {
     my ($results, $settings) = @_;
@@ -55,78 +35,75 @@ sub print_results {
 }
 
 sub get_matching_dirs {
-    my ($results) = @_;
-    my $dir_hash = {};
-    foreach my $r (@$results) {
-        my $d = dirname($r->{file});
-        $dir_hash->{$d}++;
-    }
-    my @dirs = keys %{$dir_hash};
-    @dirs = sort(@dirs);
-    return \@dirs;
+    my ($search_results) = @_;
+    my @dirs = map { $_->{file}->{path} } @$search_results;
+    my $uniq = plfind::common::uniq(\@dirs);
+    return $uniq;
 }
 
 sub print_matching_dirs {
-    my ($results) = @_;
-    my $dirs = get_matching_dirs($results);
-    plfind::common::log_msg(sprintf("\nDirectories with matches (%d):", scalar @{$dirs}));
-    foreach my $d (@{$dirs}) {
-        plfind::common::log_msg($d);
+    my ($search_results) = @_;
+    my $dirs = get_matching_dirs($search_results);
+    if (scalar @{$dirs}) {
+        plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @{$dirs}));
+        foreach my $d (@{$dirs}) {
+            plfind::common::log_msg($d);
+        }
+    } else {
+        plfind::common::log_msg("\nMatching directories: 0");
     }
 }
 
 sub get_matching_files {
-    my ($results) = @_;
-    my $file_hash = {};
-    foreach my $r (@$results) {
-        my $f = $r->{file};
-        $file_hash->{$f}++;
-    }
-    my @files = keys %{$file_hash};
-    @files = sort(@files);
+    my ($search_results) = @_;
+    my @files = map { $_->{file}->to_string() } @$search_results;
     return \@files;
 }
 
 sub print_matching_files {
-    my ($results) = @_;
-    my $files = get_matching_files($results);
-    plfind::common::log_msg(sprintf("\nFiles with matches (%d):", scalar @{$files}));
-    foreach my $f (@{$files}) {
-        plfind::common::log_msg($f);
+    my ($search_results) = @_;
+    my $files = get_matching_files($search_results);
+    if (scalar @{$files}) {
+        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @{$files}));
+        foreach my $f (@{$files}) {
+            plfind::common::log_msg($f);
+        }
+    } else {
+        plfind::common::log_msg("\nMatching files: 0");
     }
 }
 
 sub get_matching_lines {
-    my ($results, $settings) = @_;
-    my $line_hash = {};
-    my @lines = ();
-    foreach my $r (@$results) {
-        my $l = plfind::common::trim($r->{line});
-        $line_hash->{$l}++;
-        push(@lines, $l);
-    }
+    my ($search_results, $settings) = @_;
+    my @lines = map { plfind::common::trim($_->{line}) } @$search_results;
     if ($settings->{unique_lines}) {
-        @lines = keys %{$line_hash};
+        my $uniq = plfind::common::uniq(\@lines);
+        @lines = @{$uniq};
     }
     @lines = sort {uc($a) cmp uc($b)} @lines;
     return \@lines;
 }
 
 sub print_matching_lines {
-    my ($results, $settings) = @_;
-    my $lines = get_matching_lines($results, $settings);
-    my $msg = "\nLines with matches (%d):";
+    my ($search_results, $settings) = @_;
+    my $lines = get_matching_lines($search_results, $settings);
+    my $title = 'Matching lines';
     if ($settings->{unique_lines}) {
-        $msg = "\nUnique lines with matches (%d):";
+        $title = 'Unique matching lines';
     }
-    plfind::common::log_msg(sprintf($msg, scalar @{$lines}));
-    foreach my $l (@{$lines}) {
-        plfind::common::log_msg($l);
+    if (scalar @{$lines}) {
+        my $msg = "\n%s (%d):";
+        plfind::common::log_msg(sprintf($msg, $title, scalar @{$lines}));
+        foreach my $l (@{$lines}) {
+            plfind::common::log_msg($l);
+        }
+    } else {
+        plfind::common::log_msg("\n$title: 0");
     }
 }
 
 sub main {
-    my $search_options = new plsearch::SearchOptions();
+    my $search_options = plsearch::SearchOptions->new();
     my ($settings, $errs) = $search_options->settings_from_args(\@ARGV);
 
     if (scalar @{$errs}) {
@@ -149,7 +126,7 @@ sub main {
         exit;
     }
 
-    my ($searcher, $errs2) = new plsearch::Searcher($settings);
+    my ($searcher, $errs2) = plsearch::Searcher->new($settings);
 
     if (scalar @{$errs2}) {
         plfind::common::log_msg('');
@@ -160,26 +137,26 @@ sub main {
         exit;
     }
 
-    my $results = $searcher->search();
+    my $search_results = $searcher->search();
 
     if ($settings->{print_results}) {
         plfind::common::log_msg('');
-        print_results($results, $settings);
+        print_results($search_results, $settings);
     }
 
     # print matching dirs
     if ($settings->{print_dirs}) {
-        print_matching_dirs($results);
+        print_matching_dirs($search_results);
     }
 
     # print matching files
     if ($settings->{print_files}) {
-        print_matching_files($results);
+        print_matching_files($search_results);
     }
 
     # print matching lines
     if ($settings->{print_lines}) {
-        print_matching_lines($results, $settings);
+        print_matching_lines($search_results, $settings);
     }
 }
 

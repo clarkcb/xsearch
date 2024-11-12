@@ -156,7 +156,7 @@ sub search_text_file {
 
 sub search_text_file_contents {
     my ($self, $fr) = @_;
-    my $contents = plsearch::FileUtil::get_file_contents($fr->to_string());
+    my $contents = plfind::FileUtil::get_file_contents($fr->to_string());
     my $results = $self->search_multiline_string($contents);
     foreach my $r (@{$results}) {
         $r->{file} = $fr;
