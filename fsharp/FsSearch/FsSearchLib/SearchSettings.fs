@@ -38,6 +38,7 @@ type SearchSettings() =
             $", Colorize: %b{this.Colorize}";
             $", Debug: %b{this.Debug}";
             $", FirstMatch: %b{this.FirstMatch}";
+            $", FollowSymlinks: %b{this.FollowSymlinks}";
             $", InArchiveExtensions: %s{Common.ListToString(this.InArchiveExtensions)}";
             $", InArchiveFilePatterns: %s{Common.ListToString(this.InArchiveFilePatterns)}";
             $", IncludeHidden: %b{this.IncludeHidden}";

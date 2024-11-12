@@ -196,7 +196,7 @@ type Searcher (settings : SearchSettings) =
     member this.SearchTextFileLines (f : FileResult.t) : SearchResult.t list =
         let mutable results : SearchResult.t list = []
         try
-            let lines = FileUtil.GetFileLines f.File.FullName this.TextFileEncoding |> List.ofSeq
+            let lines = File.ReadLines f.File.FullName |> List.ofSeq
             results <-
                 this.SearchLines lines
                 |> List.map (fun r -> { r with File = f })
@@ -257,13 +257,8 @@ type Searcher (settings : SearchSettings) =
 
     member this.Search () : SearchResult.t list =
         let files = _finder.Find()
-        let mutable results : SearchResult.t list = []
-
-        for file in files do
-            let fileSearchResults = this.SearchFile file
-            results <- List.append results fileSearchResults
-            
-        results |> List.ofSeq
+        let results = files |> List.collect this.SearchFile
+        results
 
     member this.GetSortedResults (results : SearchResult.t list) : SearchResult.t list = 
         results

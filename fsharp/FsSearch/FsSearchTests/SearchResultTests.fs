@@ -22,7 +22,7 @@ type SearchResultTests () =
         settings.Paths <- ["~"]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.cs")
+        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
         let fileResult = FileResult.Create file FileType.Code
         let lineNum = 10
         let matchStartIndex = 15
@@ -65,7 +65,7 @@ type SearchResultTests () =
         settings.Paths <- ["~"]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.cs")
+        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
         let fileResult = FileResult.Create file FileType.Code
         let lineNum = 10
         let matchStartIndex = 15
@@ -97,7 +97,7 @@ type SearchResultTests () =
         settings.Paths <- ["~"]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let file = FileInfo(FileUtil.JoinPath (FileUtil.ExpandPath this.CsSearchPath) "Searcher.exe")
+        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.exe"))
         let fileResult = FileResult.Create file FileType.Binary
         let lineNum = 0
         let matchStartIndex = 0

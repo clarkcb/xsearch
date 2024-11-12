@@ -56,10 +56,12 @@ module SearchOptions =
             ("debug", (fun (b : bool) (settings : SearchSettings) -> settings.Debug <- b));
             ("excludehidden", (fun (b : bool) (settings : SearchSettings) -> settings.IncludeHidden <- not b));
             ("firstmatch", (fun (b : bool) (settings : SearchSettings) -> settings.FirstMatch <- b));
+            ("followsymlinks", (fun (b : bool) (settings : SearchSettings) -> settings.FollowSymlinks <- b));
             ("help", (fun (b : bool) (settings : SearchSettings) -> settings.PrintUsage <- b));
             ("includehidden", (fun (b : bool) (settings : SearchSettings) -> settings.IncludeHidden <- b));
             ("multilinesearch", (fun (b : bool) (settings : SearchSettings) -> settings.MultiLineSearch <- b));
             ("nocolorize", (fun (b : bool) (settings : SearchSettings) -> settings.Colorize <- not b));
+            ("nofollowsymlinks", (fun (b : bool) (settings : SearchSettings) -> settings.FollowSymlinks <- not b));
             ("noprintdirs", (fun (b : bool) (settings : SearchSettings) -> settings.PrintDirs <- not b));
             ("noprintfiles", (fun (b : bool) (settings : SearchSettings) -> settings.PrintFiles <- not b));
             ("noprintlines", (fun (b : bool) (settings : SearchSettings) -> settings.PrintLines <- not b));

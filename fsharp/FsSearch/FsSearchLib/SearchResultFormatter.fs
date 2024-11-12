@@ -13,7 +13,7 @@ type SearchResultFormatter (settings : SearchSettings) =
             s.Substring(matchStartIndex + matchLength)
 
     let GetRelativeFilePath (result : SearchResult.t) : string =
-        FileUtil.ContractPath (result.File.File.ToString())
+        result.File.File.ToString()
 
     let FormatMatchingLine (result : SearchResult.t) : string =
         let mutable formatted : string = result.Line.Trim()
