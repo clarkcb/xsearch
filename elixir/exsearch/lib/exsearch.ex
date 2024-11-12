@@ -107,7 +107,7 @@ defmodule ExSearch.Main do
         Logging.log("\nExSearch version: #{ExSearch.Config.version()}")
       end
     else
-      searcher = Searcher.new([file_types: ExFind.FileTypes.new(), settings: settings])
+      searcher = Searcher.new(settings)
       case Searcher.search(searcher) do
         {:error, message} -> handle_error(message, search_options)
         {:ok, results} -> handle_results(results, settings)

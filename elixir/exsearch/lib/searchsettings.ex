@@ -10,6 +10,7 @@ defmodule ExSearch.SearchSettings do
             colorize: true,
             debug: false,
             first_match: false,
+            follow_symlinks: false,
             in_archive_extensions: [],
             in_archive_file_patterns: [],
             in_dir_patterns: [],
@@ -60,6 +61,7 @@ defmodule ExSearch.SearchSettings do
     FindSettings.new(
       archives_only: settings.archives_only,
       debug: settings.debug,
+      follow_symlinks: settings.follow_symlinks,
       in_archive_extensions: settings.in_archive_extensions,
       in_archive_file_patterns: settings.in_archive_file_patterns,
       in_dir_patterns: settings.in_dir_patterns,

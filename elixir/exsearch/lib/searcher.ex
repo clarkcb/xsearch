@@ -11,9 +11,11 @@ defmodule ExSearch.Searcher do
   alias ExSearch.SearchResult
   alias ExSearch.SearchSettings
 
-  defstruct [:file_types, :settings]
+  defstruct [:settings]
 
-  def new(args), do: __struct__(args)
+  def new(settings) do
+    __struct__([settings: settings])
+  end
 
   # ----------------------------------------------------------------------------
   # Binary search (blob search)
@@ -252,7 +254,7 @@ defmodule ExSearch.Searcher do
       {:error, message} -> {:error, message}
       {:ok, _} ->
         find_settings = SearchSettings.to_find_settings(searcher.settings)
-        finder = Finder.new([file_types: searcher.file_types, settings: find_settings])
+        finder = Finder.new(find_settings)
         case Finder.find(finder) do
           {:error, message} -> {:error, message}
           {:ok, file_results} ->
