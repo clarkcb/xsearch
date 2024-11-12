@@ -19,7 +19,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "Search"
         let filepath = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        let fileResult = FileResult(filePath: filepath, fileType: FileType.code)
+        let fileResult = FileResult(filePath: filepath, fileType: FileType.code, fileSize: 0)
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
@@ -47,7 +47,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "maxlen"
         let file = "./maxlen.txt"
-        let fileResult = FileResult(filePath: file, fileType: FileType.text)
+        let fileResult = FileResult(filePath: file, fileType: FileType.text, fileSize: 0)
         let lineNum = 1
         let matchStartIndex = 53
         let matchEndIndex = 59
@@ -76,7 +76,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "maxlen"
         let file = "./maxlen.txt"
-        let fileResult = FileResult(filePath: file, fileType: FileType.text)
+        let fileResult = FileResult(filePath: file, fileType: FileType.text, fileSize: 0)
         let lineNum = 1
         let matchStartIndex = 53
         let matchEndIndex = 59
@@ -107,7 +107,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "Search"
         let file = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
-        let fileResult = FileResult(filePath: file, fileType: FileType.binary)
+        let fileResult = FileResult(filePath: file, fileType: FileType.binary, fileSize: 0)
         let lineNum = 0
         let matchStartIndex = 0
         let matchEndIndex = 0
@@ -132,7 +132,7 @@ class SearchResultTests: XCTestCase {
         let formatter = SearchResultFormatter(settings: settings)
         let pattern = "Search"
         let file = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        let fileResult = FileResult(filePath: file, fileType: FileType.text)
+        let fileResult = FileResult(filePath: file, fileType: FileType.text, fileSize: 0)
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23

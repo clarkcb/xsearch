@@ -61,7 +61,7 @@ func main() {
 
         let searcher = try Searcher(settings: settings)
 
-        let results = searcher.search()
+        let results = try searcher.search()
 
         if settings.printResults {
             let formatter = SearchResultFormatter(settings: settings)

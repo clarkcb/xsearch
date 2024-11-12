@@ -176,6 +176,9 @@ public class SearchOptions {
         "firstmatch": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.firstMatch = bool
         },
+        "followsymlinks": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.followSymlinks = bool
+        },
         "help": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printUsage = bool
         },
@@ -187,6 +190,9 @@ public class SearchOptions {
         },
         "nocolorize": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.colorize = !bool
+        },
+        "nofollowsymlinks": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.followSymlinks = !bool
         },
         "noprintdirs": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printDirs = !bool

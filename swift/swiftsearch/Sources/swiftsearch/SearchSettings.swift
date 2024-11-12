@@ -91,6 +91,7 @@ public class SearchSettings: FindSettings {
             ", colorize=\(colorize)" +
             ", debug=\(debug)" +
             ", firstMatch=\(firstMatch)" +
+            ", followSymlinks=\(followSymlinks)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
             ", includeHidden=\(includeHidden)" +

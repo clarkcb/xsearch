@@ -32,6 +32,7 @@ class SearchOptionsTests: XCTestCase {
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
         XCTAssert(settings.firstMatch == DefaultSearchSettings.firstMatch, "firstMatch == false")
+        XCTAssert(settings.followSymlinks == DefaultFindSettings.followSymlinks, "followSymlinks == false")
         XCTAssert(settings.includeHidden == DefaultFindSettings.includeHidden, "includeHidden == true")
         XCTAssert(settings.maxSize == DefaultFindSettings.maxSize, "maxSize == 0")
         XCTAssert(settings.minSize == DefaultFindSettings.minSize, "maxSize == 0")
@@ -77,7 +78,8 @@ class SearchOptionsTests: XCTestCase {
   "linesafter": 2,
   "debug": true,
   "allmatches": false,
-  "includehidden": false,
+  "followsymlinks": true,
+  "includehidden": true,
   "printdirs": true,
   "printfiles": true
 }
@@ -86,6 +88,7 @@ class SearchOptionsTests: XCTestCase {
         print("settings: \(settings)")
         XCTAssertTrue(settings.debug, "debug == true")
         XCTAssertTrue(settings.firstMatch, "firstMatch == true")
+        XCTAssertTrue(settings.followSymlinks, "followSymlinks == true")
         XCTAssertEqual(2, settings.inExtensions.count)
         XCTAssertTrue(settings.inExtensions.contains("js"))
         XCTAssertTrue(settings.inExtensions.contains("ts"))

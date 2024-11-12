@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class SearchError: Error {
+final public class SearchError: Error {
     public let msg: String
 
     public init(msg: String) {
