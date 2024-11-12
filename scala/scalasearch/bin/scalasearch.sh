@@ -6,7 +6,7 @@ then
 fi
 
 SCALASEARCH_PATH="$XSEARCH_PATH/scala/scalasearch"
-SCALA_VERSION=3.2.2
+SCALA_VERSION=3.5.2
 SCALASEARCH_JAR=$(find "$SCALASEARCH_PATH/target/scala-$SCALA_VERSION" -maxdepth 1 -name "scalasearch-assembly-*.jar" | head -n 1)
 
 # echo "java -Xms1G -Xmx2G -cp $SCALASEARCH_JAR scalasearch.SearchMain $@"

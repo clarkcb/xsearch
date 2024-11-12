@@ -4,6 +4,7 @@ import org.json.{JSONArray, JSONObject, JSONTokener}
 import scalafind.{Common, FileType, FileTypes, FileUtil, FindOptions, SortBy}
 
 import java.io.{File, IOException, InputStreamReader}
+import java.nio.file.Paths
 import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -114,7 +115,7 @@ object SearchOptions {
     "out-linesbeforepattern" ->
       ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
     "path" ->
-      ((s, ss) => ss.copy(paths = ss.paths + s)),
+      ((s, ss) => ss.copy(paths = ss.paths + Paths.get(s))),
     "searchpattern" ->
       ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
     "settings-file" ->
@@ -185,7 +186,7 @@ object SearchOptions {
       if (this.argActionMap.contains(arg)) {
         argActionMap(arg)(s, ss)
       } else if (arg == "path") {
-        ss.copy(paths = ss.paths + arg)
+        ss.copy(paths = ss.paths + Paths.get(arg))
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
@@ -244,7 +245,7 @@ object SearchOptions {
               throw new SearchException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
-          nextArg(tail, ss.copy(paths = ss.paths + arg))
+          nextArg(tail, ss.copy(paths = ss.paths + Paths.get(arg)))
       }
     }
     nextArg(args.toList, SearchSettings(printResults = true))

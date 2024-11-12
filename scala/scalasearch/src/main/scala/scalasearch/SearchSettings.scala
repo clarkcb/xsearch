@@ -4,8 +4,8 @@ import scalafind.{FindSettings, SortBy}
 import scalafind.FileType.FileType
 import scalafind.SortBy.SortBy
 
+import java.nio.file.Path
 import java.time.LocalDateTime
-
 import scala.util.matching.Regex
 
 object DefaultSettings {
@@ -13,6 +13,7 @@ object DefaultSettings {
   val colorize = true
   val debug = false
   val firstMatch = false
+  val followSymlinks = false
   val includeHidden = false
   val linesAfter = 0
   val linesBefore = 0
@@ -22,7 +23,7 @@ object DefaultSettings {
   val minDepth: Int = -1
   val minSize = 0
   var multiLineSearch = false
-  var paths: Set[String] = Set.empty[String]
+  var paths: Set[Path] = Set.empty[Path]
   val printDirs = false
   val printFiles = false
   val printLines = false
@@ -40,6 +41,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           colorize: Boolean = DefaultSettings.colorize,
                           debug: Boolean = DefaultSettings.debug,
                           firstMatch: Boolean = DefaultSettings.firstMatch,
+                          followSymlinks: Boolean = DefaultSettings.followSymlinks,
                           inArchiveExtensions: Set[String] = Set.empty[String],
                           inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                           includeHidden: Boolean = DefaultSettings.includeHidden,
@@ -69,7 +71,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           outFileTypes: Set[FileType] = Set.empty[FileType],
                           outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
                           outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
-                          paths: Set[String] = DefaultSettings.paths,
+                          paths: Set[Path] = DefaultSettings.paths,
                           printDirs: Boolean = DefaultSettings.printDirs,
                           printFiles: Boolean = DefaultSettings.printFiles,
                           printLines: Boolean = DefaultSettings.printLines,
@@ -92,6 +94,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
   val findSettings: FindSettings = FindSettings(
     archivesOnly = archivesOnly,
     debug = debug,
+    followSymlinks = followSymlinks,
     inArchiveExtensions = inArchiveExtensions,
     inArchiveFilePatterns = inArchiveFilePatterns,
     includeHidden = includeHidden,
@@ -161,6 +164,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", colorize: " + colorize +
       ", debug: " + debug +
       ", firstMatch: " + firstMatch +
+      ", followSymlinks: " + followSymlinks +
       ", inArchiveExtensions: " + inArchiveExtensions +
       ", inArchiveFilePatterns: " + inArchiveFilePatterns +
       ", includeHidden: " + includeHidden +
