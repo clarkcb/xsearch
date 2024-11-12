@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -44,12 +42,11 @@ public class Searcher {
     }
 
     final void validateSettings() throws SearchException {
-        Set<String> paths = settings.getPaths();
-        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
+        var paths = settings.getPaths();
+        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
             throw new SearchException("Startpath not defined");
         }
-        for (String p : paths) {
-            Path path = Paths.get(p);
+        for (var path : paths) {
             if (!Files.exists(path)) {
                 throw new SearchException("Startpath not found");
             }
@@ -115,12 +112,14 @@ public class Searcher {
             log("");
         }
 
-        List<SearchResult> results = searchFiles(fileResults);
+        List<SearchResult> searchResults = searchFiles(fileResults);
 
         if (settings.getVerbose()) {
             log("\nFile search complete.\n");
         }
-        return results;
+
+        sortSearchResults(searchResults);
+        return searchResults;
     }
 
     private List<SearchResult> searchFiles(List<FileResult> fileResults) {
@@ -495,15 +494,20 @@ public class Searcher {
         return results;
     }
 
-    public int compareResults(final SearchResult r1, final SearchResult r2) {
-        int fileResultCmp = finder.compareFileResults(r1.getFileResult(), r2.getFileResult());
-        if (fileResultCmp == 0) {
-            int lineNumCmp = Integer.compare(r1.getLineNum(), r2.getLineNum());
-            if (lineNumCmp == 0) {
-                return Integer.compare(r1.getMatchStartIndex(), r2.getMatchStartIndex());
-            }
-            return lineNumCmp;
+    public final void sortSearchResults(List<SearchResult> searchResults) {
+        if (settings.getSortBy().equals(SortBy.FILENAME)) {
+            searchResults.sort((sr1, sr2) -> sr1.compareByName(sr2, settings.getSortCaseInsensitive()));
+        } else if (settings.getSortBy().equals(SortBy.FILESIZE)) {
+            searchResults.sort((sr1, sr2) -> sr1.compareBySize(sr2, settings.getSortCaseInsensitive()));
+        } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
+            searchResults.sort((sr1, sr2) -> sr1.compareByType(sr2, settings.getSortCaseInsensitive()));
+        } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
+            searchResults.sort((sr1, sr2) -> sr1.compareByLastMod(sr2, settings.getSortCaseInsensitive()));
+        } else {
+            searchResults.sort((sr1, sr2) -> sr1.compareByPath(sr2, settings.getSortCaseInsensitive()));
         }
-        return fileResultCmp;
+        if (settings.getSortDescending()) {
+            Collections.reverse(searchResults);
+        }
     }
 }

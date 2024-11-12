@@ -14,60 +14,63 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javafind.Logger;
+import static javafind.Logger.log;
+import static javafind.Logger.logError;
 
 public class SearchMain {
 
     private static void handleError(final String message) {
-        Logger.log("");
-        Logger.logError(message);
+        log("");
+        logError(message);
     }
 
     private static void handleError(final String message, SearchOptions options) {
-        Logger.log("");
-        Logger.logError(message + "\n");
+        log("");
+        logError(message + "\n");
         options.usage(1);
     }
 
     private static void printSearchResults(List<SearchResult> results, SearchSettings settings) {
-        SearchResultFormatter formatter = new SearchResultFormatter(settings);
-        Logger.log(String.format("Search results (%d):", results.size()));
-        for (SearchResult r : results) {
-            Logger.log(formatter.format(r));
+        var formatter = new SearchResultFormatter(settings);
+        log(String.format("Search results (%d):", results.size()));
+        for (var r : results) {
+            log(formatter.format(r));
         }
     }
 
     private static List<String> getMatchingDirs(List<SearchResult> results) {
-        return results.stream().map(r -> r.getFileResult().getPath().getParent())
+        return results.stream()
+                .map(r -> r.getFileResult().getPath().getParent())
                 .map(p -> p == null ? "." : p.toString())
                 .distinct()
                 .sorted().collect(Collectors.toList());
     }
 
     private static void printMatchingDirs(List<SearchResult> results) {
-        List<String> dirs = getMatchingDirs(results);
-        Logger.log(String.format("\nDirectories with matches (%d):", dirs.size()));
-        for (String d : dirs) {
-            Logger.log(d);
+        var dirs = getMatchingDirs(results);
+        log(String.format("\nDirectories with matches (%d):", dirs.size()));
+        for (var d : dirs) {
+            log(d);
         }
     }
 
     private static List<String> getMatchingFiles(List<SearchResult> results) {
-        return results.stream().map(r -> r.getFileResult().toString()).distinct()
+        return results.stream()
+                .map(r -> r.getFileResult().toString()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
     private static void printMatchingFiles(List<SearchResult> results) {
-        List<String> files = getMatchingFiles(results);
-        Logger.log(String.format("\nFiles with matches (%d):", files.size()));
-        for (String f : files) {
-            Logger.log(f);
+        var files = getMatchingFiles(results);
+        log(String.format("\nFiles with matches (%d):", files.size()));
+        for (var f : files) {
+            log(f);
         }
     }
 
     private static List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {
-        List<String> lines = new ArrayList<>();
-        for (SearchResult r : results) {
+        var lines = new ArrayList<String>();
+        for (var r : results) {
             lines.add(r.getLine().trim());
         }
         if (settings.getUniqueLines()) {
@@ -79,55 +82,52 @@ public class SearchMain {
     }
 
     private static void printMatchingLines(List<SearchResult> results, SearchSettings settings) {
-        List<String> lines = getMatchingLines(results, settings);
+        var lines = getMatchingLines(results, settings);
         String hdr;
         if (settings.getUniqueLines()) {
             hdr = "\nUnique lines with matches (%d):";
         } else {
             hdr = "\nLines with matches (%d):";
         }
-        Logger.log(String.format(hdr, lines.size()));
-        for (String line : lines) {
-            Logger.log(line);
+        log(String.format(hdr, lines.size()));
+        for (var line : lines) {
+            log(line);
         }
     }
 
     public static void main(final String[] args) {
-
         try {
-            SearchOptions options = new SearchOptions();
+            var options = new SearchOptions();
 
             try {
-                SearchSettings settings = options.settingsFromArgs(args);
+                var settings = options.settingsFromArgs(args);
 
                 if (settings.getDebug()) {
-                    Logger.log("\nsettings:");
-                    Logger.log(settings.toString() + "\n");
+                    log("\nsettings:");
+                    log(settings.toString() + "\n");
                 }
 
                 if (settings.getPrintUsage()) {
-                    Logger.log("");
+                    log("");
                     options.usage(0);
                 }
 
-                Searcher searcher = new Searcher(settings);
-
+                var searcher = new Searcher(settings);
                 searcher.validateSettings();
-                List<SearchResult> results = searcher.search();
+                var searchResults = searcher.search();
 
-                // print the results
                 if (settings.getPrintResults()) {
-                    Logger.log("");
-                    printSearchResults(results, settings);
+                    log("");
+                    printSearchResults(searchResults, settings);
                 }
                 if (settings.getPrintDirs()) {
-                    printMatchingDirs(results);
+                    printMatchingDirs(searchResults);
                 }
                 if (settings.getPrintFiles()) {
-                    printMatchingFiles(results);
+                    printMatchingFiles(searchResults);
                 }
                 if (settings.getPrintLines()) {
-                    printMatchingLines(results, settings);
+                    printMatchingLines(searchResults, settings);
                 }
 
             } catch (SearchException e) {
