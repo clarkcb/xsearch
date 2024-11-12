@@ -13,67 +13,67 @@ void main() {
   }
 
   /***************************************************************************
-   * isSearchDir tests
+   * isMatchingDir tests
    **************************************************************************/
-  group('isSearchDir tests', () {
-    test('test isSearchDir single dot', () {
+  group('isMatchingDir tests', () {
+    test('test isMatchingDir single dot', () {
       var settings = getSettings();
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('.')), true);
+      expect(searcher.isMatchingDir(Directory('.')), true);
     });
 
-    test('test isSearchDir double dot', () {
+    test('test isMatchingDir double dot', () {
       var settings = getSettings();
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('..')), true);
+      expect(searcher.isMatchingDir(Directory('..')), true);
     });
 
-    test('test isSearchDir hidden dir', () {
+    test('test isMatchingDir hidden dir', () {
       var settings = getSettings();
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('.git')), false);
+      expect(searcher.isMatchingDir(Directory('.git')), false);
     });
 
-    test('test isSearchDir hidden dir includeHidden', () {
-      var settings = getSettings();
-      settings.excludeHidden = false;
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('.git')), true);
-    });
-
-    test('test isSearchDir no patterns', () {
+    test('test isMatchingDir hidden dir includeHidden', () {
       var settings = getSettings();
       settings.excludeHidden = false;
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('/Users')), true);
+      expect(searcher.isMatchingDir(Directory('.git')), true);
     });
 
-    test('test isSearchDir dir matches inDirPatterns', () {
+    test('test isMatchingDir no patterns', () {
+      var settings = getSettings();
+      settings.excludeHidden = false;
+      var searcher = Searcher(settings);
+      expect(searcher.isMatchingDir(Directory('/Users')), true);
+    });
+
+    test('test isMatchingDir dir matches inDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('Search', settings.inDirPatterns);
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), true);
+      expect(searcher.isMatchingDir(Directory('./CsSearch')), true);
     });
 
-    test('test isSearchDir dir does not match inDirPatterns', () {
+    test('test isMatchingDir dir does not match inDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('SearchFiles', settings.inDirPatterns);
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), false);
+      expect(searcher.isMatchingDir(Directory('./CsSearch')), false);
     });
 
-    test('test isSearchDir dir matches outDirPatterns', () {
+    test('test isMatchingDir dir matches outDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('Search', settings.outDirPatterns);
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), false);
+      expect(searcher.isMatchingDir(Directory('./CsSearch')), false);
     });
 
-    test('test isSearchDir dir does not match outDirPatterns', () {
+    test('test isMatchingDir dir does not match outDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('SearchFiles', settings.outDirPatterns);
       var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), true);
+      expect(searcher.isMatchingDir(Directory('./CsSearch')), true);
     });
   });
 
