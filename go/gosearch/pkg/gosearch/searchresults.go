@@ -106,20 +106,146 @@ func (srs *SearchResults) Less(i, j int) bool {
 	if fri != frj {
 		return fri < frj
 	}
+	sres := compareSearchFields(sri, srj)
 	if srs.Settings.FindSettings.SortDescending() {
-		if sri.LineNum != srj.LineNum {
-			return sri.LineNum > srj.LineNum
-		}
-		return sri.MatchStartIndex > srj.MatchStartIndex
+		return sres >= 0
 	}
-	if sri.LineNum != srj.LineNum {
-		return sri.LineNum < srj.LineNum
-	}
-	return sri.MatchStartIndex < srj.MatchStartIndex
+	return sres < 0
 }
 
 func (srs *SearchResults) Swap(i, j int) {
 	srs.SearchResults[j], srs.SearchResults[i] = srs.SearchResults[i], srs.SearchResults[j]
+}
+
+func compareSearchFields(sr1, sr2 *SearchResult) int {
+	if sr1.LineNum == sr2.LineNum {
+		if sr1.MatchStartIndex == sr2.MatchStartIndex {
+			if sr1.MatchEndIndex == sr2.MatchEndIndex {
+				return 0
+			}
+			if sr1.MatchEndIndex < sr2.MatchEndIndex {
+				return -1
+			}
+			return 1
+		}
+		if sr1.MatchStartIndex < sr2.MatchStartIndex {
+			return -1
+		}
+		return 1
+	}
+	if sr1.LineNum < sr2.LineNum {
+		return -1
+	}
+	return 1
+}
+
+func (srs *SearchResults) CompareByPath(sr1, sr2 *SearchResult, sortCaseInsensitive bool) int {
+	pres := srs.FileResults.CompareByPath(sr1.File, sr2.File, sortCaseInsensitive)
+	if pres == 0 {
+		return compareSearchFields(sr1, sr2)
+	}
+	if pres < 0 {
+		return -1
+	}
+	return 1
+}
+
+func (srs *SearchResults) getSortByPath(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		return srs.CompareByPath(srs.SearchResults[i], srs.SearchResults[j], sortCaseInsensitive) < 0
+	}
+}
+
+func (srs *SearchResults) CompareByName(sr1, sr2 *SearchResult, sortCaseInsensitive bool) int {
+	nres := srs.FileResults.CompareByName(sr1.File, sr2.File, sortCaseInsensitive)
+	if nres == 0 {
+		return compareSearchFields(sr1, sr2)
+	}
+	if nres < 0 {
+		return -1
+	}
+	return 1
+}
+
+func (srs *SearchResults) getSortByName(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		return srs.CompareByName(srs.SearchResults[i], srs.SearchResults[j], sortCaseInsensitive) < 0
+	}
+}
+
+func (srs *SearchResults) CompareBySize(sr1, sr2 *SearchResult, sortCaseInsensitive bool) int {
+	nres := srs.FileResults.CompareBySize(sr1.File, sr2.File, sortCaseInsensitive)
+	if nres == 0 {
+		return compareSearchFields(sr1, sr2)
+	}
+	if nres < 0 {
+		return -1
+	}
+	return 1
+}
+
+func (srs *SearchResults) getSortBySize(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		return srs.CompareBySize(srs.SearchResults[i], srs.SearchResults[j], sortCaseInsensitive) < 0
+	}
+}
+
+func (srs *SearchResults) CompareByType(sr1, sr2 *SearchResult, sortCaseInsensitive bool) int {
+	tres := srs.FileResults.CompareByType(sr1.File, sr2.File, sortCaseInsensitive)
+	if tres == 0 {
+		return compareSearchFields(sr1, sr2)
+	}
+	if tres < 0 {
+		return -1
+	}
+	return 1
+}
+
+func (srs *SearchResults) getSortByType(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		return srs.CompareByType(srs.SearchResults[i], srs.SearchResults[j], sortCaseInsensitive) < 0
+	}
+}
+
+func (srs *SearchResults) CompareByLastMod(sr1, sr2 *SearchResult, sortCaseInsensitive bool) int {
+	lres := srs.FileResults.CompareByLastMod(sr1.File, sr2.File, sortCaseInsensitive)
+	if lres == 0 {
+		return compareSearchFields(sr1, sr2)
+	}
+	if lres < 0 {
+		return -1
+	}
+	return 1
+}
+
+func (srs *SearchResults) getSortByLastMod(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		return srs.CompareByLastMod(srs.SearchResults[i], srs.SearchResults[j], sortCaseInsensitive) < 0
+	}
+}
+
+func (srs *SearchResults) Sort(settings *SearchSettings) {
+	switch settings.SortBy() {
+	case gofind.SortByFileName:
+		sort.Slice(srs.FileResults, srs.getSortByName(settings.SortCaseInsensitive()))
+	case gofind.SortByFileSize:
+		sort.Slice(srs.FileResults, srs.getSortBySize(settings.SortCaseInsensitive()))
+	case gofind.SortByFileType:
+		sort.Slice(srs.FileResults, srs.getSortByType(settings.SortCaseInsensitive()))
+	case gofind.SortByLastMod:
+		sort.Slice(srs.FileResults, srs.getSortByLastMod(settings.SortCaseInsensitive()))
+	default:
+		sort.Slice(srs.FileResults, srs.getSortByPath(settings.SortCaseInsensitive()))
+	}
+	if settings.SortDescending() {
+		srs.reverse()
+	}
+}
+
+func (srs *SearchResults) reverse() {
+	for i, j := 0, len(srs.SearchResults)-1; i < j; i, j = i+1, j-1 {
+		srs.SearchResults[i], srs.SearchResults[j] = srs.SearchResults[j], srs.SearchResults[i]
+	}
 }
 
 func (srs *SearchResults) GetPathCountMap() map[string]int {
@@ -254,10 +380,6 @@ func (srs *SearchResults) PrintSearchResults() {
 		}
 		gofind.Log(formatter.Format(r))
 	}
-}
-
-func (srs *SearchResults) Sort() {
-	sort.Slice(srs.SearchResults, srs.Less)
 }
 
 type SearchResultFormatter struct {

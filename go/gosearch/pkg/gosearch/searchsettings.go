@@ -113,6 +113,14 @@ func (s *SearchSettings) SetFirstMatch(b bool) {
 	s.firstMatch = b
 }
 
+func (s *SearchSettings) FollowSymlinks() bool {
+	return s.FindSettings.FollowSymlinks()
+}
+
+func (s *SearchSettings) SetFollowSymlinks(b bool) {
+	s.FindSettings.SetFollowSymlinks(b)
+}
+
 func (s *SearchSettings) InArchiveExtensions() []string {
 	return s.FindSettings.InArchiveExtensions()
 }
@@ -515,6 +523,7 @@ func (s *SearchSettings) String() string {
 		", Colorize: %t" +
 		", Debug: %t" +
 		", FirstMatch: %t" +
+		", FollowSymlinks: %t" +
 		", InArchiveExtensions: %s" +
 		", InArchiveFilePatterns: %s" +
 		", IncludeHidden: %t" +
@@ -565,6 +574,7 @@ func (s *SearchSettings) String() string {
 		s.Colorize(),
 		s.Debug(),
 		s.FirstMatch(),
+		s.FollowSymlinks(),
 		gofind.StringListToString(s.InArchiveExtensions()),
 		gofind.PatternsToString(s.InArchiveFilePatterns()),
 		s.IncludeHidden(),

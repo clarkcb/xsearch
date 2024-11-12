@@ -362,6 +362,9 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"firstmatch": func(b bool, settings *SearchSettings) {
 			settings.SetFirstMatch(b)
 		},
+		"followsymlinks": func(b bool, settings *SearchSettings) {
+			settings.SetFollowSymlinks(b)
+		},
 		"help": func(b bool, settings *SearchSettings) {
 			settings.SetPrintUsage(b)
 		},
@@ -370,6 +373,9 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"multilinesearch": func(b bool, settings *SearchSettings) {
 			settings.SetMultiLineSearch(b)
+		},
+		"nofollowsymlinks": func(b bool, settings *SearchSettings) {
+			settings.SetFollowSymlinks(!b)
 		},
 		"noprintdirs": func(b bool, settings *SearchSettings) {
 			settings.SetPrintDirs(!b)
@@ -457,5 +463,8 @@ func (so *SearchOptions) generateCodeFile(filePath string) {
 	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
 	depth--
 	buffer.WriteString(fmt.Sprintf("%s}\n}\n", strings.Repeat("\t", depth)))
-	os.WriteFile(filePath, buffer.Bytes(), 0644)
+	err := os.WriteFile(filePath, buffer.Bytes(), 0644)
+	if err != nil {
+		panic(err)
+	}
 }
