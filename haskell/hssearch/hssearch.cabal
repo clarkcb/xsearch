@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -40,6 +40,7 @@ library
       Paths_hssearch
   hs-source-dirs:
       src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -47,10 +48,11 @@ library
     , directory
     , filepath
     , hsfind
-    , regex-pcre-builtin >=0.94.4
-    , split >=0.2.2
+    , regex-pcre-builtin >=0.95.2
+    , split >=0.2.3
     , text
     , time
+    , timeit >=2.0
   default-language: Haskell2010
 
 executable hssearch
@@ -59,7 +61,7 @@ executable hssearch
       Paths_hssearch
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -68,10 +70,11 @@ executable hssearch
     , filepath
     , hsfind
     , hssearch
-    , regex-pcre-builtin >=0.94.4
-    , split >=0.2.2
+    , regex-pcre-builtin >=0.95.2
+    , split >=0.2.3
     , text
     , time
+    , timeit >=2.0
   default-language: Haskell2010
 
 test-suite hssearch-test
@@ -85,7 +88,7 @@ test-suite hssearch-test
       Paths_hssearch
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HUnit ==1.6.*
     , aeson
@@ -95,10 +98,11 @@ test-suite hssearch-test
     , filepath
     , hsfind
     , hssearch
-    , regex-pcre-builtin >=0.94.4
-    , split >=0.2.2
+    , regex-pcre-builtin >=0.95.2
+    , split >=0.2.3
     , test-framework ==0.8.*
     , test-framework-hunit ==0.3.*
     , text
     , time
+    , timeit >=2.0
   default-language: Haskell2010

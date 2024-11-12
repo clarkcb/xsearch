@@ -18,6 +18,7 @@ data SearchSettings = SearchSettings {
                                      , colorize :: Bool
                                      , debug :: Bool
                                      , firstMatch :: Bool
+                                     , followSymlinks :: Bool
                                      , inArchiveExtensions :: [String]
                                      , inArchiveFilePatterns :: [String]
                                      , includeHidden :: Bool
@@ -71,6 +72,7 @@ defaultSearchSettings = SearchSettings {
                                        , colorize=True
                                        , debug=False
                                        , firstMatch=False
+                                       , followSymlinks=False
                                        , inArchiveExtensions=[]
                                        , inArchiveFilePatterns=[]
                                        , includeHidden=False
@@ -129,6 +131,7 @@ toFindSettings :: SearchSettings -> FS.FindSettings
 toFindSettings searchSettings = FS.FindSettings {
                                      FS.archivesOnly=archivesOnly searchSettings
                                    , FS.debug=debug searchSettings
+                                   , FS.followSymlinks=followSymlinks searchSettings
                                    , FS.inArchiveExtensions=inArchiveExtensions searchSettings
                                    , FS.inArchiveFilePatterns=inArchiveFilePatterns searchSettings
                                    , FS.includeHidden=includeHidden searchSettings
