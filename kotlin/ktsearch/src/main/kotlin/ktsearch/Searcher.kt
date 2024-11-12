@@ -86,7 +86,8 @@ class Searcher(val settings: SearchSettings) {
     }
 
     private fun searchFiles(frs: List<FileResult>): List<SearchResult> {
-        return frs.flatMap { searchFile(it) }
+        val results = frs.flatMap { searchFile(it) }
+        return sortSearchResults(results)
     }
 
     private fun searchFile(fr: FileResult): List<SearchResult> {
@@ -393,15 +394,35 @@ class Searcher(val settings: SearchSettings) {
         return results.toList()
     }
 
-    fun compareResults(r1: SearchResult, r2: SearchResult): Int {
-        val fileResultCmp = finder.compareFileResults(r1.file!!, r2.file!!);
-        if (fileResultCmp == 0) {
-            val lineNumCmp = r1.lineNum.compareTo(r2.lineNum);
-            if (lineNumCmp == 0) {
-                return r1.matchStartIndex.compareTo(r2.matchStartIndex);
-            }
-            return lineNumCmp;
+    private fun sortSearchResults(searchResults: List<SearchResult>): List<SearchResult> {
+        val sortedSearchResults: MutableList<SearchResult> =
+            when (settings.sortBy) {
+                SortBy.FILENAME -> {
+                    searchResults.stream()
+                        .sorted { sr1, sr2 -> sr1.compareByName(sr2, settings.sortCaseInsensitive) }.toList()
+                }
+                SortBy.FILESIZE -> {
+                    searchResults.stream()
+                        .sorted { sr1, sr2 -> sr1.compareBySize(sr2, settings.sortCaseInsensitive) }.toList()
+                }
+                SortBy.FILETYPE -> {
+                    searchResults.stream()
+                        .sorted { sr1, sr2 -> sr1.compareByType(sr2, settings.sortCaseInsensitive) }.toList()
+                }
+                SortBy.LASTMOD -> {
+                    searchResults.stream()
+                        .sorted { sr1, sr2 -> sr1.compareByLastMod(sr2, settings.sortCaseInsensitive) }.toList()
+                }
+                else -> {
+                    searchResults.stream()
+                        .sorted { sr1, sr2 -> sr1.compareByPath(sr2, settings.sortCaseInsensitive) }.toList()
+                }
+            }.toMutableList()
+
+        if (settings.sortDescending) {
+            sortedSearchResults.reverse()
         }
-        return fileResultCmp;
+
+        return sortedSearchResults.toList()
     }
 }

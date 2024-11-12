@@ -22,6 +22,72 @@ data class SearchResult(val searchPattern: Regex,
                 line: String) :
             this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex,
                     line, listOf(), listOf())
+
+    private fun compareSearchResultFields(other: SearchResult): Int {
+        var cmp: Int = this.lineNum - other.lineNum
+        if (cmp == 0) {
+            cmp = this.matchStartIndex - other.matchStartIndex
+            if (cmp == 0) {
+                cmp = this.matchEndIndex - other.matchEndIndex
+            }
+        }
+        return cmp
+    }
+
+    fun compareByPath(other: SearchResult, sortCaseInsensitive: Boolean): Int {
+        var fileResultCmp = 0
+        if (this.file != null && other.file != null) {
+            fileResultCmp = file.compareByPath(other.file, sortCaseInsensitive)
+        }
+        if (fileResultCmp == 0) {
+            return compareSearchResultFields(other)
+        }
+        return fileResultCmp
+    }
+
+    fun compareByName(other: SearchResult, sortCaseInsensitive: Boolean): Int {
+        var fileResultCmp = 0
+        if (this.file != null && other.file != null) {
+            fileResultCmp = file.compareByName(other.file, sortCaseInsensitive)
+        }
+        if (fileResultCmp == 0) {
+            return compareSearchResultFields(other)
+        }
+        return fileResultCmp
+    }
+
+    fun compareBySize(other: SearchResult, sortCaseInsensitive: Boolean): Int {
+        var fileResultCmp = 0
+        if (this.file != null && other.file != null) {
+            fileResultCmp = file.compareBySize(other.file, sortCaseInsensitive)
+        }
+        if (fileResultCmp == 0) {
+            return compareSearchResultFields(other)
+        }
+        return fileResultCmp
+    }
+
+    fun compareByType(other: SearchResult, sortCaseInsensitive: Boolean): Int {
+        var fileResultCmp = 0
+        if (this.file != null && other.file != null) {
+            fileResultCmp = file.compareByType(other.file, sortCaseInsensitive)
+        }
+        if (fileResultCmp == 0) {
+            return compareSearchResultFields(other)
+        }
+        return fileResultCmp
+    }
+
+    fun compareByLastMod(other: SearchResult, sortCaseInsensitive: Boolean): Int {
+        var fileResultCmp = 0
+        if (this.file != null && other.file != null) {
+            fileResultCmp = file.compareByLastMod(other.file, sortCaseInsensitive)
+        }
+        if (fileResultCmp == 0) {
+            return compareSearchResultFields(other)
+        }
+        return fileResultCmp
+    }
 }
 
 class SearchResultFormatter(val settings: SearchSettings) {
