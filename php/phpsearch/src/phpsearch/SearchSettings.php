@@ -94,17 +94,6 @@ class SearchSettings extends FindSettings
         }
     }
 
-    private function arr_to_string(array $arr): string
-    {
-        $s = '["' . implode('","', $arr) . '"]';
-        return $s;
-    }
-
-    private function bool_to_string(bool $b): string
-    {
-        return $b ? 'true' : 'false';
-    }
-
     public function __toString(): string
     {
         return sprintf('SearchSettings(' .
@@ -112,6 +101,7 @@ class SearchSettings extends FindSettings
             ', colorize: %s' .
             ', debug: %s' .
             ', first_match: %s' .
+            ', follow_symlinks: %s' .
             ', in_archive_extensions: %s' .
             ', in_archive_file_patterns: %s' .
             ', include_hidden: %s' .
@@ -162,6 +152,7 @@ class SearchSettings extends FindSettings
             StringUtil::bool_to_string($this->colorize),
             StringUtil::bool_to_string($this->debug),
             StringUtil::bool_to_string($this->first_match),
+            StringUtil::bool_to_string($this->follow_symlinks),
             StringUtil::string_array_to_string($this->in_archive_extensions),
             StringUtil::string_array_to_string($this->in_archive_file_patterns),
             StringUtil::bool_to_string($this->include_hidden),

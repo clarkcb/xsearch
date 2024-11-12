@@ -32,7 +32,7 @@ class SearchOptions
             'in-ext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->in_extensions),
             'in-filepattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_file_patterns),
-            'in-file_type' => fn (string $s, SearchSettings $ss) => $ss->add_file_types($s, $ss->in_file_types),
+            'in-filetype' => fn (string $s, SearchSettings $ss) => $ss->add_file_types($s, $ss->in_file_types),
             'in-linesafterpattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_lines_after_patterns),
             'in-linesbeforepattern' =>
@@ -78,10 +78,12 @@ class SearchOptions
             'debug' => fn (bool $b, SearchSettings $ss) => $ss->set_debug($b),
             'excludehidden' => fn (bool $b, SearchSettings $ss) => $ss->include_hidden = !$b,
             'firstmatch' => fn (bool $b, SearchSettings $ss) => $ss->first_match = $b,
+            'followsymlinks' => fn (bool $b, SearchSettings $ss) => $ss->follow_symlinks = $b,
             'help' => fn (bool $b, SearchSettings $ss) => $ss->print_usage = $b,
             'includehidden' => fn (bool $b, SearchSettings $ss) => $ss->include_hidden = $b,
             'multilinesearch' => fn (bool $b, SearchSettings $ss) => $ss->multi_line_search = $b,
             'nocolorize' => fn (bool $b, SearchSettings $ss) => $ss->colorize = !$b,
+            'nofollowsymlinks' => fn (bool $b, SearchSettings $ss) => $ss->follow_symlinks = !$b,
             'noprintdirs' => fn (bool $b, SearchSettings $ss) => $ss->print_dirs = !$b,
             'noprintfiles' => fn (bool $b, SearchSettings $ss) => $ss->print_files = !$b,
             'noprintlines' => fn (bool $b, SearchSettings $ss) => $ss->print_lines = !$b,

@@ -153,12 +153,12 @@ class Searcher
     private function search_text_file_contents(FileResult $f): void
     {
         $contents = file_get_contents($f->file_path());
-        $results = $this->search_multiline_string($contents);
+        $results = $this->search_multi_line_string($contents);
         foreach ($results as $r) {
             $fr = new SearchResult(
                 $r->pattern,
                 $f,
-                $r->linenum,
+                $r->line_num,
                 $r->match_start_index,
                 $r->match_end_index,
                 $r->line,
