@@ -1,0 +1,46 @@
+module RbSearch
+  # SearchSettings - encapsulates search settings
+  class SearchSettings < RbFind::FindSettings
+    @colorize: bool
+    @first_match: bool
+    @in_lines_after_patterns: Set[Regexp]
+    @in_lines_before_patterns: Set[Regexp]
+    @lines_after: Integer
+    @lines_after_to_patterns: Set[Regexp]
+    @lines_after_until_patterns: Set[Regexp]
+    @lines_before: Integer
+    @max_line_length: Integer
+    @multi_line_search: bool
+    @out_lines_after_patterns: Set[Regexp]
+    @out_lines_before_patterns: Set[Regexp]
+    @print_lines: bool
+    @print_results: bool
+    @search_archives: bool
+    @search_patterns: Set[Regexp]
+    @text_file_encoding: String
+    @unique_lines: bool
+
+    attr_accessor colorize: bool
+    attr_accessor first_match: bool
+    attr_accessor in_lines_after_patterns: Set[Regexp]
+    attr_accessor in_lines_before_patterns: Set[Regexp]
+    attr_accessor lines_after: Integer
+    attr_accessor lines_after_to_patterns: Set[Regexp]
+    attr_accessor lines_after_until_patterns: Set[Regexp]
+    attr_accessor lines_before: Integer
+    attr_accessor max_line_length: Integer
+    attr_accessor multi_line_search: bool
+    attr_accessor out_lines_after_patterns: Set[Regexp]
+    attr_accessor out_lines_before_patterns: Set[Regexp]
+    attr_accessor print_lines: bool
+    attr_accessor print_results: bool
+    attr_accessor search_archives: bool
+    attr_accessor search_patterns: Set[Regexp]
+    attr_accessor text_file_encoding: String
+    attr_accessor unique_lines: bool
+
+    def initialize: () -> void
+
+    def to_s: () -> String
+  end
+end

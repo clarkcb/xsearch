@@ -1,0 +1,28 @@
+module RbSearch
+  # SearchResultFormatter - provides formatting of search result instances
+  class SearchResultFormatter
+    @settings: SearchSettings
+
+    attr_accessor settings: SearchSettings
+
+    SEPARATOR_LEN: 80
+
+    def initialize: (SearchSettings settings) -> void
+
+    def format: (SearchResult result) -> String
+
+    private
+
+    def strip_newlines: (String s) -> String
+
+    def colorize: (String str, Integer match_start_index, Integer match_end_index) -> String
+
+    def format_matching_line: (SearchResult result) -> String
+
+    def single_line_format: (SearchResult result) -> String
+
+    def line_num_padding: (SearchResult result) -> Integer
+
+    def multi_line_format: (SearchResult result) -> String
+  end
+end

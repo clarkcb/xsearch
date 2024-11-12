@@ -1,0 +1,16 @@
+module RbSearch
+  # SearchOption - encapsulates a CLI search option
+  class SearchOption
+    @short_arg: String
+    @long_arg: String
+    @desc: String
+
+    attr_reader short_arg: String
+    attr_reader long_arg: String
+    attr_reader desc: String
+
+    def initialize: (String short_arg, String long_arg, String desc) -> void
+
+    def sort_arg: () -> String
+  end
+end

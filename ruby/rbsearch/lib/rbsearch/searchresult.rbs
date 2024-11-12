@@ -1,0 +1,28 @@
+module RbSearch
+  # SearchResult - encapsulates a search result
+  class SearchResult
+    @pattern: Regexp
+    @file: RbFind::FileResult
+    @line_num: Integer
+    @match_start_index: Integer
+    @match_end_index: Integer
+    @line: String
+    @lines_before: Array[String]
+    @lines_after: Array[String]
+
+    attr_accessor pattern: Regexp
+    attr_accessor file: RbFind::FileResult
+    attr_accessor line_num: Integer
+    attr_accessor match_start_index: Integer
+    attr_accessor match_end_index: Integer
+    attr_accessor line: String
+    attr_accessor lines_before: Array[String]
+    attr_accessor lines_after: Array[String]
+
+    SEPARATOR_LEN: 80
+
+    def initialize: (Regexp pattern, RbFind::FileResult file, ?::Integer line_num,
+                     ?::Integer match_start_index, ?::Integer match_end_index,
+                     ?::String line, ?Array[String] lines_before, ?Array[String] lines_after) -> void
+  end
+end

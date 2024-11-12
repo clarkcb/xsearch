@@ -1,0 +1,27 @@
+module RbSearch
+  # SearchOptions - parses CLI args into settings, generates usage string
+  class SearchOptions
+    @options: Array[SearchOption]
+    @arg_action_dict: Hash[Symbol, Proc]
+    @bool_flag_action_dict: Hash[Symbol, Proc]
+    @long_arg_dict: Hash[String, Symbol]
+
+    def initialize: () -> void
+
+    def search_settings_from_args: (Array[String] args) -> SearchSettings
+
+    def settings_from_file: (String file_path, SearchSettings settings) -> void
+
+    def settings_from_json: (String json, SearchSettings settings) -> void
+
+    def usage: () -> void
+
+    def get_usage_string: () -> String
+
+    private
+
+    def set_actions: () -> void
+
+    def set_options_from_json: () -> void
+  end
+end

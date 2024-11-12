@@ -1,0 +1,6 @@
+module RbSearch
+  # SearchError - custom exception class
+  class SearchError < StandardError
+    def initialize: (::String msg) -> void
+  end
+end

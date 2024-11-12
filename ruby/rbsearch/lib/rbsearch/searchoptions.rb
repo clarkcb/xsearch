@@ -40,7 +40,7 @@ module RbSearch
             raise SearchError, "Invalid option: #{arg}"
           end
         else
-          settings.paths.push(arg)
+          settings.paths.add(arg)
         end
       end
       settings
@@ -214,10 +214,12 @@ module RbSearch
         debug: ->(b, settings) { settings.debug = b },
         excludehidden: ->(b, settings) { settings.include_hidden = !b },
         firstmatch: ->(b, settings) { settings.first_match = b },
+        followsymlinks: ->(b, settings) { settings.follow_symlinks = b },
         help: ->(b, settings) { settings.print_usage = b },
         includehidden: ->(b, settings) { settings.include_hidden = b },
         multilinesearch: ->(b, settings) { settings.multi_line_search = b },
         nocolorize: ->(b, settings) { settings.colorize = !b },
+        nofollowsymlinks: ->(b, settings) { settings.follow_symlinks = !b },
         noprintdirs: ->(b, settings) { settings.print_dirs = !b },
         noprintfiles: ->(b, settings) { settings.print_files = !b },
         noprintlines: ->(b, settings) { settings.print_lines = !b },

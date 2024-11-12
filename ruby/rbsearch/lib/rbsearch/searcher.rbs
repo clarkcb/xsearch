@@ -1,0 +1,59 @@
+use Ripper::Lexer::Elem
+
+module RbSearch
+  # Searcher - finds files to search and searches them according to settings
+  class Searcher
+    @settings: SearchSettings
+    @finder: RbFind::Finder
+
+    attr_reader settings: SearchSettings
+
+    def initialize: (SearchSettings settings) -> void
+
+    def search: () -> Array[SearchResult]
+
+    def search_multi_line_string: (String str) -> Array[SearchResult]
+
+    def search_line_iterator: (Enumerator[Elem, Array[String]] lines) -> Array[SearchResult]
+
+    private
+
+    def validate_settings: () -> void
+
+    def matches_any_pattern: (String str, Set[Regexp] pattern_set) -> bool
+
+    def any_matches_any_pattern: (Array[String] str_list, Set[Regexp] pattern_set) -> bool
+
+    def search_file: (RbFind::FileResult fr) -> Array[SearchResult]
+
+    def search_binary_file: (RbFind::FileResult fr) -> Array[SearchResult]
+
+    def search_binary_string: (String binstr) -> Array[SearchResult]
+
+    def search_text_file: (RbFind::FileResult fr) -> Array[SearchResult]
+
+    def get_line_count: (String s) -> Integer
+
+    def search_text_file_contents: (RbFind::FileResult fr) -> Array[SearchResult]
+
+    def get_new_line_indices: (String s) -> Array[Integer]
+
+    def get_lines_at_indices: (String s, Array[Integer] at_indices, Array[Integer] start_line_indices, Array[Integer] end_line_indices) -> Array[String]
+
+    def get_lines_before: (String s, Array[Integer] before_start_indices, Array[Integer] start_line_indices, Array[Integer] end_line_indices) -> Array[String]
+
+    def get_lines_after: (String s, Array[Integer] after_start_indices, Array[Integer] start_line_indices, Array[Integer] end_line_indices) -> Array[String]
+
+    def lines_match: (Array[String] lines, Set[Regexp] in_patterns, Set[Regexp] out_patterns) -> bool
+
+    def lines_before_match: (Array[String] lines_before) -> bool
+
+    def do_lines_after_or_until: () -> bool
+
+    def do_lines_after: () -> bool
+
+    def lines_after_match: (Array[String] lines_after) -> bool
+
+    def search_text_file_lines: (RbFind::FileResult fr) -> Array[SearchResult]
+  end
+end

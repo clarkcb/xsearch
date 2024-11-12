@@ -57,6 +57,7 @@ module RbSearch
         "archives_only: #{@archives_only}" +
         ", debug: #{@debug}" +
         ", first_match: #{@first_match}" +
+        ", follow_symlinks: #{@follow_symlinks}" +
         ', ' + set_to_s('in_archive_extensions', @in_archive_extensions) +
         ', ' + set_to_s('in_archive_file_patterns', @in_archive_file_patterns) +
         ", include_hidden: #{@include_hidden}" +
@@ -86,7 +87,7 @@ module RbSearch
         ', ' + file_types_to_s('out_file_types', @out_file_types) +
         ', ' + array_to_s('out_lines_after_patterns', @out_lines_after_patterns.map { |p| p.source }) +
         ', ' + array_to_s('out_lines_before_patterns', @out_lines_before_patterns.map { |p| p.source }) +
-        ', ' + set_to_s('paths', @paths) +
+        ', ' + paths_to_s('paths', @paths) +
         ", print_dirs: #{@print_dirs}" +
         ", print_files: #{@print_files}" +
         ", print_lines: #{@print_lines}" +
