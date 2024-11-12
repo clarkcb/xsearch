@@ -1,7 +1,5 @@
 using System.Text;
 
-using CsFindLib;
-
 namespace CsSearchLib;
 
 public class SearchResultFormatter
@@ -22,9 +20,9 @@ public class SearchResultFormatter
 		return SingleLineFormat(result);
 	}
 
-	private string GetRelativeFilePath(SearchResult result)
+	private static string GetRelativeFilePath(SearchResult result)
 	{
-		return FileUtil.ContractOrRelativePath(result.File!.FullName, Settings.Paths);
+		return result.File!.PathAndName;
 	}
 
 	private static int LineNumPadding(SearchResult result)
@@ -36,11 +34,11 @@ public class SearchResultFormatter
 	private static string Colorize(string s, int matchStartIndex, int matchEndIndex)
 	{
 		var matchLength = matchEndIndex - matchStartIndex;
-		return s.Substring(0, matchStartIndex) +
+		return s[..matchStartIndex] +
 		       Color.Green + 
 		       s.Substring(matchStartIndex, matchLength) +
 		       Color.Reset + 
-		       s.Substring(matchStartIndex + matchLength);
+		       s[(matchStartIndex + matchLength)..];
 	}
 
 	private string MultiLineFormat(SearchResult result)

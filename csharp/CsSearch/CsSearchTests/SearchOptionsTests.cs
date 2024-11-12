@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using CsFindLib;
 using CsSearchLib;
+using NUnit.Framework;
 
 namespace CsSearchTests;
 
@@ -43,10 +43,10 @@ public class SearchOptionsTests
 	{
 		var args = new List<string>() { "-x", "cs", "-s", "Search", "." };
 		var settings = _searchOptions.SettingsFromArgs(args);
-		var startInfo = new DirectoryInfo(".");
+		var startPath = new FilePath(".");
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
-		Assert.That(settings.Paths.First(), Is.EqualTo(startInfo.ToString()));
+		Assert.That(settings.Paths.First().Path, Is.EqualTo(startPath.Path));
 		Assert.That(settings.InExtensions.Count, Is.EqualTo(1));
 		Assert.That(settings.InExtensions.Contains(".cs"));
 		Assert.That(settings.SearchPatterns.Count, Is.EqualTo(1));
@@ -87,9 +87,10 @@ public class SearchOptionsTests
 }";
 		var settings = new SearchSettings();
 		SearchOptions.SettingsFromJson(json, settings);
+		var startPath = new FilePath("~/src/xsearch/");
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
-		Assert.That(settings.Paths.First(), Is.EqualTo("~/src/xsearch/"));
+		Assert.That(settings.Paths.First().Path, Is.EqualTo(startPath.Path));
 
 		Assert.That(settings.InExtensions.Count, Is.EqualTo(2));
 		Assert.That(settings.InExtensions.Contains(".js"));

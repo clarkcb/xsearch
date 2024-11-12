@@ -50,7 +50,7 @@ public class SearchOptions
 			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
 			{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
 			{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
-			{ "path", (s, settings) => settings.Paths.Add(s) },
+			{ "path", (s, settings) => settings.AddPath(s) },
 			{ "searchpattern", (s, settings) => settings.AddSearchPattern(s) },
 			{ "settings-file", SettingsFromFile },
 			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
@@ -65,10 +65,12 @@ public class SearchOptions
 			{ "debug", (b, settings) => settings.Debug = b },
 			{ "excludehidden", (b, settings) => settings.IncludeHidden = !b },
 			{ "firstmatch", (b, settings) => settings.FirstMatch = b },
+			{ "followsymlinks", (b, settings) => settings.FollowSymlinks = b },
 			{ "help", (b, settings) => settings.PrintUsage = b },
 			{ "includehidden", (b, settings) => settings.IncludeHidden = b },
 			{ "multilinesearch", (b, settings) => settings.MultiLineSearch = b },
 			{ "nocolorize", (b, settings) => settings.Colorize = !b },
+			{ "nofollowsymlinks", (b, settings) => settings.FollowSymlinks = !b },
 			{ "noprintdirs", (b, settings) => settings.PrintDirs = !b },
 			{ "noprintfiles", (b, settings) => settings.PrintFiles = !b },
 			{ "noprintlines", (b, settings) => settings.PrintLines = !b },
@@ -201,7 +203,7 @@ public class SearchOptions
 		}
 		else if (arg.Equals("path"))
 		{
-			settings.Paths.Add(val);
+			settings.AddPath(val);
 		}
 		else
 		{
@@ -276,7 +278,7 @@ public class SearchOptions
 			}
 			else
 			{
-				settings.Paths.Add(s);
+				settings.AddPath(s);
 			}
 		}
 		return settings;

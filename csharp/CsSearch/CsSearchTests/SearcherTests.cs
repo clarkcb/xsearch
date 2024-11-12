@@ -30,7 +30,7 @@ class SearcherTests
 	{
 		// var settings = new SearchSettings {StartPath = "."};
 		var settings = new SearchSettings();
-		settings.Paths.Add(".");
+		settings.AddPath(".");
 		settings.AddSearchPattern("Searcher");
 		return settings;
 	}

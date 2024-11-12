@@ -26,19 +26,20 @@ public class Searcher
 	public Searcher(SearchSettings settings)
 	{
 		Settings = settings;
+		try
+		{
+			_finder = new Finder(settings);
+		}
+		catch (FindException e)
+		{
+			throw new SearchException(e.Message);
+		}
 		ValidateSettings();
-		_finder = new Finder(settings);
-		Results = new ConcurrentBag<SearchResult>();
+		Results = [];
 	}
 
 	private void ValidateSettings()
 	{
-		if (Settings.Paths.Count == 0)
-			throw new SearchException("Startpath not defined");
-		if (Settings.Paths.Select(FileUtil.ExpandPath).Any(p => !Directory.Exists(p) && !File.Exists(p)))
-		{
-			throw new SearchException("Startpath not found");
-		}
 		if (Settings.SearchPatterns.Count < 1)
 			throw new SearchException("No search patterns defined");
 		try
@@ -64,20 +65,20 @@ public class Searcher
 		if (Settings.Verbose)
 		{
 			var findDirs = fileResults
-				.Where(sf => sf.File.Directory != null)
-				.Select(sf => sf.File.Directory!.ToString())
+				.Where(fr => fr.FilePath.Parent != null)
+				.Select(fr => fr.FilePath.Parent!.ToString())
 				.Distinct()
 				.OrderBy(d => d).ToArray();
 			Logger.Log($"Directories to be searched ({findDirs.Length}):");
 			foreach (var d in findDirs)
 			{
-				Logger.Log(FileUtil.ContractOrRelativePath(d, Settings.Paths));
+				Logger.Log(d);
 			}
 				
 			Logger.Log($"\nFiles to be searched ({fileResults.Count}):");
 			foreach (var f in fileResults)
 			{
-				Logger.Log(FileUtil.ContractOrRelativePath(f.FullName, Settings.Paths));
+				Logger.Log(f.PathAndName);
 			}
 		}
 
@@ -132,13 +133,13 @@ public class Searcher
 				SearchBinaryFile(f);
 				break;
 			case FileType.Archive:
-				Logger.Log($"Skipping archive file {FileUtil.ContractPath(f.FullName)}");
+				Logger.Log($"Skipping archive file {f.PathAndName}");
 				break;
 			default:
 			{
 				if (Settings.Verbose)
 				{
-					Logger.Log($"Skipping file {FileUtil.ContractPath(f.FullName)}");
+					Logger.Log($"Skipping file {f.PathAndName}");
 				}
 
 				break;
@@ -149,7 +150,7 @@ public class Searcher
 	private void SearchTextFile(FileResult f)
 	{
 		if (Settings.Debug)
-			Logger.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.Paths)}");
+			Logger.Log($"Searching text file {f.PathAndName}");
 		if (Settings.MultiLineSearch)
 			SearchTextFileContents(f);
 		else
@@ -160,7 +161,7 @@ public class Searcher
 	{
 		try
 		{
-			var contents = FileUtil.GetFileContents(f, TextFileEncoding);
+			var contents = FileUtil.GetFileContents(f.FullName, TextFileEncoding);
 			var results = SearchContents(contents);
 			foreach (var r in results)
 			{
@@ -285,7 +286,7 @@ public class Searcher
 	{
 		try
 		{
-			var enumerableLines = FileUtil.EnumerableStringFromFile(f, TextFileEncoding);
+			var enumerableLines = File.ReadLines(f.FullName);
 			var results = SearchLines(enumerableLines);
 
 			foreach (var r in results)
@@ -393,13 +394,13 @@ public class Searcher
 		return results;
 	}
 
-	private void SearchBinaryFile(FileResult sf)
+	private void SearchBinaryFile(FileResult fr)
 	{
 		if (Settings.Verbose)
-			Logger.Log($"Searching binary file {FileUtil.ContractPath(sf.FullName)}");
+			Logger.Log($"Searching binary file {fr.PathAndName}");
 		try
 		{
-			using var sr = new StreamReader(sf.FullName, _binaryEncoding);
+			using var sr = new StreamReader(fr.FullName, _binaryEncoding);
 			var contents = sr.ReadToEnd();
 			foreach (var p in Settings.SearchPatterns)
 			{
@@ -412,7 +413,7 @@ public class Searcher
 				{
 					AddSearchResult(new SearchResult(
 						p,
-						sf,
+						fr,
 						0,
 						m.Index + 1,
 						m.Index + m.Length + 1,
@@ -431,37 +432,31 @@ public class Searcher
 		Results.Add(searchResult);
 	}
 
-	private IList<SearchResult> GetSortedSearchResults()
-	{
-		var sorted = Results.ToList();
-		sorted.Sort(new SearchResultsComparer());
-		return sorted;
-	}
-
 	public void PrintResults()
 	{
-		var sortedResults = GetSortedSearchResults();
+		// File sorting is done by CsFind, so maybe additional sorting isn't needed?
+		// var sortedResults = GetSortedSearchResults();
 		var formatter = new SearchResultFormatter(Settings);
-		Logger.Log($"Search results ({sortedResults.Count}):");
-		foreach (var searchResult in sortedResults)
+		Logger.Log($"Search results ({Results.Count}):");
+		foreach (var searchResult in Results)
 		{
 			Logger.Log(formatter.Format(searchResult));
 		}
 	}
 
-	private IEnumerable<DirectoryInfo> GetMatchingDirs()
+	private IEnumerable<FilePath> GetMatchingDirs()
 	{
-		return new List<DirectoryInfo>(
-			Results.Where(r => r.File?.File.Directory != null)
-				.Select(r => r.File!.File.Directory!)
+		return new List<FilePath>(
+			Results.Where(r => r.File?.FilePath.Parent != null)
+				.Select(r => r.File!.FilePath.Parent!)
   				.Distinct()
-				.OrderBy(d => d.FullName));
+				.OrderBy(d => d.Path));
 	}
 
 	public void PrintMatchingDirs()
 	{
 		var matchingDirs = GetMatchingDirs()
-			.Select(d => FileUtil.GetRelativePath(d.FullName, Settings.Paths))
+			.Select(d => d.Path)
 			.Distinct()
 			.OrderBy(d => d).ToList();
 		Logger.Log($"\nDirectories with matches ({matchingDirs.Count}):");
@@ -471,19 +466,18 @@ public class Searcher
 		}
 	}
 
-	private IEnumerable<FileInfo> GetMatchingFiles()
+	private IEnumerable<FilePath> GetMatchingFiles()
 	{
-		return new List<FileInfo>(
+		return new List<FilePath>(
 			Results.Where(r => r.File != null)
-				.Select(r => r.File!.PathAndName)
-				.Distinct().Select(f => new FileInfo(f))
-				.OrderBy(d => d.FullName));
+				.Select(r => r.File!.FilePath)
+				.Distinct().ToList());
 	}
 
 	public void PrintMatchingFiles()
 	{
 		var matchingFiles = GetMatchingFiles()
-			.Select(f => FileUtil.GetRelativePath(f.FullName, Settings.Paths))
+			.Select(f => f.ToString())
 			.Distinct()
 			.OrderBy(f => f).ToList();
 		Logger.Log($"\nFiles with matches ({matchingFiles.Count()}):");

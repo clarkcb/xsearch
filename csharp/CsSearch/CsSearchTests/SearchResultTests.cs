@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using CsSearchLib;
 using NUnit.Framework;
@@ -22,7 +23,8 @@ class SearchResultTests
 		};
 		var formatter = new SearchResultFormatter(settings);
 		var pattern = new Regex("Search");
-		var file = new FileResult(CsSearchPath, "Searcher.cs", FileType.Code);
+		var filePath = new FilePath(Path.Join(CsSearchPath, "Searcher.cs"));
+		var file = new FileResult(filePath, FileType.Code);
 		const int lineNum = 10;
 		const int matchStartIndex = 15;
 		const int matchEndIndex = 23;
@@ -45,7 +47,8 @@ class SearchResultTests
 		};
 		var formatter = new SearchResultFormatter(settings);
 		var pattern = new Regex("maxlen");
-		var file = new FileResult(".", "maxlen.txt", FileType.Text);
+		var filePath = new FilePath("./maxlen.txt");
+		var file = new FileResult(filePath, FileType.Text);
 		const int lineNum = 1;
 		const int matchStartIndex = 53;
 		const int matchEndIndex = 59;
@@ -71,7 +74,8 @@ class SearchResultTests
 		};
 		var formatter = new SearchResultFormatter(settings);
 		var pattern = new Regex("maxlen");
-		var file = new FileResult(".", "maxlen.txt", FileType.Text);
+		var filePath = new FilePath("./maxlen.txt");
+		var file = new FileResult(filePath, FileType.Text);
 		const int lineNum = 1;
 		const int matchStartIndex = 53;
 		const int matchEndIndex = 59;
@@ -101,7 +105,8 @@ class SearchResultTests
 		};
 		var formatter = new SearchResultFormatter(settings);
 		var pattern = new Regex("Search");
-		var file = new FileResult(CsSearchPath, "Searcher.cs", FileType.Code);
+		var filePath = new FilePath(Path.Join(CsSearchPath, "Searcher.cs"));
+		var file = new FileResult(filePath, FileType.Code);
 		const int lineNum = 10;
 		const int matchStartIndex = 15;
 		const int matchEndIndex = 23;
@@ -131,7 +136,8 @@ class SearchResultTests
 		var settings = new SearchSettings();
 		var formatter = new SearchResultFormatter(settings);
 		var pattern = new Regex("Search");
-		var file = new FileResult(CsSearchPath, "Searcher.exe", FileType.Binary);
+		var filePath = new FilePath(Path.Join(CsSearchPath, "Searcher.exe"));
+		var file = new FileResult(filePath, FileType.Binary);
 		const int lineNum = 0;
 		const int matchStartIndex = 0;
 		const int matchEndIndex = 0;

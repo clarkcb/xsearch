@@ -152,6 +152,7 @@ public class SearchSettings : FindSettings
 		       ", Colorize: " + Colorize +
 		       ", Debug: " + Debug +
 		       ", FirstMatch: " + FirstMatch +
+		       ", FollowSymlinks: " + FollowSymlinks +
 		       ", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions) +
 		       ", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns) +
 		       ", IncludeHidden: " + IncludeHidden +
