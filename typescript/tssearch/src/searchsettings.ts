@@ -64,6 +64,14 @@ export class SearchSettings {
         if (value) this.findSettings.verbose = value;
     }
 
+    get followSymlinks(): boolean {
+        return this.findSettings.followSymlinks;
+    }
+
+    set followSymlinks(value: boolean) {
+        this.findSettings.followSymlinks = value;
+    }
+
     get includeHidden(): boolean {
         return this.findSettings.includeHidden;
     }
@@ -160,7 +168,7 @@ export class SearchSettings {
         SearchSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
-    get maxLastMod(): Date | null {
+    get maxLastMod(): number {
         return this.findSettings.maxLastMod;
     }
 
@@ -172,12 +180,12 @@ export class SearchSettings {
         this.findSettings.maxDepth = value;
     }
 
-    set maxLastMod(value: Date | null) {
+    set maxLastMod(value: number) {
         this.findSettings.maxLastMod = value;
     }
 
     maxLastModFromString(s: string) {
-        this.findSettings.maxLastMod = StringUtil.getDateForString(s);
+        this.findSettings.maxLastMod = StringUtil.getTimestampForString(s);
     }
 
     get maxSize(): number {
@@ -196,16 +204,16 @@ export class SearchSettings {
         this.findSettings.minDepth = value;
     }
 
-    get minLastMod(): Date | null {
+    get minLastMod(): number {
         return this.findSettings.minLastMod;
     }
 
-    set minLastMod(value: Date | null) {
+    set minLastMod(value: number) {
         this.findSettings.minLastMod = value;
     }
 
     minLastModFromString(s: string) {
-        this.findSettings.minLastMod = StringUtil.getDateForString(s);
+        this.findSettings.minLastMod = StringUtil.getTimestampForString(s);
     }
 
     get minSize(): number {
@@ -394,6 +402,7 @@ export class SearchSettings {
             + ', colorize=' + this.colorize
             + ', debug=' + this.debug
             + ', firstMatch=' + this.firstMatch
+            + ', followSymlinks=' + this.followSymlinks
             + ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions)
             + ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
             + ', includeHidden=' + this.includeHidden
@@ -408,11 +417,11 @@ export class SearchSettings {
             + ', ' + StringUtil.patternListToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns)
             + ', linesBefore=' + this.linesBefore
             + ', maxDepth=' + this.maxDepth
-            + ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod)
+            + ', ' + StringUtil.timestampToString('maxLastMod', this.maxLastMod)
             + ', maxLineLength=' + this.maxLineLength
             + ', maxSize=' + this.maxSize
             + ', minDepth=' + this.minDepth
-            + ', ' + StringUtil.dateToString('minLastMod', this.minLastMod)
+            + ', ' + StringUtil.timestampToString('minLastMod', this.minLastMod)
             + ', minSize=' + this.minSize
             + ', multilineSearch=' + this.multilineSearch
             + ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions)

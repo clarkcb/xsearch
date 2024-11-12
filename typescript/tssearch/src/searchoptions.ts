@@ -113,12 +113,16 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.includeHidden = !b; },
             'firstmatch':
                 (b: boolean, settings: SearchSettings) => { settings.firstMatch = b; },
+            'followsymlinks':
+                (b: boolean, settings: SearchSettings) => { settings.followSymlinks = b; },
             'includehidden':
                 (b: boolean, settings: SearchSettings) => { settings.includeHidden = b; },
             'help':
                 (b: boolean, settings: SearchSettings) => { settings.printUsage = b; },
             'multilinesearch':
                 (b: boolean, settings: SearchSettings) => { settings.multilineSearch = b; },
+            'nofollowsymlinks':
+                (b: boolean, settings: SearchSettings) => { settings.followSymlinks = !b; },
             'noprintdirs':
                 (b: boolean, settings: SearchSettings) => { settings.printDirs = !b; },
             'noprintfiles':
@@ -206,7 +210,7 @@ export class SearchOptions {
     private settingsFromFile(filepath: string, settings: SearchSettings): Error | undefined {
         const fs = require('fs');
         if (fs.existsSync(filepath)) {
-            const json: string = FileUtil.getFileContents(filepath, settings.textFileEncoding);
+            const json: string = FileUtil.getFileContentsSync(filepath, settings.textFileEncoding);
             return this.settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');

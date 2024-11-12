@@ -117,7 +117,7 @@ export class Searcher {
         if (this._settings.verbose) {
             common.log(`Searching binary file: "${fileResult}"`);
         }
-        const contents: string = FileUtil.getFileContents(fileResult.relativePath(), this._binaryEncoding);
+        const contents: string = FileUtil.getFileContentsSync(fileResult.relativePath(), this._binaryEncoding);
         let results: SearchResult[] = [];
 
         const searchPattern = (p: RegExp): SearchResult[] => {
@@ -163,7 +163,7 @@ export class Searcher {
     }
 
     private async searchTextFileContents(fileResult: FileResult): Promise<SearchResult[]> {
-        const contents: string = FileUtil.getFileContents(fileResult.relativePath(), this._settings.textFileEncoding);
+        const contents: string = FileUtil.getFileContentsSync(fileResult.relativePath(), this._settings.textFileEncoding);
         const results: SearchResult[] = await this.searchMultiLineString(contents);
         return results.map((r: SearchResult) => {
             return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
@@ -306,7 +306,7 @@ export class Searcher {
 
     private async searchTextFileLines(fileResult: FileResult): Promise<SearchResult[]> {
         const self = this;
-        const lines: string[] = FileUtil.getFileLines(fileResult.relativePath(), this._settings.textFileEncoding);
+        const lines: string[] = FileUtil.getFileLinesSync(fileResult.relativePath(), this._settings.textFileEncoding);
         const linesResults: SearchResult[] = await this.searchLines(lines);
         return linesResults.map((r: SearchResult) => {
             return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
