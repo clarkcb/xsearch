@@ -102,6 +102,8 @@ class SearchOptions {
                 (b, settings) => { settings.includeHidden = !b; },
             'firstmatch':
                 (b, settings) => { settings.firstMatch = b; },
+            'followsymlinks':
+                (b, settings) => { settings.followSymlinks = b; },
             'includehidden':
                 (b, settings) => { settings.includeHidden = b; },
             'help':
@@ -110,6 +112,8 @@ class SearchOptions {
                 (b, settings) => { settings.multilineSearch = b; },
             'nocolorize':
                 (b, settings) => { settings.colorize = !b; },
+            'nofollowsymlinks':
+                (b, settings) => { settings.followSymlinks = !b; },
             'noprintdirs':
                 (b, settings) => { settings.printDirs = !b; },
             'noprintfiles':

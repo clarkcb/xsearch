@@ -112,7 +112,7 @@ class Searcher {
             common.log(`Searching binary file: "${fileResult}"`);
         }
 
-        const contents = await FileUtil.getFileContentsAsync(fileResult.relativePath(), this.binaryEncoding);
+        const contents = FileUtil.getFileContentsSync(fileResult.relativePath(), this.binaryEncoding);
         let results = [];
 
         const searchPattern = p => {
@@ -158,7 +158,7 @@ class Searcher {
     }
 
     async searchTextFileContents(fileResult) {
-        const contents = await FileUtil.getFileContentsAsync(fileResult.relativePath(), this.settings.textFileEncoding);
+        const contents = FileUtil.getFileContentsSync(fileResult.relativePath(), this.settings.textFileEncoding);
         let stringResults = await this.searchMultiLineString(contents);
         return stringResults.map(r => {
             return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
@@ -304,7 +304,7 @@ class Searcher {
     }
 
     async searchTextFileLines(fileResult) {
-        let lines = FileUtil.getFileLines(fileResult.relativePath(), this.settings.textFileEncoding);
+        let lines = FileUtil.getFileLinesSync(fileResult.relativePath(), this.settings.textFileEncoding);
         let linesResults = await this.searchLines(lines);
         return linesResults.map(r => {
             return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,

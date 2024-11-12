@@ -56,6 +56,14 @@ class SearchSettings {
         this.#findSettings.debug = value;
     }
 
+    get followSymlinks() {
+        return this.findSettings.followSymlinks;
+    }
+
+    set followSymlinks(value) {
+        this.findSettings.followSymlinks = value;
+    }
+
     get inArchiveExtensions() {
         return this.#findSettings.inArchiveExtensions;
     }
@@ -386,6 +394,7 @@ class SearchSettings {
             ', colorize=' + this.colorize +
             ', debug=' + this.debug +
             ', firstMatch=' + this.firstMatch +
+            ', followSymlinks=' + this.followSymlinks +
             ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +
             ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
             ', includeHidden=' + this.includeHidden +
