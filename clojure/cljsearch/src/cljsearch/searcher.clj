@@ -6,23 +6,31 @@
 (ns cljsearch.searcher
   #^{:author "Cary Clark",
      :doc "Recursive file search utility"}
+  (:require [cljfind.fileresult]
+            [cljsearch.searchresult]
+            [cljsearch.searchsettings])
   (:import (java.io File)
            (java.util.jar JarFile)
-           (java.util.zip ZipFile))
+           (java.util.zip ZipFile)
+           (cljfind.fileresult FileResult)
+           (cljfind.fileresult FileResult)
+           (cljsearch.searchresult SearchResult)
+           (cljsearch.searchsettings SearchSettings)
+           )
   (:use [clojure.java.io :only (file reader)]
         [clojure.string :as str :only (join trim upper-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only (file-result-path)]
-        [cljfind.finder :only (find-files)]
+        [cljfind.finder :only (find-files validate-settings)]
         [cljsearch.searchresult :only
           (->SearchResult search-result-to-string)]
         [cljsearch.searchsettings]
         ))
 
-(defn print-search-result [r settings]
+(defn print-search-result [^SearchResult r ^SearchSettings settings]
   (log-msg (search-result-to-string r settings)))
 
-(defn print-search-results [results settings]
+(defn print-search-results [results ^SearchSettings settings]
   (log-msg (format "\nSearch results (%d):" (count results)))
   (doseq [r results] (print-search-result r settings)))
 
@@ -42,13 +50,13 @@
     (log-msg (format "\nFiles with matches (%d):" (count files)))
     (doseq [f files] (log-msg f))))
 
-(defn get-matching-lines [results settings]
+(defn get-matching-lines [results ^SearchSettings settings]
   (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) results))]
     (if (:unique-lines settings)
       (distinct lines)
       lines)))
 
-(defn print-matching-lines [results settings]
+(defn print-matching-lines [results ^SearchSettings settings]
   (let [lines (get-matching-lines results settings)]
     (log-msg
       (if (:unique-lines settings)
@@ -71,10 +79,10 @@
     ["Startpath not defined"]
     (take 1 (filter #(not (= % nil)) (map validate-path paths)))))
 
-(defn validate-settings [settings]
-  (let [path-errs (take 1 (filter #(not (= % nil)) (validate-paths (:paths settings))))]
-    (if (not (empty? path-errs))
-      path-errs
+(defn validate-search-settings [^SearchSettings settings]
+  (let [find-errs (validate-settings settings)]
+    (if (not (empty? find-errs))
+      find-errs
       (let [tests [(fn [ss] (if (empty? (:search-patterns ss)) "No search patterns defined" nil))
                    (fn [ss]
                      (if
@@ -91,17 +99,17 @@
                   ]]
         (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))))
 
-(defn search-archive-file [f settings]
+(defn search-archive-file [f ^SearchSettings settings]
   (if (:verbose settings)
     (log-msg (format "Searching archive file %s" f))))
 
 (defn search-binary-string-for-pattern
-  ([b p settings]
+  ([b p ^SearchSettings settings]
     (let [m (re-matcher p b)]
       (if (.find m 0)
         (search-binary-string-for-pattern b m 0 settings)
         [])))
-  ([b m i settings]
+  ([b m i ^SearchSettings settings]
     (if (.find m i)
       (do
         (let [startmatchindex (.start m)
@@ -121,13 +129,13 @@
               endmatchindex settings)))))
       [])))
 
-(defn search-binary-string [b settings]
+(defn search-binary-string [b ^SearchSettings settings]
   (if (:debug settings)
     (log-msg "Searching binary string"))
   (apply concat
     (map #(search-binary-string-for-pattern b % settings) (:search-patterns settings))))
 
-(defn search-binary-file [fr settings]
+(defn search-binary-file [fr ^SearchSettings settings]
   (if (:verbose settings)
     (log-msg (format "Searching binary file %s" (file-result-path fr))))
   (let [contents (slurp (:file fr) :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
@@ -135,7 +143,7 @@
         with-file-results (map #(assoc-in % [:file] fr) search-results)]
     with-file-results))
 
-(defn matches-any-pattern? [s pp]
+(defn matches-any-pattern? [^String s pp]
   (some #(re-find % s) pp))
 
 (defn any-matches-any-pattern? [ss pp]
@@ -150,18 +158,18 @@
       (empty? outpatterns)
       (not (any-matches-any-pattern? lines outpatterns)))))
 
-(defn lines-before-match? [lines-before settings]
+(defn lines-before-match? [lines-before ^SearchSettings settings]
   (lines-match? lines-before (:in-lines-before-patterns settings) (:out-lines-before-patterns settings)))
 
-(defn lines-after-match? [lines-after settings]
+(defn lines-after-match? [lines-after ^SearchSettings settings]
   (lines-match? lines-after (:in-lines-after-patterns settings) (:out-lines-after-patterns settings)))
 
-(defn get-newline-indices [s]
+(defn get-newline-indices [^String s]
   (map first 
     (filter #(= (second %) \newline)
       (map-indexed vector s))))
 
-(defn get-multiline-lines-before [s beforestartindices beforeendindices settings]
+(defn get-multiline-lines-before [^String s beforestartindices beforeendindices ^SearchSettings settings]
   (if (> (:lines-before settings) 0)
     (let [lines-before (:lines-before settings)
           startindices (take-last lines-before beforestartindices)
@@ -171,7 +179,7 @@
         []))
     []))
 
-(defn get-multiline-lines-after [s afterstartindices afterendindices settings]
+(defn get-multiline-lines-after [^String s afterstartindices afterendindices ^SearchSettings settings]
   (if (> (:lines-after settings) 0)
     (let [lines-after (:lines-after settings)
           startindices (take lines-after afterstartindices)
@@ -182,7 +190,7 @@
     []))
 
 (defn search-multiline-string-for-pattern
-  ([s p settings]
+  ([^String s p ^SearchSettings settings]
     (let [m (re-matcher p s)]
       (if (.find m 0)
         (let [newlineindices (get-newline-indices s)
@@ -190,7 +198,7 @@
               endlineindices (concat newlineindices [(count s)])]
           (search-multiline-string-for-pattern s m 0 startlineindices
             endlineindices settings)))))
-  ([s m i startlineindices endlineindices settings]
+  ([^String s m i startlineindices endlineindices ^SearchSettings settings]
     (if (.find m i)
       (do
         (let [startmatchindex (.start m)
@@ -231,18 +239,18 @@
             [])))
       [])))
 
-(defn search-multiline-string [s settings]
+(defn search-multiline-string [^String s ^SearchSettings settings]
   (apply concat
     (map #(search-multiline-string-for-pattern s % settings) (:search-patterns settings))))
 
-(defn search-text-file-contents [fr settings]
+(defn search-text-file-contents [^FileResult fr ^SearchSettings settings]
   (let [contents (slurp (:file fr) :encoding (:text-file-encoding settings))
         search-results (search-multiline-string contents settings)
         with-file-results (map #(assoc-in % [:file] fr) search-results)]
     with-file-results))
 
 (defn search-line-for-pattern
-  ([line-num line lines-before lines-after p settings]
+  ([line-num line lines-before lines-after p ^SearchSettings settings]
     (let [m (re-matcher p line)]
       (if
         (and
@@ -251,7 +259,7 @@
           (lines-after-match? lines-after settings))
         (search-line-for-pattern line-num line lines-before lines-after m 0 [] settings)
         [])))
-  ([line-num line lines-before lines-after m i results settings]
+  ([line-num line lines-before lines-after m i results ^SearchSettings settings]
     (if (.find m i)
       (do
         (let [startmatchindex (.start m)
@@ -269,19 +277,19 @@
             endmatchindex (concat results [result]) settings)))
       results)))
 
-(defn search-line [line-num line lines-before lines-after settings]
+(defn search-line [line-num line lines-before lines-after ^SearchSettings settings]
   (apply concat
     (map #(search-line-for-pattern line-num line lines-before lines-after % settings)
       (:search-patterns settings))))
 
 (defn search-lines
-  ([lines settings]
+  ([lines ^SearchSettings settings]
     (let [line (first lines)
           nextlines (drop (:lines-after settings) (rest lines))
           lines-before []
           lines-after (take (:lines-after settings) (rest lines))]
       (search-lines 1 line nextlines lines-before lines-after [] settings)))
-  ([line-num line lines lines-before lines-after results settings]
+  ([line-num line lines lines-before lines-after results ^SearchSettings settings]
     (if line
       (let [nextresults (search-line line-num line lines-before lines-after settings)
             nextline-num (+ line-num 1)
@@ -305,20 +313,20 @@
         (take 1 results)
         results))))
 
-(defn search-text-file-lines [fr settings]
-  (with-open [rdr (reader (:file fr) :encoding (:text-file-encoding settings))]
+(defn search-text-file-lines [^FileResult fr ^SearchSettings settings]
+  (with-open [rdr (reader (.toFile (:path fr)) :encoding (:text-file-encoding settings))]
     (let [search-results (search-lines (line-seq rdr) settings)
           with-file-results (map #(assoc-in % [:file] fr) search-results)]
       with-file-results)))
 
-(defn search-text-file [fr settings]
+(defn search-text-file [^FileResult fr ^SearchSettings settings]
   (if (:verbose settings)
     (log-msg (format "Searching text file %s" (file-result-path fr))))
   (if (:multi-line-search settings)
     (search-text-file-contents fr settings)
     (search-text-file-lines fr settings)))
 
-(defn search-file [fr settings]
+(defn search-file [^FileResult fr ^SearchSettings settings]
   (let [file-type (:file-type fr)
         verbose (:verbose settings)
         file-path (file-result-path fr)]
@@ -339,7 +347,7 @@
           (if verbose (log-msg (format "Skipping file of unknown type: %s" file-path))
           [])))))
 
-(defn search-files [search-files settings]
+(defn search-files [search-files ^SearchSettings settings]
   (if (:verbose settings)
     (do
       (log-msg (format "\nFiles to be searched (%d):" (count search-files)))
@@ -347,8 +355,8 @@
       (log-msg "")))
   (apply concat (map #(search-file % settings) search-files)))
 
-(defn search [settings]
-  (let [validation-errs (validate-settings settings)]
+(defn search [^SearchSettings settings]
+  (let [validation-errs (validate-search-settings settings)]
     (if (empty? validation-errs)
       (let [find-settings (to-find-settings settings)
             [file-results find-errs] (find-files find-settings)]

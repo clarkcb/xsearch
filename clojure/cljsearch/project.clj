@@ -4,11 +4,14 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [
-                  [org.clojure/clojure "1.11.2"]
+                  [org.clojure/clojure "1.12.0"]
                   [org.clojure/data.json "2.5.0"]
                   [clojure.java-time "1.4.2"]
                   [cljfind "0.1.0-SNAPSHOT"]
                 ]
-  :main ^:skip-aot cljsearch.cljsearch
+;  :main ^:skip-aot cljsearch.cljsearch
+  :main cljsearch.cljsearch
+  :aot [cljsearch.cljsearch]
   :target-path "target/%s"
+  :plugins [[jonase/eastwood "1.4.3"]]
   :profiles {:uberjar {:aot :all}})

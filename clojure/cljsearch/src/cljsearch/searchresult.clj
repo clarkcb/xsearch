@@ -9,6 +9,8 @@
 (ns cljsearch.searchresult
   #^{:author "Cary Clark",
      :doc "Search results record and functions"}
+  (:require [cljsearch.searchsettings])
+  (:import (cljsearch.searchsettings SearchSettings))
   (:use [clojure.string :as str :only (trim trimr trim-newline)]
         [cljsearch.color :only (RESET GREEN)]
         [cljfind.fileresult :only (file-result-path)]
@@ -18,7 +20,7 @@
 (defrecord SearchResult [pattern file line-num matchstartindex matchendindex line
                          lines-before lines-after])
 
-(defn multi-line-to-string [r settings]
+(defn multi-line-to-string ^String [^SearchResult r ^SearchSettings settings]
   (let [line-num (:line-num r)
         lines-before (map #(str/trim-newline %) (:lines-before r))
         line (str/trim-newline (:line r))
@@ -40,7 +42,7 @@
         (map #(format lines-format " " (+ line-num (first %) 1) (second %))
           lines-after-indexed)))))
 
-(defn rec-get-indices [settings linestartindex lineendindex]
+(defn rec-get-indices [^SearchSettings settings linestartindex lineendindex]
   (if (< (- lineendindex linestartindex) (:max-line-length settings))
     (let [lsi (if (> linestartindex 0) (- linestartindex 1) linestartindex)
           lei (if (< (- lineendindex lsi) (:max-line-length settings)) (+ lineendindex 1) lineendindex)]
@@ -48,7 +50,7 @@
     { :linestartindex linestartindex
       :lineendindex lineendindex }))
 
-(defn format-matching-line [r settings]
+(defn format-matching-line [^SearchResult r ^SearchSettings settings]
   (let [trimmed (str/trim (:line r))
         trimmed-length (count trimmed)
         leading-whitespace-count (- (count (str/trimr (:line r))) (count trimmed))
@@ -72,7 +74,7 @@
         formatted (str pre-match match post-match)]
     formatted))
 
-(defn single-line-to-string [r settings]
+(defn single-line-to-string ^String [^SearchResult r ^SearchSettings settings]
   (if (> (:line-num r) 0)
     (str
       (file-result-path (:file r)) ": " (:line-num r) ": [" (:matchstartindex r) ":"
@@ -80,7 +82,7 @@
     (str (file-result-path (:file r)) " matches at [" (:matchstartindex r) ":"
       (:matchendindex r) "]")))
 
-(defn search-result-to-string [r settings]
+(defn search-result-to-string ^String [^SearchResult r ^SearchSettings settings]
   (if
     (or
       (not (empty? (:lines-before r)))

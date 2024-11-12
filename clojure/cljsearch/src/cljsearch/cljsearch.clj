@@ -9,7 +9,7 @@
 (defn -main
   "This will be the main function for cljsearch"
   [& args]
-  (let [[settings errs] (settings-from-args args)]
+  (let [[^SearchSettings settings errs] (settings-from-args args)]
     (if (:debug settings) (log-msg settings))
     (if (empty? errs)
       (do

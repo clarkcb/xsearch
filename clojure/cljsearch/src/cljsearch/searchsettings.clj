@@ -20,6 +20,7 @@
     ^Boolean colorize
     ^Boolean debug
     ^Boolean first-match
+    ^Boolean follow-symlinks
     ^clojure.lang.PersistentHashSet in-archive-extensions
     ^clojure.lang.PersistentHashSet in-archive-file-patterns
     ^clojure.lang.PersistentHashSet in-dir-patterns
@@ -73,6 +74,7 @@
    true      ; colorize
    false     ; debug
    false     ; first-match
+   false     ; follow-symlinks
    #{}       ; in-archive-extensions
    #{}       ; in-archive-file-patterns
    #{}       ; in-dir-patterns
@@ -124,6 +126,7 @@
   (->FindSettings
    (:archives-only search-settings)             ; archives-only
    (:debug search-settings)                     ; debug
+   (:follow-symlinks search-settings)           ; follow-symlinks
    (:in-archive-extensions search-settings)     ; in-archive-extensions
    (:in-archive-file-patterns search-settings)  ; in-archive-file-patterns
    (:in-dir-patterns search-settings)           ; in-dir-patterns

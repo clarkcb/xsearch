@@ -10,13 +10,15 @@
   #^{:author "Cary Clark",
      :doc "Defines the available command-line options utility functions"}
   (:import (java.io File))
-  (:require [clojure.java.io :as io])
-  (:require [clojure.string :as str])
-  (:require [clojure.data.json :as json])
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [clojure.data.json :as json]
+            [cljsearch.searchsettings])
+  (:import (cljsearch.searchsettings SearchSettings))
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileutil :only (expand-path)]
+        [cljfind.fileutil :only (expand-path to-path)]
         [cljfind.findsettings :only (add-extension add-file-type add-path add-pattern set-debug
                                      sort-by-from-name)]
         [cljsearch.searchsettings :only
@@ -52,66 +54,68 @@
   (doseq [o OPTIONS] (print-option o)))
 
 (def arg-action-map
-  { :encoding (fn [settings s] (assoc settings :text-file-encoding s))
-    :in-archiveext (fn [settings s] (add-extension settings s :in-archive-extensions))
-    :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archive-file-patterns))
-    :in-dirpattern (fn [settings s] (add-pattern settings s :in-dir-patterns))
-    :in-ext (fn [settings s] (add-extension settings s :in-extensions))
-    :in-filepattern (fn [settings s] (add-pattern settings s :in-file-patterns))
-    :in-filetype (fn [settings s] (add-file-type settings s :in-file-types))
-    :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-lines-after-patterns))
-    :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-lines-before-patterns))
-    :linesafter (fn [settings s] (assoc settings :lines-after (Integer/parseInt s)))
-    :linesaftertopattern (fn [settings s] (add-pattern settings s :lines-after-to-patterns))
-    :linesafteruntilpattern (fn [settings s] (add-pattern settings s :lines-after-until-patterns))
-    :linesbefore (fn [settings s] (assoc settings :lines-before (Integer/parseInt s)))
-    :maxdepth (fn [settings s] (assoc settings :max-depth (Integer/parseInt s)))
-    :maxlastmod (fn [settings s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
-    :maxlinelength (fn [settings s] (assoc settings :max-line-length (read-string s)))
-    :maxsize (fn [settings s] (assoc settings :max-size (Integer/parseInt s)))
-    :mindepth (fn [settings s] (assoc settings :min-depth (Integer/parseInt s)))
-    :minlastmod (fn [settings s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
-    :minsize (fn [settings s] (assoc settings :min-size (Integer/parseInt s)))
-    :out-archiveext (fn [settings s] (add-extension settings s :out-archive-extensions))
-    :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archive-file-patterns))
-    :out-dirpattern (fn [settings s] (add-pattern settings s :out-dir-patterns))
-    :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
-    :out-filepattern (fn [settings s] (add-pattern settings s :out-file-patterns))
-    :out-filetype (fn [settings s] (add-file-type settings s :out-file-types))
-    :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-lines-after-patterns))
-    :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-lines-before-patterns))
-    :path (fn [settings s] (add-path settings s))
-    :searchpattern (fn [settings s] (add-pattern settings s :search-patterns))
-    :sort-by (fn [settings s] (assoc settings :sort-by (sort-by-from-name s)))
+  { :encoding (fn [^SearchSettings settings ^String s] (assoc settings :text-file-encoding s))
+    :in-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :in-archive-extensions))
+    :in-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-archive-file-patterns))
+    :in-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-dir-patterns))
+    :in-ext (fn [^SearchSettings settings ^String s] (add-extension settings s :in-extensions))
+    :in-filepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-file-patterns))
+    :in-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :in-file-types))
+    :in-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-after-patterns))
+    :in-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-before-patterns))
+    :linesafter (fn [^SearchSettings settings ^String s] (assoc settings :lines-after (Integer/parseInt s)))
+    :linesaftertopattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-to-patterns))
+    :linesafteruntilpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-until-patterns))
+    :linesbefore (fn [^SearchSettings settings ^String s] (assoc settings :lines-before (Integer/parseInt s)))
+    :maxdepth (fn [^SearchSettings settings ^String s] (assoc settings :max-depth (Integer/parseInt s)))
+    :maxlastmod (fn [^SearchSettings settings ^String s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
+    :maxlinelength (fn [^SearchSettings settings ^String s] (assoc settings :max-line-length (read-string s)))
+    :maxsize (fn [^SearchSettings settings ^String s] (assoc settings :max-size (Integer/parseInt s)))
+    :mindepth (fn [^SearchSettings settings ^String s] (assoc settings :min-depth (Integer/parseInt s)))
+    :minlastmod (fn [^SearchSettings settings ^String s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
+    :minsize (fn [^SearchSettings settings ^String s] (assoc settings :min-size (Integer/parseInt s)))
+    :out-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :out-archive-extensions))
+    :out-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-archive-file-patterns))
+    :out-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-dir-patterns))
+    :out-ext (fn [^SearchSettings settings ^String s]  (add-extension settings s :out-extensions))
+    :out-filepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-file-patterns))
+    :out-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :out-file-types))
+    :out-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-lines-after-patterns))
+    :out-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-lines-before-patterns))
+    :path (fn [^SearchSettings settings ^String s] (add-path settings (to-path s)))
+    :searchpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :search-patterns))
+    :sort-by (fn [^SearchSettings settings ^String s] (assoc settings :sort-by (sort-by-from-name s)))
   })
 
 (def bool-flag-action-map
-  { :allmatches (fn [settings b] (assoc settings :first-match (not b)))
-    :archivesonly (fn [settings b] (set-archives-only settings b))
-    :colorize (fn [settings b] (assoc settings :colorize b))
-    :debug (fn [settings b] (set-debug settings b))
-    :excludehidden (fn [settings b] (assoc settings :exclude-hidden b))
-    :firstmatch (fn [settings b] (assoc settings :first-match b))
-    :help (fn [settings b] (assoc settings :print-usage b))
-    :includehidden (fn [settings b] (assoc settings :exclude-hidden (not b)))
-    :multilinesearch (fn [settings b] (assoc settings :multi-line-search b))
-    :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
-    :noprintmatches (fn [settings b] (assoc settings :print-results (not b)))
-    :norecursive (fn [settings b] (assoc settings :recursive (not b)))
-    :nosearcharchives (fn [settings b] (assoc settings :search-archives (not b)))
-    :printdirs (fn [settings b] (assoc settings :print-dirs b))
-    :printfiles (fn [settings b] (assoc settings :print-files b))
-    :printlines (fn [settings b] (assoc settings :print-lines b))
-    :printmatches (fn [settings b] (assoc settings :print-results b))
-    :recursive (fn [settings b] (assoc settings :recursive b))
-    :searcharchives (fn [settings b] (assoc settings :search-archives b))
-    :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
-    :sort-caseinsensitive (fn [settings b] (assoc settings :sort-case-insensitive b))
-    :sort-casesensitive (fn [settings b] (assoc settings :sort-case-insensitive (not b)))
-    :sort-descending (fn [settings b] (assoc settings :sort-descending b))
-    :uniquelines (fn [settings b] (assoc settings :unique-lines b))
-    :verbose (fn [settings b] (assoc settings :verbose b))
-    :version (fn [settings b] (assoc settings :version b))
+  { :allmatches (fn [^SearchSettings settings b] (assoc settings :first-match (not b)))
+    :archivesonly (fn [^SearchSettings settings b] (set-archives-only settings b))
+    :colorize (fn [^SearchSettings settings b] (assoc settings :colorize b))
+    :debug (fn [^SearchSettings settings b] (set-debug settings b))
+    :excludehidden (fn [^SearchSettings settings b] (assoc settings :exclude-hidden b))
+    :firstmatch (fn [^SearchSettings settings b] (assoc settings :first-match b))
+    :followsymlinks (fn [^SearchSettings settings b] (assoc settings :follow-symlinks b))
+    :help (fn [^SearchSettings settings b] (assoc settings :print-usage b))
+    :includehidden (fn [^SearchSettings settings b] (assoc settings :exclude-hidden (not b)))
+    :multilinesearch (fn [^SearchSettings settings b] (assoc settings :multi-line-search b))
+    :nocolorize (fn [^SearchSettings settings b] (assoc settings :colorize (not b)))
+    :nofollowsymlinks (fn [^SearchSettings settings b] (assoc settings :follow-symlinks (not b)))
+    :noprintmatches (fn [^SearchSettings settings b] (assoc settings :print-results (not b)))
+    :norecursive (fn [^SearchSettings settings b] (assoc settings :recursive (not b)))
+    :nosearcharchives (fn [^SearchSettings settings b] (assoc settings :search-archives (not b)))
+    :printdirs (fn [^SearchSettings settings b] (assoc settings :print-dirs b))
+    :printfiles (fn [^SearchSettings settings b] (assoc settings :print-files b))
+    :printlines (fn [^SearchSettings settings b] (assoc settings :print-lines b))
+    :printmatches (fn [^SearchSettings settings b] (assoc settings :print-results b))
+    :recursive (fn [^SearchSettings settings b] (assoc settings :recursive b))
+    :searcharchives (fn [^SearchSettings settings b] (assoc settings :search-archives b))
+    :sort-ascending (fn [^SearchSettings settings b] (assoc settings :sort-descending (not b)))
+    :sort-caseinsensitive (fn [^SearchSettings settings b] (assoc settings :sort-case-insensitive b))
+    :sort-casesensitive (fn [^SearchSettings settings b] (assoc settings :sort-case-insensitive (not b)))
+    :sort-descending (fn [^SearchSettings settings b] (assoc settings :sort-descending b))
+    :uniquelines (fn [^SearchSettings settings b] (assoc settings :unique-lines b))
+    :verbose (fn [^SearchSettings settings b] (assoc settings :verbose b))
+    :version (fn [^SearchSettings settings b] (assoc settings :version b))
   })
 
 (defn get-long-arg [arg]
@@ -124,7 +128,7 @@
       (contains? short-long-map arg) (keyword (get short-long-map arg))
       :else nil)))
 
-(defn settings-from-map [settings ks m errs]
+(defn settings-from-map ^SearchSettings [^SearchSettings settings ks m errs]
   (if (empty? ks)
     [settings errs]
     (let [k (keyword (first ks))
@@ -141,21 +145,21 @@
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
 (defn settings-from-json
-  ([json]
+  (^SearchSettings [json]
     (settings-from-json DEFAULT-SETTINGS json))
-  ([settings json]
+  (^SearchSettings [^SearchSettings settings ^String json]
     (let [obj (json/read-str json :key-fn keyword)
           ks (keys obj)]
       (settings-from-map settings ks obj []))))
 
-(defn settings-from-file [settings f]
+(defn settings-from-file ^SearchSettings [^SearchSettings settings f]
   (let [contents (slurp f)]
     (settings-from-json settings contents)))
 
 (defn settings-from-args
-  ([args]
+  (^SearchSettings [args]
     (settings-from-args DEFAULT-SETTINGS args []))
-  ([settings args errs]
+  (^SearchSettings [^SearchSettings settings args errs]
     (if (or (empty? args) (not (empty? errs)))
       [settings errs]
       (let [arg (first args)
@@ -176,13 +180,13 @@
             :else
               (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a))))
           ;; (settings-from-args (assoc settings :startpath arg) (rest args) errs)
-          (settings-from-args (add-path settings arg) (rest args) errs))))))
+          (settings-from-args (add-path settings (to-path arg)) (rest args) errs))))))
 
 (defn longest-length [options]
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
     (apply max lens)))
 
-(defn option-to-string [opt longest]
+(defn option-to-string ^String [^SearchOption opt longest]
   (let [s (:short-arg opt)
         l (:long-arg opt)
         d (:desc opt)
