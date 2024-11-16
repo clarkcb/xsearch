@@ -30,8 +30,6 @@ endif()
 include_directories(${XSEARCH_PATH}/cpp/cppsearch/include)
 include_directories(${Boost_INCLUDE_DIRS})
 
-#find_package(cppfind CONFIG REQUIRED)
-
 
 ################################################################################
 # cppfind Library section
@@ -111,7 +109,6 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        #GIT_TAG        v2.13.9
         GIT_TAG        v3.7.1
 )
 
@@ -130,6 +127,6 @@ set(TEST_FILES
 
 add_executable(cppsearch-tests ${TEST_FILES})
 
-target_link_libraries(cppsearch-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
+ target_link_libraries(cppsearch-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
 
 unset(XSEARCH_PATH CACHE)

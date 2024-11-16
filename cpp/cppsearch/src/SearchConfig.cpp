@@ -4,7 +4,7 @@ namespace cppsearch {
     std::string xsearchpath() {
         std::string xsearchpath = std::getenv("XSEARCH_PATH");
         if (xsearchpath.empty()) {
-            std::string home = std::getenv("HOME");
+            const std::string home = std::getenv("HOME");
             if (home.empty()) {
                 // TODO: throw exception?
                 return "";

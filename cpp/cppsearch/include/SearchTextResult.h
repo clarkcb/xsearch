@@ -1,7 +1,6 @@
 #ifndef CPPSEARCH_SEARCHTEXTRESULT_H
 #define CPPSEARCH_SEARCHTEXTRESULT_H
 
-#include <cstdlib>
 #include "cppfind.h"
 
 namespace cppsearch {
@@ -9,13 +8,13 @@ namespace cppsearch {
     public:
         SearchTextResult(const cppfind::RegexPattern& pattern, unsigned long line_num,
                          unsigned long match_start_idx, unsigned long match_end_idx,
-                         const std::string& line, const std::vector<std::string>& lines_before,
+                         std::string line, const std::vector<std::string>& lines_before,
                          const std::vector<std::string>& lines_after);
         SearchTextResult(const cppfind::RegexPattern& pattern, unsigned long line_num,
                          unsigned long match_start_idx, unsigned long match_end_idx,
-                         const std::string& line);
-        SearchTextResult(const SearchTextResult& other);
-//        SearchTextResult(SearchTextResult&& other) noexcept;
+                         std::string line);
+        SearchTextResult(const SearchTextResult& other) = default;
+        //SearchTextResult(SearchTextResult&& other) noexcept = default;
         [[nodiscard]] cppfind::RegexPattern pattern() const;
         [[nodiscard]] unsigned long line_num() const;
         [[nodiscard]] unsigned long match_start_idx() const;
@@ -35,10 +34,10 @@ namespace cppsearch {
         std::vector<std::string> m_lines_before;
         std::vector<std::string> m_lines_after;
 
-    private:
-        void init(const cppfind::RegexPattern& pattern, unsigned long line_num,
-                  unsigned long match_start_idx, unsigned long match_end_idx, const std::string& line,
-                  const std::vector<std::string>& lines_before, const std::vector<std::string>& lines_after);
+    // private:
+    //     void init(const cppfind::RegexPattern& pattern, unsigned long line_num,
+    //               unsigned long match_start_idx, unsigned long match_end_idx, const std::string& line,
+    //               const std::vector<std::string>& lines_before, const std::vector<std::string>& lines_after);
 
     };
 }

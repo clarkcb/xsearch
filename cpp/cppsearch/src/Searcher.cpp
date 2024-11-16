@@ -1,30 +1,42 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+
 #include "SearchException.h"
 #include "Searcher.h"
 #include "cppfind.h"
 
 namespace cppsearch {
-    Searcher::Searcher(const SearchSettings& settings)  try : m_finder(cppfind::Finder(settings))
+    Searcher::Searcher(const SearchSettings& settings)  try : m_finder(cppfind::Finder(settings)),  m_search_settings(settings)
     {
         validate_settings(settings);
-        m_settings = settings;
     } catch (const cppfind::FindException& e) {
+        throw SearchException(e.what());
+    } catch (const std::bad_alloc& e) {
         throw SearchException(e.what());
     }
 
-    void Searcher::validate_settings(const SearchSettings& ss) {
-        if (ss.search_patterns().empty()) {
+    Searcher::Searcher(const std::unique_ptr<SearchSettings>& settings_ptr)  try : m_finder(cppfind::Finder(*settings_ptr)),  m_search_settings(*settings_ptr)
+    {
+        validate_settings(m_search_settings);
+    } catch (const cppfind::FindException& e) {
+        throw SearchException(e.what());
+    } catch (const std::bad_alloc& e) {
+        throw SearchException(e.what());
+    }
+
+    void Searcher::validate_settings(const SearchSettings& settings) {
+        if (settings.search_patterns().empty()) {
             throw SearchException("No search patterns defined");
         }
     }
 
-    std::vector<SearchFileResult> Searcher::search() {
+    std::vector<SearchFileResult> Searcher::search() const {
         std::vector<SearchFileResult> results{};
 
         try {
-            std::vector<cppfind::FileResult> file_results = m_finder.find();
+            const std::vector<cppfind::FileResult> file_results = m_finder.find();
             results = search_files(file_results);
         } catch (const cppfind::FindException& e) {
             throw SearchException(e.what());
@@ -34,27 +46,21 @@ namespace cppsearch {
     }
 
     bool matches_any_pattern(const std::string_view s,
-                             const std::set<cppfind::RegexPattern,
-                             cppfind::RegexPatternCmp>& patterns) {
-        std::smatch pmatch;
+                             const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& patterns) {
         const std::string ss{s};
-        for (auto& p : patterns) {
-            if (regex_search(ss, pmatch, p.regex())) {
-                return true;
-            }
-        }
-        return false;
+        return std::ranges::any_of(patterns.cbegin(), patterns.cend(), [ss](const cppfind::RegexPattern& p) {
+            return regex_search(ss, p.regex());
+        });
     }
 
     bool any_matches_any_pattern(const std::vector<std::string>& ss,
-                                 const std::set<cppfind::RegexPattern,
-                                 cppfind::RegexPatternCmp>& patterns) {
-        return std::any_of(ss.begin(), ss.end(), [patterns](const std::string& s) {
+                                 const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& patterns) {
+        return std::ranges::any_of(ss.begin(), ss.end(), [patterns](const std::string& s) {
             return matches_any_pattern(s, patterns);
         });
     }
 
-    std::vector<SearchFileResult> Searcher::search_files(const std::vector<cppfind::FileResult>& files) {
+    std::vector<SearchFileResult> Searcher::search_files(const std::vector<cppfind::FileResult>& files) const {
         std::vector<SearchFileResult> results{};
         for (auto& fr : files) {
             std::vector<SearchFileResult> fr_results = search_file(fr);
@@ -63,7 +69,7 @@ namespace cppsearch {
         return results;
     }
 
-    std::vector<SearchFileResult> Searcher::search_file(const cppfind::FileResult& fr) {
+    std::vector<SearchFileResult> Searcher::search_file(const cppfind::FileResult& fr) const {
         std::vector<SearchFileResult> results{};
         if (fr.file_type() == cppfind::FileType::CODE
             || fr.file_type() == cppfind::FileType::XML
@@ -73,52 +79,51 @@ namespace cppsearch {
             results = search_binary_file(fr);
         } else if (fr.file_type() == cppfind::FileType::ARCHIVE) {
             //cout << "m_file is an ARCHIVE file: " << fr->file_name() << endl;
-            if (m_settings.search_archives()) {
+            if (m_search_settings.search_archives()) {
                 // TODO: search archive
             }
         } else {
-            std::cout << "m_file is an UNKNOWN file: " << fr.file_name() << std::endl;
+            std::cout << "m_file is an UNKNOWN file: " << fr.file_path() << std::endl;
         }
         return results;
     }
 
-    std::vector<SearchFileResult> Searcher::search_text_file(const cppfind::FileResult& fr) {
-        if (m_settings.debug()) {
-            std::cout << "Searching text file " << fr.string() << std::endl;
+    std::vector<SearchFileResult> Searcher::search_text_file(const cppfind::FileResult& fr) const {
+        if (m_search_settings.debug()) {
+            std::cout << "Searching text file " << fr.file_path() << std::endl;
         }
         std::ifstream fin(fr.string());
         std::vector<SearchTextResult> text_results = search_ifstream(fin);
         fin.close();
 
-        std::vector<SearchFileResult> file_results{};
-        //file_results.
-        auto text_to_file = [&fr](const SearchTextResult& r) {
-            return SearchFileResult(fr, r);
+        std::vector<SearchFileResult> file_results;
+        auto text_to_file = [&fr](SearchTextResult& r) {
+            return SearchFileResult(fr, std::move(r));
         };
-        std::transform(text_results.cbegin(), text_results.cend(), file_results.begin(), text_to_file);
+        std::ranges::transform(text_results.begin(), text_results.end(), file_results.begin(),
+            text_to_file);
         return file_results;
     }
 
-    std::vector<SearchTextResult> Searcher::search_ifstream(std::ifstream& fin) {
-        if (m_settings.multi_line_search()) {
+    std::vector<SearchTextResult> Searcher::search_ifstream(std::ifstream& fin) const {
+        if (m_search_settings.multi_line_search()) {
             return search_ifstream_contents(fin);
-        } else {
-            return search_ifstream_lines(fin);
         }
+        return search_ifstream_lines(fin);
     }
 
     bool lines_match(const std::vector<std::string>& lines,
-                     const std::set<cppfind::RegexPattern, cppfind::RegexPatternCmp>& in_patterns,
-                     const std::set<cppfind::RegexPattern, cppfind::RegexPatternCmp>& out_patterns) {
+                     const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& in_patterns,
+                     const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& out_patterns) {
         return lines.empty() ||
                ((in_patterns.empty() || any_matches_any_pattern(lines, in_patterns)) &&
                 (out_patterns.empty() || !any_matches_any_pattern(lines, out_patterns)));
     }
 
-    std::vector<SearchTextResult> Searcher::search_ifstream_lines(std::ifstream& fin) {
+    std::vector<SearchTextResult> Searcher::search_ifstream_lines(std::ifstream& fin) const {
         std::vector<SearchTextResult> results{};
 
-        for (const auto& p : m_settings.search_patterns()) {
+        for (const auto& p : m_search_settings.search_patterns()) {
 
             fin.seekg(0);
 
@@ -129,11 +134,11 @@ namespace cppsearch {
 
             std::deque<std::string> lines_before;
             std::deque<std::string> lines_after;
-            unsigned int lines_before_count = m_settings.lines_before();
-            unsigned int lines_after_count = m_settings.lines_after();
+            unsigned int lines_before_count = m_search_settings.lines_before();
+            unsigned int lines_after_count = m_search_settings.lines_after();
 
             while (true) {
-                if (m_settings.first_match() && found_pattern) {
+                if (m_search_settings.first_match() && found_pattern) {
                     break;
                 }
 
@@ -159,7 +164,7 @@ namespace cppsearch {
                 auto matches_end = std::sregex_iterator();
 
                 for (std::sregex_iterator it = matches_begin; it != matches_end; ++it) {
-                    if (m_settings.first_match() && found_pattern) {
+                    if (m_search_settings.first_match() && found_pattern) {
                         break;
                     }
 
@@ -168,13 +173,13 @@ namespace cppsearch {
                     unsigned long match_start_idx = match.position(0);
                     unsigned long match_end_idx = match_start_idx + match.length(0);
                     auto v_lines_before = std::vector<std::string>(lines_before.begin(), lines_before.end());
-                    if (!lines_match(v_lines_before, m_settings.in_lines_before_patterns(),
-                                     m_settings.out_lines_before_patterns())) {
+                    if (!lines_match(v_lines_before, m_search_settings.in_lines_before_patterns(),
+                                     m_search_settings.out_lines_before_patterns())) {
                         continue;
                     }
                     auto v_lines_after = std::vector<std::string>(lines_after.begin(), lines_after.end());
-                    if (!lines_match(v_lines_after, m_settings.in_lines_after_patterns(),
-                                     m_settings.out_lines_after_patterns())) {
+                    if (!lines_match(v_lines_after, m_search_settings.in_lines_after_patterns(),
+                                     m_search_settings.out_lines_after_patterns())) {
                         continue;
                     }
 
@@ -182,7 +187,7 @@ namespace cppsearch {
                                          match_end_idx + 1, line,
                                          v_lines_before, v_lines_after);
 
-                    if (m_settings.first_match()) {
+                    if (m_search_settings.first_match()) {
                         found_pattern = true;
                         break;
                     }
@@ -201,14 +206,25 @@ namespace cppsearch {
         return results;
     }
 
-    std::vector<SearchTextResult> Searcher::search_ifstream_contents(std::ifstream& fin) {
-        std::string contents = cppfind::FileUtil::get_contents(fin);
+    std::string get_contents(std::ifstream& fin) {
+        std::string s;
+        if (fin) {
+            std::ostringstream ss;
+            ss << fin.rdbuf(); // reading data
+            s = ss.str();
+        }
+        return s;
+    }
+
+    std::vector<SearchTextResult> Searcher::search_ifstream_contents(std::ifstream& fin) const {
+        // auto contents = cppfind::FileUtil::get_contents(fin);
+        const auto contents = get_contents(fin);
         return search_multiline_string(contents);
     }
 
     std::vector<unsigned long> get_newline_indices(const std::string& s) {
         std::vector<unsigned long> newline_indices{};
-        for (unsigned long i=0; i < s.length(); i++) {
+        for (unsigned long i=0; i < s.length(); ++i) {
             if (s.at(i) == '\n') {
                 newline_indices.push_back(i);
             }
@@ -234,8 +250,8 @@ namespace cppsearch {
     std::string get_line_for_pos(std::string& s, std::vector<unsigned long>& newline_indices, unsigned long pos) {
         long i = 0;
         while (newline_indices[i] <= pos) i++;
-        unsigned long line_start_idx = newline_indices[i-1] + 1;
-        unsigned long line_len = newline_indices[i] - newline_indices[i-1] - 1;
+        const unsigned long line_start_idx = newline_indices[i-1] + 1;
+        const unsigned long line_len = newline_indices[i] - newline_indices[i-1] - 1;
         return s.substr(line_start_idx, line_len);
     }
 
@@ -264,13 +280,13 @@ namespace cppsearch {
                                                  unsigned long line_count, unsigned long pos) {
         std::vector<std::string> lines;
         lines.reserve(line_count);
-        long i = 0;
+        size_t i = 0;
         while (newline_indices[i] <= pos) i++;
         while (i < newline_indices.size() && line_count > 0) {
-            std::pair<unsigned long, unsigned long> start_end =
+            auto [fst, snd] =
                     get_line_start_end_for_pos(newline_indices, newline_indices[i]);
-            unsigned long line_start_idx = start_end.first;
-            unsigned long line_end_idx = start_end.second;
+            const unsigned long line_start_idx = fst;
+            const unsigned long line_end_idx = snd;
             lines.insert(lines.end(), s.substr(line_start_idx, line_end_idx - line_start_idx));
             ++i;
             --line_count;
@@ -278,16 +294,16 @@ namespace cppsearch {
         return lines;
     }
 
-    std::vector<SearchTextResult> Searcher::search_multiline_string(const std::string& s) {
+    std::vector<SearchTextResult> Searcher::search_multiline_string(const std::string& s) const {
         std::vector<SearchTextResult> results{};
 
         // get newline, startline and endline indices
         std::vector<unsigned long> newline_indices = get_newline_indices(s);
         std::vector<unsigned long> line_start_indices = {0};
         auto plus_one = [](unsigned long num) {return num + 1;};
-        std::transform(newline_indices.begin(), newline_indices.end(), std::back_inserter(line_start_indices), plus_one);
+        std::ranges::transform(newline_indices.begin(), newline_indices.end(), std::back_inserter(line_start_indices), plus_one);
 
-        for (const auto& p : m_settings.search_patterns()) {
+        for (const auto& p : m_search_settings.search_patterns()) {
             // ---------------------------------------------------------------------
             std::regex r = p.regex();
             auto matches_begin = std::sregex_iterator(s.begin(), s.end(), r);
@@ -309,20 +325,20 @@ namespace cppsearch {
                 std::string line = s.substr(line_start_idx, line_end_idx - line_start_idx);
 
                 std::vector<std::string> lines_before;
-                if (m_settings.lines_before() > 0) {
-                    lines_before = get_lines_before_pos(s, newline_indices, m_settings.lines_before(),
+                if (m_search_settings.lines_before() > 0) {
+                    lines_before = get_lines_before_pos(s, newline_indices, m_search_settings.lines_before(),
                                                         line_start_idx);
-                    if (!lines_match(lines_before, m_settings.in_lines_before_patterns(),
-                                     m_settings.out_lines_before_patterns())) {
+                    if (!lines_match(lines_before, m_search_settings.in_lines_before_patterns(),
+                                     m_search_settings.out_lines_before_patterns())) {
                         continue;
                     }
                 }
                 std::vector<std::string> lines_after;
-                if (m_settings.lines_after() > 0) {
-                    lines_after = get_lines_after_pos(s, newline_indices, m_settings.lines_after(),
+                if (m_search_settings.lines_after() > 0) {
+                    lines_after = get_lines_after_pos(s, newline_indices, m_search_settings.lines_after(),
                                                        line_start_idx);
-                    if (!lines_match(lines_after, m_settings.in_lines_after_patterns(),
-                                     m_settings.out_lines_after_patterns())) {
+                    if (!lines_match(lines_after, m_search_settings.in_lines_after_patterns(),
+                                     m_search_settings.out_lines_after_patterns())) {
                         continue;
                     }
                 }
@@ -332,7 +348,7 @@ namespace cppsearch {
                                      match_end_idx - line_start_idx + 1,
                                      line, lines_before, lines_after);
 
-                if (m_settings.first_match()) {
+                if (m_search_settings.first_match()) {
                     break;
                 }
             }
@@ -342,17 +358,18 @@ namespace cppsearch {
         return results;
     }
 
-    std::vector<SearchFileResult> Searcher::search_binary_file(const cppfind::FileResult& fr) {
+    std::vector<SearchFileResult> Searcher::search_binary_file(const cppfind::FileResult& fr) const {
         std::vector<SearchFileResult> results{};
-        std::set <std::string> found_patterns{};
+        std::unordered_set<std::string> found_patterns{};
 
         std::ifstream fin(fr.string());
-        std::string s = cppfind::FileUtil::get_contents(fin);
+        // std::string s = cppfind::FileUtil::get_contents(fin);
+        auto s = get_contents(fin);
         fin.close();
 
         std::smatch pmatch;
-        for (const auto& p : m_settings.search_patterns()) {
-            if (m_settings.first_match() && found_patterns.find(p.pattern()) != found_patterns.end()) {
+        for (const auto& p : m_search_settings.search_patterns()) {
+            if (m_search_settings.first_match() && found_patterns.contains(p.pattern())) {
                 continue;
             }
             unsigned long trimmed = 0;
@@ -362,9 +379,9 @@ namespace cppsearch {
                 for (unsigned i=0; i < pmatch.size(); ++i) {
                     unsigned long match_start_idx = pmatch.position(i) + trimmed;
                     unsigned long match_end_idx = match_start_idx + pmatch.length(i);
-                    std::string line{};
-                    results.emplace_back(fr, p, 0, match_start_idx, match_end_idx, line);
-                    if (m_settings.first_match()) {
+                    std::string line;
+                    results.emplace_back(fr, SearchTextResult(p, 0, match_start_idx, match_end_idx, line));
+                    if (m_search_settings.first_match()) {
                         found_patterns.insert(p.pattern());
                         skip_pattern = true;
                         break;
