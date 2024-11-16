@@ -20,15 +20,16 @@ module RbSearch
       settings = @search_options.search_settings_from_args([])
       assert_equal(false, settings.archives_only)
       assert_equal(false, settings.debug)
-      assert_equal(true, settings.exclude_hidden)
       assert_equal(false, settings.first_match)
+      assert_equal(false, settings.follow_symlinks)
+      assert_equal(false, settings.include_hidden)
       assert_equal(0, settings.lines_after)
       assert_equal(0, settings.lines_before)
-      assert_equal(false, settings.list_dirs)
-      assert_equal(false, settings.list_files)
-      assert_equal(false, settings.list_lines)
       assert_equal(150, settings.max_line_length)
       assert_equal(false, settings.multi_line_search)
+      assert_equal(false, settings.print_dirs)
+      assert_equal(false, settings.print_files)
+      assert_equal(false, settings.print_lines)
       assert_equal(true, settings.print_results)
       assert_equal(false, settings.print_usage)
       assert_equal(false, settings.print_version)
@@ -103,12 +104,15 @@ module RbSearch
         "linesafter": 2,
         "debug": true,
         "allmatches": false,
+        "followsymlinks": true,
         "includehidden": true
       }
       JSON
       @search_options.settings_from_json(json, settings)
       assert(settings.debug)
       assert(settings.verbose)
+      assert(settings.follow_symlinks)
+      assert(settings.include_hidden)
     end
   end
 end

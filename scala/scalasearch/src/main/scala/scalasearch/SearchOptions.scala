@@ -134,6 +134,7 @@ object SearchOptions {
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
     "excludehidden" -> ((b, ss) => ss.copy(includeHidden = !b)),
     "firstmatch" -> ((b, ss) => ss.copy(firstMatch = b)),
+    "followsymlinks" -> ((b, ss) => ss.copy(followSymlinks = b)),
     "help" -> ((b, ss) => ss.copy(printUsage = b)),
     "includehidden" -> ((b, ss) => ss.copy(includeHidden = b)),
     "multilinesearch" -> ((b, ss) => ss.copy(multiLineSearch = b)),
@@ -196,6 +197,8 @@ object SearchOptions {
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
+    case i: Int =>
+      applySetting(arg, i.toString, ss)
     case l: Long =>
       applySetting(arg, l.toString, ss)
     case a: JSONArray =>

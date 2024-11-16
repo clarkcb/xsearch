@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use phpfind\FileUtil;
 use phpsearch\Config;
@@ -21,7 +23,7 @@ class SearcherTest extends TestCase
 
     private function get_test_file(): string
     {
-        return FileUtil::expand_user_home_path(Config::SHAREDPATH . '/testFiles/testFile2.txt');
+        return FileUtil::expand_user_home_path(Config::XSEARCH_SHARED_PATH . '/testFiles/testFile2.txt');
     }
 
     ################################################################################

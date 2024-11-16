@@ -5,7 +5,7 @@
         [cljsearch.config :only (XSEARCHPATH)]
         [cljfind.fileresult :only (new-file-result file-result-path)]
         [cljsearch.searchresult :only (->SearchResult search-result-to-string)]
-        [cljsearch.searchsettings :only (DEFAULT-SETTINGS)]
+        [cljsearch.searchsettings :only (DEFAULT-SEARCH-SETTINGS)]
         [cljsearch.color :only (RESET GREEN)]))
 
 (def CSSEARCHPATH
@@ -13,7 +13,7 @@
 
 (deftest test-singleline-search-result
   (testing "test-singleline-search-result"
-    (let [settings (assoc DEFAULT-SETTINGS :colorize false)
+    (let [settings (assoc DEFAULT-SEARCH-SETTINGS :colorize false)
           file (file (str CSSEARCHPATH "/Searcher.cs"))
           file-result (new-file-result file :code)
           line-num 10
@@ -37,7 +37,7 @@
 
 (deftest test-singleline-longer-than-maxlength-search-result
   (testing "test-singleline-longer-than-maxlength-search-result"
-    (let [settings (assoc DEFAULT-SETTINGS :colorize false :max-line-length 100)
+    (let [settings (assoc DEFAULT-SEARCH-SETTINGS :colorize false :max-line-length 100)
           file (file "./maxlen.txt")
           file-result (new-file-result file :text)
           line-num 1
@@ -62,7 +62,7 @@
 
 (deftest test-singleline-colorize-search-result
   (testing "test-singleline-longer-than-maxlength-search-result"
-    (let [settings (assoc DEFAULT-SETTINGS :colorize true :max-line-length 100)
+    (let [settings (assoc DEFAULT-SEARCH-SETTINGS :colorize true :max-line-length 100)
           file (file "./maxlen.txt")
           file-result (new-file-result file :text)
           line-num 1
@@ -87,7 +87,7 @@
 
 (deftest test-binaryfile-search-result
   (testing "test-binaryfile-search-result"
-    (let [settings DEFAULT-SETTINGS
+    (let [settings DEFAULT-SEARCH-SETTINGS
           file (file (str CSSEARCHPATH "/Searcher.exe"))
           file-result (new-file-result file :binary)
           line-num 0
@@ -111,7 +111,7 @@
 
 (deftest test-multiline-search-result
   (testing "test-multiline-search-result"
-    (let [settings DEFAULT-SETTINGS
+    (let [settings DEFAULT-SEARCH-SETTINGS
           file (file (str CSSEARCHPATH "/Searcher.cs"))
           file-result (new-file-result file :binary)
           line-num 10

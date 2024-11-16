@@ -9,7 +9,8 @@ void main() {
     expect(settings.colorize, true);
     expect(settings.debug, false);
     expect(settings.firstMatch, false);
-    expect(settings.includeHidden, true);
+    expect(settings.followSymlinks, false);
+    expect(settings.includeHidden, false);
     expect(settings.linesAfter, 0);
     expect(settings.linesBefore, 0);
     expect(settings.maxLineLength, 150);
@@ -48,7 +49,7 @@ void main() {
     var args = ['-x', 'dart,kt', '-s', 'Search', '--archivesonly', '.'];
     var settings = await options.settingsFromArgs(args);
     expect(settings.archivesOnly, true);
-    expect(settings.searchArchives, true);
+    expect(settings.includeArchives, true);
   });
 
   test('test get settings from json', () async {

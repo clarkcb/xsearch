@@ -81,6 +81,7 @@ describe('testing searchoptions', () => {
             '  "linesafter": 2,\n' +
             '  "debug": true,\n' +
             '  "allmatches": false,\n' +
+            '  "followsymlinks": true,\n' +
             '  "includehidden": true\n' +
             '}';
         const err: Error|void = searchOptions.settingsFromJson(json, settings);
@@ -99,6 +100,7 @@ describe('testing searchoptions', () => {
         expect(settings.debug).toBeTruthy();
         expect(settings.verbose).toBeTruthy();
         expect(settings.firstMatch).toBeTruthy();
-        expect(!settings.includeHidden).toBeTruthy();
+        expect(settings.followSymlinks).toBeTruthy();
+        expect(settings.includeHidden).toBeTruthy();
     });
 });

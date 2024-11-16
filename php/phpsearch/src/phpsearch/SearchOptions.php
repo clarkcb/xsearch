@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpsearch;
 
@@ -113,7 +115,7 @@ class SearchOptions
      */
     private function set_options_from_json(): void
     {
-        $search_options_path = FileUtil::expand_user_home_path(Config::SEARCHOPTIONSPATH);
+        $search_options_path = FileUtil::expand_user_home_path(Config::SEARCH_OPTIONS_PATH);
         if (file_exists($search_options_path)) {
             $json_obj = json_decode(file_get_contents($search_options_path), true);
             foreach ($json_obj['searchoptions'] as $so) {

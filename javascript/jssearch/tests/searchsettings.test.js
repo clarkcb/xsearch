@@ -11,13 +11,14 @@ describe('testing searchsettings', () => {
         const settings = new SearchSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.debug).toBeFalsy();
-        expect(settings.excludeHidden).toBeTruthy();
         expect(settings.firstMatch).toBeFalsy();
+        expect(settings.followSymlinks).toBeFalsy();
+        expect(settings.includeHidden).toBeFalsy();
         expect(settings.linesAfter).toEqual(0);
         expect(settings.linesBefore).toEqual(0);
-        expect(settings.listDirs).toBeFalsy();
-        expect(settings.listFiles).toBeFalsy();
-        expect(settings.listLines).toBeFalsy();
+        expect(settings.printDirs).toBeFalsy();
+        expect(settings.printFiles).toBeFalsy();
+        expect(settings.printLines).toBeFalsy();
         expect(settings.maxLineLength).toEqual(150);
         expect(settings.multilineSearch).toBeFalsy();
         expect(settings.printResults).toBeFalsy();

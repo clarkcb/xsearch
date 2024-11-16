@@ -19,15 +19,16 @@ module RbSearch
     def test_default_settings
       assert_equal(false, @settings.archives_only)
       assert_equal(false, @settings.debug)
-      assert_equal(true, @settings.exclude_hidden)
       assert_equal(false, @settings.first_match)
+      assert_equal(false, @settings.follow_symlinks)
+      assert_equal(false, @settings.include_hidden)
       assert_equal(0, @settings.lines_after)
       assert_equal(0, @settings.lines_before)
-      assert_equal(false, @settings.list_dirs)
-      assert_equal(false, @settings.list_files)
-      assert_equal(false, @settings.list_lines)
       assert_equal(150, @settings.max_line_length)
       assert_equal(false, @settings.multi_line_search)
+      assert_equal(false, @settings.print_dirs)
+      assert_equal(false, @settings.print_files)
+      assert_equal(false, @settings.print_lines)
       assert_equal(true, @settings.print_results)
       assert_equal(false, @settings.print_usage)
       assert_equal(false, @settings.print_version)
@@ -95,8 +96,8 @@ module RbSearch
     def test_add_patterns_as_array
       @settings.add_patterns(%w[Search FileTypes], @settings.search_patterns)
       assert_equal(2, @settings.search_patterns.length)
-      assert_equal(@settings.search_patterns.first.source, 'Search')
-      assert_equal(@settings.search_patterns[1].source, 'FileTypes')
+      assert(@settings.search_patterns.any? {|p| p.source == 'Search'})
+      assert(@settings.search_patterns.any? {|p| p.source == 'FileTypes'})
     end
   end
 end

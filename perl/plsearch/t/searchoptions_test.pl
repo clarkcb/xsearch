@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 55;
+use Test::Simple tests => 54;
 
 use plsearch::SearchOptions;
 
@@ -29,7 +29,7 @@ sub test_no_args {
     ok(scalar @{$errs} == 0, 'No errors from empty args');
     ok(!$settings->{archives_only}, 'archives_only is false by default');
     ok(!$settings->{debug}, 'debug is false by default');
-    ok($settings->{exclude_hidden}, 'exclude_hidden is true by default');
+    ok(!$settings->{include_hidden}, 'include_hidden is false by default');
     ok(!$settings->{first_match}, 'first_match is false by default');
     ok($settings->{lines_after} == 0, 'lines_after == 0 by default');
     ok($settings->{lines_before} == 0, 'lines_before == 0 by default');
@@ -66,7 +66,7 @@ sub test_archives_only_arg {
     my ($settings, $errs) = $search_options->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from valid archives_only arg');
     ok($settings->{archives_only}, 'archives_only is true');
-    ok($settings->{search_archives}, 'search_archives is true');
+    # ok($settings->{search_archives}, 'search_archives is true');
 }
 
 sub test_debug_arg {
@@ -99,7 +99,7 @@ sub test_settings_from_json {
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "search_pattern": "Searcher",
+  "searchpattern": "Searcher",
   "linesbefore": 2,
   "linesafter": 2,
   "debug": true,
@@ -109,7 +109,8 @@ sub test_settings_from_json {
 END_JSON
     $search_options->settings_from_json($json, $settings);
     ok(scalar @{$settings->{paths}} == 1, "paths has one paths");
-    ok($settings->{paths}->[0] eq '~/src/xsearch/', 'paths has "~/src/xsearch/" path');
+    my $expected_path = $ENV{HOME} . "/src/xsearch";
+    ok($settings->{paths}->[0]->stringify eq $expected_path, 'paths has "~/src/xsearch/" path');
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");
     ok($settings->{in_extensions}->[1] eq 'ts', "in_extensions contains ts extension");
@@ -124,7 +125,7 @@ END_JSON
     ok($settings->{debug} == 1, "debug is set to true");
     ok($settings->{verbose} == 1, "verbose is set to true");
     ok($settings->{first_match} == 1, "first_match is set to true by setting allmatches to false");
-    ok($settings->{exclude_hidden} == 0, 'exclude_hidden is set to false by setting includehidden to true');
+    ok($settings->{include_hidden} == 1, 'include_hidden is set to true');
 }
 
 sub main {

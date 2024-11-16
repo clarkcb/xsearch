@@ -5,6 +5,7 @@ import (
 	"gofind/pkg/gofind"
 	"regexp"
 	"testing"
+	"time"
 )
 
 func TestAddSearchResult(t *testing.T) {
@@ -16,7 +17,7 @@ func TestAddSearchResult(t *testing.T) {
 	path := fmt.Sprintf("%s/go/gosearch/pkg/gosearch", config.XSEARCHPATH)
 	name := "searchresults_test.go"
 	//searchItem := NewSearchItem(path, name, FiletypeCode)
-	fileResult := gofind.NewFileResult(path, name, gofind.FiletypeCode, nil)
+	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeCode, 0, time.Time{})
 
 	line := "func TestAddSearchResult(t *testing.T) {"
 

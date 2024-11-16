@@ -771,10 +771,11 @@ mod tests {
             Ok(settings) => {
                 assert!(settings.debug());
                 assert!(settings.first_match());
+                assert!(!settings.follow_symlinks());
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
-                assert!(settings.include_hidden());
+                assert!(!settings.include_hidden());
                 assert_eq!(settings.lines_after(), 2);
                 assert_eq!(settings.lines_before(), 2);
                 assert_eq!(settings.out_dir_patterns().len(), 11);

@@ -195,7 +195,7 @@ module RbSearch
           settings.add_patterns(x, settings.out_lines_before_patterns)
         },
         'path': lambda { |x, settings|
-          settings.paths.push(x)
+          settings.add_path(x)
         },
         'searchpattern': lambda { |x, settings|
           settings.add_patterns(x, settings.search_patterns)

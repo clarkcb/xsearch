@@ -25,7 +25,7 @@ describe('testing searcher', () => {
     it('TestSearchLines', async () => {
         const settings = getSettings();
         const searcher = new Searcher(settings);
-        const lines = FileUtil.getFileLines(testFile);
+        const lines = FileUtil.getFileLinesSync(testFile);
 
         const results = await searcher.searchLines(lines);
         expect(results.length).toEqual(2);

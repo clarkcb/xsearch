@@ -12,7 +12,7 @@
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (split)]
         [cljfind.filetypes :only (from-name)]
-        [cljfind.findsettings :only (->FindSettings)]))
+        [cljfind.findsettings]))
 
 (defrecord SearchSettings
   [
@@ -68,7 +68,7 @@
     ^Boolean verbose
   ])
 
-(def DEFAULT-SETTINGS
+(def DEFAULT-SEARCH-SETTINGS
   (->SearchSettings
    false     ; archives-only
    true      ; colorize
@@ -159,8 +159,8 @@
    (:verbose search-settings)                   ; verbose
    ))
 
-(defn set-archives-only [settings b]
-  (let [with-search-archives (assoc settings :search-archives b)]
-    (if b
-      (assoc with-search-archives :archives-only true)
-      with-search-archives)))
+;(defn set-archives-only [settings b]
+;  (let [with-search-archives (assoc settings :search-archives b)]
+;    (if b
+;      (assoc with-search-archives :archives-only true)
+;      with-search-archives)))

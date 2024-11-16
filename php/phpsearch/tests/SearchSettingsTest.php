@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use phpsearch\SearchSettings;
 use PHPUnit\Framework\TestCase;
@@ -22,13 +24,14 @@ class SearchSettingsTest extends TestCase
     {
         $this->assertFalse($this->settings->archives_only);
         $this->assertFalse($this->settings->debug);
-        $this->assertTrue($this->settings->exclude_hidden);
         $this->assertFalse($this->settings->first_match);
+        $this->assertFalse($this->settings->follow_symlinks);
+        $this->assertFalse($this->settings->include_hidden);
         $this->assertEquals(0, $this->settings->lines_after);
         $this->assertEquals(0, $this->settings->lines_before);
-        $this->assertFalse($this->settings->list_dirs);
-        $this->assertFalse($this->settings->list_files);
-        $this->assertFalse($this->settings->list_lines);
+        $this->assertFalse($this->settings->print_dirs);
+        $this->assertFalse($this->settings->print_files);
+        $this->assertFalse($this->settings->print_lines);
         $this->assertEquals(150, $this->settings->max_line_length);
         $this->assertFalse($this->settings->multi_line_search);
         $this->assertTrue($this->settings->print_results);

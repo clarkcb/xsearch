@@ -133,22 +133,22 @@ func TestSearchSettingsFromJson(t *testing.T) {
 	}
 
 	if settings.LinesBefore() != 2 {
-		t.Errorf("settings.LinesBefore (%d) != 2", settings.LinesBefore)
+		t.Errorf("settings.LinesBefore (%d) != 2", settings.LinesBefore())
 	}
 
 	if settings.LinesAfter() != 2 {
-		t.Errorf("settings.LinesAfter (%d) != 2", settings.LinesAfter)
+		t.Errorf("settings.LinesAfter (%d) != 2", settings.LinesAfter())
 	}
 
 	if !settings.Debug() {
-		t.Errorf("settings.Debug (%t) != true", settings.Debug)
+		t.Errorf("settings.Debug (%t) != true", settings.Debug())
 	}
 
 	if !settings.FirstMatch() {
-		t.Errorf("settings.FirstMatch (%t) != true", settings.FirstMatch)
+		t.Errorf("settings.FirstMatch (%t) != true", settings.FirstMatch())
 	}
 
 	if !settings.IncludeHidden() {
-		t.Errorf("settings.IncludeHidden (%t) != true", settings.IncludeHidden)
+		t.Errorf("settings.IncludeHidden (%t) != true", settings.IncludeHidden())
 	}
 }

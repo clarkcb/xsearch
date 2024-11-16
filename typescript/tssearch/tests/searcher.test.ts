@@ -26,7 +26,7 @@ describe('testing searcher', () => {
     it('TestSearchLines', async () => {
         const settings: SearchSettings = getSettings();
         const searcher: Searcher = new Searcher(settings);
-        const lines: string[] = FileUtil.getFileLines(testFile, 'utf-8');
+        const lines: string[] = FileUtil.getFileLinesSync(testFile, 'utf-8');
 
         const results: SearchResult[] = await searcher.searchLines(lines);
         expect(results.length).toEqual(2);
@@ -54,7 +54,7 @@ describe('testing searcher', () => {
     it('TestSearchMultiLineString', async () => {
         const settings: SearchSettings = getSettings();
         const searcher: Searcher = new Searcher(settings);
-        const contents: string = FileUtil.getFileContents(testFile, 'utf-8');
+        const contents: string = FileUtil.getFileContentsSync(testFile, 'utf-8');
 
         const results: SearchResult[] = await searcher.searchMultiLineString(contents);
         expect(results.length).toEqual(2);

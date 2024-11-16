@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/phpsearch/config.php';
+require_once __DIR__ . '/phpsearch/Config.php';
 
 // the str_replace was necessary when using a namespace because it was using
 // a backslash in the path instead of forward slash

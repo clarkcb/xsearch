@@ -26,8 +26,8 @@ sub test_default_settings {
     ok(!$settings->{archives_only}, "archives_only is false by default");
     ok($settings->{colorize}, "colorize is true by default");
     ok(!$settings->{debug}, "debug is false by default");
-    ok($settings->{exclude_hidden}, "exclude_hidden is true by default");
     ok(!$settings->{first_match}, "first_match is false by default");
+    ok(!$settings->{include_hidden}, "include_hidden is false by default");
     ok($settings->{lines_after} == 0, "lines_after == 0 by default");
     ok($settings->{lines_before} == 0, "lines_before == 0 by default");
     ok(!$settings->{list_dirs}, "list_dirs is false by default");

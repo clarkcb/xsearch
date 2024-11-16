@@ -1,12 +1,20 @@
-cmake_minimum_required(VERSION 3.28.1)
+cmake_minimum_required(VERSION 3.30)
 project(cppsearch VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")
 #message("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 
-set(CMAKE_CXX_STANDARD 20)
+if (CMAKE_CXX_FLAGS STREQUAL "")
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic")
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+# Adding AddressSanitizer
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+        set(CMAKE_CXX_STANDARD 20)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+endif()
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
@@ -95,7 +103,7 @@ target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME})
 
 
 ################################################################################
-# Testing section
+# Test dependencies section
 ################################################################################
 
 Include(FetchContent)
@@ -103,20 +111,25 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v2.13.9
+        #GIT_TAG        v2.13.9
+        GIT_TAG        v3.7.1
 )
 
 FetchContent_MakeAvailable(Catch2)
+
+
+################################################################################
+# Tests section
+################################################################################
 
 set(TEST_FILES
         tests/SearcherTest.cpp
         tests/SearchOptionsTest.cpp
         tests/SearchResultTest.cpp
-        tests/SearchSettingsTest.cpp
-        tests/tests-main.cpp)
+        tests/SearchSettingsTest.cpp)
 
 add_executable(cppsearch-tests ${TEST_FILES})
 
-target_link_libraries(cppsearch-tests ${PROJECT_NAME} Catch2::Catch2)
+target_link_libraries(cppsearch-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
 
 unset(XSEARCH_PATH CACHE)

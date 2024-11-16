@@ -1,5 +1,4 @@
 defmodule ExSearchTest.SearcherTest do
-  alias ExFind.FileTypes
   alias ExSearch.Config
   alias ExSearch.Searcher
   alias ExSearch.SearchSettings
@@ -11,7 +10,7 @@ defmodule ExSearchTest.SearcherTest do
       settings = SearchSettings.new([paths: [file_path]])
                  |> SearchSettings.add_patterns(["Searcher"], :search_patterns)
 
-      searcher = Searcher.new([file_types: FileTypes.new(), settings: settings])
+      searcher = Searcher.new(settings)
 
       [first_result, second_result] = Searcher.search!(searcher)
 

@@ -33,6 +33,10 @@
       "desc": "Capture only the first file + searchpattern match"
     },
     {
+      "long": "followsymlinks",
+      "desc": "Follow symlinks to their linked files or directories"
+    },
+    {
       "long": "help",
       "short": "h",
       "desc": "Print this usage and exit"
@@ -139,6 +143,10 @@
       "long": "nocolorize",
       "short": "C",
       "desc": "Do not colorize console output"
+    },
+    {
+      "long": "nofollowsymlinks",
+      "desc": "Do not follow symlinks to their linked files or directories"
     },
     {
       "long": "noprintdirs",

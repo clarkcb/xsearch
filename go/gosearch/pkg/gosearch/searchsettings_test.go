@@ -7,12 +7,13 @@ func TestDefaultSearchSettings(t *testing.T) {
 	if settings.ArchivesOnly() ||
 		settings.Debug() ||
 		settings.FirstMatch() ||
+		settings.FollowSymlinks() ||
 		settings.IncludeHidden() ||
 		settings.MultiLineSearch() ||
 		settings.PrintDirs() ||
 		settings.PrintFiles() ||
 		settings.PrintLines() ||
-		!settings.PrintResults() ||
+		settings.PrintResults() ||
 		settings.PrintUsage() ||
 		settings.PrintVersion() ||
 		!settings.Recursive() ||

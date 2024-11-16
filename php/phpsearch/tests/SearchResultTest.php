@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use phpfind\FileResult;
 use phpfind\FileType;
@@ -18,7 +20,7 @@ class SearchResultTest extends TestCase
         $settings->colorize = false;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
-        $file = new FileResult(self::CSSEARCHPATH, "Searcher.cs", FileType::Code, false);
+        $file = new FileResult(self::CSSEARCHPATH, "Searcher.cs", FileType::Code, 0, 0);
         $line_num = 10;
         $match_start_index = 15;
         $match_end_index = 23;
@@ -54,7 +56,7 @@ class SearchResultTest extends TestCase
         $settings->max_line_length = 100;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "maxlen";
-        $file = new FileResult('.', "maxlen.txt", FileType::Text, false);
+        $file = new FileResult('.', "maxlen.txt", FileType::Text, 0, 0);
         $line_num = 1;
         $match_start_index = 53;
         $match_end_index = 59;
@@ -89,7 +91,7 @@ class SearchResultTest extends TestCase
         $settings = new SearchSettings();
         $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
-        $file = new FileResult(self::CSSEARCHPATH, "Searcher.exe", FileType::Binary, false);
+        $file = new FileResult(self::CSSEARCHPATH, "Searcher.exe", FileType::Binary, 0, 0);
         $line_num = 0;
         $match_start_index = 0;
         $match_end_index = 0;
@@ -117,7 +119,7 @@ class SearchResultTest extends TestCase
         $settings->colorize = false;
         $formatter = new SearchResultFormatter($settings);
         $pattern = "Search";
-        $file = new FileResult(self::CSSEARCHPATH, "Searcher.cs", FileType::Code, false);
+        $file = new FileResult(self::CSSEARCHPATH, "Searcher.cs", FileType::Code, 0, 0);
         $line_num = 10;
         $match_start_index = 15;
         $match_end_index = 23;

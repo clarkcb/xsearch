@@ -537,11 +537,11 @@ func (s *SearchSettings) String() string {
 		", LinesAfterToPatterns: %s" +
 		", LinesAfterUntilPatterns: %s" +
 		", LinesBefore: %d" +
-		", MaxDepth: %s" +
+		", MaxDepth: %d" +
 		", MaxLastMod: %s" +
 		", MaxLineLength: %d" +
 		", MaxSize: %d" +
-		", MinDepth: %s" +
+		", MinDepth: %d" +
 		", MinLastMod: %s" +
 		", MinSize: %d" +
 		", MultiLineSearch: %t" +
@@ -614,7 +614,7 @@ func (s *SearchSettings) String() string {
 		s.FindSettings.Recursive(),
 		s.SearchArchives(),
 		gofind.PatternsToString(s.SearchPatterns()),
-		s.FindSettings.SortBy(),
+		gofind.NameForSortBy(s.FindSettings.SortBy()),
 		s.FindSettings.SortCaseInsensitive(),
 		s.FindSettings.SortDescending(),
 		s.TextFileEncoding(),

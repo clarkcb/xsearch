@@ -3,18 +3,21 @@ package scalasearch
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 
+import java.nio.file.Paths
+
 class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
 
-  val startpath = "."
+  val startPath = "."
   val searchString = "Search"
   //val requiredArgs = List("-s", searchString, startpath)
-  val requiredArgs = Array("-s", searchString, startpath)
+  val requiredArgs: Array[String] = Array("-s", searchString, startPath)
 
   def assertDefaultSettings(settings: SearchSettings): Unit = {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
-    assert(settings.excludeHidden == DefaultSettings.excludeHidden)
     assert(settings.firstMatch == DefaultSettings.firstMatch)
+    assert(settings.followSymlinks == DefaultSettings.followSymlinks)
+    assert(settings.includeHidden == DefaultSettings.includeHidden)
     assert(settings.linesAfter == DefaultSettings.linesAfter)
     assert(settings.linesBefore == DefaultSettings.linesBefore)
     assert(settings.printDirs == DefaultSettings.printDirs)
@@ -44,7 +47,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.searchPatterns.size == 1)
     assert(settings.searchPatterns.toList.head.toString == searchString)
     assert(settings.paths.size == 1)
-    assert(settings.paths.toList.head.toString == startpath)
+    assert(settings.paths.toList.head.toString == startPath)
   }
 
   // test -a / --allmatches
@@ -82,7 +85,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
 //    println("args: " + args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
 //    println("settings.excludeHidden: " + settings.excludeHidden)
-    assert(settings.excludeHidden)
+    assert(!settings.includeHidden)
   }
 
   // test -1 / --firstmatch
@@ -116,8 +119,8 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val args = Array("--includehidden") ++ requiredArgs
 //    println("args: " + args.toList)
     val settings = SearchOptions.settingsFromArgs(args)
-    println("settings.excludeHidden: " + settings.excludeHidden)
-    assert(!settings.excludeHidden)
+//    println("settings.includeHidden: " + settings.includeHidden)
+    assert(settings.includeHidden)
   }
 
   // test --in-archivefilepattern
@@ -261,30 +264,6 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(longSettings.linesBefore == 2)
   }
 
-  // test --listdirs
-  test("""test settingsFromArgs with args="--listdirs" """) {
-    val args = Array("--listdirs") ++ requiredArgs
-//    println("args: " + args.toList)
-    val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.printDirs)
-  }
-
-  // test --listfiles
-  test("""test settingsFromArgs with args="--listfiles" """) {
-    val args = Array("--listfiles") ++ requiredArgs
-//    println("args: " + args.toList)
-    val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.printFiles)
-  }
-
-  // test --listlines
-  test("""test settingsFromArgs with args="--listlines" """) {
-    val args = Array("--listlines") ++ requiredArgs
-//    println("args: " + args.toList)
-    val settings = SearchOptions.settingsFromArgs(args)
-    assert(settings.printLines)
-  }
-
   // test -m / --multilinesearch
   test("""test settingsFromArgs with args="-m" / "--multilinesearch" """) {
     val shortArgs = Array("-m") ++ requiredArgs
@@ -415,6 +394,30 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.outLinesBeforePatterns.toList.head.toString == "Search")
   }
 
+  // test --printdirs
+  test("""test settingsFromArgs with args="--printdirs" """) {
+    val args = Array("--printdirs") ++ requiredArgs
+    //    println("args: " + args.toList)
+    val settings = SearchOptions.settingsFromArgs(args)
+    assert(settings.printDirs)
+  }
+
+  // test --printfiles
+  test("""test settingsFromArgs with args="--printfiles" """) {
+    val args = Array("--printfiles") ++ requiredArgs
+    //    println("args: " + args.toList)
+    val settings = SearchOptions.settingsFromArgs(args)
+    assert(settings.printFiles)
+  }
+
+  // test --printlines
+  test("""test settingsFromArgs with args="--printlines" """) {
+    val args = Array("--printlines") ++ requiredArgs
+    //    println("args: " + args.toList)
+    val settings = SearchOptions.settingsFromArgs(args)
+    assert(settings.printLines)
+  }
+
   // test -p / --printmatches
   test("""test settingsFromArgs with args="-p" / "--printmatches" """) {
     val shortArgs = Array("-p") ++ requiredArgs
@@ -493,10 +496,12 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
                  |  "linesafter": 2,
                  |  "debug": true,
                  |  "allmatches": false,
-                 |  "includehidden": false
+                 |  "followsymlinks": true,
+                 |  "includehidden": true
                  |}"""
+    val expectedPath = Paths.get("/Users/cary/src/xsearch/")
     val settings = SearchOptions.settingsFromJson(json.stripMargin, ss)
-    assert(settings.paths.contains("/Users/cary/src/xsearch/"))
+    assert(settings.paths.contains(expectedPath))
     assert(settings.inExtensions.size == 2)
     assert(settings.inExtensions.contains("js"))
     assert(settings.inExtensions.contains("ts"))
@@ -507,6 +512,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.linesAfter == 2)
     assert(settings.debug)
     assert(settings.firstMatch)
-    assert(settings.excludeHidden)
+    assert(settings.followSymlinks)
+    assert(settings.includeHidden)
   }
 }

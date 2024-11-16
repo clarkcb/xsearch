@@ -3,6 +3,7 @@ package javasearch;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +28,7 @@ public class SearchOptionsTest {
             assertEquals(150, settings.getMaxLineLength());
             assertFalse(settings.getMultiLineSearch());
             assertEquals(1, settings.getPaths().size());
-            assertTrue(settings.getPaths().contains("."));
+            assertTrue(settings.getPaths().contains(Paths.get(".")));
             assertFalse(settings.getPrintDirs());
             assertFalse(settings.getPrintFiles());
             assertFalse(settings.getPrintLines());
@@ -86,7 +87,7 @@ public class SearchOptionsTest {
             searchOptions.settingsFromJson(json.toString(), settings);
 
             assertEquals(1, settings.getPaths().size());
-            assertTrue(settings.getPaths().contains("~/src/xsearch/"));
+            assertTrue(settings.getPaths().contains(Paths.get("~/src/xsearch/")));
 
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("js"));

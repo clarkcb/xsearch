@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include "SearchConfig.h"
 #include "Searcher.h"
 

@@ -11,6 +11,6 @@
   "debug": true,
   "allmatches": false,
   "includehidden": false,
-  "listdirs": true,
-  "listfiles": true
+  "printdirs": true,
+  "printfiles": true
 }

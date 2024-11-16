@@ -8,7 +8,8 @@ void main() {
     expect(settings.colorize, true);
     expect(settings.debug, false);
     expect(settings.firstMatch, false);
-    expect(settings.includeHidden, true);
+    expect(settings.followSymlinks, false);
+    expect(settings.includeHidden, false);
     expect(settings.linesAfter, 0);
     expect(settings.linesBefore, 0);
     expect(settings.maxLineLength, 150);
@@ -57,7 +58,7 @@ void main() {
     expect(settings.searchArchives, false);
     settings.archivesOnly = true;
     expect(settings.archivesOnly, true);
-    expect(settings.searchArchives, true);
+    expect(settings.includeArchives, true);
   });
 
   test('test set debug', () {

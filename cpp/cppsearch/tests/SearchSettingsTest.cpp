@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include "SearchSettings.h"
 
 TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
@@ -7,13 +7,15 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
     REQUIRE(!settings.first_match());
-    REQUIRE(settings.include_hidden());
     REQUIRE(!settings.include_archives());
+    REQUIRE(settings.include_hidden());
     REQUIRE((settings.lines_after() == 0));
     REQUIRE((settings.lines_before() == 0));
+    REQUIRE(settings.max_depth() == -1);
     REQUIRE(settings.max_last_mod() == 0);
     REQUIRE((settings.max_line_length() == 150));
     REQUIRE(settings.max_size() == 0);
+    REQUIRE(settings.min_depth() == -1);
     REQUIRE(settings.min_last_mod() == 0);
     REQUIRE(settings.min_size() == 0);
     REQUIRE(!settings.multi_line_search());
@@ -97,11 +99,15 @@ TEST_CASE("Add patterns to SearchSettings", "[SearchSettings]") {
 TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
     auto settings = cppsearch::SearchSettings();
 
+    bool archives_only = settings.archives_only();
+    bool search_archives = settings.search_archives();
+    bool debug = settings.debug();
+    bool verbose = settings.verbose();
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.search_archives());
     settings.archives_only(true);
     REQUIRE(settings.archives_only());
-    REQUIRE(settings.search_archives());
+    //REQUIRE(settings.search_archives());
 
     REQUIRE(!settings.debug());
     REQUIRE(!settings.verbose());

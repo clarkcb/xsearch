@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use phpsearch\SearchException;
 use phpsearch\SearchOptions;
@@ -30,13 +32,14 @@ class SearchOptionsTest extends TestCase
         $this->assertFalse($settings->archives_only);
         $this->assertTrue($settings->colorize);
         $this->assertFalse($settings->debug);
-        $this->assertTrue($settings->exclude_hidden);
         $this->assertFalse($settings->first_match);
+        $this->assertFalse($settings->follow_symlinks);
+        $this->assertFalse($settings->include_hidden);
         $this->assertEquals(0, $settings->lines_after);
         $this->assertEquals(0, $settings->lines_before);
-        $this->assertFalse($settings->list_dirs);
-        $this->assertFalse($settings->list_files);
-        $this->assertFalse($settings->list_lines);
+        $this->assertFalse($settings->print_dirs);
+        $this->assertFalse($settings->print_files);
+        $this->assertFalse($settings->print_lines);
         $this->assertEquals(150, $settings->max_line_length);
         $this->assertFalse($settings->multi_line_search);
         $this->assertTrue($settings->print_results);
@@ -109,6 +112,7 @@ class SearchOptionsTest extends TestCase
   "linesafter": 2,
   "debug": true,
   "allmatches": false,
+  "followsymlinks": true,
   "includehidden": true
 }
 END_JSON;
@@ -129,6 +133,7 @@ END_JSON;
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
         $this->assertTrue($settings->first_match);
-        $this->assertTrue(!$settings->exclude_hidden);
+        $this->assertTrue($settings->follow_symlinks);
+        $this->assertTrue($settings->include_hidden);
     }
 }

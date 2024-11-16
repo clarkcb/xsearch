@@ -9,6 +9,7 @@ class SearchSettingsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
     assert(settings.firstMatch == DefaultSettings.firstMatch)
+    assert(settings.followSymlinks == DefaultSettings.followSymlinks)
     assert(settings.includeHidden == DefaultSettings.includeHidden)
     assert(settings.linesAfter == DefaultSettings.linesAfter)
     assert(settings.linesBefore == DefaultSettings.linesBefore)

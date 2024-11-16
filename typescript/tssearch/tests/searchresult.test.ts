@@ -4,7 +4,7 @@
  * Some tests of searchresult.js
  */
 
-import {COLORS} from "../src/common";
+import {COLORS} from "../src/color";
 import * as config from '../src/config';
 import {FileType, FileResult} from 'tsfind';
 import {SearchResult} from '../src/searchresult';
@@ -19,7 +19,7 @@ describe('testing searchresult', () => {
         settings.colorize = false;
         const formatter = new SearchResultFormatter(settings);
         const pattern = /Search/;
-        const fileResult = new FileResult(cssearch_path, 'Searcher.cs', FileType.Code, null);
+        const fileResult = new FileResult(cssearch_path, 'Searcher.cs', FileType.Code, 0, 0);
         const lineNum = 10;
         const matchStartIndex = 15;
         const matchEndIndex = 23;
@@ -40,7 +40,7 @@ describe('testing searchresult', () => {
         settings.maxLineLength = 100;
         const formatter = new SearchResultFormatter(settings);
         const pattern = /maxlen/;
-        const fileResult = new FileResult('.', 'maxlen.txt', FileType.Text, null);
+        const fileResult = new FileResult('.', 'maxlen.txt', FileType.Text, 0, 0);
         const lineNum = 1;
         const matchStartIndex = 53;
         const matchEndIndex = 59;
@@ -65,7 +65,7 @@ describe('testing searchresult', () => {
         const formatter = new SearchResultFormatter(settings);
         settings.maxLineLength = 100;
         const pattern = /maxlen/;
-        const fileResult = new FileResult('.', 'maxlen.txt', FileType.Text, null);
+        const fileResult = new FileResult('.', 'maxlen.txt', FileType.Text, 0, 0);
         const lineNum = 1;
         const matchStartIndex = 53;
         const matchEndIndex = 59;
@@ -92,7 +92,7 @@ describe('testing searchresult', () => {
         const formatter = new SearchResultFormatter(settings);
         const pattern = /Search/;
         const fileResult = new FileResult(cssearch_path + 'bin/Debug', 'CsSearch.exe',
-            FileType.Binary, null);
+            FileType.Binary, 0, 0);
         const lineNum = 0;
         const matchStartIndex = 5;
         const matchEndIndex = 10;
@@ -111,7 +111,7 @@ describe('testing searchresult', () => {
         settings.colorize = false;
         const formatter = new SearchResultFormatter(settings);
         const pattern = /Search/;
-        const fileResult = new FileResult(cssearch_path, 'Searcher.cs', FileType.Code, null);
+        const fileResult = new FileResult(cssearch_path, 'Searcher.cs', FileType.Code, 0, 0);
         const lineNum = 10;
         const matchStartIndex = 15;
         const matchEndIndex = 23;

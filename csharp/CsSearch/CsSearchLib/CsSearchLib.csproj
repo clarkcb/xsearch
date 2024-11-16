@@ -7,8 +7,6 @@
 
     <ItemGroup>
         <None Remove="Resources\searchoptions.json" />
-        <None Remove="Resources\filetypes.json" />
-        <EmbeddedResource Include="Resources\filetypes.json" />
         <EmbeddedResource Include="Resources\searchoptions.json" />
     </ItemGroup>
 

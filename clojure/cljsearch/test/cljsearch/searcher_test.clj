@@ -6,14 +6,15 @@
         [cljfind.fileutil :only (expand-path)]
         [cljsearch.searcher :only
           (search-lines search-multiline-string)]
+        [cljfind.findsettings]
         [cljsearch.searchsettings :only
-          (DEFAULT-SETTINGS add-extension add-pattern set-archives-only)]))
+         (DEFAULT-SEARCH-SETTINGS)]))
 
 (def TESTFILE
   (str/join java.io.File/separator [SHAREDPATH "testFiles" "testFile2.txt"]))
 
 (defn get-settings []
-  (add-pattern DEFAULT-SETTINGS "Searcher" :search-patterns))
+  (add-pattern DEFAULT-SEARCH-SETTINGS "Searcher" :search-patterns))
 
 ;; *****************************************************************************
 ;; search-lines tests

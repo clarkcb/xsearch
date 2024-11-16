@@ -19,10 +19,12 @@
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path to-path)]
-        [cljfind.findsettings :only (add-extension add-file-type add-path add-pattern set-debug
-                                     sort-by-from-name)]
+        [cljfind.findsettings :only
+         (add-extension add-file-type add-path add-pattern
+          set-archives-only set-debug set-int-val set-long-val
+          sort-by-from-name)]
         [cljsearch.searchsettings :only
-         (->SearchSettings DEFAULT-SETTINGS set-archives-only)]))
+         (->SearchSettings DEFAULT-SEARCH-SETTINGS)]))
 
 (defrecord SearchOption [short-arg long-arg desc])
 
@@ -43,7 +45,7 @@
         get-desc (fn [l] (get long-desc-map l))]
     (sort-by get-sort-arg (map #(SearchOption. (get-short %) % (get-desc %)) long-names))))
 
-(def OPTIONS (get-search-options-from-json))
+(def SEARCH-OPTIONS (get-search-options-from-json))
 
 (defn print-option [opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
@@ -51,7 +53,7 @@
       (format format-string (:short-arg opt) (:long-arg opt) (:desc opt)))))
 
 (defn print-options []
-  (doseq [o OPTIONS] (print-option o)))
+  (doseq [o SEARCH-OPTIONS] (print-option o)))
 
 (def arg-action-map
   { :encoding (fn [^SearchSettings settings ^String s] (assoc settings :text-file-encoding s))
@@ -63,17 +65,17 @@
     :in-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :in-file-types))
     :in-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-after-patterns))
     :in-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-before-patterns))
-    :linesafter (fn [^SearchSettings settings ^String s] (assoc settings :lines-after (Integer/parseInt s)))
+    :linesafter (fn [^SearchSettings settings ^String s] (set-int-val settings s :lines-after))
     :linesaftertopattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-to-patterns))
     :linesafteruntilpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-until-patterns))
-    :linesbefore (fn [^SearchSettings settings ^String s] (assoc settings :lines-before (Integer/parseInt s)))
-    :maxdepth (fn [^SearchSettings settings ^String s] (assoc settings :max-depth (Integer/parseInt s)))
+    :linesbefore (fn [^SearchSettings settings ^String s] (set-int-val settings s :lines-before))
+    :maxdepth (fn [^SearchSettings settings ^String s] (set-int-val settings s :max-depth))
     :maxlastmod (fn [^SearchSettings settings ^String s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
     :maxlinelength (fn [^SearchSettings settings ^String s] (assoc settings :max-line-length (read-string s)))
-    :maxsize (fn [^SearchSettings settings ^String s] (assoc settings :max-size (Integer/parseInt s)))
-    :mindepth (fn [^SearchSettings settings ^String s] (assoc settings :min-depth (Integer/parseInt s)))
+    :maxsize (fn [^SearchSettings settings ^String s] (set-long-val settings s :max-size))
+    :mindepth (fn [^SearchSettings settings ^String s] (set-int-val settings s :min-depth))
     :minlastmod (fn [^SearchSettings settings ^String s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
-    :minsize (fn [^SearchSettings settings ^String s] (assoc settings :min-size (Integer/parseInt s)))
+    :minsize (fn [^SearchSettings settings ^String s] (set-long-val settings s :min-size))
     :out-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :out-archive-extensions))
     :out-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-archive-file-patterns))
     :out-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-dir-patterns))
@@ -119,9 +121,9 @@
   })
 
 (defn get-long-arg [arg]
-  (let [long-names (map :long-arg OPTIONS)
+  (let [long-names (map :long-arg SEARCH-OPTIONS)
         long-map (zipmap long-names (repeat 1))
-        short-options (remove #(= (:short-arg %) "") OPTIONS)
+        short-options (remove #(= (:short-arg %) "") SEARCH-OPTIONS)
         short-long-map (zipmap (map :short-arg short-options) (map :long-arg short-options))]
     (cond
       (contains? long-map arg) (keyword arg)
@@ -146,7 +148,7 @@
 
 (defn settings-from-json
   (^SearchSettings [json]
-    (settings-from-json DEFAULT-SETTINGS json))
+   (settings-from-json DEFAULT-SEARCH-SETTINGS json))
   (^SearchSettings [^SearchSettings settings ^String json]
     (let [obj (json/read-str json :key-fn keyword)
           ks (keys obj)]
@@ -158,7 +160,7 @@
 
 (defn settings-from-args
   (^SearchSettings [args]
-    (settings-from-args DEFAULT-SETTINGS args []))
+   (settings-from-args DEFAULT-SEARCH-SETTINGS args []))
   (^SearchSettings [^SearchSettings settings args errs]
     (if (or (empty? args) (not (empty? errs)))
       [settings errs]
@@ -195,12 +197,12 @@
     (format (str "%-" longest "s %s") opt-string d)))
 
 (defn usage-string []
-  (let [longest (longest-length OPTIONS)]
+  (let [longest (longest-length SEARCH-OPTIONS)]
     (str
-      "Usage:\n"
-      " cljsearch [options] -s <searchpattern> <path> [<path> ...]\n\n"
-      "Options:\n "
-      (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
+     "Usage:\n"
+     " cljsearch [options] -s <searchpattern> <path> [<path> ...]\n\n"
+     "Options:\n "
+     (str/join "\n " (map #(option-to-string % longest) SEARCH-OPTIONS)))))
 
 (defn usage
   ([exit-code]

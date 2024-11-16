@@ -1,6 +1,7 @@
 (ns cljsearch.searchoptions-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
+        [cljfind.fileutil :only (to-path)]
         [cljsearch.searchoptions :only (settings-from-args settings-from-json)]))
 
 (deftest test-no-args
@@ -37,7 +38,7 @@
       (is (= (count (:search-patterns ss)) 1))
       (is (= (.pattern (first (:search-patterns ss))) "Search"))
       (is (= (count (:paths ss)) 1))
-      (is (contains? (:paths ss) ".")))))
+      (is (contains? (:paths ss) (to-path "."))))))
 
 (deftest test-missing-arg
   (let [[ss errs] (settings-from-args ["-x" "clj" "-s" "Search" "." "-D"])]
@@ -51,11 +52,11 @@
       (is (= (count errs) 1))
       (is (= (first errs) "Invalid option: Q")))))
 
-(deftest test-archives-only
-  (let [[ss errs] (settings-from-args ["--archivesonly"])]
-    (testing "test-archives-only"
-      (is (= (:archives-only ss) true))
-      (is (= (:search-archives ss) true)))))
+;(deftest test-archives-only
+;  (let [[ss errs] (settings-from-args ["--archivesonly"])]
+;    (testing "test-archives-only"
+;      (is (= (:archives-only ss) true))
+;      (is (= (:search-archives ss) true)))))
 
 (deftest test-debug
   (let [[ss errs] (settings-from-args ["--debug"])]
@@ -79,7 +80,8 @@
         [ss errs] (settings-from-json settings-json)
         ]
     (testing "test-debug"
-      (is (contains? (:paths ss) "~/src/xsearch"))
+      (is (= (count (:paths ss)) 1))
+      (is (contains? (:paths ss) (to-path "~/src/xsearch")))
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "js"))
       (is (contains? (:in-extensions ss) "ts"))

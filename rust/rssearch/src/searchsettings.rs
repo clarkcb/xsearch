@@ -90,6 +90,14 @@ impl SearchSettings {
         self._first_match = b
     }
 
+    pub fn follow_symlinks(&self) -> bool {
+        self._find_settings.follow_symlinks()
+    }
+
+    pub fn set_follow_symlinks(&mut self, b: bool) {
+        self._find_settings.set_follow_symlinks(b);
+    }
+
     pub fn in_archive_extensions(&self) -> &Vec<String> {
         &self._find_settings.in_archive_extensions()
     }
@@ -474,6 +482,7 @@ mod tests {
         assert_eq!(settings.colorize(), true);
         assert_eq!(settings.debug(), false);
         assert_eq!(settings.first_match(), false);
+        assert_eq!(settings.follow_symlinks(), false);
         assert!(settings.in_archive_extensions().is_empty());
         assert!(settings.in_archive_file_patterns().is_empty());
         assert_eq!(settings.include_hidden(), false);

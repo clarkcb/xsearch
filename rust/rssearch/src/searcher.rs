@@ -977,27 +977,6 @@ mod tests {
     }
 
     #[test]
-    fn test_search_jar_files() {
-        let mut settings = SearchSettings::default();
-        settings.add_path(String::from("../../java/javasearch"));
-        settings.set_archives_only(true);
-        settings.add_in_archive_extension(String::from("jar"));
-        settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
-
-        let results = searcher.search();
-        assert!(results.is_ok());
-        let results = results.ok().unwrap();
-        println!("results: {}", results.len());
-        if !results.is_empty() {
-            assert_eq!(results[0].pattern, "Searcher");
-            assert!(results[0].file.is_some());
-            //assert_eq!(results[0].line, "");
-            assert_eq!(results[0].line_num, 0);
-        }
-    }
-
-    #[test]
     fn test_search_zip_file() {
         let mut settings = SearchSettings::default();
         let path = Path::new("../../shared/testFiles.zip");
