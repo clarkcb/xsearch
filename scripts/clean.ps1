@@ -1,0 +1,697 @@
+#!/usr/bin/env pwsh
+################################################################################
+#
+# clean.ps1
+#
+# Runs a clean (remove generated files) for each language version
+#
+################################################################################
+param([switch]$help = $false,
+      [switch]$all = $false)
+
+########################################
+# Configuration
+########################################
+
+$scriptPath = $MyInvocation.MyCommand.Path
+$scriptDir = Split-Path $scriptPath -Parent
+
+. (Join-Path $scriptDir 'config.ps1')
+. (Join-Path $scriptDir 'common.ps1')
+
+# args holds the remaining arguments
+$langs = $args
+
+if ($langs -contains 'all')
+{
+    $all = $true
+}
+
+Log("help: $help")
+Log("all: $all")
+if ($langs.Length -gt 0 -and -not $all)
+{
+    Log("langs ($($langs.Length)): $langs")
+}
+
+
+########################################
+# Utility Functions
+########################################
+
+function Usage
+{
+    Write-Host "`nUsage: clean.ps1 [-help] {""all"" | lang [lang...]}`n"
+    exit
+}
+
+
+################################################################################
+# Clean functions
+################################################################################
+
+function CleanBashSearch
+{
+    Write-Host
+    Hdr('CleanBashSearch')
+    Log('Nothing to do for bash')
+}
+
+function CleanCSearch
+{
+    Write-Host
+    Hdr('CleanCSearch')
+
+    $oldPwd = Get-Location
+    Set-Location $cSearchPath
+
+    Log('make clean')
+    make clean
+
+    Set-Location $oldPwd
+}
+
+function CleanCljSearch
+{
+    Write-Host
+    Hdr('CleanCljSearch')
+
+    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install leiningen')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $cljSearchPath
+
+    Log('lein clean')
+    lein clean
+
+    Set-Location $oldPwd
+}
+
+function CleanCppSearch
+{
+    Write-Host
+    Hdr('CleanCppSearch')
+
+    $oldPwd = Get-Location
+    Set-Location $cppSearchPath
+
+    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
+    ForEach ($c in $cmakeBuildDirs)
+    {
+        if (Test-Path $c)
+        {
+            Log("Remove-Item $c -Recurse -Force")
+            Remove-Item $c -Recurse -Force
+        }
+    }
+
+    Set-Location $oldPwd
+}
+
+function CleanCsSearch
+{
+    Write-Host
+    Hdr('CleanCsSearch')
+
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dotnet')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $csSearchPath
+
+    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    Log("dotnet clean -v minimal")
+    dotnet clean -v minimal
+
+    $cssearchProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsSearch')}
+    ForEach ($p in $cssearchProjectDirs)
+    {
+        $binDir = Join-Path $p.FullName 'bin'
+        if (Test-Path $binDir)
+        {
+            Log("Remove-Item $binDir -Recurse -Force")
+            Remove-Item $binDir -Recurse -Force
+        }
+        $objDir = Join-Path $p.FullName 'obj'
+        if (Test-Path $objDir)
+        {
+            Log("Remove-Item $objDir -Recurse -Force")
+            Remove-Item $objDir -Recurse -Force
+        }
+    }
+
+    Set-Location $oldPwd
+}
+
+function CleanDartSearch
+{
+    Write-Host
+    Hdr('CleanDartSearch')
+
+    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dart')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $dartSearchPath
+
+    Log('dart pub cache repair')
+    dart pub cache repair
+
+    Set-Location $oldPwd
+}
+
+function CleanExSearch
+{
+    Write-Host
+    Hdr('CleanExSearch')
+
+    # ensure elixir is installed
+    if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install elixir')
+        return
+    }
+
+    # ensure mix is installed
+    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install mix')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $exSearchPath
+
+    Log('mix clean')
+    mix clean
+
+    Set-Location $oldPwd
+}
+
+function CleanFsSearch
+{
+
+    Write-Host
+    Hdr('CleanFsSearch')
+
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dotnet')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $fsSearchPath
+
+    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    Log("dotnet clean -v minimal")
+    dotnet clean -v minimal
+
+    $fssearchProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsSearch')}
+    ForEach ($p in $fssearchProjectDirs)
+    {
+        $binDir = Join-Path $p.FullName 'bin'
+        if (Test-Path $binDir)
+        {
+            Log("Remove-Item $binDir -Recurse -Force")
+            Remove-Item $binDir -Recurse -Force
+        }
+        $objDir = Join-Path $p.FullName 'obj'
+        if (Test-Path $objDir)
+        {
+            Log("Remove-Item $objDir -Recurse -Force")
+            Remove-Item $objDir -Recurse -Force
+        }
+    }
+
+    Set-Location $oldPwd
+}
+
+function CleanGoSearch
+{
+    Write-Host
+    Hdr('CleanGoSearch')
+
+    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install go')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $goSearchPath
+
+    Log('go clean')
+    go clean
+
+    Set-Location $oldPwd
+}
+
+function CleanGroovySearch
+{
+    Write-Host
+    Hdr('CleanGroovySearch')
+
+    $oldPwd = Get-Location
+    Set-Location $groovySearchPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+        PrintError('You need to install gradle')
+        return
+    }
+
+    Log("$gradle --warning-mode all clean")
+    & $gradle --warning-mode all clean
+
+    Set-Location $oldPwd
+}
+
+function CleanHsSearch
+{
+    Write-Host
+    Hdr('CleanHsSearch')
+
+    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install stack')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $hsSearchPath
+
+    Log('stack clean')
+    stack clean
+
+    Set-Location $oldPwd
+}
+
+function CleanJavaSearch
+{
+    Write-Host
+    Hdr('CleanJavaSearch')
+
+    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install maven')
+        return
+    }
+
+    Log("mvn -f $javaSearchPath/pom.xml clean")
+    mvn -f $javaSearchPath/pom.xml clean
+}
+
+function CleanJsSearch
+{
+    Write-Host
+    Hdr('CleanJsSearch')
+
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install node.js/npm')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $jsSearchPath
+
+    Log('npm run clean')
+    npm run clean
+
+    Set-Location $oldPwd
+}
+
+function CleanKtSearch
+{
+    Write-Host
+    Hdr('CleanKtSearch')
+
+    $oldPwd = Get-Location
+    Set-Location $ktSearchPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+        PrintError('You need to install gradle')
+        return
+    }
+
+    Log("$gradle --warning-mode all clean")
+    & $gradle --warning-mode all clean
+
+    Set-Location $oldPwd
+}
+
+function CleanObjcSearch
+{
+    Write-Host
+    Hdr('CleanObjcSearch')
+
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install swift')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $objcSearchPath
+
+    Log("swift package clean")
+    swift package clean
+
+    Set-Location $oldPwd
+}
+
+function CleanMlSearch
+{
+    Write-Host
+    Hdr('CleanMlSearch')
+    Log('not implemented at this time')
+}
+
+function CleanPlSearch
+{
+    Write-Host
+    Hdr('CleanPlSearch')
+    Log('Nothing to do for perl')
+}
+
+function CleanPhpSearch
+{
+    Write-Host
+    Hdr('CleanPhpSearch')
+    Log('Nothing to do for php')
+}
+
+function CleanPs1Search
+{
+    Write-Host
+    Hdr('CleanPs1Search')
+    Log('not implemented at this time')
+}
+
+function CleanPySearch
+{
+    Write-Host
+    Hdr('CleanPySearch')
+    Log('Nothing to do for python')
+}
+
+function CleanRbSearch
+{
+    Write-Host
+    Hdr('CleanRbSearch')
+    Log('Nothing to do for ruby')
+}
+
+function CleanRsSearch
+{
+    Write-Host
+    Hdr('CleanRsSearch')
+
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install cargo')
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $rsSearchPath
+
+    Log('cargo clean')
+    cargo clean
+
+    Set-Location $oldPwd
+}
+
+function CleanScalaSearch
+{
+    Write-Host
+    Hdr('CleanScalaSearch')
+
+    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install scala + sbt')
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $scalaSearchPath
+
+    Log('sbt clean')
+    sbt clean
+
+    Set-Location $oldPwd
+}
+
+function CleanSwiftSearch
+{
+    Write-Host
+    Hdr('CleanSwiftSearch')
+
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install swift')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $swiftSearchPath
+
+    Log("swift package clean")
+    swift package clean
+
+    Set-Location $oldPwd
+}
+
+function CleanTsSearch
+{
+    Write-Host
+    Hdr('CleanTsSearch')
+
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install node.js/npm')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $tsSearchPath
+
+    Log('npm run clean')
+    npm run clean
+
+    Set-Location $oldPwd
+}
+
+function CleanLinux
+{
+    Write-Host
+    Hdr('CleanLinux')
+
+    # CleanCSearch
+
+    # CleanCljSearch
+
+    # CleanCppSearch
+
+    CleanCsSearch
+
+    CleanDartSearch
+
+    CleanFsSearch
+
+    CleanGoSearch
+
+    # CleanHsSearch
+
+    CleanJavaSearch
+
+    CleanJsSearch
+
+    CleanKtSearch
+
+    # CleanObjcSearch
+
+    # CleanMlSearch
+
+    CleanPlSearch
+
+    CleanPhpSearch
+
+    CleanPySearch
+
+    CleanRbSearch
+
+    CleanRsSearch
+
+    # CleanScalaSearch
+
+    CleanSwiftSearch
+
+    CleanTsSearch
+
+    exit
+}
+
+function CleanAll
+{
+    Write-Host
+    Hdr('CleanAll')
+
+    CleanBashSearch
+
+    # CleanCSearch
+
+    CleanCljSearch
+
+    CleanCppSearch
+
+    CleanCsSearch
+
+    CleanDartSearch
+
+    CleanFsSearch
+
+    CleanGoSearch
+
+    CleanGroovySearch
+
+    CleanHsSearch
+
+    CleanJavaSearch
+
+    CleanJsSearch
+
+    CleanKtSearch
+
+    CleanObjcSearch
+
+    CleanMlSearch
+
+    CleanPlSearch
+
+    CleanPhpSearch
+
+    CleanPySearch
+
+    CleanRbSearch
+
+    CleanRsSearch
+
+    CleanScalaSearch
+
+    CleanSwiftSearch
+
+    CleanTsSearch
+
+    exit
+}
+
+################################################################################
+# Main function
+################################################################################
+
+function CleanMain
+{
+    param($langs=@())
+
+    if ($langs.Count -eq 0)
+    {
+        Usage
+    }
+
+    if ($langs -contains 'all')
+    {
+        CleanAll
+    }
+
+    ForEach ($lang in $langs)
+    {
+        switch ($lang)
+        {
+            'linux'      { CleanLinux }
+            'bash'       { CleanBashSearch }
+            'c'          { CleanCSearch }
+            'clj'        { CleanCljSearch }
+            'clojure'    { CleanCljSearch }
+            'cpp'        { CleanCppSearch }
+            'cs'         { CleanCsSearch }
+            'csharp'     { CleanCsSearch }
+            'dart'       { CleanDartSearch }
+            'elixir'     { CleanExSearch }
+            'ex'         { CleanExSearch }
+            'fs'         { CleanFsSearch }
+            'fsharp'     { CleanFsSearch }
+            'go'         { CleanGoSearch }
+            'groovy'     { CleanGroovySearch }
+            'haskell'    { CleanHsSearch }
+            'hs'         { CleanHsSearch }
+            'java'       { CleanJavaSearch }
+            'javascript' { CleanJsSearch }
+            'js'         { CleanJsSearch }
+            'kotlin'     { CleanKtSearch }
+            'kt'         { CleanKtSearch }
+            'objc'       { CleanObjcSearch }
+            'ocaml'      { CleanMlSearch }
+            'ml'         { CleanMlSearch }
+            'perl'       { CleanPlSearch }
+            'pl'         { CleanPlSearch }
+            'php'        { CleanPhpSearch }
+            'powershell' { CleanPs1Search }
+            'ps1'        { CleanPs1Search }
+            'pwsh'       { CleanPs1Search }
+            'py'         { CleanPySearch }
+            'python'     { CleanPySearch }
+            'rb'         { CleanRbSearch }
+            'ruby'       { CleanRbSearch }
+            'rs'         { CleanRsSearch }
+            'rust'       { CleanRsSearch }
+            'scala'      { CleanScalaSearch }
+            'swift'      { CleanSwiftSearch }
+            'ts'         { CleanTsSearch }
+            'typescript' { CleanTsSearch }
+            default      { ExitWithError("unknown/unsupported language: $lang") }
+        }
+    }
+}
+
+if ($help)
+{
+    Usage
+}
+
+$oldPwd = Get-Location
+
+try {
+    if ($all)
+    {
+        CleanAll
+    }
+
+    CleanMain $langs
+}
+catch {
+    PrintError($_.Exception.Message)
+}
+finally {
+    Set-Location $oldPwd
+}

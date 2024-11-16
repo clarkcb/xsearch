@@ -13,14 +13,6 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
-
-# Adding xfind so we can copy over dependencies as necessary
-if [ -z "$XFIND_PATH" ]
-then
-    XFIND_PATH="$HOME/src/xfind"
-fi
-source "$XFIND_PATH/scripts/config.sh"
-
 source "$DIR/common.sh"
 
 
@@ -29,12 +21,19 @@ source "$DIR/common.sh"
 ########################################
 
 usage () {
-    echo -e "\nUsage: build.sh [-h|--help] [--debug] [--release] [--venv] {\"all\" | langcode}\n"
+    echo -e "\nUsage: build.sh [-h|--help] [--debug] [--release] [--venv] {\"all\" | lang [lang...]}\n"
     exit
 }
 
-# copy_searchoptions_resources
-copy_searchoptions_resources () {
+# copy_config_json_resources
+copy_config_json_resources () {
+    local resources_path="$1"
+    log "cp $XSEARCH_SHARED_PATH/config.json $resources_path/"
+    cp "$XSEARCH_SHARED_PATH/config.json" "$resources_path/"
+}
+
+# copy_searchoptions_json_resources
+copy_searchoptions_json_resources () {
     local resources_path="$1"
     log "cp $XSEARCH_SHARED_PATH/searchoptions.json $resources_path/"
     cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$resources_path/"
@@ -43,28 +42,15 @@ copy_searchoptions_resources () {
 # copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
-    log "cp $XSEARCH_SHARED_PATH/config.json $resources_path/"
-    cp "$XSEARCH_SHARED_PATH/config.json" "$resources_path/"
-    log "cp $XSEARCH_SHARED_PATH/filetypes.json $resources_path/"
-    cp "$XSEARCH_SHARED_PATH/filetypes.json" "$resources_path/"
-    log "cp $XSEARCH_SHARED_PATH/searchoptions.json $resources_path/"
-    cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$resources_path/"
-}
-
-# copy_xml_resources
-copy_xml_resources () {
-    local resources_path="$1"
-    log "cp $XSEARCH_SHARED_PATH/filetypes.xml $resources_path/"
-    cp "$XSEARCH_SHARED_PATH/filetypes.xml" "$resources_path/"
-    log "cp $XSEARCH_SHARED_PATH/searchoptions.xml $resources_path/"
-    cp "$XSEARCH_SHARED_PATH/searchoptions.xml" "$resources_path/"
+    copy_config_json_resources "$resources_path"
+    copy_searchoptions_json_resources "$resources_path"
 }
 
 # copy_test_resources
 copy_test_resources () {
     local test_resources_path="$1"
     log "cp $XSEARCH_TEST_FILE_PATH/testFile*.txt $test_resources_path/"
-    cp "$XSEARCH_TEST_FILE_PATH/testFile*.txt" "$test_resources_path/"
+    cp "$XSEARCH_TEST_FILE_PATH"/testFile*.txt "$test_resources_path/"
 }
 
 # add_to_bin
@@ -80,7 +66,7 @@ add_to_bin () {
 
     cd "$XSEARCH_BIN_PATH"
 
-    if [[ $script_name == *.sh ]]
+    if [[ $script_name == *.sh || $script_name == *.bash ]]
     then
         script_name=${script_name%%.*}
     fi
@@ -102,9 +88,10 @@ add_to_bin () {
 # Build Functions
 ########################################
 
-build_c () {
+build_csearch () {
     echo
-    hdr "build_c"
+    hdr "build_csearch"
+    log "language: C"
 
     # ensure make is installed
     if [ -z "$(which make)" ]
@@ -135,9 +122,22 @@ build_c () {
     cd -
 }
 
-build_clojure () {
+build_cljsearch () {
     echo
-    hdr "build_clojure"
+    hdr "build_cljsearch"
+    log "language: clojure"
+
+    # ensure clojure is installed
+    if [ -z "$(which clj)" ]
+    then
+        log_error "You need to install clojure"
+        return
+    fi
+
+    # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+    # CLOJURE_VERSION=$(clj -version | head -n 1 | cut -d ' ' -f 3)
+    CLOJURE_VERSION=$(clj -version 2>&1)
+    log "clojure version: $CLOJURE_VERSION"
 
     # ensure leiningen is installed
     if [ -z "$(which lein)" ]
@@ -146,10 +146,15 @@ build_clojure () {
         return
     fi
 
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    LEIN_VERSION=$(lein version)
+    log "lein version: $LEIN_VERSION"
+
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$CLJSEARCH_PATH/resources"
     mkdir -p "$RESOURCES_PATH"
-    copy_searchoptions_resources "$RESOURCES_PATH"
+    copy_filetypes_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$CLJSEARCH_PATH"
 
@@ -157,6 +162,12 @@ build_clojure () {
     log "Building cljsearch"
     log "lein clean"
     lein clean
+
+    # install to local maven repository
+    log "lein install"
+    lein install
+
+    # create uberjar
     log "lein uberjar"
     lein uberjar
 
@@ -175,9 +186,10 @@ build_clojure () {
     cd -
 }
 
-build_cpp () {
+build_cppsearch () {
     echo
-    hdr "build_cpp"
+    hdr "build_cppsearch"
+    log "language: C++"
 
     # ensure cmake is installed
     if [ -z "$(which cmake)" ]
@@ -185,6 +197,10 @@ build_cpp () {
         log_error "You need to install cmake"
         return
     fi
+
+    # cmake --version output looks like this: cmake version 3.30.2
+    CMAKE_VERSION=$(cmake --version | head -n 1 | cut -d ' ' -f 3)
+    log "cmake version: $CMAKE_VERSION"
 
     cd "$CPPSEARCH_PATH"
 
@@ -264,9 +280,10 @@ build_cpp () {
     cd -
 }
 
-build_csharp () {
+build_cssearch () {
     echo
-    hdr "build_csharp"
+    hdr "build_cssearch"
+    log "language: C#"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -275,12 +292,15 @@ build_csharp () {
         return
     fi
 
+    DOTNET_VERSION=$(dotnet --version)
+    log "dotnet version: $DOTNET_VERSION"
+
     RESOURCES_PATH="$CSSEARCH_PATH/CsSearchLib/Resources"
     TEST_RESOURCES_PATH="$CSSEARCH_PATH/CsSearchTests/Resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_searchoptions_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -324,9 +344,10 @@ build_csharp () {
     fi
 }
 
-build_dart () {
+build_dartsearch () {
     echo
-    hdr "build_dart"
+    hdr "build_dartsearch"
+    log "language: dart"
 
     # ensure dart is installed
     if [ -z "$(which dart)" ]
@@ -334,6 +355,9 @@ build_dart () {
         log_error "You need to install dart"
         return
     fi
+
+    DART_VERSION=$(dart --version)
+    log "$DART_VERSION"
 
     cd "$DARTSEARCH_PATH"
 
@@ -372,9 +396,10 @@ build_dart () {
     cd -
 }
 
-build_elixir () {
+build_exsearch () {
     echo
-    hdr "build_elixir"
+    hdr "build_exsearch"
+    log "language: elixir"
 
     # ensure elixir is installed
     if [ -z "$(which elixir)" ]
@@ -383,6 +408,9 @@ build_elixir () {
         return
     fi
 
+    ELIXIR_VERSION=$(elixir --version | grep Elixir)
+    log "elixir version: $ELIXIR_VERSION"
+
     # ensure mix is installed
     if [ -z "$(which mix)" ]
     then
@@ -390,14 +418,18 @@ build_elixir () {
         return
     fi
 
+    MIX_VERSION=$(mix --version | grep Mix)
+    log "mix version: $MIX_VERSION"
+
     cd "$EXSEARCH_PATH"
 
     log "Building exsearch"
-    if [ ! -f "$EXSEARCH_PATH/mix.lock" ]
-    then
-        log "mix deps.get"
-        mix deps.get
-    fi
+    log "mix deps.get"
+    mix deps.get
+
+    log "Compiling exfind"
+    log "mix compile"
+    mix compile
 
     log "Creating exsearch executable"
     log "mix escript.build"
@@ -418,9 +450,10 @@ build_elixir () {
     cd -
 }
 
-build_fsharp () {
+build_fssearch () {
     echo
-    hdr "build_fsharp"
+    hdr "build_fssearch"
+    log "language: F#"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -429,12 +462,16 @@ build_fsharp () {
         return
     fi
 
+    DOTNET_VERSION=$(dotnet --version)
+    log "dotnet version: $DOTNET_VERSION"
+
     RESOURCES_PATH="$FSSEARCH_PATH/FsSearchLib/Resources"
     TEST_RESOURCES_PATH="$FSSEARCH_PATH/FsSearchTests/Resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_searchoptions_resources "$RESOURCES_PATH"
+    copy_filetypes_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -478,9 +515,10 @@ build_fsharp () {
     fi
 }
 
-build_go () {
+build_gosearch () {
     echo
-    hdr "build_go"
+    hdr "build_gosearch"
+    log "language: go"
 
     # ensure go is installed
     if [ -z "$(which go)" ]
@@ -488,6 +526,10 @@ build_go () {
         log_error "You need to install go"
         return
     fi
+
+    GO_VERSION=$(go version | sed 's/go version //')
+    # GO_VERSION=$(go version | head -n 1 | cut -d ' ' -f 3)
+    log "go version: $GO_VERSION"
 
     # build the code to generate the dynamic code for gosearch
     #log "Building gengosearchcode"
@@ -535,9 +577,20 @@ build_go () {
     cd -
 }
 
-build_haskell () {
+build_hssearch () {
     echo
-    hdr "build_haskell"
+    hdr "build_hssearch"
+    log "language: haskell"
+
+    # ensure ghc is installed
+    if [ -z "$(which ghc)" ]
+    then
+        log_error "You need to install ghc"
+        return
+    fi
+
+    GHC_VERSION=$(ghc --version)
+    log "ghc version: $GHC_VERSION"
 
     # ensure stack is installed
     if [ -z "$(which stack)" ]
@@ -545,6 +598,9 @@ build_haskell () {
         log_error "You need to install stack"
         return
     fi
+
+    STACK_VERSION=$(stack --version)
+    log "stack version: $STACK_VERSION"
 
     # set the default stack settings, e.g. use system ghc
     STACK_DIR=$HOME/.stack
@@ -597,9 +653,10 @@ build_haskell () {
     cd -
 }
 
-build_java () {
+build_javasearch () {
     echo
-    hdr "build_java"
+    hdr "build_javasearch"
+    log "language: java"
 
     # ensure mvn is installed
     if [ -z "$(which mvn)" ]
@@ -637,16 +694,30 @@ build_java () {
     add_to_bin "$JAVASEARCH_PATH/bin/javasearch.sh"
 }
 
-build_javascript () {
+build_jssearch () {
     echo
-    hdr "build_javascript"
+    hdr "build_jssearch"
+    log "language: javascript"
+
+    # ensure node is installed
+    if [ -z "$(which node)" ]
+    then
+        log_error "You need to install node.js"
+        return
+    fi
+
+    NODE_VERSION=$(node --version)
+    log "node version: $NODE_VERSION"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        log_error "You need to install node.js/npm"
+        log_error "You need to install npm"
         return
     fi
+
+    NPM_VERSION=$(npm --version)
+    log "npm version: $NPM_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$JSSEARCH_PATH/data"
@@ -678,16 +749,51 @@ build_javascript () {
     cd -
 }
 
-build_kotlin () {
+build_ktsearch () {
     echo
-    hdr "build_kotlin"
+    hdr "build_ktsearch"
+    log "language: kotlin"
 
-    # ensure gradle is installed
-    if [ -z "$(which gradle)" ]
+    cd "$KTSEARCH_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
         log_error "You need to install gradle"
         return
     fi
+
+    GRADLE_OUTPUT=$($GRADLE --version)
+    # echo "$GRADLE_OUTPUT"
+
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
+    log "$GRADLE version: $GRADLE_VERSION"
+
+    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
+    log "Kotlin version: $KOTLIN_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     RESOURCES_PATH="$KTSEARCH_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$KTSEARCH_PATH/src/test/resources"
@@ -701,6 +807,7 @@ build_kotlin () {
     copy_test_resources "$TEST_RESOURCES_PATH"
 
     # TEMP(?): copy the jar file for the local ktfind dependency to lib
+    log "KTFIND_PATH: $KTFIND_PATH"
     KTFIND_JAR=$(find "$KTFIND_PATH/build/libs" -maxdepth 1 -name "ktfind*.jar" | head -n 1)
     if [ -f "$KTFIND_JAR" ]
     then
@@ -708,13 +815,17 @@ build_kotlin () {
         cp "$KTFIND_JAR" "$KTSEARCH_PATH/lib/"
     fi
 
-    # run a gradle build
+    # run a gradle clean jar build
     log "Building ktsearch"
 
-    cd "$KTSEARCH_PATH/"
-
-    log "gradle --warning-mode all clean jar"
-    gradle --warning-mode all clean jar
+    # log "gradle --warning-mode all clean jar publishToMavenLocal"
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    # GRADLE_ARGS="--info --warning-mode all"
+    GRADLE_ARGS="--warning-mode all"
+    GRADLE_TASKS="clean jar"
+    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
+    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
+    "$GRADLE" --warning-mode all clean jar
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -731,9 +842,10 @@ build_kotlin () {
     cd -
 }
 
-build_objc () {
+build_objcsearch () {
     echo
-    hdr "build_objc"
+    hdr "build_objcsearch"
+    log "language: Objective C"
 
     TARGET=alltargets
 
@@ -744,6 +856,15 @@ build_objc () {
         log_error "You need to install swift"
         return
     fi
+
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    SWIFT_VERSION=$(swift --version 2>&1 | grep 'Apple Swift' | cut -d ' ' -f 7)
+    log "swift version: Apple Swift version $SWIFT_VERSION"
+
+    # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
     cd "$OBJCSEARCH_PATH"
 
@@ -788,9 +909,10 @@ build_objc () {
     cd -
 }
 
-build_ocaml () {
+build_mlsearch () {
     echo
-    hdr "build_ocaml"
+    hdr "build_mlsearch"
+    log "language: ocaml"
 
     cd "$MLSEARCH_PATH"
     ./build.sh
@@ -802,9 +924,10 @@ build_ocaml () {
     cd -
 }
 
-build_perl () {
+build_plsearch () {
     echo
-    hdr "build_perl"
+    hdr "build_plsearch"
+    log "language: perl"
 
     # ensure perl is installed
     if [ -z "$(which perl)" ]
@@ -813,11 +936,14 @@ build_perl () {
         return
     fi
 
-    if [ -z "$(perl -v | grep 'This is perl 5')" ]
+    PERL_VERSION="$(perl -e 'print $^V' | grep '^v5')"
+    if [ -z $PERL_VERSION ]
     then
-        echo "A 5.x version of perl is required"
+        log_error "A 5.x version of perl is required"
         return
     fi
+
+    log "perl version: $PERL_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLSEARCH_PATH/share"
@@ -840,9 +966,10 @@ build_perl () {
     add_to_bin "$PLSEARCH_PATH/bin/plsearch.sh"
 }
 
-build_php () {
+build_phpsearch () {
     echo
-    hdr "build_php"
+    hdr "build_phpsearch"
+    log "language: php"
 
     # ensure php is installed
     if [ -z "$(which php)" ]
@@ -851,12 +978,14 @@ build_php () {
         return
     fi
 
-    # TODO: do a real version check
-    if [ -z "$(php -v | grep 'cli')" ]
+    # PHP_VERSION=$(php -r "echo phpversion();")
+    PHP_VERSION=$(php -v | grep '^PHP [78]')
+    if [ -z "$PHP_VERSION" ]
     then
         log_error "A version of PHP >= 7.x is required"
         return
     fi
+    log "php version: $PHP_VERSION"
 
     # ensure composer is installed
     if [ -z "$(which composer)" ]
@@ -864,6 +993,9 @@ build_php () {
         log_error "Need to install composer"
         return
     fi
+
+    COMPOSER_VERSION=$(composer --version 2>&1 | grep '^Composer')
+    log "composer version: $COMPOSER_VERSION"
 
     CONFIG_PATH="$PHPSEARCH_PATH/config"
     RESOURCES_PATH="$PHPSEARCH_PATH/resources"
@@ -878,7 +1010,7 @@ build_php () {
     log "cp $XSEARCH_SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
     cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
 
-    cd "$PHPSEARCH_PATH/"
+    cd "$PHPSEARCH_PATH"
 
     # run a composer build
     log "Building phpsearch"
@@ -907,79 +1039,125 @@ build_php () {
     cd -
 }
 
-build_python () {
+build_pysearch () {
     echo
-    hdr "build_python"
-
-    # ensure python3.9+ is installed
-    PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
-    PYTHON=
-    for p in ${PYTHON_VERSIONS[*]}
-    do
-        PYTHON=$(which "$p")
-        if [ -f "$PYTHON" ]
-        then
-            break
-        fi
-    done
-
-    if [ -z "$PYTHON" ]
-    then
-        log_error "A version of python >= 3.9 is required"
-        return
-    else
-        PYTHON=$(basename "$PYTHON")
-        log "Using $PYTHON ($(which $PYTHON))"
-    fi
+    hdr "build_pysearch"
+    log "language: python"
 
     # Set to Yes to use venv
     USE_VENV=$VENV
+    # PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
+    # We don't want to use python3.12 yet
+    PYTHON_VERSIONS=(python3.11 python3.10 python3.9)
+    PYTHON=
 
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$PYSEARCH_PATH/data"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    ACTIVE_VENV=
+
+    if [ "$USE_VENV" == 'yes' ]
+    then
+        log 'Using venv'
+
+        # 3 possibilities:
+        # 1. venv exists and is active
+        # 2. venv exists and is not active
+        # 3. venv does not exist
+
+        if [ -n "$VIRTUAL_ENV" ]
+        then
+            # 1. venv exists and is active
+            log "Already active venv: $VIRTUAL_ENV"
+            ACTIVE_VENV="$VIRTUAL_ENV"
+
+            PYTHON=$(which python3)
+            PYTHON=$(basename "$PYTHON")
+
+        elif [ -d "$PYSEARCH_PATH/venv" ]
+        then
+            # 2. venv exists and is not active
+            log 'Using existing venv'
+
+            # activate the venv - we run this even if this venv or another is already active
+            # because it's the only way to be able to run deactivate later
+            log "source $PYFIND_PATH/venv/bin/activate"
+            source $PYFIND_PATH/venv/bin/activate
+
+            PYTHON=$(which python3)
+            PYTHON=$(basename "$PYTHON")
+
+        else
+            # 3. venv does not exist
+            # ensure python3.9+ is installed
+            for p in ${PYTHON_VERSIONS[*]}
+            do
+                PYTHON=$(which "$p")
+                if [ -f "$PYTHON" ]
+                then
+                    break
+                fi
+            done
+
+            if [ -z "$PYTHON" ]
+            then
+                log_error "A version of python >= 3.9 is required"
+                return
+            else
+                PYTHON=$(basename "$PYTHON")
+            fi
+
+            log "Creating new venv"
+
+            # create a virtual env to run from and install to if it doesn't already exist
+            log "$PYTHON -m venv venv"
+            "$PYTHON" -m venv venv
+
+            # activate the venv
+            log "source $PYSEARCH_PATH/venv/bin/activate"
+            source $PYSEARCH_PATH/venv/bin/activate
+
+            # get the path to the venv version
+            PYTHON=$(which python3)
+            PYTHON=$(basename "$PYTHON")
+        fi
+
+    else
+
+        log "Not using venv"
+
+        # ensure python3.9+ is installed
+        for p in ${PYTHON_VERSIONS[*]}
+        do
+            PYTHON=$(which "$p")
+            if [ -f "$PYTHON" ]
+            then
+                break
+            fi
+        done
+
+        if [ -z "$PYTHON" ]
+        then
+            log_error "A version of python >= 3.9 is required"
+            return
+        else
+            PYTHON=$(basename "$PYTHON")
+        fi
+    fi
+
+    log "Using $PYTHON ($(which $PYTHON))"
+    log "$PYTHON -V: $($PYTHON -V)"
+
+    # # copy the shared json files to the local resource location
+    # RESOURCES_PATH="$PYSEARCH_PATH/data"
+    # mkdir -p "$RESOURCES_PATH"
+    # copy_json_resources "$RESOURCES_PATH"
     # TODO: this next path is the *real* resource path, need to remove the other one
-    RESOURCES_PATH="$PYFIND_PATH/pyfind/data"
+    RESOURCES_PATH="$PYSEARCH_PATH/pysearch/data"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
     cd "$PYSEARCH_PATH"
 
-    if [ "$USE_VENV" == 'yes' ]
-    then
-        log "Using venv"
-
-        # if venv is active, deactivate it (in case it happens to be another venv that is active)
-        if [ -n "$VIRTUAL_ENV" ]
-        then
-            log "Deactivating current venv"
-            deactivate
-        fi
-
-        # create a virtual env to run from and install to if it doesn't already exist
-        if [ ! -d "$PYSEARCH_PATH/venv" ]
-        then
-            log "$PYTHON -m venv venv"
-            "$PYTHON" -m venv venv
-        fi
-
-        # if venv isn't active, activate it
-        # (TODO: this is probably always true because of earlier deactivation)
-        if [ -z "$VIRTUAL_ENV" ]
-        then
-            log "source $PYSEARCH_PATH/venv/bin/activate"
-            source $PYSEARCH_PATH/venv/bin/activate
-        fi
-
-        # get the path to the venv version
-        PYTHON=$(which python3)
-        PYTHON=$(basename "$PYTHON")
-        log "Using $PYTHON ($(which $PYTHON))"
-    fi
-
     # install wheel - this seems to fix problems with installing local dependencies,
-    # which pyfind will be for pysearch
+    # which pysearch will be for pysearch
     # log "pip3 install wheel"
     # pip3 install wheel
 
@@ -997,7 +1175,8 @@ build_python () {
         ERROR=yes
     fi
 
-    if [ "$USE_VENV" == 'yes' ]
+    # if there was not an active venv before the build, deactivate the venv
+    if [ "$USE_VENV" == 'yes' -a -z "$ACTIVE_VENV" ]
     then
         # deactivate at end of setup process
         log "deactivate"
@@ -1006,6 +1185,7 @@ build_python () {
 
     if [ -n "$ERROR" ]
     then
+        cd -
         return
     fi
 
@@ -1017,9 +1197,10 @@ build_python () {
     cd -
 }
 
-build_ruby () {
+build_rbsearch () {
     echo
-    hdr "build_ruby"
+    hdr "build_rbsearch"
+    log "language: ruby"
 
     # ensure ruby2.x+ is installed
     if [ -z "$(which ruby)" ]
@@ -1028,12 +1209,14 @@ build_ruby () {
         return
     fi
 
-    # TODO: do a real version check (first determine minimum needed version)
-    if [ -z "$(ruby -v | grep 'ruby 3')" ]
+    RUBY_VERSION="$(ruby -v 2>&1 | grep '^ruby 3')"
+    if [ -z "$RUBY_VERSION" ]
     then
         log_error "A version of ruby >= 3.x is required"
         return
     fi
+
+    log "ruby version: $RUBY_VERSION"
 
     # if [ -z "$(which bundle)" ]
     # then
@@ -1046,25 +1229,28 @@ build_ruby () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_searchoptions_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
     # TODO: figure out how to install dependencies without installing rbsearch (which is what bundler does)
-    # cd "$RBSEARCH_PATH"
-    # log "bundle"
-    # bundle
-    # cd -
+    cd "$RBSEARCH_PATH"
+
+    log "bundle install"
+    bundle install
+
+    cd -
 
     # add to bin
     add_to_bin "$RBSEARCH_PATH/bin/rbsearch.sh"
 }
 
-build_rust () {
+build_rssearch () {
     echo
-    hdr "build_rust"
+    hdr "build_rssearch"
+    log "language: rust"
 
     # ensure cargo/rust is installed
     if [ -z "$(which cargo)" ]
@@ -1072,6 +1258,19 @@ build_rust () {
         log_error "You need to install rust"
         return
     fi
+
+    RUST_VERSION=$(rustc --version)
+    log "rustc version: $RUST_VERSION"
+
+    # ensure cargo is installed
+    if [ -z "$(which cargo)" ]
+    then
+        log_error "You need to install cargo"
+        return
+    fi
+
+    CARGO_VERSION=$(cargo --version)
+    log "cargo version: $CARGO_VERSION"
 
     cd "$RSSEARCH_PATH"
 
@@ -1114,9 +1313,10 @@ build_rust () {
     cd -
 }
 
-build_scala () {
+build_scalasearch () {
     echo
-    hdr "build_scala"
+    hdr "build_scalasearch"
+    log "language: scala"
 
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
@@ -1125,12 +1325,39 @@ build_scala () {
         return
     fi
 
+    # scala --version output looks like this:
+    # Scala code runner version: 1.4.3
+    # Scala version (default): 3.5.2
+    SCALA_VERSION=$(scala -version 2>&1 | tail -n 1 | cut -d ' ' -f 4)
+    log "scala version: $SCALA_VERSION"
+
+    cd "$SCALAFIND_PATH"
+
+    # ensure sbt is installed
+    if [ -z "$(which sbt)" ]
+    then
+        log_error "You need to install sbt"
+        return
+    fi
+
+    SBT_OUTPUT=$(sbt --version)
+
+    SBT_PROJECT_VERSION=$(echo "$SBT_OUTPUT" | grep 'project')
+    log "$SBT_PROJECT_VERSION"
+
+    SBT_SCRIPT_VERSION=$(echo "$SBT_OUTPUT" | grep 'script')
+    log "$SBT_SCRIPT_VERSION"
+
+    JDK_VERSION=$(java -version  2>&1 | head -n 1)
+    log "JDK version: $JDK_VERSION"
+
     RESOURCES_PATH="$SCALASEARCH_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$SCALASEARCH_PATH/src/test/resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_searchoptions_resources "$RESOURCES_PATH"
+    copy_filetypes_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -1139,7 +1366,11 @@ build_scala () {
     # TEMP(?): copy the jar file for the local scalafind dependency to lib
     if [ -z "$SCALA_VERSION" ]
     then
-        SCALA_VERSION=3.4.1
+        SCALA_VERSION=3.5.2
+    fi
+    if [ -z "$SCALAFIND_PATH" ]
+    then
+        SCALAFIND_PATH="$HOME/src/xfind/scala/scalafind"
     fi
     SCALAFIND_JAR=$(find "$SCALAFIND_PATH/target/scala-$SCALA_VERSION" -maxdepth 1 -name "scalafind*.jar" | grep -v assembly | head -n 1)
     if [ -f "$SCALAFIND_JAR" ]
@@ -1173,9 +1404,10 @@ build_scala () {
     cd -
 }
 
-build_swift () {
+build_swiftsearch () {
     echo
-    hdr "build_swift"
+    hdr "build_swiftsearch"
+    log "language: swift"
 
     # ensure swift is installed
     if [ -z "$(which swift)" ]
@@ -1183,6 +1415,13 @@ build_swift () {
         log_error "You need to install swift"
         return
     fi
+
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    SWIFT_VERSION=$(swift --version 2>&1 | grep 'Apple Swift' | cut -d ' ' -f 7)
+    log "swift version: Apple Swift version $SWIFT_VERSION"
 
     # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
@@ -1229,16 +1468,30 @@ build_swift () {
     cd -
 }
 
-build_typescript () {
+build_tssearch () {
     echo
-    hdr "build_typescript"
+    hdr "build_tssearch"
+    log "language: typescript"
+
+    # ensure node is installed
+    if [ -z "$(which node)" ]
+    then
+        log_error "You need to install node.js"
+        return
+    fi
+
+    NODE_VERSION=$(node --version)
+    log "node version: $NODE_VERSION"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        log_error "You need to install node.js/npm"
+        log_error "You need to install npm"
         return
     fi
+
+    NPM_VERSION=$(npm --version)
+    log "npm version: $NPM_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$TSSEARCH_PATH/data"
@@ -1271,61 +1524,61 @@ build_typescript () {
 
 # build_linux - builds the versions that are currently supported in the linux container
 # Notes about some of the builds:
-# - build_clojure    - this build is _really_ slow (10+ minutes?), so call its build directly if you want to try it
-# - build_cpp        - this build takes a decent amount of time to complete (though nowhere near as much as clojure)
-# - build_go         - go is known for having very fast builds, and it's true, the only builds that are faster here
-#                      are the ones that do nothing except copy over resources files (e.g. perl)
-# - build_haskell    - having some dependency issues that need to work through to get it buildling again
-# - build_javascript - this fails to build in the vscode terminal right now due to some debug plugin issue; building
-#                      in an external terminal fixes the problem
-# - build_kotlin     - This build can sometimes be quite slow, other times fairly fast. In particular, the first
-#                      time will likely be quite slow, and I think it will also be slow when a build hasn't been run
-#                      in a while
-# - build_objc       - not sure if it's even possible to build this on linux, but excluding for now
-# - build_ocaml      - had a number of different issues trying to get this version building again, finally
-#                      gave up for now after it appeared that there were a lot of changes to the main API, etc.
-# - build_rust       - the first time this build is run it will pretty time-consuming, particularly for release
-#                      target, but intermittent builds should be pretty fast
-# - build_scala      - this build isn't as slow as the clojure version's, but it's slow enough to run separately
-# - build_typescript - this build has the same problem as build_javascript; run the build in an external terminal
+# - build_cljsearch    - this build is _really_ slow (10+ minutes?), so call its build directly if you want to try it
+# - build_cppsearch    - this build takes a decent amount of time to complete (though nowhere near as much as clojure)
+# - build_gosearch     - go is known for having very fast builds, and it's true, the only builds that are faster here
+#                        are the ones that do nothing except copy over resources files (e.g. perl)
+# - build_hssearch     - having some dependency issues that need to work through to get it buildling again
+# - build_jssearch     - this fails to build in the vscode terminal right now due to some debug plugin issue; building
+#                        in an external terminal fixes the problem
+# - build_ktsearch     - This build can sometimes be quite slow, other times fairly fast. In particular, the first
+#                        time will likely be quite slow, and I think it will also be slow when a build hasn't been run
+#                        in a while
+# - build_objcsearch   - not sure if it's even possible to build this on linux, but excluding for now
+# - build_mlsearch     - had a number of different issues trying to get this version building again, finally
+#                        gave up for now after it appeared that there were a lot of changes to the main API, etc.
+# - build_rssearch     - the first time this build is run it will pretty time-consuming, particularly for release
+#                        target, but intermittent builds should be pretty fast
+# - build_scalasearch  - this build isn't as slow as the clojure version's, but it's slow enough to run separately
+# - build_tssearch     - this build has the same problem as build_jssearch; run the build in an external terminal
 build_linux () {
     hdr "build_linux"
 
     # time build_c
 
-    # time build_clojure
+    # time build_cljsearch
 
-    # time build_cpp
+    # time build_cppsearch
 
-    time build_csharp
+    time build_cssearch
 
-    time build_dart
+    time build_dartsearch
 
-    time build_fsharp
+    time build_fssearch
 
-    time build_go
+    time build_gosearch
 
-    time build_java
+    time build_javasearch
 
-    time build_javascript
+    time build_jssearch
 
-    # time build_kotlin
+    # time build_ktsearch
 
-    time build_perl
+    time build_plsearch
 
-    time build_php
+    time build_phpsearch
 
-    time build_python
+    time build_pysearch
 
-    time build_ruby
+    time build_rbsearch
 
-    time build_rust
+    time build_rssearch
 
-    # time build_scala
+    # time build_scalasearch
 
-    time build_swift
+    time build_swiftsearch
 
-    time build_typescript
+    time build_tssearch
 }
 
 build_all () {
@@ -1333,56 +1586,72 @@ build_all () {
 
     # time build_c
 
-    time build_clojure
+    time build_cljsearch
 
-    time build_cpp
+    time build_cppsearch
 
-    time build_csharp
+    time build_cssearch
 
-    time build_dart
+    time build_dartsearch
 
-    time build_fsharp
+    time build_fssearch
 
-    time build_go
+    time build_gosearch
 
-    time build_haskell
+    time build_hssearch
 
-    time build_java
+    time build_javasearch
 
-    time build_javascript
+    time build_jssearch
 
-    time build_kotlin
+    time build_ktsearch
 
-    time build_objc
+    time build_objcsearch
 
-    # time build_ocaml
+    # time build_mlsearch
 
-    time build_perl
+    time build_plsearch
 
-    time build_php
+    time build_phpsearch
 
-    time build_python
+    time build_pysearch
 
-    time build_ruby
+    time build_rbsearch
 
-    time build_rust
+    time build_rssearch
 
-    time build_scala
+    time build_scalasearch
 
-    time build_swift
+    time build_swiftsearch
 
-    time build_typescript
+    time build_tssearch
 }
 
 
 ########################################
 # Build Main
 ########################################
+echo
+hdr "xsearch build script"
+log "user: $USER"
+log "host: $HOSTNAME"
+log "os: $(uname -o)"
+
+# Get the current git branch and commit
+# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse --short HEAD)
+log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
+
+log "args: $*"
+
 HELP=
 DEBUG=
 RELEASE=
 VENV=
-TARGET_LANG=all
+BUILD_ALL=
+# TARGET_LANG=all
+TARGET_LANGS=()
 
 if [ $# == 0 ]
 then
@@ -1404,14 +1673,17 @@ do
         --venv)
             VENV=yes
             ;;
+        --all | all)
+            BUILD_ALL=yes
+            ;;
         *)
-            TARGET_LANG=$1
+            TARGET_LANGS+=($1)
             ;;
     esac
     shift || true
 done
 
-if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
+if [ -z "$RELEASE" ]
 then
     DEBUG=yes
 fi
@@ -1421,93 +1693,111 @@ log "HELP: $HELP"
 log "DEBUG: $DEBUG"
 log "RELEASE: $RELEASE"
 log "VENV: $VENV"
-log "TARGET_LANG: $TARGET_LANG"
+log "BUILD_ALL: $BUILD_ALL"
+if [ ${#TARGET_LANGS[@]} -gt 0 ]
+then
+    log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
+fi
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $TARGET_LANG in
-    all)
-        build_all
-        ;;
-    linux)
-        build_linux
-        ;;
-    # c)
-    #     build_c
-    #     ;;
-    clj | clojure)
-        build_clojure
-        ;;
-    cpp)
-        build_cpp
-        ;;
-    cs | csharp)
-        build_csharp
-        ;;
-    dart)
-        build_dart
-        ;;
-    ex | elixir)
-        build_elixir
-        ;;
-    fs | fsharp)
-        build_fsharp
-        ;;
-    go)
-        build_go
-        ;;
-    # groovy)
-    #     build_groovy
-    #     ;;
-    haskell | hs)
-        build_haskell
-        ;;
-    java)
-        build_java
-        ;;
-    javascript | js)
-        build_javascript
-        ;;
-    kotlin | kt)
-        build_kotlin
-        ;;
-    objc)
-        build_objc
-        ;;
-    # ocaml | ml)
-    #     build_ocaml
-    #     ;;
-    perl | pl)
-        build_perl
-        ;;
-    php)
-        build_php
-        ;;
-    # ps1 | powershell)
-    #     build_powershell
-    #     ;;
-    py | python)
-        build_python
-        ;;
-    rb | ruby)
-        build_ruby
-        ;;
-    rs | rust)
-        build_rust
-        ;;
-    scala)
-        build_scala
-        ;;
-    swift)
-        build_swift
-        ;;
-    ts | typescript)
-        build_typescript
-        ;;
-    *)
-        log_error -n "ERROR: unknown xsearch build argument: $TARGET_LANG"
-        ;;
-esac
+if [ -n "$BUILD_ALL" ]
+then
+    build_all
+    exit
+fi
+
+if [ ${#TARGET_LANGS[@]} == 0 ]
+then
+    usage
+fi
+
+for TARGET_LANG in ${TARGET_LANGS[*]}
+do
+    case $TARGET_LANG in
+        linux)
+            build_linux
+            ;;
+        # bash)
+        #     time build_bashsearch
+        #     ;;
+        # c)
+        #     build_csearch
+        #     ;;
+        clj | clojure)
+            build_cljsearch
+            ;;
+        cpp)
+            build_cppsearch
+            ;;
+        cs | csharp)
+            build_cssearch
+            ;;
+        dart)
+            build_dartsearch
+            ;;
+        ex | elixir)
+            build_exsearch
+            ;;
+        fs | fsharp)
+            build_fssearch
+            ;;
+        go)
+            build_gosearch
+            ;;
+        # groovy)
+        #     build_groovysearch
+        #     ;;
+        haskell | hs)
+            build_hssearch
+            ;;
+        java)
+            build_javasearch
+            ;;
+        javascript | js)
+            build_jssearch
+            ;;
+        kotlin | kt)
+            build_ktsearch
+            ;;
+        objc)
+            build_objcsearch
+            ;;
+        # ocaml | ml)
+        #     build_mlsearch
+        #     ;;
+        perl | pl)
+            build_plsearch
+            ;;
+        php)
+            build_phpsearch
+            ;;
+        # ps1 | powershell)
+        #     build_powershell
+        #     ;;
+        py | python)
+            build_pysearch
+            ;;
+        rb | ruby)
+            build_rbsearch
+            ;;
+        rs | rust)
+            build_rssearch
+            ;;
+        scala)
+            build_scalasearch
+            ;;
+        swift)
+            build_swiftsearch
+            ;;
+        ts | typescript)
+            build_tssearch
+            ;;
+        *)
+            log_error -n "ERROR: unknown xsearch build argument: $TARGET_LANG"
+            ;;
+    esac
+done

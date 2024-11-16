@@ -7,16 +7,18 @@
 # A simple benchmarking tool for the various xsearch language versions
 #
 ################################################################################
-from dataclasses import dataclass
-import os
-import re
+import argparse
+import json
 import subprocess
 import sys
+
+from dataclasses import dataclass
+from datetime import datetime
+from tabulate import tabulate
 from typing import Union
 
-from tabulate import tabulate
-
 from xsearch import *
+
 
 @dataclass
 class Scenario:
@@ -24,6 +26,14 @@ class Scenario:
     name: str
     args: list
     replace_xsearch_name: bool = False
+    case_insensitive_cmp: bool = False
+
+
+@dataclass
+class ScenarioGroup:
+    """Class for grouping scenarios"""
+    name: str
+    scenarios: list[Scenario]
 
 
 ########################################
@@ -38,7 +48,7 @@ sharedpath = os.path.join(XSEARCHPATH, 'shared')
 
 default_runs = 10
 
-ignore_dirs = ['node_modules', 'vendor', 'venv']
+ignore_dirs = ['build', 'cmake', 'node_modules', 'vendor', 'venv']
 ignore_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
 search_args = ['-s', 'Searcher']
 core_args = ignore_args + search_args
@@ -302,13 +312,73 @@ class ScenarioResults(object):
 class Benchmarker(object):
     def __init__(self, **kwargs):
         self.xsearch_names = all_xsearch_names
+        self.group_names = []
+        self.scenario_names = []
         self.scenarios = []
+        self.scenarios_file = ''
         self.runs = default_runs
         self.debug = True
         self.exit_on_diff = True
         self.exit_on_sort_diff = True
-        self.diff_outputs = []
+        self.ignore_blank_lines = True
+        self.scenario_diff_dict = {}
+        self.skip_groups = ['settings-only']
         self.__dict__.update(kwargs)
+        self.shell = os.environ.get('SHELL', '/bin/bash')
+        self.git_info = get_git_info()
+        # read from scenarios file
+        if self.scenarios_file and os.path.isfile(self.scenarios_file):
+            self.load_scenarios(self.scenarios_file)
+
+    def load_scenarios(self, scenarios_file: str):
+            scenario_group_dict = {}
+            if not os.path.isfile(scenarios_file):
+                print(f'Error: scenarios file not found: {scenarios_file}')
+                return
+            with open(scenarios_file, 'r') as sf:
+                scenarios_dict = json.load(sf)
+            self.scenarios = []
+            XSEARCH_PATH = os.environ.get('XSEARCH_PATH', XSEARCHPATH)
+            for (rk, rv) in scenarios_dict['ref'].items():
+                if rk == 'common_out_dirpatterns':
+                    scenarios_dict['ref'][rk] = [elem for d in [['-D', d] for d in rv] for elem in d]
+                elif rk == 'common_in_extensions':
+                    scenarios_dict['ref'][rk] = ['-x', ','.join(rv)]
+                elif rk == 'common_out_extensions':
+                    scenarios_dict['ref'][rk] = ['-X', ','.join(rv)]
+                elif rk == 'common_search_patterns':
+                    scenarios_dict['ref'][rk] = [elem for s in [['-s', s] for s in rv] for elem in s]
+                elif rk == 'common_startpaths':
+                    for i, p in enumerate(rv):
+                        rv[i] = p.replace('$XSEARCH_PATH', XSEARCH_PATH)
+                elif rk == 'scriptpath' or rk == 'sharedpath':
+                    scenarios_dict['ref'][rk] = [rv.replace('$XSEARCH_PATH', XSEARCH_PATH)]
+
+            for s in scenarios_dict['scenarios']:
+                if self.scenario_names and s['name'] not in self.scenario_names:
+                    continue
+                sg_name = s['group']
+                sg = scenario_group_dict.setdefault(sg_name, ScenarioGroup(sg_name, []))
+                args = s['args']
+                if 'common_args' in s:
+                    for ca in s['common_args']:
+                        args.extend(scenarios_dict['ref'][ca]) 
+                scenario = Scenario(s['name'], s['args'])
+                if 'replace_xsearch_name' in s:
+                    scenario.replace_xsearch_name = s['replace_xsearch_name']
+                sg.scenarios.append(scenario)
+            groups = self.group_names
+            if not groups:
+                groups = scenario_group_dict.keys()
+            elif any([g not in scenario_group_dict for g in groups]):
+                print(f'Error: group not found in scenarios file: {groups}')
+                sys.exit(1)
+            if self.skip_groups:
+                groups = [g for g in groups if g not in self.skip_groups]
+            for g in groups:
+                sg = scenario_group_dict.get(g)
+                if sg:
+                    self.scenarios.extend(sg.scenarios)
 
     def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print('\n{}'.format(title))
@@ -342,6 +412,9 @@ class Benchmarker(object):
         title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs\n".\
             format(len(scenario_results.scenario_results), len(self.scenarios),
                    scenario_results.runs, len(self.scenarios) * self.runs)
+        title += '\n\nDate/time:  {}'.format(datetime.now())
+        title += '\nGit branch: "{}" ({})\n'.format(self.git_info["branch"],
+                                                  self.git_info["commit"])
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user', 'avg',
                'rank', 'total', 'avg', 'rank']
         data = []
@@ -363,11 +436,14 @@ class Benchmarker(object):
             xta = scenario_results.avg_total(x)
             xtr = scenario_results.rank_total(x)
             data.append([x, xr, xra, xrr, xs, xsa, xsr, xu, xua, xur, xt, xta, xtr])
-        self.__print_data_table(title, hdr, data, col_types)
+        sorted_data = sorted(data, key=lambda d: d[12])
+        self.__print_data_table(title, hdr, sorted_data, col_types)
 
     def print_scenario_result(self, scenario_result: ScenarioResult):
-        title = '\nTotal results for scenario {} ("{}") with {} runs\n'.\
-            format(scenario_result.index, scenario_result.scenario.name, self.runs)
+        now = datetime.now()
+        title = '\nTotal results for scenario {} ("{}") with {} runs on {} at {}\n'.\
+            format(scenario_result.index, scenario_result.scenario.name, self.runs,
+                   now.date(), now.time())
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user',
                'avg', 'rank', 'total', 'avg', 'rank']
         data = []
@@ -392,7 +468,7 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def print_run_result(self, sn: int, result: RunResult):
-        title = '\nResults for scenario {} ("{}") run {}\n'.format(sn, result.scenario.name, result.run)
+        title = f'\nResults for scenario {sn} ("{result.scenario.name}") run {result.run}\n'
         hdr = ['real', 'rank', 'sys', 'rank', 'user', 'rank', 'total', 'rank']
         data = []
         real_ranks = result.real_ranks
@@ -413,7 +489,54 @@ class Benchmarker(object):
             data.append([x, xr, xrr, xs, xsr, xu, xur, xt, xtr])
         self.__print_data_table(title, hdr, data, col_types)
 
-    def times_from_lines(self, lines: list[str]) -> dict[str,float]:
+    def times_from_lines(self, lines: list[str]) -> dict[str, float]:
+        # print(f'times_from_lines: {lines}')
+        times_lines = [l for l in lines if l.endswith(' sys')]
+        if times_lines:
+            time_line_re = re.compile(r'^(\d+\.\d+)\s+(real)\s+(\d+\.\d+)\s+(user)\s+(\d+\.\d+)\s+(sys)$')
+            time_line_match = time_line_re.match(times_lines[0])
+            if time_line_match:
+                time_dict = {}
+                time_dict['real'] = float(time_line_match.group(1))
+                time_dict['user'] = float(time_line_match.group(3))
+                time_dict['sys'] = float(time_line_match.group(5))
+                time_dict['total'] = sum(time_dict.values())
+                return time_dict
+        elif self.shell == '/bin/bash':
+            return self.bash_times_from_lines(lines)
+        elif self.shell == '/bin/zsh':
+            return self.zsh_times_from_lines(lines)
+
+    def zsh_times_from_lines(self, lines: list[str]) -> dict[str, float]:
+        """The following matches lines like:
+           <command> <utime> user <stime> system <pct> cpu <elapsed> total
+           Example:
+           cppfind  0.01s user 0.01s system 80% cpu 0.016 total
+        """
+        print('zsh_times_from_lines')
+        times_lines = [l for l in lines if l.endswith(' total')]
+        if times_lines:
+            time_line_re = re.compile(r'^(\S+)\s+(\d+\.\d+)s user\s+(\d+\.\d+)s system\s+(\d+)% cpu\s+(\d+\.\d+) total$')
+            time_dict = {}
+            time_line_match = time_line_re.match(times_lines[0])
+            if time_line_match:
+                time_dict['user'] = float(time_line_match.group(2))
+                time_dict['sys'] = float(time_line_match.group(3))
+                time_dict['total'] = float(time_line_match.group(5))
+                time_dict['real'] = float('0.0')
+        else:
+            print(f"Times line not found")
+            time_dict = {s: 0 for s in time_keys}
+        # print('time_dict: {}'.format(time_dict))
+        return time_dict
+
+    def bash_times_from_lines(self, lines: list[str]) -> dict[str, float]:
+        """The following matches lines like:
+           real    0m0.005s
+           user    0m0.002s
+           sys     0m0.002s
+        """
+        print('bash_times_from_lines')
         time_dict = {}
         times = lines[0].split()
         time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
@@ -436,61 +559,37 @@ class Benchmarker(object):
                 time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
                 time_dict['total'] = sum(time_dict.values())
             except Exception as e:
-                print("Exception: {}".format(str(e)))
-                print("Invalid times line: \"{}\"".format(lines[0]))
+                print(f"Exception: {str(e)}")
+                print(f"Invalid times line: \"{lines[0]}\"")
                 time_dict = {s: 0 for s in time_keys}
         # print('time_dict: {}'.format(time_dict))
         return time_dict
-    # def times_from_lines(self, lines: list[str]) -> dict[str,float]:
-    #     times = lines[0].split()
-    #     times.reverse()
-    #     try:
-    #         time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
-    #         time_dict['total'] = sum(time_dict.values())
-    #     except Exception as e:
-    #         print("Exception: {}".format(str(e)))
-    #         print("Invalid times line: \"{}\"".format(lines[0]))
-    #         time_dict = {s: 0 for s in time_keys}
-    #     return time_dict
 
-    def compare_outputs(self, s: Scenario, sn: int, xsearch_output) -> bool:
-        nonmatching = nonmatching_outputs(xsearch_output)
-        if nonmatching:
-            xs = []
-            if len(nonmatching) == 2:
-                xs = sorted(nonmatching.keys())
-            elif len(nonmatching) > 2:
-                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
-            print()
-            for x in xs:
-                for y in sorted(nonmatching[x]):
-                    print('\n{} output != {} output for args: {}'.format(x, y, ' '.join(s.args)))
-                    print('{} output:\n"{}"'.format(x, xsearch_output[x]))
-                    print('{} output:\n"{}"'.format(y, xsearch_output[y]))
-                    self.diff_outputs.append((sn, x, y))
+    def compare_outputs(self, s: Scenario, sn: int, xsearch_output: dict[str, list[str]]) -> bool:
+        non_matching = non_matching_outputs(xsearch_output, case_insensitive_cmp=s.case_insensitive_cmp)
+        if non_matching:
+            print('\nOutputs of these language versions differ:')
+            print(non_matching)
+            self.scenario_diff_dict[s.name] = non_matching
+            for x, y in non_matching:
+                print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
+                print(f'{x} output ({len(xsearch_output[x])} lines):\n"{xsearch_output[x]}"')
+                print(f'{y} output ({len(xsearch_output[y])} lines):\n"{xsearch_output[y]}"')
             return False
         else:
             print('\nOutputs of all versions match')
             return True
 
-    def compare_output_lens(self, sn: int, xfind_output) -> bool:
-        nonmatching = nonmatching_lens(xfind_output)
-        if nonmatching:
-            xs = []
-            if len(nonmatching) == 2:
-                xs = sorted(nonmatching.keys())
-            elif len(nonmatching) > 2:
-                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
-            print()
-            for x in xs:
-                for y in sorted(nonmatching[x]):
-                    print('{} output != {} output'.format(x, y))
-                    print('{} output:\n"{}"'.format(x, xfind_output[x]))
-                    print('{} output:\n"{}"'.format(y, xfind_output[y]))
-                    self.diff_outputs.append((sn, x, y))
-            for x in xs:
-                if nonmatching[x]:
-                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(nonmatching[x]), str(nonmatching[x])))
+    def compare_output_lens(self, s: Scenario, sn: int, xsearch_output: dict[str, list[str]]) -> bool:
+        non_matching = non_matching_lens(xsearch_output)
+        if non_matching:
+            print('\nOutput lengths differ for these language versions:')
+            print(non_matching)
+            self.scenario_diff_dict[s.name] = non_matching
+            for x, y in non_matching:
+                print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
+                print(f'{x} output ({len(xsearch_output[x])} lines):\n"{xsearch_output[x]}"')
+                print(f'{y} output ({len(xsearch_output[y])} lines):\n"{xsearch_output[y]}"')
             return False
         else:
             print('\nOutputs of all versions match')
@@ -512,42 +611,57 @@ class Benchmarker(object):
             fullargs = ['time', x] + s.args
             print(' '.join(fullargs[1:]))
             xsearch_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            # print('process opened for {}'.format(x))
+                                                stderr=subprocess.PIPE)
 
         for x in self.xsearch_names:
             p = xsearch_procs[x]
             output_lines = []
-            time_lines = []
+            error_lines = []
             while True:
                 output_line = p.stdout.readline()
-                time_line = p.stderr.readline()
-                if not output_line and not time_line:
+                error_line = p.stderr.readline()
+                if not output_line and not error_line:
                     break
-                if output_line:
+                if output_line and error_line:
+                    error_line = error_line.decode().strip()
+                    if error_line.startswith('ERROR:'):
+                        output_lines.append(error_line)
+                    else:
+                        error_lines.append(error_line)
                     output_lines.append(output_line.decode().strip())
-                if time_line:
-                    time_line = time_line.decode().strip()
-                    if time_line == 'Command exited with non-zero status 1':
+                elif output_line:
+                    output_lines.append(output_line.decode().strip())
+                elif error_line:
+                    error_line = error_line.decode().strip()
+                    if error_line == 'Command exited with non-zero status 1':
                         continue
-                    # print('time_line: "{}"'.format(time_line))
-                    time_lines.append(time_line)
+                    # print(f'error_line: "{error_line}"')
+                    if error_line.startswith('ERROR:'):
+                        output_lines.append(error_line)
+                    else:
+                        error_lines.append(error_line)
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
-            output = '\n'.join(sorted(output_lines))
+            # output = '\n'.join(sorted(output_lines))
             if s.replace_xsearch_name:
+                output = '\n'.join(output_lines)
                 output = xsearch_name_regex.sub('xsearch', output)
-            xsearch_output[x] = output
+                output_lines = output.split('\n')
+            xsearch_output[x] = output_lines
             if self.debug:
-                print('{} output:\n"{}"'.format(x, output))
-            xsearch_times[x] = self.times_from_lines(time_lines)
+                print('{} output:\n"{}"'.format(x, '\n'.join(output_lines)))
+            xsearch_times[x] = self.times_from_lines([e for e in error_lines if e])
             time_dict = xsearch_times[x]
+            if 'real' not in time_dict and 'elapsed' not in time_dict:
+                raise Exception('No real or elapsed time for {}'.format(x))
             treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
+            if 'sys' not in time_dict and 'system' not in time_dict:
+                raise Exception('No sys or system time for {}'.format(x))
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
         if not self.compare_outputs(s, sn, xsearch_output) and self.exit_on_diff:
-            if not self.compare_output_lens(sn, xsearch_output) and self.exit_on_sort_diff:
+            if not self.compare_output_lens(s, sn, xsearch_output) and self.exit_on_sort_diff:
                 raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
@@ -584,7 +698,7 @@ class Benchmarker(object):
             time_dict = xsearch_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
         if not self.compare_outputs(s, sn, xsearch_output) and self.exit_on_diff:
-            if not self.compare_output_lens(sn, xsearch_output) and self.exit_on_sort_diff:
+            if not self.compare_output_lens(s, sn, xsearch_output) and self.exit_on_sort_diff:
                 raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
@@ -616,8 +730,21 @@ class Benchmarker(object):
         except KeyboardInterrupt:
             print('\n')
 
-        if self.diff_outputs:
-            print('\nThere were output differences in some scenarios')
+        if self.scenario_diff_dict:
+            print('\nThere were output differences in these scenarios:')
+            for sn, diffs in self.scenario_diff_dict.items():
+                version_diffs = dict()
+                print(f"'{sn}': {diffs}")
+                for d in diffs:
+                    if d[0] not in version_diffs:
+                        version_diffs[d[0]] = 0
+                    if d[1] not in version_diffs:
+                        version_diffs[d[1]] = 0
+                    version_diffs[d[0]] += 1
+                    version_diffs[d[1]] += 1
+                for v, d in version_diffs.items():
+                    if d > 1:
+                        print(f'{v} had differences with {d} other versions')
         else:
             print('\nOutputs of all versions in all scenarios match')
 
@@ -628,53 +755,85 @@ class Benchmarker(object):
 ########################################
 # Main functions
 ########################################
-def get_args(args):
-    xsearch_names = all_xsearch_names
-    runs = default_runs
-    debug = False
-    exit_on_diff = False
-    while args:
-        arg = args.pop(0)
-        if arg.startswith('-'):
-            if arg == '-l': # xsearch_names
-                xsearch_names = []
-                if args:
-                    langs = sorted(args.pop(0).split(','))
-                    for lang in langs:
-                        if lang in xsearch_dict:
-                            xsearch_names.append(xsearch_dict[lang])
-                        else:
-                            print('Skipping unknown language: {}'.format(lang))
-                else:
-                    print('ERROR: missing language names for -l arg')
-                    sys.exit(1)
-            elif arg == '-r': # runs
-                if args:
-                    runs = int(args.pop(0))
-                else:
-                    print('ERROR: missing runs value for -r arg')
-                    sys.exit(1)
-            elif arg == '-b':
-                exit_on_diff = True
-            elif arg == '--debug':
-                debug = True
-            else:
-                print('ERROR: unknown arg: {}'.format(arg))
-                sys.exit(1)
-        else:
-            print('ERROR: unknown arg: {}'.format(arg))
-            sys.exit(1)
-    return xsearch_names, runs, exit_on_diff, debug
+def get_git_info():
+    git_info = {}
+    try:
+        git_info['branch'] = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip().decode()
+        git_info['commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
+        # git_info['status'] = subprocess.check_output(['git', 'status', '--porcelain']).strip().decode()
+    except Exception as e:
+        print(f'Error getting git info: {str(e)}')
+    return git_info
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(description='Run xsearch benchmark')
+    parser.add_argument('-g', '--group', nargs='*', help='Name of scenario group to run')
+    parser.add_argument('-s', '--scenario', nargs='*', help='Name of scenario to run')
+    parser.add_argument('-l', '--langs', help='Comma-separated list of languages to include in benchmark')
+    parser.add_argument('-L', '--nolangs', help='Comma-separated list of languages to exclude from benchmark')
+    parser.add_argument('-r', '--runs', type=int, help='Number of runs for each scenario')
+    parser.add_argument('-b', '--exit-on-diff', action='store_true', help='Exit on first output difference')
+    parser.add_argument('-f', '--scenarios-file', help='A scenarios json file')
+    parser.add_argument('--debug', action='store_true', help='Print debug output')
+    return parser
 
 
 def main():
-    xsearch_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
-    print('xsearch_names: {}'.format(str(xsearch_names)))
-    print('runs: {}'.format(runs))
-    print('exit_on_diff: {}'.format(exit_on_diff))
+    # Defaults
+    xsearch_names = all_xsearch_names
+    groups = []
+    scenarios = []
+    runs = default_runs
+    debug = False
+    exit_on_diff = False
+    scenarios_file = 'scenarios.json'
+
+    parser = get_parser()
+    parsed_args = parser.parse_args(sys.argv[1:])
+
+    if parsed_args.debug:
+        debug = True
+
+    if parsed_args.group:
+        groups.extend(parsed_args.group)
+
+    if parsed_args.scenario:
+        scenarios.extend(parsed_args.scenario)
+
+    if parsed_args.langs:
+        xsearch_names = []
+        langs = sorted(parsed_args.langs.split(','))
+        for lang in langs:
+            if lang in xsearch_dict:
+                xsearch_names.append(xsearch_dict[lang])
+            else:
+                print(f'Skipping unknown language: {lang}')
+
+    if parsed_args.nolangs:
+        nolangs = sorted(parsed_args.nolangs.split(','))
+        for nolang in nolangs:
+            if nolang in xsearch_dict:
+                if xsearch_dict[nolang] in xsearch_names:
+                    del xsearch_names[xsearch_names.index(xsearch_dict[nolang])]
+            else:
+                print(f'Skipping unknown language: {lang}')
+
+    if parsed_args.runs:
+        runs = parsed_args.runs
+
+    if parsed_args.scenarios_file:
+        scenarios_file = parsed_args.scenarios_file
+
+    print(f'xfind_names ({len(xsearch_names)}): {str(xsearch_names)}')
     print('debug: {}'.format(debug))
+    print('exit_on_diff: {}'.format(exit_on_diff))
+    print('runs: {}'.format(runs))
     benchmarker = Benchmarker(xsearch_names=xsearch_names, runs=runs,
-        scenarios=scenarios, exit_on_diff=exit_on_diff, debug=debug)
+                              group_names=groups, scenario_names=scenarios,
+                              scenarios_file=scenarios_file,
+                              exit_on_diff=exit_on_diff,
+                              debug=debug)
     benchmarker.run()
 
 

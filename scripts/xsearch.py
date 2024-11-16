@@ -40,8 +40,8 @@ xsearch_dict = {
     'perl':       'plsearch',
     'pl':         'plsearch',
     'php':        'phpsearch',
-    'powershell': 'ps1search',
-    'ps1':        'ps1search',
+    # 'powershell': 'ps1search',
+    # 'ps1':        'ps1search',
     'python':     'pysearch',
     'py':         'pysearch',
     'ruby':       'rbsearch',
@@ -78,38 +78,79 @@ elif 'XSEARCHPATH' in os.environ:
 
 default_startpath = XSEARCHPATH
 
-def nonmatching_lens(xsearch_output):
-    """Examines xsearch_output (a dict of {xsearch_name : [lines]})
-       and returns a dict of xsearch instances with non-matching
-       output line lengths ({xsearch_name: [non_matching_xsearch_names]})
-    """
-    nonmatching = {}
-    xs = sorted(xsearch_output.keys())
-    while xs:
-        x = xs.pop(0)
-        for y in xs:
-            x_len = len(xsearch_output[x])
-            y_len = len(xsearch_output[y])
-            if x_len != y_len:
-                nonmatching.setdefault(x, []).append(y)
-                nonmatching.setdefault(y, []).append(x)
-    return nonmatching
 
-def nonmatching_outputs(xsearch_output):
+def lines_for_diff(lines: list[str],
+                   skip_blanks: bool = False,
+                   sort_lines: bool = False,
+                   case_insensitive_cmp: bool = False,
+                   normalize_field_names: bool = False) -> list[str]:
+    """Return lines modified according to different settings"""
+    diff_lines = lines[:]
+    if skip_blanks:
+        diff_lines = [line for line in diff_lines if line.strip() != '']
+    if sort_lines:
+        diff_lines = list(sorted(diff_lines))
+    if case_insensitive_cmp:
+        diff_lines = [line.upper() for line in diff_lines]
+    if normalize_field_names:
+        diff_lines = [
+            line.replace('_', '').replace('-', '')
+            for line in diff_lines
+        ]
+    return diff_lines
+
+
+def non_matching_lens(xsearch_output: dict[str, list[str]],
+                      skip_blanks: bool = True) -> list[tuple[str, str]]:
     """Examines xsearch_output (a dict of {xsearch_name : [lines]})
-       and returns a dict of xsearch instances with non-matching
-       output ({xsearch_name: [non_matching_xsearch_names]})
+       and returns a list of tuples of non-matching xsearch pairs
+       ([(xsearch_name_1, xsearch_name_2)]
     """
-    nonmatching = {}
+    non_matching = []
     xs = sorted(xsearch_output.keys())
     while xs:
         x = xs.pop(0)
+        x_lines = lines_for_diff(xsearch_output[x], skip_blanks=skip_blanks)
+        x_len = len(x_lines)
         for y in xs:
-            x_output = xsearch_output[x]
-            y_output = xsearch_output[y]
-            if x_output != y_output:
+            y_lines = lines_for_diff(xsearch_output[y], skip_blanks=skip_blanks)
+            y_len = len(y_lines)
+            if x_len != y_len:
+                x_and_y = tuple(sorted([x, y]))
+                if x_and_y not in non_matching:
+                    non_matching.append(x_and_y)
+    return non_matching
+
+
+def non_matching_outputs(xsearch_output: dict[str, list[str]],
+                         sort_lines: bool = True,
+                         skip_blanks: bool = True,
+                         case_insensitive_cmp: bool = False,
+                         normalize_field_names: bool = False) -> list[tuple[str, str]]:
+    """Examines xsearch_output (a dict of {xsearch_name : [lines]})
+       and returns a list of tuples of non-matching xsearch pairs
+      ([(xsearch_name_1, xsearch_name_2)]
+    """
+    non_matching = []
+    xs = sorted(xsearch_output.keys())
+    while xs:
+        x = xs.pop(0)
+        x_lines = lines_for_diff(xsearch_output[x],
+                                 skip_blanks=skip_blanks,
+                                 sort_lines=sort_lines,
+                                 case_insensitive_cmp=case_insensitive_cmp,
+                                 normalize_field_names=normalize_field_names)
+        for y in xs:
+            y_lines = lines_for_diff(xsearch_output[y],
+                                     skip_blanks=skip_blanks,
+                                     sort_lines=sort_lines,
+                                     case_insensitive_cmp=case_insensitive_cmp,
+                                     normalize_field_names=normalize_field_names)
+            if x_lines != y_lines:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))
-                nonmatching.setdefault(x, []).append(y)
-                nonmatching.setdefault(y, []).append(x)
-    return nonmatching
+                x_and_y = tuple(sorted([x, y]))
+                # x_and_y = (x_and_y[0], x_and_y[1])
+                if x_and_y not in non_matching:
+                    non_matching.append(x_and_y)
+    return non_matching

@@ -3,14 +3,14 @@
 #
 # build.ps1
 #
-# Builds specified language version of xsearch, or all versions
+# Builds specified language versions of xsearch, or all versions
 #
 ################################################################################
 param([switch]$help = $false,
       [switch]$debug = $false,
       [switch]$release = $false,
       [switch]$venv = $false,
-      [string]$lang = '')
+      [switch]$all = $false)
 
 ########################################
 # Configuration
@@ -20,31 +20,56 @@ $xsearchScriptPath = $MyInvocation.MyCommand.Path
 $xsearchScriptDir = Split-Path $xsearchScriptPath -Parent
 
 . (Join-Path -Path $xsearchScriptDir -ChildPath 'config.ps1')
-
-# Add xfind config script
-if (-not (Test-Path Env:XFIND_PATH))
-{
-    $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
-}
-$xfindScriptDir = Join-Path $env:XFIND_PATH 'scripts'
-. (Join-Path -Path $xfindScriptDir -ChildPath 'config.ps1')
-
-
 . (Join-Path -Path $xsearchScriptDir -ChildPath 'common.ps1')
 
-# check for help switch
-$help = $help.IsPresent
-
-# for languages that have debug and release builds
-$debug = $debug.IsPresent
-$release = $release.IsPresent
 if (-not $release)
 {
     $debug = $true
 }
 
-# for python
-$venv = $venv.IsPresent
+# args holds the remaining arguments
+$langs = $args
+$hostname = [System.Net.Dns]::GetHostName()
+
+Hdr('xsearch build script')
+Log("user: $env:USER")
+Log("host: $hostname")
+if ($IsWindows)
+{
+    Log("os: $env:OS")
+}
+elseif ($IsLinux)
+{
+    Log("os: Linux")
+}
+elseif ($IsMacOS)
+{
+    Log("os: Darwin")
+}
+else
+{
+    Log("os: unknown")
+}
+
+$gitBranch = git branch --show-current
+$gitCommit = git rev-parse --short HEAD
+Log("git branch: $gitBranch ($gitCommit)")
+
+if ($langs -contains 'all')
+{
+    $all = $true
+}
+
+Log("help: $help")
+Log("debug: $debug")
+Log("release: $release")
+Log("venv: $venv")
+Log("all: $all")
+Log("args: $args")
+if ($langs.Length -gt 0 -and -not $all)
+{
+    Log("langs ($($langs.Length)): $langs")
+}
 
 
 ########################################
@@ -53,28 +78,14 @@ $venv = $venv.IsPresent
 
 function Usage
 {
-    Write-Host "`nUsage: build.ps1 [-help] [-debug] [-release] [-venv] {""all"" | langcode}`n"
+    Write-Host "`nUsage: build.ps1 [-help] [-debug] [-release] [-venv] {""all"" | lang [lang...]}`n"
     exit
 }
 
-function CopyJsonResources
+function CopySearchOptionsJsonResources
 {
     param([string]$resourcesPath)
-    $fileTypesPath = Join-Path $xsearchSharedPath 'filetypes.json'
-    Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
-    Copy-Item $fileTypesPath -Destination $resourcesPath
     $searchOptionsPath = Join-Path $xsearchSharedPath 'searchoptions.json'
-    Log("Copy-Item $searchOptionsPath -Destination $resourcesPath")
-    Copy-Item $searchOptionsPath -Destination $resourcesPath
-}
-
-function CopyXmlResources
-{
-    param([string]$resourcesPath)
-    $fileTypesPath = Join-Path $xsearchSharedPath 'filetypes.xml'
-    Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
-    Copy-Item $fileTypesPath -Destination $resourcesPath
-    $searchOptionsPath = Join-Path $xsearchSharedPath 'searchoptions.xml'
     Log("Copy-Item $searchOptionsPath -Destination $resourcesPath")
     Copy-Item $searchOptionsPath -Destination $resourcesPath
 }
@@ -82,8 +93,8 @@ function CopyXmlResources
 function CopyTestResources
 {
     param([string]$testResourcesPath)
-    Log("Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath")
-    Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath
+    Log("Copy-Item $xsearchTestFilePath -Include testFile*.txt -Destination $testResourcesPath")
+    Copy-Item $xsearchTestFilePath -Include testFile*.txt -Destination $testResourcesPath
 }
 
 function AddSoftLink
@@ -136,10 +147,31 @@ function AddToBin
 # Build functions
 ################################################################################
 
-function BuildC
+function BuildBashSearch
 {
     Write-Host
-    Hdr('BuildC')
+    Hdr('BuildBashSearch')
+    Log("language: bash")
+
+    Log("Not currently implemented")
+}
+
+function BuildCSearch
+{
+    Write-Host
+    Hdr('BuildCSearch')
+    Log("language: C")
+
+    if ($IsWindows)
+    {
+        Log('BuildCFind - currently unimplemented for Windows')
+        return
+    }
+    if (!$IsMacOS -and !$IsLinux)
+    {
+        Log('Skipping for unknown/unsupported OS')
+        return
+    }
 
     # ensure make is installed
     if (-not (Get-Command 'make' -ErrorAction 'SilentlyContinue'))
@@ -149,7 +181,7 @@ function BuildC
     }
 
     $oldPwd = Get-Location
-    Set-Location $csearchPath
+    Set-Location $cSearchPath
 
     Log('Building csearch')
     Log('make')
@@ -168,16 +200,28 @@ function BuildC
     }
 
     # add to bin
-    $csearchExe = Join-Path $csearchPath 'csearch'
-    AddToBin($csearchExe)
+    $cSearchExe = Join-Path $cSearchPath 'csearch'
+    AddToBin($cSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildClojure
+function BuildCljSearch
 {
     Write-Host
-    Hdr('BuildClojure')
+    Hdr('BuildCljSearch')
+    Log("language: clojure")
+
+    # ensure clojure is installed
+    if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install clojure')
+        return
+    }
+
+    # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+    $clojureVersion = clj -version 2>&1
+    Log("clojure version: $clojureVersion")
 
     # ensure leiningen is installed
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
@@ -186,16 +230,20 @@ function BuildClojure
         return
     }
 
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    $leinVersion = lein version
+    Log("lein version: $leinVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $cljsearchPath 'resources'
+    $resourcesPath = Join-Path $cljSearchPath 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $cljsearchPath
+    Set-Location $cljSearchPath
 
     # Create uberjar with lein
     Log('Building cljsearch')
@@ -217,20 +265,21 @@ function BuildClojure
     }
 
     # add to bin
-    $cljsearchExe = Join-Path $cljsearchPath 'bin' 'cljsearch.ps1'
-    AddToBin($cljsearchExe)
+    $cljSearchExe = Join-Path $cljSearchPath 'bin' 'cljsearch.ps1'
+    AddToBin($cljSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildCpp
+function BuildCppSearch
 {
     Write-Host
-    Hdr('BuildCpp')
+    Hdr('BuildCppSearch')
+    Log("language: C++")
 
     if ($IsWindows)
     {
-        Log('BuildCpp - currently unimplemented for Windows')
+        Log('BuildCppSearch - currently unimplemented for Windows')
         return
     }
     if (!$IsMacOS -and !$IsLinux)
@@ -246,15 +295,20 @@ function BuildCpp
         return
     }
 
+    # cmake --version output looks like this: cmake version 3.30.2
+    $cmakeVersion = cmake --version
+    $cmakeVersion = @($cmakeVersion -split '\s+')[2]
+    Log("cmake version: $cmakeVersion")
+
     $oldPwd = Get-Location
-    Set-Location $cppsearchPath
+    Set-Location $cppSearchPath
 
     # Set CMAKE_CXX_FLAGS
     $cmakeCxxFlags = "-W -Wall -Werror -Wextra -Wshadow -Wnon-virtual-dtor -pedantic"
 
     # Add AddressSanitizer
     # $cmakeCxxFlags = "$cmakeCxxFlags -fsanitize=address -fno-omit-frame-pointer"
-    
+
     $configurations = @()
     if ($debug)
     {
@@ -267,7 +321,7 @@ function BuildCpp
     ForEach ($c in $configurations)
     {
         $cmakeBuildDir = "cmake-build-$c"
-        $cmakeBuildPath = Join-Path $cppsearchPath $cmakeBuildDir
+        $cmakeBuildPath = Join-Path $cppSearchPath $cmakeBuildDir
 
         if (-not (Test-Path $cmakeBuildPath))
         {
@@ -281,7 +335,7 @@ function BuildCpp
             # Log("make -f Makefile")
             # make -f Makefile
 
-            Set-Location $cppsearchPath
+            Set-Location $cppSearchPath
         }
 
         $targets = @('clean', 'cppsearch', 'cppsearchapp', 'cppsearch-tests')
@@ -305,23 +359,24 @@ function BuildCpp
     if ($release)
     {
         # add release to bin
-        $cppsearchExe = Join-Path $cppsearchPath 'bin' 'cppsearch.release.ps1'
-        AddToBin($cppsearchExe)
+        $cppSearchExe = Join-Path $cppSearchPath 'bin' 'cppsearch.release.ps1'
+        AddToBin($cppSearchExe)
     }
     else
     {
         # add debug to bin
-        $cppsearchExe = Join-Path $cppsearchPath 'bin' 'cppsearch.debug.ps1'
-        AddToBin($cppsearchExe)
+        $cppSearchExe = Join-Path $cppSearchPath 'bin' 'cppsearch.debug.ps1'
+        AddToBin($cppSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildCsharp
+function BuildCsSearch
 {
     Write-Host
-    Hdr('BuildCsharp')
+    Hdr('BuildCsSearch')
+    Log("language: C#")
 
     # ensure dotnet is installed
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
@@ -330,15 +385,18 @@ function BuildCsharp
         return
     }
 
-    $resourcesPath = Join-Path $cssearchPath 'CsSearchLib' 'Resources'
-    $testResourcesPath = Join-Path $cssearchPath 'CsSearchTests' 'Resources'
+    $dotnetVersion = dotnet --version
+    Log("dotnet version: $dotnetVersion")
+
+    $resourcesPath = Join-Path $csSearchPath 'CsSearchLib' 'Resources'
+    $testResourcesPath = Join-Path $csSearchPath 'CsSearchTests' 'Resources'
 
     # copy the shared json files to the local resource location
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     # copy the shared test files to the local test resource location
     if (-not (Test-Path $testResourcesPath))
@@ -348,9 +406,9 @@ function BuildCsharp
     CopyTestResources($testResourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $cssearchPath
+    Set-Location $csSearchPath
 
-    $csSearchSolutionPath = Join-Path $cssearchPath 'CsSearch.sln'
+    $csSearchSolutionPath = Join-Path $csSearchPath 'CsSearch.sln'
 
     $configurations = @()
     if ($debug)
@@ -385,23 +443,24 @@ function BuildCsharp
     if ($release)
     {
         # add release to bin
-        $cssearchExe = Join-Path $cssearchPath 'bin' 'cssearch.release.ps1'
-        AddToBin($cssearchExe)
+        $csSearchExe = Join-Path $csSearchPath 'bin' 'cssearch.release.ps1'
+        AddToBin($csSearchExe)
     }
     else
     {
         # add debug to bin
-        $cssearchExe = Join-Path $cssearchPath 'bin' 'cssearch.debug.ps1'
-        AddToBin($cssearchExe)
+        $csSearchExe = Join-Path $csSearchPath 'bin' 'cssearch.debug.ps1'
+        AddToBin($csSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildDart
+function BuildDartSearch
 {
     Write-Host
-    Hdr('BuildDart')
+    Hdr('BuildDartSearch')
+    Log("language: dart")
 
     # ensure dart is installed
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
@@ -410,12 +469,15 @@ function BuildDart
         return
     }
 
+    $dartVersion = dart --version
+    Log("$dartVersion")
+
     $oldPwd = Get-Location
-    Set-Location $dartsearchPath
+    Set-Location $dartSearchPath
 
     Log('Building dartsearch')
-    if ((-not (Test-Path (Join-Path $dartsearchPath '.dart_tool' 'package_config.json'))) -and
-        (-not (Test-Path (Join-Path $dartsearchPath '.packages'))))
+    if ((-not (Test-Path (Join-Path $dartSearchPath '.dart_tool' 'package_config.json'))) -and
+        (-not (Test-Path (Join-Path $dartSearchPath '.packages'))))
     {
         Log('dart pub get')
         dart pub get
@@ -427,7 +489,7 @@ function BuildDart
     }
 
     Log('Compiling dartsearch')
-    $dartsearchDart = Join-Path $dartsearchPath 'bin' 'dartsearch.dart'
+    $dartsearchDart = Join-Path $dartSearchPath 'bin' 'dartsearch.dart'
     Log("dart compile exe $dartsearchDart")
     dart compile exe $dartsearchDart
 
@@ -444,16 +506,17 @@ function BuildDart
     }
 
     # add to bin
-    $dartsearchExe = Join-Path $dartsearchPath 'bin' 'dartsearch.ps1'
-    AddToBin($dartsearchExe)
+    $dartSearchExe = Join-Path $dartSearchPath 'bin' 'dartsearch.ps1'
+    AddToBin($dartSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildElixir
+function BuildExSearch
 {
     Write-Host
-    Hdr('BuildElixir')
+    Hdr('BuildExSearch')
+    Log("language: elixir")
 
     # ensure elixir is installed
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
@@ -462,6 +525,9 @@ function BuildElixir
         return
     }
 
+    $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
+    Log("elixir version: $elixirVersion")
+
     # ensure mix is installed
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
@@ -469,15 +535,19 @@ function BuildElixir
         return
     }
 
-    $oldPwd = Get-Location
-    Set-Location $exsearchPath
+    $mixVersion = mix --version | Select-String -Pattern 'Mix'
+    Log("mix version: $mixVersion")
 
-    Log('Building exsearch')
-    if (-not (Test-Path 'mix.lock'))
-    {
-        Log('mix deps.get')
-        mix deps.get
-    }
+    $oldPwd = Get-Location
+    Set-Location $exSearchPath
+
+    Log('Getting exsearch dependencies')
+    Log('mix deps.get')
+    mix deps.get
+
+    Log('Compiling exsearch')
+    Log('mix compile')
+    mix compile
 
     Log('Creating exsearch executable')
     Log('mix escript.build')
@@ -496,16 +566,17 @@ function BuildElixir
     }
 
     # add to bin
-    $exsearchExe = Join-Path $exsearchPath 'bin' 'exsearch'
-    AddToBin($exsearchExe)
+    $exSearchExe = Join-Path $exSearchPath 'bin' 'exsearch'
+    AddToBin($exSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildFsharp
+function BuildFsSearch
 {
     Write-Host
-    Hdr('BuildFsharp')
+    Hdr('BuildFsSearch')
+    Log("language: F#")
 
     # ensure dotnet is installed
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
@@ -514,15 +585,18 @@ function BuildFsharp
         return
     }
 
-    $resourcesPath = Join-Path $fssearchPath 'FsSearchLib' 'Resources'
-    $testResourcesPath = Join-Path $fssearchPath 'FsSearchTests' 'Resources'
+    $dotnetVersion = dotnet --version
+    Log("dotnet version: $dotnetVersion")
+
+    $resourcesPath = Join-Path $fsSearchPath 'FsSearchLib' 'Resources'
+    $testResourcesPath = Join-Path $fsSearchPath 'FsSearchTests' 'Resources'
 
     # copy the shared json files to the local resource location
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     # copy the shared test files to the local test resource location
     if (-not (Test-Path $testResourcesPath))
@@ -532,9 +606,9 @@ function BuildFsharp
     CopyTestResources($testResourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $fssearchPath
+    Set-Location $fsSearchPath
 
-    $fsSearchSolutionPath = Join-Path $fssearchPath 'FsSearch.sln'
+    $fsSearchSolutionPath = Join-Path $fsSearchPath 'FsSearch.sln'
 
     $configurations = @()
     if ($debug)
@@ -569,23 +643,24 @@ function BuildFsharp
     if ($release)
     {
         # add release to bin
-        $fssearchExe = Join-Path $fssearchPath 'bin' 'fssearch.release.ps1'
-        AddToBin($fssearchExe)
+        $fsSearchExe = Join-Path $fsSearchPath 'bin' 'fssearch.release.ps1'
+        AddToBin($fsSearchExe)
     }
     else
     {
         # add debug to bin
-        $fssearchExe = Join-Path $fssearchPath 'bin' 'fssearch.debug.ps1'
-        AddToBin($fssearchExe)
+        $fsSearchExe = Join-Path $fsSearchPath 'bin' 'fssearch.debug.ps1'
+        AddToBin($fsSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildGo
+function BuildGoSearch
 {
     Write-Host
-    Hdr('BuildGo')
+    Hdr('BuildGoSearch')
+    Log("language: go")
 
     # ensure go is installed
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
@@ -594,8 +669,11 @@ function BuildGo
         return
     }
 
+    $goVersion = (go version) -replace 'go version ', ''
+    Log("go version: $goVersion")
+
     $oldPwd = Get-Location
-    Set-Location $gosearchPath
+    Set-Location $goSearchPath
 
     # go fmt the gosearch source (for auto-generated code)
     Log('Auto-formatting gosearch')
@@ -634,17 +712,37 @@ function BuildGo
     if ($env:GOBIN -ne $xsearchBinPath)
     {
         # add to bin
-        $gosearchExe = Join-Path $env:GOBIN 'gosearch'
-        AddToBin($gosearchExe)
+        $goSearchExe = Join-Path $env:GOBIN 'gosearch'
+        AddToBin($goSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildHaskell
+function BuildGroovySearch
 {
     Write-Host
-    Hdr('BuildHaskell')
+    Hdr('BuildGroovySearch')
+    Log("language: groovy")
+
+    Log("Not currently implemented")
+}
+
+function BuildHsSearch
+{
+    Write-Host
+    Hdr('BuildHsSearch')
+    Log("language: haskell")
+
+    # ensure ghc is installed
+    if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install ghc')
+        return
+    }
+
+    $ghcVersion = ghc --version
+    Log("ghc version: $ghcVersion")
 
     # ensure stack is installed
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
@@ -652,6 +750,9 @@ function BuildHaskell
         PrintError('You need to install stack')
         return
     }
+
+    $stackVersion = stack --version
+    Log("stack version: $stackVersion")
 
     # set the default stack settings, e.g. use system ghc
     $stackDir = Join-Path $HOME '.stack'
@@ -666,15 +767,15 @@ function BuildHaskell
     }
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $hssearchPath 'data'
+    $resourcesPath = Join-Path $hsSearchPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $hssearchPath
+    Set-Location $hsSearchPath
 
     # build with stack (via make)
     Log('Building hssearch')
@@ -702,10 +803,21 @@ function BuildHaskell
     Set-Location $oldPwd
 }
 
-function BuildJava
+function BuildJavaSearch
 {
     Write-Host
-    Hdr('BuildJava')
+    Hdr('BuildJavaSearch')
+    Log("language: java")
+
+    # ensure java is installed
+    if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install java')
+        return
+    }
+
+    $javaVersion = java -version 2>&1 | Select-String -Pattern 'version'
+    Log("java version: $javaVersion")
 
     # ensure mvn is installed
     if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
@@ -714,16 +826,19 @@ function BuildJava
         return
     }
 
+    $mvnVersion = mvn --version 2>&1 | Select-String -Pattern 'Apache Maven'
+    Log("mvn version: $mvnVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $javasearchPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $javaSearchPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $javasearchPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $javaSearchPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
@@ -732,8 +847,8 @@ function BuildJava
 
     # run maven clean package (skip testing as this is run via unittest.sh)
     Log('Building javasearch')
-    Log("mvn -f $javasearchPath/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
-    mvn -f $javasearchPath/pom.xml clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
+    Log("mvn -f $javaSearchPath/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
+    mvn -f $javaSearchPath/pom.xml clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
@@ -747,32 +862,46 @@ function BuildJava
     }
 
     # add to bin
-    $javasearchExe = Join-Path $javasearchPath 'bin' 'javasearch.ps1'
-    AddToBin($javasearchExe)
+    $javaSearchExe = Join-Path $javaSearchPath 'bin' 'javasearch.ps1'
+    AddToBin($javaSearchExe)
 }
 
-function BuildJavaScript
+function BuildJsSearch
 {
     Write-Host
-    Hdr('BuildJavaScript')
+    Hdr('BuildJsSearch')
+    Log("language: javascript")
+
+    # ensure node is installed
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install node.js')
+        return
+    }
+
+    $nodeVersion = node --version
+    Log("node version: $nodeVersion")
 
     # ensure npm is installed
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install node.js/npm')
+        PrintError('You need to install npm')
         return
     }
 
+    $npmVersion = npm --version
+    Log("npm version: $npmVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $jssearchPath 'data'
+    $resourcesPath = Join-Path $jsSearchPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $jssearchPath
+    Set-Location $jsSearchPath
 
     # run npm install and build
     Log('Building jssearch')
@@ -795,34 +924,54 @@ function BuildJavaScript
     }
 
     # add to bin
-    $jssearchExe = Join-Path $jssearchPath 'bin' 'jssearch.ps1'
-    AddToBin($jssearchExe)
+    $jsSearchExe = Join-Path $jsSearchPath 'bin' 'jssearch.ps1'
+    AddToBin($jsSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildKotlin
+function BuildKtSearch
 {
     Write-Host
-    Hdr('BuildKotlin')
+    Hdr('BuildKtSearch')
+    Log("language: kotlin")
 
-    # ensure gradle is installed
-    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $ktSearchPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
         return
     }
 
+    $gradleOutput = & $gradle --version
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
+    Log("$gradle version: $gradleVersion")
+
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $ktsearchPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $ktSearchPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $ktsearchPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $ktSearchPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
@@ -836,18 +985,15 @@ function BuildKotlin
     if ($ktFindJars.count -gt 0)
     {
         $ktFindJar = $ktFindJars[0]
-        $ktSearchLibPath = Join-Path $ktsearchPath 'lib'
+        $ktSearchLibPath = Join-Path $ktSearchPath 'lib'
         Log("Copy-Item $ktFindJar -Destination $ktSearchLibPath")
         Copy-Item $ktFindJar -Destination $ktSearchLibPath
     }
 
-    $oldPwd = Get-Location
-    Set-Location $ktsearchPath
-
     # run a gradle build
     Log('Building ktsearch')
-    Log('gradle --warning-mode all clean jar')
-    gradle --warning-mode all clean jar
+    Log("$gradle --warning-mode all clean jar")
+    & $gradle --warning-mode all clean jar
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
@@ -860,18 +1006,19 @@ function BuildKotlin
         Set-Location $oldPwd
         return
     }
-    
+
     # add to bin
-    $ktsearchExe = Join-Path $ktsearchPath 'bin' 'ktsearch.ps1'
-    AddToBin($ktsearchExe)
+    $ktSearchExe = Join-Path $ktSearchPath 'bin' 'ktsearch.ps1'
+    AddToBin($ktSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildObjc
+function BuildObjcSearch
 {
     Write-Host
-    Hdr('BuildObjc')
+    Hdr('BuildObjcSearch')
+    Log("language: objc")
 
     # ensure swift is installed
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
@@ -880,8 +1027,16 @@ function BuildObjc
         return
     }
 
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Apple Swift'
+    $swiftVersion = @($swiftVersion -split '\s+')[3]
+    Log("swift version: Apple Swift version $swiftVersion")
+
     $oldPwd = Get-Location
-    Set-Location $objcsearchPath
+    Set-Location $objcSearchPath
 
     if ($debug)
     {
@@ -918,29 +1073,33 @@ function BuildObjc
         }
 
         # add release to bin
-        $objcsearchExe = Join-Path $objcsearchPath 'bin' 'objcsearch.release.ps1'
-        AddToBin($objcsearchExe)
+        $objcSearchExe = Join-Path $objcSearchPath 'bin' 'objcsearch.release.ps1'
+        AddToBin($objcSearchExe)
     }
     else
     {
         # add debug to bin
-        $objcsearchExe = Join-Path $objcsearchPath 'bin' 'objcsearch.debug.ps1'
-        AddToBin($objcsearchExe)
+        $objcSearchExe = Join-Path $objcSearchPath 'bin' 'objcsearch.debug.ps1'
+        AddToBin($objcSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildOcaml
+function BuildMlSearch
 {
     Write-Host
-    Hdr('BuildOcaml - currently unimplemented')
+    Hdr('BuildMlSearch')
+    Log("language: ocaml")
+
+    Log("Not currently implemented")
 }
 
-function BuildPerl
+function BuildPlSearch
 {
     Write-Host
-    Hdr('BuildPerl')
+    Hdr('BuildPlSearch')
+    Log("language: perl")
 
     # ensure perl is installed
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
@@ -949,20 +1108,22 @@ function BuildPerl
         return
     }
 
-    $versionOutput = & perl -v | Select-String -Pattern 'This is perl 5' 2>&1
-    if (-not $versionOutput)
+    $perlVersion = perl -e 'print $^V' | Select-String -Pattern 'v5'
+    if (-not $perlVersion)
     {
         PrintError('A 5.x version of perl is required')
         return
     }
 
+    Log("perl version: $perlVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $plsearchPath 'share'
+    $resourcesPath = Join-Path $plSearchPath 'share'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
@@ -976,14 +1137,15 @@ function BuildPerl
     }
 
     # add to bin
-    $plsearchExe = Join-Path $plsearchPath 'bin' 'plsearch.ps1'
-    AddToBin($plsearchExe)
+    $plSearchExe = Join-Path $plSearchPath 'bin' 'plsearch.ps1'
+    AddToBin($plSearchExe)
 }
 
-function BuildPhp
+function BuildPhpSearch
 {
     Write-Host
-    Hdr('BuildPhp')
+    Hdr('BuildPhpSearch')
+    Log("language: php")
 
     # ensure php is installed
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
@@ -992,12 +1154,13 @@ function BuildPhp
         return
     }
 
-    $versionOutput = & php -v | Select-String -Pattern 'PHP [78]' 2>&1
-    if (-not $versionOutput)
+    $phpVersion = & php -v | Select-String -Pattern '^PHP [78]' 2>&1
+    if (-not $phpVersion)
     {
         PrintError('A version of PHP >= 7.x is required')
         return
     }
+    Log("php version: $phpVersion")
 
     # ensure composer is installed
     if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
@@ -1006,9 +1169,12 @@ function BuildPhp
         return
     }
 
+    $composerVersion = composer --version 2>&1 | Select-String -Pattern '^Composer'
+    Log("composer version: $composerVersion")
+
     # copy the shared config json file to the local config location
     $configFilePath = Join-Path $xsearchSharedPath 'config.json'
-    $configPath = Join-Path $phpsearchPath 'config'
+    $configPath = Join-Path $phpSearchPath 'config'
     if (-not (Test-Path $configPath))
     {
         New-Item -ItemType directory -Path $configPath
@@ -1017,20 +1183,20 @@ function BuildPhp
     Copy-Item $configFilePath -Destination $configPath
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $phpsearchPath 'resources'
+    $resourcesPath = Join-Path $phpSearchPath 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $phpsearchPath
+    Set-Location $phpSearchPath
 
     # run a composer build
     Log('Building phpsearch')
 
-    if (Test-Path (Join-Path $phpsearchPath 'vendor'))
+    if (Test-Path (Join-Path $phpSearchPath 'vendor'))
     {
         Log('composer update')
         composer update
@@ -1054,78 +1220,151 @@ function BuildPhp
     }
 
     # add to bin
-    $phpsearchExe = Join-Path $phpsearchPath 'bin' 'phpsearch.ps1'
-    AddToBin($phpsearchExe)
+    $phpSearchExe = Join-Path $phpSearchPath 'bin' 'phpsearch.ps1'
+    AddToBin($phpSearchExe)
 
     Set-Location $oldPwd
 }
-
-function BuildPython
+function BuildPs1Search
 {
     Write-Host
-    Hdr('BuildPython')
+    Hdr('BuildPs1Search')
+    Log("language: powershell")
 
-    # ensure python3.9+ is installed
-    $pythonVersions = @('python3.12', 'python3.11', 'python3.10', 'python3.9')
-    $python = ''
-    ForEach ($p in $pythonVersions)
-    {
-        $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
-        if ($null -ne $pythonCmd)
-        {
-            $python = $p
-            Log("Using $p (${pythonCmd.Source})")
-            break
-        }
-    }
+    Log("Not currently implemented")
+}
 
-    if (-not $python)
-    {
-        PrintError('You need to install python(>= 3.9)')
-        return
-    }
+function BuildPySearch
+{
+    Write-Host
+    Hdr('BuildPySearch')
+    Log("language: python")
+
+    $oldPwd = Get-Location
+    Set-Location $pySearchPath
 
     # Set to $true to use venv
     $useVenv=$venv
+    # $pythonVersions = @('python3.12', 'python3.11', 'python3.10', 'python3.9')
+    # We don't want to use python3.12 yet
+    $pythonVersions = @('python3.11', 'python3.10', 'python3.9')
+    $python = ''
+    $venvPath = Join-Path $pySearchPath 'venv'
 
-    # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $pysearchPath 'data'
-    if (-not (Test-Path $resourcesPath))
-    {
-        New-Item -ItemType directory -Path $resourcesPath
-    }
-    CopyJsonResources($resourcesPath)
-
-    $oldPwd = Get-Location
-    Set-Location $pysearchPath
+    $activeVenv = ''
 
     if ($useVenv)
     {
-        # create a virtual env to run from and install to
-        $venvPath = Join-Path $pysearchPath 'venv'
-        if (-not (Test-Path $venvPath))
+        Log('Using venv')
+
+        # 3 possibilities:
+        # 1. venv exists and is active
+        # 2. venv exists and is not active
+        # 3. venv does not exist
+
+        if ($env:VIRTUAL_ENV)
         {
+            # 1. venv exists and is active
+            Log("Already active venv: $env:VIRTUAL_ENV")
+            $activeVenv = $env:VIRTUAL_ENV
+
+            ForEach ($p in $pythonVersions)
+            {
+                $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+                if ($null -ne $pythonCmd)
+                {
+                    $python = $p
+                    break
+                }
+            }
+        }
+        elseif (Test-Path $venvPath)
+        {
+            # 2. venv exists and is not active
+            Log('Using existing venv')
+
+            # activate the venv
+            $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+            Log("$activatePath")
+            & $activatePath
+
+            ForEach ($p in $pythonVersions)
+            {
+                $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+                if ($null -ne $pythonCmd)
+                {
+                    $python = $p
+                    break
+                }
+            }
+        }
+        else
+        {
+            # 3. venv does not exist
+            # ensure python3.9+ is installed
+            ForEach ($p in $pythonVersions)
+            {
+                $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+                if ($null -ne $pythonCmd)
+                {
+                    $python = $p
+                    break
+                }
+            }
+
+            if (-not $python)
+            {
+                PrintError('You need to install python(>= 3.9)')
+                return
+            }
+
+            Log('Creating new venv')
+
+            # create a virtual env to run from and install to
             Log("$python -m venv venv")
             & $python -m venv venv
-        }
-    
-        # activate the virtual env
-        $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
-        Log("$activatePath")
-        & $activatePath
 
-        # Get the path to the venv version
+            # activate the virtual env
+            $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+            Log("$activatePath")
+            & $activatePath
+        }
+    }
+    else
+    {
+        Log('Not using venv')
+
+        # ensure python3.9+ is installed
         ForEach ($p in $pythonVersions)
         {
             $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
             if ($null -ne $pythonCmd)
             {
                 $python = $p
-                Log("Using $p (${pythonCmd.Source})")
                 break
             }
         }
+
+        if (-not $python)
+        {
+            PrintError('You need to install python(>= 3.9)')
+            return
+        }
     }
+
+    $pythonExePath = Get-Command $python | Select-Object -ExpandProperty Source
+    Log("Using $python ($pythonExePath)")
+    $pythonVersion = & $python -V | Select-String -Pattern '^Python'
+    Log("Version: $pythonVersion")
+
+    # copy the shared json files to the local resource location
+    $resourcesPath = Join-Path $pySearchPath 'data'
+    if (-not (Test-Path $resourcesPath))
+    {
+        New-Item -ItemType directory -Path $resourcesPath
+    }
+    CopySearchOptionsJsonResources($resourcesPath)
+
 
     # install dependencies in requirements.txt
     Log('pip3 install -r requirements.txt')
@@ -1143,7 +1382,8 @@ function BuildPython
         $buildError = $true
     }
 
-    if ($useVenv)
+    # if there was not an active venv before the build, deactivate the venv
+    if ($useVenv -and -not $activeVenv)
     {
         # deactivate at end of setup process
         Log('deactivate')
@@ -1157,16 +1397,17 @@ function BuildPython
     }
 
     # add to bin
-    $pysearchExe = Join-Path $pysearchPath 'bin' 'pysearch.ps1'
-    AddToBin($pysearchExe)
+    $pySearchExe = Join-Path $pySearchPath 'bin' 'pysearch.ps1'
+    AddToBin($pySearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildRuby
+function BuildRbSearch
 {
     Write-Host
-    Hdr('BuildRuby')
+    Hdr('BuildRbSearch')
+    Log("language: ruby")
 
     # ensure ruby2.x is installed
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
@@ -1175,16 +1416,17 @@ function BuildRuby
         return
     }
 
-    $versionOutput = & ruby -v | Select-String -Pattern 'ruby 3' 2>&1
-    if (-not $versionOutput)
+    $rubyVersion = & ruby -v 2>&1 | Select-String -Pattern '^ruby 3' 2>&1
+    if (-not $rubyVersion)
     {
         PrintError('A version of ruby >= 3.x is required')
         return
     }
+    Log("ruby version: $rubyVersion")
 
     # copy the shared config json file to the local config location
     $configFilePath = Join-Path $xsearchSharedPath 'config.json'
-    $configPath = Join-Path $rbsearchPath 'data'
+    $configPath = Join-Path $rbSearchPath 'data'
     if (-not (Test-Path $configPath))
     {
         New-Item -ItemType directory -Path $configPath
@@ -1193,32 +1435,55 @@ function BuildRuby
     Copy-Item $configFilePath -Destination $configPath
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $rbsearchPath 'data'
+    $resourcesPath = Join-Path $rbSearchPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
+
+    $oldPwd = Get-Location
+    Set-Location $rbSearchPath
+
+    Log('Building rbsearch')
+    Log('bundle install')
+    bundle install
 
     # add to bin
-    $rbsearchExe = Join-Path $rbsearchPath 'bin' 'rbsearch.ps1'
-    AddToBin($rbsearchExe)
+    $rbSearchExe = Join-Path $rbSearchPath 'bin' 'rbsearch.ps1'
+    AddToBin($rbSearchExe)
+
+    Set-Location $oldPwd
 }
 
-function BuildRust
+function BuildRsSearch
 {
     Write-Host
-    Hdr('BuildRust')
+    Hdr('BuildRsSearch')
+    Log("language: rust")
 
-    # ensure cargo/rust is installed
-    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
+    # ensure rust is installed
+    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
         return
     }
 
+    $rustVersion = rustc --version | Select-String -Pattern 'rustc'
+    Log("rustc version: $rustVersion")
+
+    # ensure cargo is installed
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install cargo')
+        return
+    }
+
+    $cargoVersion = cargo --version | Select-String -Pattern 'cargo'
+    Log("cargo version: $cargoVersion")
+
     $oldPwd = Get-Location
-    Set-Location $rssearchPath
+    Set-Location $rsSearchPath
 
     Log('Building rssearch')
 
@@ -1258,54 +1523,80 @@ function BuildRust
         }
 
         # add release to bin
-        $rssearchExe = Join-Path $rssearchPath 'bin' 'rssearch.release.ps1'
-        AddToBin($rssearchExe)
+        $rsSearchExe = Join-Path $rsSearchPath 'bin' 'rssearch.release.ps1'
+        AddToBin($rsSearchExe)
     }
     else
     {
         # add debug to bin
-        $rssearchExe = Join-Path $rssearchPath 'bin' 'rssearch.debug.ps1'
-        AddToBin($rssearchExe)
+        $rsSearchExe = Join-Path $rsSearchPath 'bin' 'rssearch.debug.ps1'
+        AddToBin($rsSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildScala
+function BuildScalaSearch
 {
     Write-Host
-    Hdr('BuildScala')
+    Hdr('BuildScalaSearch')
+    Log("language: scala")
+
+    # ensure sbt is installed
+    if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install scala')
+        return
+    }
+
+    # scala --version output looks like this:
+    # Scala code runner version: 1.4.3
+    # Scala version (default): 3.5.2
+    $scalaVersion = scala --version 2>&1 | Select-Object -Last 1
+    $scalaVersion = @($scalaVersion -split '\s+')[3]
+    Log("scala version: $scalaVersion")
+
+    $oldPwd = Get-Location
+    Set-Location $scalaSearchPath
 
     # ensure sbt is installed
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install scala + sbt')
+        PrintError('You need to install sbt')
         return
     }
 
+    $sbtOutput = sbt --version
+
+    $sbtProjectVersion = $sbtOutput | Select-String -Pattern 'project'
+    Log("$sbtProjectVersion")
+
+    $sbtScriptVersion = $sbtOutput | Select-String -Pattern 'script'
+    Log("$sbtScriptVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $scalasearchPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $scalaSearchPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $scalasearchPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $scalaSearchPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources($testResourcesPath)
 
-    $scalaVersion = '3.4.1'
+    $scalaVersion = '3.5.2'
     if (Test-Path Env:SCALA_VERSION)
     {
         $scalaVersion = $env:SCALA_VERSION
     }
 
-    # TEMP(?): copy the jar file for the local ktfind dependency to lib
+    # TEMP(?): copy the jar file for the local scalafind dependency to lib
     $scalafindLibDir = Join-Path "$env:XFIND_PATH" 'scala' 'scalafind' 'target' "scala-$scalaVersion"
     $scalaFindJars = @(Get-ChildItem -Path $scalafindLibDir -File) |
                     Where-Object { $_.Name.StartsWith('scalafind') -and $_.Name.EndsWith('.jar') } |
@@ -1313,14 +1604,10 @@ function BuildScala
     if ($scalaFindJars.count -gt 0)
     {
         $scalaFindJar = $scalaFindJars[0]
-        $scalaSearchLibPath = Join-Path $scalasearchPath 'lib'
+        $scalaSearchLibPath = Join-Path $scalaSearchPath 'lib'
         Log("Copy-Item $scalaFindJar -Destination $scalaSearchLibPath")
         Copy-Item $scalaFindJar -Destination $scalaSearchLibPath
     }
-    
-
-    $oldPwd = Get-Location
-    Set-Location $scalasearchPath
 
     # run sbt assembly
     Log('Building scalasearch')
@@ -1340,16 +1627,17 @@ function BuildScala
     }
 
     # add to bin
-    $scalasearchExe = Join-Path $scalasearchPath 'bin' 'scalasearch.ps1'
-    AddToBin($scalasearchExe)
+    $scalaSearchExe = Join-Path $scalaSearchPath 'bin' 'scalasearch.ps1'
+    AddToBin($scalaSearchExe)
 
     Set-Location $oldPwd
 }
 
-function BuildSwift
+function BuildSwiftSearch
 {
     Write-Host
-    Hdr('BuildSwift')
+    Hdr('BuildSwiftSearch')
+    Log("language: swift")
 
     # ensure swift is installed
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
@@ -1358,8 +1646,16 @@ function BuildSwift
         return
     }
 
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Apple Swift'
+    $swiftVersion = @($swiftVersion -split '\s+')[3]
+    Log("swift version: Apple Swift version $swiftVersion")
+
     $oldPwd = Get-Location
-    Set-Location $swiftsearchPath
+    Set-Location $swiftSearchPath
 
     Log('Building swiftsearch')
 
@@ -1378,7 +1674,7 @@ function BuildSwift
             PrintError('Build failed')
             Set-Location $oldPwd
             return
-            }
+        }
     }
 
     if ($release)
@@ -1399,41 +1695,55 @@ function BuildSwift
         }
 
         # add release to bin
-        $swiftsearchExe = Join-Path $swiftsearchPath 'bin' 'swiftsearch.release.ps1'
-        AddToBin($swiftsearchExe)
+        $swiftSearchExe = Join-Path $swiftSearchPath 'bin' 'swiftsearch.release.ps1'
+        AddToBin($swiftSearchExe)
     }
     else
     {
         # add debug to bin
-        $swiftsearchExe = Join-Path $swiftsearchPath 'bin' 'swiftsearch.debug.ps1'
-        AddToBin($swiftsearchExe)
+        $swiftSearchExe = Join-Path $swiftSearchPath 'bin' 'swiftsearch.debug.ps1'
+        AddToBin($swiftSearchExe)
     }
 
     Set-Location $oldPwd
 }
 
-function BuildTypeScript
+function BuildTsSearch
 {
     Write-Host
-    Hdr('BuildTypeScript')
+    Hdr('BuildTsSearch')
+    Log("language: typescript")
+
+    # ensure node is installed
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install node.js')
+        return
+    }
+
+    $nodeVersion = node --version
+    Log("node version: $nodeVersion")
 
     # ensure npm is installed
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install node.js/npm')
+        PrintError('You need to install npm')
         return
     }
 
+    $npmVersion = npm --version
+    Log("npm version: $npmVersion")
+
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $tssearchPath 'data'
+    $resourcesPath = Join-Path $tsSearchPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
-    CopyJsonResources($resourcesPath)
+    CopySearchOptionsJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $tssearchPath
+    Set-Location $tsSearchPath
 
     # run npm install and build
     Log('Building tssearch')
@@ -1456,8 +1766,8 @@ function BuildTypeScript
     }
 
     # add to bin
-    $tssearchExe = Join-Path $tssearchPath 'bin' 'tssearch.ps1'
-    AddToBin($tssearchExe)
+    $tsSearchExe = Join-Path $tsSearchPath 'bin' 'tssearch.ps1'
+    AddToBin($tsSearchExe)
 
     Set-Location $oldPwd
 }
@@ -1467,43 +1777,47 @@ function BuildLinux
     Write-Host
     Hdr('BuildLinux')
 
-    # Measure-Command { BuildC }
+    Measure-Command { BuildBashSearch }
 
-    # Measure-Command { BuildClojure }
+    # Measure-Command { BuildCSearch }
 
-    # Measure-Command { BuildCpp }
+    # Measure-Command { BuildCljSearch }
 
-    Measure-Command { BuildCsharp }
+    # Measure-Command { BuildCppSearch }
 
-    Measure-Command { BuildDart }
+    Measure-Command { BuildCsSearch }
 
-    Measure-Command { BuildFsharp }
+    Measure-Command { BuildDartSearch }
 
-    Measure-Command { BuildGo }
+    Measure-Command { BuildFsSearch }
 
-    Measure-Command { BuildJava }
+    Measure-Command { BuildGoSearch }
 
-    Measure-Command { BuildJavaScript }
+    Measure-Command { BuildJavaSearch }
 
-    # Measure-Command { BuildKotlin }
+    Measure-Command { BuildJsSearch }
 
-    Measure-Command { BuildPerl }
+    # Measure-Command { BuildKtSearch }
 
-    Measure-Command { BuildPhp }
+    Measure-Command { BuildPlSearch }
 
-    # Measure-Command { BuildPowerShell }
+    Measure-Command { BuildPhpSearch }
 
-    Measure-Command { BuildPython }
+    # Measure-Command { BuildPs1Search }
 
-    Measure-Command { BuildRuby }
+    Measure-Command { BuildPySearch }
 
-    Measure-Command { BuildRust }
+    Measure-Command { BuildRbSearch }
 
-    # Measure-Command { BuildScala }
+    Measure-Command { BuildRsSearch }
 
-    Measure-Command { BuildSwift }
+    # Measure-Command { BuildScalaSearch }
 
-    Measure-Command { BuildTypeScript }
+    Measure-Command { BuildSwiftSearch }
+
+    Measure-Command { BuildTsSearch }
+
+    exit
 }
 
 function BuildAll
@@ -1511,47 +1825,57 @@ function BuildAll
     Write-Host
     Hdr('BuildAll')
 
-    # Measure-Command { BuildC }
+    Measure-Command { BuildBashSearch }
 
-    Measure-Command { BuildClojure }
+    # Measure-Command { BuildCSearch }
 
-    Measure-Command { BuildCpp }
+    Measure-Command { BuildCljSearch }
 
-    Measure-Command { BuildCsharp }
+    Measure-Command { BuildCppSearch }
 
-    Measure-Command { BuildDart }
+    Measure-Command { BuildCsSearch }
 
-    Measure-Command { BuildElixir }
+    Measure-Command { BuildDartSearch }
 
-    Measure-Command { BuildFsharp }
+    Measure-Command { BuildExSearch }
 
-    Measure-Command { BuildGo }
+    Measure-Command { BuildFsSearch }
 
-    Measure-Command { BuildHaskell }
+    Measure-Command { BuildGoSearch }
 
-    Measure-Command { BuildJava }
+    Measure-Command { BuildGroovySearch }
 
-    Measure-Command { BuildJavaScript }
+    Measure-Command { BuildHsSearch }
 
-    Measure-Command { BuildKotlin }
+    Measure-Command { BuildJavaSearch }
 
-    Measure-Command { BuildObjc }
+    Measure-Command { BuildJsSearch }
 
-    Measure-Command { BuildPerl }
+    Measure-Command { BuildKtSearch }
 
-    Measure-Command { BuildPhp }
+    Measure-Command { BuildObjcSearch }
 
-    Measure-Command { BuildPython }
+    Measure-Command { BuildMlSearch }
 
-    Measure-Command { BuildRuby }
+    Measure-Command { BuildPlSearch }
 
-    Measure-Command { BuildRust }
+    Measure-Command { BuildPhpSearch }
 
-    Measure-Command { BuildScala }
+    Measure-Command { BuildPs1Search }
 
-    Measure-Command { BuildSwift }
+    Measure-Command { BuildPySearch }
 
-    Measure-Command { BuildTypeScript }
+    Measure-Command { BuildRbSearch }
+
+    Measure-Command { BuildRsSearch }
+
+    Measure-Command { BuildScalaSearch }
+
+    Measure-Command { BuildSwiftSearch }
+
+    Measure-Command { BuildTsSearch }
+
+    exit
 }
 
 ################################################################################
@@ -1560,56 +1884,87 @@ function BuildAll
 
 function BuildMain
 {
-    param($lang='')
+    param($langs=@())
 
-    switch ($lang)
+    if ($langs.Count -eq 0)
     {
-        'all'        { BuildAll }
-        'linux'      { BuildLinux }
-        # 'c'          { Measure-Command { BuildC } }
-        'clj'        { Measure-Command { BuildClojure } }
-        'clojure'    { Measure-Command { BuildClojure } }
-        'cpp'        { Measure-Command { BuildCpp } }
-        'cs'         { Measure-Command { BuildCsharp } }
-        'csharp'     { Measure-Command { BuildCsharp } }
-        'dart'       { Measure-Command { BuildDart } }
-        'elixir'     { Measure-Command { BuildElixir } }
-        'ex'         { Measure-Command { BuildElixir } }
-        'fs'         { Measure-Command { BuildFsharp } }
-        'fsharp'     { Measure-Command { BuildFsharp } }
-        'go'         { Measure-Command { BuildGo } }
-        'haskell'    { Measure-Command { BuildHaskell } }
-        'hs'         { Measure-Command { BuildHaskell } }
-        'java'       { Measure-Command { BuildJava } }
-        'javascript' { Measure-Command { BuildJavaScript } }
-        'js'         { Measure-Command { BuildJavaScript } }
-        'kotlin'     { Measure-Command { BuildKotlin } }
-        'kt'         { Measure-Command { BuildKotlin } }
-        'objc'       { Measure-Command { BuildObjc } }
-        # 'ocaml'      { Measure-Command { BuildOcaml } }
-        # 'ml'         { Measure-Command { BuildOcaml } }
-        'perl'       { Measure-Command { BuildPerl } }
-        'pl'         { Measure-Command { BuildPerl } }
-        'php'        { Measure-Command { BuildPhp } }
-        # 'powershell' { Measure-Command { BuildPowerShell } }
-        # 'ps1'        { Measure-Command { BuildPowerShell } }
-        'py'         { Measure-Command { BuildPython } }
-        'python'     { Measure-Command { BuildPython } }
-        'rb'         { Measure-Command { BuildRuby } }
-        'ruby'       { Measure-Command { BuildRuby } }
-        'rs'         { Measure-Command { BuildRust } }
-        'rust'       { Measure-Command { BuildRust } }
-        'scala'      { Measure-Command { BuildScala } }
-        'swift'      { Measure-Command { BuildSwift } }
-        'ts'         { Measure-Command { BuildTypeScript } }
-        'typescript' { Measure-Command { BuildTypeScript } }
-        default      { ExitWithError("Unknown option: $lang") }
+        Usage
+    }
+
+    if ($langs -contains 'all')
+    {
+        BuildAll
+        exit
+    }
+
+    ForEach ($lang in $langs)
+    {
+        switch ($lang.ToLower())
+        {
+            'linux'      { BuildLinux }
+            'bash'       { Measure-Command { BuildBashSearch } }
+            # 'c'          { Measure-Command { BuildCSearch } }
+            'clj'        { Measure-Command { BuildCljSearch } }
+            'clojure'    { Measure-Command { BuildCljSearch } }
+            'cpp'        { Measure-Command { BuildCppSearch } }
+            'cs'         { Measure-Command { BuildCsSearch } }
+            'csharp'     { Measure-Command { BuildCsSearch } }
+            'dart'       { Measure-Command { BuildDartSearch } }
+            'elixir'     { Measure-Command { BuildExSearch } }
+            'ex'         { Measure-Command { BuildExSearch } }
+            'fs'         { Measure-Command { BuildFsSearch } }
+            'fsharp'     { Measure-Command { BuildFsSearch } }
+            'go'         { Measure-Command { BuildGoSearch } }
+            'groovy'     { Measure-Command { BuildGroovySearch } }
+            'haskell'    { Measure-Command { BuildHsSearch } }
+            'hs'         { Measure-Command { BuildHsSearch } }
+            'java'       { Measure-Command { BuildJavaSearch } }
+            'javascript' { Measure-Command { BuildJsSearch } }
+            'js'         { Measure-Command { BuildJsSearch } }
+            'kotlin'     { Measure-Command { BuildKtSearch } }
+            'kt'         { Measure-Command { BuildKtSearch } }
+            'objc'       { Measure-Command { BuildObjcSearch } }
+            'ocaml'      { Measure-Command { BuildMlSearch } }
+            'ml'         { Measure-Command { BuildMlSearch } }
+            'perl'       { Measure-Command { BuildPlSearch } }
+            'pl'         { Measure-Command { BuildPlSearch } }
+            'php'        { Measure-Command { BuildPhpSearch } }
+            'powershell' { Measure-Command { BuildPs1Search } }
+            'ps1'        { Measure-Command { BuildPs1Search } }
+            'pwsh'       { Measure-Command { BuildPs1Search } }
+            'py'         { Measure-Command { BuildPySearch } }
+            'python'     { Measure-Command { BuildPySearch } }
+            'rb'         { Measure-Command { BuildRbSearch } }
+            'ruby'       { Measure-Command { BuildRbSearch } }
+            'rs'         { Measure-Command { BuildRsSearch } }
+            'rust'       { Measure-Command { BuildRsSearch } }
+            'scala'      { Measure-Command { BuildScalaSearch } }
+            'swift'      { Measure-Command { BuildSwiftSearch } }
+            'ts'         { Measure-Command { BuildTsSearch } }
+            'typescript' { Measure-Command { BuildTsSearch } }
+            default      { ExitWithError("unknown/unsupported language: $lang") }
+        }
     }
 }
 
-if ($help -or $lang -eq '')
+if ($help)
 {
     Usage
 }
 
-BuildMain $lang
+$oldPwd = Get-Location
+
+try {
+    if ($all)
+    {
+        BuildAll
+    }
+
+    BuildMain $langs
+}
+catch {
+    PrintError($_.Exception.Message)
+}
+finally {
+    Set-Location $oldPwd
+}

@@ -10,6 +10,17 @@
 # Configuration
 ########################################
 
+# XFIND_PATH defaults to $HOME/src/xfind if not defined as env var
+if [ -z "$XFIND_PATH" ]; then
+    if [ -n "$XFIND_PATH" ]; then
+        XFIND_PATH=$XFINDPATH
+    else
+        XFIND_PATH=$HOME/src/xfind
+    fi
+fi
+source "$XFIND_PATH/scripts/config.sh"
+
+
 # XSEARCH_PATH defaults to $HOME/src/xsearch if not defined as env var
 if [ -z "$XSEARCH_PATH" ]; then
     if [ -n "$XSEARCHPATH" ]; then
