@@ -439,6 +439,24 @@ class Benchmarker(object):
         sorted_data = sorted(data, key=lambda d: d[12])
         self.__print_data_table(title, hdr, sorted_data, col_types)
 
+    def print_scenario_results_summary(self, scenario_results: ScenarioResults):
+        title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs".\
+            format(len(scenario_results.scenario_results), len(self.scenarios),
+                   scenario_results.runs, len(self.scenarios) * self.runs)
+        title += '\n\nDate/time:  {}'.format(datetime.now())
+        title += '\nGit branch: "{}" ({})\n'.format(self.git_info["branch"],
+                                                  self.git_info["commit"])
+        hdr = ['total', 'avg', 'rank']
+        data = []
+        col_types = [float, float, int]
+        for x in self.xfind_names:
+            xt = scenario_results.total_total(x)
+            xta = scenario_results.avg_total(x)
+            xtr = scenario_results.rank_total(x)
+            data.append([x, xt, xta, xtr])
+        sorted_data = sorted(data, key=lambda d: d[3])
+        self.__print_data_table(title, hdr, sorted_data, col_types)
+
     def print_scenario_result(self, scenario_result: ScenarioResult):
         now = datetime.now()
         title = '\nTotal results for scenario {} ("{}") with {} runs on {} at {}\n'.\
@@ -750,6 +768,7 @@ class Benchmarker(object):
 
         self.print_scenario_results(scenario_results)
         # self.print_scenario_summary(scenario_results)
+        self.print_scenario_results_summary(scenario_results)
 
 
 ########################################
