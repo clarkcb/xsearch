@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z "$XSEARCH_PATH" ]
+then
+    XSEARCH_PATH="$HOME/src/xsearch"
+fi
+
+CSSEARCH_PATH="$XSEARCH_PATH/csharp/CsSearch"
+# CONFIGURATION=Debug
+CONFIGURATION=Release
+DOTNET_VERSION=net9.0
+CSSEARCH_EXE="$CSSEARCH_PATH/CsSearch/bin/$CONFIGURATION/$DOTNET_VERSION/CsSearch"
+
+$CSSEARCH_EXE "$@"
