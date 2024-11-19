@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5563cd4d039a1e3e44e5c37e15eea213",
+    "content-hash": "0fde92726ce30a61f6e77446457624ae",
     "packages": [
         {
             "name": "clarkcb/phpfind",
@@ -12,13 +12,13 @@
             "dist": {
                 "type": "path",
                 "url": "../../../xfind/php/phpfind",
-                "reference": "6f7e8a9f4c4fc178ea38a22b3e32e825b22d36b3"
+                "reference": "0084f06d8744cb05dd016c975b8a0f3b7cab85a8"
             },
             "require": {
                 "ext-json": "*"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.12.10",
+                "phpstan/phpstan": "^1.12.11",
                 "phpunit/phpunit": "^9.6.21"
             },
             "bin": [
@@ -352,16 +352,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.10",
+            "version": "1.12.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "fc463b5d0fe906dcf19689be692c65c50406a071"
+                "reference": "0d1fc20a962a91be578bcfe7cf939e6e1a2ff733"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/fc463b5d0fe906dcf19689be692c65c50406a071",
-                "reference": "fc463b5d0fe906dcf19689be692c65c50406a071",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/0d1fc20a962a91be578bcfe7cf939e6e1a2ff733",
+                "reference": "0d1fc20a962a91be578bcfe7cf939e6e1a2ff733",
                 "shasum": ""
             },
             "require": {
@@ -406,7 +406,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-11-11T15:37:09+00:00"
+            "time": "2024-11-17T14:08:01+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
