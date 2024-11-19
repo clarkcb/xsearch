@@ -25,6 +25,16 @@ usage () {
     exit
 }
 
+# clean_json_resources
+clean_json_resources () {
+    local resources_path="$1"
+    for f in $(find "$resources_path" -name "*.json" -type f -maxdepth 1)
+    do
+        log "rm $f"
+        rm "$f"
+    done
+}
+
 
 ########################################
 # Clean Functions
@@ -66,6 +76,8 @@ clean_cljsearch () {
 
     log "lein clean"
     lein clean
+
+    clean_json_resources "$CLJSEARCH_PATH/resources"
 
     cd -
 }
@@ -113,6 +125,8 @@ clean_cssearch () {
             rm -rf "$p/obj"
         fi
     done
+
+    clean_json_resources "$CSSEARCH_PATH/CsSearchLib/Resources"
 
     cd -
 }
@@ -192,6 +206,8 @@ clean_fssearch () {
         fi
     done
 
+    clean_json_resources "$FSSEARCH_PATH/FsSearchLib/Resources"
+
     cd -
 }
 
@@ -214,6 +230,33 @@ clean_gosearch () {
     cd -
 }
 
+clean_groovysearch () {
+    echo
+    hdr "clean_groovysearch"
+
+    cd "$GROOVYSEARCH_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
+    then
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
+        return
+    fi
+
+    log "$GRADLE --warning-mode all clean"
+    "$GRADLE" --warning-mode all clean
+
+    clean_json_resources "$GROOVYSEARCH_PATH/src/main/resources"
+
+    cd -
+}
+
 clean_hssearch () {
     echo
     hdr "clean_hssearch"
@@ -229,6 +272,8 @@ clean_hssearch () {
 
     log "stack clean"
     stack clean
+
+    clean_json_resources "$HSSEARCH_PATH/data"
 
     cd -
 }
@@ -246,6 +291,8 @@ clean_javasearch () {
 
     log "mvn -f $JAVASEARCH_PATH/pom.xml clean"
     mvn -f $JAVASEARCH_PATH/pom.xml clean
+
+    clean_json_resources "$JAVASEARCH_PATH/src/main/resources"
 }
 
 clean_jssearch () {
@@ -263,6 +310,8 @@ clean_jssearch () {
 
     log "npm run clean"
     npm run clean
+
+    clean_json_resources "$JSSEARCH_PATH/data"
 
     cd -
 }
@@ -289,6 +338,8 @@ clean_ktsearch () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
+    clean_json_resources "$KTSEARCH_PATH/src/main/resources"
+
     cd -
 }
 
@@ -314,25 +365,35 @@ clean_mlsearch () {
 clean_plsearch () {
     echo
     hdr "clean_plsearch"
-    log "Nothing to do for perl"
+
+    clean_json_resources "$PLSEARCH_PATH/share"
 }
 
 clean_phpsearch () {
     echo
     hdr "clean_phpsearch"
-    log "Nothing to do for php"
+
+    clean_json_resources "$PHPSEARCH_PATH/resources"
 }
+
+# clean_ps1search () {
+#     echo
+#     hdr "clean_ps1search"
+#     log "Nothing to do for powershell"
+# }
 
 clean_pysearch () {
     echo
     hdr "clean_pysearch"
-    log "Nothing to do for python"
+
+    clean_json_resources "$PYSEARCH_PATH/pysearch/data"
 }
 
 clean_rbsearch () {
     echo
     hdr "clean_rbsearch"
-    log "Nothing to do for ruby"
+
+    clean_json_resources "$RBSEARCH_PATH/data"
 }
 
 clean_rssearch () {
@@ -372,6 +433,8 @@ clean_scalasearch () {
     log "sbt clean"
     sbt clean
 
+    clean_json_resources "$SCALASEARCH_PATH/src/main/resources"
+
     cd -
 }
 
@@ -402,6 +465,8 @@ clean_tssearch () {
 
     log "npm run clean"
     npm run clean
+
+    clean_json_resources "$TSSEARCH_PATH/data"
 
     cd -
 }
@@ -468,6 +533,8 @@ clean_all () {
     clean_fssearch
 
     clean_gosearch
+
+    clean_groovysearch
 
     clean_hssearch
 
@@ -598,9 +665,9 @@ do
         go)
             clean_gosearch
             ;;
-        # groovy)
-        #     clean_groovysearch
-        #     ;;
+        groovy)
+            clean_groovysearch
+            ;;
         haskell | hs)
             clean_hssearch
             ;;

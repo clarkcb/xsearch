@@ -45,6 +45,17 @@ function Usage
     exit
 }
 
+function CleanJsonResources
+{
+    param([string]$resourcesPath)
+    $resourceFiles = Get-ChildItem $resourcesPath -Depth 0 | Where-Object {!$_.PsIsContainer -and $_.Extension -eq '.json'}
+    ForEach ($f in $resourceFiles)
+    {
+        Log("Remove-Item $f")
+        Remove-Item $f
+    }
+}
+
 
 ################################################################################
 # Clean functions
@@ -88,6 +99,9 @@ function CleanCljSearch
     Log('lein clean')
     lein clean
 
+    $resourcesPath = Join-Path $cljSearchPath 'resources'
+    CleanJsonResources($resourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -130,8 +144,8 @@ function CleanCsSearch
     Log("dotnet clean -v minimal")
     dotnet clean -v minimal
 
-    $cssearchProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsSearch')}
-    ForEach ($p in $cssearchProjectDirs)
+    $csSearchProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsSearch')}
+    ForEach ($p in $csSearchProjectDirs)
     {
         $binDir = Join-Path $p.FullName 'bin'
         if (Test-Path $binDir)
@@ -146,6 +160,9 @@ function CleanCsSearch
             Remove-Item $objDir -Recurse -Force
         }
     }
+
+    $resourcesPath = Join-Path $csSearchPath 'CsSearchLib' 'Resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -217,8 +234,8 @@ function CleanFsSearch
     Log("dotnet clean -v minimal")
     dotnet clean -v minimal
 
-    $fssearchProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsSearch')}
-    ForEach ($p in $fssearchProjectDirs)
+    $fsSearchProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsSearch')}
+    ForEach ($p in $fsSearchProjectDirs)
     {
         $binDir = Join-Path $p.FullName 'bin'
         if (Test-Path $binDir)
@@ -233,6 +250,9 @@ function CleanFsSearch
             Remove-Item $objDir -Recurse -Force
         }
     }
+
+    $resourcesPath = Join-Path $fsSearchPath 'FsSearchLib' 'Resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -279,6 +299,9 @@ function CleanGroovySearch
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
 
+    $resourcesPath = Join-Path $groovySearchPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -299,6 +322,9 @@ function CleanHsSearch
     Log('stack clean')
     stack clean
 
+    $resourcesPath = Join-Path $hsSearchPath 'data'
+    CleanJsonResources($resourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -315,6 +341,9 @@ function CleanJavaSearch
 
     Log("mvn -f $javaSearchPath/pom.xml clean")
     mvn -f $javaSearchPath/pom.xml clean
+
+    $resourcesPath = Join-Path $javaSearchPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanJsSearch
@@ -333,6 +362,9 @@ function CleanJsSearch
 
     Log('npm run clean')
     npm run clean
+
+    $resourcesPath = Join-Path $jsSearchPath 'data'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -358,6 +390,9 @@ function CleanKtSearch
 
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
+
+    $resourcesPath = Join-Path $ktSearchPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -393,21 +428,25 @@ function CleanPlSearch
 {
     Write-Host
     Hdr('CleanPlSearch')
-    Log('Nothing to do for perl')
+
+    $resourcesPath = Join-Path $plSearchPath 'share'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanPhpSearch
 {
     Write-Host
     Hdr('CleanPhpSearch')
-    Log('Nothing to do for php')
+
+    $resourcesPath = Join-Path $phpSearchPath 'resources'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanPs1Search
 {
     Write-Host
     Hdr('CleanPs1Search')
-    Log('not implemented at this time')
+    Log('Nothing to do for powershell')
 }
 
 function CleanPySearch
@@ -415,13 +454,18 @@ function CleanPySearch
     Write-Host
     Hdr('CleanPySearch')
     Log('Nothing to do for python')
+
+    $resourcesPath = Join-Path $pySearchPath 'pysearch' 'data'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanRbSearch
 {
     Write-Host
     Hdr('CleanRbSearch')
-    Log('Nothing to do for ruby')
+
+    $resourcesPath = Join-Path $rbSearchPath 'data'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanRsSearch
@@ -458,6 +502,9 @@ function CleanScalaSearch
 
     Log('sbt clean')
     sbt clean
+
+    $resourcesPath = Join-Path $scalaSearchPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -498,6 +545,9 @@ function CleanTsSearch
 
     Log('npm run clean')
     npm run clean
+
+    $resourcesPath = Join-Path $tsSearchPath 'data'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
