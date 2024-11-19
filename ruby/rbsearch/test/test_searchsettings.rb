@@ -10,8 +10,7 @@ require_relative '../lib/rbsearch'
 require 'minitest/autorun'
 
 module RbSearch
-
-  class SearchSettingsTest < Minitest::Test
+  class SearchSettingsTest < Test::Unit::TestCase
     def setup
       @settings = SearchSettings.new
     end

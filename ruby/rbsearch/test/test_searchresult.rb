@@ -11,7 +11,7 @@ require 'minitest/autorun'
 
 module RbSearch
 
-  class SearchResultTest < Minitest::Test
+  class SearchResultTest < Test::Unit::TestCase
     def setup
       @cssearch_path = "~/src/xsearch/csharp/CsSearch/CsSearch"
     end

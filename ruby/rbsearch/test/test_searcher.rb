@@ -11,7 +11,7 @@ require 'minitest/autorun'
 
 module RbSearch
 
-  class SearcherTest < Minitest::Test
+  class SearcherTest < Test::Unit::TestCase
 
     def get_settings
       settings = SearchSettings.new
@@ -35,17 +35,18 @@ module RbSearch
       fo = File.open(testfile, mode: 'r:ISO-8859-1')
       contents = fo.read
       results = searcher.search_multi_line_string(contents)
-      assert_equal(results.size, 2)
+      assert_equal(2, results.size)
 
       first_result = results[0]
-      assert_equal(first_result.line_num, 29)
-      assert_equal(first_result.match_start_index, 3)
-      assert_equal(first_result.match_end_index, 11)
+      assert_equal(29, first_result.line_num)
+      assert_equal(3, first_result.match_start_index)
+      assert_equal(11, first_result.match_end_index)
 
+      # swap arguments to assert_equal to match the order of the original code
       second_result = results[1]
-      assert_equal(second_result.line_num, 35)
-      assert_equal(second_result.match_start_index, 24)
-      assert_equal(second_result.match_end_index, 32)
+      assert_equal(35, second_result.line_num)
+      assert_equal(24, second_result.match_start_index)
+      assert_equal(32, second_result.match_end_index)
     ensure
       fo.close
     end
@@ -63,14 +64,14 @@ module RbSearch
       assert_equal(results.size, 2)
 
       first_result = results[0]
-      assert_equal(first_result.line_num, 29)
-      assert_equal(first_result.match_start_index, 3)
-      assert_equal(first_result.match_end_index, 11)
+      assert_equal(29, first_result.line_num)
+      assert_equal(3, first_result.match_start_index)
+      assert_equal(11, first_result.match_end_index)
 
       second_result = results[1]
-      assert_equal(second_result.line_num, 35)
-      assert_equal(second_result.match_start_index, 24)
-      assert_equal(second_result.match_end_index, 32)
+      assert_equal(35, second_result.line_num)
+      assert_equal(24, second_result.match_start_index)
+      assert_equal(32, second_result.match_end_index)
     ensure
       fo.close
     end

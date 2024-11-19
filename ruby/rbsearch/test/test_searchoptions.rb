@@ -11,7 +11,7 @@ require 'minitest/autorun'
 
 module RbSearch
 
-  class SearchOptionsTest < Minitest::Test
+  class SearchOptionsTest < Test::Unit::TestCase
     def setup
       @search_options = RbSearch::SearchOptions.new
     end
