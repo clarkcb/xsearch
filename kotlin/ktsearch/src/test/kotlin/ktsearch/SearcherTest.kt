@@ -27,7 +27,7 @@ class SearcherTest {
         assertEquals(2, results.size.toLong())
 
         val firstResult = results[0]
-        val expectedFirstLineNum = 29
+        val expectedFirstLineNum = 30
         assertEquals(expectedFirstLineNum, firstResult.lineNum)
         val expectedFirstMatchStartIndex = 3
         assertEquals(expectedFirstMatchStartIndex, firstResult.matchStartIndex)
@@ -35,7 +35,7 @@ class SearcherTest {
         assertEquals(expectedFirstMatchEndIndex, firstResult.matchEndIndex)
 
         val secondResult = results[1]
-        val expectedSecondLineNum = 35
+        val expectedSecondLineNum = 36
         assertEquals(expectedSecondLineNum, secondResult.lineNum)
         val expectedSecondMatchStartIndex = 24
         assertEquals(expectedSecondMatchStartIndex, secondResult.matchStartIndex)
@@ -56,7 +56,7 @@ class SearcherTest {
         assertEquals(2, results.size.toLong())
 
         val firstResult = results[0]
-        val expectedFirstLineNum = 29
+        val expectedFirstLineNum = 30
         assertEquals(expectedFirstLineNum, firstResult.lineNum)
         val expectedFirstMatchStartIndex = 3
         assertEquals(expectedFirstMatchStartIndex, firstResult.matchStartIndex)
@@ -64,7 +64,7 @@ class SearcherTest {
         assertEquals(expectedFirstMatchEndIndex, firstResult.matchEndIndex)
 
         val secondResult = results[1]
-        val expectedSecondLineNum = 35
+        val expectedSecondLineNum = 36
         assertEquals(expectedSecondLineNum, secondResult.lineNum)
         val expectedSecondMatchStartIndex = 24
         assertEquals(expectedSecondMatchStartIndex, secondResult.matchStartIndex)
@@ -82,7 +82,7 @@ class SearcherTest {
         assertEquals(2, results.size.toLong())
 
         val firstResult = results[0]
-        val expectedFirstLineNum = 29
+        val expectedFirstLineNum = 30
         assertEquals(expectedFirstLineNum, firstResult.lineNum)
         val expectedFirstMatchStartIndex = 3
         assertEquals(expectedFirstMatchStartIndex, firstResult.matchStartIndex)
@@ -90,7 +90,7 @@ class SearcherTest {
         assertEquals(expectedFirstMatchEndIndex, firstResult.matchEndIndex)
 
         val secondResult = results[1]
-        val expectedSecondLineNum = 35
+        val expectedSecondLineNum = 36
         assertEquals(expectedSecondLineNum, secondResult.lineNum)
         val expectedSecondMatchStartIndex = 24
         assertEquals(expectedSecondMatchStartIndex, secondResult.matchStartIndex)

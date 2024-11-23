@@ -7,7 +7,7 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'minitest/autorun'
+require 'test/unit'
 
 module RbSearch
 
@@ -38,13 +38,13 @@ module RbSearch
       assert_equal(2, results.size)
 
       first_result = results[0]
-      assert_equal(29, first_result.line_num)
+      assert_equal(30, first_result.line_num)
       assert_equal(3, first_result.match_start_index)
       assert_equal(11, first_result.match_end_index)
 
       # swap arguments to assert_equal to match the order of the original code
       second_result = results[1]
-      assert_equal(35, second_result.line_num)
+      assert_equal(36, second_result.line_num)
       assert_equal(24, second_result.match_start_index)
       assert_equal(32, second_result.match_end_index)
     ensure
@@ -64,12 +64,12 @@ module RbSearch
       assert_equal(results.size, 2)
 
       first_result = results[0]
-      assert_equal(29, first_result.line_num)
+      assert_equal(30, first_result.line_num)
       assert_equal(3, first_result.match_start_index)
       assert_equal(11, first_result.match_end_index)
 
       second_result = results[1]
-      assert_equal(35, second_result.line_num)
+      assert_equal(36, second_result.line_num)
       assert_equal(24, second_result.match_start_index)
       assert_equal(32, second_result.match_end_index)
     ensure

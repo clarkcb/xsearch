@@ -54,12 +54,12 @@ sub test_search_lines {
     my $results = $searcher->search_multiline_string($contents);
     ok(scalar @{$results} == 2, 'Two search results');
     my $first_result = $results->[0];
-    ok($first_result->{line_num} == 29, "First result on line 23");
+    ok($first_result->{line_num} == 30, "First result on line 30");
     ok($first_result->{match_start_index} == 3, "First result match_start_index == 3");
     ok($first_result->{match_end_index} == 11, "First result match_start_index == 11");
 
     my $second_result = $results->[1];
-    ok($second_result->{line_num} == 35, "Second result on line 29");
+    ok($second_result->{line_num} == 36, "Second result on line 36");
     ok($second_result->{match_start_index} == 24, "Second result match_start_index == 24");
     ok($second_result->{match_end_index} == 32, "Second result match_start_index == 32");
 }
@@ -76,12 +76,12 @@ sub test_search_multiline_string {
     my $results = $searcher->search_lines($lines);
     ok(scalar @{$results} == 2, 'Two search results');
     my $first_result = $results->[0];
-    ok($first_result->{line_num} == 29, "First result on line 23");
+    ok($first_result->{line_num} == 30, "First result on line 30");
     ok($first_result->{match_start_index} == 3, "First result match_start_index == 3");
     ok($first_result->{match_end_index} == 11, "First result match_start_index == 11");
 
     my $second_result = $results->[1];
-    ok($second_result->{line_num} == 35, "Second result on line 29");
+    ok($second_result->{line_num} == 36, "Second result on line 36");
     ok($second_result->{match_start_index} == 24, "Second result match_start_index == 24");
     ok($second_result->{match_end_index} == 32, "Second result match_start_index == 32");
 }

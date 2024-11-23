@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CsFindLib;
 using CsSearchLib;
 using NUnit.Framework;
 
@@ -10,8 +9,6 @@ namespace CsSearchTests;
 [TestFixture]
 class SearcherTests
 {
-	private readonly FileTypes _fileTypes = new();
-		
 	private static string GetTestFileContent()
 	{
 		return EmbeddedTestResource.GetResourceFileContents("CsSearchTests.Resources.testFile2.txt");
@@ -20,7 +17,7 @@ class SearcherTests
 	public static IEnumerable<string> GetTestFileLines()
 	{
 		var testFile2Contents = GetTestFileContent();
-		foreach (var line in testFile2Contents.Split(new[] { "\n", "\r" }, StringSplitOptions.None))
+		foreach (var line in testFile2Contents.Split(["\n", "\r"], StringSplitOptions.None))
 		{
 			yield return line;
 		}
@@ -49,7 +46,7 @@ class SearcherTests
 		Assert.That(results.Count == 2);
 
 		var firstResult = results[0];
-		const int expectedFirstLineNum = 29;
+		const int expectedFirstLineNum = 30;
 		Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum));
 		const int expectedFirstMatchStartIndex = 3;
 		Assert.That(firstResult.MatchStartIndex, Is.EqualTo(expectedFirstMatchStartIndex));
@@ -57,7 +54,7 @@ class SearcherTests
 		Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex));
 
 		var secondResult = results[1];
-		const int expectedSecondLineNum = 35;
+		const int expectedSecondLineNum = 36;
 		Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum));
 		const int expectedSecondMatchStartIndex = 24;
 		Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex));
@@ -79,7 +76,7 @@ class SearcherTests
 		Assert.That(results.Count == 2);
 
 		var firstResult = results[0];
-		const int expectedFirstLineNum = 29;
+		const int expectedFirstLineNum = 30;
 		Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum));
 		const int expectedFirstMatchStartIndex = 3;
 		Assert.That(firstResult.MatchStartIndex, Is.EqualTo(expectedFirstMatchStartIndex));
@@ -87,7 +84,7 @@ class SearcherTests
 		Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex));
 
 		var secondResult = results[1];
-		const int expectedSecondLineNum = 35;
+		const int expectedSecondLineNum = 36;
 		Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum));
 		const int expectedSecondMatchStartIndex = 24;
 		Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex));

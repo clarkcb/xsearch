@@ -47,12 +47,12 @@ class SearcherTest(unittest.TestCase):
         self.assertEqual(len(results), 2)
 
         first_result = results[0]
-        self.assertEqual(first_result.line_num, 29)
+        self.assertEqual(first_result.line_num, 30)
         self.assertEqual(first_result.match_start_index, 3)
         self.assertEqual(first_result.match_end_index, 11)
 
         second_result = results[1]
-        self.assertEqual(second_result.line_num, 35)
+        self.assertEqual(second_result.line_num, 36)
         self.assertEqual(second_result.match_start_index, 24)
         self.assertEqual(second_result.match_end_index, 32)
 
@@ -76,12 +76,12 @@ class SearcherTest(unittest.TestCase):
         self.assertEqual(len(results), 2)
 
         first_result = results[0]
-        self.assertEqual(first_result.line_num, 29)
+        self.assertEqual(first_result.line_num, 30)
         self.assertEqual(first_result.match_start_index, 3)
         self.assertEqual(first_result.match_end_index, 11)
 
         second_result = results[1]
-        self.assertEqual(second_result.line_num, 35)
+        self.assertEqual(second_result.line_num, 36)
         self.assertEqual(second_result.match_start_index, 24)
         self.assertEqual(second_result.match_end_index, 32)
 

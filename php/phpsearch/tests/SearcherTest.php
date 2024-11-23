@@ -40,12 +40,12 @@ class SearcherTest extends TestCase
             $this->assertCount(2, $results);
 
             $firstResult = $results[0];
-            $this->assertEquals(29, $firstResult->line_num);
+            $this->assertEquals(30, $firstResult->line_num);
             $this->assertEquals(3, $firstResult->match_start_index);
             $this->assertEquals(11, $firstResult->match_end_index);
 
             $secondResult = $results[1];
-            $this->assertEquals(35, $secondResult->line_num);
+            $this->assertEquals(36, $secondResult->line_num);
             $this->assertEquals(24, $secondResult->match_start_index);
             $this->assertEquals(32, $secondResult->match_end_index);
         } catch (SearchException $e) {
@@ -67,12 +67,12 @@ class SearcherTest extends TestCase
             $this->assertCount(2, $results);
 
             $firstResult = $results[0];
-            $this->assertEquals(29, $firstResult->line_num);
+            $this->assertEquals(30, $firstResult->line_num);
             $this->assertEquals(3, $firstResult->match_start_index);
             $this->assertEquals(11, $firstResult->match_end_index);
 
             $secondResult = $results[1];
-            $this->assertEquals(35, $secondResult->line_num);
+            $this->assertEquals(36, $secondResult->line_num);
             $this->assertEquals(24, $secondResult->match_start_index);
             $this->assertEquals(32, $secondResult->match_end_index);
         } catch (SearchException $e) {

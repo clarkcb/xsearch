@@ -18,11 +18,11 @@ public class SearchSettingsTests
 		Assert.That(settings.IncludeHidden, Is.False);
 		Assert.That(settings.LinesAfter, Is.EqualTo(0));
 		Assert.That(settings.LinesBefore, Is.EqualTo(0));
+		Assert.That(settings.MaxLineLength, Is.EqualTo(150));
+		Assert.That(settings.MultiLineSearch, Is.False);
 		Assert.That(settings.PrintDirs, Is.False);
 		Assert.That(settings.PrintFiles, Is.False);
 		Assert.That(settings.PrintLines, Is.False);
-		Assert.That(settings.MaxLineLength, Is.EqualTo(150));
-		Assert.That(settings.MultiLineSearch, Is.False);
 		Assert.That(settings.PrintResults, Is.False);
 		Assert.That(settings.PrintUsage, Is.False);
 		Assert.That(settings.PrintVersion, Is.False);

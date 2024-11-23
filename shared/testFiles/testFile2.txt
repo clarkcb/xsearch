@@ -1,31 +1,32 @@
 Test file
 
-This is a file to test xsearch, which currently has the following 16 implementations:
+This is a file to test xsearch, which currently has the following 21 implementations:
 
 1. cljsearch for Clojure
-2. cssearch for C#
-3. fssearch for F#
-4. gosearch for Go
-5. hssearch for Haskell
-6. javasearch for Java
-7. jssearch for JavaScript (Node.js)
-8. ktsearch for Kotlin
-9. mlsearch for ocaml
-10. phpsearch.php for PHP
-11. plsearch.pl for Perl
-12. pysearch.py for Python
-13. rbsearch.rb for Ruby
-14. scalasearch for Scala
-15. swiftsearch for Swift
-16. tssearch for TypeScript
+2. cppsearch for C++
+3. cssearch for C#
+4. dartsearch for Dart
+5. exsearch for Elixir
+6. fssearch for F#
+7. gosearch for Go
+8. hssearch for Haskell
+9. javasearch for Java
+10. jssearch for JavaScript (Node.js)
+11. ktsearch for Kotlin
+12. objcsearch for Objective-C
+13. phpsearch for PHP
+14. plsearch for Perl
+15. ps1search for PowerShell
+16. pysearch for Python
+17. rbsearch for Ruby
+18. rssearch for Rust
+19. scalasearch for Scala
+20. swiftsearch for Swift
+21. tssearch for TypeScript
 
 
 The basic code structure includes these elements:
 
-* FileTypes - helps determine file type (archive, binary or text),
-  searchability, etc.
-* FileUtil - provides file-related functionality (e.g. get file extension,
-  check whether file is hidden)
 * Searcher - executes the file search based on the SearchSettings
 * SearchOptions - loads option data from XML, generates usage text, builds a
   SearchSettings instance from command line arguments
@@ -35,17 +36,11 @@ The basic code structure includes these elements:
   after, etc., used by Searcher
 
 
-Partially done implementations:
-
-* csearch for C
-* cppsearch for C++
-
-
 Other possible implementations:
 
 * adasearch for Ada
 * erlsearch for Erlang
-* rssearch for Rust
+* jlsearch for Julia
 
 
 This is the second-to-last line of the test file. The final line is blank.

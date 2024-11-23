@@ -25,10 +25,10 @@
       (let [settings (get-settings)
             results (search-lines (line-seq rdr) settings)]
         (is (= (count results) 2))
-        (is (= (:line-num (first results)) 29))
+        (is (= (:line-num (first results)) 30))
         (is (= (:matchstartindex (first results)) 3))
         (is (= (:matchendindex (first results)) 11))
-        (is (= (:line-num (second results)) 35))
+        (is (= (:line-num (second results)) 36))
         (is (= (:matchstartindex (second results)) 24))
         (is (= (:matchendindex (second results)) 32))))))
 
@@ -41,9 +41,9 @@
           contents (slurp (expand-path TESTFILE))
           results (search-multiline-string contents settings)]
       (is (= (count results) 2))
-      (is (= (:line-num (first results)) 29))
+      (is (= (:line-num (first results)) 30))
       (is (= (:matchstartindex (first results)) 3))
       (is (= (:matchendindex (first results)) 11))
-      (is (= (:line-num (second results)) 35))
+      (is (= (:line-num (second results)) 36))
       (is (= (:matchstartindex (second results)) 24))
       (is (= (:matchendindex (second results)) 32)))))

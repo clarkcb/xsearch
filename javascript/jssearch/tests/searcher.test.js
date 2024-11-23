@@ -31,7 +31,7 @@ describe('testing searcher', () => {
         expect(results.length).toEqual(2);
 
         const firstResult = results[0];
-        const expectedFirstLineNum = 29;
+        const expectedFirstLineNum = 30;
         expect(firstResult.lineNum).toEqual(expectedFirstLineNum);
         const expectedFirstMatchStartIndex = 3;
         expect(firstResult.matchStartIndex).toEqual(expectedFirstMatchStartIndex);
@@ -39,7 +39,7 @@ describe('testing searcher', () => {
         expect(firstResult.matchEndIndex).toEqual(expectedFirstMatchEndIndex);
 
         const secondResult = results[1];
-        const expectedSecondLineNum = 35;
+        const expectedSecondLineNum = 36;
         expect(secondResult.lineNum).toEqual(expectedSecondLineNum);
         const expectedSecondMatchStartIndex = 24;
         expect(secondResult.matchStartIndex).toEqual(expectedSecondMatchStartIndex);
@@ -59,7 +59,7 @@ describe('testing searcher', () => {
             expect(results.length).toEqual(2);
 
             const firstResult = results[0];
-            const expectedFirstLineNum = 29;
+            const expectedFirstLineNum = 30;
             expect(firstResult.lineNum).toEqual(expectedFirstLineNum);
             const expectedFirstMatchStartIndex = 3;
             expect(firstResult.matchStartIndex).toEqual(expectedFirstMatchStartIndex);
@@ -67,7 +67,7 @@ describe('testing searcher', () => {
             expect(firstResult.matchEndIndex).toEqual(expectedFirstMatchEndIndex);
 
             const secondResult = results[1];
-            const expectedSecondLineNum = 35;
+            const expectedSecondLineNum = 36;
             expect(secondResult.lineNum).toEqual(expectedSecondLineNum);
             const expectedSecondMatchStartIndex = 24;
             expect(secondResult.matchStartIndex).toEqual(expectedSecondMatchStartIndex);

@@ -36,11 +36,11 @@ class SearcherTests: XCTestCase {
 
             XCTAssert(results.count == 2)
 
-            XCTAssertEqual(29, results[0].lineNum)
+            XCTAssertEqual(30, results[0].lineNum)
             XCTAssertEqual(3, results[0].matchStartIndex)
             XCTAssertEqual(11, results[0].matchEndIndex)
 
-            XCTAssertEqual(35, results[1].lineNum)
+            XCTAssertEqual(36, results[1].lineNum)
             XCTAssertEqual(24, results[1].matchStartIndex)
             XCTAssertEqual(32, results[1].matchEndIndex)
 
@@ -65,11 +65,11 @@ class SearcherTests: XCTestCase {
 
             XCTAssert(results.count == 2)
 
-            XCTAssertEqual(29, results[0].lineNum)
+            XCTAssertEqual(30, results[0].lineNum)
             XCTAssertEqual(3, results[0].matchStartIndex)
             XCTAssertEqual(11, results[0].matchEndIndex)
 
-            XCTAssertEqual(35, results[1].lineNum)
+            XCTAssertEqual(36, results[1].lineNum)
             XCTAssertEqual(24, results[1].matchStartIndex)
             XCTAssertEqual(32, results[1].matchEndIndex)
 

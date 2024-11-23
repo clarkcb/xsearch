@@ -39,7 +39,7 @@ public class SearcherTest {
             assertEquals(results.size(), 2);
 
             SearchResult firstResult = results.get(0);
-            int expectedFirstLineNum = 29;
+            int expectedFirstLineNum = 30;
             assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
             int expectedFirstMatchStartIndex = 3;
             assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
@@ -47,7 +47,7 @@ public class SearcherTest {
             assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
 
             SearchResult secondResult = results.get(1);
-            int expectedSecondLineNum = 35;
+            int expectedSecondLineNum = 36;
             assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
             int expectedSecondMatchStartIndex = 24;
             assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
@@ -76,7 +76,7 @@ public class SearcherTest {
             assert(results.size() == 2);
 
             SearchResult firstResult = results.get(0);
-            int expectedFirstLineNum = 29;
+            int expectedFirstLineNum = 30;
             assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
             int expectedFirstMatchStartIndex = 3;
             assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
@@ -84,7 +84,7 @@ public class SearcherTest {
             assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
 
             SearchResult secondResult = results.get(1);
-            int expectedSecondLineNum = 35;
+            int expectedSecondLineNum = 36;
             assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
             int expectedSecondMatchStartIndex = 24;
             assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
@@ -112,7 +112,7 @@ public class SearcherTest {
 
             SearchResult firstResult = results.get(0);
             System.out.println("firstResult:\n" + firstResult);
-            int expectedFirstLineNum = 29;
+            int expectedFirstLineNum = 30;
             assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
             int expectedFirstMatchStartIndex = 3;
             assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
@@ -121,7 +121,7 @@ public class SearcherTest {
 
             SearchResult secondResult = results.get(1);
             System.out.println("secondResult:\n" + secondResult);
-            int expectedSecondLineNum = 35;
+            int expectedSecondLineNum = 36;
             assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
             int expectedSecondMatchStartIndex = 24;
             assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);

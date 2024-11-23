@@ -28,7 +28,6 @@ type SearcherTests () =
         settings
     
 
-    
     //////////////////////////////////////////////////////////////
     // SearchTextReaderLines test
     //////////////////////////////////////////////////////////////
@@ -42,7 +41,7 @@ type SearcherTests () =
         Assert.That(results.Length, Is.EqualTo(2))
 
         let firstResult = results[0]
-        let expectedFirstLineNum = 29
+        let expectedFirstLineNum = 30
         Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum))
 
         let expectedFirstMatchStartIndex = 3
@@ -52,7 +51,7 @@ type SearcherTests () =
         Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex))
 
         let secondResult = results[1]
-        let expectedSecondLineNum = 35
+        let expectedSecondLineNum = 36
         Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum))
         let expectedSecondMatchStartIndex = 24
         Assert.That(secondResult.MatchStartIndex, Is.EqualTo(expectedSecondMatchStartIndex))
@@ -73,7 +72,7 @@ type SearcherTests () =
         Assert.That(results.Length, Is.EqualTo(2))
 
         let firstResult = results[0]
-        let expectedFirstLineNum = 29
+        let expectedFirstLineNum = 30
         Assert.That(firstResult.LineNum, Is.EqualTo(expectedFirstLineNum))
 
         let expectedFirstMatchStartIndex = 3
@@ -83,7 +82,7 @@ type SearcherTests () =
         Assert.That(firstResult.MatchEndIndex, Is.EqualTo(expectedFirstMatchEndIndex))
 
         let secondResult = results[1]
-        let expectedSecondLineNum = 35
+        let expectedSecondLineNum = 36
         Assert.That(secondResult.LineNum, Is.EqualTo(expectedSecondLineNum))
 
         let expectedSecondMatchStartIndex = 24

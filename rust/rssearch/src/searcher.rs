@@ -831,12 +831,12 @@ mod tests {
         let results = searcher.search_text_lines(&mut lines);
 
         assert_eq!(results.len(), 2);
-        assert_eq!(results[0].line_num, 29);
+        assert_eq!(results[0].line_num, 30);
         assert_eq!(results[0].match_start_index, 3);
         assert_eq!(results[0].match_end_index, 11);
         assert_eq!(results[0].lines_before.len(), 0);
         assert_eq!(results[0].lines_after.len(), 0);
-        assert_eq!(results[1].line_num, 35);
+        assert_eq!(results[1].line_num, 36);
         assert_eq!(results[1].match_start_index, 24);
         assert_eq!(results[1].match_end_index, 32);
         assert_eq!(results[1].lines_before.len(), 0);
@@ -860,7 +860,7 @@ mod tests {
         let results = searcher.search_text_lines(&mut lines);
 
         assert_eq!(results.len(), 1);
-        assert_eq!(results[0].line_num, 29);
+        assert_eq!(results[0].line_num, 30);
         assert_eq!(results[0].match_start_index, 3);
         assert_eq!(results[0].match_end_index, 11);
         assert_eq!(results[0].lines_after.len(), 6);
@@ -885,12 +885,12 @@ mod tests {
         let results = searcher.search_multi_line_string(&contents);
 
         assert_eq!(results.len(), 2);
-        assert_eq!(results[0].line_num, 29);
+        assert_eq!(results[0].line_num, 30);
         assert_eq!(results[0].match_start_index, 3);
         assert_eq!(results[0].match_end_index, 11);
         assert_eq!(results[0].lines_before.len(), 2);
         assert_eq!(results[0].lines_after.len(), 2);
-        assert_eq!(results[1].line_num, 35);
+        assert_eq!(results[1].line_num, 36);
         assert_eq!(results[1].match_start_index, 24);
         assert_eq!(results[1].match_end_index, 32);
         assert_eq!(results[1].lines_before.len(), 2);
@@ -915,7 +915,7 @@ mod tests {
         let results = searcher.search_multi_line_string(&contents);
 
         assert_eq!(results.len(), 1);
-        assert_eq!(results[0].line_num, 29);
+        assert_eq!(results[0].line_num, 30);
         assert_eq!(results[0].match_start_index, 3);
         assert_eq!(results[0].match_end_index, 11);
         assert_eq!(results[0].lines_after.len(), 6);

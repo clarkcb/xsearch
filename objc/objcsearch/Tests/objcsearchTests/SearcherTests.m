@@ -41,7 +41,7 @@
     XCTAssert([results count] == 2);
 
     SearchResult *firstResult = [results objectAtIndex:0];
-    int expectedFirstLineNum = 29;
+    int expectedFirstLineNum = 30;
     XCTAssert([firstResult lineNum] == expectedFirstLineNum);
     int expectedFirstMatchStartIndex = 3;
     XCTAssert([firstResult matchStartIndex] == expectedFirstMatchStartIndex);
@@ -49,7 +49,7 @@
     XCTAssert([firstResult matchEndIndex] == expectedFirstMatchEndIndex);
 
     SearchResult *secondResult = [results objectAtIndex:1];
-    int expectedSecondLineNum = 35;
+    int expectedSecondLineNum = 36;
     XCTAssert([secondResult lineNum] == expectedSecondLineNum);
     int expectedSecondMatchStartIndex = 24;
     XCTAssert([secondResult matchStartIndex] == expectedSecondMatchStartIndex);

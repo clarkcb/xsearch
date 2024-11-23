@@ -514,6 +514,13 @@ unittest_rbsearch () {
 
     log "ruby version: $RUBY_VERSION"
 
+    ensure bundler is installed
+    if [ -z "$(which bundle)" ]
+    then
+        log_error "You need to install bundler: https://bundler.io/"
+        return
+    fi
+
     # ensure rake is installed
     if [ -z "$(which rake)" ]
     then
@@ -851,7 +858,7 @@ do
             unittest_tssearch
             ;;
         *)
-            echo -n "ERROR: unknown unittest argument: $ARG"
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
             ;;
     esac
 done

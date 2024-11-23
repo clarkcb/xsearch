@@ -51,7 +51,7 @@ func TestSearchTextReaderLines(t *testing.T) {
 	}
 
 	firstResult := results[0]
-	expectedFirstLineNum := 29
+	expectedFirstLineNum := 30
 	if firstResult.LineNum != expectedFirstLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
@@ -68,7 +68,7 @@ func TestSearchTextReaderLines(t *testing.T) {
 	}
 
 	secondResult := results[1]
-	expectedSecondLineNum := 35
+	expectedSecondLineNum := 36
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)
@@ -101,7 +101,7 @@ func TestSearchMultiLineString(t *testing.T) {
 	}
 
 	firstResult := results[0]
-	expectedFirstLineNum := 29
+	expectedFirstLineNum := 30
 	if firstResult.LineNum != expectedFirstLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *firstResult,
 			expectedFirstLineNum)
@@ -118,7 +118,7 @@ func TestSearchMultiLineString(t *testing.T) {
 	}
 
 	secondResult := results[1]
-	expectedSecondLineNum := 35
+	expectedSecondLineNum := 36
 	if secondResult.LineNum != expectedSecondLineNum {
 		t.Errorf("firstResult=%v, expected LineNum=%d", *secondResult,
 			expectedSecondLineNum)

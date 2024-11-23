@@ -7,7 +7,7 @@
 ################################################################################
 
 require_relative '../lib/rbsearch'
-require 'minitest/autorun'
+require 'test/unit'
 
 module RbSearch
 
