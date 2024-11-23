@@ -2,14 +2,9 @@ using System.Text;
 
 namespace CsSearchLib;
 
-public class SearchResultFormatter
+public class SearchResultFormatter(SearchSettings settings)
 {
-	private SearchSettings Settings { get; }
-
-	public SearchResultFormatter(SearchSettings settings)
-	{
-		Settings = settings;
-	}
+	private SearchSettings Settings { get; } = settings;
 
 	public string Format(SearchResult result)
 	{

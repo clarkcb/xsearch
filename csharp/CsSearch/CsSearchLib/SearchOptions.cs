@@ -232,13 +232,13 @@ public class SearchOptions
 		while (queue.Count > 0)
 		{
 			var s = queue.Dequeue();
-			if (s.StartsWith("-"))
+			if (s.StartsWith('-'))
 			{
 				try
 				{
-					while (s.StartsWith("-"))
+					while (s.StartsWith('-'))
 					{
-						s = s.Substring(1);
+						s = s[1..];
 					}
 				}
 				catch (InvalidOperationException e)

@@ -341,8 +341,7 @@ public class Searcher
 		var linesAfter = new Queue<string>();
 
 		using var lineEnumerator = lines.GetEnumerator();
-		var stop = false;
-		while ((lineEnumerator.MoveNext() || linesAfter.Count > 0) && !stop)
+		while (lineEnumerator.MoveNext() || linesAfter.Count > 0)
 		{
 			lineNum++;
 			var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
@@ -360,24 +359,43 @@ public class Searcher
 			{
 				foreach (var p in Settings.SearchPatterns)
 				{
-					foreach (var match in p.Matches(line).Where(m => m != null))
+					if (Settings.FirstMatch)
 					{
-						if (Settings.FirstMatch && patternMatches.ContainsKey(p))
+						var match = p.Match(line);
+						if (match.Success)
 						{
-							stop = true;
-							break;
+							results.Add(new SearchResult(p,
+								null,
+								lineNum,
+								match.Index + 1,
+								match.Index + match.Length + 1,
+								line,
+								new List<string>(linesBefore),
+								new List<string>(linesAfter)));
+							patternMatches[p] = 1;
 						}
-						results.Add(new SearchResult(p,
-							null,
-							lineNum,
-							match.Index + 1,
-							match.Index + match.Length + 1,
-							line,
-							new List<string>(linesBefore),
-							new List<string>(linesAfter)));
-						patternMatches[p] = 1;
+					}
+					else
+					{
+						foreach (var match in p.Matches(line).Where(m => m.Success))
+						{
+							results.Add(new SearchResult(p,
+								null,
+								lineNum,
+								match.Index + 1,
+								match.Index + match.Length + 1,
+								line,
+								new List<string>(linesBefore),
+								new List<string>(linesAfter)));
+						}
 					}
 				}
+			}
+
+			// If all search patterns are in patternMatches, FirstMatch complete, return results
+			if (patternMatches.Count == Settings.SearchPatterns.Count)
+			{
+				return results;
 			}
 
 			if (Settings.LinesBefore == 0) continue;
@@ -404,20 +422,33 @@ public class Searcher
 			var contents = sr.ReadToEnd();
 			foreach (var p in Settings.SearchPatterns)
 			{
-				var matches = p.Matches(contents).Cast<Match>();
 				if (Settings.FirstMatch)
 				{
-					matches = matches.Take(1);
+					var m = p.Match(contents);
+					if (m.Success)
+					{
+						AddSearchResult(new SearchResult(
+							p,
+							fr,
+							0,
+							m.Index + 1,
+							m.Index + m.Length + 1,
+							null));
+					}
 				}
-				foreach (var m in matches)
+				else
 				{
-					AddSearchResult(new SearchResult(
-						p,
-						fr,
-						0,
-						m.Index + 1,
-						m.Index + m.Length + 1,
-						null));
+					var matches = p.Matches(contents).Cast<Match>();
+					foreach (var m in matches)
+					{
+						AddSearchResult(new SearchResult(
+							p,
+							fr,
+							0,
+							m.Index + 1,
+							m.Index + m.Length + 1,
+							null));
+					}
 				}
 			}
 		}
@@ -480,10 +511,17 @@ public class Searcher
 			.Select(f => f.ToString())
 			.Distinct()
 			.OrderBy(f => f).ToList();
-		Logger.Log($"\nFiles with matches ({matchingFiles.Count()}):");
-		foreach (var f in matchingFiles)
+		if (matchingFiles.Count > 0)
 		{
-			Logger.Log(f);
+			Logger.Log($"\nFiles with matches ({matchingFiles.Count()}):");
+			foreach (var f in matchingFiles)
+			{
+				Logger.Log(f);
+			}
+		}
+		else
+		{
+			Logger.Log($"\nFiles with matches: 0");
 		}
 	}
 
