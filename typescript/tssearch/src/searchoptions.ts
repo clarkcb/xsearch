@@ -107,6 +107,8 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.firstMatch = !b; },
             'archivesonly':
                 (b: boolean, settings: SearchSettings) => { settings.archivesOnly = b; },
+            'colorize':
+                (b: boolean, settings: SearchSettings) => { settings.colorize = b; },
             'debug':
                 (b: boolean, settings: SearchSettings) => { settings.debug = b; },
             'excludehidden':
@@ -121,6 +123,8 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.printUsage = b; },
             'multilinesearch':
                 (b: boolean, settings: SearchSettings) => { settings.multilineSearch = b; },
+            'nocolorize':
+                (b: boolean, settings: SearchSettings) => { settings.colorize = !b; },
             'nofollowsymlinks':
                 (b: boolean, settings: SearchSettings) => { settings.followSymlinks = !b; },
             'noprintdirs':
