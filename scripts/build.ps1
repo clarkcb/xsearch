@@ -1225,13 +1225,41 @@ function BuildPhpSearch
 
     Set-Location $oldPwd
 }
+
 function BuildPs1Search
 {
     Write-Host
     Hdr('BuildPs1Search')
     Log("language: powershell")
 
-    Log("Not currently implemented")
+    # We don't need to check for powershell, as we're running in it
+
+    $powershellVersion = pwsh -v
+    Log("powershell version: $powershellVersion")
+
+    $oldPwd = Get-Location
+    Set-Location $ps1FindPath
+
+    Log('Building ps1search')
+
+    # copy the file to the first of the module paths, if defined
+    $modulePaths = @($env:PSModulePath -split ':')
+    if ($modulePaths.Count -gt 0) {
+        $ps1SearchTargetModulePath = Join-Path $modulePaths[0] 'Ps1SearchModule'
+        if (-not (Test-Path $ps1SearchTargetModulePath)) {
+            Log("New-Item -Path $ps1SearchTargetModulePath -ItemType Directory")
+            New-Item -Path $ps1SearchTargetModulePath -ItemType Directory
+        }
+        $ps1fSearchModulePath = Join-Path $ps1SearchPath 'Ps1SearchModule.psm1'
+        Log("Copy-Item $ps1fSearchModulePath -Destination $ps1SearchTargetModulePath")
+        Copy-Item $ps1fSearchModulePath -Destination $ps1SearchTargetModulePath
+    }
+
+    # add to bin
+    $ps1SearchExe = Join-Path $ps1SearchPath 'ps1search.ps1'
+    AddToBin($ps1SearchExe)
+
+    Set-Location $oldPwd
 }
 
 function BuildPySearch

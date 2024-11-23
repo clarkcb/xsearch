@@ -376,11 +376,11 @@ clean_phpsearch () {
     clean_json_resources "$PHPSEARCH_PATH/resources"
 }
 
-# clean_ps1search () {
-#     echo
-#     hdr "clean_ps1search"
-#     log "Nothing to do for powershell"
-# }
+clean_ps1search () {
+    echo
+    hdr "clean_ps1search"
+    log "Nothing to do for powershell"
+}
 
 clean_pysearch () {
     echo
@@ -552,6 +552,8 @@ clean_all () {
 
     clean_phpsearch
 
+    clean_ps1search
+
     clean_pysearch
 
     clean_rbsearch
@@ -692,9 +694,9 @@ do
         php)
             clean_phpsearch
             ;;
-        # ps1 | powershell)
-        #     clean_powershell
-        #     ;;
+        ps1 | pwsh | powershell)
+            clean_powershell
+            ;;
         py | python)
             clean_pysearch
             ;;

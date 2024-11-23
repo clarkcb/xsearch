@@ -66,7 +66,7 @@ add_to_bin () {
 
     cd "$XSEARCH_BIN_PATH"
 
-    if [[ $script_name == *.sh || $script_name == *.bash ]]
+    if [[ $script_name == *.sh || $script_name == *.bash || $script_name == *.ps1 ]]
     then
         script_name=${script_name%%.*}
     fi
@@ -1039,6 +1039,44 @@ build_phpsearch () {
     cd -
 }
 
+build_ps1search () {
+    echo
+    hdr "build_ps1search"
+    log "language: powershell"
+
+    # ensure pwsh is installed
+    if [ -z "$(which pwsh)" ]
+    then
+        log_error "You need to install powershell"
+        return
+    fi
+
+    POWERSHELL_VERSION=$(pwsh -v)
+    log "powershell version: $POWERSHELL_VERSION"
+
+    MODULEPATH=$(pwsh -c 'echo $env:PSModulePath')
+    if [ -z "$MODULEPATH" ]
+    then
+        log_error "Unable to get powershell module path"
+        return
+    fi
+
+    log "Building ps1search"
+
+    # split on : and get the first path
+    IFS=':' read -ra MODULEPATHS <<< "$MODULEPATH"
+    MODULEPATH=${MODULEPATHS[0]}
+    PS1SEARCHMODULEPATH="$MODULEPATH/Ps1SearchModule"
+
+    mkdir -p "$PS1SEARCHMODULEPATH"
+
+    log "cp $PS1SEARCH_PATH/Ps1SearchModule.psm1 $PS1SEARCHMODULEPATH/"
+    cp "$PS1SEARCH_PATH/Ps1SearchModule.psm1" "$PS1SEARCHMODULEPATH/"
+
+    # add to bin
+    add_to_bin "$PS1SEARCH_PATH/ps1search.ps1"
+}
+
 build_pysearch () {
     echo
     hdr "build_pysearch"
@@ -1614,6 +1652,8 @@ build_all () {
 
     time build_phpsearch
 
+    time build_ps1search
+
     time build_pysearch
 
     time build_rbsearch
@@ -1775,9 +1815,9 @@ do
         php)
             build_phpsearch
             ;;
-        # ps1 | powershell)
-        #     build_powershell
-        #     ;;
+        ps1 | powershell)
+            build_ps1search
+            ;;
         py | python)
             build_pysearch
             ;;

@@ -517,7 +517,23 @@ function UnitTestPs1Search
 {
     Write-Host
     Hdr('UnitTestPs1Search')
-    Log('not implemented at this time')
+
+    # We don't need to check for powershell, as we're running in it
+
+    $powershellVersion = pwsh -v
+    Log("powershell version: $powershellVersion")
+
+    $testsScriptPath = Join-Path $ps1SearchPath 'ps1search.tests.ps1'
+    if (-not (Test-Path $testsScriptPath))
+    {
+        Log("Test script not found: $testsScriptPath")
+        return
+    }
+
+    # run tests
+    Log('Unit-testing ps1search')
+    Log("& $testsScriptPath")
+    & $testsScriptPath
 }
 
 function UnitTestPySearch
@@ -761,6 +777,8 @@ function UnitTestAll
     UnitTestPlSearch
 
     UnitTestPhpSearch
+
+    UnitTestPs1Search
 
     UnitTestPySearch
 

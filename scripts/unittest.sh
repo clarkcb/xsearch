@@ -432,6 +432,33 @@ unittest_phpsearch () {
     "$PHPUNIT" "$TESTS_PATH"
 }
 
+unittest_ps1search () {
+    echo
+    hdr "unittest_ps1search"
+
+    # ensure pwsh is installed
+    if [ -z "$(which pwsh)" ]
+    then
+        log_error "You need to install powershell"
+        return
+    fi
+
+    POWERSHELL_VERSION=$(pwsh -v)
+    log "powershell version: $POWERSHELL_VERSION"
+
+    TESTS_SCRIPT="$PS1SEARCH_PATH/ps1search.tests.ps1"
+    if [ ! -f "$TESTS_SCRIPT" ]
+    then
+        log_error "Test script not found: $TESTS_SCRIPT"
+        return
+    fi
+
+    # run tests with powershell
+    log "Unit-testing ps1search"
+    log "pwsh $TESTS_SCRIPT"
+    pwsh "$TESTS_SCRIPT"
+}
+
 unittest_pysearch () {
     echo
     hdr "unittest_pysearch"
@@ -663,6 +690,8 @@ unittest_all () {
 
     unittest_phpsearch
 
+    unittest_ps1search
+
     unittest_pysearch
 
     unittest_rbsearch
@@ -799,6 +828,9 @@ do
             ;;
         php)
             unittest_phpsearch
+            ;;
+        ps1 | powershell | pwsh)
+            unittest_ps1search
             ;;
         py | python)
             unittest_pysearch
