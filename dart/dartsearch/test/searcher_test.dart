@@ -32,12 +32,12 @@ void main() {
     expect(results.length, 2);
 
     var firstResult = results[0];
-    expect(firstResult.lineNum, 29);
+    expect(firstResult.lineNum, 30);
     expect(firstResult.matchStartIndex, 3);
     expect(firstResult.matchEndIndex, 11);
 
     var secondResult = results[1];
-    expect(secondResult.lineNum, 35);
+    expect(secondResult.lineNum, 36);
     expect(secondResult.matchStartIndex, 24);
     expect(secondResult.matchEndIndex, 32);
   });
@@ -56,12 +56,12 @@ void main() {
     expect(results.length, 2);
 
     var firstResult = results[0];
-    expect(firstResult.lineNum, 29);
+    expect(firstResult.lineNum, 30);
     expect(firstResult.matchStartIndex, 3);
     expect(firstResult.matchEndIndex, 11);
 
     var secondResult = results[1];
-    expect(secondResult.lineNum, 35);
+    expect(secondResult.lineNum, 36);
     expect(secondResult.matchStartIndex, 24);
     expect(secondResult.matchEndIndex, 32);
   });
