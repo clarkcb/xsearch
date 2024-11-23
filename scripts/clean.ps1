@@ -56,6 +56,17 @@ function CleanJsonResources
     }
 }
 
+function CleanTestResources
+{
+    param([string]$resourcesPath)
+    $resourceFiles = Get-ChildItem $resourcesPath -Depth 0 | Where-Object {!$_.PsIsContainer -and $_.Name -like "testFile*" -and $_.Extension -eq '.txt'}
+    ForEach ($f in $resourceFiles)
+    {
+        Log("Remove-Item $f")
+        Remove-Item $f
+    }
+}
+
 
 ################################################################################
 # Clean functions
@@ -164,6 +175,9 @@ function CleanCsSearch
     $resourcesPath = Join-Path $csSearchPath 'CsSearchLib' 'Resources'
     CleanJsonResources($resourcesPath)
 
+    $testResourcesPath = Join-Path $csSearchPath 'CsSearchTests' 'Resources'
+    CleanTestResources($testResourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -254,6 +268,9 @@ function CleanFsSearch
     $resourcesPath = Join-Path $fsSearchPath 'FsSearchLib' 'Resources'
     CleanJsonResources($resourcesPath)
 
+    $testResourcesPath = Join-Path $fsSearchPath 'FsSearchTests' 'Resources'
+    CleanTestResources($testResourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -302,6 +319,9 @@ function CleanGroovySearch
     $resourcesPath = Join-Path $groovySearchPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
 
+    $testResourcesPath = Join-Path $groovySearchPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -344,6 +364,9 @@ function CleanJavaSearch
 
     $resourcesPath = Join-Path $javaSearchPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $javaSearchPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 }
 
 function CleanJsSearch
@@ -393,6 +416,9 @@ function CleanKtSearch
 
     $resourcesPath = Join-Path $ktSearchPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $ktSearchPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
 }
@@ -466,6 +492,9 @@ function CleanRbSearch
 
     $resourcesPath = Join-Path $rbSearchPath 'data'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $rbSearchPath 'test' 'fixtures'
+    CleanTestResources($testResourcesPath)
 }
 
 function CleanRsSearch
@@ -505,6 +534,9 @@ function CleanScalaSearch
 
     $resourcesPath = Join-Path $scalaSearchPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $scalaSearchPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
 }

@@ -35,6 +35,16 @@ clean_json_resources () {
     done
 }
 
+# clean_test_resources
+clean_test_resources () {
+    local resources_path="$1"
+    for f in $(find "$resources_path" -name "testFile*.txt" -type f -maxdepth 1)
+    do
+        log "rm $f"
+        rm "$f"
+    done
+}
+
 
 ########################################
 # Clean Functions
@@ -128,6 +138,8 @@ clean_cssearch () {
 
     clean_json_resources "$CSSEARCH_PATH/CsSearchLib/Resources"
 
+    clean_test_resources "$CSSEARCH_PATH/CsSearchTests/Resources"
+
     cd -
 }
 
@@ -208,6 +220,8 @@ clean_fssearch () {
 
     clean_json_resources "$FSSEARCH_PATH/FsSearchLib/Resources"
 
+    clean_test_resources "$FSSEARCH_PATH/FsSearchTests/Resources"
+
     cd -
 }
 
@@ -254,6 +268,8 @@ clean_groovysearch () {
 
     clean_json_resources "$GROOVYSEARCH_PATH/src/main/resources"
 
+    clean_test_resources "$GROOVYSEARCH_PATH/src/test/resources"
+
     cd -
 }
 
@@ -293,6 +309,8 @@ clean_javasearch () {
     mvn -f $JAVASEARCH_PATH/pom.xml clean
 
     clean_json_resources "$JAVASEARCH_PATH/src/main/resources"
+
+    clean_test_resources "$JAVASEARCH_PATH/src/test/resources"
 }
 
 clean_jssearch () {
@@ -339,6 +357,8 @@ clean_ktsearch () {
     "$GRADLE" --warning-mode all clean
 
     clean_json_resources "$KTSEARCH_PATH/src/main/resources"
+
+    clean_test_resources "$KTSEARCH_PATH/src/test/resources"
 
     cd -
 }
@@ -394,6 +414,8 @@ clean_rbsearch () {
     hdr "clean_rbsearch"
 
     clean_json_resources "$RBSEARCH_PATH/data"
+
+    clean_test_resources "$RBSEARCH_PATH/test/fixtures"
 }
 
 clean_rssearch () {
@@ -434,6 +456,8 @@ clean_scalasearch () {
     sbt clean
 
     clean_json_resources "$SCALASEARCH_PATH/src/main/resources"
+
+    clean_test_resources "$SCALASEARCH_PATH/src/test/resources"
 
     cd -
 }

@@ -88,6 +88,13 @@ add_to_bin () {
 # Build Functions
 ########################################
 
+build_bashsearch () {
+    echo
+    hdr "build_bashsearch"
+    log "language: bash"
+    log "Not currently implemented"
+}
+
 build_csearch () {
     echo
     hdr "build_csearch"
@@ -153,7 +160,6 @@ build_cljsearch () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$CLJSEARCH_PATH/resources"
     mkdir -p "$RESOURCES_PATH"
-    copy_filetypes_json_resources "$RESOURCES_PATH"
     copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$CLJSEARCH_PATH"
@@ -470,7 +476,6 @@ build_fssearch () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_filetypes_json_resources "$RESOURCES_PATH"
     copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
@@ -626,7 +631,7 @@ build_hssearch () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$HSSEARCH_PATH/data"
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$HSSEARCH_PATH/"
 
@@ -670,7 +675,7 @@ build_javasearch () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -722,7 +727,7 @@ build_jssearch () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$JSSEARCH_PATH/data"
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$JSSEARCH_PATH"
 
@@ -800,7 +805,7 @@ build_ktsearch () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
@@ -947,11 +952,7 @@ build_plsearch () {
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLSEARCH_PATH/share"
-    mkdir -p "$RESOURCES_PATH"
-    log "cp $XSEARCH_SHARED_PATH/config.json $RESOURCES_PATH/"
-    cp "$XSEARCH_SHARED_PATH/config.json" "$RESOURCES_PATH/"
-    log "cp $XSEARCH_SHARED_PATH/searchoptions.json $RESOURCES_PATH/"
-    cp "$XSEARCH_SHARED_PATH/searchoptions.json" "$RESOURCES_PATH/"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -1184,13 +1185,9 @@ build_pysearch () {
     log "$PYTHON -V: $($PYTHON -V)"
 
     # # copy the shared json files to the local resource location
-    # RESOURCES_PATH="$PYSEARCH_PATH/data"
-    # mkdir -p "$RESOURCES_PATH"
-    # copy_json_resources "$RESOURCES_PATH"
-    # TODO: this next path is the *real* resource path, need to remove the other one
     RESOURCES_PATH="$PYSEARCH_PATH/pysearch/data"
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$PYSEARCH_PATH"
 
@@ -1253,17 +1250,19 @@ build_rbsearch () {
         log_error "A version of ruby >= 3.x is required"
         return
     fi
-
     log "ruby version: $RUBY_VERSION"
 
-    # if [ -z "$(which bundle)" ]
-    # then
-    #     log_error "You need to install bundler: https://bundler.io/"
-    #     return
-    # fi
+    if [ -z "$(which bundle)" ]
+    then
+        log_error "You need to install bundler: https://bundler.io/"
+        return
+    fi
+
+    BUNDLE_VERSION="$(bundle version)"
+    log "$BUNDLE_VERSION"
 
     RESOURCES_PATH="$RBSEARCH_PATH/data"
-    TEST_RESOURCES_PATH="$RBSEARCH_PATH/lib/test/fixtures"
+    TEST_RESOURCES_PATH="$RBSEARCH_PATH/test/fixtures"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -1394,7 +1393,6 @@ build_scalasearch () {
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    copy_filetypes_json_resources "$RESOURCES_PATH"
     copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
@@ -1534,7 +1532,7 @@ build_tssearch () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$TSSEARCH_PATH/data"
     mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
+    copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$TSSEARCH_PATH"
 
@@ -1837,7 +1835,7 @@ do
             build_tssearch
             ;;
         *)
-            log_error -n "ERROR: unknown xsearch build argument: $TARGET_LANG"
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
             ;;
     esac
 done
