@@ -353,6 +353,9 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"archivesonly": func(b bool, settings *SearchSettings) {
 			settings.SetArchivesOnly(b)
 		},
+		"colorize": func(b bool, settings *SearchSettings) {
+			settings.SetColorize(b)
+		},
 		"debug": func(b bool, settings *SearchSettings) {
 			settings.SetDebug(b)
 		},
@@ -373,6 +376,9 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"multilinesearch": func(b bool, settings *SearchSettings) {
 			settings.SetMultiLineSearch(b)
+		},
+		"nocolorize": func(b bool, settings *SearchSettings) {
+			settings.SetColorize(!b)
 		},
 		"nofollowsymlinks": func(b bool, settings *SearchSettings) {
 			settings.SetFollowSymlinks(!b)
