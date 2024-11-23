@@ -1,0 +1,61 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "build", "cmake", "node_modules", "pycache", "target", "vendor", "venv"
+        ],
+        "common_flags": ["--nocolorize"],
+        "common_in_extensions": ["py", "rb"],
+        "common_out_extensions": ["py", "rb"],
+        "common_search_patterns": ["Searcher"],
+        "common_startpaths": ["$XSEARCH_PATH/python", "$XSEARCH_PATH/ruby"],
+        "scriptpath": "$XSEARCH_PATH/scripts",
+        "sharedpath": "$XSEARCH_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "help/usage",
+            "name": "no args",
+            "args": [],
+            "replace_xsearch_name": true
+        },
+        {
+            "group": "help/usage",
+            "name": "help",
+            "args": ["-h"],
+            "replace_xsearch_name": true
+        },
+        {
+            "group": "search lines",
+            "name": "search lines #1",
+            "args": [],
+            "common_args": [
+                "common_flags", "common_out_dirpatterns", "common_in_extensions", "common_search_patterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "search lines",
+            "name": "search lines #2 - first match",
+            "args": ["-1"],
+            "common_args": [
+                "common_flags", "common_out_dirpatterns", "common_in_extensions", "common_search_patterns", "common_startpaths"
+            ]
+        },
+
+        {
+            "group": "search contents",
+            "name": "search contents #1",
+            "args": ["-m"],
+            "common_args": [
+                "common_flags", "common_out_dirpatterns", "common_in_extensions", "common_search_patterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "search contents",
+            "name": "search lines #2 - first match",
+            "args": ["-m", "-1"],
+            "common_args": [
+                "common_flags", "common_out_dirpatterns", "common_in_extensions", "common_search_patterns", "common_startpaths"
+            ]
+        }
+    ]
+}

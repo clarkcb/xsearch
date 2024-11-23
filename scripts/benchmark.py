@@ -340,6 +340,8 @@ class Benchmarker(object):
             self.scenarios = []
             XSEARCH_PATH = os.environ.get('XSEARCH_PATH', XSEARCHPATH)
             for (rk, rv) in scenarios_dict['ref'].items():
+                if rk == 'common_flags':
+                    scenarios_dict['ref'][rk] = rv
                 if rk == 'common_out_dirpatterns':
                     scenarios_dict['ref'][rk] = [elem for d in [['-D', d] for d in rv] for elem in d]
                 elif rk == 'common_in_extensions':
@@ -449,7 +451,7 @@ class Benchmarker(object):
         hdr = ['total', 'avg', 'rank']
         data = []
         col_types = [float, float, int]
-        for x in self.xfind_names:
+        for x in self.xsearch_names:
             xt = scenario_results.total_total(x)
             xta = scenario_results.avg_total(x)
             xtr = scenario_results.rank_total(x)
@@ -529,7 +531,7 @@ class Benchmarker(object):
         """The following matches lines like:
            <command> <utime> user <stime> system <pct> cpu <elapsed> total
            Example:
-           cppfind  0.01s user 0.01s system 80% cpu 0.016 total
+           cppsearch  0.01s user 0.01s system 80% cpu 0.016 total
         """
         print('zsh_times_from_lines')
         times_lines = [l for l in lines if l.endswith(' total')]
@@ -844,7 +846,7 @@ def main():
     if parsed_args.scenarios_file:
         scenarios_file = parsed_args.scenarios_file
 
-    print(f'xfind_names ({len(xsearch_names)}): {str(xsearch_names)}')
+    print(f'xsearch_names ({len(xsearch_names)}): {str(xsearch_names)}')
     print('debug: {}'.format(debug))
     print('exit_on_diff: {}'.format(exit_on_diff))
     print('runs: {}'.format(runs))
