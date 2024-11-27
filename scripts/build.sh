@@ -700,16 +700,57 @@ build_javasearch () {
     hdr "build_javasearch"
     log "language: java"
 
-    # ensure mvn is installed
-    if [ -z "$(which mvn)" ]
+    # ensure java is installed
+    if [ -z "$(which java)" ]
     then
-        log_error "You need to install maven"
+        log_error "You need to install java"
         FAILED_BUILDS+=("javasearch")
         return
     fi
 
-    RESOURCES_PATH="$JAVASEARCH_PATH/src/main/resources"
-    TEST_RESOURCES_PATH="$JAVASEARCH_PATH/src/test/resources"
+    JAVA_VERSION=$(java -version 2>&1 | head -n 1)
+    log "java version: $JAVA_VERSION"
+
+    cd "$JAVASEARCH_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
+    then
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
+        FAILED_BUILDS+=("javasearch")
+        cd -
+        return
+    fi
+
+    GRADLE_OUTPUT=$($GRADLE --version)
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
+    log "$GRADLE version: $GRADLE_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
+
+    RESOURCES_PATH="$JAVASEARCH_PATH/lib/src/main/resources"
+    TEST_RESOURCES_PATH="$JAVASEARCH_PATH/lib/src/test/resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -719,10 +760,17 @@ build_javasearch () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # run a maven clean build
+    # run a gradle clean jar build
     log "Building javasearch"
-    log "mvn -f $JAVASEARCH_PATH/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT"
-    mvn -f "$JAVASEARCH_PATH/pom.xml" clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT
+
+    # log "gradle --warning-mode all clean jar publishToMavenLocal"
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    # GRADLE_ARGS="--info --warning-mode all"
+    GRADLE_ARGS="--warning-mode all"
+    GRADLE_TASKS="clean jar"
+    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
+    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
+    "$GRADLE" --warning-mode all clean jar
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -735,8 +783,14 @@ build_javasearch () {
         return
     fi
 
+    # # install to local repo so it can be added as a dependency to javasearch
+    # log "mvn -f $JAVASEARCH_PATH/pom.xml install"
+    # mvn -f "$JAVASEARCH_PATH/pom.xml" install
+
     # add to bin
     add_to_bin "$JAVASEARCH_PATH/bin/javasearch.sh"
+
+    cd -
 }
 
 build_jssearch () {

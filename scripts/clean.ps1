@@ -379,21 +379,32 @@ function CleanJavaSearch
     Write-Host
     Hdr('CleanJavaSearch')
 
-    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $javaSearchPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
-        PrintError('You need to install maven')
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
         $global:failedBuilds += 'javasearch'
         return
     }
 
-    Log("mvn -f $javaSearchPath/pom.xml clean")
-    mvn -f $javaSearchPath/pom.xml clean
+    Log("$gradle --warning-mode all clean")
+    & $gradle --warning-mode all clean
 
-    $resourcesPath = Join-Path $javaSearchPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $javaSearchPath 'lib' 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
 
-    $testResourcesPath = Join-Path $javaSearchPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $javaSearchPath 'lib' 'src' 'test' 'resources'
     CleanTestResources($testResourcesPath)
+
+    Set-Location $oldPwd
 }
 
 function CleanJsSearch

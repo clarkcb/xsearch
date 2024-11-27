@@ -863,19 +863,35 @@ function BuildJavaSearch
     $javaVersion = java -version 2>&1 | Select-String -Pattern 'version'
     Log("java version: $javaVersion")
 
-    # ensure mvn is installed
-    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $javaSearchPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
-        PrintError('You need to install maven')
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
         $global:failedBuilds += 'javasearch'
         return
     }
 
-    $mvnVersion = mvn --version 2>&1 | Select-String -Pattern 'Apache Maven'
-    Log("mvn version: $mvnVersion")
+    $gradleOutput = & $gradle --version
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
+    Log("$gradle version: $gradleVersion")
+
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $javaSearchPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $javaSearchPath 'lib' 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -883,17 +899,17 @@ function BuildJavaSearch
     CopySearchOptionsJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $javaSearchPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $javaSearchPath 'lib' 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources($testResourcesPath)
 
-    # run maven clean package (skip testing as this is run via unittest.sh)
+    # run a gradle build
     Log('Building javasearch')
-    Log("mvn -f $javaSearchPath/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
-    mvn -f $javaSearchPath/pom.xml clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
+    Log("$gradle --warning-mode all clean jar")
+    & $gradle --warning-mode all clean jar
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
@@ -911,6 +927,8 @@ function BuildJavaSearch
     # add to bin
     $javaSearchExe = Join-Path $javaSearchPath 'bin' 'javasearch.ps1'
     AddToBin($javaSearchExe)
+
+    Set-Location $oldPwd
 }
 
 function BuildJsSearch

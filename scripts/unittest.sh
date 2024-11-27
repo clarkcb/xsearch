@@ -396,18 +396,55 @@ unittest_javasearch () {
     echo
     hdr "unittest_javasearch"
 
-    # ensure mvn is installed
-    if [ -z "$(which mvn)" ]
+    # if java is installed, display version
+    if [ -n "$(which java)" ]
     then
-        log_error "You need to install mvn"
+        JAVA_VERSION=$(java -version 2>&1 | head -n 1)
+        log "java version: $JAVA_VERSION"
+    fi
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
+    then
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         FAILED_BUILDS+=("javasearch")
         return
     fi
 
-    # run tests via maven
+    GRADLE_OUTPUT=$($GRADLE --version)
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
+    log "$GRADLE version: $GRADLE_VERSION"
+
+    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
+    log "Kotlin version: $KOTLIN_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
+
+    cd "$JAVASEARCH_PATH"
+
+    # run tests via gradle
     log "Unit-testing javasearch"
-    log "mvn -f $JAVASEARCH_PATH/pom.xml test"
-    mvn -f "$JAVASEARCH_PATH/pom.xml" test
+    log "$GRADLE --warning-mode all test"
+    "$GRADLE" --warning-mode all test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("javasearch")
+    fi
+
+    cd -
 }
 
 unittest_jssearch () {

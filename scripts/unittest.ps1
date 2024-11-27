@@ -438,21 +438,50 @@ function UnitTestJavaSearch
         Log("java version: $javaVersion")
     }
 
-    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
-        PrintError('You need to install mvn')
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
         $global:failedBuilds += 'javasearch'
         return
     }
 
-    $mvnVersion = mvn --version 2>&1 | Select-String -Pattern 'Apache Maven'
-    Log("mvn version: $mvnVersion")
+    $gradleOutput = & $gradle --version
 
-    # run tests via maven
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
+    Log("$gradle version: $gradleVersion")
+
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
+
+    $oldPwd = Get-Location
+    Set-Location $javaSearchPath
+
+    # run tests via gradle
     Log('Unit-testing javasearch')
-    $pomPath = Join-Path $javaSearchPath 'pom.xml'
-    Log("mvn -f $pomPath test")
-    mvn -f $pomPath test
+    Log("$gradle --warning-mode all test")
+    & $gradle --warning-mode all test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'javasearch'
+    }
+
+    Set-Location $oldPwd
 }
 
 function UnitTestJsSearch

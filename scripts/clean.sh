@@ -319,20 +319,30 @@ clean_javasearch () {
     echo
     hdr "clean_javasearch"
 
-    # ensure mvn is installed
-    if [ -z "$(which mvn)" ]
+    cd "$JAVASEARCH_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
-        log_error "You need to install mvn"
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         FAILED_BUILDS+=("javasearch")
         return
     fi
 
-    log "mvn -f $JAVASEARCH_PATH/pom.xml clean"
-    mvn -f $JAVASEARCH_PATH/pom.xml clean
+    log "$GRADLE --warning-mode all clean"
+    "$GRADLE" --warning-mode all clean
 
-    clean_json_resources "$JAVASEARCH_PATH/src/main/resources"
+    clean_json_resources "$JAVASEARCH_PATH/lib/src/main/resources"
 
-    clean_test_resources "$JAVASEARCH_PATH/src/test/resources"
+    clean_test_resources "$JAVASEARCH_PATH/lib/src/test/resources"
+
+    cd -
 }
 
 clean_jssearch () {
