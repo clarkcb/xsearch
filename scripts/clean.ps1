@@ -34,6 +34,9 @@ if ($langs.Length -gt 0 -and -not $all)
     Log("langs ($($langs.Length)): $langs")
 }
 
+# Add failed builds to this array and report failed builds at the end
+$failedBuilds = @()
+
 
 ########################################
 # Utility Functions
@@ -64,6 +67,22 @@ function CleanTestResources
     {
         Log("Remove-Item $f")
         Remove-Item $f
+    }
+}
+
+function PrintFailedBuilds
+{
+    if ($global:failedBuilds.Length -gt 0)
+    {
+        Write-Host "`nFailed builds:"
+        ForEach ($fb in $global:failedBuilds)
+        {
+            Write-Host $fb
+        }
+    }
+    else
+    {
+        Write-Host "`nAll builds succeeded"
     }
 }
 
@@ -101,6 +120,7 @@ function CleanCljSearch
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
+        $global:failedBuilds += 'cljsearch'
         return
     }
 
@@ -145,6 +165,7 @@ function CleanCsSearch
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'cssearch'
         return
     }
 
@@ -189,6 +210,7 @@ function CleanDartSearch
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
+        $global:failedBuilds += 'dartsearch'
         return
     }
 
@@ -210,6 +232,7 @@ function CleanExSearch
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install elixir')
+        $global:failedBuilds += 'exsearch'
         return
     }
 
@@ -217,6 +240,7 @@ function CleanExSearch
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
+        $global:failedBuilds += 'exsearch'
         return
     }
 
@@ -238,6 +262,7 @@ function CleanFsSearch
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'fssearch'
         return
     }
 
@@ -282,6 +307,7 @@ function CleanGoSearch
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
+        $global:failedBuilds += 'gosearch'
         return
     }
 
@@ -308,8 +334,10 @@ function CleanGroovySearch
     {
         $gradle = $gradleWrapper
     }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'groovysearch'
         return
     }
 
@@ -333,6 +361,7 @@ function CleanHsSearch
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
+        $global:failedBuilds += 'hssearch'
         return
     }
 
@@ -377,6 +406,7 @@ function CleanJsSearch
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
+        $global:failedBuilds += 'jssearch'
         return
     }
 
@@ -406,8 +436,11 @@ function CleanKtSearch
     {
         $gradle = $gradleWrapper
     }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'ktsearch'
+        Set-Location $oldPwd
         return
     }
 
@@ -431,6 +464,7 @@ function CleanObjcSearch
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'objcsearch'
         return
     }
 
@@ -479,7 +513,6 @@ function CleanPySearch
 {
     Write-Host
     Hdr('CleanPySearch')
-    Log('Nothing to do for python')
 
     $resourcesPath = Join-Path $pySearchPath 'pysearch' 'data'
     CleanJsonResources($resourcesPath)
@@ -505,6 +538,8 @@ function CleanRsSearch
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo')
+        $global:failedBuilds += 'rssearch'
+        return
     }
 
     $oldPwd = Get-Location
@@ -524,6 +559,8 @@ function CleanScalaSearch
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala + sbt')
+        $global:failedBuilds += 'scalasearch'
+        return
     }
 
     $oldPwd = Get-Location
@@ -549,6 +586,7 @@ function CleanSwiftSearch
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'swiftsearch'
         return
     }
 
@@ -569,6 +607,7 @@ function CleanTsSearch
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
+        $global:failedBuilds += 'tssearch'
         return
     }
 
@@ -589,6 +628,8 @@ function CleanLinux
     Write-Host
     Hdr('CleanLinux')
 
+    # CleanBashSearch
+
     # CleanCSearch
 
     # CleanCljSearch
@@ -602,6 +643,8 @@ function CleanLinux
     CleanFsSearch
 
     CleanGoSearch
+
+    # CleanGroovySearch
 
     # CleanHsSearch
 
@@ -631,6 +674,8 @@ function CleanLinux
 
     CleanTsSearch
 
+    PrintFailedBuilds
+
     exit
 }
 
@@ -639,7 +684,7 @@ function CleanAll
     Write-Host
     Hdr('CleanAll')
 
-    CleanBashSearch
+    # CleanBashSearch
 
     # CleanCSearch
 
@@ -655,7 +700,7 @@ function CleanAll
 
     CleanGoSearch
 
-    CleanGroovySearch
+    # CleanGroovySearch
 
     CleanHsSearch
 
@@ -673,6 +718,8 @@ function CleanAll
 
     CleanPhpSearch
 
+    CleanPs1Search
+
     CleanPySearch
 
     CleanRbSearch
@@ -684,6 +731,8 @@ function CleanAll
     CleanSwiftSearch
 
     CleanTsSearch
+
+    PrintFailedBuilds
 
     exit
 }
@@ -711,7 +760,7 @@ function CleanMain
         switch ($lang)
         {
             'linux'      { CleanLinux }
-            'bash'       { CleanBashSearch }
+            # 'bash'       { CleanBashSearch }
             'c'          { CleanCSearch }
             'clj'        { CleanCljSearch }
             'clojure'    { CleanCljSearch }
@@ -724,7 +773,7 @@ function CleanMain
             'fs'         { CleanFsSearch }
             'fsharp'     { CleanFsSearch }
             'go'         { CleanGoSearch }
-            'groovy'     { CleanGroovySearch }
+            # 'groovy'     { CleanGroovySearch }
             'haskell'    { CleanHsSearch }
             'hs'         { CleanHsSearch }
             'java'       { CleanJavaSearch }
@@ -733,8 +782,8 @@ function CleanMain
             'kotlin'     { CleanKtSearch }
             'kt'         { CleanKtSearch }
             'objc'       { CleanObjcSearch }
-            'ocaml'      { CleanMlSearch }
-            'ml'         { CleanMlSearch }
+            # 'ocaml'      { CleanMlSearch }
+            # 'ml'         { CleanMlSearch }
             'perl'       { CleanPlSearch }
             'pl'         { CleanPlSearch }
             'php'        { CleanPhpSearch }
@@ -754,6 +803,8 @@ function CleanMain
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
+
+    PrintFailedBuilds
 }
 
 if ($help)

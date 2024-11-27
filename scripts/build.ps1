@@ -71,6 +71,9 @@ if ($langs.Length -gt 0 -and -not $all)
     Log("langs ($($langs.Length)): $langs")
 }
 
+# Add failed builds to this array and report failed builds at the end
+$failedBuilds = @()
+
 
 ########################################
 # Utility Functions
@@ -142,6 +145,22 @@ function AddToBin
     AddSoftLink $linkPath $xsearchScriptPath
 }
 
+function PrintFailedBuilds
+{
+    if ($global:failedBuilds.Length -gt 0)
+    {
+        Write-Host "`nFailed builds:"
+        ForEach ($fb in $global:failedBuilds)
+        {
+            Write-Host $fb
+        }
+    }
+    else
+    {
+        Write-Host "`nAll builds succeeded"
+    }
+}
+
 
 ################################################################################
 # Build functions
@@ -177,6 +196,7 @@ function BuildCSearch
     if (-not (Get-Command 'make' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install make')
+        $global:failedBuilds += 'csearch'
         return
     }
 
@@ -195,6 +215,7 @@ function BuildCSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'csearch'
         Set-Location $oldPwd
         return
     }
@@ -216,6 +237,7 @@ function BuildCljSearch
     if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install clojure')
+        $global:failedBuilds += 'cljsearch'
         return
     }
 
@@ -227,6 +249,7 @@ function BuildCljSearch
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
+        $global:failedBuilds += 'cljsearch'
         return
     }
 
@@ -260,6 +283,7 @@ function BuildCljSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'cljsearch'
         Set-Location $oldPwd
         return
     }
@@ -292,6 +316,7 @@ function BuildCppSearch
     if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cmake')
+        $global:failedBuilds += 'cppsearch'
         return
     }
 
@@ -350,6 +375,7 @@ function BuildCppSearch
             else
             {
                 PrintError("Build target $t failed")
+                $global:failedBuilds += 'cppsearch'
                 Set-Location $oldPwd
                 return
             }
@@ -382,6 +408,7 @@ function BuildCsSearch
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'cssearch'
         return
     }
 
@@ -435,6 +462,7 @@ function BuildCsSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'cssearch'
             Set-Location $oldPwd
             return
         }
@@ -466,6 +494,7 @@ function BuildDartSearch
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
+        $global:failedBuilds += 'dartsearch'
         return
     }
 
@@ -501,6 +530,7 @@ function BuildDartSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'dartsearch'
         Set-Location $oldPwd
         return
     }
@@ -522,6 +552,7 @@ function BuildExSearch
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install elixir')
+        $global:failedBuilds += 'exsearch'
         return
     }
 
@@ -532,6 +563,7 @@ function BuildExSearch
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
+        $global:failedBuilds += 'exsearch'
         return
     }
 
@@ -561,6 +593,7 @@ function BuildExSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'exsearch'
         Set-Location $oldPwd
         return
     }
@@ -582,6 +615,7 @@ function BuildFsSearch
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'fssearch'
         return
     }
 
@@ -635,6 +669,7 @@ function BuildFsSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'fssearch'
             Set-Location $oldPwd
             return
         }
@@ -666,6 +701,7 @@ function BuildGoSearch
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
+        $global:failedBuilds += 'gosearch'
         return
     }
 
@@ -705,6 +741,7 @@ function BuildGoSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'gosearch'
         Set-Location $oldPwd
         return
     }
@@ -738,6 +775,7 @@ function BuildHsSearch
     if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ghc')
+        $global:failedBuilds += 'hssearch'
         return
     }
 
@@ -748,6 +786,7 @@ function BuildHsSearch
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
+        $global:failedBuilds += 'hssearch'
         return
     }
 
@@ -793,6 +832,7 @@ function BuildHsSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'hssearch'
         Set-Location $oldPwd
         return
     }
@@ -813,6 +853,7 @@ function BuildJavaSearch
     if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install java')
+        $global:failedBuilds += 'javasearch'
         return
     }
 
@@ -858,6 +899,8 @@ function BuildJavaSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'javasearch'
+        Set-Location $oldPwd
         return
     }
 
@@ -876,6 +919,7 @@ function BuildJsSearch
     if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js')
+        $global:failedBuilds += 'jssearch'
         return
     }
 
@@ -886,6 +930,7 @@ function BuildJsSearch
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'jssearch'
         return
     }
 
@@ -919,6 +964,7 @@ function BuildJsSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'jssearch'
         Set-Location $oldPwd
         return
     }
@@ -948,6 +994,7 @@ function BuildKtSearch
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'ktsearch'
         return
     }
 
@@ -1003,6 +1050,7 @@ function BuildKtSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'ktsearch'
         Set-Location $oldPwd
         return
     }
@@ -1024,6 +1072,7 @@ function BuildObjcSearch
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'objcsearch'
         return
     }
 
@@ -1051,6 +1100,7 @@ function BuildObjcSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'objcsearch'
             Set-Location $oldPwd
             return
         }
@@ -1068,6 +1118,7 @@ function BuildObjcSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'objcsearch'
             Set-Location $oldPwd
             return
         }
@@ -1105,6 +1156,7 @@ function BuildPlSearch
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install perl')
+        $global:failedBuilds += 'plsearch'
         return
     }
 
@@ -1112,6 +1164,7 @@ function BuildPlSearch
     if (-not $perlVersion)
     {
         PrintError('A 5.x version of perl is required')
+        $global:failedBuilds += 'plsearch'
         return
     }
 
@@ -1133,6 +1186,7 @@ function BuildPlSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'plsearch'
         return
     }
 
@@ -1151,6 +1205,7 @@ function BuildPhpSearch
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install php')
+        $global:failedBuilds += 'phpsearch'
         return
     }
 
@@ -1158,6 +1213,7 @@ function BuildPhpSearch
     if (-not $phpVersion)
     {
         PrintError('A version of PHP >= 7.x is required')
+        $global:failedBuilds += 'phpsearch'
         return
     }
     Log("php version: $phpVersion")
@@ -1166,6 +1222,7 @@ function BuildPhpSearch
     if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install composer')
+        $global:failedBuilds += 'phpsearch'
         return
     }
 
@@ -1215,6 +1272,7 @@ function BuildPhpSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'phpsearch'
         Set-Location $oldPwd
         return
     }
@@ -1407,6 +1465,7 @@ function BuildPySearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'pysearch'
         $buildError = $true
     }
 
@@ -1441,6 +1500,7 @@ function BuildRbSearch
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ruby')
+        $global:failedBuilds += 'rbsearch'
         return
     }
 
@@ -1448,6 +1508,7 @@ function BuildRbSearch
     if (-not $rubyVersion)
     {
         PrintError('A version of ruby >= 3.x is required')
+        $global:failedBuilds += 'rbsearch'
         return
     }
     Log("ruby version: $rubyVersion")
@@ -1477,6 +1538,18 @@ function BuildRbSearch
     Log('bundle install')
     bundle install
 
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Build succeeded')
+    }
+    else
+    {
+        PrintError('Build failed')
+        $global:failedBuilds += 'rbsearch'
+        Set-Location $oldPwd
+        return
+    }
+
     # add to bin
     $rbSearchExe = Join-Path $rbSearchPath 'bin' 'rbsearch.ps1'
     AddToBin($rbSearchExe)
@@ -1494,6 +1567,7 @@ function BuildRsSearch
     if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
+        $global:failedBuilds += 'rssearch'
         return
     }
 
@@ -1504,6 +1578,7 @@ function BuildRsSearch
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo')
+        $global:failedBuilds += 'rssearch'
         return
     }
 
@@ -1528,6 +1603,7 @@ function BuildRsSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'rssearch'
             Set-Location $oldPwd
             return
         }
@@ -1546,6 +1622,7 @@ function BuildRsSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'rssearch'
             Set-Location $oldPwd
             return
         }
@@ -1574,6 +1651,7 @@ function BuildScalaSearch
     if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala')
+        $global:failedBuilds += 'scalasearch'
         return
     }
 
@@ -1591,6 +1669,7 @@ function BuildScalaSearch
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install sbt')
+        $global:failedBuilds += 'scalasearch'
         return
     }
 
@@ -1650,6 +1729,7 @@ function BuildScalaSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'scalasearch'
         Set-Location $oldPwd
         return
     }
@@ -1671,6 +1751,7 @@ function BuildSwiftSearch
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'swiftsearch'
         return
     }
 
@@ -1700,6 +1781,7 @@ function BuildSwiftSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'swiftsearch'
             Set-Location $oldPwd
             return
         }
@@ -1718,6 +1800,7 @@ function BuildSwiftSearch
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'swiftsearch'
             Set-Location $oldPwd
             return
         }
@@ -1746,6 +1829,7 @@ function BuildTsSearch
     if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js')
+        $global:failedBuilds += 'tssearch'
         return
     }
 
@@ -1756,6 +1840,7 @@ function BuildTsSearch
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'tssearch'
         return
     }
 
@@ -1789,6 +1874,7 @@ function BuildTsSearch
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'tssearch'
         Set-Location $oldPwd
         return
     }
@@ -1844,6 +1930,8 @@ function BuildLinux
     Measure-Command { BuildSwiftSearch }
 
     Measure-Command { BuildTsSearch }
+
+    PrintFailedBuilds
 
     exit
 }
@@ -1903,6 +1991,8 @@ function BuildAll
 
     Measure-Command { BuildTsSearch }
 
+    PrintFailedBuilds
+
     exit
 }
 
@@ -1924,12 +2014,16 @@ function BuildMain
         BuildAll
         exit
     }
+    if ($langs -contains 'linux')
+    {
+        BuildLinux
+        exit
+    }
 
     ForEach ($lang in $langs)
     {
         switch ($lang.ToLower())
         {
-            'linux'      { BuildLinux }
             'bash'       { Measure-Command { BuildBashSearch } }
             # 'c'          { Measure-Command { BuildCSearch } }
             'clj'        { Measure-Command { BuildCljSearch } }
@@ -1973,6 +2067,8 @@ function BuildMain
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
+
+    PrintFailedBuilds
 }
 
 if ($help)

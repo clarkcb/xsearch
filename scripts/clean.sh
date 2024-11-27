@@ -15,6 +15,9 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
 
+# Add failed builds to this array and report failed builds at the end
+FAILED_BUILDS=()
+
 
 ########################################
 # Utility Functions
@@ -43,6 +46,15 @@ clean_test_resources () {
         log "rm $f"
         rm "$f"
     done
+}
+
+print_failed_builds () {
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
+    then
+        log_error "Failed cleans: ${FAILED_BUILDS[*]}"
+    else
+        log "All cleans succeeded"
+    fi
 }
 
 
@@ -78,7 +90,8 @@ clean_cljsearch () {
     # ensure lein is installed
     if [ -z "$(which lein)" ]
     then
-        echo "You need to install lein"
+        log_error "You need to install lein"
+        FAILED_BUILDS+=("cljsearch")
         return
     fi
 
@@ -114,7 +127,8 @@ clean_cssearch () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("cssearch")
         return
     fi
 
@@ -150,7 +164,8 @@ clean_dartsearch () {
     # ensure dart is installed
     if [ -z "$(which dart)" ]
     then
-        echo "You need to install dart"
+        log_error "You need to install dart"
+        FAILED_BUILDS+=("dartsearch")
         return
     fi
 
@@ -171,6 +186,7 @@ clean_exsearch () {
     if [ -z "$(which elixir)" ]
     then
         log_error "You need to install elixir"
+        FAILED_BUILDS+=("exsearch")
         return
     fi
 
@@ -178,6 +194,7 @@ clean_exsearch () {
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
+        FAILED_BUILDS+=("exsearch")
         return
     fi
 
@@ -196,7 +213,8 @@ clean_fssearch () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("fssearch")
         return
     fi
 
@@ -232,7 +250,8 @@ clean_gosearch () {
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
-        echo "You need to install go"
+        log_error "You need to install go"
+        FAILED_BUILDS+=("gosearch")
         return
     fi
 
@@ -260,6 +279,7 @@ clean_groovysearch () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("groovysearch")
         return
     fi
 
@@ -280,7 +300,8 @@ clean_hssearch () {
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
-        echo "You need to install stack"
+        log_error "You need to install stack"
+        FAILED_BUILDS+=("hssearch")
         return
     fi
 
@@ -320,7 +341,8 @@ clean_jssearch () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install npm"
+        log_error "You need to install npm"
+        FAILED_BUILDS+=("jssearch")
         return
     fi
 
@@ -350,6 +372,8 @@ clean_ktsearch () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("ktsearch")
+        cd -
         return
     fi
 
@@ -366,6 +390,14 @@ clean_ktsearch () {
 clean_objcsearch () {
     echo
     hdr "clean_objcsearch"
+
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("objcsearch")
+        return
+    fi
 
     cd "$OBJCSEARCH_PATH"
 
@@ -425,7 +457,8 @@ clean_rssearch () {
     # ensure cargo is installed
     if [ -z "$(which cargo)" ]
     then
-        echo "You need to install cargo/rust"
+        log_error "You need to install cargo/rust"
+        FAILED_BUILDS+=("rssearch")
         return
     fi
 
@@ -444,7 +477,8 @@ clean_scalasearch () {
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        echo "You need to install sbt"
+        log_error "You need to install sbt"
+        FAILED_BUILDS+=("scalasearch")
         return
     fi
 
@@ -466,6 +500,14 @@ clean_swiftsearch () {
     echo
     hdr "clean_swiftsearch"
 
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("swiftsearch")
+        return
+    fi
+
     cd "$SWIFTSEARCH_PATH"
 
     log "swift package clean"
@@ -481,7 +523,8 @@ clean_tssearch () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install npm"
+        log_error "You need to install npm"
+        FAILED_BUILDS+=("tssearch")
         return
     fi
 
@@ -593,7 +636,7 @@ clean_all () {
 
 
 ########################################
-# Clean Steps
+# Clean Main
 ########################################
 echo
 hdr "xsearch clean script"
@@ -650,6 +693,7 @@ fi
 if [ -n "$CLEAN_ALL" ]
 then
     clean_all
+    print_failed_builds
     exit
 fi
 
@@ -744,3 +788,5 @@ do
             ;;
     esac
 done
+
+print_failed_builds

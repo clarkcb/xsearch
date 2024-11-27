@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #
 # build.sh
@@ -14,6 +14,9 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
+
+# Add failed builds to this array and report failed builds at the end
+FAILED_BUILDS=()
 
 
 ########################################
@@ -84,6 +87,15 @@ add_to_bin () {
     cd -
 }
 
+print_failed_builds () {
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
+    then
+        log_error "Failed builds: ${FAILED_BUILDS[*]}"
+    else
+        log "All builds succeeded"
+    fi
+}
+
 ########################################
 # Build Functions
 ########################################
@@ -104,6 +116,7 @@ build_csearch () {
     if [ -z "$(which make)" ]
     then
         log_error "You need to install make"
+        FAILED_BUILDS+=("csearch")
         return
     fi
 
@@ -120,6 +133,7 @@ build_csearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("csearch")
         return
     fi
 
@@ -138,6 +152,7 @@ build_cljsearch () {
     if [ -z "$(which clj)" ]
     then
         log_error "You need to install clojure"
+        FAILED_BUILDS+=("cljsearch")
         return
     fi
 
@@ -150,6 +165,7 @@ build_cljsearch () {
     if [ -z "$(which lein)" ]
     then
         log_error "You need to install leiningen"
+        FAILED_BUILDS+=("cljsearch")
         return
     fi
 
@@ -183,6 +199,8 @@ build_cljsearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("cljsearch")
+        cd -
         return
     fi
 
@@ -201,6 +219,7 @@ build_cppsearch () {
     if [ -z "$(which cmake)" ]
     then
         log_error "You need to install cmake"
+        FAILED_BUILDS+=("cppsearch")
         return
     fi
 
@@ -268,6 +287,8 @@ build_cppsearch () {
                     log "Build target $t succeeded"
                 else
                     log_error "Build target $t failed"
+                    FAILED_BUILDS+=("cppsearch")
+                    cd -
                     return
                 fi
             done
@@ -295,6 +316,7 @@ build_cssearch () {
     if [ -z "$(which dotnet)" ]
     then
         log_error "You need to install dotnet"
+        FAILED_BUILDS+=("cssearch")
         return
     fi
 
@@ -336,6 +358,7 @@ build_cssearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("cssearch")
             return
         fi
     done
@@ -359,6 +382,7 @@ build_dartsearch () {
     if [ -z "$(which dart)" ]
     then
         log_error "You need to install dart"
+        FAILED_BUILDS+=("dartsearch")
         return
     fi
 
@@ -393,6 +417,8 @@ build_dartsearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("dartsearch")
+        cd -
         return
     fi
 
@@ -411,6 +437,7 @@ build_exsearch () {
     if [ -z "$(which elixir)" ]
     then
         log_error "You need to install elixir"
+        FAILED_BUILDS+=("exsearch")
         return
     fi
 
@@ -421,6 +448,7 @@ build_exsearch () {
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
+        FAILED_BUILDS+=("exsearch")
         return
     fi
 
@@ -447,6 +475,8 @@ build_exsearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("exsearch")
+        cd -
         return
     fi
 
@@ -465,6 +495,7 @@ build_fssearch () {
     if [ -z "$(which dotnet)" ]
     then
         log_error "You need to install dotnet"
+        FAILED_BUILDS+=("fssearch")
         return
     fi
 
@@ -506,6 +537,7 @@ build_fssearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("fssearch")
             return
         fi
     done
@@ -529,6 +561,7 @@ build_gosearch () {
     if [ -z "$(which go)" ]
     then
         log_error "You need to install go"
+        FAILED_BUILDS+=("gosearch")
         return
     fi
 
@@ -576,7 +609,7 @@ build_gosearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
-        return
+        FAILED_BUILDS+=("gosearch")
     fi
 
     cd -
@@ -591,6 +624,7 @@ build_hssearch () {
     if [ -z "$(which ghc)" ]
     then
         log_error "You need to install ghc"
+        FAILED_BUILDS+=("hssearch")
         return
     fi
 
@@ -601,6 +635,7 @@ build_hssearch () {
     if [ -z "$(which stack)" ]
     then
         log_error "You need to install stack"
+        FAILED_BUILDS+=("hssearch")
         return
     fi
 
@@ -649,6 +684,8 @@ build_hssearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("hssearch")
+        cd -
         return
     fi
 
@@ -692,6 +729,8 @@ build_javasearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("javasearch")
+        cd -
         return
     fi
 
@@ -708,6 +747,7 @@ build_jssearch () {
     if [ -z "$(which node)" ]
     then
         log_error "You need to install node.js"
+        FAILED_BUILDS+=("jssearch")
         return
     fi
 
@@ -718,6 +758,7 @@ build_jssearch () {
     if [ -z "$(which npm)" ]
     then
         log_error "You need to install npm"
+        FAILED_BUILDS+=("jssearch")
         return
     fi
 
@@ -727,6 +768,7 @@ build_jssearch () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$JSSEARCH_PATH/data"
     mkdir -p "$RESOURCES_PATH"
+    copy_config_json_resources "$RESOURCES_PATH"
     copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     cd "$JSSEARCH_PATH"
@@ -745,6 +787,8 @@ build_jssearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("jssearch")
+        cd -
         return
     fi
 
@@ -771,6 +815,8 @@ build_ktsearch () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("ktsearch")
+        cd -
         return
     fi
 
@@ -838,6 +884,8 @@ build_ktsearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("ktsearch")
+        cd -
         return
     fi
 
@@ -859,6 +907,7 @@ build_objcsearch () {
     if [ -z "$(which swift)" ]
     then
         log_error "You need to install swift"
+        FAILED_BUILDS+=("objcsearch")
         return
     fi
 
@@ -887,6 +936,8 @@ build_objcsearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("objcsearch")
+            cd -
             return
         fi
     fi
@@ -901,6 +952,8 @@ build_objcsearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("objcsearch")
+            cd -
             return
         fi
 
@@ -938,6 +991,7 @@ build_plsearch () {
     if [ -z "$(which perl)" ]
     then
         log_error "You need to install perl"
+        FAILED_BUILDS+=("plsearch")
         return
     fi
 
@@ -945,6 +999,7 @@ build_plsearch () {
     if [ -z $PERL_VERSION ]
     then
         log_error "A 5.x version of perl is required"
+        FAILED_BUILDS+=("plsearch")
         return
     fi
 
@@ -952,6 +1007,7 @@ build_plsearch () {
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLSEARCH_PATH/share"
+    mkdir -p "$RESOURCES_PATH"
     copy_searchoptions_json_resources "$RESOURCES_PATH"
 
     # check for success/failure
@@ -960,6 +1016,7 @@ build_plsearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("plsearch")
         return
     fi
 
@@ -976,6 +1033,7 @@ build_phpsearch () {
     if [ -z "$(which php)" ]
     then
         log_error "You need to install PHP"
+        FAILED_BUILDS+=("phpsearch")
         return
     fi
 
@@ -984,6 +1042,7 @@ build_phpsearch () {
     if [ -z "$PHP_VERSION" ]
     then
         log_error "A version of PHP >= 7.x is required"
+        FAILED_BUILDS+=("phpsearch")
         return
     fi
     log "php version: $PHP_VERSION"
@@ -992,6 +1051,7 @@ build_phpsearch () {
     if [ -z "$(which composer)" ]
     then
         log_error "Need to install composer"
+        FAILED_BUILDS+=("phpsearch")
         return
     fi
 
@@ -1031,6 +1091,8 @@ build_phpsearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("phpsearch")
+        cd -
         return
     fi
 
@@ -1049,6 +1111,7 @@ build_ps1search () {
     if [ -z "$(which pwsh)" ]
     then
         log_error "You need to install powershell"
+        FAILED_BUILDS+=("ps1search")
         return
     fi
 
@@ -1059,6 +1122,7 @@ build_ps1search () {
     if [ -z "$MODULEPATH" ]
     then
         log_error "Unable to get powershell module path"
+        FAILED_BUILDS+=("ps1search")
         return
     fi
 
@@ -1117,8 +1181,8 @@ build_pysearch () {
 
             # activate the venv - we run this even if this venv or another is already active
             # because it's the only way to be able to run deactivate later
-            log "source $PYFIND_PATH/venv/bin/activate"
-            source $PYFIND_PATH/venv/bin/activate
+            log "source $PYSEARCH_PATH/venv/bin/activate"
+            source $PYSEARCH_PATH/venv/bin/activate
 
             PYTHON=$(which python3)
             PYTHON=$(basename "$PYTHON")
@@ -1138,6 +1202,7 @@ build_pysearch () {
             if [ -z "$PYTHON" ]
             then
                 log_error "A version of python >= 3.9 is required"
+                FAILED_BUILDS+=("pysearch")
                 return
             else
                 PYTHON=$(basename "$PYTHON")
@@ -1175,6 +1240,7 @@ build_pysearch () {
         if [ -z "$PYTHON" ]
         then
             log_error "A version of python >= 3.9 is required"
+            FAILED_BUILDS+=("pysearch")
             return
         else
             PYTHON=$(basename "$PYTHON")
@@ -1192,7 +1258,7 @@ build_pysearch () {
     cd "$PYSEARCH_PATH"
 
     # install wheel - this seems to fix problems with installing local dependencies,
-    # which pysearch will be for pysearch
+    # which pyfind will be for pysearch
     # log "pip3 install wheel"
     # pip3 install wheel
 
@@ -1207,6 +1273,7 @@ build_pysearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("pysearch")
         ERROR=yes
     fi
 
@@ -1241,6 +1308,7 @@ build_rbsearch () {
     if [ -z "$(which ruby)" ]
     then
         log_error "You need to install ruby"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
 
@@ -1248,6 +1316,7 @@ build_rbsearch () {
     if [ -z "$RUBY_VERSION" ]
     then
         log_error "A version of ruby >= 3.x is required"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
     log "ruby version: $RUBY_VERSION"
@@ -1255,6 +1324,7 @@ build_rbsearch () {
     if [ -z "$(which bundle)" ]
     then
         log_error "You need to install bundler: https://bundler.io/"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
 
@@ -1278,10 +1348,10 @@ build_rbsearch () {
     log "bundle install"
     bundle install
 
-    cd -
-
     # add to bin
     add_to_bin "$RBSEARCH_PATH/bin/rbsearch.sh"
+
+    cd -
 }
 
 build_rssearch () {
@@ -1289,10 +1359,11 @@ build_rssearch () {
     hdr "build_rssearch"
     log "language: rust"
 
-    # ensure cargo/rust is installed
-    if [ -z "$(which cargo)" ]
+    # ensure rust is installed
+    if [ -z "$(which rustc)" ]
     then
         log_error "You need to install rust"
+        FAILED_BUILDS+=("rssearch")
         return
     fi
 
@@ -1303,6 +1374,7 @@ build_rssearch () {
     if [ -z "$(which cargo)" ]
     then
         log_error "You need to install cargo"
+        FAILED_BUILDS+=("rssearch")
         return
     fi
 
@@ -1323,6 +1395,8 @@ build_rssearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("rssearch")
+            cd -
             return
         fi
     fi
@@ -1337,6 +1411,8 @@ build_rssearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("rssearch")
+            cd -
             return
         fi
 
@@ -1356,9 +1432,10 @@ build_scalasearch () {
     log "language: scala"
 
     # ensure sbt is installed
-    if [ -z "$(which sbt)" ]
+    if [ -z "$(which scala)" ]
     then
-        log_error "You need to install scala + sbt"
+        log_error "You need to install scala"
+        FAILED_BUILDS+=("scalasearch")
         return
     fi
 
@@ -1368,12 +1445,11 @@ build_scalasearch () {
     SCALA_VERSION=$(scala -version 2>&1 | tail -n 1 | cut -d ' ' -f 4)
     log "scala version: $SCALA_VERSION"
 
-    cd "$SCALAFIND_PATH"
-
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
         log_error "You need to install sbt"
+        FAILED_BUILDS+=("scalasearch")
         return
     fi
 
@@ -1431,6 +1507,8 @@ build_scalasearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("scalasearch")
+        cd -
         return
     fi
 
@@ -1449,6 +1527,7 @@ build_swiftsearch () {
     if [ -z "$(which swift)" ]
     then
         log_error "You need to install swift"
+        FAILED_BUILDS+=("swiftsearch")
         return
     fi
 
@@ -1477,6 +1556,8 @@ build_swiftsearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("swiftsearch")
+            cd -
             return
         fi
     fi
@@ -1491,6 +1572,8 @@ build_swiftsearch () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("swiftsearch")
+            cd -
             return
         fi
 
@@ -1513,6 +1596,7 @@ build_tssearch () {
     if [ -z "$(which node)" ]
     then
         log_error "You need to install node.js"
+        FAILED_BUILDS+=("tssearch")
         return
     fi
 
@@ -1523,6 +1607,7 @@ build_tssearch () {
     if [ -z "$(which npm)" ]
     then
         log_error "You need to install npm"
+        FAILED_BUILDS+=("tssearch")
         return
     fi
 
@@ -1549,6 +1634,8 @@ build_tssearch () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("tssearch")
+        cd -
         return
     fi
 
@@ -1580,7 +1667,9 @@ build_tssearch () {
 build_linux () {
     hdr "build_linux"
 
-    # time build_c
+    # time build_bashsearch
+
+    # time build_csearch
 
     # time build_cljsearch
 
@@ -1593,6 +1682,8 @@ build_linux () {
     time build_fssearch
 
     time build_gosearch
+
+    time build_groovysearch
 
     time build_javasearch
 
@@ -1620,7 +1711,9 @@ build_linux () {
 build_all () {
     hdr "build_all"
 
-    # time build_c
+    # time build_bashsearch
+
+    # time build_csearch
 
     time build_cljsearch
 
@@ -1633,6 +1726,8 @@ build_all () {
     time build_fssearch
 
     time build_gosearch
+
+    # time build_groovysearch
 
     time build_hssearch
 
@@ -1745,6 +1840,7 @@ fi
 if [ -n "$BUILD_ALL" ]
 then
     build_all
+    print_failed_builds
     exit
 fi
 
@@ -1839,3 +1935,5 @@ do
             ;;
     esac
 done
+
+print_failed_builds

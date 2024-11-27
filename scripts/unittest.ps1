@@ -34,6 +34,9 @@ if ($langs.Length -gt 0 -and -not $all)
     Log("langs ($($langs.Length)): $langs")
 }
 
+# Add failed builds to this array and report failed builds at the end
+$failedBuilds = @()
+
 
 ########################################
 # Utility Functions
@@ -43,6 +46,19 @@ function Usage
 {
     Write-Host "`nUsage: unittest.ps1 [-help] {""all"" | lang [lang...]}`n"
     exit
+}
+
+function PrintFailedBuilds
+{
+    if ($global:failedBuilds.Length -gt 0)
+    {
+        $fbString = $global:failedBuilds -join ' '
+        PrintError("Failed builds: $fbString")
+    }
+    else
+    {
+        Log("All builds succeeded")
+    }
 }
 
 
@@ -87,6 +103,7 @@ function UnitTestCljSearch
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
+        $global:failedBuilds += 'cljfind'
         return
     }
 
@@ -101,6 +118,17 @@ function UnitTestCljSearch
     Log('Unit-testing cljsearch')
     Log('lein test')
     lein test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'cljfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -122,7 +150,7 @@ function UnitTestCppSearch
     $configurations = @('debug', 'release')
     ForEach ($c in $configurations)
     {
-        $cmakeBuildDir = "$cppSearchPath/cmake-build-$c"
+        $cmakeBuildDir = Join-Path $cppSearchPath "cmake-build-$c"
 
         if (Test-Path $cmakeBuildDir)
         {
@@ -132,15 +160,29 @@ function UnitTestCppSearch
                 # run tests
                 Log($cppSearchTestExe)
                 & $cppSearchTestExe
+
+                # check for success/failure
+                if ($LASTEXITCODE -eq 0)
+                {
+                    Log('Tests succeeded')
+                }
+                else
+                {
+                    PrintError('Tests failed')
+                    $global:failedBuilds += 'cppsearch'
+                    return
+                }
             }
             else
             {
                 LogError("cppsearch-tests not found: $cppSearchTestExe")
+                $global:failedBuilds += 'cppsearch'
             }
         }
         else
         {
             LogError("cmake build directory not found: $cmmakeBuildDir")
+            $global:failedBuilds += 'cppsearch'
         }
     }
 }
@@ -153,6 +195,7 @@ function UnitTestCsSearch
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'cssearch'
         return
     }
 
@@ -165,9 +208,21 @@ function UnitTestCsSearch
     # $verbosity = 'normal'
     # $verbosity = 'detailed'
 
+    # run tests
     Log('Unit-testing cssearch')
     Write-Host "dotnet test $csSearchSolutionPath --verbosity $verbosity"
     dotnet test $csSearchSolutionPath --verbosity $verbosity
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'cssearch'
+    }
 }
 
 function UnitTestDartSearch
@@ -179,6 +234,7 @@ function UnitTestDartSearch
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
+        $global:failedBuilds += 'dartsearch'
         return
     }
 
@@ -188,9 +244,21 @@ function UnitTestDartSearch
     $oldPwd = Get-Location
     Set-Location $dartSearchPath
 
+    # run tests
     Log('Unit-testing dartsearch')
     Log('dart run test')
     dart run test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'dartsearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -210,6 +278,7 @@ function UnitTestExSearch
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
+        $global:failedBuilds += 'exsearch'
         return
     }
 
@@ -219,9 +288,21 @@ function UnitTestExSearch
     $oldPwd = Get-Location
     Set-Location $exSearchPath
 
+    # run tests
     Log('Unit-testing exsearch')
     Log('mix test')
     mix test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'exsearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -234,6 +315,7 @@ function UnitTestFsSearch
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'fssearch'
         return
     }
 
@@ -246,9 +328,21 @@ function UnitTestFsSearch
     # $verbosity = 'normal'
     # $verbosity = 'detailed'
 
+    # run tests
     Log('Unit-testing fssearch')
     Write-Host "dotnet test $fsSearchSolutionPath --verbosity $verbosity"
     dotnet test $fsSearchSolutionPath --verbosity $verbosity
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'fssearch'
+    }
 }
 
 function UnitTestGoSearch
@@ -259,6 +353,7 @@ function UnitTestGoSearch
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
+        $global:failedBuilds += 'gosearch'
         return
     }
 
@@ -268,9 +363,21 @@ function UnitTestGoSearch
     $oldPwd = Get-Location
     Set-Location $goSearchPath
 
+    # run tests
     Log('Unit-testing gosearch')
     Log('go test --cover ./...')
     go test --cover ./...
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'gosearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -290,6 +397,7 @@ function UnitTestHsSearch
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
+        $global:failedBuilds += 'hssearch'
         return
     }
 
@@ -303,6 +411,17 @@ function UnitTestHsSearch
     Log('Unit-testing hssearch')
     Log('stack test')
     stack test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'hssearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -351,6 +470,7 @@ function UnitTestJsSearch
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'jssearch'
         return
     }
 
@@ -364,6 +484,17 @@ function UnitTestJsSearch
     Log('Unit-testing jssearch')
     Log('npm test')
     npm test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'jssearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -382,6 +513,7 @@ function UnitTestKtSearch
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'ktsearch'
         return
     }
 
@@ -404,6 +536,17 @@ function UnitTestKtSearch
     Log("$gradle --warning-mode all test")
     & $gradle --warning-mode all test
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'ktsearch'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -416,6 +559,7 @@ function UnitTestObjcSearch
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'objcsearch'
         return
     }
 
@@ -426,10 +570,19 @@ function UnitTestObjcSearch
     Set-Location $objcSearchPath
 
     Log('Unit-testing objcsearch')
-    # Log('xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests')
-    # xcodebuild test -project objcsearch.xcodeproj -scheme objcsearch_tests
     Log('swift test')
     swift test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'objcsearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -449,6 +602,7 @@ function UnitTestPlSearch
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install perl')
+        $global:failedBuilds += 'plsearch'
         return
     }
 
@@ -482,6 +636,7 @@ function UnitTestPhpSearch
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install php')
+        $global:failedBuilds += 'phpsearch'
         return
     }
 
@@ -489,6 +644,7 @@ function UnitTestPhpSearch
     if (-not $phpVersion)
     {
         PrintError('A version of PHP >= 7.x is required')
+        $global:failedBuilds += 'phpsearch'
         return
     }
     Log("php version: $phpVersion")
@@ -503,14 +659,27 @@ function UnitTestPhpSearch
     if (-not (Get-Command 'phpunit' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install phpunit')
+        $global:failedBuilds += 'phpsearch'
         return
     }
 
     $phpTestsPath = Join-Path $phpSearchPath 'tests'
 
+    # run tests
     Log('Unit-testing phpsearch')
     Log("phpunit $phpTestsPath")
     phpunit $phpTestsPath
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'phpsearch'
+    }
 }
 
 function UnitTestPs1Search
@@ -527,6 +696,7 @@ function UnitTestPs1Search
     if (-not (Test-Path $testsScriptPath))
     {
         Log("Test script not found: $testsScriptPath")
+        $global:failedBuilds += 'ps1search'
         return
     }
 
@@ -544,7 +714,8 @@ function UnitTestPySearch
     $venvPath = Join-Path $pySearchPath 'venv'
     if (-not (Test-Path $venvPath))
     {
-        Log('venv path not found, you probably need to run the python build (./build.ps1 python)')
+        PrintError('venv path not found, you probably need to run the python build (./build.ps1 python)')
+        $global:failedBuilds += 'pyfind'
         return
     }
 
@@ -560,6 +731,17 @@ function UnitTestPySearch
     # Run the individual tests
     Log('pytest')
     pytest
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'pysearch'
+    }
 
     # deactivate at end of setup process
     Log('deactivate')
@@ -577,6 +759,7 @@ function UnitTestRbSearch
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ruby')
+        $global:failedBuilds += 'rbsearch'
         return
     }
 
@@ -584,6 +767,7 @@ function UnitTestRbSearch
     if (-not $rubyVersion)
     {
         PrintError('A version of ruby >= 3.x is required')
+        $global:failedBuilds += 'rbsearch'
         return
     }
 
@@ -600,6 +784,7 @@ function UnitTestRbSearch
     if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rake')
+        $global:failedBuilds += 'rbsearch'
         return
     }
 
@@ -607,10 +792,19 @@ function UnitTestRbSearch
     Set-Location $rbSearchPath
 
     Log('Unit-testing rbsearch')
-    # Log('rake test')
-    # rake test
     Log('bundle exec rake test')
     bundle exec rake test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'rbsearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -630,6 +824,7 @@ function UnitTestRsSearch
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo')
+        $global:failedBuilds += 'rssearch'
         return
     }
 
@@ -639,9 +834,21 @@ function UnitTestRsSearch
     $oldPwd = Get-Location
     Set-Location $rsSearchPath
 
+    # run tests
     Log('Unit-testing rssearch')
     Log('cargo test --package rssearch --bin rssearch')
     cargo test --package rssearch --bin rssearch
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'rssearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -662,6 +869,7 @@ function UnitTestScalaSearch
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install sbt')
+        $global:failedBuilds += 'scalasearch'
         return
     }
 
@@ -676,9 +884,21 @@ function UnitTestScalaSearch
     $oldPwd = Get-Location
     Set-Location $scalaSearchPath
 
+    # run tests
     Log('Unit-testing scalasearch')
     Log('sbt test')
     sbt test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'scalasearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -691,6 +911,7 @@ function UnitTestSwiftSearch
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'swiftsearch'
         return
     }
 
@@ -700,9 +921,21 @@ function UnitTestSwiftSearch
     $oldPwd = Get-Location
     Set-Location $swiftSearchPath
 
+    # run tests
     Log('Unit-testing swiftsearch')
     Log('swift test')
     swift test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'swiftsearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -723,6 +956,7 @@ function UnitTestTsSearch
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'tssearch'
         return
     }
 
@@ -732,9 +966,21 @@ function UnitTestTsSearch
     $oldPwd = Get-Location
     Set-Location $tsSearchPath
 
+    # run tests
     Log('Unit-testing tssearch')
     Log('npm test')
     npm test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'tssearch'
+    }
 
     Set-Location $oldPwd
 }
@@ -744,7 +990,7 @@ function UnitTestAll
     Write-Host
     Hdr('UnitTestAll')
 
-    UnitTestBashSearch
+    # UnitTestBashSearch
 
     # UnitTestCSearch
 
@@ -761,6 +1007,8 @@ function UnitTestAll
     UnitTestFsSearch
 
     UnitTestGoSearch
+
+    # UnitTestGroovySearch
 
     UnitTestHsSearch
 
@@ -791,6 +1039,8 @@ function UnitTestAll
     UnitTestSwiftSearch
 
     UnitTestTsSearch
+
+    PrintFailedBuilds
 
     exit
 }
@@ -830,6 +1080,7 @@ function UnitTestMain
             'fs'         { UnitTestFsSearch }
             'fsharp'     { UnitTestFsSearch }
             'go'         { UnitTestGoSearch }
+            # 'groovy'     { UnitTestGroovySearch }
             'haskell'    { UnitTestHsSearch }
             'hs'         { UnitTestHsSearch }
             'java'       { UnitTestJavaSearch }
@@ -841,6 +1092,7 @@ function UnitTestMain
             'ocaml'      { UnitTestMlSearch }
             'ml'         { UnitTestMlSearch }
             'perl'       { UnitTestPlSearch }
+            'pl'         { UnitTestPlSearch }
             'php'        { UnitTestPhpSearch }
             'powershell' { UnitTestPs1Search }
             'ps1'        { UnitTestPs1Search }
@@ -858,6 +1110,8 @@ function UnitTestMain
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
+
+    PrintFailedBuilds
 }
 
 if ($help)

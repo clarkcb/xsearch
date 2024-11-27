@@ -15,20 +15,38 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
 
+# Add failed builds to this array and report failed builds at the end
+FAILED_BUILDS=()
+
 
 ########################################
 # Utility Functions
 ########################################
 
 usage () {
-    echo -e "\nUsage: unittest.sh [-h|--help] {\"all\" | langcode}\n"
+    echo -e "\nUsage: unittest.sh [-h|--help] {\"all\" | lang [lang...]}\n"
     exit
+}
+
+print_failed_builds () {
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
+    then
+        log_error "Failed unit tests: ${FAILED_BUILDS[*]}"
+    else
+        log "All unit tests succeeded"
+    fi
 }
 
 
 ########################################
 # Unit Test Functions
 ########################################
+
+unittest_bashsearch () {
+    echo
+    hdr "unittest_bashsearch"
+    log "Not currently implemented"
+}
 
 unittest_csearch () {
     echo
@@ -37,14 +55,25 @@ unittest_csearch () {
     # ensure make is installed
     if [ -z "$(which make)" ]
     then
-        echo "You need to install make"
+        log_error "You need to install make"
+        FAILED_BUILDS+=("csearch")
         return
     fi
 
-    log "Unit-testing cfind"
+    log "Unit-testing csearch"
+
     cd "$CFIND_PATH"
     log "make run_tests"
     make run_tests
+
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("csearch")
+    fi
+
     cd -
 }
 
@@ -52,24 +81,57 @@ unittest_cljsearch () {
     echo
     hdr "unittest_cljsearch"
 
+    # if clojure is installed, display version
+    if [ -n "$(which clj)" ]
+    then
+        # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+        # CLOJURE_VERSION=$(clj -version | head -n 1 | cut -d ' ' -f 3)
+        CLOJURE_VERSION=$(clj -version 2>&1)
+        log "clojure version: $CLOJURE_VERSION"
+    fi
+
     # ensure lein is installed
     if [ -z "$(which lein)" ]
     then
-        echo "You need to install lein"
+        log_error "You need to install lein"
+        FAILED_BUILDS+=("cljsearch")
         return
     fi
 
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    LEIN_VERSION=$(lein version)
+    log "lein version: $LEIN_VERSION"
+
+    cd "$CLJSEARCH_PATH"
+
     # Test with lein
     log "Unit-testing cljsearch"
-    cd "$CLJSEARCH_PATH"
     log "lein test"
     lein test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("cljsearch")
+    fi
+
     cd -
 }
 
 unittest_cppsearch () {
     echo
     hdr "unittest_cppsearch"
+
+    # if cmake is installed, display version
+    if [ -n "$(which cmake)" ]
+    then
+        # cmake --version output looks like this: cmake version 3.30.2
+        CMAKE_VERSION=$(cmake --version | head -n 1 | cut -d ' ' -f 3)
+        log "cmake version: $CMAKE_VERSION"
+    fi
 
     log "Unit-testing cppsearch"
     CONFIGURATIONS=(debug release)
@@ -79,8 +141,28 @@ unittest_cppsearch () {
         if [ -d "$CMAKE_BUILD_DIR" ]
         then
             CPPSEARCH_TEST_EXE=$CMAKE_BUILD_DIR/cppsearch-tests
-            log "$CPPSEARCH_TEST_EXE"
-            $CPPSEARCH_TEST_EXE
+            if [ -e "$CPPSEARCH_TEST_EXE" ]
+            then
+                log "$CPPSEARCH_TEST_EXE"
+                $CPPSEARCH_TEST_EXE
+
+                if [ "$?" -eq 0 ]
+                then
+                    log "C++ unit test for $c succeeded"
+                else
+                    log_error "ERROR: cppsearch unit tests for $c failed"
+                    FAILED_BUILDS+=("cppsearch")
+                    return
+                fi
+            else
+                log_error "cppsearch-tests not found: $CPPSEARCH_TEST_EXE"
+                FAILED_BUILDS+=("cppsearch")
+                return
+            fi
+        else
+            log_error "cmake build directory not found: $CMAKE_BUILD_DIR"
+            FAILED_BUILDS+=("cppsearch")
+            return
         fi
     done
 }
@@ -92,7 +174,8 @@ unittest_cssearch () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("cssearch")
         return
     fi
 
@@ -108,6 +191,15 @@ unittest_cssearch () {
     log "Unit-testing cssearch"
     log "dotnet test $CSSEARCH_PATH/CsSearch.sln --verbosity $VERBOSITY"
     dotnet test "$CSSEARCH_PATH/CsSearch.sln" --verbosity $VERBOSITY
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("cssearch")
+    fi
 }
 
 unittest_dartsearch () {
@@ -118,6 +210,7 @@ unittest_dartsearch () {
     if [ -z "$(which dart)" ]
     then
         log_error "You need to install dart"
+        FAILED_BUILDS+=("dartsearch")
         return
     fi
 
@@ -125,9 +218,20 @@ unittest_dartsearch () {
     log "$DART_VERSION"
 
     cd "$DARTSEARCH_PATH"
+
     log "Unit-testing dartsearch"
     log "dart run test"
     dart run test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("dartsearch")
+    fi
+
     cd -
 }
 
@@ -146,6 +250,7 @@ unittest_exsearch () {
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
+        FAILED_BUILDS+=("exsearch")
         return
     fi
 
@@ -159,6 +264,14 @@ unittest_exsearch () {
     log "mix test"
     mix test
 
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("exsearch")
+    fi
+
     cd -
 }
 
@@ -169,7 +282,8 @@ unittest_fssearch () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("fssearch")
         return
     fi
 
@@ -185,6 +299,15 @@ unittest_fssearch () {
     log "Unit-testing fssearch"
     log "dotnet test $FSSEARCH_PATH/FsSearch.sln --verbosity $VERBOSITY"
     dotnet test "$FSSEARCH_PATH/FsSearch.sln" --verbosity $VERBOSITY
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("fssearch")
+    fi
 }
 
 unittest_gosearch () {
@@ -194,7 +317,8 @@ unittest_gosearch () {
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
-        echo "You need to install go"
+        log_error "You need to install go"
+        FAILED_BUILDS+=("gosearch")
         return
     fi
 
@@ -207,10 +331,24 @@ unittest_gosearch () {
     cd "$GOSEARCH_PATH"
 
     log "go test --cover ./..."
-    # cd $GOSRC_PATH; go test; cd -
     go test --cover ./...
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("gosearch")
+    fi
+
     cd -
+}
+
+unittest_groovysearch () {
+    echo
+    hdr "unittest_groovysearch"
+    log "Not currently implemented"
 }
 
 unittest_hssearch () {
@@ -227,7 +365,8 @@ unittest_hssearch () {
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
-        echo "You need to install stack"
+        log_error "You need to install stack"
+        FAILED_BUILDS+=("hssearch")
         return
     fi
 
@@ -240,6 +379,15 @@ unittest_hssearch () {
     log "Unit-testing hssearch"
     log "stack test"
     stack test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("hssearch")
+    fi
 
     cd -
 }
@@ -275,7 +423,8 @@ unittest_jssearch () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install npm"
+        log_error "You need to install npm"
+        FAILED_BUILDS+=("jssearch")
         return
     fi
 
@@ -284,10 +433,19 @@ unittest_jssearch () {
 
     cd "$JSSEARCH_PATH"
 
-    # run tests
+    # run tests via npm
     log "Unit-testing jssearch"
     log "npm test"
     npm test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("jssearch")
+    fi
 
     cd -
 }
@@ -306,6 +464,7 @@ unittest_ktsearch () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("ktsearch")
         return
     fi
 
@@ -327,6 +486,15 @@ unittest_ktsearch () {
     log "$GRADLE --warning-mode all test"
     "$GRADLE" --warning-mode all test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("ktsearch")
+    fi
+
     cd -
 }
 
@@ -334,29 +502,47 @@ unittest_objcsearch () {
     echo
     hdr "unittest_objcsearch"
 
+    # TODO: copy resource files locally?
     # ensure xcode is installed
-    if [ -z "$(which xcodebuild)" ]
+    if [ -z "$(which swift)" ]
     then
-        echo "You need to install xcode"
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("objcsearch")
         return
     fi
 
-    log "Unit-testing objcsearch"
+    SWIFT_VERSION=$(swift --version 2>&1 | grep Swift)
+    log "swift version: $SWIFT_VERSION"
+
     cd "$OBJCSEARCH_PATH"
+
+    log "Unit-testing objcsearch"
     log "swift test"
     swift test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("objcsearch")
+    fi
+
     cd -
 }
 
-unittest_mlsearch () {
-    echo
-    hdr "unittest_mlsearch"
-
-    cd "$MLSEARCH_PATH"
-    log "Unit-testing mlsearch"
-    ./unittest.sh
-    cd -
-}
+# unittest_mlsearch () {
+#     echo
+#     hdr "unittest_mlsearch"
+#
+#     cd "$MLSEARCH_PATH"
+#
+#     log "Unit-testing mlsearch"
+#     ./unittest.sh
+#
+#     cd -
+# }
 
 unittest_plsearch () {
     echo
@@ -366,6 +552,7 @@ unittest_plsearch () {
     if [ -z "$(which perl)" ]
     then
         log_error "You need to install perl"
+        FAILED_BUILDS+=("plsearch")
         return
     fi
 
@@ -373,6 +560,7 @@ unittest_plsearch () {
     if [ -z $PERL_VERSION ]
     then
         log_error "A 5.x version of perl is required"
+        FAILED_BUILDS+=("plsearch")
         return
     fi
 
@@ -386,7 +574,17 @@ unittest_plsearch () {
     for f in ${FILES[*]}
     do
         log "perl $f"
-        perl "$f"
+        IFS='' perl "$f" | tail -n +2 |
+        while read line
+        do
+            echo "$line"
+            if [[ ! "$line" =~ ^ok[[:space:]][0-9]+.+$ ]]
+            then
+                log_error "Tests failed"
+                FAILED_BUILDS+=("plsearch")
+                return
+            fi
+        done
     done
 }
 
@@ -398,14 +596,15 @@ unittest_phpsearch () {
     if [ -z "$(which php)" ]
     then
         log_error "You need to install PHP"
+        FAILED_BUILDS+=("phpsearch")
         return
     fi
 
-    # PHP_VERSION=$(php -r "echo phpversion();")
     PHP_VERSION=$(php -v | grep '^PHP [78]')
     if [ -z "$PHP_VERSION" ]
     then
         log_error "A version of PHP >= 7.x is required"
+        FAILED_BUILDS+=("phpsearch")
         return
     fi
     log "php version: $PHP_VERSION"
@@ -422,7 +621,8 @@ unittest_phpsearch () {
 
     if [ ! -f "$PHPUNIT" ]
     then
-        echo "You need to install phpunit first"
+        log_error "You need to install phpunit first"
+        FAILED_BUILDS+=("phpsearch")
         return
     fi
 
@@ -430,6 +630,15 @@ unittest_phpsearch () {
     log "Unit-testing phpsearch"
     log "$PHPUNIT $TESTS_PATH"
     "$PHPUNIT" "$TESTS_PATH"
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("phpsearch")
+    fi
 }
 
 unittest_ps1search () {
@@ -440,6 +649,7 @@ unittest_ps1search () {
     if [ -z "$(which pwsh)" ]
     then
         log_error "You need to install powershell"
+        FAILED_BUILDS+=("ps1search")
         return
     fi
 
@@ -450,6 +660,7 @@ unittest_ps1search () {
     if [ ! -f "$TESTS_SCRIPT" ]
     then
         log_error "Test script not found: $TESTS_SCRIPT"
+        FAILED_BUILDS+=("ps1search")
         return
     fi
 
@@ -457,6 +668,15 @@ unittest_ps1search () {
     log "Unit-testing ps1search"
     log "pwsh $TESTS_SCRIPT"
     pwsh "$TESTS_SCRIPT"
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("ps1search")
+    fi
 }
 
 unittest_pysearch () {
@@ -470,7 +690,8 @@ unittest_pysearch () {
 
     if [ ! -d "$VENV_PATH" ]
     then
-        log "venv path not found, you probably need to run the python build (./build.sh python)"
+        log_error "venv path not found, you probably need to run the python build (./build.sh python)"
+        FAILED_BUILDS+=("pysearch")
         return
     fi
 
@@ -485,6 +706,15 @@ unittest_pysearch () {
     log "pytest"
     pytest
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("pysearch")
+    fi
+
     # deactivate the virtualenv
     log "deactivate"
     deactivate
@@ -496,12 +726,11 @@ unittest_rbsearch () {
     echo
     hdr "unittest_rbsearch"
 
-    log "Unit-testing rbsearch"
-
     # ensure ruby3.x+ is installed
     if [ -z "$(which ruby)" ]
     then
         log_error "You need to install ruby"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
 
@@ -509,31 +738,43 @@ unittest_rbsearch () {
     if [ -z "$RUBY_VERSION" ]
     then
         log_error "A version of ruby >= 3.x is required"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
 
     log "ruby version: $RUBY_VERSION"
 
-    ensure bundler is installed
+    # ensure bundler is installed
     if [ -z "$(which bundle)" ]
     then
         log_error "You need to install bundler: https://bundler.io/"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
 
     # ensure rake is installed
     if [ -z "$(which rake)" ]
     then
-        echo "You need to install rake"
+        log_error "You need to install rake"
+        FAILED_BUILDS+=("rbsearch")
         return
     fi
 
     cd "$RBSEARCH_PATH"
 
     # Run all tests via rake
-    log "Unit-testing rbfind"
+    log "Unit-testing rbsearch"
     log "bundle exec rake test"
     bundle exec rake test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("rbsearch")
+    fi
 
     cd -
 }
@@ -552,7 +793,8 @@ unittest_rssearch () {
     # ensure cargo is installed
     if [ -z "$(which cargo)" ]
     then
-        echo "You need to install cargo"
+        log_error "You need to install cargo"
+        FAILED_BUILDS+=("rssearch")
         return
     fi
 
@@ -563,8 +805,17 @@ unittest_rssearch () {
 
     # Run cargo test
     log "Unit-testing rssearch"
-    log "cargo test"
-    cargo test
+    log "cargo test --package rssearch --bin rssearch"
+    cargo test --package rssearch --bin rssearch
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("rssearch")
+    fi
 
     cd -
 }
@@ -583,7 +834,8 @@ unittest_scalasearch () {
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        echo "You need to install sbt"
+        log_error "You need to install sbt"
+        FAILED_BUILDS+=("scalasearch")
         return
     fi
 
@@ -605,6 +857,15 @@ unittest_scalasearch () {
     log "sbt test"
     sbt test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("scalasearch")
+    fi
+
     cd -
 }
 
@@ -615,7 +876,8 @@ unittest_swiftsearch () {
     # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
-        echo "You need to install swift"
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("swiftsearch")
         return
     fi
 
@@ -624,9 +886,19 @@ unittest_swiftsearch () {
 
     cd "$SWIFTSEARCH_PATH"
 
+    # run tests
     log "Unit-testing swiftsearch"
     log "swift test"
     swift test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("swiftsearch")
+    fi
 
     cd -
 }
@@ -645,7 +917,8 @@ unittest_tssearch () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install npm"
+        log_error "You need to install npm"
+        FAILED_BUILDS+=("tssearch")
         return
     fi
 
@@ -659,11 +932,22 @@ unittest_tssearch () {
     log "npm test"
     npm test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("tssearch")
+    fi
+
     cd -
 }
 
 unittest_all () {
     hdr "unittest_all"
+
+    # unittest_bashsearch
 
     # unittest_csearch
 
@@ -680,6 +964,8 @@ unittest_all () {
     unittest_fssearch
 
     unittest_gosearch
+
+    # unittest_groovysearch
 
     unittest_hssearch
 
@@ -771,6 +1057,7 @@ fi
 if [ -n "$TEST_ALL" ]
 then
     unittest_all
+    print_failed_builds
     exit
 fi
 
@@ -782,11 +1069,8 @@ fi
 for TARGET_LANG in ${TARGET_LANGS[*]}
 do
     case $TARGET_LANG in
-        all)
-            unittest_all
-            ;;
-        # linux)
-        #     unittest_linux
+        # bash)
+        #     unittest_bashsearch
         #     ;;
         # c)
         #     unittest_csearch
@@ -812,6 +1096,9 @@ do
         go)
             unittest_gosearch
             ;;
+        # groovy)
+        #     unittest_groovysearch
+        #     ;;
         haskell | hs)
             unittest_hssearch
             ;;
@@ -862,3 +1149,5 @@ do
             ;;
     esac
 done
+
+print_failed_builds
