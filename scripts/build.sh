@@ -704,6 +704,7 @@ build_javasearch () {
     if [ -z "$(which mvn)" ]
     then
         log_error "You need to install maven"
+        FAILED_BUILDS+=("javasearch")
         return
     fi
 

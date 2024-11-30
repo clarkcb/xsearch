@@ -441,6 +441,7 @@ function UnitTestJavaSearch
     if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mvn')
+        $global:failedBuilds += 'javasearch'
         return
     }
 

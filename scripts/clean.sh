@@ -322,7 +322,8 @@ clean_javasearch () {
     # ensure mvn is installed
     if [ -z "$(which mvn)" ]
     then
-        echo "You need to install mvn"
+        log_error "You need to install mvn"
+        FAILED_BUILDS+=("javasearch")
         return
     fi
 

@@ -864,6 +864,7 @@ function BuildJavaSearch
     if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install maven')
+        $global:failedBuilds += 'javasearch'
         return
     }
 
