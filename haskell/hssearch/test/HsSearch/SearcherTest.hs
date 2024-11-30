@@ -33,10 +33,10 @@ getSearchContentsTests = do
   contents <- getFileContents testFile
   let results = searchContents settings contents
   return [ testCase "length results == 2" (length results @?= 2)
-         , testCase "lineNum (head results) == 29" (lineNum (head results) @?= 29)
+         , testCase "lineNum (head results) == 30" (lineNum (head results) @?= 30)
          , testCase "matchStartIndex (head results) == 3" (matchStartIndex (head results) @?= 3)
          , testCase "matchEndIndex (head results) == 11" (matchEndIndex (head results) @?= 11)
-         , testCase "lineNum (last results) == 35" (lineNum (last results) @?= 35)
+         , testCase "lineNum (last results) == 36" (lineNum (last results) @?= 36)
          , testCase "matchStartIndex (last results) == 3" (matchStartIndex (last results) @?= 24)
          , testCase "matchEndIndex (last results) == 11" (matchEndIndex (last results) @?= 32)
          ]
@@ -56,10 +56,10 @@ getSearchLinesTests = do
   fileLines <- getLines testFile
   let results = searchLines settings fileLines
   return [ testCase "length results == 2" (length results @?= 2)
-         , testCase "lineNum (head results) == 29" (lineNum (head results) @?= 29)
+         , testCase "lineNum (head results) == 30" (lineNum (head results) @?= 30)
          , testCase "matchStartIndex (head results) == 3" (matchStartIndex (head results) @?= 3)
          , testCase "matchEndIndex (head results) == 11" (matchEndIndex (head results) @?= 11)
-         , testCase "lineNum (last results) == 35" (lineNum (last results) @?= 35)
+         , testCase "lineNum (last results) == 36" (lineNum (last results) @?= 36)
          , testCase "matchStartIndex (last results) == 3" (matchStartIndex (last results) @?= 24)
          , testCase "matchEndIndex (last results) == 11" (matchEndIndex (last results) @?= 32)
          ]

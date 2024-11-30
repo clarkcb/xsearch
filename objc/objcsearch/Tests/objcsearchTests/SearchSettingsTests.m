@@ -31,6 +31,8 @@
     XCTAssert(![settings firstMatch]);
     XCTAssert(![settings followSymlinks]);
     XCTAssert(![settings includeHidden]);
+    XCTAssert([settings linesAfter] == 0);
+    XCTAssert([settings linesBefore] == 0);
     XCTAssert([settings maxSize] == 0);
     XCTAssert([settings minSize] == 0);
     XCTAssert(![settings multiLineSearch]);
