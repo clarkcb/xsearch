@@ -74,15 +74,12 @@ function PrintFailedBuilds
 {
     if ($global:failedBuilds.Length -gt 0)
     {
-        Write-Host "`nFailed builds:"
-        ForEach ($fb in $global:failedBuilds)
-        {
-            Write-Host $fb
-        }
+        $joinedBuilds = $global:failedBuilds -join ', '
+        PrintError("Failed builds: $joinedBuilds")
     }
     else
     {
-        Write-Host "`nAll builds succeeded"
+        Log("All builds succeeded")
     }
 }
 

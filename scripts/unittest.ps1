@@ -52,8 +52,8 @@ function PrintFailedBuilds
 {
     if ($global:failedBuilds.Length -gt 0)
     {
-        $fbString = $global:failedBuilds -join ' '
-        PrintError("Failed builds: $fbString")
+        $joinedBuilds = $global:failedBuilds -join ', '
+        PrintError("Failed builds: $joinedBuilds")
     }
     else
     {

@@ -96,8 +96,14 @@ function CopySearchOptionsJsonResources
 function CopyTestResources
 {
     param([string]$testResourcesPath)
-    Log("Copy-Item $xsearchTestFilePath -Include testFile*.txt -Destination $testResourcesPath")
-    Copy-Item $xsearchTestFilePath -Include testFile*.txt -Destination $testResourcesPath
+
+    $testFiles = @(Get-ChildItem -Path $xsearchTestFilePath -File) |
+                   Where-Object { $_.Name.StartsWith('testFile') -and $_.Extension -eq '.txt' }
+    foreach ($testFile in $testFiles)
+    {
+        Log("Copy-Item $testFile -Destination $testResourcesPath")
+        Copy-Item $testFile -Destination $testResourcesPath
+    }
 }
 
 function AddSoftLink
@@ -149,15 +155,12 @@ function PrintFailedBuilds
 {
     if ($global:failedBuilds.Length -gt 0)
     {
-        Write-Host "`nFailed builds:"
-        ForEach ($fb in $global:failedBuilds)
-        {
-            Write-Host $fb
-        }
+        $joinedBuilds = $global:failedBuilds -join ', '
+        PrintError("Failed builds: $joinedBuilds")
     }
     else
     {
-        Write-Host "`nAll builds succeeded"
+        Log("All builds succeeded")
     }
 }
 
