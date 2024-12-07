@@ -9,7 +9,7 @@ const {FileUtil} = require('jsfind');
 const {Searcher} = require('../src/searcher');
 const {SearchSettings} = require('../src/searchsettings');
 
-const testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
+const testFile = config.SHARED_PATH + "/testFiles/testFile2.txt";
 
 const getSettings = () => {
     let settings = new SearchSettings();

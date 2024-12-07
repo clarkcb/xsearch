@@ -16,80 +16,7 @@ class SearchOptions {
 
     constructor() {
         this.argNameMap = {};
-        this.argMap = {};
-        this.flagMap = {};
-        this.argActionMap = {
-            'encoding':
-                (x, settings) => { settings.textFileEncoding = x; },
-            'in-archiveext':
-                (x, settings) => { settings.addInArchiveExtensions(x); },
-            'in-archivefilepattern':
-                (x, settings) => { settings.addInArchiveFilePatterns(x); },
-            'in-dirpattern':
-                (x, settings) => { settings.addInDirPatterns(x); },
-            'in-ext':
-                (x, settings) => { settings.addInExtensions(x); },
-            'in-filepattern':
-                (x, settings) => { settings.addInFilePatterns(x); },
-            'in-filetype':
-                (x, settings) => { settings.addInFileTypes(x); },
-            'in-linesafterpattern':
-                (x, settings) => { settings.addInLinesAfterPatterns(x); },
-            'in-linesbeforepattern':
-                (x, settings) => { settings.addInLinesBeforePatterns(x); },
-            'linesafter':
-                (x, settings) => { settings.linesAfter = parseInt(x); },
-            'linesaftertopattern':
-                (x, settings) => { settings.addLinesAfterToPatterns(x); },
-            'linesafteruntilpattern':
-                (x, settings) => { settings.addLinesAfterUntilPatterns(x); },
-            'linesbefore':
-                (x, settings) => { settings.linesBefore = parseInt(x); },
-            'maxdepth':
-                (x, settings) => { settings.maxDepth = parseInt(x, 10); },
-            'maxlastmod':
-                (x, settings) => { settings.maxLastModFromString(x); },
-            'maxlinelength':
-                (x, settings) => { settings.maxLineLength = parseInt(x); },
-            'maxsize':
-                (x, settings) => {
-                    settings.maxSize = parseInt(x, 10);
-                },
-            'mindepth':
-                (x, settings) => { settings.minDepth = parseInt(x, 10); },
-            'minlastmod':
-                (x, settings) => { settings.minLastModFromString(x); },
-            'minsize':
-                (x, settings) => {
-                    settings.minSize = parseInt(x, 10);
-                },
-            'out-dirpattern':
-                (x, settings) => { settings.addOutDirPatterns(x); },
-            'out-archiveext':
-                (x, settings) => { settings.addOutArchiveExtensions(x); },
-            'out-archivefilepattern':
-                (x, settings) => { settings.addOutArchiveFilePatterns(x); },
-            'out-ext':
-                (x, settings) => { settings.addOutExtensions(x); },
-            'out-filepattern':
-                (x, settings) => { settings.addOutFilePatterns(x); },
-            'out-filetype':
-                (x, settings) => { settings.addOutFileTypes(x); },
-            'out-linesafterpattern':
-                (x, settings) => { settings.addOutLinesAfterPatterns(x); },
-            'out-linesbeforepattern':
-                (x, settings) => { settings.addOutLinesBeforePatterns(x); },
-            'path':
-                (x, settings) => { settings.paths.push(x); },
-            'searchpattern':
-                (x, settings) => { settings.addSearchPatterns(x); },
-            'settings-file':
-                (x, settings) => { return settingsFromFile(x, settings); },
-            'sort-by':
-                (x, settings) => { settings.sortBy = nameToSortBy(x); }
-
-        };
-        this.boolFlagActionMap = {
+        this.boolActionMap = {
             'allmatches':
                 (b, settings) => { settings.firstMatch = !b; },
             'archivesonly':
@@ -153,58 +80,108 @@ class SearchOptions {
             'version':
                 (b, settings) => { settings.printVersion = b; }
         };
+        this.strActionMap = {
+            'encoding':
+                (s, settings) => { settings.textFileEncoding = s; },
+            'in-archiveext':
+                (s, settings) => { settings.addInArchiveExtensions(s); },
+            'in-archivefilepattern':
+                (s, settings) => { settings.addInArchiveFilePatterns(s); },
+            'in-dirpattern':
+                (s, settings) => { settings.addInDirPatterns(s); },
+            'in-ext':
+                (s, settings) => { settings.addInExtensions(s); },
+            'in-filepattern':
+                (s, settings) => { settings.addInFilePatterns(s); },
+            'in-filetype':
+                (s, settings) => { settings.addInFileTypes(s); },
+            'in-linesafterpattern':
+                (s, settings) => { settings.addInLinesAfterPatterns(s); },
+            'in-linesbeforepattern':
+                (s, settings) => { settings.addInLinesBeforePatterns(s); },
+            'linesaftertopattern':
+                (s, settings) => { settings.addLinesAfterToPatterns(s); },
+            'linesafteruntilpattern':
+                (s, settings) => { settings.addLinesAfterUntilPatterns(s); },
+            'maxlastmod':
+                (s, settings) => { settings.maxLastModFromString(s); },
+            'minlastmod':
+                (s, settings) => { settings.minLastModFromString(s); },
+            'out-dirpattern':
+                (s, settings) => { settings.addOutDirPatterns(s); },
+            'out-archiveext':
+                (s, settings) => { settings.addOutArchiveExtensions(s); },
+            'out-archivefilepattern':
+                (s, settings) => { settings.addOutArchiveFilePatterns(s); },
+            'out-ext':
+                (s, settings) => { settings.addOutExtensions(s); },
+            'out-filepattern':
+                (s, settings) => { settings.addOutFilePatterns(s); },
+            'out-filetype':
+                (s, settings) => { settings.addOutFileTypes(s); },
+            'out-linesafterpattern':
+                (s, settings) => { settings.addOutLinesAfterPatterns(s); },
+            'out-linesbeforepattern':
+                (s, settings) => { settings.addOutLinesBeforePatterns(s); },
+            'path':
+                (s, settings) => { settings.paths.push(s); },
+            'searchpattern':
+                (s, settings) => { settings.addSearchPatterns(s); },
+            'settings-file':
+                (s, settings) => { return this.settingsFromFile(s, settings); },
+            'sort-by':
+                (s, settings) => { settings.sortBy = nameToSortBy(s); }
+        };
+        this.intActionMap = {
+            'linesafter':
+                (i, settings) => { settings.linesAfter = i; },
+            'linesbefore':
+                (i, settings) => { settings.linesBefore = i; },
+            'maxdepth':
+                (i, settings) => { settings.maxDepth = i; },
+            'maxlinelength':
+                (i, settings) => { settings.maxLineLength = i; },
+            'maxsize':
+                (i, settings) => { settings.maxSize = i; },
+            'mindepth':
+                (i, settings) => { settings.minDepth = i; },
+            'minsize':
+                (i, settings) => { settings.minSize = i; },
+        };
+
         // the list of SearchOption objects (populated from JSON)
         this.options = [];
         (() => {
-            const fs = require('fs');
-
-            let json = '';
-            if (fs.existsSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH))) {
-                json = fs.readFileSync(FileUtil.expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
-            } else {
-                throw new SearchError('File not found: ' + config.SEARCHOPTIONSJSONPATH);
-            }
-
+            let json = FileUtil.getFileContentsSync(config.SEARCH_OPTIONS_JSON_PATH, 'utf-8');
             let obj = JSON.parse(json);
-            if (obj.hasOwnProperty('searchoptions') && Array.isArray(obj['searchoptions'])) {
-                obj['searchoptions'].forEach(so => {
-                    let longArg = so['long'];
+            if (Object.prototype.hasOwnProperty.call(obj, 'searchoptions') && Array.isArray(obj.searchoptions)) {
+                obj.searchoptions.forEach(so => {
+                    let longArg = so.long;
                     let shortArg = '';
-                    if (so.hasOwnProperty('short'))
-                        shortArg = so['short'];
-                    let desc = so['desc'];
-                    let func = null;
+                    if (Object.prototype.hasOwnProperty.call(so, 'short'))
+                        shortArg = so.short;
+                    let desc = so.desc;
                     this.argNameMap[longArg] = longArg;
                     if (shortArg) this.argNameMap[shortArg] = longArg;
-                    if (this.argActionMap[longArg]) func = this.argActionMap[longArg];
-                    else if (this.boolFlagActionMap[longArg]) func = this.boolFlagActionMap[longArg];
-                    else throw new SearchError("Unknown option: " + longArg);
-                    const option = new SearchOption(shortArg, longArg, desc, func);
+                    const option = new SearchOption(shortArg, longArg, desc);
                     this.options.push(option);
-                    if (this.argActionMap[longArg]) {
-                        this.argMap[longArg] = option;
-                        if (shortArg) this.argMap[shortArg] = option;
-                    } else if (this.boolFlagActionMap[longArg]) {
-                        this.flagMap[longArg] = option;
-                        if (shortArg) this.flagMap[shortArg] = option;
-                    }
                 });
-            } else throw new SearchError("Invalid searchoptions file: " + config.SEARCHOPTIONSJSONPATH);
-            this.options.sort(this.optcmp);
+            } else throw new SearchError(`Invalid searchoptions file: ${config.SEARCH_OPTIONS_JSON_PATH}`);
+            this.options.sort(this.optCmp);
         })();
 
     }
 
-    optcmp(o1, o2) {
-        const a = o1.sortarg;
-        const b = o2.sortarg;
+    optCmp(o1, o2) {
+        const a = o1.sortArg;
+        const b = o2.sortArg;
         return a.localeCompare(b);
     }
 
-    settingsFromFile(filepath, settings) {
+    settingsFromFile(filePath, settings) {
         const fs = require('fs');
-        if (fs.existsSync(filepath)) {
-            let json = fs.readFileSync(filepath).toString();
+        if (fs.existsSync(filePath)) {
+            let json = FileUtil.getFileContentsSync(filePath, 'utf-8');
             return this.settingsFromJson(json, settings);
         } else {
             return new SearchError('Settings file not found');
@@ -218,14 +195,16 @@ class SearchOptions {
             if (err) break;
             if (obj.hasOwnProperty(k)) {
                 let longKey = this.argNameMap[k];
-                if (this.argMap[k]) {
+                if (this.boolActionMap[longKey]) {
+                    this.boolActionMap[longKey](obj[k], settings);
+                } else if (this.strActionMap[k]) {
                     if (obj[k]) {
-                        this.argMap[k].func(obj[k], settings);
+                        this.strActionMap[k](obj[k], settings);
                     } else {
                         err = new Error("Missing argument for option " + k);
                     }
-                } else if (this.boolFlagActionMap[longKey]) {
-                    this.boolFlagActionMap[longKey](obj[k], settings);
+                } else if (this.intActionMap[longKey]) {
+                    this.intActionMap[longKey](obj[k], settings);
                 } else if (k === 'path') {
                     settings.paths.push(obj[k]);
                 } else {
@@ -239,9 +218,9 @@ class SearchOptions {
     settingsFromArgs(args, cb) {
         let err = null;
         let settings = new SearchSettings();
-
-        // default printResults to true since it's being run from cmd line
+        // default printResults to true since running as cli
         settings.printResults = true;
+
         while(args && !err) {
             let arg = args.shift();
             if (!arg) {
@@ -251,16 +230,21 @@ class SearchOptions {
                 while (arg && arg.charAt(0) === '-') {
                     arg = arg.substring(1);
                 }
-                if (this.argMap[arg]) {
+                let longArg = this.argNameMap[arg];
+                if (this.boolActionMap[longArg]) {
+                    this.boolActionMap[longArg](true, settings);
+                } else if (this.strActionMap[longArg] || this.intActionMap[longArg]) {
                     if (args.length > 0) {
-                        err = this.argMap[arg].func(args.shift(), settings);
+                        if (this.strActionMap[longArg]) {
+                            err = this.strActionMap[longArg](args.shift(), settings);
+                        } else {
+                            err = this.intActionMap[longArg](parseInt(args.shift(), 10), settings);
+                        }
                     } else {
-                        err = new Error("Missing argument for option " + arg);
+                        err = new Error(`Missing argument for option ${arg}`);
                     }
-                } else if (this.flagMap[arg]) {
-                    this.flagMap[arg].func(true, settings);
                 } else {
-                    err = new Error("Invalid option: " + arg);
+                    err = new Error(`Invalid option: ${arg}`);
                 }
             } else {
                 settings.paths.push(arg);
@@ -286,9 +270,9 @@ class SearchOptions {
         let longest = 0;
         this.options.forEach(opt => {
             let optString = ' ';
-            if (opt.shortarg)
-                optString += '-' + opt.shortarg + ',';
-            optString += '--' + opt.longarg;
+            if (opt.shortArg)
+                optString += '-' + opt.shortArg + ',';
+            optString += '--' + opt.longArg;
             if (optString.length > longest)
                 longest = optString.length;
             optStrings.push(optString);

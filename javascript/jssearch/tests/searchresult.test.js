@@ -11,7 +11,7 @@ const {SearchResult} = require('../src/searchresult');
 const {SearchResultFormatter} = require('../src/searchresultformatter');
 const {SearchSettings} = require('../src/searchsettings');
 
-const cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
+const cssearch_path = config.XSEARCH_PATH + '/csharp/CsSearch/CsSearch';
 
 describe('testing searchresult', () => {
     it('testSingleLineResult', () => {
