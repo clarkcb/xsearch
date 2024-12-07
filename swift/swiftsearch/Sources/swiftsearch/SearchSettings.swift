@@ -11,9 +11,9 @@ import swiftfind
 public enum DefaultSearchSettings {
     public static let colorize = true
     public static let firstMatch = false
-    public static let linesAfter = 0
-    public static let linesBefore = 0
-    public static let maxLineLength = 150
+    public static let linesAfter: Int32 = 0
+    public static let linesBefore: Int32 = 0
+    public static let maxLineLength: Int32 = 150
     public static let multiLineSearch = false
     public static let printLines = false
     public static let printResults = true
@@ -25,14 +25,14 @@ public enum DefaultSearchSettings {
 public class SearchSettings: FindSettings {
     public var colorize: Bool = DefaultSearchSettings.colorize
     public var firstMatch: Bool = DefaultSearchSettings.firstMatch
-    public var linesAfter = DefaultSearchSettings.linesAfter
-    public var linesBefore = DefaultSearchSettings.linesBefore
-    public var maxLineLength = DefaultSearchSettings.maxLineLength
+    public var linesAfter: Int32 = DefaultSearchSettings.linesAfter
+    public var linesBefore: Int32 = DefaultSearchSettings.linesBefore
+    public var maxLineLength: Int32 = DefaultSearchSettings.maxLineLength
     public var multiLineSearch: Bool = DefaultSearchSettings.multiLineSearch
     public var printLines: Bool = DefaultSearchSettings.printLines
     public var printResults: Bool = DefaultSearchSettings.printResults
     public var searchArchives: Bool = DefaultSearchSettings.searchArchives
-    public var textFileEncoding = DefaultSearchSettings.textFileEncoding
+    public var textFileEncoding: String = DefaultSearchSettings.textFileEncoding
     public var uniqueLines: Bool = DefaultSearchSettings.uniqueLines
 
     public var inLinesAfterPatterns = [Regex]()

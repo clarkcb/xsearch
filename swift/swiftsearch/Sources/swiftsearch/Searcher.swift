@@ -173,9 +173,9 @@ public class Searcher {
             var linesBefore: [String] = []
             if settings.linesBefore > 0 {
                 let linesBeforeStartIndices = takeRight(beforeStartLineIndices
-                    .filter { $0 < startLineIndex }, num: settings.linesBefore)
+                    .filter { $0 < startLineIndex }, num: Int(settings.linesBefore))
                 let linesBeforeEndIndices = takeRight(endLineIndices.filter { $0 < endLineIndex },
-                                                      num: settings.linesBefore)
+                                                      num: Int(settings.linesBefore))
                 for i in 0 ..< linesBeforeStartIndices.count {
                     linesBefore.append(lineFromIndices(str, startLineIndex: linesBeforeStartIndices[i],
                                                        endLineIndex: linesBeforeEndIndices[i]))
@@ -184,9 +184,9 @@ public class Searcher {
             var linesAfter: [String] = []
             if settings.linesAfter > 0 {
                 let linesAfterStartIndices = take(startLineIndices.filter { $0 > startLineIndex },
-                                                  num: settings.linesAfter)
+                                                  num: Int(settings.linesAfter))
                 let linesAfterEndIndices = take(endLineIndices.filter { $0 > endLineIndex },
-                                                num: settings.linesAfter)
+                                                num: Int(settings.linesAfter))
                 for i in 0 ..< linesAfterStartIndices.count {
                     linesAfter.append(lineFromIndices(str, startLineIndex: linesAfterStartIndices[i],
                                                       endLineIndex: linesAfterEndIndices[i]))
