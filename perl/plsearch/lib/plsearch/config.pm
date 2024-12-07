@@ -13,20 +13,22 @@ use warnings;
 
 use parent 'Exporter';
 
-use Cwd qw(abs_path);
-use File::Basename;
-use File::Spec;
-use JSON::PP qw(decode_json);
+# use Cwd qw(abs_path);
+# use File::Basename;
+# use File::Spec;
+# use JSON::PP qw(decode_json);
+use Path::Class;
 
-my $absdir = dirname(abs_path(__FILE__));
-my $share_path = File::Spec->join($absdir, '../../share');
+our $XSEARCH_PATH = $ENV{'XSEARCH_PATH'};
+if (defined $ENV{XSEARCH_PATH}) {
+    $XSEARCH_PATH = dir($ENV{'XSEARCH_PATH'})
+} else {
+    $XSEARCH_PATH = dir($ENV{'HOME'}, 'src', 'xsearch');
+}
+our $SHARED_PATH = $XSEARCH_PATH->subdir('shared');
+our $SEARCH_OPTIONS_PATH = $SHARED_PATH->file('searchoptions.json');
 
-our $XSEARCHPATH = $ENV{'XSEARCH_PATH'};
-our $SHAREDPATH = "$XSEARCHPATH/shared";
-our $FILETYPESPATH = "$share_path/filetypes.json";
-our $SEARCHOPTIONSPATH = "$share_path/searchoptions.json";
-
-our @EXPORT = qw($XSEARCHPATH $SHAREDPATH $FILETYPESPATH $SEARCHOPTIONSPATH);
+our @EXPORT = qw($XSEARCH_PATH $SHARED_PATH $SEARCH_OPTIONS_PATH);
 
 1;
 

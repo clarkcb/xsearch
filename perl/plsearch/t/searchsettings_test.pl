@@ -22,7 +22,7 @@ use Test::Simple tests => 30;
 use plsearch::SearchSettings;
 
 sub test_default_settings {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     ok(!$settings->{archives_only}, "archives_only is false by default");
     ok($settings->{colorize}, "colorize is true by default");
     ok(!$settings->{debug}, "debug is false by default");
@@ -46,14 +46,14 @@ sub test_default_settings {
 }
 
 sub test_add_single_extension {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->add_exts('pl', $settings->{in_extensions});
     ok(scalar @{$settings->{in_extensions}} == 1, "in_extensions has one extension");
     ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
 }
 
 sub test_add_comma_delimited_extensions {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->add_exts('pl,py', $settings->{in_extensions});
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
@@ -61,7 +61,7 @@ sub test_add_comma_delimited_extensions {
 }
 
 sub test_add_array_extensions {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->add_exts(['pl','py'], $settings->{in_extensions});
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
@@ -69,13 +69,13 @@ sub test_add_array_extensions {
 }
 
 sub test_add_single_pattern {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->add_patterns('Searcher', $settings->{search_patterns});
     ok(scalar @{$settings->{search_patterns}} == 1, "search_patterns has one pattern");
 }
 
 sub test_add_array_patterns {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->add_patterns(['Searcher', 'Result'], $settings->{search_patterns});
     ok(scalar @{$settings->{search_patterns}} == 2, "search_patterns has two patterns");
 }

@@ -24,7 +24,122 @@ use plsearch::config;
 use plsearch::SearchOption;
 use plsearch::SearchSettings;
 
-my $arg_action_hash = {
+my $bool_action_hash = {
+    'allmatches' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('first_match', !$bool);
+    },
+    'archivesonly' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('archives_only', $bool);
+    },
+    'colorize' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('colorize', $bool);
+    },
+    'debug' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('debug', $bool);
+    },
+    'excludehidden' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('include_hidden', !$bool);
+    },
+    'firstmatch' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('first_match', $bool);
+    },
+    'followsymlinks' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('follow_symlinks', $bool);
+    },
+    'help' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_usage', $bool);
+    },
+    'includehidden' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('include_hidden', $bool);
+    },
+    'multilinesearch' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('multi_line_search', $bool);
+    },
+    'nocolorize' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('colorize', !$bool);
+    },
+    'nofollowsymlinks' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('follow_symlinks', !$bool);
+    },
+    'noprintmatches' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_results', !$bool);
+    },
+    'norecursive' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('recursive', !$bool);
+    },
+    'nosearcharchives' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('search_archives', !$bool);
+    },
+    'printdirs' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('list_dirs', $bool);
+    },
+    'printfiles' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('list_files', $bool);
+    },
+    'printlines' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('list_lines', $bool);
+    },
+    'printmatches' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_results', $bool);
+    },
+    'recursive' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('recursive', $bool);
+    },
+    'searcharchives' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('search_archives', $bool);
+    },
+    'sort-ascending' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_descending', !$bool);
+    },
+    'sort-caseinsensitive' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_case_insensitive', $bool);
+    },
+    'sort-casesensitive' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_case_insensitive', !$bool);
+    },
+    'sort-descending' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_descending', $bool);
+    },
+    'uniquelines' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('unique_lines', $bool);
+    },
+    'verbose' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('verbose', $bool);
+    },
+    'version' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_version', $bool);
+    }
+};
+
+my $str_action_hash = {
     'encoding' => sub {
         my ($s, $settings) = @_;
         $settings->{text_file_encoding} = $s;
@@ -61,10 +176,6 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{in_lines_before_patterns});
     },
-    'linesafter' => sub {
-        my ($s, $settings) = @_;
-        $settings->{lines_after} = int($s);
-    },
     'linesaftertopattern' => sub {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{lines_aftertopatterns});
@@ -73,37 +184,13 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{lines_afteruntilpatterns});
     },
-    'linesbefore' => sub {
-        my ($s, $settings) = @_;
-        $settings->{lines_before} = int($s);
-    },
-    'maxdepth' => sub {
-        my ($s, $settings) = @_;
-        $settings->{max_depth} = int($s);
-    },
     'maxlastmod' => sub {
         my ($s, $settings) = @_;
         $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
     },
-    'maxlinelength' => sub {
-        my ($s, $settings) = @_;
-        $settings->{max_line_length} = int($s);
-    },
-    'maxsize' => sub {
-        my ($s, $settings) = @_;
-        $settings->{max_size} = int($s);
-    },
-    'mindepth' => sub {
-        my ($s, $settings) = @_;
-        $settings->{min_depth} = int($s);
-    },
     'minlastmod' => sub {
         my ($s, $settings) = @_;
         $settings->{min_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
-    },
-    'minsize' => sub {
-        my ($s, $settings) = @_;
-        $settings->{min_size} = int($s);
     },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;
@@ -155,119 +242,37 @@ my $arg_action_hash = {
     },
 };
 
-my $bool_flag_action_hash = {
-    'allmatches' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('first_match', !$b);
+my $int_action_hash = {
+    'linesafter' => sub {
+        # my ($s, $settings) = @_;
+        # $settings->{lines_after} = int($s);
+        my ($i, $settings) = @_;
+        $settings->{lines_after} = $i;
     },
-    'archivesonly' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('archives_only', $b);
+    'linesbefore' => sub {
+        my ($i, $settings) = @_;
+        $settings->{lines_before} = $i;
     },
-    'colorize' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('colorize', $b);
+    'maxdepth' => sub {
+        my ($i, $settings) = @_;
+        $settings->{max_depth} = $i;
     },
-    'debug' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('debug', $b);
+    'maxlinelength' => sub {
+        my ($i, $settings) = @_;
+        $settings->{max_line_length} = $i;
     },
-    'excludehidden' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('include_hidden', !$b);
+    'maxsize' => sub {
+        my ($i, $settings) = @_;
+        $settings->{max_size} = $i;
     },
-    'firstmatch' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('first_match', $b);
+    'mindepth' => sub {
+        my ($i, $settings) = @_;
+        $settings->{min_depth} = $i;
     },
-    'followsymlinks' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('follow_symlinks', $b);
+    'minsize' => sub {
+        my ($i, $settings) = @_;
+        $settings->{min_size} = $i;
     },
-    'help' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_usage', $b);
-    },
-    'includehidden' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('include_hidden', $b);
-    },
-    'multilinesearch' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('multi_line_search', $b);
-    },
-    'nocolorize' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('colorize', !$b);
-    },
-    'nofollowsymlinks' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('follow_symlinks', !$b);
-    },
-    'noprintmatches' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_results', !$b);
-    },
-    'norecursive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('recursive', !$b);
-    },
-    'nosearcharchives' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('search_archives', !$b);
-    },
-    'printdirs' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_dirs', $b);
-    },
-    'printfiles' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_files', $b);
-    },
-    'printlines' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_lines', $b);
-    },
-    'printmatches' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_results', $b);
-    },
-    'recursive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('recursive', $b);
-    },
-    'searcharchives' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('search_archives', $b);
-    },
-    'sort-ascending' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_descending', !$b);
-    },
-    'sort-caseinsensitive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_case_insensitive', $b);
-    },
-    'sort-casesensitive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_case_insensitive', !$b);
-    },
-    'sort-descending' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_descending', $b);
-    },
-    'uniquelines' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('unique_lines', $b);
-    },
-    'verbose' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('verbose', $b);
-    },
-    'version' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_version', $b);
-    }
 };
 
 sub new {
@@ -281,20 +286,15 @@ sub new {
 
 sub set_options_from_json {
     my $options_hash = {};
-    my $options_json_hash = decode_json plfind::FileUtil::get_file_contents($SEARCHOPTIONSPATH);
+    my $contents = $SEARCH_OPTIONS_PATH->slurp;
+    my $options_json_hash = decode_json $contents;
     foreach my $search_option (@{$options_json_hash->{searchoptions}}) {
         my $short = $search_option->{short};
         my $long = $search_option->{long};
         my $desc = $search_option->{desc};
-        my $func = sub {};
-        if (exists $arg_action_hash->{$long}) {
-            $func = $arg_action_hash->{$long};
-        } elsif (exists $bool_flag_action_hash->{$long}) {
-            $func = $bool_flag_action_hash->{$long};
-        }
-        my $opt = new plsearch::SearchOption($short, $long, $desc, $func);
+        my $opt = plsearch::SearchOption->new($short, $long, $desc);
         $options_hash->{$long} = $opt;
-        if ($short) {
+        if (defined $short) {
             $options_hash->{$short} = $options_hash->{$long};
         }
     }
@@ -302,28 +302,30 @@ sub set_options_from_json {
 }
 
 sub settings_from_file {
+    # $file_path is instance of Path::Class::File
     my ($file_path, $settings) = @_;
     my $errs = [];
     unless (-e $file_path) {
         push(@{$errs}, 'Settings file not found: ' . $file_path);
         return $errs;
     }
-    my $json = plfind::FileUtil::get_file_contents($file_path);
+    my $json = $file_path->slurp;
     return __from_json($json, $settings);
 }
 
 # private function
 sub __from_json {
     my ($json, $settings) = @_;
-    #print "\$json: '$json'\n";
     my $errs = [];
     my $json_hash = decode_json $json;
     my @opt_names = keys %{$json_hash};
     foreach my $o (@opt_names) {
-        if (exists $arg_action_hash->{$o}) {
-            &{$arg_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif (exists $bool_flag_action_hash->{$o}) {
-            &{$bool_flag_action_hash->{$o}}($json_hash->{$o}, $settings);
+        if (exists $bool_action_hash->{$o}) {
+            &{$bool_action_hash->{$o}}($json_hash->{$o}, $settings);
+        } elsif (exists $str_action_hash->{$o}) {
+            &{$str_action_hash->{$o}}($json_hash->{$o}, $settings);
+        } elsif (exists $int_action_hash->{$o}) {
+            &{$int_action_hash->{$o}}($json_hash->{$o}, $settings);
         } else {
             push(@{$errs}, 'Invalid option: ' . $o);
         }
@@ -340,7 +342,9 @@ sub settings_from_json {
 
 sub settings_from_args {
     my ($self, $args) = @_;
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
+    # default print_results to true since running as cli
+    $settings->set_property('print_results', 1);
     my @errs;
     while (scalar @{$args}) {
         my $arg = shift @{$args};
@@ -349,15 +353,19 @@ sub settings_from_args {
             if (exists $self->{options}->{$arg}) {
                 my $opt = $self->{options}->{$arg};
                 my $long = $opt->{long_arg};
-                if (exists $arg_action_hash->{$long}) {
+                if (exists $bool_action_hash->{$long}) {
+                    &{$bool_action_hash->{$long}}(1, $settings);
+                } elsif (exists $str_action_hash->{$long} || exists $int_action_hash->{$long}) {
                     if (scalar @{$args}) {
                         my $val = shift @{$args};
-                        &{$arg_action_hash->{$long}}($val, $settings);
+                        if (exists $str_action_hash->{$long}) {
+                            &{$str_action_hash->{$long}}($val, $settings);
+                        } else {
+                            &{$int_action_hash->{$long}}(int($val), $settings);
+                        }
                     } else {
                         push(@errs, "Missing value for $arg");
                     }
-                } elsif (exists $bool_flag_action_hash->{$long}) {
-                    &{$bool_flag_action_hash->{$long}}(1, $settings);
                 }
             } else {
                 push(@errs, "Invalid option: $arg");
@@ -379,13 +387,12 @@ sub get_usage_string {
     my $usage = "Usage:\n plsearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n";
     my $longest = 0;
     my $options_with_sort_key = {};
-    my @opt_strs_with_descs;
     foreach my $opt_key (keys %{$self->{options}}) {
         my $option = $self->{options}->{$opt_key};
         my $long_arg = $option->{long_arg};
         my $short_arg = $option->{short_arg};
         my $sort_key = $long_arg;
-        if ($short_arg) {
+        if (defined $short_arg) {
             $sort_key = lc($short_arg) . 'a' . $long_arg;
         }
         $options_with_sort_key->{$sort_key} = $option;
