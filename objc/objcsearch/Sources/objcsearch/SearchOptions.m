@@ -6,8 +6,9 @@
 // private properties
 @property NSArray<SearchOption*> *searchOptions;
 @property NSDictionary<NSString*,NSString*> *longArgDict;
-@property NSDictionary *argActionDict;
-@property NSDictionary *boolFlagActionDict;
+@property NSDictionary *boolActionDict;
+@property NSDictionary *stringActionDict;
+@property NSDictionary *integerActionDict;
 
 @end
 
@@ -18,8 +19,9 @@
     if (self) {
         self.searchOptions = [self searchOptionsFromJson];
         self.longArgDict = [self getLongArgDict];
-        self.argActionDict = [self getArgActionDict];
-        self.boolFlagActionDict = [self getBoolFlagActionDict];
+        self.boolActionDict = [self getBoolActionDict];
+        self.stringActionDict = [self getStringActionDict];
+        self.integerActionDict = [self getIntegerActionDict];
     }
     return self;
 }
@@ -65,29 +67,29 @@
 
 - (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(SearchSettings *)settings {
     if ([obj isKindOfClass:[NSString class]]) {
-        if ([name isEqualToString:@"path"]) {
-            [settings addPath:(NSMutableString*)obj];
-        } else if (self.argActionDict[name]) {
-            void(^block)(NSObject *, SearchSettings *) = self.argActionDict[name];
-            block(obj, settings);
+        NSString *s = (NSString *)obj;
+        if (self.stringActionDict[name]) {
+            void(^block)(NSObject *, SearchSettings *) = self.stringActionDict[name];
+            block(s, settings);
         }
     } else if ([obj isKindOfClass:[NSNumber class]]) {
         NSNumber *num = (NSNumber *)obj;
-        if (self.argActionDict[name]) {
-            void(^block)(NSString* s, SearchSettings *) = self.argActionDict[name];
-            block([num description], settings);
-        } else if (self.boolFlagActionDict[name]) {
+        if (self.boolActionDict[name]) {
             BOOL b = [num boolValue];
-            void(^block)(BOOL, SearchSettings *) = self.boolFlagActionDict[name];
+            void(^block)(BOOL, SearchSettings *) = self.boolActionDict[name];
             block(b, settings);
+        } else if (self.integerActionDict[name]) {
+            NSInteger i = [num integerValue];
+            void(^block)(BOOL, SearchSettings *) = self.integerActionDict[name];
+            block(i, settings);
+        } else if (self.stringActionDict[name]) {
+            void(^block)(NSString* s, SearchSettings *) = self.stringActionDict[name];
+            block([num description], settings);
         }
     } else if ([obj isKindOfClass:[NSArray class]]) {
-        if (self.argActionDict[name]) {
-            void(^block)(NSObject *, SearchSettings *) = self.argActionDict[name];
-            NSArray *arr = (NSArray *)obj;
-            for (NSObject *o in arr) {
-                block([o description], settings);
-            }
+        NSArray *arr = (NSArray *)obj;
+        for (NSObject *o in arr) {
+            [self applySetting:name obj:o settings:settings];
         }
     }
 }
@@ -132,155 +134,148 @@
     return [NSDictionary dictionaryWithDictionary:longArgDict];
 }
 
-typedef void (^ArgActionBlockType)(NSString*, SearchSettings*);
+typedef void (^BoolActionBlockType)(BOOL, SearchSettings*);
 
-- (NSDictionary<NSString*,ArgActionBlockType>*) getArgActionDict {
-    return [[NSDictionary alloc] initWithObjectsAndKeys:
-            ^void (NSString* s, SearchSettings *ss) {
-                ss.textFileEncoding = s;
-            }, @"encoding",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addInArchiveExtension:s];
-            }, @"in-archiveext",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.inArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-archivefilepattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.inDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-dirpattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addInExtension:s];
-            }, @"in-ext",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.inFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-filepattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addInFileType:s];
-            }, @"in-filetype",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.inLinesAfterPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-linesafterpattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.inLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-linesbeforepattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                ss.linesAfter = [s intValue];
-            }, @"linesafter",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.linesAfterToPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"linesaftertopattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.linesAfterUntilPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"linesafteruntilpattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                ss.linesBefore = [s intValue];
-            }, @"linesbefore",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setMaxDepthFromString:s];
-            }, @"maxdepth",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setMaxLastModFromString:s];
-            }, @"maxlastmod",
-            ^void (NSString* s, SearchSettings *ss) {
-                ss.maxLineLength = [s intValue];
-            }, @"maxlinelength",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setMaxSizeFromString:s];
-            }, @"maxsize",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setMinDepthFromString:s];
-            }, @"mindepth",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setMinLastModFromString:s];
-            }, @"minlastmod",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setMinSizeFromString:s];
-            }, @"minsize",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addOutArchiveExtension:s];
-            }, @"out-archiveext",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.outArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-archivefilepattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.outDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-dirpattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addOutExtension:s];
-            }, @"out-ext",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.outFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-filepattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addOutFileType:s];
-            }, @"out-filetype",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.outLinesAfterPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-linesafterpattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.outLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-linesbeforepattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss addPath:s];
-            }, @"path",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss.searchPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"searchpattern",
-            ^void (NSString* s, SearchSettings *ss) {
-                [ss setSortByFromName:s];
-            }, @"sort-by",
-//            ^void (NSString* s, SearchSettings *ss) {
-//                [self settingsFromFile:s settings:ss];
-//            }, @"settings-file",
-            nil];
+- (NSDictionary<NSString*,BoolActionBlockType>*) getBoolActionDict {
+    return @{
+        @"allmatches" : [^void (BOOL b, SearchSettings *ss) { ss.firstMatch = !b; } copy],
+        @"archivesonly" : [^void (BOOL b, SearchSettings *ss) {
+            ss.archivesOnly = b;
+            if (b) ss.searchArchives = true;
+        } copy],
+        @"colorize" : [^void (BOOL b, SearchSettings *ss) { ss.colorize = b; } copy],
+        @"debug" : [^void (BOOL b, SearchSettings *ss) {
+            ss.debug = b;
+            if (b) ss.verbose = true;
+        } copy],
+        @"excludehidden" : [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = !b; } copy],
+        @"firstmatch" : [^void (BOOL b, SearchSettings *ss) { ss.firstMatch = b; } copy],
+        @"followsymlinks" : [^void (BOOL b, SearchSettings *ss) { ss.followSymlinks = b; } copy],
+        @"help" : [^void (BOOL b, SearchSettings *ss) { ss.printUsage = b; } copy],
+        @"includehidden" : [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = b; } copy],
+        @"multilinesearch" : [^void (BOOL b, SearchSettings *ss) { ss.multiLineSearch = b; } copy],
+        @"nocolorize" : [^void (BOOL b, SearchSettings *ss) { ss.colorize = !b; } copy],
+        @"nofollowsymlinks" : [^void (BOOL b, SearchSettings *ss) { ss.followSymlinks = !b; } copy],
+        @"noprintdirs" : [^void (BOOL b, SearchSettings *ss) { ss.printDirs = !b; } copy],
+        @"noprintfiles" : [^void (BOOL b, SearchSettings *ss) { ss.printFiles = !b; } copy],
+        @"noprintlines" : [^void (BOOL b, SearchSettings *ss) { ss.printLines = !b; } copy],
+        @"noprintmatches" : [^void (BOOL b, SearchSettings *ss) { ss.printResults = !b; } copy],
+        @"norecursive" : [^void (BOOL b, SearchSettings *ss) { ss.recursive = !b; } copy],
+        @"nosearcharchives" : [^void (BOOL b, SearchSettings *ss) { ss.searchArchives = !b; } copy],
+        @"printdirs" : [^void (BOOL b, SearchSettings *ss) { ss.printDirs = b; } copy],
+        @"printfiles" : [^void (BOOL b, SearchSettings *ss) { ss.printFiles = b; } copy],
+        @"printlines" : [^void (BOOL b, SearchSettings *ss) { ss.printLines = b; } copy],
+        @"printmatches" : [^void (BOOL b, SearchSettings *ss) { ss.printResults = b; } copy],
+        @"recursive" : [^void (BOOL b, SearchSettings *ss) { ss.recursive = b; } copy],
+        @"searcharchives" : [^void (BOOL b, SearchSettings *ss) { ss.searchArchives = b; } copy],
+        @"sort-ascending" : [^void (BOOL b, SearchSettings *ss) { ss.sortDescending = !b; } copy],
+        @"sort-caseinsensitive" : [^void (BOOL b, SearchSettings *ss) { ss.sortCaseInsensitive = b; } copy],
+        @"sort-casesensitive" : [^void (BOOL b, SearchSettings *ss) { ss.sortCaseInsensitive = !b; } copy],
+        @"sort-descending" : [^void (BOOL b, SearchSettings *ss) { ss.sortDescending = b; } copy],
+        @"uniquelines" : [^void (BOOL b, SearchSettings *ss) { ss.uniqueLines = b; } copy],
+        @"verbose" : [^void (BOOL b, SearchSettings *ss) { ss.verbose = b; } copy],
+        @"version" : [^void (BOOL b, SearchSettings *ss) { ss.printVersion = b; } copy]
+    };
 }
 
-typedef void (^BoolFlagActionBlockType)(BOOL, SearchSettings*);
+typedef void (^StringActionBlockType)(NSString*, SearchSettings*);
 
-- (NSDictionary<NSString*,BoolFlagActionBlockType>*) getBoolFlagActionDict {
-    return [[NSDictionary alloc] initWithObjectsAndKeys:
-            [^void (BOOL b, SearchSettings *ss) { ss.firstMatch = !b; } copy], @"allmatches",
-            [^void (BOOL b, SearchSettings *ss) {
-                ss.archivesOnly = b;
-                if (b) ss.searchArchives = true;
-            } copy], @"archivesonly",
-            [^void (BOOL b, SearchSettings *ss) { ss.colorize = b; } copy], @"colorize",
-            [^void (BOOL b, SearchSettings *ss) {
-                ss.debug = b;
-                if (b) ss.verbose = true;
-            } copy], @"debug",
-            [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = !b; } copy], @"excludehidden",
-            [^void (BOOL b, SearchSettings *ss) { ss.firstMatch = b; } copy], @"firstmatch",
-            [^void (BOOL b, SearchSettings *ss) { ss.followSymlinks = b; } copy], @"followsymlinks",
-            [^void (BOOL b, SearchSettings *ss) { ss.printUsage = b; } copy], @"help",
-            [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = b; } copy], @"includehidden",
-            [^void (BOOL b, SearchSettings *ss) { ss.multiLineSearch = b; } copy], @"multilinesearch",
-            [^void (BOOL b, SearchSettings *ss) { ss.colorize = !b; } copy], @"nocolorize",
-            [^void (BOOL b, SearchSettings *ss) { ss.followSymlinks = !b; } copy], @"nofollowsymlinks",
-            [^void (BOOL b, SearchSettings *ss) { ss.printDirs = !b; } copy], @"noprintdirs",
-            [^void (BOOL b, SearchSettings *ss) { ss.printFiles = !b; } copy], @"noprintfiles",
-            [^void (BOOL b, SearchSettings *ss) { ss.printLines = !b; } copy], @"noprintlines",
-            [^void (BOOL b, SearchSettings *ss) { ss.printResults = !b; } copy], @"noprintmatches",
-            [^void (BOOL b, SearchSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
-            [^void (BOOL b, SearchSettings *ss) { ss.searchArchives = !b; } copy], @"nosearcharchives",
-            [^void (BOOL b, SearchSettings *ss) { ss.printDirs = b; } copy], @"printdirs",
-            [^void (BOOL b, SearchSettings *ss) { ss.printFiles = b; } copy], @"printfiles",
-            [^void (BOOL b, SearchSettings *ss) { ss.printLines = b; } copy], @"printlines",
-            [^void (BOOL b, SearchSettings *ss) { ss.printResults = b; } copy], @"printmatches",
-            [^void (BOOL b, SearchSettings *ss) { ss.recursive = b; } copy], @"recursive",
-            [^void (BOOL b, SearchSettings *ss) { ss.searchArchives = b; } copy], @"searcharchives",
-            [^void (BOOL b, SearchSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
-            [^void (BOOL b, SearchSettings *ss) { ss.sortCaseInsensitive = b; } copy], @"sort-caseinsensitive",
-            [^void (BOOL b, SearchSettings *ss) { ss.sortCaseInsensitive = !b; } copy], @"sort-casesensitive",
-            [^void (BOOL b, SearchSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
-            [^void (BOOL b, SearchSettings *ss) { ss.uniqueLines = b; } copy], @"uniquelines",
-            [^void (BOOL b, SearchSettings *ss) { ss.verbose = b; } copy], @"verbose",
-            [^void (BOOL b, SearchSettings *ss) { ss.printVersion = b; } copy], @"version",
-            nil];
+- (NSDictionary<NSString*,StringActionBlockType>*) getStringActionDict {
+    return @{
+        @"encoding" : ^void (NSString* s, SearchSettings *ss) {
+            ss.textFileEncoding = s;
+        },
+        @"in-archiveext" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addInArchiveExtension:s];
+        },
+        @"in-archivefilepattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.inArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-dirpattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.inDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-ext" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addInExtension:s];
+        },
+        @"in-filepattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.inFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-filetype" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addInFileType:s];
+        },
+        @"in-linesafterpattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.inLinesAfterPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-linesbeforepattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.inLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"linesaftertopattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.linesAfterToPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"linesafteruntilpattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.linesAfterUntilPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"maxlastmod" : ^void (NSString* s, SearchSettings *ss) {
+            [ss setMaxLastModFromString:s];
+        },
+        @"minlastmod" : ^void (NSString* s, SearchSettings *ss) {
+            [ss setMinLastModFromString:s];
+        },
+        @"out-archiveext" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addOutArchiveExtension:s];
+        },
+        @"out-archivefilepattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.outArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-dirpattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.outDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-ext" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addOutExtension:s];
+        },
+        @"out-filepattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.outFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-filetype" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addOutFileType:s];
+        },
+        @"out-linesafterpattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.outLinesAfterPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-linesbeforepattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.outLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"path" : ^void (NSString* s, SearchSettings *ss) {
+            [ss addPath:s];
+        },
+        @"searchpattern" : ^void (NSString* s, SearchSettings *ss) {
+            [ss.searchPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"sort-by" : ^void (NSString* s, SearchSettings *ss) {
+            [ss setSortByFromName:s];
+        }
+    };
+}
+
+typedef void (^IntegerActionBlockType)(NSInteger, SearchSettings*);
+
+- (NSDictionary<NSString*,IntegerActionBlockType>*) getIntegerActionDict {
+    return @{
+        @"linesafter" : [^void (NSInteger i, SearchSettings *ss) { ss.linesAfter = i; } copy],
+        @"linesbefore" : [^void (NSInteger i, SearchSettings *ss) { ss.linesBefore = i; } copy],
+        @"maxdepth" : [^void (NSInteger i, SearchSettings *ss) { ss.maxDepth = i; } copy],
+        @"maxlinelength" : [^void (NSInteger i, SearchSettings *ss) { ss.maxLineLength = i; } copy],
+        @"maxsize" : [^void (NSInteger i, SearchSettings *ss) { ss.maxSize = i; } copy],
+        @"mindepth" : [^void (NSInteger i, SearchSettings *ss) { ss.minDepth = i; } copy],
+        @"minsize" : [^void (NSInteger i, SearchSettings *ss) { ss.minSize = i; } copy]
+    };
 }
 
 - (SearchSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
     SearchSettings *settings = [[SearchSettings alloc] init];
+    // default printResults to true since running as cli
+    settings.printResults = true;
+
     int i = 1;
     while (i < [args count]) {
         NSString *arg = args[i];
@@ -291,26 +286,30 @@ typedef void (^BoolFlagActionBlockType)(BOOL, SearchSettings*);
             if (self.longArgDict[arg]) {
                 //logMsg([NSString stringWithFormat:@"Option in longArgDict: %@", arg]);
                 NSString *longArg = self.longArgDict[arg];
-                if (self.argActionDict[longArg] || [longArg isEqualToString:@"settings-file"]) {
+                if (self.boolActionDict[longArg]) {
+                    void(^block)(BOOL, SearchSettings *) = self.boolActionDict[longArg];
+                    block(true, settings);
+                } else {
+                    NSString *argVal = @"";
                     if ([args count] > i+1) {
-                        NSString *secondArg = args[i+1];
-                        if (self.argActionDict[longArg]) {
-                            void(^block)(NSString *, SearchSettings *) = self.argActionDict[longArg];
-                            block(secondArg, settings);
-                        } else {
-                            [self settingsFromFile:secondArg settings:settings];
-                        }
+                        argVal = args[i+1];
                         i++;
                     } else {
                         setError(error, [NSString stringWithFormat:@"Missing argument for option %@", arg]);
                         return nil;
                     }
-                } else if (self.boolFlagActionDict[longArg]) {
-                    void(^block)(BOOL, SearchSettings *) = self.boolFlagActionDict[longArg];
-                    block(true, settings);
-                } else {
-                    setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
-                    return nil;
+                    if (self.stringActionDict[longArg]) {
+                        void(^block)(NSString *, SearchSettings *) = self.stringActionDict[longArg];
+                        block(argVal, settings);
+                    } else if (self.integerActionDict[longArg]) {
+                        void(^block)(NSInteger, SearchSettings *) = self.integerActionDict[longArg];
+                        block([argVal integerValue], settings);
+                    } else if ([longArg isEqualToString:@"settings-file"]) {
+                        [self settingsFromFile:argVal settings:settings];
+                    } else {
+                        setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
+                        return nil;
+                    }
                 }
             } else {
                 setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
