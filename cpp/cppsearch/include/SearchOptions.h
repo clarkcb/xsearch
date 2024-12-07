@@ -22,7 +22,7 @@ namespace cppsearch {
     private:
         std::unordered_map<std::string, std::function<void(bool, SearchSettings&)>> m_bool_arg_map;
         std::unordered_map<std::string, std::function<void(int, SearchSettings&)>> m_int_arg_map;
-        std::unordered_map<std::string, std::function<void(long, SearchSettings&)>> m_long_arg_map;
+        std::unordered_map<std::string, std::function<void(uint64_t, SearchSettings&)>> m_long_arg_map;
         std::unordered_map<std::string, std::function<void(std::string&, SearchSettings&)>> m_str_arg_map;
         std::unordered_map<std::string, std::string> m_arg_name_map;
         std::vector<SearchOption> m_options;

@@ -60,8 +60,8 @@ namespace cppsearch {
         };
 
         m_long_arg_map = {
-            {"maxsize", [](const long lng, SearchSettings& ss) { ss.max_size(lng); }},
-            {"minsize", [](const long lng, SearchSettings& ss) { ss.min_size(lng); }},
+            {"maxsize", [](const uint64_t lng, SearchSettings& ss) { ss.max_size(lng); }},
+            {"minsize", [](const uint64_t lng, SearchSettings& ss) { ss.min_size(lng); }},
         };
 
         m_str_arg_map = {
@@ -222,11 +222,6 @@ namespace cppsearch {
         // ~1MB, an arbitrary limit, but at least a limit
         assert(file_size <= 1024000);
 
-        // std::fstream f(file_path, std::ios::in);
-        // const json doc = json::parse(f);
-        // f.close();
-        // settings_from_json_object(doc, settings);
-
         FILE *fp = fopen(file_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -240,8 +235,6 @@ namespace cppsearch {
     }
 
     void SearchOptions::settings_from_json(const std::string_view json_str, SearchSettings& settings) {
-        // const json doc = json::parse(json_str);
-        // settings_from_json_object(doc, settings);
         rapidjson::Document document;
         document.Parse(std::string{json_str}.c_str());
         settings_from_document(document, settings);
@@ -276,61 +269,19 @@ namespace cppsearch {
                     const std::string msg = "Invalid option: " + name;
                     throw SearchException(msg);
                 }
+
+            } else if (it->value.IsNumber()) {
+                if (m_int_arg_map.contains(name)) {
+                    m_int_arg_map[name](it->value.GetInt(), settings);
+                } else if (m_long_arg_map.contains(name)) {
+                    m_long_arg_map[name](it->value.GetUint64(), settings);
+                } else {
+                    const std::string msg = "Invalid option: " + name;
+                    throw SearchException(msg);
+                }
             }
         }
     }
-
-    // void SearchOptions::settings_from_json_object(const json& json_obj, SearchSettings& settings) {
-    //     assert(json_obj.is_object());
-    //
-    //     for (auto it = json_obj.begin(); it != json_obj.end(); ++it) {
-    //         const std::string& key = it.key();
-    //
-    //         if (const json& val = it.value();
-    //             val.is_array()) {
-    //             if (m_str_arg_map.contains(key)) {
-    //                 for (const json& elem : val) {
-    //                     assert(elem.is_string());
-    //                     std::string s = elem;
-    //                     m_str_arg_map[key](s, settings);
-    //                 }
-    //             } else {
-    //                 const std::string msg = "Invalid option: " + key;
-    //                 throw SearchException(msg);
-    //             }
-    //         } else if (val.is_boolean()) {
-    //             if (m_bool_arg_map.contains(key)) {
-    //                 bool b = val;
-    //                 m_bool_arg_map[key](b, settings);
-    //             } else {
-    //                 const std::string msg = "Invalid option: " + key;
-    //                 throw SearchException(msg);
-    //             }
-    //         } else if (val.is_string()) {
-    //             if (m_str_arg_map.contains(key)) {
-    //                 std::string s = val;
-    //                 m_str_arg_map[key](s, settings);
-    //             } else {
-    //                 const std::string msg = "Invalid option: " + key;
-    //                 throw SearchException(msg);
-    //             }
-    //         } else if (val.is_number()) {
-    //             if (m_int_arg_map.contains(key)) {
-    //                 int i = val;
-    //                 m_int_arg_map[key](i, settings);
-    //             } else if (m_long_arg_map.contains(key)) {
-    //                 long lng = val;
-    //                 m_long_arg_map[key](lng, settings);
-    //             } else {
-    //                 const std::string msg = "Invalid option: " + key;
-    //                 throw SearchException(msg);
-    //             }
-    //         } else if (val.is_object()) {
-    //             // just assume that the settings are in a contained object
-    //             settings_from_json_object(val, settings);
-    //         }
-    //     }
-    // }
 
     void SearchOptions::usage() {
         const std::string usage_string{get_usage_string()};
@@ -349,7 +300,7 @@ namespace cppsearch {
         auto sort_option_lambda = [](const SearchOption& s1, const SearchOption& s2) -> bool {
             return s1.sort_arg().compare(s2.sort_arg()) < 0;
         };
-        std::sort(m_options.begin(), m_options.end(), sort_option_lambda);
+        std::ranges::sort(m_options, sort_option_lambda);
 
         unsigned long longest_len = 0;
         for (auto const& option : m_options) {
@@ -366,7 +317,7 @@ namespace cppsearch {
         }
 
         const std::string format = std::string(" %1$-") + std::to_string(longest_len) + "s  %2$s\n";
-        for (size_t i = 0; i < opt_strings.size(); ++i) {
+        for (int i = 0; i < opt_strings.size(); ++i) {
             usage_string.append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
         }
         return usage_string;
