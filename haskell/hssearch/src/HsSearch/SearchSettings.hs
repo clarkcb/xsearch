@@ -28,13 +28,13 @@ data SearchSettings = SearchSettings {
                                      , inFileTypes :: [FileType]
                                      , inLinesAfterPatterns :: [String]
                                      , inLinesBeforePatterns :: [String]
-                                     , linesAfter :: Int
+                                     , linesAfter :: Integer
                                      , linesAfterToPatterns :: [String]
                                      , linesAfterUntilPatterns :: [String]
-                                     , linesBefore :: Int
+                                     , linesBefore :: Integer
                                      , maxDepth :: Integer
                                      , maxLastMod :: Maybe UTCTime
-                                     , maxLineLength :: Int
+                                     , maxLineLength :: Integer
                                      , maxSize :: Integer
                                      , minDepth :: Integer
                                      , minLastMod :: Maybe UTCTime

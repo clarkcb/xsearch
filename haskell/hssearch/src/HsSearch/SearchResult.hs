@@ -11,6 +11,7 @@ import Data.Char (isSpace)
 
 import HsSearch.Color (green, reset)
 import HsSearch.SearchSettings
+-- import GHC.Real (Integral(toInteger), fromIntegral)
 
 data SearchResult = SearchResult {
                                    searchPattern :: String
@@ -67,9 +68,10 @@ formatMatchingLine settings result =
         recGetIndicesToMaxLen s e maxLen | e - s + 1 < maxLen = recGetIndicesToMaxLen (decGreaterThanZero s) (incLessThanMax e maxLineEndIndex) maxLen
                                          | e - s < maxLen = recGetIndicesToMaxLen (decGreaterThanZero s) e maxLen
                                          | otherwise = (s, e)
+        intMaxLineLength = fromInteger $ maxLineLength settings
         (lsi, lei) =
-          if trimmedLength > maxLineLength settings
-          then recGetIndicesToMaxLen msi mei (maxLineLength settings)
+          if trimmedLength > intMaxLineLength
+          then recGetIndicesToMaxLen msi mei intMaxLineLength
           else (0, maxLineEndIndex)
         trimWhitespace :: B.ByteString -> B.ByteString
         trimWhitespace = B.drop leadingSpaceCount

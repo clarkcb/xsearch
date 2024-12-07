@@ -128,17 +128,17 @@ searchContentsForPattern settings contents = patternResults
         lineLength i = endLineIndex i - startLineIndex i
         lineAtIndex i = B.take (lineLength i) $ B.drop (startLineIndex i) contents
         countNewlines s = BC.length $ BC.filter (=='\n') s
-        linesBeforeNum = linesBefore settings
+        intLinesBefore = fromInteger $ linesBefore settings
         takeRight n = reverse . take n . reverse
         linesBeforeIndices i n = (takeRight n . takeWhile (<i)) startLineIndices
         getLinesBefore i n = map lineAtIndex (linesBeforeIndices i n)
-        beforeLns i | linesBeforeNum == 0 = []
-                    | otherwise = getLinesBefore (startLineIndex i) linesBeforeNum
-        linesAfterNum = linesAfter settings
+        beforeLns i | intLinesBefore == 0 = []
+                    | otherwise = getLinesBefore (startLineIndex i) intLinesBefore
+        intLinesAfter = fromInteger $ linesAfter settings
         linesAfterIndices i n = (take n . dropWhile (<=i)) startLineIndices
         getLinesAfter i n = map lineAtIndex (linesAfterIndices i n)
-        afterLns i | linesAfterNum == 0 = []
-                   | otherwise = getLinesAfter (startLineIndex i) linesAfterNum
+        afterLns i | intLinesAfter == 0 = []
+                   | otherwise = getLinesAfter (startLineIndex i) intLinesAfter
         checkBefore = linesBefore settings > 0
         beforeLinesMatch bs =
           not checkBefore
@@ -183,11 +183,11 @@ recSearchLines settings beforeList lst num results =
   case lst of
     []     -> results
     (l:ls) -> recSearchLines settings (newBefore l) ls (num + 1) (updatedResults l)
-  where beforeNum = linesBefore settings
-        newBefore l | beforeNum == 0 = []
-                    | length beforeList == beforeNum = tail beforeList ++ [l]
+  where intLinesBefore = fromInteger $ linesBefore settings
+        newBefore l | intLinesBefore == 0 = []
+                    | length beforeList == intLinesBefore = tail beforeList ++ [l]
                     | otherwise = beforeList ++ [l]
-        afterNum = linesAfter settings
+        intLinesAfter = fromInteger $ linesAfter settings
         afterToPatterns = linesAfterToPatterns settings
         afterUntilPatterns = linesAfterUntilPatterns settings
         checkAfterTo = not (null afterToPatterns)
@@ -204,7 +204,7 @@ recSearchLines settings beforeList lst num results =
         afterList
           | checkAfterTo = take afterToCount (tail lst)
           | checkAfterUntil = take afterUntilCount (tail lst)
-          | otherwise = take afterNum (tail lst)
+          | otherwise = take intLinesAfter (tail lst)
         updatedResults l = results ++ newResults l
         newResults l = concatMap (searchNextPattern l) filteredPatterns
         searchNextPattern l = searchLineForPattern settings (num + 1) beforeList l afterList
