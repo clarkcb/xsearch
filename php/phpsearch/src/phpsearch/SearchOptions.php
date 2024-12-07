@@ -11,9 +11,25 @@ use phpfind\FileUtil;
  */
 class SearchOptions
 {
+    /**
+     * @var SearchOption[] $options
+     */
     private array $options;
-    private readonly array $arg_action_map;
-    private readonly array $bool_flag_action_map;
+    /**
+     * @var array<string, \Closure> $bool_action_map
+     */
+    private readonly array $bool_action_map;
+    /**
+     * @var array<string, \Closure> $str_action_map
+     */
+    private readonly array $str_action_map;
+    /**
+     * @var array<string, \Closure> $int_action_map
+     */
+    private readonly array $int_action_map;
+    /**
+     * @var array<string, string> $long_arg_map
+     */
     private array $long_arg_map;
 
 
@@ -22,58 +38,9 @@ class SearchOptions
      */
     public function __construct()
     {
-        $this->options = array();
+        $this->options = [];
 
-        $this->arg_action_map = [
-            'encoding' => fn (string $s, SearchSettings $ss) => $ss->text_file_encoding = $s,
-            'in-archiveext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->in_archive_extensions),
-            'in-archivefilepattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_archive_file_patterns),
-            'in-dirpattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_dir_patterns),
-            'in-ext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->in_extensions),
-            'in-filepattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_file_patterns),
-            'in-filetype' => fn (string $s, SearchSettings $ss) => $ss->add_file_types($s, $ss->in_file_types),
-            'in-linesafterpattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_lines_after_patterns),
-            'in-linesbeforepattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_lines_before_patterns),
-            'linesafter' => fn (string $s, SearchSettings $ss) => $ss->lines_after = intval($s),
-            'linesaftertopattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->lines_after_to_patterns),
-            'linesafteruntilpattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->lines_after_until_patterns),
-            'linesbefore' => fn (string $s, SearchSettings $ss) => $ss->lines_before = intval($s),
-            'maxdepth' => fn (string $s, SearchSettings $ss) => $ss->max_depth = intval($s),
-            'maxlastmod' => fn (string $s, SearchSettings $ss) => $ss->max_last_mod = new \DateTime($s),
-            'maxlinelength' => fn (string $s, SearchSettings $ss) => $ss->max_line_length = intval($s),
-            'maxsize' => fn (string $s, SearchSettings $ss) => $ss->max_size = intval($s),
-            'mindepth' => fn (string $s, SearchSettings $ss) => $ss->min_depth = intval($s),
-            'minlastmod' => fn (string $s, SearchSettings $ss) => $ss->min_last_mod = new \DateTime($s),
-            'minsize' => fn (string $s, SearchSettings $ss) => $ss->min_size = intval($s),
-            'out-archiveext' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->out_archive_extensions),
-            'out-archivefilepattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_archive_file_patterns),
-            'out-dirpattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_dir_patterns),
-            'out-ext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->out_extensions),
-            'out-filepattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_file_patterns),
-            'out-filetype' => fn (string $s, SearchSettings $ss) => $ss->add_file_types($s, $ss->out_file_types),
-            'out-linesafterpattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_lines_after_patterns),
-            'out-linesbeforepattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_lines_before_patterns),
-            'path' => fn (string $s, SearchSettings $ss) => $ss->paths[] = $s,
-            'searchpattern' =>
-                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->search_patterns),
-            'settings-file' => fn (string $s, SearchSettings $ss) => $this->settings_from_file($s, $ss),
-            'sort-by' => fn (string $s, SearchSettings $ss) => $ss->set_sort_by($s)
-        ];
-
-        $this->bool_flag_action_map = [
+        $this->bool_action_map = [
             'allmatches' => fn (bool $b, SearchSettings $ss) => $ss->first_match = !$b,
             'archivesonly' => fn (bool $b, SearchSettings $ss) => $ss->set_archives_only($b),
             'colorize' => fn (bool $b, SearchSettings $ss) => $ss->colorize = $b,
@@ -106,6 +73,59 @@ class SearchOptions
             'verbose' => fn (bool $b, SearchSettings $ss) => $ss->verbose = $b,
             'version' => fn (bool $b, SearchSettings $ss) => $ss->print_version = $b
         ];
+
+        $this->str_action_map = [
+            'encoding' => fn (string $s, SearchSettings $ss) => $ss->text_file_encoding = $s,
+            'in-archiveext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->in_archive_extensions),
+            'in-archivefilepattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_archive_file_patterns),
+            'in-dirpattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_dir_patterns),
+            'in-ext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->in_extensions),
+            'in-filepattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_file_patterns),
+            'in-filetype' => fn (string $s, SearchSettings $ss) => $ss->add_file_types($s, $ss->in_file_types),
+            'in-linesafterpattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_lines_after_patterns),
+            'in-linesbeforepattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->in_lines_before_patterns),
+            'linesaftertopattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->lines_after_to_patterns),
+            'linesafteruntilpattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->lines_after_until_patterns),
+            'maxlastmod' => fn (string $s, SearchSettings $ss) => $ss->max_last_mod = new \DateTime($s),
+            'minlastmod' => fn (string $s, SearchSettings $ss) => $ss->min_last_mod = new \DateTime($s),
+            'out-archiveext' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->out_archive_extensions),
+            'out-archivefilepattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_archive_file_patterns),
+            'out-dirpattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_dir_patterns),
+            'out-ext' => fn (string $s, SearchSettings $ss) => $ss->add_exts($s, $ss->out_extensions),
+            'out-filepattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_file_patterns),
+            'out-filetype' => fn (string $s, SearchSettings $ss) => $ss->add_file_types($s, $ss->out_file_types),
+            'out-linesafterpattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_lines_after_patterns),
+            'out-linesbeforepattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->out_lines_before_patterns),
+            'path' => fn (string $s, SearchSettings $ss) => $ss->paths[] = $s,
+            'searchpattern' =>
+                fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->search_patterns),
+            'settings-file' => fn (string $s, SearchSettings $ss) => $this->settings_from_file($s, $ss),
+            'sort-by' => fn (string $s, SearchSettings $ss) => $ss->set_sort_by($s)
+        ];
+
+        $this->int_action_map = [
+            'linesafter' => fn (int $i, SearchSettings $ss) => $ss->lines_after = $i,
+            'linesbefore' => fn (int $i, SearchSettings $ss) => $ss->lines_before = $i,
+            'maxdepth' => fn (int $i, SearchSettings $ss) => $ss->max_depth = $i,
+            'maxlinelength' => fn (int $i, SearchSettings $ss) => $ss->max_line_length = $i,
+            'maxsize' => fn (int $i, SearchSettings $ss) => $ss->max_size = $i,
+            'mindepth' => fn (int $i, SearchSettings $ss) => $ss->min_depth = $i,
+            'minsize' => fn (int $i, SearchSettings $ss) => $ss->min_size = $i
+        ];
+
         $this->long_arg_map = array();
         $this->set_options_from_json();
     }
@@ -117,31 +137,42 @@ class SearchOptions
     {
         $search_options_path = FileUtil::expand_user_home_path(Config::SEARCH_OPTIONS_PATH);
         if (file_exists($search_options_path)) {
-            $json_obj = json_decode(file_get_contents($search_options_path), true);
-            foreach ($json_obj['searchoptions'] as $so) {
-                $short = array_key_exists('short', $so) ? sprintf('%s', $so['short']) : '';
-                $long = sprintf('%s', $so['long']);
-                $desc = $so['desc'];
-                $func = null;
-                if (array_key_exists($long, $this->arg_action_map)) {
-                    $func = $this->arg_action_map[$long];
-                } elseif (array_key_exists($long, $this->bool_flag_action_map)) {
-                    $func = $this->bool_flag_action_map[$long];
-                }
-                $option = new SearchOption($short, $long, $desc, $func);
-                $this->options[] = $option;
-                $this->long_arg_map[$long] = $long;
-                if ($short) {
-                    $this->long_arg_map[$short] = $long;
-                }
+            $contents = file_get_contents($search_options_path);
+            if ($contents === false || trim($contents) === '') {
+                return;
             }
-            usort($this->options, array('phpsearch\SearchOptions', 'cmp_search_options'));
+
+            try {
+                $json_obj = json_decode(trim($contents), true, 512, JSON_THROW_ON_ERROR);
+                $search_options = $json_obj['searchoptions'];
+                if ($search_options) {
+                    foreach ((array)$search_options as $so) {
+                        $so = (array)$so;
+                        $short = '';
+                        $long = (string)$so['long'];
+                        $desc = (string)$so['desc'];
+                        $this->long_arg_map[$long] = $long;
+                        if (array_key_exists('short', $so)) {
+                            $short = (string)$so['short'];
+                            $this->long_arg_map[$short] = $long;
+                        }
+                        $this->options[] = new SearchOption($short, $long, $desc);
+                    }
+                    usort($this->options, array('phpsearch\SearchOptions', 'cmp_search_options'));
+                }
+
+            } catch (\JsonException $e) {
+                throw new SearchException($e->getMessage());
+            }
         } else {
             throw new SearchException('File not found: ' . $search_options_path);
         }
     }
 
     /**
+     * @param string $file_path
+     * @param SearchSettings $settings
+     * @return void
      * @throws SearchException
      */
     private function settings_from_file(string $file_path, SearchSettings $settings): void
@@ -150,42 +181,59 @@ class SearchOptions
             throw new SearchException('Settings file not found');
         }
         $json = file_get_contents($file_path);
-        $this->settings_from_json($json, $settings);
-    }
-
-    /**
-     * @throws SearchException
-     */
-    public function settings_from_json(string $json, SearchSettings $settings): void
-    {
-        $json_obj = json_decode($json, true);
-        foreach (array_keys($json_obj) as $k) {
-            if (array_key_exists($k, $this->arg_action_map)) {
-                if (gettype($json_obj[$k]) == 'string') {
-                    $this->arg_action_map[$k]($json_obj[$k], $settings);
-                } elseif (gettype($json_obj[$k]) == 'integer') {
-                    $this->arg_action_map[$k]((string)$json_obj[$k], $settings);
-                } elseif (gettype($json_obj[$k]) == 'array') {
-                    foreach ($json_obj[$k] as $s) {
-                        $this->arg_action_map[$k]($s, $settings);
-                    }
-                } else {
-                    throw new SearchException("Invalid setting type: $k");
-                }
-            } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
-                $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
-            } else {
-                throw new SearchException("Invalid option: $k");
-            }
+        if ($json) {
+            $this->settings_from_json($json, $settings);
         }
     }
 
     /**
+     * @param string $json
+     * @param SearchSettings $settings
+     * @return void
+     * @throws SearchException
+     */
+    public function settings_from_json(string $json, SearchSettings $settings): void
+    {
+        if (trim($json) === '') {
+            return;
+        }
+
+        try {
+            $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
+            foreach (array_keys($json_obj) as $k) {
+                if (array_key_exists($k, $this->bool_action_map)) {
+                    $this->bool_action_map[$k]($json_obj[$k], $settings);
+                } elseif (array_key_exists($k, $this->str_action_map)) {
+                    if (gettype($json_obj[$k]) == 'string') {
+                        $this->str_action_map[$k]($json_obj[$k], $settings);
+                    } elseif (gettype($json_obj[$k]) == 'array') {
+                        foreach ($json_obj[$k] as $s) {
+                            $this->str_action_map[$k]($s, $settings);
+                        }
+                    } else {
+                        throw new SearchException("Invalid setting type: $k");
+                    }
+                } elseif (array_key_exists($k, $this->int_action_map)) {
+                    $this->int_action_map[$k]($json_obj[$k], $settings);
+                } else {
+                    throw new SearchException("Invalid option: $k");
+                }
+            }
+        } catch (\JsonException $e) {
+            throw new SearchException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param string[] $args
+     * @return SearchSettings $settings
      * @throws SearchException
      */
     public function settings_from_args(array $args): SearchSettings
     {
         $settings = new SearchSettings();
+        // default print_results to true since running as cli
+        $settings->print_results = true;
         while (count($args) > 0) {
             $arg = array_shift($args);
             if ($arg[0] == '-') {
@@ -196,17 +244,22 @@ class SearchOptions
                     throw new SearchException("Invalid option: $arg");
                 }
                 $long_arg = $this->long_arg_map[$arg];
-                if (array_key_exists($long_arg, $this->arg_action_map)) {
-                    if (count($args) > 0) {
-                        $val = array_shift($args);
-                        $this->arg_action_map[$long_arg]($val, $settings);
-                    } else {
-                        throw new SearchException("Missing value for $arg");
-                    }
-                } elseif (array_key_exists($long_arg, $this->bool_flag_action_map)) {
-                    $this->bool_flag_action_map[$long_arg](true, $settings);
+                if (array_key_exists($long_arg, $this->bool_action_map)) {
+                    $this->bool_action_map[$long_arg](true, $settings);
                     if (in_array($long_arg, array("help", "version"))) {
                         break;
+                    }
+                } elseif (array_key_exists($long_arg, $this->str_action_map)
+                          || array_key_exists($long_arg, $this->int_action_map)) {
+                    if (count($args) > 0) {
+                        $val = array_shift($args);
+                        if (array_key_exists($long_arg, $this->str_action_map)) {
+                            $this->str_action_map[$long_arg]($val, $settings);
+                        } elseif (array_key_exists($long_arg, $this->int_action_map)) {
+                            $this->int_action_map[$long_arg](intval($val), $settings);
+                        }
+                    } else {
+                        throw new SearchException("Missing value for $arg");
                     }
                 } else {
                     throw new SearchException("Invalid option: $arg");
@@ -218,16 +271,19 @@ class SearchOptions
         return $settings;
     }
 
-    public function usage(): void
+    private static function cmp_search_options(SearchOption $o1, SearchOption $o2): int
     {
-        echo $this->get_usage_string() . "\n";
+        return strcmp($o1->sort_arg, $o2->sort_arg);
     }
 
+    /**
+     * @return string
+     */
     private function get_usage_string(): string
     {
         $usage = "Usage:\n phpsearch [options] -s <searchpattern>";
         $usage .= " <path> [<path> ...]\n\nOptions:\n";
-        $opt_map = array();
+        $opt_map = [];
         $longest = 0;
         foreach ($this->options as $option) {
             $opt_str = '';
@@ -247,8 +303,21 @@ class SearchOptions
         return $usage;
     }
 
-    private static function cmp_search_options(SearchOption $o1, SearchOption $o2): int
+    /**
+     * @return void
+     */
+    public function usage(): void
     {
-        return strcmp($o1->sort_arg, $o2->sort_arg);
+        echo $this->get_usage_string() . "\n";
+    }
+
+    /**
+     * @param int $exit_code
+     * @return never
+     */
+    public function usage_and_exit(int $exit_code = 0): never
+    {
+        $this->usage();
+        exit($exit_code);
     }
 }
