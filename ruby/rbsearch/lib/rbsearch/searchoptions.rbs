@@ -2,8 +2,9 @@ module RbSearch
   # SearchOptions - parses CLI args into settings, generates usage string
   class SearchOptions
     @options: Array[SearchOption]
-    @arg_action_dict: Hash[Symbol, Proc]
-    @bool_flag_action_dict: Hash[Symbol, Proc]
+    @bool_action_dict: Hash[Symbol, Proc]
+    @str_action_dict: Hash[Symbol, Proc]
+    @int_action_dict: Hash[Symbol, Proc]
     @long_arg_dict: Hash[String, Symbol]
 
     def initialize: () -> void

@@ -13,8 +13,9 @@ module RbSearch
 
     def initialize
       @options = []
-      @arg_action_dict = {}
-      @bool_flag_action_dict = {}
+      @bool_action_dict = {}
+      @str_action_dict = {}
+      @int_action_dict = {}
       @long_arg_dict = {}
       set_actions
       set_options_from_json
@@ -23,24 +24,29 @@ module RbSearch
 
     def search_settings_from_args(args)
       settings = SearchSettings.new
+      # default print_files to true since running as cli
       settings.print_results = true
       until args.empty?
         arg = args.shift
         if arg.start_with?('-')
           arg = arg[1..arg.length] while arg && arg.start_with?('-')
           long_arg = @long_arg_dict[arg]
-          if @arg_action_dict.key?(long_arg)
+          if @bool_action_dict.key?(long_arg)
+            @bool_action_dict[long_arg].call(true, settings)
+            return settings if [:help, :version].include?(long_arg)
+            elsif @str_action_dict.key?(long_arg) || @int_action_dict.key?(long_arg)
             raise SearchError, "Missing value for option #{arg}" if args.empty?
             arg_val = args.shift
-            @arg_action_dict[long_arg].call(arg_val, settings)
-          elsif @bool_flag_action_dict.key?(long_arg)
-            @bool_flag_action_dict[long_arg].call(true, settings)
-            return settings if %w[help version].include?(long_arg)
+            if @str_action_dict.key?(long_arg)
+              @str_action_dict[long_arg].call(arg_val, settings)
+            else
+              @int_action_dict[long_arg].call(arg_val.to_i, settings)
+            end
           else
             raise SearchError, "Invalid option: #{arg}"
           end
         else
-          settings.paths.add(arg)
+          settings.add_path(arg)
         end
       end
       settings
@@ -64,13 +70,13 @@ module RbSearch
       json_hash = JSON.parse(json)
       json_hash.each_key do |arg|
         arg_sym = arg.to_sym
-        if @arg_action_dict.key?(arg_sym)
-          @arg_action_dict[arg_sym].call(json_hash[arg], settings)
-        elsif @bool_flag_action_dict.key?(arg_sym)
-          @bool_flag_action_dict[arg_sym].call(json_hash[arg], settings)
-          return if %w[h help V version].include?(arg)
-        elsif arg == 'path'
-          settings.paths.push(json_hash[arg])
+        if @bool_action_dict.key?(arg_sym)
+          @bool_action_dict[arg_sym].call(json_hash[arg], settings)
+          return if %w[help version].include?(arg)
+        elsif @str_action_dict.key?(arg_sym)
+          @str_action_dict[arg_sym].call(json_hash[arg], settings)
+        elsif @int_action_dict.key?(arg_sym)
+          @int_action_dict[arg_sym].call(json_hash[arg], settings)
         else
           raise SearchError, "Invalid option: #{arg}"
         end
@@ -109,105 +115,7 @@ module RbSearch
     private
 
     def set_actions
-      @arg_action_dict = {
-        'encoding': lambda { |x, settings|
-          settings.text_file_encoding = x
-        },
-        'in-archiveext': lambda { |x, settings|
-          settings.add_exts(x, settings.in_archive_extensions)
-        },
-        'in-archivefilepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_archive_file_patterns)
-        },
-        'in-dirpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_dir_patterns)
-        },
-        'in-ext': lambda { |x, settings|
-          settings.add_exts(x, settings.in_extensions)
-        },
-        'in-filetype': lambda { |x, settings|
-          settings.add_file_types(x, settings.in_file_types)
-        },
-        'in-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_file_patterns)
-        },
-        'in-linesafterpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_lines_after_patterns)
-        },
-        'in-linesbeforepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_lines_before_patterns)
-        },
-        'linesafter': lambda { |x, settings|
-          settings.lines_after = x.to_i
-        },
-        'linesaftertopattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.lines_after_to_patterns)
-        },
-        'linesafteruntilpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.lines_after_until_patterns)
-        },
-        'linesbefore': lambda { |x, settings|
-          settings.lines_before = x.to_i
-        },
-        'maxdepth': lambda { |x, settings|
-          settings.max_depth = x.to_i
-        },
-        'maxlastmod': lambda { |x, settings|
-          settings.max_last_mod = DateTime.parse(x)
-        },
-        'maxlinelength': lambda { |x, settings|
-          settings.max_line_length = x.to_i
-        },
-        'maxsize': lambda { |x, settings|
-          settings.max_size = x.to_i
-        },
-        'mindepth': lambda { |x, settings|
-          settings.min_depth = x.to_i
-        },
-        'minlastmod': lambda { |x, settings|
-          settings.min_last_mod = DateTime.parse(x)
-        },
-        'minsize': lambda { |x, settings|
-          settings.min_size = x.to_i
-        },
-        'out-archiveext': lambda { |x, settings|
-          settings.add_exts(x, settings.out_archive_extensions)
-        },
-        'out-archivefilepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_archive_file_patterns)
-        },
-        'out-dirpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_dir_patterns)
-        },
-        'out-ext': lambda { |x, settings|
-          settings.add_exts(x, settings.out_extensions)
-        },
-        'out-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_file_patterns)
-        },
-        'out-filetype': lambda { |x, settings|
-          settings.add_file_types(x, settings.out_file_types)
-        },
-        'out-linesafterpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_lines_after_patterns)
-        },
-        'out-linesbeforepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_lines_before_patterns)
-        },
-        'path': lambda { |x, settings|
-          settings.add_path(x)
-        },
-        'searchpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.search_patterns)
-        },
-        'settings-file': lambda { |x, settings|
-          settings_from_file(x, settings)
-        },
-        'sort-by': lambda { |x, settings|
-          settings.set_sort_by(x)
-        }
-      }
-      @bool_flag_action_dict = {
+      @bool_action_dict = {
         allmatches: ->(b, settings) { settings.first_match = !b },
         archivesonly: ->(b, settings) { settings.archives_only = b },
         colorize: ->(b, settings) { settings.colorize = b },
@@ -240,6 +148,42 @@ module RbSearch
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.print_version = b }
       }
+      @str_action_dict = {
+        encoding: ->(s, settings) { settings.text_file_encoding = s },
+        'in-archiveext': ->(s, settings) { settings.add_exts(s, settings.in_archive_extensions) },
+        'in-archivefilepattern': ->(s, settings) { settings.add_patterns(s, settings.in_archive_file_patterns) },
+        'in-dirpattern': ->(s, settings) { settings.add_patterns(s, settings.in_dir_patterns) },
+        'in-ext': ->(s, settings) { settings.add_exts(s, settings.in_extensions) },
+        'in-filetype': ->(s, settings) { settings.add_file_types(s, settings.in_file_types) },
+        'in-filepattern': ->(s, settings) { settings.add_patterns(s, settings.in_file_patterns) },
+        'in-linesafterpattern': ->(s, settings) { settings.add_patterns(s, settings.in_lines_after_patterns) },
+        'in-linesbeforepattern': ->(s, settings) { settings.add_patterns(s, settings.in_lines_before_patterns) },
+        linesaftertopattern: ->(s, settings) { settings.add_patterns(s, settings.lines_after_to_patterns) },
+        linesafteruntilpattern: ->(s, settings) { settings.add_patterns(s, settings.lines_after_until_patterns) },
+        maxlastmod: ->(s, settings) { settings.max_last_mod = DateTime.parse(s) },
+        minlastmod: ->(s, settings) { settings.min_last_mod = DateTime.parse(s) },
+        'out-archiveext': ->(s, settings) { settings.add_exts(s, settings.out_archive_extensions) },
+        'out-archivefilepattern': ->(s, settings) { settings.add_patterns(s, settings.out_archive_file_patterns) },
+        'out-dirpattern': ->(s, settings) { settings.add_patterns(s, settings.out_dir_patterns) },
+        'out-ext': ->(s, settings) { settings.add_exts(s, settings.out_extensions) },
+        'out-filepattern': ->(s, settings) { settings.add_patterns(s, settings.out_file_patterns) },
+        'out-filetype': ->(s, settings) { settings.add_file_types(s, settings.out_file_types) },
+        'out-linesafterpattern': ->(s, settings) { settings.add_patterns(s, settings.out_lines_after_patterns) },
+        'out-linesbeforepattern': ->(s, settings) { settings.add_patterns(s, settings.out_lines_before_patterns) },
+        path: ->(s, settings) { settings.add_path(s) },
+        searchpattern: ->(s, settings) { settings.add_patterns(s, settings.search_patterns) },
+        'settings-file': ->(s, settings) { settings_from_file(s, settings) },
+        'sort-by': ->(s, settings) { settings.set_sort_by_for_name(s) }
+      }
+      @int_action_dict = {
+        linesafter: ->(i, settings) { settings.lines_after = i },
+        linesbefore: ->(i, settings) { settings.lines_before = i },
+        maxdepth: ->(i, settings) { settings.max_depth = i },
+        maxlinelength: ->(i, settings) { settings.max_line_length = i },
+        maxsize: ->(i, settings) { settings.max_size = i },
+        mindepth: ->(i, settings) { settings.min_depth = i },
+        minsize: ->(i, settings) { settings.min_size = i },
+      }
       @long_arg_dict = {}
     end
 
@@ -258,15 +202,7 @@ module RbSearch
           end
         desc = so['desc']
         long_sym = long.to_sym
-        func =
-          if @arg_action_dict.key?(long_sym)
-            @arg_action_dict[long_sym]
-          elsif @bool_flag_action_dict.key?(long_sym)
-            @bool_flag_action_dict[long_sym]
-          else
-            raise SearchError, "Unknown search option: #{long}"
-          end
-        @options.push(SearchOption.new(short, long, desc, func))
+        @options.push(SearchOption.new(short, long, desc))
         @long_arg_dict[long] = long_sym
         @long_arg_dict[short] = long_sym if short
       end
