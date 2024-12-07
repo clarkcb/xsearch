@@ -13,50 +13,7 @@ public class SearchOptions
 {
 	private readonly string _searchOptionsResource;
 
-	private static readonly Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
-		new()
-		{
-			{ "encoding", (s, settings) => settings.TextFileEncoding = s },
-			{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
-			{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
-			{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
-			{ "in-ext", (s, settings) => settings.AddInExtension(s) },
-			{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
-			{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
-			{ "in-linesafterpattern", (s, settings) => settings.AddInLinesAfterPattern(s) },
-			{ "in-linesbeforepattern", (s, settings) => settings.AddInLinesBeforePattern(s) },
-			{ "linesafter", (s, settings) => settings.LinesAfter = int.Parse(s) },
-			{ "linesaftertopattern", (s, settings) => settings.AddLinesAfterToPattern(s) },
-			{ "linesafteruntilpattern", (s, settings) => settings.AddLinesAfterUntilPattern(s) },
-			{ "linesbefore", (s, settings) => settings.LinesBefore = int.Parse(s) },
-			{ "maxdepth", (s, settings) => settings.MaxDepth = int.Parse(s) },
-			{ "maxlastmod", (s, settings) => {
-					settings.MaxLastMod = DateTime.Parse(s);
-				}
-			},
-			{ "maxlinelength", (s, settings) => settings.MaxLineLength = int.Parse(s) },
-			{ "maxsize", (s, settings) => settings.MaxSize = int.Parse(s) },
-			{ "mindepth", (s, settings) => settings.MinDepth = int.Parse(s) },
-			{ "minlastmod", (s, settings) => {
-					settings.MinLastMod = DateTime.Parse(s);
-				}
-			},
-			{ "minsize", (s, settings) => settings.MinSize = int.Parse(s) },
-			{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
-			{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
-			{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
-			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
-			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
-			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
-			{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
-			{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
-			{ "path", (s, settings) => settings.AddPath(s) },
-			{ "searchpattern", (s, settings) => settings.AddSearchPattern(s) },
-			{ "settings-file", SettingsFromFile },
-			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
-		};
-
-	private static readonly Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
+	private static readonly Dictionary<string, Action<bool, SearchSettings>> BoolActionDictionary =
 		new()
 		{
 			{ "allmatches", (b, settings) => settings.FirstMatch = !b },
@@ -92,52 +49,90 @@ public class SearchOptions
 			{ "version", (b, settings) => settings.PrintVersion = b },
 		};
 
+	private static readonly Dictionary<string, Action<string, SearchSettings>> StringActionDictionary =
+		new()
+		{
+			{ "encoding", (s, settings) => settings.TextFileEncoding = s },
+			{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
+			{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
+			{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
+			{ "in-ext", (s, settings) => settings.AddInExtension(s) },
+			{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
+			{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
+			{ "in-linesafterpattern", (s, settings) => settings.AddInLinesAfterPattern(s) },
+			{ "in-linesbeforepattern", (s, settings) => settings.AddInLinesBeforePattern(s) },
+			{ "linesaftertopattern", (s, settings) => settings.AddLinesAfterToPattern(s) },
+			{ "linesafteruntilpattern", (s, settings) => settings.AddLinesAfterUntilPattern(s) },
+			{ "maxlastmod", (s, settings) => {
+					settings.MaxLastMod = DateTime.Parse(s);
+				}
+			},
+			{ "minlastmod", (s, settings) => {
+					settings.MinLastMod = DateTime.Parse(s);
+				}
+			},
+			{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
+			{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
+			{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
+			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
+			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
+			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
+			{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
+			{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
+			{ "path", (s, settings) => settings.AddPath(s) },
+			{ "searchpattern", (s, settings) => settings.AddSearchPattern(s) },
+			{ "settings-file", SettingsFromFile },
+			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
+		};
+
+	private static readonly Dictionary<string, Action<int, SearchSettings>> IntActionDictionary =
+		new()
+		{
+			{ "linesafter", (i, settings) => settings.LinesAfter = i },
+			{ "linesbefore", (i, settings) => settings.LinesBefore = i },
+			{ "maxdepth", (i, settings) => settings.MaxDepth = i },
+			{ "maxlinelength", (i, settings) => settings.MaxLineLength = i },
+			{ "maxsize", (i, settings) => settings.MaxSize = i },
+			{ "mindepth", (i, settings) => settings.MinDepth = i },
+			{ "minsize", (i, settings) => settings.MinSize = i },
+		};
+
 	public List<SearchOption> Options { get; }
-	public Dictionary<string, SearchOption> ArgDictionary { get; }
-	public Dictionary<string, SearchOption> FlagDictionary { get; }
+	// public Dictionary<string, SearchOption> BoolOptionDictionary { get; }
+	// public Dictionary<string, SearchOption> StringOptionDictionary { get; }
+	// public Dictionary<string, SearchOption> IntOptionDictionary { get; }
+	private Dictionary<string, string> LongArgDictionary { get; }
 
 	public SearchOptions()
 	{
 		_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.searchoptions.json");
 		Options = new List<SearchOption>();
-		ArgDictionary = new Dictionary<string, SearchOption>();
-		FlagDictionary = new Dictionary<string, SearchOption>();
+		LongArgDictionary = new Dictionary<string, string>();
 		SetOptionsFromJson();
 	}
 
 	private void SetOptionsFromJson()
 	{
 		var searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(_searchOptionsResource);
-		if (searchOptionsDict == null || !searchOptionsDict.ContainsKey("searchoptions"))
+		if (searchOptionsDict == null
+		    || !searchOptionsDict.TryGetValue("searchoptions", out List<Dictionary<string, string>>? optionDicts))
 		{
 			throw new SearchException("Missing or invalid search options resource");
 		}
-		var optionDicts = searchOptionsDict["searchoptions"];
-		foreach (var optionDict in optionDicts)
+
+        foreach (var optionDict in optionDicts)
 		{
 			var longArg = optionDict["long"];
-			var shortArg = optionDict.TryGetValue("short", out var value) ? value : null;
+			LongArgDictionary.Add(longArg, longArg);
+			string? shortArg = null;
+			if (optionDict.TryGetValue("short", out var shortVal))
+			{
+				shortArg = shortVal;
+				LongArgDictionary.Add(shortArg, longArg);
+			}
 			var desc = optionDict["desc"];
-			if (ArgActionDictionary.TryGetValue(longArg, out var argVal))
-			{
-				var option = new SearchArgOption(shortArg, longArg, argVal, desc);
-				Options.Add(option);
-				ArgDictionary.Add(longArg, option);
-				if (!string.IsNullOrWhiteSpace(shortArg))
-				{
-					ArgDictionary.Add(shortArg, option);
-				}
-			}
-			else if (BoolFlagActionDictionary.TryGetValue(longArg, out var flagVal))
-			{
-				var option = new SearchFlagOption(shortArg, longArg, flagVal, desc);
-				Options.Add(option);
-				FlagDictionary.Add(longArg, option);
-				if (!string.IsNullOrWhiteSpace(shortArg))
-				{
-					FlagDictionary.Add(shortArg, option);
-				}
-			}
+			var option = new SearchOption(shortArg, longArg, desc);
+			Options.Add(option);
 		}
 	}
 
@@ -179,7 +174,7 @@ public class SearchOptions
 				ApplySetting(arg, false, settings);
 				break;
 			case JsonValueKind.Number:
-				ApplySetting(arg, obj.GetInt32().ToString(), settings);
+				ApplySetting(arg, obj.GetInt32(), settings);
 				break;
 			case JsonValueKind.Array:
 				foreach (var arrVal in obj.EnumerateArray())
@@ -195,15 +190,11 @@ public class SearchOptions
 		}
 	}
 
-	private static void ApplySetting(string arg, string val, SearchSettings settings)
+	private static void ApplySetting(string arg, bool val, SearchSettings settings)
 	{
-		if (ArgActionDictionary.TryGetValue(arg, out var value))
+		if (BoolActionDictionary.TryGetValue(arg, out var action))
 		{
-			value(val, settings);
-		}
-		else if (arg.Equals("path"))
-		{
-			settings.AddPath(val);
+			action(val, settings);
 		}
 		else
 		{
@@ -211,11 +202,23 @@ public class SearchOptions
 		}
 	}
 
-	private static void ApplySetting(string arg, bool val, SearchSettings settings)
+	private static void ApplySetting(string arg, string val, SearchSettings settings)
 	{
-		if (BoolFlagActionDictionary.TryGetValue(arg, out var value))
+		if (StringActionDictionary.TryGetValue(arg, out var action))
 		{
-			value(val, settings);
+			action(val, settings);
+		}
+		else
+		{
+			throw new SearchException("Invalid option: " + arg);
+		}
+	}
+
+	private static void ApplySetting(string arg, int val, SearchSettings settings)
+	{
+		if (IntActionDictionary.TryGetValue(arg, out var action))
+		{
+			action(val, settings);
 		}
 		else
 		{
@@ -231,54 +234,60 @@ public class SearchOptions
 
 		while (queue.Count > 0)
 		{
-			var s = queue.Dequeue();
-			if (s.StartsWith('-'))
+			var arg = queue.Dequeue();
+			if (arg.StartsWith('-'))
 			{
 				try
 				{
-					while (s.StartsWith('-'))
+					while (arg.StartsWith('-'))
 					{
-						s = s[1..];
+						arg = arg[1..];
 					}
 				}
 				catch (InvalidOperationException e)
 				{
 					throw new SearchException(e.Message);
 				}
-				if (string.IsNullOrWhiteSpace(s))
+				if (string.IsNullOrWhiteSpace(arg))
 				{
 					throw new SearchException("Invalid option: -");
 				}
-				if (ArgDictionary.TryGetValue(s, out var argVal))
+
+				var longArg = LongArgDictionary.GetValueOrDefault(arg, arg);
+				if (BoolActionDictionary.TryGetValue(longArg, out var boolAction))
+				{
+					boolAction(true, settings);
+				}
+				else if (StringActionDictionary.TryGetValue(longArg, out var stringAction))
 				{
 					try
 					{
-						((SearchArgOption)argVal).Action(queue.Dequeue(), settings);
+						stringAction(queue.Dequeue(), settings);
 					}
-					catch (InvalidOperationException e)
+					catch (InvalidOperationException)
 					{
-						throw new SearchException(e.Message);
+						throw new SearchException($"Missing value for option {arg}");
 					}
 				}
-				else if (FlagDictionary.TryGetValue(s, out var flagVal))
+				else if (IntActionDictionary.TryGetValue(longArg, out var intAction))
 				{
 					try
 					{
-						((SearchFlagOption)flagVal).Action(true, settings);
+						intAction(int.Parse(queue.Dequeue()), settings);
 					}
-					catch (InvalidOperationException e)
+					catch (InvalidOperationException)
 					{
-						throw new SearchException(e.Message);
+						throw new SearchException($"Missing value for option {arg}");
 					}
 				}
 				else
 				{
-					throw new SearchException("Invalid option: " + s);
+					throw new SearchException($"Invalid option: {arg}");
 				}
 			}
 			else
 			{
-				settings.AddPath(s);
+				settings.AddPath(arg);
 			}
 		}
 		return settings;
