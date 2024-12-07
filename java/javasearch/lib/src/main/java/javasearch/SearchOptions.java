@@ -27,6 +27,7 @@ import java.util.*;
 public class SearchOptions {
     private static final String SEARCH_OPTIONS_JSON_PATH = "/searchoptions.json";
     private final List<SearchOption> options;
+    private final Map<String, String> longArgMap = new HashMap<>();
 
     public SearchOptions() throws IOException {
         options = new ArrayList<>();
@@ -34,55 +35,12 @@ public class SearchOptions {
     }
 
     @FunctionalInterface
-    private interface ArgSetter {
-        void set(String s, SearchSettings settings);
-    }
-
-    private final int actionMapSize = 32;
-    private final Map<String, ArgSetter> argActionMap = new HashMap<>(actionMapSize) {
-        {
-            put("encoding", (s, settings) -> settings.setTextFileEncoding(s));
-            put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
-            put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
-            put("in-dirpattern", (s, settings) -> settings.addInDirPattern(s));
-            put("in-ext", (s, settings) -> settings.addInExtension(s));
-            put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
-            put("in-filetype", (s, settings) -> settings.addInFileType(s));
-            put("in-linesafterpattern", (s, settings) -> settings.addInLinesAfterPattern(s));
-            put("in-linesbeforepattern", (s, settings) -> settings.addInLinesBeforePattern(s));
-            put("linesafter", (s, settings) -> settings.setLinesAfter(Integer.parseInt(s)));
-            put("linesaftertopattern", (s, settings) -> settings.addLinesAfterToPattern(s));
-            put("linesafteruntilpattern", (s, settings) -> settings.addLinesAfterUntilPattern(s));
-            put("linesbefore", (s, settings) -> settings.setLinesBefore(Integer.parseInt(s)));
-            put("maxdepth", (s, settings) -> settings.setMaxDepth(Integer.parseInt(s)));
-            put("maxlastmod", (s, settings) -> settings.setMaxLastMod(s));
-            put("maxlinelength", (s, settings) -> settings.setMaxLineLength(Integer.parseInt(s)));
-            put("maxsize", (s, settings) -> settings.setMaxSize(Integer.parseInt(s)));
-            put("mindepth", (s, settings) -> settings.setMinDepth(Integer.parseInt(s)));
-            put("minlastmod", (s, settings) -> settings.setMinLastMod(s));
-            put("minsize", (s, settings) -> settings.setMinSize(Integer.parseInt(s)));
-            put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
-            put("out-archivefilepattern", (s, settings) -> settings.addOutArchiveFilePattern(s));
-            put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));
-            put("out-ext", (s, settings) -> settings.addOutExtension(s));
-            put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
-            put("out-filetype", (s, settings) -> settings.addOutFileType(s));
-            put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
-            put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
-            put("path", (s, settings) -> settings.addPath(s));
-            put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
-            put("settings-file", (s, settings) -> settingsFromFilePath(s, settings));
-            put("sort-by", (s, settings) -> settings.setSortBy(SortBy.forName(s)));
-        }
-    };
-
-    @FunctionalInterface
-    private interface BooleanFlagSetter {
+    private interface BooleanSetter {
         void set(Boolean b, SearchSettings settings);
     }
 
-    private final int flagMapSize = 29;
-    private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<>(flagMapSize) {
+    private final int boolActionMapSize = 29;
+    private final Map<String, BooleanSetter> boolActionMap = new HashMap<>(boolActionMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
@@ -116,6 +74,70 @@ public class SearchOptions {
         }
     };
 
+    @FunctionalInterface
+    private interface StringSetter {
+        void set(String s, SearchSettings settings);
+    }
+
+    private final int stringActionMapSize = 25;
+    private final Map<String, StringSetter> stringActionMap = new HashMap<>(stringActionMapSize) {
+        {
+            put("encoding", (s, settings) -> settings.setTextFileEncoding(s));
+            put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
+            put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
+            put("in-dirpattern", (s, settings) -> settings.addInDirPattern(s));
+            put("in-ext", (s, settings) -> settings.addInExtension(s));
+            put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
+            put("in-filetype", (s, settings) -> settings.addInFileType(s));
+            put("in-linesafterpattern", (s, settings) -> settings.addInLinesAfterPattern(s));
+            put("in-linesbeforepattern", (s, settings) -> settings.addInLinesBeforePattern(s));
+            put("linesaftertopattern", (s, settings) -> settings.addLinesAfterToPattern(s));
+            put("linesafteruntilpattern", (s, settings) -> settings.addLinesAfterUntilPattern(s));
+            put("maxlastmod", (s, settings) -> settings.setMaxLastMod(s));
+            put("minlastmod", (s, settings) -> settings.setMinLastMod(s));
+            put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
+            put("out-archivefilepattern", (s, settings) -> settings.addOutArchiveFilePattern(s));
+            put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));
+            put("out-ext", (s, settings) -> settings.addOutExtension(s));
+            put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
+            put("out-filetype", (s, settings) -> settings.addOutFileType(s));
+            put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
+            put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
+            put("path", (s, settings) -> settings.addPath(s));
+            put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
+            put("sort-by", (s, settings) -> settings.setSortBy(SortBy.forName(s)));
+        }
+    };
+
+    @FunctionalInterface
+    private interface IntegerSetter {
+        void set(Integer i, SearchSettings settings);
+    }
+
+    private final int intActionMapSize = 5;
+    private final Map<String, IntegerSetter> intActionMap = new HashMap<>(intActionMapSize) {
+        {
+            put("linesafter", (i, settings) -> settings.setLinesAfter(i));
+            put("linesbefore", (i, settings) -> settings.setLinesBefore(i));
+            put("maxdepth", (i, settings) -> settings.setMaxDepth(i));
+            put("maxlinelength", (i, settings) -> settings.setMaxLineLength(i));
+            put("mindepth", (i, settings) -> settings.setMinDepth(i));
+        }
+    };
+
+    @FunctionalInterface
+    private interface LongSetter {
+        void set(Long l, SearchSettings settings);
+    }
+
+    private final int longActionMapSize = 2;
+    private final Map<String, LongSetter> longActionMap = new HashMap<>(longActionMapSize) {
+        {
+            put("maxsize", (l, settings) -> settings.setMaxSize(l));
+            put("minsize", (l, settings) -> settings.setMinSize(l));
+        }
+    };
+
     private void setOptionsFromJson() {
         InputStream searchOptionsInputStream = getClass().getResourceAsStream(SEARCH_OPTIONS_JSON_PATH);
         assert searchOptionsInputStream != null;
@@ -125,33 +147,31 @@ public class SearchOptions {
         for (int i=0; i<searchOptionsArray.length(); i++) {
             var searchOptionObj = searchOptionsArray.getJSONObject(i);
             var longArg = searchOptionObj.getString("long");
+            longArgMap.put(longArg, longArg);
             var desc = searchOptionObj.getString("desc");
             var shortArg = "";
             if (searchOptionObj.has("short")) {
                 shortArg = searchOptionObj.getString("short");
+                longArgMap.put(shortArg, longArg);
             }
             options.add(new SearchOption(shortArg, longArg, desc));
         }
     }
 
-    private void settingsFromFilePath(final String filePath, final SearchSettings settings) {
+    private void settingsFromFilePath(final String filePath, final SearchSettings settings) throws SearchException {
         var path = Paths.get(filePath);
         try {
-            if (Files.exists(path)) {
-                Logger.log("Settings file not found: " + filePath);
-                System.exit(1);
+            if (!Files.exists(path)) {
+                throw new SearchException("Settings file not found: " + filePath);
             }
             if (!FileUtil.hasExtension(filePath, "json")) {
-                Logger.log("Invalid settings file type (just be JSON): " + filePath);
-                System.exit(1);
+                throw new SearchException("Invalid settings file type (must be JSON): " + filePath);
             }
             settingsFromJson(FileUtil.getFileContents(path), settings);
         } catch (FileNotFoundException e) {
-            Logger.log("Settings file not found: " + filePath);
-            System.exit(1);
+            throw new SearchException("Settings file not found: " + filePath);
         } catch (IOException e) {
-            Logger.log("IOException reading settings file: " + filePath);
-            System.exit(1);
+            throw new SearchException("IOException reading settings file: " + filePath);
         }
     }
 
@@ -193,8 +213,8 @@ public class SearchOptions {
 
     private void applySetting(final String arg, final String val, SearchSettings settings)
             throws SearchException{
-        if (this.argActionMap.containsKey(arg)) {
-            this.argActionMap.get(arg).set(val, settings);
+        if (this.stringActionMap.containsKey(arg)) {
+            this.stringActionMap.get(arg).set(val, settings);
         } else if (arg.equals("path")) {
             settings.addPath(val);
         } else {
@@ -204,8 +224,8 @@ public class SearchOptions {
 
     private void applySetting(final String arg, final Boolean val, SearchSettings settings)
             throws SearchException{
-        if (this.boolflagActionMap.containsKey(arg)) {
-            this.boolflagActionMap.get(arg).set(val, settings);
+        if (this.boolActionMap.containsKey(arg)) {
+            this.boolActionMap.get(arg).set(val, settings);
         } else {
             throw new SearchException("Invalid option: " + arg);
         }
@@ -213,17 +233,8 @@ public class SearchOptions {
 
     public final SearchSettings settingsFromArgs(final String[] args) throws SearchException {
         SearchSettings settings = new SearchSettings();
-        // default printresults to True since running from command line
+        // default printResults to true since running from command line
         settings.setPrintResults(true);
-
-        // add short arg mappings
-        options.stream().filter(o -> !o.getShortArg().isEmpty()).forEach(o -> {
-            if (argActionMap.containsKey(o.getLongArg())) {
-                argActionMap.put(o.getShortArg(), argActionMap.get(o.getLongArg()));
-            } else if (boolflagActionMap.containsKey(o.getLongArg())) {
-                boolflagActionMap.put(o.getShortArg(), boolflagActionMap.get(o.getLongArg()));
-            }
-        });
 
         Queue<String> queue = new LinkedList<>(Arrays.asList(args));
         while (!queue.isEmpty()) {
@@ -232,15 +243,27 @@ public class SearchOptions {
                 while (arg.startsWith("-")) {
                     arg = arg.substring(1);
                 }
-                if (this.argActionMap.containsKey(arg)) {
+                var longArg = longArgMap.get(arg);
+                if (this.boolActionMap.containsKey(longArg)) {
+                    this.boolActionMap.get(longArg).set(true, settings);
+                } else if (this.stringActionMap.containsKey(longArg)
+                        || this.intActionMap.containsKey(longArg)
+                        || this.longActionMap.containsKey(longArg)
+                        || longArg.equals("settings-file")) {
                     if (!queue.isEmpty()) {
                         String argVal = queue.remove();
-                        this.argActionMap.get(arg).set(argVal, settings);
+                        if (this.stringActionMap.containsKey(longArg)) {
+                            this.stringActionMap.get(longArg).set(argVal, settings);
+                        } else if (this.intActionMap.containsKey(longArg)) {
+                            this.intActionMap.get(longArg).set(Integer.parseInt(argVal), settings);
+                        } else if (this.longActionMap.containsKey(longArg)) {
+                            this.longActionMap.get(longArg).set(Long.parseLong(argVal), settings);
+                        } else if (longArg.equals("settings-file")) {
+                            settingsFromFilePath(argVal, settings);
+                        }
                     } else {
                         throw new SearchException("Missing value for option " + arg);
                     }
-                } else if (this.boolflagActionMap.containsKey(arg)) {
-                    this.boolflagActionMap.get(arg).set(true, settings);
                 } else {
                     throw new SearchException("Invalid option: " + arg);
                 }
