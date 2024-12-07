@@ -32,7 +32,7 @@ class SearchOptions(object):
         self.__set_options_from_json()
 
     def __set_dicts(self):
-        self.__bool_arg_dict = {
+        self.__bool_action_dict = {
             'allmatches':
                 lambda b, settings:
                 settings.set_property('first_match', not b),
@@ -128,142 +128,137 @@ class SearchOptions(object):
                 settings.set_property('print_version', b)
         }
 
-        self.__coll_arg_dict = {
-            'in-archiveext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'in_archive_extensions'),
-            'in-archivefilepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_archive_file_patterns'),
-            'in-dirpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_dir_patterns'),
-            'in-ext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'in_extensions'),
-            'in-filepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_file_patterns'),
-            'in-filetype':
-                lambda x, settings:
-                settings.add_file_types(x, 'in_file_types'),
-            'in-linesafterpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_lines_after_patterns'),
-            'in-linesbeforepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_lines_before_patterns'),
-            'linesaftertopattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'lines_after_to_patterns'),
-            'linesafteruntilpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'lines_after_until_patterns'),
-            'out-archiveext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'out_archive_extensions'),
-            'out-archivefilepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_archive_file_patterns'),
-            'out-dirpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_dir_patterns'),
-            'out-ext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'out_extensions'),
-            'out-filepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_file_patterns'),
-            'out-filetype':
-                lambda x, settings:
-                settings.add_file_types(x, 'out_file_types'),
-            'out-linesafterpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_lines_after_patterns'),
-            'out-linesbeforepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_lines_before_patterns'),
-            'path':
-                lambda x, settings:
-                settings.add_path(x),
-            'searchpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'search_patterns'),
-            'sort-by':
-                lambda x, settings:
-                settings.set_sort_by(x),
-        }
-
-        self.__dt_arg_dict = {
-            'lastmod-after':
-                lambda x, settings:
-                settings.set_property('lastmod_after', x),
-            'lastmod-before':
-                lambda x, settings:
-                settings.set_property('lastmod_before', x),
-            'maxlastmod':
-                lambda x, settings:
-                settings.set_property('max_last_mod', x),
-            'minlastmod':
-                lambda x, settings:
-                settings.set_property('min_last_mod', x),
-        }
-
-        self.__int_arg_dict = {
-            'linesafter':
-                lambda x, settings:
-                settings.set_property('lines_after', int(x)),
-            'linesbefore':
-                lambda x, settings:
-                settings.set_property('lines_before', int(x)),
-            'maxdepth':
-                lambda x, settings:
-                settings.set_property('max_depth', int(x)),
-            'maxlinelength':
-                lambda x, settings:
-                settings.set_property('max_line_length', int(x)),
-            'maxsize':
-                lambda x, settings:
-                settings.set_property('max_size', int(x)),
-            'mindepth':
-                lambda x, settings:
-                settings.set_property('min_depth', int(x)),
-            'minsize':
-                lambda x, settings:
-                settings.set_property('min_size', int(x)),
-        }
-
-        self.__str_arg_dict = {
+        self.__str_action_dict = {
             'encoding':
-                lambda x, settings:
-                settings.set_property('text_file_encoding', x),
+                lambda s, settings:
+                settings.set_property('text_file_encoding', s),
+            'in-archiveext':
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'in_archive_extensions'),
+            'in-archivefilepattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'in_archive_file_patterns'),
+            'in-dirpattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'in_dir_patterns'),
+            'in-ext':
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'in_extensions'),
+            'in-filepattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'in_file_patterns'),
+            'in-filetype':
+                lambda s, settings:
+                settings.add_file_types(s, 'in_file_types'),
+            'in-linesafterpattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'in_lines_after_patterns'),
+            'in-linesbeforepattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'in_lines_before_patterns'),
+            'linesaftertopattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'lines_after_to_patterns'),
+            'linesafteruntilpattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'lines_after_until_patterns'),
+            'out-archiveext':
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'out_archive_extensions'),
+            'out-archivefilepattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'out_archive_file_patterns'),
+            'out-dirpattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'out_dir_patterns'),
+            'out-ext':
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'out_extensions'),
+            'out-filepattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'out_file_patterns'),
+            'out-filetype':
+                lambda s, settings:
+                settings.add_file_types(s, 'out_file_types'),
+            'out-linesafterpattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'out_lines_after_patterns'),
+            'out-linesbeforepattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'out_lines_before_patterns'),
             'path':
-                lambda x, settings:
-                settings.paths.add(x),
+                lambda s, settings:
+                settings.add_path(s),
+            'searchpattern':
+                lambda s, settings:
+                settings.add_patterns(s, 'search_patterns'),
+            'sort-by':
+                lambda s, settings:
+                settings.set_sort_by(s),
+        }
+
+        self.__dt_action_dict = {
+            'lastmod-after':
+                lambda dt, settings:
+                settings.set_property('lastmod_after', dt),
+            'lastmod-before':
+                lambda dt, settings:
+                settings.set_property('lastmod_before', dt),
+            'maxlastmod':
+                lambda dt, settings:
+                settings.set_property('max_last_mod', dt),
+            'minlastmod':
+                lambda dt, settings:
+                settings.set_property('min_last_mod', dt),
+        }
+
+        self.__int_action_dict = {
+            'linesafter':
+                lambda i, settings:
+                settings.set_property('lines_after', i),
+            'linesbefore':
+                lambda i, settings:
+                settings.set_property('lines_before', i),
+            'maxdepth':
+                lambda i, settings:
+                settings.set_property('max_depth', i),
+            'maxlinelength':
+                lambda i, settings:
+                settings.set_property('max_line_length', i),
+            'maxsize':
+                lambda i, settings:
+                settings.set_property('max_size', i),
+            'mindepth':
+                lambda i, settings:
+                settings.set_property('min_depth', i),
+            'minsize':
+                lambda i, settings:
+                settings.set_property('min_size', i),
         }
 
         self.__long_arg_dict = {}
 
     def settings_from_file(self, file_path: str, settings: SearchSettings):
-        assert os.path.exists(file_path), \
-            'Settings file not found: {0:s}'.format(file_path)
-        with open(file_path) as f:
+        """Read settings from a JSON file"""
+        assert os.path.exists(file_path), f'Settings file not found: {file_path}'
+        with open(file_path, encoding='UTF-8') as f:
             json_str = f.read()
         self.settings_from_json(json_str, settings)
 
     def settings_from_json(self, json_str: str, settings: SearchSettings):
+        """Read settings from a JSON string"""
         json_dict = json.loads(json_str)
         for arg in json_dict:
-            if arg in self.__bool_arg_dict:
-                self.__bool_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__coll_arg_dict:
-                self.__coll_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__dt_arg_dict:
-                self.__dt_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__int_arg_dict:
-                self.__int_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__str_arg_dict:
-                self.__str_arg_dict[arg](json_dict[arg], settings)
+            if arg in self.__bool_action_dict:
+                self.__bool_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.__str_action_dict:
+                self.__str_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.__dt_action_dict:
+                self.__dt_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.__int_action_dict:
+                self.__int_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.__str_action_dict:
+                self.__str_action_dict[arg](json_dict[arg], settings)
             else:
                 raise SearchException(f'Invalid option: {arg}')
 
@@ -277,18 +272,14 @@ class SearchOptions(object):
             if 'short' in search_option_obj:
                 short_arg = search_option_obj['short']
             desc = search_option_obj['desc']
-            if long_arg in self.__bool_arg_dict:
-                func = self.__bool_arg_dict[long_arg]
-            elif long_arg in self.__coll_arg_dict:
-                func = self.__coll_arg_dict[long_arg]
-            elif long_arg in self.__dt_arg_dict:
-                func = self.__dt_arg_dict[long_arg]
-            elif long_arg in self.__int_arg_dict:
-                func = self.__int_arg_dict[long_arg]
-            elif long_arg in self.__str_arg_dict:
-                func = self.__str_arg_dict[long_arg]
-            elif long_arg in self.__str_arg_dict:
-                func = self.__str_arg_dict[long_arg]
+            if long_arg in self.__bool_action_dict:
+                func = self.__bool_action_dict[long_arg]
+            elif long_arg in self.__str_action_dict:
+                func = self.__str_action_dict[long_arg]
+            elif long_arg in self.__dt_action_dict:
+                func = self.__dt_action_dict[long_arg]
+            elif long_arg in self.__int_action_dict:
+                func = self.__int_action_dict[long_arg]
             elif long_arg == 'settings-file':
                 func = self.settings_from_file
             else:
@@ -314,23 +305,22 @@ class SearchOptions(object):
                     arg = arg[1:]
                 if arg in self.__long_arg_dict:
                     long_arg = self.__long_arg_dict[arg]
-                    if long_arg in self.__bool_arg_dict:
-                        self.__bool_arg_dict[long_arg](True, settings)
+                    if long_arg in self.__bool_action_dict:
+                        self.__bool_action_dict[long_arg](True, settings)
                         if long_arg in ('help', 'version'):
                             return settings
-                    elif long_arg in self.__coll_arg_dict or \
-                            long_arg in self.__dt_arg_dict or \
-                            long_arg in self.__int_arg_dict or \
-                            long_arg in self.__str_arg_dict or \
+                    elif long_arg in self.__str_action_dict or \
+                            long_arg in self.__dt_action_dict or \
+                            long_arg in self.__int_action_dict or \
                             long_arg == 'settings-file':
                         if arg_deque:
                             arg_val = arg_deque.popleft()
-                            if long_arg in self.__coll_arg_dict:
-                                self.__coll_arg_dict[long_arg](arg_val, settings)
-                            elif long_arg in self.__dt_arg_dict:
-                                self.__dt_arg_dict[long_arg](
+                            if long_arg in self.__str_action_dict:
+                                self.__str_action_dict[long_arg](arg_val, settings)
+                            elif long_arg in self.__dt_action_dict:
+                                self.__dt_action_dict[long_arg](
                                     common.parse_datetime_str(arg_val), settings)
-                            elif long_arg in self.__int_arg_dict:
+                            elif long_arg in self.__int_action_dict:
                                 invalid_int = False
                                 try:
                                     i = int(arg_val)
@@ -342,9 +332,9 @@ class SearchOptions(object):
                                 if invalid_int:
                                     err = f'Invalid value for option {arg}: {arg_val}'
                                     raise SearchException(err)
-                                self.__int_arg_dict[long_arg](arg_val, settings)
-                            elif long_arg in self.__str_arg_dict:
-                                self.__str_arg_dict[long_arg](arg_val, settings)
+                                self.__int_action_dict[long_arg](arg_val, settings)
+                            elif long_arg in self.__str_action_dict:
+                                self.__str_action_dict[long_arg](arg_val, settings)
                             elif long_arg == 'settings-file':
                                 self.settings_from_file(arg_val, settings)
                         else:
