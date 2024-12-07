@@ -28,7 +28,7 @@
 
 (defrecord SearchOption [short-arg long-arg desc])
 
-(defn get-sort-arg [^SearchOption so]
+(defn get-sort-arg ^String [^SearchOption so]
   (if (= "" (:short-arg so))
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
@@ -45,7 +45,7 @@
         get-desc (fn [l] (get long-desc-map l))]
     (sort-by get-sort-arg (map #(SearchOption. (get-short %) % (get-desc %)) long-names))))
 
-(def SEARCH-OPTIONS (get-search-options-from-json))
+(def ^:const SEARCH-OPTIONS (get-search-options-from-json))
 
 (defn print-option [opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
@@ -55,41 +55,7 @@
 (defn print-options []
   (doseq [o SEARCH-OPTIONS] (print-option o)))
 
-(def arg-action-map
-  { :encoding (fn [^SearchSettings settings ^String s] (assoc settings :text-file-encoding s))
-    :in-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :in-archive-extensions))
-    :in-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-archive-file-patterns))
-    :in-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-dir-patterns))
-    :in-ext (fn [^SearchSettings settings ^String s] (add-extension settings s :in-extensions))
-    :in-filepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-file-patterns))
-    :in-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :in-file-types))
-    :in-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-after-patterns))
-    :in-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-before-patterns))
-    :linesafter (fn [^SearchSettings settings ^String s] (set-int-val settings s :lines-after))
-    :linesaftertopattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-to-patterns))
-    :linesafteruntilpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-until-patterns))
-    :linesbefore (fn [^SearchSettings settings ^String s] (set-int-val settings s :lines-before))
-    :maxdepth (fn [^SearchSettings settings ^String s] (set-int-val settings s :max-depth))
-    :maxlastmod (fn [^SearchSettings settings ^String s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
-    :maxlinelength (fn [^SearchSettings settings ^String s] (assoc settings :max-line-length (read-string s)))
-    :maxsize (fn [^SearchSettings settings ^String s] (set-long-val settings s :max-size))
-    :mindepth (fn [^SearchSettings settings ^String s] (set-int-val settings s :min-depth))
-    :minlastmod (fn [^SearchSettings settings ^String s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
-    :minsize (fn [^SearchSettings settings ^String s] (set-long-val settings s :min-size))
-    :out-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :out-archive-extensions))
-    :out-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-archive-file-patterns))
-    :out-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-dir-patterns))
-    :out-ext (fn [^SearchSettings settings ^String s]  (add-extension settings s :out-extensions))
-    :out-filepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-file-patterns))
-    :out-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :out-file-types))
-    :out-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-lines-after-patterns))
-    :out-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-lines-before-patterns))
-    :path (fn [^SearchSettings settings ^String s] (add-path settings (to-path s)))
-    :searchpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :search-patterns))
-    :sort-by (fn [^SearchSettings settings ^String s] (assoc settings :sort-by (sort-by-from-name s)))
-  })
-
-(def bool-flag-action-map
+(def bool-action-map
   { :allmatches (fn [^SearchSettings settings b] (assoc settings :first-match (not b)))
     :archivesonly (fn [^SearchSettings settings b] (set-archives-only settings b))
     :colorize (fn [^SearchSettings settings b] (assoc settings :colorize b))
@@ -120,6 +86,53 @@
     :version (fn [^SearchSettings settings b] (assoc settings :version b))
   })
 
+(def string-action-map
+  { :encoding (fn [^SearchSettings settings ^String s] (assoc settings :text-file-encoding s))
+    :in-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :in-archive-extensions))
+    :in-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-archive-file-patterns))
+    :in-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-dir-patterns))
+    :in-ext (fn [^SearchSettings settings ^String s] (add-extension settings s :in-extensions))
+    :in-filepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-file-patterns))
+    :in-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :in-file-types))
+    :in-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-after-patterns))
+    :in-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :in-lines-before-patterns))
+    :linesaftertopattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-to-patterns))
+    :linesafteruntilpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :lines-after-until-patterns))
+    :maxlastmod (fn [^SearchSettings settings ^String s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
+    :minlastmod (fn [^SearchSettings settings ^String s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
+    :out-archiveext (fn [^SearchSettings settings ^String s] (add-extension settings s :out-archive-extensions))
+    :out-archivefilepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-archive-file-patterns))
+    :out-dirpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-dir-patterns))
+    :out-ext (fn [^SearchSettings settings ^String s]  (add-extension settings s :out-extensions))
+    :out-filepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-file-patterns))
+    :out-filetype (fn [^SearchSettings settings ^String s] (add-file-type settings s :out-file-types))
+    :out-linesafterpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-lines-after-patterns))
+    :out-linesbeforepattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :out-lines-before-patterns))
+    :path (fn [^SearchSettings settings ^String s] (add-path settings (to-path s)))
+    :searchpattern (fn [^SearchSettings settings ^String s] (add-pattern settings s :search-patterns))
+    :sort-by (fn [^SearchSettings settings ^String s] (assoc settings :sort-by (sort-by-from-name s)))
+  })
+
+(def int-action-map
+  { :linesafter (fn [^SearchSettings settings i] (set-int-val settings i :lines-after))
+    :linesbefore (fn [^SearchSettings settings i] (set-int-val settings i :lines-before))
+    :maxdepth (fn [^SearchSettings settings i] (set-int-val settings i :max-depth))
+    :maxlinelength (fn [^SearchSettings settings i] (set-int-val settings i :max-line-length))
+    :mindepth (fn [^SearchSettings settings i] (set-int-val settings i :min-depth))
+  })
+
+(def long-action-map
+  { :maxsize (fn [^SearchSettings settings l] (set-long-val settings l :max-size))
+    :minsize (fn [^SearchSettings settings ^String s] (set-long-val settings s :min-size))
+  })
+
+(defn get-long-arg-map []
+  (let [long-names     (map :long-arg SEARCH-OPTIONS)
+        long-map       (zipmap long-names (map #(keyword %) long-names))
+        short-options  (remove #(= (:short-arg %) "") SEARCH-OPTIONS)
+        short-long-map (zipmap (map :short-arg short-options) (map #(keyword %) (map :long-arg short-options)))]
+    (merge long-map short-long-map)))
+
 (defn get-long-arg [arg]
   (let [long-names (map :long-arg SEARCH-OPTIONS)
         long-map (zipmap long-names (repeat 1))
@@ -136,13 +149,14 @@
     (let [k (keyword (first ks))
           v (k m)]
       (cond
-        (contains? arg-action-map k)
-          (settings-from-map ((k arg-action-map) settings v) (rest ks) m errs)
-        (contains? bool-flag-action-map k)
-          (settings-from-map ((k bool-flag-action-map) settings v) (rest ks) m errs)
-        (= k :path)
-          (do
-            (settings-from-map (assoc settings :startpath v) (rest ks) m errs))
+        (contains? bool-action-map k)
+          (settings-from-map ((k bool-action-map) settings v) (rest ks) m errs)
+        (contains? string-action-map k)
+          (settings-from-map ((k string-action-map) settings v) (rest ks) m errs)
+        (contains? int-action-map k)
+          (settings-from-map ((k int-action-map) settings v) (rest ks) m errs)
+        (contains? long-action-map k)
+          (settings-from-map ((k long-action-map) settings v) (rest ks) m errs)
         :else
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
@@ -158,31 +172,75 @@
   (let [contents (slurp f)]
     (settings-from-json settings contents)))
 
-(defn settings-from-args
-  (^SearchSettings [args]
-   (settings-from-args DEFAULT-SEARCH-SETTINGS args []))
-  (^SearchSettings [^SearchSettings settings args errs]
-    (if (or (empty? args) (not (empty? errs)))
-      [settings errs]
-      (let [arg (first args)
-            a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
-            k (if a (get-long-arg a))
-            a2 (second args)]
-        (if a
-          (cond
-            (contains? arg-action-map k)
-              (if a2
-                (settings-from-args ((k arg-action-map) settings a2) (drop 2 args) errs)
-                (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
-            (contains? bool-flag-action-map k)
-              (settings-from-args ((k bool-flag-action-map) settings true) (rest args) errs)
-            (= k :settings-file)
-              (let [[file-settings file-errs] (settings-from-file settings a2)]
-                (settings-from-args file-settings (drop 2 args) (concat errs file-errs)))
-            :else
-              (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a))))
-          ;; (settings-from-args (assoc settings :startpath arg) (rest args) errs)
-          (settings-from-args (add-path settings (to-path arg)) (rest args) errs))))))
+;(defn settings-from-args
+;  (^SearchSettings [args]
+;   (settings-from-args DEFAULT-SEARCH-SETTINGS args []))
+;  (^SearchSettings [^SearchSettings settings args errs]
+;    (if (or (empty? args) (not (empty? errs)))
+;      [settings errs]
+;      (let [arg (first args)
+;            a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
+;            k (if a (get-long-arg a))
+;            a2 (second args)]
+;        (if a
+;          (cond
+;            (contains? string-action-map k)
+;              (if a2
+;                (settings-from-args ((k string-action-map) settings a2) (drop 2 args) errs)
+;                (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
+;            (contains? bool-action-map k)
+;              (settings-from-args ((k bool-action-map) settings true) (rest args) errs)
+;            (= k :settings-file)
+;              (let [[file-settings file-errs] (settings-from-file settings a2)]
+;                (settings-from-args file-settings (drop 2 args) (concat errs file-errs)))
+;            :else
+;              (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a))))
+;          ;; (settings-from-args (assoc settings :startpath arg) (rest args) errs)
+;          (settings-from-args (add-path settings (to-path arg)) (rest args) errs))))))
+
+(defn rec-get-settings-from-args ^SearchSettings [^SearchSettings settings long-arg-map args errs]
+  (if (or (empty? args) (not (empty? errs)))
+    [settings errs]
+    (let [arg (first args)
+          a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
+          k (if a (get long-arg-map a))
+          a2 (second args)]
+      (if a
+        (cond
+          ;; 1) boolean option
+          (contains? bool-action-map k)
+          (rec-get-settings-from-args ((k bool-action-map) settings true) long-arg-map (rest args) errs)
+
+          ;; 2) option without arg
+          (not a2)
+          (rec-get-settings-from-args settings long-arg-map (rest args) (conj errs (str "Missing arg for option " a)))
+
+          ;; 3) string option
+          (contains? string-action-map k)
+          (rec-get-settings-from-args ((k string-action-map) settings a2) long-arg-map (drop 2 args) errs)
+
+          ;; 4) int option
+          (contains? int-action-map k)
+          (rec-get-settings-from-args ((k int-action-map) settings a2) long-arg-map (drop 2 args) errs)
+
+          ;; 5) long option
+          (contains? long-action-map k)
+          (rec-get-settings-from-args ((k long-action-map) settings a2) long-arg-map (drop 2 args) errs)
+
+          ;; 5) file option
+          (= k :settings-file)
+          (let [[file-settings file-errs] (settings-from-file settings a2)]
+            (rec-get-settings-from-args file-settings long-arg-map (drop 2 args) (concat errs file-errs)))
+
+          :else
+          (rec-get-settings-from-args settings long-arg-map (rest args) (conj errs (str "Invalid option: " a))))
+        (rec-get-settings-from-args (add-path settings (to-path arg)) long-arg-map (rest args) errs)))))
+
+(defn settings-from-args ^SearchSettings [args]
+  ;; default print-results to true since running as cli
+  (let [initial-settings (assoc DEFAULT-SEARCH-SETTINGS :print-results true)
+        long-arg-map (get-long-arg-map)]
+    (rec-get-settings-from-args initial-settings long-arg-map args [])))
 
 (defn longest-length [options]
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
