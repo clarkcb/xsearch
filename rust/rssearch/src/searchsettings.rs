@@ -9,11 +9,11 @@ pub struct SearchSettings {
     _first_match: bool,
     _in_lines_after_patterns: Vec<Regex>,
     _in_lines_before_patterns: Vec<Regex>,
-    _lines_after: usize,
+    _lines_after: i32,
     _lines_after_to_patterns: Vec<Regex>,
     _lines_after_until_patterns: Vec<Regex>,
-    _lines_before: usize,
-    _max_line_length: usize,
+    _lines_before: i32,
+    _max_line_length: i32,
     _multi_line_search: bool,
     _out_lines_after_patterns: Vec<Regex>,
     _out_lines_before_patterns: Vec<Regex>,
@@ -33,11 +33,11 @@ impl SearchSettings {
             _first_match: false,
             _in_lines_after_patterns: Vec::new(),
             _in_lines_before_patterns: Vec::new(),
-            _lines_after: 0usize,
+            _lines_after: 0i32,
             _lines_after_to_patterns: Vec::new(),
             _lines_after_until_patterns: Vec::new(),
-            _lines_before: 0usize,
-            _max_line_length: 150usize,
+            _lines_before: 0i32,
+            _max_line_length: 150i32,
             _multi_line_search: false,
             _out_lines_after_patterns: Vec::new(),
             _out_lines_before_patterns: Vec::new(),
@@ -178,12 +178,12 @@ impl SearchSettings {
         self._find_settings.set_include_archives(b)
     }
 
-    pub fn lines_after(&self) -> usize {
+    pub fn lines_after(&self) -> i32 {
         self._lines_after
     }
 
-    pub fn set_lines_after(&mut self, u: usize) {
-        self._lines_after = u
+    pub fn set_lines_after(&mut self, i: i32) {
+        self._lines_after = i
     }
 
     pub fn lines_after_to_patterns(&self) -> &Vec<Regex> {
@@ -202,19 +202,19 @@ impl SearchSettings {
         add_pattern(pattern, &mut self._lines_after_until_patterns);
     }
 
-    pub fn lines_before(&self) -> usize {
+    pub fn lines_before(&self) -> i32 {
         self._lines_before
     }
 
-    pub fn set_lines_before(&mut self, u: usize) {
-        self._lines_before = u
+    pub fn set_lines_before(&mut self, i: i32) {
+        self._lines_before = i
     }
 
-    pub fn max_depth(&self) -> i64 {
+    pub fn max_depth(&self) -> i32 {
         self._find_settings.max_depth()
     }
 
-    pub fn set_max_depth(&mut self, m: i64) {
+    pub fn set_max_depth(&mut self, m: i32) {
         self._find_settings.set_max_depth(m)
     }
 
@@ -226,12 +226,12 @@ impl SearchSettings {
         self._find_settings.set_max_last_mod(u)
     }
 
-    pub fn max_line_length(&self) -> usize {
+    pub fn max_line_length(&self) -> i32 {
         self._max_line_length
     }
 
-    pub fn set_max_line_length(&mut self, u: usize) {
-        self._max_line_length = u
+    pub fn set_max_line_length(&mut self, i: i32) {
+        self._max_line_length = i
     }
 
     pub fn max_size(&self) -> u64 {
@@ -242,11 +242,11 @@ impl SearchSettings {
         self._find_settings.set_max_size(u)
     }
 
-    pub fn min_depth(&self) -> i64 {
+    pub fn min_depth(&self) -> i32 {
         self._find_settings.min_depth()
     }
 
-    pub fn set_min_depth(&mut self, m: i64) {
+    pub fn set_min_depth(&mut self, m: i32) {
         self._find_settings.set_min_depth(m)
     }
 

@@ -1,5 +1,6 @@
 use core::slice::Iter;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::fs;
 
 use serde::{Deserialize, Serialize};
@@ -19,14 +20,18 @@ pub struct SearchOption {
     desc: String,
 }
 
-type ArgAction = Box<dyn Fn(&str, &mut SearchSettings) -> Result<(), SearchError>>;
-type FlagAction = Box<dyn Fn(bool, &mut SearchSettings) -> Result<(), SearchError>>;
+type BoolAction = Box<dyn Fn(bool, &mut SearchSettings) -> Result<(), SearchError>>;
+type StringAction = Box<dyn Fn(&str, &mut SearchSettings) -> Result<(), SearchError>>;
+type IntAction = Box<dyn Fn(i32, &mut SearchSettings) -> Result<(), SearchError>>;
+type LongAction = Box<dyn Fn(u64, &mut SearchSettings) -> Result<(), SearchError>>;
 
 pub struct SearchOptions {
     pub search_options: Vec<SearchOption>,
     pub version: String,
-    pub arg_map: HashMap<String, ArgAction>,
-    pub flag_map: HashMap<String, FlagAction>,
+    pub bool_action_map: HashMap<String, BoolAction>,
+    pub string_action_map: HashMap<String, StringAction>,
+    pub int_action_map: HashMap<String, IntAction>,
+    pub long_action_map: HashMap<String, LongAction>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -48,8 +53,10 @@ impl SearchOptions {
         Ok(SearchOptions {
             search_options: jso.searchoptions,
             version: config.version.clone(),
-            arg_map: get_arg_map(),
-            flag_map: get_flag_map(),
+            bool_action_map: get_bool_action_map(),
+            string_action_map: get_string_action_map(),
+            int_action_map: get_int_action_map(),
+            long_action_map: get_long_action_map(),
         })
     }
 
@@ -73,7 +80,6 @@ impl SearchOptions {
 
     pub fn settings_from_json(&self, json_string: &str) -> Result<SearchSettings, SearchError> {
         let mut settings = SearchSettings::default();
-        settings.set_print_results(true); // default to true when running from main
         match serde_json::from_str(json_string) {
             Ok(value) => {
                 if let Err(error) = self.settings_from_value(&value, &mut settings) {
@@ -100,14 +106,33 @@ impl SearchOptions {
                 }
             },
             Value::Bool(b) => {
-                if let Err(error) = self.apply_flag(name, *b, settings) {
+                if let Err(error) = self.apply_bool_arg(name, *b, settings) {
                     return Err(error);
                 }
             },
             Value::Number(n) => {
-                let s: String = format!("{}", n);
-                if let Err(error) = self.apply_arg(name, &s, settings) {
-                    return Err(error);
+                if self.int_action_map.contains_key(name) {
+                    let l = n.as_i64().unwrap();
+                    match i32::try_from(l) {
+                        Ok(i) => {
+                            if let Err(error) = self.apply_int_arg(name, i, settings) {
+                                return Err(error);
+                            }
+                        }
+                        Err(error) => return Err(SearchError::new(&error.to_string())),
+                    }
+                } else if self.long_action_map.contains_key(name) {
+                    match n.as_u64() {
+                        Some(l) => {
+                            if let Err(error) = self.apply_long_arg(name, l, settings) {
+                                return Err(error);
+                            }
+
+                        }
+                        None => return Err(SearchError::new(&format!("Invalid value for option {}", name)))
+                    }
+                } else {
+                    return Err(SearchError::new(&format!("Unknown or invalid option {}", name)));
                 }
             },
             Value::Object(_) => {
@@ -115,14 +140,9 @@ impl SearchOptions {
                     return Err(error);
                 }
             },
-            Value::String(s) => match name.as_str() {
-                "path" => {
-                    settings.add_path(String::from(s));
-                },
-                _ => {
-                    if let Err(error) = self.apply_arg(name, &s, settings) {
-                        return Err(error);
-                    }
+            Value::String(s) => {
+                if let Err(error) = self.apply_string_arg(name, &s, settings) {
+                    return Err(error);
                 }
             },
             _ => {}
@@ -164,10 +184,10 @@ impl SearchOptions {
             }
             match args.next() {
                 Some(next_arg) if next_arg.starts_with("-") => {
-                    let long_arg = next_arg.trim_start_matches('-');
-                    match long_map.get(long_arg) {
-                        Some(arg) if arg == "settings-file" => match args.next() {
-                            Some(argval) => match self.settings_from_file(&argval) {
+                    let arg = next_arg.trim_start_matches('-');
+                    match long_map.get(arg) {
+                        Some(long_arg) if long_arg == "settings-file" => match args.next() {
+                            Some(arg_val) => match self.settings_from_file(&arg_val) {
                                 Ok(file_settings) => settings = file_settings,
                                 Err(error) => return Err(error),
                             },
@@ -177,21 +197,37 @@ impl SearchOptions {
                                 ));
                             }
                         },
-                        Some(arg) if self.arg_map.contains_key(arg) => match args.next() {
-                            Some(argval) => {
-                                if let Err(error) = self.apply_arg(arg, &argval, &mut settings) {
-                                    return Err(error);
+                        Some(long_arg) if self.bool_action_map.contains_key(long_arg) => {
+                            if let Err(error) = self.apply_bool_arg(long_arg, true, &mut settings) {
+                                return Err(error);
+                            }
+                        },
+                        Some(long_arg) => match args.next() {
+                            Some(arg_val) => {
+                                if self.string_action_map.contains_key(long_arg) {
+                                    if let Err(error) = self.apply_string_arg(long_arg, &arg_val, &mut settings) {
+                                        return Err(error);
+                                    }
+                                } else if self.int_action_map.contains_key(long_arg) {
+                                    let i = arg_val.parse::<i32>().unwrap_or(0);
+                                    if let Err(error) = self.apply_int_arg(long_arg, i, &mut settings) {
+                                        return Err(error);
+                                    }
+                                } else if self.long_action_map.contains_key(long_arg) {
+                                    let l = arg_val.parse::<u64>().unwrap_or(0);
+                                    if let Err(error) = self.apply_long_arg(long_arg, l, &mut settings) {
+                                        return Err(error);
+                                    }
+                                } else {
+                                    return Err(SearchError::new(
+                                        format!("Invalid option: {}", &next_arg).as_str(),
+                                    ))
                                 }
                             },
                             None => {
                                 return Err(SearchError::new(
                                     format!("Missing value for option {}", &next_arg).as_str(),
                                 ));
-                            }
-                        },
-                        Some(arg) if self.flag_map.contains_key(arg) => {
-                            if let Err(error) = self.apply_flag(arg, true, &mut settings) {
-                                return Err(error);
                             }
                         },
                         _ => {
@@ -201,8 +237,10 @@ impl SearchOptions {
                         }
                     }
                 }
-                Some(nextarg) => {
-                    settings.add_path(String::from(nextarg));
+                Some(next_arg) => {
+                    if let Err(error) = self.apply_string_arg("path", &next_arg, &mut settings) {
+                        return Err(error);
+                    }
                 },
                 None => break,
             }
@@ -214,11 +252,11 @@ impl SearchOptions {
     fn get_sort_opt_map(&self) -> HashMap<String, &SearchOption> {
         let mut map = HashMap::with_capacity(self.search_options.len());
         for so in self.search_options.iter() {
-            let sortkey = match &so.short {
+            let sort_key = match &so.short {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
             };
-            map.insert(sortkey, so);
+            map.insert(sort_key, so);
         }
         map
     }
@@ -227,9 +265,9 @@ impl SearchOptions {
         let mut usage = String::from("\nUsage:\n rssearch [options] -s <searchpattern>");
         usage.push_str(" <path> [<path> ...]\n\nOptions:\n");
         let sort_opt_map = self.get_sort_opt_map();
-        let mut sortkeys: Vec<String> = Vec::with_capacity(self.search_options.len());
+        let mut sort_keys: Vec<String> = Vec::with_capacity(self.search_options.len());
         for key in sort_opt_map.keys() {
-            sortkeys.push(key.clone());
+            sort_keys.push(key.clone());
         }
         let mut maxlen: usize = 0;
         for so in self.search_options.iter() {
@@ -242,15 +280,15 @@ impl SearchOptions {
             }
         }
 
-        sortkeys.sort_unstable();
-        for sortkey in sortkeys.iter() {
-            let so = sort_opt_map.get(sortkey).unwrap();
-            let optstring = match &so.short {
+        sort_keys.sort_unstable();
+        for sort_key in sort_keys.iter() {
+            let so = sort_opt_map.get(sort_key).unwrap();
+            let opt_string = match &so.short {
                 Some(short) => String::from(format!(" -{},--{}", short, &so.long)),
                 None => String::from(format!(" --{}", &so.long)),
             };
-            let optstring = format!("{:maxlen$}", optstring.as_str(), maxlen = maxlen + 1);
-            usage.push_str(optstring.as_str());
+            let opt_string = format!("{:maxlen$}", opt_string.as_str(), maxlen = maxlen + 1);
+            usage.push_str(opt_string.as_str());
             usage.push_str("  ");
             usage.push_str(so.desc.as_str());
             usage.push_str("\n");
@@ -267,139 +305,254 @@ impl SearchOptions {
         log(format!("xsearch version {}", self.version).as_str());
     }
 
-    fn apply_arg(
+    fn apply_bool_arg(
         &self,
-        argname: &str,
-        s: &str,
-        settings: &mut SearchSettings,
-    ) -> Result<(), SearchError> {
-        match self.arg_map.get(argname) {
-            Some(arg_fn) => match arg_fn(&s, settings) {
-                Ok(_) => return Ok(()),
-                Err(error) => return Err(error),
-            },
-            None => {
-                return Err(SearchError::new(
-                    format!("Invalid option: {}", argname).as_str(),
-                ))
-            }
-        }
-    }
-
-    fn apply_flag(
-        &self,
-        argname: &str,
+        arg_name: &str,
         b: bool,
         settings: &mut SearchSettings,
     ) -> Result<(), SearchError> {
-        match self.flag_map.get(argname) {
+        match self.bool_action_map.get(arg_name) {
             Some(arg_fn) => match arg_fn(b, settings) {
                 Ok(_) => return Ok(()),
                 Err(error) => return Err(error),
             },
             None => {
                 return Err(SearchError::new(
-                    format!("Invalid option: {}", argname).as_str(),
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_string_arg(
+        &self,
+        arg_name: &str,
+        s: &str,
+        settings: &mut SearchSettings,
+    ) -> Result<(), SearchError> {
+        match self.string_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(&s, settings) {
+                Ok(_) => return Ok(()),
+                Err(error) => return Err(error),
+            },
+            None => {
+                return Err(SearchError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_int_arg(
+        &self,
+        arg_name: &str,
+        i: i32,
+        settings: &mut SearchSettings,
+    ) -> Result<(), SearchError> {
+        match self.int_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(i, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(SearchError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_long_arg(
+        &self,
+        arg_name: &str,
+        l: u64,
+        settings: &mut SearchSettings,
+    ) -> Result<(), SearchError> {
+        match self.long_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(l, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(SearchError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
                 ))
             }
         }
     }
 }
 
-fn get_arg_map() -> HashMap<String, ArgAction> {
-    let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(28);
-    arg_map.insert(
+fn get_bool_action_map() -> HashMap<String, BoolAction> {
+    let mut bool_action_map: HashMap<String, BoolAction> = HashMap::with_capacity(24);
+    bool_action_map.insert(
+        "allmatches".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_first_match(!b))),
+    );
+    bool_action_map.insert(
+        "archivesonly".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_archives_only(b))),
+    );
+    bool_action_map.insert(
+        "colorize".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_colorize(b))),
+    );
+    bool_action_map.insert(
+        "debug".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_debug(b))),
+    );
+    bool_action_map.insert(
+        "excludehidden".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(!b))),
+    );
+    bool_action_map.insert(
+        "firstmatch".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_first_match(b))),
+    );
+    bool_action_map.insert(
+        "help".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_usage(b))),
+    );
+    bool_action_map.insert(
+        "includehidden".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(b))),
+    );
+    bool_action_map.insert(
+        "printdirs".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(b))),
+    );
+    bool_action_map.insert(
+        "printfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(b))),
+    );
+    bool_action_map.insert(
+        "printlines".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(b))),
+    );
+    bool_action_map.insert(
+        "multilinesearch".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_multi_line_search(b))),
+    );
+    bool_action_map.insert(
+        "nocolorize".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_colorize(!b))),
+    );
+    bool_action_map.insert(
+        "noprintdirs".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(!b))),
+    );
+    bool_action_map.insert(
+        "noprintfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(!b))),
+    );
+    bool_action_map.insert(
+        "noprintlines".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(!b))),
+    );
+    bool_action_map.insert(
+        "noprintmatches".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_results(!b))),
+    );
+    bool_action_map.insert(
+        "norecursive".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_recursive(!b))),
+    );
+    bool_action_map.insert(
+        "printmatches".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_results(b))),
+    );
+    bool_action_map.insert(
+        "recursive".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_recursive(b))),
+    );
+    bool_action_map.insert(
+        "searcharchives".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_search_archives(b))),
+    );
+    bool_action_map.insert(
+        "uniquelines".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_unique_lines(b))),
+    );
+    bool_action_map.insert(
+        "verbose".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_verbose(b))),
+    );
+    bool_action_map.insert(
+        "version".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_version(b))),
+    );
+    bool_action_map
+}
+
+fn get_string_action_map() -> HashMap<String, StringAction> {
+    let mut string_action_map: HashMap<String, StringAction> = HashMap::with_capacity(28);
+    string_action_map.insert(
         "encoding".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.set_text_file_encoding(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-archiveext".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_archive_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-archivefilepattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_archive_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-dirpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_dir_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-ext".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-filepattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-filetype".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             let filetype = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_in_file_type(filetype))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-linesafterpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_lines_after_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-linesbeforepattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_in_lines_before_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
-        "linesafter".to_string(),
-        Box::new(
-            |s: &str, settings: &mut SearchSettings| match s.parse::<usize>() {
-                Ok(linesafter) => Ok(settings.set_lines_after(linesafter)),
-                _ => return Err(SearchError::new("Invalid value for linesafter")),
-            },
-        ),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "linesaftertopattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_lines_after_to_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "linesafteruntilpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_lines_after_until_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
-        "linesbefore".to_string(),
-        Box::new(
-            |s: &str, settings: &mut SearchSettings| match s.parse::<usize>() {
-                Ok(linesbefore) => Ok(settings.set_lines_before(linesbefore)),
-                _ => return Err(SearchError::new("Invalid value for linesbefore")),
-            },
-        ),
-    );
-    arg_map.insert(
-        "maxdepth".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
-            Ok(settings.set_max_depth(s.parse::<i64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "maxlastmod".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             let res = rsfind::common::timestamp_from_date_string(s);
@@ -414,19 +567,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             }
         }),
     );
-    arg_map.insert(
-        "maxsize".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
-            Ok(settings.set_max_size(s.parse::<u64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
-        "mindepth".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
-            Ok(settings.set_min_depth(s.parse::<i64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "minlastmod".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             let res = rsfind::common::timestamp_from_date_string(s);
@@ -441,169 +582,114 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             }
         }),
     );
-    arg_map.insert(
-        "minsize".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
-            Ok(settings.set_min_size(s.parse::<u64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "out-archiveext".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_archive_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-archivefilepattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_archive_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-dirpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_dir_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-ext".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-filepattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-filetype".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             let filetype = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_out_file_type(filetype))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-linesafterpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_lines_after_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-linesbeforepattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_out_lines_before_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
+        "path".to_string(),
+        Box::new(|s: &str, settings: &mut SearchSettings| {
+            Ok(settings.add_path(s.to_string()))
+        }),
+    );
+    string_action_map.insert(
         "searchpattern".to_string(),
         Box::new(|s: &str, settings: &mut SearchSettings| {
             Ok(settings.add_search_pattern(s.to_string()))
         }),
     );
-    arg_map
+    string_action_map
 }
 
-fn get_flag_map() -> HashMap<String, FlagAction> {
-    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(24);
-    flag_map.insert(
-        "allmatches".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_first_match(!b))),
+fn get_int_action_map() -> HashMap<String, IntAction> {
+    let mut int_action_map: HashMap<String, IntAction> = HashMap::with_capacity(2);
+    int_action_map.insert(
+        "linesafter".to_string(),
+        Box::new(|i: i32, settings: &mut SearchSettings| {
+            Ok(settings.set_max_depth(i))
+        }),
     );
-    flag_map.insert(
-        "archivesonly".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_archives_only(b))),
+    int_action_map.insert(
+        "linesbefore".to_string(),
+        Box::new(|i: i32, settings: &mut SearchSettings| {
+            Ok(settings.set_max_depth(i))
+        }),
     );
-    flag_map.insert(
-        "colorize".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_colorize(b))),
+    int_action_map.insert(
+        "maxdepth".to_string(),
+        Box::new(|i: i32, settings: &mut SearchSettings| {
+            Ok(settings.set_max_depth(i))
+        }),
     );
-    flag_map.insert(
-        "debug".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_debug(b))),
+    int_action_map.insert(
+        "mindepth".to_string(),
+        Box::new(|i: i32, settings: &mut SearchSettings| {
+            Ok(settings.set_min_depth(i))
+        }),
     );
-    flag_map.insert(
-        "excludehidden".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(!b))),
+    int_action_map
+}
+
+fn get_long_action_map() -> HashMap<String, LongAction> {
+    let mut long_action_map: HashMap<String, LongAction> = HashMap::with_capacity(2);
+    long_action_map.insert(
+        "maxsize".to_string(),
+        Box::new(|l: u64, settings: &mut SearchSettings| {
+            Ok(settings.set_max_size(l))
+        }),
     );
-    flag_map.insert(
-        "firstmatch".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_first_match(b))),
+    long_action_map.insert(
+        "minsize".to_string(),
+        Box::new(|l: u64, settings: &mut SearchSettings| {
+            Ok(settings.set_min_size(l))
+        }),
     );
-    flag_map.insert(
-        "help".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_usage(b))),
-    );
-    flag_map.insert(
-        "includehidden".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(b))),
-    );
-    flag_map.insert(
-        "printdirs".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(b))),
-    );
-    flag_map.insert(
-        "printfiles".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(b))),
-    );
-    flag_map.insert(
-        "printlines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(b))),
-    );
-    flag_map.insert(
-        "multilinesearch".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_multi_line_search(b))),
-    );
-    flag_map.insert(
-        "nocolorize".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_colorize(!b))),
-    );
-    flag_map.insert(
-        "noprintdirs".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(!b))),
-    );
-    flag_map.insert(
-        "noprintfiles".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(!b))),
-    );
-    flag_map.insert(
-        "noprintlines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(!b))),
-    );
-    flag_map.insert(
-        "noprintmatches".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_results(!b))),
-    );
-    flag_map.insert(
-        "norecursive".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_recursive(!b))),
-    );
-    flag_map.insert(
-        "printmatches".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_results(b))),
-    );
-    flag_map.insert(
-        "recursive".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_recursive(b))),
-    );
-    flag_map.insert(
-        "searcharchives".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_search_archives(b))),
-    );
-    flag_map.insert(
-        "uniquelines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_unique_lines(b))),
-    );
-    flag_map.insert(
-        "verbose".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_verbose(b))),
-    );
-    flag_map.insert(
-        "version".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_version(b))),
-    );
-    flag_map
+    long_action_map
 }
 
 #[cfg(test)]

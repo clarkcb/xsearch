@@ -101,7 +101,8 @@ fn search(args: Iter<String>) {
                 Ok(results) => {
                     if searcher.settings.print_results() {
                         let formatter = SearchResultFormatter::new(
-                            searcher.settings.colorize(), searcher.settings.max_line_length());
+                            searcher.settings.colorize(),
+                            searcher.settings.max_line_length() as usize);
                         log(format!("\nSearch results ({}):", results.len()).as_str());
                         for r in results.iter() {
                             log(formatter.format(r).as_str());

@@ -54,6 +54,12 @@ impl Searcher {
                 "Invalid or unsupported text file encoding",
             ));
         }
+        if settings.lines_after() < 0 {
+            return Err(SearchError::new("Invalid linesafter"));
+        }
+        if settings.lines_before() < 0 {
+            return Err(SearchError::new("Invalid linesbefore"));
+        }
         Ok(())
     }
 
@@ -500,7 +506,7 @@ impl Searcher {
             } else {
                 break;
             };
-            while lines_after.len() < self.settings.lines_after() {
+            while lines_after.len() < self.settings.lines_after() as usize {
                 match lines.next() {
                     Some(l) => lines_after.push_back(l),
                     None => break,
@@ -593,10 +599,10 @@ impl Searcher {
                 }
             }
             if self.settings.lines_before() > 0 {
-                if lines_before.len() == self.settings.lines_before() {
+                if lines_before.len() == self.settings.lines_before() as usize {
                     lines_before.pop_front();
                 }
-                if lines_before.len() < self.settings.lines_before() {
+                if lines_before.len() < self.settings.lines_before() as usize {
                     lines_before.push_back(line);
                 }
             }
@@ -687,7 +693,7 @@ impl Searcher {
                     let nlis: Vec<usize> = nlis
                         .iter()
                         .rev()
-                        .take(self.settings.lines_before() + 1)
+                        .take(self.settings.lines_before() as usize + 1)
                         .rev()
                         .cloned()
                         .collect();
@@ -710,7 +716,7 @@ impl Searcher {
                     let nlis: &[usize] = &newline_indices[lines_before_count - 1..];
                     let nlis: Vec<usize> = if self.settings.lines_after() > 0 {
                         nlis.iter()
-                            .take(self.settings.lines_after() + 1)
+                            .take(self.settings.lines_after() as usize + 1)
                             .cloned()
                             .collect()
                     } else {
