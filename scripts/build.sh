@@ -1400,8 +1400,22 @@ build_rbsearch () {
     # TODO: figure out how to install dependencies without installing rbsearch (which is what bundler does)
     cd "$RBSEARCH_PATH"
 
+    log "Building rbsearch"
     log "bundle install"
     bundle install
+
+    # check for success/failure
+    if [ "$?" -ne 0 ]
+    then
+        log_error "bundle install failed"
+        FAILED_BUILDS+=("rbsearch")
+        cd -
+        return
+    fi
+
+    # TODO: install the gem?
+    # log "gem install rbsearch-0.1.0.gem"
+    # gem install rbsearch-0.1.0.gem
 
     # add to bin
     add_to_bin "$RBSEARCH_PATH/bin/rbsearch.sh"
@@ -1964,7 +1978,7 @@ do
         php)
             build_phpsearch
             ;;
-        ps1 | powershell)
+        ps1 | powershell | pwsh)
             build_ps1search
             ;;
         py | python)
