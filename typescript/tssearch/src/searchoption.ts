@@ -12,9 +12,9 @@ export class SearchOption {
     desc: string;
     public sortArg: string;
 
-    constructor(shortarg: string, longarg: string, desc: string) {
-        this.shortArg = shortarg;
-        this.longArg = longarg;
+    constructor(shortArg: string, longArg: string, desc: string) {
+        this.shortArg = shortArg;
+        this.longArg = longArg;
         this.desc = desc;
         this.sortArg = this.getSortArg();
     }

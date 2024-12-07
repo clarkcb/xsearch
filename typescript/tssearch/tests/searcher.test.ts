@@ -10,7 +10,7 @@ import {Searcher} from '../src/searcher';
 import {SearchResult} from '../src/searchresult';
 import {SearchSettings} from '../src/searchsettings';
 
-const testFile = config.SHAREDPATH + '/testFiles/testFile2.txt';
+const testFile = config.SHARED_PATH + '/testFiles/testFile2.txt';
 
 const getSettings = function() {
     const settings: SearchSettings = new SearchSettings();

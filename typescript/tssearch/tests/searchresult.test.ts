@@ -11,7 +11,7 @@ import {SearchResult} from '../src/searchresult';
 import {SearchResultFormatter} from '../src/searchresultformatter';
 import {SearchSettings} from '../src/searchsettings';
 
-const cssearch_path = config.XSEARCHPATH + '/csharp/CsSearch/CsSearch';
+const cssearch_path = config.XSEARCH_PATH + '/csharp/CsSearch/CsSearch';
 
 describe('testing searchresult', () => {
     it('testSingleLineResult', () => {
