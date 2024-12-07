@@ -18,7 +18,6 @@ type SearchOption struct {
 }
 
 type SearchOptions struct {
-	//SearchConfig  *SearchConfig
 	SearchOptions []*SearchOption
 }
 
@@ -47,8 +46,8 @@ func NewSearchOptions() *SearchOptions {
 	return searchOptions
 }
 
-func (so *SearchOptions) SettingsFromFile(filepath string, settings *SearchSettings) error {
-	if data, err := os.ReadFile(filepath); err != nil {
+func (so *SearchOptions) SettingsFromFile(filePath string, settings *SearchSettings) error {
+	if data, err := os.ReadFile(filePath); err != nil {
 		return err
 	} else {
 		return so.SettingsFromJson(data, settings)
@@ -56,26 +55,34 @@ func (so *SearchOptions) SettingsFromFile(filepath string, settings *SearchSetti
 }
 
 func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings) error {
-	argActionMap := so.getArgActionMap()
-	boolFlagActionMap := so.getBoolFlagActionMap()
+	boolActionMap := so.getBoolActionMap()
+	stringActionMap := so.getStringActionMap()
+	intActionMap := so.getIntActionMap()
+	longActionMap := so.getLongActionMap()
 	type JsonSettings map[string]interface{}
 	var jsonSettings JsonSettings
 	if err := json.Unmarshal(data, &jsonSettings); err != nil {
 		return err
 	}
 	for k := range jsonSettings {
-		if af, isAction := argActionMap[k]; isAction {
+		if bf, isBool := boolActionMap[k]; isBool {
+			if v, hasVal := jsonSettings[k]; hasVal {
+				bf(v.(bool), settings)
+			} else {
+				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
+			}
+		} else if sf, isString := stringActionMap[k]; isString {
 			if v, hasVal := jsonSettings[k]; hasVal {
 				switch v := v.(type) {
 				case string:
-					af(v, settings)
+					sf(v, settings)
 				case int:
-					af(strconv.Itoa(v), settings)
+					sf(strconv.Itoa(v), settings)
 				case float32, float64:
-					af(fmt.Sprintf("%v", v.(float64)), settings)
+					sf(fmt.Sprintf("%v", v.(float64)), settings)
 				case []interface{}:
 					for i := range v {
-						af(v[i].(string), settings)
+						sf(v[i].(string), settings)
 					}
 				default:
 					gofind.Log(fmt.Sprintf("k: %v", k))
@@ -87,22 +94,21 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 			} else {
 				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
 			}
-		} else if ff, isFlag := boolFlagActionMap[k]; isFlag {
+		} else if iff, isInt := intActionMap[k]; isInt {
 			if v, hasVal := jsonSettings[k]; hasVal {
-				ff(v.(bool), settings)
+				iff(v.(int), settings)
 			} else {
 				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
 			}
-		} else if k == "path" {
-			if sp, hasStartPath := jsonSettings[k]; hasStartPath {
-				settings.AddPath(sp.(string))
+		} else if lff, isLong := longActionMap[k]; isLong {
+			if v, hasVal := jsonSettings[k]; hasVal {
+				lff(v.(int64), settings)
 			} else {
-				gofind.Log("startpath value is invalid")
+				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else {
 			return fmt.Errorf("Invalid option: %s", k)
 		}
-
 	}
 	return nil
 }
@@ -111,12 +117,16 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 	settings := GetDefaultSearchSettings()
 	// default printFiles to true since running as cli
 	settings.SetPrintResults(true)
-	argActionMap := so.getArgActionMap()
-	flagActionMap := so.getBoolFlagActionMap()
+	boolActionMap := so.getBoolActionMap()
+	stringActionMap := so.getStringActionMap()
+	intActionMap := so.getIntActionMap()
+	longActionMap := so.getLongActionMap()
 
 	if false {
-		gofind.Log(fmt.Sprintf("argActionMap: %v", argActionMap))
-		gofind.Log(fmt.Sprintf("flagActionMap: %v", flagActionMap))
+		gofind.Log(fmt.Sprintf("boolActionMap: %v", boolActionMap))
+		gofind.Log(fmt.Sprintf("stringActionMap: %v", stringActionMap))
+		gofind.Log(fmt.Sprintf("intActionMap: %v", intActionMap))
+		gofind.Log(fmt.Sprintf("longActionMap: %v", longActionMap))
 	}
 
 	for i := 0; i < len(args); {
@@ -125,17 +135,32 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 			if false {
 				gofind.Log(fmt.Sprintf("k: %s\n", k))
 			}
-			if af, isAction := argActionMap[k]; isAction {
+			if bf, isBool := boolActionMap[k]; isBool {
+				bf(true, settings)
+			} else {
 				i++
 				if len(args) < i+1 {
 					return nil, fmt.Errorf("Missing value for option: %s", k)
 				}
 				val := args[i]
-				af(val, settings)
-			} else if ff, isFlag := flagActionMap[k]; isFlag {
-				ff(true, settings)
-			} else {
-				return nil, fmt.Errorf("Invalid option: %s", k)
+
+				if sf, isString := stringActionMap[k]; isString {
+					sf(val, settings)
+				} else if iff, isInt := intActionMap[k]; isInt {
+					intVal, err := strconv.Atoi(val)
+					if err != nil {
+						return nil, fmt.Errorf("Invalid value for option %s", k)
+					}
+					iff(intVal, settings)
+				} else if lff, isLong := longActionMap[k]; isLong {
+					longVal, err := strconv.ParseInt(val, 0, 64)
+					if err != nil {
+						return nil, fmt.Errorf("Invalid value for option %s", k)
+					}
+					lff(longVal, settings)
+				} else {
+					return nil, fmt.Errorf("Invalid option: %s", k)
+				}
 			}
 		} else {
 			settings.AddPath(args[i])
@@ -214,139 +239,10 @@ func (so *SearchOptions) getOptDescMap() map[string]string {
 	return m
 }
 
-type argAction func(s string, settings *SearchSettings)
+type boolAction func(b bool, settings *SearchSettings)
 
-func (so *SearchOptions) getArgActionMap() map[string]argAction {
-	m := map[string]argAction{
-		"encoding": func(s string, settings *SearchSettings) {
-			settings.SetTextFileEncoding(s)
-		},
-		"in-archiveext": func(s string, settings *SearchSettings) {
-			settings.AddInArchiveExtension(s)
-		},
-		"in-archivefilepattern": func(s string, settings *SearchSettings) {
-			settings.AddInArchiveFilePattern(s)
-		},
-		"in-dirpattern": func(s string, settings *SearchSettings) {
-			settings.AddInDirPattern(s)
-		},
-		"in-ext": func(s string, settings *SearchSettings) {
-			settings.AddInExtension(s)
-		},
-		"in-filepattern": func(s string, settings *SearchSettings) {
-			settings.AddInFilePattern(s)
-		},
-		"in-filetype": func(s string, settings *SearchSettings) {
-			settings.AddInFileType(gofind.GetFileTypeForName(s))
-		},
-		"in-linesafterpattern": func(s string, settings *SearchSettings) {
-			settings.AddInLinesAfterPattern(s)
-		},
-		"in-linesbeforepattern": func(s string, settings *SearchSettings) {
-			settings.AddInLinesBeforePattern(s)
-		},
-		"linesafter": func(s string, settings *SearchSettings) {
-			num, err := strconv.Atoi(s)
-			if err == nil {
-				settings.SetLinesAfter(num)
-			} else {
-				gofind.Log(fmt.Sprintf("Invalid value for linesafter: %s\n", s))
-			}
-		},
-		"linesaftertopattern": func(s string, settings *SearchSettings) {
-			settings.AddLinesAfterToPattern(s)
-		},
-		"linesafteruntilpattern": func(s string, settings *SearchSettings) {
-			settings.AddLinesAfterUntilPattern(s)
-		},
-		"linesbefore": func(s string, settings *SearchSettings) {
-			num, err := strconv.Atoi(s)
-			if err == nil {
-				settings.SetLinesBefore(num)
-			} else {
-				gofind.Log(fmt.Sprintf("Invalid value for linesbefore: %s\n", s))
-			}
-		},
-		"maxdepth": func(s string, settings *SearchSettings) {
-			settings.SetMaxDepthFromString(s)
-		},
-		"maxlastmod": func(s string, settings *SearchSettings) {
-			settings.SetMaxLastModFromString(s)
-		},
-		"maxlinelength": func(s string, settings *SearchSettings) {
-			num, err := strconv.Atoi(s)
-			if err == nil {
-				settings.SetMaxLineLength(num)
-			} else {
-				gofind.Log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
-			}
-		},
-		"maxsize": func(s string, settings *SearchSettings) {
-			settings.SetMaxSizeFromString(s)
-		},
-		"mindepth": func(s string, settings *SearchSettings) {
-			settings.SetMinDepthFromString(s)
-		},
-		"minlastmod": func(s string, settings *SearchSettings) {
-			settings.SetMinLastModFromString(s)
-		},
-		"minsize": func(s string, settings *SearchSettings) {
-			settings.SetMinSizeFromString(s)
-		},
-		"out-archiveext": func(s string, settings *SearchSettings) {
-			settings.AddOutArchiveExtension(s)
-		},
-		"out-archivefilepattern": func(s string, settings *SearchSettings) {
-			settings.AddOutArchiveFilePattern(s)
-		},
-		"out-dirpattern": func(s string, settings *SearchSettings) {
-			settings.AddOutDirPattern(s)
-		},
-		"out-ext": func(s string, settings *SearchSettings) {
-			settings.AddOutExtension(s)
-		},
-		"out-filepattern": func(s string, settings *SearchSettings) {
-			settings.AddOutFilePattern(s)
-		},
-		"out-filetype": func(s string, settings *SearchSettings) {
-			settings.AddOutFileType(gofind.GetFileTypeForName(s))
-		},
-		"out-linesafterpattern": func(s string, settings *SearchSettings) {
-			settings.AddOutLinesAfterPattern(s)
-		},
-		"out-linesbeforepattern": func(s string, settings *SearchSettings) {
-			settings.AddOutLinesBeforePattern(s)
-		},
-		"path": func(s string, settings *SearchSettings) {
-			settings.AddPath(s)
-		},
-		"searchpattern": func(s string, settings *SearchSettings) {
-			settings.AddSearchPattern(s)
-		},
-		"settings-file": func(s string, settings *SearchSettings) {
-			err := so.SettingsFromFile(s, settings)
-			if err != nil {
-				return
-			}
-		},
-		"sort-by": func(s string, settings *SearchSettings) {
-			settings.SetSortByFromString(s)
-		},
-	}
-	for _, o := range so.SearchOptions {
-		if o.Short != "" {
-			if f, ok := m[o.Long]; ok {
-				m[o.Short] = f
-			}
-		}
-	}
-	return m
-}
-
-type boolFlagAction func(b bool, settings *SearchSettings)
-
-func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
-	m := map[string]boolFlagAction{
+func (so *SearchOptions) getBoolActionMap() map[string]boolAction {
+	m := map[string]boolAction{
 		"allmatches": func(b bool, settings *SearchSettings) {
 			settings.SetFirstMatch(!b)
 		},
@@ -447,6 +343,136 @@ func (so *SearchOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 				m[o.Short] = f
 			}
 		}
+	}
+	return m
+}
+
+type stringAction func(s string, settings *SearchSettings)
+
+func (so *SearchOptions) getStringActionMap() map[string]stringAction {
+	m := map[string]stringAction{
+		"encoding": func(s string, settings *SearchSettings) {
+			settings.SetTextFileEncoding(s)
+		},
+		"in-archiveext": func(s string, settings *SearchSettings) {
+			settings.AddInArchiveExtension(s)
+		},
+		"in-archivefilepattern": func(s string, settings *SearchSettings) {
+			settings.AddInArchiveFilePattern(s)
+		},
+		"in-dirpattern": func(s string, settings *SearchSettings) {
+			settings.AddInDirPattern(s)
+		},
+		"in-ext": func(s string, settings *SearchSettings) {
+			settings.AddInExtension(s)
+		},
+		"in-filepattern": func(s string, settings *SearchSettings) {
+			settings.AddInFilePattern(s)
+		},
+		"in-filetype": func(s string, settings *SearchSettings) {
+			settings.AddInFileType(gofind.GetFileTypeForName(s))
+		},
+		"in-linesafterpattern": func(s string, settings *SearchSettings) {
+			settings.AddInLinesAfterPattern(s)
+		},
+		"in-linesbeforepattern": func(s string, settings *SearchSettings) {
+			settings.AddInLinesBeforePattern(s)
+		},
+		"linesaftertopattern": func(s string, settings *SearchSettings) {
+			settings.AddLinesAfterToPattern(s)
+		},
+		"linesafteruntilpattern": func(s string, settings *SearchSettings) {
+			settings.AddLinesAfterUntilPattern(s)
+		},
+		"maxlastmod": func(s string, settings *SearchSettings) {
+			settings.SetMaxLastModFromString(s)
+		},
+		"minlastmod": func(s string, settings *SearchSettings) {
+			settings.SetMinLastModFromString(s)
+		},
+		"out-archiveext": func(s string, settings *SearchSettings) {
+			settings.AddOutArchiveExtension(s)
+		},
+		"out-archivefilepattern": func(s string, settings *SearchSettings) {
+			settings.AddOutArchiveFilePattern(s)
+		},
+		"out-dirpattern": func(s string, settings *SearchSettings) {
+			settings.AddOutDirPattern(s)
+		},
+		"out-ext": func(s string, settings *SearchSettings) {
+			settings.AddOutExtension(s)
+		},
+		"out-filepattern": func(s string, settings *SearchSettings) {
+			settings.AddOutFilePattern(s)
+		},
+		"out-filetype": func(s string, settings *SearchSettings) {
+			settings.AddOutFileType(gofind.GetFileTypeForName(s))
+		},
+		"out-linesafterpattern": func(s string, settings *SearchSettings) {
+			settings.AddOutLinesAfterPattern(s)
+		},
+		"out-linesbeforepattern": func(s string, settings *SearchSettings) {
+			settings.AddOutLinesBeforePattern(s)
+		},
+		"path": func(s string, settings *SearchSettings) {
+			settings.AddPath(s)
+		},
+		"searchpattern": func(s string, settings *SearchSettings) {
+			settings.AddSearchPattern(s)
+		},
+		"settings-file": func(s string, settings *SearchSettings) {
+			err := so.SettingsFromFile(s, settings)
+			if err != nil {
+				return
+			}
+		},
+		"sort-by": func(s string, settings *SearchSettings) {
+			settings.SetSortByFromString(s)
+		},
+	}
+	for _, o := range so.SearchOptions {
+		if o.Short != "" {
+			if f, ok := m[o.Long]; ok {
+				m[o.Short] = f
+			}
+		}
+	}
+	return m
+}
+
+type intAction func(i int, settings *SearchSettings)
+
+func (so *SearchOptions) getIntActionMap() map[string]intAction {
+	m := map[string]intAction{
+		"linesafter": func(i int, settings *SearchSettings) {
+			settings.SetLinesAfter(i)
+		},
+		"linesbefore": func(i int, settings *SearchSettings) {
+			settings.SetLinesBefore(i)
+		},
+		"maxdepth": func(i int, settings *SearchSettings) {
+			settings.SetMaxDepth(i)
+		},
+		"maxlinelength": func(i int, settings *SearchSettings) {
+			settings.SetMaxLineLength(i)
+		},
+		"mindepth": func(i int, settings *SearchSettings) {
+			settings.SetMinDepth(i)
+		},
+	}
+	return m
+}
+
+type longAction func(l int64, settings *SearchSettings)
+
+func (so *SearchOptions) getLongActionMap() map[string]longAction {
+	m := map[string]longAction{
+		"maxsize": func(l int64, settings *SearchSettings) {
+			settings.SetMaxSize(l)
+		},
+		"minsize": func(l int64, settings *SearchSettings) {
+			settings.SetMinSize(l)
+		},
 	}
 	return m
 }
