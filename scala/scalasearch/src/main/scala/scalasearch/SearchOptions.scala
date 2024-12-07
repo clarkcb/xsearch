@@ -1,13 +1,11 @@
 package scalasearch
 
 import org.json.{JSONArray, JSONObject, JSONTokener}
-import scalafind.{Common, FileType, FileTypes, FileUtil, FindOptions, SortBy}
+import scalafind.{Common, FileType, FileUtil, SortBy}
 
 import java.io.{File, IOException, InputStreamReader}
 import java.nio.file.Paths
-import java.time.{LocalDate, LocalDateTime}
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
+import java.time.LocalDateTime
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
@@ -55,78 +53,9 @@ object SearchOptions {
     }
   }
 
-  type ArgAction = (String, SearchSettings) => SearchSettings
+  private type BoolAction = (Boolean, SearchSettings) => SearchSettings
 
-  private val argActionMap = Map[String, ArgAction](
-    "encoding" ->
-      ((s, ss) => ss.copy(textFileEncoding = s)),
-    "in-archiveext" ->
-      ((s, ss) => ss.copy(inArchiveExtensions = ss.addExtensions(s, ss.inArchiveExtensions))),
-    "in-archivefilepattern" ->
-      ((s, ss) => ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns + s.r)),
-    "in-dirpattern" ->
-      ((s, ss) => ss.copy(inDirPatterns = ss.inDirPatterns + s.r)),
-    "in-ext" ->
-      ((s, ss) => ss.copy(inExtensions = ss.addExtensions(s, ss.inExtensions))),
-    "in-filepattern" ->
-      ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
-    "in-filetype" ->
-      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileType.forName(s))),
-    "in-linesafterpattern" ->
-      ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
-    "in-linesbeforepattern" ->
-      ((s, ss) => ss.copy(inLinesBeforePatterns = ss.inLinesBeforePatterns + s.r)),
-    "linesafter" ->
-      ((s, ss) => ss.copy(linesAfter = s.toInt)),
-    "linesaftertopattern" ->
-      ((s, ss) => ss.copy(linesAfterToPatterns  = ss.linesAfterToPatterns + s.r)),
-    "linesafteruntilpattern" ->
-      ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
-    "linesbefore" ->
-      ((s, ss) => ss.copy(linesBefore = s.toInt)),
-    "maxdepth" ->
-      ((s, ss) => ss.copy(maxDepth = s.toInt)),
-    "maxlastmod" ->
-      ((s, ss) => ss.copy(maxLastMod = ss.getLastModFromString(s))),
-    "maxlinelength" ->
-      ((s, ss) => ss.copy(maxLineLength = s.toInt)),
-    "maxsize" ->
-      ((s, ss) => ss.copy(maxSize = s.toInt)),
-    "mindepth" ->
-      ((s, ss) => ss.copy(minDepth = s.toInt)),
-    "minlastmod" ->
-      ((s, ss) => ss.copy(minLastMod = ss.getLastModFromString(s))),
-    "minsize" ->
-      ((s, ss) => ss.copy(minSize = s.toInt)),
-    "out-archiveext" ->
-      ((s, ss) => ss.copy(outArchiveExtensions = ss.addExtensions(s, ss.outArchiveExtensions))),
-    "out-archivefilepattern" ->
-      ((s, ss) => ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns + s.r)),
-    "out-dirpattern" ->
-      ((s, ss) => ss.copy(outDirPatterns = ss.outDirPatterns + s.r)),
-    "out-ext" ->
-      ((s, ss) => ss.copy(outExtensions = ss.addExtensions(s, ss.outExtensions))),
-    "out-filepattern" ->
-      ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
-    "out-filetype" ->
-      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileType.forName(s))),
-    "out-linesafterpattern" ->
-      ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
-    "out-linesbeforepattern" ->
-      ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
-    "path" ->
-      ((s, ss) => ss.copy(paths = ss.paths + Paths.get(s))),
-    "searchpattern" ->
-      ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
-    "settings-file" ->
-      ((s, ss) => settingsFromFile(s, ss)),
-    "sort-by" ->
-      ((s, ss) => ss.copy(sortBy = SortBy.forName(s))),
-  )
-
-  type FlagAction = (Boolean, SearchSettings) => SearchSettings
-
-  private val boolFlagActionMap = Map[String, FlagAction](
+  private val boolActionMap = Map[String, BoolAction](
     "archivesonly" -> ((b, ss) =>
       if (b) ss.copy(archivesOnly = b, searchArchives = b) else ss.copy(archivesOnly = b)),
     "allmatches" -> ((b, ss) => ss.copy(firstMatch = !b)),
@@ -160,6 +89,78 @@ object SearchOptions {
     "version" -> ((b, ss) => ss.copy(printVersion = b))
   )
 
+  private type StringAction = (String, SearchSettings) => SearchSettings
+
+  private val stringActionMap = Map[String, StringAction](
+    "encoding" ->
+      ((s, ss) => ss.copy(textFileEncoding = s)),
+    "in-archiveext" ->
+      ((s, ss) => ss.copy(inArchiveExtensions = ss.addExtensions(s, ss.inArchiveExtensions))),
+    "in-archivefilepattern" ->
+      ((s, ss) => ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns + s.r)),
+    "in-dirpattern" ->
+      ((s, ss) => ss.copy(inDirPatterns = ss.inDirPatterns + s.r)),
+    "in-ext" ->
+      ((s, ss) => ss.copy(inExtensions = ss.addExtensions(s, ss.inExtensions))),
+    "in-filepattern" ->
+      ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
+    "in-filetype" ->
+      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileType.forName(s))),
+    "in-linesafterpattern" ->
+      ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
+    "in-linesbeforepattern" ->
+      ((s, ss) => ss.copy(inLinesBeforePatterns = ss.inLinesBeforePatterns + s.r)),
+    "linesaftertopattern" ->
+      ((s, ss) => ss.copy(linesAfterToPatterns  = ss.linesAfterToPatterns + s.r)),
+    "linesafteruntilpattern" ->
+      ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
+    "maxlastmod" ->
+      ((s, ss) => ss.copy(maxLastMod = ss.getLastModFromString(s))),
+    "minlastmod" ->
+      ((s, ss) => ss.copy(minLastMod = ss.getLastModFromString(s))),
+    "out-archiveext" ->
+      ((s, ss) => ss.copy(outArchiveExtensions = ss.addExtensions(s, ss.outArchiveExtensions))),
+    "out-archivefilepattern" ->
+      ((s, ss) => ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns + s.r)),
+    "out-dirpattern" ->
+      ((s, ss) => ss.copy(outDirPatterns = ss.outDirPatterns + s.r)),
+    "out-ext" ->
+      ((s, ss) => ss.copy(outExtensions = ss.addExtensions(s, ss.outExtensions))),
+    "out-filepattern" ->
+      ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
+    "out-filetype" ->
+      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileType.forName(s))),
+    "out-linesafterpattern" ->
+      ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
+    "out-linesbeforepattern" ->
+      ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
+    "path" ->
+      ((s, ss) => ss.copy(paths = ss.paths + Paths.get(s))),
+    "searchpattern" ->
+      ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
+    "settings-file" ->
+      ((s, ss) => settingsFromFile(s, ss)),
+    "sort-by" ->
+      ((s, ss) => ss.copy(sortBy = SortBy.forName(s))),
+  )
+
+  private type IntAction = (Int, SearchSettings) => SearchSettings
+
+  private val intActionMap = Map[String, IntAction](
+    "linesafter" -> ((i, ss) => ss.copy(linesAfter = i)),
+    "linesbefore" -> ((i, ss) => ss.copy(linesBefore = i)),
+    "maxdepth" -> ((i, ss) => ss.copy(maxDepth = i)),
+    "maxlinelength" -> ((i, ss) => ss.copy(maxLineLength = i)),
+    "mindepth" -> ((i, ss) => ss.copy(minDepth = i)),
+  )
+
+  private type LongAction = (Long, SearchSettings) => SearchSettings
+
+  private val longActionMap = Map[String, LongAction](
+    "maxsize" -> ((l, ss) => ss.copy(maxSize = l)),
+    "minsize" -> ((l, ss) => ss.copy(minSize = l)),
+  )
+
   private def settingsFromFile(filePath: String, ss: SearchSettings): SearchSettings = {
     val file: File = new File(filePath)
     if (!file.exists()) {
@@ -181,26 +182,36 @@ object SearchOptions {
     recSettingsFromJson(jsonObject.keySet().asScala.toList, ss)
   }
 
-  @tailrec
+//  @tailrec
   private def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = obj match {
-    case s: String =>
-      if (this.argActionMap.contains(arg)) {
-        argActionMap(arg)(s, ss)
-      } else if (arg == "path") {
-        ss.copy(paths = ss.paths + Paths.get(arg))
+    case b: Boolean =>
+      if (this.boolActionMap.contains(arg)) {
+        boolActionMap(arg)(b, ss)
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
-    case b: Boolean =>
-      if (this.boolFlagActionMap.contains(arg)) {
-        boolFlagActionMap(arg)(b, ss)
+    case s: String =>
+      if (this.stringActionMap.contains(arg)) {
+        stringActionMap(arg)(s, ss)
       } else {
         throw new SearchException("Invalid option: " + arg)
       }
     case i: Int =>
-      applySetting(arg, i.toString, ss)
+      if (this.intActionMap.contains(arg)) {
+        intActionMap(arg)(i, ss)
+      } else if (this.longActionMap.contains(arg)) {
+        longActionMap(arg)(i.toLong, ss)
+      } else {
+        throw new SearchException("Invalid option: " + arg)
+      }
     case l: Long =>
-      applySetting(arg, l.toString, ss)
+      if (this.longActionMap.contains(arg)) {
+        longActionMap(arg)(l, ss)
+      } else if (this.intActionMap.contains(arg)) {
+        intActionMap(arg)(l.toInt, ss)
+      } else {
+        throw new SearchException("Invalid option: " + arg)
+      }
     case a: JSONArray =>
       applySettings(arg, a.toList.asScala.map(_.toString).toList, ss)
     case _ =>
@@ -229,17 +240,25 @@ object SearchOptions {
         case switchPattern(arg) :: tail =>
           argMap.get(arg) match {
             case Some(longArg) =>
-              if (argActionMap.contains(longArg)) {
+              if (boolActionMap.contains(longArg)) {
+                if (Set("help", "version").contains(longArg)) {
+                  nextArg(Nil, boolActionMap(longArg)(true, ss))
+                } else {
+                  nextArg(tail, boolActionMap(longArg)(true, ss))
+                }
+              } else if (stringActionMap.contains(longArg)
+                         || intActionMap.contains(longArg)
+                         || longActionMap.contains(longArg)) {
                 if (tail.nonEmpty) {
-                  nextArg(tail.tail, argActionMap(longArg)(tail.head, ss))
+                  if (stringActionMap.contains(longArg)) {
+                    nextArg(tail.tail, stringActionMap(longArg)(tail.head, ss))
+                  } else if (intActionMap.contains(longArg)) {
+                    nextArg(tail.tail, intActionMap(longArg)(tail.head.toInt, ss))
+                  } else {
+                    nextArg(tail.tail, longActionMap(longArg)(tail.head.toLong, ss))
+                  }
                 } else {
                   throw new SearchException("Missing value for arg %s".format(arg))
-                }
-              } else if (boolFlagActionMap.contains(longArg)) {
-                if (Set("help", "version").contains(longArg)) {
-                  nextArg(Nil, boolFlagActionMap(longArg)(true, ss))
-                } else {
-                  nextArg(tail, boolFlagActionMap(longArg)(true, ss))
                 }
               } else {
                 throw new SearchException("Invalid option: %s".format(arg))
@@ -251,6 +270,7 @@ object SearchOptions {
           nextArg(tail, ss.copy(paths = ss.paths + Paths.get(arg)))
       }
     }
+    // default printResults to true since running as cli
     nextArg(args.toList, SearchSettings(printResults = true))
   }
 
@@ -259,7 +279,7 @@ object SearchOptions {
     sys.exit(status)
   }
 
-  def getUsageString: String = {
+  private def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
     sb.append(" scalasearch [options] -s <searchpattern> <path> [<path> ...]\n\n")
