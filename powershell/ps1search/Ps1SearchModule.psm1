@@ -187,133 +187,7 @@ class SearchOptions {
     [SearchOption[]]$Options = @()
     # instantiate this way to get case sensitivity of keys
     $LongArgMap = [system.collections.hashtable]::new()
-    $ArgActionMap = @{
-        "encoding" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.TextFileEncoding = $s
-        }
-        "in-archiveext" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InArchiveExtensions += $settings.GetExtensions($s)
-        }
-        "in-archivefilepattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InArchiveFilePatterns += [regex]$s
-        }
-        "in-dirpattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InDirPatterns += [regex]$s
-        }
-        "in-ext" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InExtensions += $settings.GetExtensions($s)
-        }
-        "in-filepattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InFilePatterns += [regex]$s
-        }
-        "in-filetype" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InFileTypes += GetFileTypeFromName($s)
-        }
-        "in-linesafterpattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InLinesAfterPatterns += [regex]$s
-        }
-        "in-linesbeforepattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.InLinesBeforePatterns += [regex]$s
-        }
-        "linesafter" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.LinesAfter = [int]$s
-        }
-        "linesaftertopattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.LinesAfterToPatterns += [regex]$s
-        }
-        "linesafteruntilpattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.LinesAfterUntilPatterns += [regex]$s
-        }
-        "linesbefore" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.LinesBefore = [int]$s
-        }
-        "maxdepth" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MaxDepth = [int]$s
-        }
-        "maxlastmod" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MaxLastMod = [DateTime]$s
-        }
-        "maxlinelength" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MaxLineLength = [int]$s
-        }
-        "maxsize" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MaxSize = [int]$s
-        }
-        "mindepth" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MinDepth = [int]$s
-        }
-        "minlastmod" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MinLastMod = [DateTime]$s
-        }
-        "minsize" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.MinSize = [int]$s
-        }
-        "out-archiveext" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutArchiveExtensions += $settings.GetExtensions($s)
-        }
-        "out-archivefilepattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutArchiveFilePatterns += [regex]$s
-        }
-        "out-dirpattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutDirPatterns += [regex]$s
-        }
-        "out-ext" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutExtensions += $settings.GetExtensions($s)
-        }
-        "out-filepattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutFilePatterns += [regex]$s
-        }
-        "out-filetype" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutFileTypes += GetFileTypeFromName($s)
-        }
-        "out-linesafterpattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutLinesAfterPatterns += [regex]$s
-        }
-        "out-linesbeforepattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.OutLinesBeforePatterns += [regex]$s
-        }
-        "path" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.Paths += $s
-        }
-        "searchpattern" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.SearchPatterns += [regex]$s
-        }
-        "sort-by" = {
-            param([string]$s, [SearchSettings]$settings)
-            $settings.SortBy = GetSortByFromName($s)
-        }
-    }
-    $BoolFlagActionMap = @{
+    $BoolActionMap = @{
         "allmatches" = {
             param([bool]$b, [SearchSettings]$settings)
             $settings.FirstMatch = !$b
@@ -447,6 +321,134 @@ class SearchOptions {
             $settings.PrintVersion = $b
         }
     }
+    $StringActionMap = @{
+        "encoding" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.TextFileEncoding = $s
+        }
+        "in-archiveext" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InArchiveExtensions += $settings.GetExtensions($s)
+        }
+        "in-archivefilepattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InArchiveFilePatterns += [regex]$s
+        }
+        "in-dirpattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InDirPatterns += [regex]$s
+        }
+        "in-ext" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InExtensions += $settings.GetExtensions($s)
+        }
+        "in-filepattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InFilePatterns += [regex]$s
+        }
+        "in-filetype" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InFileTypes += GetFileTypeFromName($s)
+        }
+        "in-linesafterpattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InLinesAfterPatterns += [regex]$s
+        }
+        "in-linesbeforepattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.InLinesBeforePatterns += [regex]$s
+        }
+        "linesaftertopattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.LinesAfterToPatterns += [regex]$s
+        }
+        "linesafteruntilpattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.LinesAfterUntilPatterns += [regex]$s
+        }
+        "maxlastmod" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.MaxLastMod = [DateTime]$s
+        }
+        "minlastmod" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.MinLastMod = [DateTime]$s
+        }
+        "out-archiveext" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutArchiveExtensions += $settings.GetExtensions($s)
+        }
+        "out-archivefilepattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutArchiveFilePatterns += [regex]$s
+        }
+        "out-dirpattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutDirPatterns += [regex]$s
+        }
+        "out-ext" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutExtensions += $settings.GetExtensions($s)
+        }
+        "out-filepattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutFilePatterns += [regex]$s
+        }
+        "out-filetype" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutFileTypes += GetFileTypeFromName($s)
+        }
+        "out-linesafterpattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutLinesAfterPatterns += [regex]$s
+        }
+        "out-linesbeforepattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.OutLinesBeforePatterns += [regex]$s
+        }
+        "path" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.Paths += $s
+        }
+        "searchpattern" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.SearchPatterns += [regex]$s
+        }
+        "sort-by" = {
+            param([string]$s, [SearchSettings]$settings)
+            $settings.SortBy = GetSortByFromName($s)
+        }
+    }
+    $IntActionMap = @{
+        "linesafter" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.LinesAfter = $i
+        }
+        "linesbefore" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.LinesBefore = $i
+        }
+        "maxdepth" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.MaxDepth = $i
+        }
+        "maxlinelength" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.MaxLineLength = $i
+        }
+        "maxsize" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.MaxSize = $i
+        }
+        "mindepth" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.MinDepth = $i
+        }
+        "minsize" = {
+            param([int]$i, [SearchSettings]$settings)
+            $settings.MinSize = $i
+        }
+    }
 
     SearchOptions() {
         $this.Options = $this.LoadOptionsFromJson()
@@ -471,6 +473,40 @@ class SearchOptions {
         return $opts | Sort-Object -Property SortArg
     }
 
+    [SearchSettings]UpdateSettingsFromHash([SearchSettings]$settings, $settingsHash) {
+        foreach ($key in $settingsHash.Keys) {
+            $val = $settingsHash[$key]
+            if ($this.BoolActionMap.ContainsKey($key)) {
+                $this.BoolActionMap[$key].Invoke($val, $settings)
+            } elseif ($this.StringActionMap.ContainsKey($key)) {
+                if ($val -is [string]) {
+                    $this.StringActionMap[$key].Invoke($val, $settings)
+                } elseif ($val -is [object[]]) {
+                    foreach ($v in $val) {
+                        $this.StringActionMap[$key].Invoke($v, $settings)
+                    }
+                } else {
+                    throw "Invalid value for $key"
+                }
+            } elseif ($this.IntActionMap.ContainsKey($key)) {
+                $this.IntActionMap[$key].Invoke($val, $settings)
+            } else {
+                throw "Invalid option: $key"
+            }
+        }
+        return $settings
+    }
+
+    [SearchSettings]UpdateSettingsFromFilePath([SearchSettings]$settings, [string]$filePath) {
+        $settingsHash = Get-Content $filePath | ConvertFrom-Json -AsHashtable
+        return $this.UpdateSettingsFromHash($settings, $settingsHash)
+    }
+
+    [SearchSettings]SettingsFromFilePath([string]$filePath) {
+        $settings = [SearchSettings]::new()
+        return $this.UpdateSettingsFromFilePath($settings, $filePath)
+    }
+
     [SearchSettings]SettingsFromArgs([string[]]$argList) {
         $settings = [SearchSettings]::new()
         # default PrintResults to true since we're using via CLI
@@ -489,26 +525,22 @@ class SearchOptions {
                     throw "Invalid option: $arg"
                 }
                 $longArg = $this.LongArgMap[$arg]
-                if ($this.ArgActionMap.ContainsKey($longArg)) {
+                if ($this.BoolActionMap.ContainsKey($longArg)) {
+                    $this.BoolActionMap[$longArg].Invoke($true, $settings)
+                } else {
                     $idx++
-                    if ($idx -lt $argList.Count) {
-                        $this.ArgActionMap[$longArg].Invoke($argList[$idx], $settings)
-                    } else {
+                    if ($idx -ge $argList.Count) {
                         throw "Missing value for $arg"
                     }
-                } elseif ($this.BoolFlagActionMap.ContainsKey($longArg)) {
-                    $this.BoolFlagActionMap[$longArg].Invoke($true, $settings)
-                # } elseif ($this.SearchArgActionMap.ContainsKey($longArg)) {
-                #     $idx++
-                #     if ($idx -lt $argList.Count) {
-                #         $this.SearchArgActionMap[$longArg].Invoke($argList[$idx], $settings)
-                #     } else {
-                #         throw "Missing value for $arg"
-                #     }
-                # } elseif ($this.SearchBoolFlagActionMap.ContainsKey($longArg)) {
-                #     $this.SearchBoolFlagActionMap[$longArg].Invoke($true, $settings)
-                } else {
-                    throw "Invalid option: $arg"
+                    if ($this.StringActionMap.ContainsKey($longArg)) {
+                        $this.StringActionMap[$longArg].Invoke($argList[$idx], $settings)
+                    } elseif ($this.IntActionMap.ContainsKey($longArg)) {
+                        $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
+                    } elseif ($longArg -eq 'settings-file') {
+                        $settings = $this.UpdateSettingsFromFilePath($settings, $argList[$idx])
+                    } else {
+                        throw "Invalid option: $arg"
+                    }
                 }
             } else {
                 $settings.Paths += $arg

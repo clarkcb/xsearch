@@ -2,7 +2,7 @@
   "path": "~/src/xsearch/",
   "in-ext": ["js", "ts"],
   "out-dirpattern": [
-    "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor"
+    "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor", "venv"
   ],
   "out-filepattern": ["gulpfile", "\\.min\\."],
   "searchpattern": "Searcher",
@@ -11,6 +11,7 @@
   "debug": true,
   "allmatches": false,
   "includehidden": false,
+  "maxdepth": 10,
   "printdirs": true,
   "printfiles": true
 }
