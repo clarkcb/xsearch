@@ -5,28 +5,37 @@ module HsSearch.Searcher
     , getSearchFiles
     , searchContents
     , searchLines
-    , validateSettings
+    , validateSearchSettings
     ) where
 
-import Control.Monad (forM)
+-- import Control.Monad (forM)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
-import Data.Maybe (catMaybes, fromJust, isJust)
+import Data.Maybe (catMaybes)
 import Text.Regex.PCRE
 
 import HsFind.FileResult
 import HsFind.FileTypes
 import HsFind.FileUtil
-import HsFind.Finder (doFind)
+import HsFind.Finder (doFind, validateFindSettings)
 
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
 
-validateSettings :: SearchSettings -> [String]
-validateSettings settings = concatMap ($settings) validators
-  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
-                     , \s -> ["No search patterns defined" | null (searchPatterns s)]
+validateSearchSettings :: SearchSettings -> Maybe String
+validateSearchSettings settings =
+  case validateFindSettings $ toFindSettings settings of
+    Just err -> Just err
+    Nothing -> recValidateSettings validators []
+  where recValidateSettings :: [SearchSettings -> [String]] -> [String] -> Maybe String
+        recValidateSettings validators' errs = do
+          case errs of
+            [] -> case validators' of
+                    [] -> Nothing
+                    (v:vs) -> recValidateSettings vs (v settings)
+            _ -> Just $ head errs
+        validators = [ \s -> ["No search patterns defined" | null (searchPatterns s)]
                      , \s -> ["Invalid lines after" | linesAfter s < 0]
                      , \s -> ["Invalid lines before" | linesBefore s < 0]
                      , \s -> ["Invalid max line length" | maxLineLength s < 0]
@@ -34,7 +43,7 @@ validateSettings settings = concatMap ($settings) validators
                      , \s -> ["Invalid min size" | minSize s < 0]
                      ]
 
-getSearchFiles :: SearchSettings -> IO [FileResult]
+getSearchFiles :: SearchSettings -> IO (Either String [FileResult])
 getSearchFiles settings = do
   doFind $ toFindSettings settings
 
@@ -255,7 +264,11 @@ doSearchFiles settings files = do
   results <- mapM (doSearchFile settings) files
   return $ concat results
 
-doSearch :: SearchSettings -> IO [SearchResult]
+doSearch :: SearchSettings -> IO (Either String [SearchResult])
 doSearch settings = do
-  files <- getSearchFiles settings
-  doSearchFiles settings files
+  findResultsEither <- doFind $ toFindSettings settings
+  case findResultsEither of
+    Left err -> return $ Left err
+    Right fileResults -> do
+      searchResults <- doSearchFiles settings fileResults
+      return $ Right searchResults

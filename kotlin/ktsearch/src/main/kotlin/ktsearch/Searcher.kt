@@ -1,7 +1,6 @@
 package ktsearch
 
 import ktfind.*
-import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset
 import kotlin.streams.toList
@@ -19,19 +18,6 @@ class Searcher(val settings: SearchSettings) {
     }
 
     private fun validateSettings(settings: SearchSettings) {
-        if (settings.paths.isEmpty()) {
-            throw SearchException("Startpath not defined")
-        }
-        for (p in settings.paths) {
-            val pFile = File(p)
-            if (!pFile.exists()) {
-                throw SearchException("Startpath not found")
-            }
-            if (!pFile.canRead()) {
-                throw SearchException("Startpath not readable")
-            }
-        }
-
         if (settings.searchPatterns.isEmpty()) {
             throw SearchException("No search patterns defined")
         }
@@ -46,7 +32,7 @@ class Searcher(val settings: SearchSettings) {
         }
         try {
             charset = Charset.forName(settings.textFileEncoding)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             throw SearchException("Invalid or unsupported encoding: ${settings.textFileEncoding}")
         }
     }

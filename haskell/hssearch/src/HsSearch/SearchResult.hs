@@ -129,9 +129,6 @@ formatMultiLine settings result =
                           then colorizeBS (matchStartIndex result - 1) (matchEndIndex result - 1) bs
                           else bs
 
-strip :: String -> String
-strip = trimLeadingWhitespace . reverse . trimLeadingWhitespace . reverse
-
 rstrip :: String -> String
 rstrip = reverse . trimLeadingWhitespace . reverse
 

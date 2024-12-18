@@ -288,7 +288,7 @@ class SearchOptions {
                     throw SearchException("Invalid option: $arg")
                 }
             } else {
-                return recSettingsFromArgs(args.drop(1), settings.copy(paths = settings.paths.plus(nextArg)))
+                return recSettingsFromArgs(args.drop(1), settings.copy(paths = addPath(nextArg, settings.paths)))
             }
         }
         // default printResults to true since running as cli

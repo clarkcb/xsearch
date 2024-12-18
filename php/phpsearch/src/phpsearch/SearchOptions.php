@@ -135,7 +135,7 @@ class SearchOptions
      */
     private function set_options_from_json(): void
     {
-        $search_options_path = FileUtil::expand_user_home_path(Config::SEARCH_OPTIONS_PATH);
+        $search_options_path = FileUtil::expand_path(Config::SEARCH_OPTIONS_PATH);
         if (file_exists($search_options_path)) {
             $contents = file_get_contents($search_options_path);
             if ($contents === false || trim($contents) === '') {

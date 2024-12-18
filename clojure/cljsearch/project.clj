@@ -5,8 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [
                   [org.clojure/clojure "1.12.0"]
-                  [org.clojure/data.json "2.5.0"]
-                  [clojure.java-time "1.4.2"]
+                  [org.clojure/data.json "2.5.1"]
+                  [clojure.java-time "1.4.3"]
                   [cljfind "0.1.0-SNAPSHOT"]
                 ]
 ;  :main ^:skip-aot cljsearch.cljsearch

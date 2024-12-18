@@ -22,8 +22,8 @@ getFileContents :: FilePath -> IO B.ByteString
 getFileContents f = do
   contentsEither <- getFileByteString f
   case contentsEither of
-    (Left _) -> return B.empty
-    (Right contents) -> return contents
+    Left _ -> return B.empty
+    Right contents -> return contents
 
 getSearchContentsTests :: IO [Test]
 getSearchContentsTests = do
@@ -45,7 +45,7 @@ getLines :: FilePath -> IO [B.ByteString]
 getLines f = do
   linesEither <- getFileLines f
   case linesEither of
-    Left e -> return []
+    Left _ -> return []
     Right fileLines -> return fileLines
 
 getSearchLinesTests :: IO [Test]

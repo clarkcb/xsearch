@@ -189,22 +189,22 @@ updateSettingsFromArgs settings opts arguments =
   else
     recSettingsFromArgs settings $ rights longArgs
   where recSettingsFromArgs :: SearchSettings -> [String] -> Either String SearchSettings
-        recSettingsFromArgs settings args =
+        recSettingsFromArgs ss args =
           case args of
-          [] -> Right settings
+          [] -> Right ss
           [a] | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
-              BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) settings True) []
+              BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) []
               StringActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
               IntegerActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
               UnknownActionType -> Left $ "Invalid option: " ++ a ++ "\n"
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
-              BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) settings True) as
-              StringActionType -> recSettingsFromArgs (getStringAction (argName a) settings (head as)) (tail as)
-              IntegerActionType -> recSettingsFromArgs (getIntegerAction (argName a) settings (read (head as))) (tail as)
+              BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) as
+              StringActionType -> recSettingsFromArgs (getStringAction (argName a) ss (head as)) (tail as)
+              IntegerActionType -> recSettingsFromArgs (getIntegerAction (argName a) ss (read (head as))) (tail as)
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
-          a:as -> recSettingsFromArgs (settings {paths = paths settings ++ [a]}) as
+          a:as -> recSettingsFromArgs (ss {paths = paths ss ++ [a]}) as
         longArgs :: [Either String String]
         longArgs = map (shortToLong opts) arguments
         getActionType :: String -> ActionType

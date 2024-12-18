@@ -8,8 +8,6 @@ import HsSearch.SearchResultTest
 import HsSearch.SearchSettingsTest
 
 import Test.Framework
-import Test.Framework.Providers.HUnit
-import Test.HUnit hiding (Test)
 
 main :: IO ()
 main = do

@@ -6,7 +6,7 @@
 
 "use strict";
 
-import {FileType, FindSettings, SortBy, SortUtil, StringUtil} from 'tsfind';
+import {FileType, FileTypes, FindSettings, SortBy, SortUtil, StringUtil} from 'tsfind';
 
 export class SearchSettings {
     private readonly findSettings: FindSettings;
@@ -409,7 +409,7 @@ export class SearchSettings {
             + ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns)
             + ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions)
             + ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
+            + ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', ' + StringUtil.patternListToString('inLinesAfterPatterns', this.inLinesAfterPatterns)
             + ', ' + StringUtil.patternListToString('inLinesBeforePatterns', this.inLinesBeforePatterns)
             + ', linesAfter=' + this.linesAfter
@@ -429,7 +429,7 @@ export class SearchSettings {
             + ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns)
             + ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions)
             + ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns)
-            + ', ' + StringUtil.fileTypesToString('outFileTypes', this.outFileTypes)
+            + ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes)
             + ', ' + StringUtil.patternListToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
             + ', ' + StringUtil.patternListToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
             + ', ' + StringUtil.stringListToString('paths', this.paths)

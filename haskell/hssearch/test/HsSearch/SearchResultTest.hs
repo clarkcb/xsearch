@@ -13,9 +13,16 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
 
+testFileLineNum :: Int
 testFileLineNum = 10
+
+testFileMatchStartIndex :: Int
 testFileMatchStartIndex = 15
+
+testFileMatchEndIndex :: Int
 testFileMatchEndIndex = 23
+
+testFileLine :: BC.ByteString
 testFileLine = BC.pack "\tpublic class Searcher\n"
 
 getBinaryFileSearchResultTests :: IO [Test]

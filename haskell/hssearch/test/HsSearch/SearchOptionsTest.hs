@@ -5,7 +5,6 @@ module HsSearch.SearchOptionsTest
   , getSettingsFromNoArgsTests
   ) where
 
-import HsSearch.Searcher
 import HsSearch.SearchOptions
 import HsSearch.SearchSettings
 
@@ -17,7 +16,7 @@ getSettingsFromNoArgsTests :: IO [Test]
 getSettingsFromNoArgsTests = do
   searchOptions <- getSearchOptions
   case settingsFromArgs searchOptions [] of
-    Left errMsg -> return []
+    Left _ -> return [ testCase "getSettingsFromNoArgsTests" (True @?= False) ]
     Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= False)
              , testCase "debug" (debug settings @?= False)
@@ -47,7 +46,7 @@ getSettingsFromArgsTests = do
   let args = ["-x","hs","-X","hi,o","-s","Searcher","-b","2","-B","2","."]
   searchOptions <- getSearchOptions
   case settingsFromArgs searchOptions args of
-    Left errMsg -> return []
+    Left _ -> return [ testCase "getSettingsFromArgsTests" (True @?= False) ]
     Right settings ->
       return [ testCase "paths ." (paths settings @?= ["."])
              , testCase "-s Searcher" (searchPatterns settings @?= ["Searcher"])
@@ -62,7 +61,7 @@ getArchivesOnlyTests = do
   let args = ["--archivesonly"]
   searchOptions <- getSearchOptions
   case settingsFromArgs searchOptions args of
-    Left errMsg -> return []
+    Left _ -> return [ testCase "getArchivesOnlyTests" (True @?= False) ]
     Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= True)
              , testCase "searchArchives" (searchArchives settings @?= True)
@@ -73,7 +72,7 @@ getDebugTests = do
   let args = ["--debug"]
   searchOptions <- getSearchOptions
   case settingsFromArgs searchOptions args of
-    Left errMsg -> return []
+    Left _ -> return [ testCase "getDebugTests" (True @?= False) ]
     Right settings ->
       return [ testCase "debug" (debug settings @?= True)
              , testCase "verbose" (verbose settings @?= True)
