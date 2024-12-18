@@ -2,16 +2,18 @@ module HsSearch.SearchSettings
   ( SearchSettings(..)
   , defaultSearchSettings
   , newExtensions
+  , searchSettingsToString
   , toFindSettings
   ) where
 
+import Data.List (intercalate)
 import Data.List.Split (splitOn)
 import Data.Time (UTCTime)
 
-import HsFind.FileTypes (FileType)
+import HsFind.FileTypes (FileType, getFileTypeName)
 import HsFind.FileUtil (normalizeExtension)
-import HsFind.FindSettings (SortBy(..))
 import qualified HsFind.FindSettings as FS (FindSettings(..))
+import HsFind.SortBy (SortBy(..), sortByToString)
 
 data SearchSettings = SearchSettings {
                                        archivesOnly :: Bool
@@ -163,3 +165,65 @@ toFindSettings searchSettings = FS.FindSettings {
                                    , FS.sortResultsBy=sortResultsBy searchSettings
                                    , FS.verbose=verbose searchSettings
                                    }
+
+searchSettingsToString :: SearchSettings -> String
+searchSettingsToString settings = 
+  "SearchSettings(" ++
+  "archivesOnly=" ++ show (archivesOnly settings) ++
+  ", colorize=" ++ show (colorize settings) ++
+  ", debug=" ++ show (debug settings) ++
+  ", firstMatch=" ++ show (firstMatch settings) ++
+  ", followSymlinks=" ++ show (followSymlinks settings) ++
+  ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
+  ", inArchiveFilePatterns=" ++ listToString (inArchiveFilePatterns settings) ++
+  ", includeHidden=" ++ show (includeHidden settings) ++
+  ", inDirPatterns=" ++ listToString (inDirPatterns settings) ++
+  ", inExtensions=" ++ listToString (inExtensions settings) ++
+  ", inFilePatterns=" ++ listToString (inFilePatterns settings) ++
+  ", inFileTypes=" ++ fileTypesToString (inFileTypes settings) ++
+  ", inLinesAfterPatterns=" ++ listToString (inLinesAfterPatterns settings) ++
+  ", inLinesBeforePatterns=" ++ listToString (inLinesBeforePatterns settings) ++
+  ", linesAfter=" ++ show (linesAfter settings) ++
+  ", linesAfterToPatterns=" ++ listToString (linesAfterToPatterns settings) ++
+  ", linesAfterUntilPatterns=" ++ listToString (linesAfterUntilPatterns settings) ++
+  ", linesBefore=" ++ show (linesBefore settings) ++
+  ", maxDepth=" ++ show (maxDepth settings) ++
+  ", maxLastMod=" ++ lastModToString (maxLastMod settings) ++
+  ", maxLineLength=" ++ show (maxLineLength settings) ++
+  ", maxSize=" ++ show (maxSize settings) ++
+  ", minDepth=" ++ show (minDepth settings) ++
+  ", minLastMod=" ++ lastModToString (minLastMod settings) ++
+  ", minSize=" ++ show (minSize settings) ++
+  ", multiLineSearch=" ++ show (multiLineSearch settings) ++
+  ", outArchiveExtensions=" ++ listToString (outArchiveExtensions settings) ++
+  ", outArchiveFilePatterns=" ++ listToString (outArchiveFilePatterns settings) ++
+  ", outDirPatterns=" ++ listToString (outDirPatterns settings) ++
+  ", outExtensions=" ++ listToString (outExtensions settings) ++
+  ", outFilePatterns=" ++ listToString (outFilePatterns settings) ++
+  ", outFileTypes=" ++ fileTypesToString (outFileTypes settings) ++
+  ", outLinesAfterPatterns=" ++ listToString (outLinesAfterPatterns settings) ++
+  ", outLinesBeforePatterns=" ++ listToString (outLinesBeforePatterns settings) ++
+  ", paths=" ++ listToString (paths settings) ++
+  ", printDirs=" ++ show (printDirs settings) ++
+  ", printFiles=" ++ show (printFiles settings) ++
+  ", printLines=" ++ show (printLines settings) ++
+  ", printUsage=" ++ show (printUsage settings) ++
+  ", printResults=" ++ show (printResults settings) ++
+  ", printVersion=" ++ show (printVersion settings) ++
+  ", recursive=" ++ show (recursive settings) ++
+  ", searchArchives=" ++ show (searchArchives settings) ++
+  ", searchPatterns=" ++ listToString (searchPatterns settings) ++
+  ", sortBy=" ++ sortByToString (sortResultsBy settings) ++
+  ", sortCaseInsensitive=" ++ show (sortCaseInsensitive settings) ++
+  ", sortDescending=" ++ show (sortDescending settings) ++
+  ", textFileEncoding=\"" ++ textFileEncoding settings ++ "\"" ++
+  ", uniqueLines=" ++ show (uniqueLines settings) ++
+  ", verbose=" ++ show (verbose settings) ++
+  ")"
+  where listToString lst | null lst = "[]"
+                         | otherwise = "[\"" ++ intercalate "\", \"" lst ++ "\"]"
+        fileTypesToString fts = "[" ++ intercalate ", " (fileTypeNames fts) ++ "]"
+        fileTypeNames = Prelude.map getFileTypeName
+        lastModToString :: Maybe UTCTime -> String
+        lastModToString Nothing = "0"
+        lastModToString (Just t) = show t

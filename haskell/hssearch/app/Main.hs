@@ -79,27 +79,26 @@ main = do
     Left errMsg -> do
       logMsg "\n"
       logErr $ errMsg ++ "\n"
-      logMsg $ getUsage searchOptions ++ "\n"
+      logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
     Right settings -> do
       logMsg $ if debug settings
-               then "\nsettings: " ++ show settings ++ "\n"
+               then searchSettingsToString settings ++ "\n"
                else ""
       case validateSearchSettings settings of
         Just errMsg -> do
           logMsg "\n"
           logErr $ errMsg ++ "\n"
-          logMsg $ getUsage searchOptions ++ "\n"
+          logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
         Nothing -> do
           if printUsage settings
-          then logMsg $ getUsage searchOptions ++ "\n"
+          then logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
           else do
             searchResultsEither <- doSearch settings
             case searchResultsEither of
               Left errMsg -> do
                 logMsg "\n"
                 logErr $ errMsg ++ "\n"
-                logMsg "\n"
-                logMsg $ getUsage searchOptions ++ "\n"
+                logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
               Right searchResults -> do
                 logMsg $ formatResults settings searchResults
                 logMsg $ if printDirs settings

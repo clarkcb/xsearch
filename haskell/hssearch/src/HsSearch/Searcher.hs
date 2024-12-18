@@ -25,9 +25,12 @@ import HsSearch.SearchSettings
 
 validateSearchSettings :: SearchSettings -> Maybe String
 validateSearchSettings settings =
-  case validateFindSettings $ toFindSettings settings of
-    Just err -> Just err
-    Nothing -> recValidateSettings validators []
+  if printUsage settings
+    then Nothing
+    else
+      case validateFindSettings $ toFindSettings settings of
+        Just err -> Just err
+        Nothing -> recValidateSettings validators []
   where recValidateSettings :: [SearchSettings -> [String]] -> [String] -> Maybe String
         recValidateSettings validators' errs = do
           case errs of
