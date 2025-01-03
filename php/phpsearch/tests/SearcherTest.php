@@ -23,7 +23,7 @@ class SearcherTest extends TestCase
 
     private function get_test_file(): string
     {
-        return FileUtil::expand_user_home_path(Config::XSEARCH_SHARED_PATH . '/testFiles/testFile2.txt');
+        return FileUtil::expand_path(Config::XSEARCH_SHARED_PATH . '/testFiles/testFile2.txt');
     }
 
     ################################################################################

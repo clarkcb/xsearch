@@ -17,7 +17,6 @@ class Searcher
 {
     private readonly SearchSettings $settings;
     private readonly Finder $finder;
-    private array $results;
 
     /**
      * @throws SearchException
@@ -30,7 +29,7 @@ class Searcher
         } catch (FindException $e) {
             throw new SearchException($e->getMessage());
         }
-        $this->results = array();
+        // We can validate_settings after creating Finder since we want its validation to occur first
         $this->validate_settings();
     }
 
@@ -39,17 +38,6 @@ class Searcher
      */
     private function validate_settings(): void
     {
-        if (!$this->settings->paths) {
-            throw new SearchException('Startpath not defined');
-        }
-        foreach ($this->settings->paths as $p) {
-            if (!file_exists($p)) {
-                throw new SearchException('Startpath not found');
-            }
-            if (!is_readable($p)) {
-                throw new SearchException('Startpath not readable');
-            }
-        }
         if (count($this->settings->search_patterns) == 0) {
             throw new SearchException('No search patterns defined');
         }
@@ -85,60 +73,6 @@ class Searcher
         return false;
     }
 
-    /**
-     * @throws SearchException
-     */
-    public function search(): void
-    {
-        try {
-            $file_results = $this->finder->find();
-        } catch (FindException $e) {
-            throw new SearchException($e->getMessage());
-        }
-        if ($this->settings->verbose) {
-            $get_path = function ($sf) {
-                return $sf->path;
-            };
-            $dir_results = array_unique(array_map($get_path, $file_results));
-            Logger::log_msg(sprintf("\nDirectories to be searched (%d):", count($dir_results)));
-            foreach ($dir_results as $d) {
-                Logger::log_msg($d);
-            }
-            Logger::log_msg(sprintf("\n\nFiles to be searched (%d):", count($file_results)));
-            foreach ($file_results as $f) {
-                Logger::log_msg((string)$f);
-            }
-        }
-
-        // search the files
-        // TODO: use Fiber?
-        foreach ($file_results as $f) {
-            $this->search_file($f);
-        }
-    }
-
-    public function search_file(FileResult $f): void
-    {
-        if ($f->file_type == FileType::Text || $f->file_type == FileType::Code ||
-            $f->file_type == FileType::Xml) {
-            $this->search_text_file($f);
-        } elseif ($f->file_type == FileType::Binary) {
-            $this->search_binary_file($f);
-        }
-    }
-
-    private function search_text_file(FileResult $f): void
-    {
-        if ($this->settings->debug) {
-            Logger::log_msg("Searching text file $f");
-        }
-        if ($this->settings->multi_line_search) {
-            $this->search_text_file_contents($f);
-        } else {
-            $this->search_text_file_lines($f);
-        }
-    }
-
     private function get_new_line_indices(string $s): array
     {
         $indices = array();
@@ -150,25 +84,6 @@ class Searcher
             $i++;
         }
         return $indices;
-    }
-
-    private function search_text_file_contents(FileResult $f): void
-    {
-        $contents = file_get_contents($f->file_path());
-        $results = $this->search_multi_line_string($contents);
-        foreach ($results as $r) {
-            $fr = new SearchResult(
-                $r->pattern,
-                $f,
-                $r->line_num,
-                $r->match_start_index,
-                $r->match_end_index,
-                $r->line,
-                $r->lines_before,
-                $r->lines_after
-            );
-            $this->add_search_result($fr);
-        }
     }
 
     private function get_before_indices(array $indices, int $after_index): array
@@ -223,6 +138,37 @@ class Searcher
         return $lines_after;
     }
 
+    private function lines_match(array $lines, array $in_patterns, array $out_patterns): bool
+    {
+        if ((!$in_patterns || $this->any_matches_any_pattern($lines, $in_patterns))
+            &&
+            (!$out_patterns || !$this->any_matches_any_pattern($lines, $out_patterns))) {
+            return true;
+        }
+        return false;
+    }
+
+    private function lines_before_match(array $lines_before): bool
+    {
+        return $this->lines_match(
+            $lines_before,
+            $this->settings->in_lines_before_patterns,
+            $this->settings->out_lines_before_patterns
+        );
+    }
+
+    private function lines_after_match(array $lines_after): bool
+    {
+        return $this->lines_match(
+            $lines_after,
+            $this->settings->in_lines_after_patterns,
+            $this->settings->out_lines_after_patterns
+        );
+    }
+
+    /**
+     * @return SearchResult[]
+     */
     public function search_multi_line_string(string $s): array
     {
         $results = array();
@@ -299,56 +245,25 @@ class Searcher
         return $results;
     }
 
-    private function search_text_file_lines(FileResult $f): void
+    /**
+     * @return SearchResult[]
+     */
+    private function search_text_file_contents(FileResult $f): array
     {
-        $lines = file($f->file_path());
-        $results = $this->search_lines($lines);
+        $contents = file_get_contents($f->file_path());
+        $results = $this->search_multi_line_string($contents);
         foreach ($results as $r) {
-            $fr = new SearchResult(
-                $r->pattern,
-                $f,
-                $r->line_num,
-                $r->match_start_index,
-                $r->match_end_index,
-                $r->line,
-                $r->lines_before,
-                $r->lines_after
-            );
-            $this->add_search_result($fr);
+            $r->file = $f;
         }
+        return $results;
     }
 
-    private function lines_match(array $lines, array $in_patterns, array $out_patterns): bool
-    {
-        if ((!$in_patterns || $this->any_matches_any_pattern($lines, $in_patterns))
-            &&
-            (!$out_patterns || !$this->any_matches_any_pattern($lines, $out_patterns))) {
-            return true;
-        }
-        return false;
-    }
-
-    private function lines_before_match(array $lines_before): bool
-    {
-        return $this->lines_match(
-            $lines_before,
-            $this->settings->in_lines_before_patterns,
-            $this->settings->out_lines_before_patterns
-        );
-    }
-
-    private function lines_after_match(array $lines_after): bool
-    {
-        return $this->lines_match(
-            $lines_after,
-            $this->settings->in_lines_after_patterns,
-            $this->settings->out_lines_after_patterns
-        );
-    }
-
+    /**
+     * @return SearchResult[]
+     */
     public function search_lines(array $lines): array
     {
-        $linenum = 0;
+        $line_num = 0;
         $line = '';
         $lines_before = array();
         $lines_after = array();
@@ -363,7 +278,7 @@ class Searcher
             if ($line === null) {
                 break;
             }
-            $linenum++;
+            $line_num++;
             if ($this->settings->lines_after) {
                 while (count($lines_after) < $this->settings->lines_after) {
                     $line_after = array_shift($lines);
@@ -391,7 +306,7 @@ class Searcher
                         $r = new SearchResult(
                             $pattern,
                             null,
-                            $linenum,
+                            $line_num,
                             $start_index,
                             $end_index,
                             $line,
@@ -415,12 +330,44 @@ class Searcher
         return $results;
     }
 
-    private function search_binary_file(FileResult $f): void
+    /**
+     * @return SearchResult[]
+     */
+    private function search_text_file_lines(FileResult $f): array
+    {
+        $lines = file($f->file_path());
+        $results = $this->search_lines($lines);
+        foreach ($results as $r) {
+            $r->file = $f;
+        }
+        return $results;
+    }
+
+    /**
+     * @return SearchResult[]
+     */
+    private function search_text_file(FileResult $f): array
+    {
+        if ($this->settings->debug) {
+            Logger::log_msg("Searching text file $f");
+        }
+        if ($this->settings->multi_line_search) {
+            return $this->search_text_file_contents($f);
+        } else {
+            return $this->search_text_file_lines($f);
+        }
+    }
+
+    /**
+     * @return SearchResult[]
+     */
+    private function search_binary_file(FileResult $f): array
     {
         if ($this->settings->debug) {
             Logger::log_msg("Searching binary file $f");
         }
         $contents = file_get_contents($f->file_path());
+        $results = [];
         foreach ($this->settings->search_patterns as $pattern) {
             $p = '/' . $pattern . '/';
             if (preg_match_all($p, $contents, $matches, PREG_OFFSET_CAPTURE)) {
@@ -437,57 +384,82 @@ class Searcher
                         [],
                         []
                     );
-                    $this->add_search_result($r);
+                    $results[] = $r;
                     if ($this->settings->first_match) {
                         break;
                     }
                 }
             }
         }
+        return $results;
     }
 
-    private function add_search_result(SearchResult $r): void
+    /**
+     * @return SearchResult[]
+     */
+    public function search_file(FileResult $f): array
     {
-        $this->results[] = $r;
-    }
-
-    private function cmp_ignorecase(string $s1, string $s2): int
-    {
-        return strcmp(strtolower($s1), strtolower($s2));
-    }
-
-    private function cmp_search_results(SearchResult $r1, SearchResult $r2): int
-    {
-        $dircmp = $this->cmp_ignorecase($r1->file->path, $r2->file->path);
-        if ($dircmp !== 0) {
-            return $dircmp;
+        if ($f->file_type == FileType::Text || $f->file_type == FileType::Code ||
+            $f->file_type == FileType::Xml) {
+            return $this->search_text_file($f);
+        } elseif ($f->file_type == FileType::Binary) {
+            return $this->search_binary_file($f);
         }
-        $filecmp = $this->cmp_ignorecase($r1->file->file_name, $r2->file->file_name);
-        if ($filecmp !== 0) {
-            return $filecmp;
-        }
-        if ($r1->line_num === $r2->line_num) {
-            return $r1->match_start_index - $r2->match_start_index;
-        }
-        return $r1->line_num - $r2->line_num;
+        return [];
     }
 
-    public function print_results(): void
+    /**
+     * @return SearchResult[]
+     * @throws SearchException
+     */
+    public function search(): array
     {
-        $sorted_results = $this->results;
-        usort($sorted_results, array($this, 'cmp_search_results'));
-        $formatter = new SearchResultFormatter($this->settings);
-        Logger::log_msg(sprintf("\nSearch results (%d):", count($sorted_results)));
-        foreach ($sorted_results as $r) {
-            Logger::log_msg($formatter->format($r));
+        try {
+            $file_results = $this->finder->find();
+        } catch (FindException $e) {
+            throw new SearchException($e->getMessage());
+        }
+        if ($this->settings->verbose) {
+            $get_path = function ($sf) {
+                return $sf->path;
+            };
+            $dir_results = array_unique(array_map($get_path, $file_results));
+            Logger::log_msg(sprintf("\nDirectories to be searched (%d):", count($dir_results)));
+            foreach ($dir_results as $d) {
+                Logger::log_msg($d);
+            }
+            Logger::log_msg(sprintf("\n\nFiles to be searched (%d):", count($file_results)));
+            foreach ($file_results as $f) {
+                Logger::log_msg((string)$f);
+            }
+        }
+
+        // search the files
+        $search_results = [];
+        foreach ($file_results as $f) {
+            $search_results = array_merge($search_results, $this->search_file($f));
+        }
+        return $search_results;
+    }
+
+    public function print_results(array $results): void
+    {
+        if (count($results) > 0) {
+            $formatter = new SearchResultFormatter($this->settings);
+            Logger::log_msg(sprintf("\nSearch results (%d):", count($results)));
+            foreach ($results as $r) {
+                Logger::log_msg($formatter->format($r));
+            }
+        } else {
+            Logger::log_msg("\nSearch results: 0");
         }
     }
 
-    public function get_matching_dirs(): array
+    public function get_matching_dirs(array $results): array
     {
-        $dirs = array();
-        foreach ($this->results as $r) {
-            $d = dirname($r->file);
+        $dirs = [];
+        foreach ($results as $r) {
+            $d = $r->file->path;
             if (!in_array($d, $dirs)) {
                 $dirs[] = $d;
             }
@@ -496,41 +468,48 @@ class Searcher
         return $dirs;
     }
 
-    public function print_matching_dirs(): void
+    public function print_matching_dirs(array $results): void
     {
-        $dirs = $this->get_matching_dirs();
-        Logger::log_msg(sprintf("\nDirectories with matches (%d):", count($dirs)));
-        foreach ($dirs as $d) {
-            Logger::log_msg($d);
+        $dirs = $this->get_matching_dirs($results);
+        if (count($dirs) > 0) {
+            Logger::log_msg(sprintf("\nMatching directories (%d):", count($dirs)));
+            foreach ($dirs as $d) {
+                Logger::log_msg($d);
+            }
+        } else {
+            Logger::log_msg("\nMatching directories: 0");
         }
     }
 
-    public function get_matching_files(): array
+    public function get_matching_files(array $results): array
     {
         $files = array();
-        foreach ($this->results as $r) {
-            $f = $r->file;
+        foreach ($results as $r) {
+            $f = $r->file->file_path();
             if (!in_array($f, $files)) {
                 $files[] = $f;
             }
         }
-        sort($files);
         return $files;
     }
 
-    public function print_matching_files(): void
+    public function print_matching_files(array $results): void
     {
-        $files = $this->get_matching_files();
-        Logger::log_msg(sprintf("\nFiles with matches (%d):", count($files)));
-        foreach ($files as $f) {
-            Logger::log_msg((string)$f);
+        $files = $this->get_matching_files($results);
+        if (count($files) > 0) {
+            Logger::log_msg(sprintf("\nMatching files (%d):", count($files)));
+            foreach ($files as $f) {
+                Logger::log_msg($f);
+            }
+        } else {
+            Logger::log_msg("\nMatching files: 0");
         }
     }
 
-    public function get_matching_lines(): array
+    public function get_matching_lines(array $results): array
     {
         $lines = array();
-        foreach ($this->results as $r) {
+        foreach ($results as $r) {
             $l = trim($r->line);
             if (!$this->settings->unique_lines || !in_array($l, $lines)) {
                 $lines[] = $l;
@@ -540,16 +519,20 @@ class Searcher
         return $lines;
     }
 
-    public function print_matching_lines(): void
+    public function print_matching_lines(array $results): void
     {
-        $lines = $this->get_matching_lines();
-        $msg = "\nLines with matches (%d):";
+        $lines = $this->get_matching_lines($results);
+        $msg = "\nMatching lines";
         if ($this->settings->unique_lines) {
-            $msg = "\nUnique lines with matches (%d):";
+            $msg = "\nUnique matching lines";
         }
-        Logger::log_msg(sprintf($msg, count($lines)));
-        foreach ($lines as $l) {
-            Logger::log_msg($l);
+        if (count($lines) > 0) {
+            Logger::log_msg(sprintf("%s (%d):", $msg, count($lines)));
+            foreach ($lines as $l) {
+                Logger::log_msg($l);
+            }
+        } else {
+            Logger::log_msg(sprintf("%s: 0", $msg));
         }
     }
 }

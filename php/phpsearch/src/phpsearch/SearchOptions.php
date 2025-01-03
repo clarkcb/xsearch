@@ -112,7 +112,7 @@ class SearchOptions
             'path' => fn (string $s, SearchSettings $ss) => $ss->paths[] = $s,
             'searchpattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->search_patterns),
-            'settings-file' => fn (string $s, SearchSettings $ss) => $this->settings_from_file($s, $ss),
+            'settings-file' => fn (string $s, SearchSettings $ss) => $this->update_settings_from_file($s, $ss),
             'sort-by' => fn (string $s, SearchSettings $ss) => $ss->set_sort_by($s)
         ];
 
@@ -126,7 +126,7 @@ class SearchOptions
             'minsize' => fn (int $i, SearchSettings $ss) => $ss->min_size = $i
         ];
 
-        $this->long_arg_map = array();
+        $this->long_arg_map = ['path' => 'path'];
         $this->set_options_from_json();
     }
 
@@ -170,29 +170,12 @@ class SearchOptions
     }
 
     /**
-     * @param string $file_path
-     * @param SearchSettings $settings
-     * @return void
-     * @throws SearchException
-     */
-    private function settings_from_file(string $file_path, SearchSettings $settings): void
-    {
-        if (!file_exists($file_path)) {
-            throw new SearchException('Settings file not found');
-        }
-        $json = file_get_contents($file_path);
-        if ($json) {
-            $this->settings_from_json($json, $settings);
-        }
-    }
-
-    /**
      * @param string $json
      * @param SearchSettings $settings
      * @return void
-     * @throws SearchException
+     * @throws SearchException|\JsonException
      */
-    public function settings_from_json(string $json, SearchSettings $settings): void
+    public function update_settings_from_json(string $json, SearchSettings $settings): void
     {
         if (trim($json) === '') {
             return;
@@ -200,9 +183,21 @@ class SearchOptions
 
         try {
             $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
-            foreach (array_keys($json_obj) as $k) {
+            $keys = array_keys($json_obj);
+            # keys are sorted so that output is consistent across all versions
+            sort($keys);
+            $is_invalid_key = fn (string $k) => !array_key_exists($k, $this->long_arg_map);
+            $invalid_keys = array_filter($keys, $is_invalid_key);
+            if ($invalid_keys) {
+                throw new SearchException("Invalid option: " . array_values($invalid_keys)[0]);
+            }
+            foreach ($keys as $k) {
                 if (array_key_exists($k, $this->bool_action_map)) {
-                    $this->bool_action_map[$k]($json_obj[$k], $settings);
+                    if (gettype($json_obj[$k]) == 'boolean') {
+                        $this->bool_action_map[$k]($json_obj[$k], $settings);
+                    } else {
+                        throw new SearchException("Invalid value for option: $k");
+                    }
                 } elseif (array_key_exists($k, $this->str_action_map)) {
                     if (gettype($json_obj[$k]) == 'string') {
                         $this->str_action_map[$k]($json_obj[$k], $settings);
@@ -214,13 +209,43 @@ class SearchOptions
                         throw new SearchException("Invalid setting type: $k");
                     }
                 } elseif (array_key_exists($k, $this->int_action_map)) {
-                    $this->int_action_map[$k]($json_obj[$k], $settings);
+                    if (gettype($json_obj[$k]) == 'integer') {
+                        $this->int_action_map[$k]($json_obj[$k], $settings);
+                    } else {
+                        throw new SearchException("Invalid value for option: $k");
+                    }
                 } else {
+                    # Should never reach here
                     throw new SearchException("Invalid option: $k");
                 }
             }
         } catch (\JsonException $e) {
-            throw new SearchException($e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $file_path
+     * @param SearchSettings $settings
+     * @return void
+     * @throws SearchException
+     */
+    private function update_settings_from_file(string $file_path, SearchSettings $settings): void
+    {
+        $expanded_path = FileUtil::expand_path($file_path);
+        if (!file_exists($expanded_path)) {
+            throw new SearchException("Settings file not found: $file_path");
+        }
+        if (!str_ends_with($expanded_path, '.json')) {
+            throw new SearchException("Invalid settings file (must be JSON): $file_path");
+        }
+        try {
+            $json = file_get_contents($expanded_path);
+            if ($json) {
+                $this->update_settings_from_json($json, $settings);
+            }
+        } catch (\JsonException $e) {
+            throw new SearchException("Unable to parse JSON in settings file: $file_path");
         }
     }
 

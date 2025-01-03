@@ -25,30 +25,30 @@ function main($argv): void
         }
 
         $searcher = new Searcher($settings);
-        $searcher->search();
+        $search_results = $searcher->search();
 
         // print the results
         if ($settings->print_results) {
-            $searcher->print_results();
+            $searcher->print_results($search_results);
         }
 
         // print matching dirs
         if ($settings->print_dirs) {
-            $searcher->print_matching_dirs();
+            $searcher->print_matching_dirs($search_results);
         }
 
         // print matching files
         if ($settings->print_files) {
-            $searcher->print_matching_files();
+            $searcher->print_matching_files($search_results);
         }
 
         // print matching lines
         if ($settings->print_lines) {
-            $searcher->print_matching_lines();
+            $searcher->print_matching_lines($search_results);
         }
     } catch (SearchException $e) {
         Logger::log_msg('');
-        Logger::log_err($e->getMessage());
+        Logger::log_err($e->getMessage() . "\n");
         $search_options->usage_and_exit(1);
     }
 }

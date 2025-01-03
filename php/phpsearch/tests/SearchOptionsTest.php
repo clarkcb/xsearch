@@ -112,7 +112,7 @@ class SearchOptionsTest extends TestCase
 }
 END_JSON;
         $search_options = new SearchOptions();
-        $search_options->settings_from_json($json, $settings);
+        $search_options->update_settings_from_json($json, $settings);
         $this->assertCount(1, $settings->paths);
         $this->assertTrue(in_array('~/src/xsearch/', $settings->paths));
         $this->assertCount(2, $settings->in_extensions);
