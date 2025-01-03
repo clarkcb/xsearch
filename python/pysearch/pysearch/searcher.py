@@ -52,10 +52,6 @@ class Searcher(object):
 
     def __validate_settings(self):
         """Assert required settings in SearchSettings instance"""
-        assert self.settings.paths, 'Startpath not defined'
-        for p in self.settings.paths:
-            assert os.path.exists(p), 'Startpath not found'
-            assert os.access(p, os.R_OK), 'Startpath not readable'
         assert self.settings.search_patterns, 'No search patterns defined'
         assert self.settings.lines_after >= 0, 'Invalid linesafter'
         assert self.settings.lines_before >= 0, 'Invalid linesbefore'

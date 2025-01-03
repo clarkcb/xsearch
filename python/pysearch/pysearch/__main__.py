@@ -5,11 +5,10 @@
 #
 # pysearch.py
 #
-# A CLI file search utility implemented in python (3.x)
+# A CLI file search utility implemented in python (>=3.9.x)
 #
 ###############################################################################
 """
-import os
 import sys
 from typing import List
 
@@ -68,13 +67,17 @@ def get_matching_lines(search_results: List[SearchResult], settings: SearchSetti
 
 
 async def main():
+    if sys.version_info < (3, 9):
+        sys.exit('Sorry, Python < 3.9 is not supported')
+
     search_options = SearchOptions()
 
     settings = None
     try:
         settings = search_options.search_settings_from_args(sys.argv[1:])
     except SearchException as e:
-        log_error(str(e))
+        log('')
+        log_error(f'{e}\n')
         search_options.usage(1)
 
     if settings.debug:
@@ -130,7 +133,8 @@ async def main():
                 log('\nMatching lines: 0')
 
     except AssertionError as e:
-        log_error(str(e))
+        log('')
+        log_error(f'{e}\n')
         search_options.usage(1)
     except KeyboardInterrupt:
         log('')

@@ -107,7 +107,7 @@ class SearchOptionsTest(unittest.TestCase):
   "allmatches": false,
   "includehidden": true
 }'''
-        self.search_options.settings_from_json(json, settings)
+        self.search_options.update_settings_from_json(json, settings)
         self.assertEqual(1, len(settings.paths))
         self.assertIn(Path('~/src/xsearch/'), settings.paths)
         for x in {'js', 'ts'}:
