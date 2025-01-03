@@ -8,7 +8,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import scala.util.matching.Regex
 
-object DefaultSettings {
+object DefaultSearchSettings {
   val archivesOnly = false
   val colorize = true
   val debug = false
@@ -37,32 +37,32 @@ object DefaultSettings {
   var verbose = false
 }
 
-case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
-                          colorize: Boolean = DefaultSettings.colorize,
-                          debug: Boolean = DefaultSettings.debug,
-                          firstMatch: Boolean = DefaultSettings.firstMatch,
-                          followSymlinks: Boolean = DefaultSettings.followSymlinks,
+case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archivesOnly,
+                          colorize: Boolean = DefaultSearchSettings.colorize,
+                          debug: Boolean = DefaultSearchSettings.debug,
+                          firstMatch: Boolean = DefaultSearchSettings.firstMatch,
+                          followSymlinks: Boolean = DefaultSearchSettings.followSymlinks,
                           inArchiveExtensions: Set[String] = Set.empty[String],
                           inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
-                          includeHidden: Boolean = DefaultSettings.includeHidden,
+                          includeHidden: Boolean = DefaultSearchSettings.includeHidden,
                           inDirPatterns: Set[Regex] = Set.empty[Regex],
                           inExtensions: Set[String] = Set.empty[String],
                           inFilePatterns: Set[Regex] = Set.empty[Regex],
                           inFileTypes: Set[FileType] = Set.empty[FileType],
                           inLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
                           inLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
-                          linesAfter: Int = DefaultSettings.linesAfter,
+                          linesAfter: Int = DefaultSearchSettings.linesAfter,
                           linesAfterToPatterns: Set[Regex] = Set.empty[Regex],
                           linesAfterUntilPatterns: Set[Regex] = Set.empty[Regex],
-                          linesBefore: Int = DefaultSettings.linesBefore,
-                          maxDepth: Int = DefaultSettings.maxDepth,
+                          linesBefore: Int = DefaultSearchSettings.linesBefore,
+                          maxDepth: Int = DefaultSearchSettings.maxDepth,
                           maxLastMod: Option[LocalDateTime] = None,
-                          maxLineLength: Int = DefaultSettings.maxLineLength,
-                          maxSize: Long = DefaultSettings.maxSize,
-                          minDepth: Int = DefaultSettings.minDepth,
+                          maxLineLength: Int = DefaultSearchSettings.maxLineLength,
+                          maxSize: Long = DefaultSearchSettings.maxSize,
+                          minDepth: Int = DefaultSearchSettings.minDepth,
                           minLastMod: Option[LocalDateTime] = None,
-                          minSize: Long = DefaultSettings.minSize,
-                          multiLineSearch: Boolean = DefaultSettings.multiLineSearch,
+                          minSize: Long = DefaultSearchSettings.minSize,
+                          multiLineSearch: Boolean = DefaultSearchSettings.multiLineSearch,
                           outArchiveExtensions: Set[String] = Set.empty[String],
                           outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                           outDirPatterns: Set[Regex] = Set.empty[Regex],
@@ -71,22 +71,22 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           outFileTypes: Set[FileType] = Set.empty[FileType],
                           outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
                           outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
-                          paths: Set[Path] = DefaultSettings.paths,
-                          printDirs: Boolean = DefaultSettings.printDirs,
-                          printFiles: Boolean = DefaultSettings.printFiles,
-                          printLines: Boolean = DefaultSettings.printLines,
-                          printResults: Boolean = DefaultSettings.printResults,
-                          printUsage: Boolean = DefaultSettings.printUsage,
-                          printVersion: Boolean = DefaultSettings.printVersion,
-                          recursive: Boolean = DefaultSettings.recursive,
-                          var searchArchives: Boolean = DefaultSettings.searchArchives,
+                          paths: Set[Path] = DefaultSearchSettings.paths,
+                          printDirs: Boolean = DefaultSearchSettings.printDirs,
+                          printFiles: Boolean = DefaultSearchSettings.printFiles,
+                          printLines: Boolean = DefaultSearchSettings.printLines,
+                          printResults: Boolean = DefaultSearchSettings.printResults,
+                          printUsage: Boolean = DefaultSearchSettings.printUsage,
+                          printVersion: Boolean = DefaultSearchSettings.printVersion,
+                          recursive: Boolean = DefaultSearchSettings.recursive,
+                          var searchArchives: Boolean = DefaultSearchSettings.searchArchives,
                           searchPatterns: Set[Regex] = Set.empty[Regex],
                           sortBy: SortBy = SortBy.FilePath,
-                          textFileEncoding: String = DefaultSettings.textFileEncoding,
-                          uniqueLines: Boolean = DefaultSettings.uniqueLines,
+                          textFileEncoding: String = DefaultSearchSettings.textFileEncoding,
+                          uniqueLines: Boolean = DefaultSearchSettings.uniqueLines,
                           sortCaseInsensitive: Boolean = false,
                           sortDescending: Boolean = false,
-                          var verbose: Boolean = DefaultSettings.verbose) {
+                          var verbose: Boolean = DefaultSearchSettings.verbose) {
 
   searchArchives = archivesOnly || searchArchives
   verbose = debug || verbose

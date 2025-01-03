@@ -4,23 +4,22 @@ import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInp
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
 import scalafind.{FileResult, FileType, FileTypes, Finder}
-import scalafind.FileType.FileType
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
-import java.nio.file.{Files, Paths}
+import java.nio.file.Paths
 import java.util.zip.{GZIPInputStream, ZipFile}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.Source
 import scala.jdk.CollectionConverters.*
-import scala.util.matching.Regex
 import scala.util.control.NonLocalReturns.*
+import scala.util.matching.Regex
 
 class Searcher (_settings: SearchSettings) {
-  import scalafind.FileUtil._
-  import Searcher._
+  import Searcher.*
+  import scalafind.FileUtil.*
 
   val settings: SearchSettings = _settings
   private val finder: Finder = try {
@@ -45,10 +44,6 @@ class Searcher (_settings: SearchSettings) {
     }
   }
   validateSettings()
-
-  def isSearchDir(d: File): Boolean = {
-    isSearchDir(d.getName)
-  }
 
   def isSearchDir(dirName: String): Boolean = {
     val pathElems = splitPath(dirName)
@@ -564,9 +559,6 @@ object Searcher {
   val tarExtension = "tar"
 
   val settingsTests: Seq[SearchSettings => Option[String]] = Seq[SearchSettings => Option[String]](
-    ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
-    ss => if (ss.paths.forall { p => Files.exists(p) }) None else Some("Startpath not found"),
-    ss => if (ss.paths.forall { p => Files.isReadable(p) }) None else Some("Startpath not readable"),
     ss => if (ss.searchPatterns.nonEmpty) None else Some("No search patterns defined"),
     ss => if (ss.linesAfter >= 0) None else Some("Invalid linesafter"),
     ss => if (ss.linesBefore >= 0) None else Some("Invalid linesbefore"),

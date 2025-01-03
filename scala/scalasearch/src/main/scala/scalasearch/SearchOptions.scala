@@ -1,19 +1,19 @@
 package scalasearch
 
-import org.json.{JSONArray, JSONObject, JSONTokener}
+import org.json.{JSONArray, JSONException, JSONObject, JSONTokener}
 import scalafind.{Common, FileType, FileUtil, SortBy}
 
-import java.io.{File, IOException, InputStreamReader}
-import java.nio.file.Paths
+import java.io.{IOException, InputStreamReader}
+import java.nio.file.{Files, Path, Paths}
 import java.time.LocalDateTime
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 
-case class SearchOption(shortarg: Option[String], longarg: String, desc: String) {
-  val sortarg: String = shortarg match {
-    case Some(sa) => sa.toLowerCase + "@" + longarg.toLowerCase
-    case None => longarg.toLowerCase
+case class SearchOption(shortArg: Option[String], longArg: String, desc: String) {
+  val sortArg: String = shortArg match {
+    case Some(sa) => sa.toLowerCase + "@" + longArg.toLowerCase
+    case None => longArg.toLowerCase
   }
 }
 
@@ -22,10 +22,25 @@ object SearchOptions {
   private val _searchOptions = mutable.ListBuffer.empty[SearchOption]
 
   private def searchOptions: List[SearchOption] = {
-    if (_searchOptions.isEmpty) {
-      loadSearchOptionsFromJson()
+    val opts =
+      if (_searchOptions.isEmpty) {
+        loadSearchOptionsFromJson()
+        _searchOptions.sortWith(_.sortArg < _.sortArg)
+      } else {
+        _searchOptions
+      }
+    List.empty[SearchOption] ++ opts
+  }
+
+  private var _longArgMap = Map.empty[String, String]
+
+  private def longArgMap: Map[String, String] = {
+    if (_longArgMap.isEmpty) {
+      val longOpts: Map[String, String] = searchOptions.map { o => (o.longArg, o.longArg)}.toMap
+      val shortOpts = searchOptions.filter(_.shortArg.nonEmpty).map { o => (o.shortArg.get, o.longArg)}.toMap
+      _longArgMap = longOpts ++ shortOpts ++ Map("path" -> "path")
     }
-    List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
+    _longArgMap
   }
 
   private def loadSearchOptionsFromJson(): Unit = {
@@ -139,7 +154,7 @@ object SearchOptions {
     "searchpattern" ->
       ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
     "settings-file" ->
-      ((s, ss) => settingsFromFile(s, ss)),
+      ((s, ss) => updateSettingsFromFile(s, ss)),
     "sort-by" ->
       ((s, ss) => ss.copy(sortBy = SortBy.forName(s))),
   )
@@ -161,16 +176,49 @@ object SearchOptions {
     "minsize" -> ((l, ss) => ss.copy(minSize = l)),
   )
 
-  private def settingsFromFile(filePath: String, ss: SearchSettings): SearchSettings = {
-    val file: File = new File(filePath)
-    if (!file.exists()) {
-      throw new SearchException("Settings file not found: %s".format(filePath))
-    }
-    val json: String = FileUtil.getFileContents(file)
-    settingsFromJson(json, ss)
+  @tailrec
+  private def applySettings(arg: String, lst: List[Any], ss: SearchSettings): SearchSettings = lst match {
+    case Nil => ss
+    case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
   }
 
-  def settingsFromJson(json: String, ss: SearchSettings): SearchSettings = {
+  private def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = {
+    if (this.boolActionMap.contains(arg)) {
+      obj match
+        case b: Boolean =>
+          boolActionMap(arg)(b, ss)
+        case _ =>
+          throw new SearchException("Invalid value for option: " + arg)
+    } else if (this.stringActionMap.contains(arg)) {
+      obj match
+        case s: String =>
+          stringActionMap(arg)(s, ss)
+        case a: JSONArray =>
+          applySettings(arg, a.toList.asScala.toList, ss)
+        case _ =>
+          throw new SearchException("Invalid value for option: " + arg)
+    } else if (this.intActionMap.contains(arg)) {
+      obj match
+        case i: Int =>
+          intActionMap(arg)(i, ss)
+        case l: Long =>
+          intActionMap(arg)(l.toInt, ss)
+        case _ =>
+          throw new SearchException("Invalid value for option: " + arg)
+    } else if (this.longActionMap.contains(arg)) {
+      obj match
+        case i: Int =>
+          longActionMap(arg)(i.toLong, ss)
+        case l: Long =>
+          longActionMap(arg)(l, ss)
+        case _ =>
+          throw new SearchException("Invalid value for option: " + arg)
+    } else {
+      throw new SearchException("Invalid option: " + arg)
+    }
+  }
+
+  def updateSettingsFromJson(json: String, ss: SearchSettings): SearchSettings = {
     val jsonObject = new JSONObject(new JSONTokener(json))
     @tailrec
     def recSettingsFromJson(keys: List[String], settings: SearchSettings): SearchSettings = keys match {
@@ -179,66 +227,43 @@ object SearchOptions {
         val v = jsonObject.get(k)
         recSettingsFromJson(ks, applySetting(k, v, settings))
     }
-    recSettingsFromJson(jsonObject.keySet().asScala.toList, ss)
+
+    // keys are sorted so that output is consistent across all versions
+    val keys = jsonObject.keySet().asScala.toList.sorted
+    val invalidKeys = keys.filter(k => !longArgMap.contains(k))
+    if (invalidKeys.nonEmpty) {
+      throw new SearchException("Invalid option: %s".format(invalidKeys.head))
+    }
+    recSettingsFromJson(keys, ss)
   }
 
-//  @tailrec
-  private def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = obj match {
-    case b: Boolean =>
-      if (this.boolActionMap.contains(arg)) {
-        boolActionMap(arg)(b, ss)
-      } else {
-        throw new SearchException("Invalid option: " + arg)
-      }
-    case s: String =>
-      if (this.stringActionMap.contains(arg)) {
-        stringActionMap(arg)(s, ss)
-      } else {
-        throw new SearchException("Invalid option: " + arg)
-      }
-    case i: Int =>
-      if (this.intActionMap.contains(arg)) {
-        intActionMap(arg)(i, ss)
-      } else if (this.longActionMap.contains(arg)) {
-        longActionMap(arg)(i.toLong, ss)
-      } else {
-        throw new SearchException("Invalid option: " + arg)
-      }
-    case l: Long =>
-      if (this.longActionMap.contains(arg)) {
-        longActionMap(arg)(l, ss)
-      } else if (this.intActionMap.contains(arg)) {
-        intActionMap(arg)(l.toInt, ss)
-      } else {
-        throw new SearchException("Invalid option: " + arg)
-      }
-    case a: JSONArray =>
-      applySettings(arg, a.toList.asScala.map(_.toString).toList, ss)
-    case _ =>
-      throw new SearchException("Unsupported data type")
-  }
-
-  @tailrec
-  private def applySettings(arg: String, lst: List[String], ss: SearchSettings): SearchSettings = lst match {
-    case Nil => ss
-    case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
-  }
-
-  private def getArgMap: Map[String, String] = {
-    val longOpts: Map[String, String] = searchOptions.map { o => (o.longarg, o.longarg)}.toMap
-    val shortOpts = searchOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg.get, o.longarg)}.toMap
-    longOpts ++ shortOpts
+  private def updateSettingsFromFile(filePath: String, ss: SearchSettings): SearchSettings = {
+    val path: Path = FileUtil.expandPath(Paths.get(filePath))
+    if (!Files.exists(path)) {
+      throw new SearchException("Settings file not found: %s".format(filePath))
+    }
+    if (!filePath.endsWith(".json")) {
+      throw new SearchException("Invalid settings file (must be JSON): %s".format(filePath))
+    }
+    try {
+      val json: String = FileUtil.getPathContents(path)
+      updateSettingsFromJson(json, ss)
+    } catch {
+      case e: IOException =>
+        throw new SearchException("Error reading settings file: %s".format(filePath))
+      case e: JSONException =>
+        throw new SearchException("Unable to parse JSON in settings file: %s".format(filePath))
+    }
   }
 
   def settingsFromArgs(args: Array[String]): SearchSettings = {
-    val argMap = getArgMap
     val switchPattern = """^-+(\w[\w\-]*)$""".r
     @tailrec
     def nextArg(arglist: List[String], ss: SearchSettings): SearchSettings = {
       arglist match {
         case Nil => ss
         case switchPattern(arg) :: tail =>
-          argMap.get(arg) match {
+          longArgMap.get(arg) match {
             case Some(longArg) =>
               if (boolActionMap.contains(longArg)) {
                 if (Set("help", "version").contains(longArg)) {
@@ -274,20 +299,15 @@ object SearchOptions {
     nextArg(args.toList, SearchSettings(printResults = true))
   }
 
-  def usage(status: Int): Unit = {
-    Common.log(getUsageString)
-    sys.exit(status)
-  }
-
   private def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
     sb.append(" scalasearch [options] -s <searchpattern> <path> [<path> ...]\n\n")
     sb.append("Options:\n")
     val optPairs = searchOptions.map { so =>
-      val opts = so.shortarg match {
-        case Some(sa) => s"-$sa,--${so.longarg}"
-        case None => s"--${so.longarg}"
+      val opts = so.shortArg match {
+        case Some(sa) => s"-$sa,--${so.longArg}"
+        case None => s"--${so.longArg}"
       }
       (opts, so.desc)
     }
@@ -297,5 +317,10 @@ object SearchOptions {
       sb.append(format.format(op._1, op._2))
     }
     sb.toString()
+  }
+
+  def usage(status: Int): Unit = {
+    Common.log(getUsageString)
+    sys.exit(status)
   }
 }

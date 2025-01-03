@@ -13,23 +13,23 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
   val requiredArgs: Array[String] = Array("-s", searchString, startPath)
 
   def assertDefaultSettings(settings: SearchSettings): Unit = {
-    assert(settings.archivesOnly == DefaultSettings.archivesOnly)
-    assert(settings.debug == DefaultSettings.debug)
-    assert(settings.firstMatch == DefaultSettings.firstMatch)
-    assert(settings.followSymlinks == DefaultSettings.followSymlinks)
-    assert(settings.includeHidden == DefaultSettings.includeHidden)
-    assert(settings.linesAfter == DefaultSettings.linesAfter)
-    assert(settings.linesBefore == DefaultSettings.linesBefore)
-    assert(settings.printDirs == DefaultSettings.printDirs)
-    assert(settings.printFiles == DefaultSettings.printFiles)
-    assert(settings.printLines == DefaultSettings.printLines)
-    assert(settings.multiLineSearch == DefaultSettings.multiLineSearch)
+    assert(settings.archivesOnly == DefaultSearchSettings.archivesOnly)
+    assert(settings.debug == DefaultSearchSettings.debug)
+    assert(settings.firstMatch == DefaultSearchSettings.firstMatch)
+    assert(settings.followSymlinks == DefaultSearchSettings.followSymlinks)
+    assert(settings.includeHidden == DefaultSearchSettings.includeHidden)
+    assert(settings.linesAfter == DefaultSearchSettings.linesAfter)
+    assert(settings.linesBefore == DefaultSearchSettings.linesBefore)
+    assert(settings.printDirs == DefaultSearchSettings.printDirs)
+    assert(settings.printFiles == DefaultSearchSettings.printFiles)
+    assert(settings.printLines == DefaultSearchSettings.printLines)
+    assert(settings.multiLineSearch == DefaultSearchSettings.multiLineSearch)
     //assert(settings.printResults == DefaultSettings.printResults)
-    assert(settings.printUsage == DefaultSettings.printUsage)
-    assert(settings.printVersion == DefaultSettings.printVersion)
-    assert(settings.searchArchives == DefaultSettings.searchArchives)
-    assert(settings.uniqueLines == DefaultSettings.uniqueLines)
-    assert(settings.verbose == DefaultSettings.verbose)
+    assert(settings.printUsage == DefaultSearchSettings.printUsage)
+    assert(settings.printVersion == DefaultSearchSettings.printVersion)
+    assert(settings.searchArchives == DefaultSearchSettings.searchArchives)
+    assert(settings.uniqueLines == DefaultSearchSettings.uniqueLines)
+    assert(settings.verbose == DefaultSearchSettings.verbose)
   }
 
   // test defaults
@@ -500,7 +500,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
                  |  "includehidden": true
                  |}"""
     val expectedPath = Paths.get("/Users/cary/src/xsearch/")
-    val settings = SearchOptions.settingsFromJson(json.stripMargin, ss)
+    val settings = SearchOptions.updateSettingsFromJson(json.stripMargin, ss)
     assert(settings.paths.contains(expectedPath))
     assert(settings.inExtensions.size == 2)
     assert(settings.inExtensions.contains("js"))
