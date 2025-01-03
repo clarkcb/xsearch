@@ -85,8 +85,9 @@ public class SearchOptionsTests
   ""allmatches"": false,
   ""includehidden"": true
 }";
+		var options = new SearchOptions();
 		var settings = new SearchSettings();
-		SearchOptions.SettingsFromJson(json, settings);
+		options.UpdateSettingsFromJson(json, settings);
 		var startPath = new FilePath("~/src/xsearch/");
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));

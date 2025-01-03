@@ -23,31 +23,32 @@ namespace CsSearch
 				}
 
 				var searcher = new Searcher(settings);
-				searcher.Search();
+				var results = searcher.Search();
 
 				if (settings.PrintResults)
 				{
 					Logger.Log("");
-					searcher.PrintResults();
+					searcher.PrintResults(results);
 				}
 
 				if (settings.PrintDirs)
 				{
-					searcher.PrintMatchingDirs();
+					searcher.PrintMatchingDirs(results);
 				}
 
 				if (settings.PrintFiles)
 				{
-					searcher.PrintMatchingFiles();
+					searcher.PrintMatchingFiles(results);
 				}
 
 				if (settings.PrintLines)
 				{
-					searcher.PrintMatchingLines();
+					searcher.PrintMatchingLines(results);
 				}
 			}
 			catch (SearchException e)
 			{
+				Logger.Log("");
 				Logger.LogError(e.Message);
 				options.Usage(1);
 			}

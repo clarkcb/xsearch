@@ -58,121 +58,29 @@ public class Searcher
 			throw new SearchException("Invalid maxlinelength");
 	}
 
-	public void Search()
+	private void AddSearchResult(SearchResult searchResult)
 	{
-		var fileResults = _finder.Find().ToList();
-
-		if (Settings.Verbose)
-		{
-			var findDirs = fileResults
-				.Where(fr => fr.FilePath.Parent != null)
-				.Select(fr => fr.FilePath.Parent!.ToString())
-				.Distinct()
-				.OrderBy(d => d).ToArray();
-			Logger.Log($"Directories to be searched ({findDirs.Length}):");
-			foreach (var d in findDirs)
-			{
-				Logger.Log(d);
-			}
-				
-			Logger.Log($"\nFiles to be searched ({fileResults.Count}):");
-			foreach (var f in fileResults)
-			{
-				Logger.Log(f.PathAndName);
-			}
-		}
-
-		var searched = 0;
-		while (fileResults.Count - searched > FileBatchSize)
-		{
-			SearchBatch(fileResults.Skip(searched).Take(FileBatchSize).ToArray());
-			searched += FileBatchSize;
-		}
-		if (fileResults.Count > searched)
-		{
-			SearchBatch(fileResults.Skip(searched).ToArray());
-		}
+		Results.Add(searchResult);
 	}
 
-	private void SearchBatch(IReadOnlyList<FileResult> findFiles)
+	private static bool LinesMatch(IEnumerable<string> lines,
+		ICollection<Regex> inPatterns, ICollection<Regex> outPatterns)
 	{
-		if (findFiles.Count > 100)
-		{
-			SearchBatchConcurrent(findFiles);
-		}
-		else
-		{
-			foreach (var f in findFiles)
-			{
-				SearchFile(f);
-			}
-		}
+		var lineList = lines.ToList();
+		return ((inPatterns.Count == 0 || AnyMatchesAnyPattern(lineList, inPatterns))
+		        && (outPatterns.Count == 0 || !AnyMatchesAnyPattern(lineList, outPatterns)));
 	}
 
-	private void SearchBatchConcurrent(IReadOnlyList<FileResult> searchFiles)
+	private bool LinesBeforeMatch(IEnumerable<string> linesBefore)
 	{
-		var searchTasks = new Task[searchFiles.Count];
-		for (var i = 0; i < searchFiles.Count; i++)
-		{
-			var searchFile = searchFiles[i];
-			searchTasks[i] = Task.Factory.StartNew(() => SearchFile(searchFile));
-		}
-		Task.WaitAll(searchTasks);
+		return LinesMatch(linesBefore, Settings.InLinesBeforePatterns,
+			Settings.OutLinesBeforePatterns);
 	}
 
-	public void SearchFile(FileResult f)
+	private bool LinesAfterMatch(IEnumerable<string> linesAfter)
 	{
-		switch (f.Type)
-		{
-			case FileType.Code:
-			case FileType.Text:
-			case FileType.Xml:
-				SearchTextFile(f);
-				break;
-			case FileType.Binary:
-				SearchBinaryFile(f);
-				break;
-			case FileType.Archive:
-				Logger.Log($"Skipping archive file {f.PathAndName}");
-				break;
-			default:
-			{
-				if (Settings.Verbose)
-				{
-					Logger.Log($"Skipping file {f.PathAndName}");
-				}
-
-				break;
-			}
-		}
-	}
-
-	private void SearchTextFile(FileResult f)
-	{
-		if (Settings.Debug)
-			Logger.Log($"Searching text file {f.PathAndName}");
-		if (Settings.MultiLineSearch)
-			SearchTextFileContents(f);
-		else
-			SearchTextFileLines(f);
-	}
-
-	private void SearchTextFileContents(FileResult f)
-	{
-		try
-		{
-			var contents = FileUtil.GetFileContents(f.FullName, TextFileEncoding);
-			var results = SearchContents(contents);
-			foreach (var r in results)
-			{
-				r.File = f;
-				AddSearchResult(r);
-			}
-		}
-		catch (IOException e)
-		{
-			Logger.Log(e.Message);
-		}
+		return LinesMatch(linesAfter, Settings.InLinesAfterPatterns,
+			Settings.OutLinesAfterPatterns);
 	}
 
 	private static IEnumerable<int> GetNewLineIndices(string text)
@@ -282,6 +190,97 @@ public class Searcher
 		return results;
 	}
 
+	private static bool AnyMatchesAnyPattern(IEnumerable<string> strings,
+		IEnumerable<Regex> patterns)
+	{
+		return strings.Any(s => MatchesAnyPattern(s, patterns));
+	}
+
+	private static bool MatchesAnyPattern(string s, IEnumerable<Regex> patterns)
+	{
+		return !string.IsNullOrEmpty(s) && patterns.Any(p => p.Match(s).Success);
+	}
+
+	public IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
+	{
+		var patternMatches = new Dictionary<Regex, int>();
+		var results = new List<SearchResult>();
+		var lineNum = 0;
+		var linesBefore = new Queue<string>();
+		var linesAfter = new Queue<string>();
+
+		using var lineEnumerator = lines.GetEnumerator();
+		while (linesAfter.Count > 0 || lineEnumerator.MoveNext())
+		{
+			lineNum++;
+			var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
+			if (Settings.LinesAfter > 0)
+			{
+				while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
+				{
+					linesAfter.Enqueue(lineEnumerator.Current);
+				}
+			}
+
+			if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
+			    &&
+			    (Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
+			{
+				foreach (var p in Settings.SearchPatterns)
+				{
+					var matches = new List<Match>();
+					if (Settings.FirstMatch)
+					{
+						var match = p.Match(line);
+						if (match.Success)
+						{
+							matches.Add(match);
+							patternMatches[p] = 1;
+						}
+					}
+					else
+					{
+						var mc = p.Matches(line);
+						if (mc.Count > 0)
+						{
+							matches.AddRange(mc);
+							patternMatches[p] = 1;
+						}
+					}
+					foreach (var match in matches)
+					{
+						results.Add(new SearchResult(p,
+							null,
+							lineNum,
+							match.Index + 1,
+							match.Index + match.Length + 1,
+							line,
+							new List<string>(linesBefore),
+							new List<string>(linesAfter)));
+					}
+				}
+			}
+
+			// If all search patterns are in patternMatches, FirstMatch complete, return results
+			if (Settings.FirstMatch && patternMatches.Count == Settings.SearchPatterns.Count)
+			{
+				return results;
+			}
+
+			if (Settings.LinesBefore == 0) continue;
+			if (linesBefore.Count == Settings.LinesBefore)
+			{
+				linesBefore.Dequeue();
+			}
+			if (linesBefore.Count < Settings.LinesBefore)
+			{
+				linesBefore.Enqueue(line);
+			}
+		}
+
+		return results;
+	}
+
 	private void SearchTextFileLines(FileResult f)
 	{
 		try
@@ -301,115 +300,32 @@ public class Searcher
 		}
 	}
 
-	private static bool AnyMatchesAnyPattern(IEnumerable<string> strings,
-		IEnumerable<Regex> patterns)
+	private void SearchTextFileContents(FileResult f)
 	{
-		return strings.Any(s => MatchesAnyPattern(s, patterns));
-	}
-
-	private static bool MatchesAnyPattern(string s, IEnumerable<Regex> patterns)
-	{
-		return !string.IsNullOrEmpty(s) && patterns.Any(p => p.Match(s).Success);
-	}
-
-	private static bool LinesMatch(IEnumerable<string> lines,
-		ICollection<Regex> inPatterns, ICollection<Regex> outPatterns)
-	{
-		var lineList = lines.ToList();
-		return ((inPatterns.Count == 0 || AnyMatchesAnyPattern(lineList, inPatterns))
-		        && (outPatterns.Count == 0 || !AnyMatchesAnyPattern(lineList, outPatterns)));
-	}
-
-	private bool LinesBeforeMatch(IEnumerable<string> linesBefore)
-	{
-		return LinesMatch(linesBefore, Settings.InLinesBeforePatterns,
-			Settings.OutLinesBeforePatterns);
-	}
-
-	private bool LinesAfterMatch(IEnumerable<string> linesAfter)
-	{
-		return LinesMatch(linesAfter, Settings.InLinesAfterPatterns,
-			Settings.OutLinesAfterPatterns);
-	}
-
-	public IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
-	{
-		var patternMatches = new Dictionary<Regex, int>();
-		var results = new List<SearchResult>();
-		var lineNum = 0;
-		var linesBefore = new Queue<string>();
-		var linesAfter = new Queue<string>();
-
-		using var lineEnumerator = lines.GetEnumerator();
-		while (lineEnumerator.MoveNext() || linesAfter.Count > 0)
+		try
 		{
-			lineNum++;
-			var line = linesAfter.Count > 0 ? linesAfter.Dequeue() : lineEnumerator.Current;
-			if (Settings.LinesAfter > 0)
+			var contents = FileUtil.GetFileContents(f.FullName, TextFileEncoding);
+			var results = SearchContents(contents);
+			foreach (var r in results)
 			{
-				while (linesAfter.Count < Settings.LinesAfter && lineEnumerator.MoveNext())
-				{
-					linesAfter.Enqueue(lineEnumerator.Current);
-				}
-			}
-
-			if ((Settings.LinesBefore == 0 || linesBefore.Count == 0 || LinesBeforeMatch(linesBefore))
-			    &&
-			    (Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
-			{
-				foreach (var p in Settings.SearchPatterns)
-				{
-					if (Settings.FirstMatch)
-					{
-						var match = p.Match(line);
-						if (match.Success)
-						{
-							results.Add(new SearchResult(p,
-								null,
-								lineNum,
-								match.Index + 1,
-								match.Index + match.Length + 1,
-								line,
-								new List<string>(linesBefore),
-								new List<string>(linesAfter)));
-							patternMatches[p] = 1;
-						}
-					}
-					else
-					{
-						foreach (var match in p.Matches(line).Where(m => m.Success))
-						{
-							results.Add(new SearchResult(p,
-								null,
-								lineNum,
-								match.Index + 1,
-								match.Index + match.Length + 1,
-								line,
-								new List<string>(linesBefore),
-								new List<string>(linesAfter)));
-						}
-					}
-				}
-			}
-
-			// If all search patterns are in patternMatches, FirstMatch complete, return results
-			if (patternMatches.Count == Settings.SearchPatterns.Count)
-			{
-				return results;
-			}
-
-			if (Settings.LinesBefore == 0) continue;
-			if (linesBefore.Count == Settings.LinesBefore)
-			{
-				linesBefore.Dequeue();
-			}
-			if (linesBefore.Count < Settings.LinesBefore)
-			{
-				linesBefore.Enqueue(line);
+				r.File = f;
+				AddSearchResult(r);
 			}
 		}
+		catch (IOException e)
+		{
+			Logger.Log(e.Message);
+		}
+	}
 
-		return results;
+	private void SearchTextFile(FileResult f)
+	{
+		if (Settings.Debug)
+			Logger.Log($"Searching text file {f.PathAndName}");
+		if (Settings.MultiLineSearch)
+			SearchTextFileContents(f);
+		else
+			SearchTextFileLines(f);
 	}
 
 	private void SearchBinaryFile(FileResult fr)
@@ -458,62 +374,185 @@ public class Searcher
 		}
 	}
 
-	private void AddSearchResult(SearchResult searchResult)
+	public void SearchFile(FileResult f)
 	{
-		Results.Add(searchResult);
+		switch (f.Type)
+		{
+			case FileType.Code:
+			case FileType.Text:
+			case FileType.Xml:
+				SearchTextFile(f);
+				break;
+			case FileType.Audio:
+			case FileType.Binary:
+			case FileType.Font:
+			case FileType.Image:
+			case FileType.Video:
+				SearchBinaryFile(f);
+				break;
+			case FileType.Archive:
+				Logger.Log($"Skipping archive file {f.PathAndName}");
+				break;
+			default:
+			{
+				if (Settings.Verbose)
+				{
+					Logger.Log($"Skipping file {f.PathAndName}");
+				}
+
+				break;
+			}
+		}
 	}
 
-	public void PrintResults()
+	private void SearchBatchConcurrent(IReadOnlyList<FileResult> searchFiles)
+	{
+		var searchTasks = new Task[searchFiles.Count];
+		for (var i = 0; i < searchFiles.Count; i++)
+		{
+			var searchFile = searchFiles[i];
+			searchTasks[i] = Task.Factory.StartNew(() => SearchFile(searchFile));
+		}
+		Task.WaitAll(searchTasks);
+	}
+
+	private void SearchBatch(IReadOnlyList<FileResult> findFiles)
+	{
+		if (findFiles.Count > 100)
+		{
+			SearchBatchConcurrent(findFiles);
+		}
+		else
+		{
+			foreach (var f in findFiles)
+			{
+				SearchFile(f);
+			}
+		}
+	}
+
+	public List<SearchResult> Search()
+	{
+		var fileResults = _finder.Find().ToList();
+
+		if (Settings.Verbose)
+		{
+			var findDirs = fileResults
+				.Where(fr => fr.FilePath.Parent != null)
+				.Select(fr => fr.FilePath.Parent!.ToString())
+				.Distinct()
+				.OrderBy(d => d).ToArray();
+			Logger.Log($"Directories to be searched ({findDirs.Length}):");
+			foreach (var d in findDirs)
+			{
+				Logger.Log(d);
+			}
+				
+			Logger.Log($"\nFiles to be searched ({fileResults.Count}):");
+			foreach (var f in fileResults)
+			{
+				Logger.Log(f.PathAndName);
+			}
+		}
+
+		var searched = 0;
+		while (fileResults.Count - searched > FileBatchSize)
+		{
+			SearchBatch(fileResults.Skip(searched).Take(FileBatchSize).ToArray());
+			searched += FileBatchSize;
+		}
+		if (fileResults.Count > searched)
+		{
+			SearchBatch(fileResults.Skip(searched).ToArray());
+		}
+
+		var results = Results.ToList();
+		SortSearchResults(results);
+		return results;
+	}
+
+	private Comparison<SearchResult> GetSearchResultsComparison()
+	{
+		var fileResultsComparison = _finder.GetFileResultsComparison();
+		return (r1, r2) =>
+		{
+			if (r1.File is not null && r2.File is not null)
+			{
+				return fileResultsComparison(r1.File, r2.File);
+			}
+			if (r1.File == null) return r2.File == null ? 0 : -1;
+			return 1;
+		};
+	}
+
+	private void SortSearchResults(List<SearchResult> results)
+	{
+		var comparison = GetSearchResultsComparison();
+		results.Sort(comparison);
+
+		if (Settings.SortDescending)
+		{
+			results.Reverse();
+		}
+	}
+
+	public void PrintResults(IEnumerable<SearchResult> results)
 	{
 		// File sorting is done by CsFind, so maybe additional sorting isn't needed?
 		// var sortedResults = GetSortedSearchResults();
 		var formatter = new SearchResultFormatter(Settings);
-		Logger.Log($"Search results ({Results.Count}):");
-		foreach (var searchResult in Results)
+		var resultsList = results.ToList();
+		Logger.Log($"Search results ({resultsList.Count}):");
+		foreach (var searchResult in resultsList)
 		{
 			Logger.Log(formatter.Format(searchResult));
 		}
 	}
 
-	private IEnumerable<FilePath> GetMatchingDirs()
+	private IEnumerable<FilePath> GetMatchingDirs(IEnumerable<SearchResult> results)
 	{
 		return new List<FilePath>(
-			Results.Where(r => r.File?.FilePath.Parent != null)
+			results.Where(r => r.File?.FilePath.Parent != null)
 				.Select(r => r.File!.FilePath.Parent!)
   				.Distinct()
 				.OrderBy(d => d.Path));
 	}
 
-	public void PrintMatchingDirs()
+	public void PrintMatchingDirs(IEnumerable<SearchResult> results)
 	{
-		var matchingDirs = GetMatchingDirs()
-			.Select(d => d.Path)
-			.Distinct()
-			.OrderBy(d => d).ToList();
-		Logger.Log($"\nDirectories with matches ({matchingDirs.Count}):");
-		foreach (var d in matchingDirs)
+		var matchingDirs = GetMatchingDirs(results)
+			.Select(d => d.ToString())
+			.ToList();
+		if (matchingDirs.Count != 0)
 		{
-			Logger.Log(d);
+			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
+			foreach (var d in matchingDirs)
+			{
+				Logger.Log(d);
+			}
+		}
+		else
+		{
+			Logger.Log("\nMatching directories: 0");
 		}
 	}
 
-	private IEnumerable<FilePath> GetMatchingFiles()
+	private IEnumerable<FilePath> GetMatchingFiles(IEnumerable<SearchResult> results)
 	{
 		return new List<FilePath>(
-			Results.Where(r => r.File != null)
+			results.Where(r => r.File != null)
 				.Select(r => r.File!.FilePath)
 				.Distinct().ToList());
 	}
 
-	public void PrintMatchingFiles()
+	public void PrintMatchingFiles(IEnumerable<SearchResult> results)
 	{
-		var matchingFiles = GetMatchingFiles()
+		var matchingFiles = GetMatchingFiles(results)
 			.Select(f => f.ToString())
-			.Distinct()
-			.OrderBy(f => f).ToList();
+			.ToList();
 		if (matchingFiles.Count > 0)
 		{
-			Logger.Log($"\nFiles with matches ({matchingFiles.Count()}):");
+			Logger.Log($"\nMatching files ({matchingFiles.Count}):");
 			foreach (var f in matchingFiles)
 			{
 				Logger.Log(f);
@@ -521,13 +560,13 @@ public class Searcher
 		}
 		else
 		{
-			Logger.Log($"\nFiles with matches: 0");
+			Logger.Log("\nMatching files: 0");
 		}
 	}
 
-	private IEnumerable<string> GetMatchingLines()
+	private IEnumerable<string> GetMatchingLines(IEnumerable<SearchResult> results)
 	{
-		var lines = Results.Where(r => r.Line != null)
+		var lines = results.Where(r => r.Line != null)
 			.Select(r => r.Line!.Trim()).ToList();
 		if (Settings.UniqueLines)
 		{
@@ -537,10 +576,10 @@ public class Searcher
 		return lines;
 	}
 
-	public void PrintMatchingLines()
+	public void PrintMatchingLines(IEnumerable<SearchResult> results)
 	{
-		var matchingLines = GetMatchingLines().ToList();
-		var hdrText = Settings.UniqueLines ? "Unique lines with matches" : "Lines with matches";
+		var matchingLines = GetMatchingLines(results).ToList();
+		var hdrText = Settings.UniqueLines ? "Unique matching lines" : "Matching lines";
 		Logger.Log($"\n{hdrText} ({matchingLines.Count()}):");
 		foreach (var m in matchingLines)
 		{

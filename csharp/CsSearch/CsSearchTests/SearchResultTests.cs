@@ -31,7 +31,8 @@ class SearchResultTests
 		const string line = "\tpublic class Searcher\n";
 		var searchResult = new SearchResult(pattern, file, lineNum,
 			matchStartIndex, matchEndIndex, line);
-		var expectedPath = CsSearchPath + "/Searcher.cs";
+		var expandedSearchPath = FileUtil.ExpandPath(CsSearchPath);
+		var expectedPath = Path.Join(expandedSearchPath, "Searcher.cs");
 		var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {line.Trim()}";
 
 		Assert.That(formatter.Format(searchResult), Is.EqualTo(expectedOutput));
@@ -116,7 +117,8 @@ class SearchResultTests
 		var searchResult = new SearchResult(pattern, file, lineNum,
 			matchStartIndex, matchEndIndex,
 			line, linesBefore, linesAfter);
-		var expectedPath = $"{CsSearchPath}/Searcher.cs";
+		var expandedSearchPath = FileUtil.ExpandPath(CsSearchPath);
+		var expectedPath = Path.Join(expandedSearchPath, "Searcher.cs");
 		var expectedOutput = string.Format(new string('=', 80) + "\n" +
 		                                   "{0}: {1}: [{2}:{3}]\n" +
 		                                   new string('-', 80) + "\n" +
@@ -144,7 +146,8 @@ class SearchResultTests
 		string? line = null;
 		var searchResult = new SearchResult(pattern, file, lineNum,
 			matchStartIndex, matchEndIndex, line);
-		var expectedPath = $"{CsSearchPath}/Searcher.exe";
+		var expandedSearchPath = FileUtil.ExpandPath(CsSearchPath);
+		var expectedPath = Path.Join(expandedSearchPath, "Searcher.exe");
 		var expectedOutput = $"{expectedPath} matches at [0:0]";
 
 		var output = formatter.Format(searchResult);
