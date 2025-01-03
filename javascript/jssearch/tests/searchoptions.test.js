@@ -128,7 +128,7 @@ describe('testing searchoptions', () => {
             '  "allmatches": false,\n' +
             '  "includehidden": true\n' +
             '}';
-        const err = searchOptions.settingsFromJson(json, settings);
+        const err = searchOptions.updateSettingsFromJson(json, settings);
         expect(err).toBeNull();
         expect(settings.inExtensions.length).toEqual(2);
         expect(settings.outDirPatterns.length).toEqual(1);

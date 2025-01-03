@@ -409,11 +409,11 @@ class SearchSettings {
             ', ' + StringUtil.patternListToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns) +
             ', linesBefore=' + this.linesBefore +
             ', maxDepth=' + this.maxDepth +
-            ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
+            ', ' + StringUtil.timestampToString('maxLastMod', this.maxLastMod) +
             ', maxLineLength=' + this.maxLineLength +
             ', maxSize=' + this.maxSize +
             ', minDepth=' + this.minDepth +
-            ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
+            ', ' + StringUtil.timestampToString('minLastMod', this.minLastMod) +
             ', minSize=' + this.minSize +
             ', multilineSearch=' + this.multilineSearch +
             ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions) +

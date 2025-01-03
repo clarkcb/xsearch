@@ -10,12 +10,15 @@ const {SearchError} = require('./searcherror');
 const {SearchOption} = require('./searchoption');
 const {SearchSettings} = require('./searchsettings');
 const {nameToSortBy} = require("../../../../xfind/javascript/jsfind/src/sortby");
+const fs = require("fs");
+const {FindError} = require("../../../../xfind/javascript/jsfind/src/finderror");
 
 class SearchOptions {
     'use strict'
 
     constructor() {
-        this.argNameMap = {};
+        // path included separately because it is not included as an option in findoptions.json
+        this.argNameMap = {'path': 'path'};
         this.boolActionMap = {
             'allmatches':
                 (b, settings) => { settings.firstMatch = !b; },
@@ -80,7 +83,7 @@ class SearchOptions {
             'version':
                 (b, settings) => { settings.printVersion = b; }
         };
-        this.strActionMap = {
+        this.stringActionMap = {
             'encoding':
                 (s, settings) => { settings.textFileEncoding = s; },
             'in-archiveext':
@@ -127,8 +130,8 @@ class SearchOptions {
                 (s, settings) => { settings.paths.push(s); },
             'searchpattern':
                 (s, settings) => { settings.addSearchPatterns(s); },
-            'settings-file':
-                (s, settings) => { return this.settingsFromFile(s, settings); },
+            // 'settings-file':
+            //     (s, settings) => { return this.updateSettingsFromFile(s, settings); },
             'sort-by':
                 (s, settings) => { settings.sortBy = nameToSortBy(s); }
         };
@@ -167,52 +170,81 @@ class SearchOptions {
                     this.options.push(option);
                 });
             } else throw new SearchError(`Invalid searchoptions file: ${config.SEARCH_OPTIONS_JSON_PATH}`);
-            this.options.sort(this.optCmp);
+            // this.options.sort(this.optCmp);
         })();
-
     }
 
-    optCmp(o1, o2) {
-        const a = o1.sortArg;
-        const b = o2.sortArg;
-        return a.localeCompare(b);
-    }
+    // optCmp(o1, o2) {
+    //     const a = o1.sortArg;
+    //     const b = o2.sortArg;
+    //     return a.localeCompare(b);
+    // }
 
-    settingsFromFile(filePath, settings) {
-        const fs = require('fs');
-        if (fs.existsSync(filePath)) {
-            let json = FileUtil.getFileContentsSync(filePath, 'utf-8');
-            return this.settingsFromJson(json, settings);
-        } else {
-            return new SearchError('Settings file not found');
-        }
-    }
-
-    settingsFromJson(json, settings) {
+    updateSettingsFromJson(json, settings) {
         let err = null;
-        let obj = JSON.parse(json);
-        for (let k in obj) {
+        const obj = JSON.parse(json);
+        // keys are sorted so that output is consistent across all versions
+        const keys = Object.keys(obj).sort();
+        const invalidKeys = keys.filter(k => !Object.prototype.hasOwnProperty.call(this.argNameMap, k));
+        if (invalidKeys.length > 0) {
+            return new SearchError(`Invalid option: ${invalidKeys[0]}`);
+        }
+        for (const k of keys) {
             if (err) break;
-            if (obj.hasOwnProperty(k)) {
-                let longKey = this.argNameMap[k];
-                if (this.boolActionMap[longKey]) {
-                    this.boolActionMap[longKey](obj[k], settings);
-                } else if (this.strActionMap[k]) {
-                    if (obj[k]) {
-                        this.strActionMap[k](obj[k], settings);
-                    } else {
-                        err = new Error("Missing argument for option " + k);
-                    }
-                } else if (this.intActionMap[longKey]) {
-                    this.intActionMap[longKey](obj[k], settings);
-                } else if (k === 'path') {
-                    settings.paths.push(obj[k]);
+            if (obj[k] === undefined || obj[k] === null) {
+                err = new SearchError(`Missing value for option ${k}`);
+            }
+            let longArg = this.argNameMap[k];
+            if (this.boolActionMap[longArg]) {
+                if (typeof obj[k] === 'boolean') {
+                    this.boolActionMap[longArg](obj[k], settings);
                 } else {
-                    err = new SearchError("Invalid option: " + k);
+                    err = new SearchError(`Invalid value for option: ${k}`);
                 }
+            } else if (this.stringActionMap[longArg]) {
+                if (typeof obj[k] === 'string') {
+                    this.stringActionMap[longArg](obj[k], settings);
+                } else if (typeof obj[k] === 'object' && Array.isArray(obj[k])) {
+                    obj[k].forEach(s => {
+                        if (typeof s === 'string') {
+                            this.stringActionMap[longArg](s, settings);
+                        } else {
+                            err = new SearchError(`Invalid value for option: ${k}`);
+                        }
+                    });
+                } else {
+                    err = new SearchError(`Invalid value for option: ${k}`);
+                }
+            } else if (this.intActionMap[longArg]) {
+                if (typeof obj[k] === 'number') {
+                    this.intActionMap[longArg](obj[k], settings);
+                } else {
+                    err = new SearchError(`Invalid value for option: ${k}`);
+                }
+            } else {
+                // should never get here
+                err = new SearchError(`Invalid option: ${k}`);
             }
         }
         return err;
+    }
+
+    updateSettingsFromFile(filePath, settings) {
+        const fs = require('fs');
+        const expandedPath = FileUtil.expandPath(filePath);
+        if (fs.existsSync(expandedPath)) {
+            if (expandedPath.endsWith('.json')) {
+                let json = FileUtil.getFileContentsSync(expandedPath, 'utf-8');
+                try {
+                    return this.updateSettingsFromJson(json, settings);
+                } catch (e) {
+                    return new SearchError(`Unable to parse JSON in settings file: ${filePath}`);
+                }
+            }
+            return new SearchError(`Invalid settings file (must be JSON): ${filePath}`);
+        } else {
+            return new SearchError(`Settings file not found: ${filePath}`);
+        }
     }
 
     settingsFromArgs(args, cb) {
@@ -233,12 +265,14 @@ class SearchOptions {
                 let longArg = this.argNameMap[arg];
                 if (this.boolActionMap[longArg]) {
                     this.boolActionMap[longArg](true, settings);
-                } else if (this.strActionMap[longArg] || this.intActionMap[longArg]) {
+                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg] || longArg === 'settings-file') {
                     if (args.length > 0) {
-                        if (this.strActionMap[longArg]) {
-                            err = this.strActionMap[longArg](args.shift(), settings);
-                        } else {
+                        if (this.stringActionMap[longArg]) {
+                            err = this.stringActionMap[longArg](args.shift(), settings);
+                        } else if (this.intActionMap[longArg]) {
                             err = this.intActionMap[longArg](parseInt(args.shift(), 10), settings);
+                        } else {
+                            err = this.updateSettingsFromFile(args.shift(), settings);
                         }
                     } else {
                         err = new Error(`Missing argument for option ${arg}`);
