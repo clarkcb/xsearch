@@ -13,8 +13,12 @@ class Searcher(val settings: SearchSettings) {
     private var charset: Charset? = null
 
     init {
+        try {
+            finder = Finder(settings.findSettings)
+        } catch (e: FindException) {
+            throw SearchException(e.message!!)
+        }
         validateSettings(settings)
-        finder = Finder(settings.findSettings)
     }
 
     private fun validateSettings(settings: SearchSettings) {

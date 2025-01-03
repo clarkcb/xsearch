@@ -2,11 +2,14 @@ package ktsearch
 
 import ktfind.*
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -23,7 +26,8 @@ data class SearchOption(val shortArg: String?, val longArg: String, val desc: St
 class SearchOptions {
     private val searchOptionsJsonPath = "/searchoptions.json"
     private val searchOptions : List<SearchOption>
-    private var longArgMap = mutableMapOf<String, String>()
+    // We add path manually since it's not an option in searchoptions.json
+    private var longArgMap = mutableMapOf<String, String>("path" to "path")
 
     init {
         searchOptions = loadSearchOptionsFromJson()
@@ -136,10 +140,10 @@ class SearchOptions {
                 { s, ss -> ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns.plus(Regex(s))) },
         "out-linesbeforepattern" to
                 { s, ss -> ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns.plus(Regex(s))) },
+        "path" to
+                { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
         "searchpattern" to
                 { s, ss -> ss.copy(searchPatterns = ss.searchPatterns.plus(Regex(s))) },
-        "settings-file" to
-                { s, ss -> settingsFromFile(s, ss) },
         "sort-by" to
                 { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
     )
@@ -157,15 +161,46 @@ class SearchOptions {
         "minsize" to { l, ss -> ss.copy(minSize = l) },
     )
 
-    private fun settingsFromFile(filePath: String, settings: SearchSettings) : SearchSettings {
-        val file = File(filePath)
-        try {
-            val json = file.readText()
-            return settingsFromJson(json, settings)
-        } catch (_: FileNotFoundException) {
-            throw SearchException("Settings file not found: $filePath")
-        } catch (_: IOException) {
-            throw SearchException("IOException reading settings file: $filePath")
+    private fun applySettings(key: String, lst: List<Any>, settings: SearchSettings): SearchSettings {
+        return if (lst.isEmpty()) settings
+        else {
+            applySettings(key, lst.drop(1), applySetting(key, lst.first(), settings))
+        }
+    }
+
+    private fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
+        if (boolActionMap.containsKey(key)) {
+            if (obj is Boolean) {
+                return this.boolActionMap[key]!!.invoke(obj, settings)
+            } else {
+                throw SearchException("Invalid value for option: $key")
+            }
+        } else if (stringActionMap.containsKey(key)) {
+            return if (obj is String) {
+                this.stringActionMap[key]!!.invoke(obj, settings)
+            } else if (obj is JSONArray) {
+                applySettings(key, obj.toList(), settings)
+            } else {
+                throw SearchException("Invalid value for option: $key")
+            }
+        } else if (intActionMap.containsKey(key)) {
+            return if (obj is Int) {
+                this.intActionMap[key]!!.invoke(obj, settings)
+            } else if (obj is Long) {
+                this.intActionMap[key]!!.invoke(obj.toInt(), settings)
+            } else {
+                throw SearchException("Invalid value for option: $key")
+            }
+        } else if (longActionMap.containsKey(key)) {
+            return if (obj is Int) {
+                this.longActionMap[key]!!.invoke(obj.toLong(), settings)
+            } else if (obj is Long) {
+                this.longActionMap[key]!!.invoke(obj, settings)
+            } else {
+                throw SearchException("Invalid value for option: $key")
+            }
+        } else {
+            throw SearchException("Invalid option: $key")
         }
     }
 
@@ -183,75 +218,32 @@ class SearchOptions {
                 }
             }
         }
-        return recSettingsFromJson(jsonObject.keySet().toList(), settings)
-    }
-
-    private fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
-        when (obj) {
-            is Boolean -> {
-                return applyBoolSetting(key, obj, settings)
-            }
-            is String -> {
-                return applyStringSetting(key, obj, settings)
-            }
-            is Int -> {
-                return applyIntSetting(key, obj, settings)
-            }
-            is Long -> {
-                return applyLongSetting(key, obj, settings)
-            }
-            is JSONArray -> {
-                return applySettings(key, obj.toList().map { it as String }, settings)
-            }
-            else -> {
-                return settings
-            }
+        // keys are sorted so that output is consistent across all versions
+        val keys = jsonObject.keySet().toList().sorted()
+        val invalidKeys = keys.filter { !longArgMap.containsKey(it) }
+        if (invalidKeys.isNotEmpty()) {
+            throw SearchException("Invalid option: ${invalidKeys[0]}")
         }
+        return recSettingsFromJson(keys, settings)
     }
 
-    private fun applyBoolSetting(key: String, bool: Boolean, settings: SearchSettings): SearchSettings {
-        if (this.boolActionMap.containsKey(key)) {
-            return this.boolActionMap[key]!!.invoke(bool, settings)
-        } else {
-            throw SearchException("Invalid option: $key")
+    private fun settingsFromFile(filePath: String, settings: SearchSettings) : SearchSettings {
+        val path = FileUtil.expandPath(Paths.get(filePath));
+        if (!Files.exists(path)) {
+            throw SearchException("Settings file not found: $filePath")
         }
-    }
-
-    private fun applyStringSetting(key: String, s: String, settings: SearchSettings): SearchSettings {
-        return when {
-            this.stringActionMap.containsKey(key) -> {
-                this.stringActionMap[key]!!.invoke(s, settings)
-            }
-            else -> {
-                throw SearchException("Invalid option: $key")
-            }
+        if (!filePath.endsWith(".json")) {
+            throw SearchException("Invalid settings file (must be JSON): $filePath")
         }
-    }
-
-    private fun applyIntSetting(key: String, i: Int, settings: SearchSettings): SearchSettings {
-        return if (this.intActionMap.containsKey(key)) {
-            this.intActionMap[key]!!.invoke(i, settings)
-        } else if (this.longActionMap.containsKey(key)) {
-            this.longActionMap[key]!!.invoke(i.toLong(), settings)
-        } else {
-            throw FindException("Invalid option: $key")
-        }
-    }
-
-    private fun applyLongSetting(key: String, l: Long, settings: SearchSettings): SearchSettings {
-        return if (this.intActionMap.containsKey(key)) {
-            this.intActionMap[key]!!.invoke(l.toInt(), settings)
-        } else if (this.longActionMap.containsKey(key)) {
-            this.longActionMap[key]!!.invoke(l, settings)
-        } else {
-            throw FindException("Invalid option: $key")
-        }
-    }
-
-    private fun applySettings(key: String, lst: List<String>, settings: SearchSettings): SearchSettings {
-        return if (lst.isEmpty()) settings
-        else {
-            applySettings(key, lst.drop(1), applyStringSetting(key, lst.first(), settings))
+        try {
+            val json = path.toFile().readText()
+            return settingsFromJson(json, settings)
+        } catch (_: FileNotFoundException) {
+            throw SearchException("Settings file not found: $filePath")
+        } catch (_: IOException) {
+            throw SearchException("IOException reading settings file: $filePath")
+        } catch (_: JSONException) {
+            throw SearchException("Unable to parse JSON in settings file: $filePath")
         }
     }
 
@@ -262,7 +254,7 @@ class SearchOptions {
             if (nextArg.startsWith("-")) {
                 val arg = nextArg.dropWhile { it == '-' }
                 val longArg = longArgMap[arg]
-                return if (boolActionMap.containsKey(arg)) {
+                return if (boolActionMap.containsKey(longArg)) {
                     val ss = boolActionMap[longArg]!!.invoke(true, settings)
                     recSettingsFromArgs(args.drop(1), ss)
                 } else if (stringActionMap.containsKey(longArg)
@@ -278,9 +270,15 @@ class SearchOptions {
                         } else if (longActionMap.containsKey(longArg)) {
                             longActionMap[longArg]!!.invoke(argVal.toLong(), settings)
                         } else {
-                            throw FindException("Unhandled option $arg")
+                            throw SearchException("Unhandled option $arg")
                         }
                         recSettingsFromArgs(args.drop(2), ss)
+                    } else {
+                        throw SearchException("Missing value for option $arg")
+                    }
+                } else if (longArg == "settings-file") {
+                    if (args.size > 1) {
+                        recSettingsFromArgs(args.drop(2), settingsFromFile(args[1], settings))
                     } else {
                         throw SearchException("Missing value for option $arg")
                     }

@@ -1,5 +1,6 @@
 package ktsearch
 
+import java.nio.file.Paths
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -27,7 +28,7 @@ class SearchOptionsTest {
         assertEquals(150, settings.maxLineLength)
         assertFalse(settings.multiLineSearch)
         assertEquals(1, settings.paths.size)
-        assertEquals(".", settings.paths.first())
+        assertEquals(Paths.get("."), settings.paths.first())
         assertTrue(settings.printResults)
         assertFalse(settings.printUsage)
         assertFalse(settings.printVersion)
@@ -47,7 +48,7 @@ class SearchOptionsTest {
         assertEquals(1, settings.searchPatterns.size)
         assertEquals("Search", settings.searchPatterns.first().toString())
         assertEquals(1, settings.paths.size)
-        assertEquals(".", settings.paths.first())
+        assertEquals(Paths.get("."), settings.paths.first())
     }
 
     @Test
@@ -68,7 +69,7 @@ class SearchOptionsTest {
         val settings = searchOptions.settingsFromJson(json, getDefaultSettings())
 
         assertEquals(1, settings.paths.size)
-        assertEquals("~/src/xsearch/", settings.paths.first())
+        assertEquals(Paths.get("~/src/xsearch/"), settings.paths.first())
 
         assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("js"))

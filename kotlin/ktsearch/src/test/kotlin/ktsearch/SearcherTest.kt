@@ -1,5 +1,6 @@
 package ktsearch
 
+import java.nio.file.Paths
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -8,7 +9,7 @@ import kotlin.test.assertEquals
  */
 class SearcherTest {
     private fun getSettings(): SearchSettings {
-        return getDefaultSettings().copy(paths=setOf("."), searchPatterns=setOf(Regex("Searcher")))
+        return getDefaultSettings().copy(paths=setOf(Paths.get(".")), searchPatterns=setOf(Regex("Searcher")))
     }
 
     private val testFilePath = "/testFile2.txt"

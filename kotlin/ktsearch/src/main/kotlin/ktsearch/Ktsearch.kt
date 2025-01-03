@@ -15,10 +15,14 @@ fun printErrorWithUsage(err: String, searchOptions: SearchOptions) {
 }
 
 fun printResults(results: List<SearchResult>, settings: SearchSettings) {
-    log("\nSearch results (${results.size}):")
-    val formatter = SearchResultFormatter(settings)
-    for (r in results) {
-        log(formatter.format(r))
+    if (results.isEmpty()) {
+        log("\nSearch results: 0")
+    } else {
+        log("\nSearch results (${results.size}):")
+        val formatter = SearchResultFormatter(settings)
+        for (r in results) {
+            log(formatter.format(r))
+        }
     }
 }
 
@@ -27,17 +31,25 @@ fun printMatchingDirs(results: List<SearchResult>) {
         .map { f -> f.path.parent }
         .map { p -> p?.toString() ?: "." }
         .distinct().sorted().toList()
-    log("\nDirectories with matches (${dirs.size}):")
-    for (d in dirs) {
-        log(d)
+    if (dirs.isEmpty()) {
+        log("\nMatching directories: 0")
+    } else {
+        log("\nMatching directories (${dirs.size}):")
+        for (d in dirs) {
+            log(d)
+        }
     }
 }
 
 fun printMatchingFiles(results: List<SearchResult>) {
     val files = results.mapNotNull { r -> r.file }.map { f -> f.toString() }.distinct().sorted()
-    log("\nFiles with matches (${files.size}):")
-    for (f in files) {
-        log(f)
+    if (files.isEmpty()) {
+        log("\nMatching files: 0")
+    } else {
+        log("\nMatching files (${files.size}):")
+        for (f in files) {
+            log(f)
+        }
     }
 }
 
@@ -47,11 +59,15 @@ fun printMatchingLines(settings: SearchSettings, results: List<SearchResult>) {
                     distinct().sorted()
             else results.map { r -> r.line.trim() }.sorted()
     val hdr =
-            if (settings.uniqueLines) "\nUnique lines with matches (${lines.size}):"
-            else "\nLines with matches (${lines.size}):"
-    log(hdr)
-    for (l in lines) {
-        log(l)
+            if (settings.uniqueLines) "\nUnique matching lines"
+            else "\nMatching lines"
+    if (lines.isEmpty()) {
+        log("$hdr: 0")
+    } else {
+        log("$hdr (${lines.size}):")
+        for (l in lines) {
+            log(l)
+        }
     }
 }
 
