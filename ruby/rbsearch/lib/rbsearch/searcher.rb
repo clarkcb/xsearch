@@ -21,8 +21,8 @@ module RbSearch
 
     def initialize(settings)
       @settings = settings
-      validate_settings
       @finder = RbFind::Finder.new(settings)
+      validate_settings
     end
 
     def search
@@ -170,15 +170,9 @@ module RbSearch
       end
     end
 
-
     private
 
     def validate_settings
-      raise SearchError, 'Startpath not defined' if @settings.paths.empty?
-      @settings.paths.each do |p|
-        raise SearchError, 'Startpath not found' unless Pathname.new(p).exist?
-        raise SearchError, 'Startpath not readable' unless File.readable?(p)
-      end
       raise SearchError, 'No search patterns defined' if @settings.search_patterns.empty?
       raise SearchError, 'Invalid lines_before' if @settings.lines_before < 0
       raise SearchError, 'Invalid lines_after' if @settings.lines_after < 0

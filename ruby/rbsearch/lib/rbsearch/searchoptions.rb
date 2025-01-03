@@ -10,6 +10,7 @@ module RbSearch
 
   # SearchOptions - parses CLI args into settings, generates usage string
   class SearchOptions
+    attr_reader :options
 
     def initialize
       @options = []
@@ -30,11 +31,14 @@ module RbSearch
         arg = args.shift
         if arg.start_with?('-')
           arg = arg[1..arg.length] while arg && arg.start_with?('-')
+          unless @long_arg_dict.key?(arg)
+            raise SearchError, "Invalid option: #{arg}"
+          end
           long_arg = @long_arg_dict[arg]
           if @bool_action_dict.key?(long_arg)
             @bool_action_dict[long_arg].call(true, settings)
             return settings if [:help, :version].include?(long_arg)
-            elsif @str_action_dict.key?(long_arg) || @int_action_dict.key?(long_arg)
+          elsif @str_action_dict.key?(long_arg) || @int_action_dict.key?(long_arg)
             raise SearchError, "Missing value for option #{arg}" if args.empty?
             arg_val = args.shift
             if @str_action_dict.key?(long_arg)
@@ -52,40 +56,71 @@ module RbSearch
       settings
     end
 
-    def settings_from_file(file_path, settings)
-      f = File.open(file_path, mode: 'r')
-      json = f.read
-      settings_from_json(json, settings)
-    rescue IOError => e
-      raise SearchError, "#{e} (file: #{file_path})"
-    rescue ArgumentError => e
-      raise SearchError, "#{e} (file: #{file_path})"
-    rescue SearchError => e
-      raise SearchError, "#{e} (file: #{file_path})"
-    ensure
-      f&.close
-    end
-
-    def settings_from_json(json, settings)
+    def update_settings_from_json(json, settings)
       json_hash = JSON.parse(json)
-      json_hash.each_key do |arg|
+      # keys are sorted so that output is consistent across all versions
+      keys = json_hash.keys.sort
+      invalid_keys = keys.reject { |k| @long_arg_dict.key?(k) }
+      unless invalid_keys.empty?
+        raise SearchError, "Invalid option: #{invalid_keys[0]}"
+      end
+      keys.each do |arg|
         arg_sym = arg.to_sym
         if @bool_action_dict.key?(arg_sym)
-          @bool_action_dict[arg_sym].call(json_hash[arg], settings)
-          return if %w[help version].include?(arg)
+          if json_hash[arg] == true || json_hash[arg] == false
+            @bool_action_dict[arg_sym].call(json_hash[arg], settings)
+            return if %w[help version].include?(arg)
+          else
+            raise SearchError, "Invalid value for option: #{arg}"
+          end
         elsif @str_action_dict.key?(arg_sym)
-          @str_action_dict[arg_sym].call(json_hash[arg], settings)
+          if json_hash[arg].is_a?(String)
+            @str_action_dict[arg_sym].call(json_hash[arg], settings)
+          elsif json_hash[arg].is_a?(Array)
+            json_hash[arg].each do |v|
+              if v.is_a?(String)
+                @str_action_dict[arg_sym].call(v, settings)
+              else
+                raise SearchError, "Invalid value for option: #{arg}"
+              end
+            end
+          else
+            raise SearchError, "Invalid value for option: #{arg}"
+          end
         elsif @int_action_dict.key?(arg_sym)
-          @int_action_dict[arg_sym].call(json_hash[arg], settings)
+          if json_hash[arg].is_a?(Numeric)
+            @int_action_dict[arg_sym].call(json_hash[arg], settings)
+          else
+            raise SearchError, "Invalid value for option: #{arg}"
+          end
         else
+          # should never reach here
           raise SearchError, "Invalid option: #{arg}"
         end
       end
     end
 
-    def usage
-      puts "#{get_usage_string}\n"
-      abort
+    def update_settings_from_file(file_path, settings)
+      expanded_path = Pathname.new(file_path).expand_path
+      unless expanded_path.exist?
+        raise SearchError, "Settings file not found: #{file_path}"
+      end
+      unless expanded_path.extname == '.json'
+        raise SearchError, "Invalid settings file (must be JSON): #{file_path}"
+      end
+      f = File.open(expanded_path.to_s, mode: 'r')
+      json = f.read
+      update_settings_from_json(json, settings)
+    rescue IOError => e
+      raise SearchError, e.to_s
+    rescue ArgumentError => e
+      raise SearchError, e.to_s
+    rescue SearchError => e
+      raise SearchError, e.to_s
+    rescue JSON::ParserError => e
+      raise SearchError, "Unable to parse JSON in settings file: #{file_path}"
+    ensure
+      f&.close
     end
 
     def get_usage_string
@@ -110,6 +145,11 @@ module RbSearch
         i += 1
       end
       usage
+    end
+
+    def usage
+      puts "#{get_usage_string}\n"
+      abort
     end
 
     private
@@ -172,7 +212,7 @@ module RbSearch
         'out-linesbeforepattern': ->(s, settings) { settings.add_patterns(s, settings.out_lines_before_patterns) },
         path: ->(s, settings) { settings.add_path(s) },
         searchpattern: ->(s, settings) { settings.add_patterns(s, settings.search_patterns) },
-        'settings-file': ->(s, settings) { settings_from_file(s, settings) },
+        'settings-file': ->(s, settings) { update_settings_from_file(s, settings) },
         'sort-by': ->(s, settings) { settings.set_sort_by_for_name(s) }
       }
       @int_action_dict = {
@@ -185,6 +225,7 @@ module RbSearch
         minsize: ->(i, settings) { settings.min_size = i },
       }
       @long_arg_dict = {}
+      @long_arg_dict['path'] = :path
     end
 
     def set_options_from_json

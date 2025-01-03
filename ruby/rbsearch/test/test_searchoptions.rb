@@ -62,7 +62,7 @@ module RbSearch
       assert(settings.in_extensions.include?('py'))
       assert(settings.in_extensions.include?('rb'))
       assert_equal(1, settings.paths.length)
-      assert(settings.paths.include?('.'))
+      assert(settings.paths.include?(Pathname.new('.')))
       assert_equal(1, settings.search_patterns.length)
       assert_equal('Search', settings.search_patterns.first.source)
     end
@@ -108,7 +108,7 @@ module RbSearch
         "includehidden": true
       }
       JSON
-      @search_options.settings_from_json(json, settings)
+      @search_options.update_settings_from_json(json, settings)
       assert(settings.debug)
       assert(settings.verbose)
       assert(settings.follow_symlinks)

@@ -7,17 +7,19 @@ module RbSearch
     @int_action_dict: Hash[Symbol, Proc]
     @long_arg_dict: Hash[String, Symbol]
 
+    attr_reader options: Array[SearchOption]
+
     def initialize: () -> void
 
     def search_settings_from_args: (Array[String] args) -> SearchSettings
 
-    def settings_from_file: (String file_path, SearchSettings settings) -> void
+    def update_settings_from_json: (String json, SearchSettings settings) -> void
 
-    def settings_from_json: (String json, SearchSettings settings) -> void
-
-    def usage: () -> void
+    def update_settings_from_file: (String file_path, SearchSettings settings) -> void
 
     def get_usage_string: () -> String
+
+    def usage: () -> void
 
     private
 
