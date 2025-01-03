@@ -84,7 +84,7 @@ describe('testing searchoptions', () => {
             '  "followsymlinks": true,\n' +
             '  "includehidden": true\n' +
             '}';
-        const err: Error|void = searchOptions.settingsFromJson(json, settings);
+        const err: Error|void = searchOptions.updateSettingsFromJson(json, settings);
         expect(err).toBeUndefined();
         expect(settings.paths.length).toEqual(1);
         expect(settings.paths[0]).toEqual('~/src/xsearch/');

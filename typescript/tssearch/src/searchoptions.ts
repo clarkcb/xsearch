@@ -10,6 +10,7 @@ import * as fs from 'fs';
 
 import * as config from './config';
 import {FileUtil, SortUtil} from 'tsfind';
+import {SearchError} from './searcherror';
 import {SearchOption} from './searchoption';
 import {SearchSettings} from './searchsettings';
 
@@ -26,7 +27,8 @@ export class SearchOptions {
 
     constructor() {
         this.options = [];
-        this.argNameMap = {};
+        // path included separately because it is not included as an option in findoptions.json
+        this.argNameMap = {'path': 'path'};
 
         this.boolActionMap = {
             'allmatches':
@@ -140,8 +142,6 @@ export class SearchOptions {
                 (s: string, settings: SearchSettings) => { settings.paths.push(s); },
             'searchpattern':
                 (s: string, settings: SearchSettings) => { settings.addSearchPatterns(s); },
-            'settings-file':
-                (s: string, settings: SearchSettings) => { this.settingsFromFile(s, settings); },
             'sort-by':
                 (s: string, settings: SearchSettings) => { settings.sortBy = SortUtil.nameToSortBy(s); }
         };
@@ -166,11 +166,11 @@ export class SearchOptions {
         this.setOptionsFromJsonFile();
     }
 
-    private static optCmp(o1: SearchOption, o2: SearchOption) {
-        const a: string = o1.sortArg;
-        const b: string = o2.sortArg;
-        return a.localeCompare(b);
-    }
+    // private static optCmp(o1: SearchOption, o2: SearchOption) {
+    //     const a: string = o1.sortArg;
+    //     const b: string = o2.sortArg;
+    //     return a.localeCompare(b);
+    // }
 
     // setOptionsFromJsonFile
     private setOptionsFromJsonFile(): void {
@@ -189,40 +189,74 @@ export class SearchOptions {
                 this.options.push(option);
             });
         } else throw new Error(`Invalid searchoptions file: ${config.SEARCH_OPTIONS_JSON_PATH}`);
-        this.options.sort(SearchOptions.optCmp);
+        // this.options.sort(SearchOptions.optCmp);
     }
 
-    private settingsFromFile(filepath: string, settings: SearchSettings): Error | undefined {
-        if (fs.existsSync(filepath)) {
-            const json: string = FileUtil.getFileContentsSync(filepath, settings.textFileEncoding);
-            return this.settingsFromJson(json, settings);
-        } else {
-            return new Error('Settings file not found');
-        }
-    }
-
-    public settingsFromJson(json: string, settings: SearchSettings): Error | undefined {
+    public updateSettingsFromJson(json: string, settings: SearchSettings): Error | undefined {
         let err: Error | undefined = undefined;
         const obj = JSON.parse(json);
-        for (const k in obj) {
+        // keys are sorted so that output is consistent across all versions
+        const keys = Object.keys(obj).sort();
+        const invalidKeys = keys.filter(k => !Object.prototype.hasOwnProperty.call(this.argNameMap, k));
+        if (invalidKeys.length > 0) {
+            return new SearchError(`Invalid option: ${invalidKeys[0]}`);
+        }
+        for (const k of keys) {
             if (err) break;
-            if (Object.prototype.hasOwnProperty.call(obj, k)) {
-                if (this.boolActionMap[k]) {
-                    this.boolActionMap[k](obj[k], settings);
-                } else if (this.stringActionMap[k]) {
-                    if (obj[k]) {
-                        err = this.stringActionMap[k](obj[k], settings);
-                    } else {
-                        err = new Error(`Missing argument for option ${k}`);
-                    }
-                } else if (this.intActionMap[k]) {
-                    this.intActionMap[k](obj[k], settings);
+            if (obj[k] === undefined || obj[k] === null) {
+                err = new SearchError(`Missing value for option ${k}`);
+            }
+            let longArg = this.argNameMap[k];
+            if (this.boolActionMap[longArg]) {
+                if (typeof obj[k] === 'boolean') {
+                    this.boolActionMap[longArg](obj[k], settings);
                 } else {
-                    err = new Error(`Invalid option: ${k}`);
+                    err = new SearchError(`Invalid value for option: ${k}`);
                 }
+            } else if (this.stringActionMap[longArg]) {
+                if (typeof obj[k] === 'string') {
+                    this.stringActionMap[longArg](obj[k], settings);
+                } else if (typeof obj[k] === 'object' && obj[k].constructor === Array) {
+                    obj[k].forEach((s: any) => {
+                        if (typeof s === 'string') {
+                            this.stringActionMap[longArg](s, settings);
+                        } else {
+                            err = new SearchError(`Invalid value for option: ${k}`);
+                        }
+                    });
+                } else {
+                    err = new SearchError(`Invalid value for option: ${k}`);
+                }
+            } else if (this.intActionMap[longArg]) {
+                if (typeof obj[k] === 'number') {
+                    this.intActionMap[longArg](obj[k], settings);
+                } else {
+                    err = new SearchError(`Invalid value for option: ${k}`);
+                }
+            } else {
+                // should never get here
+                err = new SearchError(`Invalid option: ${k}`);
             }
         }
         return err;
+    }
+
+    private updateSettingsFromFile(filePath: string, settings: SearchSettings): Error | undefined {
+        const expandedPath = FileUtil.expandPath(filePath);
+        if (fs.existsSync(expandedPath)) {
+            if (filePath.endsWith('.json')) {
+                const json: string = FileUtil.getFileContentsSync(expandedPath, settings.textFileEncoding);
+                try {
+                    return this.updateSettingsFromJson(json, settings);
+                } catch (e: any) {
+                    return new SearchError(`Unable to parse JSON in settings file: ${filePath}`);
+                }
+            } else {
+                return new SearchError(`Invalid settings file (must be JSON): ${filePath}`);
+            }
+        } else {
+            return new SearchError(`Settings file not found: ${filePath}`);
+        }
     }
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: SearchSettings) => void) {
@@ -242,12 +276,14 @@ export class SearchOptions {
                 const longArg = this.argNameMap[arg];
                 if (this.boolActionMap[longArg]) {
                     this.boolActionMap[longArg](true, settings);
-                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg]) {
+                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg] || longArg === 'settings-file') {
                     if (args.length > 0) {
                         if (this.stringActionMap[longArg]) {
                             this.stringActionMap[longArg](args.shift(), settings);
-                        } else {
+                        } else if (this.intActionMap[longArg]) {
                             this.intActionMap[longArg](parseInt(args.shift()!, 10), settings);
+                        } else {
+                            err = this.updateSettingsFromFile(args.shift()!, settings);
                         }
                     } else {
                         err = new Error(`Missing argument for option ${arg}`);
@@ -260,15 +296,6 @@ export class SearchOptions {
             }
         }
         cb(err, settings);
-    }
-
-    public usage(): void {
-        this.usageWithCode(0);
-    }
-
-    public usageWithCode(exitCode: number): void {
-        console.log(this.getUsageString());
-        process.exit(exitCode);
     }
 
     private getUsageString(): string {
@@ -294,5 +321,14 @@ export class SearchOptions {
             usage += os + '  ' + optDescs[i] + '\n';
         }
         return usage;
+    }
+
+    public usageWithCode(exitCode: number): void {
+        console.log(this.getUsageString());
+        process.exit(exitCode);
+    }
+
+    public usage(): void {
+        this.usageWithCode(0);
     }
 }

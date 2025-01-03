@@ -7,11 +7,11 @@
 "use strict";
 
 import * as common from './common';
+import {Searcher} from './searcher';
 import {SearchOptions} from './searchoptions';
 import {SearchSettings} from './searchsettings';
-import {Searcher} from './searcher';
-import {SearchResultFormatter} from "./searchresultformatter";
 import {SearchResult} from "./searchresult";
+import {SearchResultFormatter} from "./searchresultformatter";
 
 function handleError(err: Error | any, searchOptions: SearchOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
@@ -53,8 +53,12 @@ function getMatchingDirs(results: SearchResult[]): string[] {
 
 function printMatchingDirs(results: SearchResult[]): void {
     const dirs: string[] = getMatchingDirs(results);
-    common.log("\nDirectories with matches " + `(${dirs.length}):`);
-    dirs.forEach(d => common.log(d));
+    if (dirs.length > 0) {
+        common.log("\nMatching directories " + `(${dirs.length}):`);
+        dirs.forEach(d => common.log(d));
+    } else {
+        common.log("\nMatching directories: 0");
+    }
 }
 
 function getMatchingFiles(results: SearchResult[]): string[] {
@@ -64,8 +68,12 @@ function getMatchingFiles(results: SearchResult[]): string[] {
 
 function printMatchingFiles(results: SearchResult[]): void {
     const files: string[] = getMatchingFiles(results);
-    common.log("\nFiles with matches " + `(${files.length}):`);
-    files.forEach(f => common.log(f));
+    if (files.length > 0) {
+        common.log("\nMatching files " + `(${files.length}):`);
+        files.forEach(f => common.log(f));
+    } else {
+        common.log("\nMatching files: 0");
+    }
 }
 
 function getMatchingLines(results: SearchResult[], uniqueLines: boolean): string[] {
@@ -85,11 +93,17 @@ function printMatchingLines(results: SearchResult[], uniqueLines: boolean): void
     const lines: string[] = getMatchingLines(results, uniqueLines);
     let hdrText: string;
     if (uniqueLines)
-        hdrText = "\nUnique lines with matches " + `(${lines.length}):`;
+        hdrText = "\nUnique lines with matches";
     else
-        hdrText = "\nLines with matches " + `(${lines.length}):`;
-    common.log(hdrText);
-    lines.forEach(l => common.log(l));
+        hdrText = "\nLines with matches";
+    if (lines.length > 0) {
+        hdrText = `${hdrText} (${lines.length}):`
+        common.log(hdrText);
+        lines.forEach(l => common.log(l));
+    } else {
+        hdrText = `${hdrText}: 0`
+        common.log(hdrText);
+    }
 }
 
 const searchMain = async () => {
