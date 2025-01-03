@@ -18,7 +18,7 @@
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileutil :only (expand-path to-path)]
+        [cljfind.fileutil :only (exists? expand-path path-str to-path)]
         [cljfind.findsettings :only
          (add-extension add-file-type add-path add-pattern
           set-archives-only set-debug set-int-val set-long-val
@@ -47,7 +47,7 @@
 
 (def ^:const SEARCH-OPTIONS (get-search-options-from-json))
 
-(defn print-option [opt]
+(defn print-option [^SearchOption opt]
   (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
     (println
       (format format-string (:short-arg opt) (:long-arg opt) (:desc opt)))))
@@ -127,7 +127,7 @@
   })
 
 (defn get-long-arg-map []
-  (let [long-names     (map :long-arg SEARCH-OPTIONS)
+  (let [long-names     (concat (map :long-arg SEARCH-OPTIONS) ["path"])
         long-map       (zipmap long-names (map #(keyword %) long-names))
         short-options  (remove #(= (:short-arg %) "") SEARCH-OPTIONS)
         short-long-map (zipmap (map :short-arg short-options) (map #(keyword %) (map :long-arg short-options)))]
@@ -143,60 +143,65 @@
       (contains? short-long-map arg) (keyword (get short-long-map arg))
       :else nil)))
 
-(defn settings-from-map ^SearchSettings [^SearchSettings settings ks m errs]
-  (if (empty? ks)
+(defn settings-from-map [^SearchSettings settings ks m errs]
+  (if (or (empty? ks) (not (empty? errs)))
     [settings errs]
     (let [k (keyword (first ks))
           v (k m)]
       (cond
         (contains? bool-action-map k)
-          (settings-from-map ((k bool-action-map) settings v) (rest ks) m errs)
+          (if (instance? Boolean v)
+            (settings-from-map ((k bool-action-map) settings v) (rest ks) m errs)
+            (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k)))))
         (contains? string-action-map k)
-          (settings-from-map ((k string-action-map) settings v) (rest ks) m errs)
+          (if (instance? String v)
+            (settings-from-map ((k string-action-map) settings v) (rest ks) m errs)
+            (if (coll? v)
+              (if (empty? v)
+                (settings-from-map settings (rest ks) m errs)
+                (settings-from-map ((k string-action-map) settings (first v)) ks (assoc m k (rest v)) errs))
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k))))))
         (contains? int-action-map k)
-          (settings-from-map ((k int-action-map) settings v) (rest ks) m errs)
+          (if (instance? Integer v)
+            (settings-from-map ((k int-action-map) settings v) (rest ks) m errs)
+            (if (instance? Long v)
+              (settings-from-map ((k int-action-map) settings (.intValue v)) (rest ks) m errs)
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k))))))
         (contains? long-action-map k)
-          (settings-from-map ((k long-action-map) settings v) (rest ks) m errs)
+          (if (instance? Integer v)
+            (settings-from-map ((k long-action-map) settings (.longValue v)) (rest ks) m errs)
+            (if (instance? Long v)
+              (settings-from-map ((k long-action-map) settings v) (rest ks) m errs)
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k))))))
         :else
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
 (defn settings-from-json
-  (^SearchSettings [json]
-   (settings-from-json DEFAULT-SEARCH-SETTINGS json))
-  (^SearchSettings [^SearchSettings settings ^String json]
+  ([^String json]
+   (settings-from-json DEFAULT-SEARCH-SETTINGS (get-long-arg-map) json))
+  ([^SearchSettings settings long-arg-map ^String json]
     (let [obj (json/read-str json :key-fn keyword)
-          ks (keys obj)]
-      (settings-from-map settings ks obj []))))
+          ;; keys are sorted so that output is consistent across all versions
+          ks (sort (keys obj))
+          invalid-ks (remove #(contains? long-arg-map %) (map #(name %) ks))]
+      (if (not (empty? invalid-ks))
+        [nil [(str "Invalid option: " (first invalid-ks))]]
+        (settings-from-map settings ks obj [])))))
 
-(defn settings-from-file ^SearchSettings [^SearchSettings settings f]
-  (let [contents (slurp f)]
-    (settings-from-json settings contents)))
-
-;(defn settings-from-args
-;  (^SearchSettings [args]
-;   (settings-from-args DEFAULT-SEARCH-SETTINGS args []))
-;  (^SearchSettings [^SearchSettings settings args errs]
-;    (if (or (empty? args) (not (empty? errs)))
-;      [settings errs]
-;      (let [arg (first args)
-;            a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
-;            k (if a (get-long-arg a))
-;            a2 (second args)]
-;        (if a
-;          (cond
-;            (contains? string-action-map k)
-;              (if a2
-;                (settings-from-args ((k string-action-map) settings a2) (drop 2 args) errs)
-;                (settings-from-args settings (rest args) (conj errs (str "Missing arg for option " a))))
-;            (contains? bool-action-map k)
-;              (settings-from-args ((k bool-action-map) settings true) (rest args) errs)
-;            (= k :settings-file)
-;              (let [[file-settings file-errs] (settings-from-file settings a2)]
-;                (settings-from-args file-settings (drop 2 args) (concat errs file-errs)))
-;            :else
-;              (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a))))
-;          ;; (settings-from-args (assoc settings :startpath arg) (rest args) errs)
-;          (settings-from-args (add-path settings (to-path arg)) (rest args) errs))))))
+(defn settings-from-file
+  ([f]
+   (settings-from-file DEFAULT-SEARCH-SETTINGS (get-long-arg-map) f))
+  ([^SearchSettings settings long-arg-map f]
+   (let [filepath (expand-path (to-path f))
+         pathstr (path-str filepath)]
+     (if (not (exists? filepath))
+       [settings [(str "Settings file not found: " pathstr)]]
+       (if (not (.endsWith pathstr ".json"))
+         [settings [(str "Invalid settings file (must be JSON): " pathstr)]]
+         (try
+           (settings-from-json settings long-arg-map (slurp pathstr))
+           (catch Exception e
+             [settings [(str "Unable to parse JSON in settings file: " pathstr)]])))))))
 
 (defn rec-get-settings-from-args ^SearchSettings [^SearchSettings settings long-arg-map args errs]
   (if (or (empty? args) (not (empty? errs)))
@@ -207,29 +212,33 @@
           a2 (second args)]
       (if a
         (cond
-          ;; 1) boolean option
+          ;; 1) no k
+          (not k)
+          (rec-get-settings-from-args settings long-arg-map (rest args) (conj errs (str "Invalid option: " a)))
+
+          ;; 2) boolean option
           (contains? bool-action-map k)
           (rec-get-settings-from-args ((k bool-action-map) settings true) long-arg-map (rest args) errs)
 
-          ;; 2) option without arg
+          ;; 3) option without arg
           (not a2)
           (rec-get-settings-from-args settings long-arg-map (rest args) (conj errs (str "Missing arg for option " a)))
 
-          ;; 3) string option
+          ;; 4) string option
           (contains? string-action-map k)
           (rec-get-settings-from-args ((k string-action-map) settings a2) long-arg-map (drop 2 args) errs)
 
-          ;; 4) int option
+          ;; 5) int option
           (contains? int-action-map k)
           (rec-get-settings-from-args ((k int-action-map) settings a2) long-arg-map (drop 2 args) errs)
 
-          ;; 5) long option
+          ;; 6) long option
           (contains? long-action-map k)
           (rec-get-settings-from-args ((k long-action-map) settings a2) long-arg-map (drop 2 args) errs)
 
-          ;; 5) file option
+          ;; 7) settings-file option
           (= k :settings-file)
-          (let [[file-settings file-errs] (settings-from-file settings a2)]
+          (let [[file-settings file-errs] (settings-from-file settings long-arg-map a2)]
             (rec-get-settings-from-args file-settings long-arg-map (drop 2 args) (concat errs file-errs)))
 
           :else

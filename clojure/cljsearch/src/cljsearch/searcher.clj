@@ -13,7 +13,6 @@
            (java.util.jar JarFile)
            (java.util.zip ZipFile)
            (cljfind.fileresult FileResult)
-           (cljfind.fileresult FileResult)
            (cljsearch.searchresult SearchResult)
            (cljsearch.searchsettings SearchSettings)
            )
@@ -21,6 +20,7 @@
         [clojure.string :as str :only (join trim upper-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only (file-result-path)]
+        [cljfind.fileutil :only (get-parent path-str)]
         [cljfind.finder :only (find-files validate-settings)]
         [cljsearch.searchresult :only
           (->SearchResult search-result-to-string)]
@@ -31,24 +31,33 @@
   (log-msg (search-result-to-string r settings)))
 
 (defn print-search-results [results ^SearchSettings settings]
-  (log-msg (format "\nSearch results (%d):" (count results)))
-  (doseq [r results] (print-search-result r settings)))
+  (if (> (count results) 0)
+    (let [hdr (format "\nSearch results (%d):" (count results))]
+      (log-msg hdr)
+      (doseq [r results] (print-search-result r settings)))
+    (log-msg "\nSearch results: 0")))
 
 (defn get-matching-dirs [results]
-  (sort (distinct (map #(.getParent (:file %)) (map #(:file %) results)))))
+  (sort (distinct (map #(get-parent (:path %)) (map #(:file %) results)))))
 
 (defn print-matching-dirs [results]
   (let [dirs (get-matching-dirs results)]
-    (log-msg (format "\nDirectories with matches (%d):" (count dirs)))
-    (doseq [d dirs] (log-msg d))))
+    (if (> (count dirs) 0)
+      (let [hdr (format "\nMatching directories (%d):" (count dirs))]
+        (log-msg hdr)
+        (doseq [d dirs] (log-msg d)))
+      (log-msg "\nMatching directories: 0"))))
 
 (defn get-matching-files [results]
-  (sort (distinct (map #(.getPath (:file %)) (map #(:file %) results)))))
+  (sort (distinct (map #(path-str (:path %)) (map #(:file %) results)))))
 
 (defn print-matching-files [results]
   (let [files (get-matching-files results)]
-    (log-msg (format "\nFiles with matches (%d):" (count files)))
-    (doseq [f files] (log-msg f))))
+    (if (> (count files) 0)
+      (let [hdr (format "\nMatching files (%d):" (count files))]
+        (log-msg hdr)
+        (doseq [f files] (log-msg f)))
+      (log-msg "\nMatching files: 0"))))
 
 (defn get-matching-lines [results ^SearchSettings settings]
   (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) results))]
@@ -57,12 +66,15 @@
       lines)))
 
 (defn print-matching-lines [results ^SearchSettings settings]
-  (let [lines (get-matching-lines results settings)]
-    (log-msg
-      (if (:unique-lines settings)
-        (format "\nUnique lines with matches (%d):" (count lines))
-        (format "\nLines with matches (%d):" (count lines))))
-    (doseq [l lines] (log-msg l))))
+  (let [lines (get-matching-lines results settings)
+        hdr (if (:unique-lines settings)
+              "\nUnique lines with matches"
+              "\nLines with matches")]
+    (if (> (count lines) 0)
+      (let [hdr1 (format "%s (%d):" hdr (count lines))]
+        (log-msg hdr1)
+        (doseq [l lines] (log-msg l)))
+      (log-msg (format "%s: 0" hdr)))))
 
 (defn validate-path [path]
   (if (not path)
