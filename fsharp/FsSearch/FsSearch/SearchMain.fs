@@ -6,7 +6,8 @@ open FsSearchLib
 module Main =
 
     let HandleError (err : string) : unit =
-        Logger.Log $"\nERROR: %s{err}"
+        Logger.Log("");
+        Logger.LogError err
         SearchOptions.Usage(1)
 
     let Search (settings : SearchSettings) : unit =
@@ -36,18 +37,15 @@ module Main =
         match (Array.toList args) with
         | [] -> HandleError "Startpath not defined"
         | _ ->
-            let settings, err = SearchOptions.SettingsFromArgs(args)
-
-            if err.Length > 0 then
-                HandleError err
-
-            if settings.Debug then
-                Logger.Log $"settings: %s{settings.ToString}"
-
-            if settings.PrintUsage then
-                SearchOptions.Usage(0)
-            else
-                Search settings
+            match SearchOptions.SettingsFromArgs(args) with
+            | Ok settings ->
+                if settings.Debug then
+                    Logger.Log settings.ToString
+                if settings.PrintUsage then
+                    FindOptions.Usage(0)
+                else
+                    Search settings
+            | Error e -> HandleError e
 
         // main entry point return
         0;;
