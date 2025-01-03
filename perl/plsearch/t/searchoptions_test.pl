@@ -109,7 +109,7 @@ sub test_settings_from_json {
 END_JSON
     $search_options->settings_from_json($json, $settings);
     ok(scalar @{$settings->{paths}} == 1, "paths has one paths");
-    my $expected_path = $ENV{HOME} . "/src/xsearch";
+    my $expected_path = "~/src/xsearch";
     ok($settings->{paths}->[0]->stringify eq $expected_path, 'paths has "~/src/xsearch/" path');
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");

@@ -13,10 +13,6 @@ use warnings;
 
 use parent 'Exporter';
 
-# use Cwd qw(abs_path);
-# use File::Basename;
-# use File::Spec;
-# use JSON::PP qw(decode_json);
 use Path::Class;
 
 our $XSEARCH_PATH = $ENV{'XSEARCH_PATH'};

@@ -12,7 +12,9 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use DateTime::Format::DateParse;
 use JSON::PP qw(decode_json);
+use Path::Class;
 
 use lib $ENV{'XFIND_PATH'} . '/perl/plfind/lib';
 
@@ -20,7 +22,7 @@ use plfind::FileType;
 use plfind::FileTypes;
 use plfind::FileUtil;
 
-use plsearch::config;
+use plsearch::config qw($SEARCH_OPTIONS_PATH);
 use plsearch::SearchOption;
 use plsearch::SearchSettings;
 
@@ -87,15 +89,15 @@ my $bool_action_hash = {
     },
     'printdirs' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('list_dirs', $bool);
+        $settings->set_property('print_dirs', $bool);
     },
     'printfiles' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('list_files', $bool);
+        $settings->set_property('print_files', $bool);
     },
     'printlines' => sub {
         my ($bool, $settings) = @_;
-        $settings->set_property('list_lines', $bool);
+        $settings->set_property('print_lines', $bool);
     },
     'printmatches' => sub {
         my ($bool, $settings) = @_;
@@ -226,15 +228,11 @@ my $str_action_hash = {
     },
     'path' => sub {
         my ($s, $settings) = @_;
-        $settings->add_path($s);
+        $settings->add_paths($s);
     },
     'searchpattern' => sub {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{search_patterns});
-    },
-    'settings-file' => sub {
-        my ($s, $settings) = @_;
-        settings_from_file(file($s), $settings);
     },
     'sort-by' => sub {
         my ($s, $settings) = @_;
@@ -301,43 +299,59 @@ sub set_options_from_json {
     return $options_hash;
 }
 
-sub settings_from_file {
-    # $file_path is instance of Path::Class::File
-    my ($file_path, $settings) = @_;
-    my $errs = [];
-    unless (-e $file_path) {
-        push(@{$errs}, 'Settings file not found: ' . $file_path);
-        return $errs;
-    }
-    my $json = $file_path->slurp;
-    return __from_json($json, $settings);
-}
-
-# private function
-sub __from_json {
-    my ($json, $settings) = @_;
+sub settings_from_json {
+    my ($self, $json, $settings) = @_;
     my $errs = [];
     my $json_hash = decode_json $json;
-    my @opt_names = keys %{$json_hash};
-    foreach my $o (@opt_names) {
-        if (exists $bool_action_hash->{$o}) {
-            &{$bool_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif (exists $str_action_hash->{$o}) {
-            &{$str_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif (exists $int_action_hash->{$o}) {
-            &{$int_action_hash->{$o}}($json_hash->{$o}, $settings);
+    # keys are sorted so that output is consistent across all versions
+    my @keys = sort (keys %{$json_hash});
+    my @invalid_keys = grep { $_ ne 'path' && !exists($self->{options}->{$_}) } @keys;
+    if (scalar @invalid_keys) {
+        push(@$errs, 'Invalid option: ' . $invalid_keys[0]);
+        return $errs;
+    }
+    foreach my $k (@keys) {
+        if (exists $bool_action_hash->{$k}) {
+            if (plfind::common::is_bool($json_hash->{$k})) {
+                &{$bool_action_hash->{$k}}($json_hash->{$k}, $settings);
+            } else {
+                push(@$errs, 'Invalid value for option: ' . $k);
+            }
+        } elsif (exists $str_action_hash->{$k}) {
+            &{$str_action_hash->{$k}}($json_hash->{$k}, $settings);
+        } elsif (exists $int_action_hash->{$k}) {
+            if ($json_hash->{$k} =~ /^\d+$/) {
+                &{$int_action_hash->{$k}}($json_hash->{$k}, $settings);
+            } else {
+                push(@$errs, 'Invalid value for option: ' . $k);
+            }
         } else {
-            push(@{$errs}, 'Invalid option: ' . $o);
+            # should never reach here
+            push(@$errs, 'Invalid option: ' . $k);
         }
     }
     return $errs;
 }
 
-# public method (made available for unit testing)
-sub settings_from_json {
-    my ($self, $json, $settings) = @_;
-    #print "\$json: '$json'\n";
-    __from_json($json, $settings);
+sub settings_from_file {
+    # $file_path is instance of Path::Class::File
+    my ($self, $file_path, $settings) = @_;
+    my $errs = [];
+    my $expanded_path = file(plfind::FileUtil::expand_path($file_path));
+    unless (-e $expanded_path) {
+        push(@$errs, 'Settings file not found: ' . $file_path);
+        return $errs;
+    }
+    unless ($expanded_path =~ /\.json$/) {
+        push(@$errs, 'Invalid settings file (must be JSON): ' . $file_path);
+        return $errs;
+    }
+    my $json = $expanded_path->slurp;
+    my $rc = eval { $errs = $self->settings_from_json($json, $settings); 1; };
+    if (!$rc) {
+        push(@$errs, 'Unable to parse JSON in settings file: ' . $file_path);
+    }
+    return $errs;
 }
 
 sub settings_from_args {
@@ -346,8 +360,8 @@ sub settings_from_args {
     # default print_results to true since running as cli
     $settings->set_property('print_results', 1);
     my @errs;
-    while (scalar @{$args}) {
-        my $arg = shift @{$args};
+    while (scalar @$args && !(scalar @errs)) {
+        my $arg = shift @$args;
         if ($arg =~ /^\-+/) {
             $arg =~ s/^\-+//;
             if (exists $self->{options}->{$arg}) {
@@ -355,13 +369,19 @@ sub settings_from_args {
                 my $long = $opt->{long_arg};
                 if (exists $bool_action_hash->{$long}) {
                     &{$bool_action_hash->{$long}}(1, $settings);
-                } elsif (exists $str_action_hash->{$long} || exists $int_action_hash->{$long}) {
-                    if (scalar @{$args}) {
-                        my $val = shift @{$args};
+                } elsif (exists $str_action_hash->{$long}
+                         || exists $int_action_hash->{$long}
+                         || $long eq 'settings-file') {
+                    if (scalar @$args) {
+                        my $val = shift @$args;
                         if (exists $str_action_hash->{$long}) {
                             &{$str_action_hash->{$long}}($val, $settings);
-                        } else {
+                        } elsif (exists $int_action_hash->{$long}) {
                             &{$int_action_hash->{$long}}(int($val), $settings);
+                        } else {
+                            my $file_path = file($val);
+                            my $settings_file_errors = $self->settings_from_file($file_path, $settings);
+                            push(@errs, @$settings_file_errors);
                         }
                     } else {
                         push(@errs, "Missing value for $arg");
@@ -375,11 +395,6 @@ sub settings_from_args {
         }
     }
     return ($settings, \@errs);
-}
-
-sub usage {
-    my $self = shift;
-    print $self->get_usage_string();
 }
 
 sub get_usage_string {
@@ -420,6 +435,11 @@ sub get_usage_string {
         $opt_descs_with_key->{$sort_key});
     }
     return $usage;
+}
+
+sub usage {
+    my $self = shift;
+    print $self->get_usage_string();
 }
 
 1;

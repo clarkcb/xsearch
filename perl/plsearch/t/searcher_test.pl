@@ -26,19 +26,19 @@ use plsearch::Searcher;
 
 
 sub get_settings {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     push(@{$settings->{paths}}, ".");
     push(@{$settings->{search_patterns}}, "Searcher");
     return $settings;
 }
 
 sub get_test_file {
-  return "$SHAREDPATH/testFiles/testFile2.txt";
+  return "$SHARED_PATH/testFiles/testFile2.txt";
 }
 
 sub test_validate_settings {
     my $settings = get_settings();
-    my ($searcher, $errs) = new plsearch::Searcher($settings);
+    my ($searcher, $errs) = plsearch::Searcher->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
 }
 
@@ -47,7 +47,7 @@ sub test_validate_settings {
 ################################################################################
 sub test_search_lines {
     my $settings = get_settings();
-    my ($searcher, $errs) = new plsearch::Searcher($settings);
+    my ($searcher, $errs) = plsearch::Searcher->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $test_file = get_test_file();
     my $contents = plfind::FileUtil::get_file_contents($test_file);
@@ -69,7 +69,7 @@ sub test_search_lines {
 ################################################################################
 sub test_search_multiline_string {
     my $settings = get_settings();
-    my ($searcher, $errs) = new plsearch::Searcher($settings);
+    my ($searcher, $errs) = plsearch::Searcher->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $test_file = get_test_file();
     my $lines = plfind::FileUtil::get_file_lines($test_file);

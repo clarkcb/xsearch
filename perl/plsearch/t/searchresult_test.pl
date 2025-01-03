@@ -29,12 +29,12 @@ use plsearch::SearchResult;
 use plsearch::SearchResultFormatter;
 use plsearch::SearchSettings;
 
-my $cssearch_path = $XSEARCHPATH . '/csharp/CsSearch/CsSearch';
+my $cssearch_path = $XSEARCH_PATH . '/csharp/CsSearch/CsSearch';
 
 sub test_single_line_search_result {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->{colorize} = 0;
-    my $formatter = new plsearch::SearchResultFormatter($settings);
+    my $formatter = plsearch::SearchResultFormatter->new($settings);
     my $pattern = 'Search';
     my $file_path = file("$cssearch_path/Searcher.cs");
     my $file_type = plfind::FileType->CODE;
@@ -47,7 +47,7 @@ sub test_single_line_search_result {
     my $line = "\tpublic class Searcher\n";
     my $lines_before = [];
     my $lines_after = [];
-    my $search_result = new plsearch::SearchResult($pattern, $file_result, $line_num, $match_start_index,
+    my $search_result = plsearch::SearchResult->new($pattern, $file_result, $line_num, $match_start_index,
         $match_end_index, $line, $lines_before, $lines_after);
     my $expected_output = sprintf("%s: %d: [%d:%d]: %s", $file_path, $line_num,
         $match_start_index, $match_end_index, plfind::common::trim($line));
@@ -57,10 +57,10 @@ sub test_single_line_search_result {
 }
 
 sub test_single_line_longer_than_maxlength_search_result {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->{colorize} = 0;
     $settings->{max_line_length} = 100;
-    my $formatter = new plsearch::SearchResultFormatter($settings);
+    my $formatter = plsearch::SearchResultFormatter->new($settings);
     my $pattern = 'maxlen';
     my $file_path = file("$cssearch_path/maxlen.txt");
     my $file_type = plfind::FileType->TEXT;
@@ -74,7 +74,7 @@ sub test_single_line_longer_than_maxlength_search_result {
     my $line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789";
     my $lines_before = [];
     my $lines_after = [];
-    my $search_result = new plsearch::SearchResult($pattern, $file_result, $line_num, $match_start_index,
+    my $search_result = plsearch::SearchResult->new($pattern, $file_result, $line_num, $match_start_index,
         $match_end_index, $line, $lines_before, $lines_after);
     my $expectedline = '...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...';
     my $expected_output = sprintf("%s: %d: [%d:%d]: %s", $file_path, $line_num,
@@ -87,10 +87,10 @@ sub test_single_line_longer_than_maxlength_search_result {
 }
 
 sub test_single_line_longer_colorize_search_result {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->{colorize} = 1;
     $settings->{max_line_length} = 100;
-    my $formatter = new plsearch::SearchResultFormatter($settings);
+    my $formatter = plsearch::SearchResultFormatter->new($settings);
     my $pattern = 'maxlen';
     my $file_path = file("$cssearch_path/maxlen.txt");
     my $file_type = plfind::FileType->TEXT;
@@ -106,7 +106,7 @@ sub test_single_line_longer_colorize_search_result {
     my $lines_after = [];
     my $max_line_length = 100;
     my $colorize = 1;
-    my $search_result = new plsearch::SearchResult($pattern, $file_result, $line_num, $match_start_index,
+    my $search_result = plsearch::SearchResult->new($pattern, $file_result, $line_num, $match_start_index,
         $match_end_index, $line, $lines_before, $lines_after, $max_line_length, $colorize);
     my $expectedline = '...89012345678901234567890123456789012345678901'.
         plsearch::Color->GREEN .
@@ -121,8 +121,8 @@ sub test_single_line_longer_colorize_search_result {
 }
 
 sub test_binary_file_search_result {
-    my $settings = new plsearch::SearchSettings();
-    my $formatter = new plsearch::SearchResultFormatter($settings);
+    my $settings = plsearch::SearchSettings->new();
+    my $formatter = plsearch::SearchResultFormatter->new($settings);
     my $pattern = 'Search';
     my $file_path = file("$cssearch_path/Searcher.exe");
     my $file_type = plfind::FileType->BINARY;
@@ -135,7 +135,7 @@ sub test_binary_file_search_result {
     my $line = "";
     my $lines_before = [];
     my $lines_after = [];
-    my $search_result = new plsearch::SearchResult($pattern, $file_result, $line_num,
+    my $search_result = plsearch::SearchResult->new($pattern, $file_result, $line_num,
         $match_start_index, $match_end_index, $line, $lines_before, $lines_after);
     my $expected_output = sprintf("%s matches at [%d:%d]", $file_path,
         $match_start_index, $match_end_index);
@@ -145,9 +145,9 @@ sub test_binary_file_search_result {
 }
 
 sub test_multi_line_search_result {
-    my $settings = new plsearch::SearchSettings();
+    my $settings = plsearch::SearchSettings->new();
     $settings->{colorize} = 0;
-    my $formatter = new plsearch::SearchResultFormatter($settings);
+    my $formatter = plsearch::SearchResultFormatter->new($settings);
     my $pattern = 'Search';
     my $file_path = file("$cssearch_path/Searcher.cs");
     my $file_type = plfind::FileType->CODE;
@@ -160,7 +160,7 @@ sub test_multi_line_search_result {
     my $line = "\tpublic class Searcher\n";
     my $lines_before = ["namespace CsSearch\n", "{\n"];
     my $lines_after = ["\t{\n", "\t\tprivate readonly FileTypes _fileTypes;\n"];
-    my $search_result = new plsearch::SearchResult($pattern, $file_result, $line_num,
+    my $search_result = plsearch::SearchResult->new($pattern, $file_result, $line_num,
         $match_start_index, $match_end_index, $line, $lines_before, $lines_after);
     my $outputtemplate = 
         "================================================================================\n" .

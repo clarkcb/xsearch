@@ -105,13 +105,13 @@ sub format_matching_line {
     }
 
     if ($self->{settings}->{colorize}) {
-        $formatted = $self->colorize($formatted, $match_start_index, $match_end_index);
+        $formatted = colorize($formatted, $match_start_index, $match_end_index);
     }
     return $formatted;
 }
 
 sub colorize {
-    my ($self, $s, $match_start_index, $match_end_index) = @_;
+    my ($s, $match_start_index, $match_end_index) = @_;
     my $match_length = $match_end_index - $match_start_index;
     my $c = substr($s, 0, $match_start_index);
     $c .= plsearch::Color->GREEN;
@@ -122,12 +122,12 @@ sub colorize {
 }
 
 sub line_num_padding {
-    my ($self, $result) = @_;
+    my ($result) = @_;
     return length(sprintf("%d", $result->{line_num} + (scalar @{$result->{lines_after}})));
 }
 
 sub trim_newline {
-    my ($self, $s) = @_;
+    my ($s) = @_;
     $s =~ s/[\r\n]+$//;
     return $s;
 }
@@ -138,24 +138,24 @@ sub multi_line_format {
     my $s = ('=' x 80) . "\n$file: $result->{line_num}: ";
     $s .= "[$result->{match_start_index}:$result->{match_end_index}]\n";
     $s .= ('-' x 80) . "\n";
-    my $lines_format = sprintf(" %%%dd | %%s\n", $self->line_num_padding($result));
+    my $lines_format = sprintf(" %%%dd | %%s\n", line_num_padding($result));
     my $current_line_num = $result->{line_num};
     if (scalar @{$result->{lines_before}}) {
         $current_line_num -= (scalar @{$result->{lines_before}});
         foreach my $line_before (@{$result->{lines_before}}) {
-            $s .= sprintf(' '.$lines_format, $current_line_num, $self->trim_newline($line_before));
+            $s .= sprintf(' '.$lines_format, $current_line_num, trim_newline($line_before));
             $current_line_num++;
         }
     }
-    my $line = $self->trim_newline($result->{line});
+    my $line = trim_newline($result->{line});
     if ($self->{settings}->{colorize}) {
-        $line = $self->colorize($line, $result->{match_start_index} - 1, $result->{match_end_index} - 1);
+        $line = colorize($line, $result->{match_start_index} - 1, $result->{match_end_index} - 1);
     }
     $s .= sprintf('>'.$lines_format, $current_line_num, $line);
     if (scalar @{$result->{lines_after}}) {
         $current_line_num++;
         foreach my $line_after (@{$result->{lines_after}}) {
-            $s .= sprintf(' '.$lines_format, $current_line_num, $self->trim_newline($line_after));
+            $s .= sprintf(' '.$lines_format, $current_line_num, trim_newline($line_after));
             $current_line_num++;
         }
     }
