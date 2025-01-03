@@ -11,9 +11,9 @@ Class to encapsulate all command line search options
 package javasearch;
 
 import javafind.FileUtil;
-import javafind.Logger;
 import javafind.SortBy;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -27,7 +27,12 @@ import java.util.*;
 public class SearchOptions {
     private static final String SEARCH_OPTIONS_JSON_PATH = "/searchoptions.json";
     private final List<SearchOption> options;
-    private final Map<String, String> longArgMap = new HashMap<>();
+    // We add path manually because it's not an option in searchoptions.json
+    private final Map<String, String> longArgMap = new HashMap<>() {
+        {
+            put("path", "path");
+        }
+    };
 
     public SearchOptions() throws IOException {
         options = new ArrayList<>();
@@ -39,7 +44,7 @@ public class SearchOptions {
         void set(Boolean b, SearchSettings settings);
     }
 
-    private final int boolActionMapSize = 29;
+    private final int boolActionMapSize = 31;
     private final Map<String, BooleanSetter> boolActionMap = new HashMap<>(boolActionMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
@@ -48,10 +53,12 @@ public class SearchOptions {
             put("debug", (b, settings) -> settings.setDebug(b));
             put("excludehidden", (b, settings) -> settings.setIncludeHidden(!b));
             put("firstmatch", (b, settings) -> settings.setFirstMatch(b));
+            put("followsymlinks", (b, settings) -> settings.setFollowSymlinks(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
             put("multilinesearch", (b, settings) -> settings.setMultiLineSearch(b));
             put("nocolorize", (b, settings) -> settings.setColorize(!b));
+            put("nofollowsymlinks", (b, settings) -> settings.setFollowSymlinks(!b));
             put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
             put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
             put("noprintlines", (b, settings) -> settings.setPrintLines(!b));
@@ -158,76 +165,83 @@ public class SearchOptions {
         }
     }
 
+    private void applySetting(final String arg, final Object obj, SearchSettings settings)
+            throws SearchException {
+        if (this.boolActionMap.containsKey(arg)) {
+            if (obj instanceof Boolean) {
+                this.boolActionMap.get(arg).set((Boolean)obj, settings);
+            } else {
+                throw new SearchException("Invalid value for option: " + arg);
+            }
+        } else if (this.stringActionMap.containsKey(arg)) {
+            if (obj instanceof String) {
+                this.stringActionMap.get(arg).set((String)obj, settings);
+            } else if (obj instanceof JSONArray) {
+                for (int i=0; i < ((JSONArray)obj).length(); i++) {
+                    Object item = ((JSONArray)obj).get(i);
+                    if (item instanceof String) {
+                        this.stringActionMap.get(arg).set((String)item, settings);
+                    } else {
+                        throw new SearchException("Invalid value for option: " + arg);
+                    }
+                }
+            } else {
+                throw new SearchException("Invalid value for option: " + arg);
+            }
+        } else if (this.intActionMap.containsKey(arg)) {
+            if (obj instanceof Integer) {
+                this.intActionMap.get(arg).set((Integer)obj, settings);
+            } else if (obj instanceof Long) {
+                this.intActionMap.get(arg).set(((Long)obj).intValue(), settings);
+            } else {
+                throw new SearchException("Invalid value for option: " + arg);
+            }
+        } else if (this.longActionMap.containsKey(arg)) {
+            if (obj instanceof Integer) {
+                this.longActionMap.get(arg).set(((Integer)obj).longValue(), settings);
+            } else if (obj instanceof Long) {
+                this.longActionMap.get(arg).set((Long)obj, settings);
+            } else {
+                throw new SearchException("Invalid value for option: " + arg);
+            }
+        } else {
+            // should never get here
+            throw new SearchException("Invalid option: " + arg);
+        }
+    }
+
+    public void settingsFromJson(final String json, SearchSettings settings) throws SearchException {
+        var jsonObj = new JSONObject(new JSONTokener(json));
+        // keys are sorted so that output is consistent across all versions
+        var keys = jsonObj.keySet().stream().sorted().toList();
+        var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).toList();
+        if (!invalidKeys.isEmpty()) {
+            throw new SearchException("Invalid option: " + invalidKeys.getFirst());
+        }
+        for (var k : keys) {
+            var v = jsonObj.get(k);
+            if (v != null) {
+                applySetting(k, v, settings);
+            }
+        }
+    }
+
     private void settingsFromFilePath(final String filePath, final SearchSettings settings) throws SearchException {
-        var path = Paths.get(filePath);
+        var path = FileUtil.expandPath(Paths.get(filePath));
+        if (!Files.exists(path)) {
+            throw new SearchException("Settings file not found: " + filePath);
+        }
+        if (!filePath.endsWith( ".json")) {
+            throw new SearchException("Invalid settings file (must be JSON): " + filePath);
+        }
         try {
-            if (!Files.exists(path)) {
-                throw new SearchException("Settings file not found: " + filePath);
-            }
-            if (!FileUtil.hasExtension(filePath, "json")) {
-                throw new SearchException("Invalid settings file type (must be JSON): " + filePath);
-            }
             settingsFromJson(FileUtil.getFileContents(path), settings);
         } catch (FileNotFoundException e) {
             throw new SearchException("Settings file not found: " + filePath);
         } catch (IOException e) {
             throw new SearchException("IOException reading settings file: " + filePath);
-        }
-    }
-
-    public void settingsFromJson(final String json, SearchSettings settings) {
-        var jsonObj = new JSONObject(new JSONTokener(json));
-        for (var ko : jsonObj.keySet()) {
-            var vo = jsonObj.get(ko);
-            applySetting(ko, vo, settings);
-        }
-    }
-
-    private void applySetting(final String arg, final Object obj, SearchSettings settings) {
-        if (obj instanceof String) {
-            try {
-                applySetting(arg, (String)obj, settings);
-            } catch (SearchException e) {
-                Logger.logError("SearchException: " + e.getMessage());
-            }
-        } else if (obj instanceof Boolean) {
-            try {
-                applySetting(arg, (Boolean)obj, settings);
-            } catch (SearchException e) {
-                Logger.logError("SearchException: " + e.getMessage());
-            }
-        } else if ((obj instanceof Integer) || (obj instanceof Long)) {
-            try {
-                applySetting(arg, obj.toString(), settings);
-            } catch (SearchException e) {
-                Logger.logError("SearchException: " + e.getMessage());
-            }
-        } else if (obj instanceof JSONArray) {
-            for (int i=0; i < ((JSONArray)obj).length(); i++) {
-                applySetting(arg, ((JSONArray)obj).get(i), settings);
-            }
-        } else {
-            Logger.log("obj is another class type");
-        }
-    }
-
-    private void applySetting(final String arg, final String val, SearchSettings settings)
-            throws SearchException{
-        if (this.stringActionMap.containsKey(arg)) {
-            this.stringActionMap.get(arg).set(val, settings);
-        } else if (arg.equals("path")) {
-            settings.addPath(val);
-        } else {
-            throw new SearchException("Invalid option: " + arg);
-        }
-    }
-
-    private void applySetting(final String arg, final Boolean val, SearchSettings settings)
-            throws SearchException{
-        if (this.boolActionMap.containsKey(arg)) {
-            this.boolActionMap.get(arg).set(val, settings);
-        } else {
-            throw new SearchException("Invalid option: " + arg);
+        } catch (JSONException e) {
+            throw new SearchException("Unable to parse JSON in settings file: " + filePath);
         }
     }
 

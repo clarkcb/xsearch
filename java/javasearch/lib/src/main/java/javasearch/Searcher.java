@@ -42,19 +42,11 @@ public class Searcher {
     }
 
     final void validateSettings() throws SearchException {
-        var paths = settings.getPaths();
-        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
-            throw new SearchException("Startpath not defined");
+        try {
+            this.finder.validateSettings();
+        } catch (FindException e) {
+            throw new SearchException(e.getMessage());
         }
-        for (var path : paths) {
-            if (!Files.exists(path)) {
-                throw new SearchException("Startpath not found");
-            }
-            if (!Files.isReadable(path)) {
-                throw new SearchException("Startpath not readable");
-            }
-        }
-
         if (settings.getSearchPatterns().isEmpty()) {
             throw new SearchException("No search patterns defined");
         }

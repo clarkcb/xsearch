@@ -108,6 +108,9 @@ public class SearchOptionsTest {
             assertTrue(settings.getDebug());
             assertTrue(settings.getFirstMatch());
             assertFalse(settings.getIncludeHidden());
+        } catch (SearchException e) {
+            System.out.println("SearchException: " + e.getMessage());
+            fail();
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
             fail();

@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 import static javafind.Logger.log;
 import static javafind.Logger.logError;
 
-import javasearch.SearchException;
-
 
 public class JavaSearch {
 
@@ -34,10 +32,14 @@ public class JavaSearch {
     }
 
     private static void printSearchResults(List<SearchResult> results, SearchSettings settings) {
-        var formatter = new SearchResultFormatter(settings);
-        log(String.format("Search results (%d):", results.size()));
-        for (var r : results) {
-            log(formatter.format(r));
+        if (results.isEmpty()) {
+            log("Search results: 0");
+        } else {
+            var formatter = new SearchResultFormatter(settings);
+            log(String.format("Search results (%d):", results.size()));
+            for (var r : results) {
+                log(formatter.format(r));
+            }
         }
     }
 
@@ -51,9 +53,13 @@ public class JavaSearch {
 
     private static void printMatchingDirs(List<SearchResult> results) {
         var dirs = getMatchingDirs(results);
-        log(String.format("\nDirectories with matches (%d):", dirs.size()));
-        for (var d : dirs) {
-            log(d);
+        if (dirs.isEmpty()) {
+            log("\nMatching directories: 0");
+        } else {
+            log(String.format("\nMatching directories (%d):", dirs.size()));
+            for (var d : dirs) {
+                log(d);
+            }
         }
     }
 
@@ -65,9 +71,13 @@ public class JavaSearch {
 
     private static void printMatchingFiles(List<SearchResult> results) {
         var files = getMatchingFiles(results);
-        log(String.format("\nFiles with matches (%d):", files.size()));
-        for (var f : files) {
-            log(f);
+        if (files.isEmpty()) {
+            log("\nMatching files: 0");
+        } else {
+            log(String.format("\nMatching files (%d):", files.size()));
+            for (var f : files) {
+                log(f);
+            }
         }
     }
 
@@ -88,13 +98,17 @@ public class JavaSearch {
         var lines = getMatchingLines(results, settings);
         String hdr;
         if (settings.getUniqueLines()) {
-            hdr = "\nUnique lines with matches (%d):";
+            hdr = "\nUnique matching lines";
         } else {
-            hdr = "\nLines with matches (%d):";
+            hdr = "\nMatching lines";
         }
-        log(String.format(hdr, lines.size()));
-        for (var line : lines) {
-            log(line);
+        if (lines.isEmpty()) {
+            log(String.format("%s: 0", hdr));
+        } else {
+            log(String.format("%s (%d):", hdr, lines.size()));
+            for (var line : lines) {
+                log(line);
+            }
         }
     }
 
