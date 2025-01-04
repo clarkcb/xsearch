@@ -1,0 +1,45 @@
+{
+    "ref": {
+        "common_startpaths": ["$XSEARCH_PATH/scripts"],
+        "scriptpath": "$XSEARCH_PATH/scripts",
+        "sharedpath": "$XSEARCH_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "settings-file",
+            "name": "use settings-file",
+            "args": ["--settings-file", "$XSEARCH_PATH/shared/settings.json"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "settings-file",
+            "name": "use settings-file and other args",
+            "args": ["--settings-file", "$XSEARCH_PATH/shared/settings.json", "--followsymlinks"]
+        },
+        {
+            "group": "settings-file",
+            "name": "use invalid settings-file",
+            "args": ["--settings-file", "$XSEARCH_PATH/shared/config.json"],
+            "replace_xsearch_name": true
+        },
+        {
+            "group": "settings-file",
+            "name": "use settings-file with non-json extension",
+            "args": ["--settings-file", "$XSEARCH_PATH/shared/alphabet.txt"],
+            "replace_xsearch_name": true
+        },
+        {
+            "group": "settings-file",
+            "name": "use non-json settings-file with json extension",
+            "args": ["--settings-file", "$XSEARCH_PATH/shared/alphabet.json"],
+            "replace_xsearch_name": true
+        },
+        {
+            "group": "settings-file",
+            "name": "use non-existing settings-file",
+            "args": ["--settings-file", "$XSEARCH_PATH/shared/nonexistant.json"],
+            "replace_xsearch_name": true
+        }
+    ]
+}

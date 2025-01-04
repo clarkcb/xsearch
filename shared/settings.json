@@ -1,5 +1,5 @@
 {
-  "path": "~/src/xsearch/",
+  "path": ["~/src/xsearch/javascript/", "~/src/xsearch/typescript/"],
   "in-ext": ["js", "ts"],
   "out-dirpattern": [
     "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor", "venv"
@@ -8,10 +8,12 @@
   "searchpattern": "Searcher",
   "linesbefore": 2,
   "linesafter": 2,
-  "debug": true,
+  "colorize": false,
+  "debug": false,
   "allmatches": false,
   "includehidden": false,
   "maxdepth": 10,
+  "maxsize": 10000,
   "printdirs": true,
   "printfiles": true
 }
