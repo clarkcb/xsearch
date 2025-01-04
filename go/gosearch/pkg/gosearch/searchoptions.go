@@ -46,14 +46,6 @@ func NewSearchOptions() *SearchOptions {
 	return searchOptions
 }
 
-func (so *SearchOptions) SettingsFromFile(filePath string, settings *SearchSettings) error {
-	if data, err := os.ReadFile(filePath); err != nil {
-		return err
-	} else {
-		return so.SettingsFromJson(data, settings)
-	}
-}
-
 func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings) error {
 	boolActionMap := so.getBoolActionMap()
 	stringActionMap := so.getStringActionMap()
@@ -62,7 +54,25 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 	type JsonSettings map[string]interface{}
 	var jsonSettings JsonSettings
 	if err := json.Unmarshal(data, &jsonSettings); err != nil {
-		return err
+		errMsg := fmt.Sprintf("Unable to parse JSON")
+		return fmt.Errorf(errMsg)
+	}
+	// first check for invalid keys
+	for k := range jsonSettings {
+		foundOption := false
+		if k == "path" {
+			foundOption = true
+			continue
+		}
+		for _, o := range so.SearchOptions {
+			if o.Long == k {
+				foundOption = true
+				break
+			}
+		}
+		if !foundOption {
+			return fmt.Errorf(fmt.Sprintf("Invalid option: %v", k))
+		}
 	}
 	for k := range jsonSettings {
 		if bf, isBool := boolActionMap[k]; isBool {
@@ -92,25 +102,70 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else if iff, isInt := intActionMap[k]; isInt {
 			if v, hasVal := jsonSettings[k]; hasVal {
-				iff(v.(int), settings)
+				switch v := v.(type) {
+				case int:
+					iff(v, settings)
+				case float32, float64:
+					iff(int(v.(float64)), settings)
+				default:
+					gofind.Log(fmt.Sprintf("k: %v", k))
+					gofind.Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					return fmt.Errorf(errMsg)
+				}
 			} else {
-				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else if lff, isLong := longActionMap[k]; isLong {
 			if v, hasVal := jsonSettings[k]; hasVal {
-				lff(v.(int64), settings)
+				switch v := v.(type) {
+				case int64:
+					lff(v, settings)
+				case float32, float64:
+					lff(int64(v.(float64)), settings)
+				default:
+					gofind.Log(fmt.Sprintf("k: %v", k))
+					gofind.Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					gofind.Log(errMsg)
+					return fmt.Errorf(errMsg)
+				}
 			} else {
-				gofind.Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else {
-			return fmt.Errorf("Invalid option: %s", k)
+			errMsg := fmt.Sprintf("Invalid option: %v", k)
+			return fmt.Errorf(errMsg)
 		}
 	}
 	return nil
+}
+
+func (so *SearchOptions) SettingsFromFile(filePath string, settings *SearchSettings) error {
+	expandedPath := gofind.ExpandPath(filePath)
+	if data, err := os.ReadFile(expandedPath); err != nil {
+		if strings.HasSuffix(err.Error(), "no such file or directory") {
+			errMsg := fmt.Sprintf("Settings file not found: %v", filePath)
+			return fmt.Errorf(errMsg)
+		}
+		return err
+	} else {
+		if err := so.SettingsFromJson(data, settings); err != nil {
+			if err.Error() == "Unable to parse JSON" {
+				errMsg := fmt.Sprintf("Invalid settings file (must be JSON): %v", filePath)
+				return fmt.Errorf(errMsg)
+			}
+			return err
+		}
+		return nil
+	}
 }
 
 func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings, error) {
@@ -122,19 +177,9 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 	intActionMap := so.getIntActionMap()
 	longActionMap := so.getLongActionMap()
 
-	if false {
-		gofind.Log(fmt.Sprintf("boolActionMap: %v", boolActionMap))
-		gofind.Log(fmt.Sprintf("stringActionMap: %v", stringActionMap))
-		gofind.Log(fmt.Sprintf("intActionMap: %v", intActionMap))
-		gofind.Log(fmt.Sprintf("longActionMap: %v", longActionMap))
-	}
-
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
 			k := strings.TrimLeft(args[i], "-")
-			if false {
-				gofind.Log(fmt.Sprintf("k: %s\n", k))
-			}
 			if bf, isBool := boolActionMap[k]; isBool {
 				bf(true, settings)
 			} else {
@@ -158,6 +203,11 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 						return nil, fmt.Errorf("Invalid value for option %s", k)
 					}
 					lff(longVal, settings)
+				} else if k == "settings-file" {
+					err := so.SettingsFromFile(val, settings)
+					if err != nil {
+						return nil, err
+					}
 				} else {
 					return nil, fmt.Errorf("Invalid option: %s", k)
 				}
@@ -419,12 +469,6 @@ func (so *SearchOptions) getStringActionMap() map[string]stringAction {
 		},
 		"searchpattern": func(s string, settings *SearchSettings) {
 			settings.AddSearchPattern(s)
-		},
-		"settings-file": func(s string, settings *SearchSettings) {
-			err := so.SettingsFromFile(s, settings)
-			if err != nil {
-				return
-			}
 		},
 		"sort-by": func(s string, settings *SearchSettings) {
 			settings.SetSortByFromString(s)
