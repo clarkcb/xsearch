@@ -55,6 +55,7 @@ module RbSearch
     def to_s
       'SearchSettings(' +
         "archives_only: #{@archives_only}" +
+        ", colorize: #{@colorize}" +
         ", debug: #{@debug}" +
         ", first_match: #{@first_match}" +
         ", follow_symlinks: #{@follow_symlinks}" +
