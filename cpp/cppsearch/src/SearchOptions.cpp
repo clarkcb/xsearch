@@ -211,9 +211,78 @@ namespace cppsearch {
         return settings;
     }
 
+    void SearchOptions::settings_from_document(rapidjson::Document& document, SearchSettings& settings) {
+        assert(document.IsObject());
+
+        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
+            std::string name = it->name.GetString();
+            if (!m_arg_name_map.contains(name)) {
+                const std::string msg = "Invalid option: " + name;
+                throw SearchException(msg);
+            }
+
+            if (m_bool_arg_map.contains(name)) {
+                if (it->value.IsBool()) {
+                    const bool b = it->value.GetBool();
+                    m_bool_arg_map[name](b, settings);
+                } else {
+                    const std::string msg = "Invalid value for option: " + name;
+                    throw SearchException(msg);
+                }
+            } else if (m_str_arg_map.contains(name)) {
+                if (it->value.IsString()) {
+                    auto s = std::string(it->value.GetString());
+                    m_str_arg_map[name](s, settings);
+                } else if (it->value.IsArray()) {
+                    const auto& arr = it->value.GetArray();
+                    for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
+                        if (arr[i].IsString()) {
+                            auto s = std::string(arr[i].GetString());
+                            m_str_arg_map[name](s, settings);
+                        } else {
+                            const std::string msg = "Invalid value for option: " + name;
+                            throw SearchException(msg);
+                        }
+                    }
+                } else {
+                    const std::string msg = "Invalid value for option: " + name;
+                    throw SearchException(msg);
+                }
+            } else if (m_int_arg_map.contains(name) || m_long_arg_map.contains(name)) {
+                if (it->value.IsNumber()) {
+                    if (m_int_arg_map.contains(name)) {
+                        m_int_arg_map[name](it->value.GetInt(), settings);
+                    } else if (m_long_arg_map.contains(name)) {
+                        m_long_arg_map[name](it->value.GetUint64(), settings);
+                    }
+                } else {
+                    const std::string msg = "Invalid value for option: " + name;
+                    throw SearchException(msg);
+                }
+            } else {
+                // should never reach here
+                const std::string msg = "Invalid option: " + name;
+                throw SearchException(msg);
+            }
+        }
+    }
+
+    void SearchOptions::settings_from_json(const std::string_view json_str, SearchSettings& settings) {
+        rapidjson::Document document;
+        document.Parse(std::string{json_str}.c_str());
+        settings_from_document(document, settings);
+    }
+
     void SearchOptions::settings_from_file(const std::filesystem::path& file_path, SearchSettings& settings) {
-        if (!std::filesystem::exists(file_path)) {
+        if (const auto expanded_path = cppfind::FileUtil::expand_path(file_path);
+            !std::filesystem::exists(expanded_path)) {
             std::string msg{"Settings file not found: "};
+            msg.append(file_path);
+            throw SearchException(msg);
+        }
+
+        if (file_path.extension() != ".json") {
+            std::string msg{"Invalid settings file (must be JSON): "};
             msg.append(file_path);
             throw SearchException(msg);
         }
@@ -232,61 +301,6 @@ namespace cppsearch {
         fclose(fp);
 
         settings_from_document(document, settings);
-    }
-
-    void SearchOptions::settings_from_json(const std::string_view json_str, SearchSettings& settings) {
-        rapidjson::Document document;
-        document.Parse(std::string{json_str}.c_str());
-        settings_from_document(document, settings);
-    }
-
-    void SearchOptions::settings_from_document(rapidjson::Document& document, SearchSettings& settings) {
-        assert(document.IsObject());
-
-        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
-            std::string name = it->name.GetString();
-
-            // TODO: we need to handle numeric types also
-            if (it->value.IsArray()) {
-                assert(m_str_arg_map.contains(name));
-                const auto& arr = it->value.GetArray();
-                for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-                    assert(arr[i].IsString());
-                    auto s = std::string(arr[i].GetString());
-                    m_str_arg_map[name](s, settings);
-                }
-
-            } else if (it->value.IsBool()) {
-                assert(m_bool_arg_map.contains(name));
-                const bool b = it->value.GetBool();
-                m_bool_arg_map[name](b, settings);
-
-            } else if (it->value.IsString()) {
-                auto s = std::string(it->value.GetString());
-                if (m_str_arg_map.contains(name)) {
-                    m_str_arg_map[name](s, settings);
-                } else {
-                    const std::string msg = "Invalid option: " + name;
-                    throw SearchException(msg);
-                }
-
-            } else if (it->value.IsNumber()) {
-                if (m_int_arg_map.contains(name)) {
-                    m_int_arg_map[name](it->value.GetInt(), settings);
-                } else if (m_long_arg_map.contains(name)) {
-                    m_long_arg_map[name](it->value.GetUint64(), settings);
-                } else {
-                    const std::string msg = "Invalid option: " + name;
-                    throw SearchException(msg);
-                }
-            }
-        }
-    }
-
-    void SearchOptions::usage() {
-        const std::string usage_string{get_usage_string()};
-        std::cout << usage_string << std::endl;
-        exit(1);
     }
 
     std::string SearchOptions::get_usage_string() {
@@ -321,5 +335,11 @@ namespace cppsearch {
             usage_string.append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
         }
         return usage_string;
+    }
+
+    void SearchOptions::usage() {
+        const std::string usage_string{get_usage_string()};
+        std::cout << usage_string << std::endl;
+        exit(1);
     }
 }
