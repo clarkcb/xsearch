@@ -452,6 +452,8 @@ class SearchOptions {
 
     SearchOptions() {
         $this.Options = $this.LoadOptionsFromJson()
+        $this.LongArgMap["path"] = "path"
+
     }
     
     [SearchOption[]]LoadOptionsFromJson() {
@@ -473,38 +475,69 @@ class SearchOptions {
         return $opts | Sort-Object -Property SortArg
     }
 
-    [SearchSettings]UpdateSettingsFromHash([SearchSettings]$settings, $settingsHash) {
-        foreach ($key in $settingsHash.Keys) {
-            $val = $settingsHash[$key]
+    [void]UpdateSettingsFromJson([SearchSettings]$settings, [string]$json) {
+        $settingsHash = @{}
+        try {
+            $settingsHash = $json | ConvertFrom-Json -AsHashtable
+        } catch {
+            throw "Unable to parse JSON"
+        }
+        # keys are sorted so that output is consistent across all versions
+        $keys = $settingsHash.Keys | Sort-Object
+        $invalidKeys = @($keys | Where-Object { -not $this.LongArgMap.ContainsKey($_) })
+        if ($invalidKeys.Count -gt 0) {
+            throw "Invalid option: " + $invalidKeys[0]
+        }
+        foreach ($key in $keys) {
+            $value = $settingsHash[$key]
             if ($this.BoolActionMap.ContainsKey($key)) {
-                $this.BoolActionMap[$key].Invoke($val, $settings)
+                if ($value -is [bool]) {
+                    $this.BoolActionMap[$key].Invoke($value, $settings)
+                } else {
+                    throw "Invalid value for option: " + $key
+                }
             } elseif ($this.StringActionMap.ContainsKey($key)) {
-                if ($val -is [string]) {
-                    $this.StringActionMap[$key].Invoke($val, $settings)
-                } elseif ($val -is [object[]]) {
-                    foreach ($v in $val) {
+                if ($value -is [string]) {
+                    $this.StringActionMap[$key].Invoke($value, $settings)
+                } elseif ($value -is [object[]]) {
+                    foreach ($v in $value) {
                         $this.StringActionMap[$key].Invoke($v, $settings)
                     }
                 } else {
-                    throw "Invalid value for $key"
+                    throw "Invalid value for option: $key"
                 }
             } elseif ($this.IntActionMap.ContainsKey($key)) {
-                $this.IntActionMap[$key].Invoke($val, $settings)
+                if ($value -is [int] -or $value -is [int64]) {
+                    $this.IntActionMap[$key].Invoke($value, $settings)
+                } else {
+                    throw "Invalid value for option: " + $key
+                }
             } else {
+                # should never reach here
                 throw "Invalid option: $key"
             }
         }
-        return $settings
     }
 
-    [SearchSettings]UpdateSettingsFromFilePath([SearchSettings]$settings, [string]$filePath) {
-        $settingsHash = Get-Content $filePath | ConvertFrom-Json -AsHashtable
-        return $this.UpdateSettingsFromHash($settings, $settingsHash)
-    }
+    [void]UpdateSettingsFromFilePath([SearchSettings]$settings, [string]$filePath) {
+        $expandedPath = ExpandPath($filePath)
+        if (-not (Test-Path -Path $expandedPath)) {
+            throw "Settings file not found: $filePath"
+        }
+        if (-not $filePath.EndsWith(".json")) {
+            throw "Invalid settings file (must be JSON): $filePath"
+        }
 
-    [SearchSettings]SettingsFromFilePath([string]$filePath) {
-        $settings = [SearchSettings]::new()
-        return $this.UpdateSettingsFromFilePath($settings, $filePath)
+        $json = Get-Content -Path $expandedPath -Raw
+        try {
+            $this.UpdateSettingsFromJson($settings, $json)
+        }
+        catch {
+            if ($_.Exception.Message -eq 'Unable to parse JSON') {
+                throw "Unable to parse JSON in settings file: $filePath"
+            }
+            throw $_
+        }
     }
 
     [SearchSettings]SettingsFromArgs([string[]]$argList) {
@@ -537,7 +570,7 @@ class SearchOptions {
                     } elseif ($this.IntActionMap.ContainsKey($longArg)) {
                         $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
                     } elseif ($longArg -eq 'settings-file') {
-                        $settings = $this.UpdateSettingsFromFilePath($settings, $argList[$idx])
+                        $this.UpdateSettingsFromFilePath($settings, $argList[$idx])
                     } else {
                         throw "Invalid option: $arg"
                     }
@@ -698,7 +731,7 @@ class SearchResultFormatter {
         $linesBefore += "$($result.File.File.ToString()): $($result.LineNum): [$($result.MatchStartIndex):$($result.MatchEndIndex)]"
         $linesBefore += "-" * 80
         $lineNumPadding = $this.LineNumPadding($result)
-        $formatStr = " {0,-$lineNumPadding} | {1}"
+        $formatStr = " {0,$lineNumPadding} | {1}"
         $currentLineNum = $result.LineNum
         if ($result.LinesBefore.Count -gt 0) {
             $currentLineNum -= $result.LinesBefore.Count
@@ -708,7 +741,7 @@ class SearchResultFormatter {
                 $currentLineNum++;
             }
         }
-        $matchingLine += "> {0,-$lineNumPadding} | " -f $currentLineNum
+        $matchingLine += "> {0,$lineNumPadding} | " -f $currentLineNum
         if ($this.Settings.Colorize) {
             $lineElems = $this.Colorize($result.Line, $result.MatchStartIndex - 1, $result.MatchEndIndex - 1)
             $matchingLine += $lineElems
@@ -817,17 +850,17 @@ class Searcher {
     [SearchResult[]]SearchLines([string[]]$lines) {
         $patternMatches = @{}
         [SearchResult[]]$searchResults = @()
-        [int]$lineNum = 0
+        [int]$lineIdx = 0
         $linesBefore = New-Object System.Collections.Generic.Queue[string]
         $linesAfter = New-Object System.Collections.Generic.Queue[string]
         
-        while ($lineNum -lt $lines.Count -or $linesAfter.Count -gt 0) {
-            $line = $linesAfter.Count -gt 0 ? $linesAfter.Dequeue() : $lines[$lineNum]
+        while ($lineIdx -lt $lines.Count -or $linesAfter.Count -gt 0) {
+            $line = $linesAfter.Count -gt 0 ? $linesAfter.Dequeue() : $lines[$lineIdx]
             if ($this.Settings.LinesAfter -gt 0) {
-                $nextLineNum = $lineNum + 1
-                while ($linesAfter.Count -lt $this.Settings.LinesAfter -and $nextLineNum -lt $lines.Count) {
-                    $linesAfter.Enqueue($lines[$nextLineNum])
-                    $nextLineNum++
+                $nextLineIdx = $lineIdx + $linesAfter.Count + 1
+                while ($linesAfter.Count -lt $this.Settings.LinesAfter -and $nextLineIdx -lt $lines.Count) {
+                    $linesAfter.Enqueue($lines[$nextLineIdx])
+                    $nextLineIdx++
                 }
             }
 
@@ -835,29 +868,27 @@ class Searcher {
                 ($this.Settings.LinesAfter -eq 0 -or $linesAfter.Count -eq 0 -or $this.LinesAfterMatch($linesAfter))) {
 
                 foreach ($p in $this.Settings.SearchPatterns) {
+                    $_matches = @()
                     if ($this.Settings.FirstMatch) {
                         $m = $p.Match($line)
                         if ($m.Success) {
-                            [SearchResult]$searchResult = [SearchResult]::new($p, $null, $lineNum + 1,
-                                    $m.Index + 1, $m.Index + $m.Length + 1, $line, $linesBefore.ToArray(),
-                                    $linesAfter.ToArray())
-                            $searchResults += $searchResult
+                            $_matches += $m
                             $patternMatches[$p] = 1
                         }
                     } else {
                         $_matches = $p.Matches($line)
-                        foreach ($m in $_matches) {
-                            [SearchResult]$searchResult = [SearchResult]::new($p, $null, $lineNum + 1,
-                                    $m.Index + 1, $m.Index + $m.Length + 1, $line, $linesBefore.ToArray(),
-                                    $linesAfter.ToArray())
-                            $searchResults += $searchResult
-                        }
+                    }
+                    foreach ($m in $_matches) {
+                        [SearchResult]$searchResult = [SearchResult]::new($p, $null, $lineIdx + 1,
+                                $m.Index + 1, $m.Index + $m.Length + 1, $line, $linesBefore.ToArray(),
+                                $linesAfter.ToArray())
+                        $searchResults += $searchResult
                     }
                 }
             }
             
             # If all patterns are in $patternMatches, FirstMatch complete, return $searchResults
-            if ($patternMatches.Count -eq $this.Settings.SearchPatterns.Count) {
+            if ($this.Settings.FirstMatch -and $patternMatches.Count -eq $this.Settings.SearchPatterns.Count) {
                 return $searchResults
             }
 
@@ -870,7 +901,7 @@ class Searcher {
                 }
             }
 
-            $lineNum++
+            $lineIdx++
         }
 
         return $searchResults
@@ -1136,14 +1167,14 @@ class Searcher {
         [string[]]$dirs = $this.GetMatchingDirs($searchResults)
         if ($dirs.Count -gt 0) {
 #            LogMsg("`nDirectories with matches ($($dirs.Count)):")
-            Write-Host "`nDirectories with matches ($($dirs.Count)):"
+            Write-Host "`nMatching directories ($($dirs.Count)):"
             foreach ($dir in $dirs) {
 #                LogMsg($dir)
                 Write-Host $dir
             }
         } else {
 #            LogMsg("`nDirectories with matches: 0")
-            Write-Host "`nDirectories with matches: 0"
+            Write-Host "`nMatching directories: 0"
         }
     }
 
@@ -1162,14 +1193,14 @@ class Searcher {
         [string[]]$files = $this.GetMatchingFiles($searchResults)
         if ($files.Count -gt 0) {
 #            LogMsg("`nFiles with matches ($($files.Count)):")
-            Write-Host "`nFiles with matches ($($files.Count)):"
+            Write-Host "`nMatching files ($($files.Count)):"
             foreach ($file in $files) {
 #                LogMsg($file)
                 Write-Host $file
             }
         } else {
 #            LogMsg("`nFiles with matches: 0")
-             Write-Host "`nFiles with matches: 0"
+             Write-Host "`nMatching files: 0"
         }
     }
 
@@ -1186,7 +1217,7 @@ class Searcher {
 
     [void]PrintMatchingLines([SearchResult[]]$searchResults, [SearchSettings]$settings) {
         [string[]]$lines = $this.GetMatchingLines($searchResults, $settings)
-        $hdr = $settings.UniqueLines ? "Unique lines with matches" : "Lines with matches"
+        $hdr = $settings.UniqueLines ? "Unique matching lines" : "Matching lines"
         if ($lines.Count -gt 0) {
             Write-Host "`n$hdr ($($lines.Count)):"
             foreach ($line in $lines) {
