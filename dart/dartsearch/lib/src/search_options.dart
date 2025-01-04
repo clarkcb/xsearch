@@ -1,5 +1,5 @@
 import 'dart:convert' show json;
-import 'dart:io' show File;
+import 'dart:io';
 
 import 'package:dartfind/dartfind.dart';
 import 'package:dartsearch/src/config.dart' show searchOptionsPath;
@@ -35,7 +35,7 @@ class SearchOptions {
   var boolActionMap = {};
   var stringActionMap = {};
   var intActionMap = {};
-  var longArgMap = {};
+  var longArgMap = {'path': 'path'};
   late Future ready;
 
   SearchOptions() {
@@ -54,7 +54,7 @@ class SearchOptions {
         String? shortArg;
         if ((so).containsKey('short')) {
           shortArg = (so)['short'];
-          longArgMap[shortArg] = longArg;
+          longArgMap[shortArg!] = longArg;
         }
         searchOptions.add(SearchOption(shortArg, longArg, desc));
       }
@@ -160,7 +160,17 @@ class SearchOptions {
       String jsonString, SearchSettings settings) async {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
-      jsonMap.forEach((key, value) {
+      var keys = jsonMap.keys.toList();
+      // keys are sorted so that output is consistent across all versions
+      keys.sort();
+      // first check for invalid options
+      for (var key in keys) {
+        if (!longArgMap.containsKey(key)) {
+          throw SearchException('Invalid option: $key');
+        }
+      }
+      for (var key in keys) {
+        var value = jsonMap[key];
         if (boolActionMap.containsKey(key)) {
           if (value is bool) {
             boolActionMap[key](value, settings);
@@ -170,30 +180,43 @@ class SearchOptions {
         } else if (stringActionMap.containsKey(key)) {
           if (value is String) {
             stringActionMap[key](value, settings);
-          } else if (value is num) {
-            stringActionMap[key]('$value', settings);
+          } else if (value is List) {
+            for (var item in value) {
+              if (item is String) {
+                stringActionMap[key](item, settings);
+              } else {
+                throw SearchException('Invalid value for option: $key');
+              }
+            }
           } else {
-            value.forEach((elem) {
-              stringActionMap[key](elem, settings);
-            });
+            throw SearchException('Invalid value for option: $key');
           }
         } else if (intActionMap.containsKey(key)) {
           if (value is int) {
             intActionMap[key](value, settings);
           } else {
-            logError('Invalid value for option $key');
+            throw SearchException('Invalid value for option: $key');
           }
         } else {
-          logError('Invalid option: $key');
+          throw SearchException('Invalid option: $key');
         }
-      });
+      }
     });
   }
 
   Future<void> settingsFromFile(
       String filePath, SearchSettings settings) async {
-    var contents = await File(filePath).readAsString();
-    await settingsFromJson(contents, settings);
+    var expandedPath = FileUtil.expandPath(filePath);
+    if (FileSystemEntity.typeSync(expandedPath) ==
+        FileSystemEntityType.notFound) {
+      throw SearchException('Settings file not found: $filePath');
+    }
+    if (expandedPath.endsWith('.json')) {
+      var contents = await File(expandedPath).readAsString();
+      await settingsFromJson(contents, settings);
+    } else {
+      throw FindException('Invalid settings file (must be JSON): $filePath');
+    }
   }
 
   Future<SearchSettings> settingsFromArgs(List<String> args) async {
@@ -209,7 +232,7 @@ class SearchOptions {
             arg = arg.substring(1);
           }
           if (longArgMap.containsKey(arg)) {
-            String longArg = longArgMap[arg];
+            String longArg = longArgMap[arg]!;
             if (boolActionMap.containsKey(longArg)) {
               boolActionMap[longArg](true, settings);
             } else if (stringActionMap.containsKey(longArg) ||

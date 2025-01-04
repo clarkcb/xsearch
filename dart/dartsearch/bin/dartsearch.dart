@@ -27,12 +27,16 @@ int sortResults(SearchResult r1, SearchResult r2) {
 }
 
 void printResults(List<SearchResult> results, SearchSettings settings) {
-  logMsg('\nSearch results (${results.length}):');
-  var formatter = SearchResultFormatter(settings);
-  // The results are in file_results order, which is good enough for now
-  // results.sort(sortResults);
-  for (var r in results) {
-    logMsg(formatter.format(r));
+  if (results.isNotEmpty) {
+    logMsg('\nSearch results (${results.length}):');
+    var formatter = SearchResultFormatter(settings);
+    // The results are in file_results order, which is good enough for now
+    // results.sort(sortResults);
+    for (var r in results) {
+      logMsg(formatter.format(r));
+    }
+  } else {
+    logMsg('\nSearch results: 0');
   }
 }
 
@@ -45,8 +49,10 @@ List<String> getMatchingDirs(List<SearchResult> results) {
 void printMatchingDirs(List<SearchResult> results, SearchSettings settings) {
   var dirs = getMatchingDirs(results);
   if (dirs.isNotEmpty) {
-    logMsg('\nDirectories with matches (${dirs.length}):');
+    logMsg('\nMatching directories (${dirs.length}):');
     dirs.forEach(logMsg);
+  } else {
+    logMsg('\nMatching directories: 0');
   }
 }
 
@@ -62,14 +68,17 @@ List<String> getMatchingFiles(
     List<SearchResult> results, SearchSettings settings) {
   var files = results.map((r) => r.file!.file).toSet().toList();
   files.sort(sortFiles);
-  return files.map((f) => FileUtil.contractPath(f.path)).toList();
+  // return files.map((f) => FileUtil.contractPath(f.path)).toList();
+  return files.map((f) => f.path).toList();
 }
 
 void printMatchingFiles(List<SearchResult> results, SearchSettings settings) {
   var files = getMatchingFiles(results, settings);
   if (files.isNotEmpty) {
-    logMsg('\nFiles with matches (${files.length}):');
+    logMsg('\nMatching files (${files.length}):');
     files.forEach(logMsg);
+  } else {
+    logMsg('\nMatching files: 0');
   }
 }
 
@@ -86,15 +95,17 @@ List<String> getMatchingLines(
 
 void printMatchingLines(List<SearchResult> results, SearchSettings settings) {
   var lines = getMatchingLines(results, settings);
+  String msg;
+  if (settings.uniqueLines) {
+    msg = '\nUnique matching lines';
+  } else {
+    msg = '\nMatching lines';
+  }
   if (lines.isNotEmpty) {
-    String msg;
-    if (settings.uniqueLines) {
-      msg = '\nUnique lines with matches (${lines.length}):';
-    } else {
-      msg = '\nLines with matches (${lines.length}):';
-    }
-    logMsg(msg);
+    logMsg('$msg (${lines.length}):');
     lines.forEach(logMsg);
+  } else {
+    logMsg('$msg: 0');
   }
 }
 
