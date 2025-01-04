@@ -11,7 +11,9 @@
     if (self) {
         self.finder = [[Finder alloc] initWithSettings:settings error:error];
         self.settings = settings;
-        [self validateSettings:settings error:error];
+        if (![self validateSettings:settings error:error]) {
+            return self;
+        }
     }
     return self;
 }
@@ -22,31 +24,32 @@
     return encoding;
 }
 
-- (void) validateSettings:(SearchSettings*)settings error:(NSError**)error {
+- (BOOL) validateSettings:(SearchSettings*)settings error:(NSError**)error {
     if (settings == nil) {
         setError(error, @"Settings not defined");
-    } else if ([settings.paths count] == 0) {
-        setError(error, @"Startpath not defined");
-    } else if (![FileUtil allExist:settings.paths]) {
-        setError(error, @"Startpath not found");
-    } else if (![FileUtil allReadable:settings.paths]) {
-        setError(error, @"Startpath not readable");
+        return false;
     } else if ([settings.searchPatterns count] == 0) {
         setError(error, @"No search patterns defined");
+        return false;
     } else if (settings.linesAfter < 0) {
         setError(error, @"Invalid linesafter");
+        return false;
     } else if (settings.linesBefore < 0) {
         setError(error, @"Invalid linesbefore");
+        return false;
     } else if (settings.maxLineLength < 0) {
         setError(error, @"Invalid maxlinelength");
+        return false;
     } else {
         NSStringEncoding encoding = [self strToEncoding:settings.textFileEncoding];
         if (encoding == 0xFFFFFFFF) {
             setError(error, @"Invalid textfileencoding");
+            return false;
         } else {
             self.textFileEncoding = encoding;
         }
     }
+    return true;
 }
 
 - (BOOL) matchesAnyPattern:(NSString*)s patterns:(NSArray<Regex*>*)patterns {

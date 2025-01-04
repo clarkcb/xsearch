@@ -70,8 +70,6 @@
 }
 
 - (void)testSettingsFromJson {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-
     NSString *startPath = @"~/src/xsearch";
     NSString *json = [NSString stringWithFormat:@"{\n"
                       "\"path\": \"%@\",\n"
@@ -90,7 +88,8 @@
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
 
     SearchOptions *options = [[SearchOptions alloc] init];
-    [options settingsFromData:data settings:settings];
+    NSError *error = nil;
+    SearchSettings *settings = [options settingsFromData:data error:&error];
 
     XCTAssert([[settings paths] count] == 1);
     XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"~/src/xsearch"]);

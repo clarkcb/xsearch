@@ -9,7 +9,8 @@
 
 - (NSArray<SearchOption*>*) searchOptionsFromJson;
 - (SearchSettings*) settingsFromArgs:(NSArray*)args error:(NSError**)error;
-- (void) settingsFromData:(NSData *)data settings:(SearchSettings *)settings;
+- (void) updateSettingsFromData:(NSData *)data settings:(SearchSettings *)settings error:(NSError**)error;;
+- (SearchSettings*) settingsFromData:(NSData *)data error:(NSError **)error;
 - (NSString*) getUsageString;
 - (void) usage:(int)code;
 

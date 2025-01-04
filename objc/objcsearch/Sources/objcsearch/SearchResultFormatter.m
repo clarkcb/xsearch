@@ -142,7 +142,11 @@
     char cNumString[10];
     sprintf(cNumString, [numberFormat UTF8String], lineNum);
     NSString *numberString = [NSString stringWithUTF8String:cNumString];
-    [s appendFormat:@"%@ | %@", numberString, line];
+    if ([line hasSuffix:@"\n"]) {
+        [s appendFormat:@"%@ | %@", numberString, line];
+    } else {
+        [s appendFormat:@"%@ | %@\n", numberString, line];
+    }
     return [NSString stringWithString:s];
 }
 

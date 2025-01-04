@@ -95,26 +95,38 @@ int main(int argc, const char * argv[]) {
         }
 
         if (settings.printResults) {
-            SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
-            logMsg([NSString stringWithFormat:@"\nSearch results (%lu):", [results count]]);
-            for (SearchResult *r in results) {
-                logMsg([formatter format:r]);
+            if ([results count] > 0) {
+                SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
+                logMsg([NSString stringWithFormat:@"\nSearch results (%lu):", [results count]]);
+                for (SearchResult *r in results) {
+                    logMsg([formatter format:r]);
+                }
+            } else {
+                logMsg(@"\nSearch results: 0");
             }
         }
 
         if (settings.printDirs) {
             NSArray<NSString*> *dirPaths = getMatchingDirs(results);
-            logMsg([NSString stringWithFormat:@"\nDirectories with matches (%lu):", [dirPaths count]]);
-            for (NSString *d in dirPaths) {
-                logMsg(d);
+            if ([dirPaths count] > 0) {
+                logMsg([NSString stringWithFormat:@"\nMatching directories (%lu):", [dirPaths count]]);
+                for (NSString *d in dirPaths) {
+                    logMsg(d);
+                }
+            } else {
+                logMsg(@"\nMatching directories: 0");
             }
         }
 
         if (settings.printFiles) {
             NSArray<NSString*> *filePaths = getMatchingFiles(results);
-            logMsg([NSString stringWithFormat:@"\nFiles with matches (%lu):", [filePaths count]]);
-            for (NSString *f in filePaths) {
-                logMsg(f);
+            if ([filePaths count] > 0) {
+                logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [filePaths count]]);
+                for (NSString *f in filePaths) {
+                    logMsg(f);
+                }
+            } else {
+                logMsg(@"\nMatching files: 0");
             }
         }
 
@@ -122,13 +134,17 @@ int main(int argc, const char * argv[]) {
             NSArray<NSString*> *lines = getMatchingLines(results, settings);
             NSString *linesHdr;
             if (settings.uniqueLines) {
-                linesHdr = @"Unique lines with matches";
+                linesHdr = @"Unique matching lines";
             } else {
-                linesHdr = @"Lines with matches";
+                linesHdr = @"Matching lines";
             }
-            logMsg([NSString stringWithFormat:@"\n%@ (%lu):", linesHdr, [lines count]]);
-            for (NSString *l in lines) {
-                logMsg(l);
+            if ([lines count] > 0) {
+                logMsg([NSString stringWithFormat:@"\n%@ (%lu):", linesHdr, [lines count]]);
+                for (NSString *l in lines) {
+                    logMsg(l);
+                }
+            } else {
+                logMsg([NSString stringWithFormat:@"\n%@: 0", linesHdr]);
             }
         }
     }

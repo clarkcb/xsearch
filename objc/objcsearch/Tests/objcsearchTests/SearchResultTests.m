@@ -33,14 +33,14 @@
     settings.colorize = false;
     SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
     Regex *regex = [[Regex alloc] initWithPattern:@"Search"];
-    FileResult *sf = [[FileResult alloc] initWithFilePath:@"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs" fileType:FileTypeCode fileSize:0 lastMod:nil];
+    FileResult *fr = [[FileResult alloc] initWithFilePath:@"~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs" fileType:FileTypeCode fileSize:0 lastMod:nil];
     long lineNum = 10;
     long matchStartIndex = 15;
     long matchEndIndex = 23;
     NSString *line = @"\tpublic class Searcher\n";
 
     SearchResult *result = [[SearchResult alloc] initWithPattern:[regex pattern]
-                                                            file:sf
+                                                            file:fr
                                                          lineNum:lineNum
                                                  matchStartIndex:matchStartIndex
                                                    matchEndIndex:matchEndIndex
@@ -49,7 +49,7 @@
                                                       linesAfter:[[NSArray alloc] init]];
 
     NSString *trimmedLine = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSString *expectedOutput = [NSString stringWithFormat:@"%@: %lu: [%lu:%lu]: %@", [sf description], lineNum,
+    NSString *expectedOutput = [NSString stringWithFormat:@"%@: %lu: [%lu:%lu]: %@", [fr description], lineNum,
                                 matchStartIndex, matchEndIndex, trimmedLine];
     NSString *output = [formatter format:result];
     XCTAssert([output isEqualToString:expectedOutput]);
@@ -59,13 +59,13 @@
     SearchSettings *settings = [[SearchSettings alloc] init];
     SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
     Regex *regex = [[Regex alloc] initWithPattern:@"Search"];
-    FileResult *sf = [[FileResult alloc] initWithFilePath:@"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe" fileType:FileTypeBinary fileSize:0 lastMod:nil];
+    FileResult *fr = [[FileResult alloc] initWithFilePath:@"~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe" fileType:FileTypeBinary fileSize:0 lastMod:nil];
     long lineNum = 0;
     long matchStartIndex = 0;
     long matchEndIndex = 0;
     
     SearchResult *result = [[SearchResult alloc] initWithPattern:[regex pattern]
-                                                            file:sf
+                                                            file:fr
                                                          lineNum:lineNum
                                                  matchStartIndex:matchStartIndex
                                                    matchEndIndex:matchEndIndex
@@ -73,7 +73,7 @@
                                                      linesBefore:[[NSArray alloc] init]
                                                       linesAfter:[[NSArray alloc] init]];
 
-    NSString *expectedOutput = [NSString stringWithFormat:@"%@ matches at [%lu:%lu]", [sf description],
+    NSString *expectedOutput = [NSString stringWithFormat:@"%@ matches at [%lu:%lu]", [fr description],
                                 matchStartIndex, matchEndIndex];
     NSString *output = [formatter format:result];
     XCTAssert([output isEqualToString:expectedOutput]);
@@ -83,8 +83,8 @@
     SearchSettings *settings = [[SearchSettings alloc] init];
     SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
     Regex *regex = [[Regex alloc] initWithPattern:@"Search"];
-    NSString *filePath = @"~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
-    FileResult *sf = [[FileResult alloc] initWithFilePath:filePath fileType:FileTypeText fileSize:0 lastMod:nil];
+    NSString *filePath = @"~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs";
+    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:FileTypeText fileSize:0 lastMod:nil];
     long lineNum = 10;
     long matchStartIndex = 15;
     long matchEndIndex = 23;
@@ -93,7 +93,7 @@
     NSArray<NSString*> *linesAfter = @[@"\t{\n", @"\t\tprivate readonly FileTypes _fileTypes;\n"];
 
     SearchResult *result = [[SearchResult alloc] initWithPattern:[regex pattern]
-                                                            file:sf
+                                                            file:fr
                                                          lineNum:lineNum
                                                  matchStartIndex:matchStartIndex
                                                    matchEndIndex:matchEndIndex
@@ -111,6 +111,10 @@
     "  12 | \t\tprivate readonly FileTypes _fileTypes;\n", filePath, lineNum, matchStartIndex, matchEndIndex];
 
     NSString *output = [formatter format:result];
+    logMsg(@"\noutput:");
+    logMsg(output);
+    logMsg(@"\nexpectedOutput:");
+    logMsg(expectedOutput);
     XCTAssert([output isEqualToString:expectedOutput]);
 }
 
