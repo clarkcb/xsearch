@@ -51,6 +51,8 @@ library
     , text
     , time
     , timeit >=2.0
+    , unordered-containers
+    , vector
   default-language: Haskell2010
 
 executable hssearch
@@ -73,6 +75,8 @@ executable hssearch
     , text
     , time
     , timeit >=2.0
+    , unordered-containers
+    , vector
   default-language: Haskell2010
 
 test-suite hssearch-test
@@ -103,4 +107,6 @@ test-suite hssearch-test
     , text
     , time
     , timeit >=2.0
+    , unordered-containers
+    , vector
   default-language: Haskell2010

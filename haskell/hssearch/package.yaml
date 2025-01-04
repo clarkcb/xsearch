@@ -30,6 +30,8 @@ dependencies:
 - text
 - time
 - timeit >=2.0
+- unordered-containers
+- vector
 - hsfind
 
 data-files:

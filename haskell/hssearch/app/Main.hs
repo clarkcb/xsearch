@@ -16,10 +16,10 @@ import HsSearch.SearchSettings
 
 formatResults :: SearchSettings -> [SearchResult] -> String
 formatResults settings results =
-  "\nSearch results (" ++ show (length results) ++ "):\n" ++
-    (if not (null results)
-       then unlines (map (formatSearchResult settings) results)
-       else "")
+  if not (null results) then
+    "\nSearch results (" ++ show (length results) ++ "):\n" ++
+    unlines (map (formatSearchResult settings) results)
+  else "\nSearch results: 0\n"
 
 getMatchingDirs :: [SearchResult] -> [FilePath]
 getMatchingDirs = sort . nub . map getDirectory
@@ -74,40 +74,46 @@ logErr s = hPutStr stderr $ "ERROR: " ++ s
 main :: IO ()
 main = do
   args <- getArgs
-  searchOptions <- getSearchOptions
-  case settingsFromArgs searchOptions args of
+  searchOptionsEither <- getSearchOptions
+  case searchOptionsEither of
     Left errMsg -> do
       logMsg "\n"
       logErr $ errMsg ++ "\n"
-      logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
-    Right settings -> do
-      logMsg $ if debug settings
-               then searchSettingsToString settings ++ "\n"
-               else ""
-      case validateSearchSettings settings of
-        Just errMsg -> do
+    Right searchOptions -> do
+      settingsFromArgsEither <- ioSettingsFromArgs searchOptions args
+      case settingsFromArgsEither of
+        Left errMsg -> do
           logMsg "\n"
           logErr $ errMsg ++ "\n"
           logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
-        Nothing -> do
-          if printUsage settings
-          then logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
-          else do
-            searchResultsEither <- doSearch settings
-            case searchResultsEither of
-              Left errMsg -> do
-                logMsg "\n"
-                logErr $ errMsg ++ "\n"
-                logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
-              Right searchResults -> do
-                logMsg $ formatResults settings searchResults
-                logMsg $ if printDirs settings
-                         then formatMatchingDirs searchResults
-                         else ""
-                logMsg $ if printFiles settings
-                         then formatMatchingFiles searchResults
-                         else ""
-                logMsg $ if printLines settings
-                         then formatMatchingLines searchResults (uniqueLines settings)
-                         else ""
-                logMsg ""
+        Right settings -> do
+          logMsg $ if debug settings
+                   then searchSettingsToString settings ++ "\n"
+                   else ""
+          case validateSearchSettings settings of
+            Just errMsg -> do
+              logMsg "\n"
+              logErr $ errMsg ++ "\n"
+              logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+            Nothing -> do
+              if printUsage settings
+              then logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+              else do
+                searchResultsEither <- doSearch settings
+                case searchResultsEither of
+                  Left errMsg -> do
+                    logMsg "\n"
+                    logErr $ errMsg ++ "\n"
+                    logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+                  Right searchResults -> do
+                    logMsg $ formatResults settings searchResults
+                    logMsg $ if printDirs settings
+                             then formatMatchingDirs searchResults
+                             else ""
+                    logMsg $ if printFiles settings
+                             then formatMatchingFiles searchResults
+                             else ""
+                    logMsg $ if printLines settings
+                             then formatMatchingLines searchResults (uniqueLines settings)
+                             else ""
+                    logMsg ""
