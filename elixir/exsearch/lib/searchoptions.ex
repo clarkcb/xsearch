@@ -158,7 +158,7 @@ defmodule ExSearch.SearchOptions do
     updated_args_with_paths = updated_args ++ Enum.map(updated_paths, fn p -> {:path, p} end)
     case invalid do
       [{opt, nil} | _rest] -> {:error, "Invalid option: #{opt}"}
-      [] -> {:ok, FindOptions.update_settings_from_args(settings, updated_args_with_paths, arg_action_maps)}
+      [] -> FindOptions.update_settings_from_args(settings, updated_args_with_paths, arg_action_maps)
     end
   end
 
@@ -166,24 +166,6 @@ defmodule ExSearch.SearchOptions do
     case get_settings_from_args(args, options) do
       {:error, message} -> raise SearchError, message: message
       {:ok, settings} -> settings
-    end
-  end
-
-  def get_settings_from_json(json) do
-    FindOptions.update_settings_from_json(SearchSettings.new(), json)
-  end
-
-  def get_settings_from_json!(json) do
-    case get_settings_from_json(json) do
-      {:error, message} -> raise SearchError, message: message
-      {:ok, settings} -> settings
-    end
-  end
-
-  def get_settings_from_file(json_file) do
-    case File.read(json_file) do
-      {:ok, json} -> get_settings_from_json(json)
-      {:error, e} -> {:error, e}
     end
   end
 

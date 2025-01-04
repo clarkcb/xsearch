@@ -1,3 +1,5 @@
+alias ExFind.FindOptions
+
 defmodule ExSearchTest.SearchOptionsTest do
   alias ExSearch.SearchOptions
   use ExUnit.Case
@@ -82,7 +84,7 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    {status, settings} = SearchOptions.get_settings_from_json(json)
+    {status, settings} = FindOptions.get_settings_from_json(json)
     assert status == :ok
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
@@ -103,7 +105,7 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    {status, _value} = SearchOptions.get_settings_from_json(json)
+    {status, _value} = FindOptions.get_settings_from_json(json)
     assert status == :error
   end
 
@@ -118,7 +120,7 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    settings = SearchOptions.get_settings_from_json!(json)
+    settings = FindOptions.get_settings_from_json!(json)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
     assert settings.out_dir_patterns == [~r/dep/]
@@ -138,14 +140,14 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    assert_raise ExSearch.SearchError, fn ->
-      _ = SearchOptions.get_settings_from_json!(json)
+    assert_raise ExFind.FindError, fn ->
+      _ = FindOptions.get_settings_from_json!(json)
     end
   end
 
   test "settings from non-existent file" do
     json_file = "/non/existent/file.json"
-    {status, _value} = SearchOptions.get_settings_from_file(json_file)
+    {status, _value} = FindOptions.get_settings_from_file(json_file)
     assert status == :error
   end
 end
