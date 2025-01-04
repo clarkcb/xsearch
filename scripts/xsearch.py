@@ -13,52 +13,82 @@ import re
 ########################################
 # Configuration
 ########################################
+lang_alias_dict = {
+    'bash': 'bash',
+    'C': 'c',
+    'c': 'c',
+    'clj': 'clojure',
+    'clojure': 'clojure',
+    'C++': 'cpp',
+    'cpp': 'cpp',
+    'C#': 'csharp',
+    'cs': 'csharp',
+    'csharp': 'csharp',
+    'dart': 'dart',
+    'elixir': 'elixir',
+    'ex': 'elixir',
+    'F#': 'fsharp',
+    'fs': 'fsharp',
+    'fsharp': 'fsharp',
+    'go': 'go',
+    'groovy': 'groovy',
+    'haskell': 'haskell',
+    'hs': 'haskell',
+    'java': 'java',
+    'javascript': 'javascript',
+    'js': 'javascript',
+    'kotlin': 'kotlin',
+    'kt': 'kotlin',
+    'objc': 'objc',
+    'ocaml': 'ocaml',
+    'ml': 'ocaml',
+    'perl': 'perl',
+    'pl': 'perl',
+    'php': 'php',
+    'powershell': 'powershell',
+    'ps1': 'powershell',
+    'pwsh': 'powershell',
+    'py': 'python',
+    'python': 'python',
+    'rb': 'ruby',
+    'ruby': 'ruby',
+    'rs': 'rust',
+    'rust': 'rust',
+    'scala': 'scala',
+    'swift': 'swift',
+    'ts': 'typescript',
+    'typescript': 'typescript'
+}
 xsearch_dict = {
+    # 'bash':       'bashsearch',
     # 'c':          'csearch',
-    'clj':        'cljsearch',
     'clojure':    'cljsearch',
     'cpp':        'cppsearch',
-    'cs':         'cssearch',
     'csharp':     'cssearch',
     'dart':       'dartsearch',
     'elixir':     'exsearch',
-    'ex':         'exsearch',
-    'fs':         'fssearch',
     'fsharp':     'fssearch',
     'go':         'gosearch',
     # 'groovy':     'groovysearch',
     'haskell':    'hssearch',
-    'hs':         'hssearch',
     'java':       'javasearch',
     'javascript': 'jssearch',
-    'js':         'jssearch',
     'kotlin':     'ktsearch',
-    'kt':         'ktsearch',
     'objc':       'objcsearch',
     # 'ocaml':      'mlsearch',
-    # 'ml':         'mlsearch',
     'perl':       'plsearch',
-    'pl':         'plsearch',
     'php':        'phpsearch',
     'powershell': 'ps1search',
-    'ps1':        'ps1search',
-    'pwsh':       'ps1search',
     'python':     'pysearch',
-    'py':         'pysearch',
     'ruby':       'rbsearch',
-    'rb':         'rbsearch',
-    'rs':         'rssearch',
     'rust':       'rssearch',
     'scala':      'scalasearch',
     'swift':      'swiftsearch',
-    'ts':         'tssearch',
     'typescript': 'tssearch',
 }
-win_supported = [
-    'cs', 'csharp', 'fs', 'fsharp', 'go', 'haskell', 'javascript', 'js',
-    'perl', 'pl', 'py', 'python', 'rb', 'ruby'
-]
+win_supported = [ 'csharp', 'fsharp', 'go', 'haskell', 'javascript', 'perl', 'python', 'ruby']
 all_xsearch_names = sorted(list(set(xsearch_dict.values())))
+all_langs = sorted(list(set(xsearch_dict.keys())))
 HOME_NAME = 'HOME'
 if platform.system() == 'Windows':
     HOME_NAME = 'USERPROFILE'
@@ -151,7 +181,6 @@ def non_matching_outputs(xsearch_output: dict[str, list[str]],
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))
                 x_and_y = tuple(sorted([x, y]))
-                # x_and_y = (x_and_y[0], x_and_y[1])
                 if x_and_y not in non_matching:
                     non_matching.append(x_and_y)
     return non_matching
