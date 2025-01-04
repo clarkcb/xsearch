@@ -64,36 +64,56 @@ func main() {
         let results = try searcher.search()
 
         if settings.printResults {
-            let formatter = SearchResultFormatter(settings: settings)
-            logMsg("\nSearch results (\(results.count)):")
-            for res in results {
-                logMsg("\(formatter.format(result: res))")
+            if results.count > 0 {
+                let formatter = SearchResultFormatter(settings: settings)
+                logMsg("\nSearch results (\(results.count)):")
+                for res in results {
+                    logMsg("\(formatter.format(result: res))")
+                }
+            } else {
+                logMsg("\nSearch results: 0")
             }
         }
 
         if settings.printDirs {
             let dirs = getMatchingDirs(results)
-            logMsg("\nDirectories with matches (\(dirs.count)):")
-            for dir in dirs {
-                logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+            if dirs.count > 0 {
+                logMsg("\nMatching directories (\(dirs.count)):")
+                for dir in dirs {
+                    // TODO: better way to format paths, probably create a FindPath class for this
+                    // logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+                    logMsg(dir)
+                }
+            } else {
+                logMsg("\nMatching directories: 0")
             }
         }
 
         if settings.printFiles {
             let files = getMatchingFiles(results)
-            logMsg("\nFiles with matches (\(files.count)):")
-            for file in files {
-                logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+            if files.count > 0 {
+                logMsg("\nMatching files (\(files.count)):")
+                for file in files {
+                    // TODO: better way to format paths, probably create a FindPath class for this
+                    // logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+                    logMsg(file)
+                }
+            } else {
+                logMsg("\nMatching files: 0")
             }
         }
 
         if settings.printLines {
             let lines = getMatchingLines(results, settings: settings)
-            let hdr = settings.uniqueLines ? "\nUnique lines with matches (\(lines.count)):"
-                : "\nLines with matches (\(lines.count)):"
-            logMsg(hdr)
-            for line in lines {
-                logMsg(line)
+            let hdr = settings.uniqueLines ? "\nUnique matching lines"
+                : "\nMatching lines"
+            if lines.count > 0 {
+                logMsg("\(hdr) (\(lines.count)):")
+                for line in lines {
+                    logMsg(line)
+                }
+            } else {
+                logMsg("\(hdr): 0")
             }
         }
 

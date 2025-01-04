@@ -120,8 +120,9 @@ public class SearchResultFormatter {
     }
 
     private func formatFilePath(result: SearchResult) -> String {
-        result.file == nil ? "<text>" : FileUtil.formatPath(result.file!.filePath,
-                                                            forPaths: Array(settings.paths))
+//        result.file == nil ? "<text>" : FileUtil.formatPath(result.file!.filePath,
+//                                                            forPaths: Array(settings.paths))
+        result.file == nil ? "<text>" : result.file!.filePath
     }
 
     private func singleLineFormat(result: SearchResult) -> String {
