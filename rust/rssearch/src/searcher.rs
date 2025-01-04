@@ -775,28 +775,32 @@ impl Searcher {
 
 /// Get the unique list of directories for which search results were found
 pub fn get_result_dirs(results: &[SearchResult]) -> Vec<String> {
+    let mut dir_set: HashSet<String> = HashSet::new();
     let mut dirs: Vec<String> = Vec::new();
     for r in results.iter() {
         if let Some(f) = &r.file {
-            dirs.push(String::from(f.parent()));
+            if !dir_set.contains(f.parent()) {
+                dirs.push(String::from(f.parent()));
+                dir_set.insert(String::from(f.parent()));
+            }
         }
     }
-    dirs.sort_unstable();
-    dirs.dedup();
     dirs
 }
 
 /// Get the unique list of files for which search results were found
 pub fn get_result_files(results: &[SearchResult]) -> Vec<String> {
+    let mut file_set: HashSet<String> = HashSet::new();
     let mut files: Vec<String> = Vec::new();
     for r in results.iter() {
         if let Some(f) = &r.file {
             let filepath = f.file_path();
-            files.push(filepath);
+            if !file_set.contains(&filepath) {
+                files.push(filepath.clone());
+                file_set.insert(filepath);
+            }
         }
     }
-    files.sort_unstable();
-    files.dedup();
     files
 }
 

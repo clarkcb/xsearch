@@ -4,7 +4,7 @@ use std::process;
 
 extern crate rsfind;
 
-use crate::common::log;
+use crate::common::{log, log_err};
 use crate::searcher::{get_result_dirs, get_result_files, get_result_lines};
 use crate::searcherror::SearchError;
 use crate::searchresultformatter::SearchResultFormatter;
@@ -20,7 +20,8 @@ pub mod searchsettings;
 pub mod searchresultformatter;
 
 fn print_error(error: SearchError, options: &searchoptions::SearchOptions) {
-    log(format!("\nERROR: {}", error.description).as_str());
+    log("");
+    log_err(error.description.as_str());
     options.print_usage();
 }
 

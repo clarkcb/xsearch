@@ -1,8 +1,9 @@
+use std::fmt;
 use regex::Regex;
 
 use rsfind::findsettings::FindSettings;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct SearchSettings {
     _find_settings: FindSettings,
     _colorize: bool,
@@ -465,10 +466,88 @@ impl SearchSettings {
     pub fn set_verbose(&mut self, b: bool) {
         self._find_settings.set_verbose(b)
     }
+
+    fn get_settings_string(&self) -> String {
+        let mut s = String::from("SearchSettings(");
+        s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
+        s.push_str(format!(", colorize={}", &self.colorize()).as_str());
+        s.push_str(format!(", debug={}", &self.debug()).as_str());
+        s.push_str(format!(", first_match={}", &self.first_match()).as_str());
+        s.push_str(format!(", follow_symlinks={}", &self.follow_symlinks()).as_str());
+        s.push_str(format!(", in_archive_extensions={:?}", &self.in_archive_extensions()).as_str());
+        s.push_str(format!(", in_archive_file_patterns={}", get_regex_vec_string(&self.in_archive_file_patterns())).as_str());
+        s.push_str(format!(", in_dir_patterns={}", get_regex_vec_string(&self.in_dir_patterns())).as_str());
+        s.push_str(format!(", in_extensions={:?}", &self.in_extensions()).as_str());
+        s.push_str(format!(", in_file_patterns={}", get_regex_vec_string(&self.in_file_patterns())).as_str());
+        s.push_str(format!(", in_file_types={:?}", &self.in_file_types()).as_str());
+        s.push_str(format!(", in_lines_after_patterns={}", get_regex_vec_string(&self.in_lines_after_patterns())).as_str());
+        s.push_str(format!(", in_lines_before_patterns={}", get_regex_vec_string(&self.in_lines_before_patterns())).as_str());
+        s.push_str(format!(", include_archives={:?}", &self.include_archives()).as_str());
+        s.push_str(format!(", include_hidden={:?}", &self.include_hidden()).as_str());
+        s.push_str(format!(", lines_after={:?}", &self.lines_after()).as_str());
+        s.push_str(format!(", lines_after_to_patterns={}", get_regex_vec_string(&self.lines_after_to_patterns())).as_str());
+        s.push_str(format!(", lines_after_until_patterns={}", get_regex_vec_string(&self.lines_after_until_patterns())).as_str());
+        s.push_str(format!(", lines_before={:?}", &self.lines_before()).as_str());
+        s.push_str(format!(", max_depth={:?}", &self.max_depth()).as_str());
+        s.push_str(format!(", max_last_mod={:?}", &self.max_last_mod()).as_str());
+        s.push_str(format!(", max_line_length={:?}", &self.max_line_length()).as_str());
+        s.push_str(format!(", max_size={:?}", &self.max_size()).as_str());
+        s.push_str(format!(", min_depth={:?}", &self.min_depth()).as_str());
+        s.push_str(format!(", min_last_mod={:?}", &self.min_last_mod()).as_str());
+        s.push_str(format!(", min_size={:?}", &self.min_size()).as_str());
+        s.push_str(format!(", multi_line_search={:?}", &self.multi_line_search()).as_str());
+        s.push_str(format!(", out_archive_extensions={:?}", &self.out_archive_extensions()).as_str());
+        s.push_str(format!(", out_archive_file_patterns={}", get_regex_vec_string(&self.out_archive_file_patterns())).as_str());
+        s.push_str(format!(", out_dir_patterns={}", get_regex_vec_string(&self.out_dir_patterns())).as_str());
+        s.push_str(format!(", out_extensions={:?}", &self.out_extensions()).as_str());
+        s.push_str(format!(", out_file_patterns={}", get_regex_vec_string(&self.out_file_patterns())).as_str());
+        s.push_str(format!(", out_file_types={:?}", &self.out_file_types()).as_str());
+        s.push_str(format!(", out_lines_after_patterns={}", get_regex_vec_string(&self.out_lines_after_patterns())).as_str());
+        s.push_str(format!(", out_lines_before_patterns={}", get_regex_vec_string(&self.out_lines_before_patterns())).as_str());
+        s.push_str(format!(", paths={:?}", &self.paths()).as_str());
+        s.push_str(format!(", print_dirs={:?}", &self.print_dirs()).as_str());
+        s.push_str(format!(", print_files={:?}", &self.print_files()).as_str());
+        s.push_str(format!(", print_lines={:?}", &self.print_lines()).as_str());
+        s.push_str(format!(", print_results={:?}", &self.print_results()).as_str());
+        s.push_str(format!(", print_usage={:?}", &self.print_usage()).as_str());
+        s.push_str(format!(", print_version={:?}", &self.print_version()).as_str());
+        s.push_str(format!(", recursive={}", &self.recursive()).as_str());
+        s.push_str(format!(", search_archives={:?}", &self.search_archives()).as_str());
+        s.push_str(format!(", search_patterns={}", get_regex_vec_string(&self.search_patterns())).as_str());
+        s.push_str(format!(", sort_by={:?}", &self.sort_by()).as_str());
+        s.push_str(format!(", sort_case_insensitive={}", &self.sort_case_insensitive()).as_str());
+        s.push_str(format!(", sort_descending={}", &self.sort_descending()).as_str());
+        s.push_str(format!(", text_file_encoding={}", &self.text_file_encoding()).as_str());
+        s.push_str(format!(", unique_lines={}", &self.unique_lines()).as_str());
+        s.push_str(format!(", verbose={}", &self.verbose()).as_str());
+        s.push_str(")");
+        s
+    }
+}
+
+impl fmt::Debug for SearchSettings {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.get_settings_string())
+    }
 }
 
 pub fn add_pattern(pattern: String, patterns: &mut Vec<Regex>) {
     patterns.push(Regex::new(pattern.as_str()).unwrap());
+}
+
+fn get_regex_vec_string(vec: &Vec<Regex>) -> String {
+    let patterns: Vec<String> = vec.iter().map(|r| r.to_string()).collect();
+    let mut s = String::from("[");
+    let mut i = 0;
+    for pattern in patterns.iter() {
+        if i > 0 {
+            s.push_str(", ");
+        }
+        s.push_str(format!("{:?}", pattern).as_str());
+        i += 1;
+    }
+    s.push_str("]");
+    s
 }
 
 #[cfg(test)]
