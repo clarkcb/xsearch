@@ -216,7 +216,7 @@ public class SearchOptions {
         var keys = jsonObj.keySet().stream().sorted().toList();
         var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).toList();
         if (!invalidKeys.isEmpty()) {
-            throw new SearchException("Invalid option: " + invalidKeys.getFirst());
+            throw new SearchException("Invalid option: " + invalidKeys.get(0));
         }
         for (var k : keys) {
             var v = jsonObj.get(k);
@@ -306,16 +306,16 @@ public class SearchOptions {
         int longest = 0;
         for (SearchOption opt : this.options) {
             StringBuilder optString = new StringBuilder();
-            String shortArg = opt.getShortArg();
+            String shortArg = opt.shortArg();
             if (null != shortArg && !shortArg.isEmpty()) {
                 optString.append("-").append(shortArg).append(",");
             }
-            optString.append("--").append(opt.getLongArg());
+            optString.append("--").append(opt.longArg());
             if (optString.length() > longest) {
                 longest = optString.length();
             }
             optStrings.add(optString.toString());
-            optDescs.add(opt.getDescription());
+            optDescs.add(opt.description());
         }
         final String format = " %1$-" + longest + "s  %2$s\n";
         for (int i = 0; i < optStrings.size(); i++) {

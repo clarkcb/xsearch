@@ -86,11 +86,11 @@ public class Searcher {
 
         if (settings.getVerbose()) {
             List<String> dirResults = fileResults.stream()
-                    .map(fr -> fr.getPath().getParent())
+                    .map(fr -> fr.path().getParent())
                     .map(p -> p == null ? "." : p.toString())
                     .distinct()
                     .sorted(String::compareTo)
-                    .collect(Collectors.toList());
+                    .toList();
             log(String.format("\nDirectories to be searched (%d):",
                     dirResults.size()));
             for (String d : dirResults) {
@@ -155,7 +155,7 @@ public class Searcher {
     }
 
     public final List<SearchResult> searchFile(final FileResult fr) {
-        FileType fileType = fr.getFileType();
+        FileType fileType = fr.fileType();
         if (fileType == FileType.CODE || fileType == FileType.TEXT || fileType == FileType.XML) {
             return searchTextFile(fr);
         } else if (fileType == FileType.BINARY) {
@@ -178,7 +178,7 @@ public class Searcher {
     private List<SearchResult> searchTextFileContents(final FileResult fr) {
         List<SearchResult> results = new ArrayList<>();
         try {
-            String contents = FileUtil.getFileContents(fr.getPath(), charset);
+            String contents = FileUtil.getFileContents(fr.path(), charset);
             results.addAll(searchMultiLineString(contents));
             for (SearchResult r : results) {
                 r.setFileResult(fr);
@@ -205,7 +205,7 @@ public class Searcher {
         List<Number> startLineIndices = new ArrayList<>();
         startLineIndices.add(0);
         startLineIndices.addAll(newLineIndices.stream()
-                .map(i -> i.longValue() + 1).collect(Collectors.toList()));
+                .map(i -> i.longValue() + 1).toList());
         return startLineIndices;
     }
 
@@ -322,7 +322,7 @@ public class Searcher {
         LineIterator it = null;
         List<SearchResult> results = new ArrayList<>();
         try {
-            it = FileUtil.getFileLineIterator(fr.getPath(), settings.getTextFileEncoding());
+            it = FileUtil.getFileLineIterator(fr.path(), settings.getTextFileEncoding());
             results.addAll(searchStringIterator(it));
             for (SearchResult r : results) {
                 r.setFileResult(fr);
@@ -461,11 +461,11 @@ public class Searcher {
 
     private List<SearchResult> searchBinaryFile(final FileResult fr) {
         if (settings.getVerbose()) {
-            log(String.format("Searching binary file %s", fr.getPath()));
+            log(String.format("Searching binary file %s", fr.path()));
         }
         List<SearchResult> results = new ArrayList<>();
         try {
-            String content = FileUtil.getFileContents(fr.getPath(), StandardCharsets.ISO_8859_1);
+            String content = FileUtil.getFileContents(fr.path(), StandardCharsets.ISO_8859_1);
             for (Pattern p : settings.getSearchPatterns()) {
                 Matcher m = p.matcher(content);
                 boolean found = m.find();

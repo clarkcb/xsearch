@@ -47,11 +47,11 @@ public class SearchResultFormatter {
         String fileString = result.getFileResult() == null ? noSearchFileText : result.getFileResult().toString();
         final int lineSepLength = 80;
         StringBuilder sb = new StringBuilder()
-                .append(StringUtil.repeatString("=", lineSepLength)).append("\n")
+                .append("=".repeat(lineSepLength)).append("\n")
                 .append(fileString).append(": ").append(result.getLineNum()).append(": ")
                 .append("[").append(result.getMatchStartIndex()).append(":")
                 .append(result.getMatchEndIndex()).append("]\n")
-                .append(StringUtil.repeatString("-", lineSepLength)).append("\n");
+                .append("-".repeat(lineSepLength)).append("\n");
         int currentLineNum = result.getLineNum();
         String lineFormat = " %1$" + lineNumPadding(result) + "d | %2$s\n";
         if (!result.getLinesBefore().isEmpty()) {

@@ -45,7 +45,7 @@ public class JavaSearch {
 
     private static List<String> getMatchingDirs(List<SearchResult> results) {
         return results.stream()
-                .map(r -> r.getFileResult().getPath().getParent())
+                .map(r -> r.getFileResult().path().getParent())
                 .map(p -> p == null ? "." : p.toString())
                 .distinct()
                 .sorted().collect(Collectors.toList());
