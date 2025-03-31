@@ -5,12 +5,12 @@ description: A sample command-line application.
 # repository: https://github.com/clarkcb/xsearch
 
 environment:
-  sdk: '>=2.18.0 <3.7.0'
+  sdk: '>=2.19.0 <3.8.0'
 
 dependencies:
   dartfind:
     path: ../../../xfind/dart/dartfind
 
 dev_dependencies:
-  lints: ^5.1.0
-  test: ^1.25.12
+  lints: ^5.1.1
+  test: ^1.25.15

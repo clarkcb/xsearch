@@ -7,13 +7,13 @@ gemspec
 
 gem 'rake', '~> 13.2.1'
 
-gem 'rbs', '~> 3.7.0'
+gem 'rbs', '~> 3.9.1'
 
 gem 'test-unit', '~> 3.6.7'
 
-gem 'rubocop', '~> 1.69.2'
+gem 'rubocop', '~> 1.75'
 
 # https://stackoverflow.com/a/19363523/1002072
 gem 'rbfind', path: '../../../xfind/ruby/rbfind'
 
-ruby '3.3.6'
+ruby '3.4.2'

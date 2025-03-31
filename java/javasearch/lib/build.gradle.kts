@@ -23,6 +23,6 @@ repositories {
 
 dependencies {
     implementation("commons-io:commons-io:2.18.0")
-    implementation("org.json:json:20240303")
+    implementation("org.json:json:20250107")
     implementation("xfind:javafind:0.1.0-SNAPSHOT")
 }

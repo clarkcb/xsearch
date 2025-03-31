@@ -1,14 +1,17 @@
 module.exports = {
   env: {
-    browser: false,
-    commonjs: true,
-    es2021: true
+    es2021: true,
+    jest: true,
+    node: true
   },
-  extends: [
-    'standard'
-  ],
+  extends: 'eslint:recommended',
+  parser: '@babel/eslint-parser',
   parserOptions: {
-    ecmaVersion: 12
+    ecmaVersion: 12,
+    sourceType: 'script', // the default; should it be 'module'?
+    ecmaFeatures: {
+      impliedString: true // enable global strict mode (if ecmaVersion is 5 or greater)
+    }
   },
   rules: {
   }

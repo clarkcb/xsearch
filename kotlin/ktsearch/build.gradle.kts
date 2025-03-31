@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm") version "2.1.0"
     application
 }
 
@@ -9,6 +9,7 @@ group = "xsearch"
 version = "0.1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     flatDir {
         dirs("lib")
@@ -16,8 +17,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.json:json:20240303")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    implementation("org.json:json:20250107")
     implementation("xfind:ktfind:0.1.0-SNAPSHOT")
     testImplementation(kotlin("test"))
 }
@@ -48,7 +49,9 @@ tasks.jar {
             mapOf(
                 "Implementation-Title" to project.name,
                 "Implementation-Version" to project.version,
-                "Main-Class" to application.mainClass))
+                "Main-Class" to application.mainClass
+            )
+        )
     }
 
     val sourcesMain = sourceSets.main.get()

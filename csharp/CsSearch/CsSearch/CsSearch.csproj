@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <PackageVersion>0.1.0</PackageVersion>
         <Authors>Cary Clark</Authors>
-        <Description>C# implementation of xsearch in dotnet 8.0</Description>
+        <Description>C# implementation of xsearch in dotnet 9.0</Description>
         <RootNamespace>CsSearch</RootNamespace>
     </PropertyGroup>
 
