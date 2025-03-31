@@ -16,7 +16,7 @@
         [cljfind.fileresult :only (file-result-path)]
         ))
 
-; record to hold a search-result (file is a SearchFile record instance)
+; record to hold a search-result (file is a FileResult record instance)
 (defrecord SearchResult [pattern file line-num matchstartindex matchendindex line
                          lines-before lines-after])
 

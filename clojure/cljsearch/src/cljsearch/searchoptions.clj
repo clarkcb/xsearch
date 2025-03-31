@@ -18,7 +18,7 @@
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileutil :only (exists? expand-path path-str to-path)]
+        [cljfind.fileutil :only (exists-path? expand-path path-str to-path)]
         [cljfind.findsettings :only
          (add-extension add-file-type add-path add-pattern
           set-archives-only set-debug set-int-val set-long-val
@@ -194,7 +194,7 @@
   ([^SearchSettings settings long-arg-map f]
    (let [filepath (expand-path (to-path f))
          pathstr (path-str filepath)]
-     (if (not (exists? filepath))
+     (if (not (exists-path? filepath))
        [settings [(str "Settings file not found: " pathstr)]]
        (if (not (.endsWith pathstr ".json"))
          [settings [(str "Invalid settings file (must be JSON): " pathstr)]]

@@ -20,7 +20,7 @@
         [clojure.string :as str :only (join trim upper-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only (file-result-path)]
-        [cljfind.fileutil :only (get-parent path-str)]
+        [cljfind.fileutil :only (get-parent-name path-str)]
         [cljfind.finder :only (find-files validate-settings)]
         [cljsearch.searchresult :only
           (->SearchResult search-result-to-string)]
@@ -38,7 +38,7 @@
     (log-msg "\nSearch results: 0")))
 
 (defn get-matching-dirs [results]
-  (sort (distinct (map #(get-parent (:path %)) (map #(:file %) results)))))
+  (sort (distinct (map #(get-parent-name (:path %)) (map #(:file %) results)))))
 
 (defn print-matching-dirs [results]
   (let [dirs (get-matching-dirs results)]
@@ -49,7 +49,7 @@
       (log-msg "\nMatching directories: 0"))))
 
 (defn get-matching-files [results]
-  (sort (distinct (map #(path-str (:path %)) (map #(:file %) results)))))
+  (sort (distinct (map #(file-result-path (:file %)) results))))
 
 (defn print-matching-files [results]
   (let [files (get-matching-files results)]
