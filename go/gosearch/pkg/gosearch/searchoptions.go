@@ -54,8 +54,7 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 	type JsonSettings map[string]interface{}
 	var jsonSettings JsonSettings
 	if err := json.Unmarshal(data, &jsonSettings); err != nil {
-		errMsg := fmt.Sprintf("Unable to parse JSON")
-		return fmt.Errorf(errMsg)
+		return fmt.Errorf("Unable to parse JSON")
 	}
 	// first check for invalid keys
 	for k := range jsonSettings {
@@ -71,7 +70,7 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 			}
 		}
 		if !foundOption {
-			return fmt.Errorf(fmt.Sprintf("Invalid option: %v", k))
+			return fmt.Errorf("Invalid option: %v", k)
 		}
 	}
 	for k := range jsonSettings {
@@ -97,13 +96,12 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 				default:
 					gofind.Log(fmt.Sprintf("k: %v", k))
 					gofind.Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					const errMsg = "Unknown data type in settings file"
 					gofind.Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
-				return fmt.Errorf(errMsg)
+				return fmt.Errorf("Invalid value for option: %v", k)
 			}
 		} else if iff, isInt := intActionMap[k]; isInt {
 			if v, hasVal := jsonSettings[k]; hasVal {
@@ -115,12 +113,10 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 				default:
 					gofind.Log(fmt.Sprintf("k: %v", k))
 					gofind.Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					errMsg := fmt.Sprintf("Unknown data type in settings file")
-					return fmt.Errorf(errMsg)
+					return fmt.Errorf("Unknown data type in settings file")
 				}
 			} else {
-				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
-				return fmt.Errorf(errMsg)
+				return fmt.Errorf("Invalid value for option: %v", k)
 			}
 		} else if lff, isLong := longActionMap[k]; isLong {
 			if v, hasVal := jsonSettings[k]; hasVal {
@@ -132,17 +128,15 @@ func (so *SearchOptions) SettingsFromJson(data []byte, settings *SearchSettings)
 				default:
 					gofind.Log(fmt.Sprintf("k: %v", k))
 					gofind.Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					const errMsg = "Unknown data type in settings file"
 					gofind.Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
-				return fmt.Errorf(errMsg)
+				return fmt.Errorf("Invalid value for option: %v", k)
 			}
 		} else {
-			errMsg := fmt.Sprintf("Invalid option: %v", k)
-			return fmt.Errorf(errMsg)
+			return fmt.Errorf("Invalid option: %v", k)
 		}
 	}
 	return nil
@@ -152,15 +146,13 @@ func (so *SearchOptions) SettingsFromFile(filePath string, settings *SearchSetti
 	expandedPath := gofind.ExpandPath(filePath)
 	if data, err := os.ReadFile(expandedPath); err != nil {
 		if strings.HasSuffix(err.Error(), "no such file or directory") {
-			errMsg := fmt.Sprintf("Settings file not found: %v", filePath)
-			return fmt.Errorf(errMsg)
+			return fmt.Errorf("Settings file not found: %v", filePath)
 		}
 		return err
 	} else {
 		if err := so.SettingsFromJson(data, settings); err != nil {
 			if err.Error() == "Unable to parse JSON" {
-				errMsg := fmt.Sprintf("Invalid settings file (must be JSON): %v", filePath)
-				return fmt.Errorf(errMsg)
+				return fmt.Errorf("Invalid settings file (must be JSON): %v", filePath)
 			}
 			return err
 		}
