@@ -24,7 +24,7 @@ class SearchSettings(FindSettings):
     """a class to encapsulate search settings for a particular search session"""
 
     __slots__ = FindSettings.__slots__ + [
-        'colorize', 'first_match', 'in_lines_after_patterns', 'in_lines_before_patterns',
+        'first_match', 'in_lines_after_patterns', 'in_lines_before_patterns',
         'lines_after', 'lines_after_to_patterns', 'lines_after_until_patterns', 'lines_before',
         'max_line_length', 'multi_line_search', 'out_lines_after_patterns',
         'out_lines_before_patterns', 'print_lines', 'print_results', 'search_archives',
@@ -90,6 +90,7 @@ class SearchSettings(FindSettings):
                  verbose: bool = False):
         FindSettings.__init__(self,
                               archives_only=archives_only,
+                              colorize=colorize,
                               debug=debug,
                               # find_in_archives=search_archives,
                               follow_symlinks=follow_symlinks,
@@ -123,7 +124,6 @@ class SearchSettings(FindSettings):
                               sort_case_insensitive=sort_case_insensitive,
                               sort_descending=sort_descending,
                               verbose=verbose)
-        self.colorize = colorize
         self.first_match = first_match
         self.in_lines_after_patterns: PatternSet = \
             in_lines_after_patterns if in_lines_after_patterns else set()

@@ -12,6 +12,7 @@ from io import StringIO
 from typing import List
 
 from pyfind import FileResult
+from pyfind.fileresult import FileResultFormatter
 
 from .color import Color
 from .searchsettings import SearchSettings
@@ -67,6 +68,7 @@ class SearchResultFormatter(object):
 
     def __init__(self, settings: SearchSettings):
         self.settings = settings
+        self.file_formatter = FileResultFormatter(settings)
 
     @staticmethod
     def colorize(s: str, match_start_index: int, match_end_index: int) -> str:
@@ -129,7 +131,7 @@ class SearchResultFormatter(object):
 
     def __single_line_format(self, result: SearchResult) -> str:
         sio = StringIO()
-        sio.write(str(result.file))
+        sio.write(self.file_formatter.format_file_result(result.file))
         if result.line_num and result.line:
             sio.write(': {0:d}: [{1:d}:{2:d}]'.format(result.line_num,
                                                       result.match_start_index,
@@ -149,7 +151,7 @@ class SearchResultFormatter(object):
     def __multi_line_format(self, result: SearchResult) -> str:
         sio = StringIO()
         sio.write('{0}\n{1}:'.format(
-            '=' * self.SEPARATOR_LEN, str(result.file)))
+            '=' * self.SEPARATOR_LEN, self.file_formatter.format_file_result(result.file)))
         sio.write(' {0:d}: [{1:d}:{2:d}]'.format(result.line_num, result.match_start_index,
                                                  result.match_end_index))
         if result.contained:
