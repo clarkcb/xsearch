@@ -71,22 +71,30 @@ func (s *Searcher) GetSearchResults() *SearchResults {
 	return s.searchResults
 }
 
+const (
+	NoSearchPatternsDefined = "No search patterns defined"
+	InvalidLinesAfter       = "Invalid linesafter"
+	InvalidLinesBefore      = "Invalid linesbefore"
+	InvalidMaxLineLength    = "Invalid maxlinelength"
+	InvalidTextFileEncoding = "Invalid or unsupported text file encoding"
+)
+
 func (s *Searcher) validateSettings() error {
 	if s.Settings.SearchPatterns().IsEmpty() {
-		return fmt.Errorf("No search patterns defined")
+		return fmt.Errorf(NoSearchPatternsDefined)
 	}
 	if s.Settings.LinesAfter() < 0 {
-		return fmt.Errorf("Invalid linesafter")
+		return fmt.Errorf(InvalidLinesAfter)
 	}
 	if s.Settings.LinesBefore() < 0 {
-		return fmt.Errorf("Invalid linesbefore")
+		return fmt.Errorf(InvalidLinesBefore)
 	}
 	if s.Settings.MaxLineLength() < 0 {
-		return fmt.Errorf("Invalid maxlinelength")
+		return fmt.Errorf(InvalidMaxLineLength)
 	}
 	enc, err := ianaindex.IANA.Encoding(s.Settings.TextFileEncoding())
 	if err != nil {
-		return fmt.Errorf("Invalid or unsupported text file encoding")
+		return fmt.Errorf(InvalidTextFileEncoding)
 	}
 	s.textDecoder = enc.NewDecoder()
 	return nil

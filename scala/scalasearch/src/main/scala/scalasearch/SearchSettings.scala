@@ -201,7 +201,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archives
       ", sortBy: " + sortBy +
       ", sortCaseInsensitive: " + sortCaseInsensitive +
       ", sortDescending: " + sortDescending +
-      ", textFileEncoding: " + textFileEncoding  +
+      ", textFileEncoding: " + textFileEncoding +
       ", uniqueLines: " + uniqueLines +
       ", verbose: " + verbose +
       ")"

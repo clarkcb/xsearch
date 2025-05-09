@@ -505,7 +505,7 @@ mergeSearchSettings old new = SearchSettings
   , sortCaseInsensitive = sortCaseInsensitive new || sortCaseInsensitive old
   , sortDescending = sortDescending new || sortDescending old
   , sortResultsBy = if sortResultsBy new /= SortByFilePath then sortResultsBy new else sortResultsBy old
-  , textFileEncoding = if textFileEncoding new /= "utf-9" then textFileEncoding new else textFileEncoding old
+  , textFileEncoding = if textFileEncoding new /= "utf-8" then textFileEncoding new else textFileEncoding old
   , uniqueLines = uniqueLines new || uniqueLines old
   , verbose = verbose new || verbose old
   }

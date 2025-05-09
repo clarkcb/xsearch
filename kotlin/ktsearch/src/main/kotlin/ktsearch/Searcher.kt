@@ -3,6 +3,8 @@ package ktsearch
 import ktfind.*
 import java.io.IOException
 import java.nio.charset.Charset
+import java.nio.charset.IllegalCharsetNameException
+import java.nio.charset.UnsupportedCharsetException
 import kotlin.streams.toList
 
 /**
@@ -37,7 +39,11 @@ class Searcher(val settings: SearchSettings) {
         try {
             charset = Charset.forName(settings.textFileEncoding)
         } catch (_: IllegalArgumentException) {
-            throw SearchException("Invalid or unsupported encoding: ${settings.textFileEncoding}")
+            throw SearchException("Missing text encoding")
+        } catch (_: IllegalCharsetNameException) {
+            throw SearchException("Invalid text encoding: ${settings.textFileEncoding}")
+        } catch (_: UnsupportedCharsetException) {
+            throw SearchException("Unsupported text encoding: ${settings.textFileEncoding}")
         }
     }
 

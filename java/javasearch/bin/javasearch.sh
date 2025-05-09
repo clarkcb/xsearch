@@ -20,6 +20,7 @@ JAVASEARCH_LIB_JAR="$JAVASEARCH_PATH/lib/build/libs/lib.jar"
 JAVASEARCH_APP_JAR="$JAVASEARCH_PATH/app/build/libs/app.jar"
 JAVASEARCH_CLASSPATH="$JAVAFIND_JAR:$JAVASEARCH_LIB_JAR:$JAVASEARCH_APP_JAR"
 
-JAVA_HOME="/usr/local/Cellar/openjdk/23.0.1/libexec/openjdk.jdk/Contents/Home"
+# JAVA_HOME="/usr/local/Cellar/openjdk/23.0.1/libexec/openjdk.jdk/Contents/Home"
+JAVA_HOME=$(/usr/libexec/java_home -v17)
 
 java -cp "$JAVASEARCH_CLASSPATH" javasearch.JavaSearch "$@"

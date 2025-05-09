@@ -3,4 +3,5 @@
 *.xml
 .gradle/
 
+node_modules/
 venv/

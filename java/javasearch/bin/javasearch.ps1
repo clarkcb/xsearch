@@ -21,7 +21,9 @@ $javaSearchJarsPath = Join-Path $env:XSEARCH_PATH 'java' 'javasearch' 'target'
 $javaSearchClasspath = "$($javaFindJarPath):$($javaSearchLibJarPath):$javaSearchAppJarPath"
 
 $oldJavaHome = $env:JAVA_HOME
-$env:JAVA_HOME="/usr/local/Cellar/openjdk/23.0.1/libexec/openjdk.jdk/Contents/Home"
+# $env:JAVA_HOME = "/usr/local/Cellar/openjdk/23.0.1/libexec/openjdk.jdk/Contents/Home"
+$env:JAVA_HOME = /usr/libexec/java_home -v17
+
 
 java -cp $javaSearchClasspath 'javasearch.JavaSearch' $Args
 
