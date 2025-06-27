@@ -19,9 +19,10 @@ from collections import deque
 from io import StringIO
 from typing import Deque, Optional, TextIO
 
-from pyfind import FileResult, FileType, FileTypes, FileUtil, Finder, log, log_error
+from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, SortBy,
+                    log, log_error, print_dir_results, print_file_results)
 
-from .searchresult import SearchResult
+from .searchresult import SearchResult, SearchResultFormatter
 from .searchsettings import SearchSettings, PatternSet
 
 TARFILE_MODULE_AVAILABLE = True
@@ -706,3 +707,61 @@ def lines_match(lines, in_patterns: PatternSet, out_patterns: PatternSet):
              not any_matches_any_pattern(lines, out_patterns)):
         return True
     return False
+
+
+def print_search_results(results: list[SearchResult], formatter: SearchResultFormatter):
+    log(f'Search results ({len(results)}):')
+    for r in results:
+        s = formatter.format(r)
+        try:
+            log(s)
+        except UnicodeEncodeError:
+            log(repr(s))
+
+
+def get_matching_file_results(search_results: list[SearchResult]) -> list[FileResult]:
+    """Get list of files with matches"""
+    file_set = {}
+    files = []
+    for r in search_results:
+        if r.file:
+            if str(r.file) not in file_set:
+                files.append(r.file)
+                file_set[str(r.file)] = True
+    return files
+
+
+def print_search_dir_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
+    """Print the dir results"""
+    file_results = get_matching_file_results(search_results)
+    print_dir_results(file_results, formatter.file_formatter)
+
+
+def print_search_file_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
+    """Print the file results"""
+    file_results = get_matching_file_results(search_results)
+    print_file_results(file_results, formatter.file_formatter)
+
+
+def get_matching_lines(search_results: list[SearchResult], settings: SearchSettings) -> list[str]:
+    """Get list of lines with matches (unique if settings.unique_lines)"""
+    lines = [r.line.lstrip() for r in search_results if r.line]
+    if settings.unique_lines:
+        lines = list(set(lines))
+    return list(sorted(lines, key=lambda s: s.upper()))
+
+
+def print_search_lines_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
+    """Print the lines results"""
+    lines = get_matching_lines(search_results, formatter.settings)
+    if lines:
+        line_len = len(lines)
+        if formatter.settings.unique_lines:
+            msg = f'\nUnique matching lines ({line_len}):'
+        else:
+            msg = f'\nMatching lines ({line_len}):'
+        log(msg)
+        for line in lines:
+            log(formatter.format_line(line))
+    else:
+        log('\nMatching lines: 0')
