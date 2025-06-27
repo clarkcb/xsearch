@@ -3,14 +3,6 @@ class Object
 
   def handle_search_error: (StandardError err, RbSearch::SearchOptions options) -> void
 
-  def print_results: (Array[RbSearch::SearchResult] results, RbSearch::SearchSettings settings) -> void
-
-  def print_result: (RbSearch::SearchResult search_result, RbSearch::SearchSettings settings) -> void
-
-  def get_matching_dirs: (Array[RbSearch::SearchResult] results) -> Array[String]
-
-  def get_matching_files: (Array[RbSearch::SearchResult] results) -> Array[String]
-
   def get_matching_lines: (Array[RbSearch::SearchResult] results, RbSearch::SearchSettings settings) -> Array[String]
 
   def search: (RbSearch::SearchOptions options, RbSearch::SearchSettings settings) -> void

@@ -16,7 +16,19 @@ module RbSearch
 
     def search_line_iterator: (Enumerator[Elem, Array[String]] lines) -> Array[SearchResult]
 
+    def print_result: (SearchResult search_result, SearchSettings settings) -> void
+
+    def print_search_results: (Array[SearchResult] results, SearchResultFormatter formatter) -> void
+
+    def print_matching_dirs: (Array[SearchResult] results, SearchResultFormatter formatter) -> void
+
+    def print_matching_files: (Array[SearchResult] results, SearchResultFormatter formatter) -> void
+
+    def print_matching_lines: (Array[SearchResult] results, SearchResultFormatter formatter) -> void
+
     private
+
+    def get_file_results: (Array[SearchResult] search_results) -> Array[RbFind::FileResult]
 
     def validate_settings: () -> void
 

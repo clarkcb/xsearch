@@ -21,30 +21,13 @@ module RbSearch
 
     def initialize(settings)
       @settings = settings
-      @finder = RbFind::Finder.new(settings)
+      @finder =
+        begin
+          RbFind::Finder.new(settings)
+        rescue RbFind::FindError => e
+          raise SearchError, e
+        end
       validate_settings
-    end
-
-    def search
-      # get the file results
-      file_results = @finder.find
-      if @settings.verbose
-        dir_results = file_results.map(&:path).uniq.sort
-        RbFind::log("\nDirectories to be searched (#{dir_results.size}):")
-        dir_results.each do |d|
-          RbFind::log(d)
-        end
-        RbFind::log("\nFiles to be searched (#{file_results.size}):")
-        file_results.each do |fr|
-          RbFind::log(fr.to_s)
-        end
-        RbFind::log("\n")
-      end
-      results = []
-      file_results.each do |fr|
-        results.concat(search_file(fr))
-      end
-      results
     end
 
     def search_multi_line_string(str)
@@ -170,6 +153,70 @@ module RbSearch
       end
     end
 
+    def search
+      # get the file results
+      file_results = @finder.find
+      if @settings.verbose
+        dir_results = file_results.map(&:path).uniq.sort
+        RbFind.log("\nDirectories to be searched (#{dir_results.size}):")
+        dir_results.each do |d|
+          RbFind.log(d)
+        end
+        RbFind.log("\nFiles to be searched (#{file_results.size}):")
+        file_results.each do |fr|
+          RbFind.log(fr.to_s)
+        end
+        RbFind.log("\n")
+      end
+      results = []
+      file_results.each do |fr|
+        results.concat(search_file(fr))
+      end
+      results
+    end
+
+    def print_result(search_result, settings)
+      s = ''
+      s += "#{search_result.pattern}: " if settings.search_patterns.size > 1
+      s += search_result.to_s
+      RbFind.log(s)
+    end
+
+    def print_search_results(search_results, formatter)
+      RbFind.log("Search results (#{search_results.size}):")
+      search_results.each do |r|
+        RbFind.log(formatter.format(r))
+      end
+    end
+
+    def print_matching_dirs(search_results, formatter)
+      file_results = get_file_results(search_results)
+      @finder.print_dir_results(file_results, formatter.file_formatter)
+    end
+
+    def print_matching_files(search_results, formatter)
+      file_results = get_file_results(search_results)
+      @finder.print_file_results(file_results, formatter.file_formatter)
+    end
+
+    def print_matching_lines(search_results, formatter)
+      lines = get_matching_lines(search_results, formatter.settings)
+      hdr_text =
+        if settings.unique_lines
+          'Unique lines with matches'
+        else
+          'Lines with matches'
+        end
+      if lines.empty?
+        RbFind.log("#{hdr_text}: 0")
+      else
+        RbFind.log("#{hdr_text} (#{lines.size}):")
+        lines.each do |line|
+          RbFind.log("#{formatter.format_line(line)}\n")
+        end
+      end
+    end
+
     private
 
     def validate_settings
@@ -202,7 +249,7 @@ module RbSearch
       when RbFind::FileType::BINARY
         return search_binary_file(fr)
       else
-        RbFind::log("Searching currently unsupported for FileType #{fr.file_type}")
+        RbFind.log("Searching currently unsupported for FileType #{fr.file_type}")
       end
       []
     end
@@ -246,7 +293,7 @@ module RbSearch
     end
 
     def search_text_file(fr)
-      RbFind::log("Searching text file #{fr}") if @settings.debug
+      RbFind.log("Searching text file #{fr}") if @settings.debug
       if @settings.multi_line_search
         search_text_file_contents(fr)
       else
@@ -338,6 +385,24 @@ module RbSearch
       raise SearchError, "#{e} (file: #{fr})"
     ensure
       f&.close
+    end
+
+    def get_file_results(search_results)
+      file_set = Set.new
+      file_results = []
+      search_results.each do |r|
+        unless file_set.include?(r.file.to_s)
+          file_results.push(r.file)
+          file_set.add(r.file.to_s)
+        end
+      end
+      file_results
+    end
+
+    def get_matching_lines(results, settings)
+      lines = results.map { |r| r.line.strip }.sort { |l1, l2| l1.upcase <=> l2.upcase }
+      lines.uniq! if settings.unique_lines
+      lines
     end
   end
 end

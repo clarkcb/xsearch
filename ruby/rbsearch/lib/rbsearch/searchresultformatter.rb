@@ -1,17 +1,28 @@
 # frozen_string_literal: true
 
-require_relative 'color'
+require 'rbfind/color'
+require 'rbfind/fileresultformatter'
+
 
 module RbSearch
 
   # SearchResultFormatter - provides formatting of search result instances
   class SearchResultFormatter
-    attr_accessor :settings
+    attr_reader :settings,
+                :file_formatter
 
     SEPARATOR_LEN = 80
 
     def initialize(settings)
       @settings = settings
+      @file_formatter = RbFind::FileResultFormatter.new(settings)
+      if settings.colorize
+        define_singleton_method(:format_line) { |line| format_line_with_color(line) }
+      end
+    end
+
+    def format_line(line)
+      line
     end
 
     def format(result)
@@ -24,15 +35,25 @@ module RbSearch
 
     private
 
+    def format_line_with_color(line)
+      formatted_line = line
+      @settings.search_patterns.each do |p|
+        m = p.match(formatted_line)
+        if m
+          formatted_line = colorize(formatted_line, m.begin(0), m.end(0))
+          break
+        end
+      end
+      formatted_line
+    end
+
     def strip_newlines(s)
       s = s[0..-2] while s.end_with? "\n", "\r"
       s
     end
 
     def colorize(str, match_start_index, match_end_index)
-      str[0..(match_start_index - 1)] +
-        str[match_start_index..(match_end_index - 1)].green +
-        str[match_end_index..(str.length - 1)]
+      @file_formatter.colorize(str, match_start_index, match_end_index)
     end
 
     def format_matching_line(result)
@@ -94,7 +115,7 @@ module RbSearch
     end
 
     def single_line_format(result)
-      s = result.file.to_s
+      s = @file_formatter.format_file_result(result.file)
       if result.line_num.positive? && !result.line.empty?
         s << ": #{result.line_num}: [#{result.match_start_index}:#{result.match_end_index}]"
         s << ": #{format_matching_line(result)}"
@@ -110,8 +131,9 @@ module RbSearch
     end
 
     def multi_line_format(result)
+      file = @file_formatter.format_file_result(result.file)
       s = '=' * SEPARATOR_LEN + "\n"
-      s << "#{result.file}: #{result.line_num}: [#{result.match_start_index}:#{result.match_end_index}]\n"
+      s << "#{file}: #{result.line_num}: [#{result.match_start_index}:#{result.match_end_index}]\n"
       s << '-' * SEPARATOR_LEN + "\n"
       line_format = " %%%dd | %%s\n" % [line_num_padding(result)]
       current_line_num = result.line_num

@@ -2,16 +2,22 @@ module RbSearch
   # SearchResultFormatter - provides formatting of search result instances
   class SearchResultFormatter
     @settings: SearchSettings
+    @file_formatter: RbFind::FileResultFormatter
 
     attr_accessor settings: SearchSettings
+    attr_accessor file_formatter: RbFind::FileResultFormatter
 
     SEPARATOR_LEN: 80
 
     def initialize: (SearchSettings settings) -> void
 
+    def format_line: (String line) -> String
+
     def format: (SearchResult result) -> String
 
     private
+
+    def format_line_with_color: (String line) -> String
 
     def strip_newlines: (String s) -> String
 

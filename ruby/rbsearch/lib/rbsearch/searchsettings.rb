@@ -5,43 +5,41 @@ module RbSearch
 
   # SearchSettings - encapsulates search settings
   class SearchSettings < RbFind::FindSettings
-    attr_accessor :colorize
-    attr_accessor :first_match
-    attr_accessor :in_lines_after_patterns
-    attr_accessor :in_lines_before_patterns
-    attr_accessor :lines_after
-    attr_accessor :lines_after_to_patterns
-    attr_accessor :lines_after_until_patterns
-    attr_accessor :lines_before
-    attr_accessor :max_line_length
-    attr_accessor :multi_line_search
-    attr_accessor :out_lines_after_patterns
-    attr_accessor :out_lines_before_patterns
-    attr_accessor :print_lines
-    attr_accessor :print_results
-    attr_accessor :search_archives
-    attr_accessor :search_patterns
-    attr_accessor :text_file_encoding
-    attr_accessor :unique_lines
+    attr_accessor :first_match,
+                  :in_lines_after_patterns,
+                  :in_lines_before_patterns,
+                  :lines_after,
+                  :lines_after_to_patterns,
+                  :lines_after_until_patterns,
+                  :lines_before,
+                  :max_line_length,
+                  :multi_line_search,
+                  :out_lines_after_patterns,
+                  :out_lines_before_patterns,
+                  :print_lines,
+                  :print_results,
+                  :search_archives,
+                  :search_patterns,
+                  :text_file_encoding,
+                  :unique_lines
 
     def initialize
       super
-      @colorize = true
       @first_match = false
-      @in_lines_after_patterns = Set::new
-      @in_lines_before_patterns = Set::new
+      @in_lines_after_patterns = Set.new
+      @in_lines_before_patterns = Set.new
       @lines_after = 0
-      @lines_after_to_patterns = Set::new
-      @lines_after_until_patterns = Set::new
+      @lines_after_to_patterns = Set.new
+      @lines_after_until_patterns = Set.new
       @lines_before = 0
       @max_line_length = 150
       @multi_line_search = false
-      @out_lines_after_patterns = Set::new
-      @out_lines_before_patterns = Set::new
+      @out_lines_after_patterns = Set.new
+      @out_lines_before_patterns = Set.new
       @print_lines = false
       @print_results = true
       @search_archives = false
-      @search_patterns = Set::new
+      @search_patterns = Set.new
       @text_file_encoding = 'utf-8'
       @unique_lines = false
     end
