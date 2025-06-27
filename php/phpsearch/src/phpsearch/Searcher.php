@@ -442,10 +442,9 @@ class Searcher
         return $search_results;
     }
 
-    public function print_results(array $results): void
+    public function print_results(array $results, SearchResultFormatter $formatter): void
     {
         if (count($results) > 0) {
-            $formatter = new SearchResultFormatter($this->settings);
             Logger::log_msg(sprintf("\nSearch results (%d):", count($results)));
             foreach ($results as $r) {
                 Logger::log_msg($formatter->format($r));
@@ -455,55 +454,32 @@ class Searcher
         }
     }
 
-    public function get_matching_dirs(array $results): array
+    public function get_file_results(array $results): array
     {
-        $dirs = [];
+        $file_hash = array();
+        $file_results = array();
         foreach ($results as $r) {
-            $d = $r->file->path;
-            if (!in_array($d, $dirs)) {
-                $dirs[] = $d;
+            if (null != $r->file) {
+                $f = $r->file;
+                if (!array_key_exists($f->file_path(), $file_hash)) {
+                    $file_results[] = $f;
+                    $file_hash[$f->file_path()] = $f;
+                }
             }
         }
-        sort($dirs);
-        return $dirs;
+        return $file_results;
     }
 
-    public function print_matching_dirs(array $results): void
+    public function print_matching_dirs(array $results, SearchResultFormatter $formatter): void
     {
-        $dirs = $this->get_matching_dirs($results);
-        if (count($dirs) > 0) {
-            Logger::log_msg(sprintf("\nMatching directories (%d):", count($dirs)));
-            foreach ($dirs as $d) {
-                Logger::log_msg($d);
-            }
-        } else {
-            Logger::log_msg("\nMatching directories: 0");
-        }
+        $file_results = $this->get_file_results($results);
+        $this->finder->print_matching_dirs($file_results, $formatter->file_result_formatter);
     }
 
-    public function get_matching_files(array $results): array
+    public function print_matching_files(array $results, SearchResultFormatter $formatter): void
     {
-        $files = array();
-        foreach ($results as $r) {
-            $f = $r->file->file_path();
-            if (!in_array($f, $files)) {
-                $files[] = $f;
-            }
-        }
-        return $files;
-    }
-
-    public function print_matching_files(array $results): void
-    {
-        $files = $this->get_matching_files($results);
-        if (count($files) > 0) {
-            Logger::log_msg(sprintf("\nMatching files (%d):", count($files)));
-            foreach ($files as $f) {
-                Logger::log_msg($f);
-            }
-        } else {
-            Logger::log_msg("\nMatching files: 0");
-        }
+        $file_results = $this->get_file_results($results);
+        $this->finder->print_matching_files($file_results, $formatter->file_result_formatter);
     }
 
     public function get_matching_lines(array $results): array
@@ -515,11 +491,12 @@ class Searcher
                 $lines[] = $l;
             }
         }
-        usort($lines, 'cmp_ignorecase');
+//        usort($lines, 'cmp_ignorecase');
+        sort($lines);
         return $lines;
     }
 
-    public function print_matching_lines(array $results): void
+    public function print_matching_lines(array $results, SearchResultFormatter $formatter): void
     {
         $lines = $this->get_matching_lines($results);
         $msg = "\nMatching lines";
@@ -529,7 +506,7 @@ class Searcher
         if (count($lines) > 0) {
             Logger::log_msg(sprintf("%s (%d):", $msg, count($lines)));
             foreach ($lines as $l) {
-                Logger::log_msg($l);
+                Logger::log_msg($formatter->format_line($l));
             }
         } else {
             Logger::log_msg(sprintf("%s: 0", $msg));

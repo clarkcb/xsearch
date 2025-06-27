@@ -9,6 +9,7 @@ use phpfind\Logger;
 use phpsearch\Searcher;
 use phpsearch\SearchException;
 use phpsearch\SearchOptions;
+use phpsearch\SearchResultFormatter;
 
 function main($argv): void
 {
@@ -26,25 +27,26 @@ function main($argv): void
 
         $searcher = new Searcher($settings);
         $search_results = $searcher->search();
+        $formatter = new SearchResultFormatter($settings);
 
         // print the results
         if ($settings->print_results) {
-            $searcher->print_results($search_results);
+            $searcher->print_results($search_results, $formatter);
         }
 
         // print matching dirs
         if ($settings->print_dirs) {
-            $searcher->print_matching_dirs($search_results);
+            $searcher->print_matching_dirs($search_results, $formatter);
         }
 
         // print matching files
         if ($settings->print_files) {
-            $searcher->print_matching_files($search_results);
+            $searcher->print_matching_files($search_results, $formatter);
         }
 
         // print matching lines
         if ($settings->print_lines) {
-            $searcher->print_matching_lines($search_results);
+            $searcher->print_matching_lines($search_results, $formatter);
         }
     } catch (SearchException $e) {
         Logger::log_msg('');

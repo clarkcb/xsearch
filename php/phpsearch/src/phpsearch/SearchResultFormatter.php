@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace phpsearch;
 
+use phpfind\Color;
+use phpfind\FileResultFormatter;
+
 /**
  * Class SearchResultFormatter
  *
@@ -11,13 +14,42 @@ namespace phpsearch;
  */
 class SearchResultFormatter
 {
-    const SEPARATOR_LEN = 80;
+    const int SEPARATOR_LEN = 80;
 
-    private SearchSettings $settings;
+    public SearchSettings $settings;
+    public FileResultFormatter $file_result_formatter;
+    private \Closure $cl_format_line;
 
     public function __construct(SearchSettings $settings)
     {
         $this->settings = $settings;
+        $this->file_result_formatter = new FileResultFormatter($settings);
+        if ($settings->colorize) {
+            $this->cl_format_line = function (string $line): string { return $this->format_line_with_color($line); };
+        } else {
+            $this->cl_format_line = function (string $line): string { return $line; };
+        }
+    }
+    private function format_line_with_color(string $line): string
+    {
+        $formatted_line = $line;
+        foreach ($this->settings->search_patterns as $p) {
+            $pattern = '/' . $p . '/';
+            preg_match($pattern, $formatted_line, $matches, PREG_OFFSET_CAPTURE);
+            if (!empty($matches)) {
+                $start_index = (int)$matches[0][1];
+                $end_index = $start_index + strlen($matches[0][0]);
+                $formatted_line = $this->colorize($formatted_line, $start_index, $end_index);
+                break;
+            }
+        }
+        return $formatted_line;
+    }
+
+    public function format_line(string $line): string
+    {
+        // call the closure as defined in constructor
+        return ($this->cl_format_line)($line);
     }
 
     public function format(SearchResult $result): string
@@ -35,12 +67,7 @@ class SearchResultFormatter
 
     private function colorize(string $s, int $match_start_index, int $match_end_index): string
     {
-        $match_length = $match_end_index - $match_start_index;
-        return substr($s, 0, $match_start_index) .
-            Color::Green->value .
-            substr($s, $match_start_index, $match_length) .
-            Color::Reset->value .
-            substr($s, $match_start_index + $match_length);
+        return $this->file_result_formatter->colorize($s, $match_start_index, $match_end_index);
     }
 
     private function format_matching_line(SearchResult $result): string
@@ -107,7 +134,7 @@ class SearchResultFormatter
 
     private function single_line_format(SearchResult $result): string
     {
-        $s = $result->file;
+        $s = $this->file_result_formatter->format_file_result($result->file);
         if ($result->line_num) {
             $s .= ': ' . $result->line_num . ': ';
             $s .= "[{$result->match_start_index}:{$result->match_end_index}]: ";
@@ -127,7 +154,7 @@ class SearchResultFormatter
     private function multi_line_format(SearchResult $result): string
     {
         $s = str_repeat('=', self::SEPARATOR_LEN) . "\n";
-        $s .= $result->file . ': ' . $result->line_num . ': ';
+        $s .= $this->file_result_formatter->format_file_result($result->file) . ': ' . $result->line_num . ': ';
         $s .= '[' . $result->match_start_index . ':' . $result->match_end_index . ']';
         $s .= "\n" . str_repeat('-', self::SEPARATOR_LEN) . "\n";
         $line_format = sprintf(" %%%dd | %%s\n", $this->line_num_padding($result));

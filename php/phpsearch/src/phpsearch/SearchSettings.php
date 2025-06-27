@@ -13,7 +13,6 @@ use phpfind\StringUtil;
  */
 class SearchSettings extends FindSettings
 {
-    public bool $colorize = true;
     public bool $first_match = false;
     public array $in_lines_after_patterns = array();
     public array $in_lines_before_patterns = array();
@@ -25,7 +24,6 @@ class SearchSettings extends FindSettings
     public bool $multi_line_search = false;
     public array $out_lines_after_patterns = array();
     public array $out_lines_before_patterns = array();
-    public array $paths = array();
     public bool $print_lines = false;
     public bool $print_results = true;
     public bool $search_archives = false;
