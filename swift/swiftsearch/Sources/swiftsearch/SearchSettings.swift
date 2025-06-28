@@ -9,7 +9,6 @@
 import swiftfind
 
 public enum DefaultSearchSettings {
-    public static let colorize = true
     public static let firstMatch = false
     public static let linesAfter: Int32 = 0
     public static let linesBefore: Int32 = 0
@@ -23,7 +22,6 @@ public enum DefaultSearchSettings {
 }
 
 public class SearchSettings: FindSettings {
-    public var colorize: Bool = DefaultSearchSettings.colorize
     public var firstMatch: Bool = DefaultSearchSettings.firstMatch
     public var linesAfter: Int32 = DefaultSearchSettings.linesAfter
     public var linesBefore: Int32 = DefaultSearchSettings.linesBefore

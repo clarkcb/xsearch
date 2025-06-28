@@ -36,9 +36,27 @@ public struct SearchResult {
 
 public class SearchResultFormatter {
     let settings: SearchSettings
+    let fileFormatter: FileResultFormatter
+    public var formatLine = { (line: String) in line }
 
     public init(settings: SearchSettings) {
         self.settings = settings
+        self.fileFormatter = FileResultFormatter(settings: settings)
+        if settings.colorize {
+            formatLine = formatLineWithColor
+        }
+    }
+
+    private func formatLineWithColor(_ line: String) -> String {
+        var formattedLine = line
+        for p in settings.searchPatterns {
+            let match = p.firstMatch(formattedLine)
+            if match != nil {
+                formattedLine = colorize(formattedLine, match!.range.lowerBound, match!.range.upperBound)
+                break
+            }
+        }
+        return formattedLine
     }
 
     public func format(result: SearchResult) -> String {
@@ -50,13 +68,7 @@ public class SearchResultFormatter {
     }
 
     private func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int) -> String {
-        let strMatchStartIndex = s.index(s.startIndex, offsetBy: matchStartIndex)
-        let strMatchEndIndex = s.index(s.startIndex, offsetBy: matchEndIndex)
-        return String(s[..<strMatchStartIndex]) +
-            Color.GREEN +
-            String(s[strMatchStartIndex ..< strMatchEndIndex]) +
-            Color.RESET +
-            String(s[strMatchEndIndex...])
+        fileFormatter.colorize(s, matchStartIndex, matchEndIndex)
     }
 
     private func formatMatchingLine(result: SearchResult) -> String {
@@ -120,9 +132,7 @@ public class SearchResultFormatter {
     }
 
     private func formatFilePath(result: SearchResult) -> String {
-//        result.file == nil ? "<text>" : FileUtil.formatPath(result.file!.filePath,
-//                                                            forPaths: Array(settings.paths))
-        result.file == nil ? "<text>" : result.file!.filePath
+        result.file == nil ? "<text>" : fileFormatter.formatFileResult(result.file!)
     }
 
     private func singleLineFormat(result: SearchResult) -> String {

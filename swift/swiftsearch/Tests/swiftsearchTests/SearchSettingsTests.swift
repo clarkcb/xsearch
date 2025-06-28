@@ -23,7 +23,6 @@ class SearchSettingsTests: XCTestCase {
 
     func testDefaultSettings() {
         XCTAssert(DefaultFindSettings.archivesOnly == false, "archivesOnly == false")
-        XCTAssert(DefaultSearchSettings.colorize == true, "colorize == true")
         XCTAssert(DefaultFindSettings.debug == false, "debug == false")
         XCTAssert(DefaultSearchSettings.firstMatch == false, "firstMatch == false")
         XCTAssert(DefaultFindSettings.followSymlinks == false, "followSymlinks == false")
@@ -50,7 +49,6 @@ class SearchSettingsTests: XCTestCase {
     func testInitialSettingsEqualDefaultSettings() {
         let settings = SearchSettings()
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
-        XCTAssert(settings.colorize == DefaultSearchSettings.colorize, "colorize == true")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
         XCTAssert(settings.firstMatch == DefaultSearchSettings.firstMatch, "firstMatch == false")
         XCTAssert(settings.followSymlinks == DefaultFindSettings.followSymlinks, "followSymlinks == false")

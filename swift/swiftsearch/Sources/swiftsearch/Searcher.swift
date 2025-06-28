@@ -393,4 +393,63 @@ public class Searcher {
     private func getSortedSearchResults(results: [SearchResult]) -> [SearchResult] {
         return results.sorted(by: { self.cmpResultsInDir($0, $1) })
     }
+
+    public func printSearchResults(_ searchResults: [SearchResult], _ formatter: SearchResultFormatter) -> Void {
+        if searchResults.count > 0 {
+            let formatter = SearchResultFormatter(settings: settings)
+            logMsg("\nSearch results (\(searchResults.count)):")
+            for res in searchResults {
+                logMsg("\(formatter.format(result: res))")
+            }
+        } else {
+            logMsg("\nSearch results: 0")
+        }
+    }
+
+    private func getFileResults(_ searchResults: [SearchResult]) -> [FileResult] {
+        var fileSet = Set<String>()
+        var fileResults = [FileResult]()
+        for searchResult in searchResults {
+            if searchResult.file != nil {
+                if !fileSet.contains(searchResult.file!.filePath) {
+                    fileResults.append(searchResult.file!)
+                    fileSet.insert(searchResult.file!.filePath)
+                }
+            }
+        }
+        return fileResults
+    }
+
+    public func printMatchingDirs(_ searchResults: [SearchResult], _ formatter: SearchResultFormatter) -> Void {
+        let fileResults = getFileResults(searchResults)
+        finder.printMatchingDirs(fileResults, formatter.fileFormatter)
+    }
+
+    public func printMatchingFiles(_ searchResults: [SearchResult], _ formatter: SearchResultFormatter) -> Void {
+        let fileResults = getFileResults(searchResults)
+        finder.printMatchingFiles(fileResults, formatter.fileFormatter)
+    }
+
+    private func getMatchingLines(_ searchResults: [SearchResult]) -> [String] {
+        var lines = searchResults.map { $0.line.trimmingCharacters(in: whitespace as CharacterSet) }
+        if settings.uniqueLines {
+            let lineSet = Set<String>(lines)
+            lines = Array(lineSet)
+        }
+        return lines.sorted { $0.lowercased() < $1.lowercased() }
+    }
+
+    public func printMatchingLines(_ searchResults: [SearchResult], _ formatter: SearchResultFormatter) -> Void {
+        let lines = getMatchingLines(searchResults)
+        let hdr = settings.uniqueLines ? "\nUnique matching lines"
+            : "\nMatching lines"
+        if lines.count > 0 {
+            logMsg("\(hdr) (\(lines.count)):")
+            for line in lines {
+                logMsg(formatter.formatLine(line))
+            }
+        } else {
+            logMsg("\(hdr): 0")
+        }
+    }
 }
