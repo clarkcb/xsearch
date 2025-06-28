@@ -3,11 +3,11 @@ package scalasearch
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
-import scalafind.{FileResult, FileType, FileTypes, Finder}
+import scalafind.{FileResult, FileType, FileTypes, FileUtil, Finder}
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 import java.util.zip.{GZIPInputStream, ZipFile}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -550,6 +550,67 @@ class Searcher (_settings: SearchSettings) {
       }
     } else {
       fileResultCmp
+    }
+  }
+
+  def printSearchResults(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
+    // TODO: add includePattern setting in formatted output
+    if (results.isEmpty) {
+      log("\nSearch results: 0")
+    } else {
+      log("\nSearch results (%d):".format(results.length))
+      //      val formatter = new SearchResultFormatter(searcher.settings)
+      results.sortWith((sr1, sr2) => compareResults(sr1, sr2))
+        .foreach(r => log(formatter.format(r)))
+    }
+  }
+
+  private def getMatchingFiles(results: Seq[SearchResult]): Seq[String] = {
+    results
+      .filter(_.file.isDefined)
+      .map(_.file.get.path.toString)
+      .distinct
+  }
+
+  private def getMatchingFileResults(results: Seq[SearchResult]): Seq[FileResult] = {
+    results
+      .filter(_.file.isDefined)
+      .flatMap(_.file)
+      .distinct
+  }
+
+  def printMatchingDirs(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
+    val files = getMatchingFileResults(results)
+    finder.printMatchingDirs(files, formatter.fileResultFormatter)
+  }
+
+  def printMatchingFiles(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
+    val files = getMatchingFileResults(results)
+    finder.printMatchingFiles(files, formatter.fileResultFormatter)
+  }
+
+  private def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
+    val allLines = results.flatMap(r => r.line).map(_.trim)
+    if (settings.uniqueLines) {
+      allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
+    } else {
+      allLines.sortWith(_.toUpperCase < _.toUpperCase)
+    }
+  }
+
+  def printMatchingLines(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
+    val lines = getMatchingLines(results, settings)
+    val hdr =
+      if (settings.uniqueLines) {
+        "\nUnique matching lines"
+      } else {
+        "\nMatching lines"
+      }
+    if (lines.nonEmpty) {
+      log("%s (%d):".format(hdr, lines.length))
+      lines.foreach(line => log(formatter.formatLine(line)))
+    } else {
+      log("%s: 0".format(hdr))
     }
   }
 }

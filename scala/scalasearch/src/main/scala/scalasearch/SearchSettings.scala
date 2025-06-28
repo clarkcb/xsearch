@@ -93,6 +93,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archives
 
   val findSettings: FindSettings = FindSettings(
     archivesOnly = archivesOnly,
+    colorize = colorize,
     debug = debug,
     followSymlinks = followSymlinks,
     inArchiveExtensions = inArchiveExtensions,

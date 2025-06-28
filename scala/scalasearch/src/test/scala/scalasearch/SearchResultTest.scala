@@ -2,7 +2,7 @@ package scalasearch
 
 import org.junit.Assert.assertEquals
 import org.scalatest.funsuite.AnyFunSuite
-import scalafind.{FileResult, FileType}
+import scalafind.{Color, FileResult, FileType}
 
 import java.io.File
 import java.nio.file.{Path, Paths}

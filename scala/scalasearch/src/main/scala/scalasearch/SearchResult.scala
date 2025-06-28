@@ -1,6 +1,6 @@
 package scalasearch
 
-import scalafind.FileResult
+import scalafind.{Color, FileResult, FileResultFormatter}
 
 import scala.util.matching.Regex
 
@@ -18,6 +18,22 @@ case class SearchResult(searchPattern: Regex, file: Option[FileResult],
 
 class SearchResultFormatter(val settings: SearchSettings) {
   val sepLen = 80
+  var fileResultFormatter = new FileResultFormatter(settings.findSettings)
+
+  private def formatLineWithColor(line: String): String = {
+    var formattedLine = line
+    settings.searchPatterns.flatMap(p => p.findFirstMatchIn(formattedLine)).take(1).foreach { m =>
+      formattedLine = colorize(formattedLine, m.start, m.end)
+    }
+    formattedLine
+  }
+
+  val formatLine: String => String =
+    if (settings.colorize) {
+      formatLineWithColor
+    } else {
+      (line: String) => line
+    }
 
   def format(result: SearchResult): String = {
     if (result.linesBefore.nonEmpty || result.linesAfter.nonEmpty) {
@@ -28,11 +44,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
   }
 
   private def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
-    s.substring(0, matchStartIndex) +
-      Color.GREEN +
-      s.substring(matchStartIndex, matchEndIndex) +
-      Color.RESET +
-      s.substring(matchEndIndex)
+    fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex)
   }
 
   private def formatMatchingLine(result: SearchResult): String = {
@@ -94,7 +106,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
   }
 
   def singleLineFormat(result: SearchResult): String = {
-    val filepath = if (result.file.isDefined) result.file.get.toString else "<text>"
+    val filepath = if (result.file.isDefined) fileResultFormatter.formatFileResult(result.file.get) else "<text>"
     val matchString =
       if (result.lineNum > 0) {
         ": %d: [%d:%d]: %s".format(result.lineNum, result.matchStartIndex, result.matchEndIndex,
@@ -126,7 +138,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
     result.line match {
       case Some(resultLine) =>
         val sb = new StringBuilder
-        val filepath = if (result.file.isDefined) result.file.get.toString else "<text>"
+        val filepath = if (result.file.isDefined) fileResultFormatter.formatFileResult(result.file.get) else "<text>"
         sb.append("%s\n%s: %d: [%d:%d]\n%s\n".format("=" * sepLen, filepath,
           result.lineNum, result.matchStartIndex, result.matchEndIndex, "-" * sepLen))
         val lineFormat = " %1$" + lineNumPadding(result) + "d | %2$s\n"
