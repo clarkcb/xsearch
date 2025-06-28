@@ -31,21 +31,22 @@ function SearchMain {
 
         [Searcher]$searcher = [Searcher]::new($settings)
         [SearchResult[]]$results = $searcher.Search()
+        [SearchResultFormatter]$formatter = [SearchResultFormatter]::new($settings)
 
         if ($settings.PrintResults) {
-            $searcher.PrintResults(@($results))
+            $searcher.PrintResults($results, $formatter)
         }
 
          if ($settings.PrintDirs) {
-             $searcher.PrintMatchingDirs(@($results))
+             $searcher.PrintMatchingDirs(@($results), $formatter)
          }
 
          if ($settings.PrintFiles) {
-             $searcher.PrintMatchingFiles(@($results))
+             $searcher.PrintMatchingFiles(@($results), $formatter)
          }
 
          if ($settings.PrintLines) {
-             $searcher.PrintMatchingLines(@($results), $settings)
+             $searcher.PrintMatchingLines(@($results), $formatter)
          }
     }
     catch {

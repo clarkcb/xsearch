@@ -681,22 +681,46 @@ class FormattedResult {
 ########################################
 class SearchResultFormatter {
     [SearchSettings]$Settings
+    [FileResultFormatter]$FileFormatter
+    [Scriptblock]$FormatLineBlock
 
     SearchResultFormatter([SearchSettings]$settings) {
         $this.Settings = $settings
+        $this.FileFormatter = [FileResultFormatter]::new($settings)
+        if ($settings.Colorize) {
+            $this.FormatLineBlock = {
+                param([string]$line)
+                return $this.FormatLineColor($line)
+            }
+        } else {
+            $this.FormatLineBlock = {
+                param([string]$line)
+                return $line
+            }
+        }
     }
 
     # This splits a string into 3 segments: before, in, and after, where the 'in' segment should be colorized
-    [string[]]Colorize([string]$s, [int]$matchStartIdx, [int]$matchEndIdx) {
-        # Write-Host "This is " -ForegroundColor Red "red text" -ForegroundColor White " and this is white text."
-        [string[]]$elems = @()
-        $matchLen = $matchEndIdx - $matchStartIdx
-        $elems += $s.Substring(0, $matchStartIdx)
-        $elems += $s.Substring($matchStartIdx, $matchLen)
-        $elems += $s.Substring($matchEndIdx)
-        return $elems
+    [string[]]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx) {
+        return $this.FileFormatter.ColorizeString($s, $matchStartIdx, $matchEndIdx)
     }
-    
+
+    [string]FormatLineColor([string]$line) {
+        $formattedLine = $line
+        foreach ($pattern in $this.Settings.SearchPatterns) {
+            $match = $pattern.Match($formattedLine)
+            if ($match.Success) {
+                $formattedLine = $this.ColorizeString($formattedLine, $match.Index, $match.Index + $match.Length)
+                break
+            }
+        }
+        return $formattedLine
+    }
+
+    [string]FormatLine([string]$line) {
+        return $this.FormatLineBlock.Invoke($line)
+    }
+
     [string[]]FormatMatchingLine([SearchResult]$result) {
         $s = $result.Line.TrimEnd()
         $withLeadWhitespaceLen = $s.Length
@@ -709,7 +733,7 @@ class SearchResultFormatter {
         $matchEndIdx = $matchStartIdx + $matchLen
         [string[]]$elems = @()
         if ($this.Settings.Colorize) {
-            $lineElems = $this.Colorize($s, $matchStartIdx, $matchEndIdx)
+            $lineElems = $this.ColorizeString($s, $matchStartIdx, $matchEndIdx)
             $elems += $lineElems
         } else {
             $elems += $s
@@ -728,7 +752,7 @@ class SearchResultFormatter {
         [string[]]$linesAfter = @()
         
         $linesBefore += "=" * 80
-        $linesBefore += "$($result.File.File.ToString()): $($result.LineNum): [$($result.MatchStartIndex):$($result.MatchEndIndex)]"
+        $linesBefore += "$($this.FileFormatter.FormatFileResult($result.File)): $($result.LineNum): [$($result.MatchStartIndex):$($result.MatchEndIndex)]"
         $linesBefore += "-" * 80
         $lineNumPadding = $this.LineNumPadding($result)
         $formatStr = " {0,$lineNumPadding} | {1}"
@@ -743,7 +767,7 @@ class SearchResultFormatter {
         }
         $matchingLine += "> {0,$lineNumPadding} | " -f $currentLineNum
         if ($this.Settings.Colorize) {
-            $lineElems = $this.Colorize($result.Line, $result.MatchStartIndex - 1, $result.MatchEndIndex - 1)
+            $lineElems = $this.ColorizeString($result.Line, $result.MatchStartIndex - 1, $result.MatchEndIndex - 1)
             $matchingLine += $lineElems
         } else {
             $matchingLine += $result.Line
@@ -762,14 +786,13 @@ class SearchResultFormatter {
 
     [FormattedResult]SingleLineFormat([SearchResult]$result) {
         [string[]]$elems = @()
-        $s = $result.File.File.ToString()
+        $s = $this.FileFormatter.FormatFileResult($result.File)
         if ($result.LineNum -eq 0) {
             $s += " matches at [$($result.MatchStartIndex):$($result.MatchEndIndex)]"
             $elems += $s
         } else {
             $s += ": $($result.LineNum): [$($result.MatchStartIndex):$($result.MatchEndIndex)]: "
             $elems += $s
-            #$s += $this.FormatMatchingLine($result)
             $elems += $this.FormatMatchingLine($result)
         }
         
@@ -1116,7 +1139,7 @@ class Searcher {
             } else {
                 Write-Host $formattedResult.MatchingLine -Separator ''
             }
-            
+
             if ($formattedResult.LinesAfter.Count -gt 0) {
                 $formattedResult.LinesAfter | ForEach-Object { Write-Host $_ }
             }
@@ -1136,72 +1159,40 @@ class Searcher {
         }
     }
 
-    [void]PrintResults([SearchResult[]]$searchResults) {
+    [void]PrintResults([SearchResult[]]$searchResults, [SearchResultFormatter]$formatter) {
         if ($searchResults.Count -gt 0) {
             Write-Host "`nSearch results ($($searchResults.Count)):"
-            [SearchResultFormatter]$formatter = [SearchResultFormatter]::new($this.Settings)
+            # [SearchResultFormatter]$formatter = [SearchResultFormatter]::new($this.Settings)
             foreach ($r in $searchResults) {
                 [FormattedResult]$formatted = $formatter.Format($r)
                 $this.WriteFormattedResult($formatted)
             }
         } else {
-            Write-Host "`nSearch results: 0"
+            LogMsg("`nSearch results: 0")
         }
     }
 
-    [string[]]GetMatchingDirs([SearchResult[]]$searchResults) {
-        [string[]]$dirs = @()
+    [FileResult[]]GetMatchingFiles([SearchResult[]]$searchResults) {
+        [FileResult[]]$files = @()
         foreach ($r in $searchResults) {
-            $dir = '.'
             if ($null -ne $r.File.File.DirectoryName) {
                 $dir = $r.File.File.DirectoryName
             }
-            if ($dirs -notcontains $dir) {
-                $dirs += $dir
-            }
-        }
-        return $dirs
-    }
-
-    [void]PrintMatchingDirs([SearchResult[]]$searchResults) {
-        [string[]]$dirs = $this.GetMatchingDirs($searchResults)
-        if ($dirs.Count -gt 0) {
-#            LogMsg("`nDirectories with matches ($($dirs.Count)):")
-            Write-Host "`nMatching directories ($($dirs.Count)):"
-            foreach ($dir in $dirs) {
-#                LogMsg($dir)
-                Write-Host $dir
-            }
-        } else {
-#            LogMsg("`nDirectories with matches: 0")
-            Write-Host "`nMatching directories: 0"
-        }
-    }
-
-    [string[]]GetMatchingFiles([SearchResult[]]$searchResults) {
-        [string[]]$files = @()
-        foreach ($r in $searchResults) {
-            $file = $r.File.File.FullName
-            if ($files -notcontains $file) {
-                $files += $file
+            if ($files -notcontains $r.File) {
+                $files += $r.File
             }
         }
         return $files
     }
 
-    [void]PrintMatchingFiles([SearchResult[]]$searchResults) {
-        [string[]]$files = $this.GetMatchingFiles($searchResults)
-        if ($files.Count -gt 0) {
-#            LogMsg("`nFiles with matches ($($files.Count)):")
-            Write-Host "`nMatching files ($($files.Count)):"
-            foreach ($file in $files) {
-#                LogMsg($file)
-                Write-Host $file
-            }
-        } else {
-#            LogMsg("`nFiles with matches: 0")
-             Write-Host "`nMatching files: 0"
-        }
+    [void]PrintMatchingDirs([SearchResult[]]$searchResults, [SearchResultFormatter]$formatter) {
+        [FileResult[]]$files = $this.GetMatchingFiles($searchResults)
+        $this.Finder.PrintMatchingDirs($files, $formatter.FileFormatter)
+    }
+
+    [void]PrintMatchingFiles([SearchResult[]]$searchResults, [SearchResultFormatter]$formatter) {
+        [FileResult[]]$files = $this.GetMatchingFiles($searchResults)
+        $this.Finder.PrintMatchingFiles($files, $formatter.FileFormatter)
     }
 
     [string[]]GetMatchingLines([SearchResult[]]$searchResults, [SearchSettings]$settings) {
@@ -1215,16 +1206,16 @@ class Searcher {
         return $lines | Sort-Object
     }
 
-    [void]PrintMatchingLines([SearchResult[]]$searchResults, [SearchSettings]$settings) {
-        [string[]]$lines = $this.GetMatchingLines($searchResults, $settings)
-        $hdr = $settings.UniqueLines ? "Unique matching lines" : "Matching lines"
+    [void]PrintMatchingLines([SearchResult[]]$searchResults, [SearchResultFormatter]$formatter) {
+        [string[]]$lines = $this.GetMatchingLines($searchResults, $formatter.Settings)
+        $hdr = $formatter.Settings.UniqueLines ? "Unique matching lines" : "Matching lines"
         if ($lines.Count -gt 0) {
-            Write-Host "`n$hdr ($($lines.Count)):"
+            LogMsg("`n$hdr ($($lines.Count)):")
             foreach ($line in $lines) {
-                Write-Host $line
+                LogMsg($formatter.FormatLine($line))
             }
         } else {
-            Write-Host "`n$($hdr): 0"
+            LogMsg("`n$($hdr): 0")
         }
     }
 }
