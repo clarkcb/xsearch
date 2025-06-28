@@ -4,25 +4,39 @@
 
 plugins {
     id("buildlogic.java-library-conventions")
+    id("maven-publish")
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
+// TODO: replace with use of "com.github.ben-manes.versions" plugin?
+apply<DependencyUpdatePlugin>()
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
+    mavenCentral()
 }
 
 dependencies {
-    implementation("commons-io:commons-io:2.18.0")
-    implementation("org.json:json:20250107")
-    implementation("xfind:javafind:0.1.0-SNAPSHOT")
+    implementation(libs.commons.io)
+    implementation(libs.org.json)
+    implementation("javafind:lib:0.1.0-SNAPSHOT")
+    testImplementation(libs.junit.jupiter)
+}
+
+tasks.withType<JavaCompile>() {
+    options.encoding = "UTF-8"
+    options.release = 17
+}
+
+group = "javasearch" // should this be "xsearch" or "xsearch.javasearch"?
+version = "0.1.0-SNAPSHOT"
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }

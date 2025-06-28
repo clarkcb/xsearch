@@ -6,28 +6,38 @@ plugins {
     id("buildlogic.java-application-conventions")
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
 repositories {
     mavenLocal()
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
+    mavenCentral()
 }
 
 dependencies {
-    implementation("org.apache.commons:commons-text")
-    implementation("xfind:javafind:0.1.0-SNAPSHOT")
     implementation(project(":lib"))
+    implementation("javafind:lib:0.1.0-SNAPSHOT")
 }
 
 application {
     // Define the main class for the application.
     mainClass = "javasearch.JavaSearch"
+}
+
+tasks.jar {
+    manifest {
+        attributes(
+            mapOf(
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+                "Main-Class" to application.mainClass
+            )
+        )
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
+
+    // Also include compiled classes from this project
+    from(sourceSets.main.get().output)
 }
