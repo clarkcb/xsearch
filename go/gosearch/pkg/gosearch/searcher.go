@@ -818,7 +818,7 @@ func (s *Searcher) Search() (*SearchResults, error) {
 	}
 
 	// sort the SearchResults
-	//s.searchResults.Sort(s.Settings)
+	s.searchResults.Sort(s.Settings)
 
 	return s.searchResults, nil
 }

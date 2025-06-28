@@ -37,25 +37,26 @@ func main() {
 	if err != nil {
 		errorAndExit(err, searchOptions)
 	}
+	formatter := gosearch.NewSearchResultFormatter(settings)
 
 	// if there are results and PrintResults is true then print them out
 	if settings.PrintResults() {
 		gofind.Log("")
-		searchResults.PrintSearchResults()
+		searchResults.PrintSearchResults(formatter)
 	}
 
 	// print matching dirs
 	if settings.PrintDirs() {
-		searchResults.PrintMatchingDirs()
+		searchResults.PrintMatchingDirs(formatter)
 	}
 
 	// print matching files
 	if settings.PrintFiles() {
-		searchResults.PrintMatchingFiles()
+		searchResults.PrintMatchingFiles(formatter)
 	}
 
 	// print matching lines (unique or not, sorted alphabetically)
 	if settings.PrintLines() {
-		searchResults.PrintMatchingLines()
+		searchResults.PrintMatchingLines(formatter)
 	}
 }

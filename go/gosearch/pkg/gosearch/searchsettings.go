@@ -10,7 +10,6 @@ import (
 
 type SearchSettings struct {
 	FindSettings            *gofind.FindSettings
-	colorize                bool
 	firstMatch              bool
 	inLinesAfterPatterns    *gofind.Patterns
 	inLinesBeforePatterns   *gofind.Patterns
@@ -33,7 +32,6 @@ type SearchSettings struct {
 func GetDefaultSearchSettings() *SearchSettings {
 	return &SearchSettings{
 		gofind.GetDefaultFindSettings(),
-		true,                 // Colorize
 		false,                // FirstMatch
 		gofind.NewPatterns(), // InLinesAfterPatterns
 		gofind.NewPatterns(), // InLinesBeforePatterns
@@ -90,11 +88,11 @@ func (s *SearchSettings) SetArchivesOnly(archivesOnly bool) {
 }
 
 func (s *SearchSettings) Colorize() bool {
-	return s.colorize
+	return s.FindSettings.Colorize()
 }
 
 func (s *SearchSettings) SetColorize(b bool) {
-	s.colorize = b
+	s.FindSettings.SetColorize(b)
 }
 
 func (s *SearchSettings) Debug() bool {
