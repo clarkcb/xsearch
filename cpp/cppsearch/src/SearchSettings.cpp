@@ -4,7 +4,6 @@
 namespace cppsearch {
 
     SearchSettings::SearchSettings() :
-    m_colorize{true},
     m_first_match{false},
     m_lines_after{0},
     m_lines_before{0},
@@ -180,7 +179,7 @@ namespace cppsearch {
     std::string SearchSettings::string() const {
         return std::string("SearchSettings(")
                 + "archives_only: " + cppfind::StringUtil::bool_to_string(archives_only())
-                + ", colorize: " + cppfind::StringUtil::bool_to_string(m_colorize)
+                + ", colorize: " + cppfind::StringUtil::bool_to_string(colorize())
                 + ", debug: " + cppfind::StringUtil::bool_to_string(debug())
                 + ", first_match: " + cppfind::StringUtil::bool_to_string(m_first_match)
                 + ", follow_symlinks: " + cppfind::StringUtil::bool_to_string(follow_symlinks())
@@ -198,9 +197,6 @@ namespace cppsearch {
                 + ", lines_after_to_patterns: " + patterns_to_string(m_lines_after_to_patterns)
                 + ", lines_after_until_patterns: " + patterns_to_string(m_lines_after_until_patterns)
                 + ", lines_before: " + std::to_string(m_lines_before)
-                + ", list_dirs: " + cppfind::StringUtil::bool_to_string(print_dirs())
-                + ", list_files: " + cppfind::StringUtil::bool_to_string(print_files())
-                + ", list_lines: " + cppfind::StringUtil::bool_to_string(m_print_lines)
                 + ", max_depth: " + std::to_string(max_depth())
                 + ", max_last_mod: \"" + cppfind::StringUtil::long_to_date_str(max_last_mod()) + "\""
                 + ", max_line_length: " + std::to_string(m_max_line_length)
@@ -218,6 +214,9 @@ namespace cppsearch {
                 + ", out_lines_after_patterns: " + patterns_to_string(m_out_lines_after_patterns)
                 + ", out_lines_before_patterns: " + patterns_to_string(m_out_lines_before_patterns)
                 + ", paths: " + paths_to_string(paths())
+                + ", print_dirs: " + cppfind::StringUtil::bool_to_string(print_dirs())
+                + ", print_files: " + cppfind::StringUtil::bool_to_string(print_files())
+                + ", print_lines: " + cppfind::StringUtil::bool_to_string(m_print_lines)
                 + ", print_results: " + cppfind::StringUtil::bool_to_string(m_print_results)
                 + ", print_usage: " + cppfind::StringUtil::bool_to_string(print_usage())
                 + ", print_version: " + cppfind::StringUtil::bool_to_string(print_version())

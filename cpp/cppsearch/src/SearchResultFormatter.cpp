@@ -2,11 +2,32 @@
 #include "SearchResultFormatter.h"
 
 namespace cppsearch {
-    SearchResultFormatter::SearchResultFormatter(const SearchSettings& settings) : m_settings(settings) {
+    SearchResultFormatter::SearchResultFormatter(const SearchSettings& settings) :
+    m_settings{settings},
+    m_file_formatter{cppfind::FileResultFormatter(static_cast<cppfind::FindSettings>(settings))} {
+        init();
+    }
+
+    SearchResultFormatter::SearchResultFormatter(const std::unique_ptr<SearchSettings>& settings_ptr) :
+    m_settings{*settings_ptr},
+    m_file_formatter{cppfind::FileResultFormatter(*settings_ptr)} {
+        init();
+    }
+
+    void SearchResultFormatter::init() {
+        if (m_settings.colorize()) {
+            func_format_line = [this](const std::string& line) { return format_line_with_color(line); };
+        } else {
+            func_format_line = [](const std::string& line) { return line; };
+        }
     }
 
     SearchSettings SearchResultFormatter::settings() const {
         return m_settings;
+    }
+
+    cppfind::FileResultFormatter SearchResultFormatter::file_formatter() const {
+        return m_file_formatter;
     }
 
     std::string SearchResultFormatter::format(const SearchFileResult& result) const {
@@ -64,25 +85,13 @@ namespace cppsearch {
         // TODO: try using https://github.com/agauniyal/rang for CLI colorization
         if (m_settings.colorize()) {
             formatted = colorize(formatted, match_start_index, match_length);
-//            formatted = formatted.substr(0, match_start_index) +
-//                        COLOR_GREEN +
-//                        formatted.substr(match_start_index, match_length) +
-//                        COLOR_RESET +
-//                        formatted.substr(match_start_index + match_length);
         }
         return formatted;
     }
 
     std::string SearchResultFormatter::colorize(const std::string& s, const unsigned long start_idx,
                                                 const unsigned long match_length) {
-        size_t s_size = s.size();
-        std::string prefix = s.substr(0, start_idx);
-        std::string match = s.substr(start_idx, match_length);
-        return s.substr(0, start_idx) +
-                    COLOR_GREEN +
-                    s.substr(start_idx, match_length) +
-                    COLOR_RESET +
-                    s.substr(start_idx + match_length);
+       return cppfind::FileResultFormatter::colorize(s, start_idx, match_length);
     }
 
     std::string SearchResultFormatter::single_line_format(const SearchFileResult& result) const {

@@ -17,7 +17,6 @@ namespace cppsearch {
 
         // property getters
         // [[nodiscard]] bool archives_only() const;
-        [[nodiscard]] bool colorize() const;
         [[nodiscard]] bool first_match() const;
         // [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool multi_line_search() const;
@@ -38,7 +37,6 @@ namespace cppsearch {
 
         // property setters
         // void archives_only(bool archives_only);
-        void colorize(bool colorize);
         void first_match(bool first_match);
         // void include_archives(bool include_archives);
         void multi_line_search(bool multi_line_search);
@@ -63,7 +61,6 @@ namespace cppsearch {
         [[nodiscard]] std::string string() const;
 
     private:
-        bool m_colorize;
         bool m_first_match;
 
         std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> m_in_lines_after_patterns;
