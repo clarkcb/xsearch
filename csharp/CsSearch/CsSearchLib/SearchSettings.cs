@@ -22,8 +22,6 @@ public class SearchSettings : FindSettings
 			}
 		}
 	}
-
-	public bool Colorize { get; set; }
 	public bool FirstMatch { get; set; }
 	public ISet<Regex> InLinesAfterPatterns { get; }
 	public ISet<Regex> InLinesBeforePatterns { get; }
@@ -56,7 +54,6 @@ public class SearchSettings : FindSettings
 
 	public SearchSettings()
 	{
-		Colorize = true;
 		FirstMatch = false;
 		InLinesAfterPatterns = new HashSet<Regex>();
 		InLinesBeforePatterns = new HashSet<Regex>();

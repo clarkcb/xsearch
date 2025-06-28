@@ -473,15 +473,25 @@ public class Searcher
 
 	private Comparison<SearchResult> GetSearchResultsComparison()
 	{
-		var fileResultsComparison = _finder.GetFileResultsComparison();
-		return (r1, r2) =>
+		if (Settings.SortDescending)
 		{
-			if (r1.File is not null && r2.File is not null)
+			return Settings.SortBy switch
 			{
-				return fileResultsComparison(r1.File, r2.File);
-			}
-			if (r1.File == null) return r2.File == null ? 0 : -1;
-			return 1;
+				SortBy.FileName => (r1, r2) => r2.CompareByName(r1, Settings.SortCaseInsensitive),
+				SortBy.FileSize => (r1, r2) => r2.CompareBySize(r1, Settings.SortCaseInsensitive),
+				SortBy.FileType => (r1, r2) => r2.CompareByType(r1, Settings.SortCaseInsensitive),
+				SortBy.LastMod => (r1, r2) => r2.CompareByLastMod(r1, Settings.SortCaseInsensitive),
+				_ => (r1, r2) => r2.CompareByPath(r1, Settings.SortCaseInsensitive)
+			};
+		}
+
+		return Settings.SortBy switch
+		{
+			SortBy.FileName => (r1, r2) => r1.CompareByName(r2, Settings.SortCaseInsensitive),
+			SortBy.FileSize => (r1, r2) => r1.CompareBySize(r2, Settings.SortCaseInsensitive),
+			SortBy.FileType => (r1, r2) => r1.CompareByType(r2, Settings.SortCaseInsensitive),
+			SortBy.LastMod => (r1, r2) => r1.CompareByLastMod(r2, Settings.SortCaseInsensitive),
+			_ => (r1, r2) => r1.CompareByPath(r2, Settings.SortCaseInsensitive)
 		};
 	}
 
@@ -496,11 +506,11 @@ public class Searcher
 		}
 	}
 
-	public void PrintResults(IEnumerable<SearchResult> results)
+	public static void PrintResults(IEnumerable<SearchResult> results, SearchResultFormatter formatter)
 	{
 		// File sorting is done by CsFind, so maybe additional sorting isn't needed?
 		// var sortedResults = GetSortedSearchResults();
-		var formatter = new SearchResultFormatter(Settings);
+		// var formatter = new SearchResultFormatter(Settings);
 		var resultsList = results.ToList();
 		Logger.Log($"Search results ({resultsList.Count}):");
 		foreach (var searchResult in resultsList)
@@ -509,62 +519,29 @@ public class Searcher
 		}
 	}
 
-	private IEnumerable<FilePath> GetMatchingDirs(IEnumerable<SearchResult> results)
+	private static IEnumerable<FileResult> GetMatchingFiles(IEnumerable<SearchResult> results)
 	{
-		return new List<FilePath>(
-			results.Where(r => r.File?.FilePath.Parent != null)
-				.Select(r => r.File!.FilePath.Parent!)
-  				.Distinct()
-				.OrderBy(d => d.Path));
+		return
+		[
+			..results.Where(r => r.File != null)
+				.Select(r => r.File!)
+				.DistinctBy(fp => fp.ToString())
+		];
 	}
 
-	public void PrintMatchingDirs(IEnumerable<SearchResult> results)
+	public static void PrintMatchingDirs(IEnumerable<SearchResult> results, SearchResultFormatter formatter)
 	{
-		var matchingDirs = GetMatchingDirs(results)
-			.Select(d => d.ToString())
-			.ToList();
-		if (matchingDirs.Count != 0)
-		{
-			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
-			foreach (var d in matchingDirs)
-			{
-				Logger.Log(d);
-			}
-		}
-		else
-		{
-			Logger.Log("\nMatching directories: 0");
-		}
+		var matchingFiles = GetMatchingFiles(results);
+		Finder.PrintMatchingDirs(matchingFiles, formatter.FileFormatter);
 	}
 
-	private IEnumerable<FilePath> GetMatchingFiles(IEnumerable<SearchResult> results)
+	public static void PrintMatchingFiles(IEnumerable<SearchResult> results, SearchResultFormatter formatter)
 	{
-		return new List<FilePath>(
-			results.Where(r => r.File != null)
-				.Select(r => r.File!.FilePath)
-				.Distinct().ToList());
+		var matchingFiles = GetMatchingFiles(results);
+		Finder.PrintMatchingFiles(matchingFiles, formatter.FileFormatter);
 	}
 
-	public void PrintMatchingFiles(IEnumerable<SearchResult> results)
-	{
-		var matchingFiles = GetMatchingFiles(results)
-			.Select(f => f.ToString())
-			.ToList();
-		if (matchingFiles.Count > 0)
-		{
-			Logger.Log($"\nMatching files ({matchingFiles.Count}):");
-			foreach (var f in matchingFiles)
-			{
-				Logger.Log(f);
-			}
-		}
-		else
-		{
-			Logger.Log("\nMatching files: 0");
-		}
-	}
-
-	private IEnumerable<string> GetMatchingLines(IEnumerable<SearchResult> results)
+	private List<string> GetMatchingLines(IEnumerable<SearchResult> results)
 	{
 		var lines = results.Where(r => r.Line != null)
 			.Select(r => r.Line!.Trim()).ToList();
@@ -576,14 +553,14 @@ public class Searcher
 		return lines;
 	}
 
-	public void PrintMatchingLines(IEnumerable<SearchResult> results)
+	public void PrintMatchingLines(IEnumerable<SearchResult> results, SearchResultFormatter formatter)
 	{
 		var matchingLines = GetMatchingLines(results).ToList();
 		var hdrText = Settings.UniqueLines ? "Unique matching lines" : "Matching lines";
-		Logger.Log($"\n{hdrText} ({matchingLines.Count()}):");
+		Logger.Log($"\n{hdrText} ({matchingLines.Count}):");
 		foreach (var m in matchingLines)
 		{
-			Logger.Log(m);
+			Logger.Log(formatter.FormatLine(m));
 		}
 	}
 }

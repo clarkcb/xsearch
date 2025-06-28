@@ -1,10 +1,45 @@
+using System;
 using System.Text;
+using CsFindLib;
 
 namespace CsSearchLib;
 
-public class SearchResultFormatter(SearchSettings settings)
+public class SearchResultFormatter
 {
-	private SearchSettings Settings { get; } = settings;
+	private SearchSettings Settings { get; }
+	public FileResultFormatter FileFormatter { get; }
+	private Func<string, string> FormatLineFunc { get; }
+
+	public SearchResultFormatter(SearchSettings settings)
+	{
+		Settings = settings;
+		FileFormatter = new FileResultFormatter(settings);
+		if (settings.Colorize)
+		{
+			FormatLineFunc = FormatLineWithColor;
+		}
+		else
+		{
+			FormatLineFunc = line => line;
+		}
+	}
+
+	private string FormatLineWithColor(string line)
+	{
+		var formattedLine = line;
+		foreach (var p in Settings.SearchPatterns)
+		{
+			var m = p.Match(formattedLine);
+			if (m.Success)
+			{
+				formattedLine = Colorize(formattedLine, m.Index, m.Index + m.Length);
+				break;
+			}
+		}
+		return formattedLine;
+	}
+
+	public string FormatLine(string line) => FormatLineFunc(line);
 
 	public string Format(SearchResult result)
 	{
@@ -15,32 +50,23 @@ public class SearchResultFormatter(SearchSettings settings)
 		return SingleLineFormat(result);
 	}
 
-	private static string GetRelativeFilePath(SearchResult result)
-	{
-		return result.File!.PathAndName;
-	}
-
 	private static int LineNumPadding(SearchResult result)
 	{
 		var maxLineNum = result.LineNum + result.LinesAfter.Count;
 		return $"{maxLineNum}".Length;
 	}
 
-	private static string Colorize(string s, int matchStartIndex, int matchEndIndex)
-	{
-		var matchLength = matchEndIndex - matchStartIndex;
-		return s[..matchStartIndex] +
-		       Color.Green + 
-		       s.Substring(matchStartIndex, matchLength) +
-		       Color.Reset + 
-		       s[(matchStartIndex + matchLength)..];
-	}
+    private static string Colorize(string s, int matchStartIndex, int matchEndIndex)
+    {
+        return FileResultFormatter.Colorize(s, matchStartIndex, matchEndIndex);
+    }
 
 	private string MultiLineFormat(SearchResult result)
 	{
+		var filePath = result.File != null ? FileFormatter.FormatFileResult(result.File!) : "<text>";
 		var sb = new StringBuilder().
 			Append(new string('=', 80)).Append('\n').
-			Append(GetRelativeFilePath(result)).Append(": ").
+			Append(filePath).Append(": ").
 			Append(result.LineNum).Append(": ").
 			Append('[').Append(result.MatchStartIndex).Append(':').
 			Append(result.MatchEndIndex).Append("]\n").
@@ -81,7 +107,8 @@ public class SearchResultFormatter(SearchSettings settings)
         
 	private string SingleLineFormat(SearchResult result)
 	{
-		var sb = new StringBuilder().Append(GetRelativeFilePath(result));
+		var filePath = result.File != null ? FileFormatter.FormatFileResult(result.File!) : "<text>";
+		var sb = new StringBuilder().Append(filePath);
 		if (result.LineNum == 0)
 		{
 			sb.Append($" matches at [{result.MatchStartIndex}:{result.MatchEndIndex}]");

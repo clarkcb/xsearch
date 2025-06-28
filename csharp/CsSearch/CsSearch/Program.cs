@@ -24,26 +24,27 @@ namespace CsSearch
 
 				var searcher = new Searcher(settings);
 				var results = searcher.Search();
+				var formatter = new SearchResultFormatter(settings);
 
 				if (settings.PrintResults)
 				{
 					Logger.Log("");
-					searcher.PrintResults(results);
+					Searcher.PrintResults(results, formatter);
 				}
 
 				if (settings.PrintDirs)
 				{
-					searcher.PrintMatchingDirs(results);
+					Searcher.PrintMatchingDirs(results, formatter);
 				}
 
 				if (settings.PrintFiles)
 				{
-					searcher.PrintMatchingFiles(results);
+					Searcher.PrintMatchingFiles(results, formatter);
 				}
 
 				if (settings.PrintLines)
 				{
-					searcher.PrintMatchingLines(results);
+					searcher.PrintMatchingLines(results, formatter);
 				}
 			}
 			catch (SearchException e)
