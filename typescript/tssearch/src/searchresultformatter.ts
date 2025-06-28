@@ -4,7 +4,7 @@
  * SearchResult class represents a search result
  */
 
-import {COLORS} from './color';
+import {FileResultFormatter} from 'tsfind';
 import {SearchResult} from './searchresult';
 import {SearchSettings} from './searchsettings';
 
@@ -14,9 +14,36 @@ const SEPARATOR_LEN = 80;
 
 export class SearchResultFormatter {
     settings: SearchSettings;
+    fileFormatter: FileResultFormatter;
 
     constructor(settings: SearchSettings) {
         this.settings = settings;
+        this.fileFormatter = new FileResultFormatter(settings.getFindSettings());
+        if (settings.colorize) {
+            this.formatLine = this.formatLineWithColor.bind(this);
+        }
+    }
+
+    private formatLineWithColor(line: string): string {
+        let formattedLine = line;
+        for (let p of this.settings.searchPatterns) {
+            let m = p.exec(formattedLine);
+            if (m) {
+                formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length);
+                break;
+            }
+        }
+        if (this.settings.inExtensions.length > 0) {
+            const idx: number = formattedLine.lastIndexOf('.');
+            if (idx > 0 && idx < formattedLine.length - 1) {
+                formattedLine = this.fileFormatter.colorize(formattedLine, idx + 1, formattedLine.length);
+            }
+        }
+        return formattedLine;
+    }
+
+    public formatLine(line: string): string {
+        return line;
     }
 
     public format(result: SearchResult): string {
@@ -25,7 +52,7 @@ export class SearchResultFormatter {
     }
 
     private singleLineFormat(result: SearchResult): string {
-        let s = result.file ? result.file.toString() : '<text>';
+        let s = result.file ? this.fileFormatter.formatFileResult(result.file) : '<text>';
         if (result.lineNum && result.line) {
             s += ': ' + result.lineNum + ': [' + result.matchStartIndex + ':' +
                 result.matchEndIndex +']: ' + this.formatMatchingLine(result);
@@ -53,16 +80,8 @@ export class SearchResultFormatter {
         return s.replace(/[\r\n]+$/, '');
     }
 
-    private static colorize(s: string, matchStartIndex: number, matchEndIndex: number): string {
-        return s.slice(0, matchStartIndex) +
-            COLORS.GREEN +
-            s.slice(matchStartIndex, matchEndIndex) +
-            COLORS.RESET +
-            s.slice(matchEndIndex);
-    }
-
     private multiLineFormat(result: SearchResult): string {
-        const filename = result.file ? result.file.toString() : '<text>';
+        const filename = result.file ? this.fileFormatter.formatFileResult(result.file) : '<text>';
         let s: string = Array(SEPARATOR_LEN + 1).join("=") + "\n" + `${filename}: ` +
             `${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]` +
              "\n" + Array(SEPARATOR_LEN + 1).join("-") + "\n";
@@ -79,7 +98,7 @@ export class SearchResultFormatter {
         }
         let line = SearchResultFormatter.trimRight(result.line);
         if (this.settings.colorize) {
-            line = SearchResultFormatter.colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
+            line = this.fileFormatter.colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
         }
         s += "> " + SearchResultFormatter.padLeft(currentLineNum.toString(), numPadding) + " | " +
             line + "\n";
@@ -151,7 +170,7 @@ export class SearchResultFormatter {
         }
 
         if (this.settings.colorize) {
-            formatted = SearchResultFormatter.colorize(formatted, matchStartIndex, matchEndIndex);
+            formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex);
         }
         return formatted;
     }

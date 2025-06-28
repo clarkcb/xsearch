@@ -12,6 +12,7 @@ import {FileResult, FileType, FileUtil, Finder} from 'tsfind';
 import {SearchError} from './searcherror';
 import {SearchResult} from './searchresult';
 import {SearchSettings} from './searchsettings';
+import {SearchResultFormatter} from "./searchresultformatter";
 
 export class Searcher {
     _binaryEncoding: BufferEncoding = 'latin1';
@@ -373,5 +374,84 @@ export class Searcher {
             }
         }
         return results;
+    }
+
+    cmpSearchResults(r1: SearchResult, r2: SearchResult): number {
+        let pathCmp = 0;
+        if (r1.file && r2.file)
+            pathCmp = r1.file.path.localeCompare(r2.file.path);
+        if (pathCmp === 0) {
+            let fileCmp = 0;
+            if (r1.file && r2.file)
+                fileCmp = r1.file.fileName.localeCompare(r2.file.fileName);
+            if (fileCmp === 0) {
+                if (r1.lineNum === r2.lineNum) {
+                    return r1.matchStartIndex - r2.matchStartIndex;
+                }
+                return r1.lineNum - r2.lineNum;
+            }
+            return fileCmp;
+        }
+        return pathCmp;
+    }
+
+    printSearchResults(results: SearchResult[], formatter: SearchResultFormatter): void {
+        // first sort the results
+        // TODO: ensure sorting gets help from tsfind
+        results.sort(this.cmpSearchResults);
+        common.log("\nSearch results " + `(${results.length}):`);
+        results.forEach(r => common.log(formatter.format(r)));
+    }
+
+    getFileResults(results: SearchResult[]): FileResult[] {
+        let fileMap: {[key: string]: FileResult} = {};
+        let fileResults: FileResult[] = [];
+        for (const r of results) {
+            if (r.file && !(r.file.relativePath() in fileMap)) {
+                fileMap[r.file.relativePath()] = r.file;
+                fileResults.push(r.file);
+            }
+        }
+        return fileResults;
+    }
+
+    printMatchingDirs(results: SearchResult[], formatter: SearchResultFormatter): void {
+        const fileResults: FileResult[] = this.getFileResults(results);
+        this._finder.printMatchingDirs(fileResults, formatter.fileFormatter);
+    }
+
+    printMatchingFiles(results: SearchResult[], formatter: SearchResultFormatter): void {
+        const fileResults: FileResult[] = this.getFileResults(results);
+        this._finder.printMatchingFiles(fileResults, formatter.fileFormatter);
+    }
+
+    getMatchingLines(results: SearchResult[]): string[] {
+        let lines: string[] = results.filter(r => r.lineNum > 0).map(r => r.line.trim());
+        if (this._settings.uniqueLines) {
+            lines = common.setFromArray(lines);
+        }
+        lines.sort((a, b) => {
+            if (a.toUpperCase() === b.toUpperCase())
+                return 0;
+            return a.toUpperCase() < b.toUpperCase() ? -1 : 1;
+        });
+        return lines;
+    }
+
+    printMatchingLines(results: SearchResult[], formatter: SearchResultFormatter): void {
+        const lines: string[] = this.getMatchingLines(results);
+        let hdrText: string;
+        if (this._settings.uniqueLines)
+            hdrText = "\nUnique lines with matches";
+        else
+            hdrText = "\nLines with matches";
+        if (lines.length > 0) {
+            hdrText = `${hdrText} (${lines.length}):`
+            common.log(hdrText);
+            lines.forEach(l => common.log(formatter.formatLine(l)));
+        } else {
+            hdrText = `${hdrText}: 0`
+            common.log(hdrText);
+        }
     }
 }

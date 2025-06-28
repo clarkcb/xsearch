@@ -10,7 +10,6 @@ import {FileType, FileTypes, FindSettings, SortBy, SortUtil, StringUtil} from 't
 
 export class SearchSettings {
     private readonly findSettings: FindSettings;
-    colorize = true;
     firstMatch = false;
     inLinesAfterPatterns: RegExp[] = [];
     inLinesBeforePatterns: RegExp[] = [];
@@ -53,6 +52,14 @@ export class SearchSettings {
         this.findSettings.archivesOnly = value;
         //if (value) this.findSettings.includeArchives = value;
         if (value) this.searchArchives = value;
+    }
+
+    public get colorize(): boolean {
+        return this.findSettings.colorize;
+    }
+
+    public set colorize(value: boolean) {
+        this.findSettings.colorize = value;
     }
 
     public get debug(): boolean {
