@@ -23,85 +23,6 @@ use plsearch::config;
 use plsearch::Searcher;
 use plsearch::SearchOptions;
 
-sub print_results {
-    my ($results, $settings) = @_;
-    my $len = scalar @$results;
-    my $formatter = plsearch::SearchResultFormatter->new($settings);
-
-    plfind::common::log_msg("Search results ($len):");
-    foreach my $r (@$results) {
-        plfind::common::log_msg($formatter->format($r));
-    }
-}
-
-sub get_matching_dirs {
-    my ($search_results) = @_;
-    my @dirs = map { $_->{file}->{file_path}->parent } @$search_results;
-    my $uniq = plfind::common::uniq(\@dirs);
-    return $uniq;
-}
-
-sub print_matching_dirs {
-    my ($search_results) = @_;
-    my $dirs = get_matching_dirs($search_results);
-    if (scalar @$dirs) {
-        plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @$dirs));
-        foreach my $d (@$dirs) {
-            plfind::common::log_msg($d);
-        }
-    } else {
-        plfind::common::log_msg("\nMatching directories: 0");
-    }
-}
-
-sub get_matching_files {
-    my ($search_results) = @_;
-    my @files = map { $_->{file}->to_string() } @$search_results;
-    return \@files;
-}
-
-sub print_matching_files {
-    my ($search_results) = @_;
-    my $files = get_matching_files($search_results);
-    if (scalar @$files) {
-        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @$files));
-        foreach my $f (@$files) {
-            plfind::common::log_msg($f);
-        }
-    } else {
-        plfind::common::log_msg("\nMatching files: 0");
-    }
-}
-
-sub get_matching_lines {
-    my ($search_results, $settings) = @_;
-    my @lines = map { plfind::common::trim($_->{line}) } @$search_results;
-    if ($settings->{unique_lines}) {
-        my $uniq = plfind::common::uniq(\@lines);
-        @lines = @$uniq;
-    }
-    @lines = sort {uc($a) cmp uc($b)} @lines;
-    return \@lines;
-}
-
-sub print_matching_lines {
-    my ($search_results, $settings) = @_;
-    my $lines = get_matching_lines($search_results, $settings);
-    my $title = 'Matching lines';
-    if ($settings->{unique_lines}) {
-        $title = 'Unique matching lines';
-    }
-    if (scalar @$lines) {
-        my $msg = "\n%s (%d):";
-        plfind::common::log_msg(sprintf($msg, $title, scalar @$lines));
-        foreach my $l (@$lines) {
-            plfind::common::log_msg($l);
-        }
-    } else {
-        plfind::common::log_msg("\n$title: 0");
-    }
-}
-
 sub main {
     my $search_options = plsearch::SearchOptions->new();
     my ($settings, $errs) = $search_options->settings_from_args(\@ARGV);
@@ -138,25 +59,26 @@ sub main {
     }
 
     my $search_results = $searcher->search();
+    my $formatter = plsearch::SearchResultFormatter->new($settings);
 
     if ($settings->{print_results}) {
         plfind::common::log_msg('');
-        print_results($search_results, $settings);
+        plsearch::Searcher::print_results($search_results, $formatter);
     }
 
     # print matching dirs
     if ($settings->{print_dirs}) {
-        print_matching_dirs($search_results);
+        plsearch::Searcher::print_matching_dirs($search_results, $formatter);
     }
 
     # print matching files
     if ($settings->{print_files}) {
-        print_matching_files($search_results);
+        plsearch::Searcher::print_matching_files($search_results, $formatter);
     }
 
     # print matching lines
     if ($settings->{print_lines}) {
-        print_matching_lines($search_results, $settings);
+        plsearch::Searcher::print_matching_lines($search_results, $formatter);
     }
 }
 

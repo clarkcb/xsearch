@@ -13,17 +13,48 @@ use warnings;
 
 use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
+use plfind::Color;
 use plfind::common;
-
-use plsearch::Color;
+use plfind::FileResultFormatter;
 
 sub new {
     my $class = shift;
+    my $settings = shift;
     my $self = {
-        settings => shift,
+        settings       => $settings,
+        file_formatter => plfind::FileResultFormatter->new($settings)
     };
     bless $self, $class;
+    if ($self->{settings}->{colorize}) {
+        $self->{format_line} = sub { my ($_self, $line) = @_; return $_self->format_line_with_color($line) };
+    } else {
+        $self->{format_line} = sub { my ($_self, $line) = @_; return $_self->format_line_default($line) };
+    }
     return $self;
+}
+
+sub format_line_with_color {
+    my ($self, $line) = @_;
+    my $formatted_line = $line;
+    foreach my $p (@{$self->{settings}->{search_patterns}}) {
+        if ($formatted_line =~ /$p/go) {
+            my $start_index = $-[0];
+            my $end_index = $+[0];
+            $formatted_line = colorize($formatted_line, $start_index, $end_index);
+            last;
+        }
+    }
+    return $formatted_line;
+}
+
+sub format_line_default {
+    my ($self, $line) = @_;
+    return $line;
+}
+
+sub format_line {
+    my ($self, $line) = @_;
+    $self->{format_line}->($self, $line);
 }
 
 sub format {
@@ -36,7 +67,7 @@ sub format {
 
 sub single_line_format {
     my ($self, $result) = @_;
-    my $s = $result->{file}->to_string();
+    my $s = $self->{file_formatter}->format_file_result($result->{file});
     if ($result->{line_num}) {
         $s .= ': ' . $result->{line_num} . ': ';
         $s .= '[' . $result->{match_start_index} . ':' . $result->{match_end_index};
@@ -112,13 +143,7 @@ sub format_matching_line {
 
 sub colorize {
     my ($s, $match_start_index, $match_end_index) = @_;
-    my $match_length = $match_end_index - $match_start_index;
-    my $c = substr($s, 0, $match_start_index);
-    $c .= plsearch::Color->GREEN;
-    $c .= substr($s, $match_start_index, $match_length);
-    $c .= plsearch::Color->RESET;
-    $c .= substr($s, $match_start_index + $match_length);
-    return $c;
+    plfind::FileResultFormatter::colorize($s, $match_start_index, $match_end_index);
 }
 
 sub line_num_padding {
@@ -134,7 +159,7 @@ sub trim_newline {
 
 sub multi_line_format {
     my ($self, $result) = @_;
-    my $file = $result->{file}->to_string();
+    my $file = $self->{file_formatter}->format_file_result($result->{file});
     my $s = ('=' x 80) . "\n$file: $result->{line_num}: ";
     $s .= "[$result->{match_start_index}:$result->{match_end_index}]\n";
     $s .= ('-' x 80) . "\n";

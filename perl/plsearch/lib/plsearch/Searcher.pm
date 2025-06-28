@@ -16,6 +16,7 @@ use File::Basename;
 
 use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
+use plfind::common;
 use plfind::FileType;
 use plfind::FileUtil;
 use plfind::Finder;
@@ -316,8 +317,8 @@ sub search_lines {
         }
 
         if (scalar @$lines == 0) {
-            last;
             $search = 0;
+            last;
         }
     }
     return $results;
@@ -425,6 +426,70 @@ sub search {
     }
 
     return $results;
+}
+
+sub print_results {
+    my ($results, $formatter) = @_;
+    my $len = scalar @$results;
+    plfind::common::log_msg("Search results ($len):");
+    foreach my $r (@$results) {
+        plfind::common::log_msg($formatter->format($r));
+    }
+}
+
+sub get_file_results {
+    my ($search_results) = @_;
+    my %file_hash;
+    my @file_results;
+    foreach my $r (@$search_results) {
+        my $f = $r->{file};
+        if (!exists $file_hash{$f->to_string()}) {
+            $file_hash{$f->to_string()} = 1;
+            push(@file_results, $f);
+        }
+    }
+    return \@file_results;
+}
+
+sub print_matching_dirs {
+    my ($search_results, $formatter) = @_;
+    my $file_results = get_file_results($search_results);
+    plfind::Finder::print_matching_dirs($file_results, $formatter->{file_formatter})
+}
+
+sub print_matching_files {
+    my ($search_results, $formatter) = @_;
+    my $file_results = get_file_results($search_results);
+    plfind::Finder::print_matching_files($file_results, $formatter->{file_formatter})
+}
+
+sub get_matching_lines {
+    my ($search_results, $settings) = @_;
+    my @lines = map { plfind::common::trim($_->{line}) } @$search_results;
+    if ($settings->{unique_lines}) {
+        my $uniq = plfind::common::uniq(\@lines);
+        @lines = @$uniq;
+    }
+    @lines = sort {uc($a) cmp uc($b)} @lines;
+    return \@lines;
+}
+
+sub print_matching_lines {
+    my ($search_results, $formatter) = @_;
+    my $lines = get_matching_lines($search_results, $formatter->{settings});
+    my $title = 'Matching lines';
+    if ($formatter->{settings}->{unique_lines}) {
+        $title = 'Unique matching lines';
+    }
+    if (scalar @$lines) {
+        my $msg = "\n%s (%d):";
+        plfind::common::log_msg(sprintf($msg, $title, scalar @$lines));
+        foreach my $l (@$lines) {
+            plfind::common::log_msg($formatter->format_line($l));
+        }
+    } else {
+        plfind::common::log_msg("\n$title: 0");
+    }
 }
 
 1;

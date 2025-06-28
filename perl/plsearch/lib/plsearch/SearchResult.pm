@@ -11,8 +11,6 @@ package plsearch::SearchResult;
 use strict;
 use warnings;
 
-use plsearch::Color;
-
 sub new {
     # file is a plfind::FileResult instance
     my $class = shift;
