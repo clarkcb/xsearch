@@ -11,7 +11,6 @@ class SearchSettings {
 
     #findSettings = null;
 
-    colorize = true;
     firstMatch = false;
     inLinesAfterPatterns = [];
     inLinesBeforePatterns = [];
@@ -46,6 +45,14 @@ class SearchSettings {
         this.#findSettings.archivesOnly = value;
         if (value) this.#findSettings.includeArchives = value;
         if (value) this.searchArchives = value;
+    }
+
+    get colorize() {
+        return this.#findSettings.colorize;
+    }
+
+    set colorize(value) {
+        this.#findSettings.colorize = value;
     }
 
     get debug() {

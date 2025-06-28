@@ -3,7 +3,7 @@
  *
  * SearchResultFormatter class provides formatting of search result instances
  */
-const {COLORS} = require('./color');
+const {FileResultFormatter} = require('jsfind');
 
 const SEPARATOR_LEN = 80;
 
@@ -12,6 +12,28 @@ class SearchResultFormatter {
 
     constructor(settings) {
         this.settings = settings;
+        this.fileFormatter = new FileResultFormatter(settings);
+        if (settings.colorize) {
+            this.formatLine = function(line) {
+                return this.formatLineWithColor(line);
+            };
+        }
+    }
+
+    formatLineWithColor(line) {
+        let formattedLine = line;
+        for (let p of this.settings.searchPatterns) {
+            let m = p.exec(formattedLine);
+            if (m) {
+                formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length);
+                break;
+            }
+        }
+        return formattedLine;
+    }
+
+    formatLine(line) {
+        return line;
     }
 
     format(result) {
@@ -20,7 +42,7 @@ class SearchResultFormatter {
     }
 
     singleLineFormat(result) {
-        let s = result.file ? result.file.toString() : '<text>';
+        let s = result.file ? this.fileFormatter.formatFileResult(result.file) : '<text>';
         if (result.lineNum && result.line) {
             s += `: ${result.lineNum}: [${result.matchStartIndex}:` +
                 `${result.matchEndIndex}]: ` + this.formatMatchingLine(result);
@@ -47,16 +69,8 @@ class SearchResultFormatter {
         return s.replace(/[\r\n]+$/, '');
     }
 
-    colorize(s, matchStartIndex, matchEndIndex) {
-        return s.slice(0, matchStartIndex) +
-            COLORS.GREEN +
-            s.slice(matchStartIndex, matchEndIndex) +
-            COLORS.RESET +
-            s.slice(matchEndIndex);
-    }
-
     multiLineFormat(result) {
-        const filename = result.file ? result.file.toString() : '<text>';
+        const filename = result.file ? this.fileFormatter.formatFileResult(result.file) : '<text>';
         let s = new Array(SEPARATOR_LEN + 1).join("=") + "\n" + `${filename}: ` +
             `${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]` +
             "\n" + new Array(SEPARATOR_LEN + 1).join("-") + "\n";
@@ -72,7 +86,7 @@ class SearchResultFormatter {
         }
         let line = this.trimRight(result.line);
         if (this.settings.colorize) {
-            line = this.colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
+            line = this.fileFormatter.colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
         }
         s += "> " + this.padLeft(currentLineNum, numPadding) + " | " + line + "\n";
         if (result.linesAfter.length > 0) {
@@ -142,7 +156,7 @@ class SearchResultFormatter {
         }
 
         if (this.settings.colorize) {
-            formatted = this.colorize(formatted, matchStartIndex, matchEndIndex);
+            formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex);
         }
         return formatted;
     }

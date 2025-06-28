@@ -8,6 +8,7 @@ const assert = require('assert');
 const {common, FileType, FileUtil, Finder} = require('jsfind');
 const {SearchError} = require('./searcherror');
 const {SearchResult} = require('./searchresult');
+const path = require('path')
 
 class Searcher {
     'use strict'
@@ -371,6 +372,83 @@ class Searcher {
             }
         }
         return results;
+    }
+
+    cmpSearchResults(r1, r2) {
+        const pathCmp = r1.file.path.localeCompare(r2.file.path);
+        if (pathCmp === 0) {
+            const fileCmp = path.basename(r1.file.fileName).localeCompare(path.basename(r2.file.fileName));
+            if (fileCmp === 0) {
+                if (r1.lineNum === r2.lineNum) {
+                    return r1.matchStartIndex - r2.matchStartIndex;
+                }
+                return r1.lineNum - r2.lineNum;
+            }
+            return fileCmp;
+        }
+        return pathCmp;
+    }
+
+    printSearchResults(results, formatter) {
+        // first sort the results
+        // TODO: ensure sorting gets help from jsfind
+        results.sort(this.cmpSearchResults);
+        common.log(`\nSearch results (${results.length}):`);
+        results.forEach(r => common.log(formatter.format(r)));
+    }
+
+    getFileResults(results) {
+        let fileMap = {};
+        let fileResults = [];
+        for (let r of results) {
+            if (!fileMap[r.file.relativePath()]) {
+                fileMap[r.file.relativePath()] = r.file;
+                fileResults.push(r.file);
+            }
+        }
+        return fileResults;
+    }
+
+    printMatchingDirs(results, formatter) {
+        const fileResults = this.getFileResults(results);
+        this.finder.printMatchingDirs(fileResults, formatter.fileFormatter);
+    }
+
+    printMatchingFiles(results, formatter) {
+        const fileResults = this.getFileResults(results);
+        this.finder.printMatchingFiles(fileResults, formatter.fileFormatter);
+    }
+
+    getMatchingLines(results) {
+        let lines = results.filter(r => r.lineNum > 0).map(r => r.line.trim());
+        if (this.settings.uniqueLines) {
+            lines = common.setFromArray(lines);
+        }
+        lines.sort((a, b) => {
+            let aUpper = a.toUpperCase();
+            let bUpper = b.toUpperCase();
+            if (aUpper === bUpper)
+                return 0;
+            return aUpper < bUpper ? -1 : 1;
+        });
+        return lines;
+    }
+
+    printMatchingLines(results, formatter) {
+        const lines = this.getMatchingLines(results);
+        let hdrText;
+        if (this.settings.uniqueLines)
+            hdrText = `\nUnique lines with matches`;
+        else
+            hdrText = `\nLines with matches`;
+        if (lines.length > 0) {
+            hdrText = `${hdrText} (${lines.length}):`;
+            common.log(hdrText);
+            lines.forEach(l => common.log(formatter.formatLine(l)));
+        } else {
+            hdrText = `${hdrText}: 0`;
+            common.log(hdrText);
+        }
     }
 }
 
