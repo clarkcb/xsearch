@@ -20,7 +20,6 @@ public class SearchSettings extends FindSettings {
 
     private static final int INITIAL_SET_CAPACITY = 4;
 
-    private boolean colorize;
     private boolean firstMatch;
     private final Set<Pattern> inLinesAfterPatterns;
     private final Set<Pattern> inLinesBeforePatterns;
@@ -41,7 +40,6 @@ public class SearchSettings extends FindSettings {
 
     public SearchSettings() {
         super();
-        this.colorize = DefaultSearchSettings.COLORIZE;
         this.firstMatch = DefaultSearchSettings.FIRST_MATCH;
         this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -67,14 +65,6 @@ public class SearchSettings extends FindSettings {
         if (archivesOnly) {
             this.searchArchives = true;
         }
-    }
-
-    public boolean getColorize() {
-        return colorize;
-    }
-
-    public void setColorize(boolean colorize) {
-        this.colorize = colorize;
     }
 
     public boolean getFirstMatch() {

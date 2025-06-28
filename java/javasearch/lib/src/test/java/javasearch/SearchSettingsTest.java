@@ -17,7 +17,6 @@ public class SearchSettingsTest {
     @Test
     public final void testDefaultSearchSettings() {
         SearchSettings settings = new SearchSettings();
-        assertEquals(DefaultSearchSettings.COLORIZE, settings.getColorize());
         assertEquals(DefaultSearchSettings.FIRST_MATCH, settings.getFirstMatch());
         assertEquals(DefaultSearchSettings.LINES_AFTER, settings.getLinesAfter());
         assertEquals(DefaultSearchSettings.LINES_BEFORE, settings.getLinesBefore());

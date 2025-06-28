@@ -502,4 +502,60 @@ public class Searcher {
             Collections.reverse(searchResults);
         }
     }
+
+    public static void printSearchResults(List<SearchResult> results, SearchResultFormatter formatter) {
+        if (results.isEmpty()) {
+            log("Search results: 0");
+        } else {
+            log(String.format("Search results (%d):", results.size()));
+            for (var r : results) {
+                log(formatter.format(r));
+            }
+        }
+    }
+
+    private static List<FileResult> getMatchingFileResults(List<SearchResult> results) {
+        return results.stream()
+                .map(SearchResult::getFileResult).distinct()
+                .sorted().collect(Collectors.toList());
+    }
+
+    public static void printMatchingDirs(List<SearchResult> results, SearchResultFormatter formatter) {
+        Finder.printMatchingDirs(getMatchingFileResults(results), formatter.getFileResultFormatter());
+    }
+
+    public static void printMatchingFiles(List<SearchResult> results, SearchResultFormatter formatter) {
+        Finder.printMatchingFiles(getMatchingFileResults(results), formatter.getFileResultFormatter());
+    }
+
+    private static List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {
+        var lines = new ArrayList<String>();
+        for (var r : results) {
+            lines.add(r.getLine().trim());
+        }
+        if (settings.getUniqueLines()) {
+            Set<String> lineSet = new HashSet<>(lines);
+            lines = new ArrayList<>(lineSet);
+        }
+        lines.sort(Comparator.comparing(String::toUpperCase));
+        return lines;
+    }
+
+    public static void printMatchingLines(List<SearchResult> results, SearchResultFormatter formatter) {
+        var lines = getMatchingLines(results, formatter.getSettings());
+        String hdr;
+        if (formatter.getSettings().getUniqueLines()) {
+            hdr = "\nUnique matching lines";
+        } else {
+            hdr = "\nMatching lines";
+        }
+        if (lines.isEmpty()) {
+            log(String.format("%s: 0", hdr));
+        } else {
+            log(String.format("%s (%d):", hdr, lines.size()));
+            for (var line : lines) {
+                log(formatter.formatLine(line));
+            }
+        }
+    }
 }

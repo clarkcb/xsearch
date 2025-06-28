@@ -1,5 +1,6 @@
 package javasearch;
 
+import javafind.Color;
 import javafind.FileResult;
 import javafind.FileType;
 import org.junit.jupiter.api.Test;

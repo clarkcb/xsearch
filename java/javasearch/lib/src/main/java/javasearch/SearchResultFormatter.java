@@ -10,16 +10,52 @@ Class to provide formatting of search result instances
 
 package javasearch;
 
+import javafind.Color;
+import javafind.FileResultFormatter;
 import javafind.StringUtil;
 
-public class SearchResultFormatter {
+import java.util.function.Function;
+import java.util.regex.Matcher;
 
+public class SearchResultFormatter {
     private final SearchSettings settings;
+    private final FileResultFormatter fileResultFormatter;
+    private final Function<String, String> formatLineFunc;
 
     private static final String noSearchFileText = "<text>";
 
     public SearchResultFormatter(final SearchSettings settings) {
         this.settings = settings;
+        this.fileResultFormatter = new FileResultFormatter(settings);
+        if (settings.getColorize()) {
+            this.formatLineFunc = this::formatLineWithColor;
+        } else {
+            this.formatLineFunc = String::toString;
+        }
+    }
+
+    public SearchSettings getSettings() {
+        return settings;
+    }
+
+    public FileResultFormatter getFileResultFormatter() {
+        return fileResultFormatter;
+    }
+
+    private String formatLineWithColor(final String line) {
+        var formattedLine = line;
+        for (var p : settings.getSearchPatterns()) {
+            Matcher m = p.matcher(formattedLine);
+            if (m.find()) {
+                formattedLine = colorize(formattedLine, m.start(), m.end());
+                break;
+            }
+        }
+        return formattedLine;
+    }
+
+    public String formatLine(final String line) {
+        return formatLineFunc.apply(line);
     }
 
     public final String format(SearchResult result) {
@@ -36,15 +72,11 @@ public class SearchResultFormatter {
     }
 
     private String colorize(String s, int matchStartIndex, int matchEndIndex) {
-        return s.substring(0, matchStartIndex) +
-                Color.GREEN +
-                s.substring(matchStartIndex, matchEndIndex) +
-                Color.RESET +
-                s.substring(matchEndIndex);
+        return fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex);
     }
 
     public final String multiLineToString(SearchResult result) {
-        String fileString = result.getFileResult() == null ? noSearchFileText : result.getFileResult().toString();
+        String fileString = result.getFileResult() == null ? noSearchFileText : fileResultFormatter.formatFileResult(result.getFileResult());
         final int lineSepLength = 80;
         StringBuilder sb = new StringBuilder()
                 .append("=".repeat(lineSepLength)).append("\n")
@@ -143,7 +175,11 @@ public class SearchResultFormatter {
     public final String singleLineToString(SearchResult result) {
         StringBuilder sb = new StringBuilder();
         try {
-            sb.append(result.getFileResult().toString());
+            if (result.getFileResult() != null) {
+                sb.append(fileResultFormatter.formatFileResult(result.getFileResult()));
+}           else {
+                sb.append(noSearchFileText);
+            }
         } catch (NullPointerException e) {
             sb.append(noSearchFileText);
         }
