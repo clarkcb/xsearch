@@ -9,7 +9,7 @@ module HsSearch.SearchSettings
   , updateSearchSettingsFromJsonValue
   ) where
 
-import Control.Monad (mzero, unless, MonadFail (fail))
+import Control.Monad (mzero, unless)
 import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.List (intercalate, sort)
@@ -143,6 +143,7 @@ newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "
 toFindSettings :: SearchSettings -> FS.FindSettings
 toFindSettings searchSettings = FS.FindSettings {
                                      FS.archivesOnly=archivesOnly searchSettings
+                                   , FS.colorize=colorize searchSettings
                                    , FS.debug=debug searchSettings
                                    , FS.followSymlinks=followSymlinks searchSettings
                                    , FS.inArchiveExtensions=inArchiveExtensions searchSettings
