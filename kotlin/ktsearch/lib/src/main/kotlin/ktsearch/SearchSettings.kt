@@ -61,6 +61,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val uniqueLines: Boolean,
                           val verbose: Boolean) {
     val findSettings: FindSettings = FindSettings(archivesOnly,
+        colorize,
         debug,
         followSymlinks,
         inArchiveExtensions,

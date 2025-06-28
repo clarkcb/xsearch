@@ -421,4 +421,43 @@ class Searcher(val settings: SearchSettings) {
 
         return sortedSearchResults.toList()
     }
+
+    fun printResults(results: List<SearchResult>, formatter: SearchResultFormatter) {
+        if (results.isEmpty()) {
+            log("\nSearch results: 0")
+        } else {
+            log("\nSearch results (${results.size}):")
+            for (r in results) {
+                log(formatter.format(r))
+            }
+        }
+    }
+
+    fun printMatchingDirs(results: List<SearchResult>, formatter: SearchResultFormatter) {
+        val files = results.mapNotNull { r -> r.file }.distinct().sorted()
+        finder.printMatchingDirs(files, formatter.fileResultFormatter)
+    }
+
+    fun printMatchingFiles(results: List<SearchResult>, formatter: SearchResultFormatter) {
+        val files = results.mapNotNull { r -> r.file }.distinct().sorted()
+        finder.printMatchingFiles(files, formatter.fileResultFormatter)
+    }
+
+    fun printMatchingLines(results: List<SearchResult>, formatter: SearchResultFormatter) {
+        val lines: List<String> =
+            if (settings.uniqueLines) results.map { r -> r.line.trim() }.
+            distinct().sorted()
+            else results.map { r -> r.line.trim() }.sorted()
+        val hdr =
+            if (settings.uniqueLines) "\nUnique matching lines"
+            else "\nMatching lines"
+        if (lines.isEmpty()) {
+            log("$hdr: 0")
+        } else {
+            log("$hdr (${lines.size}):")
+            for (l in lines) {
+                log(formatter.formatLine(l))
+            }
+        }
+    }
 }

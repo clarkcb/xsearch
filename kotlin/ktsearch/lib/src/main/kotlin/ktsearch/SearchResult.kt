@@ -1,6 +1,8 @@
 package ktsearch
 
+import ktfind.Color
 import ktfind.FileResult
+import ktfind.FileResultFormatter
 
 /**
  * @author cary on 7/25/16.
@@ -92,6 +94,25 @@ data class SearchResult(val searchPattern: Regex,
 
 class SearchResultFormatter(val settings: SearchSettings) {
     private val noSearchFileText = "<text>"
+    val fileResultFormatter = FileResultFormatter(settings.findSettings)
+
+    private fun formatLineWithColor(line: String): String {
+        var formattedLine = line
+        for (p in settings.searchPatterns) {
+            val m = p.find(formattedLine)
+            if (m != null) {
+                formattedLine = colorize(formattedLine, m.range.first, m.range.last + 1)
+                break
+            }
+        }
+        return formattedLine
+    }
+
+    val formatLine = if (settings.colorize) {
+        this::formatLineWithColor
+    } else {
+        { line: String -> line }
+    }
 
     fun format(result: SearchResult): String {
         return if (settings.linesBefore > 0 || settings.linesAfter > 0) {
@@ -102,16 +123,12 @@ class SearchResultFormatter(val settings: SearchSettings) {
     }
 
     private fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String {
-        return s.substring(0, matchStartIndex) +
-                Color.GREEN +
-                s.substring(matchStartIndex, matchEndIndex) +
-                Color.RESET +
-                s.substring(matchEndIndex)
+        return fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex)
     }
 
     private fun multiLineFormat(result: SearchResult): String {
         val lineSepLength = 80
-        val fileString = if (result.file == null) noSearchFileText else result.file.toString()
+        val fileString = if (result.file == null) noSearchFileText else fileResultFormatter.formatFileResult(result.file)
         val sb = StringBuilder().
                 append("=".repeat(lineSepLength)).append("\n").
                 append(fileString).append(": ").append(result.lineNum).append(": [").
@@ -200,7 +217,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
     private fun singleLineFormat(result: SearchResult): String {
         val sb = StringBuilder()
         if (result.file != null) {
-            sb.append(result.file.toString())
+            sb.append(fileResultFormatter.formatFileResult(result.file))
         } else {
             sb.append(noSearchFileText)
         }
