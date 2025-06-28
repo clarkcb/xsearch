@@ -348,6 +348,7 @@ class SearchOptions(object):
                                 common.parse_datetime_str(arg_val), settings)
                         elif long_arg in self.__int_action_dict:
                             invalid_int = False
+                            i = 0
                             try:
                                 i = int(arg_val)
                             except ValueError:
@@ -358,7 +359,7 @@ class SearchOptions(object):
                             if invalid_int:
                                 err = f'Invalid value for option {arg}: {arg_val}'
                                 raise SearchException(err)
-                            self.__int_action_dict[long_arg](arg_val, settings)
+                            self.__int_action_dict[long_arg](i, settings)
                         elif long_arg in self.__str_action_dict:
                             self.__str_action_dict[long_arg](arg_val, settings)
                         elif long_arg == 'settings-file':

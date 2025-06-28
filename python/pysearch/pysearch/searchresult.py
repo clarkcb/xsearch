@@ -11,10 +11,8 @@
 from io import StringIO
 from typing import List
 
-from pyfind import FileResult
-from pyfind.fileresult import FileResultFormatter
+from pyfind import Color, FileResult, FileResultFormatter
 
-from .color import Color
 from .searchsettings import SearchSettings
 
 
@@ -69,12 +67,25 @@ class SearchResultFormatter(object):
     def __init__(self, settings: SearchSettings):
         self.settings = settings
         self.file_formatter = FileResultFormatter(settings)
+        if settings.colorize:
+            self.format_line = self.__format_line_with_color
 
-    @staticmethod
-    def colorize(s: str, match_start_index: int, match_end_index: int) -> str:
-        return s[0:match_start_index] + Color.GREEN + \
-            s[match_start_index:match_end_index] + \
-            Color.RESET + s[match_end_index:]
+    def __format_line_with_color(self, line: str) -> str:
+        """format a line, highlighting matches with color"""
+        formatted_line = str(line)
+        for p in self.settings.search_patterns:
+            match = p.search(formatted_line)
+            if match:
+                formatted_line = FileResultFormatter.colorize(
+                    formatted_line, match.start(), match.end())
+                break
+        return formatted_line
+
+    def format_line(self, line: str) -> str:
+        """format a line, just returns the line by default but can be
+           redefined to point to __format_line_with_color() if settings
+           require colorization"""
+        return str(line)
 
     def __format_matching_line(self, result: SearchResult) -> str:
         if not result.line or not result.line.strip():
@@ -125,7 +136,7 @@ class SearchResultFormatter(object):
             if line_end_index < max_line_end_index - 3:
                 formatted = formatted[:-3] + '...'
         if self.settings.colorize:
-            formatted = self.colorize(
+            formatted = FileResultFormatter.colorize(
                 formatted, match_start_index, match_end_index)
         return formatted
 
@@ -167,8 +178,8 @@ class SearchResultFormatter(object):
                                                    strip_newlines(line_before)))
                 current_line_num += 1
         if self.settings.colorize:
-            line = self.colorize(result.line, result.match_start_index - 1,
-                                 result.match_end_index - 1)
+            line = FileResultFormatter.colorize(result.line, result.match_start_index - 1,
+                                                result.match_end_index - 1)
         else:
             line = result.line
         sio.write('>' + line_format.format(result.line_num,
