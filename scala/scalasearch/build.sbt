@@ -1,4 +1,4 @@
-val scala3Version = "3.6.2"
+val scala3Version = "3.7.1"
 
 ThisBuild / scalaVersion := scala3Version
 ThisBuild / organization := "xsearch"
@@ -11,7 +11,7 @@ lazy val scalaSearch = (project in file("."))
     scalaVersion := scala3Version,
 
     libraryDependencies ++= Seq(
-      "org.json" % "json" % "20250107",
+      "org.json" % "json" % "20250517",
       "org.apache.commons" % "commons-compress" % "1.27.1",
       "org.scalactic" %% "scalactic" % "3.2.19",
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,

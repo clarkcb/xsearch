@@ -9,14 +9,14 @@ Gem::Specification.new do |spec|
   spec.email       = ['clarkcb@gmail.com']
 
   spec.summary     = 'ruby version of xsearch'
-  spec.homepage    = 'http://github.com/clarkcb/xsearch'
+  spec.homepage    = 'https://github.com/clarkcb/xsearch'
   spec.license     = 'MIT'
-  spec.required_ruby_version = ">= 3.3.6"
+  spec.required_ruby_version = '>= 3.3.6'
 
   spec.metadata['allowed_push_host'] = "TODO: Set to your gem server 'https://example.com'"
 
-  spec.metadata["homepage_uri"]    = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata['homepage_uri']    = spec.homepage
+  spec.metadata['source_code_uri'] = spec.homepage
   # spec.metadata["changelog_uri"]   = "TODO: Put your gem's CHANGELOG.md URL here."
 
   # Specify which files should be added to the gem when it is released.
@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.test_files = Dir.chdir(__dir__) do
     `git ls-files -z`.split("\x0").select { |f| f.start_with?('test/') } 
   end
-  spec.bindir      = 'bin'
+  spec.bindir = 'bin'
   # spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   # spec.executables << 'rbsearch'
   spec.executables = %w[rbsearch.sh rbsearch.ps1]

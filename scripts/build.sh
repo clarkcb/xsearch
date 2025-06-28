@@ -767,10 +767,12 @@ build_javasearch () {
     # gradle --warning-mode all clean jar publishToMavenLocal
     # GRADLE_ARGS="--info --warning-mode all"
     GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS="clean jar"
-    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
-    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
-    "$GRADLE" --warning-mode all clean jar
+    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
+    for t in ${GRADLE_TASKS[*]}
+    do
+        log "$GRADLE $GRADLE_ARGS $t"
+        "$GRADLE" --warning-mode all $t
+    done
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -913,13 +915,13 @@ build_ktsearch () {
     copy_test_resources "$TEST_RESOURCES_PATH"
 
     # TEMP(?): copy the jar file for the local ktfind dependency to lib
-    log "KTFIND_PATH: $KTFIND_PATH"
-    KTFIND_JAR=$(find "$KTFIND_PATH/build/libs" -maxdepth 1 -name "ktfind*.jar" | head -n 1)
-    if [ -f "$KTFIND_JAR" ]
-    then
-        log "cp $KTFIND_JAR $KTSEARCH_PATH/lib/"
-        cp "$KTFIND_JAR" "$KTSEARCH_PATH/lib/"
-    fi
+    # log "KTFIND_PATH: $KTFIND_PATH"
+    # KTFIND_JAR=$(find "$KTFIND_PATH/build/libs" -maxdepth 1 -name "ktfind*.jar" | head -n 1)
+    # if [ -f "$KTFIND_JAR" ]
+    # then
+    #     log "cp $KTFIND_JAR $KTSEARCH_PATH/lib/"
+    #     cp "$KTFIND_JAR" "$KTSEARCH_PATH/lib/"
+    # fi
 
     # run a gradle clean jar build
     log "Building ktsearch"
@@ -928,10 +930,12 @@ build_ktsearch () {
     # gradle --warning-mode all clean jar publishToMavenLocal
     # GRADLE_ARGS="--info --warning-mode all"
     GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS="clean jar"
-    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
-    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
-    "$GRADLE" --warning-mode all clean jar
+    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
+    for t in ${GRADLE_TASKS[*]}
+    do
+        log "$GRADLE $GRADLE_ARGS $t"
+        "$GRADLE" --warning-mode all $t
+    done
 
     # check for success/failure
     if [ "$?" -eq 0 ]
