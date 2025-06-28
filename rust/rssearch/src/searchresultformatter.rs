@@ -1,28 +1,43 @@
-use crate::color::{GREEN, RESET};
 use crate::searchresult::SearchResult;
+use crate::searchsettings::SearchSettings;
+
+use rsfind::fileresultformatter::{colorize, FileResultFormatter};
 
 pub struct SearchResultFormatter {
-    pub colorize: bool,
-    pub max_line_length: usize,
+    pub settings: SearchSettings,
+    pub file_formatter: FileResultFormatter,
+    pub format_line: Box<dyn Fn(&str, &SearchSettings) -> String>,
 }
 
 const SEPARATOR_LEN: usize = 80;
 
-impl SearchResultFormatter {
-    pub fn new(colorize: bool, max_line_length: usize) -> SearchResultFormatter {
-        SearchResultFormatter {
-            colorize,
-            max_line_length,
+fn format_line_with_color(line: &str, settings: &SearchSettings) -> String {
+    let mut formatted_line = String::from(line);
+    for p in settings.search_patterns() {
+        let m = p.find(&line);
+        if m.is_some() {
+            formatted_line = colorize(&formatted_line, m.unwrap().start(),
+                                      m.unwrap().end());
+            break;
         }
     }
+    formatted_line
+}
 
-    fn colorize_string(&self, string: String, match_start_index: usize, match_end_index: usize) -> String {
-        String::from(format!("{}{}{}{}{}",
-                             &string[0..match_start_index],
-                             GREEN,
-                             &string[match_start_index..match_end_index],
-                             RESET,
-                             &string[match_end_index..]))
+impl SearchResultFormatter {
+    pub fn new(settings: SearchSettings) -> SearchResultFormatter {
+        let file_formatter = FileResultFormatter::new(settings.find_settings());
+        let _format_line: fn(&str, &SearchSettings) -> String =
+            if settings.colorize() {
+                |line: &str, settings: &SearchSettings| format_line_with_color(&line, &settings)
+            } else {
+                |line: &str, _settings: &SearchSettings| String::from(line)
+            };
+        Self {
+            settings,
+            file_formatter,
+            format_line: Box::new(_format_line),
+        }
     }
 
     fn format_matching_line(&self, result: &SearchResult) -> String {
@@ -43,7 +58,8 @@ impl SearchResultFormatter {
         let mut match_start_index = result.match_start_index - 1 - leading_ws_count;
         let mut match_end_index = match_start_index + match_length;
 
-        if formatted_length > self.max_line_length {
+        let max_line_length = self.settings.max_line_length() as usize;
+        if formatted_length > max_line_length {
             let mut line_start_index = match_start_index + 0;
             let mut line_end_index = line_start_index + match_length;
             match_start_index = 0;
@@ -57,14 +73,14 @@ impl SearchResultFormatter {
             }
 
             formatted_length = line_end_index - line_start_index;
-            while formatted_length < self.max_line_length {
+            while formatted_length < max_line_length {
                 if line_start_index > 0 {
                     line_start_index -= 1;
                     match_start_index += 1;
                     match_end_index += 1;
                     formatted_length = line_end_index - line_start_index;
                 }
-                if formatted_length < self.max_line_length && line_end_index < max_line_end_index {
+                if formatted_length < max_line_length && line_end_index < max_line_end_index {
                     line_end_index += 1;
                 }
                 formatted_length = line_end_index - line_start_index;
@@ -87,15 +103,15 @@ impl SearchResultFormatter {
                                              String::from(after)));
         }
 
-        if self.colorize {
-            formatted = self.colorize_string(formatted, match_start_index, match_end_index);
+        if self.settings.colorize() {
+            formatted = colorize(&formatted, match_start_index, match_end_index);
         }
         formatted
     }
 
     fn single_line_format(&self, result: &SearchResult) -> String {
         let file_prefix = match &result.file {
-            Some(f) => f.full_path(),
+            Some(fr) => self.file_formatter.format_file_result(fr),
             None => "<text>".to_string(),
         };
         if result.line_num > 0 {
@@ -124,11 +140,11 @@ impl SearchResultFormatter {
         let mut buffer = String::new();
         buffer.push_str("=".repeat(SEPARATOR_LEN).as_str());
         match &result.file {
-            Some(f) => {
+            Some(fr) => {
                 buffer.push_str(
                     format!(
                         "\n{}: {}: [{}:{}]\n",
-                        f.full_path(),
+                        self.file_formatter.format_file_result(fr),
                         result.line_num,
                         result.match_start_index,
                         result.match_end_index
@@ -164,9 +180,9 @@ impl SearchResultFormatter {
             }
         }
         let mut line = result.line.clone();
-        if self.colorize {
-            line = self.colorize_string(line, result.match_start_index - 1,
-                                        result.match_end_index - 1);
+        if self.settings.colorize() {
+            line = colorize(&line, result.match_start_index - 1,
+                            result.match_end_index - 1);
         }
         let l = format!(
             "> {:linenum_padding$} | {}\n",

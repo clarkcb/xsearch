@@ -75,16 +75,17 @@ impl PartialEq for SearchResult {
 mod tests {
     use crate::common::log;
     use crate::searchresultformatter::SearchResultFormatter;
-    use crate::color::{GREEN, RESET};
+    use rsfind::color::{GREEN, RESET};
     use std::path::Path;
 
     use rsfind::filetypes::FileType;
-
+    use crate::searchsettings::SearchSettings;
     use super::*;
 
     #[test]
     fn test_single_line_search_result() {
-        let formatter = SearchResultFormatter::new(false, 100);
+        let settings = SearchSettings::default();
+        let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("Searcher");
         let file_path = Path::new("~/src/xsearch/rust/rssearch/src/searcher.rs");
 
@@ -119,7 +120,8 @@ mod tests {
 
     #[test]
     fn test_single_line_longer_than_max_line_length_search_result() {
-        let formatter = SearchResultFormatter::new(false, 100);
+        let settings = SearchSettings::default();
+        let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("maxlen");
         let file_path = Path::new("./maxlen.txt");
         let file = FileResult::new(file_path.to_path_buf(), FileType::Code, 0, 0);
@@ -154,7 +156,8 @@ mod tests {
 
     #[test]
     fn test_single_line_colorize_search_result() {
-        let formatter = SearchResultFormatter::new(true, 100);
+        let settings = SearchSettings::default();
+        let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("maxlen");
         let file_path = Path::new("./maxlen.txt");
         let file = FileResult::new(file_path.to_path_buf(), FileType::Code, 0, 0);
@@ -189,7 +192,8 @@ mod tests {
 
     #[test]
     fn test_binary_search_result() {
-        let formatter = SearchResultFormatter::new(false, 100);
+        let settings = SearchSettings::default();
+        let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("Searcher");
         let file_path = Path::new("~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe");
         let file = FileResult::new(file_path.to_path_buf(), FileType::Code, 0, 0);
@@ -221,7 +225,8 @@ mod tests {
 
     #[test]
     fn test_multi_line_search_result() {
-        let formatter = SearchResultFormatter::new(false, 100);
+        let settings = SearchSettings::default();
+        let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("Searcher");
         let file_path = Path::new("~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs");
         let file = FileResult::new(file_path.to_path_buf(), FileType::Code, 0, 0);

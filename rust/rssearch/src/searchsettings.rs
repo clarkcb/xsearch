@@ -6,7 +6,6 @@ use rsfind::findsettings::FindSettings;
 #[derive(Clone)]
 pub struct SearchSettings {
     _find_settings: FindSettings,
-    _colorize: bool,
     _first_match: bool,
     _in_lines_after_patterns: Vec<Regex>,
     _in_lines_before_patterns: Vec<Regex>,
@@ -30,7 +29,6 @@ impl SearchSettings {
     pub fn default() -> SearchSettings {
         SearchSettings {
             _find_settings: FindSettings::default(),
-            _colorize: true,
             _first_match: false,
             _in_lines_after_patterns: Vec::new(),
             _in_lines_before_patterns: Vec::new(),
@@ -68,11 +66,11 @@ impl SearchSettings {
     }
 
     pub fn colorize(&self) -> bool {
-        self._colorize
+        self._find_settings.colorize()
     }
 
     pub fn set_colorize(&mut self, b: bool) {
-        self._colorize = b
+        self._find_settings.set_colorize(b)
     }
 
     pub fn debug(&self) -> bool {

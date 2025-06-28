@@ -465,18 +465,6 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_include_hidden(b))),
     );
     bool_action_map.insert(
-        "printdirs".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(b))),
-    );
-    bool_action_map.insert(
-        "printfiles".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(b))),
-    );
-    bool_action_map.insert(
-        "printlines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(b))),
-    );
-    bool_action_map.insert(
         "multilinesearch".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_multi_line_search(b))),
     );
@@ -507,6 +495,18 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
     bool_action_map.insert(
         "norecursive".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_recursive(!b))),
+    );
+    bool_action_map.insert(
+        "printdirs".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_dirs(b))),
+    );
+    bool_action_map.insert(
+        "printfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_files(b))),
+    );
+    bool_action_map.insert(
+        "printlines".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_lines(b))),
     );
     bool_action_map.insert(
         "printmatches".to_string(),

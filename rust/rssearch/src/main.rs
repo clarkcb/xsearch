@@ -5,11 +5,10 @@ use std::process;
 extern crate rsfind;
 
 use crate::common::{log, log_err};
-use crate::searcher::{get_result_dirs, get_result_files, get_result_lines};
+use crate::searcher::{print_results, print_result_dirs, print_result_files, print_result_lines};
 use crate::searcherror::SearchError;
 use crate::searchresultformatter::SearchResultFormatter;
 
-pub mod color;
 pub mod common;
 pub mod config;
 pub mod searcher;
@@ -28,43 +27,6 @@ fn print_error(error: SearchError, options: &searchoptions::SearchOptions) {
 fn error_and_exit(error: SearchError, options: &searchoptions::SearchOptions) {
     print_error(error, options);
     process::exit(1);
-}
-
-fn print_result_dirs(results: &Vec<searchresult::SearchResult>) {
-    let dirs = get_result_dirs(results);
-    if dirs.is_empty() {
-        log("\nMatching directories: 0");
-    } else {
-        log(format!("\nMatching directories ({}):", dirs.len()).as_str());
-        for dir in dirs.iter() {
-            log(format!("{}", dir).as_str());
-        }
-    }
-}
-
-fn print_result_files(results: &Vec<searchresult::SearchResult>) {
-    let files = get_result_files(results);
-    if files.is_empty() {
-        log("\nMatching files: 0");
-    } else {
-        log(format!("\nMatching files ({}):", files.len()).as_str());
-        for file in files.iter() {
-            log(format!("{}", file).as_str());
-        }
-    }
-}
-
-fn print_result_lines(results: &Vec<searchresult::SearchResult>, unique: bool) {
-    let lines = get_result_lines(results, unique);
-    let lines_title = if unique { "Unique matching lines" } else { "Matching lines" };
-    if lines.is_empty() {
-        log(format!("\n{}: 0", lines_title).as_str());
-    } else {
-        log(format!("\n{} ({}):", lines_title, lines.len()).as_str());
-        for line in lines.iter() {
-            log(format!("{}", line).as_str());
-        }
-    }
 }
 
 fn search(args: Iter<String>) {
@@ -100,23 +62,19 @@ fn search(args: Iter<String>) {
 
             match searcher.search() {
                 Ok(results) => {
+                    let formatter = SearchResultFormatter::new(
+                        searcher.settings.clone());
                     if searcher.settings.print_results() {
-                        let formatter = SearchResultFormatter::new(
-                            searcher.settings.colorize(),
-                            searcher.settings.max_line_length() as usize);
-                        log(format!("\nSearch results ({}):", results.len()).as_str());
-                        for r in results.iter() {
-                            log(formatter.format(r).as_str());
-                        }
+                        print_results(&results, &formatter);
                     }
                     if searcher.settings.print_dirs() {
-                        print_result_dirs(&results);
+                        print_result_dirs(&results, &formatter);
                     }
                     if searcher.settings.print_files() {
-                        print_result_files(&results);
+                        print_result_files(&results, &formatter);
                     }
                     if searcher.settings.print_lines() {
-                        print_result_lines(&results, searcher.settings.unique_lines());
+                        print_result_lines(&results, &formatter);
                     }
                 },
                 Err(error) => error_and_exit(error, &options),

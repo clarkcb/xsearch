@@ -2,9 +2,7 @@ use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::fs;
 use std::io;
-// use std::io::BufReader;
 use std::io::Read;
-// use std::path::Path;
 use std::str::Lines;
 
 use encoding::codec::singlebyte::SingleByteEncoding;
@@ -13,11 +11,13 @@ use regex::{Match, Regex};
 use rsfind::fileresult::FileResult;
 use rsfind::filetypes::FileType;
 use rsfind::fileutil::FileUtil;
+use rsfind::finder::{print_matching_dirs, print_matching_files};
 // use zip::read::ZipFile;
 
 use crate::common::log;
 use crate::searcherror::SearchError;
 use crate::searchresult::SearchResult;
+use crate::searchresultformatter::SearchResultFormatter;
 use crate::searchsettings::SearchSettings;
 
 const BINARY_ENCODING: &SingleByteEncoding = encoding::all::ISO_8859_1;
@@ -83,104 +83,6 @@ impl Searcher {
             }
         }
         false
-    }
-
-    /// Initiate a searcher search for the given settings and get the results
-    pub fn search(&self) -> Result<Vec<SearchResult>, SearchError> {
-        let mut file_results: Vec<FileResult> = Vec::new();
-
-        match self.finder.find() {
-            Ok(mut find_results) => {
-                file_results.append(&mut find_results);
-            }
-            Err(error) => return Err(SearchError::new(error.description.as_str())),
-        }
-
-        if self.settings.verbose() && !file_results.is_empty() {
-            let mut dirs: Vec<String> = file_results.iter().map(|f| String::from(f.parent())).collect();
-            dirs.sort_unstable();
-            dirs.dedup();
-            log(format!("\nDirectories to be searched ({}):", dirs.len()).as_str());
-            for dir in dirs.iter() {
-                log(format!("{}", dir).as_str());
-            }
-
-            let files: Vec<String> = file_results.iter().map(|f| f.file_path()).collect();
-            log(format!("\nFiles to be searched ({}):", files.len()).as_str());
-            for file in files.iter() {
-                log(format!("{}", file).as_str());
-            }
-        }
-
-        self.search_files(file_results)
-    }
-
-    fn search_files(&self, files: Vec<FileResult>) -> Result<Vec<SearchResult>, SearchError> {
-        let mut results: Vec<SearchResult> = Vec::new();
-        for fr in files.into_iter() {
-            match self.search_file(fr) {
-                Ok(mut file_results) => {
-                    results.append(&mut file_results);
-                },
-                Err(error) => {
-                    log(format!("{}", error).as_str());
-                    return Err(error);
-                }
-            }
-        }
-        // TODO: implement custom sorting of [SearchResult]
-        results.sort_unstable();
-        Ok(results)
-    }
-
-    /// Search an individual file and get the results
-    pub fn search_file(&self, file: FileResult) -> Result<Vec<SearchResult>, SearchError> {
-        match file.file_type {
-            FileType::Text | FileType::Code | FileType::Xml => self.search_text_file(file),
-            FileType::Binary => self.search_binary_file(file),
-            FileType::Archive => {
-                if self.settings.search_archives() {
-                    self.search_archive_file(file)
-                } else {
-                    log(format!("Skipping archive file: {}", file.file_path()).as_str());
-                    Ok(vec![])
-                }
-            },
-            _ => {
-                log(format!("Skipping unknown file type: {:?}", file.file_type).as_str());
-                Ok(vec![])
-            }
-        }
-    }
-
-    fn search_archive_file(
-        &self,
-        file: FileResult,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        if self.settings.verbose() {
-            log(format!("Searching archive file {}", file.file_path()).as_str());
-        }
-
-        match FileUtil::get_extension(&file.file_name()) {
-            // TODO: what other extensions are zip format?
-            Some(ext) if ["zip", "zipx", "jar", "war", "ear", "whl"].contains(&ext) => {
-                // self.search_archive_zip_file(file)
-                log(format!("Searching zip archives files is currently disabled").as_str());
-                Ok(vec![])
-            },
-            Some(ext) => {
-                log(format!("Searching not currently supported for {} files", ext).as_str());
-                Ok(vec![])
-            },
-            None => {
-                log(format!(
-                    "Skipping unknown archive file of unknown type: {}",
-                    file.file_path()
-                )
-                .as_str());
-                Ok(vec![])
-            }
-        }
     }
 
     // TODO: enable after implementing archive file "finding" in rsfind
@@ -307,6 +209,36 @@ impl Searcher {
     //     Ok(vec![])
     // }
 
+    fn search_archive_file(
+        &self,
+        file: FileResult,
+    ) -> Result<Vec<SearchResult>, SearchError> {
+        if self.settings.verbose() {
+            log(format!("Searching archive file {}", file.file_path()).as_str());
+        }
+
+        match FileUtil::get_extension(&file.file_name()) {
+            // TODO: what other extensions are zip format?
+            Some(ext) if ["zip", "zipx", "jar", "war", "ear", "whl"].contains(&ext) => {
+                // self.search_archive_zip_file(file)
+                log(format!("Searching zip archives files is currently disabled").as_str());
+                Ok(vec![])
+            },
+            Some(ext) => {
+                log(format!("Searching not currently supported for {} files", ext).as_str());
+                Ok(vec![])
+            },
+            None => {
+                log(format!(
+                    "Skipping unknown archive file of unknown type: {}",
+                    file.file_path()
+                )
+                    .as_str());
+                Ok(vec![])
+            }
+        }
+    }
+
     fn get_encoded_byte_string_for_reader(
         &self,
         reader: &mut dyn Read,
@@ -343,37 +275,6 @@ impl Searcher {
         self.get_encoded_byte_string(file, BINARY_ENCODING)
     }
 
-    fn search_binary_file(
-        &self,
-        file: FileResult,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        if self.settings.verbose() {
-            log(format!("Searching binary file {}", file.file_path()).as_str());
-        }
-        let mut results: Vec<SearchResult> = Vec::new();
-        match self.get_byte_string(&file) {
-            Ok(byte_string) => match self.search_binary_byte_string(&byte_string) {
-                Ok(rs) => {
-                    for r in rs.into_iter() {
-                        results.push(SearchResult::new(
-                            r.pattern.clone(),
-                            Some(file.clone()),
-                            0,
-                            r.match_start_index,
-                            r.match_end_index,
-                            "".to_string(),
-                            Vec::new(),
-                            Vec::new(),
-                        ));
-                    }
-                },
-                Err(error) => return Err(error),
-            },
-            Err(error) => return Err(error),
-        }
-        Ok(results)
-    }
-
     fn search_binary_byte_string(
         &self,
         bytestring: &String,
@@ -401,6 +302,37 @@ impl Searcher {
                 );
                 results.push(r);
             }
+        }
+        Ok(results)
+    }
+
+    fn search_binary_file(
+        &self,
+        file: FileResult,
+    ) -> Result<Vec<SearchResult>, SearchError> {
+        if self.settings.verbose() {
+            log(format!("Searching binary file {}", file.file_path()).as_str());
+        }
+        let mut results: Vec<SearchResult> = Vec::new();
+        match self.get_byte_string(&file) {
+            Ok(byte_string) => match self.search_binary_byte_string(&byte_string) {
+                Ok(rs) => {
+                    for r in rs.into_iter() {
+                        results.push(SearchResult::new(
+                            r.pattern.clone(),
+                            Some(file.clone()),
+                            0,
+                            r.match_start_index,
+                            r.match_end_index,
+                            "".to_string(),
+                            Vec::new(),
+                            Vec::new(),
+                        ));
+                    }
+                },
+                Err(error) => return Err(error),
+            },
+            Err(error) => return Err(error),
         }
         Ok(results)
     }
@@ -446,196 +378,9 @@ impl Searcher {
         }
     }
 
-    fn search_text_file(&self, file: FileResult) -> Result<Vec<SearchResult>, SearchError> {
-        let encoding = self.get_text_file_encoding();
-        if self.settings.verbose() {
-            log(format!("Searching text file {}", file.file_path()).as_str());
-        }
-        if self.settings.multi_line_search() {
-            return self.search_text_file_contents(file, encoding);
-        }
-        return self.search_text_file_lines(file, encoding);
-    }
-
-    fn search_text_file_lines<'a>(
-        &self,
-        // file: &'a FileResult,
-        file: FileResult,
-        encoding: &'static dyn Encoding,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        let contents = match self.get_text_file_contents(&file, encoding) {
-            Ok(contents) => contents,
-            Err(error) => return Err(error),
-        };
-        let mut lines = contents.lines();
-        Ok(self
-            .search_text_lines(&mut lines)
-            .iter()
-            .map(|r| {
-                SearchResult::new(
-                    r.pattern.clone(),
-                    Some(file.clone()),
-                    r.line_num,
-                    r.match_start_index,
-                    r.match_end_index,
-                    r.line.clone(),
-                    r.lines_before.clone(),
-                    r.lines_after.clone(),
-                )
-            })
-            .collect())
-    }
-
     fn lines_match(&self, lines: &[String], in_patterns: &[Regex], out_patterns: &[Regex]) -> bool {
         (in_patterns.is_empty() || self.any_matches_any_pattern(lines, in_patterns))
             && (out_patterns.is_empty() || !self.any_matches_any_pattern(lines, out_patterns))
-    }
-
-    /// Search a Lines iterator
-    pub fn search_text_lines<'a>(&self, lines: &mut Lines) -> Vec<SearchResult> {
-        let mut results: Vec<SearchResult> = Vec::new();
-        let mut current_linenum = 1usize;
-        let mut lines_before: VecDeque<&str> = VecDeque::new();
-        let mut lines_after: VecDeque<&str> = VecDeque::new();
-        let mut matched_patterns: HashSet<&str> = HashSet::new();
-        loop {
-            let line = if lines_after.len() > 0 {
-                lines_after.pop_front().unwrap()
-            } else if let Some(line) = lines.next() {
-                line
-            } else {
-                break;
-            };
-            while lines_after.len() < self.settings.lines_after() as usize {
-                match lines.next() {
-                    Some(l) => lines_after.push_back(l),
-                    None => break,
-                }
-            }
-            for p in self.settings.search_patterns() {
-                for m in p.find_iter(line) {
-                    let mut v_lines_before: Vec<String> = Vec::new();
-                    if !lines_before.is_empty() {
-                        for line_before in lines_before.iter() {
-                            v_lines_before.push(line_before.to_string());
-                        }
-                        if !self.lines_match(
-                            &v_lines_before,
-                            &self.settings.in_lines_before_patterns(),
-                            &self.settings.out_lines_before_patterns(),
-                        ) {
-                            continue;
-                        }
-                    }
-                    let mut v_lines_after: Vec<String> = Vec::new();
-                    if !lines_after.is_empty() {
-                        for line_after in lines_after.iter() {
-                            v_lines_after.push(line_after.to_string());
-                        }
-                        if !self.lines_match(
-                            &v_lines_after,
-                            &self.settings.in_lines_after_patterns(),
-                            &self.settings.out_lines_after_patterns(),
-                        ) {
-                            continue;
-                        }
-                    }
-
-                    let has_lines_after_to_patterns =
-                        !self.settings.lines_after_to_patterns().is_empty();
-                    let has_lines_after_until_patterns =
-                        !self.settings.lines_after_until_patterns().is_empty();
-                    if has_lines_after_to_patterns || has_lines_after_until_patterns {
-                        let lines_after_patterns = if has_lines_after_to_patterns {
-                            self.settings.lines_after_to_patterns()
-                        } else {
-                            self.settings.lines_after_until_patterns()
-                        };
-
-                        let mut lines_after_match =
-                            self.any_matches_any_pattern(&v_lines_after, &lines_after_patterns);
-                        while !lines_after_match {
-                            match lines.next() {
-                                Some(line) => {
-                                    if self.matches_any_pattern(
-                                        &line.to_string(),
-                                        &lines_after_patterns,
-                                    ) {
-                                        if has_lines_after_to_patterns {
-                                            lines_after.push_back(line);
-                                            v_lines_after.push(line.to_string());
-                                        }
-                                        lines_after_match = true;
-                                    } else {
-                                        lines_after.push_back(line);
-                                        v_lines_after.push(line.to_string());
-                                    }
-                                },
-                                None => break,
-                            }
-                        }
-                        if !lines_after_match {
-                            continue;
-                        }
-                    }
-
-                    let r = SearchResult::new(
-                        p.as_str().to_string(),
-                        None,
-                        current_linenum,
-                        m.start() + 1,
-                        m.end() + 1,
-                        line.to_string().clone(),
-                        v_lines_before,
-                        v_lines_after,
-                    );
-                    results.push(r);
-                    matched_patterns.insert(p.as_str());
-                    if self.settings.first_match()
-                        && matched_patterns.len() == self.settings.search_patterns().len()
-                    {
-                        return results;
-                    }
-                }
-            }
-            if self.settings.lines_before() > 0 {
-                if lines_before.len() == self.settings.lines_before() as usize {
-                    lines_before.pop_front();
-                }
-                if lines_before.len() < self.settings.lines_before() as usize {
-                    lines_before.push_back(line);
-                }
-            }
-            current_linenum += 1;
-        }
-        results
-    }
-
-    fn search_text_file_contents(
-        &self,
-        file: FileResult,
-        encoding: &'static dyn Encoding,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        let contents = match self.get_text_file_contents(&file, encoding) {
-            Ok(contents) => contents,
-            Err(error) => return Err(error),
-        };
-        Ok(self
-            .search_multi_line_string(&contents)
-            .iter()
-            .map(|r| {
-                SearchResult::new(
-                    r.pattern.clone(),
-                    Some(file.clone()),
-                    r.line_num,
-                    r.match_start_index,
-                    r.match_end_index,
-                    r.line.clone(),
-                    r.lines_before.clone(),
-                    r.lines_after.clone(),
-                )
-            })
-            .collect())
     }
 
     fn get_lines_from_contents(&self, contents: &str, newline_indices: Vec<usize>) -> Vec<String> {
@@ -771,41 +516,302 @@ impl Searcher {
 
         results
     }
-}
 
-/// Get the unique list of directories for which search results were found
-pub fn get_result_dirs(results: &[SearchResult]) -> Vec<String> {
-    let mut dir_set: HashSet<String> = HashSet::new();
-    let mut dirs: Vec<String> = Vec::new();
-    for r in results.iter() {
-        if let Some(f) = &r.file {
-            if !dir_set.contains(f.parent()) {
-                dirs.push(String::from(f.parent()));
-                dir_set.insert(String::from(f.parent()));
+    fn search_text_file_contents(
+        &self,
+        file: FileResult,
+        encoding: &'static dyn Encoding,
+    ) -> Result<Vec<SearchResult>, SearchError> {
+        let contents = match self.get_text_file_contents(&file, encoding) {
+            Ok(contents) => contents,
+            Err(error) => return Err(error),
+        };
+        Ok(self
+            .search_multi_line_string(&contents)
+            .iter()
+            .map(|r| {
+                SearchResult::new(
+                    r.pattern.clone(),
+                    Some(file.clone()),
+                    r.line_num,
+                    r.match_start_index,
+                    r.match_end_index,
+                    r.line.clone(),
+                    r.lines_before.clone(),
+                    r.lines_after.clone(),
+                )
+            })
+            .collect())
+    }
+
+    /// Search a Lines iterator
+    pub fn search_text_lines<'a>(&self, lines: &mut Lines) -> Vec<SearchResult> {
+        let mut results: Vec<SearchResult> = Vec::new();
+        let mut current_linenum = 1usize;
+        let mut lines_before: VecDeque<&str> = VecDeque::new();
+        let mut lines_after: VecDeque<&str> = VecDeque::new();
+        let mut matched_patterns: HashSet<&str> = HashSet::new();
+        loop {
+            let line = if lines_after.len() > 0 {
+                lines_after.pop_front().unwrap()
+            } else if let Some(line) = lines.next() {
+                line
+            } else {
+                break;
+            };
+            while lines_after.len() < self.settings.lines_after() as usize {
+                match lines.next() {
+                    Some(l) => lines_after.push_back(l),
+                    None => break,
+                }
+            }
+            for p in self.settings.search_patterns() {
+                for m in p.find_iter(line) {
+                    let mut v_lines_before: Vec<String> = Vec::new();
+                    if !lines_before.is_empty() {
+                        for line_before in lines_before.iter() {
+                            v_lines_before.push(line_before.to_string());
+                        }
+                        if !self.lines_match(
+                            &v_lines_before,
+                            &self.settings.in_lines_before_patterns(),
+                            &self.settings.out_lines_before_patterns(),
+                        ) {
+                            continue;
+                        }
+                    }
+                    let mut v_lines_after: Vec<String> = Vec::new();
+                    if !lines_after.is_empty() {
+                        for line_after in lines_after.iter() {
+                            v_lines_after.push(line_after.to_string());
+                        }
+                        if !self.lines_match(
+                            &v_lines_after,
+                            &self.settings.in_lines_after_patterns(),
+                            &self.settings.out_lines_after_patterns(),
+                        ) {
+                            continue;
+                        }
+                    }
+
+                    let has_lines_after_to_patterns =
+                        !self.settings.lines_after_to_patterns().is_empty();
+                    let has_lines_after_until_patterns =
+                        !self.settings.lines_after_until_patterns().is_empty();
+                    if has_lines_after_to_patterns || has_lines_after_until_patterns {
+                        let lines_after_patterns = if has_lines_after_to_patterns {
+                            self.settings.lines_after_to_patterns()
+                        } else {
+                            self.settings.lines_after_until_patterns()
+                        };
+
+                        let mut lines_after_match =
+                            self.any_matches_any_pattern(&v_lines_after, &lines_after_patterns);
+                        while !lines_after_match {
+                            match lines.next() {
+                                Some(line) => {
+                                    if self.matches_any_pattern(
+                                        &line.to_string(),
+                                        &lines_after_patterns,
+                                    ) {
+                                        if has_lines_after_to_patterns {
+                                            lines_after.push_back(line);
+                                            v_lines_after.push(line.to_string());
+                                        }
+                                        lines_after_match = true;
+                                    } else {
+                                        lines_after.push_back(line);
+                                        v_lines_after.push(line.to_string());
+                                    }
+                                },
+                                None => break,
+                            }
+                        }
+                        if !lines_after_match {
+                            continue;
+                        }
+                    }
+
+                    let r = SearchResult::new(
+                        p.as_str().to_string(),
+                        None,
+                        current_linenum,
+                        m.start() + 1,
+                        m.end() + 1,
+                        line.to_string().clone(),
+                        v_lines_before,
+                        v_lines_after,
+                    );
+                    results.push(r);
+                    matched_patterns.insert(p.as_str());
+                    if self.settings.first_match()
+                        && matched_patterns.len() == self.settings.search_patterns().len()
+                    {
+                        return results;
+                    }
+                }
+            }
+            if self.settings.lines_before() > 0 {
+                if lines_before.len() == self.settings.lines_before() as usize {
+                    lines_before.pop_front();
+                }
+                if lines_before.len() < self.settings.lines_before() as usize {
+                    lines_before.push_back(line);
+                }
+            }
+            current_linenum += 1;
+        }
+        results
+    }
+
+    fn search_text_file_lines<'a>(
+        &self,
+        // file: &'a FileResult,
+        file: FileResult,
+        encoding: &'static dyn Encoding,
+    ) -> Result<Vec<SearchResult>, SearchError> {
+        let contents = match self.get_text_file_contents(&file, encoding) {
+            Ok(contents) => contents,
+            Err(error) => return Err(error),
+        };
+        let mut lines = contents.lines();
+        Ok(self
+            .search_text_lines(&mut lines)
+            .iter()
+            .map(|r| {
+                SearchResult::new(
+                    r.pattern.clone(),
+                    Some(file.clone()),
+                    r.line_num,
+                    r.match_start_index,
+                    r.match_end_index,
+                    r.line.clone(),
+                    r.lines_before.clone(),
+                    r.lines_after.clone(),
+                )
+            })
+            .collect())
+    }
+
+    fn search_text_file(&self, file: FileResult) -> Result<Vec<SearchResult>, SearchError> {
+        let encoding = self.get_text_file_encoding();
+        if self.settings.verbose() {
+            log(format!("Searching text file {}", file.file_path()).as_str());
+        }
+        if self.settings.multi_line_search() {
+            return self.search_text_file_contents(file, encoding);
+        }
+        return self.search_text_file_lines(file, encoding);
+    }
+
+    /// Search an individual file and get the results
+    pub fn search_file(&self, file: FileResult) -> Result<Vec<SearchResult>, SearchError> {
+        match file.file_type {
+            FileType::Text | FileType::Code | FileType::Xml => self.search_text_file(file),
+            FileType::Binary => self.search_binary_file(file),
+            FileType::Archive => {
+                if self.settings.search_archives() {
+                    self.search_archive_file(file)
+                } else {
+                    log(format!("Skipping archive file: {}", file.file_path()).as_str());
+                    Ok(vec![])
+                }
+            },
+            _ => {
+                log(format!("Skipping unknown file type: {:?}", file.file_type).as_str());
+                Ok(vec![])
             }
         }
     }
-    dirs
+
+    fn search_files(&self, files: Vec<FileResult>) -> Result<Vec<SearchResult>, SearchError> {
+        let mut results: Vec<SearchResult> = Vec::new();
+        for fr in files.into_iter() {
+            match self.search_file(fr) {
+                Ok(mut file_results) => {
+                    results.append(&mut file_results);
+                },
+                Err(error) => {
+                    log(format!("{}", error).as_str());
+                    return Err(error);
+                }
+            }
+        }
+        // TODO: implement custom sorting of [SearchResult]
+        results.sort_unstable();
+        Ok(results)
+    }
+
+    /// Initiate a searcher search for the given settings and get the results
+    pub fn search(&self) -> Result<Vec<SearchResult>, SearchError> {
+        let mut file_results: Vec<FileResult> = Vec::new();
+
+        match self.finder.find() {
+            Ok(mut find_results) => {
+                file_results.append(&mut find_results);
+            }
+            Err(error) => return Err(SearchError::new(error.description.as_str())),
+        }
+
+        if self.settings.verbose() && !file_results.is_empty() {
+            let mut dirs: Vec<String> = file_results.iter().map(|f| String::from(f.parent())).collect();
+            dirs.sort_unstable();
+            dirs.dedup();
+            log(format!("\nDirectories to be searched ({}):", dirs.len()).as_str());
+            for dir in dirs.iter() {
+                log(format!("{}", dir).as_str());
+            }
+
+            let files: Vec<String> = file_results.iter().map(|f| f.file_path()).collect();
+            log(format!("\nFiles to be searched ({}):", files.len()).as_str());
+            for file in files.iter() {
+                log(format!("{}", file).as_str());
+            }
+        }
+
+        self.search_files(file_results)
+    }
+}
+
+pub fn print_results(results: &Vec<SearchResult>, formatter: &SearchResultFormatter) {
+    if results.is_empty() {
+        log("\nSearch results: 0");
+    } else {
+        log(format!("\nSearch results ({}):", results.len()).as_str());
+        for r in results.iter() {
+            log(formatter.format(r).as_str());
+        }
+    }
 }
 
 /// Get the unique list of files for which search results were found
-pub fn get_result_files(results: &[SearchResult]) -> Vec<String> {
+fn get_file_results(search_results: &[SearchResult]) -> Vec<FileResult> {
     let mut file_set: HashSet<String> = HashSet::new();
-    let mut files: Vec<String> = Vec::new();
-    for r in results.iter() {
+    let mut file_results: Vec<FileResult> = Vec::new();
+    for r in search_results.iter() {
         if let Some(f) = &r.file {
             let filepath = f.file_path();
             if !file_set.contains(&filepath) {
-                files.push(filepath.clone());
+                file_results.push(f.clone());
                 file_set.insert(filepath);
             }
         }
     }
-    files
+    file_results
+}
+
+pub fn print_result_dirs(results: &Vec<SearchResult>, formatter: &SearchResultFormatter) {
+    let files = get_file_results(results);
+    print_matching_dirs(&files, &formatter.file_formatter)
+}
+
+pub fn print_result_files(results: &Vec<SearchResult>, formatter: &SearchResultFormatter) {
+    let files = get_file_results(results);
+    print_matching_files(&files, &formatter.file_formatter)
 }
 
 /// Get the [unique] list of lines containing matches for a set of search results
-pub fn get_result_lines(results: &[SearchResult], unique: bool) -> Vec<&str> {
+fn get_result_lines(results: &[SearchResult], unique: bool) -> Vec<&str> {
     let mut lines: Vec<&str> = Vec::new();
     for r in results.iter() {
         lines.push(&r.line.trim());
@@ -815,6 +821,20 @@ pub fn get_result_lines(results: &[SearchResult], unique: bool) -> Vec<&str> {
         lines.dedup();
     }
     lines
+}
+
+pub fn print_result_lines(results: &Vec<SearchResult>, formatter: &SearchResultFormatter) {
+    let unique = formatter.settings.unique_lines();
+    let lines = get_result_lines(results, unique);
+    let lines_title = if unique { "Unique matching lines" } else { "Matching lines" };
+    if lines.is_empty() {
+        log(format!("\n{}: 0", lines_title).as_str());
+    } else {
+        log(format!("\n{} ({}):", lines_title, lines.len()).as_str());
+        for line in lines.iter() {
+            log(format!("{}", (&formatter.format_line)(line, &formatter.settings)).as_str());
+        }
+    }
 }
 
 #[cfg(test)]
