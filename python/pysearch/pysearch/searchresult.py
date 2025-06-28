@@ -11,7 +11,7 @@
 from io import StringIO
 from typing import List
 
-from pyfind import Color, FileResult, FileResultFormatter
+from pyfind import Color, FileResult, FileResultFormatter, FileResultSorter, SortBy
 
 from .searchsettings import SearchSettings
 
@@ -199,3 +199,71 @@ class SearchResultFormatter(object):
             return self.__multi_line_format(result)
         else:
             return self.__single_line_format(result)
+
+
+class SearchResultSorter(object):
+    """provides sorting of SearchResult instances"""
+
+    def __init__(self, settings: SearchSettings):
+        self.settings = settings
+        self.file_sorter = FileResultSorter(settings)
+
+    def key_by_search_fields(self, r: SearchResult) -> list:
+        return [r.line_num, r.match_start_index, r.match_end_index]
+
+    def key_by_file_path(self, r: SearchResult) -> list:
+        key = []
+        if r.file:
+            key.extend(self.file_sorter.key_by_file_path(r.file))
+        key.extend(self.key_by_search_fields(r))
+        return key
+
+    def key_by_file_name(self, r: SearchResult) -> list:
+        key = []
+        if r.file:
+            key.extend(self.file_sorter.key_by_file_name(r.file))
+        key.extend(self.key_by_search_fields(r))
+        return key
+
+    def key_by_file_size(self, r: SearchResult) -> list:
+        key = []
+        if r.file:
+            key.extend(self.file_sorter.key_by_file_size(r.file))
+        key.extend(self.key_by_search_fields(r))
+        return key
+
+    def key_by_file_type(self, r: SearchResult) -> list:
+        key = []
+        if r.file:
+            key.extend(self.file_sorter.key_by_file_type(r.file))
+        key.extend(self.key_by_search_fields(r))
+        return key
+
+    def key_by_last_mod(self, r: SearchResult) -> list:
+        key = []
+        if r.file:
+            key.extend(self.file_sorter.key_by_last_mod(r.file))
+        key.extend(self.key_by_search_fields(r))
+        return key
+
+    def get_sort_key_function(self) -> callable:
+        """Get the sort key function based on the settings."""
+        match self.settings.sort_by:
+            case SortBy.FILEPATH:
+                return self.key_by_file_path
+            case SortBy.FILENAME:
+                return self.key_by_file_name
+            case SortBy.FILESIZE:
+                return self.key_by_file_size
+            case SortBy.FILETYPE:
+                return self.key_by_file_type
+            case SortBy.LASTMOD:
+                return self.key_by_last_mod
+            case _:
+                return self.key_by_file_path
+
+    def sort(self, results: list[SearchResult]) -> list[SearchResult]:
+        """Sort the given list of SearchResult instances."""
+        sort_key_func = self.get_sort_key_function()
+        return sorted(results, key=sort_key_func,
+                      reverse=self.settings.sort_descending)

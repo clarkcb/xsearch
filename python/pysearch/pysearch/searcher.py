@@ -22,7 +22,7 @@ from typing import Deque, Optional, TextIO
 from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, SortBy,
                     log, log_error, print_dir_results, print_file_results)
 
-from .searchresult import SearchResult, SearchResultFormatter
+from .searchresult import SearchResult, SearchResultFormatter, SearchResultSorter
 from .searchsettings import SearchSettings, PatternSet
 
 TARFILE_MODULE_AVAILABLE = True
@@ -95,7 +95,8 @@ class Searcher(object):
             for coroutine in asyncio.as_completed(tasks):
                 search_results.extend(await coroutine)
             offset += batch_size
-        return self.sort_search_results(search_results)
+        search_result_sorter = SearchResultSorter(self.settings)
+        return search_result_sorter.sort(search_results)
 
     async def search_contained_file(self, containers: list[Path], fr: FileResult) -> list[SearchResult]:
         """Search a contained file and return the results"""
@@ -658,66 +659,6 @@ class Searcher(object):
         if ext in self.file_types.ZIPFILE_EXTENSIONS:
             return self._get_zipfile_contained_file_bytes(containers, file_path)
         return b''
-
-    def key_by_search_fields(self, r: SearchResult) -> list:
-        return [r.line_num, r.match_start_index, r.match_end_index]
-
-    def key_by_file_path(self, r: SearchResult) -> list:
-        key = []
-        if r.file:
-            key.extend(self.finder.key_by_file_path(r.file))
-        key.extend(self.key_by_search_fields(r))
-        return key
-
-    def key_by_file_name(self, r: SearchResult) -> list:
-        key = []
-        if r.file:
-            key.extend(self.finder.key_by_file_name(r.file))
-        key.extend(self.key_by_search_fields(r))
-        return key
-
-    def key_by_file_size(self, r: SearchResult) -> list:
-        key = []
-        if r.file:
-            key.extend(self.finder.key_by_file_size(r.file))
-        key.extend(self.key_by_search_fields(r))
-        return key
-
-    def key_by_file_type(self, r: SearchResult) -> list:
-        key = []
-        if r.file:
-            key.extend(self.finder.key_by_file_type(r.file))
-        key.extend(self.key_by_search_fields(r))
-        return key
-
-    def key_by_last_mod(self, r: SearchResult) -> list:
-        key = []
-        if r.file:
-            key.extend(self.finder.key_by_last_mod(r.file))
-        key.extend(self.key_by_search_fields(r))
-        return key
-
-    def get_sort_key_function(self) -> callable:
-        """Get the sort key function based on the settings."""
-        match self.settings.sort_by:
-            case SortBy.FILEPATH:
-                return self.key_by_file_path
-            case SortBy.FILENAME:
-                return self.key_by_file_name
-            case SortBy.FILESIZE:
-                return self.key_by_file_size
-            case SortBy.FILETYPE:
-                return self.key_by_file_type
-            case SortBy.LASTMOD:
-                return self.key_by_last_mod
-            case _:
-                return self.key_by_file_path
-
-    def sort_search_results(self, results: list[SearchResult]) -> list[SearchResult]:
-        """Sort the given list of SearchResult instances."""
-        sort_key_func = self.get_sort_key_function()
-        return sorted(results, key=sort_key_func,
-                      reverse=self.settings.sort_descending)
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet):
