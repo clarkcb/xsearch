@@ -1,5 +1,4 @@
-import 'package:dartfind/dartfind.dart' show FileResult;
-import 'package:dartsearch/src/console_color.dart';
+import 'package:dartfind/dartfind.dart' show FileResult, FileResultFormatter;
 import 'package:dartsearch/src/search_settings.dart';
 
 class SearchResult {
@@ -27,15 +26,30 @@ class SearchResultFormatter {
   static const noSearchFileText = '<text>';
 
   final SearchSettings settings;
+  FileResultFormatter? fileFormatter;
+  String Function(String) formatLine = (String line) => line;
 
-  const SearchResultFormatter(this.settings);
+  SearchResultFormatter(this.settings) {
+    fileFormatter = FileResultFormatter(settings);
+    if (settings.colorize) {
+      formatLine = formatLineWithColor;
+    }
+  }
 
   String colorize(String s, int matchStartIndex, int matchEndIndex) {
-    return s.substring(0, matchStartIndex) +
-        ConsoleColor.GREEN +
-        s.substring(matchStartIndex, matchEndIndex) +
-        ConsoleColor.RESET +
-        s.substring(matchEndIndex);
+    return fileFormatter!.colorize(s, matchStartIndex, matchEndIndex);
+  }
+
+  String formatLineWithColor(String line) {
+    var formattedLine = line;
+    for (var p in settings.searchPatterns) {
+      var match = (p as RegExp).firstMatch(formattedLine);
+      if (match != null) {
+        formattedLine = colorize(formattedLine, match.start, match.end);
+        break;
+      }
+    }
+    return formattedLine;
   }
 
   int _lineNumPadding(SearchResult result) {
@@ -53,7 +67,7 @@ class SearchResultFormatter {
       // } else if (settings.startPath.startsWith('~')) {
       //   filePath = FileUtil.contractPath(result.file.file.path);
     } else {
-      filePath = result.file!.file.path;
+      filePath = fileFormatter!.formatFileResult(result.file!);
     }
     var s = '${'=' * lineSepLength}\n';
     s += '$filePath: ${result.lineNum}:';
@@ -152,7 +166,7 @@ class SearchResultFormatter {
       // } else if (settings.startPath.startsWith('~')) {
       //   s = FileUtil.contractPath(result.file.file.path);
     } else {
-      s = result.file!.file.path;
+      s = fileFormatter!.formatFileResult(result.file!);
     }
     if (result.lineNum == 0) {
       s += ' matches at [${result.matchStartIndex}:${result.matchEndIndex}]';

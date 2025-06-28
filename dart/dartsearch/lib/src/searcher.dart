@@ -329,6 +329,105 @@ class Searcher {
     return results;
   }
 
+  int cmpByMatchLocation(SearchResult r1, SearchResult r2) {
+    if (r1.lineNum != r2.lineNum) {
+      return r1.lineNum.compareTo(r2.lineNum);
+    }
+    if (r1.matchStartIndex != r2.matchStartIndex) {
+      return r1.matchStartIndex.compareTo(r2.matchStartIndex);
+    }
+    return r1.matchEndIndex.compareTo(r2.matchEndIndex);
+  }
+
+  int cmpByFilePath(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = _finder.cmpByFilePath(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByFileName(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = _finder.cmpByFileName(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByFileSize(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = _finder.cmpByFileSize(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByFileType(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = _finder.cmpByFileType(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByLastMod(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = _finder.cmpByLastMod(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int Function(SearchResult, SearchResult)? getSortComparator() {
+    if (settings.sortDescending) {
+      switch (settings.sortBy) {
+        case SortBy.fileName:
+          return (SearchResult r1, SearchResult r2) => cmpByFileName(r2, r1);
+        case SortBy.fileSize:
+          return (SearchResult r1, SearchResult r2) => cmpByFileSize(r2, r1);
+        case SortBy.fileType:
+          return (SearchResult r1, SearchResult r2) => cmpByFileType(r2, r1);
+        case SortBy.lastMod:
+          return (SearchResult r1, SearchResult r2) => cmpByLastMod(r2, r1);
+        default:
+          return (SearchResult r1, SearchResult r2) => cmpByFilePath(r2, r1);
+      }
+    }
+    switch (settings.sortBy) {
+      case SortBy.fileName:
+        return (SearchResult r1, SearchResult r2) => cmpByFileName(r1, r2);
+      case SortBy.fileSize:
+        return (SearchResult r1, SearchResult r2) => cmpByFileSize(r1, r2);
+      case SortBy.fileType:
+        return (SearchResult r1, SearchResult r2) => cmpByFileType(r1, r2);
+      case SortBy.lastMod:
+        return (SearchResult r1, SearchResult r2) => cmpByLastMod(r1, r2);
+      default:
+        return (SearchResult r1, SearchResult r2) => cmpByFilePath(r1, r2);
+    }
+  }
+
+  void sortSearchResults(List<SearchResult> results) {
+    var sortComparator = getSortComparator();
+    results.sort(sortComparator);
+  }
+
   Future<List<SearchResult>> _searchFiles() async {
     var fileResults = await _finder.find();
     if (settings.verbose) {
@@ -362,6 +461,9 @@ class Searcher {
       offset += batchSize;
     }
 
+    if (results.length > 1) {
+      sortSearchResults(results);
+    }
     return results;
   }
 
@@ -369,5 +471,77 @@ class Searcher {
     return Future.wait([_fileTypes.ready]).then((res) {
       return _searchFiles();
     });
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  void printResults(
+      List<SearchResult> results, SearchResultFormatter formatter) {
+    if (results.isNotEmpty) {
+      logMsg('\nSearch results (${results.length}):');
+      for (var r in results) {
+        logMsg(formatter.format(r));
+      }
+    } else {
+      logMsg('\nSearch results: 0');
+    }
+  }
+
+  int sortFileResults(FileResult fr1, FileResult fr2) {
+    if (fr1.file.parent.path == fr2.file.parent.path) {
+      return fr1.file.path.compareTo(fr2.file.path);
+    } else {
+      return fr1.file.parent.path.compareTo(fr2.file.parent.path);
+    }
+  }
+
+  List<FileResult> getMatchingFileResults(List<SearchResult> results) {
+    var files = results.map((r) => r.file!).toSet().toList();
+    files.sort(sortFileResults);
+    return files;
+  }
+
+  void printMatchingDirs(
+      List<SearchResult> results, SearchResultFormatter formatter) {
+    var files = getMatchingFileResults(results);
+    _finder.printMatchingDirs(files, formatter.fileFormatter!);
+  }
+
+  void printMatchingFiles(
+      List<SearchResult> results, SearchResultFormatter formatter) {
+    var files = getMatchingFileResults(results);
+    _finder.printMatchingFiles(files, formatter.fileFormatter!);
+  }
+
+  List<String> getMatchingLines(
+      List<SearchResult> results, SearchSettings settings) {
+    var lines = results
+        .where((r) => r.line != null)
+        .map((r) => r.line!.trim())
+        .toList();
+    if (settings.uniqueLines) {
+      lines = lines.toSet().toList();
+    }
+    lines.sort((l1, l2) => l1.toLowerCase().compareTo(l2.toLowerCase()));
+    return lines;
+  }
+
+  void printMatchingLines(
+      List<SearchResult> results, SearchResultFormatter formatter) {
+    var lines = getMatchingLines(results, settings);
+    String msg;
+    if (settings.uniqueLines) {
+      msg = '\nUnique matching lines';
+    } else {
+      msg = '\nMatching lines';
+    }
+    if (lines.isNotEmpty) {
+      logMsg('$msg (${lines.length}):');
+      for (var line in lines) {
+        logMsg(formatter.formatLine(line));
+      }
+    } else {
+      logMsg('$msg: 0');
+    }
   }
 }

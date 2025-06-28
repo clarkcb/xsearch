@@ -10,126 +10,28 @@ void _handleError(err, SearchOptions options) {
   exitCode = 1;
 }
 
-int sortResults(SearchResult r1, SearchResult r2) {
-  if (r1.file!.file.parent.path == r2.file!.file.parent.path) {
-    if (r1.file!.file.path == r2.file!.file.path) {
-      if (r1.lineNum == r2.lineNum) {
-        return r1.matchStartIndex.compareTo(r2.matchStartIndex);
-      } else {
-        return r1.lineNum.compareTo(r2.lineNum);
-      }
-    } else {
-      return r1.file!.file.path.compareTo(r2.file!.file.path);
-    }
-  } else {
-    return r1.file!.file.parent.path.compareTo(r2.file!.file.parent.path);
-  }
-}
-
-void printResults(List<SearchResult> results, SearchSettings settings) {
-  if (results.isNotEmpty) {
-    logMsg('\nSearch results (${results.length}):');
-    var formatter = SearchResultFormatter(settings);
-    // The results are in file_results order, which is good enough for now
-    // results.sort(sortResults);
-    for (var r in results) {
-      logMsg(formatter.format(r));
-    }
-  } else {
-    logMsg('\nSearch results: 0');
-  }
-}
-
-List<String> getMatchingDirs(List<SearchResult> results) {
-  var dirs = results.map((r) => r.file!.file.parent.path).toSet().toList();
-  dirs.sort();
-  return dirs;
-}
-
-void printMatchingDirs(List<SearchResult> results, SearchSettings settings) {
-  var dirs = getMatchingDirs(results);
-  if (dirs.isNotEmpty) {
-    logMsg('\nMatching directories (${dirs.length}):');
-    dirs.forEach(logMsg);
-  } else {
-    logMsg('\nMatching directories: 0');
-  }
-}
-
-int sortFiles(File f1, File f2) {
-  if (f1.parent.path == f2.parent.path) {
-    return f1.path.compareTo(f2.path);
-  } else {
-    return f1.parent.path.compareTo(f2.parent.path);
-  }
-}
-
-List<String> getMatchingFiles(
-    List<SearchResult> results, SearchSettings settings) {
-  var files = results.map((r) => r.file!.file).toSet().toList();
-  files.sort(sortFiles);
-  // return files.map((f) => FileUtil.contractPath(f.path)).toList();
-  return files.map((f) => f.path).toList();
-}
-
-void printMatchingFiles(List<SearchResult> results, SearchSettings settings) {
-  var files = getMatchingFiles(results, settings);
-  if (files.isNotEmpty) {
-    logMsg('\nMatching files (${files.length}):');
-    files.forEach(logMsg);
-  } else {
-    logMsg('\nMatching files: 0');
-  }
-}
-
-List<String> getMatchingLines(
-    List<SearchResult> results, SearchSettings settings) {
-  var lines =
-      results.where((r) => r.line != null).map((r) => r.line!.trim()).toList();
-  if (settings.uniqueLines) {
-    lines = lines.toSet().toList();
-  }
-  lines.sort((l1, l2) => l1.toLowerCase().compareTo(l2.toLowerCase()));
-  return lines;
-}
-
-void printMatchingLines(List<SearchResult> results, SearchSettings settings) {
-  var lines = getMatchingLines(results, settings);
-  String msg;
-  if (settings.uniqueLines) {
-    msg = '\nUnique matching lines';
-  } else {
-    msg = '\nMatching lines';
-  }
-  if (lines.isNotEmpty) {
-    logMsg('$msg (${lines.length}):');
-    lines.forEach(logMsg);
-  } else {
-    logMsg('$msg: 0');
-  }
-}
-
 Future<void> search(SearchSettings settings, SearchOptions options) async {
   var results = <SearchResult>[];
   try {
     var searcher = Searcher(settings);
     results = await searcher.search();
+    var formatter = SearchResultFormatter(settings);
 
     if (results.isNotEmpty) {
       if (settings.printResults) {
-        printResults(results, settings);
+        searcher.printResults(results, formatter);
       }
 
       if (settings.printDirs) {
-        printMatchingDirs(results, settings);
+        searcher.printMatchingDirs(results, formatter);
       }
 
       if (settings.printFiles) {
-        printMatchingFiles(results, settings);
+        searcher.printMatchingFiles(results, formatter);
       }
 
       if (settings.printLines) {
-        printMatchingLines(results, settings);
+        searcher.printMatchingLines(results, formatter);
       }
     }
   } on FormatException catch (e) {

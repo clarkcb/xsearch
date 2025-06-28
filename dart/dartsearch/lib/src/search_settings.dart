@@ -1,7 +1,6 @@
 import 'package:dartfind/dartfind.dart' show FindSettings;
 
 class SearchSettings extends FindSettings {
-  bool colorize = true;
   bool firstMatch = false;
   var inLinesAfterPatterns = <Pattern>{};
   var inLinesBeforePatterns = <Pattern>{};
