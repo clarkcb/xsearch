@@ -1,6 +1,6 @@
 namespace FsSearchTests
 
-open FsFind
+open FsFindLib
 open NUnit.Framework
 open FsSearchLib
 

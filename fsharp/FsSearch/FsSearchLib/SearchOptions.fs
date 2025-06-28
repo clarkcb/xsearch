@@ -6,7 +6,7 @@ open System.IO
 open System.Text
 open System.Text.Json
 open System.Text.RegularExpressions
-open FsFind
+open FsFindLib
 
 module SearchOptions =   
 
@@ -184,11 +184,7 @@ module SearchOptions =
         if fileInfo.Exists then
             if fileInfo.Extension.Equals(".json") then
                 let contents = FileUtil.GetFileContents expandedPath Encoding.Default
-                try
-                    UpdateSettingsFromJson contents settings
-                with
-                | :? Exception ->
-                    Error $"Unable to parse JSON in settings file: %s{filePath}"
+                UpdateSettingsFromJson contents settings
             else
                 Error $"Invalid settings file (must be JSON): {filePath}"
         else

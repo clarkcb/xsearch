@@ -4,7 +4,7 @@ open System.IO
 open System.Text.RegularExpressions
 open NUnit.Framework
 open FsSearchLib
-open FsFind
+open FsFindLib
 
 [<TestFixture>]
 type SearchResultTests () =

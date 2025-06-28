@@ -3,7 +3,7 @@ namespace FsSearchTests
 open System.IO
 open NUnit.Framework
 open FsSearchLib
-open FsFind
+open FsFindLib
 
 [<TestFixture>]
 type SearcherTests () =

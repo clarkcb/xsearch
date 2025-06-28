@@ -1,7 +1,7 @@
 ﻿namespace FsSearchLib
 
 open System.Text.RegularExpressions
-open FsFind
+open FsFindLib
 
 type SearchSettings() =
     inherit FindSettings()
@@ -12,7 +12,6 @@ type SearchSettings() =
             if value then
                 this.SearchArchives <- value
 
-    member val Colorize : bool = true with get, set
     member val FirstMatch : bool = false with get, set
     member val InLinesAfterPatterns : Regex list = [] with get, set
     member val InLinesBeforePatterns : Regex list = [] with get, set

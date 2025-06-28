@@ -1,6 +1,6 @@
 ﻿namespace FsSearch
 
-open FsFind
+open FsFindLib
 open FsSearchLib
 
 module Main =
@@ -18,18 +18,19 @@ module Main =
             HandleError errs.Head
 
         let results = searcher.Search()
+        let formatter = SearchResultFormatter(settings)
 
         if settings.PrintResults then
-            searcher.PrintResults results
+            searcher.PrintResults results formatter
 
         if settings.PrintDirs then
-            searcher.PrintMatchingDirs results
+            searcher.PrintMatchingDirs results formatter
 
         if settings.PrintFiles then
-            searcher.PrintMatchingFiles results
+            searcher.PrintMatchingFiles results formatter
 
         if settings.PrintLines then
-            searcher.PrintMatchingLines results
+            searcher.PrintMatchingLines results formatter
 
 
     [<EntryPoint>]
@@ -42,7 +43,7 @@ module Main =
                 if settings.Debug then
                     Logger.Log settings.ToString
                 if settings.PrintUsage then
-                    FindOptions.Usage(0)
+                    SearchOptions.Usage(0)
                 else
                     Search settings
             | Error e -> HandleError e

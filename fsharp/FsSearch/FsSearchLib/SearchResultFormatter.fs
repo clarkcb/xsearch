@@ -1,16 +1,11 @@
 namespace FsSearchLib
 
-open FsFind
+open System.Text.RegularExpressions
+
+open FsFindLib
 
 type SearchResultFormatter (settings : SearchSettings) =
-
-    let Colorize (s : string) (matchStartIndex : int) (matchEndIndex : int) : string =
-        let matchLength = matchEndIndex - matchStartIndex
-        s.Substring(0, matchStartIndex) +
-            Color.Green + 
-            s.Substring(matchStartIndex, matchLength) +
-            Color.Reset + 
-            s.Substring(matchStartIndex + matchLength)
+    let fileFormatter = FileResultFormatter(settings)
 
     let GetRelativeFilePath (result : SearchResult.t) : string =
         result.File.File.ToString()
@@ -52,7 +47,7 @@ type SearchResultFormatter (settings : SearchSettings) =
         if lineEndIndex < maxLineEndIndex - 3 then
             formatted <- formatted.Substring(0, formattedLength - 3) + "..."
         if settings.Colorize then
-            formatted <- Colorize formatted matchStartIndex matchEndIndex
+            formatted <- Color.Colorize formatted matchStartIndex matchEndIndex
         formatted
 
     let SingleLineFormat (result : SearchResult.t) : string =
@@ -62,13 +57,14 @@ type SearchResultFormatter (settings : SearchSettings) =
             else
                 let line = FormatMatchingLine result
                 $": %d{result.LineNum}: [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]: %s{line}"
-        (GetRelativeFilePath result) + matchString
+        // (GetRelativeFilePath result) + matchString
+        fileFormatter.FormatFileResult(result.File) + matchString
 
     let MultiLineFormat (result : SearchResult.t) : string =
         let hdr = 
             String.concat "\n" [
                 $"%s{new string('=', 80)}";
-                $"%s{GetRelativeFilePath result}: %d{result.LineNum}: [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]";
+                $"%s{fileFormatter.FormatFileResult(result.File)}: %d{result.LineNum}: [%d{result.MatchStartIndex}:%d{result.MatchEndIndex}]";
                 $"%s{new string('-', 80)}";
             ] + "\n"
         let maxLineNum = result.LineNum + (List.length result.LinesAfter)
@@ -90,9 +86,27 @@ type SearchResultFormatter (settings : SearchSettings) =
             linesAfterString;
         ]
 
+    member this.FormatLineWithColor (line : string) : string =
+        match (Seq.tryFind (fun p -> (p:Regex).Match(line).Success) settings.SearchPatterns) with
+        | Some searchPattern ->
+            let lineMatch = searchPattern.Match(line)
+            Color.Colorize line lineMatch.Index (lineMatch.Index + lineMatch.Length)
+        | None -> line
+
+    member this.FormatLineFun =
+        if settings.Colorize
+        then this.FormatLineWithColor
+        else fun (line : string) -> line
+
+    member this.FormatLine (line : string) : string =
+        this.FormatLineFun line
+
     member this.Format (result : SearchResult.t) : string =
         if (not (List.isEmpty result.LinesBefore)) || (not (List.isEmpty result.LinesAfter)) then
             MultiLineFormat result
         else
             SingleLineFormat result
+    
+    // read-only member properties
+    member this.FileFormatter = fileFormatter
 ;;

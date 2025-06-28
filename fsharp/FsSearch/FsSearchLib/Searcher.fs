@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Text
 open System.Text.RegularExpressions
-open FsFind
+open FsFindLib
 
 type Searcher (settings : SearchSettings) =
     let _finder = Finder(settings)
@@ -12,6 +12,7 @@ type Searcher (settings : SearchSettings) =
     let mutable _textFileEncoding = Encoding.GetEncoding("utf-8")
 
     // read-only member properties
+    member this.Finder = _finder
     member this.BinaryEncoding = _binaryEncoding
 
     // read-write member properties
@@ -255,53 +256,73 @@ type Searcher (settings : SearchSettings) =
             Logger.Log $"Skipping file of indeterminate type (this shouldn't happen): %s{f.File.FullName}"
             []
 
+    member this.SortByMatchLocation (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
+        let lineNumCmp = r1.LineNum - r2.LineNum
+        if lineNumCmp = 0
+        then
+            let startIndexCmp = r1.MatchStartIndex - r2.MatchStartIndex
+            if startIndexCmp = 0 then r1.MatchEndIndex - r2.MatchEndIndex else startIndexCmp
+        else lineNumCmp
+
+    member this.SortByPath (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
+        let cmp = this.Finder.SortByPath r1.File r2.File
+        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
+
+    member this.SortByName (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
+        let cmp = this.Finder.SortByName r1.File r2.File
+        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
+
+    member this.SortBySize (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
+        let cmp = this.Finder.SortBySize r1.File r2.File
+        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
+
+    member this.SortByType (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
+        let cmp = this.Finder.SortByType r1.File r2.File
+        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
+
+    member this.SortByLastMod (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
+        let cmp = this.Finder.SortByLastMod r1.File r2.File
+        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
+
+    member this.GetSortComparator : SearchResult.t -> SearchResult.t -> int =
+        if settings.SortDescending then
+            match settings.SortBy with
+            | SortBy.FileName -> (fun r1 r2 -> this.SortByName r2 r1)
+            | SortBy.FileSize -> (fun r1 r2 -> this.SortBySize r2 r1)
+            | SortBy.FileType -> (fun r1 r2 -> this.SortByType r2 r1)
+            | SortBy.LastMod  -> (fun r1 r2 -> this.SortByLastMod r2 r1)
+            | _               -> (fun r1 r2 -> this.SortByPath r2 r1)
+        else
+            match settings.SortBy with
+            | SortBy.FileName -> this.SortByName
+            | SortBy.FileSize -> this.SortBySize
+            | SortBy.FileType -> this.SortByType
+            | SortBy.LastMod  -> this.SortByLastMod
+            | _               -> this.SortByPath
+
+    member this.SortSearchResults (results : SearchResult.t list) : SearchResult.t list = 
+        let sortComparator = this.GetSortComparator
+        List.sortWith sortComparator results
+
     member this.Search () : SearchResult.t list =
         let files = _finder.Find()
         let results = files |> List.collect this.SearchFile
-        results
+        this.SortSearchResults results
 
-    member this.GetSortedResults (results : SearchResult.t list) : SearchResult.t list = 
-        results
-        |> Seq.sortBy (fun r -> (r.File.File.ToString(), r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
-        |> List.ofSeq
-
-    member this.PrintResults (results : SearchResult.t list) : unit =
-        let formatter = SearchResultFormatter(settings)
+    member this.PrintResults (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit =
         if results.Length > 0 then
             Logger.Log $"\nSearch results (%d{results.Length}):"
-            this.GetSortedResults results
-            |> Seq.iter (fun r -> Logger.Log $"%s{formatter.Format r}")
+            results |> Seq.iter (fun r -> Logger.Log $"%s{formatter.Format r}")
         else
             Logger.Log $"\nSearch results: 0"
 
-    member this.GetMatchingDirs (results : SearchResult.t list) : DirectoryInfo list = 
-        results
-        |> Seq.map (fun r -> r.File.File.Directory)
-        |> Seq.distinctBy (fun d -> d.FullName)
-        |> List.ofSeq
+    member this.PrintMatchingDirs (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit = 
+        let files = results |> List.map _.File
+        this.Finder.PrintMatchingDirs files formatter.FileFormatter
 
-    member this.PrintMatchingDirs (results : SearchResult.t list) : unit = 
-        let dirs = this.GetMatchingDirs results
-        if dirs.Length > 0 then
-            Logger.Log $"\nMatching directories (%d{dirs.Length}):"
-            for d in dirs do
-                printfn $"%s{d.FullName}"
-        else
-            Logger.Log "\nMatching directories: 0"
-
-    member this.GetMatchingFiles (results : SearchResult.t list) : FileInfo list = 
-        results
-        |> Seq.map (fun r -> r.File.File)
-        |> List.ofSeq
-
-    member this.PrintMatchingFiles (results : SearchResult.t list) : unit = 
-        let files = this.GetMatchingFiles results
-        if files.Length > 0 then
-            Logger.Log $"\nMatching files (%d{files.Length}):"
-            for f in files do
-                printfn $"%s{f.FullName}"
-        else
-            Logger.Log "\nMatching files: 0"
+    member this.PrintMatchingFiles (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit = 
+        let files = results |> List.map _.File |> List.distinct
+        this.Finder.PrintMatchingFiles files formatter.FileFormatter
 
     member this.GetMatchingLines (results : SearchResult.t list) : string list = 
         let lines =
@@ -315,7 +336,7 @@ type Searcher (settings : SearchSettings) =
             Seq.sortBy (fun (s : string) -> s.ToUpper()) lines
             |> List.ofSeq
 
-    member this.PrintMatchingLines (results : SearchResult.t list) : unit = 
+    member this.PrintMatchingLines (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit = 
         let lines = this.GetMatchingLines results
         let title =
             if settings.UniqueLines then "Unique matching lines"
@@ -323,8 +344,8 @@ type Searcher (settings : SearchSettings) =
         if lines.Length > 0 then
             Logger.Log $"\n%s{title} (%d{lines.Length}):"
             for l in lines do
-                printfn $"%s{l}"
+                printfn $"%s{formatter.FormatLine(l)}"
         else
             Logger.Log $"\n%s{title}: 0"
-    
+
 ;;

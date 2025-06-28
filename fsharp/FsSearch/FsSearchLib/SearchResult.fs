@@ -1,7 +1,7 @@
 ﻿namespace FsSearchLib
 
 open System.Text.RegularExpressions
-open FsFind
+open FsFindLib
 
 module SearchResult =
     type t = {

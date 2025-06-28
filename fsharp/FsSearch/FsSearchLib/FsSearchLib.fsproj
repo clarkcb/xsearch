@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Color.fs" />
     <Compile Include="EmbeddedResource.fs" />
     <Compile Include="SearchException.fs" />
     <Compile Include="SearchSettings.fs" />
