@@ -5,7 +5,6 @@
 - (instancetype) init {
     self = [super init];
     if (self) {
-        self.colorize = true;
         self.firstMatch = false;
         self.linesAfter = 0;
         self.linesBefore = 0;

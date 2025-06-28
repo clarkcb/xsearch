@@ -9,7 +9,6 @@
 
 @interface SearchSettings : FindSettings
 
-@property(nonatomic) BOOL colorize;
 @property(nonatomic) BOOL firstMatch;
 @property(nonatomic) int linesAfter;
 @property(nonatomic) int linesBefore;

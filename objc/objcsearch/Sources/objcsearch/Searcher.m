@@ -86,105 +86,12 @@
             ([outTypes count] == 0 || ![outTypes containsObject:num]));
 }
 
-- (NSArray<SearchResult*>*) search:(NSError**)error {
-    //logMsg(@"Searching...");
-    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
-    NSArray<FileResult*> *fileResults = [self.finder find:error];
-    for (FileResult *fr in fileResults) {
-        [results addObjectsFromArray:[self searchFile:fr error:error]];
-    }
-    return [NSArray arrayWithArray:results];
+- (NSString*) lineFromIndices:(NSString*)s
+               startLineIndex:(long)startLineIndex
+                 endLineIndex:(long)endLineIndex {
+    NSString *line = [s substringWithRange:NSMakeRange(startLineIndex, endLineIndex - startLineIndex)];
+    return line;
 }
-
-- (NSArray<SearchResult*>*) searchFile:(FileResult*)fr error:(NSError**)error {
-    switch (fr.fileType) {
-        case FileTypeCode:
-        case FileTypeText:
-        case FileTypeXml:
-            return [self searchTextFile:fr error:error];
-            break;
-        case FileTypeBinary:
-            return [self searchBinaryFile:fr error:error];
-            break;
-        case FileTypeArchive:
-        default:
-            return [NSArray array];
-            break;
-    }
-}
-
-- (NSArray<SearchResult*>*) searchBinaryFile:(FileResult*)fr error:(NSError**)error {
-    NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
-                                                         encoding:NSISOLatin1StringEncoding
-                                                            error:error];
-    if (*error != nil) {
-        return [NSArray array];
-    }
-    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
-    if (contents != nil) {
-        for (Regex *p in self.settings.searchPatterns) {
-            NSArray<NSTextCheckingResult*> *matches = [p matches:contents];
-            if ([matches count] > 0 && self.settings.firstMatch) {
-                matches = [NSArray arrayWithObject:matches[0]];
-            }
-            for (NSTextCheckingResult *m in matches) {
-                SearchResult *r = [[SearchResult alloc] initWithPattern:p.pattern
-                                                                   file:fr
-                                                                lineNum:0
-                                                        matchStartIndex:m.range.location + 1
-                                                          matchEndIndex:m.range.location + m.range.length + 1
-                                                                   line:@""
-                                                            linesBefore:[NSArray array]
-                                                             linesAfter:[NSArray array]];
-                [results addObject:r];
-            }
-        }
-    }
-    return results;
-}
-
-- (NSArray<SearchResult*>*) searchTextFile:(FileResult*)fr error:(NSError**)error {
-    if (self.settings.multiLineSearch) {
-        return [self searchTextFileContents:fr error:error];
-    } else {
-        // there is no line reader in ObjC, might not bother
-        // implementing line-based searching
-        //[self searchTextFileLines:sf error:error];
-        return [self searchTextFileContents:fr error:error];
-    }
-}
-
-- (NSArray<SearchResult*>*) searchTextFileContents:(FileResult*)fr error:(NSError**)error {
-    NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
-                                                         encoding:self.textFileEncoding
-                                                            error:error];
-    if (*error != nil) {
-        if ([[*error domain] isEqualToString:@"NSCocoaErrorDomain"] && [*error code] == 261) {
-            // this indicates problem reading text file with encoding, just reset the error and move on
-            *error = nil;
-        } else {
-            return [NSArray array];
-        }
-    }
-    NSArray<SearchResult*> *results = [NSArray array];
-    if (contents != nil) {
-        results = [self searchMultiLineString:contents error:error];
-        for (SearchResult *r in results) {
-            r.file = fr;
-        }
-    }
-    return results;
-}
-
-- (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s error:(NSError**)error {
-    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
-    for (Regex *p in self.settings.searchPatterns) {
-        [results addObjectsFromArray:[self searchMultiLineString:s pattern:p error:error]];
-    }
-    return [NSArray arrayWithArray:results];
-}
-
-
 
 - (NSArray<NSString*>*) getLinesAfter:(NSString*)s
                       beforeLineCount:(int)beforeLineCount
@@ -206,6 +113,58 @@
     }
     
     return [NSArray arrayWithArray:linesAfter];
+}
+
+- (BOOL) linesMatch:(NSArray<NSString*>*)lines
+         inPatterns:(NSArray<Regex*>*)inPatterns
+        outPatterns:(NSArray<Regex*>*)outPatterns {
+    return (([inPatterns count] == 0 || [self anyMatchesAnyPattern:lines patterns:inPatterns]) &&
+            ([outPatterns count] == 0 || ![self anyMatchesAnyPattern:lines patterns:outPatterns]));
+}
+
+- (BOOL) linesBeforeMatch:(NSArray<NSString*>*)linesBefore {
+    return [self linesMatch:linesBefore
+                 inPatterns:self.settings.inLinesBeforePatterns
+                outPatterns:self.settings.outLinesBeforePatterns];
+}
+
+- (BOOL) linesAfterMatch:(NSArray<NSString*>*)linesAfter {
+    return [self linesMatch:linesAfter
+                 inPatterns:self.settings.inLinesAfterPatterns
+                outPatterns:self.settings.outLinesAfterPatterns];
+}
+
+- (NSArray<NSNumber*>*) getNewLineIndices:(NSString*)s {
+    NSMutableArray<NSNumber*> *newLineIndices = [NSMutableArray array];
+    for (long i=0; i < [s length]; i++) {
+        unichar c = [s characterAtIndex:i];
+        if (c == '\n') {
+            [newLineIndices addObject:[NSNumber numberWithLong:i]];
+        }
+    }
+    return [NSArray arrayWithArray:newLineIndices];
+}
+
+- (NSArray<NSNumber*>*) getStartLineIndices:(NSArray<NSNumber*>*)newLineIndices {
+    NSMutableArray<NSNumber*> *startLineIndices = [NSMutableArray arrayWithObject:[NSNumber numberWithLong:0]];
+    for (NSNumber *n in newLineIndices) {
+        [startLineIndices addObject:[NSNumber numberWithInteger:[n longValue] + 1]];
+    }
+    return [NSArray arrayWithArray:startLineIndices];
+}
+
+- (NSArray<NSNumber*>*) getEndLineIndices:(NSArray<NSNumber*>*)newLineIndices lastIndex:(long)lastIndex {
+    NSMutableArray<NSNumber*> *endLineIndices = [NSMutableArray arrayWithArray:newLineIndices];
+    [endLineIndices addObject:[NSNumber numberWithLong:lastIndex]];
+    return [NSArray arrayWithArray:endLineIndices];
+}
+
+- (int) countLessThan:(long)num array:(NSArray<NSNumber*>*)array {
+    int count = 0;
+    while ( count < [array count] && [array[count] longValue] <= num) {
+        count++;
+    }
+    return count;
 }
 
 - (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s
@@ -274,63 +233,167 @@
     return [NSArray arrayWithArray:results];
 }
 
-- (BOOL) linesMatch:(NSArray<NSString*>*)lines
-         inPatterns:(NSArray<Regex*>*)inPatterns
-        outPatterns:(NSArray<Regex*>*)outPatterns {
-    return (([inPatterns count] == 0 || [self anyMatchesAnyPattern:lines patterns:inPatterns]) &&
-            ([outPatterns count] == 0 || ![self anyMatchesAnyPattern:lines patterns:outPatterns]));
+- (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s error:(NSError**)error {
+    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
+    for (Regex *p in self.settings.searchPatterns) {
+        [results addObjectsFromArray:[self searchMultiLineString:s pattern:p error:error]];
+    }
+    return [NSArray arrayWithArray:results];
 }
 
-- (BOOL) linesBeforeMatch:(NSArray<NSString*>*)linesBefore {
-    return [self linesMatch:linesBefore
-                 inPatterns:self.settings.inLinesBeforePatterns
-                outPatterns:self.settings.outLinesBeforePatterns];
-}
-
-- (BOOL) linesAfterMatch:(NSArray<NSString*>*)linesAfter {
-    return [self linesMatch:linesAfter
-                 inPatterns:self.settings.inLinesAfterPatterns
-                outPatterns:self.settings.outLinesAfterPatterns];
-}
-
-- (NSArray<NSNumber*>*) getNewLineIndices:(NSString*)s {
-    NSMutableArray<NSNumber*> *newLineIndices = [NSMutableArray array];
-    for (long i=0; i < [s length]; i++) {
-        unichar c = [s characterAtIndex:i];
-        if (c == '\n') {
-            [newLineIndices addObject:[NSNumber numberWithLong:i]];
+- (NSArray<SearchResult*>*) searchTextFileContents:(FileResult*)fr error:(NSError**)error {
+    NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
+                                                         encoding:self.textFileEncoding
+                                                            error:error];
+    if (*error != nil) {
+        if ([[*error domain] isEqualToString:@"NSCocoaErrorDomain"] && [*error code] == 261) {
+            // this indicates problem reading text file with encoding, just reset the error and move on
+            *error = nil;
+        } else {
+            return [NSArray array];
         }
     }
-    return [NSArray arrayWithArray:newLineIndices];
-}
-
-- (NSArray<NSNumber*>*) getStartLineIndices:(NSArray<NSNumber*>*)newLineIndices {
-    NSMutableArray<NSNumber*> *startLineIndices = [NSMutableArray arrayWithObject:[NSNumber numberWithLong:0]];
-    for (NSNumber *n in newLineIndices) {
-        [startLineIndices addObject:[NSNumber numberWithInteger:[n longValue] + 1]];
+    NSArray<SearchResult*> *results = [NSArray array];
+    if (contents != nil) {
+        results = [self searchMultiLineString:contents error:error];
+        for (SearchResult *r in results) {
+            r.file = fr;
+        }
     }
-    return [NSArray arrayWithArray:startLineIndices];
+    return results;
 }
 
-- (NSArray<NSNumber*>*) getEndLineIndices:(NSArray<NSNumber*>*)newLineIndices lastIndex:(long)lastIndex {
-    NSMutableArray<NSNumber*> *endLineIndices = [NSMutableArray arrayWithArray:newLineIndices];
-    [endLineIndices addObject:[NSNumber numberWithLong:lastIndex]];
-    return [NSArray arrayWithArray:endLineIndices];
-}
-
-- (int) countLessThan:(long)num array:(NSArray<NSNumber*>*)array {
-    int count = 0;
-    while ( count < [array count] && [array[count] longValue] < num) {
-        count++;
+- (NSArray<SearchResult*>*) searchTextFile:(FileResult*)fr error:(NSError**)error {
+    if (self.settings.multiLineSearch) {
+        return [self searchTextFileContents:fr error:error];
+    } else {
+        // there is no line reader in ObjC, might not bother
+        // implementing line-based searching
+        //[self searchTextFileLines:sf error:error];
+        return [self searchTextFileContents:fr error:error];
     }
-    return count;
 }
 
-- (NSString*) lineFromIndices:(NSString*)s
-               startLineIndex:(long)startLineIndex
-                 endLineIndex:(long)endLineIndex {
-    NSString *line = [s substringWithRange:NSMakeRange(startLineIndex, endLineIndex - startLineIndex)];
-    return line;
+- (NSArray<SearchResult*>*) searchBinaryFile:(FileResult*)fr error:(NSError**)error {
+    NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
+                                                         encoding:NSISOLatin1StringEncoding
+                                                            error:error];
+    if (*error != nil) {
+        return [NSArray array];
+    }
+    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
+    if (contents != nil) {
+        for (Regex *p in self.settings.searchPatterns) {
+            NSArray<NSTextCheckingResult*> *matches = [p matches:contents];
+            if ([matches count] > 0 && self.settings.firstMatch) {
+                matches = [NSArray arrayWithObject:matches[0]];
+            }
+            for (NSTextCheckingResult *m in matches) {
+                SearchResult *r = [[SearchResult alloc] initWithPattern:p.pattern
+                                                                   file:fr
+                                                                lineNum:0
+                                                        matchStartIndex:m.range.location + 1
+                                                          matchEndIndex:m.range.location + m.range.length + 1
+                                                                   line:@""
+                                                            linesBefore:[NSArray array]
+                                                             linesAfter:[NSArray array]];
+                [results addObject:r];
+            }
+        }
+    }
+    return results;
+}
+
+- (NSArray<SearchResult*>*) searchFile:(FileResult*)fr error:(NSError**)error {
+    switch (fr.fileType) {
+        case FileTypeCode:
+        case FileTypeText:
+        case FileTypeXml:
+            return [self searchTextFile:fr error:error];
+            break;
+        case FileTypeBinary:
+            return [self searchBinaryFile:fr error:error];
+            break;
+        case FileTypeArchive:
+        default:
+            return [NSArray array];
+            break;
+    }
+}
+
+- (NSArray<SearchResult*>*) search:(NSError**)error {
+    //logMsg(@"Searching...");
+    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
+    NSArray<FileResult*> *fileResults = [self.finder find:error];
+    for (FileResult *fr in fileResults) {
+        [results addObjectsFromArray:[self searchFile:fr error:error]];
+    }
+    return [NSArray arrayWithArray:results];
+}
+
+- (void) printSearchResults:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter {
+    if ([searchResults count] > 0) {
+        logMsg([NSString stringWithFormat:@"\nSearch results (%lu):", [searchResults count]]);
+        for (SearchResult *r in searchResults) {
+            logMsg([formatter format:r]);
+        }
+    } else {
+        logMsg(@"\nSearch results: 0");
+    }
+}
+
+- (NSArray<FileResult*>*) getFileResults:(NSArray<SearchResult*>*)results {
+    NSMutableSet<NSString*> *fileSet = [NSMutableSet set];
+    NSMutableArray<FileResult*> *fileResults = [NSMutableArray array];
+    for (SearchResult *r in results) {
+        if (![fileSet containsObject:[[r file] description]]) {
+            [fileSet addObject:[[r file] description]];
+            [fileResults addObject:[r file]];
+        }
+    }
+    return [NSArray arrayWithArray:fileResults];
+}
+
+- (void) printMatchingDirs:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter {
+    NSArray<FileResult*> *files = [self getFileResults:searchResults];
+    [_finder printMatchingDirs:files formatter:[formatter fileFormatter]];
+}
+
+- (void) printMatchingFiles:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter {
+    NSArray<FileResult*> *files = [self getFileResults:searchResults];
+    [_finder printMatchingFiles:files formatter:[formatter fileFormatter]];
+}
+
+- (NSArray<NSString*>*) getMatchingLines:(NSArray<SearchResult*>*)searchResults {
+    NSMutableArray<NSString*> *lines = [NSMutableArray array];
+    for (SearchResult *r in searchResults) {
+        [lines addObject:[[r line] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]]];
+    }
+    if (_settings.uniqueLines) {
+        NSSet<NSString*> *lineSet = [NSSet setWithArray:lines];
+        lines = [NSMutableArray arrayWithArray:[lineSet allObjects]];
+    }
+    return [lines sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+        return [s1 compare:s2];
+    }];
+}
+
+- (void) printMatchingLines:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter {
+    NSArray<NSString*> *lines = [self getMatchingLines:searchResults];
+    NSString *linesHdr;
+    if (_settings.uniqueLines) {
+        linesHdr = @"Unique matching lines";
+    } else {
+        linesHdr = @"Matching lines";
+    }
+    if ([lines count] > 0) {
+        logMsg([NSString stringWithFormat:@"\n%@ (%lu):", linesHdr, [lines count]]);
+        for (NSString *l in lines) {
+            logMsg(formatter.formatLine(l));
+        }
+    } else {
+        logMsg([NSString stringWithFormat:@"\n%@: 0", linesHdr]);
+    }
 }
 
 @end

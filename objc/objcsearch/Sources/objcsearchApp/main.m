@@ -21,42 +21,6 @@ void handleError(NSError *error, SearchOptions *options) {
     [options usage:1];
 }
 
-NSArray<NSString*>* getMatchingDirs(NSArray<SearchResult*> *results) {
-    NSMutableSet<NSString*> *dirs = [NSMutableSet set];
-    for (SearchResult *r in results) {
-        [dirs addObject:[[[r file] description] stringByDeletingLastPathComponent]];
-    }
-    NSArray *dirArr = [NSArray arrayWithArray:[dirs allObjects]];
-    return [dirArr sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
-        return [s1 compare:s2];
-    }];
-}
-
-NSArray<NSString*>* getMatchingFiles(NSArray<SearchResult*> *results) {
-    NSMutableSet<NSString*> *files = [NSMutableSet set];
-    for (SearchResult *r in results) {
-        [files addObject:[[r file] description]];
-    }
-    NSArray *fileArr = [NSArray arrayWithArray:[files allObjects]];
-    return [fileArr sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
-        return [s1 compare:s2];
-    }];
-}
-
-NSArray<NSString*>* getMatchingLines(NSArray<SearchResult*> *results, SearchSettings *settings) {
-    NSMutableArray<NSString*> *lines = [NSMutableArray array];
-    for (SearchResult *r in results) {
-        [lines addObject:[[r line] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]]];
-    }
-    if (settings.uniqueLines) {
-        NSSet<NSString*> *lineSet = [NSSet setWithArray:lines];
-        lines = [NSMutableArray arrayWithArray:[lineSet allObjects]];
-    }
-    return [lines sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
-        return [s1 compare:s2];
-    }];
-}
-
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         NSError *error = nil;
@@ -64,9 +28,6 @@ int main(int argc, const char * argv[]) {
         SearchOptions *options = [[SearchOptions alloc] init];
 
         NSArray *args = argvToNSArray(argc, argv);
-        //for (NSString *arg in args) {
-        //    logMsg([NSString stringWithFormat:@"arg: %@", arg]);
-        //}
 
         SearchSettings *settings = [options settingsFromArgs:args error:&error];
 
@@ -94,58 +55,22 @@ int main(int argc, const char * argv[]) {
             handleError(error, options);
         }
 
+        SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
+
         if (settings.printResults) {
-            if ([results count] > 0) {
-                SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
-                logMsg([NSString stringWithFormat:@"\nSearch results (%lu):", [results count]]);
-                for (SearchResult *r in results) {
-                    logMsg([formatter format:r]);
-                }
-            } else {
-                logMsg(@"\nSearch results: 0");
-            }
+            [searcher printSearchResults:results formatter:formatter];
         }
 
         if (settings.printDirs) {
-            NSArray<NSString*> *dirPaths = getMatchingDirs(results);
-            if ([dirPaths count] > 0) {
-                logMsg([NSString stringWithFormat:@"\nMatching directories (%lu):", [dirPaths count]]);
-                for (NSString *d in dirPaths) {
-                    logMsg(d);
-                }
-            } else {
-                logMsg(@"\nMatching directories: 0");
-            }
+            [searcher printMatchingDirs:results formatter:formatter];
         }
 
         if (settings.printFiles) {
-            NSArray<NSString*> *filePaths = getMatchingFiles(results);
-            if ([filePaths count] > 0) {
-                logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [filePaths count]]);
-                for (NSString *f in filePaths) {
-                    logMsg(f);
-                }
-            } else {
-                logMsg(@"\nMatching files: 0");
-            }
+            [searcher printMatchingFiles:results formatter:formatter];
         }
 
         if (settings.printLines) {
-            NSArray<NSString*> *lines = getMatchingLines(results, settings);
-            NSString *linesHdr;
-            if (settings.uniqueLines) {
-                linesHdr = @"Unique matching lines";
-            } else {
-                linesHdr = @"Matching lines";
-            }
-            if ([lines count] > 0) {
-                logMsg([NSString stringWithFormat:@"\n%@ (%lu):", linesHdr, [lines count]]);
-                for (NSString *l in lines) {
-                    logMsg(l);
-                }
-            } else {
-                logMsg([NSString stringWithFormat:@"\n%@: 0", linesHdr]);
-            }
+            [searcher printMatchingLines:results formatter:formatter];
         }
     }
     return 0;

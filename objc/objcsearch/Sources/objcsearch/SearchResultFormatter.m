@@ -7,9 +7,31 @@
 {
     self = [super init];
     if (self) {
+        // necessary to reference other methods in self from constructor
+        __weak typeof(self) weakSelf = self;
+
         self.settings = settings;
+        self.fileFormatter = [[FileResultFormatter alloc] initWithSettings:settings];
+
+        if (settings.colorize) {
+            self.formatLine = ^( NSString* line) { return [weakSelf formatLineWithColor:line]; };
+        } else {
+            self.formatLine = ^( NSString* line) { return line; };
+        }
     }
     return self;
+}
+
+- (NSString *) formatLineWithColor:(NSString*)line {
+    NSString *formattedLine = line;
+    for (Regex *p in self.settings.searchPatterns) {
+        NSTextCheckingResult *m = [p firstMatch:formattedLine];
+        if (m != nil) {
+            formattedLine = [self colorize:formattedLine matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length];
+            break;
+        }
+    }
+    return formattedLine;
 }
 
 - (NSString *) format:(SearchResult*)result {
@@ -26,17 +48,20 @@
 
 - (NSString *) singleLineFormat:(SearchResult*)result {
     NSMutableString *s = [NSMutableString string];
-    [s appendString:[result getFilePath]];
+    [s appendString:[self.fileFormatter formatFileResult:result.file]];
     if (result.lineNum > 0) {
         [s appendFormat:@": %lu: [%lu:%lu]: ", result.lineNum,
          result.matchStartIndex, result.matchEndIndex];
-//        [s appendString:[self.line stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]]];
         [s appendString:[self formatMatchingLine:result]];
     } else {
         [s appendFormat:@" matches at [%lu:%lu]",
          result.matchStartIndex, result.matchEndIndex];
     }
     return [NSString stringWithString:s];
+}
+
+- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex {
+    return [self.fileFormatter colorize:s matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex];
 }
 
 - (NSString *) formatMatchingLine:(SearchResult*)result {
@@ -91,13 +116,7 @@
     }
 
     if (self.settings.colorize) {
-        NSMutableString *c = [NSMutableString stringWithFormat:@"%@", [formatted substringToIndex:matchStartIndex]];
-//        [c appendString:ANSI_GREEN];
-        [c appendFormat:@"%s", ANSI_GREEN];
-        [c appendString:[formatted substringWithRange:NSMakeRange(matchStartIndex, matchLength)]];
-        [c appendString:ANSI_RESET];
-        [c appendString:[formatted substringFromIndex:matchEndIndex]];
-        formatted = [NSMutableString stringWithFormat:@"%@", c];
+        return [self colorize:formatted matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex];
     }
 
     return [NSString stringWithString:formatted];
@@ -107,7 +126,7 @@
     NSMutableString *s = [NSMutableString string];
     int sepLen = 80;
     [s appendFormat:@"%@\n", [self getRepeatingString:@"=" count:sepLen]];
-    [s appendString:[result getFilePath]];
+    [s appendString:[self.fileFormatter formatFileResult:result.file]];
     [s appendFormat:@": %lu: [%lu:%lu]\n", result.lineNum,
      result.matchStartIndex, result.matchEndIndex];
     [s appendFormat:@"%@\n", [self getRepeatingString:@"-" count:sepLen]];
