@@ -3,8 +3,6 @@ defmodule ExSearch.SearchResult do
   Documentation for `ExFind.FileResult`.
   """
 
-  alias ExFind.FileResult
-
   defstruct pattern: "", file: nil, line_num: 0, line: "", lines_before: [], lines_after: [], match_start_index: 0, match_end_index: 0
 
   def new(pattern, file, line_num, line, lines_before, lines_after, match_start_index, match_end_index) do
@@ -23,25 +21,23 @@ defmodule ExSearch.SearchResult do
   end
 
   def new(args), do: __struct__(args)
-
-  # def to_string(search_result) do
-  #   match_range = "[#{search_result.match_start_index}:#{search_result.match_end_index}]"
-  #   line_result = case {search_result.line_num, search_result.line} do
-  #     {0, ""} -> " matches at #{match_range}"
-  #     _ -> ": #{search_result.line_num}: #{match_range}: #{String.trim_leading(search_result.line)}"
-  #   end
-  #   FileResult.to_string(search_result.file) <> line_result
-  # end
 end
 
 defmodule ExSearch.SearchResultFormatter do
   @moduledoc """
-  Documentation for `ExFind.SearchResultFormatter`.
+  Documentation for `ExSearch.SearchResultFormatter`.
   """
 
-  alias ExFind.FileResult
+alias ExFind.FileResultFormatter
 
-  defstruct [:settings]
+  defstruct [:settings, :file_formatter]
+
+  def new(settings) do
+    __struct__([
+      settings: settings,
+      file_formatter: FileResultFormatter.new(settings)
+    ])
+  end
 
   def colorize_line(line, start_idx, end_idx) do
     before_text = String.slice(line, 0, start_idx - 1)
@@ -60,11 +56,12 @@ defmodule ExSearch.SearchResultFormatter do
     end)
   end
 
-  def multi_line_format(search_result, settings) do
+  def multi_line_format(formatter, search_result) do
     max_line_num = search_result.line_num + length(search_result.lines_after)
     case StringIO.open("", [], fn out ->
       match_index_range = "[#{search_result.match_start_index}:#{search_result.match_end_index}]"
-      file_path_line = "#{FileResult.to_string(search_result.file)}: #{search_result.line_num}: #{match_index_range}"
+      file_path = FileResultFormatter.format_file_result(formatter.file_formatter, search_result.file)
+      file_path_line = "#{file_path}: #{search_result.line_num}: #{match_index_range}"
       IO.write(out, String.duplicate("=", 80) <> "\n")
       IO.write(out, "#{file_path_line}\n")
       IO.write(out, String.duplicate("-", 80) <> "\n")
@@ -73,8 +70,8 @@ defmodule ExSearch.SearchResultFormatter do
         |> Enum.each(fn line -> IO.write(out, "#{line}\n") end)
       end
       colorized_line =
-        if settings.colorize do
-          colorize_line(search_result.line, search_result.match_start_index, search_result.match_end_index)
+        if formatter.settings.colorize do
+          FileResultFormatter.colorize(search_result.line, search_result.match_start_index, search_result.match_end_index)
         else
           search_result.line
         end
@@ -90,27 +87,27 @@ defmodule ExSearch.SearchResultFormatter do
     end
   end
 
-  def single_line_format(search_result, settings) do
+  def single_line_format(formatter, search_result) do
     match_range = "[#{search_result.match_start_index}:#{search_result.match_end_index}]"
     line_result = case {search_result.line_num, search_result.line} do
       {0, ""} -> " matches at #{match_range}"
       _ ->
         line =
-          if settings.colorize do
-            colorize_line(search_result.line, search_result.match_start_index, search_result.match_end_index)
+          if formatter.settings.colorize do
+            FileResultFormatter.colorize(search_result.line, search_result.match_start_index - 1, search_result.match_end_index - 1)
           else
             search_result.line
           end
         ": #{search_result.line_num}: #{match_range}: #{String.trim_leading(line)}"
     end
-    FileResult.to_string(search_result.file) <> line_result
+    FileResultFormatter.format_file_result(formatter.file_formatter, search_result.file) <> line_result
   end
 
-  def format(search_result, settings) do
-    if settings.lines_before > 0 or settings.lines_after > 0 do
-      multi_line_format(search_result, settings)
+  def format(formatter, search_result) do
+    if formatter.settings.lines_before > 0 or formatter.settings.lines_after > 0 do
+      multi_line_format(formatter, search_result)
     else
-      single_line_format(search_result, settings)
+      single_line_format(formatter, search_result)
     end
   end
 end

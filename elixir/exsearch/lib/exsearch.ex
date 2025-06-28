@@ -3,95 +3,30 @@ defmodule ExSearch.Main do
   Documentation for `ExSearch.Main`.
   """
 
-  alias ExFind.FileResult
+  alias ExFind.Logging
   alias ExSearch.Searcher
   alias ExSearch.SearchError
   alias ExSearch.SearchOptions
   alias ExSearch.SearchResultFormatter
-  alias ExFind.Logging
 
   def handle_error(message, search_options) do
     Logging.log_error("\nERROR: #{message}")
     SearchOptions.usage(search_options.options)
   end
 
-  def get_dirs(results) do
-    if results == [] do
-      []
-    else
-      Enum.map(results, fn r -> r.file.path end) |> Enum.uniq() |> Enum.sort()
-    end
-  end
-
-  def print_dirs(results) do
-    dirs = get_dirs(results)
-    if dirs == [] do
-      Logging.log("\nMatching directories: 0")
-    else
-      Logging.log("\nMatching directories (#{Enum.count(dirs)}):\n#{Enum.join(dirs, "\n")}")
-    end
-  end
-
-  def get_files(results) do
-    if results == [] do
-      []
-    else
-      Enum.map(results, fn r -> FileResult.to_string(r.file) end) |> Enum.uniq()
-    end
-  end
-
-  def print_files(results) do
-    files = get_files(results)
-    if files == [] do
-      Logging.log("\nMatching files: 0")
-    else
-      Logging.log("\nMatching files (#{Enum.count(files)}):\n#{Enum.join(files, "\n")}")
-    end
-  end
-
-  def get_lines(results, settings) do
-    if results == [] do
-      []
-    else
-      lines = Enum.map(results, fn r -> String.trim_leading(r.line) end)
-      if settings.unique_lines do
-        lines |> Enum.uniq()
-      else
-        lines
-      end
-    end
-  end
-
-  def print_lines(results, settings) do
-    lines = get_lines(results, settings)
-    cond do
-      lines == [] -> Logging.log("\nMatching lines: 0")
-      settings.unique_lines -> Logging.log("\nUnique matching lines (#{Enum.count(lines)}):\n#{Enum.join(lines, "\n")}")
-      true -> Logging.log("\nMatching lines (#{Enum.count(lines)}):\n#{Enum.join(lines, "\n")}")
-    end
-  end
-
-  def print_results(results, settings) do
-    if results == [] do
-      Logging.log("\nSearch results: 0")
-    else
-      result_strs = Enum.map(results, fn r -> SearchResultFormatter.format(r, settings) end)
-      Logging.log("\nSearch results (#{Enum.count(result_strs)}):\n#{Enum.join(result_strs, "\n")}")
-    end
-  end
-
   def handle_results(results, settings) do
+    formatter = SearchResultFormatter.new(settings)
     if settings.print_results do
-      print_results(results, settings)
+      Searcher.print_results(results, formatter)
     end
     if settings.print_dirs do
-      print_dirs(results)
+      Searcher.print_dirs(results, formatter)
     end
     if settings.print_files do
-      print_files(results)
+      Searcher.print_files(results, formatter)
     end
     if settings.print_lines do
-      print_lines(results, settings)
+      Searcher.print_lines(results, formatter)
     end
   end
 

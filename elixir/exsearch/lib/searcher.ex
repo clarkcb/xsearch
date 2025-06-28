@@ -5,11 +5,12 @@ defmodule ExSearch.Searcher do
 
   alias ExFind.FileResult
   alias ExFind.Finder
+  alias ExFind.Logging
   alias ExFind.StringUtil
 
   alias ExSearch.SearchError
   alias ExSearch.SearchResult
-  alias ExSearch.SearchSettings
+  alias ExSearch.SearchResultFormatter
 
   defstruct [:settings]
 
@@ -253,8 +254,7 @@ defmodule ExSearch.Searcher do
     case validate_settings(searcher.settings) do
       {:error, message} -> {:error, message}
       {:ok, _} ->
-        find_settings = SearchSettings.to_find_settings(searcher.settings)
-        finder = Finder.new(find_settings)
+        finder = Finder.new(searcher.settings)
         case Finder.find(finder) do
           {:error, message} -> {:error, message}
           {:ok, file_results} ->
@@ -289,6 +289,55 @@ defmodule ExSearch.Searcher do
             {:error, "Invalid maxlinelength"}
           true -> {:ok, "Settings are valid"}
         end
+    end
+  end
+
+  def get_files(search_results) do
+    if search_results == [] do
+      []
+    else
+      Enum.map(search_results, fn r -> r.file end) |> Enum.uniq() |> Enum.sort()
+    end
+  end
+
+  def print_dirs(search_results, formatter) do
+    files = get_files(search_results)
+    Finder.print_dirs(files, formatter.file_formatter)
+  end
+
+  def print_files(search_results, formatter) do
+    files = get_files(search_results)
+    Finder.print_files(files, formatter.file_formatter)
+  end
+
+  def get_lines(search_results, settings) do
+    if search_results == [] do
+      []
+    else
+      lines = Enum.map(search_results, fn r -> String.trim_leading(r.line) end)
+      if settings.unique_lines do
+        lines |> Enum.uniq()
+      else
+        lines
+      end
+    end
+  end
+
+  def print_lines(search_results, formatter) do
+    lines = get_lines(search_results, formatter.settings)
+    cond do
+      lines == [] -> Logging.log("\nMatching lines: 0")
+      formatter.settings.unique_lines -> Logging.log("\nUnique matching lines (#{Enum.count(lines)}):\n#{Enum.join(lines, "\n")}")
+      true -> Logging.log("\nMatching lines (#{Enum.count(lines)}):\n#{Enum.join(lines, "\n")}")
+    end
+  end
+
+  def print_results(search_results, formatter) do
+    if search_results == [] do
+      Logging.log("\nSearch results: 0")
+    else
+      result_strs = Enum.map(search_results, fn r -> SearchResultFormatter.format(formatter, r) end)
+      Logging.log("\nSearch results (#{Enum.count(result_strs)}):\n#{Enum.join(result_strs, "\n")}")
     end
   end
 

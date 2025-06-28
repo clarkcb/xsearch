@@ -57,44 +57,6 @@ defmodule ExSearch.SearchSettings do
             unique_lines: false,
             verbose: false
 
-  def to_find_settings(settings) do
-    FindSettings.new(
-      archives_only: settings.archives_only,
-      debug: settings.debug,
-      follow_symlinks: settings.follow_symlinks,
-      in_archive_extensions: settings.in_archive_extensions,
-      in_archive_file_patterns: settings.in_archive_file_patterns,
-      in_dir_patterns: settings.in_dir_patterns,
-      in_extensions: settings.in_extensions,
-      in_file_patterns: settings.in_file_patterns,
-      in_file_types: settings.in_file_types,
-      include_archives: settings.search_archives,
-      include_hidden: settings.include_hidden,
-      max_depth: settings.max_depth,
-      max_last_mod: settings.max_last_mod,
-      max_size: settings.max_size,
-      min_depth: settings.min_depth,
-      min_last_mod: settings.min_last_mod,
-      min_size: settings.min_size,
-      out_archive_extensions: settings.out_archive_extensions,
-      out_archive_file_patterns: settings.out_archive_file_patterns,
-      out_dir_patterns: settings.out_dir_patterns,
-      out_extensions: settings.out_extensions,
-      out_file_patterns: settings.out_file_patterns,
-      out_file_types: settings.out_file_types,
-      paths: settings.paths,
-      print_dirs: settings.print_dirs,
-      print_files: settings.print_files,
-      print_usage: settings.print_usage,
-      print_version: settings.print_version,
-      recursive: settings.recursive,
-      sort_by: settings.sort_by,
-      sort_case_insensitive: settings.sort_case_insensitive,
-      sort_descending: settings.sort_descending,
-      verbose: settings.verbose
-    )
-  end
-
   def new(), do: __struct__()
   def new(args), do: __struct__(args)
 
