@@ -125,6 +125,7 @@
 (defn to-find-settings [^SearchSettings search-settings]
   (->FindSettings
    (:archives-only search-settings)             ; archives-only
+   (:colorize search-settings)                  ; colorize
    (:debug search-settings)                     ; debug
    (:follow-symlinks search-settings)           ; follow-symlinks
    (:in-archive-extensions search-settings)     ; in-archive-extensions

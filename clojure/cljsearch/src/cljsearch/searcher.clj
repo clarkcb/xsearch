@@ -21,60 +21,11 @@
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only (file-result-path)]
         [cljfind.fileutil :only (get-parent-name path-str)]
-        [cljfind.finder :only (find-files validate-settings)]
+        [cljfind.finder :only (find-files print-matching-dirs print-matching-files validate-settings)]
         [cljsearch.searchresult :only
-          (->SearchResult search-result-to-string)]
+          (->SearchResult get-line-formatter search-result-to-string)]
         [cljsearch.searchsettings]
         ))
-
-(defn print-search-result [^SearchResult r ^SearchSettings settings]
-  (log-msg (search-result-to-string r settings)))
-
-(defn print-search-results [results ^SearchSettings settings]
-  (if (> (count results) 0)
-    (let [hdr (format "\nSearch results (%d):" (count results))]
-      (log-msg hdr)
-      (doseq [r results] (print-search-result r settings)))
-    (log-msg "\nSearch results: 0")))
-
-(defn get-matching-dirs [results]
-  (sort (distinct (map #(get-parent-name (:path %)) (map #(:file %) results)))))
-
-(defn print-matching-dirs [results]
-  (let [dirs (get-matching-dirs results)]
-    (if (> (count dirs) 0)
-      (let [hdr (format "\nMatching directories (%d):" (count dirs))]
-        (log-msg hdr)
-        (doseq [d dirs] (log-msg d)))
-      (log-msg "\nMatching directories: 0"))))
-
-(defn get-matching-files [results]
-  (sort (distinct (map #(file-result-path (:file %)) results))))
-
-(defn print-matching-files [results]
-  (let [files (get-matching-files results)]
-    (if (> (count files) 0)
-      (let [hdr (format "\nMatching files (%d):" (count files))]
-        (log-msg hdr)
-        (doseq [f files] (log-msg f)))
-      (log-msg "\nMatching files: 0"))))
-
-(defn get-matching-lines [results ^SearchSettings settings]
-  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) results))]
-    (if (:unique-lines settings)
-      (distinct lines)
-      lines)))
-
-(defn print-matching-lines [results ^SearchSettings settings]
-  (let [lines (get-matching-lines results settings)
-        hdr (if (:unique-lines settings)
-              "\nUnique lines with matches"
-              "\nLines with matches")]
-    (if (> (count lines) 0)
-      (let [hdr1 (format "%s (%d):" hdr (count lines))]
-        (log-msg hdr1)
-        (doseq [l lines] (log-msg l)))
-      (log-msg (format "%s: 0" hdr)))))
 
 (defn validate-path [path]
   (if (not path)
@@ -376,3 +327,44 @@
           [(search-files file-results settings) []]
           [[] find-errs]))
       [[] validation-errs])))
+
+(defn print-search-result [^SearchResult r ^SearchSettings settings]
+  (log-msg (search-result-to-string r settings)))
+
+(defn print-search-results [results ^SearchSettings settings]
+  (if (> (count results) 0)
+    (let [hdr (format "\nSearch results (%d):" (count results))]
+      (log-msg hdr)
+      (doseq [r results] (print-search-result r settings)))
+    (log-msg "\nSearch results: 0")))
+
+(defn get-search-results-matching-files [results]
+  (let [file-paths (map #(file-result-path (:file %)) results)
+        file-map (zipmap file-paths (map #(:file %) results))]
+    (sort-by (fn [f] (file-result-path f)) (vals file-map))))
+
+(defn print-search-results-matching-dirs [results ^SearchSettings settings]
+  (let [files (get-search-results-matching-files results)]
+    (print-matching-dirs files settings)))
+
+(defn print-search-results-matching-files [results ^SearchSettings settings]
+  (let [files (get-search-results-matching-files results)]
+    (print-matching-files files settings)))
+
+(defn get-search-results-matching-lines [results ^SearchSettings settings]
+  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) results))]
+    (if (:unique-lines settings)
+      (distinct lines)
+      lines)))
+
+(defn print-search-results-matching-lines [results ^SearchSettings settings]
+  (let [format-line (get-line-formatter settings)
+        lines (get-search-results-matching-lines results settings)
+        hdr (if (:unique-lines settings)
+              "\nUnique lines with matches"
+              "\nLines with matches")]
+    (if (> (count lines) 0)
+      (let [hdr1 (format "%s (%d):" hdr (count lines))]
+        (log-msg hdr1)
+        (doseq [l lines] (log-msg (format-line l))))
+      (log-msg (format "%s: 0" hdr)))))
