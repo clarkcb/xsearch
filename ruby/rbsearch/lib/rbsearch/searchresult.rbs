@@ -24,5 +24,25 @@ module RbSearch
     def initialize: (Regexp pattern, RbFind::FileResult file, ?::Integer line_num,
                      ?::Integer match_start_index, ?::Integer match_end_index,
                      ?::String line, ?Array[String] lines_before, ?Array[String] lines_after) -> void
+
+    def cmp_by_path: (SearchResult other) -> Integer
+
+    def cmp_by_path_ci: (SearchResult other) -> Integer
+
+    def cmp_by_name: (SearchResult other) -> Integer
+
+    def cmp_by_name_ci: (SearchResult other) -> Integer
+
+    def cmp_by_size: (SearchResult other) -> Integer
+
+    def cmp_by_size_ci: (SearchResult other) -> Integer
+
+    def cmp_by_type: (SearchResult other) -> Integer
+
+    def cmp_by_type_ci: (SearchResult other) -> Integer
+
+    def cmp_by_last_mod: (SearchResult other) -> Integer
+
+    def cmp_by_last_mod_ci: (SearchResult other) -> Integer
   end
 end

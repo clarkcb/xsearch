@@ -1,0 +1,27 @@
+module RbSearch
+
+  class SearchResultSorter
+    @settings: SearchSettings
+
+    attr_reader settings: SearchSettings
+
+    def initialize: (SearchSettings settings) -> void
+
+    def sort: (Array[SearchResult] search_results) -> void
+
+    private
+
+    def get_file_name_comparator: -> Proc
+
+    def get_file_path_comparator: -> Proc
+
+    def get_file_size_comparator: -> Proc
+
+    def get_file_type_comparator: -> Proc
+
+    def get_last_mod_comparator: -> Proc
+
+    def get_search_result_comparator: -> Proc
+
+  end
+end

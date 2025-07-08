@@ -12,6 +12,7 @@ require 'rbfind/finder'
 require_relative 'searcherror'
 require_relative 'searchresult'
 require_relative 'searchresultformatter'
+require_relative 'searchresultsorter'
 
 module RbSearch
 
@@ -168,11 +169,15 @@ module RbSearch
         end
         RbFind.log("\n")
       end
-      results = []
+      search_results = []
       file_results.each do |fr|
-        results.concat(search_file(fr))
+        search_results.concat(search_file(fr))
       end
-      results
+      if search_results.size > 1
+        search_result_sorter = SearchResultSorter.new(@settings)
+        search_result_sorter.sort(search_results)
+      end
+      search_results
     end
 
     def print_result(search_result, settings)
