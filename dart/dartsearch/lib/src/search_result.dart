@@ -1,4 +1,5 @@
-import 'package:dartfind/dartfind.dart' show FileResult, FileResultFormatter;
+import 'package:dartfind/dartfind.dart'
+    show FileResult, FileResultFormatter, FileResultSorter, SortBy;
 import 'package:dartsearch/src/search_settings.dart';
 
 class SearchResult {
@@ -184,5 +185,113 @@ class SearchResultFormatter {
       return _multiLineFormat(result);
     }
     return _singleLineFormat(result);
+  }
+}
+
+class SearchResultSorter {
+  final SearchSettings settings;
+  FileResultSorter? fileResultSorter;
+
+  SearchResultSorter(this.settings) {
+    fileResultSorter = FileResultSorter(settings);
+  }
+
+  int cmpByMatchLocation(SearchResult r1, SearchResult r2) {
+    if (r1.lineNum != r2.lineNum) {
+      return r1.lineNum.compareTo(r2.lineNum);
+    }
+    if (r1.matchStartIndex != r2.matchStartIndex) {
+      return r1.matchStartIndex.compareTo(r2.matchStartIndex);
+    }
+    return r1.matchEndIndex.compareTo(r2.matchEndIndex);
+  }
+
+  int cmpByFilePath(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = fileResultSorter!.cmpByFilePath(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByFileName(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = fileResultSorter!.cmpByFileName(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByFileSize(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = fileResultSorter!.cmpByFileSize(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByFileType(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = fileResultSorter!.cmpByFileType(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int cmpByLastMod(SearchResult r1, SearchResult r2) {
+    var cmp = 0;
+    if (r1.file != null && r2.file != null) {
+      cmp = fileResultSorter!.cmpByLastMod(r1.file!, r2.file!);
+    }
+    if (cmp != 0) {
+      return cmp;
+    }
+    return cmpByMatchLocation(r1, r2);
+  }
+
+  int Function(SearchResult, SearchResult)? getSearchResultComparator() {
+    if (settings.sortDescending) {
+      switch (settings.sortBy) {
+        case SortBy.fileName:
+          return (SearchResult r1, SearchResult r2) => cmpByFileName(r2, r1);
+        case SortBy.fileSize:
+          return (SearchResult r1, SearchResult r2) => cmpByFileSize(r2, r1);
+        case SortBy.fileType:
+          return (SearchResult r1, SearchResult r2) => cmpByFileType(r2, r1);
+        case SortBy.lastMod:
+          return (SearchResult r1, SearchResult r2) => cmpByLastMod(r2, r1);
+        default:
+          return (SearchResult r1, SearchResult r2) => cmpByFilePath(r2, r1);
+      }
+    }
+    switch (settings.sortBy) {
+      case SortBy.fileName:
+        return (SearchResult r1, SearchResult r2) => cmpByFileName(r1, r2);
+      case SortBy.fileSize:
+        return (SearchResult r1, SearchResult r2) => cmpByFileSize(r1, r2);
+      case SortBy.fileType:
+        return (SearchResult r1, SearchResult r2) => cmpByFileType(r1, r2);
+      case SortBy.lastMod:
+        return (SearchResult r1, SearchResult r2) => cmpByLastMod(r1, r2);
+      default:
+        return (SearchResult r1, SearchResult r2) => cmpByFilePath(r1, r2);
+    }
+  }
+
+  void sort(List<SearchResult> searchResults) {
+    var searchResultComparator = getSearchResultComparator();
+    searchResults.sort(searchResultComparator);
   }
 }
