@@ -28,7 +28,7 @@ defmodule ExSearch.SearchResultFormatter do
   Documentation for `ExSearch.SearchResultFormatter`.
   """
 
-alias ExFind.FileResultFormatter
+  alias ExFind.FileResultFormatter
 
   defstruct [:settings, :file_formatter]
 
@@ -109,5 +109,69 @@ alias ExFind.FileResultFormatter
     else
       single_line_format(formatter, search_result)
     end
+  end
+end
+
+defmodule ExSearch.SearchResultSorter do
+  @moduledoc """
+  Documentation for `ExSearch.SearchResultSorter`.
+  """
+
+  alias ExFind.FileResultSorter
+
+    def get_file_path_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {String.downcase(r.file.path), String.downcase(r.file.name), r.line_num, r.match_start_index, r.match_end_index} end
+    else
+      fn r -> {r.file.path, r.file.name, r.line_num, r.match_start_index, r.match_end_index} end
+    end
+  end
+
+  def get_file_name_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {String.downcase(r.file.name), String.downcase(r.file.path), r.line_num, r.match_start_index, r.match_end_index} end
+    else
+      fn r -> {r.file.name, r.file.path, r.line_num, r.match_start_index, r.match_end_index} end
+    end
+  end
+
+  def get_file_size_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {r.file.file_size, String.downcase(r.file.path), String.downcase(r.file.name), r.line_num, r.match_start_index, r.match_end_index} end
+    else
+      fn r -> {r.file.file_size, r.file.path, r.file.name, r.line_num, r.match_start_index, r.match_end_index} end
+    end
+  end
+
+  def get_file_type_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {r.file.file_type, String.downcase(r.file.path), String.downcase(r.file.name), r.line_num, r.match_start_index, r.match_end_index} end
+    else
+      fn r -> {r.file.file_type, r.file.path, r.file.name, r.line_num, r.match_start_index, r.match_end_index} end
+    end
+  end
+
+  def get_last_mod_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {r.file.last_mod, String.downcase(r.file.path), String.downcase(r.file.name), r.line_num, r.match_start_index, r.match_end_index} end
+    else
+      fn r -> {r.file.last_mod, r.file.path, r.file.name, r.line_num, r.match_start_index, r.match_end_index} end
+    end
+  end
+
+  def get_search_result_mapper(settings) do
+    case settings.sort_by do
+      :file_name -> get_file_name_mapper(settings)
+      :file_size -> get_file_size_mapper(settings)
+      :file_type -> get_file_type_mapper(settings)
+      :last_mod  -> get_last_mod_mapper(settings)
+      _          -> get_file_path_mapper(settings)
+    end
+  end
+
+  def sort(settings, results) do
+    search_result_mapper = get_search_result_mapper(settings)
+    direction = if settings.sort_descending, do: :desc, else: :asc
+    Enum.sort_by(results, search_result_mapper, direction)
   end
 end

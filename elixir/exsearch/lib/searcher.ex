@@ -11,6 +11,7 @@ defmodule ExSearch.Searcher do
   alias ExSearch.SearchError
   alias ExSearch.SearchResult
   alias ExSearch.SearchResultFormatter
+  alias ExSearch.SearchResultSorter
 
   defstruct [:settings]
 
@@ -239,13 +240,21 @@ defmodule ExSearch.Searcher do
   def search_files(searcher, file_results) do
     search_results = Enum.map(file_results, fn fr -> search_file(searcher, fr) end)
     |> List.flatten()
-    {:ok, search_results}
+    if Enum.length(search_results) > 1 do
+      {:ok, SearchResultSorter.sort(searcher.settings, search_results)}
+    else
+      {:ok, search_results}
+    end
   end
 
   def search_files_async(searcher, file_results) do
     tasks = Enum.map(file_results, fn fr -> Task.async(fn -> search_file(searcher, fr) end) end)
     search_results = Task.await_many(tasks) |> List.flatten()
-    {:ok, search_results}
+    if Enum.length(search_results) > 1 do
+      {:ok, SearchResultSorter.sort(searcher.settings, search_results)}
+    else
+      {:ok, search_results}
+    end
   end
 
   def search(searcher) do
