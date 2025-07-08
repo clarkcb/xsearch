@@ -1,6 +1,6 @@
 package scalasearch
 
-import scalafind.{Color, FileResult, FileResultFormatter}
+import scalafind.{FileResult, FileResultFormatter, SortBy}
 
 import scala.util.matching.Regex
 
@@ -13,6 +13,108 @@ case class SearchResult(searchPattern: Regex, file: Option[FileResult],
            matchStartIndex: Int, matchEndIndex: Int, line: Option[String]) = {
     this(searchPattern, file, lineNum, matchStartIndex, matchEndIndex, line,
       Seq.empty[String], Seq.empty[String])
+  }
+  
+  def compareBySearchFields(other: SearchResult): Int = {
+    if (this.lineNum == other.lineNum) {
+      if (this.matchStartIndex == other.matchStartIndex) {
+        if (this.matchEndIndex < other.matchEndIndex) -1 else 1
+      } else {
+        if (this.matchStartIndex < other.matchStartIndex) -1 else 1
+      }
+    } else {
+      if (this.lineNum < other.lineNum) -1 else 1
+    }
+  }
+
+  def compareByPath(other: SearchResult, sortCaseInsensitive: Boolean): Int = {
+    val fileCmp: Int = (this.file, other.file) match {
+      case (Some(thisFile), Some(otherFile)) =>
+        thisFile.compareByPath(otherFile, sortCaseInsensitive)
+      case (_, _) => 0
+    }
+    if (fileCmp == 0) {
+      compareBySearchFields(other)
+    } else {
+      fileCmp
+    }
+  }
+
+  def beforeByPath(other: SearchResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByPath(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareByName(other: SearchResult, sortCaseInsensitive: Boolean): Int = {
+    val fileCmp: Int = (this.file, other.file) match {
+      case (Some(thisFile), Some(otherFile)) =>
+        thisFile.compareByName(otherFile, sortCaseInsensitive)
+      case (_, _) => 0
+    }
+    if (fileCmp == 0) {
+      compareBySearchFields(other)
+    } else {
+      fileCmp
+    }
+  }
+
+  def beforeByName(other: SearchResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByName(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareBySize(other: SearchResult, sortCaseInsensitive: Boolean): Int = {
+    val fileCmp: Int = (this.file, other.file) match {
+      case (Some(thisFile), Some(otherFile)) =>
+        thisFile.compareBySize(otherFile, sortCaseInsensitive)
+      case (_, _) => 0
+    }
+    if (fileCmp == 0) {
+      compareBySearchFields(other)
+    } else {
+      fileCmp
+    }
+  }
+
+  def beforeBySize(other: SearchResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareBySize(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareByType(other: SearchResult, sortCaseInsensitive: Boolean): Int = {
+    val fileCmp: Int = (this.file, other.file) match {
+      case (Some(thisFile), Some(otherFile)) =>
+        thisFile.compareByType(otherFile, sortCaseInsensitive)
+      case (_, _) => 0
+    }
+    if (fileCmp == 0) {
+      compareBySearchFields(other)
+    } else {
+      fileCmp
+    }
+  }
+
+  def beforeByType(other: SearchResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByType(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareByLastMod(other: SearchResult, sortCaseInsensitive: Boolean): Int = {
+    val fileCmp: Int = (this.file, other.file) match {
+      case (Some(thisFile), Some(otherFile)) =>
+        thisFile.compareByLastMod(otherFile, sortCaseInsensitive)
+      case (_, _) => 0
+    }
+    if (fileCmp == 0) {
+      compareBySearchFields(other)
+    } else {
+      fileCmp
+    }
+  }
+
+  def beforeByLastMod(other: SearchResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByLastMod(other, sortCaseInsensitive)
+    cmp < 0
   }
 }
 
@@ -166,5 +268,32 @@ class SearchResultFormatter(val settings: SearchSettings) {
 
       case None => ""
     }
+  }
+}
+
+class SearchResultSorter(val settings: SearchSettings) {
+  private def getSearchResultComparator: (SearchResult, SearchResult) => Boolean = {
+    if (settings.sortDescending) {
+      settings.sortBy match {
+        case SortBy.FileName => (sr1: SearchResult, sr2: SearchResult) => sr2.beforeByName(sr1, settings.sortCaseInsensitive)
+        case SortBy.FileSize => (sr1: SearchResult, sr2: SearchResult) => sr2.beforeBySize(sr1, settings.sortCaseInsensitive)
+        case SortBy.FileType => (sr1: SearchResult, sr2: SearchResult) => sr2.beforeByType(sr1, settings.sortCaseInsensitive)
+        case SortBy.LastMod => (sr1: SearchResult, sr2: SearchResult) => sr2.beforeByLastMod(sr1, settings.sortCaseInsensitive)
+        case _ => (sr1: SearchResult, sr2: SearchResult) => sr2.beforeByPath(sr1, settings.sortCaseInsensitive)
+      }
+    } else {
+      settings.sortBy match {
+        case SortBy.FileName => (sr1: SearchResult, sr2: SearchResult) => sr1.beforeByName(sr2, settings.sortCaseInsensitive)
+        case SortBy.FileSize => (sr1: SearchResult, sr2: SearchResult) => sr1.beforeBySize(sr2, settings.sortCaseInsensitive)
+        case SortBy.FileType => (sr1: SearchResult, sr2: SearchResult) => sr1.beforeByType(sr2, settings.sortCaseInsensitive)
+        case SortBy.LastMod => (sr1: SearchResult, sr2: SearchResult) => sr1.beforeByLastMod(sr2, settings.sortCaseInsensitive)
+        case _ => (sr1: SearchResult, sr2: SearchResult) => sr1.beforeByPath(sr2, settings.sortCaseInsensitive)
+      }
+    }
+  }
+
+  def sort(searchResults: Seq[SearchResult]): Seq[SearchResult] = {
+    val searchResultComparator = getSearchResultComparator
+    searchResults.sortWith(searchResultComparator)
   }
 }

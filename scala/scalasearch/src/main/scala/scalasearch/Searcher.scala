@@ -3,11 +3,11 @@ package scalasearch
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
-import scalafind.{FileResult, FileType, FileTypes, FileUtil, Finder}
+import scalafind.{FileResult, FileType, FileTypes, Finder}
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 import java.util.zip.{GZIPInputStream, ZipFile}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -80,19 +80,27 @@ class Searcher (_settings: SearchSettings) {
     val batchSize = 1000
     var until = batchSize
 
-    if (files.length > batchSize) {
-      val results = mutable.ListBuffer.empty[SearchResult]
-      while (offset < files.length) {
-        results ++= batchSearchFiles(files.slice(offset, until))
-        offset = math.min(offset + batchSize, files.length)
-        until = offset + batchSize
-      }
-      Seq.empty[SearchResult] ++ results
+    val searchResults: Seq[SearchResult] =
+      if (files.length > batchSize) {
+        val results = mutable.ListBuffer.empty[SearchResult]
+        while (offset < files.length) {
+          results ++= batchSearchFiles(files.slice(offset, until))
+          offset = math.min(offset + batchSize, files.length)
+          until = offset + batchSize
+        }
+        Seq.empty[SearchResult] ++ results
 
-    } else {
-      files.flatMap { f =>
-        searchFile(f)
+      } else {
+        files.flatMap { f =>
+          searchFile(f)
+        }
       }
+
+    if (searchResults.size > 1) {
+      val searchResultSorter = new SearchResultSorter(settings)
+      searchResultSorter.sort(searchResults)
+    } else {
+      searchResults
     }
   }
 
@@ -536,32 +544,13 @@ class Searcher (_settings: SearchSettings) {
     Seq.empty[SearchResult] ++ bzResults
   }
 
-  def compareResults(sr1: SearchResult, sr2: SearchResult): Boolean = {
-    val fileResultCmp = (sr1.file, sr2.file) match {
-      case (Some(fr1), Some(fr2)) => fr1.compareByPath(fr2, settings.sortCaseInsensitive)
-      case _ => false
-    }
-    if (fileResultCmp) {
-      val lineNumCmp = sr1.lineNum.compareTo(sr2.lineNum)
-      if (lineNumCmp == 0) {
-        sr1.matchStartIndex.compareTo(sr2.matchStartIndex) < 0
-      } else {
-        lineNumCmp < 0
-      }
-    } else {
-      fileResultCmp
-    }
-  }
-
   def printSearchResults(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
     // TODO: add includePattern setting in formatted output
     if (results.isEmpty) {
       log("\nSearch results: 0")
     } else {
       log("\nSearch results (%d):".format(results.length))
-      //      val formatter = new SearchResultFormatter(searcher.settings)
-      results.sortWith((sr1, sr2) => compareResults(sr1, sr2))
-        .foreach(r => log(formatter.format(r)))
+      results.foreach(r => log(formatter.format(r)))
     }
   }
 
