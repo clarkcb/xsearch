@@ -1,8 +1,8 @@
 package ktsearch
 
-import ktfind.Color
 import ktfind.FileResult
 import ktfind.FileResultFormatter
+import ktfind.SortBy
 
 /**
  * @author cary on 7/25/16.
@@ -239,5 +239,75 @@ class SearchResultFormatter(val settings: SearchSettings) {
                     append(formatMatchingLine(result))
         }
         return sb.toString()
+    }
+}
+
+class SearchResultSorter(val settings: SearchSettings) {
+    private fun getSearchResultComparator(): Comparator<SearchResult> {
+        return if (settings.sortDescending) {
+            when (settings.sortBy) {
+                SortBy.FILENAME -> Comparator { sr1, sr2 ->
+                    sr2.compareByName(
+                        sr1,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                SortBy.FILESIZE -> Comparator { sr1, sr2 ->
+                    sr2.compareBySize(
+                        sr1,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                SortBy.FILETYPE -> Comparator { sr1, sr2 ->
+                    sr2.compareByType(
+                        sr1,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                SortBy.LASTMOD -> Comparator { sr1, sr2 ->
+                    sr2.compareByLastMod(
+                        sr1,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                else -> Comparator { sr1, sr2 -> sr2.compareByPath(sr1, settings.sortCaseInsensitive) }
+            }
+        } else {
+            when (settings.sortBy) {
+                SortBy.FILENAME -> Comparator { sr1, sr2 ->
+                    sr1.compareByName(
+                        sr2,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                SortBy.FILESIZE -> Comparator { sr1, sr2 ->
+                    sr1.compareBySize(
+                        sr2,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                SortBy.FILETYPE -> Comparator { sr1, sr2 ->
+                    sr1.compareByType(
+                        sr2,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                SortBy.LASTMOD -> Comparator { sr1, sr2 ->
+                    sr1.compareByLastMod(
+                        sr2,
+                        settings.sortCaseInsensitive
+                    )
+                }
+                else -> Comparator { sr1, sr2 -> sr1.compareByPath(sr2, settings.sortCaseInsensitive) }
+            }
+        }
+    }
+
+    fun sort(searchResults: List<SearchResult>): List<SearchResult> {
+        if (searchResults.isEmpty()) {
+            return emptyList()
+        }
+        val searchResultComparator = getSearchResultComparator()
+        return searchResults.stream().sorted(searchResultComparator).toList()
     }
 }

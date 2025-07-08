@@ -82,8 +82,12 @@ class Searcher(val settings: SearchSettings) {
     }
 
     private fun searchFiles(frs: List<FileResult>): List<SearchResult> {
-        val results = frs.flatMap { searchFile(it) }
-        return sortSearchResults(results)
+        val searchResults = frs.flatMap { searchFile(it) }
+        if (searchResults.size > 1) {
+            val searchResultSorter = SearchResultSorter(settings)
+            return searchResultSorter.sort(searchResults)
+        }
+        return searchResults
     }
 
     private fun searchFile(fr: FileResult): List<SearchResult> {
@@ -388,38 +392,6 @@ class Searcher(val settings: SearchSettings) {
             log(e.toString())
         }
         return results.toList()
-    }
-
-    private fun sortSearchResults(searchResults: List<SearchResult>): List<SearchResult> {
-        val sortedSearchResults: MutableList<SearchResult> =
-            when (settings.sortBy) {
-                SortBy.FILENAME -> {
-                    searchResults.stream()
-                        .sorted { sr1, sr2 -> sr1.compareByName(sr2, settings.sortCaseInsensitive) }.toList()
-                }
-                SortBy.FILESIZE -> {
-                    searchResults.stream()
-                        .sorted { sr1, sr2 -> sr1.compareBySize(sr2, settings.sortCaseInsensitive) }.toList()
-                }
-                SortBy.FILETYPE -> {
-                    searchResults.stream()
-                        .sorted { sr1, sr2 -> sr1.compareByType(sr2, settings.sortCaseInsensitive) }.toList()
-                }
-                SortBy.LASTMOD -> {
-                    searchResults.stream()
-                        .sorted { sr1, sr2 -> sr1.compareByLastMod(sr2, settings.sortCaseInsensitive) }.toList()
-                }
-                else -> {
-                    searchResults.stream()
-                        .sorted { sr1, sr2 -> sr1.compareByPath(sr2, settings.sortCaseInsensitive) }.toList()
-                }
-            }.toMutableList()
-
-        if (settings.sortDescending) {
-            sortedSearchResults.reverse()
-        }
-
-        return sortedSearchResults.toList()
     }
 
     fun printResults(results: List<SearchResult>, formatter: SearchResultFormatter) {
