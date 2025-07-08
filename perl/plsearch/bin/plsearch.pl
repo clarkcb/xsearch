@@ -22,6 +22,7 @@ use plfind::common;
 use plsearch::config;
 use plsearch::Searcher;
 use plsearch::SearchOptions;
+use plsearch::SearchResultFormatter;
 
 sub main {
     my $search_options = plsearch::SearchOptions->new();

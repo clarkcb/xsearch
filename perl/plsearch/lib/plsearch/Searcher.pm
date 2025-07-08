@@ -22,7 +22,7 @@ use plfind::FileUtil;
 use plfind::Finder;
 
 use plsearch::SearchResult;
-use plsearch::SearchResultFormatter;
+use plsearch::SearchResultSorter;
 
 sub new {
     my $class = shift;
@@ -419,13 +419,17 @@ sub search {
     }
 
     # search the files
-    my $results = [];
+    my $search_results = [];
     foreach my $fr (@$file_results) {
         my $file_search_results = $self->search_file($fr);
-        push(@$results, @$file_search_results);
+        push(@$search_results, @$file_search_results);
     }
 
-    return $results;
+    if (scalar @$search_results > 1) {
+        my $search_result_sorter = plsearch::SearchResultSorter->new($self->{settings});
+        return $search_result_sorter->sort($search_results);
+    }
+    return $search_results;
 }
 
 sub print_results {
