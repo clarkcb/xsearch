@@ -11,8 +11,9 @@ import * as common from './common';
 import {FileResult, FileType, FileUtil, Finder} from 'tsfind';
 import {SearchError} from './searcherror';
 import {SearchResult} from './searchresult';
-import {SearchSettings} from './searchsettings';
 import {SearchResultFormatter} from "./searchresultformatter";
+import {SearchResultSorter} from "./searchresultsorter";
+import {SearchSettings} from './searchsettings';
 
 export class Searcher {
     _binaryEncoding: BufferEncoding = 'latin1';
@@ -82,17 +83,22 @@ export class Searcher {
         }
 
         // search the files
-        let results: SearchResult[] = [];
+        let searchResults: SearchResult[] = [];
         const searchResultsArrays: SearchResult[][] = await Promise.all(fileResults.map(fr => this.searchFile(fr)));
-        searchResultsArrays.forEach(searchResults => {
-            results = results.concat(searchResults);
+        searchResultsArrays.forEach(fileSearchResults => {
+            searchResults = searchResults.concat(fileSearchResults);
         });
 
         if (this._settings.verbose) {
             common.log('Search complete.');
         }
 
-        return results;
+        if (searchResults.length > 1) {
+            const searchResultSorter = new SearchResultSorter(this._settings);
+            searchResultSorter.sort(searchResults);
+        }
+
+        return searchResults;
     }
 
     private async searchFile(fileResult: FileResult): Promise<SearchResult[]> {
@@ -376,29 +382,7 @@ export class Searcher {
         return results;
     }
 
-    cmpSearchResults(r1: SearchResult, r2: SearchResult): number {
-        let pathCmp = 0;
-        if (r1.file && r2.file)
-            pathCmp = r1.file.path.localeCompare(r2.file.path);
-        if (pathCmp === 0) {
-            let fileCmp = 0;
-            if (r1.file && r2.file)
-                fileCmp = r1.file.fileName.localeCompare(r2.file.fileName);
-            if (fileCmp === 0) {
-                if (r1.lineNum === r2.lineNum) {
-                    return r1.matchStartIndex - r2.matchStartIndex;
-                }
-                return r1.lineNum - r2.lineNum;
-            }
-            return fileCmp;
-        }
-        return pathCmp;
-    }
-
     printSearchResults(results: SearchResult[], formatter: SearchResultFormatter): void {
-        // first sort the results
-        // TODO: ensure sorting gets help from tsfind
-        results.sort(this.cmpSearchResults);
         common.log("\nSearch results " + `(${results.length}):`);
         results.forEach(r => common.log(formatter.format(r)));
     }
