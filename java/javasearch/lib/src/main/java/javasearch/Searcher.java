@@ -110,7 +110,11 @@ public class Searcher {
             log("\nFile search complete.\n");
         }
 
-        sortSearchResults(searchResults);
+        if (searchResults.size() > 1) {
+            var searchResultSorter = new SearchResultSorter(settings);
+            searchResultSorter.sort(searchResults);
+        }
+
         return searchResults;
     }
 
@@ -484,23 +488,6 @@ public class Searcher {
             log(e.toString());
         }
         return results;
-    }
-
-    public final void sortSearchResults(List<SearchResult> searchResults) {
-        if (settings.getSortBy().equals(SortBy.FILENAME)) {
-            searchResults.sort((sr1, sr2) -> sr1.compareByName(sr2, settings.getSortCaseInsensitive()));
-        } else if (settings.getSortBy().equals(SortBy.FILESIZE)) {
-            searchResults.sort((sr1, sr2) -> sr1.compareBySize(sr2, settings.getSortCaseInsensitive()));
-        } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
-            searchResults.sort((sr1, sr2) -> sr1.compareByType(sr2, settings.getSortCaseInsensitive()));
-        } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
-            searchResults.sort((sr1, sr2) -> sr1.compareByLastMod(sr2, settings.getSortCaseInsensitive()));
-        } else {
-            searchResults.sort((sr1, sr2) -> sr1.compareByPath(sr2, settings.getSortCaseInsensitive()));
-        }
-        if (settings.getSortDescending()) {
-            Collections.reverse(searchResults);
-        }
     }
 
     public static void printSearchResults(List<SearchResult> results, SearchResultFormatter formatter) {

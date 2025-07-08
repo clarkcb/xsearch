@@ -10,7 +10,6 @@ Class to provide formatting of search result instances
 
 package javasearch;
 
-import javafind.Color;
 import javafind.FileResultFormatter;
 import javafind.StringUtil;
 
