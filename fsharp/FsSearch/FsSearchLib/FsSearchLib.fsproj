@@ -11,6 +11,7 @@
     <Compile Include="SearchSettings.fs" />
     <Compile Include="SearchResult.fs" />
     <Compile Include="SearchResultFormatter.fs" />
+    <Compile Include="SearchResultSorter.fs" />
     <Compile Include="SearchOptions.fs" />
     <Compile Include="Searcher.fs" />
     <EmbeddedResource Include="Resources\searchoptions.json" />

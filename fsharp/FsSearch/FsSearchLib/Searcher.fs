@@ -256,58 +256,14 @@ type Searcher (settings : SearchSettings) =
             Logger.Log $"Skipping file of indeterminate type (this shouldn't happen): %s{f.File.FullName}"
             []
 
-    member this.SortByMatchLocation (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
-        let lineNumCmp = r1.LineNum - r2.LineNum
-        if lineNumCmp = 0
-        then
-            let startIndexCmp = r1.MatchStartIndex - r2.MatchStartIndex
-            if startIndexCmp = 0 then r1.MatchEndIndex - r2.MatchEndIndex else startIndexCmp
-        else lineNumCmp
-
-    member this.SortByPath (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
-        let cmp = this.Finder.SortByPath r1.File r2.File
-        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
-
-    member this.SortByName (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
-        let cmp = this.Finder.SortByName r1.File r2.File
-        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
-
-    member this.SortBySize (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
-        let cmp = this.Finder.SortBySize r1.File r2.File
-        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
-
-    member this.SortByType (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
-        let cmp = this.Finder.SortByType r1.File r2.File
-        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
-
-    member this.SortByLastMod (r1 : SearchResult.t) (r2 : SearchResult.t) : int =
-        let cmp = this.Finder.SortByLastMod r1.File r2.File
-        if cmp = 0 then this.SortByMatchLocation r1 r2 else cmp
-
-    member this.GetSortComparator : SearchResult.t -> SearchResult.t -> int =
-        if settings.SortDescending then
-            match settings.SortBy with
-            | SortBy.FileName -> (fun r1 r2 -> this.SortByName r2 r1)
-            | SortBy.FileSize -> (fun r1 r2 -> this.SortBySize r2 r1)
-            | SortBy.FileType -> (fun r1 r2 -> this.SortByType r2 r1)
-            | SortBy.LastMod  -> (fun r1 r2 -> this.SortByLastMod r2 r1)
-            | _               -> (fun r1 r2 -> this.SortByPath r2 r1)
-        else
-            match settings.SortBy with
-            | SortBy.FileName -> this.SortByName
-            | SortBy.FileSize -> this.SortBySize
-            | SortBy.FileType -> this.SortByType
-            | SortBy.LastMod  -> this.SortByLastMod
-            | _               -> this.SortByPath
-
-    member this.SortSearchResults (results : SearchResult.t list) : SearchResult.t list = 
-        let sortComparator = this.GetSortComparator
-        List.sortWith sortComparator results
-
     member this.Search () : SearchResult.t list =
         let files = _finder.Find()
         let results = files |> List.collect this.SearchFile
-        this.SortSearchResults results
+        if results.Length > 1 then
+            let searchResultSorter = SearchResultSorter(settings)
+            searchResultSorter.Sort results
+        else
+            results
 
     member this.PrintResults (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit =
         if results.Length > 0 then
