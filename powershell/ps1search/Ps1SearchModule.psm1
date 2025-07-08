@@ -809,6 +809,96 @@ class SearchResultFormatter {
 #endregion
 
 
+#region SearchResultSorter
+########################################
+# SearchResultSorter
+########################################
+class SearchResultSorter
+{
+    [SearchSettings]$Settings
+
+    SearchResultSorter([SearchSettings]$settings)
+    {
+        $this.Settings = $settings
+    }
+
+    [Hashtable[]]GetOrderBySearchFields() {
+        return @(
+            @{ Expression = { $_.LineNum } },
+            @{ Expression = { $_.MatchStartIndex } },
+            @{ Expression = { $_.MatchEndIndex } }
+        )
+    }
+
+    [Hashtable[]]GetOrderByPath() {
+        return @(
+            @{ Expression = { $_.File.File.DirectoryName } },
+            @{ Expression = { $_.File.File.Name } }
+        ) + $this.GetOrderBySearchFields()
+    }
+
+    [Hashtable[]]GetOrderByName() {
+        return @(
+            @{ Expression = { $_.File.File.Name } },
+            @{ Expression = { $_.File.File.DirectoryName } }
+        ) + $this.GetOrderBySearchFields()
+    }
+
+    [Hashtable[]]GetOrderBySize() {
+        return @( @{ Expression = { $_.File.File.Length } } ) + $this.GetOrderByPath()
+    }
+
+    [Hashtable[]]GetOrderByType() {
+        return @( @{ Expression = { $_.File.Type } } ) + $this.GetOrderByPath()
+    }
+
+    [Hashtable[]]GetOrderByLastMod() {
+        return @( @{ Expression = { $_.File.File.LastWriteTimeUtc } } ) + $this.GetOrderByPath()
+    }
+
+    [SearchResult[]]Sort([SearchResult[]]$searchResults) {
+        $order = @()
+        switch (SortByToName($this.Settings.SortBy)) {
+            'filename' {
+                $order = $this.GetOrderByName()
+            }
+            'filepath' {
+                $order = $this.GetOrderByPath()
+            }
+            'filesize' {
+                $order = $this.GetOrderBySize()
+            }
+            'filetype' {
+                $order = $this.GetOrderByType()
+            }
+            'lastmod' {
+                $order = $this.GetOrderByLastMod()
+            }
+            Default {
+                $order = $this.GetOrderByPath()
+            }
+        }
+
+        if ($this.Settings.SortDescending) {
+            if ($this.Settings.SortCaseInsensitive) {
+                return $searchResults |
+                        Sort-Object -Descending -Property $order
+            }
+            return $searchResults |
+                    Sort-Object -CaseSensitive -Descending -Property $order
+        }
+
+        if ($this.Settings.SortCaseInsensitive) {
+            return $searchResults |
+                    Sort-Object -Property $order
+        }
+        return $searchResults |
+                Sort-Object -CaseSensitive -Property $order
+    }
+
+}
+
+
 #region Searcher
 ########################################
 # Searcher
@@ -1121,6 +1211,10 @@ class Searcher {
             $searched += $this.BatchSize
         }
 
+        if ($searchResults.Count -gt 1) {
+            $searchResultSorter = [SearchResultSorter]::new($this.Settings)
+            return $searchResultSorter.Sort($searchResults)
+        }
         return $searchResults
     }
 
