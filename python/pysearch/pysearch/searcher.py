@@ -95,8 +95,10 @@ class Searcher(object):
             for coroutine in asyncio.as_completed(tasks):
                 search_results.extend(await coroutine)
             offset += batch_size
-        search_result_sorter = SearchResultSorter(self.settings)
-        return search_result_sorter.sort(search_results)
+        if len(search_results) > 1:
+            search_result_sorter = SearchResultSorter(self.settings)
+            return search_result_sorter.sort(search_results)
+        return search_results
 
     async def search_contained_file(self, containers: list[Path], fr: FileResult) -> list[SearchResult]:
         """Search a contained file and return the results"""
