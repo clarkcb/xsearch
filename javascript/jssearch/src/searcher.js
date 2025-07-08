@@ -9,6 +9,7 @@ const {common, FileType, FileUtil, Finder} = require('jsfind');
 const {SearchError} = require('./searcherror');
 const {SearchResult} = require('./searchresult');
 const path = require('path')
+const { SearchResultSorter } = require('./searchresultsorter')
 
 class Searcher {
     'use strict'
@@ -73,17 +74,22 @@ class Searcher {
             }
 
             // search the files
-            let results = [];
+            let searchResults = [];
             const searchResultsArrays = await Promise.all(fileResults.map(fr => this.searchFile(fr)));
-            searchResultsArrays.forEach(searchResults => {
-                results = results.concat(searchResults);
+            searchResultsArrays.forEach(fileSearchResults => {
+                searchResults = searchResults.concat(fileSearchResults);
             });
 
             if (this.settings.verbose) {
                 common.log('Search complete.');
             }
 
-            return results;
+            if (searchResults.length > 1) {
+                const searchResultSorter = new SearchResultSorter(this.settings);
+                searchResultSorter.sort(searchResults);
+            }
+
+            return searchResults;
 
         } catch (err) {
             throw err;
@@ -374,25 +380,7 @@ class Searcher {
         return results;
     }
 
-    cmpSearchResults(r1, r2) {
-        const pathCmp = r1.file.path.localeCompare(r2.file.path);
-        if (pathCmp === 0) {
-            const fileCmp = path.basename(r1.file.fileName).localeCompare(path.basename(r2.file.fileName));
-            if (fileCmp === 0) {
-                if (r1.lineNum === r2.lineNum) {
-                    return r1.matchStartIndex - r2.matchStartIndex;
-                }
-                return r1.lineNum - r2.lineNum;
-            }
-            return fileCmp;
-        }
-        return pathCmp;
-    }
-
     printSearchResults(results, formatter) {
-        // first sort the results
-        // TODO: ensure sorting gets help from jsfind
-        results.sort(this.cmpSearchResults);
         common.log(`\nSearch results (${results.length}):`);
         results.forEach(r => common.log(formatter.format(r)));
     }
