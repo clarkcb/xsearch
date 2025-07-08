@@ -94,6 +94,11 @@ public class Searcher {
         for file in fileResults {
             searchResults += searchFile(file)
         }
+
+        if searchResults.count > 1 {
+            let searchResultSorter = SearchResultSorter(settings: settings)
+            return searchResultSorter.sort(searchResults)
+        }
         return searchResults
     }
 

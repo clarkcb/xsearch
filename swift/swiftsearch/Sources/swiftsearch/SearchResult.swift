@@ -187,3 +187,131 @@ public class SearchResultFormatter {
         return str
     }
 }
+
+public class SearchResultSorter {
+    let settings: SearchSettings
+    let fileResultSorter: FileResultSorter
+    
+    public init(settings: SearchSettings) {
+        self.settings = settings
+        self.fileResultSorter = FileResultSorter(settings: settings)
+    }
+
+    public func cmpBySearchFields(_ sr1: SearchResult, _ sr2: SearchResult) -> Int {
+        if sr1.lineNum == sr2.lineNum {
+            if sr1.matchStartIndex == sr2.matchStartIndex {
+                if sr1.matchEndIndex == sr2.matchEndIndex {
+                    return 0
+                }
+                return sr1.matchEndIndex < sr2.matchEndIndex ? -1 : 1
+            }
+            return sr1.matchStartIndex < sr2.matchStartIndex ? -1 : 1
+        }
+        return sr1.lineNum < sr2.lineNum ? -1 : 1
+    }
+
+    public func cmpByFilePath(_ sr1: SearchResult, _ sr2: SearchResult) -> Int {
+        if sr1.file != nil && sr2.file != nil {
+            let fileCmp = fileResultSorter.cmpByFilePath(sr1.file!, sr2.file!)
+            if fileCmp != 0 {
+                return fileCmp
+            }
+        }
+        return cmpBySearchFields(sr1, sr2)
+    }
+
+    public func sortByFilePath(_ sr1: SearchResult, _ sr2: SearchResult) -> Bool {
+        return cmpByFilePath(sr1, sr2) <= 0
+    }
+
+    public func cmpByFileName(_ sr1: SearchResult, _ sr2: SearchResult) -> Int {
+        if sr1.file != nil && sr2.file != nil {
+            let fileCmp = fileResultSorter.cmpByFileName(sr1.file!, sr2.file!)
+            if fileCmp != 0 {
+                return fileCmp
+            }
+        }
+        return cmpBySearchFields(sr1, sr2)
+    }
+
+    public func sortByFileName(_ sr1: SearchResult, _ sr2: SearchResult) -> Bool {
+        return cmpByFileName(sr1, sr2) <= 0
+    }
+
+    public func cmpByFileSize(_ sr1: SearchResult, _ sr2: SearchResult) -> Int {
+        if sr1.file != nil && sr2.file != nil {
+            let fileCmp = fileResultSorter.cmpByFileSize(sr1.file!, sr2.file!)
+            if fileCmp != 0 {
+                return fileCmp
+            }
+        }
+        return cmpBySearchFields(sr1, sr2)
+    }
+
+    public func sortByFileSize(_ sr1: SearchResult, _ sr2: SearchResult) -> Bool {
+        return cmpByFileSize(sr1, sr2) <= 0
+    }
+
+    public func cmpByFileType(_ sr1: SearchResult, _ sr2: SearchResult) -> Int {
+        if sr1.file != nil && sr2.file != nil {
+            let fileCmp = fileResultSorter.cmpByFileType(sr1.file!, sr2.file!)
+            if fileCmp != 0 {
+                return fileCmp
+            }
+        }
+        return cmpBySearchFields(sr1, sr2)
+    }
+
+    public func sortByFileType(_ sr1: SearchResult, _ sr2: SearchResult) -> Bool {
+        return cmpByFileType(sr1, sr2) <= 0
+    }
+
+    public func cmpByLastMod(_ sr1: SearchResult, _ sr2: SearchResult) -> Int {
+        if sr1.file != nil && sr2.file != nil {
+            let fileCmp = fileResultSorter.cmpByLastMod(sr1.file!, sr2.file!)
+            if fileCmp != 0 {
+                return fileCmp
+            }
+        }
+        return cmpBySearchFields(sr1, sr2)
+    }
+
+    public func sortByLastMod(_ sr1: SearchResult, _ sr2: SearchResult) -> Bool {
+        return cmpByLastMod(sr1, sr2) <= 0
+    }
+
+    private func getSearchResultComparator() -> (SearchResult, SearchResult) -> Bool {
+        if settings.sortDescending {
+            switch settings.sortBy {
+            case SortBy.fileName:
+                return { (sr1: SearchResult, sr2: SearchResult) -> Bool in return self.sortByFileName(sr2, sr1) }
+            case SortBy.fileSize:
+                return { (sr1: SearchResult, sr2: SearchResult) -> Bool in return self.sortByFileSize(sr2, sr1) }
+            case SortBy.fileType:
+                return { (sr1: SearchResult, sr2: SearchResult) -> Bool in return self.sortByFileType(sr2, sr1) }
+            case SortBy.lastMod:
+                return { (sr1: SearchResult, sr2: SearchResult) -> Bool in return self.sortByLastMod(sr2, sr1) }
+            default:
+                return { (sr1: SearchResult, sr2: SearchResult) -> Bool in return self.sortByFilePath(sr2, sr1) }
+            }
+        } else {
+            switch settings.sortBy {
+            case SortBy.fileName:
+                return sortByFileName
+            case SortBy.fileSize:
+                return sortByFileSize
+            case SortBy.fileType:
+                return sortByFileType
+            case SortBy.lastMod:
+                return sortByLastMod
+            default:
+                return sortByFilePath
+            }
+        }
+    }
+
+    public func sort(_ searchResults: [SearchResult]) -> [SearchResult] {
+        let searchResultComparator = getSearchResultComparator()
+        return searchResults.sorted(by: searchResultComparator)
+    }
+}
