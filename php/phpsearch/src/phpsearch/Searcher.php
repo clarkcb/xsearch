@@ -439,6 +439,10 @@ class Searcher
         foreach ($file_results as $f) {
             $search_results = array_merge($search_results, $this->search_file($f));
         }
+        if (count($search_results) > 1) {
+            $search_result_sorter = new SearchResultSorter($this->settings);
+            return $search_result_sorter->sort($search_results);
+        }
         return $search_results;
     }
 
