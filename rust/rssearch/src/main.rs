@@ -17,6 +17,7 @@ pub mod searchoptions;
 pub mod searchresult;
 pub mod searchsettings;
 pub mod searchresultformatter;
+pub mod searchresultsorter;
 
 fn print_error(error: SearchError, options: &searchoptions::SearchOptions) {
     log("");

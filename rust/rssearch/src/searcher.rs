@@ -18,6 +18,7 @@ use crate::common::log;
 use crate::searcherror::SearchError;
 use crate::searchresult::SearchResult;
 use crate::searchresultformatter::SearchResultFormatter;
+use crate::searchresultsorter::SearchResultSorter;
 use crate::searchsettings::SearchSettings;
 
 const BINARY_ENCODING: &SingleByteEncoding = encoding::all::ISO_8859_1;
@@ -725,11 +726,11 @@ impl Searcher {
     }
 
     fn search_files(&self, files: Vec<FileResult>) -> Result<Vec<SearchResult>, SearchError> {
-        let mut results: Vec<SearchResult> = Vec::new();
+        let mut search_results: Vec<SearchResult> = Vec::new();
         for fr in files.into_iter() {
             match self.search_file(fr) {
                 Ok(mut file_results) => {
-                    results.append(&mut file_results);
+                    search_results.append(&mut file_results);
                 },
                 Err(error) => {
                     log(format!("{}", error).as_str());
@@ -737,9 +738,11 @@ impl Searcher {
                 }
             }
         }
-        // TODO: implement custom sorting of [SearchResult]
-        results.sort_unstable();
-        Ok(results)
+        if search_results.len() > 1 {
+            let search_result_sorter = SearchResultSorter::new(self.settings.clone());
+            search_result_sorter.sort(&mut search_results);
+        }
+        Ok(search_results)
     }
 
     /// Initiate a searcher search for the given settings and get the results
