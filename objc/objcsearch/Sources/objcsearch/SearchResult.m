@@ -34,4 +34,66 @@
     }
 }
 
+- (NSComparisonResult)compareBySearchFields:(SearchResult *)otherSearchResult {
+    if (self.lineNum == otherSearchResult.lineNum) {
+        if (self.matchStartIndex == otherSearchResult.matchStartIndex) {
+            if (self.matchEndIndex == otherSearchResult.matchEndIndex) {
+                return NSOrderedSame;
+            }
+            if (self.matchEndIndex < otherSearchResult.matchEndIndex) {
+                return NSOrderedAscending;
+            }
+            return NSOrderedDescending;
+        }
+        if (self.matchStartIndex < otherSearchResult.matchStartIndex) {
+            return NSOrderedAscending;
+        }
+        return NSOrderedDescending;
+    }
+    if (self.lineNum < otherSearchResult.lineNum) {
+        return NSOrderedAscending;
+    }
+    return NSOrderedDescending;
+}
+
+- (NSComparisonResult)compareByPath:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive {
+    if (self.file != nil && otherSearchResult.file != nil) {
+        NSComparisonResult res = [self.file compareByPath:otherSearchResult.file caseInsensitive:caseInsensitive];
+        if (res != NSOrderedSame) return res;
+    }
+    return [self compareBySearchFields:otherSearchResult];
+}
+
+- (NSComparisonResult)compareByName:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive {
+    if (self.file != nil && otherSearchResult.file != nil) {
+        NSComparisonResult res = [self.file compareByName:otherSearchResult.file caseInsensitive:caseInsensitive];
+        if (res != NSOrderedSame) return res;
+    }
+    return [self compareBySearchFields:otherSearchResult];
+}
+
+- (NSComparisonResult)compareBySize:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive {
+    if (self.file != nil && otherSearchResult.file != nil) {
+        NSComparisonResult res = [self.file compareBySize:otherSearchResult.file caseInsensitive:caseInsensitive];
+        if (res != NSOrderedSame) return res;
+    }
+    return [self compareBySearchFields:otherSearchResult];
+}
+
+- (NSComparisonResult)compareByType:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive {
+    if (self.file != nil && otherSearchResult.file != nil) {
+        NSComparisonResult res = [self.file compareByType:otherSearchResult.file caseInsensitive:caseInsensitive];
+        if (res != NSOrderedSame) return res;
+    }
+    return [self compareBySearchFields:otherSearchResult];
+}
+
+- (NSComparisonResult)compareByLastMod:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive {
+    if (self.file != nil && otherSearchResult.file != nil) {
+        NSComparisonResult res = [self.file compareByLastMod:otherSearchResult.file caseInsensitive:caseInsensitive];
+        if (res != NSOrderedSame) return res;
+    }
+    return [self compareBySearchFields:otherSearchResult];
+}
+
 @end

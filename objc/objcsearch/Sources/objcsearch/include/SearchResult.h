@@ -25,6 +25,11 @@
                       linesAfter:(NSArray<NSString*>*)linesAfter;
 
 - (NSString *) getFilePath;
+- (NSComparisonResult)compareByPath:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareByName:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareBySize:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareByType:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareByLastMod:(SearchResult *)otherSearchResult caseInsensitive:(BOOL)caseInsensitive;
 
 @end
 

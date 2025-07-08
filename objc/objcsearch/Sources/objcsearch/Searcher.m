@@ -3,6 +3,7 @@
 #import "FileUtil.h"
 #import "Regex.h"
 #import "Searcher.h"
+#import "SearchResultSorter.h"
 
 @implementation Searcher
 
@@ -323,12 +324,17 @@
 
 - (NSArray<SearchResult*>*) search:(NSError**)error {
     //logMsg(@"Searching...");
-    NSMutableArray<SearchResult*> *results = [NSMutableArray array];
+    NSMutableArray<SearchResult*> *searchResults = [NSMutableArray array];
     NSArray<FileResult*> *fileResults = [self.finder find:error];
     for (FileResult *fr in fileResults) {
-        [results addObjectsFromArray:[self searchFile:fr error:error]];
+        [searchResults addObjectsFromArray:[self searchFile:fr error:error]];
     }
-    return [NSArray arrayWithArray:results];
+
+    if ([searchResults count] > 1) {
+        SearchResultSorter *searchResultSorter = [[SearchResultSorter alloc] initWithSettings:self.settings];
+        return [searchResultSorter sort:[NSArray arrayWithArray:searchResults]];
+    }
+    return [NSArray arrayWithArray:searchResults];
 }
 
 - (void) printSearchResults:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter {
