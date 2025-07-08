@@ -467,50 +467,18 @@ public class Searcher
 		}
 
 		var results = Results.ToList();
-		SortSearchResults(results);
+
+		if (results.Count > 1)
+		{
+			var searchResultSorter = new SearchResultSorter(Settings);
+			searchResultSorter.Sort(results);
+		}
+
 		return results;
-	}
-
-	private Comparison<SearchResult> GetSearchResultsComparison()
-	{
-		if (Settings.SortDescending)
-		{
-			return Settings.SortBy switch
-			{
-				SortBy.FileName => (r1, r2) => r2.CompareByName(r1, Settings.SortCaseInsensitive),
-				SortBy.FileSize => (r1, r2) => r2.CompareBySize(r1, Settings.SortCaseInsensitive),
-				SortBy.FileType => (r1, r2) => r2.CompareByType(r1, Settings.SortCaseInsensitive),
-				SortBy.LastMod => (r1, r2) => r2.CompareByLastMod(r1, Settings.SortCaseInsensitive),
-				_ => (r1, r2) => r2.CompareByPath(r1, Settings.SortCaseInsensitive)
-			};
-		}
-
-		return Settings.SortBy switch
-		{
-			SortBy.FileName => (r1, r2) => r1.CompareByName(r2, Settings.SortCaseInsensitive),
-			SortBy.FileSize => (r1, r2) => r1.CompareBySize(r2, Settings.SortCaseInsensitive),
-			SortBy.FileType => (r1, r2) => r1.CompareByType(r2, Settings.SortCaseInsensitive),
-			SortBy.LastMod => (r1, r2) => r1.CompareByLastMod(r2, Settings.SortCaseInsensitive),
-			_ => (r1, r2) => r1.CompareByPath(r2, Settings.SortCaseInsensitive)
-		};
-	}
-
-	private void SortSearchResults(List<SearchResult> results)
-	{
-		var comparison = GetSearchResultsComparison();
-		results.Sort(comparison);
-
-		if (Settings.SortDescending)
-		{
-			results.Reverse();
-		}
 	}
 
 	public static void PrintResults(IEnumerable<SearchResult> results, SearchResultFormatter formatter)
 	{
-		// File sorting is done by CsFind, so maybe additional sorting isn't needed?
-		// var sortedResults = GetSortedSearchResults();
-		// var formatter = new SearchResultFormatter(Settings);
 		var resultsList = results.ToList();
 		Logger.Log($"Search results ({resultsList.Count}):");
 		foreach (var searchResult in resultsList)
