@@ -45,8 +45,10 @@ func (srs *SearchResults) Len() int {
 }
 
 func (srs *SearchResults) Sort(settings *SearchSettings) {
-	searchResultSorter := NewSearchResultSorter(settings)
-	searchResultSorter.Sort(srs.SearchResults)
+	if srs.Len() > 1 {
+		searchResultSorter := NewSearchResultSorter(settings)
+		searchResultSorter.Sort(srs.SearchResults)
+	}
 }
 
 func (srs *SearchResults) PrintMatchingDirs(formatter *SearchResultFormatter) {
