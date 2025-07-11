@@ -4,8 +4,8 @@ import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
 import HsSearch.SearchOptions
-import HsSearch.Searcher (doSearch, formatMatchingDirs, formatMatchingFiles, formatMatchingLines,
-                          formatResults, validateSearchSettings)
+import HsSearch.Searcher (doSearch, formatSearchResultMatchingDirs, formatSearchResultMatchingFiles,
+                          formatSearchResultMatchingLines, formatSearchResults, validateSearchSettings)
 import HsSearch.SearchSettings
 
 
@@ -50,14 +50,14 @@ main = do
                     logErr $ errMsg ++ "\n"
                     logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
                   Right searchResults -> do
-                    logMsg $ formatResults settings searchResults
+                    logMsg $ formatSearchResults settings searchResults
                     logMsg $ if printDirs settings
-                             then formatMatchingDirs settings searchResults
+                             then formatSearchResultMatchingDirs settings searchResults
                              else ""
                     logMsg $ if printFiles settings
-                             then formatMatchingFiles settings searchResults
+                             then formatSearchResultMatchingFiles settings searchResults
                              else ""
                     logMsg $ if printLines settings
-                             then formatMatchingLines settings searchResults
+                             then formatSearchResultMatchingLines settings searchResults
                              else ""
                     logMsg ""

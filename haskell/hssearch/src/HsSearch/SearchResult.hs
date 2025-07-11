@@ -4,21 +4,24 @@ module HsSearch.SearchResult
   , formatBSLine
   , formatLine
   , formatSearchResult
+  , searchResultPath
+  , sortSearchResults
   , trimLeadingWhitespace
   ) where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (isSpace)
+import Data.List (sortBy)
 import Text.Regex.PCRE
 
 import HsFind.Color (green, reset)
-import HsFind.FileResult (colorizeString, formatFilePath)
+import HsFind.FileResult (FileResult(..), blankFileResult, colorizeString, formatFilePath, getCompareFileResultsFunc)
 import HsSearch.SearchSettings
 
 data SearchResult = SearchResult {
                                    searchPattern :: String
-                                 , filePath :: FilePath
+                                 , fileResult :: FileResult
                                  , lineNum :: Int
                                  , matchStartIndex :: Int
                                  , matchEndIndex :: Int
@@ -30,7 +33,7 @@ data SearchResult = SearchResult {
 blankSearchResult :: SearchResult
 blankSearchResult = SearchResult {
                                    searchPattern=""
-                                 , filePath=""
+                                 , fileResult=blankFileResult
                                  , lineNum=0
                                  , matchStartIndex=0
                                  , matchEndIndex=0
@@ -43,13 +46,16 @@ formatSearchResult :: SearchSettings -> SearchResult -> String
 formatSearchResult settings result = if lineNum result == 0
                                      then formatBinaryResult
                                      else formatTextResult
-  where formatBinaryResult = filePath result ++ " matches at [" ++
+  where formatBinaryResult = fileResultPath (fileResult result) ++ " matches at [" ++
                              show (matchStartIndex result) ++ ":" ++
                              show (matchEndIndex result) ++ "]"
         isMultiline = any (>0) [linesBefore settings, linesAfter settings]
         formatTextResult = if isMultiline
                            then formatMultiLine settings result
                            else formatSingleLine settings result
+
+searchResultPath :: SearchResult -> FilePath
+searchResultPath result = fileResultPath (fileResult result)
 
 subByteString :: Int -> Int -> B.ByteString -> B.ByteString
 subByteString si ei bs = B.take (ei - si) (B.drop si bs)
@@ -123,7 +129,7 @@ formatBSLine settings line =
 
 formatSingleLine :: SearchSettings -> SearchResult -> String
 formatSingleLine settings result =
-  formatFilePath (toFindSettings settings) (filePath result) ++ ": " ++
+  formatFilePath (toFindSettings settings) (searchResultPath result) ++ ": " ++
   show (lineNum result) ++ ": [" ++
   show (matchStartIndex result) ++ ":" ++
   show (matchEndIndex result) ++ "]: " ++
@@ -141,7 +147,7 @@ formatMultiLine settings result =
   "> " ++ padNumString (show resultLineNum) ++ " | " ++
   (rstrip . BC.unpack) (condColorize (line result)) ++ "\n" ++
   unlines (zipWith (curry formatLine) afterLineNums resultAfterLines)
-  where formattedFilePath = formatFilePath (toFindSettings settings) (filePath result)
+  where formattedFilePath = formatFilePath (toFindSettings settings) (searchResultPath result)
         resultLineNum = lineNum result
         resultBeforeLines = map (rstrip . BC.unpack) (beforeLines result)
         resultAfterLines = map (rstrip . BC.unpack) (afterLines result)
@@ -166,3 +172,34 @@ rstrip = reverse . trimLeadingWhitespace . reverse
 
 trimLeadingWhitespace :: String -> String
 trimLeadingWhitespace = dropWhile isSpace
+
+compareBySearchResultFields :: SearchResult -> SearchResult -> Ordering
+compareBySearchResultFields sr1 sr2 =
+  if lineNum sr1 == lineNum sr2
+  then
+    if matchStartIndex sr1 == matchStartIndex sr2
+    then compare (matchEndIndex sr1) (matchEndIndex sr2)
+    else compare (matchStartIndex sr1) (matchStartIndex sr2)
+  else compare (lineNum sr1) (lineNum sr2)
+
+compareSearchResults :: (FileResult -> FileResult -> Ordering) -> SearchResult -> SearchResult -> Ordering
+compareSearchResults compareFileResults sr1 sr2 =
+  if frcmp == EQ
+  then compareBySearchResultFields sr1 sr2
+  else frcmp
+  where fr1 = fileResult sr1
+        fr2 = fileResult sr2
+        frcmp = compareFileResults fr1 fr2
+
+getCompareSearchResultsFunc :: SearchSettings -> SearchResult -> SearchResult -> Ordering
+getCompareSearchResultsFunc settings =
+  compareSearchResults (getCompareFileResultsFunc (toFindSettings settings))
+
+doSortBySearchResults :: SearchSettings -> [SearchResult] -> [SearchResult]
+doSortBySearchResults settings = sortBy $ getCompareSearchResultsFunc settings
+
+sortSearchResults :: SearchSettings -> [SearchResult] -> [SearchResult]
+sortSearchResults settings searchResults =
+  if sortDescending settings
+  then reverse $ doSortBySearchResults settings searchResults
+  else doSortBySearchResults settings searchResults

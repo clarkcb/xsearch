@@ -2,10 +2,10 @@ module HsSearch.Searcher
     (
       doSearch
     , doSearchFiles
-    , formatMatchingDirs
-    , formatMatchingFiles
-    , formatMatchingLines
-    , formatResults
+    , formatSearchResultMatchingDirs
+    , formatSearchResultMatchingFiles
+    , formatSearchResultMatchingLines
+    , formatSearchResults
     , getSearchFiles
     , searchContents
     , searchLines
@@ -26,7 +26,7 @@ import Text.Regex.PCRE
 import HsFind.FileResult
 import HsFind.FileTypes
 import HsFind.FileUtil
-import HsFind.Finder (doFind, validateFindSettings)
+import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, validateFindSettings)
 
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
@@ -59,13 +59,14 @@ getSearchFiles :: SearchSettings -> IO (Either String [FileResult])
 getSearchFiles settings = do
   doFind $ toFindSettings settings
 
-searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
-searchBinaryFile settings f = do
-  blobEither <- getFileByteString f
+-- searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
+searchBinaryFile :: SearchSettings -> FileResult -> IO [SearchResult]
+searchBinaryFile settings fr = do
+  blobEither <- getFileByteString $ fileResultPath fr
   case blobEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right blob) -> return $ addFilePath (searchBlob settings blob)
-  where addFilePath = map (\r -> r {filePath=f})
+    (Right blob) -> return $ addFileResult (searchBlob settings blob)
+  where addFileResult = map (\r -> r {fileResult=fr})
 
 searchBlob :: SearchSettings -> B.ByteString -> [SearchResult]
 searchBlob settings blob =
@@ -88,11 +89,11 @@ searchBlobForPattern settings blob = patternResults
                             , line=B.empty
                             }
 
-searchTextFile :: SearchSettings -> FilePath -> IO [SearchResult]
-searchTextFile settings f =
+searchTextFile :: SearchSettings -> FileResult -> IO [SearchResult]
+searchTextFile settings fr =
   if multiLineSearch settings
-    then searchTextFileContents settings f
-    else searchTextFileLines settings f
+    then searchTextFileContents settings fr
+    else searchTextFileLines settings fr
 
 matchOffsetsAndLengths :: B.ByteString -> String -> [(MatchOffset,MatchLength)]
 matchOffsetsAndLengths s p = getAllMatches $ s =~ p :: [(MatchOffset,MatchLength)]
@@ -119,13 +120,13 @@ anyMatchesPattern ls p = any (`matchesPattern` p) ls
 matchesAnyPattern :: B.ByteString -> [String] -> Bool
 matchesAnyPattern l = any (matchesPattern l)
 
-searchTextFileContents :: SearchSettings -> FilePath -> IO [SearchResult]
-searchTextFileContents settings f = do
-  contentsEither <- getFileByteString f
+searchTextFileContents :: SearchSettings -> FileResult -> IO [SearchResult]
+searchTextFileContents settings fr = do
+  contentsEither <- getFileByteString $ fileResultPath fr
   case contentsEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right contents) -> return $ addFilePath (searchContents settings contents)
-  where addFilePath = map (\r -> r {filePath=f})
+    (Right contents) -> return $ addFileResult (searchContents settings contents)
+  where addFileResult = map (\r -> r {fileResult=fr})
 
 searchContents :: SearchSettings -> B.ByteString -> [SearchResult]
 searchContents settings contents =
@@ -188,13 +189,13 @@ searchContentsForPattern settings contents = patternResults
                 bs = beforeLns (fst ix)
                 as = afterLns (fst ix)
 
-searchTextFileLines :: SearchSettings -> FilePath -> IO [SearchResult]
-searchTextFileLines settings f = do
-  fileLinesEither <- getFileLines f
+searchTextFileLines :: SearchSettings -> FileResult -> IO [SearchResult]
+searchTextFileLines settings fr = do
+  fileLinesEither <- getFileLines $ fileResultPath fr
   case fileLinesEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right fileLines) -> return $ addFilePath (searchLines settings fileLines)
-  where addFilePath = map (\r -> r {filePath=f})
+    (Right fileLines) -> return $ addFileResult (searchLines settings fileLines)
+  where addFileResult = map (\r -> r {fileResult=fr})
 
 searchLines :: SearchSettings -> [B.ByteString] -> [SearchResult]
 searchLines settings lineList = recSearchLines settings [] lineList 0 []
@@ -267,8 +268,8 @@ searchLineForPattern settings num bs l as = patternResults
 doSearchFile :: SearchSettings -> FileResult -> IO [SearchResult]
 doSearchFile settings fr =
   case fileResultType fr of
-    Binary -> searchBinaryFile settings $ fileResultPath fr
-    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings $ fileResultPath fr
+    Binary -> searchBinaryFile settings fr
+    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings fr
     _ -> return []
 
 doSearchFiles :: SearchSettings -> [FileResult] -> IO [SearchResult]
@@ -283,10 +284,10 @@ doSearch settings = do
     Left err -> return $ Left err
     Right fileResults -> do
       searchResults <- doSearchFiles settings fileResults
-      return $ Right searchResults
+      return $ Right $ sortSearchResults settings searchResults
 
-formatResults :: SearchSettings -> [SearchResult] -> String
-formatResults settings results =
+formatSearchResults :: SearchSettings -> [SearchResult] -> String
+formatSearchResults settings results =
   if not (null results) then
     "\nSearch results (" ++ show (length results) ++ "):\n" ++
     unlines (map (formatSearchResult settings) results)
@@ -294,10 +295,10 @@ formatResults settings results =
 
 getMatchingDirs :: [SearchResult] -> [FilePath]
 getMatchingDirs = sort . nub . map getDirectory
-  where getDirectory r = takeDirectory (filePath r)
+  where getDirectory r = takeDirectory $ searchResultPath r
 
-formatMatchingDirs :: SearchSettings -> [SearchResult] -> String
-formatMatchingDirs settings results = 
+formatSearchResultMatchingDirs :: SearchSettings -> [SearchResult] -> String
+formatSearchResultMatchingDirs settings results = 
   if not (null matchingDirs) then
     "\nMatching directories (" ++ show (length matchingDirs) ++ "):\n" ++
     unlines matchingDirs
@@ -306,10 +307,10 @@ formatMatchingDirs settings results =
         matchingDirs = map (formatDirectory findSettings) $ getMatchingDirs results
 
 getMatchingFiles :: [SearchResult] -> [FilePath]
-getMatchingFiles = sort . nub . map filePath
+getMatchingFiles = sort . nub . map searchResultPath
 
-formatMatchingFiles :: SearchSettings -> [SearchResult] -> String
-formatMatchingFiles settings results = 
+formatSearchResultMatchingFiles :: SearchSettings -> [SearchResult] -> String
+formatSearchResultMatchingFiles settings results = 
   if not (null matchingFiles) then
     "\nMatching files (" ++ show (length matchingFiles) ++ "):\n" ++
     unlines matchingFiles
@@ -330,8 +331,8 @@ getMatchingLines settings results | unique = (doSortCaseInsensitive . nub . map 
   where unique = uniqueLines settings
         trimLine = BC.dropWhile isSpace . line
 
-formatMatchingLines :: SearchSettings -> [SearchResult] -> String
-formatMatchingLines settings results = 
+formatSearchResultMatchingLines :: SearchSettings -> [SearchResult] -> String
+formatSearchResultMatchingLines settings results = 
   "\n" ++ hdrText ++ " (" ++ show (length matchingLines) ++ "):\n" ++
   BC.unpack (BC.intercalate (BC.pack "\n") matchingLines) ++ "\n"
   where matchingLines = map (formatBSLine settings) $ getMatchingLines settings results

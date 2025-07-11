@@ -9,6 +9,9 @@ import HsSearch.Config
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
+import HsFind.FileResult
+import HsFind.FileTypes
+
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit hiding (Test)
@@ -29,21 +32,23 @@ getBinaryFileSearchResultTests :: IO [Test]
 getBinaryFileSearchResultTests = do
   xsearchPath <- getXsearchPath
   let binaryFilePath = xsearchPath ++ "/csharp/CsSearch/CsSearch/Searcher.exe"
-  let binaryFileSearchResult = blankSearchResult { filePath=binaryFilePath
-                                                 , lineNum=0
-                                                 , matchStartIndex=0
-                                                 , matchEndIndex=0
-                                                 }
+  let binaryFileResult = newFileResult binaryFilePath Binary
+  let binarySearchResult = blankSearchResult { fileResult=binaryFileResult
+                                             , lineNum=0
+                                             , matchStartIndex=0
+                                             , matchEndIndex=0
+                                             }
   let settings = defaultSearchSettings
-  let formattedResult = formatSearchResult settings binaryFileSearchResult
+  let formattedResult = formatSearchResult settings binarySearchResult
   let expectedFormat = binaryFilePath ++ " matches at [0:0]"
-  return [testCase "binaryFileSearchResult" (formattedResult @?= expectedFormat)]
+  return [testCase "binarySearchResult" (formattedResult @?= expectedFormat)]
 
 getSingleLineSearchResultTests :: IO [Test]
 getSingleLineSearchResultTests = do
   xsearchPath <- getXsearchPath
   let testFilePath = xsearchPath ++ "/csharp/CsSearch/CsSearch/Searcher.cs"
-  let singleLineSearchResult = blankSearchResult { filePath=testFilePath
+  let testFileResult = newFileResult testFilePath Code
+  let singleLineSearchResult = blankSearchResult { fileResult=testFileResult
                                                  , lineNum=testFileLineNum
                                                  , matchStartIndex=testFileMatchStartIndex
                                                  , matchEndIndex=testFileMatchEndIndex
@@ -61,11 +66,12 @@ getMultiLineSearchResultTests :: IO [Test]
 getMultiLineSearchResultTests = do
   xsearchPath <- getXsearchPath
   let testFilePath = xsearchPath ++ "/csharp/CsSearch/CsSearch/Searcher.cs"
+  let testFileResult = newFileResult testFilePath Code
   let lb = [ BC.pack "namespace CsSearch\n"
            , BC.pack "{\n" ]
   let la = [ BC.pack "\t{\n"
            , BC.pack "\t\tprivate readonly FileTypes _fileTypes;\n" ]
-  let multiLineSearchResult = blankSearchResult { filePath=testFilePath
+  let multiLineSearchResult = blankSearchResult { fileResult=testFileResult
                                                 , lineNum=testFileLineNum
                                                 , matchStartIndex=testFileMatchStartIndex
                                                 , matchEndIndex=testFileMatchEndIndex
