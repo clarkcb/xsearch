@@ -23,7 +23,7 @@
         [cljfind.fileutil :only (get-parent-name path-str)]
         [cljfind.finder :only (find-files print-matching-dirs print-matching-files validate-settings)]
         [cljsearch.searchresult :only
-          (->SearchResult get-line-formatter search-result-to-string)]
+          (->SearchResult get-line-formatter get-search-result-formatter)]
         [cljsearch.searchsettings]
         ))
 
@@ -328,15 +328,12 @@
           [[] find-errs]))
       [[] validation-errs])))
 
-(defn print-search-result [^SearchResult r ^SearchSettings settings]
-  (log-msg (search-result-to-string r settings)))
-
 (defn print-search-results [results ^SearchSettings settings]
-  (if (> (count results) 0)
-    (let [hdr (format "\nSearch results (%d):" (count results))]
-      (log-msg hdr)
-      (doseq [r results] (print-search-result r settings)))
-    (log-msg "\nSearch results: 0")))
+  (if (empty? results)
+    (log-msg "\nSearch results: 0")
+    (let [format-search-result (get-search-result-formatter settings)]
+      (log-msg (format "\nSearch results (%d):" (count results)))
+      (doseq [r results] (log-msg (format-search-result r settings))))))
 
 (defn get-search-results-matching-files [results]
   (let [file-paths (map #(file-result-path (:file %)) results)

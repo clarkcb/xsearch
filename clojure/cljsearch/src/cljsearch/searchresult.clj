@@ -41,39 +41,7 @@
     (fn [^String line]
       line)))
 
-(defn multi-line-to-string ^String [^SearchResult r ^SearchSettings settings]
-  (let [format-file-result (get-file-result-formatter settings)
-        format-line (get-line-formatter settings)
-        line-num (:line-num r)
-        lines-before (map #(str/trim-newline %) (:lines-before r))
-        line (str/trim-newline (:line r))
-        lines-after (map #(str/trim-newline %) (:lines-after r))
-        maxline-num (+ line-num (count lines-after))
-        line-numpadding (count (str maxline-num))
-        lines-format (str "%1$s %2$" line-numpadding "d | %3$s\n")
-        lines-before-indexed (map-indexed vector lines-before)
-        lines-after-indexed (map-indexed vector lines-after)]
-    (str
-      (apply str (take 80 (repeat "="))) "\n"
-      (format-file-result (:file r)) ": " (:line-num r) ": [" (:matchstartindex r) ":" (:matchendindex r) "]\n"
-      (apply str (take 80 (repeat "-"))) "\n"
-      (apply str
-        (map #(format lines-format " " (+ (- line-num (count lines-before)) (first %))
-          (second %)) lines-before-indexed))
-      (format lines-format ">" line-num (format-line line))
-      (apply str
-        (map #(format lines-format " " (+ line-num (first %) 1) (second %))
-          lines-after-indexed)))))
-
-(defn rec-get-indices [^SearchSettings settings linestartindex lineendindex]
-  (if (< (- lineendindex linestartindex) (:max-line-length settings))
-    (let [lsi (if (> linestartindex 0) (- linestartindex 1) linestartindex)
-          lei (if (< (- lineendindex lsi) (:max-line-length settings)) (+ lineendindex 1) lineendindex)]
-      (rec-get-indices settings lsi lei))
-    { :linestartindex linestartindex
-      :lineendindex lineendindex }))
-
-(defn format-matching-line [^SearchResult r ^SearchSettings settings]
+(defn format-matching-line [^SearchResult r]
   (let [trimmed (str/trim (:line r))
         leading-whitespace-count (- (count (str/trimr (:line r))) (count trimmed))
         match-length (- (:matchendindex r) (:matchstartindex r))
@@ -82,19 +50,45 @@
         formatted (colorize-string trimmed adj-match-start-index adj-match-end-index)]
     formatted))
 
-(defn single-line-to-string ^String [^SearchResult r ^SearchSettings settings]
-  (let [format-file-result (get-file-result-formatter settings)]
-    (if (> (:line-num r) 0)
-      (str
-        (format-file-result (:file r)) ": " (:line-num r) ": [" (:matchstartindex r) ":"
-        (:matchendindex r) "]: " (format-matching-line r settings))
-      (str (file-result-path (:file r)) " matches at [" (:matchstartindex r) ":"
-        (:matchendindex r) "]"))))
+(defn get-multi-line-formatter [^SearchSettings settings]
+  (let [format-file-result (get-file-result-formatter settings)
+        format-line (get-line-formatter settings)]
+    (fn [^SearchResult r]
+      (let [line-num (:line-num r)
+            lines-before (map #(str/trim-newline %) (:lines-before r))
+            line (str/trim-newline (:line r))
+            lines-after (map #(str/trim-newline %) (:lines-after r))
+            maxline-num (+ line-num (count lines-after))
+            line-numpadding (count (str maxline-num))
+            lines-format (str "%1$s %2$" line-numpadding "d | %3$s\n")
+            lines-before-indexed (map-indexed vector lines-before)
+            lines-after-indexed (map-indexed vector lines-after)]
+        (str
+         (apply str (take 80 (repeat "="))) "\n"
+         (format-file-result (:file r)) ": " (:line-num r) ": [" (:matchstartindex r) ":" (:matchendindex r) "]\n"
+         (apply str (take 80 (repeat "-"))) "\n"
+         (apply str
+                (map #(format lines-format " " (+ (- line-num (count lines-before)) (first %))
+                       (second %)) lines-before-indexed))
+         (format lines-format ">" line-num (format-line line))
+         (apply str
+                (map #(format lines-format " " (+ line-num (first %) 1) (second %))
+                     lines-after-indexed)))))))
 
-(defn search-result-to-string ^String [^SearchResult r ^SearchSettings settings]
+(defn get-single-line-formatter [^SearchSettings settings]
+  (let [format-file-result (get-file-result-formatter settings)]
+    (fn [^SearchResult r]
+      (if (> (:line-num r) 0)
+        (str
+         (format-file-result (:file r)) ": " (:line-num r) ": [" (:matchstartindex r) ":"
+         (:matchendindex r) "]: " (format-matching-line r settings))
+        (str (file-result-path (:file r)) " matches at [" (:matchstartindex r) ":"
+             (:matchendindex r) "]")))))
+
+(defn get-search-result-formatter [^SearchSettings settings]
   (if
     (or
-      (not (empty? (:lines-before r)))
-      (not (empty? (:lines-after r))))
-    (multi-line-to-string r settings)
-    (single-line-to-string r settings)))
+     (> (:lines-before settings) 0)
+     (> (:lines-after settings) 0))
+    (get-multi-line-formatter settings)
+    (get-single-line-formatter settings)))
