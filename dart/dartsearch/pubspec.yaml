@@ -5,7 +5,7 @@ description: A sample command-line application.
 # repository: https://github.com/clarkcb/xsearch
 
 environment:
-  sdk: '>=2.19.0 <3.9.0'
+  sdk: '>=2.19.0 <3.10.0'
 
 dependencies:
   dartfind:

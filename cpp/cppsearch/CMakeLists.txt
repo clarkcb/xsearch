@@ -86,6 +86,7 @@ target_sources(${PROJECT_NAME}
         include/SearchTextResult.h src/SearchTextResult.cpp
         include/SearchFileResult.h src/SearchFileResult.cpp
         include/SearchResultFormatter.h src/SearchResultFormatter.cpp
+        include/SearchResultSorter.h src/SearchResultSorter.cpp
         include/Searcher.h src/Searcher.cpp)
 
 target_link_libraries(${PROJECT_NAME} cppfind ${Boost_LIBRARIES})
@@ -109,7 +110,7 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v3.8.1
+        GIT_TAG        v3.9.1
 )
 
 FetchContent_MakeAvailable(Catch2)
