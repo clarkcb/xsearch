@@ -1,11 +1,11 @@
 /*******************************************************************************
-SearchResultFormatter
+SearchResultSorter
 
-Class to provide formatting of search result instances
+Class to provide sorting of search result instances
 
 @author Cary Clark &lt;clarkcb@gmail.com&gt;
 @version $Rev$
-@copyright Cary Clark 2020
+@copyright Cary Clark 2025
 *******************************************************************************/
 
 package javasearch;
@@ -30,24 +30,24 @@ public class SearchResultSorter {
         var sortBy = settings.getSortBy() == null ? SortBy.FILEPATH : settings.getSortBy();
         if (settings.getSortDescending()) {
             return switch (sortBy) {
-                case FILENAME -> (SearchResult fr1, SearchResult fr2) -> fr2.compareByName(fr1, settings.getSortCaseInsensitive());
-                case FILESIZE -> (SearchResult fr1, SearchResult fr2) -> fr2.compareBySize(fr1, settings.getSortCaseInsensitive());
-                case FILETYPE -> (SearchResult fr1, SearchResult fr2) -> fr2.compareByType(fr1, settings.getSortCaseInsensitive());
-                case LASTMOD -> (SearchResult fr1, SearchResult fr2) -> fr2.compareByLastMod(fr1, settings.getSortCaseInsensitive());
-                default -> (SearchResult fr1, SearchResult fr2) -> fr2.compareByPath(fr1, settings.getSortCaseInsensitive());
+                case FILENAME -> (SearchResult sr1, SearchResult sr2) -> sr2.compareByName(sr1, settings.getSortCaseInsensitive());
+                case FILESIZE -> (SearchResult sr1, SearchResult sr2) -> sr2.compareBySize(sr1, settings.getSortCaseInsensitive());
+                case FILETYPE -> (SearchResult sr1, SearchResult sr2) -> sr2.compareByType(sr1, settings.getSortCaseInsensitive());
+                case LASTMOD -> (SearchResult sr1, SearchResult sr2) -> sr2.compareByLastMod(sr1, settings.getSortCaseInsensitive());
+                default -> (SearchResult sr1, SearchResult sr2) -> sr2.compareByPath(sr1, settings.getSortCaseInsensitive());
             };
         }
         return switch (sortBy) {
-            case FILENAME -> (SearchResult fr1, SearchResult fr2) -> fr1.compareByName(fr2, settings.getSortCaseInsensitive());
-            case FILESIZE -> (SearchResult fr1, SearchResult fr2) -> fr1.compareBySize(fr2, settings.getSortCaseInsensitive());
-            case FILETYPE -> (SearchResult fr1, SearchResult fr2) -> fr1.compareByType(fr2, settings.getSortCaseInsensitive());
-            case LASTMOD -> (SearchResult fr1, SearchResult fr2) -> fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive());
-            default -> (SearchResult fr1, SearchResult fr2) -> fr1.compareByPath(fr2, settings.getSortCaseInsensitive());
+            case FILENAME -> (SearchResult sr1, SearchResult sr2) -> sr1.compareByName(sr2, settings.getSortCaseInsensitive());
+            case FILESIZE -> (SearchResult sr1, SearchResult sr2) -> sr1.compareBySize(sr2, settings.getSortCaseInsensitive());
+            case FILETYPE -> (SearchResult sr1, SearchResult sr2) -> sr1.compareByType(sr2, settings.getSortCaseInsensitive());
+            case LASTMOD -> (SearchResult sr1, SearchResult sr2) -> sr1.compareByLastMod(sr2, settings.getSortCaseInsensitive());
+            default -> (SearchResult sr1, SearchResult sr2) -> sr1.compareByPath(sr2, settings.getSortCaseInsensitive());
         };
     }
 
     public final void sort(List<SearchResult> searchResults) {
-        if (searchResults.isEmpty()) {
+        if (searchResults.size() < 2) {
             return;
         }
         var searchResultComparator = getSearchResultComparator();
