@@ -24,7 +24,7 @@ FAILED_BUILDS=()
 ########################################
 
 usage () {
-    echo -e "\nUsage: clean.sh [-h|--help] {\"all\" | langcode}\n"
+    echo -e "\nUsage: clean.sh [-h|--help] [--lock] {\"all\" | lang [lang...]}\n"
     exit
 }
 
@@ -169,11 +169,18 @@ clean_dartsearch () {
         return
     fi
 
-    # pub cache repair is apparently the closest thing to clean for dart
     cd "$DARTSEARCH_PATH"
 
+    # pub cache repair is apparently the closest thing to clean for dart
+    # but unfortunately it's pretty slow
     log "dart pub cache repair"
     dart pub cache repair
+
+    if [ -n "$LOCKFILE" -a -f "pubspec.lock" ]
+    then
+        log "rm pubspec.lock"
+        rm -f pubspec.lock
+    fi
 
     cd -
 }
@@ -202,6 +209,12 @@ clean_exsearch () {
 
     log "mix clean"
     mix clean
+
+    if [ -n "$LOCKFILE" -a -f "mix.lock" ]
+    then
+        log "rm mix.lock"
+        rm -f mix.lock
+    fi
 
     cd -
 }
@@ -312,6 +325,12 @@ clean_hssearch () {
 
     clean_json_resources "$HSSEARCH_PATH/data"
 
+    if [ -n "$LOCKFILE" -a -f "stack.yaml.lock" ]
+    then
+        log "rm stack.yaml.lock"
+        rm -f stack.yaml.lock
+    fi
+
     cd -
 }
 
@@ -332,6 +351,7 @@ clean_javasearch () {
     else
         log_error "You need to install gradle"
         FAILED_BUILDS+=("javasearch")
+        cd -
         return
     fi
 
@@ -363,6 +383,12 @@ clean_jssearch () {
     npm run clean
 
     clean_json_resources "$JSSEARCH_PATH/data"
+
+    if [ -n "$LOCKFILE" -a -f "package-lock.json" ]
+    then
+        log "rm package-lock.json"
+        rm -f package-lock.json
+    fi
 
     cd -
 }
@@ -425,6 +451,19 @@ clean_mlsearch () {
     # TODO: probably want to delete the _build directory
 }
 
+clean_phpsearch () {
+    echo
+    hdr "clean_phpsearch"
+
+    clean_json_resources "$PHPSEARCH_PATH/resources"
+
+    if [ -n "$LOCKFILE" -a -f "$PHPSEARCH_PATH/composer.lock" ]
+    then
+        log "rm composer.lock"
+        rm -f "$PHPSEARCH_PATH/composer.lock"
+    fi
+}
+
 clean_plsearch () {
     echo
     hdr "clean_plsearch"
@@ -432,17 +471,11 @@ clean_plsearch () {
     clean_json_resources "$PLSEARCH_PATH/share"
 }
 
-clean_phpsearch () {
-    echo
-    hdr "clean_phpsearch"
-
-    clean_json_resources "$PHPSEARCH_PATH/resources"
-}
-
 clean_ps1search () {
     echo
     hdr "clean_ps1search"
     log "Nothing to do for powershell"
+    # TODO: do we want to uninstall?
 }
 
 clean_pysearch () {
@@ -459,6 +492,12 @@ clean_rbsearch () {
     clean_json_resources "$RBSEARCH_PATH/data"
 
     clean_test_resources "$RBSEARCH_PATH/test/fixtures"
+
+    if [ -n "$LOCKFILE" -a -f "$RBSEARCH_PATH/Gemfile.lock" ]
+    then
+        log "rm Gemfile.lock"
+        rm -f "$RBSEARCH_PATH/Gemfile.lock"
+    fi
 }
 
 clean_rssearch () {
@@ -477,6 +516,12 @@ clean_rssearch () {
 
     echo "cargo clean"
     cargo clean
+
+    if [ -n "$LOCKFILE" -a -f "Cargo.lock" ]
+    then
+        log "rm Cargo.lock"
+        rm -f Cargo.lock
+    fi
 
     cd -
 }
@@ -546,11 +591,19 @@ clean_tssearch () {
 
     clean_json_resources "$TSSEARCH_PATH/data"
 
+    if [ -n "$LOCKFILE" -a -f "package-lock.json" ]
+    then
+        log "rm package-lock.json"
+        rm -f package-lock.json
+    fi
+
     cd -
 }
 
 clean_linux () {
     hdr "clean_linux"
+
+    # clean_bashsearch
 
     # clean_csearch
 
@@ -562,9 +615,13 @@ clean_linux () {
 
     # clean_dartsearch
 
+    clean_exsearch
+
     clean_fssearch
 
     clean_gosearch
+
+    # clean_groovysearch
 
     # clean_hssearch
 
@@ -598,6 +655,8 @@ clean_linux () {
 clean_all () {
     hdr "clean_all"
 
+    # clean_bashsearch
+
     # clean_csearch
 
     clean_cljsearch
@@ -607,6 +666,8 @@ clean_all () {
     clean_cssearch
 
     clean_dartsearch
+
+    clean_exsearch
 
     clean_fssearch
 
@@ -663,8 +724,9 @@ log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
 
 log "args: $*"
 
-HELP=
 CLEAN_ALL=
+HELP=
+LOCKFILE=
 TARGET_LANGS=()
 
 if [ $# == 0 ]
@@ -675,11 +737,14 @@ fi
 while [ -n "$1" ]
 do
     case "$1" in
+        --all | all)
+            CLEAN_ALL=yes
+            ;;
         -h | --help)
             HELP=yes
             ;;
-        --all | all)
-            CLEAN_ALL=yes
+        --lock)
+            LOCKFILE=yes
             ;;
         *)
             TARGET_LANGS+=($1)
@@ -689,8 +754,9 @@ do
 done
 
 # log the settings
-log "HELP: $HELP"
 log "CLEAN_ALL: $CLEAN_ALL"
+log "HELP: $HELP"
+log "LOCKFILE: $LOCKFILE"
 if [ ${#TARGET_LANGS[@]} -gt 0 ]
 then
     log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
