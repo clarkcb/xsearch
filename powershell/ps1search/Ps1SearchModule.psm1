@@ -162,16 +162,14 @@ class SearchSettings : FindSettings {
 ########################################
 # SearchOptions
 ########################################
-class SearchOption {
-    [string]$ShortArg
-    [string]$LongArg
-    [string]$Desc
+class SearchOption : Option {
     [string]$SortArg
 
-    SearchOption([string]$ShortArg, [string]$LongArg, [string]$Desc) {
+    SearchOption([string]$ShortArg, [string]$LongArg, [string]$Desc, [ArgTokenType]$ArgType) {
         $this.ShortArg = $ShortArg
         $this.LongArg = $LongArg
         $this.Desc = $Desc
+        $this.ArgType = $ArgType
         $this.SortArg = $this.GetSortArg()
     }
 
@@ -184,9 +182,9 @@ class SearchOption {
 }
 
 class SearchOptions {
-    [SearchOption[]]$Options = @()
+    [SearchOption[]]$SearchOptions = @()
+    [ArgTokenizer]$ArgTokenizer
     # instantiate this way to get case sensitivity of keys
-    $LongArgMap = [system.collections.hashtable]::new()
     $BoolActionMap = @{
         "allmatches" = {
             param([bool]$b, [SearchSettings]$settings)
@@ -414,6 +412,10 @@ class SearchOptions {
             param([string]$s, [SearchSettings]$settings)
             $settings.SearchPatterns += [regex]$s
         }
+        "settings-file" = {
+            param([string]$s, [SearchSettings]$settings)
+            $this.UpdateSettingsFromFilePath($settings, $s)
+        }
         "sort-by" = {
             param([string]$s, [SearchSettings]$settings)
             $settings.SortBy = GetSortByFromName($s)
@@ -451,9 +453,8 @@ class SearchOptions {
     }
 
     SearchOptions() {
-        $this.Options = $this.LoadOptionsFromJson()
-        $this.LongArgMap["path"] = "path"
-
+        $this.SearchOptions = $this.LoadOptionsFromJson()
+        $this.ArgTokenizer = [ArgTokenizer]::new($this.SearchOptions)
     }
     
     [SearchOption[]]LoadOptionsFromJson() {
@@ -465,121 +466,80 @@ class SearchOptions {
             $ShortArg = ''
             $LongArg = $optionObj['long']
             $Desc = $optionObj['desc']
-            $this.LongArgMap[$LongArg] = $LongArg
+            $ArgType = [ArgTokenType]::Unknown
+            if ($this.BoolActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Bool
+            } elseif ($this.StringActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Str
+            } elseif ($this.IntActionMap.ContainsKey($LongArg)) {
+                $ArgType = [ArgTokenType]::Int
+            }
             if ($optionObj.ContainsKey('short')) {
                 $ShortArg = $optionObj['short']
-                $this.LongArgMap[$ShortArg] = $LongArg
             }
-            [SearchOption]::new($ShortArg, $LongArg, $Desc)
+            [SearchOption]::new($ShortArg, $LongArg, $Desc, $ArgType)
         })
-        return $opts | Sort-Object -Property SortArg
+        return $opts
+    }
+
+    [void]UpdateSettingsFromArgTokens([SearchSettings]$settings, [ArgToken[]]$argTokens) {
+        foreach ($argToken in $argTokens) {
+            if ($argToken.Type -eq [ArgTokenType]::Bool) {
+                if ($this.BoolActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [bool]) {
+                        $this.BoolActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
+                    }
+                } else {
+                    throw "Invalid option: " + $argToken.Name
+                }
+            } elseif ($argToken.Type -eq [ArgTokenType]::Str) {
+                if ($this.StringActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [string]) {
+                        $this.StringActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
+                    }
+                } else {
+                    throw "Invalid option: " + $argToken.Name
+                }
+            } elseif ($argToken.Type -eq [ArgTokenType]::Int) {
+                if ($this.IntActionMap.ContainsKey($argToken.Name)) {
+                    if ($argToken.Value -is [int] -or $argToken.Value -is [int64]) {
+                        $this.IntActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                    } else {
+                        throw "Invalid value for option: " + $argToken.Name
+                    }
+                } else {
+                    throw "Invalid option: " + $argToken.Name
+                }
+            } else {
+                throw "Invalid option: " + $argToken.Name
+            }
+        }
     }
 
     [void]UpdateSettingsFromJson([SearchSettings]$settings, [string]$json) {
-        $settingsHash = @{}
-        try {
-            $settingsHash = $json | ConvertFrom-Json -AsHashtable
-        } catch {
-            throw "Unable to parse JSON"
-        }
-        # keys are sorted so that output is consistent across all versions
-        $keys = $settingsHash.Keys | Sort-Object
-        $invalidKeys = @($keys | Where-Object { -not $this.LongArgMap.ContainsKey($_) })
-        if ($invalidKeys.Count -gt 0) {
-            throw "Invalid option: " + $invalidKeys[0]
-        }
-        foreach ($key in $keys) {
-            $value = $settingsHash[$key]
-            if ($this.BoolActionMap.ContainsKey($key)) {
-                if ($value -is [bool]) {
-                    $this.BoolActionMap[$key].Invoke($value, $settings)
-                } else {
-                    throw "Invalid value for option: " + $key
-                }
-            } elseif ($this.StringActionMap.ContainsKey($key)) {
-                if ($value -is [string]) {
-                    $this.StringActionMap[$key].Invoke($value, $settings)
-                } elseif ($value -is [object[]]) {
-                    foreach ($v in $value) {
-                        $this.StringActionMap[$key].Invoke($v, $settings)
-                    }
-                } else {
-                    throw "Invalid value for option: $key"
-                }
-            } elseif ($this.IntActionMap.ContainsKey($key)) {
-                if ($value -is [int] -or $value -is [int64]) {
-                    $this.IntActionMap[$key].Invoke($value, $settings)
-                } else {
-                    throw "Invalid value for option: " + $key
-                }
-            } else {
-                # should never reach here
-                throw "Invalid option: $key"
-            }
-        }
+        $argTokens = $this.ArgTokenizer.TokenizeJson($json)
+        $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
     [void]UpdateSettingsFromFilePath([SearchSettings]$settings, [string]$filePath) {
-        $expandedPath = ExpandPath($filePath)
-        if (-not (Test-Path -Path $expandedPath)) {
-            throw "Settings file not found: $filePath"
-        }
-        if (-not $filePath.EndsWith(".json")) {
-            throw "Invalid settings file (must be JSON): $filePath"
-        }
+        $argTokens = $this.ArgTokenizer.TokenizeFilePath($filePath)
+        $this.UpdateSettingsFromArgTokens($settings, $argTokens)
+    }
 
-        $json = Get-Content -Path $expandedPath -Raw
-        try {
-            $this.UpdateSettingsFromJson($settings, $json)
-        }
-        catch {
-            if ($_.Exception.Message -eq 'Unable to parse JSON') {
-                throw "Unable to parse JSON in settings file: $filePath"
-            }
-            throw $_
-        }
+    [void]UpdateSettingsFromArgs([SearchSettings]$settings, [string[]]$argList) {
+        $argTokens = $this.ArgTokenizer.TokenizeArgs($argList)
+        $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
     [SearchSettings]SettingsFromArgs([string[]]$argList) {
         $settings = [SearchSettings]::new()
         # default PrintResults to true since we're using via CLI
         $settings.PrintResults = $true
-        $idx = 0
-        while ($idx -lt $argList.Count) {
-            if ($settings.PrintUsage -or $settings.PrintVersion) {
-                return $settings;
-            }
-            $arg = $argList[$idx]
-            if ($arg.StartsWith('-')) {
-                while ($arg.StartsWith('-')) {
-                    $arg = $arg.Substring(1)
-                }
-                if (-not $this.LongArgMap.ContainsKey($arg)) {
-                    throw "Invalid option: $arg"
-                }
-                $longArg = $this.LongArgMap[$arg]
-                if ($this.BoolActionMap.ContainsKey($longArg)) {
-                    $this.BoolActionMap[$longArg].Invoke($true, $settings)
-                } else {
-                    $idx++
-                    if ($idx -ge $argList.Count) {
-                        throw "Missing value for $arg"
-                    }
-                    if ($this.StringActionMap.ContainsKey($longArg)) {
-                        $this.StringActionMap[$longArg].Invoke($argList[$idx], $settings)
-                    } elseif ($this.IntActionMap.ContainsKey($longArg)) {
-                        $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
-                    } elseif ($longArg -eq 'settings-file') {
-                        $this.UpdateSettingsFromFilePath($settings, $argList[$idx])
-                    } else {
-                        throw "Invalid option: $arg"
-                    }
-                }
-            } else {
-                $settings.Paths += $arg
-            }
-            $idx++
-        }
+        $this.UpdateSettingsFromArgs($settings, $argList)
         return $settings
     }
 
@@ -588,7 +548,9 @@ class SearchOptions {
         $optStrs = @()
         $optMap = @{}
         $longest = 0
-        foreach ($option in $this.Options) {
+        $options = $this.SearchOptions | Sort-Object -Property SortArg
+
+        foreach ($option in $options) {
             $optStr = ''
             if ($option.ShortArg) {
                 $optStr = "-$($option.ShortArg),"
