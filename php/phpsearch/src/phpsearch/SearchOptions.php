@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace phpsearch;
 
+use phpfind\ArgTokenizer;
+use phpfind\ArgTokenType;
 use phpfind\FileUtil;
+use phpfind\FindException;
 
 /**
  * Class SearchOptions
@@ -28,9 +31,9 @@ class SearchOptions
      */
     private readonly array $int_action_map;
     /**
-     * @var array<string, string> $long_arg_map
+     * @var ArgTokenizer $arg_tokenizer
      */
-    private array $long_arg_map;
+    private ArgTokenizer $arg_tokenizer;
 
 
     /**
@@ -112,7 +115,7 @@ class SearchOptions
             'path' => fn (string $s, SearchSettings $ss) => $ss->paths[] = $s,
             'searchpattern' =>
                 fn (string $s, SearchSettings $ss) => $ss->add_patterns($s, $ss->search_patterns),
-            'settings-file' => fn (string $s, SearchSettings $ss) => $this->update_settings_from_file($s, $ss),
+            'settings-file' => fn (string $s, SearchSettings $ss) => $this->update_settings_from_file($ss, $s),
             'sort-by' => fn (string $s, SearchSettings $ss) => $ss->set_sort_by($s)
         ];
 
@@ -126,8 +129,8 @@ class SearchOptions
             'minsize' => fn (int $i, SearchSettings $ss) => $ss->min_size = $i
         ];
 
-        $this->long_arg_map = ['path' => 'path'];
         $this->set_options_from_json();
+        $this->arg_tokenizer = new ArgTokenizer($this->options);
     }
 
     /**
@@ -149,14 +152,21 @@ class SearchOptions
                     foreach ((array)$search_options as $so) {
                         $so = (array)$so;
                         $short = '';
-                        $long = (string)$so['long'];
-                        $desc = (string)$so['desc'];
-                        $this->long_arg_map[$long] = $long;
                         if (array_key_exists('short', $so)) {
                             $short = (string)$so['short'];
-                            $this->long_arg_map[$short] = $long;
                         }
-                        $this->options[] = new SearchOption($short, $long, $desc);
+                        $long = (string)$so['long'];
+                        $desc = (string)$so['desc'];
+                        if (array_key_exists($long, $this->bool_action_map)) {
+                            $arg_type = ArgTokenType::Bool;
+                        } elseif (array_key_exists($long, $this->str_action_map)) {
+                            $arg_type = ArgTokenType::Str;
+                        } elseif (array_key_exists($long, $this->int_action_map)) {
+                            $arg_type = ArgTokenType::Int;
+                        } else {
+                            throw new SearchException('Invalid option: ' . $long);
+                        }
+                        $this->options[] = new SearchOption($short, $long, $desc, $arg_type);
                     }
                     usort($this->options, array('phpsearch\SearchOptions', 'cmp_search_options'));
                 }
@@ -170,88 +180,100 @@ class SearchOptions
     }
 
     /**
-     * @param string $json
      * @param SearchSettings $settings
+     * @param array $arg_tokens
      * @return void
-     * @throws SearchException|\JsonException
+     * @throws SearchException
      */
-    public function update_settings_from_json(string $json, SearchSettings $settings): void
+    private function update_settings_from_arg_tokens(SearchSettings $settings, array $arg_tokens): void
     {
-        if (trim($json) === '') {
-            return;
-        }
-
-        try {
-            $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
-            $keys = array_keys($json_obj);
-            # keys are sorted so that output is consistent across all versions
-            sort($keys);
-            $is_invalid_key = fn (string $k) => !array_key_exists($k, $this->long_arg_map);
-            $invalid_keys = array_filter($keys, $is_invalid_key);
-            if ($invalid_keys) {
-                throw new SearchException("Invalid option: " . array_values($invalid_keys)[0]);
-            }
-            foreach ($keys as $k) {
-                if (array_key_exists($k, $this->bool_action_map)) {
-                    if (gettype($json_obj[$k]) == 'boolean') {
-                        $this->bool_action_map[$k]($json_obj[$k], $settings);
-                    } else {
-                        throw new SearchException("Invalid value for option: $k");
-                    }
-                } elseif (array_key_exists($k, $this->str_action_map)) {
-                    if (gettype($json_obj[$k]) == 'string') {
-                        $this->str_action_map[$k]($json_obj[$k], $settings);
-                    } elseif (gettype($json_obj[$k]) == 'array') {
-                        foreach ($json_obj[$k] as $s) {
-                            $this->str_action_map[$k]($s, $settings);
-                        }
-                    } else {
-                        throw new SearchException("Invalid setting type: $k");
-                    }
-                } elseif (array_key_exists($k, $this->int_action_map)) {
-                    if (gettype($json_obj[$k]) == 'integer') {
-                        $this->int_action_map[$k]($json_obj[$k], $settings);
-                    } else {
-                        throw new SearchException("Invalid value for option: $k");
+        foreach ($arg_tokens as $arg_token) {
+            if ($arg_token->type == ArgTokenType::Bool) {
+                if (is_bool($arg_token->value)) {
+                    $this->bool_action_map[$arg_token->name]($arg_token->value, $settings);
+                    if (in_array($arg_token->name, array("help", "version"))) {
+                        return;
                     }
                 } else {
-                    # Should never reach here
-                    throw new SearchException("Invalid option: $k");
+                    throw new SearchException("Invalid value for option: $arg_token->name");
                 }
+            } elseif ($arg_token->type == ArgTokenType::Str) {
+                if (is_array($arg_token->value)) {
+                    foreach ($arg_token->value as $val) {
+                        if (is_string($val)) {
+                            $this->str_action_map[$arg_token->name]($val, $settings);
+                        } else {
+                            throw new SearchException("Invalid value for option: $arg_token->name");
+                        }
+                    }
+                } elseif (is_string($arg_token->value)) {
+                    $this->str_action_map[$arg_token->name]($arg_token->value, $settings);
+                } else {
+                    throw new SearchException("Invalid value for option: $arg_token->name");
+                }
+            } elseif ($arg_token->type == ArgTokenType::Int) {
+                if (is_int($arg_token->value)) {
+                    $this->int_action_map[$arg_token->name]($arg_token->value, $settings);
+                } else {
+                    throw new SearchException("Invalid value for option: $arg_token->name");
+                }
+            } else {
+                throw new SearchException("Invalid option: $arg_token->name");
             }
-        } catch (\JsonException $e) {
-            throw $e;
         }
     }
 
     /**
-     * @param string $file_path
      * @param SearchSettings $settings
+     * @param string $json
      * @return void
      * @throws SearchException
      */
-    private function update_settings_from_file(string $file_path, SearchSettings $settings): void
+    public function update_settings_from_json(SearchSettings $settings, string $json): void
     {
-        $expanded_path = FileUtil::expand_path($file_path);
-        if (!file_exists($expanded_path)) {
-            throw new SearchException("Settings file not found: $file_path");
-        }
-        if (!str_ends_with($expanded_path, '.json')) {
-            throw new SearchException("Invalid settings file (must be JSON): $file_path");
-        }
         try {
-            $json = file_get_contents($expanded_path);
-            if ($json) {
-                $this->update_settings_from_json($json, $settings);
-            }
-        } catch (\JsonException $e) {
-            throw new SearchException("Unable to parse JSON in settings file: $file_path");
+            $arg_tokens = $this->arg_tokenizer->tokenize_json($json);
+            $this->update_settings_from_arg_tokens($settings, $arg_tokens);
+        } catch (FindException $e) {
+            throw new SearchException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param SearchSettings $settings
+     * @param string $file_path
+     * @return void
+     * @throws SearchException
+     */
+    private function update_settings_from_file(SearchSettings $settings, string $file_path): void
+    {
+        try {
+            $arg_tokens = $this->arg_tokenizer->tokenize_file($file_path);
+            $this->update_settings_from_arg_tokens($settings, $arg_tokens);
+        } catch (FindException $e) {
+            throw new SearchException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param SearchSettings $settings
+     * @param string[] $args
+     * @return void
+     * @throws SearchException
+     */
+    public function update_settings_from_args(SearchSettings $settings, array $args): void
+    {
+        try {
+            $arg_tokens = $this->arg_tokenizer->tokenize_args($args);
+            $this->update_settings_from_arg_tokens($settings, $arg_tokens);
+        } catch (FindException $e) {
+            throw new SearchException($e->getMessage());
         }
     }
 
     /**
      * @param string[] $args
-     * @return SearchSettings $settings
+     * @return SearchSettings
      * @throws SearchException
      */
     public function settings_from_args(array $args): SearchSettings
@@ -259,40 +281,7 @@ class SearchOptions
         $settings = new SearchSettings();
         // default print_results to true since running as cli
         $settings->print_results = true;
-        while (count($args) > 0) {
-            $arg = array_shift($args);
-            if ($arg[0] == '-') {
-                while ($arg[0] == '-') {
-                    $arg = substr($arg, 1);
-                }
-                if (!array_key_exists($arg, $this->long_arg_map)) {
-                    throw new SearchException("Invalid option: $arg");
-                }
-                $long_arg = $this->long_arg_map[$arg];
-                if (array_key_exists($long_arg, $this->bool_action_map)) {
-                    $this->bool_action_map[$long_arg](true, $settings);
-                    if (in_array($long_arg, array("help", "version"))) {
-                        break;
-                    }
-                } elseif (array_key_exists($long_arg, $this->str_action_map)
-                          || array_key_exists($long_arg, $this->int_action_map)) {
-                    if (count($args) > 0) {
-                        $val = array_shift($args);
-                        if (array_key_exists($long_arg, $this->str_action_map)) {
-                            $this->str_action_map[$long_arg]($val, $settings);
-                        } elseif (array_key_exists($long_arg, $this->int_action_map)) {
-                            $this->int_action_map[$long_arg](intval($val), $settings);
-                        }
-                    } else {
-                        throw new SearchException("Missing value for $arg");
-                    }
-                } else {
-                    throw new SearchException("Invalid option: $arg");
-                }
-            } else {
-                $settings->paths[] = $arg;
-            }
-        }
+        $this->update_settings_from_args($settings, $args);
         return $settings;
     }
 
