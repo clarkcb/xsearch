@@ -4,14 +4,11 @@
  * defines the set of search options and provides functionality to define search settings from them
  */
 
-const {FileUtil} = require('jsfind');
+const {ArgTokenType, ArgTokenizer, FileUtil, FindError, nameToSortBy} = require('jsfind');
 const config = require('./config');
 const {SearchError} = require('./searcherror');
 const {SearchOption} = require('./searchoption');
 const {SearchSettings} = require('./searchsettings');
-const {nameToSortBy} = require("../../../../xfind/javascript/jsfind/src/sortby");
-const fs = require("fs");
-const {FindError} = require("../../../../xfind/javascript/jsfind/src/finderror");
 
 class SearchOptions {
     'use strict'
@@ -160,140 +157,103 @@ class SearchOptions {
             if (Object.prototype.hasOwnProperty.call(obj, 'searchoptions') && Array.isArray(obj.searchoptions)) {
                 obj.searchoptions.forEach(so => {
                     let longArg = so.long;
-                    let shortArg = '';
-                    if (Object.prototype.hasOwnProperty.call(so, 'short'))
-                        shortArg = so.short;
-                    let desc = so.desc;
                     this.argNameMap[longArg] = longArg;
-                    if (shortArg) this.argNameMap[shortArg] = longArg;
-                    const option = new SearchOption(shortArg, longArg, desc);
-                    this.options.push(option);
+                    let shortArg = '';
+                    if (Object.prototype.hasOwnProperty.call(so, 'short')) {
+                        shortArg = so.short;
+                        this.argNameMap[shortArg] = longArg;
+                    }
+                    let desc = so.desc;
+                    let argType = ArgTokenType.Unknown;
+                    if (this.boolActionMap[longArg]) {
+                        argType = ArgTokenType.Bool;
+                    } else if (this.stringActionMap[longArg]) {
+                        argType = ArgTokenType.Str;
+                    } else if (this.intActionMap[longArg]) {
+                        argType = ArgTokenType.Int;
+                    }
+                    this.options.push(new SearchOption(shortArg, longArg, desc, argType));
                 });
             } else throw new SearchError(`Invalid searchoptions file: ${config.SEARCH_OPTIONS_JSON_PATH}`);
-            // this.options.sort(this.optCmp);
+            this.argTokenizer = new ArgTokenizer(this.options);
         })();
     }
 
-    // optCmp(o1, o2) {
-    //     const a = o1.sortArg;
-    //     const b = o2.sortArg;
-    //     return a.localeCompare(b);
-    // }
-
-    updateSettingsFromJson(json, settings) {
+    updateSettingsFromArgTokens(settings, argTokens) {
         let err = null;
-        const obj = JSON.parse(json);
-        // keys are sorted so that output is consistent across all versions
-        const keys = Object.keys(obj).sort();
-        const invalidKeys = keys.filter(k => !Object.prototype.hasOwnProperty.call(this.argNameMap, k));
-        if (invalidKeys.length > 0) {
-            return new SearchError(`Invalid option: ${invalidKeys[0]}`);
-        }
-        for (const k of keys) {
+        for (const argToken of argTokens) {
             if (err) break;
-            if (obj[k] === undefined || obj[k] === null) {
-                err = new SearchError(`Missing value for option ${k}`);
-            }
-            let longArg = this.argNameMap[k];
-            if (this.boolActionMap[longArg]) {
-                if (typeof obj[k] === 'boolean') {
-                    this.boolActionMap[longArg](obj[k], settings);
+            if (argToken.type === ArgTokenType.Bool) {
+                if (typeof argToken.value === 'boolean') {
+                    this.boolActionMap[argToken.name](argToken.value, settings);
                 } else {
-                    err = new SearchError(`Invalid value for option: ${k}`);
+                    err = new FindError(`Invalid value for option: ${argToken}`);
                 }
-            } else if (this.stringActionMap[longArg]) {
-                if (typeof obj[k] === 'string') {
-                    this.stringActionMap[longArg](obj[k], settings);
-                } else if (typeof obj[k] === 'object' && Array.isArray(obj[k])) {
-                    obj[k].forEach(s => {
+            } else if (argToken.type === ArgTokenType.Str) {
+                if (argToken.name === 'settings-file') {
+                    err = this.updateSettingsFromFile(settings, argToken.value);
+                } else if (typeof argToken.value === 'string') {
+                    this.stringActionMap[argToken.name](argToken.value, settings);
+                } else if (typeof argToken.value === 'object' && Array.isArray(argToken.value)) {
+                    argToken.value.forEach(s => {
                         if (typeof s === 'string') {
-                            this.stringActionMap[longArg](s, settings);
+                            this.stringActionMap[argToken.name](s, settings);
                         } else {
-                            err = new SearchError(`Invalid value for option: ${k}`);
+                            err = new FindError(`Invalid value for option: ${argToken}`);
                         }
                     });
                 } else {
-                    err = new SearchError(`Invalid value for option: ${k}`);
+                    err = new FindError(`Invalid value for option: ${argToken}`);
                 }
-            } else if (this.intActionMap[longArg]) {
-                if (typeof obj[k] === 'number') {
-                    this.intActionMap[longArg](obj[k], settings);
+            } else if (argToken.type === ArgTokenType.Int) {
+                if (typeof argToken.value === 'number') {
+                    this.intActionMap[argToken.name](argToken.value, settings);
                 } else {
-                    err = new SearchError(`Invalid value for option: ${k}`);
+                    err = new FindError(`Invalid value for option: ${argToken}`);
                 }
             } else {
-                // should never get here
-                err = new SearchError(`Invalid option: ${k}`);
+                err = new FindError(`Invalid option: ${argToken}`);
             }
         }
         return err;
     }
 
-    updateSettingsFromFile(filePath, settings) {
-        const fs = require('fs');
-        const expandedPath = FileUtil.expandPath(filePath);
-        if (fs.existsSync(expandedPath)) {
-            if (expandedPath.endsWith('.json')) {
-                let json = FileUtil.getFileContentsSync(expandedPath, 'utf-8');
-                try {
-                    return this.updateSettingsFromJson(json, settings);
-                } catch (e) {
-                    return new SearchError(`Unable to parse JSON in settings file: ${filePath}`);
-                }
-            }
-            return new SearchError(`Invalid settings file (must be JSON): ${filePath}`);
-        } else {
-            return new SearchError(`Settings file not found: ${filePath}`);
+    updateSettingsFromJson(settings, json) {
+        let { err, argTokens } = this.argTokenizer.tokenizeJson(json);
+        if (!err) {
+            err = this.updateSettingsFromArgTokens(settings, argTokens);
         }
+        return err;
+    }
+
+    updateSettingsFromFile(settings, filePath) {
+        let { err, argTokens } = this.argTokenizer.tokenizeFile(filePath);
+        if (!err) {
+            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        }
+        return err;
+    }
+
+    updateSettingsFromArgs(settings, args) {
+        let { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
+        if (!err) {
+            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        }
+        return err;
     }
 
     settingsFromArgs(args, cb) {
-        let err = null;
         let settings = new SearchSettings();
-        // default printResults to true since running as cli
+        // default printFiles to true since running as cli
         settings.printResults = true;
-
-        while(args && !err) {
-            let arg = args.shift();
-            if (!arg) {
-                break;
-            }
-            if (arg.charAt(0) === '-') {
-                while (arg && arg.charAt(0) === '-') {
-                    arg = arg.substring(1);
-                }
-                let longArg = this.argNameMap[arg];
-                if (this.boolActionMap[longArg]) {
-                    this.boolActionMap[longArg](true, settings);
-                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg] || longArg === 'settings-file') {
-                    if (args.length > 0) {
-                        if (this.stringActionMap[longArg]) {
-                            err = this.stringActionMap[longArg](args.shift(), settings);
-                        } else if (this.intActionMap[longArg]) {
-                            err = this.intActionMap[longArg](parseInt(args.shift(), 10), settings);
-                        } else {
-                            err = this.updateSettingsFromFile(args.shift(), settings);
-                        }
-                    } else {
-                        err = new Error(`Missing argument for option ${arg}`);
-                    }
-                } else {
-                    err = new Error(`Invalid option: ${arg}`);
-                }
-            } else {
-                settings.paths.push(arg);
-            }
-        }
+        let err = this.updateSettingsFromArgs(settings, args);
         cb(err, settings);
     }
 
-    usage() {
-        this.usageWithCode(0);
-    }
-
-    usageWithCode(exitCode) {
-        console.log(this.getUsageString());
-        process.exit(exitCode);
+    optCmp(o1, o2) {
+        const a = o1.sortArg;
+        const b = o2.sortArg;
+        return a.localeCompare(b);
     }
 
     getUsageString() {
@@ -302,6 +262,7 @@ class SearchOptions {
         let optStrings = [];
         let optDescs = [];
         let longest = 0;
+        this.options.sort(this.optCmp);
         this.options.forEach(opt => {
             let optString = ' ';
             if (opt.shortArg)
@@ -319,6 +280,15 @@ class SearchOptions {
             usage += os + '  ' + optDescs[i] + '\n';
         }
         return usage;
+    }
+
+    usageWithCode(exitCode) {
+        console.log(this.getUsageString());
+        process.exit(exitCode);
+    }
+
+    usage() {
+        this.usageWithCode(0);
     }
 }
 

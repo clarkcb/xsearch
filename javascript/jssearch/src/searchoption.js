@@ -7,10 +7,11 @@
 class SearchOption {
     'use strict'
 
-    constructor(shortArg, longArg, desc) {
+    constructor(shortArg, longArg, desc, argType) {
         this.shortArg = shortArg;
         this.longArg = longArg;
         this.desc = desc;
+        this.argType = argType;
 
         this.sortArg = (() => {
             if (this.shortArg)
