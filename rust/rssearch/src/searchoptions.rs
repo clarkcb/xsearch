@@ -1,10 +1,8 @@
 use core::slice::Iter;
-use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::{fs, io};
-
+use rsfind::argtokenizer::{ArgOption, ArgToken, ArgTokenType, ArgTokenizer};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use std::collections::HashMap;
+use std::fs;
 
 use crate::common::log;
 use crate::config::{Config, CONFIG_FILE_PATH};
@@ -12,14 +10,21 @@ use crate::searcherror::SearchError;
 use crate::searchsettings::SearchSettings;
 
 use rsfind::filetypes::FileTypes;
-use rsfind::fileutil::FileUtil;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct SearchOption {
+pub struct JsonSearchOption {
     long: String,
     short: Option<String>,
     desc: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct JsonSearchOptions {
+    pub searchoptions: Vec<JsonSearchOption>,
+}
+
+// Alias SearchOption to ArgOption for ArgTokenizer
+type SearchOption = ArgOption;
 
 type BoolAction = Box<dyn Fn(bool, &mut SearchSettings) -> Result<(), SearchError>>;
 type StringAction = Box<dyn Fn(&str, &mut SearchSettings) -> Result<(), SearchError>>;
@@ -33,12 +38,7 @@ pub struct SearchOptions {
     pub string_action_map: HashMap<String, StringAction>,
     pub int_action_map: HashMap<String, IntAction>,
     pub long_action_map: HashMap<String, LongAction>,
-    pub long_arg_map: HashMap<String, String>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct JsonSearchOptions {
-    pub searchoptions: Vec<SearchOption>,
+    pub arg_tokenizer: ArgTokenizer,
 }
 
 impl SearchOptions {
@@ -52,14 +52,25 @@ impl SearchOptions {
             Ok(deserialized) => deserialized,
             Err(error) => return Err(SearchError::new(&error.to_string())),
         };
+        let bool_action_map: HashMap<String, BoolAction> = get_bool_action_map();
+        let string_action_map: HashMap<String, StringAction> = get_string_action_map();
+        let int_action_map: HashMap<String, IntAction> = get_int_action_map();
+        let long_action_map: HashMap<String, LongAction> = get_long_action_map();
+        let search_options =
+            json_options_to_search_options(&jso.searchoptions,
+                                           &bool_action_map,
+                                           &string_action_map,
+                                           &int_action_map,
+                                           &long_action_map);
+        let arg_tokenizer = ArgTokenizer::new(&search_options);
         Ok(SearchOptions {
-            search_options: jso.searchoptions.clone(),
+            search_options,
             version: config.version.clone(),
-            bool_action_map: get_bool_action_map(),
-            string_action_map: get_string_action_map(),
-            int_action_map: get_int_action_map(),
-            long_action_map: get_long_action_map(),
-            long_arg_map: get_long_arg_map(&jso.searchoptions),
+            bool_action_map,
+            string_action_map,
+            int_action_map,
+            long_action_map,
+            arg_tokenizer,
         })
     }
 
@@ -139,97 +150,60 @@ impl SearchOptions {
         }
     }
 
-    fn settings_from_name_value(
+    fn update_settings_from_arg_token(
         &self,
-        name: &String,
-        value: &Value,
         settings: &mut SearchSettings,
+        arg_token: &ArgToken,
     ) -> Result<(), SearchError> {
-        if self.bool_action_map.contains_key(name) {
-            if value.is_boolean() {
-                let b = value.as_bool().unwrap();
-                if let Err(error) = self.apply_bool_arg(name, b, settings) {
+        match arg_token {
+            ArgToken::Bool { name, value } => {
+                if let Err(error) = self.apply_bool_arg(name.as_str(), value.clone(), settings) {
                     return Err(error);
                 }
-            } else {
-                return Err(SearchError::new(&format!("Invalid value for option: {}", name)));
-            }
-        } else if self.string_action_map.contains_key(name) {
-            if value.is_string() {
-                let s = value.as_str().unwrap();
-                if let Err(error) = self.apply_string_arg(name, s, settings) {
-                    return Err(error);
-                }
-            } else if value.is_array() {
-                let array = value.as_array().unwrap();
-                for v in array.iter() {
-                    if let Err(error) = self.settings_from_name_value(name, &v, settings) {
+            },
+            ArgToken::String { name, value } => {
+                if name == "settings-file" {
+                    if let Err(error) = self.update_settings_from_file(settings, value.as_str()) {
                         return Err(error);
                     }
-                }
-            } else {
-                return Err(SearchError::new(&format!("Invalid value for option: {}", name)));
-            }
-        } else if self.int_action_map.contains_key(name) {
-            if value.is_number() {
-                let l = value.as_i64().unwrap();
-                match i32::try_from(l) {
-                    Ok(i) => {
-                        if let Err(error) = self.apply_int_arg(name, i, settings) {
-                            return Err(error);
-                        }
-                    }
-                    Err(error) => return Err(SearchError::new(&error.to_string())),
-                }
-            } else {
-                return Err(SearchError::new(&format!("Invalid value for option: {}", name)));
-            }
-        } else if self.long_action_map.contains_key(name) {
-            if value.is_number() {
-                let l = value.as_u64().unwrap();
-                if let Err(error) = self.apply_long_arg(name, l, settings) {
+                } else if let Err(error) = self.apply_string_arg(name.as_str(), value.as_str(), settings) {
                     return Err(error);
                 }
-            } else {
-                return Err(SearchError::new(&format!("Invalid value for option: {}", name)));
-            }
-        } else {
-            return Err(SearchError::new(&format!("Invalid option: {}", name)));
+            },
+            ArgToken::Int { name, value } => {
+                if let Err(error) = self.apply_int_arg(name.as_str(), value.clone(), settings) {
+                    return Err(error);
+                }
+            },
+            ArgToken::Long { name, value } => {
+                if let Err(error) = self.apply_long_arg(name.as_str(), value.clone() as u64, settings) {
+                    return Err(error);
+                }
+            },
         }
         Ok(())
     }
 
-    fn settings_from_value(
+    fn update_settings_from_arg_tokens(
         &self,
-        value: &Value,
         settings: &mut SearchSettings,
+        mut arg_tokens: Iter<ArgToken>,
     ) -> Result<(), SearchError> {
-        match value {
-            Value::Object(obj) => {
-                let mut keys = obj.keys().into_iter().collect::<Vec<&String>>();
-                keys.sort_unstable();
-                for key in keys {
-                    if !self.long_arg_map.contains_key(key) {
-                        return Err(SearchError::new(
-                            format!("Invalid option: {}", key).as_str()
-                        ))
-                    }
+        match arg_tokens.next() {
+            Some(arg_token) => {
+                if let Err(error) = self.update_settings_from_arg_token(settings, arg_token) {
+                    return Err(error);
                 }
-                for (s, v) in obj.iter() {
-                    if let Err(error) = self.settings_from_name_value(&s, &v, settings) {
-                        return Err(error);
-                    }
-                }
+                self.update_settings_from_arg_tokens(settings, arg_tokens)
             },
-            _ => {}
+            None => Ok(()),
         }
-        Ok(())
     }
 
     pub fn update_settings_from_json(&self, settings: &mut SearchSettings, json_string: &str) -> Result<(), SearchError> {
-        match serde_json::from_str(json_string) {
-            Ok(value) => self.settings_from_value(&value, settings),
-            Err(_error) => Err(SearchError::new("Unable to parse JSON")),
+        match self.arg_tokenizer.tokenize_json(json_string) {
+            Ok(arg_tokens) => self.update_settings_from_arg_tokens(settings, arg_tokens.iter()),
+            Err(error) => Err(SearchError::new(&error.to_string())),
         }
     }
 
@@ -237,43 +211,14 @@ impl SearchOptions {
         let mut settings = SearchSettings::default();
         match self.update_settings_from_json(&mut settings, json_string) {
             Ok(()) => Ok(settings),
-            Err(error) => Err(SearchError::new(&error.to_string())),
+            Err(error) => Err(error),
         }
     }
 
     pub fn update_settings_from_file(&self, settings: &mut SearchSettings, json_file: &str) -> Result<(), SearchError> {
-        let expanded_path = FileUtil::expand_path_string(json_file);
-        let metadata = fs::metadata(&expanded_path);
-        if metadata.is_err() {
-            return match metadata.err().unwrap().kind() {
-                io::ErrorKind::NotFound => Err(SearchError::new(
-                    format!("Settings file not found: {}", &json_file).as_str())),
-                io::ErrorKind::PermissionDenied => Err(SearchError::new(
-                    format!("Settings file not readable: {}", &json_file).as_str())),
-                _ => {
-                    Err(SearchError::new(
-                        "An unknown error occurred trying to read settings file"))
-                }
-            }
-        }
-        if json_file.ends_with(".json") {
-            match fs::read_to_string(expanded_path) {
-                Ok(json) => match self.update_settings_from_json(settings, &json) {
-                    Ok(()) => Ok(()),
-                    Err(error) => {
-                        if error.description.eq("Unable to parse JSON") {
-                            Err(SearchError::new(
-                                format!("Unable to parse JSON in settings file: {}", &json_file).as_str()))
-                        } else {
-                            Err(error)
-                        }
-                    },
-                },
-                Err(error) => Err(SearchError::new(&error.to_string())),
-            }
-        } else {
-            Err(SearchError::new(
-                format!("Invalid settings file (must be JSON): {}", &json_file).as_str()))
+        match self.arg_tokenizer.tokenize_file(json_file) {
+            Ok(arg_tokens) => self.update_settings_from_arg_tokens(settings, arg_tokens.iter()),
+            Err(error) => Err(SearchError::new(&error.to_string())),
         }
     }
 
@@ -288,73 +233,12 @@ impl SearchOptions {
     pub fn update_settings_from_args(
         &self,
         settings: &mut SearchSettings,
-        mut args: Iter<String>,
+        args: Iter<String>,
     ) -> Result<(), SearchError> {
-
-        loop {
-            if settings.print_usage() || settings.print_version() {
-                return Ok(());
-            }
-            match args.next() {
-                // if it ends with rssearch, it's the executable arg, skip it
-                Some(next_arg) if next_arg.ends_with("rssearch") => {},
-                Some(next_arg) if next_arg.starts_with("-") => {
-                    let arg = next_arg.trim_start_matches('-');
-                    match self.long_arg_map.get(arg) {
-                        Some(long_arg) if self.bool_action_map.contains_key(long_arg) => {
-                            if let Err(error) = self.apply_bool_arg(long_arg, true, settings) {
-                                return Err(error);
-                            }
-                        },
-                        Some(long_arg) => match args.next() {
-                            Some(arg_val) => {
-                                if self.string_action_map.contains_key(long_arg) {
-                                    if let Err(error) = self.apply_string_arg(long_arg, &arg_val, settings) {
-                                        return Err(error);
-                                    }
-                                } else if self.int_action_map.contains_key(long_arg) {
-                                    let i = arg_val.parse::<i32>().unwrap_or(0);
-                                    if let Err(error) = self.apply_int_arg(long_arg, i, settings) {
-                                        return Err(error);
-                                    }
-                                } else if self.long_action_map.contains_key(long_arg) {
-                                    let l = arg_val.parse::<u64>().unwrap_or(0);
-                                    if let Err(error) = self.apply_long_arg(long_arg, l, settings) {
-                                        return Err(error);
-                                    }
-                                } else if long_arg == "settings-file" {
-                                    if let Err(error) = self.update_settings_from_file(settings, &arg_val) {
-                                        return Err(error);
-                                    }
-                                } else {
-                                    return Err(SearchError::new(
-                                        format!("Invalid option: {}", &next_arg).as_str(),
-                                    ))
-                                }
-                            },
-                            None => {
-                                return Err(SearchError::new(
-                                    format!("Missing value for option {}", &next_arg).as_str(),
-                                ));
-                            }
-                        },
-                        _ => {
-                            return Err(SearchError::new(
-                                format!("Invalid option: {}", &next_arg).as_str(),
-                            ))
-                        }
-                    }
-                }
-                Some(next_arg) => {
-                    if let Err(error) = self.apply_string_arg("path", &next_arg, settings) {
-                        return Err(error);
-                    }
-                },
-                None => break,
-            }
+        match self.arg_tokenizer.tokenize_args(args.into_iter()) {
+            Ok(arg_tokens) => self.update_settings_from_arg_tokens(settings, arg_tokens.iter()),
+            Err(error) => Err(SearchError::new(&error.to_string())),
         }
-
-        Ok(())
     }
 
     pub fn settings_from_args(
@@ -744,16 +628,29 @@ fn get_long_action_map() -> HashMap<String, LongAction> {
     long_action_map
 }
 
-fn get_long_arg_map(options: &Vec<SearchOption>) -> HashMap<String, String> {
-    let mut map = HashMap::new();
-    map.insert("path".to_string(), "path".to_string());
-    for so in options.iter() {
-        map.insert(so.long.to_string(), so.long.to_string());
-        if so.short.is_some() {
-            map.insert(so.short.as_ref().unwrap().to_string(), so.long.to_string());
+fn json_options_to_search_options(json_options: &Vec<JsonSearchOption>,
+                                  bool_action_map: &HashMap<String, BoolAction>,
+                                  string_action_map: &HashMap<String, StringAction>,
+                                  int_action_map: &HashMap<String, IntAction>,
+                                  long_action_map: &HashMap<String, LongAction>) -> Vec<SearchOption> {
+    let mut search_options: Vec<SearchOption> = Vec::new();
+    for jo in json_options.iter() {
+        let long_arg = jo.long.clone();
+        let short_arg = jo.short.clone();
+        let desc = jo.desc.clone();
+        let mut arg_type = ArgTokenType::Unknown;
+        if bool_action_map.contains_key(&long_arg) {
+            arg_type = ArgTokenType::Bool;
+        } else if string_action_map.contains_key(&long_arg) {
+            arg_type = ArgTokenType::String;
+        } else if int_action_map.contains_key(&long_arg) {
+            arg_type = ArgTokenType::Int;
+        } else if long_action_map.contains_key(&jo.long.to_string()) {
+            arg_type = ArgTokenType::Long;
         }
+        search_options.push(SearchOption { long: long_arg, short: short_arg, desc, arg_type });
     }
-    map
+    search_options
 }
 
 
