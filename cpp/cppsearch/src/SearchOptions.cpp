@@ -14,87 +14,11 @@
 #include "cppfind.h"
 
 namespace cppsearch {
-    SearchOptions::SearchOptions() {
-        m_bool_arg_map = {
-            {"archivesonly", [](const bool b, SearchSettings& ss) { ss.archives_only(b); }},
-            {"allmatches", [](const bool b, SearchSettings& ss) { ss.first_match(!b); }},
-            {"colorize", [](const bool b, SearchSettings& ss) { ss.colorize(b); }},
-            {"debug", [](const bool b, SearchSettings& ss) { ss.debug(b); }},
-            {"excludearchives", [](const bool b, SearchSettings& ss) { ss.include_archives(!b); }},
-            {"excludehidden", [](const bool b, SearchSettings& ss) { ss.include_hidden(!b); }},
-            {"firstmatch", [](const bool b, SearchSettings& ss) { ss.first_match(b); }},
-            {"followsymlinks", [](const bool b, SearchSettings& ss) { ss.follow_symlinks(b); }},
-            {"help", [](const bool b, SearchSettings& ss) { ss.print_usage(b); }},
-            {"includearchives", [](const bool b, SearchSettings& ss) { ss.include_archives(b); }},
-            {"includehidden", [](const bool b, SearchSettings& ss) { ss.include_hidden(b); }},
-            {"multilinesearch", [](const bool b, SearchSettings& ss) { ss.multi_line_search(b); }},
-            {"nocolorize", [](const bool b, SearchSettings& ss) { ss.colorize(!b); }},
-            {"nofollowsymlinks", [](const bool b, SearchSettings& ss) { ss.follow_symlinks(!b); }},
-            {"noprintdirs", [](const bool b, SearchSettings& ss) { ss.print_dirs(!b); }},
-            {"noprintfiles", [](const bool b, SearchSettings& ss) { ss.print_files(!b); }},
-            {"noprintlines", [](const bool b, SearchSettings& ss) { ss.print_lines(!b); }},
-            {"noprintmatches", [](const bool b, SearchSettings& ss) { ss.print_results(!b); }},
-            {"norecursive", [](const bool b, SearchSettings& ss) { ss.recursive(!b); }},
-            {"nosearcharchives", [](const bool b, SearchSettings& ss) { ss.search_archives(!b); }},
-            {"printdirs", [](const bool b, SearchSettings& ss) { ss.print_dirs(b); }},
-            {"printfiles", [](const bool b, SearchSettings& ss) { ss.print_files(b); }},
-            {"printlines", [](const bool b, SearchSettings& ss) { ss.print_lines(b); }},
-            {"printmatches", [](const bool b, SearchSettings& ss) { ss.print_results(b); }},
-            {"recursive", [](const bool b, SearchSettings& ss) { ss.recursive(b); }},
-            {"searcharchives", [](const bool b, SearchSettings& ss) { ss.search_archives(b); }},
-            {"sort-ascending", [](const bool b, SearchSettings& ss) { ss.sort_descending(!b); }},
-            {"sort-caseinsensitive", [](const bool b, SearchSettings& ss) { ss.sort_case_insensitive(b); }},
-            {"sort-casesensitive", [](const bool b, SearchSettings& ss) { ss.sort_case_insensitive(!b); }},
-            {"sort-descending", [](const bool b, SearchSettings& ss) { ss.sort_descending(b); }},
-            {"uniquelines", [](const bool b, SearchSettings& ss) { ss.unique_lines(b); }},
-            {"verbose", [](const bool b, SearchSettings& ss) { ss.verbose(b); }},
-            {"version", [](const bool b, SearchSettings& ss) { ss.print_version(b); }},
-        };
-
-        m_int_arg_map = {
-            {"linesafter", [](const int i, SearchSettings& ss) { ss.lines_after(i); }},
-            {"linesbefore", [](const int i, SearchSettings& ss) { ss.lines_before(i); }},
-            {"maxdepth", [](const int i, SearchSettings& ss) { ss.max_depth(i); }},
-            {"maxlinelength", [](const int i, SearchSettings& ss) { ss.max_line_length(i); }},
-            {"mindepth", [](const int i, SearchSettings& ss) { ss.min_depth(i); }},
-        };
-
-        m_long_arg_map = {
-            {"maxsize", [](const uint64_t lng, SearchSettings& ss) { ss.max_size(lng); }},
-            {"minsize", [](const uint64_t lng, SearchSettings& ss) { ss.min_size(lng); }},
-        };
-
-        m_str_arg_map = {
-            {"in-archiveext", [](const std::string& s, SearchSettings& ss) { ss.add_in_archive_extension(s); }},
-            {"in-archivefilepattern", [](const std::string& s, SearchSettings& ss) { ss.add_in_archive_file_pattern(s); }},
-            {"in-dirpattern", [](const std::string& s, SearchSettings& ss) { ss.add_in_dir_pattern(s); }},
-            {"in-ext", [](const std::string& s, SearchSettings& ss) { ss.add_in_extension(s); }},
-            {"in-filepattern", [](const std::string& s, SearchSettings& ss) { ss.add_in_file_pattern(s); }},
-            {"in-filetype", [](const std::string& s, SearchSettings& ss) { ss.add_in_file_type(cppfind::FileTypes::from_name(s)); }},
-            {"in-linesafterpattern", [](const std::string& s, SearchSettings& ss) { ss.add_in_lines_after_pattern(s); }},
-            {"in-linesbeforepattern", [](const std::string& s, SearchSettings& ss) { ss.add_in_lines_before_pattern(s); }},
-            {"linesaftertopattern", [](const std::string& s, SearchSettings& ss) { ss.add_lines_after_to_pattern(s); }},
-            {"linesafteruntilpattern", [](const std::string& s, SearchSettings& ss) { ss.add_lines_after_until_pattern(s); }},
-            {"maxlastmod", [](const std::string& s, SearchSettings& ss) { ss.max_last_mod(cppfind::StringUtil::date_str_to_long(s)); }},
-            {"minlastmod", [](const std::string& s, SearchSettings& ss) { ss.min_last_mod(cppfind::StringUtil::date_str_to_long(s)); }},
-            {"out-archiveext", [](const std::string& s, SearchSettings& ss) { ss.add_out_archive_extension(s); }},
-            {"out-archivefilepattern", [](const std::string& s, SearchSettings& ss) { ss.add_out_archive_file_pattern(s); }},
-            {"out-dirpattern", [](const std::string& s, SearchSettings& ss) { ss.add_out_dir_pattern(s); }},
-            {"out-ext", [](const std::string& s, SearchSettings& ss) { ss.add_out_extension(s); }},
-            {"out-filepattern", [](const std::string& s, SearchSettings& ss) { ss.add_out_file_pattern(s); }},
-            {"out-filetype", [](const std::string& s, SearchSettings& ss) { ss.add_out_file_type(cppfind::FileTypes::from_name(s)); }},
-            {"out-linesafterpattern", [](const std::string& s, SearchSettings& ss) { ss.add_out_lines_after_pattern(s); }},
-            {"out-linesbeforepattern", [](const std::string& s, SearchSettings& ss) { ss.add_out_lines_before_pattern(s); }},
-            {"path", [](const std::string& s, SearchSettings& ss) { ss.add_path(s); }},
-            {"searchpattern", [](const std::string& s, SearchSettings& ss) { ss.add_search_pattern(s); }},
-            {"settings-file", [this](std::string& s, SearchSettings& ss) { this->settings_from_file(s, ss); }},
-            {"sort-by", [](const std::string& s, SearchSettings& ss) { ss.sort_by(cppfind::FindSettings::sort_by_from_name(s)); }},
-        };
-
-        load_options();
+    SearchOptions::SearchOptions() : m_options(load_options()), m_arg_tokenizer(m_options) {
     }
 
-    void SearchOptions::load_options() {
+    std::vector<std::unique_ptr<cppfind::Option>> SearchOptions::load_options() {
+        std::vector<std::unique_ptr<cppfind::Option>> options;
         auto search_options_path = std::filesystem::path(xsearchpath()) / "shared/searchoptions.json";
 
         if (!std::filesystem::exists(search_options_path)) {
@@ -142,165 +66,107 @@ namespace cppsearch {
             const rapidjson::Value &descValue = search_option["desc"];
             auto desc = std::string(descValue.GetString());
 
-            auto option = SearchOption(short_arg, long_arg, desc);
-            m_options.push_back(std::move(option));
+            int arg_type = ARG_TOKEN_TYPE_UNKNOWN;
+            if (m_bool_arg_map.contains(long_arg)) {
+                arg_type = ARG_TOKEN_TYPE_BOOL;
+            } else if (m_str_arg_map.contains(long_arg)) {
+                arg_type = ARG_TOKEN_TYPE_STR;
+            } else if (m_int_arg_map.contains(long_arg)) {
+                arg_type = ARG_TOKEN_TYPE_INT;
+            } else if (m_long_arg_map.contains(long_arg)) {
+                arg_type = ARG_TOKEN_TYPE_LONG;
+            }
+
+            options.push_back(std::make_unique<SearchOption>(short_arg, long_arg, desc, arg_type));
+        }
+        return options;
+    }
+
+    void SearchOptions::update_settings_from_arg_token(SearchSettings& settings, const cppfind::ArgToken& arg_token) {
+        if (arg_token.token_type() == ARG_TOKEN_TYPE_BOOL) {
+            if (m_bool_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(bool)) {
+                    m_bool_arg_map[arg_token.name()](std::any_cast<bool>(arg_token.value()), settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw SearchException(msg);
+                }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw SearchException(msg);
+            }
+        } else if (arg_token.token_type() == ARG_TOKEN_TYPE_STR) {
+            if (m_str_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(std::string)) {
+                    auto s = std::any_cast<std::string>(arg_token.value());
+                    m_str_arg_map[arg_token.name()](s, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw SearchException(msg);
+                }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw SearchException(msg);
+            }
+        } else if (arg_token.token_type() == ARG_TOKEN_TYPE_INT) {
+            if (m_int_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(int) || arg_token.value().type() == typeid(unsigned)) {
+                    auto i = std::any_cast<int>(arg_token.value());
+                    m_int_arg_map[arg_token.name()](i, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw SearchException(msg);
+                }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw SearchException(msg);
+            }
+        } else if (arg_token.token_type() == ARG_TOKEN_TYPE_LONG) {
+            if (m_long_arg_map.contains(arg_token.name())) {
+                if (arg_token.value().type() == typeid(long)) {
+                    auto l = std::any_cast<long>(arg_token.value());
+                    m_long_arg_map[arg_token.name()](l, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + arg_token.name()};
+                    throw SearchException(msg);
+                }
+            } else {
+                std::string msg{"Invalid option: " + arg_token.name()};
+                throw SearchException(msg);
+            }
         }
     }
 
-    // TODO: try using https://github.com/CLIUtils/CLI11 for CLI arg parsing
+    void SearchOptions::update_settings_from_arg_tokens(SearchSettings& settings, const std::vector<cppfind::ArgToken>& arg_tokens) {
+        for (const auto& arg_token : arg_tokens) {
+            update_settings_from_arg_token(settings, arg_token);
+        }
+    }
+
+    void SearchOptions::update_settings_from_args(SearchSettings& settings, int &argc, char **argv) {
+        const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
+        update_settings_from_arg_tokens(settings, arg_tokens);
+    }
+
     SearchSettings SearchOptions::settings_from_args(int &argc, char **argv) {
         auto settings = SearchSettings();
 
-        // set print results to true since we are running the executable
+        // set print_results to true since we are running the executable
         settings.print_results(true);
 
-        std::deque<std::string> arg_deque;
-        unsigned int i;
+        update_settings_from_args(settings, argc, argv);
 
-        for (i=1; i < argc; ++i) {
-            arg_deque.emplace_back(argv[i]);
-        }
-
-        std::string next_arg;
-        while (!arg_deque.empty()) {
-            next_arg = arg_deque.front();
-            arg_deque.pop_front();
-
-            if (next_arg[0] == '-') {
-                while (!next_arg.empty() && next_arg[0] == '-') {
-                    next_arg = next_arg.substr(1);
-                }
-
-                if (m_arg_name_map.contains(next_arg)) {
-                    if (auto long_arg = m_arg_name_map[next_arg];
-                        m_bool_arg_map.contains(long_arg)) {
-                        m_bool_arg_map[long_arg](true, settings);
-                    } else if (m_str_arg_map.contains(long_arg)
-                        || m_int_arg_map.contains(long_arg)
-                        || m_long_arg_map.contains(long_arg)) {
-                        if (arg_deque.empty()) {
-                            std::string msg{"Missing value for option "};
-                            msg.append(next_arg);
-                            throw SearchException(msg);
-                        }
-                        auto arg_val = arg_deque.front();
-                        arg_deque.pop_front();
-                        if (m_str_arg_map.contains(long_arg)) {
-                            m_str_arg_map[long_arg](arg_val, settings);
-                        } else if (m_int_arg_map.contains(long_arg)) {
-                            const int int_val = std::stoi(arg_val);
-                            m_int_arg_map[long_arg](int_val, settings);
-                        } else if (m_long_arg_map.contains(long_arg)) {
-                            const long long_val = std::stol(arg_val);
-                            m_long_arg_map[long_arg](long_val, settings);
-                        }
-                    } else [[unlikely]] { // shouldn't be possible to get here
-                        std::string msg{"Invalid option: "};
-                        msg.append(next_arg);
-                        throw SearchException(msg);
-                    }
-                } else {
-                    std::string msg{"Invalid option: "};
-                    msg.append(next_arg);
-                    throw SearchException(msg);
-                }
-            } else {
-                settings.add_path(next_arg);
-            }
-        }
         return settings;
     }
 
-    void SearchOptions::settings_from_document(rapidjson::Document& document, SearchSettings& settings) {
-        assert(document.IsObject());
-
-        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
-            std::string name = it->name.GetString();
-            if (!m_arg_name_map.contains(name)) {
-                const std::string msg = "Invalid option: " + name;
-                throw SearchException(msg);
-            }
-
-            if (m_bool_arg_map.contains(name)) {
-                if (it->value.IsBool()) {
-                    const bool b = it->value.GetBool();
-                    m_bool_arg_map[name](b, settings);
-                } else {
-                    const std::string msg = "Invalid value for option: " + name;
-                    throw SearchException(msg);
-                }
-            } else if (m_str_arg_map.contains(name)) {
-                if (it->value.IsString()) {
-                    auto s = std::string(it->value.GetString());
-                    m_str_arg_map[name](s, settings);
-                } else if (it->value.IsArray()) {
-                    const auto& arr = it->value.GetArray();
-                    for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-                        if (arr[i].IsString()) {
-                            auto s = std::string(arr[i].GetString());
-                            m_str_arg_map[name](s, settings);
-                        } else {
-                            const std::string msg = "Invalid value for option: " + name;
-                            throw SearchException(msg);
-                        }
-                    }
-                } else {
-                    const std::string msg = "Invalid value for option: " + name;
-                    throw SearchException(msg);
-                }
-            } else if (m_int_arg_map.contains(name) || m_long_arg_map.contains(name)) {
-                if (it->value.IsNumber()) {
-                    if (m_int_arg_map.contains(name)) {
-                        m_int_arg_map[name](it->value.GetInt(), settings);
-                    } else if (m_long_arg_map.contains(name)) {
-                        m_long_arg_map[name](it->value.GetUint64(), settings);
-                    }
-                } else {
-                    const std::string msg = "Invalid value for option: " + name;
-                    throw SearchException(msg);
-                }
-            } else {
-                // should never reach here
-                const std::string msg = "Invalid option: " + name;
-                throw SearchException(msg);
-            }
-        }
+    void SearchOptions::update_settings_from_json(SearchSettings& settings, const std::string_view json) {
+        const auto arg_tokens = m_arg_tokenizer.tokenize_json(json);
+        update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
-    void SearchOptions::settings_from_json(const std::string_view json_str, SearchSettings& settings) {
-        rapidjson::Document document;
-        document.Parse(std::string{json_str}.c_str());
-        settings_from_document(document, settings);
-    }
-
-    void SearchOptions::settings_from_file(const std::filesystem::path& file_path, SearchSettings& settings) {
-        if (const auto expanded_path = cppfind::FileUtil::expand_path(file_path);
-            !std::filesystem::exists(expanded_path)) {
-            std::string msg{"Settings file not found: "};
-            msg.append(file_path);
-            throw SearchException(msg);
-        }
-
-        if (file_path.extension() != ".json") {
-            std::string msg{"Invalid settings file (must be JSON): "};
-            msg.append(file_path);
-            throw SearchException(msg);
-        }
-
-        const uint64_t file_size = std::filesystem::file_size(file_path);
-        // ~1MB, an arbitrary limit, but at least a limit
-        assert(file_size <= 1024000);
-
-        FILE *fp = fopen(file_path.c_str(), "r");
-
-        char readBuffer[file_size];
-        rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-        rapidjson::Document document;
-        document.ParseStream(is);
-        fclose(fp);
-
-        settings_from_document(document, settings);
+    void SearchOptions::update_settings_from_file(SearchSettings& settings, const std::filesystem::path& file_path) {
+        const auto arg_tokens = m_arg_tokenizer.tokenize_file(file_path);
+        update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
     std::string SearchOptions::get_usage_string() {
@@ -311,13 +177,18 @@ namespace cppsearch {
         std::vector<std::string> opt_strings{};
         std::vector<std::string> opt_descs{};
 
+        auto options = std::vector<SearchOption>{};
+        for (auto const& o : m_options) {
+            options.emplace_back(o->short_arg(), o->long_arg(), o->description(), o->arg_type());
+        }
+
         auto sort_option_lambda = [](const SearchOption& s1, const SearchOption& s2) -> bool {
             return s1.sort_arg().compare(s2.sort_arg()) < 0;
         };
-        std::ranges::sort(m_options, sort_option_lambda);
+        std::ranges::sort(options, sort_option_lambda);
 
         unsigned long longest_len = 0;
-        for (auto const& option : m_options) {
+        for (auto const& option : options) {
             std::string opt_string{};
             if (!option.short_arg().empty()) {
                 opt_string.append("-").append(option.short_arg()).append(",");
@@ -330,9 +201,14 @@ namespace cppsearch {
             opt_descs.push_back(option.description());
         }
 
-        const std::string format = std::string(" %1$-") + std::to_string(longest_len) + "s  %2$s\n";
-        for (int i = 0; i < opt_strings.size(); ++i) {
-            usage_string.append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
+        for (size_t i = 0; i < opt_strings.size(); ++i) {
+            usage_string.append(" ");
+            usage_string.append(opt_strings[i]);
+            for (size_t j = 0; j <= longest_len - opt_strings[i].length() + 1; ++j) {
+                usage_string.append(" ");
+            }
+            usage_string.append(opt_descs[i]);
+            usage_string.append("\n");
         }
         return usage_string;
     }
