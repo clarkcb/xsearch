@@ -4,12 +4,14 @@ module RbSearch
     @short_arg: String
     @long_arg: String
     @desc: String
+    @arg_type: RbFind::ArgTokenType
 
     attr_reader short_arg: String
     attr_reader long_arg: String
     attr_reader desc: String
+    attr_reader arg_type: RbFind::ArgTokenType
 
-    def initialize: (String short_arg, String long_arg, String desc) -> void
+    def initialize: (String short_arg, String long_arg, String desc, RbFind::ArgTokenType arg_type) -> void
 
     def sort_arg: () -> String
   end

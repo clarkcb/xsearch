@@ -2,4 +2,4 @@
 
 require_relative '../lib/rbsearch'
 
-main
+search_main

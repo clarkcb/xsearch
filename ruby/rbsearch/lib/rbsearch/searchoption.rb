@@ -7,11 +7,13 @@ module RbSearch
     attr_reader :short_arg
     attr_reader :long_arg
     attr_reader :desc
+    attr_reader :arg_type
 
-    def initialize(short_arg, long_arg, desc)
+    def initialize(short_arg, long_arg, desc, arg_type)
       @short_arg = short_arg
       @long_arg = long_arg
       @desc = desc
+      @arg_type = arg_type
     end
 
     def sort_arg

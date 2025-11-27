@@ -6,25 +6,30 @@ module RbSearch
     @str_action_dict: Hash[Symbol, Proc]
     @int_action_dict: Hash[Symbol, Proc]
     @long_arg_dict: Hash[String, Symbol]
+    @arg_tokenizer: RbFind::ArgTokenizer
 
     attr_reader options: Array[SearchOption]
 
     def initialize: () -> void
 
+    def update_settings_from_json: (SearchSettings settings, String json) -> void
+
+    def update_settings_from_file: (SearchSettings settings, String file_path) -> void
+
+    def update_settings_from_args: (SearchSettings settings, Array[String] args) -> SearchSettings
+
     def search_settings_from_args: (Array[String] args) -> SearchSettings
-
-    def update_settings_from_json: (String json, SearchSettings settings) -> void
-
-    def update_settings_from_file: (String file_path, SearchSettings settings) -> void
-
-    def get_usage_string: () -> String
 
     def usage: () -> void
 
     private
 
+    def get_usage_string: () -> String
+
     def set_actions: () -> void
 
     def set_options_from_json: () -> void
+
+    def update_settings_from_arg_tokens: (SearchSettings settings, Array[RbFind::ArgToken] arg_tokens) -> void
   end
 end

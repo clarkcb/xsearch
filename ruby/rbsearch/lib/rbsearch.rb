@@ -13,9 +13,6 @@ require 'rbfind/common'
 require 'rbfind/filetypes'
 require 'rbfind/fileutil'
 
-# require_relative 'rbsearch/common'
-# require_relative 'rbsearch/filetypes'
-# require_relative 'rbsearch/fileutil'
 require_relative 'rbsearch/searcher'
 require_relative 'rbsearch/searchoption'
 require_relative 'rbsearch/searchoptions'
@@ -23,7 +20,7 @@ require_relative 'rbsearch/searchresult'
 require_relative 'rbsearch/searchresultformatter'
 require_relative 'rbsearch/searchsettings'
 
-def main
+def search_main
   options = RbSearch::SearchOptions.new
 
   settings =

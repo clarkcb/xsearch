@@ -1,6 +1,7 @@
 # SearchOptions - generate help, create settings from CLI args
 require 'json'
 
+require 'rbfind/arg_tokenizer'
 require 'rbfind/common'
 require_relative 'searcherror'
 require_relative 'searchoption'
@@ -17,123 +18,53 @@ module RbSearch
       @bool_action_dict = {}
       @str_action_dict = {}
       @int_action_dict = {}
-      @long_arg_dict = {"path" => :path}
       set_actions
       set_options_from_json
       @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
+      @arg_tokenizer = RbFind::ArgTokenizer.new(@options)
+    end
+
+    def update_settings_from_json(settings, json)
+      arg_tokens = @arg_tokenizer.tokenize_json(json)
+      update_settings_from_arg_tokens(settings, arg_tokens)
+    end
+
+    def update_settings_from_file(settings, file_path)
+      arg_tokens = @arg_tokenizer.tokenize_file(file_path)
+      update_settings_from_arg_tokens(settings, arg_tokens)
+    end
+
+    def update_settings_from_args(settings, args)
+      arg_tokens = @arg_tokenizer.tokenize_args(args)
+      update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
     def search_settings_from_args(args)
       settings = SearchSettings.new
-      # default print_files to true since running as cli
+      # default print_results to true since running as cli
       settings.print_results = true
-      until args.empty?
-        arg = args.shift
-        if arg.start_with?('-')
-          arg = arg[1..arg.length] while arg && arg.start_with?('-')
-          unless @long_arg_dict.key?(arg)
-            raise SearchError, "Invalid option: #{arg}"
-          end
-          long_arg = @long_arg_dict[arg]
-          if @bool_action_dict.key?(long_arg)
-            @bool_action_dict[long_arg].call(true, settings)
-            return settings if [:help, :version].include?(long_arg)
-          elsif @str_action_dict.key?(long_arg) || @int_action_dict.key?(long_arg)
-            raise SearchError, "Missing value for option #{arg}" if args.empty?
-            arg_val = args.shift
-            if @str_action_dict.key?(long_arg)
-              @str_action_dict[long_arg].call(arg_val, settings)
-            else
-              @int_action_dict[long_arg].call(arg_val.to_i, settings)
-            end
-          else
-            raise SearchError, "Invalid option: #{arg}"
-          end
-        else
-          settings.add_path(arg)
-        end
-      end
+      update_settings_from_args(settings, args)
       settings
     end
 
-    def update_settings_from_json(json, settings)
-      json_hash = JSON.parse(json)
-      # keys are sorted so that output is consistent across all versions
-      keys = json_hash.keys.sort
-      invalid_keys = keys.reject { |k| @long_arg_dict.key?(k) }
-      unless invalid_keys.empty?
-        raise SearchError, "Invalid option: #{invalid_keys[0]}"
-      end
-      keys.each do |arg|
-        arg_sym = arg.to_sym
-        if @bool_action_dict.key?(arg_sym)
-          if json_hash[arg] == true || json_hash[arg] == false
-            @bool_action_dict[arg_sym].call(json_hash[arg], settings)
-            return if %w[help version].include?(arg)
-          else
-            raise SearchError, "Invalid value for option: #{arg}"
-          end
-        elsif @str_action_dict.key?(arg_sym)
-          if json_hash[arg].is_a?(String)
-            @str_action_dict[arg_sym].call(json_hash[arg], settings)
-          elsif json_hash[arg].is_a?(Array)
-            json_hash[arg].each do |v|
-              if v.is_a?(String)
-                @str_action_dict[arg_sym].call(v, settings)
-              else
-                raise SearchError, "Invalid value for option: #{arg}"
-              end
-            end
-          else
-            raise SearchError, "Invalid value for option: #{arg}"
-          end
-        elsif @int_action_dict.key?(arg_sym)
-          if json_hash[arg].is_a?(Numeric)
-            @int_action_dict[arg_sym].call(json_hash[arg], settings)
-          else
-            raise SearchError, "Invalid value for option: #{arg}"
-          end
-        else
-          # should never reach here
-          raise SearchError, "Invalid option: #{arg}"
-        end
-      end
+    def usage
+      puts "#{get_usage_string}\n"
+      abort
     end
 
-    def update_settings_from_file(file_path, settings)
-      expanded_path = Pathname.new(file_path).expand_path
-      unless expanded_path.exist?
-        raise SearchError, "Settings file not found: #{file_path}"
-      end
-      unless expanded_path.extname == '.json'
-        raise SearchError, "Invalid settings file (must be JSON): #{file_path}"
-      end
-      f = File.open(expanded_path.to_s, mode: 'r')
-      json = f.read
-      update_settings_from_json(json, settings)
-    rescue IOError => e
-      raise SearchError, e.to_s
-    rescue ArgumentError => e
-      raise SearchError, e.to_s
-    rescue SearchError => e
-      raise SearchError, e.to_s
-    rescue JSON::ParserError => e
-      raise SearchError, "Unable to parse JSON in settings file: #{file_path}"
-    ensure
-      f&.close
-    end
+    private
 
     def get_usage_string
-      usage = "Usage:\n"
-      usage << " rbsearch [options] -s <searchpattern> <path> [<path> ...]\n\n"
-      usage << "Options:\n"
+      usage = ["Usage:\n", " rbsearch [options] -s <searchpattern> <path> [<path> ...]\n\n", "Options:\n"]
       opt_strings = []
       opt_descs = []
       longest = 0
       @options.each do |opt|
-        opt_string = ''
-        opt_string << "-#{opt.short_arg}," unless opt.short_arg.empty?
-        opt_string << "--#{opt.long_arg}"
+        if opt.short_arg.empty?
+          opt_string = "--#{opt.long_arg}"
+        else
+          opt_string = "-#{opt.short_arg},--#{opt.long_arg}"
+        end
         longest = opt_string.length > longest ? opt_string.length : longest
         opt_strings.push(opt_string)
         opt_descs.push(opt.desc)
@@ -144,15 +75,8 @@ module RbSearch
         usage << format(format_string, opt_strings[i], opt_descs[i])
         i += 1
       end
-      usage
+      usage.join
     end
-
-    def usage
-      puts "#{get_usage_string}\n"
-      abort
-    end
-
-    private
 
     def set_actions
       @bool_action_dict = {
@@ -212,7 +136,7 @@ module RbSearch
         'out-linesbeforepattern': ->(s, settings) { settings.add_patterns(s, settings.out_lines_before_patterns) },
         path: ->(s, settings) { settings.add_path(s) },
         searchpattern: ->(s, settings) { settings.add_patterns(s, settings.search_patterns) },
-        'settings-file': ->(s, settings) { update_settings_from_file(s, settings) },
+        'settings-file': ->(s, settings) { update_settings_from_file(settings, s) },
         'sort-by': ->(s, settings) { settings.set_sort_by_for_name(s) }
       }
       @int_action_dict = {
@@ -240,15 +164,56 @@ module RbSearch
             ''
           end
         desc = so['desc']
+        arg_type = RbFind::ArgTokenType::UNKNOWN
         long_sym = long.to_sym
-        @options.push(SearchOption.new(short, long, desc))
-        @long_arg_dict[long] = long_sym
-        @long_arg_dict[short] = long_sym if short
+        if @bool_action_dict.key?(long_sym)
+          arg_type = RbFind::ArgTokenType::BOOL
+        elsif @str_action_dict.key?(long_sym)
+          arg_type = RbFind::ArgTokenType::STR
+        elsif @int_action_dict.key?(long_sym)
+          arg_type = RbFind::ArgTokenType::INT
+        end
+        @options.push(SearchOption.new(short, long, desc, arg_type))
       end
     rescue StandardError => e
       raise SearchError, "#{e} (file: #{search_options_json_path})"
     ensure
       f&.close
+    end
+
+    def update_settings_from_arg_tokens(settings, arg_tokens)
+      arg_tokens.each do |arg_token|
+        if arg_token.type == RbFind::ArgTokenType::BOOL
+          if arg_token.value == true || arg_token.value == false
+            @bool_action_dict[arg_token.name].call(arg_token.value, settings)
+            return if [:help, :version].include?(arg_token.name)
+          else
+            raise SearchError, "Invalid value for option: #{arg_token.name}"
+          end
+        elsif arg_token.type == RbFind::ArgTokenType::STR
+          if arg_token.value.is_a?(String)
+            @str_action_dict[arg_token.name].call(arg_token.value, settings)
+          elsif arg_token.value.is_a?(Array)
+            arg_token.value.each do |v|
+              if v.is_a?(String)
+                @str_action_dict[arg_token.name].call(v, settings)
+              else
+                raise SearchError, "Invalid value for option: #{arg_token.name}"
+              end
+            end
+          else
+            raise SearchError, "Invalid value for option: #{arg_token.name}"
+          end
+        elsif arg_token.type == RbFind::ArgTokenType::INT
+          if arg_token.value.is_a?(Numeric)
+            @int_action_dict[arg_token.name].call(arg_token.value, settings)
+          else
+            raise SearchError, "Invalid value for option: #{arg_token.name}"
+          end
+        else
+          raise SearchError, "Invalid option: #{arg_token.name}"
+        end
+      end
     end
   end
 end
