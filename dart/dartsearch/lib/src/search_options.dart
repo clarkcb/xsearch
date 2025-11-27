@@ -3,29 +3,41 @@ import 'dart:io';
 
 import 'package:dartfind/dartfind.dart';
 import 'package:dartsearch/src/config.dart' show searchOptionsPath;
-import 'package:dartsearch/src/search_exception.dart';
 import 'package:dartsearch/src/search_settings.dart';
 
-class SearchOption {
-  final String? shortArg;
-  final String longArg;
-  final String desc;
+class SearchOption implements Option {
+  final String? _shortArg;
+  final String _longArg;
+  final String _desc;
+  final ArgTokenType _argType;
 
-  const SearchOption(this.shortArg, this.longArg, this.desc);
+  const SearchOption(this._shortArg, this._longArg, this._desc, this._argType);
+
+  @override
+  String? shortArg() => _shortArg;
+
+  @override
+  String longArg() => _longArg;
+
+  @override
+  String desc() => _desc;
+
+  @override
+  ArgTokenType argType() => _argType;
 
   String sortArg() {
-    if (shortArg == null) {
-      return longArg.toLowerCase();
+    if (_shortArg == null) {
+      return _longArg.toLowerCase();
     } else {
-      return '${shortArg!.toLowerCase()}@${longArg.toLowerCase()}';
+      return '${_shortArg!.toLowerCase()}@${_longArg.toLowerCase()}';
     }
   }
 
   String optString() {
-    if (shortArg == null) {
-      return '--$longArg';
+    if (_shortArg == null) {
+      return '--$_longArg';
     } else {
-      return '-$shortArg,--$longArg';
+      return '-$_shortArg,--$_longArg';
     }
   }
 }
@@ -36,10 +48,12 @@ class SearchOptions {
   var stringActionMap = {};
   var intActionMap = {};
   var longArgMap = {'path': 'path'};
+  ArgTokenizer? argTokenizer;
   late Future ready;
 
   SearchOptions() {
-    ready = loadSearchOptionsFromJson().then((f) => setActionMaps());
+    setActionMaps();
+    ready = loadSearchOptionsFromJson().then((f) => setArgTokenizer());
   }
 
   Future<void> loadSearchOptionsFromJson() async {
@@ -49,14 +63,23 @@ class SearchOptions {
       var soList = soMap['searchoptions'] as List;
       for (var so in soList) {
         var longArg = (so as Map)['long'];
-        longArgMap[longArg] = longArg;
         var desc = (so)['desc']!;
         String? shortArg;
         if ((so).containsKey('short')) {
           shortArg = (so)['short'];
-          longArgMap[shortArg!] = longArg;
         }
-        searchOptions.add(SearchOption(shortArg, longArg, desc));
+        var argType = ArgTokenType.unknownType;
+        if (boolActionMap.containsKey(longArg)) {
+          argType = ArgTokenType.boolType;
+        } else if (stringActionMap.containsKey(longArg) ||
+            longArg == 'settings-file') {
+          argType = ArgTokenType.stringType;
+        } else if (intActionMap.containsKey(longArg)) {
+          argType = ArgTokenType.intType;
+        } else {
+          throw FindException('No action for option: $longArg');
+        }
+        searchOptions.add(SearchOption(shortArg, longArg, desc, argType));
       }
     }
   }
@@ -79,6 +102,8 @@ class SearchOptions {
       'noprintfiles': (bool b, SearchSettings ss) => ss.printFiles = !b,
       'noprintlines': (bool b, SearchSettings ss) => ss.printLines = !b,
       'noprintmatches': (bool b, SearchSettings ss) => ss.printResults = !b,
+      'norecursive': (bool b, SearchSettings ss) => ss.recursive = !b,
+      'nosearcharchives': (bool b, SearchSettings ss) => ss.searchArchives = !b,
       'printdirs': (bool b, SearchSettings ss) => ss.printDirs = b,
       'printfiles': (bool b, SearchSettings ss) => ss.printFiles = b,
       'printlines': (bool b, SearchSettings ss) => ss.printLines = b,
@@ -86,12 +111,12 @@ class SearchOptions {
       'printusage': (bool b, SearchSettings ss) => ss.printUsage = b,
       'recursive': (bool b, SearchSettings ss) => ss.recursive = b,
       'searcharchives': (bool b, SearchSettings ss) => ss.searchArchives = b,
-      'sort-ascending': (bool b, FindSettings ss) => ss.sortDescending = !b,
-      'sort-caseinsensitive': (bool b, FindSettings ss) =>
+      'sort-ascending': (bool b, SearchSettings ss) => ss.sortDescending = !b,
+      'sort-caseinsensitive': (bool b, SearchSettings ss) =>
           ss.sortCaseInsensitive = b,
-      'sort-casesensitive': (bool b, FindSettings ss) =>
+      'sort-casesensitive': (bool b, SearchSettings ss) =>
           ss.sortCaseInsensitive = !b,
-      'sort-descending': (bool b, FindSettings ss) => ss.sortDescending = b,
+      'sort-descending': (bool b, SearchSettings ss) => ss.sortDescending = b,
       'uniquelines': (bool b, SearchSettings ss) => ss.uniqueLines = b,
       'verbose': (bool b, SearchSettings ss) => ss.verbose = b,
       'version': (bool b, SearchSettings ss) => ss.printVersion = b,
@@ -156,120 +181,69 @@ class SearchOptions {
     };
   }
 
-  Future<void> settingsFromJson(
-      String jsonString, SearchSettings settings) async {
-    await ready.then((_) {
-      Map jsonMap = json.decode(jsonString);
-      var keys = jsonMap.keys.toList();
-      // keys are sorted so that output is consistent across all versions
-      keys.sort();
-      // first check for invalid options
-      for (var key in keys) {
-        if (!longArgMap.containsKey(key)) {
-          throw SearchException('Invalid option: $key');
-        }
-      }
-      for (var key in keys) {
-        var value = jsonMap[key];
-        if (boolActionMap.containsKey(key)) {
-          if (value is bool) {
-            boolActionMap[key](value, settings);
+  void setArgTokenizer() {
+    argTokenizer = ArgTokenizer(searchOptions);
+  }
+
+  Future<void> updateSettingsFromArgTokens(
+      SearchSettings settings, List<ArgToken> argTokens) async {
+    await ready.then((_) async {
+      for (var argToken in argTokens) {
+        if (argToken.tokenType == ArgTokenType.boolType) {
+          if (boolActionMap.containsKey(argToken.name)) {
+            boolActionMap[argToken.name](argToken.value, settings);
           } else {
-            logError('Invalid value for option $key');
+            throw FindException('Invalid option: ${argToken.name}');
           }
-        } else if (stringActionMap.containsKey(key)) {
-          if (value is String) {
-            stringActionMap[key](value, settings);
-          } else if (value is List) {
-            for (var item in value) {
-              if (item is String) {
-                stringActionMap[key](item, settings);
-              } else {
-                throw SearchException('Invalid value for option: $key');
-              }
-            }
+        } else if (argToken.tokenType == ArgTokenType.stringType) {
+          if (stringActionMap.containsKey(argToken.name)) {
+            stringActionMap[argToken.name](argToken.value, settings);
+          } else if (argToken.name == 'settings-file') {
+            await updateSettingsFromFile(settings, argToken.value);
           } else {
-            throw SearchException('Invalid value for option: $key');
+            throw FindException('Invalid option: ${argToken.name}');
           }
-        } else if (intActionMap.containsKey(key)) {
-          if (value is int) {
-            intActionMap[key](value, settings);
+        } else if (argToken.tokenType == ArgTokenType.intType) {
+          if (intActionMap.containsKey(argToken.name)) {
+            intActionMap[argToken.name](argToken.value, settings);
           } else {
-            throw SearchException('Invalid value for option: $key');
+            throw FindException('Invalid option: ${argToken.name}');
           }
         } else {
-          throw SearchException('Invalid option: $key');
+          throw FindException('Invalid option: ${argToken.name}');
         }
       }
     });
   }
 
-  Future<void> settingsFromFile(
-      String filePath, SearchSettings settings) async {
-    var expandedPath = FileUtil.expandPath(filePath);
-    if (FileSystemEntity.typeSync(expandedPath) ==
-        FileSystemEntityType.notFound) {
-      throw SearchException('Settings file not found: $filePath');
-    }
-    if (expandedPath.endsWith('.json')) {
-      var contents = await File(expandedPath).readAsString();
-      await settingsFromJson(contents, settings);
-    } else {
-      throw FindException('Invalid settings file (must be JSON): $filePath');
-    }
+  Future<void> updateSettingsFromJson(
+      SearchSettings settings, String jsonString) async {
+    await ready.then((_) async {
+      List<ArgToken> argTokens = argTokenizer!.tokenizeJson(jsonString);
+      await updateSettingsFromArgTokens(settings, argTokens);
+    });
   }
 
-  Future<SearchSettings> settingsFromArgs(List<String> args) async {
-    return await ready.then((_) async {
-      var settings = SearchSettings();
-      // default printResults to true since running as cli
-      settings.printResults = true;
-      var it = args.iterator;
-      while (it.moveNext()) {
-        var arg = it.current;
-        if (arg.startsWith('-')) {
-          while (arg.startsWith('-')) {
-            arg = arg.substring(1);
-          }
-          if (longArgMap.containsKey(arg)) {
-            String longArg = longArgMap[arg]!;
-            if (boolActionMap.containsKey(longArg)) {
-              boolActionMap[longArg](true, settings);
-            } else if (stringActionMap.containsKey(longArg) ||
-                intActionMap.containsKey(longArg)) {
-              if (it.moveNext()) {
-                var s = it.current;
-                if (stringActionMap.containsKey(longArg)) {
-                  stringActionMap[longArg](s, settings);
-                } else {
-                  intActionMap[longArg](int.parse(s), settings);
-                }
-              } else {
-                throw SearchException('Missing value for option $arg');
-              }
-            } else if (longArg == 'settings-file') {
-              if (it.moveNext()) {
-                var s = it.current;
-                await settingsFromFile(s, settings);
-              } else {
-                throw SearchException('Missing value for option $arg');
-              }
-            } else {
-              throw SearchException('Invalid option: $arg');
-            }
-          } else {
-            throw SearchException('Invalid option: $arg');
-          }
-        } else {
-          settings.paths.add(arg);
-        }
-      }
+  Future<void> updateSettingsFromFile(
+      SearchSettings settings, String filePath) async {
+    List<ArgToken> argTokens = await argTokenizer!.tokenizeFile(filePath);
+    await updateSettingsFromArgTokens(settings, argTokens);
+  }
+
+  Future<void> updateSettingsFromArgs(
+      SearchSettings settings, List<String> args) async {
+    await ready.then((_) async {
+      var argTokens = argTokenizer!.tokenizeArgs(args);
+      await updateSettingsFromArgTokens(settings, argTokens);
       return settings;
     });
   }
 
-  void usage() async {
-    logMsg(await getUsageString());
+  Future<SearchSettings> settingsFromArgs(List<String> args) async {
+    var settings = SearchSettings();
+    settings.printResults = true; // default to printing results
+    await updateSettingsFromArgs(settings, args);
+    return settings;
   }
 
   Future<String> getUsageString() async {
@@ -283,9 +257,13 @@ class SearchOptions {
           (optString.length > value.length) ? optString : value);
       for (var i = 0; i < searchOptions.length; i++) {
         s += ' ${optStrings[i].padRight(longest.length + 2, ' ')}';
-        s += '${searchOptions[i].desc}\n';
+        s += '${searchOptions[i].desc()}\n';
       }
       return s;
     });
+  }
+
+  void usage() async {
+    logMsg(await getUsageString());
   }
 }
