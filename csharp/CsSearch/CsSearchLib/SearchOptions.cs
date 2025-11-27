@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -96,21 +95,15 @@ public class SearchOptions
 			{ "minsize", (i, settings) => settings.MinSize = i },
 		};
 
-	public List<SearchOption> Options { get; }
-	// public Dictionary<string, SearchOption> BoolOptionDictionary { get; }
-	// public Dictionary<string, SearchOption> StringOptionDictionary { get; }
-	// public Dictionary<string, SearchOption> IntOptionDictionary { get; }
-	private Dictionary<string, string> LongArgDictionary { get; }
+	public List<IOption> Options { get; }
+	private ArgTokenizer ArgTokenizer { get; }
 
 	public SearchOptions()
 	{
 		_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.searchoptions.json");
-		Options = new List<SearchOption>();
-		LongArgDictionary = new Dictionary<string, string>
-		{
-			{ "path", "path" }
-		};
+		Options = [];
 		SetOptionsFromJson();
+		ArgTokenizer = new ArgTokenizer(Options);
 	}
 
 	private void SetOptionsFromJson()
@@ -125,192 +118,206 @@ public class SearchOptions
         foreach (var optionDict in optionDicts)
 		{
 			var longArg = optionDict["long"];
-			LongArgDictionary.Add(longArg, longArg);
 			string? shortArg = null;
 			if (optionDict.TryGetValue("short", out var shortVal))
 			{
 				shortArg = shortVal;
-				LongArgDictionary.Add(shortArg, longArg);
 			}
 			var desc = optionDict["desc"];
-			var option = new SearchOption(shortArg, longArg, desc);
+			ArgTokenType argType;
+			if (BoolActionDictionary.ContainsKey(longArg))
+			{
+				argType = ArgTokenType.Bool;
+			}
+			else if (StringActionDictionary.ContainsKey(longArg) || longArg.Equals("settings-file"))
+			{
+				argType = ArgTokenType.String;
+			}
+			else if (IntActionDictionary.ContainsKey(longArg))
+			{
+				argType = ArgTokenType.Int;
+			}
+			else
+			{
+				throw new SearchException($"Invalid option: {longArg}");
+			}
+			var option = new SearchOption(shortArg, longArg, desc, argType);
 			Options.Add(option);
 		}
 	}
 
-	private static void ApplySetting(string arg, JsonElement elem, SearchSettings settings)
+	private void ApplyArgTokenToSettings(ArgToken argToken, SearchSettings settings)
 	{
-		if (BoolActionDictionary.TryGetValue(arg, out var boolAction))
+		if (argToken.Type == ArgTokenType.Bool)
 		{
-			if (elem.ValueKind is JsonValueKind.False or JsonValueKind.True)
+			if (BoolActionDictionary.TryGetValue(argToken.Name, out var boolAction))
 			{
-				boolAction(elem.GetBoolean(), settings);
-			}
-			else
-			{
-				throw new SearchException($"Invalid value for option: {arg}");
-			}
-		}
-		else if (StringActionDictionary.TryGetValue(arg, out var stringAction))
-		{
-			if (elem.ValueKind is JsonValueKind.String)
-			{
-				var s = elem.GetString();
-				if (s is not null)
+				if (argToken.Value is bool b)
 				{
-					stringAction(s, settings);
+					boolAction(b, settings);
+				}
+				else if (argToken.Value is JsonElement { ValueKind: JsonValueKind.False or JsonValueKind.True } jsonElem)
+				{
+					boolAction(jsonElem.GetBoolean(), settings);
 				}
 				else
 				{
-					throw new SearchException($"Invalid value for option: {arg}");
-				}
-			} else if (elem.ValueKind is JsonValueKind.Array)
-			{
-				foreach (var arrVal in elem.EnumerateArray())
-				{
-					ApplySetting(arg, arrVal, settings);
+					throw new SearchException($"Invalid value for option: {argToken.Name}");
 				}
 			}
 			else
 			{
-				throw new SearchException($"Invalid value for option: {arg}");
+				throw new SearchException($"Invalid option: {argToken.Name}");
 			}
 		}
-		else if (IntActionDictionary.TryGetValue(arg, out var intAction))
+		else if (argToken.Type == ArgTokenType.String)
 		{
-			if (elem.ValueKind is JsonValueKind.Number)
+			if (StringActionDictionary.TryGetValue(argToken.Name, out var stringAction))
 			{
-				intAction(elem.GetInt32(), settings);
+				if (argToken.Value is string s)
+				{
+					stringAction(s, settings);
+				}
+				else if (argToken.Value is IEnumerable<string> enumerable)
+				{
+					foreach (var enumVal in enumerable)
+					{
+						stringAction(enumVal, settings);
+					}
+				}
+				else if (argToken.Value is JsonElement { ValueKind: JsonValueKind.String }  jsonElem)
+				{
+					var jsonString = jsonElem.GetString();
+					if (jsonString is not null)
+					{
+						stringAction(jsonString, settings);
+					}
+					else
+					{
+						throw new SearchException($"Invalid value for option: {argToken.Name}");
+					}
+				}
+				else if (argToken.Value is JsonElement { ValueKind: JsonValueKind.Array }  jsonArr)
+				{
+					foreach (var arrVal in jsonArr.EnumerateArray())
+					{
+						if (arrVal is JsonElement { ValueKind: JsonValueKind.String }  jsonArrElem)
+						{
+							var jsonStr = jsonArrElem.GetString();
+							if (jsonStr is not null)
+							{
+								stringAction(jsonStr, settings);
+							}
+							else
+							{
+								throw new SearchException($"Invalid value for option: {argToken.Name}");
+							}
+						}
+					}
+				}
+				else
+				{
+					throw new SearchException($"Invalid value for option: {argToken.Name}");
+				}
+			}
+			else if (argToken.Name.Equals("settings-file"))
+			{
+				if (argToken.Value is string settingsFilePath)
+				{
+					UpdateSettingsFromFile(settings, settingsFilePath);
+				}
+				else if (argToken.Value is IEnumerable<string> enumerable)
+				{
+					foreach (var enumVal in enumerable)
+					{
+						UpdateSettingsFromFile(settings, enumVal);
+					}
+				}
+				else
+				{
+					throw new SearchException($"Invalid value for option: {argToken.Name}");
+				}
 			}
 			else
 			{
-				throw new SearchException($"Invalid value for option: {arg}");
+				throw new SearchException($"Invalid option: {argToken.Name}");
+			}
+		}
+		else if (argToken.Type == ArgTokenType.Int)
+		{
+			if (IntActionDictionary.TryGetValue(argToken.Name, out var intAction))
+			{
+				if (argToken.Value is int i)
+				{
+					intAction(i, settings);
+				}
+				else if (argToken.Value is JsonElement { ValueKind: JsonValueKind.Number } jsonElem)
+				{
+					intAction(jsonElem.GetInt32(), settings);
+				}
+				else
+				{
+					throw new SearchException($"Invalid value for option: {argToken.Name}");
+				}
 			}
 		}
 		else
 		{
-			throw new SearchException($"Invalid option: {arg}");
+			throw new SearchException($"Invalid option: {argToken.Name}");
 		}
 	}
 
-	public void UpdateSettingsFromJson(string jsonString, SearchSettings settings)
+	private void UpdateSettingsFromArgTokens(SearchSettings settings, List<ArgToken> argTokens)
 	{
-		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString);
-		if (settingsDict == null) throw new SearchException($"Unable to parse json");
-		var keys = settingsDict.Keys.ToList();
-		// keys are sorted so that output is consistent across all versions
-		keys.Sort();
-		var invalidKeys = keys.Except(LongArgDictionary.Keys).ToList();
-		if (invalidKeys.Count > 0)
+		foreach (var argToken in argTokens)
 		{
-			throw new SearchException($"Invalid option: {invalidKeys[0]}");
-		}
-		foreach (var key in keys)
-		{
-			ApplySetting(key, settingsDict[key], settings);
+			ApplyArgTokenToSettings(argToken, settings);
 		}
 	}
 
-	private void UpdateSettingsFromFile(string filePath, SearchSettings settings)
+	private void UpdateSettingsFromDictionary(SearchSettings settings, Dictionary<string, object> dictionary)
 	{
-		var expandedPath = FileUtil.ExpandPath(filePath);
-		var fileInfo = new FileInfo(expandedPath);
-		if (!fileInfo.Exists)
-			throw new SearchException("Settings file not found: " + filePath);
-		if (!fileInfo.Extension.Equals(".json"))
-			throw new SearchException($"Invalid settings file (must be JSON): {filePath}");
-		var contents = FileUtil.GetFileContents(expandedPath, Encoding.Default);
-		try
-		{
-			UpdateSettingsFromJson(contents, settings);
-		}
-		catch (JsonException)
-		{
-			throw new SearchException($"Unable to parse JSON in settings file: {filePath}");
-		}
+		var argTokens = ArgTokenizer.TokenizeDictionary(dictionary);
+		UpdateSettingsFromArgTokens(settings, argTokens);
+	}
+
+	public void UpdateSettingsFromJson(SearchSettings settings, string jsonString)
+	{
+		var argTokens = ArgTokenizer.TokenizeJson(jsonString);
+		UpdateSettingsFromArgTokens(settings, argTokens);
+	}
+
+	public SearchSettings SettingsFromJson(string jsonString)
+	{
+		var settings = new SearchSettings();
+		UpdateSettingsFromJson(settings, jsonString);
+		return settings;
+	}
+
+	public void UpdateSettingsFromFile(SearchSettings settings, string filePath)
+	{
+		var argTokens = ArgTokenizer.TokenizeFile(filePath);
+		UpdateSettingsFromArgTokens(settings, argTokens);
+	}
+
+	public SearchSettings SettingsFromFile(string filePath)
+	{
+		var settings = new SearchSettings();
+		UpdateSettingsFromFile(settings, filePath);
+		return settings;
+	}
+
+	public void UpdateSettingsFromArgs(SearchSettings settings, IEnumerable<string> args)
+	{
+		var argTokens = ArgTokenizer.TokenizeArgs(args);
+		UpdateSettingsFromArgTokens(settings, argTokens);
 	}
 
 	public SearchSettings SettingsFromArgs(IEnumerable<string> args)
 	{
-		// default to PrintResults = true since this is called from CLI functionality
+		// default to PrintResults = true since this is called from CLI
 		var settings = new SearchSettings {PrintResults = true};
-		var queue = new Queue<string>(args);
-
-		while (queue.Count > 0)
-		{
-			var arg = queue.Dequeue();
-			if (arg.StartsWith('-'))
-			{
-				try
-				{
-					while (arg.StartsWith('-'))
-					{
-						arg = arg[1..];
-					}
-				}
-				catch (InvalidOperationException e)
-				{
-					throw new SearchException(e.Message);
-				}
-				if (string.IsNullOrWhiteSpace(arg))
-				{
-					throw new SearchException("Invalid option: -");
-				}
-
-				if (LongArgDictionary.TryGetValue(arg, out var longArg))
-				{
-					if (BoolActionDictionary.TryGetValue(longArg, out var boolAction))
-					{
-						boolAction(true, settings);
-					}
-					else if (StringActionDictionary.TryGetValue(longArg, out var stringAction))
-					{
-						try
-						{
-							stringAction(queue.Dequeue(), settings);
-						}
-						catch (InvalidOperationException)
-						{
-							throw new SearchException($"Missing value for option {arg}");
-						}
-					}
-					else if (IntActionDictionary.TryGetValue(longArg, out var intAction))
-					{
-						try
-						{
-							intAction(int.Parse(queue.Dequeue()), settings);
-						}
-						catch (InvalidOperationException)
-						{
-							throw new SearchException($"Missing value for option {arg}");
-						}
-					}
-					else if (longArg.Equals("settings-file"))
-					{
-						try
-						{
-							UpdateSettingsFromFile(queue.Dequeue(), settings);
-						}
-						catch (InvalidOperationException)
-						{
-							throw new SearchException($"Missing value for option {arg}");
-						}
-					}
-					else
-					{
-						throw new SearchException($"Invalid option: {arg}");
-					}
-				}
-				else
-				{
-					throw new SearchException($"Invalid option: {arg}");
-				}
-			}
-			else
-			{
-				settings.AddPath(arg);
-			}
-		}
+		UpdateSettingsFromArgs(settings, args);
 		return settings;
 	}
 

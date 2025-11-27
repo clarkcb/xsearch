@@ -87,7 +87,7 @@ public class SearchOptionsTests
 }";
 		var options = new SearchOptions();
 		var settings = new SearchSettings();
-		options.UpdateSettingsFromJson(json, settings);
+		options.UpdateSettingsFromJson(settings, json);
 		var startPath = new FilePath("~/src/xsearch/");
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));

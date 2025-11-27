@@ -1,9 +1,13 @@
-﻿namespace CsSearchLib;
+﻿using CsFindLib;
 
-public class SearchOption(string? shortArg, string longArg, string description)
+namespace CsSearchLib;
+
+public class SearchOption(string? shortArg, string longArg, string description, ArgTokenType argType): IOption
 {
 	public string? ShortArg { get; } = shortArg;
 	public string LongArg { get; } = longArg;
+	public string Description { get; } = description;
+	public ArgTokenType ArgType { get; } =  argType;
 
 	public string SortArg
 	{
@@ -15,5 +19,4 @@ public class SearchOption(string? shortArg, string longArg, string description)
 			return longArg;
 		}
 	}
-	public string Description { get; } = description;
 }
