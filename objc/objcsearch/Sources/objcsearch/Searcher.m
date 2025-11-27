@@ -11,6 +11,9 @@
     self = [super init];
     if (self) {
         self.finder = [[Finder alloc] initWithSettings:settings error:error];
+        if (*error) {
+            return self;
+        }
         self.settings = settings;
         if (![self validateSettings:settings error:error]) {
             return self;
@@ -246,7 +249,7 @@
     NSString *contents = [[NSString alloc] initWithContentsOfFile:fr.filePath
                                                          encoding:self.textFileEncoding
                                                             error:error];
-    if (*error != nil) {
+    if (*error) {
         if ([[*error domain] isEqualToString:@"NSCocoaErrorDomain"] && [*error code] == 261) {
             // this indicates problem reading text file with encoding, just reset the error and move on
             *error = nil;
@@ -326,8 +329,14 @@
     //logMsg(@"Searching...");
     NSMutableArray<SearchResult*> *searchResults = [NSMutableArray array];
     NSArray<FileResult*> *fileResults = [self.finder find:error];
+    if (*error) {
+        return [NSArray arrayWithArray:searchResults];
+    }
     for (FileResult *fr in fileResults) {
         [searchResults addObjectsFromArray:[self searchFile:fr error:error]];
+        if (*error) {
+            return [NSArray arrayWithArray:searchResults];
+        }
     }
 
     if ([searchResults count] > 1) {
