@@ -10,33 +10,26 @@ Class to encapsulate all command line search options
 
 package javasearch;
 
-import javafind.FileUtil;
-import javafind.SortBy;
+import javafind.*;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
+
+import static javafind.FindError.STARTPATH_NOT_DEFINED;
 
 public class SearchOptions {
     private static final String SEARCH_OPTIONS_JSON_PATH = "/searchoptions.json";
     private final List<SearchOption> options;
-    // We add path manually because it's not an option in searchoptions.json
-    private final Map<String, String> longArgMap = new HashMap<>() {
-        {
-            put("path", "path");
-        }
-    };
+    private final ArgTokenizer argTokenizer;
 
     public SearchOptions() throws IOException {
         options = new ArrayList<>();
         setOptionsFromJson();
+        argTokenizer = new ArgTokenizer(options);
     }
 
     @FunctionalInterface
@@ -153,138 +146,136 @@ public class SearchOptions {
 
         for (int i=0; i<searchOptionsArray.length(); i++) {
             var searchOptionObj = searchOptionsArray.getJSONObject(i);
-            var longArg = searchOptionObj.getString("long");
-            longArgMap.put(longArg, longArg);
-            var desc = searchOptionObj.getString("desc");
             var shortArg = "";
             if (searchOptionObj.has("short")) {
                 shortArg = searchOptionObj.getString("short");
-                longArgMap.put(shortArg, longArg);
             }
-            options.add(new SearchOption(shortArg, longArg, desc));
+            var longArg = searchOptionObj.getString("long");
+            var desc = searchOptionObj.getString("desc");
+            var argType = ArgTokenType.UNKNOWN;
+            if (boolActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.BOOL;
+            } else if (stringActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.STR;
+            } else if (intActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.INT;
+            } else if (longActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.LONG;
+            }
+            options.add(new SearchOption(shortArg, longArg, desc, argType));
         }
     }
 
-    private void applySetting(final String arg, final Object obj, SearchSettings settings)
+    private void applyArgTokenToSettings(final ArgToken argToken, SearchSettings settings)
             throws SearchException {
-        if (this.boolActionMap.containsKey(arg)) {
-            if (obj instanceof Boolean) {
-                this.boolActionMap.get(arg).set((Boolean)obj, settings);
+        if (argToken.type().equals(ArgTokenType.BOOL)) {
+            if (argToken.value() instanceof Boolean b) {
+                this.boolActionMap.get(argToken.name()).set(b, settings);
             } else {
-                throw new SearchException("Invalid value for option: " + arg);
+                throw new SearchException("Invalid value for option: " + argToken.name());
             }
-        } else if (this.stringActionMap.containsKey(arg)) {
-            if (obj instanceof String) {
-                this.stringActionMap.get(arg).set((String)obj, settings);
-            } else if (obj instanceof JSONArray) {
-                for (int i=0; i < ((JSONArray)obj).length(); i++) {
-                    Object item = ((JSONArray)obj).get(i);
-                    if (item instanceof String) {
-                        this.stringActionMap.get(arg).set((String)item, settings);
+        } else if (argToken.type().equals(ArgTokenType.STR)) {
+            if (argToken.value() instanceof String s) {
+                if (argToken.name().equals("settings-file")) {
+                    updateSettingsFromFilePath(settings, s);
+                } else {
+                    this.stringActionMap.get(argToken.name()).set(s, settings);
+                }
+            } else if (argToken.value() instanceof Collection<?> coll) {
+                for (Object item : coll) {
+                    if (item instanceof String s) {
+                        this.stringActionMap.get(argToken.name()).set(s, settings);
                     } else {
-                        throw new SearchException("Invalid value for option: " + arg);
+                        throw new SearchException("Invalid value for option: " + argToken.name());
+                    }
+                }
+            } else if (argToken.value() instanceof JSONArray jsonArray) {
+                for (var i = 0; i < jsonArray.length(); i++) {
+                    Object item = jsonArray.get(i);
+                    if (item instanceof String s) {
+                        this.stringActionMap.get(argToken.name()).set(s, settings);
+                    } else {
+                        throw new SearchException("Invalid value for option: " + argToken.name());
                     }
                 }
             } else {
-                throw new SearchException("Invalid value for option: " + arg);
+                throw new SearchException("Invalid value for option: " + argToken.name());
             }
-        } else if (this.intActionMap.containsKey(arg)) {
-            if (obj instanceof Integer) {
-                this.intActionMap.get(arg).set((Integer)obj, settings);
-            } else if (obj instanceof Long) {
-                this.intActionMap.get(arg).set(((Long)obj).intValue(), settings);
+        } else if (argToken.type().equals(ArgTokenType.INT)) {
+            if (argToken.value() instanceof Integer i) {
+                this.intActionMap.get(argToken.name()).set(i, settings);
+            } else if (argToken.value() instanceof Long l) {
+                this.intActionMap.get(argToken.name()).set(l.intValue(), settings);
             } else {
-                throw new SearchException("Invalid value for option: " + arg);
+                throw new SearchException("Invalid value for option: " + argToken.name());
             }
-        } else if (this.longActionMap.containsKey(arg)) {
-            if (obj instanceof Integer) {
-                this.longActionMap.get(arg).set(((Integer)obj).longValue(), settings);
-            } else if (obj instanceof Long) {
-                this.longActionMap.get(arg).set((Long)obj, settings);
+        } else if (argToken.type().equals(ArgTokenType.LONG)) {
+            if (argToken.value() instanceof Integer i) {
+                this.longActionMap.get(argToken.name()).set(i.longValue(), settings);
+            } else if (argToken.value() instanceof Long l) {
+                this.longActionMap.get(argToken.name()).set(l, settings);
             } else {
-                throw new SearchException("Invalid value for option: " + arg);
+                throw new SearchException("Invalid value for option: " + argToken.name());
             }
         } else {
-            // should never get here
-            throw new SearchException("Invalid option: " + arg);
+            throw new SearchException("Invalid option: " + argToken.name());
         }
     }
 
-    public void settingsFromJson(final String json, SearchSettings settings) throws SearchException {
-        var jsonObj = new JSONObject(new JSONTokener(json));
-        // keys are sorted so that output is consistent across all versions
-        var keys = jsonObj.keySet().stream().sorted().toList();
-        var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).toList();
-        if (!invalidKeys.isEmpty()) {
-            throw new SearchException("Invalid option: " + invalidKeys.get(0));
-        }
-        for (var k : keys) {
-            var v = jsonObj.get(k);
-            if (v != null) {
-                applySetting(k, v, settings);
-            }
+    private void updateSettingsFromArgTokens(SearchSettings settings, final List<ArgToken> argTokens) throws SearchException {
+        for (var argToken : argTokens) {
+            applyArgTokenToSettings(argToken, settings);
         }
     }
 
-    private void settingsFromFilePath(final String filePath, final SearchSettings settings) throws SearchException {
-        var path = FileUtil.expandPath(Paths.get(filePath));
-        if (!Files.exists(path)) {
-            throw new SearchException("Settings file not found: " + filePath);
-        }
-        if (!filePath.endsWith( ".json")) {
-            throw new SearchException("Invalid settings file (must be JSON): " + filePath);
-        }
+    public void updateSettingsFromJson(SearchSettings settings, final String json) throws SearchException {
         try {
-            settingsFromJson(FileUtil.getFileContents(path), settings);
-        } catch (FileNotFoundException e) {
-            throw new SearchException("Settings file not found: " + filePath);
-        } catch (IOException e) {
-            throw new SearchException("IOException reading settings file: " + filePath);
-        } catch (JSONException e) {
-            throw new SearchException("Unable to parse JSON in settings file: " + filePath);
+            var argTokens = argTokenizer.tokenizeJson(json);
+            updateSettingsFromArgTokens(settings, argTokens);
+        } catch (FindException e) {
+            throw new SearchException(e.getMessage());
+        }
+    }
+
+    public final SearchSettings settingsFromJson(final String json) throws SearchException {
+        var settings = new SearchSettings();
+        updateSettingsFromJson(settings, json);
+        return settings;
+    }
+
+    public void updateSettingsFromFilePath(SearchSettings settings, final String filePath) throws SearchException {
+        try {
+            var argTokens = argTokenizer.tokenizeFilePath(filePath);
+            updateSettingsFromArgTokens(settings, argTokens);
+        } catch (FindException e) {
+            throw new SearchException(e.getMessage());
+        }
+    }
+
+    public SearchSettings settingsFromFilePath(final String filePath) throws SearchException {
+        var settings = new SearchSettings();
+        updateSettingsFromFilePath(settings, filePath);
+        return settings;
+    }
+
+    public final void updateSettingsFromArgs(SearchSettings settings, final String[] args) throws SearchException {
+        try {
+            var argTokens = argTokenizer.tokenizeArgs(args);
+            updateSettingsFromArgTokens(settings, argTokens);
+        } catch (FindException e) {
+            throw new SearchException(e.getMessage());
         }
     }
 
     public final SearchSettings settingsFromArgs(final String[] args) throws SearchException {
-        SearchSettings settings = new SearchSettings();
+        if (args == null || args.length == 0) {
+            throw new SearchException(STARTPATH_NOT_DEFINED.getMessage());
+        }
+
+        var settings = new SearchSettings();
         // default printResults to true since running from command line
         settings.setPrintResults(true);
-
-        Queue<String> queue = new LinkedList<>(Arrays.asList(args));
-        while (!queue.isEmpty()) {
-            String arg = queue.remove();
-            if (arg.startsWith("-")) {
-                while (arg.startsWith("-")) {
-                    arg = arg.substring(1);
-                }
-                var longArg = longArgMap.get(arg);
-                if (this.boolActionMap.containsKey(longArg)) {
-                    this.boolActionMap.get(longArg).set(true, settings);
-                } else if (this.stringActionMap.containsKey(longArg)
-                        || this.intActionMap.containsKey(longArg)
-                        || this.longActionMap.containsKey(longArg)
-                        || longArg.equals("settings-file")) {
-                    if (!queue.isEmpty()) {
-                        String argVal = queue.remove();
-                        if (this.stringActionMap.containsKey(longArg)) {
-                            this.stringActionMap.get(longArg).set(argVal, settings);
-                        } else if (this.intActionMap.containsKey(longArg)) {
-                            this.intActionMap.get(longArg).set(Integer.parseInt(argVal), settings);
-                        } else if (this.longActionMap.containsKey(longArg)) {
-                            this.longActionMap.get(longArg).set(Long.parseLong(argVal), settings);
-                        } else if (longArg.equals("settings-file")) {
-                            settingsFromFilePath(argVal, settings);
-                        }
-                    } else {
-                        throw new SearchException("Missing value for option " + arg);
-                    }
-                } else {
-                    throw new SearchException("Invalid option: " + arg);
-                }
-            } else {
-                settings.addPath(arg);
-            }
-        }
+        updateSettingsFromArgs(settings, args);
         return settings;
     }
 

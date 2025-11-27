@@ -84,7 +84,7 @@ public class SearchOptionsTest {
         try {
             SearchOptions searchOptions = new SearchOptions();
             SearchSettings settings = new SearchSettings();
-            searchOptions.settingsFromJson(json.toString(), settings);
+            searchOptions.updateSettingsFromJson(settings, json.toString());
 
             assertEquals(1, settings.getPaths().size());
             assertTrue(settings.getPaths().contains(Paths.get("~/src/xsearch/")));
