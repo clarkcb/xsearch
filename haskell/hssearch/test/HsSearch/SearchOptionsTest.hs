@@ -18,7 +18,8 @@ getSettingsFromNoArgsTests = do
   case searchOptionsEither of
     Left _ -> return [ testCase "getSettingsFromNoArgsTests" (True @?= False) ]
     Right searchOptions -> do
-      case settingsFromArgs searchOptions [] of
+      settingsEither <- settingsFromArgs searchOptions []
+      case settingsEither of
         Left _ -> return [ testCase "getSettingsFromNoArgsTests" (True @?= False) ]
         Right settings ->
           return [ testCase "archivesOnly" (archivesOnly settings @?= False)
@@ -51,7 +52,8 @@ getSettingsFromArgsTests = do
   case searchOptionsEither of
     Left _ -> return [ testCase "getSettingsFromArgsTests" (True @?= False) ]
     Right searchOptions -> do
-      case settingsFromArgs searchOptions args of
+      settingsEither <- settingsFromArgs searchOptions args
+      case settingsEither of
         Left _ -> return [ testCase "getSettingsFromArgsTests" (True @?= False) ]
         Right settings ->
           return [ testCase "paths ." (paths settings @?= ["."])
@@ -69,7 +71,8 @@ getArchivesOnlyTests = do
   case searchOptionsEither of
     Left _ -> return [ testCase "getArchivesOnlyTests" (True @?= False) ]
     Right searchOptions -> do
-      case settingsFromArgs searchOptions args of
+      settingsEither <- settingsFromArgs searchOptions args
+      case settingsEither of
         Left _ -> return [ testCase "getArchivesOnlyTests" (True @?= False) ]
         Right settings ->
           return [ testCase "archivesOnly" (archivesOnly settings @?= True)
@@ -83,7 +86,8 @@ getDebugTests = do
   case searchOptionsEither of
     Left _ -> return [ testCase "getDebugTests" (True @?= False) ]
     Right searchOptions -> do
-      case settingsFromArgs searchOptions args of
+      settingsEither <- settingsFromArgs searchOptions args
+      case settingsEither of
         Left _ -> return [ testCase "getDebugTests" (True @?= False) ]
         Right settings ->
           return [ testCase "debug" (debug settings @?= True)

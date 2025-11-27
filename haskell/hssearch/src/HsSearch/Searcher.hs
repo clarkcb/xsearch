@@ -26,7 +26,7 @@ import Text.Regex.PCRE
 import HsFind.FileResult
 import HsFind.FileTypes
 import HsFind.FileUtil
-import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, validateFindSettings)
+import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
@@ -57,7 +57,7 @@ validateSearchSettings settings =
 
 getSearchFiles :: SearchSettings -> IO (Either String [FileResult])
 getSearchFiles settings = do
-  doFind $ toFindSettings settings
+  doFind $ getFinder $ toFindSettings settings
 
 -- searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
 searchBinaryFile :: SearchSettings -> FileResult -> IO [SearchResult]
@@ -279,7 +279,7 @@ doSearchFiles settings files = do
 
 doSearch :: SearchSettings -> IO (Either String [SearchResult])
 doSearch settings = do
-  findResultsEither <- doFind $ toFindSettings settings
+  findResultsEither <- getSearchFiles settings
   case findResultsEither of
     Left err -> return $ Left err
     Right fileResults -> do

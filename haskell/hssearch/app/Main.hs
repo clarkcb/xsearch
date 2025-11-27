@@ -24,12 +24,12 @@ main = do
       logMsg "\n"
       logErr $ errMsg ++ "\n"
     Right searchOptions -> do
-      settingsFromArgsEither <- ioSettingsFromArgs searchOptions args
+      settingsFromArgsEither <- settingsFromArgs searchOptions args
       case settingsFromArgsEither of
         Left errMsg -> do
           logMsg "\n"
           logErr $ errMsg ++ "\n"
-          logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+          logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
         Right settings -> do
           logMsg $ if debug settings
                    then searchSettingsToString settings ++ "\n"
@@ -37,18 +37,17 @@ main = do
           case validateSearchSettings settings of
             Just errMsg -> do
               logMsg "\n"
-              logErr $ errMsg ++ "\n"
-              logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+              logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
             Nothing -> do
               if printUsage settings
-              then logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+              then logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
               else do
                 searchResultsEither <- doSearch settings
                 case searchResultsEither of
                   Left errMsg -> do
                     logMsg "\n"
                     logErr $ errMsg ++ "\n"
-                    logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
+                    logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
                   Right searchResults -> do
                     logMsg $ formatSearchResults settings searchResults
                     logMsg $ if printDirs settings
