@@ -17,6 +17,7 @@ sub new {
         short_arg => shift,
         long_arg => shift,
         desc => shift,
+        arg_type => shift,
     };
     bless $self, $class;
     return $self;
