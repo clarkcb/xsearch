@@ -8,18 +8,17 @@
 #
 ###############################################################################
 """
+from pyfind import ArgTokenType, Option
 
 
-class SearchOption(object):
+class SearchOption(Option):
     """a class to encapsulate a specific command line option"""
 
-    __slots__ = ['short_arg', 'long_arg', 'desc', 'func']
-
-    def __init__(self, short_arg: str, long_arg: str, desc: str, func):
+    def __init__(self, short_arg: str, long_arg: str, desc: str, arg_type: ArgTokenType):
         self.short_arg = short_arg
         self.long_arg = long_arg
         self.desc = desc
-        self.func = func
+        self.arg_type = arg_type
 
     @property
     def sort_arg(self):

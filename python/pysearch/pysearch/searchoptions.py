@@ -11,25 +11,26 @@
 """
 import importlib.resources
 import json
-import os
 import sys
-from collections import deque
+from datetime import datetime
 from io import StringIO
-from typing import List
+from typing import Any
 
-from pyfind import common
+from pyfind import common, ArgToken, ArgTokenType, ArgTokenizer
+
 from .searchexception import SearchException
 from .searchoption import SearchOption
 from .searchsettings import SearchSettings
 
 
-class SearchOptions(object):
+class SearchOptions:
     """class to provide usage info and parse command-line arguments into settings"""
 
     def __init__(self):
         self.options = []
         self.__set_dicts()
         self.__set_options_from_json()
+        self.arg_tokenizer = ArgTokenizer(options=self.options)
 
     def __set_dicts(self):
         self.__bool_action_dict = {
@@ -197,7 +198,7 @@ class SearchOptions(object):
                 settings.set_sort_by(s),
         }
 
-        self.__dt_action_dict = {
+        self.__date_action_dict = {
             'lastmod-after':
                 lambda dt, settings:
                 settings.set_property('lastmod_after', dt),
@@ -236,10 +237,6 @@ class SearchOptions(object):
                 settings.set_property('min_size', i),
         }
 
-        self.__long_arg_dict = {
-            'path': 'path'
-        }
-
     def __set_options_from_json(self):
         data = importlib.resources.files('pysearch').joinpath('data')
         search_options_json = data.joinpath('searchoptions.json').read_text()
@@ -251,134 +248,100 @@ class SearchOptions(object):
                 short_arg = search_option_obj['short']
             desc = search_option_obj['desc']
             if long_arg in self.__bool_action_dict:
-                func = self.__bool_action_dict[long_arg]
+                arg_type = ArgTokenType.BOOL
             elif long_arg in self.__str_action_dict:
-                func = self.__str_action_dict[long_arg]
-            elif long_arg in self.__dt_action_dict:
-                func = self.__dt_action_dict[long_arg]
+                arg_type = ArgTokenType.STR
+            elif long_arg in self.__date_action_dict:
+                arg_type = ArgTokenType.DATE
             elif long_arg in self.__int_action_dict:
-                func = self.__int_action_dict[long_arg]
+                arg_type = ArgTokenType.INT
+            # special case for settings-file which is not in any dict
             elif long_arg == 'settings-file':
-                func = self.update_settings_from_file
+                arg_type = ArgTokenType.STR
             else:
                 raise SearchException(f'Unknown search option: {long_arg}')
-            self.options.append(SearchOption(short_arg, long_arg, desc, func))
-            self.__long_arg_dict[long_arg] = long_arg
-            if short_arg:
-                self.__long_arg_dict[short_arg] = long_arg
+            self.options.append(SearchOption(short_arg, long_arg, desc, arg_type))
 
-    def update_settings_from_json(self, json_str: str, settings: SearchSettings):
-        """Read settings from a JSON string"""
-        json_dict = json.loads(json_str)
-        # keys are sorted so that output is consistent across all versions
-        keys = sorted(json_dict.keys())
-        invalid_keys = [k for k in keys if k not in self.__long_arg_dict]
-        if invalid_keys:
-            raise SearchException(f'Invalid option: {invalid_keys[0]}')
-        for arg in keys:
-            if arg in self.__bool_action_dict:
-                if json_dict[arg] is True or json_dict[arg] is False:
-                    self.__bool_action_dict[arg](json_dict[arg], settings)
-                else:
-                    raise SearchException(f'Invalid value for option: {arg}')
-            elif arg in self.__str_action_dict:
-                if type(json_dict[arg]) == str:
-                    self.__str_action_dict[arg](json_dict[arg], settings)
-                elif type(json_dict[arg]) == list:
-                    for item in json_dict[arg]:
-                        if type(item) == str:
-                            self.__str_action_dict[arg](item, settings)
-                        else:
-                            raise SearchException(f'Invalid value for option: {arg}')
-                else:
-                    raise SearchException(f'Invalid value for option: {arg}')
-            elif arg in self.__dt_action_dict:
-                if type(json_dict[arg]) == str:
-                    self.__dt_action_dict[arg](common.parse_datetime_str(json_dict[arg]), settings)
-                else:
-                    raise SearchException(f'Invalid value for option: {arg}')
-            elif arg in self.__int_action_dict:
-                if type(json_dict[arg]) == int:
-                    self.__int_action_dict[arg](json_dict[arg], settings)
-                else:
-                    raise SearchException(f'Invalid value for option: {arg}')
-            else:
-                # should never get here
-                raise SearchException(f'Invalid option: {arg}')
-
-    def update_settings_from_file(self, file_path: str, settings: SearchSettings):
-        """Read settings from a JSON file"""
-        expanded_path = os.path.expanduser(file_path)
-        if not os.path.exists(expanded_path):
-            raise SearchException(f'Settings file not found: {file_path}')
-        if not file_path.strip().endswith('.json'):
-            raise SearchException(f'Invalid settings file (must be JSON): {file_path}')
-        with open(expanded_path, encoding='UTF-8') as f:
-            json_str = f.read()
-        try:
-            self.update_settings_from_json(json_str, settings)
-        except json.JSONDecodeError:
-            raise SearchException(f'Unable to parse JSON in settings file: {file_path}')
-
-    def update_settings_from_args(self, settings: SearchSettings, args: List[str]) -> SearchSettings:
-        """Updates a SearchSettings instance from a given list of args"""
-        arg_deque = deque(args)
-        while arg_deque:
-            arg = arg_deque.popleft()
-            if arg.startswith('-'):
-                while arg and arg.startswith('-'):
-                    arg = arg[1:]
-                if arg not in self.__long_arg_dict:
-                    raise SearchException(f'Invalid option: {arg}')
-                long_arg = self.__long_arg_dict[arg]
-                if long_arg in self.__bool_action_dict:
-                    self.__bool_action_dict[long_arg](True, settings)
-                    if long_arg in ('help', 'version'):
-                        return settings
-                elif long_arg in self.__str_action_dict or \
-                        long_arg in self.__dt_action_dict or \
-                        long_arg in self.__int_action_dict or \
-                        long_arg == 'settings-file':
-                    if arg_deque:
-                        arg_val = arg_deque.popleft()
-                        if long_arg in self.__str_action_dict:
-                            self.__str_action_dict[long_arg](arg_val, settings)
-                        elif long_arg in self.__dt_action_dict:
-                            self.__dt_action_dict[long_arg](
-                                common.parse_datetime_str(arg_val), settings)
-                        elif long_arg in self.__int_action_dict:
-                            invalid_int = False
-                            i = 0
-                            try:
-                                i = int(arg_val)
-                            except ValueError:
-                                invalid_int = True
-                            else:
-                                if i < 0:
-                                    invalid_int = True
-                            if invalid_int:
-                                err = f'Invalid value for option {arg}: {arg_val}'
-                                raise SearchException(err)
-                            self.__int_action_dict[long_arg](i, settings)
-                        elif long_arg in self.__str_action_dict:
-                            self.__str_action_dict[long_arg](arg_val, settings)
-                        elif long_arg == 'settings-file':
-                            self.update_settings_from_file(arg_val, settings)
+    def update_settings_from_arg_tokens(self, settings: SearchSettings, arg_tokens: list[ArgToken]):
+        """Update settings from a list of arg tokens"""
+        for arg_token in arg_tokens:
+            if arg_token.token_type == ArgTokenType.BOOL:
+                if arg_token.name in self.__bool_action_dict:
+                    if type(arg_token.value) is bool:
+                        self.__bool_action_dict[arg_token.name](arg_token.value, settings)
                     else:
-                        raise SearchException(f'Missing value for option {arg}')
+                        raise SearchException(f'Invalid value for option: {arg_token.name}')
                 else:
-                    raise SearchException(f'Invalid option: {arg}')
+                    raise SearchException(f'Invalid option: {arg_token.name}')
+            elif arg_token.token_type == ArgTokenType.STR:
+                if arg_token.name == 'settings-file':
+                    self.update_settings_from_file(settings, arg_token.value)
+                elif arg_token.name in self.__str_action_dict:
+                    if type(arg_token.value) is str:
+                        self.__str_action_dict[arg_token.name](arg_token.value, settings)
+                    else:
+                        raise SearchException(f'Invalid value for option: {arg_token.name}')
+                else:
+                    raise SearchException(f'Invalid option: {arg_token.name}')
+            elif arg_token.token_type == ArgTokenType.INT:
+                if arg_token.name in self.__int_action_dict:
+                    if type(arg_token.value) is int:
+                        self.__int_action_dict[arg_token.name](arg_token.value, settings)
+                    else:
+                        raise SearchException(f'Invalid value for option: {arg_token.name}')
+                else:
+                    raise SearchException(f'Invalid option: {arg_token.name}')
+            elif arg_token.token_type == ArgTokenType.DATE:
+                if arg_token.name in self.__date_action_dict:
+                    if type(arg_token.value) is datetime:
+                        self.__date_action_dict[arg_token.name](arg_token.value, settings)
+                    else:
+                        raise SearchException(f'Invalid value for option: {arg_token.name}')
+                else:
+                    raise SearchException(f'Invalid option: {arg_token.name}')
             else:
-                settings.add_path(arg)
+                raise SearchException(f'Invalid option: {arg_token.name}')
+
+    def update_settings_from_arg_dict(self, settings: SearchSettings, arg_dict: dict[str, Any]):
+        """Update settings from a dict of args"""
+        arg_tokens = self.arg_tokenizer.tokenize_arg_dict(arg_dict)
+        self.update_settings_from_arg_tokens(settings, arg_tokens)
+
+    def update_settings_from_json(self, settings: SearchSettings, json_str: str):
+        """Update settings from a JSON string"""
+        arg_tokens = self.arg_tokenizer.tokenize_json(json_str)
+        self.update_settings_from_arg_tokens(settings, arg_tokens)
+
+    def search_settings_from_json(self, json_str: str) -> SearchSettings:
+        """Read settings from a JSON string"""
+        settings = SearchSettings()
+        self.update_settings_from_json(settings, json_str)
         return settings
 
-    def search_settings_from_args(self, args: List[str]) -> SearchSettings:
-        """Returns a SearchSettings instance for a given list of args"""
+    def update_settings_from_file(self, settings: SearchSettings, file_path: str):
+        """Update settings from a JSON file"""
+        arg_tokens = self.arg_tokenizer.tokenize_file(file_path)
+        self.update_settings_from_arg_tokens(settings, arg_tokens)
+
+    def search_settings_from_file(self, file_path: str) -> SearchSettings:
+        """Read settings from a JSON file"""
+        settings = SearchSettings()
+        self.update_settings_from_file(settings, file_path)
+        return settings
+
+    def update_settings_from_args(self, settings: SearchSettings, args: list[str]):
+        """Update settings from a given list of args"""
+        arg_tokens = self.arg_tokenizer.tokenize_args(args)
+        self.update_settings_from_arg_tokens(settings, arg_tokens)
+
+    def search_settings_from_args(self, args: list[str]) -> SearchSettings:
+        """Read settings from a given list of args"""
         # default print_results to True since running from command line
         settings = SearchSettings(print_results=True)
-        return self.update_settings_from_args(settings, args)
+        self.update_settings_from_args(settings, args)
+        return settings
 
-    def __get_usage_string(self):
+    def __get_usage_string(self) -> str:
         sio = StringIO()
         sio.write('Usage:\n')
         sio.write(

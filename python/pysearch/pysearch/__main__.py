@@ -13,13 +13,12 @@ import sys
 
 from pyfind.common import log, log_error
 
+from . import VERSION
 from .searcher import (Searcher, print_search_results, print_search_dir_results,
                        print_search_file_results, print_search_lines_results)
 from .searchexception import SearchException
 from .searchoptions import SearchOptions
 from .searchresult import SearchResultFormatter
-
-VERSION = '0.1.0'
 
 
 async def main():

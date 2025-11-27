@@ -6,7 +6,8 @@ from .searchexception import SearchException
 from .searchoptions import SearchOptions
 from .searchresult import SearchResult, SearchResultFormatter, SearchResultSorter
 from .searchsettings import SearchSettings
-from pyfind import Color, FileResult, FileType
 
-__version__ = '0.1.0'
+VERSION = '0.1.0'
+
+__version__ = VERSION
 __author__ = 'Cary Clark'
