@@ -14,7 +14,8 @@ import java.nio.file.Paths
 /**
  * @author cary on 7/23/16.
  */
-data class SearchOption(val shortArg: String?, val longArg: String, val desc: String) {
+data class SearchOption(override val shortArg: String?, override val longArg: String,
+                        override val desc: String, override val argType: ArgTokenType) : Option {
     val sortArg =
             if (shortArg == null) {
                 longArg.lowercase()
@@ -27,34 +28,7 @@ class SearchOptions {
     private val searchOptionsJsonPath = "/searchoptions.json"
     private val searchOptions : List<SearchOption>
     // We add path manually since it's not an option in searchoptions.json
-    private var longArgMap = mutableMapOf<String, String>("path" to "path")
-
-    init {
-        searchOptions = loadSearchOptionsFromJson()
-    }
-
-    private fun loadSearchOptionsFromJson() : List<SearchOption> {
-        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsJsonPath)
-        val jsonObj = JSONObject(JSONTokener(searchOptionsInputStream))
-        val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
-        val options : MutableList<SearchOption> = mutableListOf()
-        while (searchOptionsArray.hasNext()) {
-            val searchOptionObj = searchOptionsArray.next() as JSONObject
-            val longArg = searchOptionObj.getString("long")
-            longArgMap[longArg] = longArg
-            val shortArg =
-                if (searchOptionObj.has("short")) {
-                    val sArg = searchOptionObj.getString("short")
-                    longArgMap[sArg] = longArg
-                    sArg
-                } else {
-                    null
-                }
-            val desc = searchOptionObj.getString("desc")
-            options.add(SearchOption(shortArg, longArg, desc))
-        }
-        return options.toList().sortedBy { it.sortArg }
-    }
+    private var argTokenizer: ArgTokenizer
 
     private val boolActionMap: Map<String, ((Boolean, SearchSettings) -> SearchSettings)> = mapOf(
         "archivesonly" to { b, ss ->
@@ -144,6 +118,8 @@ class SearchOptions {
                 { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
         "searchpattern" to
                 { s, ss -> ss.copy(searchPatterns = ss.searchPatterns.plus(Regex(s))) },
+        "settings-file" to
+                { s, ss -> updateSettingsFromFile(ss, s) },
         "sort-by" to
                 { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
     )
@@ -161,140 +137,127 @@ class SearchOptions {
         "minsize" to { l, ss -> ss.copy(minSize = l) },
     )
 
-    private fun applySettings(key: String, lst: List<Any>, settings: SearchSettings): SearchSettings {
-        return if (lst.isEmpty()) settings
-        else {
-            applySettings(key, lst.drop(1), applySetting(key, lst.first(), settings))
+    private fun loadSearchOptionsFromJson() : List<SearchOption> {
+        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsJsonPath)
+        val jsonObj = JSONObject(JSONTokener(searchOptionsInputStream))
+        val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
+        val options : MutableList<SearchOption> = mutableListOf()
+        while (searchOptionsArray.hasNext()) {
+            val searchOptionObj = searchOptionsArray.next() as JSONObject
+            val longArg = searchOptionObj.getString("long")
+            val shortArg =
+                if (searchOptionObj.has("short")) {
+                    val sArg = searchOptionObj.getString("short")
+                    sArg
+                } else {
+                    null
+                }
+            val desc = searchOptionObj.getString("desc")
+            var argType = ArgTokenType.UNKNOWN
+            if (boolActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.BOOL
+            } else if (stringActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.STR
+            } else if (intActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.INT
+            } else if (longActionMap.containsKey(longArg)) {
+                argType = ArgTokenType.LONG
+            }
+            options.add(SearchOption(shortArg, longArg, desc, argType))
         }
+        return options.toList()
     }
 
-    private fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
-        if (boolActionMap.containsKey(key)) {
-            if (obj is Boolean) {
-                return this.boolActionMap[key]!!.invoke(obj, settings)
+    init {
+        searchOptions = loadSearchOptionsFromJson()
+        argTokenizer = ArgTokenizer(searchOptions)
+    }
+
+    private fun applyArgTokenToSettings(argToken: ArgToken, settings: SearchSettings): SearchSettings {
+        if (argToken.type == ArgTokenType.BOOL) {
+            if (argToken.value is Boolean) {
+                return this.boolActionMap[argToken.name]!!.invoke(argToken.value as Boolean, settings)
             } else {
-                throw SearchException("Invalid value for option: $key")
+                throw SearchException("Invalid value for option: ${argToken.name}")
             }
-        } else if (stringActionMap.containsKey(key)) {
-            return if (obj is String) {
-                this.stringActionMap[key]!!.invoke(obj, settings)
-            } else if (obj is JSONArray) {
-                applySettings(key, obj.toList(), settings)
-            } else {
-                throw SearchException("Invalid value for option: $key")
+        } else if (argToken.type == ArgTokenType.STR) {
+            return when (argToken.value) {
+                is String -> {
+                    this.stringActionMap[argToken.name]!!.invoke(argToken.value as String, settings)
+                }
+                is Iterable<*> -> {
+                    var updatedSettings: SearchSettings = settings
+                    for (v in argToken.value as Iterable<*>) {
+                        if (v is String) {
+                            updatedSettings = this.stringActionMap[argToken.name]!!.invoke(v, updatedSettings)
+                        } else {
+                            throw SearchException("Invalid value for option: ${argToken.name}")
+                        }
+                    }
+                    updatedSettings
+                }
+                else -> {
+                    throw SearchException("Invalid value for option: ${argToken.name}")
+                }
             }
-        } else if (intActionMap.containsKey(key)) {
-            return if (obj is Int) {
-                this.intActionMap[key]!!.invoke(obj, settings)
-            } else if (obj is Long) {
-                this.intActionMap[key]!!.invoke(obj.toInt(), settings)
-            } else {
-                throw SearchException("Invalid value for option: $key")
+        } else if (argToken.type == ArgTokenType.INT) {
+            return when (argToken.value) {
+                is Int -> {
+                    this.intActionMap[argToken.name]!!.invoke(argToken.value as Int, settings)
+                }
+                is Long -> {
+                    this.intActionMap[argToken.name]!!.invoke((argToken.value as Long).toInt(), settings)
+                }
+                else -> {
+                    throw SearchException("Invalid value for option: ${argToken.name}")
+                }
             }
-        } else if (longActionMap.containsKey(key)) {
-            return if (obj is Int) {
-                this.longActionMap[key]!!.invoke(obj.toLong(), settings)
-            } else if (obj is Long) {
-                this.longActionMap[key]!!.invoke(obj, settings)
-            } else {
-                throw SearchException("Invalid value for option: $key")
+        } else if (argToken.type == ArgTokenType.LONG) {
+            return when (argToken.value) {
+                is Int -> {
+                    this.longActionMap[argToken.name]!!.invoke((argToken.value as Int).toLong(), settings)
+                }
+                is Long -> {
+                    this.longActionMap[argToken.name]!!.invoke(argToken.value as Long, settings)
+                }
+                else -> {
+                    throw SearchException("Invalid value for option: ${argToken.name}")
+                }
             }
         } else {
-            throw SearchException("Invalid option: $key")
+            throw SearchException("Invalid option: ${argToken.name}")
         }
     }
 
-    fun settingsFromJson(json: String, settings: SearchSettings): SearchSettings {
-        val jsonObject = JSONObject(JSONTokener(json))
-        fun recSettingsFromJson(keys: List<String>, settings: SearchSettings) : SearchSettings {
-            return if (keys.isEmpty()) settings
-            else {
-                val ko = keys.first()
-                val vo = jsonObject.get(ko)
-                if (vo != null) {
-                    recSettingsFromJson(keys.drop(1), applySetting(ko, vo, settings))
-                } else {
-                    recSettingsFromJson(keys.drop(1), settings)
-                }
-            }
+    private fun updateSettingsFromArgTokens(settings: SearchSettings, argTokens: List<ArgToken>): SearchSettings {
+        var updatedSettings: SearchSettings = settings
+        for (argToken in argTokens) {
+            updatedSettings = applyArgTokenToSettings(argToken, updatedSettings)
         }
-        // keys are sorted so that output is consistent across all versions
-        val keys = jsonObject.keySet().toList().sorted()
-        val invalidKeys = keys.filter { !longArgMap.containsKey(it) }
-        if (invalidKeys.isNotEmpty()) {
-            throw SearchException("Invalid option: ${invalidKeys[0]}")
-        }
-        return recSettingsFromJson(keys, settings)
+        return updatedSettings
     }
 
-    private fun settingsFromFile(filePath: String, settings: SearchSettings) : SearchSettings {
-        val path = FileUtil.expandPath(Paths.get(filePath));
-        if (!Files.exists(path)) {
-            throw SearchException("Settings file not found: $filePath")
-        }
-        if (!filePath.endsWith(".json")) {
-            throw SearchException("Invalid settings file (must be JSON): $filePath")
-        }
-        try {
-            val json = path.toFile().readText()
-            return settingsFromJson(json, settings)
-        } catch (_: FileNotFoundException) {
-            throw SearchException("Settings file not found: $filePath")
-        } catch (_: IOException) {
-            throw SearchException("IOException reading settings file: $filePath")
-        } catch (_: JSONException) {
-            throw SearchException("Unable to parse JSON in settings file: $filePath")
-        }
+    fun updateSettingsFromJson(settings: SearchSettings, json: String): SearchSettings {
+        val argTokens = argTokenizer.tokenizeJson(json)
+        return updateSettingsFromArgTokens(settings, argTokens)
     }
 
-    fun settingsFromArgs(args : Array<String>) : SearchSettings {
-        fun recSettingsFromArgs(args: List<String>, settings: SearchSettings): SearchSettings {
-            if (args.isEmpty()) return settings
-            val nextArg = args.first()
-            if (nextArg.startsWith("-")) {
-                val arg = nextArg.dropWhile { it == '-' }
-                val longArg = longArgMap[arg]
-                return if (boolActionMap.containsKey(longArg)) {
-                    val ss = boolActionMap[longArg]!!.invoke(true, settings)
-                    recSettingsFromArgs(args.drop(1), ss)
-                } else if (stringActionMap.containsKey(longArg)
-                    || intActionMap.containsKey(longArg)
-                    || longActionMap.containsKey(longArg)
-                ) {
-                    if (args.size > 1) {
-                        val argVal = args.drop(1).first()
-                        val ss = if (stringActionMap.containsKey(longArg)) {
-                            stringActionMap[longArg]!!.invoke(argVal, settings)
-                        } else if (intActionMap.containsKey(longArg)) {
-                            intActionMap[longArg]!!.invoke(argVal.toInt(), settings)
-                        } else if (longActionMap.containsKey(longArg)) {
-                            longActionMap[longArg]!!.invoke(argVal.toLong(), settings)
-                        } else {
-                            throw SearchException("Unhandled option $arg")
-                        }
-                        recSettingsFromArgs(args.drop(2), ss)
-                    } else {
-                        throw SearchException("Missing value for option $arg")
-                    }
-                } else if (longArg == "settings-file") {
-                    if (args.size > 1) {
-                        recSettingsFromArgs(args.drop(2), settingsFromFile(args[1], settings))
-                    } else {
-                        throw SearchException("Missing value for option $arg")
-                    }
-                } else {
-                    throw SearchException("Invalid option: $arg")
-                }
-            } else {
-                return recSettingsFromArgs(args.drop(1), settings.copy(paths = addPath(nextArg, settings.paths)))
-            }
-        }
-        // default printResults to true since running as cli
-        return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printResults = true))
+    fun updateSettingsFromFile(settings: SearchSettings, filePath: String): SearchSettings {
+        val argTokens = argTokenizer.tokenizeFile(filePath)
+        return updateSettingsFromArgTokens(settings, argTokens)
     }
 
-    fun usage() {
-        log(getUsageString())
+    fun updateSettingsFromArgs(settings: SearchSettings, args: Array<String>): SearchSettings {
+        val argTokens = argTokenizer.tokenizeArgs(args)
+        return updateSettingsFromArgTokens(settings, argTokens)
+    }
+
+    fun settingsFromArgs(args: Array<String>): SearchSettings {
+        if (args.isEmpty()) {
+            throw SearchException(FindError.STARTPATH_NOT_DEFINED.message)
+        }
+        val settings = getDefaultSettings().copy(printResults = true)
+        return updateSettingsFromArgs(settings, args)
     }
 
     private fun getUsageString(): String {
@@ -306,12 +269,16 @@ class SearchOptions {
             return (if (so.shortArg == null) "" else "-${so.shortArg},") + "--${so.longArg}"
         }
 
-        val optPairs = searchOptions.map { Pair(getOptString(it), it.desc) }
+        val optPairs = searchOptions.sortedBy { it.sortArg }.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.maxOfOrNull { it.first.length }
-        val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
+        val format = $$" %1$-$${longest}s  %2$s\n"
         for (o in optPairs) {
             sb.append(String.format(format, o.first, o.second))
         }
         return sb.toString()
+    }
+
+    fun usage() {
+        log(getUsageString())
     }
 }
