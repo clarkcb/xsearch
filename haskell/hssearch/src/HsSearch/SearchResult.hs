@@ -15,7 +15,7 @@ import Data.Char (isSpace)
 import Data.List (sortBy)
 import Text.Regex.PCRE
 
-import HsFind.Color (green, reset)
+import HsFind.ConsoleColor (Color(..), colorToConsoleColor, consoleGreen, consoleReset)
 import HsFind.FileResult (FileResult(..), blankFileResult, colorizeString, formatFilePath, getCompareFileResultsFunc)
 import HsSearch.SearchSettings
 
@@ -63,9 +63,9 @@ subByteString si ei bs = B.take (ei - si) (B.drop si bs)
 colorizeBS :: Int -> Int -> B.ByteString -> B.ByteString
 colorizeBS si ei bs =
   BC.concat [subByteString 0 si bs,
-             BC.pack green,
+             BC.pack consoleGreen,
              subByteString si ei bs,
-             BC.pack reset,
+             BC.pack consoleReset,
              subByteString ei (BC.length bs) bs]
 
 formatMatchingLine :: SearchSettings -> SearchResult -> String
@@ -104,7 +104,7 @@ colorizeLine settings line =
   case filter (\p -> line =~ p :: Bool) (searchPatterns settings) of
     [] -> line
     (p:_) -> case getAllMatches (line =~ p) :: [(Int, Int)] of
-      ((mStart, mLen):_) -> colorizeString line mStart mLen
+      ((mStart, mLen):_) -> colorizeString line mStart mLen (lineColor settings)
       [] -> line
 
 formatLine :: SearchSettings -> String -> String

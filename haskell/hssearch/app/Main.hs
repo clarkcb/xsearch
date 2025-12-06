@@ -3,6 +3,8 @@ module Main (main) where
 import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
+import HsFind.ConsoleColor (boldRed, consoleReset)
+
 import HsSearch.SearchOptions
 import HsSearch.Searcher (doSearch, formatSearchResultMatchingDirs, formatSearchResultMatchingFiles,
                           formatSearchResultMatchingLines, formatSearchResults, validateSearchSettings)
@@ -14,6 +16,12 @@ logMsg = putStr
 
 logErr :: String -> IO ()
 logErr s = hPutStr stderr $ "ERROR: " ++ s
+
+logErrColor :: String -> Bool -> IO ()
+logErrColor s colorize =
+  if colorize
+    then hPutStr stderr $ boldRed ++ "ERROR: " ++ s ++ consoleReset ++ "\n"
+    else hPutStr stderr $ "ERROR: " ++ s ++ "\n"
 
 main :: IO ()
 main = do
@@ -37,6 +45,7 @@ main = do
           case validateSearchSettings settings of
             Just errMsg -> do
               logMsg "\n"
+              logErrColor errMsg $ colorize settings
               logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
             Nothing -> do
               if printUsage settings

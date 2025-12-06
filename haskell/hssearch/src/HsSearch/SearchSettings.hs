@@ -21,6 +21,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V (toList)
 import GHC.Generics (Generic)
 
+import HsFind.ConsoleColor (Color(..))
 import HsFind.FileTypes (FileType, getFileTypeForName, getFileTypeName)
 import HsFind.FileUtil (normalizeExtension)
 import qualified HsFind.FindSettings as FS (FindSettings(..))
@@ -30,6 +31,9 @@ data SearchSettings = SearchSettings {
                                        archivesOnly :: Bool
                                      , colorize :: Bool
                                      , debug :: Bool
+                                     , dirColor :: Color
+                                     , extColor :: Color
+                                     , fileColor :: Color
                                      , firstMatch :: Bool
                                      , followSymlinks :: Bool
                                      , inArchiveExtensions :: [String]
@@ -41,6 +45,7 @@ data SearchSettings = SearchSettings {
                                      , inFileTypes :: [FileType]
                                      , inLinesAfterPatterns :: [String]
                                      , inLinesBeforePatterns :: [String]
+                                     , lineColor :: Color
                                      , linesAfter :: Integer
                                      , linesAfterToPatterns :: [String]
                                      , linesAfterUntilPatterns :: [String]
@@ -84,6 +89,9 @@ defaultSearchSettings = SearchSettings {
                                          archivesOnly=False
                                        , colorize=True
                                        , debug=False
+                                       , dirColor=ColorCyan
+                                       , extColor=ColorYellow
+                                       , fileColor=ColorMagenta
                                        , firstMatch=False
                                        , followSymlinks=False
                                        , inArchiveExtensions=[]
@@ -95,6 +103,7 @@ defaultSearchSettings = SearchSettings {
                                        , inFileTypes=[]
                                        , inLinesAfterPatterns=[]
                                        , inLinesBeforePatterns=[]
+                                       , lineColor=ColorGreen
                                        , linesAfter=0
                                        , linesAfterToPatterns=[]
                                        , linesAfterUntilPatterns=[]
@@ -145,6 +154,9 @@ toFindSettings searchSettings = FS.FindSettings {
                                      FS.archivesOnly=archivesOnly searchSettings
                                    , FS.colorize=colorize searchSettings
                                    , FS.debug=debug searchSettings
+                                   , FS.dirColor=dirColor searchSettings
+                                   , FS.extColor=extColor searchSettings
+                                   , FS.fileColor=fileColor searchSettings
                                    , FS.followSymlinks=followSymlinks searchSettings
                                    , FS.inArchiveExtensions=inArchiveExtensions searchSettings
                                    , FS.inArchiveFilePatterns=inArchiveFilePatterns searchSettings
