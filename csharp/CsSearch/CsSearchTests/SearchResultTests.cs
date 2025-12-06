@@ -87,9 +87,9 @@ class SearchResultTests
 			matchEndIndex, line, linesBeforeAfter, linesBeforeAfter);
 		const string expectedPath = "./maxlen.txt";
 		var expectedLine = "...89012345678901234567890123456789012345678901" +
-		                   Color.Green +
+		                   ConsoleColor.Green +
 		                   "maxlen" +
-		                   Color.Reset +
+		                   ConsoleColor.Reset +
 		                   "89012345678901234567890123456789012345678901...";
 		var expectedOutput = $"{expectedPath}: {lineNum}: [{matchStartIndex}:{matchEndIndex}]: {expectedLine}";
 

@@ -25,6 +25,7 @@ public class SearchSettings : FindSettings
 	public bool FirstMatch { get; set; }
 	public ISet<Regex> InLinesAfterPatterns { get; }
 	public ISet<Regex> InLinesBeforePatterns { get; }
+	public Color LineColor { get; set; }
 	public int LinesAfter { get; set; }
 	public ISet<Regex> LinesAfterToPatterns { get; }
 	public ISet<Regex> LinesAfterUntilPatterns { get; }
@@ -57,6 +58,7 @@ public class SearchSettings : FindSettings
 		FirstMatch = false;
 		InLinesAfterPatterns = new HashSet<Regex>();
 		InLinesBeforePatterns = new HashSet<Regex>();
+		LineColor = Color.Green;
 		LinesAfter = 0;
 		LinesAfterToPatterns = new HashSet<Regex>();
 		LinesAfterUntilPatterns = new HashSet<Regex>();

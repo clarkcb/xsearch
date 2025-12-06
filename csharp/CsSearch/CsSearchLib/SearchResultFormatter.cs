@@ -32,7 +32,7 @@ public class SearchResultFormatter
 			var m = p.Match(formattedLine);
 			if (m.Success)
 			{
-				formattedLine = Colorize(formattedLine, m.Index, m.Index + m.Length);
+				formattedLine = Colorize(formattedLine, m.Index, m.Index + m.Length, Settings.LineColor);
 				break;
 			}
 		}
@@ -56,9 +56,9 @@ public class SearchResultFormatter
 		return $"{maxLineNum}".Length;
 	}
 
-    private static string Colorize(string s, int matchStartIndex, int matchEndIndex)
+    private static string Colorize(string s, int matchStartIndex, int matchEndIndex, Color color)
     {
-        return FileResultFormatter.Colorize(s, matchStartIndex, matchEndIndex);
+        return FileResultFormatter.Colorize(s, matchStartIndex, matchEndIndex, color);
     }
 
 	private string MultiLineFormat(SearchResult result)
@@ -88,7 +88,7 @@ public class SearchResultFormatter
 		var line = result.Line;
 		if (Settings.Colorize)
 		{
-			line = Colorize(line!, result.MatchStartIndex - 1, result.MatchEndIndex - 1);
+			line = Colorize(line!, result.MatchStartIndex - 1, result.MatchEndIndex - 1, Settings.LineColor);
 		}
 		sb.Append('>').Append(string.Format(lineFormat, result.LineNum, line));
 		if (result.LinesAfter.Count > 0)
@@ -183,7 +183,7 @@ public class SearchResultFormatter
 
 		if (Settings.Colorize)
 		{
-			formatted = Colorize(formatted, matchStartIndex, matchEndIndex);
+			formatted = Colorize(formatted, matchStartIndex, matchEndIndex, Settings.LineColor);
 		}
 		return formatted;
 	}

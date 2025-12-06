@@ -5,12 +5,15 @@ namespace CsSearch
 {
 	static class Program
 	{
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
-			var options = new SearchOptions();
+			var colorize = true;
+			SearchOptions? options = null;
 			try
 			{
+				options = new SearchOptions();
 				var settings = options.SettingsFromArgs(args);
+				colorize = settings.Colorize;
 
 				if (settings.Debug)
 				{
@@ -50,8 +53,8 @@ namespace CsSearch
 			catch (SearchException e)
 			{
 				Logger.Log("");
-				Logger.LogError(e.Message);
-				options.Usage(1);
+				Logger.LogError(e.Message, colorize);
+				options?.Usage(1);
 			}
 		}
 	}
