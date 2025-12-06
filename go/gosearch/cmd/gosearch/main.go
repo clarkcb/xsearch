@@ -7,9 +7,13 @@ import (
 	"os"
 )
 
-func errorAndExit(err error, searchOptions *gosearch.SearchOptions) {
+func errorAndExit(err error, colorize bool, searchOptions *gosearch.SearchOptions) {
 	gofind.Log("")
-	gofind.LogError(fmt.Sprintf("%s", err))
+	if colorize {
+		gofind.LogErrorColor(fmt.Sprintf("%s", err))
+	} else {
+		gofind.LogError(fmt.Sprintf("%s", err))
+	}
 	searchOptions.PrintUsage()
 }
 
@@ -17,8 +21,9 @@ func main() {
 	searchOptions := gosearch.NewSearchOptions()
 	settings, err := searchOptions.SearchSettingsFromArgs(os.Args[1:])
 	if err != nil {
-		errorAndExit(err, searchOptions)
+		errorAndExit(err, true, searchOptions)
 	}
+	colorize := settings.Colorize()
 
 	if settings.PrintUsage() {
 		searchOptions.PrintUsage()
@@ -35,7 +40,7 @@ func main() {
 	searcher := gosearch.NewSearcher(settings)
 	searchResults, err := searcher.Search()
 	if err != nil {
-		errorAndExit(err, searchOptions)
+		errorAndExit(err, colorize, searchOptions)
 	}
 	formatter := gosearch.NewSearchResultFormatter(settings)
 

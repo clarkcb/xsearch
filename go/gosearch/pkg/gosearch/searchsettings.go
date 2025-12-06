@@ -13,6 +13,7 @@ type SearchSettings struct {
 	firstMatch              bool
 	inLinesAfterPatterns    *gofind.Patterns
 	inLinesBeforePatterns   *gofind.Patterns
+	lineColor               gofind.Color
 	linesAfter              int
 	linesAfterToPatterns    *gofind.Patterns
 	linesAfterUntilPatterns *gofind.Patterns
@@ -35,6 +36,7 @@ func GetDefaultSearchSettings() *SearchSettings {
 		false,                // FirstMatch
 		gofind.NewPatterns(), // InLinesAfterPatterns
 		gofind.NewPatterns(), // InLinesBeforePatterns
+		gofind.ColorGreen,    // LineColor
 		0,                    // LinesAfter
 		gofind.NewPatterns(), // LinesAfterToPatterns
 		gofind.NewPatterns(), // LinesAfterUntilPatterns
@@ -197,6 +199,14 @@ func (s *SearchSettings) InLinesBeforePatterns() *gofind.Patterns {
 
 func (s *SearchSettings) AddInLinesBeforePattern(p string) {
 	s.inLinesBeforePatterns.AddPatternString(p)
+}
+
+func (s *SearchSettings) LineColor() gofind.Color {
+	return s.lineColor
+}
+
+func (s *SearchSettings) SetLineColor(lineColor gofind.Color) {
+	s.lineColor = lineColor
 }
 
 func (s *SearchSettings) LinesAfter() int {

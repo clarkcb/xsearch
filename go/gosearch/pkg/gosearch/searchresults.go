@@ -130,7 +130,7 @@ func (f *SearchResultFormatter) formatLineWithColor(line string) string {
 	for it.Next() {
 		p := it.Value()
 		if match := p.FindStringIndex(formattedLine); match != nil {
-			formattedLine = colorize(formattedLine, match[0], match[1])
+			formattedLine = colorize(formattedLine, match[0], match[1], f.Settings.LineColor())
 			break
 		}
 	}
@@ -151,8 +151,8 @@ func lineNumPadding(r *SearchResult) int {
 	return len(fmt.Sprintf("%d", r.LineNum+len(r.LinesAfter)))
 }
 
-func colorize(s string, matchStartIndex int, matchEndIndex int) string {
-	return gofind.Colorize(s, matchStartIndex, matchEndIndex)
+func colorize(s string, matchStartIndex int, matchEndIndex int, color gofind.Color) string {
+	return gofind.Colorize(s, matchStartIndex, matchEndIndex, color)
 }
 
 func (f *SearchResultFormatter) multiLineFormat(r *SearchResult) string {
@@ -173,7 +173,7 @@ func (f *SearchResultFormatter) multiLineFormat(r *SearchResult) string {
 	}
 	line := r.Line
 	if f.Settings.Colorize() {
-		line = colorize(line, r.MatchStartIndex-1, r.MatchEndIndex-1)
+		line = colorize(line, r.MatchStartIndex-1, r.MatchEndIndex-1, f.Settings.LineColor())
 	}
 	buffer.WriteString(">" + fmt.Sprintf(lineFormat, currentLineNum, line))
 	if len(r.LinesAfter) > 0 {
@@ -251,7 +251,7 @@ func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
 	}
 
 	if f.Settings.Colorize() {
-		formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+		formatted = colorize(formatted, matchStartIndex, matchEndIndex, f.Settings.LineColor())
 	}
 	return formatted
 }
