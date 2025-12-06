@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rbfind/color'
+require 'rbfind/console_color'
 require 'rbfind/fileresultformatter'
 
 
@@ -53,7 +54,7 @@ module RbSearch
     end
 
     def colorize(str, match_start_index, match_end_index)
-      @file_formatter.colorize(str, match_start_index, match_end_index)
+      @file_formatter.colorize(str, match_start_index, match_end_index, settings.line_color)
     end
 
     def format_matching_line(result)

@@ -1,7 +1,7 @@
 class Object
   def search_main: () -> void
 
-  def handle_search_error: (StandardError err, RbSearch::SearchOptions options) -> void
+  def handle_search_error: (StandardError err, bool colorize, RbSearch::SearchOptions options) -> void
 
   def get_matching_lines: (Array[RbSearch::SearchResult] results, RbSearch::SearchSettings settings) -> Array[String]
 

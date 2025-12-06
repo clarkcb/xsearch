@@ -27,7 +27,7 @@ def search_main
     begin
       options.search_settings_from_args(ARGV)
     rescue RbSearch::SearchError => e
-      handle_error(e, options)
+      handle_search_error(e, true, options)
     end
 
   RbFind.log("settings: #{settings}") if settings.debug
@@ -45,40 +45,47 @@ def search_main
   search(options, settings)
 end
 
-def handle_error(err, options)
-  RbFind.log("\nERROR: #{err.message}\n\n")
+def handle_search_error(err, colorize, options)
+  RbFind.log('')
+  RbFind::log_err("#{err.message}\n", colorize)
   options.usage
 end
 
 def search(options, settings)
-  searcher = RbSearch::Searcher.new(settings)
-  results = searcher.search
+  searcher =
+    begin
+      RbSearch::Searcher.new(settings)
+    rescue RbSearch::SearchError => e
+      handle_search_error(e, settings.colorize, options)
+    rescue RbFind::FindError => e
+      handle_search_error(e, settings.colorize, options)
+    rescue => e
+      handle_search_error(e, settings.colorize, options)
+    end
+  search_results = searcher.search
   formatter = RbSearch::SearchResultFormatter.new(settings)
 
   # print the results
   if settings.print_results
     RbFind.log("\n")
-    searcher.print_search_results(results, formatter)
+    searcher.print_search_results(search_results, formatter)
   end
 
   if settings.print_dirs
     RbFind.log("\n")
-    searcher.print_matching_dirs(results, formatter)
+    searcher.print_matching_dirs(search_results, formatter)
   end
 
   if settings.print_files
     RbFind.log("\n")
-    searcher.print_matching_files(results, formatter)
+    searcher.print_matching_files(search_results, formatter)
   end
 
   if settings.print_lines
     RbFind.log("\n")
-    searcher.print_matching_lines(results, formatter)
+    searcher.print_matching_lines(search_results, formatter)
   end
 
-rescue RbSearch::SearchError => e
-  handle_error(e, options)
-
 rescue RuntimeError => e
-  handle_error(e, options)
+  handle_search_error(e, settings.colorize, options)
 end

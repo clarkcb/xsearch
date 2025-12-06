@@ -1,3 +1,4 @@
+require 'rbfind/color'
 require 'rbfind/filetypes'
 require 'rbfind/findsettings'
 
@@ -8,6 +9,7 @@ module RbSearch
     attr_accessor :first_match,
                   :in_lines_after_patterns,
                   :in_lines_before_patterns,
+                  :line_color,
                   :lines_after,
                   :lines_after_to_patterns,
                   :lines_after_until_patterns,
@@ -28,6 +30,7 @@ module RbSearch
       @first_match = false
       @in_lines_after_patterns = Set.new
       @in_lines_before_patterns = Set.new
+      @line_color = RbFind::Color::GREEN
       @lines_after = 0
       @lines_after_to_patterns = Set.new
       @lines_after_until_patterns = Set.new

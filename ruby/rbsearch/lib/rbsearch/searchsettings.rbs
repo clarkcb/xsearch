@@ -1,29 +1,10 @@
 module RbSearch
   # SearchSettings - encapsulates search settings
   class SearchSettings < RbFind::FindSettings
-    @colorize: bool
-    @first_match: bool
-    @in_lines_after_patterns: Set[Regexp]
-    @in_lines_before_patterns: Set[Regexp]
-    @lines_after: Integer
-    @lines_after_to_patterns: Set[Regexp]
-    @lines_after_until_patterns: Set[Regexp]
-    @lines_before: Integer
-    @max_line_length: Integer
-    @multi_line_search: bool
-    @out_lines_after_patterns: Set[Regexp]
-    @out_lines_before_patterns: Set[Regexp]
-    @print_lines: bool
-    @print_results: bool
-    @search_archives: bool
-    @search_patterns: Set[Regexp]
-    @text_file_encoding: String
-    @unique_lines: bool
-
-    attr_accessor colorize: bool
     attr_accessor first_match: bool
     attr_accessor in_lines_after_patterns: Set[Regexp]
     attr_accessor in_lines_before_patterns: Set[Regexp]
+    attr_accessor line_color: Color
     attr_accessor lines_after: Integer
     attr_accessor lines_after_to_patterns: Set[Regexp]
     attr_accessor lines_after_until_patterns: Set[Regexp]
