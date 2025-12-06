@@ -14,7 +14,6 @@ namespace cppsearch {
         SearchResultFormatter(SearchResultFormatter& other) = delete;
         SearchResultFormatter(SearchResultFormatter&& other) = delete;
         [[nodiscard]] SearchSettings settings() const;
-        [[nodiscard]] cppfind::FileResultFormatter file_formatter() const;
         [[nodiscard]] std::string format(const SearchFileResult& result) const;
 
     private:
@@ -23,7 +22,7 @@ namespace cppsearch {
         [[nodiscard]] std::string single_line_format(const SearchFileResult& result) const;
         [[nodiscard]] std::string multi_line_format(const SearchFileResult& result) const;
         static unsigned long line_num_padding(const SearchFileResult& result);
-        static std::string colorize(const std::string& s, unsigned long start_idx, unsigned long length);
+        static std::string colorize(const std::string& s, unsigned long start_idx, unsigned long length, cppfind::Color color);
         [[nodiscard]] std::string format_line_with_color(const std::string& line) const;
 
         static const int line_sep_length = 80;

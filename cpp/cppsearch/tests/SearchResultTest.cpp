@@ -80,9 +80,9 @@ TEST_CASE("Verify single-line-longer-and-colorize result equals expected", "[Sea
     auto result = cppsearch::SearchFileResult(file_result, std::move(text_result));
     std::string expected_path = "./maxlen.txt";
     std::string expected_line = std::string("...89012345678901234567890123456789012345678901") +
-            COLOR_GREEN +
+            CONSOLE_GREEN +
             "maxlen" +
-            COLOR_RESET +
+            CONSOLE_RESET +
             "89012345678901234567890123456789012345678901...";
     std::string expected_output = expected_path + ": " + std::to_string(line_num) + ": ["
             + std::to_string(match_start_idx) + ":" + std::to_string(match_end_idx) + "]: " + expected_line;

@@ -132,7 +132,7 @@ TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
 
     auto options = cppsearch::SearchOptions();
     auto settings = cppsearch::SearchSettings();
-    options.settings_from_json(json, settings);
+    options.update_settings_from_json(settings, json);
 
     REQUIRE(!settings.paths().empty());
     REQUIRE(settings.paths().size() == 1);

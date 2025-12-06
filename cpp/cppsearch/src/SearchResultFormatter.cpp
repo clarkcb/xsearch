@@ -4,7 +4,7 @@
 namespace cppsearch {
     SearchResultFormatter::SearchResultFormatter(const SearchSettings& settings) :
     m_settings{settings},
-    m_file_formatter{cppfind::FileResultFormatter(static_cast<cppfind::FindSettings>(settings))} {
+    m_file_formatter{cppfind::FileResultFormatter(settings)} {
         init();
     }
 
@@ -15,19 +15,10 @@ namespace cppsearch {
     }
 
     void SearchResultFormatter::init() {
-        if (m_settings.colorize()) {
-            func_format_line = [this](const std::string& line) { return format_line_with_color(line); };
-        } else {
-            func_format_line = [](const std::string& line) { return line; };
-        }
     }
 
     SearchSettings SearchResultFormatter::settings() const {
         return m_settings;
-    }
-
-    cppfind::FileResultFormatter SearchResultFormatter::file_formatter() const {
-        return m_file_formatter;
     }
 
     std::string SearchResultFormatter::format(const SearchFileResult& result) const {
@@ -84,14 +75,14 @@ namespace cppsearch {
 
         // TODO: try using https://github.com/agauniyal/rang for CLI colorization
         if (m_settings.colorize()) {
-            formatted = colorize(formatted, match_start_index, match_length);
+            formatted = colorize(formatted, match_start_index, match_length, settings().line_color());
         }
         return formatted;
     }
 
     std::string SearchResultFormatter::colorize(const std::string& s, const unsigned long start_idx,
-                                                const unsigned long match_length) {
-       return cppfind::FileResultFormatter::colorize(s, start_idx, match_length);
+                                                const unsigned long match_length, const cppfind::Color color) {
+       return cppfind::FileResultFormatter::colorize(s, start_idx, match_length, color);
     }
 
     std::string SearchResultFormatter::single_line_format(const SearchFileResult& result) const {
@@ -144,7 +135,8 @@ namespace cppsearch {
         std::string matching_line;
         if (m_settings.colorize()) {
             matching_line = colorize(result.line(), result.match_start_idx() - 1,
-                                     result.match_end_idx() - result.match_start_idx());
+                                     result.match_end_idx() - result.match_start_idx(),
+                                     settings().line_color());
         } else {
             matching_line = result.line();
         }

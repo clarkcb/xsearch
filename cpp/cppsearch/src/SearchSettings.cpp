@@ -5,6 +5,7 @@ namespace cppsearch {
 
     SearchSettings::SearchSettings() :
     m_first_match{false},
+    m_line_color{cppfind::Color::GREEN},
     m_lines_after{0},
     m_lines_before{0},
     m_max_line_length{150},
@@ -33,14 +34,6 @@ namespace cppsearch {
     //     }
     // }
 
-    bool SearchSettings::colorize() const {
-        return m_colorize;
-    }
-
-    void SearchSettings::colorize(const bool colorize) {
-        m_colorize = colorize;
-    }
-
     bool SearchSettings::first_match() const {
         return m_first_match;
     }
@@ -64,6 +57,14 @@ namespace cppsearch {
     // void SearchSettings::include_archives(const bool include_archives) {
     //     m_include_archives = m_search_archives = include_archives;
     // }
+
+    cppfind::Color SearchSettings::line_color() const {
+        return m_line_color;
+    }
+
+    void SearchSettings::line_color(const cppfind::Color line_color) {
+        m_line_color = line_color;
+    }
 
     unsigned int SearchSettings::lines_after() const {
         return m_lines_after;

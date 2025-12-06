@@ -20,6 +20,7 @@ namespace cppsearch {
         [[nodiscard]] bool first_match() const;
         // [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool multi_line_search() const;
+        [[nodiscard]] cppfind::Color line_color() const;
         [[nodiscard]] unsigned int lines_after() const;
         [[nodiscard]] unsigned int lines_before() const;
         [[nodiscard]] size_t max_line_length() const;
@@ -40,6 +41,7 @@ namespace cppsearch {
         void first_match(bool first_match);
         // void include_archives(bool include_archives);
         void multi_line_search(bool multi_line_search);
+        void line_color(cppfind::Color line_color);
         void lines_after(unsigned int line_count);
         void lines_before(unsigned int line_count);
         void max_line_length(size_t max);
@@ -69,6 +71,7 @@ namespace cppsearch {
         std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> m_lines_after_to_patterns;
         std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> m_lines_after_until_patterns;
 
+        cppfind::Color m_line_color;
         unsigned int m_lines_after;
         unsigned int m_lines_before;
         size_t m_max_line_length;
