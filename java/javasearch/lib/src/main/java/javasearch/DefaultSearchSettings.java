@@ -1,11 +1,14 @@
 package javasearch;
 
+import javafind.Color;
+
 public final class DefaultSearchSettings {
     private DefaultSearchSettings() {
         // inaccessible constructor for utility class
     }
 
     public static final boolean FIRST_MATCH = false;
+    public static final Color LINE_COLOR = Color.GREEN;
     public static final int LINES_AFTER = 0;
     public static final int LINES_BEFORE = 0;
     public static final boolean PRINT_LINES = false;

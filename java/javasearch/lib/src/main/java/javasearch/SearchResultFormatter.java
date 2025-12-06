@@ -10,6 +10,7 @@ Class to provide formatting of search result instances
 
 package javasearch;
 
+import javafind.Color;
 import javafind.FileResultFormatter;
 import javafind.StringUtil;
 
@@ -46,7 +47,7 @@ public class SearchResultFormatter {
         for (var p : settings.getSearchPatterns()) {
             Matcher m = p.matcher(formattedLine);
             if (m.find()) {
-                formattedLine = colorize(formattedLine, m.start(), m.end());
+                formattedLine = colorize(formattedLine, m.start(), m.end(), settings.getLineColor());
                 break;
             }
         }
@@ -70,8 +71,8 @@ public class SearchResultFormatter {
         return String.format("%d", maxLineNum).length();
     }
 
-    private String colorize(String s, int matchStartIndex, int matchEndIndex) {
-        return fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex);
+    private String colorize(String s, int matchStartIndex, int matchEndIndex, Color color) {
+        return FileResultFormatter.colorize(s, matchStartIndex, matchEndIndex, color);
     }
 
     public final String multiLineToString(SearchResult result) {
@@ -97,7 +98,7 @@ public class SearchResultFormatter {
         String line = StringUtil.trimNewLine(result.getLine());
         if (settings.getColorize()) {
             line = colorize(line, result.getMatchStartIndex() - 1,
-                    result.getMatchEndIndex() - 1);
+                    result.getMatchEndIndex() - 1, settings.getLineColor());
         }
 
         sb.append(">").append(String.format(lineFormat, result.getLineNum(), line));
@@ -165,7 +166,7 @@ public class SearchResultFormatter {
         }
 
         if (settings.getColorize()) {
-            formatted = colorize(formatted, matchStartIndex, matchEndIndex);
+            formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.getLineColor());
         }
 
         return formatted;

@@ -10,12 +10,7 @@ Main class for initiating javasearch from command line
 
 package javasearch;
 
-import javafind.FileResult;
-import javafind.Finder;
-
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import static javafind.Logger.log;
 import static javafind.Logger.logError;
@@ -23,23 +18,25 @@ import static javafind.Logger.logError;
 
 public class JavaSearch {
 
-    private static void handleError(final String message) {
+    private static void handleError(final String message, final boolean colorize) {
         log("");
-        logError(message);
+        logError(message, colorize);
     }
 
-    private static void handleError(final String message, SearchOptions options) {
+    private static void handleError(final String message, final boolean colorize, SearchOptions options) {
         log("");
-        logError(message + "\n");
+        logError(message + "\n",  colorize);
         options.usage(1);
     }
 
     public static void main(final String[] args) {
+        var colorize = true;
         try {
             var options = new SearchOptions();
 
             try {
                 var settings = options.settingsFromArgs(args);
+                colorize = settings.getColorize();
 
                 if (settings.getDebug()) {
                     log("\nsettings:");
@@ -71,11 +68,11 @@ public class JavaSearch {
                 }
 
             } catch (SearchException e) {
-                handleError(e.getMessage(), options);
+                handleError(e.getMessage(), colorize, options);
             }
 
         } catch (IOException e) {
-            handleError(e.getMessage());
+            handleError(e.getMessage(), colorize);
         }
     }
 }

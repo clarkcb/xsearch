@@ -10,6 +10,7 @@ Class to encapsulate search settings
 
 package javasearch;
 
+import javafind.Color;
 import javafind.FindSettings;
 
 import java.util.HashSet;
@@ -23,6 +24,7 @@ public class SearchSettings extends FindSettings {
     private boolean firstMatch;
     private final Set<Pattern> inLinesAfterPatterns;
     private final Set<Pattern> inLinesBeforePatterns;
+    private Color lineColor;
     private int linesAfter;
     private final Set<Pattern> linesAfterToPatterns;
     private final Set<Pattern> linesAfterUntilPatterns;
@@ -43,6 +45,7 @@ public class SearchSettings extends FindSettings {
         this.firstMatch = DefaultSearchSettings.FIRST_MATCH;
         this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.lineColor = DefaultSearchSettings.LINE_COLOR;
         this.linesAfter = DefaultSearchSettings.LINES_AFTER;
         this.linesAfterToPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.linesAfterUntilPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -73,6 +76,14 @@ public class SearchSettings extends FindSettings {
 
     public void setFirstMatch(boolean firstMatch) {
         this.firstMatch = firstMatch;
+    }
+
+    public Color getLineColor() {
+        return lineColor;
+    }
+
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
     }
 
     public final int getLinesAfter() {
