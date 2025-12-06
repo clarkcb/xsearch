@@ -13,9 +13,12 @@ use phpsearch\SearchResultFormatter;
 
 function main($argv): void
 {
+    $colorize = true;
     $search_options = new SearchOptions();
     try {
         $settings = $search_options->settings_from_args(array_slice($argv, 1));
+        $colorize = $settings->colorize;
+
         if ($settings->debug) {
             Logger::log_msg("settings: $settings");
         }
@@ -50,7 +53,7 @@ function main($argv): void
         }
     } catch (SearchException $e) {
         Logger::log_msg('');
-        Logger::log_err($e->getMessage() . "\n");
+        Logger::log_err($e->getMessage() . "\n", $colorize);
         $search_options->usage_and_exit(1);
     }
 }

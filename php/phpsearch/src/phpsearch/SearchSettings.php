@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace phpsearch;
 
+use phpfind\Color;
 use phpfind\FileTypes;
 use phpfind\FindSettings;
 use phpfind\StringUtil;
@@ -16,6 +17,7 @@ class SearchSettings extends FindSettings
     public bool $first_match = false;
     public array $in_lines_after_patterns = array();
     public array $in_lines_before_patterns = array();
+    public Color $line_color = Color::Green;
     public int $lines_after = 0;
     public array $lines_after_to_patterns = array();
     public array $lines_after_until_patterns = array();

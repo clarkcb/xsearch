@@ -39,7 +39,7 @@ class SearchResultFormatter
             if (!empty($matches)) {
                 $start_index = (int)$matches[0][1];
                 $end_index = $start_index + strlen($matches[0][0]);
-                $formatted_line = $this->colorize($formatted_line, $start_index, $end_index);
+                $formatted_line = $this->colorize($formatted_line, $start_index, $end_index, $this->settings->line_color);
                 break;
             }
         }
@@ -65,9 +65,9 @@ class SearchResultFormatter
         return rtrim($s, "\r\n");
     }
 
-    private function colorize(string $s, int $match_start_index, int $match_end_index): string
+    private function colorize(string $s, int $match_start_index, int $match_end_index, Color $color): string
     {
-        return $this->file_result_formatter->colorize($s, $match_start_index, $match_end_index);
+        return $this->file_result_formatter->colorize($s, $match_start_index, $match_end_index, $color);
     }
 
     private function format_matching_line(SearchResult $result): string
@@ -127,7 +127,7 @@ class SearchResultFormatter
         }
 
         if ($this->settings->colorize) {
-            $formatted = $this->colorize($formatted, $match_start_index, $match_end_index);
+            $formatted = $this->colorize($formatted, $match_start_index, $match_end_index, $this->settings->line_color);
         }
         return $formatted;
     }
@@ -171,7 +171,8 @@ class SearchResultFormatter
             $line = $this->colorize(
                 $line,
                 $result->match_start_index - 1,
-                $result->match_end_index - 1
+                $result->match_end_index - 1,
+                $this->settings->line_color
             );
         }
         $s .= sprintf('>'.$line_format, $current_line_num, $line);
