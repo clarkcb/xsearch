@@ -1,5 +1,6 @@
 package ktsearch
 
+import ktfind.Color
 import ktfind.FileResult
 import ktfind.FileResultFormatter
 import ktfind.SortBy
@@ -101,7 +102,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
         for (p in settings.searchPatterns) {
             val m = p.find(formattedLine)
             if (m != null) {
-                formattedLine = colorize(formattedLine, m.range.first, m.range.last + 1)
+                formattedLine = colorize(formattedLine, m.range.first, m.range.last + 1, settings.lineColor)
                 break
             }
         }
@@ -122,8 +123,8 @@ class SearchResultFormatter(val settings: SearchSettings) {
         }
     }
 
-    private fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String {
-        return fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex)
+    private fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int, color: Color): String {
+        return fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex, color)
     }
 
     private fun multiLineFormat(result: SearchResult): String {
@@ -147,7 +148,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
         }
         var line = result.line
         if (settings.colorize) {
-            line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+            line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1, settings.lineColor)
         }
         sb.append(">").append(String.format(lineFormat, result.lineNum, line))
         if (result.linesAfter.isNotEmpty()) {
@@ -208,7 +209,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
         }
 
         if (settings.colorize) {
-            formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+            formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.lineColor)
         }
 
         return formatted

@@ -1,5 +1,7 @@
 package ktsearch
 
+import ktfind.Color
+import ktfind.ConsoleColor
 import ktfind.FileType
 import java.time.LocalDateTime
 
@@ -13,6 +15,9 @@ import java.nio.file.Path
 data class SearchSettings(val archivesOnly: Boolean,
                           val colorize: Boolean,
                           val debug: Boolean,
+                          val dirColor: Color,
+                          val extColor: Color,
+                          val fileColor: Color,
                           val firstMatch: Boolean,
                           val followSymlinks: Boolean,
                           val inArchiveExtensions: Set<String>,
@@ -24,6 +29,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val inFileTypes: Set<FileType>,
                           val inLinesAfterPatterns: Set<Regex>,
                           val inLinesBeforePatterns: Set<Regex>,
+                          val lineColor: Color,
                           val linesAfter: Int,
                           val linesAfterToPatterns: Set<Regex>,
                           val linesAfterUntilPatterns: Set<Regex>,
@@ -63,6 +69,9 @@ data class SearchSettings(val archivesOnly: Boolean,
     val findSettings: FindSettings = FindSettings(archivesOnly,
         colorize,
         debug,
+        dirColor,
+        extColor,
+        fileColor,
         followSymlinks,
         inArchiveExtensions,
         inArchiveFilePatterns,
@@ -102,6 +111,9 @@ fun getDefaultSettings() : SearchSettings {
         archivesOnly = false,
         colorize = true,
         debug = false,
+        dirColor = Color.CYAN,
+        extColor = Color.YELLOW,
+        fileColor = Color.MAGENTA,
         firstMatch = false,
         followSymlinks = false,
         inArchiveExtensions = linkedSetOf(),
@@ -113,6 +125,7 @@ fun getDefaultSettings() : SearchSettings {
         inFileTypes = linkedSetOf(),
         inLinesAfterPatterns = linkedSetOf(),
         inLinesBeforePatterns = linkedSetOf(),
+        lineColor = Color.GREEN,
         linesAfter = 0,
         linesAfterToPatterns = linkedSetOf(),
         linesAfterUntilPatterns = linkedSetOf(),
