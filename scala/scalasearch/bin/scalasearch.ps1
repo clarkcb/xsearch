@@ -5,15 +5,15 @@ if (-not (Test-Path Env:XSEARCH_PATH))
     $env:XSEARCH_PATH = Join-Path $HOME 'src' 'xsearch'
 }
 
-$scalaVersion = '3.7.2'
+$scalaVersion = '3.7.4'
 $scalaSearchJarPath = Join-Path $env:XSEARCH_PATH 'scala' 'scalasearch' 'target' "scala-$scalaVersion"
+$scalaSearchVersion = '0.1.0'
+$scalaSearchJarName = "scalasearch-assembly-$scalaSearchVersion.jar"
+$scalaSearchJar = Join-Path $scalaSearchJarPath $scalaSearchJarName
 
-$scalaSearchJars = @(Get-ChildItem $scalaSearchJarPath) |
-    Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.jar' -and $_ -match 'scalasearch-assembly' }
-
-if ($scalaSearchJars.count -gt 0)
+if (Test-Path $scalaSearchJar)
 {
-    & java -cp $scalaSearchJars[0] 'scalasearch.SearchMain' $Args
+    & java -cp $scalaSearchJar 'scalasearch.SearchMain' $Args
 }
 else
 {

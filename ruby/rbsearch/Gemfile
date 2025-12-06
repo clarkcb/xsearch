@@ -5,13 +5,13 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in rbsearch.gemspec
 gemspec
 
-gem 'rake', '~> 13.3.0'
+gem 'rake', '~> 13.3.1'
 
-gem 'rbs', '~> 3.9.4'
+gem 'rbs', '~> 3.9.5'
 
-gem 'test-unit', '~> 3.7.0'
+gem 'test-unit', '~> 3.7.3'
 
-gem 'rubocop', '~> 1.80.0'
+gem 'rubocop', '~> 1.81.7'
 
 # https://stackoverflow.com/a/19363523/1002072
 gem 'rbfind', path: '../../../xfind/ruby/rbfind'

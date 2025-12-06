@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.2.0"]
+requires = ["setuptools>=80.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "pysearch"
 version = "0.1.0"
 dependencies = [
     "python-dateutil>=2.9.0",
-    "termcolor>=3.1.0",
+    "termcolor>=3.2.0",
     "wheel>=0.46.1",
     # this follows the example given by gemini but not sure if it's correct
     "pyfind @ {root:uri}/../xfind/python/pyfind/",

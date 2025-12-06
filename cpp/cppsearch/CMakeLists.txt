@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 4.00)
 project(cppsearch VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")
@@ -15,9 +15,6 @@ if (NOT DEFINED CMAKE_CXX_STANDARD)
         set(CMAKE_CXX_STANDARD 20)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 endif()
-
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost REQUIRED COMPONENTS system filesystem)
 
 if (DEFINED ENV{XSEARCH_PATH})
         set(XSEARCH_PATH $ENV{XSEARCH_PATH})
@@ -110,7 +107,7 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v3.9.1
+        GIT_TAG        v3.11.0
 )
 
 FetchContent_MakeAvailable(Catch2)
