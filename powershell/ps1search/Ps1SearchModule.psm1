@@ -32,6 +32,7 @@ class SearchSettings : FindSettings {
     [bool]$FirstMatch
     [string[]]$InLinesAfterPatterns
     [string[]]$InLinesBeforePatterns
+    [Color]$LineColor
     [int]$LinesAfter
     [string[]]$LinesAfterToPatterns
     [string[]]$LinesAfterUntilPatterns
@@ -51,6 +52,9 @@ class SearchSettings : FindSettings {
 		$this.ArchivesOnly = $false
 		$this.Colorize = $true
 		$this.Debug = $false
+		$this.DirColor = [Color]::Cyan
+		$this.ExtColor = [Color]::Yellow
+		$this.FileColor = [Color]::Magenta
 		$this.FirstMatch = $false
 		$this.FollowSymlinks = $false
 		$this.InArchiveExtensions = @()
@@ -63,6 +67,7 @@ class SearchSettings : FindSettings {
 		$this.InLinesBeforePatterns = @()
 		$this.IncludeArchives = $false
 		$this.IncludeHidden = $false
+        $this.LineColor = [Color]::Green
 		$this.LinesAfter = 0
 		$this.LinesAfterToPatterns = @()
 		$this.LinesAfterUntilPatterns = @()
@@ -663,8 +668,8 @@ class SearchResultFormatter {
     }
 
     # This splits a string into 3 segments: before, in, and after, where the 'in' segment should be colorized
-    [string[]]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx) {
-        return $this.FileFormatter.ColorizeString($s, $matchStartIdx, $matchEndIdx)
+    [string[]]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx, [Color]$color) {
+        return $this.FileFormatter.ColorizeString($s, $matchStartIdx, $matchEndIdx, $color)
     }
 
     [string]FormatLineColor([string]$line) {
@@ -672,7 +677,7 @@ class SearchResultFormatter {
         foreach ($pattern in $this.Settings.SearchPatterns) {
             $match = $pattern.Match($formattedLine)
             if ($match.Success) {
-                $formattedLine = $this.ColorizeString($formattedLine, $match.Index, $match.Index + $match.Length)
+                $formattedLine = $this.ColorizeString($formattedLine, $match.Index, $match.Index + $match.Length, $this.Settings.LineColor)
                 break
             }
         }
@@ -695,7 +700,7 @@ class SearchResultFormatter {
         $matchEndIdx = $matchStartIdx + $matchLen
         [string[]]$elems = @()
         if ($this.Settings.Colorize) {
-            $lineElems = $this.ColorizeString($s, $matchStartIdx, $matchEndIdx)
+            $lineElems = $this.ColorizeString($s, $matchStartIdx, $matchEndIdx, $this.Settings.LineColor)
             $elems += $lineElems
         } else {
             $elems += $s
@@ -729,7 +734,7 @@ class SearchResultFormatter {
         }
         $matchingLine += "> {0,$lineNumPadding} | " -f $currentLineNum
         if ($this.Settings.Colorize) {
-            $lineElems = $this.ColorizeString($result.Line, $result.MatchStartIndex - 1, $result.MatchEndIndex - 1)
+            $lineElems = $this.ColorizeString($result.Line, $result.MatchStartIndex - 1, $result.MatchEndIndex - 1, $this.Settings.LineColor)
             $matchingLine += $lineElems
         } else {
             $matchingLine += $result.Line

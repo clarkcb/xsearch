@@ -15,12 +15,15 @@ function SearchMain {
         [string[]]$_args
     )
 
-    [SearchOptions]$options = [SearchOptions]::new()
+    $colorize = $true
+    $options = [SearchOptions]::new()
 
     try {
-        [SearchSettings]$settings = $options.SettingsFromArgs($_args)
+        $settings = $options.SettingsFromArgs($_args)
+        $colorize = $settings.Colorize
 
         if ($settings.Debug) {
+            # Set-LogConfiguration -LogLevel Debug
             LogMsg($settings.ToString())
         }
 
@@ -29,9 +32,9 @@ function SearchMain {
             exit
         }
 
-        [Searcher]$searcher = [Searcher]::new($settings)
-        [SearchResult[]]$results = $searcher.Search()
-        [SearchResultFormatter]$formatter = [SearchResultFormatter]::new($settings)
+        $searcher = [Searcher]::new($settings)
+        $results = $searcher.Search()
+        $formatter = [SearchResultFormatter]::new($settings)
 
         if ($settings.PrintResults) {
             $searcher.PrintResults($results, $formatter)
@@ -50,7 +53,12 @@ function SearchMain {
          }
     }
     catch {
-        LogError($_)
+        $errMsg = $_.Exception.Message
+        if ($colorize) {
+            LogErrorColor($errMsg)
+        } else {
+            LogError($errMsg)
+        }
         LogMsg($options.GetUsageString())
     }
 }
