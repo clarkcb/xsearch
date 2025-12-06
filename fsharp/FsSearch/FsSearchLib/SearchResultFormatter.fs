@@ -47,7 +47,7 @@ type SearchResultFormatter (settings : SearchSettings) =
         if lineEndIndex < maxLineEndIndex - 3 then
             formatted <- formatted.Substring(0, formattedLength - 3) + "..."
         if settings.Colorize then
-            formatted <- Color.Colorize formatted matchStartIndex matchEndIndex
+            formatted <- ColorUtil.Colorize formatted matchStartIndex matchEndIndex settings.LineColor
         formatted
 
     let SingleLineFormat (result : SearchResult.t) : string =
@@ -90,7 +90,7 @@ type SearchResultFormatter (settings : SearchSettings) =
         match (Seq.tryFind (fun p -> (p:Regex).Match(line).Success) settings.SearchPatterns) with
         | Some searchPattern ->
             let lineMatch = searchPattern.Match(line)
-            Color.Colorize line lineMatch.Index (lineMatch.Index + lineMatch.Length)
+            ColorUtil.Colorize line lineMatch.Index (lineMatch.Index + lineMatch.Length) settings.LineColor
         | None -> line
 
     member this.FormatLineFun =

@@ -15,6 +15,7 @@ type SearchSettings() =
     member val FirstMatch : bool = false with get, set
     member val InLinesAfterPatterns : Regex list = [] with get, set
     member val InLinesBeforePatterns : Regex list = [] with get, set
+    member val LineColor : Color = Color.Green with get, set
     member val LinesAfter = 0 with get, set
     member val LinesAfterToPatterns : Regex list = [] with get, set
     member val LinesAfterUntilPatterns : Regex list = [] with get, set
