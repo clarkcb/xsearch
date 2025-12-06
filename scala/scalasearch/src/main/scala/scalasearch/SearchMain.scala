@@ -4,8 +4,10 @@ import scalafind.Common
 
 object SearchMain {
   def main(args: Array[String]): Unit = {
+    var colorize = true
     try {
       val settings = SearchOptions.settingsFromArgs(args)
+      colorize = settings.colorize
 
       if (settings.debug) {
         Common.log("settings: " + settings)
@@ -30,7 +32,7 @@ object SearchMain {
     } catch {
       case e: SearchException =>
         Common.log("")
-        Common.logError(e.getMessage + "\n")
+        Common.logError(e.getMessage + "\n", colorize)
         SearchOptions.usage(1)
     }
   }

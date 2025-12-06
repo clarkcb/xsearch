@@ -47,7 +47,7 @@ class Searcher (_settings: SearchSettings) {
 
   def isSearchDir(dirName: String): Boolean = {
     val pathElems = splitPath(dirName)
-    if (!settings.includeHidden && pathElems.exists(p => isHidden(p))) {
+    if (!settings.includeHidden && pathElems.exists(p => isHiddenName(p))) {
       false
     } else {
       filterByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)

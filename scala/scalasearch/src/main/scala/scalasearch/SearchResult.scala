@@ -1,5 +1,7 @@
 package scalasearch
 
+import scalafind.Color.Color
+import scalafind.ConsoleColor.ConsoleColor
 import scalafind.{FileResult, FileResultFormatter, SortBy}
 
 import scala.util.matching.Regex
@@ -125,7 +127,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
   private def formatLineWithColor(line: String): String = {
     var formattedLine = line
     settings.searchPatterns.flatMap(p => p.findFirstMatchIn(formattedLine)).take(1).foreach { m =>
-      formattedLine = colorize(formattedLine, m.start, m.end)
+      formattedLine = colorize(formattedLine, m.start, m.end, settings.lineColor)
     }
     formattedLine
   }
@@ -145,8 +147,8 @@ class SearchResultFormatter(val settings: SearchSettings) {
     }
   }
 
-  private def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
-    fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex)
+  private def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int, color: Color): String = {
+    fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex, color)
   }
 
   private def formatMatchingLine(result: SearchResult): String = {
@@ -198,7 +200,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
         }
 
         if (settings.colorize) {
-          formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+          formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.lineColor)
         }
 
         formatted
@@ -254,7 +256,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
         }
         var line = trimNewLines(resultLine)
         if (settings.colorize) {
-          line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+          line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1, settings.lineColor)
         }
         sb.append(">" + lineFormat.format(result.lineNum, line))
         if (result.linesAfter.nonEmpty) {
