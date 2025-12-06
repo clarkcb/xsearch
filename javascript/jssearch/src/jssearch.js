@@ -13,9 +13,9 @@ const {Searcher} = require('./searcher');
 const {SearchOptions} = require('./searchoptions');
 const {SearchResultFormatter} = require('./searchresultformatter');
 
-function handleError(err, searchOptions) {
+function handleError(err, colorize, searchOptions) {
     const errMsg = 'ERROR: ' + err.message;
-    common.log('\n' + errMsg + '\n');
+    common.logError('\n' + errMsg + '\n', colorize);
     searchOptions.usageWithCode(1);
 }
 
@@ -25,7 +25,7 @@ const searchMain = async () => {
 
     searchOptions.settingsFromArgs(args, async (err, settings) => {
         if (err) {
-            handleError(err, searchOptions);
+            handleError(err, true, searchOptions);
         }
 
         if (settings.debug)
@@ -61,7 +61,7 @@ const searchMain = async () => {
             }
 
         } catch (err2) {
-            handleError(err2, searchOptions);
+            handleError(err2, settings.colorize, searchOptions);
         }
     });
 };

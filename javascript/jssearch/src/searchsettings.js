@@ -4,7 +4,7 @@
  * represents the settings to use when performing the search
  */
 
-const {FindSettings, FileTypes, sortByToName, StringUtil} = require('jsfind');
+const {Color, FindSettings, FileTypes, sortByToName, StringUtil} = require('jsfind');
 
 class SearchSettings {
     'use strict'
@@ -14,6 +14,7 @@ class SearchSettings {
     firstMatch = false;
     inLinesAfterPatterns = [];
     inLinesBeforePatterns = [];
+    lineColor = Color.GREEN;
     linesAfter = 0;
     linesAfterToPatterns = [];
     linesAfterUntilPatterns = [];
@@ -61,6 +62,30 @@ class SearchSettings {
 
     set debug(value) {
         this.#findSettings.debug = value;
+    }
+
+    get dirColor() {
+        return this.#findSettings.dirColor;
+    }
+
+    set dirColor(value) {
+        this.#findSettings.dirColor = value;
+    }
+
+    get extColor() {
+        return this.#findSettings.extColor;
+    }
+
+    set extColor(value) {
+        this.#findSettings.extColor = value;
+    }
+
+    get fileColor() {
+        return this.#findSettings.fileColor;
+    }
+
+    set fileColor(value) {
+        this.#findSettings.fileColor = value;
     }
 
     get followSymlinks() {

@@ -25,7 +25,7 @@ class SearchResultFormatter {
         for (let p of this.settings.searchPatterns) {
             let m = p.exec(formattedLine);
             if (m) {
-                formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length);
+                formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length, this.settings.lineColor);
                 break;
             }
         }
@@ -156,7 +156,7 @@ class SearchResultFormatter {
         }
 
         if (this.settings.colorize) {
-            formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex);
+            formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex, this.settings.lineColor);
         }
         return formatted;
     }
