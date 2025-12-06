@@ -27,21 +27,6 @@
         [cljsearch.searchsettings]
         ))
 
-(defn validate-path [path]
-  (if (not path)
-    "Startpath not defined"
-    (let [file-path (if path (file path) nil)]
-      (if (or (not file-path) (not (.exists file-path)))
-        "Startpath not found"
-        (if (not (.canRead file-path))
-          "Startpath not readable"
-          nil)))))
-
-(defn validate-paths [paths]
-  (if (or (not paths) (empty? paths))
-    ["Startpath not defined"]
-    (take 1 (filter #(not (= % nil)) (map validate-path paths)))))
-
 (defn validate-search-settings [^SearchSettings settings]
   (let [find-errs (validate-settings settings)]
     (if (not (empty? find-errs))
@@ -212,69 +197,66 @@
         with-file-results (map #(assoc-in % [:file] fr) search-results)]
     with-file-results))
 
-(defn search-line-for-pattern
-  ([line-num line lines-before lines-after p ^SearchSettings settings]
-    (let [m (re-matcher p line)]
-      (if
-        (and
-          (.find m 0)
-          (lines-before-match? lines-before settings)
-          (lines-after-match? lines-after settings))
-        (search-line-for-pattern line-num line lines-before lines-after m 0 [] settings)
-        [])))
+(defn first-matches-met [results settings]
+  (every? #(> % 0) (map (fn [p] (count (filter #(= p (:pattern %)) results))) (:search-patterns settings))))
+
+(defn lines-from-lines [start-line line-count lines]
+  (vec (take line-count (drop (- start-line 1) lines))))
+
+(defn lines-before-from-lines [current-line line-count lines]
+  (let [sl (if (>= line-count current-line) (- line-count current-line) (- current-line line-count))
+        lc (if (>= line-count current-line) (- line-count current-line) line-count)]
+    (lines-from-lines sl lc lines)))
+
+(defn search-line-with-lines-for-pattern
+  ([line-num line lines p ^SearchSettings settings]
+   (let [m (re-matcher p line)]
+     (if (.find m 0)
+       (let [lines-before (if (need-lines-before settings) (lines-before-from-lines line-num (:lines-before settings) lines) [])
+             lines-after (if (need-lines-after settings) (lines-from-lines (inc line-num) (:lines-after settings) lines) [])]
+         (if
+           (and
+            (lines-before-match? lines-before settings)
+            (lines-after-match? lines-after settings))
+           (search-line-with-lines-for-pattern line-num line lines-before lines-after m 0 [] settings)
+           []))
+       [])))
   ([line-num line lines-before lines-after m i results ^SearchSettings settings]
-    (if (.find m i)
-      (do
-        (let [startmatchindex (.start m)
-              endmatchindex (.end m)
-              result (->SearchResult
-                       (.pattern m)
-                       nil 
-                       line-num
-                       (+ startmatchindex 1)
-                       (+ endmatchindex 1)
-                       line
-                       lines-before
-                       lines-after)]
-          (search-line-for-pattern line-num line lines-before lines-after m
-            endmatchindex (concat results [result]) settings)))
-      results)))
+   (if (.find m i)
+     (do
+       (let [startmatchindex (.start m)
+             endmatchindex (.end m)
+             result (->SearchResult
+                     (.pattern m)
+                     nil
+                     line-num
+                     (+ startmatchindex 1)
+                     (+ endmatchindex 1)
+                     line
+                     lines-before
+                     lines-after)]
+         (if (:first-match settings)
+           [result]
+           (search-line-with-lines-for-pattern line-num line lines-before lines-after m
+                                    endmatchindex (concat results [result]) settings))))
+     results)))
 
-(defn search-line [line-num line lines-before lines-after ^SearchSettings settings]
+(defn search-line-with-lines [line-num line lines ^SearchSettings settings]
   (apply concat
-    (map #(search-line-for-pattern line-num line lines-before lines-after % settings)
-      (:search-patterns settings))))
+         (map #(search-line-with-lines-for-pattern line-num line lines % settings)
+              (:search-patterns settings))))
 
-(defn search-lines
-  ([lines ^SearchSettings settings]
-    (let [line (first lines)
-          nextlines (drop (:lines-after settings) (rest lines))
-          lines-before []
-          lines-after (take (:lines-after settings) (rest lines))]
-      (search-lines 1 line nextlines lines-before lines-after [] settings)))
-  ([line-num line lines lines-before lines-after results ^SearchSettings settings]
-    (if line
-      (let [nextresults (search-line line-num line lines-before lines-after settings)
-            nextline-num (+ line-num 1)
-            nextline (if (empty? lines-after) (first lines) (first lines-after))
-            nextlines-before
-              (if (> (:lines-before settings) 0)
-                (if (= (count lines-before) (:lines-before settings))
-                  (concat (rest lines-before) [line])
-                  (concat lines-before [line]))
-                [])
-            nextlines-after
-              (if (> (:lines-after settings) 0)
-                (concat (rest lines-after) (take 1 lines))
-                [])]
-          (search-lines nextline-num nextline (rest lines) nextlines-before
-            nextlines-after (concat results nextresults) settings))
-      (if
-        (and
-          (> (count results) 0)
-          (:first-match settings))
-        (take 1 results)
-        results))))
+(defn search-lines [lines ^SearchSettings settings]
+  (loop [line-num 1
+         line (first lines)
+         results []]
+    (if
+      (or (nil? line) (and (:first-match settings) (first-matches-met results settings)))
+        results
+        (recur
+          (inc line-num)
+          (first (drop line-num lines))
+          (concat results (search-line-with-lines line-num line lines settings))))))
 
 (defn search-text-file-lines [^FileResult fr ^SearchSettings settings]
   (with-open [rdr (reader (.toFile (:path fr)) :encoding (:text-file-encoding settings))]
@@ -333,7 +315,7 @@
     (log-msg "\nSearch results: 0")
     (let [format-search-result (get-search-result-formatter settings)]
       (log-msg (format "\nSearch results (%d):" (count results)))
-      (doseq [r results] (log-msg (format-search-result r settings))))))
+      (doseq [r results] (log-msg (format-search-result r))))))
 
 (defn get-search-results-matching-files [results]
   (let [file-paths (map #(file-result-path (:file %)) results)
