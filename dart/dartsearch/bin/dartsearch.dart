@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:dartfind/dartfind.dart';
 import 'package:dartsearch/dartsearch.dart';
 
-void _handleError(err, SearchOptions options) {
+void _handleError(err, bool colorize, SearchOptions options) {
   logMsg('');
-  logError('$err\n');
+  logError('$err\n', colorize);
   options.usage();
   exitCode = 1;
 }
@@ -37,9 +37,9 @@ Future<void> search(SearchSettings settings, SearchOptions options) async {
   } on FormatException catch (e) {
     logError(e.message);
   } on SearchException catch (e) {
-    _handleError(e, options);
+    _handleError(e, settings.colorize, options);
   } on FindException catch (e) {
-    _handleError(e, options);
+    _handleError(e, settings.colorize, options);
   } catch (e) {
     print(e);
     rethrow;
@@ -61,6 +61,6 @@ Future<void> main(List<String> arguments) async {
       search(settings, options);
     }
   }).catchError((e) {
-    _handleError(e, options);
+    _handleError(e, true, options);
   });
 }

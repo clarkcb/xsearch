@@ -1,9 +1,10 @@
-import 'package:dartfind/dartfind.dart' show FindSettings;
+import 'package:dartfind/dartfind.dart';
 
 class SearchSettings extends FindSettings {
   bool firstMatch = false;
   var inLinesAfterPatterns = <Pattern>{};
   var inLinesBeforePatterns = <Pattern>{};
+  Color lineColor = Color.green;
   int linesAfter = 0;
   var linesAfterToPatterns = <Pattern>{};
   var linesAfterUntilPatterns = <Pattern>{};

@@ -1,5 +1,5 @@
 import 'package:dartfind/dartfind.dart'
-    show FileResult, FileResultFormatter, FileResultSorter, SortBy;
+    show Color, FileResult, FileResultFormatter, FileResultSorter, SortBy;
 import 'package:dartsearch/src/search_settings.dart';
 
 class SearchResult {
@@ -37,8 +37,9 @@ class SearchResultFormatter {
     }
   }
 
-  String colorize(String s, int matchStartIndex, int matchEndIndex) {
-    return fileFormatter!.colorize(s, matchStartIndex, matchEndIndex);
+  String colorize(
+      String s, int matchStartIndex, int matchEndIndex, Color color) {
+    return fileFormatter!.colorize(s, matchStartIndex, matchEndIndex, color);
   }
 
   String formatLineWithColor(String line) {
@@ -46,7 +47,8 @@ class SearchResultFormatter {
     for (var p in settings.searchPatterns) {
       var match = (p as RegExp).firstMatch(formattedLine);
       if (match != null) {
-        formattedLine = colorize(formattedLine, match.start, match.end);
+        formattedLine =
+            colorize(formattedLine, match.start, match.end, settings.lineColor);
         break;
       }
     }
@@ -89,8 +91,8 @@ class SearchResultFormatter {
       line = result.line!;
     }
     if (settings.colorize) {
-      line =
-          colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
+      line = colorize(line, result.matchStartIndex - 1,
+          result.matchEndIndex - 1, settings.lineColor);
     }
     var lineNumString = '$currentLineNum'.padLeft(lineNumPadding);
     s += '> $lineNumString | $line\n';
@@ -153,7 +155,8 @@ class SearchResultFormatter {
     }
 
     if (settings.colorize) {
-      formatted = colorize(formatted, matchStartIndex, matchEndIndex);
+      formatted = colorize(
+          formatted, matchStartIndex, matchEndIndex, settings.lineColor);
     }
 
     return formatted;
