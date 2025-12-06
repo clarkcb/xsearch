@@ -22,10 +22,10 @@
         [cljfind.fileutil :only (exists-path? expand-path path-str to-path)]
         [cljfind.findsettings :only
          (add-extension add-file-type add-path add-pattern
-          set-archives-only set-debug set-int-val set-long-val
-          sort-by-from-name)]
+          set-archives-only set-debug set-int-val set-long-val)]
         [cljsearch.searchsettings :only
-         (->SearchSettings DEFAULT-SEARCH-SETTINGS)]))
+         (->SearchSettings DEFAULT-SEARCH-SETTINGS)]
+        [cljfind.sortby :only (sort-by-from-name)]))
 
 (defrecord SearchOption [short-arg long-arg desc arg-type])
 

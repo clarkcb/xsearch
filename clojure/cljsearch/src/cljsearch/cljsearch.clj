@@ -23,8 +23,8 @@
               (if (:print-files settings) (print-search-results-matching-files results settings))
               (if (:print-lines settings) (print-search-results-matching-lines results settings)))
             (do
-              (log-errors errs)
+              (log-errors errs (:colorize settings))
               (usage)))))
       (do
-        (log-errors errs)
+        (log-errors errs true)
         (usage)))))

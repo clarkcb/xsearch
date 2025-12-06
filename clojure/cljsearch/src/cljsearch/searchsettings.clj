@@ -11,6 +11,7 @@
      :doc "Defines the settings for a given search instance"}
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (split)]
+        [cljfind.consolecolor]
         [cljfind.filetypes :only (from-name)]
         [cljfind.findsettings]))
 
@@ -19,6 +20,9 @@
     ^Boolean archives-only
     ^Boolean colorize
     ^Boolean debug
+    ^String dir-color
+    ^String ext-color
+    ^String file-color
     ^Boolean first-match
     ^Boolean follow-symlinks
     ^clojure.lang.PersistentHashSet in-archive-extensions
@@ -30,6 +34,7 @@
     ^clojure.lang.PersistentHashSet in-lines-after-patterns
     ^clojure.lang.PersistentHashSet in-lines-before-patterns
     ^Boolean include-hidden
+    ^String line-color
     ^Integer lines-after
     ^clojure.lang.PersistentHashSet lines-after-to-patterns
     ^clojure.lang.PersistentHashSet lines-after-until-patterns
@@ -73,6 +78,9 @@
    false     ; archives-only
    true      ; colorize
    false     ; debug
+   :cyan     ; dir-color
+   :yellow   ; ext-color
+   :magenta  ; file-color
    false     ; first-match
    false     ; follow-symlinks
    #{}       ; in-archive-extensions
@@ -84,6 +92,7 @@
    #{}       ; in-lines-after-patterns
    #{}       ; in-lines-before-patterns
    false     ; include-hidden
+   :green    ; line-color
    0         ; lines-after
    #{}       ; lines-after-to-patterns
    #{}       ; lines-after-until-patterns
@@ -127,6 +136,9 @@
    (:archives-only search-settings)             ; archives-only
    (:colorize search-settings)                  ; colorize
    (:debug search-settings)                     ; debug
+   (:dir-color search-settings)                 ; dir-color
+   (:ext-color search-settings)                 ; ext-color
+   (:file-color search-settings)                ; file-color
    (:follow-symlinks search-settings)           ; follow-symlinks
    (:in-archive-extensions search-settings)     ; in-archive-extensions
    (:in-archive-file-patterns search-settings)  ; in-archive-file-patterns
@@ -159,6 +171,18 @@
    (:sort-descending search-settings)           ; sort-descending
    (:verbose search-settings)                   ; verbose
    ))
+
+(defn need-lines-before [^SearchSettings settings]
+  (or
+   (> (:lines-before settings) 0)
+   (not (empty? (:in-lines-before-patterns settings)))
+   (not (empty? (:out-lines-before-patterns settings)))))
+
+(defn need-lines-after [^SearchSettings settings]
+  (or
+   (> (:lines-after settings) 0)
+   (not (empty? (:in-lines-after-patterns settings)))
+   (not (empty? (:out-lines-after-patterns settings)))))
 
 ;(defn set-archives-only [settings b]
 ;  (let [with-search-archives (assoc settings :search-archives b)]

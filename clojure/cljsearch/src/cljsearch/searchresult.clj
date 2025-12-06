@@ -30,7 +30,7 @@
             line
             (do
               (.find line-matcher 0)
-              (colorize-string line (.start line-matcher) (.end line-matcher))))]
+              (colorize-string line (.start line-matcher) (.end line-matcher) (:line-color settings))))]
     color-line))
 
 (defn get-line-formatter [^SearchSettings settings]
@@ -41,14 +41,17 @@
     (fn [^String line]
       line)))
 
-(defn format-matching-line [^SearchResult r]
-  (let [trimmed (str/trim (:line r))
-        leading-whitespace-count (- (count (str/trimr (:line r))) (count trimmed))
-        match-length (- (:matchendindex r) (:matchstartindex r))
-        adj-match-start-index (- (:matchstartindex r) 1 leading-whitespace-count)
-        adj-match-end-index (+ adj-match-start-index match-length)
-        formatted (colorize-string trimmed adj-match-start-index adj-match-end-index)]
-    formatted))
+(defn format-matching-line [^SearchResult r ^SearchSettings settings]
+  (let [trimmed (str/trim (:line r))]
+    (if (:colorize settings)
+      (let [trimmed (str/trim (:line r))
+            leading-whitespace-count (- (count (str/trimr (:line r))) (count trimmed))
+            match-length (- (:matchendindex r) (:matchstartindex r))
+            adj-match-start-index (- (:matchstartindex r) 1 leading-whitespace-count)
+            adj-match-end-index (+ adj-match-start-index match-length)
+            formatted (colorize-string trimmed adj-match-start-index adj-match-end-index (:line-color settings))]
+        formatted)
+      trimmed)))
 
 (defn get-multi-line-formatter [^SearchSettings settings]
   (let [format-file-result (get-file-result-formatter settings)
