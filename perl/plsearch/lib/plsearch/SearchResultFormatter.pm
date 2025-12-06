@@ -13,7 +13,7 @@ use warnings;
 
 use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
-use plfind::Color;
+use plfind::ConsoleColor;
 use plfind::common;
 use plfind::FileResultFormatter;
 
@@ -40,7 +40,7 @@ sub format_line_with_color {
         if ($formatted_line =~ /$p/go) {
             my $start_index = $-[0];
             my $end_index = $+[0];
-            $formatted_line = colorize($formatted_line, $start_index, $end_index);
+            $formatted_line = colorize($formatted_line, $start_index, $end_index, $self->{settings}->{line_color});
             last;
         }
     }
@@ -142,8 +142,8 @@ sub format_matching_line {
 }
 
 sub colorize {
-    my ($s, $match_start_index, $match_end_index) = @_;
-    plfind::FileResultFormatter::colorize($s, $match_start_index, $match_end_index);
+    my ($s, $match_start_index, $match_end_index, $color) = @_;
+    plfind::FileResultFormatter::colorize($s, $match_start_index, $match_end_index, $color);
 }
 
 sub line_num_padding {

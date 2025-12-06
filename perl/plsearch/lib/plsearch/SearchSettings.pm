@@ -10,8 +10,9 @@ package plsearch::SearchSettings;
 
 use lib $ENV{'XFIND_PATH'} . '/perl/plfind/lib';
 
-use plfind::FindSettings;
 use plfind::common;
+use plfind::Color;
+use plfind::FindSettings;
 
 our @ISA = 'plfind::FindSettings';
 
@@ -23,10 +24,10 @@ sub new {
     my $self = $class->SUPER::new();
 
     # Add the search-specific settings
-    $self->{colorize} = 1;
     $self->{first_match} = 0;
     $self->{in_lines_after_patterns} = [];
     $self->{in_lines_before_patterns} = [];
+    $self->{line_color} = plfind::Color->GREEN;
     $self->{lines_after} = 0;
     $self->{lines_after_to_patterns} = [];
     $self->{lines_after_until_patterns} = [];
