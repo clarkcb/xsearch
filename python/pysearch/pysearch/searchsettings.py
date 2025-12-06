@@ -13,7 +13,7 @@ from pathlib import Path
 import re
 from typing import Optional, Pattern
 
-from pyfind import FindSettings, FindException, SortBy, list_to_str, FileType
+from pyfind import Color, ConsoleColor, FindSettings, FindException, SortBy, list_to_str, FileType
 
 from .searchexception import SearchException
 
@@ -25,8 +25,8 @@ class SearchSettings(FindSettings):
 
     __slots__ = FindSettings.__slots__ + [
         'first_match', 'in_lines_after_patterns', 'in_lines_before_patterns',
-        'lines_after', 'lines_after_to_patterns', 'lines_after_until_patterns', 'lines_before',
-        'max_line_length', 'multi_line_search', 'out_lines_after_patterns',
+        'line_color', 'lines_after', 'lines_after_to_patterns', 'lines_after_until_patterns',
+        'lines_before', 'max_line_length', 'multi_line_search', 'out_lines_after_patterns',
         'out_lines_before_patterns', 'print_lines', 'print_results', 'search_archives',
         'search_patterns', 'text_file_encoding', 'unique_lines'
     ]
@@ -41,6 +41,9 @@ class SearchSettings(FindSettings):
                  archives_only: bool = False,
                  colorize: bool = True,
                  debug: bool = False,
+                 dir_color: Color = Color.CYAN,
+                 ext_color: Color = Color.YELLOW,
+                 file_color: Color = Color.MAGENTA,
                  first_match: bool = False,
                  follow_symlinks: bool = False,
                  in_archive_extensions: list[str] | set[str] | str = None,
@@ -52,6 +55,7 @@ class SearchSettings(FindSettings):
                  in_file_types: list | set | str | FileType = None,
                  in_lines_after_patterns: PatternSet = None,
                  in_lines_before_patterns: PatternSet = None,
+                 line_color: Color = Color.GREEN,
                  lines_after: int = 0,
                  lines_after_to_patterns: PatternSet = None,
                  lines_after_until_patterns: PatternSet = None,
@@ -92,6 +96,9 @@ class SearchSettings(FindSettings):
                               archives_only=archives_only,
                               colorize=colorize,
                               debug=debug,
+                              dir_color=dir_color,
+                              ext_color=ext_color,
+                              file_color=file_color,
                               # find_in_archives=search_archives,
                               follow_symlinks=follow_symlinks,
                               in_archive_extensions=in_archive_extensions,
@@ -129,6 +136,7 @@ class SearchSettings(FindSettings):
             in_lines_after_patterns if in_lines_after_patterns else set()
         self.in_lines_before_patterns: PatternSet = \
             in_lines_before_patterns if in_lines_before_patterns else set()
+        self.line_color = line_color
         self.lines_after = lines_after
         self.lines_after_to_patterns: PatternSet = \
             lines_after_to_patterns if lines_after_to_patterns else set()

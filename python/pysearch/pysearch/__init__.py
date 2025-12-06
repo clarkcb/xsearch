@@ -6,6 +6,7 @@ from .searchexception import SearchException
 from .searchoptions import SearchOptions
 from .searchresult import SearchResult, SearchResultFormatter, SearchResultSorter
 from .searchsettings import SearchSettings
+from pyfind import Color, ConsoleColor, FileResult, FileType
 
 VERSION = '0.1.0'
 

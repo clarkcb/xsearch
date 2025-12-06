@@ -67,7 +67,7 @@ async def main():
 
     except AssertionError as e:
         log('')
-        log_error(f'{e}\n')
+        log_error(f'{e}\n', settings.colorize)
         search_options.usage(1)
     except KeyboardInterrupt:
         log('')

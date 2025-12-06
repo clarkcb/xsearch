@@ -11,7 +11,7 @@
 from io import StringIO
 from typing import List
 
-from pyfind import Color, FileResult, FileResultFormatter, FileResultSorter, SortBy
+from pyfind import ConsoleColor, FileResult, FileResultFormatter, FileResultSorter, SortBy
 
 from .searchsettings import SearchSettings
 
@@ -137,7 +137,7 @@ class SearchResultFormatter(object):
                 formatted = formatted[:-3] + '...'
         if self.settings.colorize:
             formatted = FileResultFormatter.colorize(
-                formatted, match_start_index, match_end_index)
+                formatted, match_start_index, match_end_index, self.settings.line_color)
         return formatted
 
     def __single_line_format(self, result: SearchResult) -> str:
