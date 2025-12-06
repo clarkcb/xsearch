@@ -29,14 +29,9 @@ export class SearchResultFormatter {
         for (let p of this.settings.searchPatterns) {
             let m = p.exec(formattedLine);
             if (m) {
-                formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length);
+                formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length,
+                    this.settings.lineColor);
                 break;
-            }
-        }
-        if (this.settings.inExtensions.length > 0) {
-            const idx: number = formattedLine.lastIndexOf('.');
-            if (idx > 0 && idx < formattedLine.length - 1) {
-                formattedLine = this.fileFormatter.colorize(formattedLine, idx + 1, formattedLine.length);
             }
         }
         return formattedLine;
@@ -98,7 +93,8 @@ export class SearchResultFormatter {
         }
         let line = SearchResultFormatter.trimRight(result.line);
         if (this.settings.colorize) {
-            line = this.fileFormatter.colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1);
+            line = this.fileFormatter.colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1,
+                this.settings.lineColor);
         }
         s += "> " + SearchResultFormatter.padLeft(currentLineNum.toString(), numPadding) + " | " +
             line + "\n";
@@ -170,7 +166,7 @@ export class SearchResultFormatter {
         }
 
         if (this.settings.colorize) {
-            formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex);
+            formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex, this.settings.lineColor);
         }
         return formatted;
     }

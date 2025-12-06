@@ -4,7 +4,7 @@
  * file search utility written in typescript
  */
 
-"use strict";
+'use strict';
 
 import * as common from './common';
 import {Searcher} from './searcher';
@@ -12,9 +12,9 @@ import {SearchOptions} from './searchoptions';
 import {SearchSettings} from './searchsettings';
 import {SearchResultFormatter} from "./searchresultformatter";
 
-function handleError(err: Error | any, searchOptions: SearchOptions) {
+function handleError(err: Error | any, colorize: boolean, searchOptions: SearchOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
-    common.log('\n' + errMsg + '\n');
+    common.logError('\n' + errMsg + '\n', colorize);
     searchOptions.usageWithCode(1);
 }
 
@@ -24,7 +24,7 @@ const searchMain = async () => {
 
     searchOptions.settingsFromArgs(args, async (err: Error | void, settings: SearchSettings) => {
         if (err) {
-            handleError(err, searchOptions);
+            handleError(err, true, searchOptions);
         }
 
         if (settings.debug)
@@ -60,12 +60,12 @@ const searchMain = async () => {
             }
 
         } catch (err2) {
-            handleError(err2, searchOptions);
+            handleError(err2, settings.colorize, searchOptions);
         }
     });
 }
 
 // node.js equivalent of python's if __name__ == '__main__'
 if (require.main === module) {
-    searchMain().catch((err) => common.log(err));
+    searchMain().catch((err) => common.logError(err));
 }

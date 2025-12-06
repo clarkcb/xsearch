@@ -6,13 +6,14 @@
 
 "use strict";
 
-import {FileType, FileTypes, FindSettings, SortBy, SortUtil, StringUtil} from 'tsfind';
+import {Color, FileType, FileTypes, FindSettings, SortBy, SortUtil, StringUtil} from 'tsfind';
 
 export class SearchSettings {
     private readonly findSettings: FindSettings;
     firstMatch = false;
     inLinesAfterPatterns: RegExp[] = [];
     inLinesBeforePatterns: RegExp[] = [];
+    lineColor = Color.GREEN;
     linesAfter = 0;
     linesAfterToPatterns: RegExp[] = [];
     linesAfterUntilPatterns: RegExp[] = [];
@@ -69,6 +70,30 @@ export class SearchSettings {
     public set debug(value: boolean) {
         this.findSettings.debug = value;
         if (value) this.findSettings.verbose = value;
+    }
+
+    get dirColor(): Color {
+        return this.findSettings.dirColor;
+    }
+
+    set dirColor(value: Color) {
+        this.findSettings.dirColor = value;
+    }
+
+    get extColor(): Color {
+        return this.findSettings.extColor;
+    }
+
+    set extColor(value: Color) {
+        this.findSettings.extColor = value;
+    }
+
+    get fileColor(): Color {
+        return this.findSettings.fileColor;
+    }
+
+    set fileColor(value: Color) {
+        this.findSettings.fileColor = value;
     }
 
     get followSymlinks(): boolean {
@@ -448,7 +473,7 @@ export class SearchSettings {
             + ', recursive=' + this.recursive
             + ', searchArchives=' + this.searchArchives
             + ', ' + StringUtil.patternListToString('searchPatterns', this.searchPatterns)
-            + ', sortBy=' + SortUtil.sortByToName(this.sortBy)
+            + ', sortBy=' + this.sortBy
             + ', sortCaseInsensitive=' + this.sortCaseInsensitive
             + ', sortDescending=' + this.sortDescending
             + ', textFileEncoding="' + this.textFileEncoding + '"'

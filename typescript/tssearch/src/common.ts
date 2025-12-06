@@ -6,6 +6,8 @@
 
 "use strict";
 
+import {ConsoleColor} from 'tsfind';
+
 export interface String {
     startsWith(str: string): boolean;
 }
@@ -19,6 +21,14 @@ if (typeof String.prototype.startsWith !== 'function') {
 
 export function log(message: string): void {
     console.log(message);
+}
+
+export function logError(message: string, colorize: boolean = true): void {
+    if (colorize) {
+        console.error(`${ConsoleColor.BOLD_RED}${message}${ConsoleColor.RESET}`);
+    } else {
+        console.error(message);
+    }
 }
 
 export function boolHashFromArray(arr: string[]): {[key:string]: boolean} {
