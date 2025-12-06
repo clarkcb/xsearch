@@ -10,6 +10,7 @@
 @interface SearchSettings : FindSettings
 
 @property(nonatomic) BOOL firstMatch;
+@property(nonatomic) Color lineColor;
 @property(nonatomic) int linesAfter;
 @property(nonatomic) int linesBefore;
 @property(nonatomic) uint32_t maxLineLength;

@@ -15,9 +15,9 @@ NSArray* argvToNSArray(int argc, const char * argv[]) {
     return [NSArray arrayWithArray:args];
 }
 
-void handleError(NSError *error, SearchOptions *options) {
+void handleError(NSError *error, BOOL colorize, SearchOptions *options) {
     logMsg(@"");
-    logError(error.domain);
+    logErrorColor(error.domain, colorize);
     [options usage:1];
 }
 
@@ -32,7 +32,7 @@ int main(int argc, const char * argv[]) {
         SearchSettings *settings = [options settingsFromArgs:args error:&error];
 
         if (error) {
-            handleError(error, options);
+            handleError(error, settings.colorize, options);
         }
         
         if (settings.debug) {
@@ -46,13 +46,13 @@ int main(int argc, const char * argv[]) {
         Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
 
         if (error) {
-            handleError(error, options);
+            handleError(error, settings.colorize, options);
         }
 
         NSArray<SearchResult *> *results = [searcher search:&error];
 
         if (error) {
-            handleError(error, options);
+            handleError(error, settings.colorize, options);
         }
 
         SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];

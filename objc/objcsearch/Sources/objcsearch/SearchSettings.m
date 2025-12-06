@@ -6,6 +6,7 @@
     self = [super init];
     if (self) {
         self.firstMatch = false;
+        self.lineColor = ColorGreen;
         self.linesAfter = 0;
         self.linesBefore = 0;
         self.maxLineLength = 150;

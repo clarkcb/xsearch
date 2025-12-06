@@ -60,8 +60,8 @@
     return [NSString stringWithString:s];
 }
 
-- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex {
-    return [self.fileFormatter colorize:s matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex];
+- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex color:(Color)color {
+    return [self.fileFormatter colorize:s matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex color:color];
 }
 
 - (NSString *) formatMatchingLine:(SearchResult*)result {
@@ -116,7 +116,7 @@
     }
 
     if (self.settings.colorize) {
-        return [self colorize:formatted matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex];
+        return [self colorize:formatted matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex color:self.settings.lineColor];
     }
 
     return [NSString stringWithString:formatted];

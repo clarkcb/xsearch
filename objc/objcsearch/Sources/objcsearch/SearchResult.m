@@ -1,5 +1,5 @@
 #import "SearchResult.h"
-#import "color.h"
+#import "consolecolor.h"
 
 @implementation SearchResult
 
