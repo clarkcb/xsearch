@@ -75,7 +75,7 @@ impl PartialEq for SearchResult {
 mod tests {
     use crate::common::log;
     use crate::searchresultformatter::SearchResultFormatter;
-    use rsfind::color::{GREEN, RESET};
+    use rsfind::consolecolor::{CONSOLE_GREEN, CONSOLE_RESET};
     use std::path::Path;
 
     use rsfind::filetypes::FileType;
@@ -177,7 +177,7 @@ mod tests {
             lines_before,
             lines_after,
         );
-        let expected_line = String::from(format!("...89012345678901234567890123456789012345678901{}maxlen{}89012345678901234567890123456789012345678901...", GREEN, RESET));
+        let expected_line = String::from(format!("...89012345678901234567890123456789012345678901{}maxlen{}89012345678901234567890123456789012345678901...", CONSOLE_GREEN, CONSOLE_RESET));
         let expected_output = format!(
             "{}: {}: [{}:{}]: {}",
             &file.file_path(),

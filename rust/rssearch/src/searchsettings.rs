@@ -1,6 +1,6 @@
 use std::fmt;
 use regex::Regex;
-
+use rsfind::color::Color;
 use rsfind::findsettings::FindSettings;
 
 #[derive(Clone)]
@@ -9,6 +9,7 @@ pub struct SearchSettings {
     _first_match: bool,
     _in_lines_after_patterns: Vec<Regex>,
     _in_lines_before_patterns: Vec<Regex>,
+    _line_color: Color,
     _lines_after: i32,
     _lines_after_to_patterns: Vec<Regex>,
     _lines_after_until_patterns: Vec<Regex>,
@@ -32,6 +33,7 @@ impl SearchSettings {
             _first_match: false,
             _in_lines_after_patterns: Vec::new(),
             _in_lines_before_patterns: Vec::new(),
+            _line_color: Color::Green,
             _lines_after: 0i32,
             _lines_after_to_patterns: Vec::new(),
             _lines_after_until_patterns: Vec::new(),
@@ -175,6 +177,14 @@ impl SearchSettings {
 
     pub fn set_include_archives(&mut self, b: bool) {
         self._find_settings.set_include_archives(b)
+    }
+
+    pub fn line_color(&self) -> Color {
+        self._line_color
+    }
+
+    pub fn set_line_color(&mut self, color: Color) {
+        self._line_color = color
     }
 
     pub fn lines_after(&self) -> i32 {

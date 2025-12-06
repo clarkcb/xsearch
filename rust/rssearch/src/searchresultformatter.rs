@@ -17,7 +17,7 @@ fn format_line_with_color(line: &str, settings: &SearchSettings) -> String {
         let m = p.find(&line);
         if m.is_some() {
             formatted_line = colorize(&formatted_line, m.unwrap().start(),
-                                      m.unwrap().end());
+                                      m.unwrap().end(), &settings.line_color());
             break;
         }
     }
@@ -104,7 +104,7 @@ impl SearchResultFormatter {
         }
 
         if self.settings.colorize() {
-            formatted = colorize(&formatted, match_start_index, match_end_index);
+            formatted = colorize(&formatted, match_start_index, match_end_index, &self.settings.line_color());
         }
         formatted
     }
@@ -182,7 +182,7 @@ impl SearchResultFormatter {
         let mut line = result.line.clone();
         if self.settings.colorize() {
             line = colorize(&line, result.match_start_index - 1,
-                            result.match_end_index - 1);
+                            result.match_end_index - 1, &self.settings.line_color());
         }
         let l = format!(
             "> {:linenum_padding$} | {}\n",

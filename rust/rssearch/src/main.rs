@@ -4,7 +4,7 @@ use std::process;
 
 extern crate rsfind;
 
-use crate::common::{log, log_err};
+use crate::common::{log, log_err_color};
 use crate::searcher::{print_results, print_result_dirs, print_result_files, print_result_lines};
 use crate::searcherror::SearchError;
 use crate::searchresultformatter::SearchResultFormatter;
@@ -19,14 +19,14 @@ pub mod searchsettings;
 pub mod searchresultformatter;
 pub mod searchresultsorter;
 
-fn print_error(error: SearchError, options: &searchoptions::SearchOptions) {
+fn print_error(error: SearchError, colorize: bool, options: &searchoptions::SearchOptions) {
     log("");
-    log_err(error.description.as_str());
+    log_err_color(error.description.as_str(), colorize);
     options.print_usage();
 }
 
-fn error_and_exit(error: SearchError, options: &searchoptions::SearchOptions) {
-    print_error(error, options);
+fn error_and_exit(error: SearchError, colorize: bool, options: &searchoptions::SearchOptions) {
+    print_error(error, colorize, options);
     process::exit(1);
 }
 
@@ -53,10 +53,12 @@ fn search(args: Iter<String>) {
                 process::exit(0);
             }
 
+            let colorize = settings.colorize();
+
             let searcher = match searcher::Searcher::new(settings) {
                 Ok(searcher) => searcher,
                 Err(error) => {
-                    print_error(error, &options);
+                    print_error(error, colorize, &options);
                     process::exit(1);
                 }
             };
@@ -78,18 +80,28 @@ fn search(args: Iter<String>) {
                         print_result_lines(&results, &formatter);
                     }
                 },
-                Err(error) => error_and_exit(error, &options),
+                Err(error) => error_and_exit(error, colorize, &options),
             }
         }
         Err(error) => {
-            error_and_exit(error, &options);
+            error_and_exit(error, true, &options);
         }
+    }
+}
+
+// This is to try to skip the first arg if it is the executable
+fn update_args(args: Iter<String>) -> Iter<String> {
+    let mut updated_args = args.clone().into_iter();
+    match updated_args.next() {
+        Some(next_arg) if next_arg.ends_with("rssearch") => updated_args,
+        _ => args
     }
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    search(args.iter());
+    let updated_args = update_args(args.iter());
+    search(updated_args);
 }
 
 #[cfg(test)]
