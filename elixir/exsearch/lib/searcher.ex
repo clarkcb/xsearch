@@ -240,7 +240,7 @@ defmodule ExSearch.Searcher do
   def search_files(searcher, file_results) do
     search_results = Enum.map(file_results, fn fr -> search_file(searcher, fr) end)
     |> List.flatten()
-    if Enum.length(search_results) > 1 do
+    if Enum.count(search_results) > 1 do
       {:ok, SearchResultSorter.sort(searcher.settings, search_results)}
     else
       {:ok, search_results}
@@ -250,7 +250,7 @@ defmodule ExSearch.Searcher do
   def search_files_async(searcher, file_results) do
     tasks = Enum.map(file_results, fn fr -> Task.async(fn -> search_file(searcher, fr) end) end)
     search_results = Task.await_many(tasks) |> List.flatten()
-    if Enum.length(search_results) > 1 do
+    if Enum.count(search_results) > 1 do
       {:ok, SearchResultSorter.sort(searcher.settings, search_results)}
     else
       {:ok, search_results}

@@ -9,8 +9,8 @@ defmodule ExSearch.Main do
   alias ExSearch.SearchOptions
   alias ExSearch.SearchResultFormatter
 
-  def handle_error(message, search_options) do
-    Logging.log_error("\nERROR: #{message}")
+  def handle_error(message, colorize, search_options) do
+    Logging.log_error("\nERROR: #{message}", colorize)
     SearchOptions.usage(search_options.options)
   end
 
@@ -44,7 +44,7 @@ defmodule ExSearch.Main do
     else
       searcher = Searcher.new(settings)
       case Searcher.search(searcher) do
-        {:error, message} -> handle_error(message, search_options)
+        {:error, message} -> handle_error(message, settings.colorize, search_options)
         {:ok, results} -> handle_results(results, settings)
       end
     end
@@ -54,11 +54,11 @@ defmodule ExSearch.Main do
     search_options = SearchOptions.new()
     try do
       case SearchOptions.get_settings_from_args(args, search_options.options) do
-        {:error, message} -> handle_error(message, search_options)
+        {:error, message} -> handle_error(message, true, search_options)
         {:ok, settings} -> search(settings, search_options)
       end
     rescue
-      e in SearchError -> handle_error(e.message, search_options)
+      e in SearchError -> handle_error(e.message, true, search_options)
     end
   end
 end

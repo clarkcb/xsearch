@@ -28,6 +28,8 @@ defmodule ExSearch.SearchResultFormatter do
   Documentation for `ExSearch.SearchResultFormatter`.
   """
 
+  alias ExFind.Color
+  alias ExFind.ConsoleColor
   alias ExFind.FileResultFormatter
 
   defstruct [:settings, :file_formatter]
@@ -39,11 +41,11 @@ defmodule ExSearch.SearchResultFormatter do
     ])
   end
 
-  def colorize_line(line, start_idx, end_idx) do
+  def colorize_line(line, start_idx, end_idx, color) do
     before_text = String.slice(line, 0, start_idx - 1)
     match_text = String.slice(line, start_idx - 1, end_idx - start_idx)
     after_text = String.slice(line, end_idx - 1, String.length(line))
-    colorized = IO.ANSI.green() <> match_text <> IO.ANSI.reset()
+    colorized = Color.get_console_color_for_color(color) <> match_text <> ConsoleColor.reset
     before_text <> colorized <> after_text
   end
 
@@ -71,7 +73,8 @@ defmodule ExSearch.SearchResultFormatter do
       end
       colorized_line =
         if formatter.settings.colorize do
-          FileResultFormatter.colorize(search_result.line, search_result.match_start_index, search_result.match_end_index)
+          FileResultFormatter.colorize(search_result.line, search_result.match_start_index,
+            search_result.match_end_index, formatter.settings.line_color)
         else
           search_result.line
         end
@@ -94,7 +97,8 @@ defmodule ExSearch.SearchResultFormatter do
       _ ->
         line =
           if formatter.settings.colorize do
-            FileResultFormatter.colorize(search_result.line, search_result.match_start_index - 1, search_result.match_end_index - 1)
+            FileResultFormatter.colorize(search_result.line, search_result.match_start_index - 1,
+              search_result.match_end_index - 1, formatter.settings.line_color)
           else
             search_result.line
           end
@@ -117,9 +121,7 @@ defmodule ExSearch.SearchResultSorter do
   Documentation for `ExSearch.SearchResultSorter`.
   """
 
-  alias ExFind.FileResultSorter
-
-    def get_file_path_mapper(settings) do
+  def get_file_path_mapper(settings) do
     if settings.sort_case_insensitive do
       fn r -> {String.downcase(r.file.path), String.downcase(r.file.name), r.line_num, r.match_start_index, r.match_end_index} end
     else
