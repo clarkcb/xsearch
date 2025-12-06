@@ -10,6 +10,7 @@ import swiftfind
 
 public enum DefaultSearchSettings {
     public static let firstMatch = false
+    public static let lineColor = Color.green
     public static let linesAfter: Int32 = 0
     public static let linesBefore: Int32 = 0
     public static let maxLineLength: Int32 = 150
@@ -23,6 +24,7 @@ public enum DefaultSearchSettings {
 
 public class SearchSettings: FindSettings {
     public var firstMatch: Bool = DefaultSearchSettings.firstMatch
+    public var lineColor: Color = DefaultSearchSettings.lineColor
     public var linesAfter: Int32 = DefaultSearchSettings.linesAfter
     public var linesBefore: Int32 = DefaultSearchSettings.linesBefore
     public var maxLineLength: Int32 = DefaultSearchSettings.maxLineLength

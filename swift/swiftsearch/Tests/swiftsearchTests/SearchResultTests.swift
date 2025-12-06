@@ -93,9 +93,9 @@ class SearchResultTests: XCTestCase {
             linesAfter: linesBeforeAfter
         )
         let expectedLine = "...89012345678901234567890123456789012345678901" +
-            Color.GREEN +
+            ConsoleColor.GREEN +
             "maxlen" +
-            Color.RESET +
+            ConsoleColor.RESET +
             "89012345678901234567890123456789012345678901..."
         let expectedOutput = "\(file): \(lineNum): [\(matchStartIndex):\(matchEndIndex)]: \(expectedLine)"
         let output = formatter.format(result: searchResult)

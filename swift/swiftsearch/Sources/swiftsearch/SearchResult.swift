@@ -52,7 +52,7 @@ public class SearchResultFormatter {
         for p in settings.searchPatterns {
             let match = p.firstMatch(formattedLine)
             if match != nil {
-                formattedLine = colorize(formattedLine, match!.range.lowerBound, match!.range.upperBound)
+                formattedLine = colorize(formattedLine, match!.range.lowerBound, match!.range.upperBound, settings.lineColor)
                 break
             }
         }
@@ -67,8 +67,8 @@ public class SearchResultFormatter {
         }
     }
 
-    private func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int) -> String {
-        fileFormatter.colorize(s, matchStartIndex, matchEndIndex)
+    private func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int, _ color: Color) -> String {
+        fileFormatter.colorize(s, matchStartIndex, matchEndIndex, color)
     }
 
     private func formatMatchingLine(result: SearchResult) -> String {
@@ -125,7 +125,7 @@ public class SearchResultFormatter {
         }
 
         if settings.colorize {
-            formatted = colorize(formatted, matchStartIndex, matchEndIndex)
+            formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.lineColor)
         }
 
         return formatted
@@ -176,7 +176,7 @@ public class SearchResultFormatter {
         }
         var line = result.line
         if settings.colorize {
-            line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1)
+            line = colorize(line, result.matchStartIndex - 1, result.matchEndIndex - 1, settings.lineColor)
         }
         var currentLine = String(format: format, result.lineNum)
         currentLine = "> \(currentLine) | \(line)\n"
