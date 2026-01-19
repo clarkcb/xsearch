@@ -222,6 +222,24 @@ module RbSearch
       end
     end
 
+    def print_matches(search_results, formatter)
+      matches = get_matches(search_results, formatter.settings)
+      hdr_text =
+        if settings.unique_lines
+          'Unique matches'
+        else
+          'Matches'
+        end
+      if matches.empty?
+        RbFind.log("#{hdr_text}: 0")
+      else
+        RbFind.log("#{hdr_text} (#{matches.size}):")
+        matches.each do |m|
+          RbFind.log("#{formatter.format_match(m)}\n")
+        end
+      end
+    end
+
     private
 
     def validate_settings
@@ -405,9 +423,25 @@ module RbSearch
     end
 
     def get_matching_lines(results, settings)
-      lines = results.map { |r| r.line.strip }.sort { |l1, l2| l1.upcase <=> l2.upcase }
+      lines = results.map { |r| r.line.strip }
       lines.uniq! if settings.unique_lines
+      if settings.sort_case_insensitive
+        lines.sort! { |s1, s2| s1.upcase <=> s2.upcase }
+      else
+        lines.sort!
+      end
       lines
+    end
+
+    def get_matches(results, settings)
+      matches = results.map { |r| r.line[r.match_start_index - 1, r.match_end_index - r.match_start_index] }
+      matches.uniq! if settings.unique_lines
+      if settings.sort_case_insensitive
+        matches.sort! { |s1, s2| s1.upcase <=> s2.upcase }
+      else
+        matches.sort!
+      end
+      matches
     end
   end
 end

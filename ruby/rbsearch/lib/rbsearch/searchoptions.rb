@@ -25,18 +25,30 @@ module RbSearch
     end
 
     def update_settings_from_json(settings, json)
-      arg_tokens = @arg_tokenizer.tokenize_json(json)
-      update_settings_from_arg_tokens(settings, arg_tokens)
+      begin
+        arg_tokens = @arg_tokenizer.tokenize_json(json)
+        update_settings_from_arg_tokens(settings, arg_tokens)
+      rescue RbFind::FindError => e
+        raise SearchError, e.message
+      end
     end
 
     def update_settings_from_file(settings, file_path)
-      arg_tokens = @arg_tokenizer.tokenize_file(file_path)
-      update_settings_from_arg_tokens(settings, arg_tokens)
+      begin
+        arg_tokens = @arg_tokenizer.tokenize_file(file_path)
+        update_settings_from_arg_tokens(settings, arg_tokens)
+      rescue RbFind::FindError => e
+        raise SearchError, e.message
+      end
     end
 
     def update_settings_from_args(settings, args)
-      arg_tokens = @arg_tokenizer.tokenize_args(args)
-      update_settings_from_arg_tokens(settings, arg_tokens)
+      begin
+        arg_tokens = @arg_tokenizer.tokenize_args(args)
+        update_settings_from_arg_tokens(settings, arg_tokens)
+      rescue RbFind::FindError => e
+        raise SearchError, e.message
+      end
     end
 
     def search_settings_from_args(args)
@@ -95,13 +107,15 @@ module RbSearch
         noprintdirs: ->(b, settings) { settings.print_dirs = !b },
         noprintfiles: ->(b, settings) { settings.print_files = !b },
         noprintlines: ->(b, settings) { settings.print_lines = !b },
-        noprintmatches: ->(b, settings) { settings.print_results = !b },
+        noprintmatches: ->(b, settings) { settings.print_matches = !b },
+        noprintresults: ->(b, settings) { settings.print_results = !b },
         norecursive: ->(b, settings) { settings.recursive = !b },
         nosearcharchives: ->(b, settings) { settings.search_archives = !b },
         printdirs: ->(b, settings) { settings.print_dirs = b },
         printfiles: ->(b, settings) { settings.print_files = b },
         printlines: ->(b, settings) { settings.print_lines = b },
-        printmatches: ->(b, settings) { settings.print_results = b },
+        printmatches: ->(b, settings) { settings.print_matches = b },
+        printresults: ->(b, settings) { settings.print_results = b },
         recursive: ->(b, settings) { settings.recursive = b },
         searcharchives: ->(b, settings) { settings.search_archives = b },
         'sort-ascending': ->(b, settings) { settings.sort_descending = !b },

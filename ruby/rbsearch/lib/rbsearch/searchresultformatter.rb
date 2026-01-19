@@ -19,11 +19,16 @@ module RbSearch
       @file_formatter = RbFind::FileResultFormatter.new(settings)
       if settings.colorize
         define_singleton_method(:format_line) { |line| format_line_with_color(line) }
+        define_singleton_method(:format_match) { |match| format_match_with_color(match) }
       end
     end
 
     def format_line(line)
       line
+    end
+
+    def format_match(match)
+      match
     end
 
     def format(result)
@@ -46,6 +51,10 @@ module RbSearch
         end
       end
       formatted_line
+    end
+
+    def format_match_with_color(match)
+      colorize(match, 0, match.length)
     end
 
     def strip_newlines(s)

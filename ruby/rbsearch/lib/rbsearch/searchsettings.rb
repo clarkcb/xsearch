@@ -19,6 +19,7 @@ module RbSearch
                   :out_lines_after_patterns,
                   :out_lines_before_patterns,
                   :print_lines,
+                  :print_matches,
                   :print_results,
                   :search_archives,
                   :search_patterns,
@@ -40,6 +41,7 @@ module RbSearch
       @out_lines_after_patterns = Set.new
       @out_lines_before_patterns = Set.new
       @print_lines = false
+      @print_matches = false
       @print_results = true
       @search_archives = false
       @search_patterns = Set.new
@@ -93,6 +95,7 @@ module RbSearch
         ", print_dirs: #{@print_dirs}" +
         ", print_files: #{@print_files}" +
         ", print_lines: #{@print_lines}" +
+        ", print_matches: #{@print_matches}" +
         ", print_results: #{@print_results}" +
         ", print_usage: #{@print_usage}" +
         ", print_version: #{@print_version}" +

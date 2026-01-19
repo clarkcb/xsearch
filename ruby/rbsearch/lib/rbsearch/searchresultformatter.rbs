@@ -13,11 +13,15 @@ module RbSearch
 
     def format_line: (String line) -> String
 
+    def format_match: (String match) -> String
+
     def format: (SearchResult result) -> String
 
     private
 
     def format_line_with_color: (String line) -> String
+
+    def format_match_with_color: (String match) -> String
 
     def strip_newlines: (String s) -> String
 

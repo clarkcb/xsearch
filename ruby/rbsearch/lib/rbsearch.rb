@@ -86,6 +86,11 @@ def search(options, settings)
     searcher.print_matching_lines(search_results, formatter)
   end
 
+  if settings.print_matches
+    RbFind.log("\n")
+    searcher.print_matches(search_results, formatter)
+  end
+
 rescue RuntimeError => e
   handle_search_error(e, settings.colorize, options)
 end

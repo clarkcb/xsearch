@@ -14,6 +14,7 @@ module RbSearch
     attr_accessor out_lines_after_patterns: Set[Regexp]
     attr_accessor out_lines_before_patterns: Set[Regexp]
     attr_accessor print_lines: bool
+    attr_accessor print_matches: bool
     attr_accessor print_results: bool
     attr_accessor search_archives: bool
     attr_accessor search_patterns: Set[Regexp]

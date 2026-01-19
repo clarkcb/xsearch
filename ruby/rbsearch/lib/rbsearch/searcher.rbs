@@ -26,7 +26,13 @@ module RbSearch
 
     def print_matching_lines: (Array[SearchResult] results, SearchResultFormatter formatter) -> void
 
+    def print_matches: (Array[SearchResult] results, SearchResultFormatter formatter) -> void
+
     private
+
+    def get_matching_lines: (Array[SearchResult] results, SearchSettings settings) -> Array[String]
+
+    def get_matches: (Array[SearchResult] results, SearchSettings settings) -> Array[String]
 
     def get_file_results: (Array[SearchResult] search_results) -> Array[RbFind::FileResult]
 
