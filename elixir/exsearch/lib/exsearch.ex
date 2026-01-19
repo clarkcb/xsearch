@@ -28,6 +28,9 @@ defmodule ExSearch.Main do
     if settings.print_lines do
       Searcher.print_lines(results, formatter)
     end
+    if settings.print_matches do
+      Searcher.print_matches(results, formatter)
+    end
   end
 
   def search(settings, search_options) do

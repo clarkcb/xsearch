@@ -12,6 +12,7 @@ defmodule ExSearch.Searcher do
   alias ExSearch.SearchResult
   alias ExSearch.SearchResultFormatter
   alias ExSearch.SearchResultSorter
+  alias ExSearch.SearchSettings
 
   defstruct [:settings]
 
@@ -263,7 +264,8 @@ defmodule ExSearch.Searcher do
     case validate_settings(searcher.settings) do
       {:error, message} -> {:error, message}
       {:ok, _} ->
-        finder = Finder.new(searcher.settings)
+        # finder = Finder.new(searcher.settings)
+        finder = Finder.new(SearchSettings.to_find_settings(searcher.settings))
         case Finder.find(finder) do
           {:error, message} -> {:error, message}
           {:ok, file_results} ->
@@ -319,25 +321,73 @@ defmodule ExSearch.Searcher do
     Finder.print_files(files, formatter.file_formatter)
   end
 
-  def get_lines(search_results, settings) do
+  def get_lines(search_results, formatter) do
     if search_results == [] do
       []
     else
-      lines = Enum.map(search_results, fn r -> String.trim_leading(r.line) end)
-      if settings.unique_lines do
-        lines |> Enum.uniq()
-      else
-        lines
+      lines = search_results
+      |> Enum.map(fn r -> SearchResultFormatter.format_line(formatter, r.line, r.match_start_index - 1, r.match_end_index - 1) end)
+      |> Enum.map(fn l -> String.trim_leading(l) end)
+      case {formatter.settings.unique_lines, formatter.settings.sort_case_insensitive} do
+        {true, true} ->
+          lines
+          |> Enum.uniq_by(&String.downcase/1)
+          |> Enum.sort_by(&String.downcase/1)
+        {true, false} ->
+          lines
+          |> Enum.uniq()
+          |> Enum.sort()
+        {false, true} ->
+          lines
+          |> Enum.sort_by(&String.downcase/1)
+        {false, false} ->
+          lines
+          |> Enum.sort()
       end
     end
   end
 
   def print_lines(search_results, formatter) do
-    lines = get_lines(search_results, formatter.settings)
+    lines = get_lines(search_results, formatter)
     cond do
       lines == [] -> Logging.log("\nMatching lines: 0")
       formatter.settings.unique_lines -> Logging.log("\nUnique matching lines (#{Enum.count(lines)}):\n#{Enum.join(lines, "\n")}")
       true -> Logging.log("\nMatching lines (#{Enum.count(lines)}):\n#{Enum.join(lines, "\n")}")
+    end
+  end
+
+  def get_matches(search_results, formatter) do
+    if search_results == [] do
+      []
+    else
+      matches = search_results
+      |> Enum.map(fn r -> String.slice(r.line, r.match_start_index - 1, r.match_end_index - r.match_start_index) end)
+      |> Enum.map(fn m -> SearchResultFormatter.format_line(formatter, m, 0, String.length(m)) end)
+      case {formatter.settings.unique_lines, formatter.settings.sort_case_insensitive} do
+        {true, true} ->
+          matches
+          |> Enum.uniq_by(&String.downcase/1)
+          |> Enum.sort_by(&String.downcase/1)
+        {true, false} ->
+          matches
+          |> Enum.uniq()
+          |> Enum.sort()
+        {false, true} ->
+          matches
+          |> Enum.sort_by(&String.downcase/1)
+        {false, false} ->
+          matches
+          |> Enum.sort()
+      end
+    end
+  end
+
+  def print_matches(search_results, formatter) do
+    matches = get_matches(search_results, formatter)
+    cond do
+      matches == [] -> Logging.log("\nMatches: 0")
+      formatter.settings.unique_lines -> Logging.log("\nUnique matches (#{Enum.count(matches)}):\n#{Enum.join(matches, "\n")}")
+      true -> Logging.log("\nMatches (#{Enum.count(matches)}):\n#{Enum.join(matches, "\n")}")
     end
   end
 
