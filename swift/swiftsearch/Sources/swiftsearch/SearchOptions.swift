@@ -110,6 +110,9 @@ public class SearchOptions {
             settings.printLines = !bool
         },
         "noprintmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printMatches = !bool
+        },
+        "noprintresults": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printResults = !bool
         },
         "norecursive": { (bool: Bool, settings: SearchSettings) -> Void in
@@ -128,6 +131,9 @@ public class SearchOptions {
             settings.printLines = bool
         },
         "printmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+            settings.printMatches = bool
+        },
+        "printresults": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.printResults = bool
         },
         "recursive": { (bool: Bool, settings: SearchSettings) -> Void in

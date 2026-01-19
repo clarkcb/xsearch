@@ -63,6 +63,10 @@ func main() {
             searcher.printMatchingLines(results, formatter)
         }
 
+        if settings.printMatches {
+            searcher.printMatches(results, formatter)
+        }
+
     } catch let error as SearchError {
         handleSearchError(error, colorize, options)
     } catch let error as FindError {

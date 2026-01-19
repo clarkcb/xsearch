@@ -38,12 +38,14 @@ public class SearchResultFormatter {
     let settings: SearchSettings
     let fileFormatter: FileResultFormatter
     public var formatLine = { (line: String) in line }
+    public var formatMatch = { (match: String) in match }
 
     public init(settings: SearchSettings) {
         self.settings = settings
         self.fileFormatter = FileResultFormatter(settings: settings)
         if settings.colorize {
             formatLine = formatLineWithColor
+            formatMatch = formatMatchWithColor
         }
     }
 
@@ -57,6 +59,10 @@ public class SearchResultFormatter {
             }
         }
         return formattedLine
+    }
+
+    private func formatMatchWithColor(_ match: String) -> String {
+        return colorize(match, 0, match.count, settings.lineColor)
     }
 
     public func format(result: SearchResult) -> String {

@@ -441,7 +441,10 @@ public class Searcher {
             let lineSet = Set<String>(lines)
             lines = Array(lineSet)
         }
-        return lines.sorted { $0.lowercased() < $1.lowercased() }
+        if settings.sortCaseInsensitive {
+            return lines.sorted { $0.uppercased() < $1.uppercased() }
+        }
+        return lines.sorted { $0 < $1 }
     }
 
     public func printMatchingLines(_ searchResults: [SearchResult], _ formatter: SearchResultFormatter) -> Void {
@@ -452,6 +455,36 @@ public class Searcher {
             logMsg("\(hdr) (\(lines.count)):")
             for line in lines {
                 logMsg(formatter.formatLine(line))
+            }
+        } else {
+            logMsg("\(hdr): 0")
+        }
+    }
+
+    private func getMatches(_ searchResults: [SearchResult]) -> [String] {
+        var matches = searchResults.map { (r: SearchResult) -> String in
+            let start = r.line.index(r.line.startIndex, offsetBy: r.matchStartIndex - 1)
+            let end = r.line.index(r.line.startIndex, offsetBy: r.matchEndIndex - 1)
+            return String(r.line[start..<end])
+        }
+        if settings.uniqueLines {
+            let matchSet = Set<String>(matches)
+            matches = Array(matchSet)
+        }
+        if settings.sortCaseInsensitive {
+            return matches.sorted { $0.uppercased() < $1.uppercased() }
+        }
+        return matches.sorted { $0 < $1 }
+    }
+
+    public func printMatches(_ searchResults: [SearchResult], _ formatter: SearchResultFormatter) -> Void {
+        let matches = getMatches(searchResults)
+        let hdr = settings.uniqueLines ? "\nUnique matches"
+            : "\nMatches"
+        if matches.count > 0 {
+            logMsg("\(hdr) (\(matches.count)):")
+            for m in matches {
+                logMsg(formatter.formatMatch(m))
             }
         } else {
             logMsg("\(hdr): 0")

@@ -16,6 +16,7 @@ public enum DefaultSearchSettings {
     public static let maxLineLength: Int32 = 150
     public static let multiLineSearch = false
     public static let printLines = false
+    public static let printMatches = false
     public static let printResults = true
     public static let searchArchives = false
     public static let textFileEncoding: String = "UTF-8"
@@ -30,6 +31,7 @@ public class SearchSettings: FindSettings {
     public var maxLineLength: Int32 = DefaultSearchSettings.maxLineLength
     public var multiLineSearch: Bool = DefaultSearchSettings.multiLineSearch
     public var printLines: Bool = DefaultSearchSettings.printLines
+    public var printMatches: Bool = DefaultSearchSettings.printMatches
     public var printResults: Bool = DefaultSearchSettings.printResults
     public var searchArchives: Bool = DefaultSearchSettings.searchArchives
     public var textFileEncoding: String = DefaultSearchSettings.textFileEncoding
@@ -124,6 +126,7 @@ public class SearchSettings: FindSettings {
             ", printDirs=\(printDirs)" +
             ", printFiles=\(printFiles)" +
             ", printLines=\(printLines)" +
+            ", printMatches=\(printMatches)" +
             ", printResults=\(printResults)" +
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
