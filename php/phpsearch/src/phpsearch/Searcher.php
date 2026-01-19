@@ -495,8 +495,11 @@ class Searcher
                 $lines[] = $l;
             }
         }
-//        usort($lines, 'cmp_ignorecase');
-        sort($lines);
+        if ($this->settings->sort_case_insensitive) {
+            usort($lines, 'cmp_ignorecase');
+        } else {
+            sort($lines);
+        }
         return $lines;
     }
 
@@ -511,6 +514,40 @@ class Searcher
             Logger::log_msg(sprintf("%s (%d):", $msg, count($lines)));
             foreach ($lines as $l) {
                 Logger::log_msg($formatter->format_line($l));
+            }
+        } else {
+            Logger::log_msg(sprintf("%s: 0", $msg));
+        }
+    }
+
+    public function get_matches(array $results): array
+    {
+        $matches = array();
+        foreach ($results as $r) {
+            $m = substr($r->line, $r->match_start_index - 1, $r->match_end_index - $r->match_start_index);
+            if (!$this->settings->unique_lines || !in_array($m, $matches)) {
+                $matches[] = $m;
+            }
+        }
+        if ($this->settings->sort_case_insensitive) {
+            usort($matches, 'cmp_ignorecase');
+        } else {
+            sort($matches);
+        }
+        return $matches;
+    }
+
+    public function print_matches(array $results, SearchResultFormatter $formatter): void
+    {
+        $matches = $this->get_matches($results);
+        $msg = "\nMatches";
+        if ($this->settings->unique_lines) {
+            $msg = "\nUnique matches";
+        }
+        if (count($matches) > 0) {
+            Logger::log_msg(sprintf("%s (%d):", $msg, count($matches)));
+            foreach ($matches as $m) {
+                Logger::log_msg($formatter->format_match($m));
             }
         } else {
             Logger::log_msg(sprintf("%s: 0", $msg));

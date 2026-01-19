@@ -51,6 +51,11 @@ function main($argv): void
         if ($settings->print_lines) {
             $searcher->print_matching_lines($search_results, $formatter);
         }
+
+        // print matches
+        if ($settings->print_matches) {
+            $searcher->print_matches($search_results, $formatter);
+        }
     } catch (SearchException $e) {
         Logger::log_msg('');
         Logger::log_err($e->getMessage() . "\n", $colorize);

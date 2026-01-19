@@ -19,6 +19,7 @@ class SearchResultFormatter
     public SearchSettings $settings;
     public FileResultFormatter $file_result_formatter;
     private \Closure $cl_format_line;
+    private \Closure $cl_format_match;
 
     public function __construct(SearchSettings $settings)
     {
@@ -26,10 +27,13 @@ class SearchResultFormatter
         $this->file_result_formatter = new FileResultFormatter($settings);
         if ($settings->colorize) {
             $this->cl_format_line = function (string $line): string { return $this->format_line_with_color($line); };
+            $this->cl_format_match = function (string $match): string { return $this->format_match_with_color($match); };
         } else {
             $this->cl_format_line = function (string $line): string { return $line; };
+            $this->cl_format_match = function (string $match): string { return $match; };
         }
     }
+
     private function format_line_with_color(string $line): string
     {
         $formatted_line = $line;
@@ -46,10 +50,21 @@ class SearchResultFormatter
         return $formatted_line;
     }
 
+    private function format_match_with_color(string $match): string
+    {
+        return $this->colorize($match, 0, strlen($match), $this->settings->line_color);
+    }
+
     public function format_line(string $line): string
     {
         // call the closure as defined in constructor
         return ($this->cl_format_line)($line);
+    }
+
+    public function format_match(string $match): string
+    {
+        // call the closure as defined in constructor
+        return ($this->cl_format_match)($match);
     }
 
     public function format(SearchResult $result): string

@@ -27,6 +27,7 @@ class SearchSettings extends FindSettings
     public array $out_lines_after_patterns = array();
     public array $out_lines_before_patterns = array();
     public bool $print_lines = false;
+    public bool $print_matches = false;
     public bool $print_results = true;
     public bool $search_archives = false;
     public array $search_patterns = array();
@@ -137,6 +138,7 @@ class SearchSettings extends FindSettings
             ', print_dirs: %s' .
             ', print_files: %s' .
             ', print_lines: %s' .
+            ', print_matches: %s' .
             ', print_results: %s' .
             ', print_usage: %s' .
             ', print_version: %s' .
@@ -188,6 +190,7 @@ class SearchSettings extends FindSettings
             StringUtil::bool_to_string($this->print_dirs),
             StringUtil::bool_to_string($this->print_files),
             StringUtil::bool_to_string($this->print_lines),
+            StringUtil::bool_to_string($this->print_matches),
             StringUtil::bool_to_string($this->print_results),
             StringUtil::bool_to_string($this->print_usage),
             StringUtil::bool_to_string($this->print_version),
