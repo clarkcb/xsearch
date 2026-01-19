@@ -81,6 +81,11 @@ sub main {
     if ($settings->{print_lines}) {
         plsearch::Searcher::print_matching_lines($search_results, $formatter);
     }
+
+    # print matches
+    if ($settings->{print_matches}) {
+        plsearch::Searcher::print_matches($search_results, $formatter);
+    }
 }
 
 main();

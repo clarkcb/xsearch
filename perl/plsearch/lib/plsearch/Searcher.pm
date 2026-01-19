@@ -474,7 +474,11 @@ sub get_matching_lines {
         my $uniq = plfind::common::uniq(\@lines);
         @lines = @$uniq;
     }
-    @lines = sort {uc($a) cmp uc($b)} @lines;
+    if ($settings->{sort_case_insensitive}) {
+        @lines = sort {uc($a) cmp uc($b)} @lines;
+    } else {
+        @lines = sort @lines;
+    }
     return \@lines;
 }
 
@@ -490,6 +494,39 @@ sub print_matching_lines {
         plfind::common::log_msg(sprintf($msg, $title, scalar @$lines));
         foreach my $l (@$lines) {
             plfind::common::log_msg($formatter->format_line($l));
+        }
+    } else {
+        plfind::common::log_msg("\n$title: 0");
+    }
+}
+
+sub get_matches {
+    my ($search_results, $settings) = @_;
+    my @matches = map { substr($_->{line}, $_->{match_start_index} - 1, $_->{match_end_index} - $_->{match_start_index}) } @$search_results;
+    if ($settings->{unique_lines}) {
+        my $uniq = plfind::common::uniq(\@matches);
+        @matches = @$uniq;
+    }
+    if ($settings->{sort_case_insensitive}) {
+        @matches = sort {uc($a) cmp uc($b)} @matches;
+    } else {
+        @matches = sort @matches;
+    }
+    return \@matches;
+}
+
+sub print_matches {
+    my ($search_results, $formatter) = @_;
+    my $matches = get_matches($search_results, $formatter->{settings});
+    my $title = 'Matches';
+    if ($formatter->{settings}->{unique_lines}) {
+        $title = 'Unique matches';
+    }
+    if (scalar @$matches) {
+        my $msg = "\n%s (%d):";
+        plfind::common::log_msg(sprintf($msg, $title, scalar @$matches));
+        foreach my $m (@$matches) {
+            plfind::common::log_msg($formatter->format_match($m));
         }
     } else {
         plfind::common::log_msg("\n$title: 0");

@@ -27,8 +27,10 @@ sub new {
     bless $self, $class;
     if ($self->{settings}->{colorize}) {
         $self->{format_line} = sub { my ($_self, $line) = @_; return $_self->format_line_with_color($line) };
+        $self->{format_match} = sub { my ($_self, $match) = @_; return $_self->format_match_with_color($match) };
     } else {
-        $self->{format_line} = sub { my ($_self, $line) = @_; return $_self->format_line_default($line) };
+        $self->{format_line} = sub { my ($_self, $line) = @_; return $line };
+        $self->{format_match} = sub { my ($_self, $match) = @_; return $match };
     }
     return $self;
 }
@@ -47,14 +49,19 @@ sub format_line_with_color {
     return $formatted_line;
 }
 
-sub format_line_default {
-    my ($self, $line) = @_;
-    return $line;
+sub format_match_with_color {
+    my ($self, $match) = @_;
+    return colorize($match, 0, length($match), $self->{settings}->{line_color});
 }
 
 sub format_line {
     my ($self, $line) = @_;
     $self->{format_line}->($self, $line);
+}
+
+sub format_match {
+    my ($self, $match) = @_;
+    $self->{format_match}->($self, $match);
 }
 
 sub format {

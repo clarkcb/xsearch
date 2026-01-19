@@ -37,6 +37,7 @@ sub new {
     $self->{out_lines_after_patterns} = [];
     $self->{out_lines_before_patterns} = [];
     $self->{print_lines} = 0;
+    $self->{print_matches} = 0;
     $self->{print_results} = 1;
     $self->{search_archives} = 0;
     $self->{search_patterns} = [];
@@ -88,6 +89,7 @@ sub to_string {
         ', print_dirs=' . plfind::common::bool_to_string($self->{print_dirs}) .
         ', print_files=' . plfind::common::bool_to_string($self->{print_files}) .
         ', print_lines=' . plfind::common::bool_to_string($self->{print_lines}) .
+        ', print_matches=' . plfind::common::bool_to_string($self->{print_matches}) .
         ', print_results=' . plfind::common::bool_to_string($self->{print_results}) .
         ', print_usage=' . plfind::common::bool_to_string($self->{print_usage}) .
         ', print_version=' . plfind::common::bool_to_string($self->{print_version}) .

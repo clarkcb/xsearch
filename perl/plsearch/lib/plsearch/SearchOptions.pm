@@ -80,6 +80,10 @@ my $bool_action_hash = {
     },
     'noprintmatches' => sub {
         my ($bool, $settings) = @_;
+        $settings->set_property('print_matches', !$bool);
+    },
+    'noprintresults' => sub {
+        my ($bool, $settings) = @_;
         $settings->set_property('print_results', !$bool);
     },
     'norecursive' => sub {
@@ -103,6 +107,10 @@ my $bool_action_hash = {
         $settings->set_property('print_lines', $bool);
     },
     'printmatches' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_matches', $bool);
+    },
+    'printresults' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('print_results', $bool);
     },
