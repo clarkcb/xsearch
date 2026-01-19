@@ -28,6 +28,7 @@ object SearchMain {
       if (settings.printDirs) { searcher.printMatchingDirs(results, formatter) }
       if (settings.printFiles) { searcher.printMatchingFiles(results, formatter) }
       if (settings.printLines) { searcher.printMatchingLines(results, formatter) }
+      if (settings.printMatches) { searcher.printMatches(results, formatter) }
 
     } catch {
       case e: SearchException =>

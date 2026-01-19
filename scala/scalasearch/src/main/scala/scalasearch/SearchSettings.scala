@@ -10,30 +10,49 @@ import java.time.LocalDateTime
 import scala.util.matching.Regex
 
 object DefaultSearchSettings {
+  val archivesOnly: Boolean = DefaultFindSettings.archivesOnly
+  val colorize: Boolean = DefaultFindSettings.colorize
+  val debug: Boolean = DefaultFindSettings.debug
+  val dirColor: Color = DefaultFindSettings.dirColor
+  val extColor: Color = DefaultFindSettings.extColor
+  val fileColor: Color = DefaultFindSettings.fileColor
   val firstMatch = false
+  val followSymlinks: Boolean = DefaultFindSettings.followSymlinks
+  val includeHidden: Boolean = DefaultFindSettings.includeHidden
   val lineColor: Color = Color.GREEN
   val linesAfter = 0
   val linesBefore = 0
+  val maxDepth: Int = DefaultFindSettings.maxDepth
+  val maxSize: Long = DefaultFindSettings.maxSize
+  val minDepth: Int = DefaultFindSettings.minDepth
+  val minSize: Long = DefaultFindSettings.minSize
   val maxLineLength = 150
   var multiLineSearch = false
+  val printDirs: Boolean = DefaultFindSettings.printDirs
+  val printFiles: Boolean = DefaultFindSettings.printFiles
   val printLines = false
+  val printMatches = false
   var printResults = false
+  val printUsage: Boolean = DefaultFindSettings.printUsage
+  val printVersion: Boolean = DefaultFindSettings.printVersion
+  val recursive: Boolean = DefaultFindSettings.recursive
   var searchArchives = false
   var textFileEncoding: String = "UTF-8"
   var uniqueLines = false
+  val verbose: Boolean = DefaultFindSettings.verbose
 }
 
-case class SearchSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
-                          colorize: Boolean = DefaultFindSettings.colorize,
-                          debug: Boolean = DefaultFindSettings.debug,
-                          dirColor: Color = DefaultFindSettings.dirColor,
-                          extColor: Color = DefaultFindSettings.extColor,
-                          fileColor: Color = DefaultFindSettings.fileColor,
+case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archivesOnly,
+                          colorize: Boolean = DefaultSearchSettings.colorize,
+                          debug: Boolean = DefaultSearchSettings.debug,
+                          dirColor: Color = DefaultSearchSettings.dirColor,
+                          extColor: Color = DefaultSearchSettings.extColor,
+                          fileColor: Color = DefaultSearchSettings.fileColor,
                           firstMatch: Boolean = DefaultSearchSettings.firstMatch,
-                          followSymlinks: Boolean = DefaultFindSettings.followSymlinks,
+                          followSymlinks: Boolean = DefaultSearchSettings.followSymlinks,
                           inArchiveExtensions: Set[String] = Set.empty[String],
                           inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
-                          includeHidden: Boolean = DefaultFindSettings.includeHidden,
+                          includeHidden: Boolean = DefaultSearchSettings.includeHidden,
                           inDirPatterns: Set[Regex] = Set.empty[Regex],
                           inExtensions: Set[String] = Set.empty[String],
                           inFilePatterns: Set[Regex] = Set.empty[Regex],
@@ -45,13 +64,13 @@ case class SearchSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOn
                           linesAfterToPatterns: Set[Regex] = Set.empty[Regex],
                           linesAfterUntilPatterns: Set[Regex] = Set.empty[Regex],
                           linesBefore: Int = DefaultSearchSettings.linesBefore,
-                          maxDepth: Int = DefaultFindSettings.maxDepth,
+                          maxDepth: Int = DefaultSearchSettings.maxDepth,
                           maxLastMod: Option[LocalDateTime] = None,
                           maxLineLength: Int = DefaultSearchSettings.maxLineLength,
-                          maxSize: Long = DefaultFindSettings.maxSize,
-                          minDepth: Int = DefaultFindSettings.minDepth,
+                          maxSize: Long = DefaultSearchSettings.maxSize,
+                          minDepth: Int = DefaultSearchSettings.minDepth,
                           minLastMod: Option[LocalDateTime] = None,
-                          minSize: Long = DefaultFindSettings.minSize,
+                          minSize: Long = DefaultSearchSettings.minSize,
                           multiLineSearch: Boolean = DefaultSearchSettings.multiLineSearch,
                           outArchiveExtensions: Set[String] = Set.empty[String],
                           outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
@@ -61,14 +80,15 @@ case class SearchSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOn
                           outFileTypes: Set[FileType] = Set.empty[FileType],
                           outLinesAfterPatterns: Set[Regex] = Set.empty[Regex],
                           outLinesBeforePatterns: Set[Regex] = Set.empty[Regex],
-                          paths: Set[Path] = DefaultFindSettings.paths,
-                          printDirs: Boolean = DefaultFindSettings.printDirs,
-                          printFiles: Boolean = DefaultFindSettings.printFiles,
+                          paths: Set[Path] = Set.empty[Path],
+                          printDirs: Boolean = DefaultSearchSettings.printDirs,
+                          printFiles: Boolean = DefaultSearchSettings.printFiles,
                           printLines: Boolean = DefaultSearchSettings.printLines,
+                          printMatches: Boolean = DefaultSearchSettings.printMatches,
                           printResults: Boolean = DefaultSearchSettings.printResults,
-                          printUsage: Boolean = DefaultFindSettings.printUsage,
-                          printVersion: Boolean = DefaultFindSettings.printVersion,
-                          recursive: Boolean = DefaultFindSettings.recursive,
+                          printUsage: Boolean = DefaultSearchSettings.printUsage,
+                          printVersion: Boolean = DefaultSearchSettings.printVersion,
+                          recursive: Boolean = DefaultSearchSettings.recursive,
                           var searchArchives: Boolean = DefaultSearchSettings.searchArchives,
                           searchPatterns: Set[Regex] = Set.empty[Regex],
                           sortBy: SortBy = SortBy.FilePath,
@@ -76,7 +96,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOn
                           uniqueLines: Boolean = DefaultSearchSettings.uniqueLines,
                           sortCaseInsensitive: Boolean = false,
                           sortDescending: Boolean = false,
-                          var verbose: Boolean = DefaultFindSettings.verbose) {
+                          var verbose: Boolean = DefaultSearchSettings.verbose) {
 
   searchArchives = archivesOnly || searchArchives
   verbose = debug || verbose
@@ -186,6 +206,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOn
       ", printDirs: " + printDirs +
       ", printFiles: " + printFiles +
       ", printLines: " + printLines +
+      ", printMatches: " + printMatches +
       ", printResults: " + printResults +
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +

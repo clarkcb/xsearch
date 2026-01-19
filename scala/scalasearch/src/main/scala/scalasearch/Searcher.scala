@@ -22,6 +22,12 @@ class Searcher (_settings: SearchSettings) {
   import scalafind.FileUtil.*
 
   val settings: SearchSettings = _settings
+  private val comparator: (String, String) => Boolean =
+    if (settings.sortCaseInsensitive) {
+      (s1: String, s2: String) => s1.toUpperCase < s2.toUpperCase
+    } else {
+      (s1: String, s2: String) => s1 < s2
+    }
   private val finder: Finder = try {
     Finder(_settings.findSettings)
   } catch {
@@ -581,9 +587,9 @@ class Searcher (_settings: SearchSettings) {
   private def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
     val allLines = results.flatMap(r => r.line).map(_.trim)
     if (settings.uniqueLines) {
-      allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
+      allLines.distinct.sortWith(comparator)
     } else {
-      allLines.sortWith(_.toUpperCase < _.toUpperCase)
+      allLines.sortWith(comparator)
     }
   }
 
@@ -598,6 +604,33 @@ class Searcher (_settings: SearchSettings) {
     if (lines.nonEmpty) {
       log("%s (%d):".format(hdr, lines.length))
       lines.foreach(line => log(formatter.formatLine(line)))
+    } else {
+      log("%s: 0".format(hdr))
+    }
+  }
+
+  private def getMatches(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
+    val allMatches = results
+      .filter(r => r.line.isDefined)
+      .map(r => r.line.get.substring(r.matchStartIndex-1, r.matchEndIndex-1))
+    if (settings.uniqueLines) {
+      allMatches.distinct.sortWith(comparator)
+    } else {
+      allMatches.sortWith(comparator)
+    }
+  }
+
+  def printMatches(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
+    val matches = getMatches(results, settings)
+    val hdr =
+      if (settings.uniqueLines) {
+        "\nUnique matches"
+      } else {
+        "\nMatches"
+      }
+    if (matches.nonEmpty) {
+      log("%s (%d):".format(hdr, matches.length))
+      matches.foreach(m => log(formatter.formatMatch(m)))
     } else {
       log("%s: 0".format(hdr))
     }

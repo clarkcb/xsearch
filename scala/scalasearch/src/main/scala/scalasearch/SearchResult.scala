@@ -139,6 +139,17 @@ class SearchResultFormatter(val settings: SearchSettings) {
       (line: String) => line
     }
 
+  private def formatMatchWithColor(m: String): String = {
+    colorize(m, 0, m.length, settings.lineColor)
+  }
+
+  val formatMatch: String => String =
+    if (settings.colorize) {
+      formatMatchWithColor
+    } else {
+      (m: String) => m
+    }
+
   def format(result: SearchResult): String = {
     if (result.linesBefore.nonEmpty || result.linesAfter.nonEmpty) {
       multiLineFormat(result)
