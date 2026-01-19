@@ -16,6 +16,7 @@
 @property(nonatomic) uint32_t maxLineLength;
 @property(nonatomic) BOOL multiLineSearch;
 @property(nonatomic) BOOL printLines;
+@property(nonatomic) BOOL printMatches;
 @property(nonatomic) BOOL printResults;
 @property(nonatomic) BOOL searchArchives;
 @property(nonatomic) NSString *textFileEncoding;

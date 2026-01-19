@@ -72,6 +72,10 @@ int main(int argc, const char * argv[]) {
         if (settings.printLines) {
             [searcher printMatchingLines:results formatter:formatter];
         }
+
+        if (settings.printMatches) {
+            [searcher printMatches:results formatter:formatter];
+        }
     }
     return 0;
 }

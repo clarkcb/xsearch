@@ -12,6 +12,7 @@
         self.maxLineLength = 150;
         self.multiLineSearch = false;
         self.printLines = false;
+        self.printMatches = false;
         self.printResults = true;
         self.searchArchives = false;
         self.textFileEncoding = @"UTF-8";
@@ -67,6 +68,7 @@
     [d appendFormat:@", printDirs=%@", boolToNSString(self.printDirs)];
     [d appendFormat:@", printFiles=%@", boolToNSString(self.printFiles)];
     [d appendFormat:@", printLines=%@", boolToNSString(self.printLines)];
+    [d appendFormat:@", printMatches=%@", boolToNSString(self.printMatches)];
     [d appendFormat:@", printResults=%@", boolToNSString(self.printResults)];
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];

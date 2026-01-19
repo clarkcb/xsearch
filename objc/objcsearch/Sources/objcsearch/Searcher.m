@@ -388,6 +388,11 @@
         NSSet<NSString*> *lineSet = [NSSet setWithArray:lines];
         lines = [NSMutableArray arrayWithArray:[lineSet allObjects]];
     }
+    if (_settings.sortCaseInsensitive) {
+        return [lines sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+            return [[s1 uppercaseString] compare:[s2 uppercaseString]];
+        }];
+    }
     return [lines sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
         return [s1 compare:s2];
     }];
@@ -408,6 +413,44 @@
         }
     } else {
         logMsg([NSString stringWithFormat:@"\n%@: 0", linesHdr]);
+    }
+}
+
+- (NSArray<NSString*>*) getMatches:(NSArray<SearchResult*>*)searchResults {
+    NSMutableArray<NSString*> *matches = [NSMutableArray array];
+    for (SearchResult *r in searchResults) {
+        NSRange range = NSMakeRange(r.matchStartIndex - 1, r.matchEndIndex - r.matchStartIndex);
+        [matches addObject:[r.line substringWithRange:range]];
+    }
+    if (_settings.uniqueLines) {
+        NSSet<NSString*> *matchSet = [NSSet setWithArray:matches];
+        matches = [NSMutableArray arrayWithArray:[matchSet allObjects]];
+    }
+    if (_settings.sortCaseInsensitive) {
+        return [matches sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+            return [[s1 uppercaseString] compare:[s2 uppercaseString]];
+        }];
+    }
+    return [matches sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+        return [s1 compare:s2];
+    }];
+}
+
+- (void) printMatches:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter {
+    NSArray<NSString*> *matches = [self getMatches:searchResults];
+    NSString *matchesHdr;
+    if (_settings.uniqueLines) {
+        matchesHdr = @"Unique matches";
+    } else {
+        matchesHdr = @"Matches";
+    }
+    if ([matches count] > 0) {
+        logMsg([NSString stringWithFormat:@"\n%@ (%lu):", matchesHdr, [matches count]]);
+        for (NSString *m in matches) {
+            logMsg(formatter.formatLine(m));
+        }
+    } else {
+        logMsg([NSString stringWithFormat:@"\n%@: 0", matchesHdr]);
     }
 }
 

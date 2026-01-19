@@ -15,8 +15,10 @@
 
         if (settings.colorize) {
             self.formatLine = ^( NSString* line) { return [weakSelf formatLineWithColor:line]; };
+            self.formatMatch = ^( NSString* match) { return [weakSelf formatMatchWithColor:match]; };
         } else {
             self.formatLine = ^( NSString* line) { return line; };
+            self.formatMatch = ^( NSString* match) { return match; };
         }
     }
     return self;
@@ -27,11 +29,16 @@
     for (Regex *p in self.settings.searchPatterns) {
         NSTextCheckingResult *m = [p firstMatch:formattedLine];
         if (m != nil) {
-            formattedLine = [self colorize:formattedLine matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length];
+            formattedLine = [self colorize:formattedLine matchStartIndex:m.range.location matchEndIndex:m.range.location + m.range.length color:[self.settings lineColor]];
             break;
         }
     }
     return formattedLine;
+}
+
+- (NSString *) formatMatchWithColor:(NSString*)match {
+    long matchLen = [match length];
+    return [self colorize:match matchStartIndex:0L matchEndIndex:matchLen color:[self.settings lineColor]];
 }
 
 - (NSString *) format:(SearchResult*)result {

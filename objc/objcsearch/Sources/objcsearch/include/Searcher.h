@@ -23,6 +23,7 @@
 - (void) printMatchingDirs:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter;
 - (void) printMatchingFiles:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter;
 - (void) printMatchingLines:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter;
+- (void) printMatches:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter;
 - (void) printSearchResults:(NSArray<SearchResult*>*)searchResults formatter:(SearchResultFormatter*)formatter;
 
 @end
