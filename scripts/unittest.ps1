@@ -13,33 +13,50 @@ param([switch]$help = $false,
 # Configuration
 ########################################
 
-$scriptPath = $MyInvocation.MyCommand.Path
-$scriptDir = Split-Path $scriptPath -Parent
+$xsearchScriptPath = $MyInvocation.MyCommand.Path
+$xsearchScriptDir = Split-Path $xsearchScriptPath -Parent
 
-. (Join-Path $scriptDir 'config.ps1')
-. (Join-Path $scriptDir 'common.ps1')
+. (Join-Path -Path $xsearchScriptDir -ChildPath 'config.ps1')
+# . (Join-Path $xsearchScriptDir 'common.ps1')
+
+$xfindScriptDir = Join-Path $xfindPath 'scripts'
+. (Join-Path $xfindScriptDir 'unittest_functions.ps1')
 
 # args holds the remaining arguments
 $langs = $args
 
-if ($langs -contains 'all')
-{
+if ($langs -contains 'all') {
     $all = $true
 }
 
-Write-Host "help: $help"
-Write-Host "all: $all"
-if ($langs.Length -gt 0 -and -not $all)
-{
+$hostname = [System.Net.Dns]::GetHostName()
+
+Hdr('xsearch unittest script')
+Log("user: $env:USER")
+Log("host: $hostname")
+if ($IsWindows) {
+    Log("os: $env:OS")
+} elseif ($IsLinux) {
+    Log("os: Linux")
+} elseif ($IsMacOS) {
+    Log("os: Darwin")
+} else {
+    Log("os: unknown")
+}
+
+$gitBranch = git branch --show-current
+$gitCommit = git rev-parse --short HEAD
+Log("git branch: $gitBranch ($gitCommit)")
+
+Log("help: $help")
+Log("all: $all")
+if ($langs.Length -gt 0 -and -not $all) {
     Log("langs ($($langs.Length)): $langs")
 }
 
-# Add failed builds to this array and report failed builds at the end
-$failedBuilds = @()
-
 
 ########################################
-# Utility Functions
+# Common Functions
 ########################################
 
 function Usage
@@ -48,29 +65,38 @@ function Usage
     exit
 }
 
-function PrintFailedBuilds
-{
-    if ($global:failedBuilds.Length -gt 0)
-    {
-        $joinedBuilds = $global:failedBuilds -join ', '
-        PrintError("Failed builds: $joinedBuilds")
-    }
-    else
-    {
-        Log("All builds succeeded")
-    }
-}
-
 
 ################################################################################
 # Unit Test functions
 ################################################################################
 
+function UnitTestXsearchVersion
+{
+    param([string]$langName, [string]$versionName)
+
+    $langName = (Get-Culture).TextInfo.ToTitleCase($langName.ToLower())
+
+    $functionName = "UnitTest${langName}Version"
+
+    if (Get-Command $functionName -ErrorAction 'SilentlyContinue') {
+        & $functionName $xsearchPath $versionName
+
+        if ($global:UNITTEST_LASTEXITCODE -eq 0) {
+            Log("$versionName tests succeeded")
+            $global:successfulTests += $versionName
+        } else {
+            PrintError("$versionName tests failed")
+            $global:failedTests += $versionName
+        }
+    }
+}
+
 function UnitTestBashSearch
 {
     Write-Host
     Hdr('UnitTestBashSearch')
-    Log('not implemented at this time')
+
+    UnitTestXsearchVersion 'bash' 'bashsearch'
 }
 
 function UnitTestCSearch
@@ -78,14 +104,7 @@ function UnitTestCSearch
     Write-Host
     Hdr('UnitTestCSearch')
 
-    $oldPwd = Get-Location
-    Set-Location $cSearchPath
-
-    Log('Unit-testing csearch')
-    Log('make run_tests')
-    make run_tests
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'c' 'csearch'
 }
 
 function UnitTestCljSearch
@@ -93,44 +112,7 @@ function UnitTestCljSearch
     Write-Host
     Hdr('UnitTestCljSearch')
 
-    if (Get-Command 'clj' -ErrorAction 'SilentlyContinue')
-    {
-        # clj -version output looks like this: Clojure CLI version 1.11.4.1474
-        $clojureVersion = clj -version 2>&1
-        Log("clojure version: $clojureVersion")
-    }
-
-    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install leiningen')
-        $global:failedBuilds += 'cljfind'
-        return
-    }
-
-    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
-    $leinVersion = lein version
-    Log("lein version: $leinVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $cljSearchPath
-
-    # Test with lein
-    Log('Unit-testing cljsearch')
-    Log('lein test')
-    lein test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'cljfind'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'clojure' 'cljsearch'
 }
 
 function UnitTestCppSearch
@@ -138,53 +120,7 @@ function UnitTestCppSearch
     Write-Host
     Hdr('UnitTestCppSearch')
 
-    # if cmake is installed, display version
-    if (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')
-    {
-        # cmake --version output looks like this: cmake version 3.30.2
-        $cmakeVersion = cmake --version | Select-String -Pattern '^cmake version'
-        $cmakeVersion = @($cmakeVersion -split '\s+')[2]
-        Log("cmake version: $cmakeVersion")
-    }
-
-    $configurations = @('debug', 'release')
-    ForEach ($c in $configurations)
-    {
-        $cmakeBuildDir = Join-Path $cppSearchPath "cmake-build-$c"
-
-        if (Test-Path $cmakeBuildDir)
-        {
-            $cppSearchTestExe = Join-Path $cmakeBuildDir 'cppsearch-tests'
-            if (Test-Path $cppSearchTestExe)
-            {
-                # run tests
-                Log($cppSearchTestExe)
-                & $cppSearchTestExe
-
-                # check for success/failure
-                if ($LASTEXITCODE -eq 0)
-                {
-                    Log('Tests succeeded')
-                }
-                else
-                {
-                    PrintError('Tests failed')
-                    $global:failedBuilds += 'cppsearch'
-                    return
-                }
-            }
-            else
-            {
-                LogError("cppsearch-tests not found: $cppSearchTestExe")
-                $global:failedBuilds += 'cppsearch'
-            }
-        }
-        else
-        {
-            LogError("cmake build directory not found: $cmmakeBuildDir")
-            $global:failedBuilds += 'cppsearch'
-        }
-    }
+    UnitTestXsearchVersion 'cpp' 'cppsearch'
 }
 
 function UnitTestCsSearch
@@ -192,37 +128,7 @@ function UnitTestCsSearch
     Write-Host
     Hdr('UnitTestCsSearch')
 
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install dotnet')
-        $global:failedBuilds += 'cssearch'
-        return
-    }
-
-    $dotnetVersion = dotnet --version
-    Log("dotnet version: $dotnetVersion")
-
-    $csSearchSolutionPath = Join-Path $csSearchPath 'CsSearch.sln'
-    # $verbosity = 'quiet'
-    $verbosity = 'minimal'
-    # $verbosity = 'normal'
-    # $verbosity = 'detailed'
-
-    # run tests
-    Log('Unit-testing cssearch')
-    Write-Host "dotnet test $csSearchSolutionPath --verbosity $verbosity"
-    dotnet test $csSearchSolutionPath --verbosity $verbosity
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'cssearch'
-    }
+    UnitTestXsearchVersion 'csharp' 'cssearch'
 }
 
 function UnitTestDartSearch
@@ -230,37 +136,7 @@ function UnitTestDartSearch
     Write-Host
     Hdr('UnitTestDartSearch')
 
-    # ensure dart is installed
-    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install dart')
-        $global:failedBuilds += 'dartsearch'
-        return
-    }
-
-    $dartVersion = dart --version
-    Log("$dartVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $dartSearchPath
-
-    # run tests
-    Log('Unit-testing dartsearch')
-    Log('dart run test')
-    dart run test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'dartsearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'dart' 'dartsearch'
 }
 
 function UnitTestExSearch
@@ -268,43 +144,7 @@ function UnitTestExSearch
     Write-Host
     Hdr('UnitTestExSearch')
 
-    if (Get-Command 'elixir' -ErrorAction 'SilentlyContinue')
-    {
-        $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
-        Log("elixir version: $elixirVersion")
-    }
-
-    # ensure mix is installed
-    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install mix')
-        $global:failedBuilds += 'exsearch'
-        return
-    }
-
-    $mixVersion = mix --version | Select-String -Pattern 'Mix'
-    Log("mix version: $mixVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $exSearchPath
-
-    # run tests
-    Log('Unit-testing exsearch')
-    Log('mix test')
-    mix test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'exsearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'elixir' 'exsearch'
 }
 
 function UnitTestFsSearch
@@ -312,37 +152,7 @@ function UnitTestFsSearch
     Write-Host
     Hdr('UnitTestFsSearch')
 
-    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install dotnet')
-        $global:failedBuilds += 'fssearch'
-        return
-    }
-
-    $dotnetVersion = dotnet --version
-    Log("dotnet version: $dotnetVersion")
-
-    $fsSearchSolutionPath = Join-Path $fsSearchPath 'FsSearch.sln'
-    # $verbosity = 'quiet'
-    $verbosity = 'minimal'
-    # $verbosity = 'normal'
-    # $verbosity = 'detailed'
-
-    # run tests
-    Log('Unit-testing fssearch')
-    Write-Host "dotnet test $fsSearchSolutionPath --verbosity $verbosity"
-    dotnet test $fsSearchSolutionPath --verbosity $verbosity
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'fssearch'
-    }
+    UnitTestXsearchVersion 'fsharp' 'fssearch'
 }
 
 function UnitTestGoSearch
@@ -350,36 +160,15 @@ function UnitTestGoSearch
     Write-Host
     Hdr('UnitTestGoSearch')
 
-    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install go')
-        $global:failedBuilds += 'gosearch'
-        return
-    }
+    UnitTestXsearchVersion 'go' 'gosearch'
+}
 
-    $goVersion = (go version) -replace 'go version ',''
-    Log("go version: $goVersion")
+function UnitTestGroovySearch
+{
+    Write-Host
+    Hdr('UnitTestGroovySearch')
 
-    $oldPwd = Get-Location
-    Set-Location $goSearchPath
-
-    # run tests
-    Log('Unit-testing gosearch')
-    Log('go test --cover ./...')
-    go test --cover ./...
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'gosearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'groovy' 'groovysearch'
 }
 
 function UnitTestHsSearch
@@ -387,43 +176,7 @@ function UnitTestHsSearch
     Write-Host
     Hdr('UnitTestHsSearch')
 
-    # if ghc is installed, display version
-    if (Get-Command 'ghc' -ErrorAction 'SilentlyContinue')
-    {
-        $ghcVersion = ghc --version
-        Log("ghc version: $ghcVersion")
-    }
-
-    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install stack')
-        $global:failedBuilds += 'hssearch'
-        return
-    }
-
-    $stackVersion = stack --version
-    Log("stack version: $stackVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $hsSearchPath
-
-    # test with stack
-    Log('Unit-testing hssearch')
-    Log('stack test')
-    stack test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'hssearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'haskell' 'hssearch'
 }
 
 function UnitTestJavaSearch
@@ -431,57 +184,7 @@ function UnitTestJavaSearch
     Write-Host
     Hdr('UnitTestJavaSearch')
 
-    # if java is installed, display version
-    if (Get-Command 'java' -ErrorAction 'SilentlyContinue')
-    {
-        $javaVersion = java -version 2>&1 | Select-String -Pattern 'java version'
-        Log("java version: $javaVersion")
-    }
-
-    $gradle = 'gradle'
-    $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
-        $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install gradle')
-        $global:failedBuilds += 'javasearch'
-        return
-    }
-
-    $gradleOutput = & $gradle --version
-
-    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
-    Log("$gradle version: $gradleVersion")
-
-    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
-    Log("Kotlin version: $kotlinVersion")
-
-    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
-    Log("JVM version: $jvmVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $javaSearchPath
-
-    # run tests via gradle
-    Log('Unit-testing javasearch')
-    Log("$gradle --warning-mode all test")
-    & $gradle --warning-mode all test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'javasearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'java' 'javasearch'
 }
 
 function UnitTestJsSearch
@@ -489,44 +192,7 @@ function UnitTestJsSearch
     Write-Host
     Hdr('UnitTestJsSearch')
 
-    # if node is installed, display version
-    if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
-    {
-        $nodeVersion = node --version
-        Log("node version: $nodeVersion")
-    }
-
-    # ensure npm is installed
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install npm')
-        $global:failedBuilds += 'jssearch'
-        return
-    }
-
-    $npmVersion = npm --version
-    Log("npm version: $npmVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $jsSearchPath
-
-    # run tests via npm
-    Log('Unit-testing jssearch')
-    Log('npm test')
-    npm test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'jssearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'javascript' 'jssearch'
 }
 
 function UnitTestKtSearch
@@ -534,50 +200,7 @@ function UnitTestKtSearch
     Write-Host
     Hdr('UnitTestKtSearch')
 
-    $gradle = 'gradle'
-    $gradleWrapper = Join-Path '.' 'gradlew'
-    if (Test-Path $gradleWrapper)
-    {
-        $gradle = $gradleWrapper
-    }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install gradle')
-        $global:failedBuilds += 'ktsearch'
-        return
-    }
-
-    $gradleOutput = & $gradle --version
-
-    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
-    Log("$gradle version: $gradleVersion")
-
-    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
-    Log("Kotlin version: $kotlinVersion")
-
-    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
-    Log("JVM version: $jvmVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $ktSearchPath
-
-    # run tests via gradle
-    Log('Unit-testing ktsearch')
-    Log("$gradle --warning-mode all test")
-    & $gradle --warning-mode all test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'ktsearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'kotlin' 'ktsearch'
 }
 
 function UnitTestObjcSearch
@@ -585,36 +208,7 @@ function UnitTestObjcSearch
     Write-Host
     Hdr('UnitTestObjcSearch')
 
-    # ensure swift is installed
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install swift')
-        $global:failedBuilds += 'objcsearch'
-        return
-    }
-
-    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
-    Log("swift version: $swiftVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $objcSearchPath
-
-    Log('Unit-testing objcsearch')
-    Log('swift test')
-    swift test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'objcsearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'objc' 'objcsearch'
 }
 
 function UnitTestMlSearch
@@ -629,32 +223,7 @@ function UnitTestPlSearch
     Write-Host
     Hdr('UnitTestPlSearch')
 
-    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install perl')
-        $global:failedBuilds += 'plsearch'
-        return
-    }
-
-    $perlVersion = perl -e 'print $^V' | Select-String -Pattern 'v5'
-    if (-not $perlVersion)
-    {
-        PrintError('A 5.x version of perl is required')
-        return
-    }
-
-    Log("perl version: $perlVersion")
-
-    $plTestsPath = Join-Path $plSearchPath 't'
-
-    Log('Unit-testing plsearch')
-    $plTests = @(Get-ChildItem $plTestsPath |
-        Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
-    ForEach ($plTest in $plTests)
-    {
-        Log("perl $plTest")
-        perl $plTest
-    }
+    UnitTestXsearchVersion 'perl' 'plsearch'
 }
 
 function UnitTestPhpSearch
@@ -662,54 +231,7 @@ function UnitTestPhpSearch
     Write-Host
     Hdr('UnitTestPhpSearch')
 
-    # if php is installed, display version
-    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install php')
-        $global:failedBuilds += 'phpsearch'
-        return
-    }
-
-    $phpVersion = & php -v | Select-String -Pattern '^PHP [78]' 2>&1
-    if (-not $phpVersion)
-    {
-        PrintError('A version of PHP >= 7.x is required')
-        $global:failedBuilds += 'phpsearch'
-        return
-    }
-    Log("php version: $phpVersion")
-
-    # if composer is installed, display version
-    if (Get-Command 'composer' -ErrorAction 'SilentlyContinue')
-    {
-        $composerVersion = composer --version 2>&1 | Select-String -Pattern '^Composer'
-        Log("composer version: $composerVersion")
-    }
-
-    if (-not (Get-Command 'phpunit' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install phpunit')
-        $global:failedBuilds += 'phpsearch'
-        return
-    }
-
-    $phpTestsPath = Join-Path $phpSearchPath 'tests'
-
-    # run tests
-    Log('Unit-testing phpsearch')
-    Log("phpunit $phpTestsPath")
-    phpunit $phpTestsPath
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'phpsearch'
-    }
+    UnitTestXsearchVersion 'php' 'phpsearch'
 }
 
 function UnitTestPs1Search
@@ -717,23 +239,7 @@ function UnitTestPs1Search
     Write-Host
     Hdr('UnitTestPs1Search')
 
-    # We don't need to check for powershell, as we're running in it
-
-    $powershellVersion = pwsh -v
-    Log("powershell version: $powershellVersion")
-
-    $testsScriptPath = Join-Path $ps1SearchPath 'ps1search.tests.ps1'
-    if (-not (Test-Path $testsScriptPath))
-    {
-        Log("Test script not found: $testsScriptPath")
-        $global:failedBuilds += 'ps1search'
-        return
-    }
-
-    # run tests
-    Log('Unit-testing ps1search')
-    Log("& $testsScriptPath")
-    & $testsScriptPath
+    UnitTestXsearchVersion 'powershell' 'ps1search'
 }
 
 function UnitTestPySearch
@@ -741,43 +247,7 @@ function UnitTestPySearch
     Write-Host
     Hdr('UnitTestPySearch')
 
-    $venvPath = Join-Path $pySearchPath 'venv'
-    if (-not (Test-Path $venvPath))
-    {
-        PrintError('venv path not found, you probably need to run the python build (./build.ps1 python)')
-        $global:failedBuilds += 'pyfind'
-        return
-    }
-
-    $oldPwd = Get-Location
-    Set-Location $pySearchPath
-
-    # activate the virtual env
-    $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
-    Log("$activatePath")
-    & $activatePath
-
-    Log('Unit-testing pysearch')
-    # Run the individual tests
-    Log('pytest')
-    pytest
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'pysearch'
-    }
-
-    # deactivate at end of setup process
-    Log('deactivate')
-    deactivate
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'python' 'pysearch'
 }
 
 function UnitTestRbSearch
@@ -785,58 +255,7 @@ function UnitTestRbSearch
     Write-Host
     Hdr('UnitTestRbSearch')
 
-    # ensure ruby3.x is installed
-    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install ruby')
-        $global:failedBuilds += 'rbsearch'
-        return
-    }
-
-    $rubyVersion = & ruby -v 2>&1 | Select-String -Pattern '^ruby 3' 2>&1
-    if (-not $rubyVersion)
-    {
-        PrintError('A version of ruby >= 3.x is required')
-        $global:failedBuilds += 'rbsearch'
-        return
-    }
-
-    Log("ruby version: $rubyVersion")
-
-    # ensure bundler is installed
-    # if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue'))
-    # {
-    #     PrintError('You need to install bundler: https://bundler.io/')
-    #     return
-    # }
-
-    # ensure rake is installed
-    if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install rake')
-        $global:failedBuilds += 'rbsearch'
-        return
-    }
-
-    $oldPwd = Get-Location
-    Set-Location $rbSearchPath
-
-    Log('Unit-testing rbsearch')
-    Log('bundle exec rake test')
-    bundle exec rake test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'rbsearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'ruby' 'rbsearch'
 }
 
 function UnitTestRsSearch
@@ -844,43 +263,7 @@ function UnitTestRsSearch
     Write-Host
     Hdr('UnitTestRsSearch')
 
-    # if rust is installed, display version
-    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
-    {
-        $rustVersion = rustc --version | Select-String -Pattern 'rustc'
-        Log("rustc version: $rustVersion")
-    }
-
-    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install cargo')
-        $global:failedBuilds += 'rssearch'
-        return
-    }
-
-    $cargoVersion = cargo --version
-    Log("cargo version: $cargoVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $rsSearchPath
-
-    # run tests
-    Log('Unit-testing rssearch')
-    Log('cargo test --package rssearch --bin rssearch')
-    cargo test --package rssearch --bin rssearch
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'rssearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'rust' 'rssearch'
 }
 
 function UnitTestScalaSearch
@@ -888,49 +271,7 @@ function UnitTestScalaSearch
     Write-Host
     Hdr('UnitTestScalaSearch')
 
-    # if scala is installed, display version
-    if (Get-Command 'scala' -ErrorAction 'SilentlyContinue')
-    {
-        $scalaVersion = scala --version 2>&1 | Select-Object -Last 1
-        Log($scalaVersion)
-    }
-
-    # ensure sbt is installed
-    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install sbt')
-        $global:failedBuilds += 'scalasearch'
-        return
-    }
-
-    $sbtOutput = sbt --version
-
-    $sbtProjectVersion = $sbtOutput | Select-String -Pattern 'project'
-    Log("$sbtProjectVersion")
-
-    $sbtScriptVersion = $sbtOutput | Select-String -Pattern 'script'
-    Log("$sbtScriptVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $scalaSearchPath
-
-    # run tests
-    Log('Unit-testing scalasearch')
-    Log('sbt test')
-    sbt test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'scalasearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'scala' 'scalasearch'
 }
 
 function UnitTestSwiftSearch
@@ -938,36 +279,7 @@ function UnitTestSwiftSearch
     Write-Host
     Hdr('UnitTestSwiftSearch')
 
-    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install swift')
-        $global:failedBuilds += 'swiftsearch'
-        return
-    }
-
-    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
-    Log("swift version: $swiftVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $swiftSearchPath
-
-    # run tests
-    Log('Unit-testing swiftsearch')
-    Log('swift test')
-    swift test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'swiftsearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'swift' 'swiftsearch'
 }
 
 function UnitTestTsSearch
@@ -975,44 +287,7 @@ function UnitTestTsSearch
     Write-Host
     Hdr('UnitTestTsSearch')
 
-    # if node is installed, display version
-    if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
-    {
-        $nodeVersion = node --version
-        Log("node version: $nodeVersion")
-    }
-
-    # ensure npm is installed
-    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install npm')
-        $global:failedBuilds += 'tssearch'
-        return
-    }
-
-    $npmVersion = npm --version
-    Log("npm version: $npmVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $tsSearchPath
-
-    # run tests
-    Log('Unit-testing tssearch')
-    Log('npm test')
-    npm test
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
-    {
-        Log('Tests succeeded')
-    }
-    else
-    {
-        PrintError('Tests failed')
-        $global:failedBuilds += 'tssearch'
-    }
-
-    Set-Location $oldPwd
+    UnitTestXsearchVersion 'typescript' 'tssearch'
 }
 
 function UnitTestAll
@@ -1020,57 +295,57 @@ function UnitTestAll
     Write-Host
     Hdr('UnitTestAll')
 
-    # UnitTestBashSearch
+    # Measure-Command { UnitTestBashSearch }
 
-    # UnitTestCSearch
+    # Measure-Command { UnitTestCSearch }
 
-    UnitTestCljSearch
+    Measure-Command { UnitTestCljSearch }
 
-    UnitTestCppSearch
+    Measure-Command { UnitTestCppSearch }
 
-    UnitTestCsSearch
+    Measure-Command { UnitTestCsSearch }
 
-    UnitTestDartSearch
+    Measure-Command { UnitTestDartSearch }
 
-    UnitTestExSearch
+    Measure-Command { UnitTestExSearch }
 
-    UnitTestFsSearch
+    Measure-Command { UnitTestFsSearch }
 
-    UnitTestGoSearch
+    Measure-Command { UnitTestGoSearch }
 
-    # UnitTestGroovySearch
+    # Measure-Command { UnitTestGroovySearch }
 
-    UnitTestHsSearch
+    Measure-Command { UnitTestHsSearch }
 
-    UnitTestJavaSearch
+    Measure-Command { UnitTestJavaSearch }
 
-    UnitTestJsSearch
+    Measure-Command { UnitTestJsSearch }
 
-    UnitTestKtSearch
+    Measure-Command { UnitTestKtSearch }
 
-    UnitTestObjcSearch
+    Measure-Command { UnitTestObjcSearch }
 
-    UnitTestMlSearch
+    # Measure-Command { UnitTestMlSearch }
 
-    UnitTestPlSearch
+    Measure-Command { UnitTestPlSearch }
 
-    UnitTestPhpSearch
+    Measure-Command { UnitTestPhpSearch }
 
-    UnitTestPs1Search
+    Measure-Command { UnitTestPs1Search }
 
-    UnitTestPySearch
+    Measure-Command { UnitTestPySearch }
 
-    UnitTestRbSearch
+    Measure-Command { UnitTestRbSearch }
 
-    UnitTestRsSearch
+    Measure-Command { UnitTestRsSearch }
 
-    UnitTestScalaSearch
+    Measure-Command { UnitTestScalaSearch }
 
-    UnitTestSwiftSearch
+    Measure-Command { UnitTestSwiftSearch }
 
-    UnitTestTsSearch
+    Measure-Command { UnitTestTsSearch }
 
-    PrintFailedBuilds
+    PrintTestResults
 
     exit
 }
@@ -1083,85 +358,78 @@ function UnitTestMain
 {
     param($langs=@())
 
-    if ($langs.Count -eq 0)
-    {
+    if ($langs.Count -eq 0) {
         Usage
     }
 
-    if ($langs -contains 'all')
-    {
+    if ($langs -contains 'all') {
         UnitTestAll
     }
 
-    ForEach ($lang in $langs)
-    {
-        switch ($lang)
-        {
-            'bash'       { UnitTestBashSearch }
-            # 'c'          { UnitTestCSearch }
-            'clj'        { UnitTestCljSearch }
-            'clojure'    { UnitTestCljSearch }
-            'cpp'        { UnitTestCppSearch }
-            'cs'         { UnitTestCsSearch }
-            'csharp'     { UnitTestCsSearch }
-            'dart'       { UnitTestDartSearch }
-            'elixir'     { UnitTestExSearch }
-            'ex'         { UnitTestExSearch }
-            'fs'         { UnitTestFsSearch }
-            'fsharp'     { UnitTestFsSearch }
-            'go'         { UnitTestGoSearch }
-            # 'groovy'     { UnitTestGroovySearch }
-            'haskell'    { UnitTestHsSearch }
-            'hs'         { UnitTestHsSearch }
-            'java'       { UnitTestJavaSearch }
-            'javascript' { UnitTestJsSearch }
-            'js'         { UnitTestJsSearch }
-            'kotlin'     { UnitTestKtSearch }
-            'kt'         { UnitTestKtSearch }
-            'objc'       { UnitTestObjcSearch }
-            'ocaml'      { UnitTestMlSearch }
-            'ml'         { UnitTestMlSearch }
-            'perl'       { UnitTestPlSearch }
-            'pl'         { UnitTestPlSearch }
-            'php'        { UnitTestPhpSearch }
-            'powershell' { UnitTestPs1Search }
-            'ps1'        { UnitTestPs1Search }
-            'pwsh'       { UnitTestPs1Search }
-            'py'         { UnitTestPySearch }
-            'python'     { UnitTestPySearch }
-            'rb'         { UnitTestRbSearch }
-            'ruby'       { UnitTestRbSearch }
-            'rs'         { UnitTestRsSearch }
-            'rust'       { UnitTestRsSearch }
-            'scala'      { UnitTestScalaSearch }
-            'swift'      { UnitTestSwiftSearch }
-            'ts'         { UnitTestTsSearch }
-            'typescript' { UnitTestTsSearch }
+    ForEach ($lang in $langs) {
+        switch ($lang) {
+            # 'bash'       { UnitTestBashSearch }
+            # 'bash'       { Measure-Command { UnitTestBashSearch } }
+            # 'c'          { Measure-Command { UnitTestCSearch } }
+            'clj'        { Measure-Command { UnitTestCljSearch } }
+            'clojure'    { Measure-Command { UnitTestCljSearch } }
+            'cpp'        { Measure-Command { UnitTestCppSearch } }
+            'cs'         { Measure-Command { UnitTestCsSearch } }
+            'csharp'     { Measure-Command { UnitTestCsSearch } }
+            'dart'       { Measure-Command { UnitTestDartSearch } }
+            'elixir'     { Measure-Command { UnitTestExSearch } }
+            'ex'         { Measure-Command { UnitTestExSearch } }
+            'fs'         { Measure-Command { UnitTestFsSearch } }
+            'fsharp'     { Measure-Command { UnitTestFsSearch } }
+            'go'         { Measure-Command { UnitTestGoSearch } }
+            # 'groovy'     { Measure-Command { UnitTestGroovySearch } }
+            'haskell'    { Measure-Command { UnitTestHsSearch } }
+            'hs'         { Measure-Command { UnitTestHsSearch } }
+            'java'       { Measure-Command { UnitTestJavaSearch } }
+            'javascript' { Measure-Command { UnitTestJsSearch } }
+            'js'         { Measure-Command { UnitTestJsSearch } }
+            'kotlin'     { Measure-Command { UnitTestKtSearch } }
+            'kt'         { Measure-Command { UnitTestKtSearch } }
+            'objc'       { Measure-Command { UnitTestObjcSearch } }
+            # 'ocaml'      { Measure-Command { UnitTestMlSearch } }
+            # 'ml'         { Measure-Command { UnitTestMlSearch } }
+            'perl'       { Measure-Command { UnitTestPlSearch } }
+            'pl'         { Measure-Command { UnitTestPlSearch } }
+            'php'        { Measure-Command { UnitTestPhpSearch } }
+            'powershell' { Measure-Command { UnitTestPs1Search } }
+            'ps1'        { Measure-Command { UnitTestPs1Search } }
+            'pwsh'       { Measure-Command { UnitTestPs1Search } }
+            'py'         { Measure-Command { UnitTestPySearch } }
+            'python'     { Measure-Command { UnitTestPySearch } }
+            'rb'         { Measure-Command { UnitTestRbSearch } }
+            'ruby'       { Measure-Command { UnitTestRbSearch } }
+            'rs'         { Measure-Command { UnitTestRsSearch } }
+            'rust'       { Measure-Command { UnitTestRsSearch } }
+            'scala'      { Measure-Command { UnitTestScalaSearch } }
+            'swift'      { Measure-Command { UnitTestSwiftSearch } }
+            'ts'         { Measure-Command { UnitTestTsSearch } }
+            'typescript' { Measure-Command { UnitTestTsSearch } }
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
 
-    PrintFailedBuilds
+    PrintTestResults
 }
 
-if ($help)
-{
+if ($help) {
     Usage
 }
 
 $oldPwd = Get-Location
 
 try {
-    if ($all)
-    {
+    if ($all) {
         UnitTestAll
     }
 
     UnitTestMain $langs
-}
-catch {
+} catch {
     PrintError($_.Exception.Message)
-}
-finally {
+} finally {
     Set-Location $oldPwd
 }

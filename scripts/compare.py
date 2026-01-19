@@ -102,7 +102,7 @@ class Comparator(object):
                     break
                 output_lines.append(output_line)
             output = ''.join(output_lines)
-            if scenario.replace_xsearch_name:
+            if scenario.replace_exe_name:
                 output = xsearch_name_regex.sub('xsearch', output)
             xsearch_output[x] = output
             if self.debug:
