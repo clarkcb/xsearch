@@ -67,7 +67,7 @@ void main() {
         '}';
     var options = SearchOptions();
     var settings = SearchSettings();
-    await options.settingsFromJson(json, settings);
+    await options.updateSettingsFromJson(settings, json);
 
     expect(settings.paths.first, '~/src/xsearch/');
 

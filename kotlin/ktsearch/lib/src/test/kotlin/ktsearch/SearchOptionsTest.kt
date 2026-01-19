@@ -66,7 +66,7 @@ class SearchOptionsTest {
                  |  "includehidden": false
                  |}""".trimMargin()
         val searchOptions = SearchOptions()
-        val settings = searchOptions.settingsFromJson(json, getDefaultSettings())
+        val settings = searchOptions.updateSettingsFromJson(getDefaultSettings(), json)
 
         assertEquals(1, settings.paths.size)
         assertEquals(Paths.get("~/src/xsearch/"), settings.paths.first())

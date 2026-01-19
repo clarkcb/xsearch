@@ -75,7 +75,6 @@ impl PartialEq for SearchResult {
 mod tests {
     use crate::common::log;
     use crate::searchresultformatter::SearchResultFormatter;
-    use rsfind::consolecolor::{CONSOLE_GREEN, CONSOLE_RESET};
     use std::path::Path;
 
     use rsfind::filetypes::FileType;
@@ -84,7 +83,8 @@ mod tests {
 
     #[test]
     fn test_single_line_search_result() {
-        let settings = SearchSettings::default();
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(false);
         let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("Searcher");
         let file_path = Path::new("~/src/xsearch/rust/rssearch/src/searcher.rs");
@@ -120,7 +120,9 @@ mod tests {
 
     #[test]
     fn test_single_line_longer_than_max_line_length_search_result() {
-        let settings = SearchSettings::default();
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(false);
+        settings.set_max_line_length(130);
         let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("maxlen");
         let file_path = Path::new("./maxlen.txt");
@@ -156,7 +158,8 @@ mod tests {
 
     #[test]
     fn test_single_line_colorize_search_result() {
-        let settings = SearchSettings::default();
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(false);
         let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("maxlen");
         let file_path = Path::new("./maxlen.txt");
@@ -177,7 +180,7 @@ mod tests {
             lines_before,
             lines_after,
         );
-        let expected_line = String::from(format!("...89012345678901234567890123456789012345678901{}maxlen{}89012345678901234567890123456789012345678901...", CONSOLE_GREEN, CONSOLE_RESET));
+        let expected_line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
         let expected_output = format!(
             "{}: {}: [{}:{}]: {}",
             &file.file_path(),
@@ -225,7 +228,8 @@ mod tests {
 
     #[test]
     fn test_multi_line_search_result() {
-        let settings = SearchSettings::default();
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(false);
         let formatter = SearchResultFormatter::new(settings);
         let pattern = String::from("Searcher");
         let file_path = Path::new("~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs");

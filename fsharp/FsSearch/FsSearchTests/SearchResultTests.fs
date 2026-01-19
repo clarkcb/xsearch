@@ -19,7 +19,7 @@ type SearchResultTests () =
     member this.SearchResultSingleLine_ToString_EqualsExpected () =
         let settings = SearchSettings()
         settings.Colorize <- false
-        settings.Paths <- ["~"]
+        settings.Paths <- [this.CsSearchPath]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
         let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
@@ -30,7 +30,7 @@ type SearchResultTests () =
         let line = "\tpublic class Searcher\n"
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line [] []
         let searchResult = { searchResult with File=fileResult }
-        let expectedPath = this.CsSearchPath + "/Searcher.cs"
+        let expectedPath = FileUtil.ExpandPath(Path.Join(this.CsSearchPath, "Searcher.cs"))
         let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{line.Trim()}"
         let output = formatter.Format searchResult
         Assert.That(output, Is.EqualTo(expectedOutput))

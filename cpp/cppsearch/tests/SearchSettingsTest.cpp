@@ -99,10 +99,6 @@ TEST_CASE("Add patterns to SearchSettings", "[SearchSettings]") {
 TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
     auto settings = cppsearch::SearchSettings();
 
-    bool archives_only = settings.archives_only();
-    bool search_archives = settings.search_archives();
-    bool debug = settings.debug();
-    bool verbose = settings.verbose();
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.search_archives());
     settings.archives_only(true);

@@ -4,9 +4,8 @@
  * Some tests of searchresult.js
  */
 
-const {COLORS} = require('../src/color');
 const config = require('../src/config');
-const {FileResult, FileType} = require('jsfind');
+const {ConsoleColor, FileResult, FileType} = require('jsfind');
 const {SearchResult} = require('../src/searchresult');
 const {SearchResultFormatter} = require('../src/searchresultformatter');
 const {SearchSettings} = require('../src/searchsettings');
@@ -79,9 +78,9 @@ describe('testing searchresult', () => {
         const result = new SearchResult(pattern, file, lineNum, matchStartIndex,
             matchEndIndex, line, linesBefore, linesAfter);
         const expectedLine = '...89012345678901234567890123456789012345678901' +
-            COLORS.GREEN +
+            ConsoleColor.GREEN +
             'maxlen' +
-            COLORS.RESET +
+            ConsoleColor.RESET +
             '89012345678901234567890123456789012345678901...';
         const expectedOutput = file + ': ' + lineNum + ': [' + matchStartIndex + ':' +
             matchEndIndex + ']: ' + expectedLine;

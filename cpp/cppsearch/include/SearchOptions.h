@@ -13,8 +13,8 @@ namespace cppsearch {
     class SearchOptions {
     public:
         SearchOptions();
-        SearchSettings settings_from_args(int &argc, char **argv);
-        void update_settings_from_args(SearchSettings& settings, int &argc, char **argv);
+        SearchSettings settings_from_args(int argc, char **argv);
+        void update_settings_from_args(SearchSettings& settings, int argc, char **argv);
         void update_settings_from_file(SearchSettings& settings, const std::filesystem::path& file_path);
         void update_settings_from_json(SearchSettings& settings, std::string_view json_str);
         void usage();

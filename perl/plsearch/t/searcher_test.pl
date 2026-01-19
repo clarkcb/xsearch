@@ -13,9 +13,10 @@ my $lib_path;
 
 BEGIN {
     $lib_path = dirname(dirname(abs_path($0))) . '/lib';
-    # print "lib_path: $lib_path\n";
     unshift @INC, $lib_path;
 }
+
+use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
 use Test::Simple tests => 17;
 

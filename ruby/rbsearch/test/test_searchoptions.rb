@@ -108,7 +108,7 @@ module RbSearch
         "includehidden": true
       }
       JSON
-      @search_options.update_settings_from_json(json, settings)
+      @search_options.update_settings_from_json(settings, json)
       assert(settings.debug)
       assert(settings.verbose)
       assert(settings.follow_symlinks)

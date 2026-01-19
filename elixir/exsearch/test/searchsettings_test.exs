@@ -74,13 +74,13 @@ defmodule ExSearchTest.SearchSettingsTest do
   test "add a file pattern" do
     settings = SearchSettings.new()
     settings = SearchSettings.add_pattern(settings, "find", :in_file_patterns)
-    assert settings.in_file_patterns == [~r/find/]
+    assert Enum.map(settings.in_file_patterns, fn p -> p.source end) == ["find"]
   end
 
   test "add a search pattern" do
     settings = SearchSettings.new()
     settings = SearchSettings.add_pattern(settings, "search", :search_patterns)
-    assert settings.search_patterns == [~r/search/]
+    assert Enum.map(settings.search_patterns, fn p -> p.source end) == ["search"]
   end
 
   test "add an invalid pattern" do
@@ -93,10 +93,10 @@ defmodule ExSearchTest.SearchSettingsTest do
   test "add list of patterns" do
     settings = SearchSettings.new()
     settings = SearchSettings.add_patterns(settings, ["search", "file"], :in_file_patterns)
-    assert settings.in_file_patterns == [~r/search/, ~r/file/]
+    assert Enum.map(settings.in_file_patterns, fn p -> p.source end) == ["search", "file"]
   end
 
-  test "set archives_only sets include_archives" do
+  test "set archives_only sets search_archives" do
     settings = SearchSettings.new()
     settings = SearchSettings.set_archives_only(settings, true)
     assert settings.archives_only == true

@@ -4,9 +4,8 @@
  * Some tests of searchresult.js
  */
 
-import {COLORS} from "../src/color";
 import * as config from '../src/config';
-import {FileType, FileResult} from 'tsfind';
+import {FileType, FileResult, ConsoleColor} from 'tsfind';
 import {SearchResult} from '../src/searchresult';
 import {SearchResultFormatter} from '../src/searchresultformatter';
 import {SearchSettings} from '../src/searchsettings';
@@ -77,9 +76,9 @@ describe('testing searchresult', () => {
         const result: SearchResult = new SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
             line, linesBefore, linesAfter);
         const expectedLine = '...89012345678901234567890123456789012345678901' +
-            COLORS.GREEN +
+            ConsoleColor.GREEN +
             'maxlen' +
-            COLORS.RESET +
+            ConsoleColor.RESET +
             '89012345678901234567890123456789012345678901...';
         const expectedOutput: string = fileResult.toString() + ": " + lineNum + ": [" + matchStartIndex + ":" +
             matchEndIndex + "]: " + expectedLine;

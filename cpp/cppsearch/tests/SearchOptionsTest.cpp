@@ -5,8 +5,11 @@
 
 TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     auto* options = new cppsearch::SearchOptions();
-    char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-s"), const_cast<char *>("Searcher"),
-                     const_cast<char *>(".") };
+    char arg0[] = "cppsearch";
+    char arg1[] = "-s";
+    char arg2[] = "Searcher";
+    char arg3[] = ".";
+    char* argv[] = { arg0, arg1, arg2, arg3, nullptr };
     int argc = 4;
     auto settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
@@ -38,7 +41,7 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     REQUIRE(settings.out_extensions().empty());
     REQUIRE(settings.out_file_patterns().empty());
 
-    auto search_patterns = settings.search_patterns();
+    auto& search_patterns = settings.search_patterns();
     REQUIRE(search_patterns.size() == 1);
     std::unordered_set<std::string> expected_patterns{"Searcher"};
     auto contains_pattern = [&](auto& p) {
@@ -53,8 +56,13 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
 
 TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     auto* options = new cppsearch::SearchOptions();
-    char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-x"), const_cast<char *>("java,scala"),
-                     const_cast<char *>("-s"), const_cast<char *>("Searcher"), const_cast<char *>(".") };
+    char arg0[] = "cppsearch";
+    char arg1[] = "-x";
+    char arg2[] = "java,scala";
+    char arg3[] = "-s";
+    char arg4[] = "Searcher";
+    char arg5[] = ".";
+    char* argv[] = { arg0, arg1, arg2, arg3, arg4, arg5, nullptr };
     int argc = 6;
     auto settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
@@ -85,12 +93,12 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     REQUIRE(settings.out_extensions().empty());
     REQUIRE(settings.out_file_patterns().empty());
 
-    std::unordered_set<std::string> in_exts = settings.in_extensions();
+    auto& in_exts = settings.in_extensions();
     REQUIRE(in_exts.size() == 2);
     REQUIRE(in_exts.contains("java"));
     REQUIRE(in_exts.contains("scala"));
 
-    auto search_patterns = settings.search_patterns();
+    auto& search_patterns = settings.search_patterns();
     REQUIRE(search_patterns.size() == 1);
     std::unordered_set<std::string> expected_patterns{"Searcher"};
     auto contains_pattern = [&](auto& p) {
@@ -105,17 +113,23 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
 
 TEST_CASE("Get SearchSettings with archives-only", "[SearchOptions]") {
     auto* options = new cppsearch::SearchOptions();
-    char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-x"), const_cast<char *>("java,scala"),
-                     const_cast<char *>("-s"), const_cast<char *>("Searcher"), const_cast<char *>("--archivesonly"),
-                     const_cast<char *>(".") };
-    int argc = 7;
-    auto settings = options->settings_from_args(argc, argv);
+    char arg0[] = "cppsearch";
+    char arg1[] = "-x";
+    char arg2[] = "java,scala";
+    char arg3[] = "-s";
+    char arg4[] = "Searcher";
+    char arg5[] = "--archivesonly";
+    char arg6[] = ".";
+    char* argv[] = { arg0, arg1, arg2, arg3, arg4, arg5, arg6, nullptr };
+    constexpr int argc = 7;
+    const auto settings = options->settings_from_args(argc, argv);
     REQUIRE(settings.archives_only());
     REQUIRE(settings.search_archives());
 }
 
 TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
-    std::string json = R"(
+    // TODO: why is this string empty when the equivalent in FindOptionsTest contains the json text???
+    std::string json_str = R"(
 {
     "out-dirpattern": ["build", "node_module", "tests", "typings"],
     "out-filepattern": ["gulpfile", "\\.min\\."],
@@ -132,7 +146,7 @@ TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
 
     auto options = cppsearch::SearchOptions();
     auto settings = cppsearch::SearchSettings();
-    options.update_settings_from_json(settings, json);
+    options.update_settings_from_json(settings, json_str);
 
     REQUIRE(!settings.paths().empty());
     REQUIRE(settings.paths().size() == 1);

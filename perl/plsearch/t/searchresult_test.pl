@@ -20,11 +20,14 @@ BEGIN {
 
 use Test::Simple tests => 5;
 
+use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
+
 use plfind::common;
+use plfind::Color;
+use plfind::ConsoleColor;
 use plfind::FileResult;
 use plfind::FileType;
 use plsearch::config;
-use plsearch::Color;
 use plsearch::SearchResult;
 use plsearch::SearchResultFormatter;
 use plsearch::SearchSettings;
@@ -109,9 +112,9 @@ sub test_single_line_longer_colorize_search_result {
     my $search_result = plsearch::SearchResult->new($pattern, $file_result, $line_num, $match_start_index,
         $match_end_index, $line, $lines_before, $lines_after, $max_line_length, $colorize);
     my $expectedline = '...89012345678901234567890123456789012345678901'.
-        plsearch::Color->GREEN .
+        plfind::ConsoleColor::CONSOLE_GREEN .
         'maxlen' .
-        plsearch::Color->RESET .
+        plfind::ConsoleColor->CONSOLE_RESET .
         '89012345678901234567890123456789012345678901...';
     my $expected_output = sprintf("%s: %d: [%d:%d]: %s", $file_path, $line_num,
         $match_start_index, $match_end_index, $expectedline);

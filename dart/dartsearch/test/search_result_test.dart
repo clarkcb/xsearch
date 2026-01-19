@@ -2,7 +2,6 @@ import 'dart:io' show File;
 
 import 'package:dartfind/dartfind.dart';
 import 'package:dartsearch/dartsearch.dart';
-import 'package:dartsearch/src/console_color.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -67,7 +66,7 @@ void main() {
     var result = SearchResult(pattern, fileResult, lineNum, matchStartIndex,
         matchEndIndex, line, [], []);
     var expectedLine =
-        '...89012345678901234567890123456789012345678901${ConsoleColor.GREEN}maxlen${ConsoleColor.RESET}89012345678901234567890123456789012345678901...';
+        '...89012345678901234567890123456789012345678901${ConsoleColor.green}maxlen${ConsoleColor.reset}89012345678901234567890123456789012345678901...';
     var expectedOutput =
         '$path: $lineNum: [$matchStartIndex:$matchEndIndex]: $expectedLine';
     var output = formatter.format(result);

@@ -46,7 +46,8 @@ defmodule ExSearchTest.SearchResultTest do
     match_start_index = 18
     match_end_index = 26
     search_result = SearchResult.new(pattern, file_result, line_num, line, lines_before, lines_after, match_start_index, match_end_index)
-    search_result_formatted = SearchResultFormatter.format(search_result, settings)
+    formatter = SearchResultFormatter.new(settings)
+    search_result_formatted = SearchResultFormatter.format(formatter, search_result)
     assert search_result_formatted == "elixir/exsearch/lib/exsearch.ex: 7: [18:26]: alias ExSearch.Searcher"
   end
 
@@ -63,7 +64,8 @@ defmodule ExSearchTest.SearchResultTest do
     match_start_index = 18
     match_end_index = 26
     search_result = SearchResult.new(pattern, file_result, line_num, line, lines_before, lines_after, match_start_index, match_end_index)
-    search_result_formatted = SearchResultFormatter.format(search_result, settings)
+    formatter = SearchResultFormatter.new(settings)
+    search_result_formatted = SearchResultFormatter.format(formatter, search_result)
     expected_result_formatted = [
       "================================================================================",
       "elixir/exsearch/lib/exsearch.ex: 7: [18:26]",

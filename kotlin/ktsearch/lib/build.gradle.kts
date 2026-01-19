@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.commons.io)
     implementation(libs.org.json)
     implementation("ktfind:lib:0.1.0-SNAPSHOT")
-    testImplementation(libs.junit.jupiter)
+    testImplementation(kotlin("test"))
 }
 
 tasks.withType<JavaCompile> {

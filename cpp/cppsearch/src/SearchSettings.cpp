@@ -42,11 +42,11 @@ namespace cppsearch {
         m_first_match = first_match;
     }
 
-    std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> SearchSettings::in_lines_after_patterns() const {
+    const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& SearchSettings::in_lines_after_patterns() const {
         return m_in_lines_after_patterns;
     }
 
-    std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> SearchSettings::in_lines_before_patterns() const {
+    const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& SearchSettings::in_lines_before_patterns() const {
         return m_in_lines_before_patterns;
     }
 
@@ -98,11 +98,11 @@ namespace cppsearch {
         m_multi_line_search = multi_line_search;
     }
 
-    std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> SearchSettings::out_lines_after_patterns() const {
+    const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& SearchSettings::out_lines_after_patterns() const {
         return m_out_lines_after_patterns;
     }
 
-    std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> SearchSettings::out_lines_before_patterns() const {
+    const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& SearchSettings::out_lines_before_patterns() const {
         return m_out_lines_before_patterns;
     }
 
@@ -145,7 +145,7 @@ namespace cppsearch {
     //     }
     // }
 
-    std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> SearchSettings::search_patterns() const {
+    const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& SearchSettings::search_patterns() const {
         return m_search_patterns;
     }
 

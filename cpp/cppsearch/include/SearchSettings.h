@@ -31,11 +31,11 @@ namespace cppsearch {
         // [[nodiscard]] bool search_archives_only() const;
         [[nodiscard]] bool unique_lines() const;
 
-        [[nodiscard]] std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> in_lines_after_patterns() const;
-        [[nodiscard]] std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> in_lines_before_patterns() const;
-        [[nodiscard]] std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> out_lines_after_patterns() const;
-        [[nodiscard]] std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> out_lines_before_patterns() const;
-        [[nodiscard]] std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> search_patterns() const;
+        [[nodiscard]] const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& in_lines_after_patterns() const;
+        [[nodiscard]] const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& in_lines_before_patterns() const;
+        [[nodiscard]] const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& out_lines_after_patterns() const;
+        [[nodiscard]] const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& out_lines_before_patterns() const;
+        [[nodiscard]] const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& search_patterns() const;
 
         // property setters
         // void archives_only(bool archives_only);

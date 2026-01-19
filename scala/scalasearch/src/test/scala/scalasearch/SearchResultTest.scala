@@ -2,10 +2,9 @@ package scalasearch
 
 import org.junit.Assert.assertEquals
 import org.scalatest.funsuite.AnyFunSuite
-import scalafind.{Color, FileResult, FileType}
+import scalafind.{ConsoleColor, FileResult, FileType}
 
-import java.io.File
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 class SearchResultTest extends AnyFunSuite {
   test("test single-line search result") {
@@ -58,9 +57,9 @@ class SearchResultTest extends AnyFunSuite {
     val searchResult = SearchResult(pattern, Some(fileResult), lineNum,
       matchStartIndex, matchEndIndex, Some(line), List.empty, List.empty)
     val expectedLine = "...89012345678901234567890123456789012345678901" +
-      Color.GREEN +
+      ConsoleColor.GREEN.toString +
       "maxlen" +
-      Color.RESET +
+      ConsoleColor.RESET.toString +
       "89012345678901234567890123456789012345678901..."
     val expectedOutput = "%s: %d: [%d:%d]: %s".format(filePath,
       lineNum, matchStartIndex, matchEndIndex, expectedLine)

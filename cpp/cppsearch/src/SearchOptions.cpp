@@ -143,12 +143,14 @@ namespace cppsearch {
         }
     }
 
-    void SearchOptions::update_settings_from_args(SearchSettings& settings, int &argc, char **argv) {
+    void SearchOptions::update_settings_from_args(SearchSettings& settings, int argc, char **argv) {
         const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
-    SearchSettings SearchOptions::settings_from_args(int &argc, char **argv) {
+    SearchSettings SearchOptions::settings_from_args(int argc, char **argv) {
+        assert(argv != nullptr);
+        assert(argc >= 0);
         auto settings = SearchSettings();
 
         // set print_results to true since we are running the executable
@@ -159,8 +161,8 @@ namespace cppsearch {
         return settings;
     }
 
-    void SearchOptions::update_settings_from_json(SearchSettings& settings, const std::string_view json) {
-        const auto arg_tokens = m_arg_tokenizer.tokenize_json(json);
+    void SearchOptions::update_settings_from_json(SearchSettings& settings, const std::string_view json_str) {
+        const auto arg_tokens = m_arg_tokenizer.tokenize_json(json_str);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 

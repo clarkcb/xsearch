@@ -56,7 +56,7 @@ defmodule ExSearchTest.SearchOptionsTest do
     {:ok, settings} = SearchOptions.get_settings_from_args(["-x", "ex,exs", "src", "-f", "find"], search_options.options)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["src"]
-    assert settings.in_file_patterns == [~r/find/]
+    assert Enum.map(settings.in_file_patterns, fn p -> p.source end) == ["find"]
   end
 
   test "set archives_only" do
@@ -84,12 +84,13 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    {status, settings} = FindOptions.get_settings_from_json(json)
+    search_options = SearchOptions.new()
+    {status, settings} = FindOptions.get_settings_from_json(json, search_options.options)
     assert status == :ok
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
-    assert settings.out_dir_patterns == [~r/dep/]
-    assert settings.out_file_patterns == [~r/test/]
+    assert Enum.map(settings.out_dir_patterns, fn p -> p.source end) == ["dep"]
+    assert Enum.map(settings.out_file_patterns, fn p -> p.source end) == ["test"]
     assert settings.debug == true
     assert settings.include_hidden == true
   end
@@ -105,7 +106,8 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    {status, _value} = FindOptions.get_settings_from_json(json)
+    search_options = SearchOptions.new()
+    {status, _value} = FindOptions.get_settings_from_json(json, search_options.options)
     assert status == :error
   end
 
@@ -120,11 +122,12 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    settings = FindOptions.get_settings_from_json!(json)
+    search_options = SearchOptions.new()
+    settings = FindOptions.get_settings_from_json!(json, search_options.options)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
-    assert settings.out_dir_patterns == [~r/dep/]
-    assert settings.out_file_patterns == [~r/test/]
+    assert Enum.map(settings.out_dir_patterns, fn p -> p.source end) == ["dep"]
+    assert Enum.map(settings.out_file_patterns, fn p -> p.source end) == ["test"]
     assert settings.debug == true
     assert settings.include_hidden == true
   end
@@ -140,14 +143,16 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
+    search_options = SearchOptions.new()
     assert_raise ExFind.FindError, fn ->
-      _ = FindOptions.get_settings_from_json!(json)
+      _ = FindOptions.get_settings_from_json!(json, search_options.options)
     end
   end
 
   test "settings from non-existent file" do
     json_file = "/non/existent/file.json"
-    {status, _value} = FindOptions.get_settings_from_file(json_file)
+    search_options = SearchOptions.new()
+    {status, _value} = FindOptions.get_settings_from_file(json_file, search_options.options)
     assert status == :error
   end
 end

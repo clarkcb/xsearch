@@ -8,7 +8,7 @@ if (-not (Test-Path Env:XSEARCH_PATH))
 $dartSearchPath = Join-Path $env:XSEARCH_PATH 'dart' 'dartsearch'
 $dartSearchExe = Join-Path $dartSearchPath 'bin' 'dartsearch.exe'
 
-if (Test-Path $packagesPath -PathType Leaf)
+if (Test-Path $dartSearchExe -PathType Leaf)
 {
     & $dartSearchExe $Args
 }

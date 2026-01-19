@@ -123,8 +123,8 @@ set(TEST_FILES
         tests/SearchResultTest.cpp
         tests/SearchSettingsTest.cpp)
 
-add_executable(cppsearch-tests ${TEST_FILES})
+add_executable(${PROJECT_NAME}-tests ${TEST_FILES})
 
- target_link_libraries(cppsearch-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
+ target_link_libraries(${PROJECT_NAME}-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
 
 unset(XSEARCH_PATH CACHE)

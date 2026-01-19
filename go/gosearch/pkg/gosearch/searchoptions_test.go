@@ -80,7 +80,7 @@ func TestSearchSettingsFromJson(t *testing.T) {
 
 	settings := GetDefaultSearchSettings()
 	var err error
-	err = searchOptions.SettingsFromJson(jsonSettings, settings)
+	err = searchOptions.UpdateSettingsFromJson(settings, string(jsonSettings))
 	if err != nil {
 		t.Errorf("TestSearchSettingsFromJson: err: %v", err)
 	}

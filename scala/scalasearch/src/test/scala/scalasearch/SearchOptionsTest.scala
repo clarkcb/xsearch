@@ -277,14 +277,14 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(longSettings.multiLineSearch)
   }
 
-  // test -P / --noprintmatches
-  test("""test settingsFromArgs with args="-P" / "--noprintmatches" """) {
+  // test -P / --noprintresults
+  test("""test settingsFromArgs with args="-P" / "--noprintresults" """) {
     val shortArgs = Array("-P") ++ requiredArgs
 //    println("shortArgs: " + shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(!shortSettings.printResults)
 
-    val longArgs = Array("--noprintmatches") ++ requiredArgs
+    val longArgs = Array("--noprintresults") ++ requiredArgs
 //    println("longArgs: " + longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(!longSettings.printResults)
@@ -418,14 +418,14 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.printLines)
   }
 
-  // test -p / --printmatches
-  test("""test settingsFromArgs with args="-p" / "--printmatches" """) {
+  // test -p / --printresults
+  test("""test settingsFromArgs with args="-p" / "--printresults" """) {
     val shortArgs = Array("-p") ++ requiredArgs
 //    println("shortArgs: " + shortArgs.toList)
     val shortSettings = SearchOptions.settingsFromArgs(shortArgs)
     assert(shortSettings.printResults)
 
-    val longArgs = Array("--printmatches") ++ requiredArgs
+    val longArgs = Array("--printresults") ++ requiredArgs
 //    println("longArgs: " + longArgs.toList)
     val longSettings = SearchOptions.settingsFromArgs(longArgs)
     assert(longSettings.printResults)
@@ -500,7 +500,7 @@ class SearchOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
                  |  "includehidden": true
                  |}"""
     val expectedPath = Paths.get("/Users/cary/src/xsearch/")
-    val settings = SearchOptions.updateSettingsFromJson(json.stripMargin, ss)
+    val settings = SearchOptions.updateSettingsFromJson(ss, json.stripMargin)
     assert(settings.paths.contains(expectedPath))
     assert(settings.inExtensions.size == 2)
     assert(settings.inExtensions.contains("js"))

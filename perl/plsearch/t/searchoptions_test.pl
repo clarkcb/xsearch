@@ -17,11 +17,11 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 54;
+use Test::Simple tests => 55;
 
 use plsearch::SearchOptions;
 
-my $search_options = new plsearch::SearchOptions();
+my $search_options = plsearch::SearchOptions->new();
 
 sub test_no_args {
     my $args = [];
@@ -92,7 +92,6 @@ sub test_invalid_arg {
 }
 
 sub test_settings_from_json {
-    my $settings = new plsearch::SearchSettings();
     my $json = <<"END_JSON";
 {
   "path": "~/src/xsearch/",
@@ -107,8 +106,9 @@ sub test_settings_from_json {
   "includehidden": true
 }
 END_JSON
-    $search_options->settings_from_json($json, $settings);
-    ok(scalar @{$settings->{paths}} == 1, "paths has one paths");
+    my ($settings, $errs) = $search_options->settings_from_json($json);
+    ok(scalar @$errs == 0, 'no errors getting settings from json');
+    ok(scalar @{$settings->{paths}} == 1, "paths has one path");
     my $expected_path = "~/src/xsearch";
     ok($settings->{paths}->[0]->stringify eq $expected_path, 'paths has "~/src/xsearch/" path');
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
