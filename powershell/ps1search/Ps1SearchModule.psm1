@@ -42,6 +42,7 @@ class SearchSettings : FindSettings {
     [Regex[]]$OutLinesAfterPatterns
     [Regex[]]$OutLinesBeforePatterns
     [bool]$PrintLines
+    [bool]$PrintMatches
     [bool]$PrintResults
     [bool]$SearchArchives
     [Regex[]]$SearchPatterns
@@ -90,6 +91,7 @@ class SearchSettings : FindSettings {
 		$this.PrintDirs = $false
 		$this.PrintFiles = $false
 		$this.PrintLines = $false
+		$this.PrintMatches = $false
 		$this.PrintResults = $false
 		$this.PrintUsage = $false
 		$this.PrintVersion = $false
@@ -145,8 +147,9 @@ class SearchSettings : FindSettings {
         ", PrintDirs=$($this.PrintDirs)" +
         ", PrintFiles=$($this.PrintFiles)" +
         ", PrintLines=$($this.PrintLines)" +
-        ", PrintUsage=$($this.PrintUsage)" +
+        ", PrintMatches=$($this.PrintMatches)" +
         ", PrintResults=$($this.PrintResults)" +
+        ", PrintUsage=$($this.PrintUsage)" +
         ", PrintVersion=$($this.PrintVersion)" +
         ", Recursive=$($this.Recursive)" +
         ", SearchArchives=$($this.SearchArchives)" +
@@ -261,6 +264,10 @@ class SearchOptions {
         }
         "noprintmatches" = {
             param([bool]$b, [SearchSettings]$settings)
+            $settings.PrintMatches = !$b
+        }
+        "noprintresults" = {
+            param([bool]$b, [SearchSettings]$settings)
             $settings.PrintResults = !$b
         }
         "norecursive" = {
@@ -284,6 +291,10 @@ class SearchOptions {
             $settings.PrintLines = $b
         }
         "printmatches" = {
+            param([bool]$b, [SearchSettings]$settings)
+            $settings.PrintMatches = $b
+        }
+        "printresults" = {
             param([bool]$b, [SearchSettings]$settings)
             $settings.PrintResults = $b
         }
@@ -650,6 +661,7 @@ class SearchResultFormatter {
     [SearchSettings]$Settings
     [FileResultFormatter]$FileFormatter
     [Scriptblock]$FormatLineBlock
+    [Scriptblock]$FormatMatchBlock
 
     SearchResultFormatter([SearchSettings]$settings) {
         $this.Settings = $settings
@@ -659,10 +671,18 @@ class SearchResultFormatter {
                 param([string]$line)
                 return $this.FormatLineColor($line)
             }
+            $this.FormatMatchBlock = {
+                param([string]$m)
+                return $this.FormatMatchColor($m)
+            }
         } else {
             $this.FormatLineBlock = {
                 param([string]$line)
                 return $line
+            }
+            $this.FormatMatchBlock = {
+                param([string]$m)
+                return $m
             }
         }
     }
@@ -686,6 +706,14 @@ class SearchResultFormatter {
 
     [string]FormatLine([string]$line) {
         return $this.FormatLineBlock.Invoke($line)
+    }
+
+    [string]FormatMatchColor([string]$match) {
+        return $this.ColorizeString($match, 0, $match.Length, $this.Settings.LineColor)
+    }
+
+    [string]FormatMatch([string]$match) {
+        return $this.FormatMatchBlock.Invoke($match)
     }
 
     [string[]]FormatMatchingLine([SearchResult]$result) {
@@ -1262,9 +1290,16 @@ class Searcher {
             $lines += $r.Line.Trim()
         }
         if ($settings.UniqueLines) {
-            $lines = $lines | Get-Unique
+            $lineMap = @{}
+            foreach ($line in $lines) {
+                $lineMap[$line] = 1
+            }
+            $lines = $lineMap.Keys
         }
-        return $lines | Sort-Object
+        if ($settings.SortCaseInsensitive) {
+            return $lines | Sort-Object
+        }
+        return $lines | Sort-Object -CaseSensitive
     }
 
     [void]PrintMatchingLines([SearchResult[]]$searchResults, [SearchResultFormatter]$formatter) {
@@ -1274,6 +1309,37 @@ class Searcher {
             LogMsg("`n$hdr ($($lines.Count)):")
             foreach ($line in $lines) {
                 LogMsg($formatter.FormatLine($line))
+            }
+        } else {
+            LogMsg("`n$($hdr): 0")
+        }
+    }
+
+    [string[]]GetMatches([SearchResult[]]$searchResults, [SearchSettings]$settings) {
+        [string[]]$matches = @()
+        foreach ($r in $searchResults) {
+            $matches += $r.Line.Substring($r.MatchStartIndex - 1, $r.MatchEndIndex - $r.MatchStartIndex)
+        }
+        if ($settings.UniqueLines) {
+            $matchMap = @{}
+            foreach ($m in $matches) {
+                $matchMap[$m] = 1
+            }
+            $matches = $matchMap.Keys
+        }
+        if ($settings.SortCaseInsensitive) {
+            return $matches | Sort-Object
+        }
+        return $matches | Sort-Object -CaseSensitive
+    }
+
+    [void]PrintMatches([SearchResult[]]$searchResults, [SearchResultFormatter]$formatter) {
+        [string[]]$matches = $this.GetMatches($searchResults, $formatter.Settings)
+        $hdr = $formatter.Settings.UniqueLines ? "Unique matches" : "Matches"
+        if ($matches.Count -gt 0) {
+            LogMsg("`n$hdr ($($matches.Count)):")
+            foreach ($m in $matches) {
+                LogMsg($formatter.FormatMatch($m))
             }
         } else {
             LogMsg("`n$($hdr): 0")

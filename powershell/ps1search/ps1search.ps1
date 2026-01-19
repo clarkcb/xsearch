@@ -51,6 +51,10 @@ function SearchMain {
          if ($settings.PrintLines) {
              $searcher.PrintMatchingLines(@($results), $formatter)
          }
+
+         if ($settings.PrintMatches) {
+             $searcher.PrintMatches(@($results), $formatter)
+         }
     }
     catch {
         $errMsg = $_.Exception.Message

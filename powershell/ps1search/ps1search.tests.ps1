@@ -185,9 +185,6 @@ Describe -tag "SearchResultFormatter" -name "test_format_colorized_single_line_r
         $settings = [SearchSettings]::new()
         $settings.SearchPatterns += [regex]"Searcher"
 
-        # Create SearchResultFormatter
-        $formatter = [SearchResultFormatter]::new($settings)
-
         # Create SearchResult
         $filePath = "/home/user/src/xsearch/powershell/ps1search/ps1search.ps1";
         $file = [System.IO.FileInfo]::new("$filePath")
@@ -198,6 +195,9 @@ Describe -tag "SearchResultFormatter" -name "test_format_colorized_single_line_r
         $matchEndIdx = 18
         $line = "        [Searcher]`$searcher = [Searcher]::new(`$settings)"
         $searchResult = [SearchResult]::new($pattern, $fileResult, $lineNum, $matchStartIdx, $matchEndIdx, $line)
+
+        # Create SearchResultFormatter
+        $formatter = [SearchResultFormatter]::new($settings)
 
         $formattedResult = $formatter.Format($searchResult)
         $formattedResult.LinesBefore.Count | Should -BeExactly 0
@@ -213,9 +213,6 @@ Describe -tag "SearchResultFormatter" -name "test_format_uncolorized_single_line
         $settings.Colorize = $false
         $settings.SearchPatterns += [regex]"Searcher"
 
-        # Create SearchResultFormatter
-        $formatter = [SearchResultFormatter]::new($settings)
-
         # Create SearchResult
         $filePath = "/home/user/src/xsearch/powershell/ps1search/ps1search.ps1";
         $file = [System.IO.FileInfo]::new("$filePath")
@@ -226,6 +223,9 @@ Describe -tag "SearchResultFormatter" -name "test_format_uncolorized_single_line
         $matchEndIdx = 18
         $line = "        [Searcher]`$searcher = [Searcher]::new(`$settings)"
         $searchResult = [SearchResult]::new($pattern, $fileResult, $lineNum, $matchStartIdx, $matchEndIdx, $line)
+
+        # Create SearchResultFormatter
+        $formatter = [SearchResultFormatter]::new($settings)
 
         $formattedResult = $formatter.Format($searchResult)
         $formattedResult.LinesBefore.Count | Should -BeExactly 0
