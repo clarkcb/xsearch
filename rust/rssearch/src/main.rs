@@ -5,7 +5,8 @@ use std::process;
 extern crate rsfind;
 
 use crate::common::{log, log_err_color};
-use crate::searcher::{print_results, print_result_dirs, print_result_files, print_result_lines};
+use crate::searcher::{print_results, print_result_dirs, print_result_files, print_result_lines,
+                      print_result_matches};
 use crate::searcherror::SearchError;
 use crate::searchresultformatter::SearchResultFormatter;
 
@@ -78,6 +79,9 @@ fn search(args: Iter<String>) {
                     }
                     if searcher.settings.print_lines() {
                         print_result_lines(&results, &formatter);
+                    }
+                    if searcher.settings.print_matches() {
+                        print_result_matches(&results, &formatter);
                     }
                 },
                 Err(error) => error_and_exit(error, colorize, &options),

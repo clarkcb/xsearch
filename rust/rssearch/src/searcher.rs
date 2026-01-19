@@ -4,6 +4,7 @@ use std::fs;
 use std::io;
 use std::io::Read;
 use std::str::Lines;
+use std::cmp::Ordering;
 
 use encoding::codec::singlebyte::SingleByteEncoding;
 use encoding::{label, DecoderTrap, Encoding};
@@ -813,13 +814,23 @@ pub fn print_result_files(results: &Vec<SearchResult>, formatter: &SearchResultF
     print_matching_files(&files, &formatter.file_formatter)
 }
 
+fn get_str_comparator(sort_case_insensitive: bool) -> impl Fn(&&str, &&str) -> Ordering + use<> {
+    if sort_case_insensitive {
+        |s1: &&str, s2: &&str| s1.to_lowercase().cmp(&s2.to_lowercase())
+    } else {
+        |s1: &&str, s2: &&str| s1.cmp(&s2)
+    }
+}
+
 /// Get the [unique] list of lines containing matches for a set of search results
-fn get_result_lines(results: &[SearchResult], unique: bool) -> Vec<&str> {
+fn get_result_lines(results: &[SearchResult], sort_case_insensitive: bool, unique: bool) -> Vec<&str> {
     let mut lines: Vec<&str> = Vec::new();
     for r in results.iter() {
         lines.push(&r.line.trim());
     }
     lines.sort_unstable();
+    let comparator = get_str_comparator(sort_case_insensitive);
+    lines.sort_by(comparator);
     if unique {
         lines.dedup();
     }
@@ -827,8 +838,9 @@ fn get_result_lines(results: &[SearchResult], unique: bool) -> Vec<&str> {
 }
 
 pub fn print_result_lines(results: &Vec<SearchResult>, formatter: &SearchResultFormatter) {
+    let sort_case_insensitive = formatter.settings.sort_case_insensitive();
     let unique = formatter.settings.unique_lines();
-    let lines = get_result_lines(results, unique);
+    let lines = get_result_lines(results, sort_case_insensitive, unique);
     let lines_title = if unique { "Unique matching lines" } else { "Matching lines" };
     if lines.is_empty() {
         log(format!("\n{}: 0", lines_title).as_str());
@@ -836,6 +848,35 @@ pub fn print_result_lines(results: &Vec<SearchResult>, formatter: &SearchResultF
         log(format!("\n{} ({}):", lines_title, lines.len()).as_str());
         for line in lines.iter() {
             log(format!("{}", (&formatter.format_line)(line, &formatter.settings)).as_str());
+        }
+    }
+}
+
+/// Get the [unique] list of matches for a set of search results
+fn get_result_matches(results: &[SearchResult], sort_case_insensitive: bool, unique: bool) -> Vec<&str> {
+    let mut matches: Vec<&str> = Vec::new();
+    for r in results.iter() {
+        matches.push(&r.line[r.match_start_index - 1..r.match_end_index - 1]);
+    }
+    let comparator = get_str_comparator(sort_case_insensitive);
+    matches.sort_by(comparator);
+    if unique {
+        matches.dedup();
+    }
+    matches
+}
+
+pub fn print_result_matches(results: &Vec<SearchResult>, formatter: &SearchResultFormatter) {
+    let sort_case_insensitive = formatter.settings.sort_case_insensitive();
+    let unique = formatter.settings.unique_lines();
+    let matches = get_result_matches(results, sort_case_insensitive, unique);
+    let matches_title = if unique { "Unique matches" } else { "Matches" };
+    if matches.is_empty() {
+        log(format!("\n{}: 0", matches_title).as_str());
+    } else {
+        log(format!("\n{} ({}):", matches_title, matches.len()).as_str());
+        for line in matches.iter() {
+            log(format!("{}", (&formatter.format_match)(line, &formatter.settings)).as_str());
         }
     }
 }

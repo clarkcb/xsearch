@@ -7,6 +7,7 @@ pub struct SearchResultFormatter {
     pub settings: SearchSettings,
     pub file_formatter: FileResultFormatter,
     pub format_line: Box<dyn Fn(&str, &SearchSettings) -> String>,
+    pub format_match: Box<dyn Fn(&str, &SearchSettings) -> String>,
 }
 
 const SEPARATOR_LEN: usize = 80;
@@ -24,6 +25,10 @@ fn format_line_with_color(line: &str, settings: &SearchSettings) -> String {
     formatted_line
 }
 
+fn format_match_with_color(m: &str, settings: &SearchSettings) -> String {
+    colorize(&m, 0, m.len(), &settings.line_color())
+}
+
 impl SearchResultFormatter {
     pub fn new(settings: SearchSettings) -> SearchResultFormatter {
         let file_formatter = FileResultFormatter::new(settings.find_settings());
@@ -33,10 +38,17 @@ impl SearchResultFormatter {
             } else {
                 |line: &str, _settings: &SearchSettings| String::from(line)
             };
+        let _format_match: fn(&str, &SearchSettings) -> String =
+            if settings.colorize() {
+                |m: &str, settings: &SearchSettings| format_match_with_color(&m, &settings)
+            } else {
+                |m: &str, _settings: &SearchSettings| String::from(m)
+            };
         Self {
             settings,
             file_formatter,
             format_line: Box::new(_format_line),
+            format_match: Box::new(_format_match),
         }
     }
 

@@ -374,6 +374,10 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
     );
     bool_action_map.insert(
         "noprintmatches".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_matches(!b))),
+    );
+    bool_action_map.insert(
+        "noprintresults".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_results(!b))),
     );
     bool_action_map.insert(
@@ -394,6 +398,10 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
     );
     bool_action_map.insert(
         "printmatches".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_matches(b))),
+    );
+    bool_action_map.insert(
+        "printresults".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_print_results(b))),
     );
     bool_action_map.insert(

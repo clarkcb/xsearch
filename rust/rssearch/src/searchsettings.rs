@@ -19,6 +19,7 @@ pub struct SearchSettings {
     _out_lines_after_patterns: Vec<Regex>,
     _out_lines_before_patterns: Vec<Regex>,
     _print_lines: bool,
+    _print_matches: bool,
     _print_results: bool,
     _search_archives: bool,
     _search_patterns: Vec<Regex>,
@@ -43,6 +44,7 @@ impl SearchSettings {
             _out_lines_after_patterns: Vec::new(),
             _out_lines_before_patterns: Vec::new(),
             _print_lines: false,
+            _print_matches: false,
             _print_results: false,
             _search_archives: false,
             _search_patterns: Vec::new(),
@@ -379,6 +381,14 @@ impl SearchSettings {
         self._print_lines = b
     }
 
+    pub fn print_matches(&self) -> bool {
+        self._print_matches
+    }
+
+    pub fn set_print_matches(&mut self, b: bool) {
+        self._print_matches = b
+    }
+
     pub fn print_results(&self) -> bool {
         self._print_results
     }
@@ -516,6 +526,7 @@ impl SearchSettings {
         s.push_str(format!(", print_dirs={:?}", &self.print_dirs()).as_str());
         s.push_str(format!(", print_files={:?}", &self.print_files()).as_str());
         s.push_str(format!(", print_lines={:?}", &self.print_lines()).as_str());
+        s.push_str(format!(", print_matches={:?}", &self.print_matches()).as_str());
         s.push_str(format!(", print_results={:?}", &self.print_results()).as_str());
         s.push_str(format!(", print_usage={:?}", &self.print_usage()).as_str());
         s.push_str(format!(", print_version={:?}", &self.print_version()).as_str());
@@ -599,6 +610,7 @@ mod tests {
         assert_eq!(settings.print_dirs(), false);
         assert_eq!(settings.print_files(), false);
         assert_eq!(settings.print_lines(), false);
+        assert_eq!(settings.print_matches(), false);
         assert_eq!(settings.print_results(), false);
         assert_eq!(settings.print_usage(), false);
         assert_eq!(settings.print_version(), false);
