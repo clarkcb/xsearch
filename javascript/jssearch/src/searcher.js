@@ -407,18 +407,32 @@ class Searcher {
         this.finder.printMatchingFiles(fileResults, formatter.fileFormatter);
     }
 
+    getSortFn() {
+        let sortFn;
+        if (this.settings.sortCaseInsensitive) {
+            sortFn = (a, b) => {
+                let aUpper = a.toUpperCase();
+                let bUpper = b.toUpperCase();
+                if (aUpper === bUpper)
+                    return 0;
+                return aUpper < bUpper ? -1 : 1;
+            };
+        } else {
+            sortFn = (a, b) => {
+                if (a === b) return 0;
+                return a < b ? -1 : 1;
+            }
+        }
+        return sortFn;
+    }
+
     getMatchingLines(results) {
         let lines = results.filter(r => r.lineNum > 0).map(r => r.line.trim());
         if (this.settings.uniqueLines) {
             lines = common.setFromArray(lines);
         }
-        lines.sort((a, b) => {
-            let aUpper = a.toUpperCase();
-            let bUpper = b.toUpperCase();
-            if (aUpper === bUpper)
-                return 0;
-            return aUpper < bUpper ? -1 : 1;
-        });
+        let sortFn = this.getSortFn();
+        lines.sort(sortFn);
         return lines;
     }
 
@@ -426,13 +440,41 @@ class Searcher {
         const lines = this.getMatchingLines(results);
         let hdrText;
         if (this.settings.uniqueLines)
-            hdrText = `\nUnique lines with matches`;
+            hdrText = `\nUnique matching lines`;
         else
-            hdrText = `\nLines with matches`;
+            hdrText = `\nMatching lines`;
         if (lines.length > 0) {
             hdrText = `${hdrText} (${lines.length}):`;
             common.log(hdrText);
             lines.forEach(l => common.log(formatter.formatLine(l)));
+        } else {
+            hdrText = `${hdrText}: 0`;
+            common.log(hdrText);
+        }
+    }
+
+    getMatches(results) {
+        let matches = results.filter(r => r.lineNum > 0)
+            .map(r => r.line.substring(r.matchStartIndex - 1, r.matchEndIndex - 1));
+        if (this.settings.uniqueLines) {
+            matches = common.setFromArray(matches);
+        }
+        let sortFn = this.getSortFn();
+        matches.sort(sortFn);
+        return matches;
+    }
+
+    printMatches(results, formatter) {
+        const matches = this.getMatches(results);
+        let hdrText;
+        if (this.settings.uniqueLines)
+            hdrText = `\nUnique matches`;
+        else
+            hdrText = `\nMatches`;
+        if (matches.length > 0) {
+            hdrText = `${hdrText} (${matches.length}):`;
+            common.log(hdrText);
+            matches.forEach(m => common.log(formatter.formatMatch(m)));
         } else {
             hdrText = `${hdrText}: 0`;
             common.log(hdrText);

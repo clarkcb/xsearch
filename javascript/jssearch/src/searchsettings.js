@@ -24,6 +24,7 @@ class SearchSettings {
     outLinesAfterPatterns = [];
     outLinesBeforePatterns = [];
     printLines = false;
+    printMatches = false;
     printResults = false;
     searchArchives = false;
     searchPatterns = [];
@@ -460,6 +461,7 @@ class SearchSettings {
             ', printDirs=' + this.printDirs +
             ', printFiles=' + this.printFiles +
             ', printLines=' + this.printLines +
+            ', printMatches=' + this.printMatches +
             ', printResults=' + this.printResults +
             ', printUsage=' + this.printUsage +
             ', printVersion=' + this.printVersion +

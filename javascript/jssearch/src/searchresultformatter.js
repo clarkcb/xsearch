@@ -17,6 +17,9 @@ class SearchResultFormatter {
             this.formatLine = function(line) {
                 return this.formatLineWithColor(line);
             };
+            this.formatMatch = function(m) {
+                return this.formatMatchWithColor(m);
+            };
         }
     }
 
@@ -34,6 +37,14 @@ class SearchResultFormatter {
 
     formatLine(line) {
         return line;
+    }
+
+    formatMatchWithColor(m) {
+        return this.fileFormatter.colorize(m, 0, m.length, this.settings.lineColor);
+    }
+
+    formatMatch(m) {
+        return m;
     }
 
     format(result) {
