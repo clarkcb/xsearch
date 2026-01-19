@@ -64,4 +64,9 @@ func main() {
 	if settings.PrintLines() {
 		searchResults.PrintMatchingLines(formatter)
 	}
+
+	// print matches (unique or not, sorted alphabetically)
+	if settings.PrintMatches() {
+		searchResults.PrintMatches(formatter)
+	}
 }

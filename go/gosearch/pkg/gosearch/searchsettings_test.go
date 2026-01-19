@@ -13,6 +13,7 @@ func TestDefaultSearchSettings(t *testing.T) {
 		settings.PrintDirs() ||
 		settings.PrintFiles() ||
 		settings.PrintLines() ||
+		settings.PrintMatches() ||
 		settings.PrintResults() ||
 		settings.PrintUsage() ||
 		settings.PrintVersion() ||

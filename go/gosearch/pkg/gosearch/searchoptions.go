@@ -91,6 +91,9 @@ func getBoolActionMap() map[string]boolAction {
 			settings.SetPrintLines(!b)
 		},
 		"noprintmatches": func(b bool, settings *SearchSettings) {
+			settings.SetPrintMatches(!b)
+		},
+		"noprintresults": func(b bool, settings *SearchSettings) {
 			settings.SetPrintResults(!b)
 		},
 		"norecursive": func(b bool, settings *SearchSettings) {
@@ -109,6 +112,9 @@ func getBoolActionMap() map[string]boolAction {
 			settings.SetPrintLines(b)
 		},
 		"printmatches": func(b bool, settings *SearchSettings) {
+			settings.SetPrintMatches(b)
+		},
+		"printresults": func(b bool, settings *SearchSettings) {
 			settings.SetPrintResults(b)
 		},
 		"recursive": func(b bool, settings *SearchSettings) {

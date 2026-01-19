@@ -23,6 +23,7 @@ type SearchSettings struct {
 	outLinesAfterPatterns   *gofind.Patterns
 	outLinesBeforePatterns  *gofind.Patterns
 	printLines              bool
+	printMatches            bool
 	printResults            bool
 	searchArchives          bool
 	searchPatterns          *gofind.Patterns
@@ -46,6 +47,7 @@ func GetDefaultSearchSettings() *SearchSettings {
 		gofind.NewPatterns(), // OutLinesAfterPatterns
 		gofind.NewPatterns(), // OutLinesBeforePatterns
 		false,                // PrintLines
+		false,                // PrintMatches
 		false,                // PrintResults
 		false,                // SearchArchives
 		gofind.NewPatterns(), // SearchPatterns
@@ -425,6 +427,14 @@ func (s *SearchSettings) SetPrintLines(b bool) {
 	s.printLines = b
 }
 
+func (s *SearchSettings) PrintMatches() bool {
+	return s.printMatches
+}
+
+func (s *SearchSettings) SetPrintMatches(b bool) {
+	s.printMatches = b
+}
+
 func (s *SearchSettings) PrintResults() bool {
 	return s.printResults
 }
@@ -565,6 +575,7 @@ func (s *SearchSettings) String() string {
 		", PrintDirs: %t" +
 		", PrintFiles: %t" +
 		", PrintLines: %t" +
+		", PrintMatches: %t" +
 		", PrintResults: %t" +
 		", PrintUsage: %t" +
 		", PrintVersion: %t" +
@@ -616,6 +627,7 @@ func (s *SearchSettings) String() string {
 		s.PrintDirs(),
 		s.PrintFiles(),
 		s.PrintLines(),
+		s.PrintMatches(),
 		s.PrintResults(),
 		s.FindSettings.PrintUsage(),
 		s.FindSettings.PrintVersion(),
