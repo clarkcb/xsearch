@@ -16,7 +16,7 @@ from datetime import datetime
 from io import StringIO
 from typing import Any
 
-from pyfind import common, ArgToken, ArgTokenType, ArgTokenizer
+from pyfind import common, ArgToken, ArgTokenType, ArgTokenizer, FindException
 
 from .searchexception import SearchException
 from .searchoption import SearchOption
@@ -81,6 +81,9 @@ class SearchOptions:
                 settings.set_property('print_lines', not b),
             'noprintmatches':
                 lambda b, settings:
+                settings.set_property('print_matches', not b),
+            'noprintresults':
+                lambda b, settings:
                 settings.set_property('print_results', not b),
             'norecursive':
                 lambda b, settings:
@@ -98,6 +101,9 @@ class SearchOptions:
                 lambda b, settings:
                 settings.set_property('print_lines', b),
             'printmatches':
+                lambda b, settings:
+                settings.set_property('print_matches', b),
+            'printresults':
                 lambda b, settings:
                 settings.set_property('print_results', b),
             'recursive':
@@ -304,13 +310,19 @@ class SearchOptions:
 
     def update_settings_from_arg_dict(self, settings: SearchSettings, arg_dict: dict[str, Any]):
         """Update settings from a dict of args"""
-        arg_tokens = self.arg_tokenizer.tokenize_arg_dict(arg_dict)
-        self.update_settings_from_arg_tokens(settings, arg_tokens)
+        try:
+            arg_tokens = self.arg_tokenizer.tokenize_arg_dict(arg_dict)
+            self.update_settings_from_arg_tokens(settings, arg_tokens)
+        except FindException as e:
+            raise SearchException(e)
 
     def update_settings_from_json(self, settings: SearchSettings, json_str: str):
         """Update settings from a JSON string"""
-        arg_tokens = self.arg_tokenizer.tokenize_json(json_str)
-        self.update_settings_from_arg_tokens(settings, arg_tokens)
+        try:
+            arg_tokens = self.arg_tokenizer.tokenize_json(json_str)
+            self.update_settings_from_arg_tokens(settings, arg_tokens)
+        except FindException as e:
+            raise SearchException(e)
 
     def search_settings_from_json(self, json_str: str) -> SearchSettings:
         """Read settings from a JSON string"""
@@ -320,8 +332,11 @@ class SearchOptions:
 
     def update_settings_from_file(self, settings: SearchSettings, file_path: str):
         """Update settings from a JSON file"""
-        arg_tokens = self.arg_tokenizer.tokenize_file(file_path)
-        self.update_settings_from_arg_tokens(settings, arg_tokens)
+        try:
+            arg_tokens = self.arg_tokenizer.tokenize_file(file_path)
+            self.update_settings_from_arg_tokens(settings, arg_tokens)
+        except FindException as e:
+            raise SearchException(e)
 
     def search_settings_from_file(self, file_path: str) -> SearchSettings:
         """Read settings from a JSON file"""
@@ -331,8 +346,11 @@ class SearchOptions:
 
     def update_settings_from_args(self, settings: SearchSettings, args: list[str]):
         """Update settings from a given list of args"""
-        arg_tokens = self.arg_tokenizer.tokenize_args(args)
-        self.update_settings_from_arg_tokens(settings, arg_tokens)
+        try:
+            arg_tokens = self.arg_tokenizer.tokenize_args(args)
+            self.update_settings_from_arg_tokens(settings, arg_tokens)
+        except FindException as e:
+            raise SearchException(e)
 
     def search_settings_from_args(self, args: list[str]) -> SearchSettings:
         """Read settings from a given list of args"""

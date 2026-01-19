@@ -69,6 +69,7 @@ class SearchResultFormatter(object):
         self.file_formatter = FileResultFormatter(settings)
         if settings.colorize:
             self.format_line = self.__format_line_with_color
+            self.format_match = self.__format_match_with_color
 
     def __format_line_with_color(self, line: str) -> str:
         """format a line, highlighting matches with color"""
@@ -86,6 +87,16 @@ class SearchResultFormatter(object):
            redefined to point to __format_line_with_color() if settings
            require colorization"""
         return str(line)
+
+    def __format_match_with_color(self, match: str) -> str:
+        """format a match, highlighting with color"""
+        return FileResultFormatter.colorize(match, 0, len(match))
+
+    def format_match(self, match: str) -> str:
+        """format a match, just returns the match by default but can be
+           redefined to point to __format_match_with_color() if settings
+           require colorization"""
+        return str(match)
 
     def __format_matching_line(self, result: SearchResult) -> str:
         if not result.line or not result.line.strip():

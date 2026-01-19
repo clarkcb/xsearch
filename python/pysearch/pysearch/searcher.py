@@ -751,7 +751,11 @@ def get_matching_lines(search_results: list[SearchResult], settings: SearchSetti
     lines = [r.line.lstrip() for r in search_results if r.line]
     if settings.unique_lines:
         lines = list(set(lines))
-    return list(sorted(lines, key=lambda s: s.upper()))
+    if settings.sort_case_insensitive:
+        lines = list(sorted(lines, key=lambda s: s.upper()))
+    else:
+        lines = list(sorted(lines))
+    return lines
 
 
 def print_search_lines_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
@@ -768,3 +772,31 @@ def print_search_lines_results(search_results: list[SearchResult], formatter: Se
             log(formatter.format_line(line))
     else:
         log('\nMatching lines: 0')
+
+
+def get_matches(search_results: list[SearchResult], settings: SearchSettings) -> list[str]:
+    """Get list of matches (unique if settings.unique_lines)"""
+    matches = [r.line[r.match_start_index-1:r.match_end_index-1] for r in search_results if r.line]
+    if settings.unique_lines:
+        matches = list(set(matches))
+    if settings.sort_case_insensitive:
+        matches = list(sorted(matches, key=lambda s: s.upper()))
+    else:
+        matches = list(sorted(matches))
+    return matches
+
+
+def print_search_matches_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
+    """Print the matches results"""
+    matches = get_matches(search_results, formatter.settings)
+    if matches:
+        match_len = len(matches)
+        if formatter.settings.unique_lines:
+            msg = f'\nUnique matches ({match_len}):'
+        else:
+            msg = f'\nMatches ({match_len}):'
+        log(msg)
+        for m in matches:
+            log(formatter.format_match(m))
+    else:
+        log('\nMatches: 0')

@@ -27,8 +27,8 @@ class SearchSettings(FindSettings):
         'first_match', 'in_lines_after_patterns', 'in_lines_before_patterns',
         'line_color', 'lines_after', 'lines_after_to_patterns', 'lines_after_until_patterns',
         'lines_before', 'max_line_length', 'multi_line_search', 'out_lines_after_patterns',
-        'out_lines_before_patterns', 'print_lines', 'print_results', 'search_archives',
-        'search_patterns', 'text_file_encoding', 'unique_lines'
+        'out_lines_before_patterns', 'print_lines', 'print_matches', 'print_results',
+        'search_archives', 'search_patterns', 'text_file_encoding', 'unique_lines'
     ]
 
     def add_strs_to_set(self, strs: list[str] | set[str] | str, set_name: str):
@@ -80,6 +80,7 @@ class SearchSettings(FindSettings):
                  print_dirs: bool = False,
                  print_files: bool = False,
                  print_lines: bool = False,
+                 print_matches: bool = False,
                  print_results: bool = True,
                  print_usage: bool = False,
                  print_version: bool = False,
@@ -150,6 +151,7 @@ class SearchSettings(FindSettings):
         self.out_lines_before_patterns: PatternSet = \
             out_lines_before_patterns if out_lines_before_patterns else set()
         self.print_lines = print_lines
+        self.print_matches = print_matches
         self.print_results = print_results
         self.search_patterns = search_patterns if search_patterns else set()
         self.search_archives = search_archives

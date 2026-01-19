@@ -15,8 +15,8 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pyfind import FileType, FileResult
-from pysearch import Color, SearchResult, SearchResultFormatter, SearchSettings, XSEARCHPATH
+from pyfind import Color, ConsoleColor, FileType, FileResult
+from pysearch import SearchResult, SearchResultFormatter, SearchSettings, XSEARCHPATH
 
 
 def get_formatter(colorize: bool = True):
@@ -55,7 +55,7 @@ class SearchResultTest(unittest.TestCase):
     def test_single_line_longer_than_max_length_search_result(self):
         formatter = SearchResultFormatter(SearchSettings(colorize=False, max_line_length=100))
         pattern = 'maxlen'
-        file_name = 'maxlen.txt'
+        file_name = './maxlen.txt'
         path = Path('.', file_name)
         fr = FileResult(path=path, file_type=FileType.TEXT)
         line_num = 1
@@ -86,7 +86,7 @@ class SearchResultTest(unittest.TestCase):
     def test_single_line_longer_colorize_search_result(self):
         formatter = SearchResultFormatter(SearchSettings(colorize=True, max_line_length=100))
         pattern = 'maxlen'
-        file_name = 'maxlen.txt'
+        file_name = './maxlen.txt'
         path = Path('.', file_name)
         fr = FileResult(path=path, file_type=FileType.TEXT)
         line_num = 10
@@ -106,7 +106,7 @@ class SearchResultTest(unittest.TestCase):
                                      lines_before=lines_before,
                                      lines_after=lines_after)
         expected_line = '...89012345678901234567890123456789012345678901' + \
-                        Color.GREEN + 'maxlen' + Color.RESET + \
+                        ConsoleColor.GREEN + 'maxlen' + ConsoleColor.RESET + \
                         '89012345678901234567890123456789012345678901...'
         expected_output = \
             f'{file_name}: {line_num}: ' + \

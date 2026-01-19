@@ -95,7 +95,7 @@ class SearchOptionsTest(unittest.TestCase):
 
     def test_settings_from_json(self):
         settings = SearchSettings()
-        json = '''{
+        json_str = '''{
   "path": "~/src/xsearch/",
   "in-ext": ["js","ts"],
   "out-dirpattern": ["node_module", "dist"],
@@ -107,7 +107,7 @@ class SearchOptionsTest(unittest.TestCase):
   "allmatches": false,
   "includehidden": true
 }'''
-        self.search_options.update_settings_from_json(json, settings)
+        self.search_options.update_settings_from_json(settings, json_str)
         self.assertEqual(1, len(settings.paths))
         self.assertIn(Path('~/src/xsearch/'), settings.paths)
         for x in {'js', 'ts'}:

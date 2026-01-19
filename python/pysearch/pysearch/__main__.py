@@ -15,7 +15,8 @@ from pyfind.common import log, log_error
 
 from . import VERSION
 from .searcher import (Searcher, print_search_results, print_search_dir_results,
-                       print_search_file_results, print_search_lines_results)
+                       print_search_file_results, print_search_lines_results,
+                       print_search_matches_results)
 from .searchexception import SearchException
 from .searchoptions import SearchOptions
 from .searchresult import SearchResultFormatter
@@ -64,6 +65,9 @@ async def main():
 
         if settings.print_lines:
             print_search_lines_results(results, formatter)
+
+        if settings.print_matches:
+            print_search_matches_results(results, formatter)
 
     except AssertionError as e:
         log('')
