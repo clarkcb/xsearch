@@ -280,16 +280,21 @@ type Searcher (settings : SearchSettings) =
         let files = results |> List.map _.File |> List.distinct
         this.Finder.PrintMatchingFiles files formatter.FileFormatter
 
-    member this.GetMatchingLines (results : SearchResult.t list) : string list = 
+    member this.GetMatchingLines (results : SearchResult.t list) : string list =
+        let sortBy =
+            if settings.SortCaseInsensitive then
+                (fun (s : string) -> s.ToUpper())
+            else
+                (fun (s : string) -> s)
         let lines =
             results
             |> Seq.map (fun r -> r.Line.Trim())
         if settings.UniqueLines then
-            Seq.sortBy (fun (s : string) -> s.ToUpper()) lines
+            Seq.sortBy sortBy lines
             |> Seq.distinct
             |> List.ofSeq
         else
-            Seq.sortBy (fun (s : string) -> s.ToUpper()) lines
+            Seq.sortBy sortBy lines
             |> List.ofSeq
 
     member this.PrintMatchingLines (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit = 
@@ -301,6 +306,35 @@ type Searcher (settings : SearchSettings) =
             Logger.Log $"\n%s{title} (%d{lines.Length}):"
             for l in lines do
                 printfn $"%s{formatter.FormatLine(l)}"
+        else
+            Logger.Log $"\n%s{title}: 0"
+
+    member this.GetMatches (results : SearchResult.t list) : string list = 
+        let sortBy =
+            if settings.SortCaseInsensitive then
+                (fun (s : string) -> s.ToUpper())
+            else
+                (fun (s : string) -> s)
+        let matches =
+            results
+            |> Seq.map (fun r -> r.Line.Substring(r.MatchStartIndex - 1, r.MatchEndIndex - r.MatchStartIndex))
+        if settings.UniqueLines then
+            Seq.sortBy sortBy matches
+            |> Seq.distinct
+            |> List.ofSeq
+        else
+            Seq.sortBy sortBy matches
+            |> List.ofSeq
+
+    member this.PrintMatches (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit = 
+        let matches = this.GetMatches results
+        let title =
+            if settings.UniqueLines then "Unique matches"
+            else "Matches"
+        if matches.Length > 0 then
+            Logger.Log $"\n%s{title} (%d{matches.Length}):"
+            for m in matches do
+                printfn $"%s{formatter.FormatMatch(m)}"
         else
             Logger.Log $"\n%s{title}: 0"
 

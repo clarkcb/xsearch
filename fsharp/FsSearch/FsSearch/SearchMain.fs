@@ -32,6 +32,9 @@ module Main =
         if settings.PrintLines then
             searcher.PrintMatchingLines results formatter
 
+        if settings.PrintMatches then
+            searcher.PrintMatches results formatter
+
 
     [<EntryPoint>]
     let Main(args : string[]) = 

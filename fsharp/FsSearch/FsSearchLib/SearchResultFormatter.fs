@@ -101,6 +101,17 @@ type SearchResultFormatter (settings : SearchSettings) =
     member this.FormatLine (line : string) : string =
         this.FormatLineFun line
 
+    member this.FormatMatchWithColor (m : string) : string =
+        ColorUtil.Colorize m 0 m.Length settings.LineColor
+
+    member this.FormatMatchFun =
+        if settings.Colorize
+        then this.FormatMatchWithColor
+        else fun (m : string) -> m
+
+    member this.FormatMatch (m : string) : string =
+        this.FormatMatchFun m
+
     member this.Format (result : SearchResult.t) : string =
         if (not (List.isEmpty result.LinesBefore)) || (not (List.isEmpty result.LinesAfter)) then
             MultiLineFormat result

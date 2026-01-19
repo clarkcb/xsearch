@@ -26,13 +26,15 @@ module SearchOptions =
             ("noprintdirs", (fun (b : bool) (settings : SearchSettings) -> settings.PrintDirs <- not b));
             ("noprintfiles", (fun (b : bool) (settings : SearchSettings) -> settings.PrintFiles <- not b));
             ("noprintlines", (fun (b : bool) (settings : SearchSettings) -> settings.PrintLines <- not b));
-            ("noprintmatches", (fun (b : bool) (settings : SearchSettings) -> settings.PrintResults <- not b));
+            ("noprintmatches", (fun (b : bool) (settings : SearchSettings) -> settings.PrintMatches <- not b));
+            ("noprintresults", (fun (b : bool) (settings : SearchSettings) -> settings.PrintResults <- not b));
             ("norecursive", (fun (b : bool) (settings : SearchSettings) -> settings.Recursive <- not b));
             ("nosearcharchives", (fun (b : bool) (settings : SearchSettings) -> settings.SearchArchives <- not b));
             ("printdirs", (fun (b : bool) (settings : SearchSettings) -> settings.PrintDirs <- b));
             ("printfiles", (fun (b : bool) (settings : SearchSettings) -> settings.PrintFiles <- b));
             ("printlines", (fun (b : bool) (settings : SearchSettings) -> settings.PrintLines <- b));
-            ("printmatches", (fun (b : bool) (settings : SearchSettings) -> settings.PrintResults <- b));
+            ("printmatches", (fun (b : bool) (settings : SearchSettings) -> settings.PrintMatches <- b));
+            ("printresults", (fun (b : bool) (settings : SearchSettings) -> settings.PrintResults <- b));
             ("recursive", (fun (b : bool) (settings : SearchSettings) -> settings.Recursive <- b));
             ("searcharchives", (fun (b : bool) (settings : SearchSettings) -> settings.SearchArchives <- b));
             ("sort-ascending", (fun (b : bool) (settings : SearchSettings) -> settings.SortDescending <- not b));

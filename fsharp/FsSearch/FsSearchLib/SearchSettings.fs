@@ -25,6 +25,7 @@ type SearchSettings() =
     member val OutLinesAfterPatterns : Regex list = [] with get, set
     member val OutLinesBeforePatterns : Regex list = [] with get, set
     member val PrintLines : bool = false with get, set
+    member val PrintMatches : bool = false with get, set
     member val PrintResults : bool = false with get, set
     member val SearchArchives : bool = false with get, set
     member val SearchPatterns : Regex list = [] with get, set
@@ -72,6 +73,7 @@ type SearchSettings() =
             $", PrintDirs: %b{this.PrintDirs}";
             $", PrintFiles: %b{this.PrintFiles}";
             $", PrintLines: %b{this.PrintLines}";
+            $", PrintMatches: %b{this.PrintMatches}";
             $", PrintResults: %b{this.PrintResults}";
             $", PrintUsage: %b{this.PrintUsage}";
             $", PrintVersion: %b{this.PrintVersion}";
