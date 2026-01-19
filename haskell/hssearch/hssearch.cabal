@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      HsSearch.ByteStringUtil
       HsSearch.Config
       HsSearch.Paths_hssearch
       HsSearch.Searcher

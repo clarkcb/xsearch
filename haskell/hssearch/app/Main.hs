@@ -7,7 +7,8 @@ import HsFind.ConsoleColor (boldRed, consoleReset)
 
 import HsSearch.SearchOptions
 import HsSearch.Searcher (doSearch, formatSearchResultMatchingDirs, formatSearchResultMatchingFiles,
-                          formatSearchResultMatchingLines, formatSearchResults, validateSearchSettings)
+                          formatSearchResultMatchingLines, formatSearchResultMatches, formatSearchResults,
+                          validateSearchSettings)
 import HsSearch.SearchSettings
 
 
@@ -67,5 +68,8 @@ main = do
                              else ""
                     logMsg $ if printLines settings
                              then formatSearchResultMatchingLines settings searchResults
+                             else ""
+                    logMsg $ if printMatches settings
+                             then formatSearchResultMatches settings searchResults
                              else ""
                     logMsg ""

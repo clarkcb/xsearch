@@ -70,6 +70,7 @@ data SearchSettings = SearchSettings {
                                      , printDirs :: Bool
                                      , printFiles :: Bool
                                      , printLines :: Bool
+                                     , printMatches :: Bool
                                      , printResults :: Bool
                                      , printUsage :: Bool
                                      , printVersion :: Bool
@@ -128,6 +129,7 @@ defaultSearchSettings = SearchSettings {
                                        , printDirs=False
                                        , printFiles=False
                                        , printLines=False
+                                       , printMatches=False
                                        , printResults=False
                                        , printUsage=False
                                        , printVersion=False
@@ -231,6 +233,7 @@ searchSettingsToString settings =
   ", printDirs=" ++ show (printDirs settings) ++
   ", printFiles=" ++ show (printFiles settings) ++
   ", printLines=" ++ show (printLines settings) ++
+  ", printMatches=" ++ show (printMatches settings) ++
   ", printUsage=" ++ show (printUsage settings) ++
   ", printResults=" ++ show (printResults settings) ++
   ", printVersion=" ++ show (printVersion settings) ++
@@ -265,9 +268,9 @@ validKeys = ["allmatches", "archivesonly", "colorize", "debug", "encoding", "exc
              "nosearcharchives", "out-archiveext", "out-archivefilepattern", "out-dirpattern",
              "out-ext", "out-filepattern", "out-filetype", "out-linesafterpattern",
              "out-linesbeforepattern", "path", "printdirs", "printfiles", "printlines",
-             "printmatches", "recursive", "searchpattern", "searcharchives", "settings-file",
-             "sort-by", "sort-ascending", "sort-casesensitive", "sort-caseinsensitive",
-             "sort-descending", "uniquelines", "verbose", "version"]
+             "printmatches", "printresults", "recursive", "searchpattern", "searcharchives",
+             "settings-file", "sort-by", "sort-ascending", "sort-casesensitive",
+             "sort-caseinsensitive", "sort-descending", "uniquelines", "verbose", "version"]
 
 -- for now, we do not have custom JSON parsing for boolean fields with "no-" counterparts,
 -- the user should just use the positive counterpart with true/false
@@ -319,7 +322,8 @@ instance FromJSON SearchSettings where
     printDirs <- obj .:? "printdirs" .!= False
     printFiles <- obj .:? "printfiles" .!= False
     printLines <- obj .:? "printlines" .!= False
-    printResults <- obj .:? "printmatches" .!= False
+    printMatches <- obj .:? "printmatches" .!= False
+    printResults <- obj .:? "printresults" .!= False
     printUsage <- obj .:? "help" .!= False
     printVersion <- parsePrintVersion obj
     recursive <- obj .:? "recursive" .!= True
@@ -370,8 +374,9 @@ instance FromJSON SearchSettings where
     , printDirs=printDirs
     , printFiles=printFiles
     , printLines=printLines
-    , printUsage=printUsage
+    , printMatches=printMatches
     , printResults=printResults
+    , printUsage=printUsage
     , printVersion=printVersion
     , recursive=recursive
     , searchArchives=searchArchives
@@ -508,6 +513,7 @@ mergeSearchSettings old new = SearchSettings
   , printDirs = printDirs new || printDirs old
   , printFiles = printFiles new || printFiles old
   , printLines = printLines new || printLines old
+  , printMatches = printMatches new || printMatches old
   , printResults = printResults new || printResults old
   , printUsage = printUsage new || printUsage old
   , printVersion = printVersion new || printVersion old

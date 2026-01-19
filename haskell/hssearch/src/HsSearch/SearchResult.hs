@@ -1,6 +1,7 @@
 module HsSearch.SearchResult
   ( SearchResult(..)
   , blankSearchResult
+  , formatBS
   , formatBSLine
   , formatLine
   , formatSearchResult
@@ -15,8 +16,10 @@ import Data.Char (isSpace)
 import Data.List (sortBy)
 import Text.Regex.PCRE
 
-import HsFind.ConsoleColor (Color(..), colorToConsoleColor, consoleGreen, consoleReset)
-import HsFind.FileResult (FileResult(..), blankFileResult, colorizeString, formatFilePath, getCompareFileResultsFunc)
+import HsFind.ConsoleColor (Color(..), colorizeString, colorToConsoleColor, consoleGreen, consoleReset)
+import HsFind.FileResult (FileResult(..), blankFileResult, formatFilePath, getCompareFileResultsFunc)
+import HsFind.StringUtil (trimLeadingWhitespace, trimTrailingWhitespace)
+import HsSearch.ByteStringUtil (sliceByteString)
 import HsSearch.SearchSettings
 
 data SearchResult = SearchResult {
@@ -57,16 +60,28 @@ formatSearchResult settings result = if lineNum result == 0
 searchResultPath :: SearchResult -> FilePath
 searchResultPath result = fileResultPath (fileResult result)
 
-subByteString :: Int -> Int -> B.ByteString -> B.ByteString
-subByteString si ei bs = B.take (ei - si) (B.drop si bs)
+-- colorizeBS :: Int -> Int -> B.ByteString -> B.ByteString
+-- colorizeBS si ei bs =
+--   BC.concat [subByteString 0 si bs,
+--              BC.pack consoleGreen,
+--              subByteString si ei bs,
+--              BC.pack consoleReset,
+--              subByteString ei (BC.length bs) bs]
 
-colorizeBS :: Int -> Int -> B.ByteString -> B.ByteString
-colorizeBS si ei bs =
-  BC.concat [subByteString 0 si bs,
+colorizeBS :: B.ByteString -> Int -> Int -> B.ByteString
+colorizeBS bs startIdx len =
+  BC.concat [sliceByteString 0 startIdx bs,
              BC.pack consoleGreen,
-             subByteString si ei bs,
+             sliceByteString startIdx endIdx bs,
              BC.pack consoleReset,
-             subByteString ei (BC.length bs) bs]
+             sliceByteString endIdx (BC.length bs) bs]
+  where endIdx = startIdx + len
+
+formatBS :: SearchSettings -> B.ByteString -> B.ByteString
+formatBS settings bs =
+  if colorize settings
+  then colorizeBS bs 0 (BC.length bs)
+  else bs
 
 formatMatchingLine :: SearchSettings -> SearchResult -> String
 formatMatchingLine settings result =
@@ -96,8 +111,8 @@ formatMatchingLine settings result =
         trimWhitespace :: B.ByteString -> B.ByteString
         trimWhitespace = B.drop leadingSpaceCount
         doFormatLine :: B.ByteString -> String
-        doFormatLine bs | colorize settings = BC.unpack (colorizeBS msi mei (subByteString lsi lei (trimWhitespace bs)))
-                        | otherwise = BC.unpack (subByteString lsi lei (trimWhitespace bs))
+        doFormatLine bs | colorize settings = BC.unpack (colorizeBS (sliceByteString lsi lei (trimWhitespace bs)) msi matchLength)
+                        | otherwise = BC.unpack (sliceByteString lsi lei (trimWhitespace bs))
 
 colorizeLine :: SearchSettings -> String -> String
 colorizeLine settings line =
@@ -118,7 +133,7 @@ colorizeBSLine settings line =
   case filter (\p -> line =~ p :: Bool) (searchPatterns settings) of
     [] -> line
     (p:_) -> case getAllMatches (line =~ p) :: [(Int, Int)] of
-      ((mStart, mLen):_) -> colorizeBS mStart mLen line
+      ((mStart, mLen):_) -> colorizeBS line mStart mLen
       [] -> line
 
 formatBSLine :: SearchSettings -> B.ByteString -> B.ByteString
@@ -145,12 +160,12 @@ formatMultiLine settings result =
   replicate 80 '-' ++ "\n" ++
   unlines (zipWith (curry formatLine) beforeLineNums resultBeforeLines) ++
   "> " ++ padNumString (show resultLineNum) ++ " | " ++
-  (rstrip . BC.unpack) (condColorize (line result)) ++ "\n" ++
+  (trimTrailingWhitespace . BC.unpack) (condColorize (line result)) ++ "\n" ++
   unlines (zipWith (curry formatLine) afterLineNums resultAfterLines)
   where formattedFilePath = formatFilePath (toFindSettings settings) (searchResultPath result)
         resultLineNum = lineNum result
-        resultBeforeLines = map (rstrip . BC.unpack) (beforeLines result)
-        resultAfterLines = map (rstrip . BC.unpack) (afterLines result)
+        resultBeforeLines = map (trimTrailingWhitespace . BC.unpack) (beforeLines result)
+        resultAfterLines = map (trimTrailingWhitespace . BC.unpack) (afterLines result)
         maxNumWidth = numWidth (resultLineNum + length resultAfterLines)
         numWidth :: Int -> Int
         numWidth = recNumWidth 1 10
@@ -164,14 +179,8 @@ formatMultiLine settings result =
         formatLine (n,l) = "  " ++ padNumString (show n) ++ " | " ++ l
         condColorize :: B.ByteString -> B.ByteString
         condColorize bs = if colorize settings
-                          then colorizeBS (matchStartIndex result - 1) (matchEndIndex result - 1) bs
+                          then colorizeBS bs (matchStartIndex result - 1) (matchEndIndex result - 1)
                           else bs
-
-rstrip :: String -> String
-rstrip = reverse . trimLeadingWhitespace . reverse
-
-trimLeadingWhitespace :: String -> String
-trimLeadingWhitespace = dropWhile isSpace
 
 compareBySearchResultFields :: SearchResult -> SearchResult -> Ordering
 compareBySearchResultFields sr1 sr2 =

@@ -5,6 +5,7 @@ module HsSearch.Searcher
     , formatSearchResultMatchingDirs
     , formatSearchResultMatchingFiles
     , formatSearchResultMatchingLines
+    , formatSearchResultMatches
     , formatSearchResults
     , getSearchFiles
     , searchContents
@@ -28,6 +29,7 @@ import HsFind.FileTypes
 import HsFind.FileUtil
 import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 
+import HsSearch.ByteStringUtil (sliceByteString, trimLeftByteString, trimRightByteString)
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
@@ -326,10 +328,13 @@ doSortCaseInsensitive = sortBy compareCaseInsensitive
   where compareCaseInsensitive a b = byteStringToUpper a `compare` byteStringToUpper b
 
 getMatchingLines :: SearchSettings -> [SearchResult] -> [B.ByteString]
-getMatchingLines settings results | unique = (doSortCaseInsensitive . nub . map trimLine) results
-                                  | otherwise = (doSortCaseInsensitive . map trimLine) results
+getMatchingLines settings results | unique = (doSort . nub . map trimLine) results
+                                  | otherwise = (doSort . map trimLine) results
   where unique = uniqueLines settings
-        trimLine = BC.dropWhile isSpace . line
+        doSort = if sortCaseInsensitive settings
+                   then doSortCaseInsensitive
+                   else sort
+        trimLine = trimLeftByteString . line
 
 formatSearchResultMatchingLines :: SearchSettings -> [SearchResult] -> String
 formatSearchResultMatchingLines settings results = 
@@ -337,5 +342,28 @@ formatSearchResultMatchingLines settings results =
   BC.unpack (BC.intercalate (BC.pack "\n") matchingLines) ++ "\n"
   where matchingLines = map (formatBSLine settings) $ getMatchingLines settings results
         hdrText = if uniqueLines settings
-                  then "Unique lines with matches"
-                  else "Lines with matches"
+                  then "Unique matching lines"
+                  else "Matching lines"
+
+getMatches :: SearchSettings -> [SearchResult] -> [B.ByteString]
+getMatches settings results | unique = (doSort . nub . map getMatchString) results
+                            | otherwise = (doSort . map getMatchString) results
+  where unique = uniqueLines settings
+        doSort = if sortCaseInsensitive settings
+                   then doSortCaseInsensitive
+                   else sort
+        getMatchString r =
+          let l = line r
+              msi = matchStartIndex r - 1
+              mei = matchEndIndex r - 1
+              m = sliceByteString msi mei l
+          in m
+
+formatSearchResultMatches :: SearchSettings -> [SearchResult] -> String
+formatSearchResultMatches settings results = 
+  "\n" ++ hdrText ++ " (" ++ show (length matches) ++ "):\n" ++
+  BC.unpack (BC.intercalate (BC.pack "\n") matches) ++ "\n"
+  where matches = map (formatBS settings) $ getMatches settings results
+        hdrText = if uniqueLines settings
+                  then "Unique matches"
+                  else "Matches"
