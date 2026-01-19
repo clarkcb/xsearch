@@ -115,6 +115,16 @@ class SearchResultFormatter(val settings: SearchSettings) {
         { line: String -> line }
     }
 
+    private fun formatMatchWithColor(match: String): String {
+        return colorize(match, 0, match.length, settings.lineColor)
+    }
+
+    val formatMatch = if (settings.colorize) {
+        this::formatMatchWithColor
+    } else {
+        { match: String -> match }
+    }
+
     fun format(result: SearchResult): String {
         return if (settings.linesBefore > 0 || settings.linesAfter > 0) {
             multiLineFormat(result)
@@ -163,13 +173,32 @@ class SearchResultFormatter(val settings: SearchSettings) {
     }
 
     private fun formatMatchingLine(result: SearchResult): String {
-        var formatted = result.line.trim()
+        var formatted = result.line
+        var matchStartIndex = result.matchStartIndex - 1
+        var matchEndIndex = result.matchEndIndex - 1
+        val matchLength = matchEndIndex - matchStartIndex
+
+        if (matchLength > settings.maxLineLength) {
+            var prefix = ""
+            if (matchStartIndex > 2) {
+                prefix = "..."
+            }
+            matchEndIndex = matchStartIndex + settings.maxLineLength - 3 - prefix.length
+            formatted = prefix + result.line.substring(matchStartIndex, matchEndIndex) + "..."
+            if (settings.colorize) {
+                val colorStartIndex = prefix.length
+                val colorEndIndex = settings.maxLineLength - 3
+                formatted = colorize(formatted, colorStartIndex, colorEndIndex, settings.lineColor)
+            }
+            return formatted
+        }
+
+        formatted = result.line.trim()
         val leadingWhitespaceCount = result.line.trimEnd().length - formatted.length
         var formattedLength = formatted.length
         val maxLineEndIndex = formattedLength - 1
-        val matchLength = result.matchEndIndex - result.matchStartIndex
-        var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
-        var matchEndIndex = matchStartIndex + matchLength
+        matchStartIndex -= leadingWhitespaceCount
+        matchEndIndex = matchStartIndex + matchLength
 
         if (formattedLength > settings.maxLineLength) {
             var lineStartIndex = matchStartIndex

@@ -31,6 +31,9 @@ fun search(settings: SearchSettings) {
     if (settings.printLines) {
         searcher.printMatchingLines(results, formatter)
     }
+    if (settings.printMatches) {
+        searcher.printMatches(results, formatter)
+    }
 }
 
 fun main(args : Array<String>) {

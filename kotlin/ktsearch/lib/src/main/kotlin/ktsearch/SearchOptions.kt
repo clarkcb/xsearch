@@ -1,15 +1,8 @@
 package ktsearch
 
 import ktfind.*
-import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -53,13 +46,15 @@ class SearchOptions {
         "noprintdirs" to { b, ss -> ss.copy(printDirs = !b) },
         "noprintfiles" to { b, ss -> ss.copy(printFiles = !b) },
         "noprintlines" to { b, ss -> ss.copy(printLines = !b) },
-        "noprintmatches" to { b, ss -> ss.copy(printResults = !b) },
+        "noprintmatches" to { b, ss -> ss.copy(printMatches = !b) },
+        "noprintresults" to { b, ss -> ss.copy(printResults = !b) },
         "norecursive" to { b, ss -> ss.copy(recursive = !b) },
         "nosearcharchives" to { b, ss -> ss.copy(searchArchives = !b) },
         "printdirs" to { b, ss -> ss.copy(printDirs = b) },
         "printfiles" to { b, ss -> ss.copy(printFiles = b) },
         "printlines" to { b, ss -> ss.copy(printLines = b) },
-        "printmatches" to { b, ss -> ss.copy(printResults = b) },
+        "printmatches" to { b, ss -> ss.copy(printMatches = b) },
+        "printresults" to { b, ss -> ss.copy(printResults = b) },
         "recursive" to { b, ss -> ss.copy(recursive = b) },
         "searcharchives" to { b, ss -> ss.copy(searchArchives = b) },
         "sort-ascending" to { b, ss -> ss.copy(sortDescending = !b) },

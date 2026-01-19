@@ -13,10 +13,14 @@ import kotlin.streams.toList
 class Searcher(val settings: SearchSettings) {
     private val finder: Finder
     private var charset: Charset? = null
+    private var comparator: (String, String) -> Int = { s1: String, s2: String -> s1.compareTo(s2) }
 
     init {
         try {
             finder = Finder(settings.findSettings)
+            if (settings.sortCaseInsensitive) {
+                comparator = { s1: String, s2: String -> s1.uppercase().compareTo(s2.uppercase()) }
+            }
         } catch (e: FindException) {
             throw SearchException(e.message!!)
         }
@@ -418,8 +422,8 @@ class Searcher(val settings: SearchSettings) {
     fun printMatchingLines(results: List<SearchResult>, formatter: SearchResultFormatter) {
         val lines: List<String> =
             if (settings.uniqueLines) results.map { r -> r.line.trim() }.
-            distinct().sorted()
-            else results.map { r -> r.line.trim() }.sorted()
+            distinct().sortedWith(comparator)
+            else results.map { r -> r.line.trim() }.sortedWith(comparator)
         val hdr =
             if (settings.uniqueLines) "\nUnique matching lines"
             else "\nMatching lines"
@@ -429,6 +433,24 @@ class Searcher(val settings: SearchSettings) {
             log("$hdr (${lines.size}):")
             for (l in lines) {
                 log(formatter.formatLine(l))
+            }
+        }
+    }
+
+    fun printMatches(results: List<SearchResult>, formatter: SearchResultFormatter) {
+        val matches: List<String> =
+            if (settings.uniqueLines) results.map { r -> r.line.substring(r.matchStartIndex-1, r.matchEndIndex-1) }.
+            distinct().sortedWith(comparator)
+            else results.map { r -> r.line.substring(r.matchStartIndex-1, r.matchEndIndex-1) }.sortedWith(comparator)
+        val hdr =
+            if (settings.uniqueLines) "\nUnique matches"
+            else "\nMatches"
+        if (matches.isEmpty()) {
+            log("$hdr: 0")
+        } else {
+            log("$hdr (${matches.size}):")
+            for (m in matches) {
+                log(formatter.formatMatch(m))
             }
         }
     }

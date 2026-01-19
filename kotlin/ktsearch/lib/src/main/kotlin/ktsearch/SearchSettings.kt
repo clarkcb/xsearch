@@ -1,13 +1,11 @@
 package ktsearch
 
 import ktfind.Color
-import ktfind.ConsoleColor
 import ktfind.FileType
-import java.time.LocalDateTime
-
 import ktfind.FindSettings
 import ktfind.SortBy
 import java.nio.file.Path
+import java.time.LocalDateTime
 
 /**
  * @author cary on 7/23/16.
@@ -54,6 +52,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val printDirs: Boolean,
                           val printFiles: Boolean,
                           val printLines: Boolean,
+                          val printMatches: Boolean,
                           val printResults: Boolean,
                           val printUsage: Boolean,
                           val printVersion: Boolean,
@@ -150,6 +149,7 @@ fun getDefaultSettings() : SearchSettings {
         printDirs = false,
         printFiles = false,
         printLines = false,
+        printMatches = false,
         printResults = false,
         printUsage = false,
         printVersion = false,
