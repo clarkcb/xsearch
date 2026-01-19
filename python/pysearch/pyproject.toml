@@ -7,7 +7,7 @@ name = "pysearch"
 version = "0.1.0"
 dependencies = [
     "python-dateutil>=2.9.0",
-    "termcolor>=3.2.0",
+    "termcolor>=3.3.0",
     "wheel>=0.46.1",
     # this follows the example given by gemini but not sure if it's correct
     "pyfind @ {root:uri}/../xfind/python/pyfind/",

@@ -5,7 +5,7 @@ defmodule ExSearch.MixProject do
     [
       app: :exsearch,
       version: "0.1.0",
-      elixir: "~> 1.18",
+      elixir: "~> 1.19",
       escript: [main_module: ExSearch.Main, path: "./bin/exsearch"],
       # start_permanent: Mix.env() == :prod,
       start_permanent: true,
