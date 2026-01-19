@@ -517,7 +517,14 @@ public class Searcher
 		{
 			lines = new HashSet<string>(lines).ToList();
 		}
-		lines.Sort(new CaseInsensitiveComparer());
+		if (Settings.SortCaseInsensitive)
+		{
+			lines.Sort(new CaseInsensitiveComparer());
+		}
+		else
+		{
+			lines.Sort();
+		}
 		return lines;
 	}
 
@@ -529,6 +536,37 @@ public class Searcher
 		foreach (var m in matchingLines)
 		{
 			Logger.Log(formatter.FormatLine(m));
+		}
+	}
+
+	private List<string> GetMatches(IEnumerable<SearchResult> results)
+	{
+		var matches = results.Where(r => r.Line != null)
+			.Select(r => r.Line!.Substring(r.MatchStartIndex - 1, r.MatchEndIndex - r.MatchStartIndex))
+			.ToList();
+		if (Settings.UniqueLines)
+		{
+			matches = new HashSet<string>(matches).ToList();
+		}
+		if (Settings.SortCaseInsensitive)
+		{
+			matches.Sort(new CaseInsensitiveComparer());
+		}
+		else
+		{
+			matches.Sort();
+		}
+		return matches;
+	}
+
+	public void PrintMatches(IEnumerable<SearchResult> results, SearchResultFormatter formatter)
+	{
+		var matches = GetMatches(results).ToList();
+		var hdrText = Settings.UniqueLines ? "Unique matches" : "Matches";
+		Logger.Log($"\n{hdrText} ({matches.Count}):");
+		foreach (var m in matches)
+		{
+			Logger.Log(formatter.FormatMatch(m));
 		}
 	}
 }

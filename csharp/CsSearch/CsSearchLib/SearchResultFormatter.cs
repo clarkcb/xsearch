@@ -9,6 +9,7 @@ public class SearchResultFormatter
 	private SearchSettings Settings { get; }
 	public FileResultFormatter FileFormatter { get; }
 	private Func<string, string> FormatLineFunc { get; }
+	private Func<string, string> FormatMatchFunc { get; }
 
 	public SearchResultFormatter(SearchSettings settings)
 	{
@@ -17,10 +18,12 @@ public class SearchResultFormatter
 		if (settings.Colorize)
 		{
 			FormatLineFunc = FormatLineWithColor;
+			FormatMatchFunc = FormatMatchWithColor;
 		}
 		else
 		{
 			FormatLineFunc = line => line;
+			FormatMatchFunc = match => match;
 		}
 	}
 
@@ -40,6 +43,13 @@ public class SearchResultFormatter
 	}
 
 	public string FormatLine(string line) => FormatLineFunc(line);
+
+	private string FormatMatchWithColor(string match)
+	{
+		return Colorize(match, 0, match.Length, Settings.LineColor);
+	}
+
+	public string FormatMatch(string match) => FormatMatchFunc(match);
 
 	public string Format(SearchResult result)
 	{
@@ -123,7 +133,28 @@ public class SearchResultFormatter
 
 	private string FormatMatchingLine(SearchResult result)
 	{
+		if (string.IsNullOrWhiteSpace(result.Line)) return "";
+		
 		var formatted = result.Line!.TrimEnd();
+		var matchStartIndex = result.MatchStartIndex - 1;
+		var matchEndIndex = result.MatchEndIndex - 1;
+		var matchLength = matchEndIndex - matchStartIndex;
+		if (matchLength > Settings.MaxLineLength)
+		{
+			var prefix = "";
+			if (matchStartIndex > 2) prefix = "...";
+			matchEndIndex = matchStartIndex + Settings.MaxLineLength - 3 - prefix.Length;
+			formatted = prefix + result.Line!.Substring(matchStartIndex, matchEndIndex) + "...";
+			if (Settings.Colorize)
+			{
+				var colorStartIndex = prefix.Length;
+				var colorEndIndex = Settings.MaxLineLength - 3;
+				formatted = Colorize(formatted, colorStartIndex, colorEndIndex, Settings.LineColor);
+			}
+
+			return formatted;
+		}
+
 		var leadingWhitespaceCount = 0;
 		while (char.IsWhiteSpace(formatted[leadingWhitespaceCount]))
 		{
@@ -132,9 +163,8 @@ public class SearchResultFormatter
 		formatted = formatted.Trim();
 		var formattedLength = formatted.Length;
 		var maxLineEndIndex = formattedLength - 1;
-		var matchLength = result.MatchEndIndex - result.MatchStartIndex;
-		var matchStartIndex = result.MatchStartIndex - 1 - leadingWhitespaceCount;
-		var matchEndIndex = matchStartIndex + matchLength;
+		matchStartIndex = result.MatchStartIndex - 1 - leadingWhitespaceCount;
+		matchEndIndex = matchStartIndex + matchLength;
 
 		if (formattedLength > Settings.MaxLineLength)
 		{

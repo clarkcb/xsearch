@@ -30,13 +30,15 @@ public class SearchOptions
 			{ "noprintdirs", (b, settings) => settings.PrintDirs = !b },
 			{ "noprintfiles", (b, settings) => settings.PrintFiles = !b },
 			{ "noprintlines", (b, settings) => settings.PrintLines = !b },
-			{ "noprintmatches", (b, settings) => settings.PrintResults = !b },
+			{ "noprintmatches", (b, settings) => settings.PrintMatches = !b },
+			{ "noprintresults", (b, settings) => settings.PrintResults = !b },
 			{ "norecursive", (b, settings) => settings.Recursive = !b },
 			{ "nosearcharchives", (b, settings) => settings.SearchArchives = !b },
 			{ "printdirs", (b, settings) => settings.PrintDirs = b },
 			{ "printfiles", (b, settings) => settings.PrintFiles = b },
 			{ "printlines", (b, settings) => settings.PrintLines = b },
-			{ "printmatches", (b, settings) => settings.PrintResults = b },
+			{ "printmatches", (b, settings) => settings.PrintMatches = b },
+			{ "printresults", (b, settings) => settings.PrintResults = b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
 			{ "searcharchives", (b, settings) => settings.SearchArchives = b },
 			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },
@@ -283,8 +285,14 @@ public class SearchOptions
 
 	public void UpdateSettingsFromJson(SearchSettings settings, string jsonString)
 	{
-		var argTokens = ArgTokenizer.TokenizeJson(jsonString);
-		UpdateSettingsFromArgTokens(settings, argTokens);
+		try
+		{
+			var argTokens = ArgTokenizer.TokenizeJson(jsonString);
+			UpdateSettingsFromArgTokens(settings, argTokens);
+		} catch (FindException e)
+		{
+			throw new SearchException(e.Message);
+		}
 	}
 
 	public SearchSettings SettingsFromJson(string jsonString)
@@ -296,8 +304,14 @@ public class SearchOptions
 
 	public void UpdateSettingsFromFile(SearchSettings settings, string filePath)
 	{
-		var argTokens = ArgTokenizer.TokenizeFile(filePath);
-		UpdateSettingsFromArgTokens(settings, argTokens);
+		try
+		{
+			var argTokens = ArgTokenizer.TokenizeFile(filePath);
+			UpdateSettingsFromArgTokens(settings, argTokens);
+		} catch  (FindException e)
+		{
+			throw new SearchException(e.Message);
+		}
 	}
 
 	public SearchSettings SettingsFromFile(string filePath)
@@ -309,8 +323,15 @@ public class SearchOptions
 
 	public void UpdateSettingsFromArgs(SearchSettings settings, IEnumerable<string> args)
 	{
-		var argTokens = ArgTokenizer.TokenizeArgs(args);
-		UpdateSettingsFromArgTokens(settings, argTokens);
+		try
+		{
+			var argTokens = ArgTokenizer.TokenizeArgs(args);
+			UpdateSettingsFromArgTokens(settings, argTokens);
+		}
+		catch (FindException e)
+		{
+			throw new SearchException(e.Message);
+		}
 	}
 
 	public SearchSettings SettingsFromArgs(IEnumerable<string> args)

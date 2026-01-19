@@ -49,6 +49,11 @@ namespace CsSearch
 				{
 					searcher.PrintMatchingLines(results, formatter);
 				}
+
+				if (settings.PrintMatches)
+				{
+					searcher.PrintMatches(results, formatter);
+				}
 			}
 			catch (SearchException e)
 			{

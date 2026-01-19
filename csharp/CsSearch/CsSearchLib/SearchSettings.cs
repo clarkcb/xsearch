@@ -35,6 +35,7 @@ public class SearchSettings : FindSettings
 	public ISet<Regex> OutLinesAfterPatterns { get; }
 	public ISet<Regex> OutLinesBeforePatterns { get; }
 	public bool PrintLines { get; set; }
+	public bool PrintMatches { get; set; }
 	public bool PrintResults { get; set; }
 
 	public bool SearchArchives
@@ -68,6 +69,7 @@ public class SearchSettings : FindSettings
 		OutLinesAfterPatterns = new HashSet<Regex>();
 		OutLinesBeforePatterns = new HashSet<Regex>();
         PrintLines = false;
+        PrintMatches = false;
 		PrintResults = false;
 		SearchArchives = false;
 		SearchPatterns = new HashSet<Regex>();
@@ -185,6 +187,7 @@ public class SearchSettings : FindSettings
 		       ", PrintDirs: " + PrintDirs +
 		       ", PrintFiles: " + PrintFiles +
 		       ", PrintLines: " + PrintLines +
+		       ", PrintMatches: " + PrintMatches +
 		       ", PrintResults: " + PrintResults +
 		       ", PrintUsage: " + PrintUsage +
 		       ", PrintVersion: " + PrintVersion +
