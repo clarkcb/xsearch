@@ -162,6 +162,10 @@
     },
     {
       "long": "noprintmatches",
+      "desc": "Do not print matches after searching*"
+    },
+    {
+      "long": "noprintresults",
       "short": "P",
       "desc": "Suppress printing of search results to stdout"
     },
@@ -212,6 +216,10 @@
       "desc": "Specify pattern to filter the \"lines-before\" lines on"
     },
     {
+      "long": "path",
+      "desc": "A starting path for finding files"
+    },
+    {
       "long": "printdirs",
       "desc": "Print matching directories after searching"
     },
@@ -225,6 +233,10 @@
     },
     {
       "long": "printmatches",
+      "desc": "Print matches after searching"
+    },
+    {
+      "long": "printresults",
       "short": "p",
       "desc": "Print search results to stdout*"
     },
