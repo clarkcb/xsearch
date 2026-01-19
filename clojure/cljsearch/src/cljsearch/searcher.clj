@@ -23,7 +23,7 @@
         [cljfind.fileutil :only (get-parent-name path-str)]
         [cljfind.finder :only (find-files print-matching-dirs print-matching-files validate-settings)]
         [cljsearch.searchresult :only
-          (->SearchResult get-line-formatter get-search-result-formatter)]
+          (->SearchResult get-line-formatter get-match-formatter get-search-result-formatter)]
         [cljsearch.searchsettings]
         ))
 
@@ -331,19 +331,41 @@
     (print-matching-files files settings)))
 
 (defn get-search-results-matching-lines [results ^SearchSettings settings]
-  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) results))]
-    (if (:unique-lines settings)
-      (distinct lines)
-      lines)))
+  (let [lines (map #(str/trim (:line %)) results)]
+    (cond
+      (and (:unique-lines settings) (:sort-case-insensitive settings)) (sort-by str/upper-case (distinct lines))
+      (:unique-lines settings) (sort (distinct lines))
+      (:sort-case-insensitive settings) (sort-by str/upper-case lines)
+      :else (sort lines))))
 
 (defn print-search-results-matching-lines [results ^SearchSettings settings]
   (let [format-line (get-line-formatter settings)
         lines (get-search-results-matching-lines results settings)
         hdr (if (:unique-lines settings)
-              "\nUnique lines with matches"
-              "\nLines with matches")]
+              "\nUnique matching lines"
+              "\nMatching lines")]
     (if (> (count lines) 0)
       (let [hdr1 (format "%s (%d):" hdr (count lines))]
         (log-msg hdr1)
         (doseq [l lines] (log-msg (format-line l))))
+      (log-msg (format "%s: 0" hdr)))))
+
+(defn get-search-results-matches [results ^SearchSettings settings]
+  (let [matches (map #(subs (:line %) (dec (:matchstartindex %)) (dec (:matchendindex %))) results)]
+    (cond
+      (and (:unique-lines settings) (:sort-case-insensitive settings)) (sort-by str/upper-case (distinct matches))
+      (:unique-lines settings) (sort (distinct matches))
+      (:sort-case-insensitive settings) (sort-by str/upper-case matches)
+      :else (sort matches))))
+
+(defn print-search-results-matches [results ^SearchSettings settings]
+  (let [format-match (get-match-formatter settings)
+        matches (get-search-results-matches results settings)
+        hdr (if (:unique-lines settings)
+              "\nUnique matches"
+              "\nMatches")]
+    (if (> (count matches) 0)
+      (let [hdr1 (format "%s (%d):" hdr (count matches))]
+        (log-msg hdr1)
+        (doseq [m matches] (log-msg (format-match m))))
       (log-msg (format "%s: 0" hdr)))))

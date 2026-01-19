@@ -41,6 +41,17 @@
     (fn [^String line]
       line)))
 
+(defn colorize-match ^String [^String match ^SearchSettings settings]
+  (colorize-string match 0 (.length match) (:line-color settings)))
+
+(defn get-match-formatter [^SearchSettings settings]
+  (if
+    (:colorize settings)
+    (fn [^String match]
+      (colorize-match match settings))
+    (fn [^String match]
+      match)))
+
 (defn format-matching-line [^SearchResult r ^SearchSettings settings]
   (let [trimmed (str/trim (:line r))]
     (if (:colorize settings)

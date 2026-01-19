@@ -59,6 +59,7 @@
     ^Boolean print-dirs
     ^Boolean print-files
     ^Boolean print-lines
+    ^Boolean print-matches
     ^Boolean print-results
     ^Boolean print-usage
     ^Boolean print-version
@@ -117,6 +118,7 @@
    false     ; print-dirs
    false     ; print-files
    false     ; print-lines
+   false     ; print-matches
    true      ; print-results
    false     ; print-usage
    false     ; print-version

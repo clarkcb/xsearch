@@ -4,7 +4,8 @@
         [cljsearch.searcher :only
          (search print-search-results print-search-results-matching-dirs
                  print-search-results-matching-files
-                 print-search-results-matching-lines)]
+                 print-search-results-matching-lines
+                 print-search-results-matches)]
         [cljsearch.searchoptions :only (settings-from-args usage)]))
 
 (defn -main
@@ -21,7 +22,8 @@
               (if (:print-results settings) (print-search-results results settings))
               (if (:print-dirs settings) (print-search-results-matching-dirs results settings))
               (if (:print-files settings) (print-search-results-matching-files results settings))
-              (if (:print-lines settings) (print-search-results-matching-lines results settings)))
+              (if (:print-lines settings) (print-search-results-matching-lines results settings))
+              (if (:print-matches settings) (print-search-results-matches results settings)))
             (do
               (log-errors errs (:colorize settings))
               (usage)))))
