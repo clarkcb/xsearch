@@ -416,7 +416,11 @@ class Searcher {
     if (settings.uniqueLines) {
       lines = lines.toSet().toList();
     }
-    lines.sort((l1, l2) => l1.toLowerCase().compareTo(l2.toLowerCase()));
+    if (settings.sortCaseInsensitive) {
+      lines.sort((l1, l2) => l1.toUpperCase().compareTo(l2.toUpperCase()));
+    } else {
+      lines.sort();
+    }
     return lines;
   }
 
@@ -433,6 +437,42 @@ class Searcher {
       logMsg('$msg (${lines.length}):');
       for (var line in lines) {
         logMsg(formatter.formatLine(line));
+      }
+    } else {
+      logMsg('$msg: 0');
+    }
+  }
+
+  List<String> getMatches(List<SearchResult> results, SearchSettings settings) {
+    var matches = results
+        .where((r) => r.line != null)
+        .map((r) =>
+            r.line!.substring(r.matchStartIndex - 1, r.matchEndIndex - 1))
+        .toList();
+    if (settings.uniqueLines) {
+      matches = matches.toSet().toList();
+    }
+    if (settings.sortCaseInsensitive) {
+      matches.sort((m1, m2) => m1.toUpperCase().compareTo(m2.toUpperCase()));
+    } else {
+      matches.sort();
+    }
+    return matches;
+  }
+
+  void printMatches(
+      List<SearchResult> results, SearchResultFormatter formatter) {
+    var matches = getMatches(results, settings);
+    String msg;
+    if (settings.uniqueLines) {
+      msg = '\nUnique matches';
+    } else {
+      msg = '\nMatches';
+    }
+    if (matches.isNotEmpty) {
+      logMsg('$msg (${matches.length}):');
+      for (var m in matches) {
+        logMsg(formatter.formatMatch(m));
       }
     } else {
       logMsg('$msg: 0');

@@ -14,6 +14,7 @@ class SearchSettings extends FindSettings {
   var outLinesAfterPatterns = <Pattern>{};
   var outLinesBeforePatterns = <Pattern>{};
   bool printLines = false;
+  bool printMatches = false;
   bool printResults = false;
   bool searchArchives = false;
   var searchPatterns = <Pattern>{};
@@ -59,6 +60,7 @@ class SearchSettings extends FindSettings {
       ', printDirs: $printDirs'
       ', printFiles: $printFiles'
       ', printLines: $printLines'
+      ', printMatches: $printMatches'
       ', printResults: $printResults'
       ', printUsage: $printUsage'
       ', printVersion: $printVersion'

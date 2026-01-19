@@ -33,6 +33,10 @@ Future<void> search(SearchSettings settings, SearchOptions options) async {
       if (settings.printLines) {
         searcher.printMatchingLines(results, formatter);
       }
+
+      if (settings.printMatches) {
+        searcher.printMatches(results, formatter);
+      }
     }
   } on FormatException catch (e) {
     logError(e.message);

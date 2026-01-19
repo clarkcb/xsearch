@@ -29,11 +29,13 @@ class SearchResultFormatter {
   final SearchSettings settings;
   FileResultFormatter? fileFormatter;
   String Function(String) formatLine = (String line) => line;
+  String Function(String) formatMatch = (String match) => match;
 
   SearchResultFormatter(this.settings) {
     fileFormatter = FileResultFormatter(settings);
     if (settings.colorize) {
       formatLine = formatLineWithColor;
+      formatMatch = formatMatchWithColor;
     }
   }
 
@@ -53,6 +55,10 @@ class SearchResultFormatter {
       }
     }
     return formattedLine;
+  }
+
+  String formatMatchWithColor(String match) {
+    return colorize(match, 0, match.length, settings.lineColor);
   }
 
   int _lineNumPadding(SearchResult result) {
