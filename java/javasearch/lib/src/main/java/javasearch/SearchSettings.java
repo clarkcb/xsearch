@@ -34,6 +34,7 @@ public class SearchSettings extends FindSettings {
     private final Set<Pattern> outLinesAfterPatterns;
     private final Set<Pattern> outLinesBeforePatterns;
     private boolean printLines;
+    private boolean printMatches;
     private boolean printResults;
     private boolean searchArchives;
     private final Set<Pattern> searchPatterns;
@@ -55,6 +56,7 @@ public class SearchSettings extends FindSettings {
         this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.printLines = DefaultSearchSettings.PRINT_LINES;
+        this.printMatches = DefaultSearchSettings.PRINT_MATCHES;
         this.printResults = DefaultSearchSettings.PRINT_RESULTS;
         this.searchArchives = DefaultSearchSettings.SEARCH_ARCHIVES;
         this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -124,6 +126,14 @@ public class SearchSettings extends FindSettings {
 
     public final void setPrintLines(final boolean printLines) {
         this.printLines = printLines;
+    }
+
+    public boolean getPrintMatches() {
+        return printMatches;
+    }
+
+    public void setPrintMatches(boolean printMatches) {
+        this.printMatches = printMatches;
     }
 
     public boolean getPrintResults() {
@@ -270,6 +280,7 @@ public class SearchSettings extends FindSettings {
                 + ", printDirs: " + this.getPrintDirs()
                 + ", printFiles: " + this.getPrintFiles()
                 + ", printLines: " + this.getPrintLines()
+                + ", printMatches: " + this.getPrintMatches()
                 + ", printResults: " + this.getPrintResults()
                 + ", printUsage: " + this.getPrintUsage()
                 + ", printVersion: " + this.getPrintVersion()

@@ -66,6 +66,9 @@ public class JavaSearch {
                 if (settings.getPrintLines()) {
                     Searcher.printMatchingLines(searchResults, formatter);
                 }
+                if (settings.getPrintMatches()) {
+                    Searcher.printMatches(searchResults, formatter);
+                }
 
             } catch (SearchException e) {
                 handleError(e.getMessage(), colorize, options);

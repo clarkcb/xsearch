@@ -21,6 +21,7 @@ public class SearchResultFormatter {
     private final SearchSettings settings;
     private final FileResultFormatter fileResultFormatter;
     private final Function<String, String> formatLineFunc;
+    private final Function<String, String> formatMatchFunc;
 
     private static final String noSearchFileText = "<text>";
 
@@ -29,8 +30,10 @@ public class SearchResultFormatter {
         this.fileResultFormatter = new FileResultFormatter(settings);
         if (settings.getColorize()) {
             this.formatLineFunc = this::formatLineWithColor;
+            this.formatMatchFunc = this::formatMatchWithColor;
         } else {
             this.formatLineFunc = String::toString;
+            this.formatMatchFunc = String::toString;
         }
     }
 
@@ -56,6 +59,14 @@ public class SearchResultFormatter {
 
     public String formatLine(final String line) {
         return formatLineFunc.apply(line);
+    }
+
+    private String formatMatchWithColor(final String match) {
+        return colorize(match, 0, match.length(), settings.getLineColor());
+    }
+
+    public String formatMatch(final String match) {
+        return formatMatchFunc.apply(match);
     }
 
     public final String format(SearchResult result) {
@@ -116,6 +127,29 @@ public class SearchResultFormatter {
 
     private String formatMatchingLine(SearchResult result) {
         String formatted = result.getLine();
+        int matchStartIndex = result.getMatchStartIndex() - 1;
+        int matchEndIndex = result.getMatchEndIndex() - 1;
+        int matchLength = matchEndIndex - matchStartIndex;
+
+        // If matchLength longer than maxlinelength, get substring of match starting from beginning
+        if (matchLength > settings.getMaxLineLength()) {
+            String prefix = "";
+            if (matchStartIndex > 2) {
+                prefix = "...";
+            }
+            matchEndIndex = matchStartIndex + settings.getMaxLineLength() - 3 - prefix.length();
+            formatted =
+                prefix +
+                result.getLine().substring(matchStartIndex, matchEndIndex) +
+                "...";
+            if (settings.getColorize()) {
+                int colorStartIndex = prefix.length();
+                int colorEndIndex = settings.getMaxLineLength() - 3;
+                formatted = colorize(formatted, colorStartIndex, colorEndIndex, settings.getLineColor());
+            }
+            return formatted;
+        }
+
         int leadingWhitespaceCount = 0;
         while (Character.isWhitespace(formatted.charAt(leadingWhitespaceCount))) {
             leadingWhitespaceCount++;
@@ -123,9 +157,8 @@ public class SearchResultFormatter {
         formatted = formatted.trim();
         int formattedLength = formatted.length();
         int maxLineEndIndex = formattedLength - 1;
-        int matchLength = result.getMatchEndIndex() - result.getMatchStartIndex();
-        int matchStartIndex = result.getMatchStartIndex() - 1 - leadingWhitespaceCount;
-        int matchEndIndex = matchStartIndex + matchLength;
+        matchStartIndex -= leadingWhitespaceCount;
+        matchEndIndex = matchStartIndex + matchLength;
 
         // If longer than maxlinelength, walk out from match indices
         if (formattedLength > settings.getMaxLineLength()) {

@@ -524,7 +524,11 @@ public class Searcher {
             Set<String> lineSet = new HashSet<>(lines);
             lines = new ArrayList<>(lineSet);
         }
-        lines.sort(Comparator.comparing(String::toUpperCase));
+        if (settings.getSortCaseInsensitive()) {
+            lines.sort(Comparator.comparing(String::toUpperCase));
+        } else {
+            lines = new ArrayList<>(lines.stream().sorted().toList());
+        }
         return lines;
     }
 
@@ -542,6 +546,41 @@ public class Searcher {
             log(String.format("%s (%d):", hdr, lines.size()));
             for (var line : lines) {
                 log(formatter.formatLine(line));
+            }
+        }
+    }
+
+    private static List<String> getMatches(List<SearchResult> results, SearchSettings settings) {
+        var matches = new ArrayList<String>();
+        for (var r : results) {
+            matches.add(r.getLine().substring(r.getMatchStartIndex() - 1, r.getMatchEndIndex() - 1));
+        }
+        if (settings.getUniqueLines()) {
+            Set<String> lineSet = new HashSet<>(matches);
+            matches = new ArrayList<>(lineSet);
+        }
+        if (settings.getSortCaseInsensitive()) {
+            matches.sort(Comparator.comparing(String::toUpperCase));
+        } else {
+            matches = new ArrayList<>(matches.stream().sorted().toList());
+        }
+        return matches;
+    }
+
+    public static void printMatches(List<SearchResult> results, SearchResultFormatter formatter) {
+        var matches = getMatches(results, formatter.getSettings());
+        String hdr;
+        if (formatter.getSettings().getUniqueLines()) {
+            hdr = "\nUnique matches";
+        } else {
+            hdr = "\nMatches";
+        }
+        if (matches.isEmpty()) {
+            log(String.format("%s: 0", hdr));
+        } else {
+            log(String.format("%s (%d):", hdr, matches.size()));
+            for (var m : matches) {
+                log(formatter.formatMatch(m));
             }
         }
     }

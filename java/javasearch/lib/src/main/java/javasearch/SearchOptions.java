@@ -55,13 +55,15 @@ public class SearchOptions {
             put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
             put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
             put("noprintlines", (b, settings) -> settings.setPrintLines(!b));
-            put("noprintmatches", (b, settings) -> settings.setPrintResults(!b));
+            put("noprintmatches", (b, settings) -> settings.setPrintMatches(!b));
+            put("noprintresults", (b, settings) -> settings.setPrintResults(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("nosearcharchives", (b, settings) -> settings.setSearchArchives(!b));
             put("printdirs", (b, settings) -> settings.setPrintDirs(b));
             put("printfiles", (b, settings) -> settings.setPrintFiles(b));
             put("printlines", (b, settings) -> settings.setPrintLines(b));
-            put("printmatches", (b, settings) -> settings.setPrintResults(b));
+            put("printmatches", (b, settings) -> settings.setPrintMatches(b));
+            put("printresults", (b, settings) -> settings.setPrintResults(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("searcharchives", (b, settings) -> settings.setSearchArchives(b));
             put("sort-ascending", (b, settings) -> settings.setSortDescending(!b));
