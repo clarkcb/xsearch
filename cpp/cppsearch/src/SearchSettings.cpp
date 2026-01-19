@@ -114,6 +114,14 @@ namespace cppsearch {
         m_print_lines = print_lines;
     }
 
+    bool SearchSettings::print_matches() const {
+        return m_print_matches;
+    }
+
+    void SearchSettings::print_matches(const bool print_matches) {
+        m_print_matches = print_matches;
+    }
+
     bool SearchSettings::print_results() const {
         return m_print_results;
     }
@@ -218,6 +226,7 @@ namespace cppsearch {
                 + ", print_dirs: " + cppfind::StringUtil::bool_to_string(print_dirs())
                 + ", print_files: " + cppfind::StringUtil::bool_to_string(print_files())
                 + ", print_lines: " + cppfind::StringUtil::bool_to_string(m_print_lines)
+                + ", print_matches: " + cppfind::StringUtil::bool_to_string(m_print_matches)
                 + ", print_results: " + cppfind::StringUtil::bool_to_string(m_print_results)
                 + ", print_usage: " + cppfind::StringUtil::bool_to_string(print_usage())
                 + ", print_version: " + cppfind::StringUtil::bool_to_string(print_version())

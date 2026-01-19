@@ -25,6 +25,7 @@ namespace cppsearch {
         [[nodiscard]] unsigned int lines_before() const;
         [[nodiscard]] size_t max_line_length() const;
         [[nodiscard]] bool print_lines() const;
+        [[nodiscard]] bool print_matches() const;
         [[nodiscard]] bool print_results() const;
         [[nodiscard]] bool search_archives() const;
         // [[nodiscard]] bool search_archives_only() const;
@@ -46,6 +47,7 @@ namespace cppsearch {
         void lines_before(unsigned int line_count);
         void max_line_length(size_t max);
         void print_lines(bool print_lines);
+        void print_matches(bool print_matches);
         void print_results(bool print_results);
         void search_archives(bool search_archives);
         // void search_archives_only(bool search_archives_only);
@@ -81,6 +83,7 @@ namespace cppsearch {
         std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash> m_out_lines_before_patterns;
 
         bool m_print_lines;
+        bool m_print_matches{};
         bool m_print_results;
         bool m_search_archives;
 

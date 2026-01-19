@@ -36,30 +36,51 @@ std::vector<std::string> get_matching_files(const std::vector<SearchFileResult>&
     return matching_files;
 }
 
-std::vector<std::string> get_unique_matching_lines(const std::vector<SearchFileResult>& search_results) {
-    std::set<std::string> line_set;
-    std::vector<std::string> matching_lines;
-    for (const auto& sr : search_results) {
-        const std::string line = sr.line();
-        if (!line_set.contains(line)) {
-            matching_lines.push_back(line);
-        }
-        line_set.emplace(line);
+std::function<bool(std::string&, std::string&)> get_string_comparator(const bool sort_case_insensitive) {
+    if (sort_case_insensitive) {
+        return [](const std::string& s1, const std::string& s2) { return strcasecmp(s1.c_str(), s2.c_str()) <= 0; };
     }
-    sort(matching_lines.begin(), matching_lines.end());
-    return matching_lines;
+    return [](const std::string& s1, const std::string& s2) { return s1.compare(s2) <= 0; };
 }
 
-std::vector<std::string> get_all_matching_lines(const std::vector<SearchFileResult>& search_results) {
+std::vector<std::string> get_matching_lines(const std::vector<SearchFileResult>& search_results, const SearchSettings& settings) {
     std::vector<std::string> matching_lines;
-    std::ranges::transform(search_results.begin(), search_results.end(), std::back_inserter(matching_lines),
-        [](const SearchFileResult& r){ return r.line(); });
-    sort(matching_lines.begin(), matching_lines.end());
+    if (settings.unique_lines()) {
+        std::set<std::string> line_set;
+        for (const auto& sr : search_results) {
+            const std::string line = sr.line();
+            if (!line_set.contains(line)) {
+                matching_lines.push_back(line);
+            }
+            line_set.emplace(line);
+        }
+    } else {
+        std::ranges::transform(search_results.begin(), search_results.end(), std::back_inserter(matching_lines),
+            [](const SearchFileResult& r){ return r.line(); });
+    }
+    const auto string_comparator = get_string_comparator(settings.sort_case_insensitive());
+    std::ranges::sort(matching_lines, string_comparator);
     return matching_lines;
 }
 
-std::vector<std::string> get_matching_lines(const std::vector<SearchFileResult>& search_results, const bool unique) {
-    return unique ? get_unique_matching_lines(search_results) : get_all_matching_lines(search_results);
+std::vector<std::string> get_matches(const std::vector<SearchFileResult>& search_results, const SearchSettings& settings) {
+    std::vector<std::string> matches;
+    if (settings.unique_lines()) {
+        std::set<std::string> match_set;
+        for (const auto& r : search_results) {
+            const std::string match = r.line().substr(r.match_start_idx() - 1, r.match_end_idx() - 1);
+            if (!match_set.contains(match)) {
+                matches.push_back(match);
+            }
+            match_set.emplace(match);
+        }
+    } else {
+        std::ranges::transform(search_results.begin(), search_results.end(), std::back_inserter(matches),
+            [](const SearchFileResult& r){ return r.line().substr(r.match_start_idx() - 1, r.match_end_idx() - 1); });
+    }
+    const auto string_comparator = get_string_comparator(settings.sort_case_insensitive());
+    std::ranges::sort(matches, string_comparator);
+    return matches;
 }
 
 int main(int argc, char *argv[]) {
@@ -84,7 +105,7 @@ int main(int argc, char *argv[]) {
             options->usage();
         }
 
-        const std::unique_ptr<SearchSettings> settings_ptr = std::make_unique<SearchSettings>(settings);
+        const auto settings_ptr = std::make_unique<SearchSettings>(settings);
 
         // auto searcher = Searcher(settings);
         // auto finder = cppfind::Finder(settings_ptr);
@@ -104,7 +125,7 @@ int main(int argc, char *argv[]) {
 
         if (settings.print_dirs()) {
             std::vector<std::string> result_dirs = get_matching_dirs(results);
-            std::string msg{"\nDirectories with matches"};
+            std::string msg{"\nMatching directories"};
             if (result_dirs.empty()) {
                 msg.append(": 0");
                 cppfind::log_msg(msg);
@@ -119,7 +140,7 @@ int main(int argc, char *argv[]) {
 
         if (settings.print_files()) {
             std::vector<std::string> result_files = get_matching_files(results);
-            std::string msg{"\nFiles with matches"};
+            std::string msg{"\nMatching files"};
             if (result_files.empty()) {
                 msg.append(": 0");
                 cppfind::log_msg(msg);
@@ -133,12 +154,12 @@ int main(int argc, char *argv[]) {
         }
 
         if (settings.print_lines()) {
-            std::vector<std::string> result_lines = get_matching_lines(results, settings.unique_lines());
+            std::vector<std::string> result_lines = get_matching_lines(results, settings);
             std::string msg;
             if (settings.unique_lines()) {
-                msg = "\nUnique lines with matches";
+                msg = "\nUnique matching lines";
             } else {
-                msg = "\nLines with matches";
+                msg = "\nMatching lines";
             }
             if (result_lines.empty()) {
                 msg.append(": 0");
@@ -147,6 +168,26 @@ int main(int argc, char *argv[]) {
                 msg.append(" (").append(std::to_string(result_lines.size())).append("):");
                 cppfind::log_msg(msg);
                 for (const auto& l : result_lines) {
+                    cppfind::log_msg(l);
+                }
+            }
+        }
+
+        if (settings.print_matches()) {
+            std::vector<std::string> result_matches = get_matches(results, settings);
+            std::string msg;
+            if (settings.unique_lines()) {
+                msg = "\nUnique matches";
+            } else {
+                msg = "\nMatches";
+            }
+            if (result_matches.empty()) {
+                msg.append(": 0");
+                cppfind::log_msg(msg);
+            } else {
+                msg.append(" (").append(std::to_string(result_matches.size())).append("):");
+                cppfind::log_msg(msg);
+                for (const auto& l : result_matches) {
                     cppfind::log_msg(l);
                 }
             }
