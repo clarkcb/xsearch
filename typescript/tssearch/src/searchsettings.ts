@@ -23,6 +23,7 @@ export class SearchSettings {
     outLinesAfterPatterns: RegExp[] = [];
     outLinesBeforePatterns: RegExp[] = [];
     printLines = false;
+    printMatches = false;
     printResults = false;
     searchArchives = false;
     searchPatterns: RegExp[] = [];
@@ -468,6 +469,7 @@ export class SearchSettings {
             + ', printDirs=' + this.printDirs
             + ', printFiles=' + this.printFiles
             + ', printLines=' + this.printLines
+            + ', printMatches=' + this.printMatches
             + ', printResults=' + this.printResults
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive

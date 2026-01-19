@@ -21,6 +21,7 @@ export class SearchResultFormatter {
         this.fileFormatter = new FileResultFormatter(settings.getFindSettings());
         if (settings.colorize) {
             this.formatLine = this.formatLineWithColor.bind(this);
+            this.formatMatch = this.formatMatchWithColor.bind(this);
         }
     }
 
@@ -39,6 +40,14 @@ export class SearchResultFormatter {
 
     public formatLine(line: string): string {
         return line;
+    }
+
+    private formatMatchWithColor(m: string): string {
+        return this.fileFormatter.colorize(m, 0, m.length, this.settings.lineColor);
+    }
+
+    public formatMatch(m: string): string {
+        return m;
     }
 
     public format(result: SearchResult): string {

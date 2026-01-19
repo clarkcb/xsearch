@@ -63,6 +63,8 @@ export class SearchOptions {
             'noprintlines':
                 (b: boolean, settings: SearchSettings) => { settings.printLines = !b; },
             'noprintmatches':
+                (b: boolean, settings: SearchSettings) => { settings.printMatches = !b; },
+            'noprintresults':
                 (b: boolean, settings: SearchSettings) => { settings.printResults = !b; },
             'norecursive':
                 (b: boolean, settings: SearchSettings) => { settings.recursive = !b; },
@@ -75,6 +77,8 @@ export class SearchOptions {
             'printlines':
                 (b: boolean, settings: SearchSettings) => { settings.printLines = b; },
             'printmatches':
+                (b: boolean, settings: SearchSettings) => { settings.printMatches = b; },
+            'printresults':
                 (b: boolean, settings: SearchSettings) => { settings.printResults = b; },
             'recursive':
                 (b: boolean, settings: SearchSettings) => { settings.recursive = b; },

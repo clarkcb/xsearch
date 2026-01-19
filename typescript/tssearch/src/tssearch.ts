@@ -58,6 +58,9 @@ const searchMain = async () => {
             if (settings.printLines) {
                 searcher.printMatchingLines(results, formatter);
             }
+            if (settings.printMatches) {
+                searcher.printMatches(results, formatter);
+            }
 
         } catch (err2) {
             handleError(err2, settings.colorize, searchOptions);
