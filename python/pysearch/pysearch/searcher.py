@@ -56,7 +56,6 @@ class Searcher(object):
         assert self.settings.search_patterns, 'No search patterns defined'
         assert self.settings.lines_after >= 0, 'Invalid linesafter'
         assert self.settings.lines_before >= 0, 'Invalid linesbefore'
-        assert self.settings.max_line_length >= 0, 'Invalid maxlinelength'
         try:
             codecs.lookup(self.settings.text_file_encoding)
         except LookupError:

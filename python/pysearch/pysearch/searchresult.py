@@ -11,7 +11,7 @@
 from io import StringIO
 from typing import List
 
-from pyfind import ConsoleColor, FileResult, FileResultFormatter, FileResultSorter, SortBy
+from pyfind import FileResult, FileResultFormatter, FileResultSorter, SortBy
 
 from .searchsettings import SearchSettings
 
@@ -60,6 +60,11 @@ class SearchResult(object):
         return path, filename, self.line_num, self.match_start_index
 
 
+def _line_num_padding(result: SearchResult) -> int:
+    max_line_num = result.line_num + len(result.lines_after)
+    return len(str(max_line_num))
+
+
 class SearchResultFormatter(object):
     """provides formatting of SearchResult instances"""
     SEPARATOR_LEN = 80
@@ -68,10 +73,10 @@ class SearchResultFormatter(object):
         self.settings = settings
         self.file_formatter = FileResultFormatter(settings)
         if settings.colorize:
-            self.format_line = self.__format_line_with_color
-            self.format_match = self.__format_match_with_color
+            self.format_line = self._format_line_with_color
+            self.format_match = self._format_match_with_color
 
-    def __format_line_with_color(self, line: str) -> str:
+    def _format_line_with_color(self, line: str) -> str:
         """format a line, highlighting matches with color"""
         formatted_line = str(line)
         for p in self.settings.search_patterns:
@@ -88,7 +93,7 @@ class SearchResultFormatter(object):
            require colorization"""
         return str(line)
 
-    def __format_match_with_color(self, match: str) -> str:
+    def _format_match_with_color(self, match: str) -> str:
         """format a match, highlighting with color"""
         return FileResultFormatter.colorize(match, 0, len(match))
 
@@ -98,67 +103,108 @@ class SearchResultFormatter(object):
            require colorization"""
         return str(match)
 
-    def __format_matching_line(self, result: SearchResult) -> str:
+    def _format_result_match(self, result: SearchResult) -> str:
         if not result.line or not result.line.strip():
             return ''
-        formatted = result.line
-        leading_ws_count = 0
+
+        match_start_idx = result.match_start_index - 1
+        match_end_idx = result.match_end_index - 1
+        match_length = match_end_idx - match_start_idx
+
+        prefix = ''
+        suffix = ''
+        color_start_idx = 0
+        color_end_idx = match_length
+
+        if match_length > self.settings.max_line_length:
+            if match_start_idx > 2:
+                prefix = '...'
+            suffix = '...'
+            color_start_idx = len(prefix)
+            color_end_idx = self.settings.max_line_length - len(suffix)
+            match_end_idx = match_start_idx + color_end_idx
+            match_start_idx = match_start_idx + color_start_idx
+
+        match_str = prefix + result.line[match_start_idx:match_end_idx] + suffix
+
+        if self.settings.colorize:
+            match_str = FileResultFormatter.colorize(match_str, color_start_idx, color_end_idx, self.settings.line_color)
+
+        return match_str
+
+    def _format_result_line(self, result: SearchResult) -> str:
+        if not result.line or not result.line.strip() or self.settings.max_line_length == 0:
+            return ''
+
+        max_limit = self.settings.max_line_length > 0
+
+        if max_limit and result.match_end_index - result.match_start_index > self.settings.max_line_length:
+            return self._format_result_match(result)
+
+        line_start_idx = 0
+        line_end_idx = len(result.line) - 1
+
         whitespace_chars = ' \t\n\r'
-        while formatted[leading_ws_count] in whitespace_chars:
-            leading_ws_count += 1
-        formatted = result.line.strip()
-        formatted_length = len(formatted)
-        max_line_end_index = formatted_length - 1
+
+        while result.line[line_start_idx] in whitespace_chars:
+            line_start_idx += 1
+
+        while result.line[line_end_idx] in whitespace_chars:
+            line_end_idx -= 1
+
         match_length = result.match_end_index - result.match_start_index
+        match_start_idx = result.match_start_index - 1 - line_start_idx
+        match_end_idx = match_start_idx + match_length
 
-        # track where match start and end indices end up (changing to
-        # zero-indexed)
-        match_start_index = result.match_start_index - 1 - leading_ws_count
-        match_end_index = match_start_index + match_length
+        prefix = ''
+        suffix = ''
 
-        # If longer than max_line_length, walk out from match indices
-        if formatted_length > self.settings.max_line_length:
-            line_start_index = match_start_index
-            line_end_index = line_start_index + match_length
-            # NOTE: these are tracked so that we can colorize at correct indices
-            match_start_index = 0
-            match_end_index = match_length
+        trimmed_length = line_end_idx - line_start_idx
 
-            while line_end_index > formatted_length - 1:
-                line_start_index -= 1
-                line_end_index -= 1
-                match_start_index += 1
-                match_end_index += 1
+        if max_limit and trimmed_length > self.settings.max_line_length:
+            line_start_idx = result.match_start_index - 1
+            line_end_idx = line_start_idx + match_length
+            match_start_idx = 0
+            match_end_idx = match_length
 
-            formatted_length = line_end_index - line_start_index
-            while formatted_length < self.settings.max_line_length:
-                if line_start_index > 0:
-                    line_start_index -= 1
-                    match_start_index += 1
-                    match_end_index += 1
-                    formatted_length = line_end_index - line_start_index
-                if formatted_length < self.settings.max_line_length and \
-                        line_end_index < max_line_end_index:
-                    line_end_index += 1
-                formatted_length = line_end_index - line_start_index
-            formatted = formatted[line_start_index:line_end_index]
-            if line_start_index > 2:
-                formatted = '...' + formatted[3:]
-            if line_end_index < max_line_end_index - 3:
-                formatted = formatted[:-3] + '...'
+            current_len = line_end_idx - line_start_idx
+            while current_len < self.settings.max_line_length:
+                if line_start_idx > 0:
+                    line_start_idx -= 1
+                    match_start_idx += 1
+                    match_end_idx += 1
+                    current_len += 1
+                if current_len < self.settings.max_line_length and line_end_idx < trimmed_length:
+                    line_end_idx += 1
+                    current_len += 1
+
+            if line_start_idx > 2:
+                prefix = '...'
+                line_start_idx += 3
+
+            if line_end_idx < (trimmed_length - 3):
+                suffix = '...'
+                line_end_idx -= 3
+
+        else:
+            line_end_idx += 1
+
+        formatted = prefix + result.line[line_start_idx:line_end_idx] + suffix
+
         if self.settings.colorize:
             formatted = FileResultFormatter.colorize(
-                formatted, match_start_index, match_end_index, self.settings.line_color)
+                formatted, match_start_idx, match_end_idx, self.settings.line_color)
+
         return formatted
 
-    def __single_line_format(self, result: SearchResult) -> str:
+    def _single_line_format(self, result: SearchResult) -> str:
         sio = StringIO()
         sio.write(self.file_formatter.format_file_result(result.file))
         if result.line_num and result.line:
             sio.write(': {0:d}: [{1:d}:{2:d}]'.format(result.line_num,
                                                       result.match_start_index,
                                                       result.match_end_index))
-            sio.write(': {0:s}'.format(self.__format_matching_line(result)))
+            sio.write(': {0:s}'.format(self._format_result_line(result)))
         else:
             sio.write(' matches at [{0:d}:{1:d}]'.format(
                 result.match_start_index, result.match_end_index))
@@ -166,11 +212,7 @@ class SearchResultFormatter(object):
         sio.close()
         return s
 
-    def __line_num_padding(self, result: SearchResult) -> int:
-        max_line_num = result.line_num + len(result.lines_after)
-        return len(str(max_line_num))
-
-    def __multi_line_format(self, result: SearchResult) -> str:
+    def _multi_line_format(self, result: SearchResult) -> str:
         sio = StringIO()
         sio.write('{0}\n{1}:'.format(
             '=' * self.SEPARATOR_LEN, self.file_formatter.format_file_result(result.file)))
@@ -180,7 +222,7 @@ class SearchResultFormatter(object):
             sio.write(': {0}'.format(result.contained))
         sio.write('\n{0}\n'.format('-' * self.SEPARATOR_LEN))
         line_format = ' {0:>' + \
-                      str(self.__line_num_padding(result)) + 'd} | {1:s}\n'
+                      str(_line_num_padding(result)) + 'd} | {1:s}\n'
         current_line_num = result.line_num
         if result.lines_before:
             current_line_num -= len(result.lines_before)
@@ -207,9 +249,9 @@ class SearchResultFormatter(object):
 
     def format(self, result: SearchResult) -> str:
         if result.lines_before or result.lines_after:
-            return self.__multi_line_format(result)
+            return self._multi_line_format(result)
         else:
-            return self.__single_line_format(result)
+            return self._single_line_format(result)
 
 
 class SearchResultSorter(object):
@@ -260,8 +302,6 @@ class SearchResultSorter(object):
     def get_sort_key_function(self) -> callable:
         """Get the sort key function based on the settings."""
         match self.settings.sort_by:
-            case SortBy.FILEPATH:
-                return self.key_by_file_path
             case SortBy.FILENAME:
                 return self.key_by_file_name
             case SortBy.FILESIZE:
