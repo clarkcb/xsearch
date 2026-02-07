@@ -66,60 +66,106 @@ module RbSearch
       @file_formatter.colorize(str, match_start_index, match_end_index, settings.line_color)
     end
 
-    def format_matching_line(result)
-      formatted = result.line
-      leading_ws_count = 0
+    def format_result_match(result)
+      if result.line.nil? || result.line.empty?
+        return ''
+      end
+      match_start_idx = result.match_start_index - 1
+      match_end_idx = result.match_end_index - 1
+      match_length = match_end_idx - match_start_idx
+
+      prefix = ''
+      suffix = ''
+      color_start_idx = 0
+      color_end_idx = match_length
+
+      if match_length > @settings.max_line_length
+        if match_start_idx > 2
+          prefix = '...'
+        end
+        suffix = '...'
+        color_start_idx = prefix.length
+        color_end_idx = @settings.max_line_length - suffix.length
+        match_end_idx = match_start_idx + color_end_idx
+        match_start_idx = match_start_idx + color_start_idx
+      end
+
+      match_string = prefix + result.line[match_start_idx..(match_end_idx - 1)] + suffix
+      if @settings.colorize
+        match_string = colorize(match_string, color_start_idx, color_end_idx)
+      end
+      match_string
+    end
+
+    def format_result_line(result)
+      if result.line.nil? || result.line.strip.empty? || @settings.max_line_length == 0
+        return ''
+      end
+
+      max_limit = @settings.max_line_length > 0
+
+      if max_limit && (result.match_end_index - result.match_start_index) > @settings.max_line_length
+        return format_result_match(result)
+      end
+
+      line_start_idx = 0
+      line_end_idx = result.line.length - 1
+
       whitespace_chars = [' ', "\t", "\n", "\r"]
-      while whitespace_chars.index(formatted[leading_ws_count])
-        leading_ws_count += 1
+      while whitespace_chars.index(result.line[line_start_idx])
+        line_start_idx += 1
       end
-      formatted = formatted.strip
-      formatted_length = formatted.length
-      max_line_end_index = formatted_length - 1
+      while whitespace_chars.index(result.line[line_end_idx])
+        line_end_idx -= 1
+      end
+
       match_length = result.match_end_index - result.match_start_index
+      match_start_idx = result.match_start_index - 1 - line_start_idx
+      match_end_idx = match_start_idx + match_length
 
-      match_start_index = result.match_start_index - 1 - leading_ws_count
-      match_end_index = match_start_index + match_length
+      prefix = ''
+      suffix = ''
 
-      if formatted_length > @settings.max_line_length
-        line_start_index = match_start_index
-        line_end_index = line_start_index + match_length
-        match_start_index = 0
-        match_end_index = match_length
+      trimmed_length = line_end_idx - line_start_idx
 
-        while line_end_index > formatted_length - 1
-          line_start_index -= 1
-          line_end_index -= 1
-          match_start_index += 1
-          match_end_index += 1
-        end
+      if max_limit && trimmed_length > @settings.max_line_length
+        line_start_idx = result.match_start_index - 1
+        line_end_idx = line_start_idx + match_length
+        match_start_idx = 0
+        match_end_idx = match_length
 
-        formatted_length = line_end_index - line_start_index
-        while formatted_length < @settings.max_line_length
-          if line_start_index.positive?
-            line_start_index -= 1
-            match_start_index += 1
-            match_end_index += 1
-            formatted_length = line_end_index - line_start_index
+        current_len = line_end_idx - line_start_idx
+        while current_len < @settings.max_line_length
+          if line_start_idx > 0
+            line_start_idx -= 1
+            match_start_idx += 1
+            match_end_idx += 1
+            current_len += 1
           end
-          if formatted_length < @settings.max_line_length && line_end_index < max_line_end_index
-            line_end_index += 1
+          if current_len < @settings.max_line_length && line_end_idx < trimmed_length
+            line_end_idx += 1
+            current_len += 1
           end
-          formatted_length = line_end_index - line_start_index
         end
 
-        formatted = formatted[line_start_index..(line_end_index - 1)]
+        if line_start_idx > 2
+          prefix = '...'
+          line_start_idx += 3
+        end
 
-        if line_start_index > 2
-          formatted = "...#{formatted[3..(formatted.length - 1)]}"
+        if line_end_idx < (trimmed_length - 3)
+          suffix = '...'
+          line_end_idx -= 3
         end
-        if line_end_index < max_line_end_index - 3
-          formatted = "#{formatted[0..(formatted.length - 4)]}..."
-        end
+
+      else
+        line_end_idx += 1
       end
+
+      formatted = prefix + result.line[line_start_idx..(line_end_idx - 1)] + suffix
 
       if @settings.colorize
-        formatted = colorize(formatted, match_start_index, match_end_index)
+        formatted = colorize(formatted, match_start_idx, match_end_idx)
       end
       formatted
     end
@@ -128,7 +174,7 @@ module RbSearch
       s = @file_formatter.format_file_result(result.file)
       if result.line_num.positive? && !result.line.empty?
         s << ": #{result.line_num}: [#{result.match_start_index}:#{result.match_end_index}]"
-        s << ": #{format_matching_line(result)}"
+        s << ": #{format_result_line(result)}"
       else
         s << " matches at [#{result.match_start_index}:#{result.match_end_index}]"
       end

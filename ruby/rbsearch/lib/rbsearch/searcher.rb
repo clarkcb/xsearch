@@ -246,7 +246,6 @@ module RbSearch
       raise SearchError, 'No search patterns defined' if @settings.search_patterns.empty?
       raise SearchError, 'Invalid lines_before' if @settings.lines_before < 0
       raise SearchError, 'Invalid lines_after' if @settings.lines_after < 0
-      raise SearchError, 'Invalid max_line_length' if @settings.max_line_length < 0
       begin
         _enc = Encoding.find(@settings.text_file_encoding)
       rescue StandardError

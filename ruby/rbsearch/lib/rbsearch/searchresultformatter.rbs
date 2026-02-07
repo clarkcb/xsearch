@@ -27,7 +27,9 @@ module RbSearch
 
     def colorize: (String str, Integer match_start_index, Integer match_end_index) -> String
 
-    def format_matching_line: (SearchResult result) -> String
+    def format_result_match: (SearchResult result) -> String
+
+    def format_result_line: (SearchResult result) -> String
 
     def single_line_format: (SearchResult result) -> String
 
