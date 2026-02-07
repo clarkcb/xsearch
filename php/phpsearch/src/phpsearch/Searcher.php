@@ -47,9 +47,6 @@ class Searcher
         if ($this->settings->lines_before < 0) {
             throw new SearchException('Invalid lines_before');
         }
-        if ($this->settings->max_line_length < 0) {
-            throw new SearchException('Invalid max_line_length');
-        }
     }
 
     private function matches_any_pattern(string $s, array $patterns): bool

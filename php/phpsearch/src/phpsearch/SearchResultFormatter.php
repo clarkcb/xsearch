@@ -85,64 +85,108 @@ class SearchResultFormatter
         return $this->file_result_formatter->colorize($s, $match_start_index, $match_end_index, $color);
     }
 
-    private function format_matching_line(SearchResult $result): string
+    private function format_line_match(SearchResult $result): string
     {
-        $formatted = $this->trim_newline($result->line);
-        $leading_whitespace_count = 0;
-        $whitespace_chars = array(" ", "\t", "\n", "\r");
-        while (in_array($formatted[$leading_whitespace_count], $whitespace_chars)) {
-            $leading_whitespace_count++;
+        if (!$result->line || trim($result->line) === '') {
+            return '';
         }
-        $formatted = trim($formatted);
-        $formatted_length = strlen($formatted);
-        $max_line_end_index = $formatted_length - 1;
+        $match_start_idx = $result->match_start_index - 1;
+        $match_end_idx = $result->match_end_index - 1;
         $match_length = $result->match_end_index - $result->match_start_index;
 
-        # track where match start and end indices end up
-        $match_start_index = $result->match_start_index - 1 - $leading_whitespace_count;
-        $match_end_index = $match_start_index + $match_length;
+        $prefix = '';
+        $suffix = '';
+        $color_start_idx = 0;
+        $color_end_idx = $match_length;
 
-        # if longer than max_line_length, walk out from matching indices
-        if ($formatted_length > $this->settings->max_line_length) {
-            $line_start_index = $match_start_index;
-            $line_end_index = $line_start_index + $match_length;
-            $match_start_index = 0;
-            $match_end_index = $match_length;
-
-            # adjust left if/until line_end_index < $formatted_length
-            while ($line_end_index > $formatted_length - 1) {
-                $line_start_index--;
-                $line_end_index--;
-                $match_start_index++;
-                $match_end_index++;
+        if ($match_length > $this->settings->max_line_length) {
+            if ($match_start_idx > 2) {
+                $prefix = '...';
             }
-
-            $formatted_length = $line_end_index - $line_start_index;
-
-            while ($formatted_length < $this->settings->max_line_length) {
-                if ($line_start_index > 0) {
-                    $line_start_index--;
-                    $match_start_index++;
-                    $match_end_index++;
-                    $formatted_length = $line_end_index - $line_start_index;
-                }
-                if ($formatted_length < $this->settings->max_line_length && $line_end_index < $max_line_end_index) {
-                    $line_end_index++;
-                }
-                $formatted_length = $line_end_index - $line_start_index;
-            }
-            $formatted = substr($formatted, $line_start_index, $formatted_length);
-
-            if ($line_start_index > 2) {
-                $formatted = '...' . substr($formatted, 3);
-            }
-            if ($line_end_index < $max_line_end_index - 3) {
-                $formatted = substr($formatted, 0, $formatted_length - 3) . '...';
-            }
+            $suffix = '...';
+            $color_start_idx = strlen($prefix);
+            $color_end_idx = $this->settings->max_line_length - strlen($suffix);
+            $match_end_idx = $match_start_idx + $color_end_idx;
+            $match_start_idx = $match_start_idx + $color_start_idx;
         }
 
+        $match_str = $prefix . substr($result->line, $match_start_idx, $match_end_idx - $match_start_idx) . $suffix;
+
         if ($this->settings->colorize) {
-            $formatted = $this->colorize($formatted, $match_start_index, $match_end_index, $this->settings->line_color);
+            $match_str = $this->colorize($match_str, $color_start_idx, $color_end_idx, $this->settings->line_color);
+        }
+        return $match_str;
+    }
+
+    private function format_matching_line(SearchResult $result): string
+    {
+        if (!$result->line || trim($result->line) === '' || $this->settings->max_line_length == 0) {
+            return '';
+        }
+
+        $max_limit = $this->settings->max_line_length > 0;
+
+        if ($max_limit && ($result->match_end_index - $result->match_start_index) > $this->settings->max_line_length) {
+            return $this->format_line_match($result);
+        }
+
+        $line_start_idx = 0;
+        $line_end_idx = strlen($result->line) - 1;
+
+        $whitespace_chars = array(" ", "\t", "\n", "\r");
+        while (in_array($result->line[$line_start_idx], $whitespace_chars)) {
+            $line_start_idx++;
+        }
+        while (in_array($result->line[$line_end_idx], $whitespace_chars)) {
+            $line_end_idx--;
+        }
+
+        $match_length = $result->match_end_index - $result->match_start_index;
+        $match_start_idx = $result->match_start_index - 1 - $line_start_idx;
+        $match_end_idx = $match_start_idx + $match_length;
+
+        $prefix = '';
+        $suffix = '';
+
+        $trimmed_length = $line_end_idx - $line_start_idx;
+
+        if ($max_limit && $trimmed_length > $this->settings->max_line_length) {
+            $line_start_idx = $result->match_start_index - 1;
+            $line_end_idx = $line_start_idx + $match_length;
+            $match_start_idx = 0;
+            $match_end_idx = $match_length;
+
+            $current_len = $line_end_idx - $line_start_idx;
+            while ($current_len < $this->settings->max_line_length) {
+                if ($line_start_idx > 0) {
+                    $line_start_idx -= 1;
+                    $match_start_idx += 1;
+                    $match_end_idx += 1;
+                    $current_len += 1;
+                }
+                if ($current_len < $this->settings->max_line_length && $line_end_idx < $trimmed_length) {
+                    $line_end_idx += 1;
+                    $current_len += 1;
+                }
+            }
+
+            if ($line_start_idx > 2) {
+                $prefix = '...';
+                $line_start_idx += 3;
+            }
+
+            if ($line_end_idx < ($trimmed_length - 3)) {
+                $suffix = '...';
+                $line_end_idx -= 3;
+            }
+        } else {
+            $line_end_idx += 1;
+        }
+
+        $formatted = $prefix . substr($result->line, $line_start_idx, $line_end_idx - $line_start_idx) . $suffix;
+
+        if ($this->settings->colorize) {
+            $formatted = $this->colorize($formatted, $match_start_idx, $match_end_idx, $this->settings->line_color);
         }
         return $formatted;
     }
