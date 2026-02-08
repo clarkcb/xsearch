@@ -37,9 +37,6 @@ class Searcher(val settings: SearchSettings) {
         if (settings.linesBefore < 0) {
             throw SearchException("Invalid linesbefore")
         }
-        if (settings.maxLineLength < 0) {
-            throw SearchException("Invalid maxlinelength")
-        }
         try {
             charset = Charset.forName(settings.textFileEncoding)
         } catch (_: IllegalArgumentException) {

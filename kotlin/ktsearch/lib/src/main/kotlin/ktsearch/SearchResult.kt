@@ -172,76 +172,108 @@ class SearchResultFormatter(val settings: SearchSettings) {
         return sb.toString()
     }
 
-    private fun formatMatchingLine(result: SearchResult): String {
-        var formatted = result.line
+    private fun formatResultMatch(result: SearchResult): String {
+        if (result.line.trim() == "" || settings.maxLineLength == 0) {
+            return ""
+        }
+
         var matchStartIndex = result.matchStartIndex - 1
         var matchEndIndex = result.matchEndIndex - 1
         val matchLength = matchEndIndex - matchStartIndex
 
+        var prefix = ""
+        var suffix = ""
+        var colorStartIndex = 0
+        var colorEndIndex = matchLength
+
         if (matchLength > settings.maxLineLength) {
-            var prefix = ""
             if (matchStartIndex > 2) {
                 prefix = "..."
             }
-            matchEndIndex = matchStartIndex + settings.maxLineLength - 3 - prefix.length
-            formatted = prefix + result.line.substring(matchStartIndex, matchEndIndex) + "..."
-            if (settings.colorize) {
-                val colorStartIndex = prefix.length
-                val colorEndIndex = settings.maxLineLength - 3
-                formatted = colorize(formatted, colorStartIndex, colorEndIndex, settings.lineColor)
-            }
-            return formatted
+            suffix = "..."
+            colorStartIndex = prefix.length
+            colorEndIndex = settings.maxLineLength - 3
+            matchEndIndex = matchStartIndex + colorEndIndex
+            matchStartIndex += colorStartIndex
         }
 
-        formatted = result.line.trim()
-        val leadingWhitespaceCount = result.line.trimEnd().length - formatted.length
-        var formattedLength = formatted.length
-        val maxLineEndIndex = formattedLength - 1
-        matchStartIndex -= leadingWhitespaceCount
-        matchEndIndex = matchStartIndex + matchLength
-
-        if (formattedLength > settings.maxLineLength) {
-            var lineStartIndex = matchStartIndex
-            var lineEndIndex = lineStartIndex + matchLength
-            matchStartIndex = 0
-            matchEndIndex = matchLength
-
-            while (lineEndIndex > formattedLength - 1) {
-                lineStartIndex--
-                lineEndIndex--
-                matchStartIndex++
-                matchEndIndex++
-            }
-
-            formattedLength = lineEndIndex - lineStartIndex
-            while (formattedLength < settings.maxLineLength) {
-                if (lineStartIndex > 0) {
-                    lineStartIndex--
-                    matchStartIndex++
-                    matchEndIndex++
-                    formattedLength = lineEndIndex - lineStartIndex
-                }
-                if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
-                    lineEndIndex++
-                }
-                formattedLength = lineEndIndex - lineStartIndex
-            }
-
-            formatted = formatted.substring(lineStartIndex, lineEndIndex)
-
-            if (lineStartIndex > 2) {
-                formatted = "..." + formatted.substring(3)
-            }
-            if (lineEndIndex < maxLineEndIndex - 3) {
-                formatted = formatted.substring(0, formattedLength - 3) + "..."
-            }
+        val match = prefix + result.line.substring(matchStartIndex, matchEndIndex) + suffix
+        if (settings.colorize) {
+            return colorize(match, colorStartIndex, colorEndIndex, settings.lineColor)
         }
+        return match
+    }
+
+    private fun formatResultLine(result: SearchResult): String {
+        if (result.line.trim() == "" || settings.maxLineLength == 0) {
+            return ""
+        }
+
+        val maxLimit = settings.maxLineLength > 0
+
+        // If matchLength longer than maxlinelength, get substring of match starting from beginning
+        if (maxLimit && (result.matchEndIndex - result.matchStartIndex) > settings.maxLineLength) {
+            return formatResultMatch(result)
+        }
+
+        var lineStartIdx = 0
+        var lineEndIdx = result.line.length - 1
+
+        while (Character.isWhitespace(result.line[lineStartIdx])) {
+            lineStartIdx++
+        }
+        while (Character.isWhitespace(result.line[lineEndIdx])) {
+            lineEndIdx--
+        }
+
+        val matchLength = result.matchEndIndex - result.matchStartIndex
+        var matchStartIdx = result.matchStartIndex - 1
+        var matchEndIdx = matchStartIdx + matchLength
+
+        var prefix = ""
+        var suffix = ""
+
+        val trimmedLength = lineEndIdx - lineStartIdx
+
+        if (maxLimit && trimmedLength > settings.maxLineLength) {
+            lineStartIdx = result.matchStartIndex - 1
+            lineEndIdx = lineStartIdx + matchLength
+            matchStartIdx = 0
+            matchEndIdx = matchLength
+
+            var currentLen = lineEndIdx - lineStartIdx
+            while (currentLen < settings.maxLineLength) {
+                if (lineStartIdx > 0) {
+                    lineStartIdx--
+                    matchStartIdx++
+                    matchEndIdx++
+                    currentLen++
+                }
+                if (currentLen < settings.maxLineLength && lineEndIdx < trimmedLength) {
+                    lineEndIdx++
+                    currentLen++
+                }
+            }
+
+            if (lineStartIdx > 2) {
+                prefix = "..."
+                lineStartIdx += 3
+            }
+            if (lineEndIdx < (trimmedLength - 3)) {
+                suffix = "..."
+                lineEndIdx -= 3
+            }
+        } else {
+            lineEndIdx++
+        }
+
+        val formattedLine = prefix + result.line.substring(lineStartIdx, lineEndIdx) + suffix
 
         if (settings.colorize) {
-            formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.lineColor)
+            return colorize(formattedLine, matchStartIdx, matchEndIdx, settings.lineColor)
         }
 
-        return formatted
+        return formattedLine
     }
 
     private fun singleLineFormat(result: SearchResult): String {
@@ -266,7 +298,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
                     append(":").
                     append(result.matchEndIndex).
                     append("]: ").
-                    append(formatMatchingLine(result))
+                    append(formatResultLine(result))
         }
         return sb.toString()
     }
