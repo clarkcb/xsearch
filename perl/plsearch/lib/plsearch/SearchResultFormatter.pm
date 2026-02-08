@@ -78,7 +78,7 @@ sub single_line_format {
     if ($result->{line_num}) {
         $s .= ': ' . $result->{line_num} . ': ';
         $s .= '[' . $result->{match_start_index} . ':' . $result->{match_end_index};
-        $s .= ']: ' . $self->format_matching_line($result);
+        $s .= ']: ' . $self->format_result_line($result);
     } else {
         $s .= ' matches at ';
         $s .= '[' . $result->{match_start_index} . ':' . $result->{match_end_index} . ']';
@@ -86,64 +86,103 @@ sub single_line_format {
     return $s;
 }
 
-sub format_matching_line {
+sub format_result_match {
     my ($self, $result) = @_;
-    my $formatted = $result->{line};
-    # print "formatted: \"$formatted\"\n";
-    my $leading_whitespace_count = plfind::common::leading_whitespace_chars($formatted);
-    # remove leading and trailing whitespace
-    $formatted =~ s/^\s+|\s+$//g;
-    my $formatted_length = length($formatted);
-    # my $line_start_index = 0;
-    # my $line_end_index = $formatted_length - 1;
-    my $max_line_end_index = $formatted_length - 1;
-    my $match_length = $result->{match_end_index} - $result->{match_start_index};
 
-    # track where match start and end indices end up (changing to zero-indexed)
-    my $match_start_index = $result->{match_start_index} - 1 - $leading_whitespace_count;
-    my $match_end_index = $match_start_index + $match_length;
-
-    # if longer than max_line_length, walk out from matching indices
-    if ($formatted_length > $self->{settings}->{max_line_length}) {
-        my $line_start_index = $match_start_index;
-        my $line_end_index = $line_start_index + $match_length;
-        $match_start_index = 0;
-        $match_end_index = $match_length;
-
-        # adjust left if/until line_end_index < $formatted_length
-        while ($line_end_index > $formatted_length - 1) {
-            $line_start_index--;
-            $line_end_index--;
-            $match_start_index++;
-            $match_end_index++;
-        }
-
-        $formatted_length = $line_end_index - $line_start_index;
-
-        while ($formatted_length < $self->{settings}->{max_line_length}) {
-            if ($line_start_index > 0) {
-                $line_start_index--;
-                $match_start_index++;
-                $match_end_index++;
-                $formatted_length = $line_end_index - $line_start_index;
-            }
-            if ($formatted_length < $self->{settings}->{max_line_length} && $line_end_index < $max_line_end_index) {
-                $line_end_index++;
-            }
-            $formatted_length = $line_end_index - $line_start_index;
-        }
-        $formatted = substr($formatted, $line_start_index, $formatted_length);
-
-        if ($line_start_index > 2) {
-            $formatted = '...' . substr($formatted, 3);
-        }
-        if ($line_end_index < $max_line_end_index - 3) {
-            $formatted = substr($formatted, 0, $formatted_length - 3) . '...';
-        }
+    if (!$result->{line}) {
+        return '';
     }
 
+    my $match_start_idx = $result->{match_start_index} - 1;
+    my $match_end_idx = $result->{match_end_index} - 1;
+    my $match_length = $result->{match_end_index} - $result->{match_start_index};
+
+    my $prefix = '';
+    my $suffix = '';
+    my $color_start_idx = 0;
+    my $color_end_idx = $match_length;
+
+    if ($match_length > $self->{settings}->{max_line_length}) {
+        if ($match_start_idx > 2) {
+            $prefix = '...';
+        }
+        $suffix = '...';
+        $color_start_idx = length($prefix);
+        $color_end_idx = $self->{settings}->{max_line_length} - length($suffix);
+        $match_end_idx = $match_start_idx + $color_end_idx;
+        $match_start_idx = $match_start_idx + $color_start_idx;
+    }
+
+    my $match_string = $prefix . substr($result->{line}, $match_start_idx, $match_end_idx - $match_start_idx) . $suffix;
     if ($self->{settings}->{colorize}) {
-        $formatted = colorize($formatted, $match_start_index, $match_end_index);
+        $match_string = colorize($match_string, $color_start_idx, $color_end_idx, $self->{settings}->{line_color});
+    }
+    return $match_string;
+}
+
+sub format_result_line {
+    my ($self, $result) = @_;
+
+    if (!$result->{line} || $self->{settings}->{max_line_length} == 0) {
+        return '';
+    }
+
+    my $max_limit = $self->{settings}->{max_line_length} > 0;
+
+    if ($max_limit && ($result->{match_end_index} - $result->{match_start_index}) > $self->{settings}->{max_line_length}) {
+        return $self->format_result_match($result);
+    }
+
+    my $line_start_idx = plfind::common::leading_whitespace_chars($result->{line});
+    my $trimmed = $result->{line};
+    $trimmed =~ s/^\s+|\s+$//g;
+    my $trimmed_length = length($trimmed);
+    my $line_end_idx = $trimmed_length - 1;
+
+    my $match_length = $result->{match_end_index} - $result->{match_start_index};
+    my $match_start_idx = $result->{match_start_index} - 1;
+    my $match_end_idx = $result->{match_end_index} - 1;
+
+    my $prefix = '';
+    my $suffix = '';
+
+    if ($max_limit && $trimmed_length > $self->{settings}->{max_line_length}) {
+        $line_start_idx = $result->{match_start_index} - 1;
+        $line_end_idx = $line_start_idx + $match_length;
+        $match_start_idx = 0;
+        $match_end_idx = $match_length;
+
+        my $current_len = $line_end_idx - $line_start_idx;
+        while ($current_len < $self->{settings}->{max_line_length}) {
+            if ($line_start_idx > 0) {
+                $line_start_idx--;
+                $match_start_idx++;
+                $match_end_idx++;
+                $current_len++;
+            }
+            if ($current_len < $self->{settings}->{max_line_length} && $line_end_idx < $trimmed_length) {
+                $line_end_idx++;
+                $current_len++;
+            }
+        }
+
+        if ($line_start_idx > 2) {
+            $prefix = '...';
+            $line_start_idx += 3;
+        }
+
+        if ($line_end_idx < ($trimmed_length - 3)) {
+            $suffix = '...';
+            $line_end_idx -= 3;
+        }
+    } else {
+        $line_end_idx += 1;
+    }
+
+    my $formatted = $prefix . substr($result->{line}, $line_start_idx, $line_end_idx - $line_start_idx) . $suffix;
+
+    if ($self->{settings}->{colorize}) {
+        $formatted = colorize($formatted, $match_start_idx, $match_end_idx, $self->{settings}->{line_color});
     }
     return $formatted;
 }

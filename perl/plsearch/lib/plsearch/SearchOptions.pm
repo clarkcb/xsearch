@@ -348,7 +348,7 @@ sub update_settings_from_arg_tokens {
                 &{$str_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             }
         } elsif ($arg_token->{type} eq plfind::ArgTokenType->INT) {
-            if ($arg_value =~ /^\d+$/) {
+            if ($arg_value =~ /^[\+-]?\d+$/) {
                 &{$int_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             } else {
                 push(@errs, 'Invalid value for option: ' . $arg_token->{name});

@@ -57,9 +57,6 @@ sub validate_settings {
         push(@$errs, 'Invalid lines_before');
         return $errs;
     }
-    if ($settings->{max_line_length} < 0) {
-        push(@$errs, 'Invalid max_line_length');
-    }
     return $errs;
 }
 
