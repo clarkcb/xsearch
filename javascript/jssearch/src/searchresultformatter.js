@@ -56,7 +56,7 @@ class SearchResultFormatter {
         let s = result.file ? this.fileFormatter.formatFileResult(result.file) : '<text>';
         if (result.lineNum && result.line) {
             s += `: ${result.lineNum}: [${result.matchStartIndex}:` +
-                `${result.matchEndIndex}]: ` + this.formatMatchingLine(result);
+                `${result.matchEndIndex}]: ` + this.formatResultLine(result);
         } else {
             s += ` matches at [${result.matchStartIndex}:${result.matchEndIndex}]`;
         }
@@ -111,64 +111,109 @@ class SearchResultFormatter {
         return s;
     }
 
-    formatMatchingLine(result) {
-        let formatted = this.trimRight(result.line);
-        let leadingWhitespaceCount = 0;
-        const whitespaceChars = [' ', '\t', '\n', '\r'];
-        while (whitespaceChars.indexOf(formatted.charAt(leadingWhitespaceCount)) > -1) {
-            leadingWhitespaceCount++;
+    formatResultMatch(result) {
+        if (!result.line || result.line.trim().length === 0 || this.settings.maxLineLength === 0) {
+            return '';
         }
-        formatted = formatted.trim();
-        let formattedLength = formatted.length;
-        let maxLineEndIndex = formattedLength - 1;
-        let matchLength = result.matchEndIndex - result.matchStartIndex;
 
-        // track where match start and end indices end up
-        let matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount;
+        let matchStartIndex = result.matchStartIndex - 1;
+        let matchEndIndex = result.matchEndIndex - 1;
+        const matchLength = result.matchEndIndex - result.matchStartIndex;
+
+        let prefix = '';
+        let suffix = '';
+        let colorStartIndex = 0;
+        let colorEndIndex = matchLength;
+
+        if (matchLength > this.settings.maxLineLength) {
+            if (matchStartIndex > 2) {
+                prefix = '...';
+            }
+            suffix = '...';
+            colorStartIndex = prefix.length;
+            colorEndIndex = this.settings.maxLineLength - suffix.length;
+            matchEndIndex = matchStartIndex + colorEndIndex;
+            matchStartIndex = matchStartIndex + colorStartIndex;
+        }
+
+        let matchString = prefix + result.line.slice(matchStartIndex, matchEndIndex) + suffix;
+
+        if (this.settings.colorize) {
+            matchString = this.fileFormatter.colorize(matchString, colorStartIndex, colorEndIndex, this.settings.lineColor);
+        }
+
+        return matchString;
+    }
+
+    formatResultLine(result) {
+        if (!result.line || result.line.trim().length === 0 || this.settings.maxLineLength === 0) {
+            return '';
+        }
+
+        let maxLimit = this.settings.maxLineLength > 0;
+
+        if (maxLimit && (result.matchEndIndex - result.matchStartIndex) > this.settings.maxLineLength) {
+            return this.formatResultMatch(result);
+        }
+
+        let lineStartIndex = 0;
+        let lineEndIndex = result.line.length - 1;
+
+        const whitespaceChars = [' ', '\t', '\n', '\r'];
+        while (whitespaceChars.indexOf(result.line.charAt(lineStartIndex)) > -1) {
+            lineStartIndex++;
+        }
+        while (whitespaceChars.indexOf(result.line.charAt(lineEndIndex)) > -1) {
+            lineEndIndex--;
+        }
+
+        const matchLength = result.matchEndIndex - result.matchStartIndex;
+        let matchStartIndex = result.matchStartIndex - 1 - lineStartIndex;
         let matchEndIndex = matchStartIndex + matchLength;
 
-        // if longer than maxlinelength, walk out from matching indices
-        if (formattedLength > this.settings.maxLineLength) {
-            let lineStartIndex = matchStartIndex;
-            let lineEndIndex = lineStartIndex + matchLength;
+        let prefix = '';
+        let suffix = '';
+
+        let trimmedLength = lineEndIndex - lineStartIndex;
+
+        if (maxLimit && trimmedLength > this.settings.maxLineLength) {
+            lineStartIndex = result.matchStartIndex - 1;
+            lineEndIndex = lineStartIndex + matchLength;
             matchStartIndex = 0;
             matchEndIndex = matchLength;
 
-            while (lineEndIndex > formattedLength - 1) {
-                lineStartIndex--;
-                lineEndIndex--;
-                matchStartIndex++;
-                matchEndIndex++;
-            }
-
-            formattedLength = lineEndIndex - lineStartIndex;
-
-            while (formattedLength < this.settings.maxLineLength) {
+            let currentLen = lineEndIndex - lineStartIndex;
+            while (currentLen < this.settings.maxLineLength) {
                 if (lineStartIndex > 0) {
                     lineStartIndex--;
                     matchStartIndex++;
                     matchEndIndex++;
-                    formattedLength = lineEndIndex - lineStartIndex;
+                    currentLen++;
                 }
-                if (formattedLength < this.settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
+                if (currentLen < this.settings.maxLineLength && lineEndIndex < trimmedLength) {
                     lineEndIndex++;
+                    currentLen++;
                 }
-                formattedLength = lineEndIndex - lineStartIndex;
             }
-
-            formatted = formatted.slice(lineStartIndex, lineEndIndex);
 
             if (lineStartIndex > 2) {
-                formatted = '...' + formatted.slice(3);
+                prefix = '...';
+                lineStartIndex += 3;
             }
-            if (lineEndIndex < maxLineEndIndex - 3) {
-                formatted = formatted.slice(0, formatted.length - 3) + '...';
+            if (lineEndIndex < trimmedLength - 3) {
+                suffix = '...';
+                lineEndIndex -= 3;
             }
+        } else {
+            lineEndIndex++;
         }
+
+        let formatted = prefix + result.line.slice(lineStartIndex, lineEndIndex) + suffix;
 
         if (this.settings.colorize) {
             formatted = this.fileFormatter.colorize(formatted, matchStartIndex, matchEndIndex, this.settings.lineColor);
         }
+
         return formatted;
     }
 }

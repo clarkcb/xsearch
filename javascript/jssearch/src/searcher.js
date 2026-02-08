@@ -31,7 +31,6 @@ class Searcher {
                 'Invalid encoding');
             assert.ok(this.settings.linesBefore > -1, 'Invalid linesbefore');
             assert.ok(this.settings.linesAfter > -1, 'Invalid linesafter');
-            assert.ok(this.settings.maxLineLength > -1, 'Invalid maxlinelength');
 
         } catch (err) {
             let msg = err.message;
