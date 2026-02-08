@@ -56,9 +56,6 @@ public class Searcher {
         if (settings.getLinesBefore() < 0) {
             throw new SearchException("Invalid linesbefore");
         }
-        if (settings.getMaxLineLength() < 0) {
-            throw new SearchException("Invalid maxlinelength");
-        }
         try {
             charset = Charset.forName(settings.getTextFileEncoding());
         } catch (IllegalArgumentException e) {

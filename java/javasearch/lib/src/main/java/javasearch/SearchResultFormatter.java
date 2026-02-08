@@ -125,78 +125,115 @@ public class SearchResultFormatter {
         return sb.toString();
     }
 
-    private String formatMatchingLine(SearchResult result) {
-        String formatted = result.getLine();
+    private String formatResultMatch(SearchResult result) {
+        if (StringUtil.isNullOrWhitespace(result.getLine()) || settings.getMaxLineLength() == 0) {
+            return "";
+        }
+
         int matchStartIndex = result.getMatchStartIndex() - 1;
         int matchEndIndex = result.getMatchEndIndex() - 1;
         int matchLength = matchEndIndex - matchStartIndex;
 
+        String prefix = "";
+        String suffix = "";
+        int colorStartIndex = 0;
+        int colorEndIndex = matchLength;
+
         // If matchLength longer than maxlinelength, get substring of match starting from beginning
         if (matchLength > settings.getMaxLineLength()) {
-            String prefix = "";
-            if (matchStartIndex > 2) {
-                prefix = "...";
+            // only do prefix and suffix if maxlinelength >= 10
+            if (settings.getMaxLineLength() > 9) {
+                if (matchStartIndex > 2) {
+                    prefix = "...";
+                }
+                suffix = "...";
             }
-            matchEndIndex = matchStartIndex + settings.getMaxLineLength() - 3 - prefix.length();
-            formatted =
-                prefix +
-                result.getLine().substring(matchStartIndex, matchEndIndex) +
-                "...";
-            if (settings.getColorize()) {
-                int colorStartIndex = prefix.length();
-                int colorEndIndex = settings.getMaxLineLength() - 3;
-                formatted = colorize(formatted, colorStartIndex, colorEndIndex, settings.getLineColor());
-            }
-            return formatted;
+            colorStartIndex = prefix.length();
+            colorEndIndex = settings.getMaxLineLength() - suffix.length();
+            matchEndIndex = matchStartIndex + colorEndIndex;
+            matchStartIndex = matchStartIndex + colorStartIndex;
         }
 
-        int leadingWhitespaceCount = 0;
-        while (Character.isWhitespace(formatted.charAt(leadingWhitespaceCount))) {
-            leadingWhitespaceCount++;
+        String match = prefix + result.getLine().substring(matchStartIndex, matchEndIndex) + suffix;
+        if (settings.getColorize()) {
+            match = colorize(match, colorStartIndex, colorEndIndex, settings.getLineColor());
         }
-        formatted = formatted.trim();
-        int formattedLength = formatted.length();
-        int maxLineEndIndex = formattedLength - 1;
-        matchStartIndex -= leadingWhitespaceCount;
-        matchEndIndex = matchStartIndex + matchLength;
+        return match;
+    }
 
-        // If longer than maxlinelength, walk out from match indices
-        if (formattedLength > settings.getMaxLineLength()) {
-            int lineStartIndex = matchStartIndex;
-            int lineEndIndex = lineStartIndex + matchLength;
+    private String formatResultLine(SearchResult result) {
+        if (StringUtil.isNullOrWhitespace(result.getLine()) || settings.getMaxLineLength() == 0) {
+            return "";
+        }
+
+        // if maxLineLength < 0 it means there's no limit
+        boolean maxLimit = settings.getMaxLineLength() > 0;
+
+        // If matchLength longer than maxlinelength, get substring of match starting from beginning
+        if (maxLimit && (result.getMatchEndIndex() - result.getMatchStartIndex()) > settings.getMaxLineLength()) {
+            return formatResultMatch(result);
+        }
+
+        // start by setting the values as if no limit
+        String resultLine = result.getLine();
+        int lineStartIndex = 0;
+        int lineEndIndex = resultLine.length() - 1;
+
+        while (Character.isWhitespace(resultLine.charAt(lineStartIndex))) {
+            lineStartIndex++;
+        }
+        while (Character.isWhitespace(resultLine.charAt(lineEndIndex))) {
+            lineEndIndex--;
+        }
+
+        int matchLength = result.getMatchEndIndex() - result.getMatchStartIndex();
+        int matchStartIndex = result.getMatchStartIndex() - 1 - lineStartIndex;
+        int matchEndIndex = matchStartIndex + matchLength;
+
+        String prefix = "";
+        String suffix = "";
+
+        int trimmedLength = lineEndIndex - lineStartIndex;
+
+        if (trimmedLength == 0) {
+            return "";
+        }
+
+        if (maxLimit && trimmedLength > settings.getMaxLineLength()) {
+            lineStartIndex = result.getMatchStartIndex() - 1;
+            lineEndIndex = lineStartIndex + matchLength;
             matchStartIndex = 0;
             matchEndIndex = matchLength;
 
-            while (lineEndIndex > formattedLength - 1) {
-                lineStartIndex--;
-                lineEndIndex--;
-                matchStartIndex++;
-                matchEndIndex++;
-            }
-
-            formattedLength = lineEndIndex - lineStartIndex;
-            while (formattedLength < settings.getMaxLineLength()) {
+            int currentLen = lineEndIndex - lineStartIndex;
+            while (currentLen < settings.getMaxLineLength()) {
                 if (lineStartIndex > 0) {
                     lineStartIndex--;
                     matchStartIndex++;
                     matchEndIndex++;
-                    formattedLength = lineEndIndex - lineStartIndex;
+                    currentLen++;
                 }
-                if (formattedLength < settings.getMaxLineLength() && lineEndIndex < maxLineEndIndex) {
+                if (currentLen < settings.getMaxLineLength() && lineEndIndex < trimmedLength) {
                     lineEndIndex++;
+                    currentLen++;
                 }
-                formattedLength = lineEndIndex - lineStartIndex;
             }
 
-            formatted = formatted.substring(lineStartIndex, lineEndIndex);
-
-            if (lineStartIndex > 2) {
-                formatted = "..." + formatted.substring(3);
+            if (settings.getMaxLineLength() > 9) {
+                if (lineStartIndex > 2) {
+                    prefix = "...";
+                    lineStartIndex += 3;
+                }
+                if (lineEndIndex < (trimmedLength - 3)) {
+                    suffix = "...";
+                    lineEndIndex -= 3;
+                }
             }
-            if (lineEndIndex < maxLineEndIndex - 3) {
-                formatted = formatted.substring(0, formattedLength - 3) + "...";
-            }
+        } else {
+            lineEndIndex++;
         }
+
+        String formatted = prefix + resultLine.substring(lineStartIndex, lineEndIndex) + suffix;
 
         if (settings.getColorize()) {
             formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.getLineColor());
@@ -230,7 +267,7 @@ public class SearchResultFormatter {
                     .append(":")
                     .append(result.getMatchEndIndex())
                     .append("]: ")
-                    .append(formatMatchingLine(result));
+                    .append(formatResultLine(result));
         }
         return sb.toString();
     }
