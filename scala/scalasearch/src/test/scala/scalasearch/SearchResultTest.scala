@@ -9,10 +9,9 @@ import java.nio.file.Paths
 class SearchResultTest extends AnyFunSuite {
   test("test single-line search result") {
     val settings = SearchSettings(colorize = false)
-    val formatter = new SearchResultFormatter(settings)
     val pattern = "Search".r
-    val filePath = Paths.get("~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs")
-    val fileResult = new FileResult(filePath, FileType.Code)
+    val filePath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Code)
     val lineNum = 10
     val matchStartIndex = 15
     val matchEndIndex = 23
@@ -21,16 +20,15 @@ class SearchResultTest extends AnyFunSuite {
       matchStartIndex, matchEndIndex, Some(line), List.empty, List.empty)
     val expectedOutput = "%s: %d: [%d:%d]: %s".format(filePath,
       lineNum, matchStartIndex, matchEndIndex, line.trim)
-    val output = formatter.format(searchResult)
+    val output = new SearchResultFormatter(settings).format(searchResult)
     assertEquals(expectedOutput, output)
   }
 
   test("test single-line longer than maxlinelength search result") {
     val settings = SearchSettings(colorize = false, maxLineLength = 100)
-    val formatter = new SearchResultFormatter(settings)
     val pattern = "maxlen".r
-    val filePath = Paths.get("./maxlen.txt")
-    val fileResult = new FileResult(filePath, FileType.Text)
+    val filePath = "./maxlen.txt"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Text)
     val lineNum = 1
     val matchStartIndex = 53
     val matchEndIndex = 59
@@ -40,16 +38,15 @@ class SearchResultTest extends AnyFunSuite {
     val expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
     val expectedOutput = "%s: %d: [%d:%d]: %s".format(filePath,
       lineNum, matchStartIndex, matchEndIndex, expectedLine)
-    val output = formatter.format(searchResult)
+    val output = new SearchResultFormatter(settings).format(searchResult)
     assertEquals(expectedOutput, output)
   }
 
   test("test single-line longer colorize search result") {
     val settings = SearchSettings(colorize = true, maxLineLength = 100)
-    val formatter = new SearchResultFormatter(settings)
     val pattern = "maxlen".r
-    val filePath = Paths.get("./maxlen.txt")
-    val fileResult = new FileResult(filePath, FileType.Text)
+    val filePath = "./maxlen.txt"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Text)
     val lineNum = 1
     val matchStartIndex = 53
     val matchEndIndex = 59
@@ -63,15 +60,57 @@ class SearchResultTest extends AnyFunSuite {
       "89012345678901234567890123456789012345678901..."
     val expectedOutput = "%s: %d: [%d:%d]: %s".format(filePath,
       lineNum, matchStartIndex, matchEndIndex, expectedLine)
-    val output = formatter.format(searchResult)
+    val output = new SearchResultFormatter(settings).format(searchResult)
+    assertEquals(expectedOutput, output)
+  }
+
+  test("test match length longer colorize search result") {
+    val settings = SearchSettings(colorize = true, maxLineLength = 100)
+    val pattern = "\\d+maxlen\\d+".r
+    val filePath = "./maxlen.txt"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Text)
+    val lineNum = 10
+    val matchStartIndex = 1
+    val matchEndIndex = 110
+    val line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+    val searchResult = SearchResult(pattern, Some(fileResult), lineNum,
+      matchStartIndex, matchEndIndex, Some(line), List.empty, List.empty)
+    val expectedLine = ConsoleColor.GREEN.toString +
+      "0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456" +
+      ConsoleColor.RESET.toString +
+      "..."
+    val expectedOutput = "%s: %d: [%d:%d]: %s".format(filePath,
+      lineNum, matchStartIndex, matchEndIndex, expectedLine)
+    val output = new SearchResultFormatter(settings).format(searchResult)
+    assertEquals(expectedOutput, output)
+  }
+
+  test("test match length longer colorize search result #2") {
+    val settings = SearchSettings(colorize = true, maxLineLength = 100)
+    val pattern = "\\d+maxlen\\d+".r
+    val filePath = "./maxlen.txt"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Text)
+    val lineNum = 10
+    val matchStartIndex = 11
+    val matchEndIndex = 120
+    val line = "ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ"
+    val searchResult = SearchResult(pattern, Some(fileResult), lineNum,
+      matchStartIndex, matchEndIndex, Some(line), List.empty, List.empty)
+    val expectedLine = "..." +
+      ConsoleColor.GREEN.toString +
+      "3456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456" +
+      ConsoleColor.RESET.toString +
+      "..."
+    val expectedOutput = "%s: %d: [%d:%d]: %s".format(filePath,
+      lineNum, matchStartIndex, matchEndIndex, expectedLine)
+    val output = new SearchResultFormatter(settings).format(searchResult)
     assertEquals(expectedOutput, output)
   }
 
   test("test binary file search result") {
-    val formatter = new SearchResultFormatter(SearchSettings())
     val pattern = "Search".r
-    val filePath = Paths.get("~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe")
-    val fileResult = new FileResult(filePath, FileType.Binary)
+    val filePath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Binary)
     val lineNum = 0
     val matchStartIndex = 0
     val matchEndIndex = 0
@@ -79,15 +118,14 @@ class SearchResultTest extends AnyFunSuite {
     val searchResult = new SearchResult(pattern, Some(fileResult), lineNum,
       matchStartIndex, matchEndIndex, line)
     val expectedOutput = "%s matches at [%d:%d]".format(filePath, matchStartIndex, matchEndIndex)
-    val output = formatter.format(searchResult)
+    val output = new SearchResultFormatter(SearchSettings()).format(searchResult)
     assertEquals(expectedOutput, output)
   }
 
   test("test multi-line search result") {
-    val formatter = new SearchResultFormatter(SearchSettings(colorize = false))
     val pattern = "Search".r
-    val filePath = Paths.get("~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs")
-    val fileResult = new FileResult(filePath, FileType.Code)
+    val filePath = "~/src/git/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Code)
     val lineNum = 10
     val matchStartIndex = 15
     val matchEndIndex = 23
@@ -106,7 +144,7 @@ class SearchResultTest extends AnyFunSuite {
         |  11 | 	{
         |  12 | 		private readonly FileTypes _fileTypes;
         |""".stripMargin.format(filePath, lineNum, matchStartIndex, matchEndIndex)
-    val output = formatter.format(searchResult)
+    val output = new SearchResultFormatter(SearchSettings(colorize = false)).format(searchResult)
     assertEquals(expectedOutput, output)
   }
 }

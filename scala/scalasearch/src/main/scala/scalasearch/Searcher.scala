@@ -645,7 +645,6 @@ object Searcher {
     ss => if (ss.searchPatterns.nonEmpty) None else Some("No search patterns defined"),
     ss => if (ss.linesAfter >= 0) None else Some("Invalid linesafter"),
     ss => if (ss.linesBefore >= 0) None else Some("Invalid linesbefore"),
-    ss => if (ss.maxLineLength >= 0) None else Some("Invalid maxlinelength"),
   )
 
   def listToString(stringList: Iterable[Any]): String = {

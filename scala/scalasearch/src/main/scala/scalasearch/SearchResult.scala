@@ -162,61 +162,128 @@ class SearchResultFormatter(val settings: SearchSettings) {
     fileResultFormatter.colorize(s, matchStartIndex, matchEndIndex, color)
   }
 
-  private def formatMatchingLine(result: SearchResult): String = {
+  private def formatResultMatch(result: SearchResult): String = {
     result.line match {
       case Some(line) =>
-        val leadingWhitespaceCount = line.takeWhile(c => Character.isWhitespace(c)).length
-        var formatted = line.trim
-        var formattedLength = formatted.length
-        val maxLineEndIndex = formattedLength - 1
-        val matchLength = result.matchEndIndex - result.matchStartIndex
-        var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
-        var matchEndIndex = matchStartIndex + matchLength
+        var matchStartIndex = result.matchStartIndex - 1
+        var matchEndIndex = result.matchEndIndex - 1
+        val matchLength = matchEndIndex - matchStartIndex
 
-        if (formattedLength > settings.maxLineLength) {
-          var lineStartIndex = matchStartIndex
-          var lineEndIndex = lineStartIndex + matchLength
-          matchStartIndex = 0
-          matchEndIndex = matchLength
+        var prefix = ""
+        var suffix = ""
+        var colorStartIndex = 0
+        var colorEndIndex = matchLength
 
-          while (lineEndIndex > formattedLength - 1) {
-            lineStartIndex -= 1
-            lineEndIndex -= 1
-            matchStartIndex += 1
-            matchEndIndex += 1
-          }
-
-          formattedLength = lineEndIndex - lineStartIndex
-          while (formattedLength < settings.maxLineLength) {
-            if (lineStartIndex > 0) {
-              lineStartIndex -= 1
-              matchStartIndex += 1
-              matchEndIndex += 1
-              formattedLength = lineEndIndex - lineStartIndex
-            }
-            if (formattedLength < settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
-              lineEndIndex += 1
-            }
-            formattedLength = lineEndIndex - lineStartIndex
-          }
-
-          formatted = formatted.substring(lineStartIndex, lineEndIndex)
-
-          if (lineStartIndex > 2) {
-            formatted = "..." + formatted.substring(3)
-          }
-          if (lineEndIndex < maxLineEndIndex - 3) {
-            formatted = formatted.substring(0, formattedLength - 3) + "..."
-          }
+        if (matchLength > settings.maxLineLength) {
+          prefix = if (matchStartIndex > 2) "..." else ""
+          suffix = "..."
+          colorStartIndex = prefix.length
+          colorEndIndex = settings.maxLineLength - 3
+          matchEndIndex = matchStartIndex + colorEndIndex
+          matchStartIndex = matchStartIndex + colorStartIndex
         }
+
+        val matchString = prefix + line.substring(matchStartIndex, matchEndIndex) + suffix
 
         if (settings.colorize) {
-          formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.lineColor)
+          colorize(matchString, colorStartIndex, colorEndIndex, settings.lineColor)
+        } else {
+          matchString
+        }
+      case None => ""
+    }
+  }
+
+  private def leadingWhitespaceCount(s: String): Int = {
+    var idx = 0
+    while (idx < s.length && Character.isWhitespace(s.charAt(idx))) {
+      idx += 1
+    }
+    idx
+  }
+
+  private def trailingWhitespaceCount(s: String): Int = {
+    var idx = s.length - 1
+    while (idx > 0 && Character.isWhitespace(s.charAt(idx))) {
+      idx -= 1
+    }
+    s.length - 1 - idx
+  }
+
+  private def getLineIndices(lineStartIdx: Int, lineEndIdx: Int, matchStartIdx: Int, matchEndIdx: Int, maxIdx: Int, maxLength: Int): (Int, Int, Int, Int) = {
+    if (maxLength == 0 || lineEndIdx - lineStartIdx == 0) {
+      (0, 0, 0, 0)
+    } else if (lineEndIdx - lineStartIdx < maxLength) {
+      val (lsi, msi, mei) =
+        if (lineStartIdx > 0) {
+          (lineStartIdx - 1, matchStartIdx + 1, matchEndIdx + 1)
+        } else {
+          (lineStartIdx, matchStartIdx, matchEndIdx)
+        }
+      val lei = if (lineEndIdx - lsi < maxLength && lineEndIdx < maxIdx) lineEndIdx + 1 else lineEndIdx
+      getLineIndices(lsi, lei, msi, mei, maxIdx, maxLength)
+    } else {
+      (lineStartIdx, lineEndIdx, matchStartIdx, matchEndIdx)
+    }
+  }
+
+  private def formatResultLineWithMatch(result: SearchResult): String = {
+    if (result.line.isEmpty || result.line.get.trim.isEmpty || settings.maxLineLength == 0) {
+      ""
+    } else {
+      val line = result.line.get
+      val matchLength = result.matchEndIndex - result.matchStartIndex
+      val maxLineLength =
+        if (settings.maxLineLength < 0) {
+          result.line.get.length + 1
+        } else {
+          settings.maxLineLength
         }
 
-        formatted
+      val lineStartIdx = leadingWhitespaceCount(line)
+      val lineEndIdx = line.length - 1 - trailingWhitespaceCount(line)
+      val trimmedLength = lineEndIdx - lineStartIdx
 
-      case None => ""
+      val matchStartIdx = result.matchStartIndex - 1
+      val matchEndIdx = matchStartIdx + matchLength
+
+      val (lsi, lei, msi, mei) =
+        if (maxLineLength > 0 && trimmedLength > maxLineLength) {
+          getLineIndices(matchStartIdx, matchEndIdx, 0, matchLength, trimmedLength, maxLineLength)
+        } else {
+          (lineStartIdx, lineEndIdx+1, matchStartIdx, matchEndIdx)
+        }
+
+      val (prefix, lsi2) =
+        if (lsi > 2) {
+          ("...", lsi + 3)
+        } else {
+          ("", lsi)
+        }
+      val (suffix, lei2) =
+        if (lei < (trimmedLength - 3)) {
+          ("...", lei - 3)
+        } else {
+          ("", lei)
+        }
+
+      val formatted = prefix + line.substring(lsi2, lei2) + suffix
+
+      if (settings.colorize) {
+        colorize(formatted, msi, mei, settings.lineColor)
+      } else {
+        formatted
+      }
+    }
+  }
+
+  private def formatResultLine(result: SearchResult): String = {
+    if (result.line.isEmpty || result.line.get.trim.isEmpty || settings.maxLineLength == 0) {
+      ""
+    } else if (settings.maxLineLength > 0 && result.matchEndIndex - result.matchStartIndex > settings.maxLineLength) {
+      formatResultMatch(result)
+    } else {
+      formatResultLineWithMatch(result)
     }
   }
 
@@ -225,7 +292,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
     val matchString =
       if (result.lineNum > 0) {
         ": %d: [%d:%d]: %s".format(result.lineNum, result.matchStartIndex, result.matchEndIndex,
-          formatMatchingLine(result))
+          formatResultLine(result))
       } else {
         " matches at [%d:%d]".format(result.matchStartIndex, result.matchEndIndex)
       }
