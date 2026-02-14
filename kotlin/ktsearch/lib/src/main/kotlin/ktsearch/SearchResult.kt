@@ -236,8 +236,8 @@ class SearchResultFormatter(val settings: SearchSettings) {
         val trimmedLength = lineEndIdx - lineStartIdx
 
         if (maxLimit && trimmedLength > settings.maxLineLength) {
-            lineStartIdx = result.matchStartIndex - 1
-            lineEndIdx = lineStartIdx + matchLength
+            lineStartIdx = matchStartIdx
+            lineEndIdx = matchEndIdx
             matchStartIdx = 0
             matchEndIdx = matchLength
 
