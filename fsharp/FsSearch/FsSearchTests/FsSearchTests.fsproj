@@ -18,6 +18,7 @@
         <Compile Include="SearcherTests.fs" />
         <Compile Include="SearchOptionsTests.fs" />
         <Compile Include="SearchResultTests.fs" />
+        <Compile Include="SearchResultFormatterTests.fs" />
         <Compile Include="SearchSettingTests.fs" />
         <EmbeddedResource Include="Resources\testFile2.txt" />
     </ItemGroup>

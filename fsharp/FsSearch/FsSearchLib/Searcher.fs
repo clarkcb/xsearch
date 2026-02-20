@@ -35,8 +35,7 @@ type Searcher (settings : SearchSettings) =
             [
                 (if List.isEmpty settings.SearchPatterns then (Some "No search patterns defined") else None);
                 (if settings.LinesBefore < 0 then (Some "Invalid linesbefore") else None);
-                (if settings.LinesAfter < 0 then (Some "Invalid linesafter") else None);
-                (if settings.MaxLineLength < 0 then (Some "Invalid maxlinelength") else None);
+                (if settings.LinesAfter < 0 then (Some "Invalid linesafter") else None)
                 (this.EncodingFromStringOrError settings.TextFileEncoding);
             ]
             |> List.choose id
