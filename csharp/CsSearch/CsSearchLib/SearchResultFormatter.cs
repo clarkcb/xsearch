@@ -131,85 +131,112 @@ public class SearchResultFormatter
 		return sb.ToString();
 	}
 
-	private string FormatMatchingLine(SearchResult result)
+	private string FormatMatch(SearchResult result)
 	{
-		if (string.IsNullOrWhiteSpace(result.Line)) return "";
-		
-		var formatted = result.Line!.TrimEnd();
+		if (string.IsNullOrWhiteSpace(result.Line) || Settings.MaxLineLength == 0) return "";
+
 		var matchStartIndex = result.MatchStartIndex - 1;
 		var matchEndIndex = result.MatchEndIndex - 1;
 		var matchLength = matchEndIndex - matchStartIndex;
+
+		var prefix = "";
+		var suffix = "";
+		var colorStartIndex = 0;
+		var colorEndIndex = matchLength;
+
 		if (matchLength > Settings.MaxLineLength)
 		{
-			var prefix = "";
 			if (matchStartIndex > 2) prefix = "...";
-			matchEndIndex = matchStartIndex + Settings.MaxLineLength - 3 - prefix.Length;
-			formatted = prefix + result.Line!.Substring(matchStartIndex, matchEndIndex) + "...";
-			if (Settings.Colorize)
-			{
-				var colorStartIndex = prefix.Length;
-				var colorEndIndex = Settings.MaxLineLength - 3;
-				formatted = Colorize(formatted, colorStartIndex, colorEndIndex, Settings.LineColor);
-			}
+			suffix = "...";
+			colorStartIndex = prefix.Length;
+			colorEndIndex = Settings.MaxLineLength - 3;
+			matchEndIndex = matchStartIndex + colorEndIndex;
+			matchStartIndex += colorStartIndex;
+		}
+		
+		var matchString = prefix + result.Line.Substring(matchStartIndex, matchEndIndex - matchStartIndex) + suffix;
+		if (Settings.Colorize)
+		{
+			matchString = Colorize(matchString, colorStartIndex, colorEndIndex, Settings.LineColor);
+		}
+		return matchString;
+	}
 
-			return formatted;
+	private string FormatMatchingLine(SearchResult result)
+	{
+		if (string.IsNullOrWhiteSpace(result.Line) || Settings.MaxLineLength == 0) return "";
+
+		var maxLimit = Settings.MaxLineLength > 0;
+
+		if (maxLimit && result.MatchEndIndex - result.MatchStartIndex > Settings.MaxLineLength)
+		{
+			return FormatMatch(result);
 		}
 
-		var leadingWhitespaceCount = 0;
-		while (char.IsWhiteSpace(formatted[leadingWhitespaceCount]))
+		var lineStartIndex = 0;
+		var lineEndIndex = result.Line.Length - 1;
+		
+		while (char.IsWhiteSpace(result.Line[lineStartIndex]))
 		{
-			leadingWhitespaceCount++;
+			lineStartIndex++;
 		}
-		formatted = formatted.Trim();
-		var formattedLength = formatted.Length;
-		var maxLineEndIndex = formattedLength - 1;
-		matchStartIndex = result.MatchStartIndex - 1 - leadingWhitespaceCount;
-		matchEndIndex = matchStartIndex + matchLength;
-
-		if (formattedLength > Settings.MaxLineLength)
+		while (char.IsWhiteSpace(result.Line[lineEndIndex]))
 		{
-			var lineStartIndex = matchStartIndex;
-			var lineEndIndex = lineStartIndex + matchLength;
+			lineEndIndex--;
+		}
+
+		var matchLength = result.MatchEndIndex - result.MatchStartIndex;
+		var matchStartIndex = result.MatchStartIndex - 1 - lineStartIndex;
+		var matchEndIndex = matchStartIndex + matchLength;
+
+		var prefix = "";
+		var suffix = "";
+		
+		var trimmedLength = lineEndIndex - lineStartIndex;
+
+		if (maxLimit && trimmedLength > Settings.MaxLineLength)
+		{
+			lineStartIndex = result.MatchStartIndex - 1;
+			lineEndIndex = lineStartIndex + matchLength;
 			matchStartIndex = 0;
 			matchEndIndex = matchLength;
 
-			while (lineEndIndex > formattedLength - 1)
-			{
-				lineStartIndex--;
-				lineEndIndex--;
-				matchStartIndex++;
-				matchEndIndex++;
-			}
-
-			formattedLength = lineEndIndex - lineStartIndex;
-			while (formattedLength < Settings.MaxLineLength)
+			var currentLen = lineEndIndex - lineStartIndex;
+			while (currentLen < Settings.MaxLineLength)
 			{
 				if (lineStartIndex > 0)
 				{
 					lineStartIndex--;
 					matchStartIndex++;
 					matchEndIndex++;
-					formattedLength = lineEndIndex - lineStartIndex;
+					currentLen++;
 				}
-				if (formattedLength < Settings.MaxLineLength && lineEndIndex < maxLineEndIndex)
+
+				if (currentLen < Settings.MaxLineLength && lineEndIndex < trimmedLength)
 				{
 					lineEndIndex++;
+					currentLen++;
 				}
-				formattedLength = lineEndIndex - lineStartIndex;
 			}
-
-			formatted = formatted.Substring(lineStartIndex, formattedLength);
 
 			if (lineStartIndex > 2)
 			{
-				formatted = "..." + formatted.Substring(3);
+				prefix = "...";
+				lineStartIndex += 3;
 			}
 
-			if (lineEndIndex < maxLineEndIndex - 3)
+			if (lineEndIndex < trimmedLength - 3)
 			{
-				formatted = formatted.Substring(0, formattedLength - 3) + "...";
+				suffix = "...";
+				lineEndIndex -= 3;
 			}
 		}
+		else
+		{
+			lineEndIndex++;
+		}
+		
+		var formatted = prefix + result.Line.Substring(lineStartIndex, lineEndIndex - lineStartIndex) + suffix;
 
 		if (Settings.Colorize)
 		{

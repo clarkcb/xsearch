@@ -54,8 +54,6 @@ public class Searcher
 			throw new SearchException("Invalid linesbefore");
 		if (Settings.LinesAfter < 0)
 			throw new SearchException("Invalid linesafter");
-		if (Settings.MaxLineLength < 0)
-			throw new SearchException("Invalid maxlinelength");
 	}
 
 	private void AddSearchResult(SearchResult searchResult)
