@@ -52,17 +52,99 @@
     (fn [^String match]
       match)))
 
-(defn format-matching-line [^SearchResult r ^SearchSettings settings]
-  (let [trimmed (str/trim (:line r))]
-    (if (:colorize settings)
-      (let [trimmed (str/trim (:line r))
-            leading-whitespace-count (- (count (str/trimr (:line r))) (count trimmed))
-            match-length (- (:matchendindex r) (:matchstartindex r))
-            adj-match-start-index (- (:matchstartindex r) 1 leading-whitespace-count)
-            adj-match-end-index (+ adj-match-start-index match-length)
-            formatted (colorize-string trimmed adj-match-start-index adj-match-end-index (:line-color settings))]
-        formatted)
-      trimmed)))
+(defn format-result-match [^SearchResult r ^SearchSettings settings]
+  (if (or (= (str/trim (:line r)) "") (= (:max-line-length settings) 0))
+    ""
+    (let [match-start-idx (dec (:matchstartindex r))
+          match-end-idx (dec (:matchendindex r))
+          match-length (- match-end-idx match-start-idx)
+          gt-max-length (> match-length (:max-line-length settings))
+          prefix (if (and gt-max-length (> match-start-idx 2)) "..." "")
+          suffix (if gt-max-length "..." "")
+          match-str (if gt-max-length
+                      (str prefix (subs (:line r) match-start-idx (+ match-start-idx (- (:max-line-length settings) (.length prefix) 3))) suffix)
+                      (str prefix (subs (:line r) match-start-idx match-end-idx) suffix))
+          color-start-idx (.length prefix)
+          color-end-idx (if gt-max-length (- (:max-line-length settings) 3) match-length)]
+      (if (:colorize settings)
+        (colorize-string match-str color-start-idx color-end-idx (:line-color settings))
+        match-str))))
+
+;;; find the start-idx and end-idx that equal max-length without going beyond first or last idx
+(defn get-max-length-indices
+  ([start-idx end-idx max-idx max-length]
+   (get-max-length-indices start-idx end-idx 0 max-idx max-length))
+  ([start-idx end-idx min-idx max-idx max-length]
+    (cond
+      (= (- max-idx min-idx) max-length) [min-idx max-idx]
+      (= (- end-idx start-idx) max-length) [start-idx end-idx]
+      :else
+      (let [next-start-idx (if (> start-idx min-idx) (dec start-idx) start-idx)
+            next-end-idx (if (< (- end-idx next-start-idx) max-idx) (inc end-idx) end-idx)]
+        (get-max-length-indices next-start-idx next-end-idx min-idx max-idx max-length))
+    )))
+;    (if (= (- end-idx start-idx) max-length)
+;      [start-idx end-idx]
+;      (let [next-start-idx (if (> start-idx 0) (dec start-idx) start-idx)
+;            next-end-idx (if (< (- end-idx next-start-idx) max-length) (inc end-idx) end-idx)]
+;        (get-max-length-indices next-start-idx next-end-idx max-length)))))
+
+(defn get-string-indices [^String s match-start-idx match-end-idx max-length]
+  (cond
+    (= (str/trim s) "") [0, 0, 0, 0]
+    (= max-length 0) [0, 0, 0, 0]
+    (< max-length 0) (get-string-indices s match-start-idx match-end-idx (inc (.length s)))
+    :else
+      (let [s-length (.length s)
+            line-start-idx (- s-length (.length (str/triml s)))
+            line-end-idx (- (dec s-length) (- s-length (.length (str/trimr s))))
+            trimmed-length (- line-end-idx line-start-idx)
+            match-length (- match-end-idx match-start-idx)
+            match-start-idx' (- match-start-idx line-start-idx)
+            match-end-idx' (+ match-start-idx' match-length)
+            [lsi lei]
+              (if (> trimmed-length max-length)
+                (get-max-length-indices match-start-idx' match-end-idx' trimmed-length max-length)
+                [line-start-idx (inc line-end-idx)])
+            msi (- match-start-idx lsi)
+            mei (+ msi match-length)]
+        [lsi lei msi mei])))
+
+(defn format-result-line-with-match [^SearchResult r ^SearchSettings settings]
+  (if (or (= (str/trim (:line r)) "") (= (:max-line-length settings) 0))
+    ""
+    (let [line (:line r)
+          line-length (.length line)
+          match-start-idx (dec (:matchstartindex r))
+          match-end-idx (dec (:matchendindex r))
+          match-length (- match-end-idx match-start-idx)
+          max-line-length (if (< (:max-line-length settings) 0) (inc line-length) (:max-line-length settings))
+          max-limit (> max-line-length 0)
+          [lsi lei msi mei] (get-string-indices line match-start-idx match-end-idx max-line-length)
+          line-length' (- lei lsi)]
+      (if (= line-length' 0)
+        ""
+        (let [prefix (if (and max-limit (> lsi 2)) "..." "")
+              suffix (if (and max-limit (< lei (- line-length 2))) "..." "")
+              lsi' (+ lsi (.length prefix))
+              lei' (- lei (.length suffix))
+              truncated (str prefix (subs line lsi' lei') suffix)]
+          (if (:colorize settings)
+            (colorize-string truncated msi mei (:line-color settings))
+            truncated))))))
+
+(defn format-result-line [^SearchResult r ^SearchSettings settings]
+  (if (or (= (str/trim (:line r)) "") (= (:max-line-length settings) 0))
+    ""
+    (let [match-length (- (:matchendindex r) (:matchstartindex r))
+          max-length
+            (cond
+              (= (:max-line-length settings) 0) 0
+              (< (:max-line-length settings) 0) (inc match-length)
+              :else (:max-line-length settings))]
+      (if (> match-length max-length)
+        (format-result-match r settings)
+        (format-result-line-with-match r settings)))))
 
 (defn get-multi-line-formatter [^SearchSettings settings]
   (let [format-file-result (get-file-result-formatter settings)
@@ -95,7 +177,7 @@
       (if (> (:line-num r) 0)
         (str
          (format-file-result (:file r)) ": " (:line-num r) ": [" (:matchstartindex r) ":"
-         (:matchendindex r) "]: " (format-matching-line r settings))
+         (:matchendindex r) "]: " (format-result-line r settings))
         (str (file-result-path (:file r)) " matches at [" (:matchstartindex r) ":"
              (:matchendindex r) "]")))))
 

@@ -43,7 +43,6 @@
                        ) nil (format "Invalid encoding: %s" (:text-file-encoding ss))))
                    (fn [ss] (if (< (:lines-after ss) 0) "Invalid lines-after" nil))
                    (fn [ss] (if (< (:lines-before ss) 0) "Invalid lines-before" nil))
-                   (fn [ss] (if (< (:max-line-length ss) 0) "Invalid max-line-length" nil))
                   ]]
         (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))))
 

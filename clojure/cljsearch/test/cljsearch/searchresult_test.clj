@@ -6,7 +6,7 @@
         [cljfind.consolecolor]
         [cljfind.fileresult :only (new-file-result file-result-path)]
         [cljfind.fileutil :only (get-path-name to-path)]
-        [cljsearch.searchresult :only (->SearchResult get-search-result-formatter)]
+        [cljsearch.searchresult :only (->SearchResult get-max-length-indices get-search-result-formatter)]
         [cljsearch.searchsettings :only (DEFAULT-SEARCH-SETTINGS)]))
 
 (def CSSEARCHPATH
@@ -19,7 +19,7 @@
           file-result (new-file-result file :code)
           line-num 10
           match-start-index 15
-          match-end-index 23
+          match-end-index 21
           line "\tpublic class Searcher\n"
           lines-before []
           lines-after []
@@ -34,8 +34,46 @@
               lines-after)
           expected (format "%s: %d: [%d:%d]: %s" (file-result-path file-result) line-num
             match-start-index match-end-index (str/trim line))
-          format-search-result (get-search-result-formatter settings)]
-      (is (= (format-search-result r) expected)))))
+          format-search-result (get-search-result-formatter settings)
+          formatted (format-search-result r)]
+      (is (= formatted expected)))))
+
+(deftest test-get-max-length-indices-from-start
+  (testing "test-get-max-length-indices-from-start"
+    (let [start-idx 0
+          end-idx 10
+          max-idx 100
+          target-length 100
+          expected-start-idx 0
+          expected-end-idx 100
+          result (get-max-length-indices start-idx end-idx max-idx target-length)]
+      (is (= (first result) expected-start-idx))
+      (is (= (second result) expected-end-idx)))))
+
+(deftest test-get-max-length-indices-from-middle
+  (testing "test-get-max-length-indices-from-middle"
+    (let [start-idx 45
+          end-idx 55
+          max-idx 100
+          target-length 100
+          expected-start-idx 0
+          expected-end-idx 100
+          result (get-max-length-indices start-idx end-idx max-idx target-length)]
+      (is (= (first result) expected-start-idx))
+      (is (= (second result) expected-end-idx)))))
+
+(deftest test-get-max-length-indices-from-end
+  (testing "test-get-max-length-indices-from-end"
+    (let [start-idx 90
+          end-idx 100
+          max-idx 100
+          target-length 100
+          expected-start-idx 0
+          expected-end-idx 100
+          result (get-max-length-indices start-idx end-idx max-idx target-length)]
+      (println "result: " result)
+      (is (= (first result) expected-start-idx))
+      (is (= (second result) expected-end-idx)))))
 
 (deftest test-singleline-longer-than-maxlength-search-result
   (testing "test-singleline-longer-than-maxlength-search-result"
@@ -60,8 +98,9 @@
           expected-line "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
           expected (format "%s: %d: [%d:%d]: %s" (file-result-path file-result) line-num
             match-start-index match-end-index expected-line)
-          format-search-result (get-search-result-formatter settings)]
-      (is (= (format-search-result r) expected)))))
+          format-search-result (get-search-result-formatter settings)
+          formatted (format-search-result r)]
+      (is (= formatted expected)))))
 
 (deftest test-singleline-colorize-search-result
   (testing "test-singleline-longer-than-maxlength-search-result"
@@ -86,8 +125,9 @@
           expected-line (str "...89012345678901234567890123456789012345678901" CONSOLE_COLOR_GREEN "maxlen" CONSOLE_COLOR_RESET "89012345678901234567890123456789012345678901...")
           expected (format "%s: %d: [%d:%d]: %s" (file-result-path file-result) line-num
             match-start-index match-end-index expected-line)
-          format-search-result (get-search-result-formatter settings)]
-      (is (= (format-search-result r) expected)))))
+          format-search-result (get-search-result-formatter settings)
+          formatted (format-search-result r)]
+      (is (= formatted expected)))))
 
 (deftest test-binaryfile-search-result
   (testing "test-binaryfile-search-result"
@@ -116,7 +156,7 @@
 
 (deftest test-multiline-search-result
   (testing "test-multiline-search-result"
-    (let [settings DEFAULT-SEARCH-SETTINGS
+    (let [settings (assoc DEFAULT-SEARCH-SETTINGS :lines-before 2 :lines-after 2)
           file (to-path (str CSSEARCHPATH "/Searcher.cs"))
           file-result (new-file-result file :code)
           line-num 10
@@ -146,5 +186,6 @@
 "
           expected (format outputformat (file-result-path file-result) line-num
             match-start-index match-end-index)
-          format-search-result (get-search-result-formatter settings)]
-      (is (= (format-search-result r) expected)))))
+          format-search-result (get-search-result-formatter settings)
+          formatted (format-search-result r)]
+      (is (= formatted expected)))))
