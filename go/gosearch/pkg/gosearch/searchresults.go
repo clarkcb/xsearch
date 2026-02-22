@@ -248,59 +248,114 @@ func (f *SearchResultFormatter) singleLineFormat(r *SearchResult) string {
 	}
 }
 
-func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
-	formatted := r.Line
-	leadingWhitespaceCount := 0
+func (f *SearchResultFormatter) formatLineMatch(r *SearchResult) string {
+	if strings.TrimSpace(r.Line) == "" || f.Settings.MaxLineLength() == 0 {
+		return ""
+	}
 
-	for _, c := range formatted {
+	matchStartIndex := r.MatchStartIndex - 1
+	matchEndIndex := r.MatchStartIndex - 1
+	matchLength := r.MatchEndIndex - r.MatchStartIndex
+
+	prefix := ""
+	suffix := ""
+	colorStartIndex := 0
+	colorEndIndex := matchLength
+
+	if matchLength > f.Settings.maxLineLength {
+		if matchStartIndex > 2 {
+			prefix = "..."
+		}
+		suffix = "..."
+		colorStartIndex = len(prefix)
+		colorEndIndex = f.Settings.maxLineLength - len(suffix)
+		matchEndIndex = matchStartIndex + colorEndIndex
+		matchStartIndex = matchStartIndex + colorStartIndex
+	}
+
+	matchString := prefix + r.Line[matchStartIndex:matchEndIndex] + suffix
+
+	if f.Settings.Colorize() {
+		matchString = colorize(matchString, colorStartIndex, colorEndIndex, f.Settings.LineColor())
+	}
+
+	return matchString
+}
+
+func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
+	if strings.TrimSpace(r.Line) == "" || f.Settings.MaxLineLength() == 0 {
+		return ""
+	}
+
+	maxLimit := f.Settings.MaxLineLength() > 0
+
+	if maxLimit && r.MatchEndIndex-r.MatchStartIndex > f.Settings.maxLineLength {
+		return f.formatLineMatch(r)
+	}
+
+	lineStartIndex := 0
+	lineEndIndex := len(r.Line) - 1
+
+	for _, c := range r.Line {
 		if unicode.IsSpace(c) {
-			leadingWhitespaceCount += 1
+			lineStartIndex += 1
 		} else {
 			break
 		}
 	}
-	formatted = strings.TrimSpace(formatted)
-	formattedLength := len(formatted)
-	maxLineEndIndex := formattedLength - 1
+
+	runes := []rune(r.Line)
+	for i := len(r.Line) - 1; i > 0; i = i - 1 {
+		if unicode.IsSpace(runes[i]) {
+			lineEndIndex -= 1
+		} else {
+			break
+		}
+	}
+
 	matchLength := r.MatchEndIndex - r.MatchStartIndex
-	matchStartIndex := r.MatchStartIndex - 1 - leadingWhitespaceCount
+	matchStartIndex := r.MatchStartIndex - 1 - lineStartIndex
 	matchEndIndex := matchStartIndex + matchLength
 
-	if formattedLength > f.Settings.MaxLineLength() {
-		lineStartIndex := matchStartIndex
-		lineEndIndex := lineStartIndex + matchLength
+	prefix := ""
+	suffix := ""
+
+	trimmedLength := lineEndIndex - lineStartIndex
+
+	if maxLimit && trimmedLength > f.Settings.maxLineLength {
+		lineStartIndex = r.MatchStartIndex - 1
+		lineEndIndex = lineStartIndex + matchLength
 		matchStartIndex = 0
 		matchEndIndex = matchLength
 
-		for lineEndIndex > formattedLength-1 {
-			lineStartIndex -= 1
-			lineEndIndex -= 1
-			matchStartIndex += 1
-			matchEndIndex += 1
-		}
-
-		formattedLength = lineEndIndex - lineStartIndex
-		for formattedLength < f.Settings.MaxLineLength() {
+		currentLen := lineEndIndex - lineStartIndex
+		for currentLen < f.Settings.maxLineLength {
 			if lineStartIndex > 0 {
 				lineStartIndex -= 1
 				matchStartIndex += 1
 				matchEndIndex += 1
-				formattedLength = lineEndIndex - lineStartIndex
+				currentLen += 1
 			}
-			if formattedLength < f.Settings.MaxLineLength() && lineEndIndex < maxLineEndIndex {
+			if currentLen < f.Settings.maxLineLength && lineEndIndex < trimmedLength {
 				lineEndIndex += 1
+				currentLen += 1
 			}
-			formattedLength = lineEndIndex - lineStartIndex
 		}
 
-		formatted = formatted[lineStartIndex:lineEndIndex]
 		if lineStartIndex > 2 {
-			formatted = "..." + formatted[3:]
+			prefix = "..."
+			lineStartIndex += 3
 		}
-		if lineEndIndex < maxLineEndIndex-3 {
-			formatted = formatted[0:len(formatted)-3] + "..."
+		if lineEndIndex < trimmedLength-3 {
+			suffix = "..."
+			lineEndIndex -= 3
 		}
+
+	} else {
+		lineEndIndex += 1
 	}
+
+	formatted := prefix + r.Line[lineStartIndex:lineEndIndex] + suffix
 
 	if f.Settings.Colorize() {
 		formatted = colorize(formatted, matchStartIndex, matchEndIndex, f.Settings.LineColor())

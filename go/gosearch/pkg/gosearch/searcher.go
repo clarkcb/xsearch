@@ -71,35 +71,6 @@ func (s *Searcher) GetSearchResults() *SearchResults {
 	return s.searchResults
 }
 
-const (
-	NoSearchPatternsDefined = "No search patterns defined"
-	InvalidLinesAfter       = "Invalid linesafter"
-	InvalidLinesBefore      = "Invalid linesbefore"
-	InvalidMaxLineLength    = "Invalid maxlinelength"
-	InvalidTextFileEncoding = "Invalid or unsupported text file encoding"
-)
-
-func (s *Searcher) validateSettings() error {
-	if s.Settings.SearchPatterns().IsEmpty() {
-		return fmt.Errorf(NoSearchPatternsDefined)
-	}
-	if s.Settings.LinesAfter() < 0 {
-		return fmt.Errorf(InvalidLinesAfter)
-	}
-	if s.Settings.LinesBefore() < 0 {
-		return fmt.Errorf(InvalidLinesBefore)
-	}
-	if s.Settings.MaxLineLength() < 0 {
-		return fmt.Errorf(InvalidMaxLineLength)
-	}
-	enc, err := ianaindex.IANA.Encoding(s.Settings.TextFileEncoding())
-	if err != nil {
-		return fmt.Errorf(InvalidTextFileEncoding)
-	}
-	s.textDecoder = enc.NewDecoder()
-	return nil
-}
-
 func (s *Searcher) addSearchResult(r *SearchResult) {
 	s.searchResults.AddSearchResult(r)
 }
@@ -740,24 +711,20 @@ func (s *Searcher) printToBeSearched(fileResults *gofind.FileResults) {
 	}
 }
 
+// if we get true from addResultsDoneChan, set addResultsDone to true
+// if we get a result from addResultChan channel, add to searchResults
+// if we get an error from errChan channel, add to errors
 func (s *Searcher) activateSearchChannels() {
-	// get the results from the results channel
-	searchedFiles := map[string]bool{}
-	searchingDone := false
-	for !searchingDone {
+	addResultsDone := false
+	for !addResultsDone {
 		select {
+		case b := <-s.addResultsDoneChan:
+			addResultsDone = b
+			s.searchDoneChan <- b
 		case r := <-s.addResultChan:
 			s.addSearchResult(r)
-		case f := <-s.fileSearchedChan:
-			searchedFiles[f] = true
-			if len(searchedFiles) == s.fileResults.Len() {
-				s.searchDoneChan <- true
-				searchingDone = true
-			}
 		case e := <-s.errChan:
 			s.errors = append(s.errors, e)
-			s.searchDoneChan <- true
-			searchingDone = true
 		}
 	}
 }
@@ -775,17 +742,11 @@ func (s *Searcher) searchFiles(fileResults *gofind.FileResults) error {
 		s.batchSearchFiles(files)
 	}
 
-	//searchDone := false
-	//for !searchDone {
-	//	select {
-	//	case b := <-s.searchDoneChan:
-	//		searchDone = b
-	//	}
-	//}
-
 	if len(s.errors) > 0 {
 		return s.errors[0]
 	}
+
+	s.addResultsDoneChan <- true
 	return nil
 }
 
@@ -810,9 +771,19 @@ func (s *Searcher) Search() (*SearchResults, error) {
 	if s.Settings.Verbose() {
 		gofind.Log("\nStarting file search...\n")
 	}
+
 	if err := s.searchFiles(s.searchResults.FileResults); err != nil {
 		return nil, err
 	}
+
+	searchDone := false
+	for !searchDone {
+		select {
+		case b := <-s.searchDoneChan:
+			searchDone = b
+		}
+	}
+
 	if s.Settings.Verbose() {
 		gofind.Log("\nFile search complete.\n")
 	}
