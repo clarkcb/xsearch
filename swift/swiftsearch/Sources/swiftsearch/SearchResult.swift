@@ -77,58 +77,105 @@ public class SearchResultFormatter {
         fileFormatter.colorize(s, matchStartIndex, matchEndIndex, color)
     }
 
-    private func formatMatchingLine(result: SearchResult) -> String {
-        let whitespaceChars: Set<Character> = [" ", "\t", "\n", "\r"]
-        let leadingWhitespaceCount = result.line.prefix(while: { whitespaceChars.contains($0) }).count
-        var formatted = result.line.trimmingCharacters(in: whitespace as CharacterSet)
-        var formattedLength = formatted.count
-        let maxLineEndIndex = formattedLength - 1
+    private func formatResultMatch(result: SearchResult) -> String {
+        if result.line == "" || settings.maxLineLength == 0 {
+            return ""
+        }
+        
+        var matchStartIndex = result.matchStartIndex - 1
+        var matchEndIndex = result.matchEndIndex - 1
         let matchLength = result.matchEndIndex - result.matchStartIndex
-        var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount
-        var matchEndIndex = matchStartIndex + matchLength
+        
+        var prefix = ""
+        var suffix = ""
+        var colorStartIndex = 0
+        var colorEndIndex = matchLength
+        
+        if matchLength > settings.maxLineLength {
+            if matchStartIndex > 2 {
+                prefix = "..."
+            }
+            suffix = "..."
+            colorStartIndex = prefix.count
+            colorEndIndex = Int(settings.maxLineLength) - suffix.count
+            matchEndIndex = matchStartIndex + colorEndIndex
+            matchStartIndex = matchStartIndex + colorStartIndex
+        }
 
-        if formattedLength > settings.maxLineLength {
-            var lineStartIndex = matchStartIndex
-            var lineEndIndex = lineStartIndex + matchLength
+        let strLineStartIndex = result.line.index(result.line.startIndex, offsetBy: matchStartIndex)
+        let strLineEndIndex = result.line.index(result.line.startIndex, offsetBy: matchEndIndex)
+        var matchString = prefix + String(result.line[strLineStartIndex ..< strLineEndIndex]) + suffix
+
+        if settings.colorize {
+            matchString = colorize(matchString, colorStartIndex, colorEndIndex, settings.lineColor)
+        }
+
+        return matchString
+    }
+
+    private func formatResultLine(result: SearchResult) -> String {
+        if result.line == "" || settings.maxLineLength == 0 {
+            return ""
+        }
+        
+        let maxLimit = settings.maxLineLength > 0
+
+        if maxLimit && result.matchEndIndex - result.matchStartIndex > settings.maxLineLength {
+            return formatResultMatch(result: result)
+        }
+
+        let whitespaceChars: Set<Character> = [" ", "\t", "\n", "\r"]
+        var lineStartIndex = result.line.prefix(while: { whitespaceChars.contains($0) }).count
+        let trimmed = result.line.trimmingCharacters(in: whitespace as CharacterSet)
+        let trimmedLength = trimmed.count
+        var lineEndIndex = trimmedLength - 1
+
+        let matchLength = result.matchEndIndex - result.matchStartIndex
+        var matchStartIndex = result.matchStartIndex - 1 - lineStartIndex
+        var matchEndIndex = matchStartIndex + matchLength
+        
+        if trimmedLength == 0 {
+            return ""
+        }
+
+        var prefix = ""
+        var suffix = ""
+
+        if maxLimit && trimmedLength > settings.maxLineLength {
+            lineStartIndex = result.matchStartIndex - 1
+            lineEndIndex = lineStartIndex + matchLength
             matchStartIndex = 0
             matchEndIndex = matchLength
 
-            while lineEndIndex > formattedLength - 1 {
-                lineStartIndex -= 1
-                lineEndIndex -= 1
-                matchStartIndex += 1
-                matchEndIndex += 1
-            }
-
-            formattedLength = lineEndIndex - lineStartIndex
-            while formattedLength < settings.maxLineLength {
+            var currentLen = lineEndIndex - lineStartIndex
+            while currentLen < settings.maxLineLength {
                 if lineStartIndex > 0 {
                     lineStartIndex -= 1
                     matchStartIndex += 1
                     matchEndIndex += 1
-                    formattedLength = lineEndIndex - lineStartIndex
+                    currentLen += 1
                 }
-                if formattedLength < settings.maxLineLength, lineEndIndex < maxLineEndIndex {
+                if currentLen < settings.maxLineLength && lineEndIndex < trimmedLength {
                     lineEndIndex += 1
+                    currentLen += 1
                 }
-                formattedLength = lineEndIndex - lineStartIndex
             }
 
-            var before = ""
-            var after = ""
             if lineStartIndex > 2 {
-                before = "..."
+                prefix = "..."
                 lineStartIndex += 3
             }
-            if lineEndIndex < maxLineEndIndex - 3 {
-                after = "..."
+            if lineEndIndex < trimmedLength - 3 {
+                suffix = "..."
                 lineEndIndex -= 3
             }
-            let strLineStartIndex = formatted.index(formatted.startIndex, offsetBy: lineStartIndex)
-            let strLineEndIndex = formatted.index(formatted.startIndex, offsetBy: lineEndIndex)
-
-            formatted = before + String(formatted[strLineStartIndex ..< strLineEndIndex]) + after
+        } else {
+            lineEndIndex += 2
         }
+
+        let strLineStartIndex = result.line.index(result.line.startIndex, offsetBy: lineStartIndex)
+        let strLineEndIndex = result.line.index(result.line.startIndex, offsetBy: lineEndIndex)
+        var formatted = prefix + String(result.line[strLineStartIndex ..< strLineEndIndex]) + suffix
 
         if settings.colorize {
             formatted = colorize(formatted, matchStartIndex, matchEndIndex, settings.lineColor)
@@ -145,7 +192,7 @@ public class SearchResultFormatter {
         var str = formatFilePath(result: result)
         if result.lineNum > 0 {
             str += ": \(result.lineNum): [\(result.matchStartIndex):\(result.matchEndIndex)]: "
-            str += formatMatchingLine(result: result)
+            str += formatResultLine(result: result)
         } else {
             str += " matches at [\(result.matchStartIndex):\(result.matchEndIndex)]"
         }

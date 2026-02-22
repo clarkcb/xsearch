@@ -51,8 +51,6 @@ public class Searcher {
             throw SearchError(msg: "Invalid linesafter")
         } else if settings.linesBefore < 0 {
             throw SearchError(msg: "Invalid linesbefore")
-        } else if settings.maxLineLength < 0 {
-            throw SearchError(msg: "Invalid maxlinelength")
         } else {
             let textFileEncoding = strToEncoding(settings.textFileEncoding)
             if textFileEncoding == nil {
