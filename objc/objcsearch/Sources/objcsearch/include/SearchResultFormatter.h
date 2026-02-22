@@ -23,6 +23,7 @@
 
 // These might be temporary just to test the methods
 - (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex color:(Color)color;
+- (NSString *) formatLineMatch:(SearchResult*)result;
 - (NSString *) formatMatchingLine:(SearchResult*)result;
 @end
 

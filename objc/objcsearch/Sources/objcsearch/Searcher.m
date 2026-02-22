@@ -41,9 +41,6 @@
     } else if (settings.linesBefore < 0) {
         setError(error, @"Invalid linesbefore");
         return false;
-    } else if (settings.maxLineLength < 0) {
-        setError(error, @"Invalid maxlinelength");
-        return false;
     } else {
         NSStringEncoding encoding = [self strToEncoding:settings.textFileEncoding];
         if (encoding == 0xFFFFFFFF) {

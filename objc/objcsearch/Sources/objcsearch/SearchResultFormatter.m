@@ -71,56 +71,106 @@
     return [self.fileFormatter colorize:s matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex color:color];
 }
 
-- (NSString *) formatMatchingLine:(SearchResult*)result {
-    NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"];
-    NSMutableString *formatted = [NSMutableString string];
-    int leadingWhitespaceCount = 0;
-    while ([whitespaceCharacterSet characterIsMember:[result.line characterAtIndex:leadingWhitespaceCount]]) {
-        leadingWhitespaceCount++;
+- (NSString *) formatLineMatch:(SearchResult*)result {
+    if (result.line == nil || [result.line isEqualToString:@""] || _settings.maxLineLength == 0) {
+        return @"";
     }
-    [formatted appendString:[result.line stringByTrimmingCharactersInSet:whitespaceCharacterSet]];
-    long formattedLength = [formatted length];
-    long maxLineEndIndex = formattedLength - 1;
+    
+    long matchStartIndex = result.matchStartIndex - 1;
+    long matchEndIndex = result.matchEndIndex - 1;
     long matchLength = result.matchEndIndex - result.matchStartIndex;
-    long matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount;
+
+    NSMutableString *prefix = [NSMutableString stringWithString:@""];
+    NSMutableString *suffix = [NSMutableString stringWithString:@""];
+    long colorStartIndex = 0;
+    long colorEndIndex = matchLength;
+
+    if (matchLength > _settings.maxLineLength) {
+        if (matchStartIndex > 2) {
+            [prefix appendString:@"..."];
+        }
+        [suffix appendString:@"..."];
+        colorStartIndex = [prefix length];
+        colorEndIndex = _settings.maxLineLength - [suffix length];
+        matchEndIndex = matchStartIndex + colorEndIndex;
+        matchStartIndex = matchStartIndex + colorStartIndex;
+    }
+    
+    NSMutableString *matchString = [NSMutableString stringWithFormat:@"%@%@%@", prefix, [result.line substringWithRange:NSMakeRange(matchStartIndex, matchEndIndex - matchStartIndex)], suffix];
+
+    if (self.settings.colorize) {
+        return [self colorize:matchString matchStartIndex:colorStartIndex matchEndIndex:colorEndIndex color:self.settings.lineColor];
+    }
+
+    return [NSString stringWithString:matchString];
+}
+
+- (NSString *) formatMatchingLine:(SearchResult*)result {
+    if (result.line == nil || [result.line isEqualToString:@""] || _settings.maxLineLength == 0) {
+        return @"";
+    }
+    
+    BOOL maxLimit = _settings.maxLineLength > 0;
+
+    if (maxLimit && result.matchEndIndex - result.matchStartIndex > _settings.maxLineLength) {
+        return [self formatLineMatch:result];
+    }
+
+    long lineStartIndex = 0;
+    long lineEndIndex = [result.line length] - 1;
+    NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"];
+    while ([whitespaceCharacterSet characterIsMember:[result.line characterAtIndex:lineStartIndex]]) {
+        lineStartIndex++;
+    }
+    while ([whitespaceCharacterSet characterIsMember:[result.line characterAtIndex:lineEndIndex]]) {
+        lineEndIndex--;
+    }
+
+    NSMutableString *trimmed = [NSMutableString string];
+    [trimmed appendString:[result.line stringByTrimmingCharactersInSet:whitespaceCharacterSet]];
+    long trimmedLength = [trimmed length];
+
+    long matchLength = result.matchEndIndex - result.matchStartIndex;
+    long matchStartIndex = result.matchStartIndex - 1 - lineStartIndex;
     long matchEndIndex = matchStartIndex + matchLength;
 
-    if (formattedLength > self.settings.maxLineLength) {
-        long lineStartIndex = matchStartIndex;
-        long lineEndIndex = lineStartIndex + matchLength;
+    NSMutableString *prefix = [NSMutableString stringWithString:@""];
+    NSMutableString *suffix = [NSMutableString stringWithString:@""];
+
+    if (maxLimit && trimmedLength > _settings.maxLineLength) {
+        lineStartIndex = result.matchStartIndex - 1;
+        lineEndIndex = lineStartIndex + matchLength;
         matchStartIndex = 0;
         matchEndIndex = matchLength;
 
-        while (lineEndIndex > formattedLength - 1) {
-            lineStartIndex--;
-            lineEndIndex--;
-            matchStartIndex++;
-            matchEndIndex++;
-        }
-
-        formattedLength = lineEndIndex - lineStartIndex;
-        while (formattedLength < self.settings.maxLineLength) {
+        long currentLen = lineEndIndex - lineStartIndex;
+        while (currentLen < _settings.maxLineLength) {
             if (lineStartIndex > 0) {
                 lineStartIndex--;
                 matchStartIndex++;
                 matchEndIndex++;
-                formattedLength = lineEndIndex - lineStartIndex;
+                currentLen++;
             }
-            if (formattedLength < self.settings.maxLineLength && lineEndIndex < maxLineEndIndex) {
+            if (currentLen < _settings.maxLineLength && lineEndIndex < trimmedLength) {
                 lineEndIndex++;
+                currentLen++;
             }
-            formattedLength = lineEndIndex - lineStartIndex;
         }
-
-        formatted = [NSMutableString stringWithFormat:@"%@", [formatted substringWithRange:NSMakeRange(lineStartIndex, formattedLength)]];
-
+        
         if (lineStartIndex > 2) {
-            formatted = [NSMutableString stringWithFormat:@"...%@", [formatted substringFromIndex:3]];
+            [prefix appendString:@"..."];
+            lineStartIndex += 3;
         }
-        if (lineEndIndex < maxLineEndIndex - 3) {
-            formatted = [NSMutableString stringWithFormat:@"%@...", [formatted substringToIndex:(formattedLength - 3)]];
+        if (lineEndIndex < trimmedLength - 3) {
+            [suffix appendString:@"..."];
+            lineEndIndex -= 3;
         }
+    } else {
+        lineEndIndex += 1;
     }
+
+
+    NSMutableString *formatted = [NSMutableString stringWithFormat:@"%@%@%@", prefix, [result.line substringWithRange:NSMakeRange(lineStartIndex, lineEndIndex - lineStartIndex)], suffix];
 
     if (self.settings.colorize) {
         return [self colorize:formatted matchStartIndex:matchStartIndex matchEndIndex:matchEndIndex color:self.settings.lineColor];
