@@ -113,52 +113,105 @@ class SearchResultFormatter {
     return s;
   }
 
-  String _formatMatchingLine(SearchResult result) {
-    var formatted = result.line!.trim();
-    var leadingWhitespaceCount =
-        result.line!.trimRight().length - formatted.length;
-    var formattedLength = formatted.length;
-    var maxLineEndIndex = formattedLength - 1;
+  String _formatResultMatch(SearchResult result) {
+    if (result.line == null ||
+        result.line!.trim() == "" ||
+        settings.maxLineLength == 0) {
+      return "";
+    }
+
     var matchLength = result.matchEndIndex - result.matchStartIndex;
-    var matchStartIndex = result.matchStartIndex - 1 - leadingWhitespaceCount;
+    var matchStartIndex = result.matchStartIndex - 1;
     var matchEndIndex = matchStartIndex + matchLength;
 
-    if (formattedLength > settings.maxLineLength) {
-      var lineStartIndex = matchStartIndex;
-      var lineEndIndex = lineStartIndex + matchLength;
+    var prefix = '';
+    var suffix = '';
+    var colorStartIndex = 0;
+    var colorEndIndex = matchLength;
+
+    if (matchLength > settings.maxLineLength) {
+      if (matchStartIndex > 2) {
+        prefix = '...';
+      }
+      suffix = '...';
+      colorStartIndex = prefix.length;
+      colorEndIndex = settings.maxLineLength - suffix.length;
+      matchEndIndex = matchStartIndex + colorEndIndex;
+      matchStartIndex = matchStartIndex + colorStartIndex;
+    }
+
+    var matchString = prefix +
+        result.line!.substring(matchStartIndex, matchEndIndex) +
+        suffix;
+
+    if (settings.colorize) {
+      matchString = colorize(
+          matchString, colorStartIndex, colorEndIndex, settings.lineColor);
+    }
+
+    return matchString;
+  }
+
+  String _formatResultLine(SearchResult result) {
+    if (result.line == null ||
+        result.line!.trim() == "" ||
+        settings.maxLineLength == 0) {
+      return '';
+    }
+
+    var maxLimit = settings.maxLineLength > 0;
+
+    if (maxLimit &&
+        result.matchEndIndex - result.matchStartIndex >
+            settings.maxLineLength) {
+      return _formatResultMatch(result);
+    }
+
+    var trimmed = result.line!.trim();
+    var lineStartIndex = result.line!.trimRight().length - trimmed.length;
+    var lineEndIndex = result.line!.trimRight().length - 1;
+    var matchLength = result.matchEndIndex - result.matchStartIndex;
+    var matchStartIndex = result.matchStartIndex - 1 - lineStartIndex;
+    var matchEndIndex = matchStartIndex + matchLength;
+
+    var prefix = '';
+    var suffix = '';
+
+    if (maxLimit && trimmed.length > settings.maxLineLength) {
+      lineStartIndex = result.matchStartIndex - 1;
+      lineEndIndex = lineStartIndex + matchLength;
       matchStartIndex = 0;
       matchEndIndex = matchLength;
 
-      while (lineEndIndex > formattedLength - 1) {
-        lineStartIndex--;
-        matchStartIndex++;
-        matchEndIndex++;
-      }
-
-      formattedLength = lineEndIndex - lineStartIndex;
-      while (formattedLength < settings.maxLineLength) {
+      var currentLen = lineEndIndex - lineStartIndex;
+      while (currentLen < settings.maxLineLength) {
         if (lineStartIndex > 0) {
           lineStartIndex--;
           matchStartIndex++;
           matchEndIndex++;
-          formattedLength = lineEndIndex - lineStartIndex;
+          currentLen++;
         }
-        if (formattedLength < settings.maxLineLength &&
-            lineEndIndex < maxLineEndIndex) {
+        if (currentLen < settings.maxLineLength &&
+            lineEndIndex < trimmed.length) {
           lineEndIndex++;
+          currentLen++;
         }
-        formattedLength = lineEndIndex - lineStartIndex;
       }
-
-      formatted = formatted.substring(lineStartIndex, lineEndIndex);
 
       if (lineStartIndex > 2) {
-        formatted = '...${formatted.substring(3)}';
+        prefix = '...';
+        lineStartIndex += 3;
       }
-      if (lineEndIndex < maxLineEndIndex - 3) {
-        formatted = '${formatted.substring(0, formattedLength - 3)}...';
+      if (lineEndIndex < trimmed.length - 3) {
+        suffix = '...';
+        lineEndIndex -= 3;
       }
+    } else {
+      lineEndIndex++;
     }
+
+    var formatted =
+        prefix + result.line!.substring(lineStartIndex, lineEndIndex) + suffix;
 
     if (settings.colorize) {
       formatted = colorize(
@@ -183,7 +236,7 @@ class SearchResultFormatter {
     } else {
       s +=
           ': ${result.lineNum}: [${result.matchStartIndex}:${result.matchEndIndex}]: ';
-      s += _formatMatchingLine(result);
+      s += _formatResultLine(result);
     }
     return s;
   }

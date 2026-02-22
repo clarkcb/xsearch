@@ -26,10 +26,6 @@ void main() {
   });
 
   test('test search result with line longer than maxlinelength', () {
-    var settings = SearchSettings();
-    settings.colorize = false;
-    settings.maxLineLength = 100;
-    var formatter = SearchResultFormatter(settings);
     var pattern = RegExp('maxlen');
     var path = './maxlen.txt';
     var file = File(path);
@@ -45,15 +41,17 @@ void main() {
         '...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...';
     var expectedOutput =
         '$path: $lineNum: [$matchStartIndex:$matchEndIndex]: $expectedLine';
+
+    var settings = SearchSettings();
+    settings.colorize = false;
+    settings.maxLineLength = 100;
+    var formatter = SearchResultFormatter(settings);
+
     var output = formatter.format(result);
     expect(output, expectedOutput);
   });
 
   test('test search result with colorized line longer than maxlinelength', () {
-    var settings = SearchSettings();
-    settings.colorize = true;
-    settings.maxLineLength = 100;
-    var formatter = SearchResultFormatter(settings);
     var pattern = RegExp('maxlen');
     var path = './maxlen.txt';
     var file = File(path);
@@ -69,13 +67,69 @@ void main() {
         '...89012345678901234567890123456789012345678901${ConsoleColor.green}maxlen${ConsoleColor.reset}89012345678901234567890123456789012345678901...';
     var expectedOutput =
         '$path: $lineNum: [$matchStartIndex:$matchEndIndex]: $expectedLine';
+
+    var settings = SearchSettings();
+    settings.colorize = true;
+    settings.maxLineLength = 100;
+    var formatter = SearchResultFormatter(settings);
+
+    var output = formatter.format(result);
+    expect(output, expectedOutput);
+  });
+
+  test('test search result with match longer than maxlinelength', () {
+    var pattern = RegExp('\\d+maxlen\\d+');
+    var path = './maxlen.txt';
+    var file = File(path);
+    var fileResult = FileResult(file, FileType.text, 0, null);
+    var lineNum = 1;
+    var matchStartIndex = 1;
+    var matchEndIndex = 110;
+    var line =
+        '0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789';
+    var result = SearchResult(pattern, fileResult, lineNum, matchStartIndex,
+        matchEndIndex, line, [], []);
+    var expectedLine =
+        '${ConsoleColor.green}0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456${ConsoleColor.reset}...';
+    var expectedOutput =
+        '$path: $lineNum: [$matchStartIndex:$matchEndIndex]: $expectedLine';
+
+    var settings = SearchSettings();
+    settings.colorize = true;
+    settings.maxLineLength = 100;
+    var formatter = SearchResultFormatter(settings);
+
+    var output = formatter.format(result);
+    expect(output, expectedOutput);
+  });
+
+  test('test search result 2 with match longer than maxlinelength', () {
+    var pattern = RegExp('\\d+maxlen\\d+');
+    var path = './maxlen.txt';
+    var file = File(path);
+    var fileResult = FileResult(file, FileType.text, 0, null);
+    var lineNum = 1;
+    var matchStartIndex = 11;
+    var matchEndIndex = 120;
+    var line =
+        'ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ';
+    var result = SearchResult(pattern, fileResult, lineNum, matchStartIndex,
+        matchEndIndex, line, [], []);
+    var expectedLine =
+        '...${ConsoleColor.green}3456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456${ConsoleColor.reset}...';
+    var expectedOutput =
+        '$path: $lineNum: [$matchStartIndex:$matchEndIndex]: $expectedLine';
+
+    var settings = SearchSettings();
+    settings.colorize = true;
+    settings.maxLineLength = 100;
+    var formatter = SearchResultFormatter(settings);
+
     var output = formatter.format(result);
     expect(output, expectedOutput);
   });
 
   test('test binary file search result', () {
-    var settings = SearchSettings();
-    var formatter = SearchResultFormatter(settings);
     var pattern = RegExp('Search');
     var path = './lib/src/searcher.exe';
     var file = File(path);
@@ -86,16 +140,15 @@ void main() {
     var result = SearchResult(pattern, fileResult, lineNum, matchStartIndex,
         matchEndIndex, null, [], []);
     var expectedOutput = '$path matches at [$matchStartIndex:$matchEndIndex]';
+
+    var settings = SearchSettings();
+    var formatter = SearchResultFormatter(settings);
+
     var output = formatter.format(result);
     expect(output, expectedOutput);
   });
 
   test('test multiline search result', () {
-    var settings = SearchSettings();
-    settings.colorize = false;
-    settings.linesBefore = 2;
-    settings.linesAfter = 2;
-    var formatter = SearchResultFormatter(settings);
     var pattern = RegExp('Searcher');
     var path = '~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs';
     var file = File(path);
@@ -117,6 +170,12 @@ void main() {
         '> 10 | 	public class Searcher\n'
         '  11 | 	{\n'
         '  12 | 		private readonly FileTypes _fileTypes;\n';
+
+    var settings = SearchSettings();
+    settings.colorize = false;
+    settings.linesBefore = 2;
+    settings.linesAfter = 2;
+    var formatter = SearchResultFormatter(settings);
 
     var output = formatter.format(result);
     expect(output, expectedOutput);

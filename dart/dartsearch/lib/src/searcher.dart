@@ -45,9 +45,6 @@ class Searcher {
     if (settings.linesBefore < 0) {
       throw SearchException('Invalid linesbefore');
     }
-    if (settings.maxLineLength < 0) {
-      throw SearchException('Invalid maxlinelength');
-    }
     _textEncoding = Encoding.getByName(settings.textFileEncoding)!;
     if (_textEncoding == null) {
       throw SearchException(
