@@ -296,8 +296,6 @@ defmodule ExSearch.Searcher do
             {:error, "Invalid linesafter"}
           settings.lines_before < 0 ->
             {:error, "Invalid linesbefore"}
-          settings.max_line_length < 0 ->
-            {:error, "Invalid maxlinelength"}
           true -> {:ok, "Settings are valid"}
         end
     end

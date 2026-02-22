@@ -28,8 +28,6 @@ defmodule ExSearch.SearchResultFormatter do
   Documentation for `ExSearch.SearchResultFormatter`.
   """
 
-  alias ExFind.Color
-  alias ExFind.ConsoleColor
   alias ExFind.FileResultFormatter
 
   defstruct [:settings, :file_formatter]
@@ -41,11 +39,81 @@ defmodule ExSearch.SearchResultFormatter do
     ])
   end
 
-  def format_line(formatter, line, match_start_index, match_end_index) do
+  def format_result_match(formatter, search_result) do
+    match_start_idx = search_result.match_start_index - 1
+    match_end_idx = search_result.match_end_index - 1
+    match_length = match_end_idx - match_start_idx
+
+    {prefix, suffix, color_start_idx, color_end_idx, match_start_idx, match_end_idx} =
+      if match_length > formatter.settings.max_line_length do
+        prefix = if match_start_idx > 2, do: "...", else: ""
+        suffix = "..."
+        color_start_idx = String.length(prefix)
+        color_end_idx = formatter.settings.max_line_length - 3
+        match_end_idx = match_start_idx + color_end_idx
+        match_start_idx = match_start_idx + color_start_idx
+        {prefix, suffix, color_start_idx, color_end_idx, match_start_idx, match_end_idx}
+      else
+        {"", "", 0, match_end_idx, match_start_idx, match_end_idx}
+      end
+
+    match_string = prefix <> String.slice(search_result.line, match_start_idx, match_end_idx - match_start_idx) <> suffix
     if formatter.settings.colorize do
-      FileResultFormatter.colorize(line, match_start_index, match_end_index, formatter.settings.line_color)
+      FileResultFormatter.colorize(match_string, color_start_idx, color_end_idx, formatter.settings.line_color)
     else
-      line
+      match_string
+    end
+  end
+
+  def get_indices_for_max_line_length(line_start_idx, line_end_idx, match_start_idx, match_end_idx, line_length, max_line_length) do
+    if (line_end_idx - line_start_idx) < max_line_length do
+      {lsi, msi, mei} =
+        if line_start_idx > 0 do
+          {line_start_idx - 1, match_start_idx + 1, match_end_idx + 1}
+        else
+          {line_start_idx, match_start_idx, match_end_idx}
+        end
+      lei =
+        if (line_end_idx - lsi) < max_line_length && line_end_idx < line_length do
+          line_end_idx + 1
+        else
+          line_end_idx
+        end
+      get_indices_for_max_line_length(lsi, lei, msi, mei, line_length, max_line_length)
+    else
+      {line_start_idx, line_end_idx, match_start_idx, match_end_idx}
+    end
+  end
+
+  def format_result_line(formatter, search_result) do
+    if (search_result.line == "" || formatter.settings.max_line_length == 0) do
+      ""
+    else
+      if formatter.settings.max_line_length > 0 && (search_result.match_end_index - search_result.match_start_index) > formatter.settings.max_line_length do
+        format_result_match(formatter, search_result)
+      else
+        line_len = String.length(search_result.line)
+        line_start_idx = line_len - String.length(String.trim_leading(search_result.line))
+        line_end_idx = line_len - 1 - (line_len - String.length(String.trim_trailing(search_result.line)))
+        match_length = search_result.match_end_index - search_result.match_start_index
+        match_start_idx = search_result.match_start_index - 1 - line_start_idx
+        match_end_idx = match_start_idx + match_length
+        trimmed_length = line_end_idx - line_start_idx
+        {line_start_idx, line_end_idx, match_start_idx, match_end_idx} =
+          if formatter.settings.max_line_length > 0 && trimmed_length > formatter.settings.max_line_length do
+            get_indices_for_max_line_length(search_result.match_start_index - 1, search_result.match_end_index - 1, 0, match_length, trimmed_length, formatter.settings.max_line_length)
+          else
+            {line_start_idx, line_end_idx + 1, match_start_idx, match_end_idx}
+          end
+        {prefix, line_start_idx} = if line_start_idx > 2, do: {"...", line_start_idx + 3}, else: {"", line_start_idx}
+        {suffix, line_end_idx} = if line_end_idx < (trimmed_length - 2), do: {"...", line_end_idx - 3}, else: {"", line_end_idx}
+        formatted = prefix <> String.slice(search_result.line, line_start_idx, line_end_idx - line_start_idx) <> suffix
+        if formatter.settings.colorize do
+          FileResultFormatter.colorize(formatted, match_start_idx, match_end_idx, formatter.settings.line_color)
+        else
+          formatted
+        end
+      end
     end
   end
 
@@ -71,9 +139,13 @@ defmodule ExSearch.SearchResultFormatter do
         format_lines_with_nums(search_result.lines_before, search_result.line_num - length(search_result.lines_before), max_line_num)
         |> Enum.each(fn line -> IO.write(out, "#{line}\n") end)
       end
-      colorized_line = format_line(formatter, search_result.line,
-        search_result.match_start_index - 1, search_result.match_end_index - 1)
-      IO.write(out, "> #{search_result.line_num} | #{colorized_line}\n")
+      matching_line =
+        if formatter.settings.colorize do
+          FileResultFormatter.colorize(search_result.line, search_result.match_start_idx - 1, search_result.match_end_idx - 1, formatter.settings.line_color)
+        else
+          search_result.line
+        end
+      IO.write(out, "> #{search_result.line_num} | #{matching_line}\n")
       if search_result.lines_after != [] do
         format_lines_with_nums(search_result.lines_after, search_result.line_num + 1, max_line_num)
         |> Enum.each(fn line -> IO.write(out, "#{line}\n") end)
@@ -90,14 +162,8 @@ defmodule ExSearch.SearchResultFormatter do
     line_result = case {search_result.line_num, search_result.line} do
       {0, ""} -> " matches at #{match_range}"
       _ ->
-        line =
-          if formatter.settings.colorize do
-            FileResultFormatter.colorize(search_result.line, search_result.match_start_index - 1,
-              search_result.match_end_index - 1, formatter.settings.line_color)
-          else
-            search_result.line
-          end
-        ": #{search_result.line_num}: #{match_range}: #{String.trim_leading(line)}"
+        line = format_result_line(formatter, search_result)
+        ": #{search_result.line_num}: #{match_range}: #{line}"
     end
     FileResultFormatter.format_file_result(formatter.file_formatter, search_result.file) <> line_result
   end
