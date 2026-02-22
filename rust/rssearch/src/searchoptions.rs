@@ -611,6 +611,12 @@ fn get_int_action_map() -> HashMap<String, IntAction> {
         }),
     );
     int_action_map.insert(
+        "maxlinelength".to_string(),
+        Box::new(|i: i32, settings: &mut SearchSettings| {
+            Ok(settings.set_max_line_length(i))
+        }),
+    );
+    int_action_map.insert(
         "mindepth".to_string(),
         Box::new(|i: i32, settings: &mut SearchSettings| {
             Ok(settings.set_min_depth(i))

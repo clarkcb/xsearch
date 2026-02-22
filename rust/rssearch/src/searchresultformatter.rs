@@ -29,6 +29,15 @@ fn format_match_with_color(m: &str, settings: &SearchSettings) -> String {
     colorize(&m, 0, m.len(), &settings.line_color())
 }
 
+fn blank_or_whitespace(s: &str) -> bool {
+    for (_index, character) in s.char_indices() {
+        if !character.is_whitespace() {
+            return false;
+        }
+    }
+    true
+}
+
 impl SearchResultFormatter {
     pub fn new(settings: SearchSettings) -> SearchResultFormatter {
         let file_formatter = FileResultFormatter::new(settings.find_settings());
@@ -52,73 +61,122 @@ impl SearchResultFormatter {
         }
     }
 
-    fn format_matching_line(&self, result: &SearchResult) -> String {
-        let whitespace_chars = " \t\n\r";
-        let mut leading_ws_count = 0;
-        let mut formatted = result.line.clone();
-        while whitespace_chars.contains(formatted.chars().next().unwrap()) {
-            formatted = String::from(&formatted[1..]);
-            leading_ws_count += 1;
-        }
-        while whitespace_chars.contains(formatted.chars().rev().next().unwrap()) {
-            formatted = String::from(&formatted[..(formatted.len() - 1)]);
-        }
-
-        let mut formatted_length = formatted.len();
-        let max_line_end_index = formatted_length - 1;
-        let match_length = result.match_end_index - result.match_start_index;
-        let mut match_start_index = result.match_start_index - 1 - leading_ws_count;
-        let mut match_end_index = match_start_index + match_length;
-
-        let max_line_length = self.settings.max_line_length() as usize;
-        if formatted_length > max_line_length {
-            let mut line_start_index = match_start_index + 0;
-            let mut line_end_index = line_start_index + match_length;
-            match_start_index = 0;
-            match_end_index = match_length + 0;
-
-            while line_end_index > formatted_length - 1 {
-                line_start_index -= 1;
-                line_end_index -= 1;
-                match_start_index += 1;
-                match_end_index += 1;
-            }
-
-            formatted_length = line_end_index - line_start_index;
-            while formatted_length < max_line_length {
-                if line_start_index > 0 {
-                    line_start_index -= 1;
-                    match_start_index += 1;
-                    match_end_index += 1;
-                    formatted_length = line_end_index - line_start_index;
+    fn format_result_match(&self, result: &SearchResult) -> String {
+        if blank_or_whitespace(&result.line) || self.settings.max_line_length() == 0 {
+            String::from("")
+        } else {
+            let match_start_idx = result.match_start_index - 1usize;
+            let match_end_idx = result.match_end_index - 1usize;
+            let match_length = match_end_idx - match_start_idx;
+            if match_length <= self.settings.max_line_length() as usize {
+                let match_string = String::from(&result.line[match_start_idx..match_end_idx]);
+                if self.settings.colorize() {
+                    colorize(&match_string, 0, match_string.len(), &self.settings.line_color())
+                } else {
+                    match_string
                 }
-                if formatted_length < max_line_length && line_end_index < max_line_end_index {
-                    line_end_index += 1;
+            } else {
+                let prefix = if match_start_idx > 2 { "..." } else { "" };
+                let suffix = "...";
+                let color_start_idx = prefix.len();
+                let color_end_idx = (self.settings.max_line_length() as usize) - suffix.len();
+                let match_end_idx = match_start_idx + color_end_idx;
+                let match_start_idx = match_start_idx + color_start_idx;
+                let match_string = String::from(format!("{}{}{}",
+                                                        String::from(prefix),
+                                                        String::from(&result.line[match_start_idx..match_end_idx]),
+                                                        String::from(suffix)));
+
+                if self.settings.colorize() {
+                    colorize(&match_string, color_start_idx, color_end_idx, &self.settings.line_color())
+                } else {
+                    match_string
                 }
-                formatted_length = line_end_index - line_start_index;
             }
-
-            let mut before = String::from("");
-            let mut after = String::from("");
-            if line_start_index > 2 {
-                before = String::from("...");
-                line_start_index += 3;
-            }
-            if line_end_index < max_line_end_index - 3 {
-                after = String::from("...");
-                line_end_index -= 3;
-            }
-
-            formatted = String::from(format!("{}{}{}",
-                                             String::from(before),
-                                             String::from(&formatted[line_start_index..line_end_index]),
-                                             String::from(after)));
         }
+    }
 
-        if self.settings.colorize() {
-            formatted = colorize(&formatted, match_start_index, match_end_index, &self.settings.line_color());
+    fn format_result_line(&self, result: &SearchResult) -> String {
+        if blank_or_whitespace(&result.line) || self.settings.max_line_length() == 0 {
+            String::from("")
+        } else if self.settings.max_line_length() > 0
+            && result.match_end_index - result.match_start_index > self.settings.max_line_length() as usize {
+            self.format_result_match(result)
+        } else {
+            let mut line_start_idx = 0usize;
+            let mut line_end_idx = result.line.len() - 1usize;
+
+            // get the index after leading whitespace
+            for (_index, character) in result.line.char_indices() {
+                if character.is_whitespace() {
+                    line_start_idx += 1;
+                } else {
+                    break;
+                }
+            }
+
+            // get the index before trailing whitespace
+            for (_index, character) in result.line.char_indices().rev() {
+                if character.is_whitespace() {
+                    line_end_idx -= 1;
+                } else {
+                    break;
+                }
+            }
+
+            let match_length = result.match_end_index - result.match_start_index;
+            let mut match_start_idx = result.match_start_index - 1 - line_start_idx;
+            let mut match_end_idx = match_start_idx + match_length;
+
+            let mut prefix = "";
+            let mut suffix = "";
+
+            let trimmed_length = line_end_idx - line_start_idx;
+            let max_line_length = self.settings.max_line_length() as usize;
+
+            if self.settings.max_line_length() > 0 && trimmed_length > max_line_length {
+                line_start_idx = result.match_start_index - 1usize;
+                line_end_idx = line_start_idx + match_length;
+                match_start_idx = 0;
+                match_end_idx = match_length;
+
+                let mut current_len = line_end_idx - line_start_idx;
+                while current_len < max_line_length {
+                    if line_start_idx > 0 {
+                        line_start_idx -= 1;
+                        match_start_idx += 1;
+                        match_end_idx += 1;
+                        current_len += 1;
+                    }
+                    if current_len < max_line_length && line_end_idx < trimmed_length {
+                        line_end_idx += 1;
+                        current_len += 1;
+                    }
+                }
+
+                if line_start_idx > 2 {
+                    prefix = "...";
+                    line_start_idx += 3;
+                }
+                if line_end_idx < (trimmed_length - 3) {
+                    suffix = "...";
+                    line_end_idx -= 3;
+                }
+            } else {
+                line_end_idx += 1;
+            }
+
+            let line = String::from(format!("{}{}{}",
+                                            String::from(prefix),
+                                            String::from(&result.line[line_start_idx..line_end_idx]),
+                                            String::from(suffix)));
+
+            if self.settings.colorize() {
+                colorize(&line, match_start_idx, match_end_idx, &self.settings.line_color())
+            } else {
+                line
+            }
         }
-        formatted
     }
 
     fn single_line_format(&self, result: &SearchResult) -> String {
@@ -133,7 +191,7 @@ impl SearchResultFormatter {
                         result.line_num,
                         result.match_start_index,
                         result.match_end_index,
-                        self.format_matching_line(result)
+                        self.format_result_line(result)
             ));
         }
         String::from(
@@ -225,5 +283,185 @@ impl SearchResultFormatter {
         } else {
             self.single_line_format(result)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::searchresultformatter::SearchResultFormatter;
+    use std::path::Path;
+    use rsfind::consolecolor::{CONSOLE_GREEN, CONSOLE_RESET};
+    use rsfind::fileresult::FileResult;
+    use rsfind::filetypes::FileType;
+    use crate::searchsettings::SearchSettings;
+    use super::*;
+
+    #[test]
+    fn test_single_line_search_result_longer_than_max_line_length() {
+        let pattern = String::from("maxlen");
+        let file_path = Path::new("./maxlen.txt");
+        let file = FileResult::new(file_path.to_path_buf(), FileType::Code, 0, 0);
+        let line_num = 1;
+        let match_start_index = 53;
+        let match_end_index = 59;
+        let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
+        let lines_before: Vec<String> = Vec::new();
+        let lines_after: Vec<String> = Vec::new();
+        let result = SearchResult::new(
+            pattern,
+            Some(file.clone()),
+            line_num,
+            match_start_index,
+            match_end_index,
+            line.clone(),
+            lines_before,
+            lines_after,
+        );
+        let expected_line = String::from("...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901...");
+        let expected_output = format!(
+            "{}: {}: [{}:{}]: {}",
+            &file.file_path(),
+            line_num,
+            match_start_index,
+            match_end_index,
+            expected_line
+        );
+
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(false);
+        settings.set_max_line_length(100);
+        let formatter = SearchResultFormatter::new(settings);
+
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_single_line_search_result_longer_than_max_line_length_colorize() {
+        let pattern = String::from("maxlen");
+        let file_path = Path::new("./maxlen.txt");
+        let file = FileResult::new(file_path.to_path_buf(), FileType::Code, 0, 0);
+        let line_num = 1;
+        let match_start_index = 53;
+        let match_end_index = 59;
+        let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
+        let lines_before: Vec<String> = Vec::new();
+        let lines_after: Vec<String> = Vec::new();
+        let result = SearchResult::new(
+            pattern,
+            Some(file.clone()),
+            line_num,
+            match_start_index,
+            match_end_index,
+            line.clone(),
+            lines_before,
+            lines_after,
+        );
+        let expected_line =
+            String::from(format!("...89012345678901234567890123456789012345678901{}maxlen{}89012345678901234567890123456789012345678901...",
+                                 CONSOLE_GREEN,
+                                 CONSOLE_RESET));
+        let expected_output = format!(
+            "{}: {}: [{}:{}]: {}",
+            &file.file_path(),
+            line_num,
+            match_start_index,
+            match_end_index,
+            expected_line
+        );
+
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(true);
+        settings.set_max_line_length(100);
+        let formatter = SearchResultFormatter::new(settings);
+
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_search_result_match_longer_than_max_line_length_colorize() {
+        let pattern = String::from("\\d+maxlen\\d+");
+        let file_path = Path::new("./maxlen.txt");
+        let file = FileResult::new(file_path.to_path_buf(), FileType::Text, 0, 0);
+        let line_num = 1;
+        let match_start_index = 1;
+        let match_end_index = 110;
+        let line = String::from("0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789");
+        let lines_before: Vec<String> = Vec::new();
+        let lines_after: Vec<String> = Vec::new();
+        let result = SearchResult::new(
+            pattern,
+            Some(file.clone()),
+            line_num,
+            match_start_index,
+            match_end_index,
+            line.clone(),
+            lines_before,
+            lines_after,
+        );
+        let expected_line =
+            String::from(format!("{}0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456{}...",
+                                 CONSOLE_GREEN,
+                                 CONSOLE_RESET));
+        let expected_output = format!(
+            "{}: {}: [{}:{}]: {}",
+            &file.file_path(),
+            line_num,
+            match_start_index,
+            match_end_index,
+            expected_line
+        );
+
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(true);
+        settings.set_max_line_length(100);
+        let formatter = SearchResultFormatter::new(settings);
+
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_search_result2_match_longer_than_max_line_length_colorize() {
+        let pattern = String::from("\\d+maxlen\\d+");
+        let file_path = Path::new("./maxlen.txt");
+        let file = FileResult::new(file_path.to_path_buf(), FileType::Text, 0, 0);
+        let line_num = 1;
+        let match_start_index = 11;
+        let match_end_index = 120;
+        let line = String::from("ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ");
+        let lines_before: Vec<String> = Vec::new();
+        let lines_after: Vec<String> = Vec::new();
+        let result = SearchResult::new(
+            pattern,
+            Some(file.clone()),
+            line_num,
+            match_start_index,
+            match_end_index,
+            line.clone(),
+            lines_before,
+            lines_after,
+        );
+        let expected_line =
+            String::from(format!("...{}3456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456{}...",
+                                 CONSOLE_GREEN,
+                                 CONSOLE_RESET));
+        let expected_output = format!(
+            "{}: {}: [{}:{}]: {}",
+            &file.file_path(),
+            line_num,
+            match_start_index,
+            match_end_index,
+            expected_line
+        );
+
+        let mut settings = SearchSettings::default();
+        settings.set_colorize(true);
+        settings.set_max_line_length(100);
+        let formatter = SearchResultFormatter::new(settings);
+
+        let output = formatter.format(&result);
+        assert_eq!(output, expected_output);
     }
 }

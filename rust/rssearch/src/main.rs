@@ -117,7 +117,8 @@ mod tests {
         let startpath = "/Users/cary/src/xsearch/rust";
 
         let args: Vec<String> = vec![
-            "rssearch", "-x", "rs", "-s", "search", "-D", "debug", "-f", "search", "--debug",
+            // "rssearch", "-x", "rs", "-s", "search", "-D", "debug", "-f", "search", "--debug",
+            "-x", "rs", "-s", "search", "-D", "debug", "-f", "searcher", "--debug",
             startpath,
         ]
         .into_iter()
@@ -132,7 +133,8 @@ mod tests {
         let startpath = "/Users/cary/src/xsearch/rust";
 
         let args: Vec<String> = vec![
-            "rssearch", "-x", "rlib", "-s", "search", "-f", "search", "--debug", startpath,
+            // "rssearch", "-x", "rlib", "-s", "search", "-f", "search", "--debug", startpath,
+            "-x", "rlib", "-s", "search", "-f", "search", "--debug", startpath,
         ]
         .into_iter()
         .map(|a| a.to_string())
