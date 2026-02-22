@@ -1,6 +1,5 @@
 module HsSearch.SearchSettingsTest
   ( getDefaultSearchSettingsTests
-  , getNewExtensionsTests
   ) where
 
 import HsSearch.SearchSettings
@@ -29,10 +28,4 @@ getDefaultSearchSettingsTests = do
          , testCase "searchArchives" (searchArchives settings @?= False)
          , testCase "uniqueLines" (uniqueLines settings @?= False)
          , testCase "verbose" (verbose settings @?= False)
-         ]
-
-getNewExtensionsTests :: IO [Test]
-getNewExtensionsTests =
-  return [ testCase "hs" (newExtensions "hs" @?= [".hs"])
-         , testCase "hs,py" (newExtensions "hs,py" @?= [".hs", ".py"])
          ]

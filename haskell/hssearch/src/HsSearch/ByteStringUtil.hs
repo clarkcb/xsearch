@@ -1,7 +1,11 @@
 module HsSearch.ByteStringUtil
   ( --compareByteStrings
   --, padByteString
-    sliceByteString
+    leftWhitespaceByteString
+  , rightWhitespaceByteString
+  , sliceByteString
+  , trimByteString
+  , trimLeadingBytes
   , trimLeftByteString
   , trimRightByteString
   ) where
@@ -34,8 +38,20 @@ sliceByteString startIdx endIdx bs = B.take (endIdx - startIdx) (B.drop startIdx
 -- sliceBS :: Int -> Int -> B.ByteString -> B.ByteString
 -- sliceBS startIdx endIdx bs = B.take (endIdx - startIdx) (B.drop startIdx bs)
 
+trimLeadingBytes :: Int -> B.ByteString -> B.ByteString
+trimLeadingBytes = B.drop
+
+leftWhitespaceByteString :: B.ByteString -> Int
+leftWhitespaceByteString bs = BC.length $ BC.takeWhile isSpace bs
+
 trimLeftByteString :: B.ByteString -> B.ByteString
 trimLeftByteString = BC.dropWhile isSpace
 
+rightWhitespaceByteString :: B.ByteString -> Int
+rightWhitespaceByteString bs = BC.length $ BC.takeWhile isSpace $ B.reverse bs
+
 trimRightByteString :: B.ByteString -> B.ByteString
 trimRightByteString = B.reverse . trimLeftByteString . B.reverse
+
+trimByteString :: B.ByteString -> B.ByteString
+trimByteString = trimLeftByteString . trimRightByteString

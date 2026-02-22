@@ -3,7 +3,6 @@
 module HsSearch.SearchSettings
   ( SearchSettings(..)
   , defaultSearchSettings
-  , newExtensions
   , searchSettingsToString
   , toFindSettings
   , updateSearchSettingsFromJsonValue
@@ -110,7 +109,7 @@ defaultSearchSettings = SearchSettings {
                                        , linesAfterUntilPatterns=[]
                                        , linesBefore=0
                                        , maxDepth = -1
-                                       , maxLineLength=200
+                                       , maxLineLength=150
                                        , maxLastMod=Nothing
                                        , maxSize=0
                                        , minDepth = -1
@@ -144,12 +143,6 @@ defaultSearchSettings = SearchSettings {
                                        , verbose=False
                                        }
 
-
-newExtensions :: String -> [String]
-newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "," x)
-                | otherwise    = [normalizeExtension x]
-  where removeBlank :: [String] -> [String]
-        removeBlank = filter (/="")
 
 toFindSettings :: SearchSettings -> FS.FindSettings
 toFindSettings searchSettings = FS.FindSettings {

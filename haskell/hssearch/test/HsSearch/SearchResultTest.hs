@@ -2,6 +2,9 @@ module HsSearch.SearchResultTest
   ( getBinaryFileSearchResultTests
   , getMultiLineSearchResultTests
   , getSingleLineSearchResultTests
+  , getSingleLineLongerThanMaxLineLengthSearchResultTests
+  , getSingleLineMatchLongerThanMaxLineLengthSearchResultTests
+  , getSingleLineMatchLongerThanMaxLineLengthSearchResult2Tests
   ) where
 
 import qualified Data.ByteString.Char8 as BC
@@ -23,7 +26,7 @@ testFileMatchStartIndex :: Int
 testFileMatchStartIndex = 15
 
 testFileMatchEndIndex :: Int
-testFileMatchEndIndex = 23
+testFileMatchEndIndex = 21
 
 testFileLine :: BC.ByteString
 testFileLine = BC.pack "\tpublic class Searcher\n"
@@ -39,8 +42,8 @@ getBinaryFileSearchResultTests = do
                                              , matchEndIndex=0
                                              }
   let settings = defaultSearchSettings
-  let formattedResult = formatSearchResult settings binarySearchResult
   let expectedFormat = binaryFilePath ++ " matches at [0:0]"
+  let formattedResult = formatSearchResult settings binarySearchResult
   return [testCase "binarySearchResult" (formattedResult @?= expectedFormat)]
 
 getSingleLineSearchResultTests :: IO [Test]
@@ -55,12 +58,80 @@ getSingleLineSearchResultTests = do
                                                  , line=testFileLine
                                                  }
   let settings = defaultSearchSettings { colorize=False }
-  let formattedResult = formatSearchResult settings singleLineSearchResult
   let expectedFormat = testFilePath ++ ": " ++ show testFileLineNum ++ ": [" ++
                        show testFileMatchStartIndex ++ ":" ++
                        show testFileMatchEndIndex ++ "]: " ++
                        trimLeadingWhitespace (BC.unpack testFileLine)
+  let formattedResult = formatSearchResult settings singleLineSearchResult
   return [testCase "singleLineSearchResult" (formattedResult @?= expectedFormat)]
+
+getSingleLineLongerThanMaxLineLengthSearchResultTests :: IO [Test]
+getSingleLineLongerThanMaxLineLengthSearchResultTests = do
+  let testFilePath = "./maxlen.txt"
+  let testFileResult = newFileResult testFilePath Text
+  let matchStartIndex = 53
+  let matchEndIndex = 59
+  let line = BC.pack "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+  let singleLineSearchResult = blankSearchResult { fileResult=testFileResult
+                                                 , lineNum=testFileLineNum
+                                                 , matchStartIndex=matchStartIndex
+                                                 , matchEndIndex=matchEndIndex
+                                                 , line=line
+                                                 }
+  let settings = defaultSearchSettings { colorize=False, maxLineLength=100 }
+  let expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
+  let expectedFormat = testFilePath ++ ": " ++ show testFileLineNum ++ ": [" ++
+                       show matchStartIndex ++ ":" ++
+                       show matchEndIndex ++ "]: " ++
+                       expectedLine
+  let formattedResult = formatSearchResult settings singleLineSearchResult
+  return [testCase "singleLineLongerThanMaxLineLengthSearchResult" (formattedResult @?= expectedFormat)]
+
+getSingleLineMatchLongerThanMaxLineLengthSearchResultTests :: IO [Test]
+getSingleLineMatchLongerThanMaxLineLengthSearchResultTests = do
+  let testFilePath = "./maxlen.txt"
+  let testFileResult = newFileResult testFilePath Text
+  let fileLineNum = 1
+  let matchStartIndex = 1
+  let matchEndIndex = 110
+  let line = BC.pack "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+  let singleLineSearchResult = blankSearchResult { fileResult=testFileResult
+                                                 , lineNum=fileLineNum
+                                                 , matchStartIndex=matchStartIndex
+                                                 , matchEndIndex=matchEndIndex
+                                                 , line=line
+                                                 }
+  let settings = defaultSearchSettings { colorize=False, maxLineLength=100 }
+  let expectedLine = "0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456..."
+  let expectedFormat = testFilePath ++ ": " ++ show fileLineNum ++ ": [" ++
+                       show matchStartIndex ++ ":" ++
+                       show matchEndIndex ++ "]: " ++
+                       expectedLine
+  let formattedResult = formatSearchResult settings singleLineSearchResult
+  return [testCase "getSingleLineMatchLongerThanMaxLineLengthSearchResultTests" (formattedResult @?= expectedFormat)]
+
+getSingleLineMatchLongerThanMaxLineLengthSearchResult2Tests :: IO [Test]
+getSingleLineMatchLongerThanMaxLineLengthSearchResult2Tests = do
+  let testFilePath = "./maxlen.txt"
+  let testFileResult = newFileResult testFilePath Text
+  let fileLineNum = 1
+  let matchStartIndex = 11
+  let matchEndIndex = 120
+  let line = BC.pack "ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ"
+  let singleLineSearchResult = blankSearchResult { fileResult=testFileResult
+                                                 , lineNum=fileLineNum
+                                                 , matchStartIndex=matchStartIndex
+                                                 , matchEndIndex=matchEndIndex
+                                                 , line=line
+                                                 }
+  let settings = defaultSearchSettings { colorize=False, maxLineLength=100 }
+  let expectedLine = "...3456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456..."
+  let expectedFormat = testFilePath ++ ": " ++ show fileLineNum ++ ": [" ++
+                       show matchStartIndex ++ ":" ++
+                       show matchEndIndex ++ "]: " ++
+                       expectedLine
+  let formattedResult = formatSearchResult settings singleLineSearchResult
+  return [testCase "getSingleLineMatchLongerThanMaxLineLengthSearchResultTests" (formattedResult @?= expectedFormat)]
 
 getMultiLineSearchResultTests :: IO [Test]
 getMultiLineSearchResultTests = do

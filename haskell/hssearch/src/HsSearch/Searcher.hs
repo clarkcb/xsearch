@@ -52,7 +52,6 @@ validateSearchSettings settings =
         validators = [ \s -> ["No search patterns defined" | null (searchPatterns s)]
                      , \s -> ["Invalid lines after" | linesAfter s < 0]
                      , \s -> ["Invalid lines before" | linesBefore s < 0]
-                     , \s -> ["Invalid max line length" | maxLineLength s < 0]
                      , \s -> ["Invalid max size" | maxSize s < 0]
                      , \s -> ["Invalid min size" | minSize s < 0]
                      ]

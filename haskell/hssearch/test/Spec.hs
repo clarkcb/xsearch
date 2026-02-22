@@ -25,14 +25,16 @@ main = do
   binaryFileSearchResultTests <- getBinaryFileSearchResultTests
   singleLineSearchResultTests <- getSingleLineSearchResultTests
   multiLineSearchResultTests <- getMultiLineSearchResultTests
-
+  singleLineLongerThanMaxLineLengthSearchResultTests <- getSingleLineLongerThanMaxLineLengthSearchResultTests
+  singleLineMatchLongerThanMaxLineLengthSearchResultTests <- getSingleLineMatchLongerThanMaxLineLengthSearchResultTests
+  singleLineMatchLongerThanMaxLineLengthSearchResult2Tests <- getSingleLineMatchLongerThanMaxLineLengthSearchResult2Tests
   -- SearchSettings tests
   defaultSearchSettingsTests <- getDefaultSearchSettingsTests
-  newExtensionsTests <- getNewExtensionsTests
 
   defaultMain (searchLinesTests ++ searchContentsTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
     binaryFileSearchResultTests ++ singleLineSearchResultTests ++
-    multiLineSearchResultTests ++ 
-    defaultSearchSettingsTests ++ newExtensionsTests)
+    multiLineSearchResultTests ++ singleLineLongerThanMaxLineLengthSearchResultTests ++
+    singleLineMatchLongerThanMaxLineLengthSearchResultTests ++ singleLineMatchLongerThanMaxLineLengthSearchResult2Tests ++
+    defaultSearchSettingsTests)

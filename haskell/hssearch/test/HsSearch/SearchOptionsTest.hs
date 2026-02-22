@@ -47,7 +47,7 @@ getSettingsFromNoArgsTests = do
 
 getSettingsFromArgsTests :: IO [Test]
 getSettingsFromArgsTests = do
-  let args = ["-x","hs","-X","hi,o","-s","Searcher","-b","2","-B","2","."]
+  let args = ["-x","hs","-X","hi,o","-s","Searcher","-l","2","-L","2","."]
   searchOptionsEither <- getSearchOptions
   case searchOptionsEither of
     Left _ -> return [ testCase "getSettingsFromArgsTests" (True @?= False) ]
@@ -58,8 +58,8 @@ getSettingsFromArgsTests = do
         Right settings ->
           return [ testCase "paths ." (paths settings @?= ["."])
                  , testCase "-s Searcher" (searchPatterns settings @?= ["Searcher"])
-                 , testCase "-x hs" (inExtensions settings @?= [".hs"])
-                 , testCase "-X hi,o" (outExtensions settings @?= [".hi", ".o"])
+                 , testCase "-x hs" (inExtensions settings @?= ["hs"])
+                 , testCase "-X hi,o" (outExtensions settings @?= ["hi", "o"])
                  , testCase "linesAfter" (linesAfter settings @?= 2)
                  , testCase "linesBefore" (linesBefore settings @?= 2)
                  ]

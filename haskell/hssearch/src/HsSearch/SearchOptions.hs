@@ -20,6 +20,7 @@ import HsFind.ArgTokenizer
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (getFileString, isFile)
 import HsFind.FindOptions (parseDateToUtc)
+import HsFind.FindSettings (newExtensions)
 import HsFind.SortBy (getSortByForName)
 
 import HsSearch.Paths_hssearch (getDataFileName)

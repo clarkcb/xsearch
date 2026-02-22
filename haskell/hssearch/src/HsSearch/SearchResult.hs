@@ -19,8 +19,9 @@ import Text.Regex.PCRE
 import HsFind.ConsoleColor (Color(..), colorizeString, colorToConsoleColor, consoleGreen, consoleReset)
 import HsFind.FileResult (FileResult(..), blankFileResult, formatFilePath, getCompareFileResultsFunc)
 import HsFind.StringUtil (trimLeadingWhitespace, trimTrailingWhitespace)
-import HsSearch.ByteStringUtil (sliceByteString)
+import HsSearch.ByteStringUtil
 import HsSearch.SearchSettings
+import qualified Data.ByteString as B
 
 data SearchResult = SearchResult {
                                    searchPattern :: String
@@ -60,14 +61,6 @@ formatSearchResult settings result = if lineNum result == 0
 searchResultPath :: SearchResult -> FilePath
 searchResultPath result = fileResultPath (fileResult result)
 
--- colorizeBS :: Int -> Int -> B.ByteString -> B.ByteString
--- colorizeBS si ei bs =
---   BC.concat [subByteString 0 si bs,
---              BC.pack consoleGreen,
---              subByteString si ei bs,
---              BC.pack consoleReset,
---              subByteString ei (BC.length bs) bs]
-
 colorizeBS :: B.ByteString -> Int -> Int -> B.ByteString
 colorizeBS bs startIdx len =
   BC.concat [sliceByteString 0 startIdx bs,
@@ -83,36 +76,106 @@ formatBS settings bs =
   then colorizeBS bs 0 (BC.length bs)
   else bs
 
-formatMatchingLine :: SearchSettings -> SearchResult -> String
-formatMatchingLine settings result =
-  doFormatLine (line result)
-  where l = line result
-        leadingSpaceCount = BC.length (BC.takeWhile isSpace l)
-        trimmedLength = BC.length l - leadingSpaceCount
-        maxLineEndIndex = trimmedLength
+formatResultMatch :: SearchSettings -> SearchResult -> String
+formatResultMatch settings result =
+  doFormatMatch l
+  where
+    l = line result
+    matchStartIdx = matchStartIndex result - 1
+    matchEndIdx = matchEndIndex result - 1
+    matchLength = matchEndIdx - matchStartIdx
+    intMaxLineLength = if maxLineLength settings < 0 then matchLength + 1 else fromInteger $ maxLineLength settings
+    -- maxLimit = intMaxLineLength /= 0
+    trunc = matchLength > intMaxLineLength
+    prefix = if trunc && matchStartIdx > 2 then BC.pack "..." else BC.pack ""
+    suffix = if trunc then BC.pack "..." else BC.pack ""
+    colorStartIdx = if trunc then B.length prefix else 0
+    colorEndIdx = if trunc then intMaxLineLength - B.length suffix else matchLength
+    -- colorLength = colorEndIdx - colorStartIdx
+    matchEndIdx' = if trunc then matchStartIdx + colorEndIdx else matchEndIdx
+    matchStartIdx' = if trunc then matchStartIdx + colorStartIdx else matchStartIdx
+    matchString = B.concat [prefix, sliceByteString matchStartIdx' matchEndIdx' l, suffix]
+    doFormatMatch :: B.ByteString -> String
+    doFormatMatch bs | BC.length bs == 0 = ""
+                     | intMaxLineLength == 0 = ""
+                    --  | colorize settings = BC.unpack (colorizeBS matchString colorStartIdx (fromIntegral colorLength))
+                     | colorize settings = BC.unpack (colorizeBS matchString colorStartIdx (colorEndIdx - colorStartIdx))
+                     | otherwise = BC.unpack matchString
+
+getIndicesForStringAndMaxLength :: B.ByteString -> Int -> Int -> Int -> (Int, Int, Int, Int)
+getIndicesForStringAndMaxLength bs matchStartIdx matchEndIdx maxLength
+  | bsLength == 0 = (0, 0, 0, 0)
+  | maxLength == 0 = (0, 0, 0, 0)
+  | maxLength < 0 = getIndicesForStringAndMaxLength bs matchStartIdx matchEndIdx $ bsLength + 1
+  | trimmedLength == 0 = (0, 0, 0, 0)
+  | trimmedLength <= maxLength = (lineStartIdx, lineEndIdx + 2, matchStartIdx', matchEndIdx')
+  | otherwise = (lsi, lei, msi, mei)
+  where
+    bsLength = BC.length bs
+    lineStartIdx = leftWhitespaceByteString bs
+    lineEndIdx = bsLength - 1 - rightWhitespaceByteString bs
+    trimmedLength = lineEndIdx - lineStartIdx
+    matchLength = matchEndIdx - matchStartIdx
+    matchStartIdx' = matchStartIdx - lineStartIdx
+    matchEndIdx' = matchStartIdx' + matchLength
+    decGreaterThanZero :: Int -> Int
+    decGreaterThanZero n | n > 0 = n - 1
+                          | otherwise = n
+    incLessThanMax :: Int -> Int -> Int
+    incLessThanMax n maxN | n < maxN = n + 1
+                          | otherwise = n
+    recGetIndicesToMaxLen :: Int -> Int -> Int -> (Int, Int)
+    recGetIndicesToMaxLen si ei maxLen
+      | ei - si + 1 < maxLen = recGetIndicesToMaxLen (decGreaterThanZero si) (incLessThanMax ei trimmedLength) maxLen
+      | ei - si < maxLen = recGetIndicesToMaxLen (decGreaterThanZero si) ei maxLen
+      | otherwise = (si, ei)
+    (lsi, lei) =
+      if trimmedLength > maxLength
+      then recGetIndicesToMaxLen matchStartIdx' matchEndIdx' maxLength
+      else (0, trimmedLength + 2)
+    msi = matchStartIdx - lsi
+    mei = msi + matchLength
+
+formatResultLineWithMatch :: SearchSettings -> SearchResult -> String
+formatResultLineWithMatch settings result =
+  doFormatLine l
+  where
+    l = line result
+    lineLength = BC.length l
+    matchStartIdx = matchStartIndex result - 1
+    matchEndIdx = matchEndIndex result - 1
+    matchLength = matchEndIdx - matchStartIdx
+    intMaxLineLength = if maxLineLength settings < 0 then lineLength + 1 else fromInteger $ maxLineLength settings
+    maxLimit = intMaxLineLength > 0
+    (lsi, lei, msi, mei) = getIndicesForStringAndMaxLength l matchStartIdx matchEndIdx intMaxLineLength
+    prefix = if maxLimit && lsi > 2 then BC.pack "..." else BC.pack ""
+    suffix = if maxLimit && lei < (lineLength - 2) then BC.pack "..." else BC.pack ""
+    lsi' = lsi + BC.length prefix
+    lei' = lei - BC.length suffix
+    trimSliceByteString :: Int -> Int -> B.ByteString -> B.ByteString
+    trimSliceByteString si ei bs = B.concat [prefix, sliceByteString si ei bs, suffix]
+    doFormatLine :: B.ByteString -> String
+    doFormatLine bs | BC.length bs == 0 = ""
+                    | intMaxLineLength == 0 = ""
+                    | lei - lsi == 0 = ""
+                    | colorize settings = BC.unpack (colorizeBS (trimSliceByteString lsi' lei' bs) msi matchLength)
+                    | otherwise = BC.unpack (trimSliceByteString lsi' lei' bs)
+
+formatResultLine :: SearchSettings -> SearchResult -> String
+formatResultLine settings result
+  | BC.length (trimByteString (line result)) == 0 = ""
+  | fromInteger (maxLineLength settings) == 0 = ""
+  | otherwise =
+      if matchLength > intMaxLineLength
+      then formatResultMatch settings result
+      else formatResultLineWithMatch settings result
+      where
         matchLength = matchEndIndex result - matchStartIndex result
-        msi = matchStartIndex result - 1 - leadingSpaceCount
-        mei = msi + matchLength
-        decGreaterThanZero :: Int -> Int
-        decGreaterThanZero n | n > 0 = n - 1
-                             | otherwise = n
-        incLessThanMax :: Int -> Int -> Int
-        incLessThanMax n maxN | n < maxN = n + 1
-                              | otherwise = n
-        recGetIndicesToMaxLen :: Int -> Int -> Int -> (Int, Int)
-        recGetIndicesToMaxLen s e maxLen | e - s + 1 < maxLen = recGetIndicesToMaxLen (decGreaterThanZero s) (incLessThanMax e maxLineEndIndex) maxLen
-                                         | e - s < maxLen = recGetIndicesToMaxLen (decGreaterThanZero s) e maxLen
-                                         | otherwise = (s, e)
-        intMaxLineLength = fromInteger $ maxLineLength settings
-        (lsi, lei) =
-          if trimmedLength > intMaxLineLength
-          then recGetIndicesToMaxLen msi mei intMaxLineLength
-          else (0, maxLineEndIndex)
-        trimWhitespace :: B.ByteString -> B.ByteString
-        trimWhitespace = B.drop leadingSpaceCount
-        doFormatLine :: B.ByteString -> String
-        doFormatLine bs | colorize settings = BC.unpack (colorizeBS (sliceByteString lsi lei (trimWhitespace bs)) msi matchLength)
-                        | otherwise = BC.unpack (sliceByteString lsi lei (trimWhitespace bs))
+        intMaxLineLength =
+          case fromInteger (maxLineLength settings) of
+            0 -> 0
+            i | i < 0 -> matchLength + 1
+            i -> i
 
 colorizeLine :: SearchSettings -> String -> String
 colorizeLine settings line =
@@ -148,7 +211,7 @@ formatSingleLine settings result =
   show (lineNum result) ++ ": [" ++
   show (matchStartIndex result) ++ ":" ++
   show (matchEndIndex result) ++ "]: " ++
-  formatMatchingLine settings result
+  formatResultLine settings result
 
 formatMultiLine :: SearchSettings -> SearchResult -> String
 formatMultiLine settings result =
