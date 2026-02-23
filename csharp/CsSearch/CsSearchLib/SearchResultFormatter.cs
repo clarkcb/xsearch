@@ -126,12 +126,12 @@ public class SearchResultFormatter
 		else
 		{
 			sb.Append($": {result.LineNum}: [{result.MatchStartIndex}:{result.MatchEndIndex}]: ");
-			sb.Append(FormatMatchingLine(result));
+			sb.Append(FormatResultLine(result));
 		}
 		return sb.ToString();
 	}
 
-	private string FormatMatch(SearchResult result)
+	private string FormatResultMatch(SearchResult result)
 	{
 		if (string.IsNullOrWhiteSpace(result.Line) || Settings.MaxLineLength == 0) return "";
 
@@ -162,7 +162,7 @@ public class SearchResultFormatter
 		return matchString;
 	}
 
-	private string FormatMatchingLine(SearchResult result)
+	private string FormatResultLine(SearchResult result)
 	{
 		if (string.IsNullOrWhiteSpace(result.Line) || Settings.MaxLineLength == 0) return "";
 
@@ -170,7 +170,7 @@ public class SearchResultFormatter
 
 		if (maxLimit && result.MatchEndIndex - result.MatchStartIndex > Settings.MaxLineLength)
 		{
-			return FormatMatch(result);
+			return FormatResultMatch(result);
 		}
 
 		var lineStartIndex = 0;

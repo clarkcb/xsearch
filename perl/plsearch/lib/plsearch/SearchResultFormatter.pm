@@ -176,7 +176,7 @@ sub format_result_line {
             $line_end_idx -= 3;
         }
     } else {
-        $line_end_idx += 1;
+        $line_end_idx += 2;
     }
 
     my $formatted = $prefix . substr($result->{line}, $line_start_idx, $line_end_idx - $line_start_idx) . $suffix;

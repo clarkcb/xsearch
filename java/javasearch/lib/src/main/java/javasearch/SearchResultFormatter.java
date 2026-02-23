@@ -190,14 +190,14 @@ public class SearchResultFormatter {
         int matchStartIndex = result.getMatchStartIndex() - 1 - lineStartIndex;
         int matchEndIndex = matchStartIndex + matchLength;
 
-        String prefix = "";
-        String suffix = "";
-
         int trimmedLength = lineEndIndex - lineStartIndex;
 
         if (trimmedLength == 0) {
             return "";
         }
+
+        String prefix = "";
+        String suffix = "";
 
         if (maxLimit && trimmedLength > settings.getMaxLineLength()) {
             lineStartIndex = result.getMatchStartIndex() - 1;

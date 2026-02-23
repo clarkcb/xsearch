@@ -3,6 +3,7 @@ package ktsearch
 import ktfind.ConsoleColor
 import ktfind.FileResult
 import ktfind.FileType
+import org.junit.jupiter.api.Assertions.assertTrue
 import java.io.File
 import java.nio.file.Paths
 import kotlin.test.Test
@@ -13,17 +14,84 @@ import kotlin.test.assertEquals
  */
 class SearchResultTest {
 
+    fun getSearchResult(
+        patternString: String, pathString: String, fileType: FileType,
+        lineNum: Int, matchStartIdx: Int, matchEndIdx: Int, line: String?
+    ): SearchResult {
+        return getSearchResult(
+            patternString, pathString, fileType, lineNum, matchStartIdx, matchEndIdx, line,
+            listOf(), listOf()
+        )
+    }
+
+    fun getSearchResult(
+        patternString: String, pathString: String, fileType: FileType,
+        lineNum: Int, matchStartIdx: Int, matchEndIdx: Int, line: String?,
+        linesBefore: List<String>, linesAfter: List<String>
+    ): SearchResult {
+        val pattern = Regex(patternString)
+        val path = Paths.get(pathString)
+        val fileResult = FileResult(path, fileType)
+        return SearchResult(
+            pattern, fileResult, lineNum, matchStartIdx,
+            matchEndIdx, line!!, linesBefore, linesAfter
+        )
+    }
+
     @Test
     fun testSingleLineSearchResult() {
-        val settings = getDefaultSettings().copy(colorize = false)
-        val pattern = Regex("Search")
+        val pattern = "Search"
         val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        val fileResult = FileResult(Paths.get(path), FileType.CODE)
         val lineNum = 10
         val matchStartIndex = 15
         val matchEndIndex = 23
         val line = "\tpublic class Searcher\n"
-        val searchResult = SearchResult(pattern, fileResult, lineNum,
+        val searchResult = getSearchResult(pattern, path, FileType.CODE, lineNum,
+            matchStartIndex, matchEndIndex, line)
+        assertEquals(pattern, searchResult.searchPattern.pattern)
+        assertEquals(path, searchResult.file!!.path.toString())
+        assertEquals(FileType.CODE, searchResult.file.fileType)
+        assertEquals(lineNum, searchResult.lineNum)
+        assertEquals(matchStartIndex, searchResult.matchStartIndex)
+        assertEquals(matchEndIndex, searchResult.matchEndIndex)
+        assertEquals(line, searchResult.line)
+        assertTrue(searchResult.linesBefore.isEmpty())
+        assertTrue(searchResult.linesAfter.isEmpty())
+    }
+
+    @Test
+    fun testMultiLineSearchResult() {
+        val pattern = "Search"
+        val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+        val lineNum = 10
+        val matchStartIndex = 15
+        val matchEndIndex = 23
+        val line = "\tpublic class Searcher\n"
+        val linesBefore = listOf("namespace CsSearch", "{")
+        val linesAfter = listOf("\t{", "\t\tprivate readonly FileTypes _fileTypes;")
+        val searchResult = getSearchResult(pattern, path, FileType.CODE, lineNum,
+            matchStartIndex, matchEndIndex, line, linesBefore, linesAfter)
+        assertEquals(pattern, searchResult.searchPattern.pattern)
+        assertEquals(path, searchResult.file!!.path.toString())
+        assertEquals(FileType.CODE, searchResult.file.fileType)
+        assertEquals(lineNum, searchResult.lineNum)
+        assertEquals(matchStartIndex, searchResult.matchStartIndex)
+        assertEquals(matchEndIndex, searchResult.matchEndIndex)
+        assertEquals(line, searchResult.line)
+        assertTrue(searchResult.linesBefore.isNotEmpty())
+        assertTrue(searchResult.linesAfter.isNotEmpty())
+    }
+
+    @Test
+    fun testSingleLineSearchResultFormatFormat() {
+        val settings = getDefaultSettings().copy(colorize = false)
+        val pattern = "Search"
+        val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
+        val lineNum = 10
+        val matchStartIndex = 15
+        val matchEndIndex = 23
+        val line = "\tpublic class Searcher\n"
+        val searchResult = getSearchResult(pattern, path, FileType.CODE, lineNum,
                 matchStartIndex, matchEndIndex, line)
         val expectedOutput = String.format("%s: %d: [%d:%d]: %s", path,
                 lineNum, matchStartIndex, matchEndIndex, line.trim { it <= ' ' })
@@ -32,17 +100,17 @@ class SearchResultTest {
     }
 
     @Test
-    fun testSingleLineLongerThanMaxLineLengthSearchResult() {
+    fun testSingleLineLongerThanMaxLineLengthSearchResultFormat() {
         val settings = getDefaultSettings().copy(colorize = false, maxLineLength = 100)
-        val pattern = Regex("maxlen")
+        val pattern = "maxlen"
         val path = "./maxlen.txt"
-        val fileResult = FileResult(Paths.get(path), FileType.TEXT)
         val lineNum = 1
         val matchStartIndex = 53
         val matchEndIndex = 59
-        val line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
-        val searchResult = SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
-                line, listOf(), listOf())
+        val line =
+            "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+        val searchResult = getSearchResult(pattern, path, FileType.TEXT, lineNum,
+            matchStartIndex, matchEndIndex, line)
         val expectedPath = "." + File.separator + "maxlen.txt"
         val expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
         val expectedOutput = String.format("%s: %d: [%d:%d]: %s", expectedPath,
@@ -52,22 +120,23 @@ class SearchResultTest {
     }
 
     @Test
-    fun testSingleLineLongerColorizeSearchResult() {
+    fun testSingleLineLongerColorizeSearchResultFormat() {
         val settings = getDefaultSettings().copy(colorize = true, maxLineLength = 100)
-        val pattern = Regex("maxlen")
+        val pattern = "maxlen"
         val path = "./maxlen.txt"
-        val fileResult = FileResult(Paths.get(path), FileType.TEXT)
         val lineNum = 1
         val matchStartIndex = 53
         val matchEndIndex = 59
-        val line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
-        val searchResult = SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
-                line, listOf(), listOf())
-        val expectedLine = "...89012345678901234567890123456789012345678901" +
-                ConsoleColor.GREEN +
-                "maxlen" +
-                ConsoleColor.RESET +
-                "89012345678901234567890123456789012345678901..."
+        val line =
+            "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+        val searchResult = getSearchResult(pattern, path, FileType.TEXT, lineNum,
+            matchStartIndex, matchEndIndex, line)
+        val expectedLine =
+            "...89012345678901234567890123456789012345678901" +
+            ConsoleColor.GREEN +
+            "maxlen" +
+            ConsoleColor.RESET +
+            "89012345678901234567890123456789012345678901..."
         val expectedOutput = String.format("%s: %d: [%d:%d]: %s", path,
                 lineNum, matchStartIndex, matchEndIndex, expectedLine)
         val output = SearchResultFormatter(settings).format(searchResult)
@@ -75,22 +144,23 @@ class SearchResultTest {
     }
 
     @Test
-    fun testMatchLengthLongerColorizeSearchResult() {
+    fun testMatchLengthLongerColorizeSearchResultFormat() {
         val settings = getDefaultSettings().copy(colorize = true, maxLineLength = 100)
-        val pattern = Regex("\\d+maxlen\\d+")
+        val pattern = "\\d+maxlen\\d+"
         val path = "./maxlen.txt"
-        val fileResult = FileResult(Paths.get(path), FileType.TEXT)
         val lineNum = 10
         val matchStartIndex = 1
         val matchEndIndex = 110
-        val line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
-        val searchResult = SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
-                line, listOf(), listOf())
-        val expectedLine = "" +
-                ConsoleColor.GREEN +
-                "0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456" +
-                ConsoleColor.RESET +
-                "..."
+        val line =
+            "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+        val searchResult = getSearchResult(pattern, path, FileType.TEXT, lineNum,
+            matchStartIndex, matchEndIndex, line, listOf(), listOf())
+        val expectedLine =
+            "" +
+            ConsoleColor.GREEN +
+            "0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456" +
+            ConsoleColor.RESET +
+            "..."
         val expectedOutput = String.format("%s: %d: [%d:%d]: %s", path,
                 lineNum, matchStartIndex, matchEndIndex, expectedLine)
         val output = SearchResultFormatter(settings).format(searchResult)
@@ -98,22 +168,23 @@ class SearchResultTest {
     }
 
     @Test
-    fun testMatchLengthLongerColorizeSearchResult2() {
+    fun testMatchLengthLongerColorizeSearchResultFormat2() {
         val settings = getDefaultSettings().copy(colorize = true, maxLineLength = 100)
-        val pattern = Regex("\\d+maxlen\\d+")
+        val pattern = "\\d+maxlen\\d+"
         val path = "./maxlen.txt"
-        val fileResult = FileResult(Paths.get(path), FileType.TEXT)
         val lineNum = 10
         val matchStartIndex = 11
         val matchEndIndex = 120
-        val line = "ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ"
-        val searchResult = SearchResult(pattern, fileResult, lineNum, matchStartIndex, matchEndIndex,
-                line, listOf(), listOf())
-        val expectedLine = "..." +
-                ConsoleColor.GREEN +
-                "0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123" +
-                ConsoleColor.RESET +
-                "..."
+        val line =
+            "ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ"
+        val searchResult = getSearchResult(pattern, path, FileType.TEXT, lineNum,
+            matchStartIndex, matchEndIndex, line, listOf(), listOf())
+        val expectedLine =
+            "..." +
+            ConsoleColor.GREEN +
+            "3456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456" +
+            ConsoleColor.RESET +
+            "..."
         val expectedOutput = String.format("%s: %d: [%d:%d]: %s", path,
                 lineNum, matchStartIndex, matchEndIndex, expectedLine)
         val output = SearchResultFormatter(settings).format(searchResult)
@@ -121,15 +192,14 @@ class SearchResultTest {
     }
 
     @Test
-    fun testBinaryFileSearchResult() {
+    fun testBinaryFileSearchResultFormat() {
         val settings = getDefaultSettings()
-        val pattern = Regex("Search")
+        val pattern = "Search"
         val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.exe"
-        val fileResult = FileResult(Paths.get(path), FileType.BINARY)
         val lineNum = 0
         val matchStartIndex = 0
         val matchEndIndex = 0
-        val searchResult = SearchResult(pattern, fileResult, lineNum,
+        val searchResult = getSearchResult(pattern, path, FileType.BINARY, lineNum,
                 matchStartIndex, matchEndIndex, "")
         val expectedOutput = String.format("%s matches at [0:0]", path)
         val output = SearchResultFormatter(settings).format(searchResult)
@@ -137,18 +207,17 @@ class SearchResultTest {
     }
 
     @Test
-    fun testMultiLineSearchResult() {
+    fun testMultiLineSearchResultFormat() {
         val settings = getDefaultSettings().copy(colorize = false, linesBefore = 2, linesAfter = 2)
-        val pattern = Regex("Searcher")
+        val pattern = "Searcher"
         val path = "~/src/xsearch/csharp/CsSearch/CsSearch/Searcher.cs"
-        val fileResult = FileResult(Paths.get(path), FileType.CODE)
         val lineNum = 10
         val matchStartIndex = 15
         val matchEndIndex = 23
         val line = "\tpublic class Searcher"
         val linesBefore = listOf("namespace CsSearch", "{")
         val linesAfter = listOf("\t{", "\t\tprivate readonly FileTypes _fileTypes;")
-        val searchResult = SearchResult(pattern, fileResult, lineNum,
+        val searchResult = getSearchResult(pattern, path, FileType.CODE, lineNum,
                 matchStartIndex, matchEndIndex, line, linesBefore, linesAfter)
         val expectedOutput =
                 """================================================================================
