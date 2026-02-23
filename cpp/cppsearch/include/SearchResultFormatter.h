@@ -18,11 +18,13 @@ namespace cppsearch {
 
     private:
         void init();
-        [[nodiscard]] std::string format_matching_line(const SearchFileResult& result) const;
+        [[nodiscard]] std::string format_result_match(const SearchFileResult& result) const;
+        [[nodiscard]] std::string format_result_line(const SearchFileResult& result) const;
         [[nodiscard]] std::string single_line_format(const SearchFileResult& result) const;
         [[nodiscard]] std::string multi_line_format(const SearchFileResult& result) const;
         static unsigned long line_num_padding(const SearchFileResult& result);
-        static std::string colorize(const std::string& s, unsigned long start_idx, unsigned long length, cppfind::Color color);
+        static std::string colorize(const std::string& s, unsigned long match_start_idx,
+            unsigned long match_end_idx, cppfind::Color color);
         [[nodiscard]] std::string format_line_with_color(const std::string& line) const;
 
         static const int line_sep_length = 80;
