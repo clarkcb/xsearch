@@ -201,18 +201,13 @@ Describe -tag "SearchResultFormatter" -name "test_format_colorized_single_line_r
 
         $formattedResult = $formatter.Format($searchResult)
         $formattedResult.LinesBefore.Count | Should -BeExactly 0
-        $formattedResult.MatchingLine.Count | Should -BeExactly 4
+        $formattedResult.MatchingLine.Count | Should -BeExactly 2
         $formattedResult.LinesAfter.Count | Should -BeExactly 0
     }
 }
 
 Describe -tag "SearchResultFormatter" -name "test_format_uncolorized_single_line_result" {
     It "matches uncolorized result" {
-        # Create Settings
-        $settings = [SearchSettings]::new()
-        $settings.Colorize = $false
-        $settings.SearchPatterns += [regex]"Searcher"
-
         # Create SearchResult
         $filePath = "/home/user/src/xsearch/powershell/ps1search/ps1search.ps1";
         $file = [System.IO.FileInfo]::new("$filePath")
@@ -224,12 +219,116 @@ Describe -tag "SearchResultFormatter" -name "test_format_uncolorized_single_line
         $line = "        [Searcher]`$searcher = [Searcher]::new(`$settings)"
         $searchResult = [SearchResult]::new($pattern, $fileResult, $lineNum, $matchStartIdx, $matchEndIdx, $line)
 
+        # Create Settings
+        $settings = [SearchSettings]::new()
+        $settings.Colorize = $false
+        $settings.SearchPatterns += [regex]"Searcher"
+
         # Create SearchResultFormatter
         $formatter = [SearchResultFormatter]::new($settings)
 
         $formattedResult = $formatter.Format($searchResult)
         $formattedResult.LinesBefore.Count | Should -BeExactly 0
         $formattedResult.MatchingLine.Count | Should -BeExactly 2
+        $formattedResult.LinesAfter.Count | Should -BeExactly 0
+    }
+}
+
+Describe -tag "SearchResultFormatter" -name "test_search_result_line_longer_than_max_line_length" {
+    It "matches uncolorized result" {
+        # Create SearchResult
+        $filePath = "./maxlen.txt";
+        $file = [System.IO.FileInfo]::new("$filePath")
+        $fileResult = [FileResult]::new($file, [FileType]::Code);
+        $pattern = [regex]"maxlen"
+        $lineNum = 1
+        $matchStartIdx = 53
+        $matchEndIdx = 59
+        $line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+        $searchResult = [SearchResult]::new($pattern, $fileResult, $lineNum, $matchStartIdx, $matchEndIdx, $line)
+
+        # Create Settings
+        $settings = [SearchSettings]::new()
+        $settings.Colorize = $false
+        $settings.MaxLineLength = 100
+        $settings.SearchPatterns += [regex]"maxlen"
+
+        # Create SearchResultFormatter
+        $formatter = [SearchResultFormatter]::new($settings)
+
+        $expectedLine =
+        "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
+
+        $formattedResult = $formatter.Format($searchResult)
+        $formattedResult.LinesBefore.Count | Should -BeExactly 0
+        $formattedResult.MatchingLine.Count | Should -BeExactly 2
+        $formattedResult.MatchingLine[1] | Should -BeExactly $expectedLine
+        $formattedResult.LinesAfter.Count | Should -BeExactly 0
+    }
+}
+
+Describe -tag "SearchResultFormatter" -name "test_search_result_match_longer_than_max_line_length" {
+    It "matches uncolorized result" {
+        # Create SearchResult
+        $filePath = "./maxlen.txt";
+        $file = [System.IO.FileInfo]::new("$filePath")
+        $fileResult = [FileResult]::new($file, [FileType]::Code);
+        $pattern = [regex]"maxlen"
+        $lineNum = 1
+        $matchStartIdx = 1
+        $matchEndIdx = 110
+        $line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
+        $searchResult = [SearchResult]::new($pattern, $fileResult, $lineNum, $matchStartIdx, $matchEndIdx, $line)
+
+        # Create Settings
+        $settings = [SearchSettings]::new()
+        $settings.Colorize = $false
+        $settings.MaxLineLength = 100
+        $settings.SearchPatterns += [regex]"maxlen"
+
+        # Create SearchResultFormatter
+        $formatter = [SearchResultFormatter]::new($settings)
+
+        $expectedLine =
+        "0123456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456..."
+
+        $formattedResult = $formatter.Format($searchResult)
+        $formattedResult.LinesBefore.Count | Should -BeExactly 0
+        $formattedResult.MatchingLine.Count | Should -BeExactly 2
+        $formattedResult.MatchingLine[1] | Should -BeExactly $expectedLine
+        $formattedResult.LinesAfter.Count | Should -BeExactly 0
+    }
+}
+
+Describe -tag "SearchResultFormatter" -name "test_search_result2_match_longer_than_max_line_length" {
+    It "matches uncolorized result" {
+        # Create SearchResult
+        $filePath = "./maxlen.txt";
+        $file = [System.IO.FileInfo]::new("$filePath")
+        $fileResult = [FileResult]::new($file, [FileType]::Code);
+        $pattern = [regex]"maxlen"
+        $lineNum = 1
+        $matchStartIdx = 11
+        $matchEndIdx = 120
+        $line = "ABCDEFGHIJ0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789ABCDEFGHIJ"
+        $searchResult = [SearchResult]::new($pattern, $fileResult, $lineNum, $matchStartIdx, $matchEndIdx, $line)
+
+        # Create Settings
+        $settings = [SearchSettings]::new()
+        $settings.Colorize = $false
+        $settings.MaxLineLength = 100
+        $settings.SearchPatterns += [regex]"maxlen"
+
+        # Create SearchResultFormatter
+        $formatter = [SearchResultFormatter]::new($settings)
+
+        $expectedLine =
+        "...3456789012345678901234567890123456789012345678901maxlen890123456789012345678901234567890123456..."
+
+        $formattedResult = $formatter.Format($searchResult)
+        $formattedResult.LinesBefore.Count | Should -BeExactly 0
+        $formattedResult.MatchingLine.Count | Should -BeExactly 2
+        $formattedResult.MatchingLine[1] | Should -BeExactly $expectedLine
         $formattedResult.LinesAfter.Count | Should -BeExactly 0
     }
 }

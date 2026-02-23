@@ -75,7 +75,7 @@ class SearchSettings : FindSettings {
 		$this.LinesBefore = 0
 		$this.MaxDepth = -1
 		$this.MaxSize = 0
-		$this.MaxLineLength = 0
+		$this.MaxLineLength = 150
 		$this.MinDepth = -1
 		$this.MinSize = 0
 		$this.MultiLineSearch = $false
@@ -687,8 +687,7 @@ class SearchResultFormatter {
         }
     }
 
-    # This splits a string into 3 segments: before, in, and after, where the 'in' segment should be colorized
-    [string[]]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx, [Color]$color) {
+    [string]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx, [Color]$color) {
         return $this.FileFormatter.ColorizeString($s, $matchStartIdx, $matchEndIdx, $color)
     }
 
@@ -716,24 +715,111 @@ class SearchResultFormatter {
         return $this.FormatMatchBlock.Invoke($match)
     }
 
-    [string[]]FormatMatchingLine([SearchResult]$result) {
-        $s = $result.Line.TrimEnd()
-        $withLeadWhitespaceLen = $s.Length
-        $s = $s.TrimStart()
-        $formattedLen = $s.Length
-        $leadingWhitespaceCount = $withLeadWhitespaceLen - $formattedLen
-        $maxLineEndIdx = $formattedLen - 1
-        $matchLen = $result.MatchEndIndex - $result.MatchStartIndex
-        $matchStartIdx = $result.MatchStartIndex - 1 - $leadingWhitespaceCount
-        $matchEndIdx = $matchStartIdx + $matchLen
-        [string[]]$elems = @()
-        if ($this.Settings.Colorize) {
-            $lineElems = $this.ColorizeString($s, $matchStartIdx, $matchEndIdx, $this.Settings.LineColor)
-            $elems += $lineElems
-        } else {
-            $elems += $s
+    [string]FormatResultMatch([SearchResult]$result) {
+        if ([string]::IsNullOrWhiteSpace($result.Line) -or $this.Settings.MaxLineLength -eq 0) {
+            return ''
         }
-        return $elems
+        
+        $matchStartIdx = $result.MatchStartIndex - 1
+        $matchEndIdx = $result.MatchEndIndex - 1
+        $matchLength = $matchEndIdx - $matchStartIdx
+        
+        $prefix = ''
+        $suffix = ''
+        $colorStartIdx = 0
+        $colorEndIdx = $matchLength
+
+        if ($matchLength -gt $this.Settings.MaxLineLength) {
+            if ($matchStartIdx -gt 2) {
+                $prefix = '...'
+            }
+            $suffix = '...'
+            $colorStartIdx = $prefix.Length
+            $colorEndIdx = $this.Settings.MaxLineLength - 3
+            $matchEndIdx = $matchStartIdx + $colorEndIdx
+            $matchStartIdx = $matchStartIdx + $colorStartIdx
+        }
+
+        $matchSubstring = $result.Line.Substring($matchStartIdx, $matchEndIdx - $matchStartIdx)
+        $matchString = "$prefix${matchSubstring}$suffix"
+
+        if ($this.Settings.Colorize) {
+            $elems = $this.ColorizeString($matchString, $colorStartIdx, $colorEndIdx, $this.Settings.LineColor)
+            return Join-String -InputObject $elems
+        }
+        return $matchString
+    }
+
+    [string]FormatResultLine([SearchResult]$result) {
+        if ([string]::IsNullOrWhiteSpace($result.Line) -or $this.Settings.MaxLineLength -eq 0) {
+            return ''
+        }
+        
+        $maxLimit = $this.Settings.MaxLineLength -gt 0
+        
+        if ($maxLimit -and ($result.MatchEndIndex - $result.MatchStartIndex) -gt $this.Settings.MaxLineLength) {
+            return $this.FormatResultMatch($result)
+        }
+        
+        $lineStartIdx = 0
+        $lineEndIdx = $result.Line.Length - 1
+
+        while ([char]::IsWhiteSpace($result.Line[$lineStartIdx])) {
+            $lineStartIdx++
+        }
+        while ([char]::IsWhiteSpace($result.Line[$lineEndIdx])) {
+            $lineEndIdx--
+        }
+
+        $matchLength = $result.MatchEndIndex - $result.MatchStartIndex
+        $matchStartIdx = $result.MatchStartIndex - 1 - $lineStartIdx
+        $matchEndIdx = $matchStartIdx + $matchLength
+
+        $prefix = '';
+        $suffix = '';
+        
+        $trimmedLength = $lineEndIdx - $lineStartIdx
+
+        if ($maxLimit -and $trimmedLength -gt $this.Settings.MaxLineLength) {
+            $lineStartIdx = $result.MatchStartIndex - 1
+            $lineEndIdx = $lineStartIdx + $matchLength
+            $matchStartIdx = 0
+            $matchEndIdx = $matchLength
+
+            $currentLen = $lineEndIdx - $lineStartIdx
+            while ($currentLen -lt $this.Settings.MaxLineLength) {
+                if ($lineStartIdx -gt 0) {
+                    $lineStartIdx--
+                    $matchStartIdx++
+                    $matchEndIdx++
+                    $currentLen++
+                }
+                if ($currentLen -lt $this.Settings.MaxLineLength -and $lineEndIdx -lt $trimmedLength) {
+                    $lineEndIdx++
+                    $currentLen++
+                }
+            }
+            
+            if ($lineStartIdx -gt 2) {
+                $prefix = '...'
+                $lineStartIdx += 3
+            }
+            if ($lineEndIdx -lt ($trimmedLength - 3)) {
+                $suffix = '...'
+                $lineEndIdx -= 3
+            }
+        } else {
+            $lineEndIdx++
+        }
+
+        $formatted = $prefix + $result.Line.Substring($lineStartIdx, $lineEndIdx - $lineStartIdx) + $suffix
+
+        if ($this.Settings.Colorize) {
+            $elems = $this.ColorizeString($formatted, $matchStartIdx, $matchEndIdx, $this.Settings.LineColor)
+            return Join-String -InputObject $elems
+        }
+
+        return $formatted
     }
     
     [int]LineNumPadding([SearchResult]$result) {
@@ -788,7 +874,7 @@ class SearchResultFormatter {
         } else {
             $s += ": $($result.LineNum): [$($result.MatchStartIndex):$($result.MatchEndIndex)]: "
             $elems += $s
-            $elems += $this.FormatMatchingLine($result)
+            $elems += $this.FormatResultLine($result)
         }
         
         return [FormattedResult]::new($elems, @(), @())
@@ -928,9 +1014,6 @@ class Searcher {
         }
         if ($this.Settings.LinesBefore -lt 0) {
             throw "Invalid linesbefore"
-        }
-        if ($this.Settings.MaxLineLength -lt 0) {
-            throw "Invalid maxlinelength"
         }
     }
 
