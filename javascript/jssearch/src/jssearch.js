@@ -6,7 +6,6 @@
 
 'use strict';
 
-const path = require('path');
 
 const {common} = require('jsfind');
 const {Searcher} = require('./searcher');

@@ -67,7 +67,7 @@ export class Searcher {
 
     public async search(): Promise<SearchResult[]> {
         // get the search files
-        let fileResults: FileResult[] = await this._finder.find();
+        const fileResults: FileResult[] = await this._finder.find();
 
         if (this._settings.verbose) {
             let dirs = fileResults.map(sf => sf.path);
@@ -127,8 +127,8 @@ export class Searcher {
         let results: SearchResult[] = [];
 
         const searchPattern = (p: RegExp): SearchResult[] => {
-            let pattern = new RegExp(p.source, 'g');
-            let patternResults: SearchResult[] = [];
+            const pattern = new RegExp(p.source, 'g');
+            const patternResults: SearchResult[] = [];
             let match = pattern.exec(contents);
             while (match) {
                 patternResults.push(new SearchResult(
@@ -245,7 +245,6 @@ export class Searcher {
                 const lessOrEqual = self.getLessThanOrEqual(match.index);
                 const greaterThan = self.getGreaterThan(match.index);
                 let lineStartIndex = 0;
-                let lineEndIndex = s.length - 1;
                 let beforeLineCount = 0;
                 let beforeStartIndices: number[] = startLineIndices.filter(lessOrEqual);
                 if (beforeStartIndices.length > 0) {
@@ -256,7 +255,7 @@ export class Searcher {
                             beforeStartIndices.length - self._settings.linesBefore);
                     }
                 }
-                lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
+                const lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
                 const line: string = s.substring(lineStartIndex, lineEndIndex);
                 if (self._settings.linesBefore && beforeLineCount) {
                     linesBefore = Searcher.getLinesBefore(s, beforeStartIndices,
@@ -387,8 +386,8 @@ export class Searcher {
     }
 
     getFileResults(results: SearchResult[]): FileResult[] {
-        let fileMap: {[key: string]: FileResult} = {};
-        let fileResults: FileResult[] = [];
+        const fileMap: {[key: string]: FileResult} = {};
+        const fileResults: FileResult[] = [];
         for (const r of results) {
             if (r.file && !(r.file.relativePath() in fileMap)) {
                 fileMap[r.file.relativePath()] = r.file;
@@ -412,8 +411,8 @@ export class Searcher {
         let sortFn;
         if (this._settings.sortCaseInsensitive) {
             sortFn = (a: string, b: string) => {
-                let aUpper = a.toUpperCase();
-                let bUpper = b.toUpperCase();
+                const aUpper = a.toUpperCase();
+                const bUpper = b.toUpperCase();
                 if (aUpper === bUpper)
                     return 0;
                 return aUpper < bUpper ? -1 : 1;
@@ -432,7 +431,7 @@ export class Searcher {
         if (this._settings.uniqueLines) {
             lines = common.setFromArray(lines);
         }
-        let sortFn = this.getSortFn();
+        const sortFn = this.getSortFn();
         lines.sort(sortFn);
         return lines;
     }
@@ -460,7 +459,7 @@ export class Searcher {
         if (this._settings.uniqueLines) {
             matches = common.setFromArray(matches);
         }
-        let sortFn = this.getSortFn();
+        const sortFn = this.getSortFn();
         matches.sort(sortFn);
         return matches;
     }

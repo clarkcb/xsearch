@@ -27,8 +27,8 @@ export class SearchResultFormatter {
 
     private formatLineWithColor(line: string): string {
         let formattedLine = line;
-        for (let p of this.settings.searchPatterns) {
-            let m = p.exec(formattedLine);
+        for (const p of this.settings.searchPatterns) {
+            const m = p.exec(formattedLine);
             if (m) {
                 formattedLine = this.fileFormatter.colorize(formattedLine, m.index, m.index + m[0].length,
                     this.settings.lineColor);
@@ -158,7 +158,7 @@ export class SearchResultFormatter {
             return '';
         }
 
-        let maxLimit = this.settings.maxLineLength > 0;
+        const maxLimit = this.settings.maxLineLength > 0;
 
         if (maxLimit && (result.matchEndIndex - result.matchStartIndex) > this.settings.maxLineLength) {
             return this.formatResultMatch(result);
@@ -182,7 +182,7 @@ export class SearchResultFormatter {
         let prefix = '';
         let suffix = '';
 
-        let trimmedLength = lineEndIndex - lineStartIndex;
+        const trimmedLength = lineEndIndex - lineStartIndex;
 
         if (maxLimit && trimmedLength > this.settings.maxLineLength) {
             lineStartIndex = result.matchStartIndex - 1;

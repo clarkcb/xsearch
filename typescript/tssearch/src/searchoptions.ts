@@ -6,24 +6,22 @@
 
 'use strict';
 
-import * as fs from 'fs';
-
 import * as config from './config';
 import {ArgToken, ArgTokenizer, ArgTokenType, FileUtil, SortUtil} from 'tsfind';
 import {SearchError} from './searcherror';
 import {SearchOption} from './searchoption';
 import {SearchSettings} from './searchsettings';
 
-interface StringActionMap {
-    [key: string]: any
-}
+type BoolAction = (b: boolean, settings: SearchSettings) => void;
+type NumAction = (n: number, settings: SearchSettings) => void;
+type StringAction = (s: string, settings: SearchSettings) => void;
 
 export class SearchOptions {
     options: SearchOption[];
     argNameMap: {[index: string]:string};
-    boolActionMap: StringActionMap;
-    stringActionMap: StringActionMap;
-    intActionMap: StringActionMap;
+    boolActionMap: {[key: string]: BoolAction};
+    stringActionMap: {[key: string]: StringAction};
+    intActionMap: {[key: string]: NumAction};
     argTokenizer: ArgTokenizer;
 
     constructor() {
@@ -210,7 +208,7 @@ export class SearchOptions {
                 }
             } else if (argToken.type === ArgTokenType.Str) {
                 if (argToken.name === 'settings-file') {
-                    err = this.updateSettingsFromFile(settings, argToken.value);
+                    err = this.updateSettingsFromFile(settings, argToken.value as string);
                 } else if (typeof argToken.value === 'string') {
                     this.stringActionMap[argToken.name](argToken.value, settings);
                 } else if (typeof argToken.value === 'object' && Array.isArray(argToken.value)) {
@@ -238,34 +236,34 @@ export class SearchOptions {
     }
 
     public updateSettingsFromJson(settings: SearchSettings, json: string): Error | undefined {
-        let { err, argTokens } = this.argTokenizer.tokenizeJson(json);
-        if (!err) {
-            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        const { err, argTokens } = this.argTokenizer.tokenizeJson(json);
+        if (err) {
+            return err;
         }
-        return err;
+        return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public updateSettingsFromFile(settings: SearchSettings, filePath: string): Error | undefined {
-        let { err, argTokens } = this.argTokenizer.tokenizeFile(filePath);
-        if (!err) {
-            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        const { err, argTokens } = this.argTokenizer.tokenizeFile(filePath);
+        if (err) {
+            return err;
         }
-        return err;
+        return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public updateSettingsFromArgs(settings: SearchSettings, args: string[]): Error | undefined {
-        let { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
-        if (!err) {
-            err = this.updateSettingsFromArgTokens(settings, argTokens);
+        const { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
+        if (err) {
+            return err;
         }
-        return err;
+        return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: SearchSettings) => void): void {
         const settings: SearchSettings = new SearchSettings();
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
-        let err = this.updateSettingsFromArgs(settings, args);
+        const err = this.updateSettingsFromArgs(settings, args);
         cb(err, settings);
     }
 

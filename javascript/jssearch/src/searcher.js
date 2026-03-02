@@ -8,8 +8,7 @@ const assert = require('assert');
 const {common, FileType, FileUtil, Finder} = require('jsfind');
 const {SearchError} = require('./searcherror');
 const {SearchResult} = require('./searchresult');
-const path = require('path')
-const { SearchResultSorter } = require('./searchresultsorter')
+const { SearchResultSorter } = require('./searchresultsorter');
 
 class Searcher {
     'use strict'
@@ -48,11 +47,11 @@ class Searcher {
     }
 
     matchesAnyPattern(s, patterns) {
-        return patterns.some((p, i, arr) => s.search(p) > -1);
+        return patterns.some((p) => s.search(p) > -1);
     }
 
     anyMatchesAnyPattern(ss, patterns) {
-        return ss.some((s, i, arr) => this.matchesAnyPattern(s, patterns));
+        return ss.some((s) => this.matchesAnyPattern(s, patterns));
     }
 
     async search() {
