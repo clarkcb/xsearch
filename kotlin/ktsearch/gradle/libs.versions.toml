@@ -5,7 +5,7 @@
 kotlin-gradle-plugin = "2.3.0"
 commons-io = "2.21.0"
 org-json = "20251224"
-junit-jupiter = "6.0.2"
+junit-jupiter = "6.0.3"
 
 [libraries]
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }

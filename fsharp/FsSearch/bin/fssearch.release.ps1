@@ -9,7 +9,7 @@ $fsSearchPath = Join-Path $env:XSEARCH_PATH 'fsharp' 'FsSearch'
 
 # $configuration = 'Debug'
 $configuration = 'Release'
-$dotNetVersion = 'net9.0'
+$dotNetVersion = 'net10.0'
 $fsSearchExe = Join-Path $fsSearchPath 'FsSearch' 'bin' $configuration $dotNetVersion 'FsSearch'
 
 if (Test-Path $fsSearchExe -PathType Leaf)

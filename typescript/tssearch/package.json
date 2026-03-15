@@ -23,7 +23,7 @@
     "clean": "rm -rf ./dist ./node_modules",
     "create": "npm run build && npm run test",
     "refresh": "npm run clean && npm install",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint ./src --ext .ts",
     "test": "jest",
     "coverage": "jest --coverage"
   },
@@ -34,16 +34,20 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.52.0",
-    "@typescript-eslint/parser": "^8.52.0",
-    "eslint": "^9.39.1",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^10.0.2",
+    "globals": "^17.3.0",
     "jest": "^30.2.0",
+    "jiti": "^2.6.1",
     "ts-jest": "^29.4.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
-    "@types/node": "^25.0.6",
+    "@types/node": "^25.3.2",
     "tsfind": "file:../../../xfind/typescript/tsfind"
   }
 }

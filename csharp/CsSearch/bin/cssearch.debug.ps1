@@ -9,7 +9,7 @@ $csSearchPath = Join-Path $env:XSEARCH_PATH 'csharp' 'CsSearch'
 
 $configuration = 'Debug'
 # $configuration = 'Release'
-$dotNetVersion = 'net9.0'
+$dotNetVersion = 'net10.0'
 $csSearchExe = Join-Path $csSearchPath 'CsSearch' 'bin' $configuration $dotNetVersion 'CsSearch'
 
 if (Test-Path $csSearchExe -PathType Leaf)

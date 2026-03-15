@@ -4,7 +4,7 @@
 commons-io = "2.21.0"
 commons-text = "1.15.0"
 org-json = "20251224"
-junit-jupiter = "6.0.2"
+junit-jupiter = "6.0.3"
 
 [libraries]
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
