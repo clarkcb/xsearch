@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #
 # lint.sh
 #
-# Run static code analysis tools
+# Run static code analysis tools on xsearch language versions
 #
 ################################################################################
 
@@ -12,417 +12,509 @@
 ########################################
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
 source "$DIR/config.sh"
-source "$DIR/common.sh"
+# source "$DIR/common.sh"
+
+if [ -z "$XFIND_PATH" ]
+then
+    log_error "XFIND_PATH not defined"
+    exit 1
+fi
+
+if [ ! -d "$XFIND_PATH" ]
+then
+    log_error "XFIND_PATH directory not found"
+    exit 1
+fi
+
+XFIND_SCRIPT_DIR="$XFIND_PATH/scripts"
+
+if [ ! -d "$XFIND_PATH" ]
+then
+    log_error "XFIND_PATH/scripts directory not found"
+    exit 1
+fi
+
+# Load the generic unittest functions from xfind
+source "$XFIND_SCRIPT_DIR/lint_functions.sh"
+
+
+########################################
+# Common Functions
+########################################
+
+usage () {
+    echo -e "\nUsage: lint.sh [-h|--help] {\"all\" | lang [lang...]}\n"
+    exit
+}
 
 
 ########################################
 # Lint Functions
 ########################################
 
-lint_clojure () {
-    echo
-    hdr "lint_clojure"
+lint_xsearch_version () {
+    local lang_name="$1"
+    local version_name="$2"
 
-    cd $CLJSEARCH_PATH
+    function_name="lint_${lang_name}_version"
+    # log "function_name: $function_name"
 
-    log "Linting cljsearch"
-    log "lein eastwood"
-    lein eastwood
-
-    cd -
-}
-
-lint_cpp () {
-    echo
-    hdr "lint_cpp"
-
-    log "not implemented at this time"
-}
-
-lint_csharp () {
-    echo
-    hdr "lint_csharp"
-
-    log "not implemented at this time"
-}
-
-lint_dart () {
-    echo
-    hdr "lint_dart"
-
-    log "Linting dartsearch"
-    log "dart analyze $DARTSEARCH_PATH"
-    dart analyze $DARTSEARCH_PATH
-}
-
-lint_fsharp () {
-    echo
-    hdr "lint_fsharp"
-
-    log "not implemented at this time"
-}
-
-lint_go () {
-    echo
-    hdr "lint_go"
-
-    cd $GOSEARCH_PATH
-
-    log "Linting gosearch"
-    log "go vet ./..."
-    go vet ./...
-
-    cd -
-}
-
-lint_haskell () {
-    echo
-    hdr "lint_haskell"
-
-    HLINT=$HOME/.local/bin/hlint
-
-    log "Linting hssearch"
-    log "hlint $HSSEARCH_PATH"
-    $HLINT $HSSEARCH_PATH
-}
-
-lint_java () {
-    echo
-    hdr "lint_java"
-
-    TOOLS_PATH=$JAVA_PATH/tools
-    if [ ! -d "$TOOLS_PATH" ]
+    if [[ "$(type -t $function_name)" == "function" ]]
     then
-        log "mkdir -p $TOOLS_PATH"
-        mkdir -p $TOOLS_PATH
+        "$function_name" "$XSEARCH_PATH" "$version_name"
+    else
+        log_error "lint function not found: $function_name"
+        LINT_LASTEXITCODE=1
     fi
 
-    CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "checkstyle*.jar" | head -n 1)
-    if [ -z "$CHECKSTYLE_JAR" ]
+    # log "LINT_LASTEXITCODE: $LINT_LASTEXITCODE"
+    if [ "$LINT_LASTEXITCODE" -eq 0 ]
     then
-        log "Checkstyle jar not found, downloading"
-        URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.41/checkstyle-8.41-all.jar"
-        cd $TOOLS_PATH
-        curl -J -L -O $URL
-        cd -
-        CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "checkstyle*.jar" | head -n 1)
+        log "$version_name lint succeeded"
+        SUCCESSFUL_LINTS+=($version_name)
+    else
+        log_error "$version_name lint failed"
+        FAILED_LINTS+=($version_name)
     fi
-
-    JAVA=$JAVA_HOME/bin/java
-    CONFIG=$JAVASEARCH_PATH/sun_checks.xml
-    #CONFIG=$JAVASEARCH_PATH/google_checks.xml
-
-    GREPVS=("Javadoc"
-            "hides a field"
-            "Line is longer than 80 characters"
-            "Missing a Javadoc comment"
-            "Missing package-info.java file"
-            )
-
-    log "Linting javasearch"
-    FILES=$(find $JAVASEARCH_PATH/src -name "*.java")
-    for f in ${FILES[*]}
-    do
-        echo
-        log "java -jar $CHECKSTYLE_JAR -c $CONFIG $f"
-        output=$($JAVA -jar $CHECKSTYLE -c $CONFIG $f)
-        # for g in ${GREPVS[*]}
-        # do
-        #     output=$(echo $output | grep -v $g)
-        # done
-        echo -e $output
-    done
 }
 
-lint_javascript () {
+lint_bashsearch () {
     echo
-    hdr "lint_javascript"
+    hdr "lint_bashsearch"
 
-    JSSRC_PATH=$JSSEARCH_PATH/src
-    JSHINT=$JSSEARCH_PATH/node_modules/jshint/bin/jshint
-
-    if [ ! -f $JSHINT ]
-    then
-        cd $JSSEARCH_PATH
-        npm install jshint
-        cd -
-    fi
-
-    log "Linting jssearch"
-    FILES=$(find $JSSRC_PATH -name "*.js")
-    for f in ${FILES[*]}
-    do
-        log "$JSHINT $f"
-        $JSHINT $f
-    done
+    lint_xsearch_version "bash" "bashsearch"
 }
 
-lint_kotlin () {
+lint_csearch () {
     echo
-    hdr "lint_kotlin"
+    hdr "lint_csearch"
 
-    if [ -z "$(which ktlint)" ]
-    then
-        echo "You need to install ktlint"
-        return
-    fi
-
-    log "Linting ktsearch"
-    cd $KOTLIN_PATH
-    log "ktlint"
-    ktlint
-    cd -
+    lint_xsearch_version "c" "csearch"
 }
 
-lint_objc () {
+lint_cljsearch () {
     echo
-    hdr "lint_objc"
+    hdr "lint_cljsearch"
 
-    log "not implemented at this time"
+    lint_xsearch_version "clojure" "cljsearch"
 }
 
-lint_ocaml () {
+lint_cppsearch () {
     echo
-    hdr "lint_ocaml"
+    hdr "lint_cppsearch"
 
-    log "not implemented at this time"
+    lint_xsearch_version "cpp" "cppsearch"
 }
 
-lint_perl () {
+lint_cssearch () {
     echo
-    hdr "lint_perl"
+    hdr "lint_cssearch"
 
-    log "not implemented at this time"
+    lint_xsearch_version "csharp" "cssearch"
 }
 
-lint_php () {
+lint_dartsearch () {
     echo
-    hdr "lint_php"
-    #PHP_PATH=$XSEARCH_PATH/php
-    #PHPSEARCH_PATH=$PHP_PATH/phpsearch
-    #PHPLINT=$PHP_PATH/tools/phplint-2.0_20141127/phpl
-    ## Analyze
-    #log "Linting phpsearch.php"
-    #FILES=$(find $PHPSEARCH_PATH -name "*.php")
-    #for f in ${FILES[*]}; do
-    #    echo "$PHPLINT $f"
-    #    $PHPLINT $f
-    #done
-    log "not implemented at this time"
+    hdr "lint_dartsearch"
+
+    lint_xsearch_version "dart" "dartsearch"
 }
 
-lint_python () {
+lint_exsearch () {
     echo
-    hdr "lint_python"
+    hdr "lint_exsearch"
 
-    log "Linting pysearch"
-    cd $PYSEARCH_PATH
-    log "pylint pysearch"
-    pylint pysearch
-    cd -
+    lint_xsearch_version "elixir" "exsearch"
 }
 
-lint_ruby () {
+lint_fssearch () {
     echo
-    hdr "lint_ruby"
+    hdr "lint_fssearch"
 
-    if [ -z "$(which ruby-lint)" ]
-    then
-        echo "You need to install ruby-lint"
-        return
-    fi
-
-    log "Linting rbsearch"
-    FILES=$(find $RBSEARCH_PATH -name "*.rb")
-    for f in ${FILES[*]}
-    do
-        log "ruby-lint $f"
-        ruby-lint $f | grep -v 'undefined'
-    done
+    lint_xsearch_version "fsharp" "fssearch"
 }
 
-lint_rust () {
+lint_gosearch () {
     echo
-    hdr "lint_rust"
+    hdr "lint_gosearch"
 
-    log "not implemented at this time"
+    lint_xsearch_version "go" "gosearch"
 }
 
-lint_scala () {
+lint_groovysearch () {
     echo
-    hdr "lint_scala"
+    hdr "lint_groovysearch"
 
-    TOOLS_PATH=$SCALA_PATH/tools
-    if [ ! -d "$TOOLS_PATH" ]
-    then
-        log "mkdir -p $TOOLS_PATH"
-        mkdir -p $TOOLS_PATH
-    fi
-
-    SCALASTYLE_JAR=$(find $TOOLS_PATH -name "scalastyle*.jar" | head -n1)
-    if [ -z "$SCALASTYLE_JAR" ]
-    then
-        log "Scalastyle jar not found, downloading"
-        # URL="https://oss.sonatype.org/content/repositories/releases/org/scalastyle/scalastyle_2.11/0.7.0/scalastyle_2.11-0.7.0-batch.jar"
-        URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0.jar"
-        cd $TOOLS_PATH
-        curl -O $URL
-        cd -
-        SCALASTYLE_JAR=$(find $TOOLS_PATH -name "scalastyle*.jar" | head -n1)
-    fi
-
-    CONFIG=$SCALASEARCH_PATH/scalastyle_config.xml
-
-    log "Linting scalasearch"
-    log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALASEARCH_PATH/src/main/scala"
-    java -jar $SCALASTYLE_JAR --config $CONFIG $SCALASEARCH_PATH/src/main/scala
+    lint_xsearch_version "groovy" "groovysearch"
 }
 
-lint_swift () {
-    # Assumes that swiftlint has been installed, do this on OSX:
-    # $ sudo brew install swiftlint
+lint_hssearch () {
     echo
-    hdr "lint_swift"
+    hdr "lint_hssearch"
 
-    if [ -z "$(which swiftlint)" ]
-    then
-        echo "You need to install swiftlint"
-        return
-    fi
-
-    log "Linting swiftsearch"
-    log "cd $SWIFTSEARCH_PATH; swiftlint; cd -"
-    cd $SWIFTSEARCH_PATH; swiftlint; cd -
+    lint_xsearch_version "haskell" "hssearch"
 }
 
-lint_typescript () {
+lint_javasearch () {
     echo
-    hdr "lint_typescript"
+    hdr "lint_javasearch"
 
-    log "Not supported at this time"
+    lint_xsearch_version "java" "javasearch"
+}
+
+lint_jssearch () {
+    echo
+    hdr "lint_jssearch"
+
+    lint_xsearch_version "javascript" "jssearch"
+}
+
+lint_ktsearch () {
+    echo
+    hdr "lint_ktsearch"
+
+    lint_xsearch_version "kotlin" "ktsearch"
+}
+
+lint_mlsearch () {
+    echo
+    hdr "lint_mlsearch"
+
+    # TODO: probably want to delete the _build directory
+}
+
+lint_objcsearch () {
+    echo
+    hdr "lint_objcsearch"
+
+    lint_xsearch_version "objc" "objcsearch"
+}
+
+lint_phpsearch () {
+    echo
+    hdr "lint_phpsearch"
+
+    lint_xsearch_version "php" "phpsearch"
+}
+
+lint_plsearch () {
+    echo
+    hdr "lint_plsearch"
+
+    lint_xsearch_version "perl" "plsearch"
+}
+
+lint_ps1search () {
+    echo
+    hdr "lint_ps1search"
+    log "Nothing to do for powershell"
+
+    lint_xsearch_version "powershell" "ps1search"
+}
+
+lint_pysearch () {
+    echo
+    hdr "lint_pysearch"
+
+    lint_xsearch_version "python" "pysearch"
+}
+
+lint_rbsearch () {
+    echo
+    hdr "lint_rbsearch"
+
+    lint_xsearch_version "ruby" "rbsearch"
+}
+
+lint_rssearch () {
+    echo
+    hdr "lint_rssearch"
+
+    lint_xsearch_version "rust" "rssearch"
+}
+
+lint_scalasearch () {
+    echo
+    hdr "lint_scalasearch"
+
+    lint_xsearch_version "scala" "scalasearch"
+}
+
+lint_swiftsearch () {
+    echo
+    hdr "lint_swiftsearch"
+
+    lint_xsearch_version "swift" "swiftsearch"
+}
+
+lint_tssearch () {
+    echo
+    hdr "lint_tssearch"
+
+    lint_xsearch_version "typescript" "tssearch"
+}
+
+lint_linux () {
+    hdr "lint_linux"
+
+    # lint_bashsearch
+
+    # lint_csearch
+
+    # lint_cljsearch
+
+    # lint_cppsearch
+
+    lint_cssearch
+
+    # lint_dartsearch
+
+    lint_exsearch
+
+    lint_fssearch
+
+    lint_gosearch
+
+    # lint_groovysearch
+
+    # lint_hssearch
+
+    lint_javasearch
+
+    lint_jssearch
+
+    lint_ktsearch
+
+    # lint_objcsearch
+
+    # lint_mlsearch
+
+    lint_phpsearch
+
+    lint_plsearch
+
+    lint_pysearch
+
+    lint_rbsearch
+
+    lint_rssearch
+
+    # lint_scalasearch
+
+    lint_swiftsearch
+
+    lint_tssearch
 }
 
 lint_all () {
-    log "lint_all"
-    
-    lint_clojure
+    hdr "lint_all"
 
-    lint_cpp
+    # lint_bashsearch
 
-    lint_csharp
+    # lint_csearch
 
-    lint_dart
+    lint_cljsearch
 
-    lint_fsharp
+    lint_cppsearch
 
-    lint_go
+    lint_cssearch
 
-    lint_haskell
+    lint_dartsearch
 
-    lint_java
+    lint_exsearch
 
-    lint_javascript
+    lint_fssearch
 
-    lint_kotlin
+    lint_gosearch
 
-    lint_objc
+    # lint_groovysearch
 
-    lint_ocaml
+    lint_hssearch
 
-    lint_perl
+    lint_javasearch
 
-    lint_php
+    lint_jssearch
 
-    lint_python
+    lint_ktsearch
 
-    lint_ruby
+    lint_objcsearch
 
-    lint_rust
+    # lint_mlsearch
 
-    lint_scala
+    lint_plsearch
 
-    lint_swift
+    lint_phpsearch
 
-    lint_typescript
+    lint_ps1search
+
+    lint_pysearch
+
+    lint_rbsearch
+
+    lint_rssearch
+
+    lint_scalasearch
+
+    lint_swiftsearch
+
+    lint_tssearch
 }
 
 
 ########################################
-# Lint Steps
+# Lint Main
 ########################################
+echo
+hdr "xsearch lint script"
+log "user: $USER"
+log "host: $HOSTNAME"
+log "os: $(uname -o)"
+
+# Get the current git branch and commit
+# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse --short HEAD)
+log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
+
+log "args: $*"
+
+HELP=
+LINT_ALL=
+TARGET_LANGS=()
 
 if [ $# == 0 ]
 then
-    ARG="all"
-else
-    ARG=$1
+    HELP=yes
 fi
 
-if [ "$ARG" == "all" ]
+while [ -n "$1" ]
+do
+    case "$1" in
+        -h | --help)
+            HELP=yes
+            ;;
+        --all | all)
+            LINT_ALL=yes
+            ;;
+        *)
+            TARGET_LANGS+=($1)
+            ;;
+    esac
+    shift || true
+done
+
+# log the settings
+log "HELP: $HELP"
+log "LINT_ALL: $LINT_ALL"
+if [ ${#TARGET_LANGS[@]} -gt 0 ]
+then
+    log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
+fi
+
+if [ -n "$HELP" ]
+then
+    usage
+fi
+
+if [ -n "$LINT_ALL" ]
 then
     lint_all
-elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
-then
-    lint_clojure
-elif [ "$ARG" == "cpp" ]
-then
-    lint_cpp
-elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
-then
-    lint_csharp
-elif [ "$ARG" == "dart" ]
-then
-    lint_dart
-elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
-then
-    lint_fsharp
-elif [ "$ARG" == "go" ]
-then
-    lint_go
-elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
-then
-    lint_haskell
-elif [ "$ARG" == "java" ]
-then
-    lint_java
-elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
-then
-    lint_javascript
-elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
-then
-    lint_kotlin
-elif [ "$ARG" == "objc" ]
-then
-    lint_objc
-elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
-then
-    lint_ocaml
-elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
-then
-    lint_perl
-elif [ "$ARG" == "php" ]
-then
-    lint_php
-elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
-then
-    lint_python
-elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
-then
-    lint_ruby
-elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
-then
-    lint_rust
-elif [ "$ARG" == "scala" ]
-then
-    lint_scala
-elif [ "$ARG" == "swift" ]
-then
-    lint_swift
-elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
-then
-    lint_typescript
-else
-    echo "ERROR: unknown lint argument: $ARG"
+    print_lint_results
+    exit
 fi
 
+if [ ${#TARGET_LANGS[@]} == 0 ]
+then
+    usage
+fi
+
+for TARGET_LANG in ${TARGET_LANGS[*]}
+do
+    case $TARGET_LANG in
+        linux)
+            lint_linux
+            ;;
+        # bash)
+        #     lint_bashsearch
+        #     ;;
+        # c)
+        #     lint_csearch
+        #     ;;
+        clj | clojure)
+            lint_cljsearch
+            ;;
+        cpp)
+            lint_cppsearch
+            ;;
+        cs | csharp)
+            lint_cssearch
+            ;;
+        dart)
+            lint_dartsearch
+            ;;
+        elixir | ex)
+            lint_exsearch
+            ;;
+        fs | fsharp)
+            lint_fssearch
+            ;;
+        go)
+            lint_gosearch
+            ;;
+        # groovy)
+        #     lint_groovysearch
+        #     ;;
+        haskell | hs)
+            lint_hssearch
+            ;;
+        java)
+            lint_javasearch
+            ;;
+        javascript | js)
+            lint_jssearch
+            ;;
+        kotlin | kt)
+            lint_ktsearch
+            ;;
+        objc)
+            lint_objcsearch
+            ;;
+        # ocaml | ml)
+        #     lint_mlsearch
+        #     ;;
+        perl | pl)
+            lint_plsearch
+            ;;
+        php)
+            lint_phpsearch
+            ;;
+        ps1 | powershell)
+            lint_ps1search
+            ;;
+        py | python)
+            lint_pysearch
+            ;;
+        rb | ruby)
+            lint_rbsearch
+            ;;
+        rs | rust)
+            lint_rssearch
+            ;;
+        scala)
+            lint_scalasearch
+            ;;
+        swift)
+            lint_swiftsearch
+            ;;
+        ts | typescript)
+            lint_tssearch
+            ;;
+        *)
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
+            ;;
+    esac
+done
+
+print_lint_results

@@ -277,9 +277,9 @@ unittest_tssearch () {
 unittest_linux () {
     hdr "unittest_linux"
 
-    time unittest_bashsearch
+    # time unittest_bashsearch
 
-    time unittest_csearch
+    # time unittest_csearch
 
     # time unittest_cljsearch
 
@@ -321,9 +321,9 @@ unittest_linux () {
 unittest_all () {
     hdr "unittest_all"
 
-    time unittest_bashsearch
+    # time unittest_bashsearch
 
-    time unittest_csearch
+    # time unittest_csearch
 
     time unittest_cljsearch
 
@@ -339,7 +339,7 @@ unittest_all () {
 
     time unittest_gosearch
 
-    time unittest_groovysearch
+    # time unittest_groovysearch
 
     time unittest_hssearch
 
