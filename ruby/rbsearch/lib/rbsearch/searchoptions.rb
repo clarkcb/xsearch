@@ -53,6 +53,10 @@ module RbSearch
 
     def search_settings_from_args(args)
       settings = SearchSettings.new
+      # if a defaultfiles option isn't included, go ahead and apply default files now
+      unless args.include?('--defaultfiles') || args.include?('--nodefaultfiles')
+        update_settings_from_default_files(settings)
+      end
       # default print_results to true since running as cli
       settings.print_results = true
       update_settings_from_args(settings, args)
@@ -96,6 +100,7 @@ module RbSearch
         archivesonly: ->(b, settings) { settings.archives_only = b },
         colorize: ->(b, settings) { settings.colorize = b },
         debug: ->(b, settings) { settings.debug = b },
+        defaultfiles: ->(b, settings) { settings.default_files = b },
         excludehidden: ->(b, settings) { settings.include_hidden = !b },
         firstmatch: ->(b, settings) { settings.first_match = b },
         followsymlinks: ->(b, settings) { settings.follow_symlinks = b },
@@ -103,6 +108,7 @@ module RbSearch
         includehidden: ->(b, settings) { settings.include_hidden = b },
         multilinesearch: ->(b, settings) { settings.multi_line_search = b },
         nocolorize: ->(b, settings) { settings.colorize = !b },
+        nodefaultfiles: ->(b, settings) { settings.default_files = !b },
         nofollowsymlinks: ->(b, settings) { settings.follow_symlinks = !b },
         noprintdirs: ->(b, settings) { settings.print_dirs = !b },
         noprintfiles: ->(b, settings) { settings.print_files = !b },
@@ -201,6 +207,9 @@ module RbSearch
           if arg_token.value == true || arg_token.value == false
             @bool_action_dict[arg_token.name].call(arg_token.value, settings)
             return if [:help, :version].include?(arg_token.name)
+            if arg_token.name == :defaultfiles
+              update_settings_from_default_files(settings)
+            end
           else
             raise SearchError, "Invalid value for option: #{arg_token.name}"
           end
@@ -227,6 +236,13 @@ module RbSearch
         else
           raise SearchError, "Invalid option: #{arg_token.name}"
         end
+      end
+    end
+
+    def update_settings_from_default_files(settings)
+      default_settings_path = Pathname.new(Dir.home).join('.config', 'xsearch', 'settings.json')
+      if default_settings_path.exist?
+        update_settings_from_file(settings, default_settings_path.to_s)
       end
     end
   end

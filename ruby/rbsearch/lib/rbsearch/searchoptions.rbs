@@ -31,5 +31,7 @@ module RbSearch
     def set_options_from_json: () -> void
 
     def update_settings_from_arg_tokens: (SearchSettings settings, Array[RbFind::ArgToken] arg_tokens) -> void
+
+    def update_settings_from_default_files: (SearchSettings settings) -> void
   end
 end
