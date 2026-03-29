@@ -48,6 +48,7 @@ class SearchOptions
             'archivesonly' => fn (bool $b, SearchSettings $ss) => $ss->set_archives_only($b),
             'colorize' => fn (bool $b, SearchSettings $ss) => $ss->colorize = $b,
             'debug' => fn (bool $b, SearchSettings $ss) => $ss->set_debug($b),
+            'defaultfiles' => fn (bool $b, SearchSettings $ss) => $ss->default_files = $b,
             'excludehidden' => fn (bool $b, SearchSettings $ss) => $ss->include_hidden = !$b,
             'firstmatch' => fn (bool $b, SearchSettings $ss) => $ss->first_match = $b,
             'followsymlinks' => fn (bool $b, SearchSettings $ss) => $ss->follow_symlinks = $b,
@@ -55,6 +56,7 @@ class SearchOptions
             'includehidden' => fn (bool $b, SearchSettings $ss) => $ss->include_hidden = $b,
             'multilinesearch' => fn (bool $b, SearchSettings $ss) => $ss->multi_line_search = $b,
             'nocolorize' => fn (bool $b, SearchSettings $ss) => $ss->colorize = !$b,
+            'nodefaultfiles' => fn (bool $b, SearchSettings $ss) => $ss->default_files = !$b,
             'nofollowsymlinks' => fn (bool $b, SearchSettings $ss) => $ss->follow_symlinks = !$b,
             'noprintdirs' => fn (bool $b, SearchSettings $ss) => $ss->print_dirs = !$b,
             'noprintfiles' => fn (bool $b, SearchSettings $ss) => $ss->print_files = !$b,
@@ -196,6 +198,9 @@ class SearchOptions
                     if (in_array($arg_token->name, array("help", "version"))) {
                         return;
                     }
+                    if ($arg_token->name == "defaultfiles" && $arg_token->value) {
+                        $this->update_settings_from_default_files($settings);
+                    }
                 } else {
                     throw new SearchException("Invalid value for option: $arg_token->name");
                 }
@@ -259,6 +264,18 @@ class SearchOptions
 
     /**
      * @param SearchSettings $settings
+     * @return void
+     * @throws SearchException
+     */
+    private function update_settings_from_default_files(SearchSettings $settings): void
+    {
+        if (file_exists(Config::DEFAULT_SEARCH_SETTINGS_PATH)) {
+            $this->update_settings_from_file($settings, Config::DEFAULT_SEARCH_SETTINGS_PATH);
+        }
+    }
+
+    /**
+     * @param SearchSettings $settings
      * @param string[] $args
      * @return void
      * @throws SearchException
@@ -281,6 +298,10 @@ class SearchOptions
     public function settings_from_args(array $args): SearchSettings
     {
         $settings = new SearchSettings();
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!in_array('--defaultfiles', $args) && !in_array('--nodefaultfiles', $args)) {
+            $this->update_settings_from_default_files($settings);
+        }
         // default print_results to true since running as cli
         $settings->print_results = true;
         $this->update_settings_from_args($settings, $args);
