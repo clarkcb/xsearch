@@ -99,6 +99,7 @@ typedef void (^BoolActionBlockType)(BOOL, SearchSettings*);
             ss.debug = b;
             if (b) ss.verbose = true;
         } copy],
+        @"defaultfiles" : [^void (BOOL b, SearchSettings *ss) { ss.defaultFiles = b; } copy],
         @"excludehidden" : [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = !b; } copy],
         @"firstmatch" : [^void (BOOL b, SearchSettings *ss) { ss.firstMatch = b; } copy],
         @"followsymlinks" : [^void (BOOL b, SearchSettings *ss) { ss.followSymlinks = b; } copy],
@@ -106,6 +107,7 @@ typedef void (^BoolActionBlockType)(BOOL, SearchSettings*);
         @"includehidden" : [^void (BOOL b, SearchSettings *ss) { ss.includeHidden = b; } copy],
         @"multilinesearch" : [^void (BOOL b, SearchSettings *ss) { ss.multiLineSearch = b; } copy],
         @"nocolorize" : [^void (BOOL b, SearchSettings *ss) { ss.colorize = !b; } copy],
+        @"nodefaultfiles" : [^void (BOOL b, SearchSettings *ss) { ss.defaultFiles = !b; } copy],
         @"nofollowsymlinks" : [^void (BOOL b, SearchSettings *ss) { ss.followSymlinks = !b; } copy],
         @"noprintdirs" : [^void (BOOL b, SearchSettings *ss) { ss.printDirs = !b; } copy],
         @"noprintfiles" : [^void (BOOL b, SearchSettings *ss) { ss.printFiles = !b; } copy],
@@ -231,6 +233,9 @@ typedef void (^IntegerActionBlockType)(NSInteger, SearchSettings*);
             BOOL b = [num boolValue];
             void(^block)(BOOL, FindSettings*) = self.boolActionDict[argToken.name];
             block(b, settings);
+            if ([argToken.name isEqualToString:@"defaultfiles"]) {
+                [self updateSettingsFromDefaultFiles:settings error:error];
+            }
         } else {
             setError(error, [@"Invalid value for option: " stringByAppendingString:argToken.name]);
             return;
@@ -301,7 +306,7 @@ typedef void (^IntegerActionBlockType)(NSInteger, SearchSettings*);
     [self updateSettingsFromArgTokens:settings argTokens:argTokens error:error];
 }
 
-- (FindSettings *) settingsFromData:(NSData *)data error:(NSError **)error {
+- (SearchSettings *) settingsFromData:(NSData *)data error:(NSError **)error {
     SearchSettings *settings = [[SearchSettings alloc] init];
     [self updateSettingsFromData:settings data:data error:error];
     return settings;
@@ -321,6 +326,14 @@ typedef void (^IntegerActionBlockType)(NSInteger, SearchSettings*);
     return settings;
 }
 
+// this is intended to be private, so not including in the header file
+- (void) updateSettingsFromDefaultFiles:(SearchSettings *)settings error:(NSError **)error {
+    NSString *defaultSettingsPath = getXsearchDefaultSettingsPath();
+    if ([FileUtil exists:defaultSettingsPath]) {
+        [self updateSettingsFromFile:settings filePath:defaultSettingsPath error:error];
+    }
+}
+
 - (void) updateSettingsFromArgs:(SearchSettings *)settings args:(NSArray *)args error:(NSError **)error {
     NSArray<ArgToken*> *argTokens = [self.argTokenizer tokenizeArgs:args error:error];
     if (*error) {
@@ -333,6 +346,15 @@ typedef void (^IntegerActionBlockType)(NSInteger, SearchSettings*);
     SearchSettings *settings = [[SearchSettings alloc] init];
     // default printResults to true since running as cli
     settings.printResults = true;
+
+    // if a defaultfiles option isn't included, go ahead and apply default files now
+    if (![args containsObject:@"--defaultfiles"] && ![args containsObject:@"--nodefaultfiles"]) {
+        [self updateSettingsFromDefaultFiles:settings error:error];
+        if (*error) {
+            return settings;
+        }
+    }
+
     [self updateSettingsFromArgs:settings args:args error:error];
     return settings;
 }

@@ -5,5 +5,6 @@
 
 NSString* getXsearchPath();
 NSString* getXsearchSharedPath();
+NSString* getXsearchDefaultSettingsPath();
 
 #endif /* SearchConfig_h */

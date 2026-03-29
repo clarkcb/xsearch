@@ -12,3 +12,8 @@ NSString* getXsearchSharedPath() {
     NSString *xsearchPath = getXsearchPath();
     return [xsearchPath stringByAppendingPathComponent:@"shared"];
 }
+
+NSString* getXsearchDefaultSettingsPath() {
+    NSString *xsearchDefaultSettingsPath = [[[[NSProcessInfo processInfo] environment] objectForKey:@"HOME"] stringByAppendingString:@"/.config/xsearch/settings.json"];
+    return xsearchDefaultSettingsPath;
+}
