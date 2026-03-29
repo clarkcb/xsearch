@@ -76,6 +76,9 @@ public class SearchOptions {
         "debug": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.debug = bool
         },
+        "defaultfiles": { (bool: Bool, settings: SearchSettings) in
+            settings.defaultFiles = bool
+        },
         "excludehidden": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.includeHidden = !bool
         },
@@ -96,6 +99,9 @@ public class SearchOptions {
         },
         "nocolorize": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.colorize = !bool
+        },
+        "nodefaultfiles": { (bool: Bool, settings: SearchSettings) in
+            settings.defaultFiles = !bool
         },
         "nofollowsymlinks": { (bool: Bool, settings: SearchSettings) -> Void in
             settings.followSymlinks = !bool
@@ -272,6 +278,9 @@ public class SearchOptions {
             if argToken.type == ArgTokenType.bool {
                 if let bool = argToken.value as? Bool {
                     boolActionDict[argToken.name]!(bool, settings)
+                    if argToken.name == "defaultfiles" {
+                        try updateSettingsFromDefaultFiles(settings)
+                    }
                 } else {
                     throw FindError(msg: "Invalid value for option: \(argToken.name)")
                 }
@@ -329,6 +338,12 @@ public class SearchOptions {
         return settings
     }
 
+    private func updateSettingsFromDefaultFiles(_ settings: SearchSettings) throws {
+        if FileUtil.exists(config.defaultSearchSettingsPath) {
+            try updateSettingsFromFile(settings, filePath: config.defaultSearchSettingsPath)
+        }
+    }
+
     public func updateSettingsFromArgs(_ settings: SearchSettings, args: [String]) throws {
         let argTokens = try argTokenizer!.tokenizeArgs(args)
         try updateSettingsFromArgTokens(settings, argTokens: argTokens)
@@ -338,6 +353,12 @@ public class SearchOptions {
         let settings = SearchSettings()
         // default printResults to true since running in cli
         settings.printResults = true
+
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if !args.contains("--defaultfiles") && !args.contains("--nodefaultfiles") {
+            try updateSettingsFromDefaultFiles(settings)
+        }
+
         try updateSettingsFromArgs(settings, args: args)
         return settings
     }

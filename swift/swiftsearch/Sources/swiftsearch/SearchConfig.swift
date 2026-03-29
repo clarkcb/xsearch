@@ -12,14 +12,16 @@ public struct SearchConfig {
     public let xsearchPath: String
     public let sharedPath: String
     public let searchOptionsPath: String
+    public let defaultSearchSettingsPath: String
 
     public init() {
         if let xsearchEnvPath = ProcessInfo.processInfo.environment["XSEARCH_PATH"] {
-            self.xsearchPath = xsearchEnvPath
+            xsearchPath = xsearchEnvPath
         } else {
-            self.xsearchPath = "\(NSHomeDirectory())/src/xsearch"
+            xsearchPath = "\(NSHomeDirectory())/src/xsearch"
         }
-        self.sharedPath = "\(xsearchPath)/shared"
-        self.searchOptionsPath = "\(sharedPath)/searchoptions.json"
+        sharedPath = "\(xsearchPath)/shared"
+        searchOptionsPath = "\(sharedPath)/searchoptions.json"
+        defaultSearchSettingsPath = "\(NSHomeDirectory())/.config/xsearch/settings.json"
     }
 }
