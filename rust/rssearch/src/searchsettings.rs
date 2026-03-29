@@ -85,6 +85,14 @@ impl SearchSettings {
         self._find_settings.set_debug(b);
     }
 
+    pub fn default_files(&self) -> bool {
+        self._find_settings.default_files()
+    }
+
+    pub fn set_default_files(&mut self, b: bool) {
+        self._find_settings.set_default_files(b);
+    }
+
     pub fn first_match(&self) -> bool {
         self._first_match
     }
@@ -490,6 +498,7 @@ impl SearchSettings {
         s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
         s.push_str(format!(", colorize={}", &self.colorize()).as_str());
         s.push_str(format!(", debug={}", &self.debug()).as_str());
+        s.push_str(format!(", default_files={}", &self.default_files()).as_str());
         s.push_str(format!(", first_match={}", &self.first_match()).as_str());
         s.push_str(format!(", follow_symlinks={}", &self.follow_symlinks()).as_str());
         s.push_str(format!(", in_archive_extensions={:?}", &self.in_archive_extensions()).as_str());
@@ -579,6 +588,7 @@ mod tests {
         assert_eq!(settings.archives_only(), false);
         assert_eq!(settings.colorize(), true);
         assert_eq!(settings.debug(), false);
+        assert_eq!(settings.default_files(), true);
         assert_eq!(settings.first_match(), false);
         assert_eq!(settings.follow_symlinks(), false);
         assert!(settings.in_archive_extensions().is_empty());

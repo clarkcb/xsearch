@@ -3,7 +3,7 @@ use rsfind::argtokenizer::{ArgOption, ArgToken, ArgTokenType, ArgTokenizer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-
+use std::path::Path;
 use crate::common::log;
 use crate::config::{Config, CONFIG_FILE_PATH};
 use crate::searcherror::SearchError;
@@ -32,8 +32,8 @@ type IntAction = Box<dyn Fn(i32, &mut SearchSettings) -> Result<(), SearchError>
 type LongAction = Box<dyn Fn(u64, &mut SearchSettings) -> Result<(), SearchError>>;
 
 pub struct SearchOptions {
+    pub config: Config,
     pub search_options: Vec<SearchOption>,
-    pub version: String,
     pub bool_action_map: HashMap<String, BoolAction>,
     pub string_action_map: HashMap<String, StringAction>,
     pub int_action_map: HashMap<String, IntAction>,
@@ -43,8 +43,8 @@ pub struct SearchOptions {
 
 impl SearchOptions {
     pub fn new() -> Result<SearchOptions, SearchError> {
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let contents: String = match fs::read_to_string(config.search_options_path) {
+        let config = Config::new();
+        let contents: String = match fs::read_to_string(&config.search_options_path) {
             Ok(contents) => contents,
             Err(error) => return Err(SearchError::new(&error.to_string())),
         };
@@ -64,8 +64,8 @@ impl SearchOptions {
                                            &long_action_map);
         let arg_tokenizer = ArgTokenizer::new(&search_options);
         Ok(SearchOptions {
+            config,
             search_options,
-            version: config.version.clone(),
             bool_action_map,
             string_action_map,
             int_action_map,
@@ -160,6 +160,11 @@ impl SearchOptions {
                 if let Err(error) = self.apply_bool_arg(name.as_str(), value.clone(), settings) {
                     return Err(error);
                 }
+                if name == "defaultfiles" {
+                    if let Err(error) = self.update_settings_from_default_files(settings) {
+                        return Err(error);
+                    }
+                }
             },
             ArgToken::String { name, value } => {
                 if name == "settings-file" {
@@ -230,6 +235,17 @@ impl SearchOptions {
         }
     }
 
+    pub fn update_settings_from_default_files(
+        &self,
+        settings: &mut SearchSettings,
+    ) -> Result<(), SearchError> {
+        if Path::new(&self.config.default_search_settings_path).exists() {
+            self.update_settings_from_file(settings, &self.config.default_search_settings_path)
+        } else {
+            Ok(())
+        }
+    }
+
     pub fn update_settings_from_args(
         &self,
         settings: &mut SearchSettings,
@@ -246,10 +262,24 @@ impl SearchOptions {
         args: Iter<String>,
     ) -> Result<SearchSettings, SearchError> {
         let mut settings = SearchSettings::default();
-        settings.set_print_results(true); // default to true when running from main
-        match self.update_settings_from_args(&mut settings, args) {
-            Ok(()) => Ok(settings),
-            Err(error) => Err(error),
+        settings.set_print_results(true); // default to true when running from cli
+
+        if args.clone().any(|a| a == "--defaultfiles" ||  a == "--nodefaultfiles") {
+            match self.update_settings_from_args(&mut settings, args) {
+                Ok(()) => Ok(settings),
+                Err(error) => Err(error),
+            }
+        } else {
+            // if a defaultfiles option isn't included, go ahead and apply default files now
+            match self.update_settings_from_default_files(&mut settings) {
+                Ok(()) => {
+                    match self.update_settings_from_args(&mut settings, args) {
+                        Ok(()) => Ok(settings),
+                        Err(error) => Err(error),
+                    }
+                },
+                Err(error) => Err(error),
+            }
         }
     }
 
@@ -306,7 +336,7 @@ impl SearchOptions {
     }
 
     pub fn print_version(&self) {
-        log(format!("xsearch version {}", self.version).as_str());
+        log(format!("xsearch version {}", self.config.version).as_str());
     }
 }
 
@@ -327,6 +357,10 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
     bool_action_map.insert(
         "debug".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_debug(b))),
+    );
+    bool_action_map.insert(
+        "defaultfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_default_files(b))),
     );
     bool_action_map.insert(
         "excludehidden".to_string(),
@@ -355,6 +389,10 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
     bool_action_map.insert(
         "nocolorize".to_string(),
         Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_colorize(!b))),
+    );
+    bool_action_map.insert(
+        "nodefaultfiles".to_string(),
+        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_default_files(!b))),
     );
     bool_action_map.insert(
         "nofollowsymlinks".to_string(),

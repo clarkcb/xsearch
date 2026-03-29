@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fs};
 
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +8,7 @@ pub struct Config {
     pub shared_path: String,
     pub file_types_path: String,
     pub search_options_path: String,
+    pub default_search_settings_path: String,
     pub version: String,
 }
 
@@ -35,6 +36,7 @@ impl Config {
             shared_path: shared_path.clone(),
             file_types_path: shared_path.clone() + "/filetypes.json",
             search_options_path: shared_path.clone() + "/searchoptions.json",
+            default_search_settings_path: env::var("HOME").unwrap() + "/.config/xsearch/settings.json",
             version,
         }
     }
