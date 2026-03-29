@@ -25,6 +25,7 @@ class SearchSettings extends FindSettings {
   String toString() => 'SearchSettings(archivesOnly: $archivesOnly'
       ', colorize: $colorize'
       ', debug: $debug'
+      ', defaultFiles=$defaultFiles'
       ', firstMatch: $firstMatch'
       ', followSymlinks: $followSymlinks'
       ', inArchiveExtensions: ${stringSetToString(inArchiveExtensions)}'

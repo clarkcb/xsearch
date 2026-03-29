@@ -5,3 +5,5 @@ String xSearchPath = Platform.environment.containsKey('XSEARCH_PATH')
     : '${Platform.environment['HOME']!}/src/xsearch';
 String sharedPath = '$xSearchPath/shared';
 String searchOptionsPath = '$sharedPath/searchoptions.json';
+final String defaultSearchSettingsPath =
+    '${Platform.environment['HOME']!}/.config/xsearch/settings.json';

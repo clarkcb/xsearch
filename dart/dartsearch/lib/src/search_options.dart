@@ -2,7 +2,8 @@ import 'dart:convert' show json;
 import 'dart:io';
 
 import 'package:dartfind/dartfind.dart';
-import 'package:dartsearch/src/config.dart' show searchOptionsPath;
+import 'package:dartsearch/src/config.dart'
+    show searchOptionsPath, defaultSearchSettingsPath;
 import 'package:dartsearch/src/search_settings.dart';
 
 class SearchOption implements Option {
@@ -90,6 +91,7 @@ class SearchOptions {
       'allmatches': (bool b, SearchSettings ss) => ss.firstMatch = !b,
       'colorize': (bool b, SearchSettings ss) => ss.colorize = b,
       'debug': (bool b, SearchSettings ss) => ss.debug = b,
+      'defaultfiles': (bool b, SearchSettings ss) => ss.defaultFiles = b,
       'excludehidden': (bool b, SearchSettings ss) => ss.includeHidden = !b,
       'firstmatch': (bool b, SearchSettings ss) => ss.firstMatch = b,
       'followsymlinks': (bool b, SearchSettings ss) => ss.followSymlinks = b,
@@ -97,6 +99,7 @@ class SearchOptions {
       'includehidden': (bool b, SearchSettings ss) => ss.includeHidden = b,
       'multilinesearch': (bool b, SearchSettings ss) => ss.multiLineSearch = b,
       'nocolorize': (bool b, SearchSettings ss) => ss.colorize = !b,
+      'nodefaultfiles': (bool b, SearchSettings ss) => ss.defaultFiles = !b,
       'nofollowsymlinks': (bool b, SearchSettings ss) => ss.followSymlinks = !b,
       'noprintdirs': (bool b, SearchSettings ss) => ss.printDirs = !b,
       'noprintfiles': (bool b, SearchSettings ss) => ss.printFiles = !b,
@@ -194,6 +197,9 @@ class SearchOptions {
         if (argToken.tokenType == ArgTokenType.boolType) {
           if (boolActionMap.containsKey(argToken.name)) {
             boolActionMap[argToken.name](argToken.value, settings);
+            if (argToken.name == 'defaultfiles') {
+              await updateSettingsFromDefaultFiles(settings);
+            }
           } else {
             throw FindException('Invalid option: ${argToken.name}');
           }
@@ -228,8 +234,17 @@ class SearchOptions {
 
   Future<void> updateSettingsFromFile(
       SearchSettings settings, String filePath) async {
-    List<ArgToken> argTokens = await argTokenizer!.tokenizeFile(filePath);
-    await updateSettingsFromArgTokens(settings, argTokens);
+    await ready.then((_) async {
+      List<ArgToken> argTokens = await argTokenizer!.tokenizeFile(filePath);
+      await updateSettingsFromArgTokens(settings, argTokens);
+    });
+  }
+
+  Future<void> updateSettingsFromDefaultFiles(SearchSettings settings) async {
+    if (FileSystemEntity.typeSync(defaultSearchSettingsPath) ==
+        FileSystemEntityType.file) {
+      await updateSettingsFromFile(settings, defaultSearchSettingsPath);
+    }
   }
 
   Future<void> updateSettingsFromArgs(
@@ -244,6 +259,13 @@ class SearchOptions {
   Future<SearchSettings> settingsFromArgs(List<String> args) async {
     var settings = SearchSettings();
     settings.printResults = true; // default to printing results
+
+    // if a defaultfiles option isn't included, go ahead and apply default files now
+    if (!args.contains('--defaultfiles') &&
+        !args.contains('--nodefaultfiles')) {
+      await updateSettingsFromDefaultFiles(settings);
+    }
+
     await updateSettingsFromArgs(settings, args);
     return settings;
   }
