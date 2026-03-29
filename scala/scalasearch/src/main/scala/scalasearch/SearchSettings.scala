@@ -13,6 +13,7 @@ object DefaultSearchSettings {
   val archivesOnly: Boolean = DefaultFindSettings.archivesOnly
   val colorize: Boolean = DefaultFindSettings.colorize
   val debug: Boolean = DefaultFindSettings.debug
+  val defaultFiles: Boolean = DefaultFindSettings.defaultFiles
   val dirColor: Color = DefaultFindSettings.dirColor
   val extColor: Color = DefaultFindSettings.extColor
   val fileColor: Color = DefaultFindSettings.fileColor
@@ -45,6 +46,7 @@ object DefaultSearchSettings {
 case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archivesOnly,
                           colorize: Boolean = DefaultSearchSettings.colorize,
                           debug: Boolean = DefaultSearchSettings.debug,
+                          defaultFiles: Boolean = DefaultSearchSettings.defaultFiles,
                           dirColor: Color = DefaultSearchSettings.dirColor,
                           extColor: Color = DefaultSearchSettings.extColor,
                           fileColor: Color = DefaultSearchSettings.fileColor,
@@ -101,10 +103,11 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archives
   searchArchives = archivesOnly || searchArchives
   verbose = debug || verbose
 
-  val findSettings: FindSettings = FindSettings(
+  def getFindSettings: FindSettings = FindSettings(
     archivesOnly = archivesOnly,
     colorize = colorize,
     debug = debug,
+    defaultFiles = defaultFiles,
     dirColor = dirColor,
     extColor = extColor,
     fileColor = fileColor,
@@ -141,11 +144,11 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archives
     verbose = verbose)
 
   def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
-    findSettings.addExtensions(exts, extensions)
+    FindSettings.addExtensions(exts, extensions)
   }
 
   def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
-    findSettings.getLastModFromString(lastModString)
+    FindSettings.getLastModFromString(lastModString)
   }
 
   def hasLinesBefore: Boolean = {
@@ -177,6 +180,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSearchSettings.archives
       "archivesOnly: " + archivesOnly +
       ", colorize: " + colorize +
       ", debug: " + debug +
+      ", defaultFiles: " + defaultFiles +
       ", firstMatch: " + firstMatch +
       ", followSymlinks: " + followSymlinks +
       ", inArchiveExtensions: " + inArchiveExtensions +

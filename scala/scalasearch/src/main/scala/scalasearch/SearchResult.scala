@@ -1,7 +1,6 @@
 package scalasearch
 
 import scalafind.Color.Color
-import scalafind.ConsoleColor.ConsoleColor
 import scalafind.{FileResult, FileResultFormatter, SortBy}
 
 import scala.util.matching.Regex
@@ -122,7 +121,7 @@ case class SearchResult(searchPattern: Regex, file: Option[FileResult],
 
 class SearchResultFormatter(val settings: SearchSettings) {
   val sepLen = 80
-  var fileResultFormatter = new FileResultFormatter(settings.findSettings)
+  var fileResultFormatter = new FileResultFormatter(settings.getFindSettings)
 
   private def formatLineWithColor(line: String): String = {
     var formattedLine = line

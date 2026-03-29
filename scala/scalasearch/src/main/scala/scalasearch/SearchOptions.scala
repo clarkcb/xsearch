@@ -1,11 +1,10 @@
 package scalasearch
 
 import org.json.{JSONArray, JSONException, JSONObject, JSONTokener}
-import scalafind.{ArgOption, ArgToken, ArgTokenType, ArgTokenizer, Common, FileType, FileUtil, SortBy}
+import scalafind.{ArgOption, ArgToken, ArgTokenType, ArgTokenizer, Common, FileType, SortBy}
 
 import java.io.{IOException, InputStreamReader}
-import java.nio.file.{Files, Path, Paths}
-import java.time.LocalDateTime
+import java.nio.file.{Files, Paths}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
@@ -82,6 +81,7 @@ object SearchOptions {
     "allmatches" -> ((b, ss) => ss.copy(firstMatch = !b)),
     "colorize" -> ((b, ss) => ss.copy(colorize = b)),
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
+    "defaultfiles" -> ((b, ss) => ss.copy(defaultFiles = b)),
     "excludehidden" -> ((b, ss) => ss.copy(includeHidden = !b)),
     "firstmatch" -> ((b, ss) => ss.copy(firstMatch = b)),
     "followsymlinks" -> ((b, ss) => ss.copy(followSymlinks = b)),
@@ -89,6 +89,7 @@ object SearchOptions {
     "includehidden" -> ((b, ss) => ss.copy(includeHidden = b)),
     "multilinesearch" -> ((b, ss) => ss.copy(multiLineSearch = b)),
     "nocolorize" -> ((b, ss) => ss.copy(colorize = !b)),
+    "nodefaultfiles" -> ((b, ss) => ss.copy(defaultFiles = !b)),
     "nofollowsymlinks" -> ((b, ss) => ss.copy(followSymlinks = !b)),
     "noprintdirs" -> ((b, ss) => ss.copy(printDirs = !b)),
     "noprintfiles" -> ((b, ss) => ss.copy(printFiles = !b)),
@@ -195,7 +196,11 @@ object SearchOptions {
     if (this.boolActionMap.contains(arg)) {
       obj match
         case b: Boolean =>
-          boolActionMap(arg)(b, ss)
+          if (arg == "defaultfiles") {
+            updateSettingsFromDefaultFiles(boolActionMap(arg)(b, ss))
+          } else {
+            boolActionMap(arg)(b, ss)
+          }
         case _ =>
           throw new SearchException("Invalid value for option: " + arg)
     } else if (this.stringActionMap.contains(arg)) {
@@ -255,13 +260,27 @@ object SearchOptions {
     updateSettingsFromArgTokens(settings, argTokens)
   }
 
+  private def updateSettingsFromDefaultFiles(settings: SearchSettings): SearchSettings = {
+    val defaultSearchSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xsearch", "settings.json")
+    if (Files.exists(defaultSearchSettingsPath)) {
+      updateSettingsFromFile(settings, defaultSearchSettingsPath.toString)
+    } else {
+      settings
+    }
+  }
+
   def updateSettingsFromArgs(settings: SearchSettings, args: Array[String]): SearchSettings = {
     val argTokens = argTokenizer.tokenizeArgs(args)
     updateSettingsFromArgTokens(settings, argTokens)
   }
 
   def settingsFromArgs(args: Array[String]): SearchSettings = {
-    updateSettingsFromArgs(SearchSettings(printResults = true), args)
+    val settings = SearchSettings(printResults = true)
+    if (!args.contains("--defaultfiles") && !args.contains("--nodefaultfiles")) {
+      updateSettingsFromArgs(updateSettingsFromDefaultFiles(settings), args)
+    } else {
+      updateSettingsFromArgs(settings, args)
+    }
   }
 
   private def getUsageString: String = {

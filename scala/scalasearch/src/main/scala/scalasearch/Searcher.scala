@@ -29,7 +29,7 @@ class Searcher (_settings: SearchSettings) {
       (s1: String, s2: String) => s1 < s2
     }
   private val finder: Finder = try {
-    Finder(_settings.findSettings)
+    Finder(_settings.getFindSettings)
   } catch {
     case e: Exception => throw new SearchException(e.getMessage)
     case _ => throw new SearchException("An unknown error occurred trying to create Finder")
