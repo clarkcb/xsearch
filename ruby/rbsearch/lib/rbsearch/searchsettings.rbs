@@ -4,7 +4,7 @@ module RbSearch
     attr_accessor first_match: bool
     attr_accessor in_lines_after_patterns: Set[Regexp]
     attr_accessor in_lines_before_patterns: Set[Regexp]
-    attr_accessor line_color: Color
+    attr_accessor line_color: RbFind::Color
     attr_accessor lines_after: Integer
     attr_accessor lines_after_to_patterns: Set[Regexp]
     attr_accessor lines_after_until_patterns: Set[Regexp]
@@ -22,7 +22,5 @@ module RbSearch
     attr_accessor unique_lines: bool
 
     def initialize: () -> void
-
-    def to_s: () -> String
   end
 end
