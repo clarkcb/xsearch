@@ -9,6 +9,7 @@ const config = require('./config');
 const {SearchError} = require('./searcherror');
 const {SearchOption} = require('./searchoption');
 const {SearchSettings} = require('./searchsettings');
+const fs = require("fs");
 
 class SearchOptions {
     'use strict'
@@ -25,6 +26,8 @@ class SearchOptions {
                 (b, settings) => { settings.colorize = b; },
             'debug':
                 (b, settings) => { settings.debug = b; },
+            'defaultfiles':
+                (b, settings) => { settings.defaultFiles = b; },
             'excludehidden':
                 (b, settings) => { settings.includeHidden = !b; },
             'firstmatch':
@@ -39,6 +42,8 @@ class SearchOptions {
                 (b, settings) => { settings.multilineSearch = b; },
             'nocolorize':
                 (b, settings) => { settings.colorize = !b; },
+            'nodefaultfiles':
+                (b, settings) => { settings.defaultFiles = !b; },
             'nofollowsymlinks':
                 (b, settings) => { settings.followSymlinks = !b; },
             'noprintdirs':
@@ -190,6 +195,12 @@ class SearchOptions {
             if (argToken.type === ArgTokenType.Bool) {
                 if (typeof argToken.value === 'boolean') {
                     this.boolActionMap[argToken.name](argToken.value, settings);
+                    if (argToken.name === 'help' || argToken.name === 'version') {
+                        return;
+                    }
+                    if (argToken.name === 'defaultfiles' && argToken.value) {
+                        err = this.updateSettingsFromDefaultFiles(settings);
+                    }
                 } else {
                     err = new FindError(`Invalid value for option: ${argToken}`);
                 }
@@ -238,6 +249,14 @@ class SearchOptions {
         return err;
     }
 
+    updateSettingsFromDefaultFiles(settings) {
+        let err;
+        if (fs.existsSync(config.DEFAULT_SEARCH_SETTINGS_PATH)) {
+            err = this.updateSettingsFromFile(settings, config.DEFAULT_SEARCH_SETTINGS_PATH);
+        }
+        return err;
+    }
+
     updateSettingsFromArgs(settings, args) {
         let { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
         if (!err) {
@@ -248,9 +267,16 @@ class SearchOptions {
 
     settingsFromArgs(args, cb) {
         let settings = new SearchSettings();
-        // default printFiles to true since running as cli
-        settings.printResults = true;
-        let err = this.updateSettingsFromArgs(settings, args);
+        let err;
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!args.includes('--defaultfiles') && !args.includes('--nodefaultfiles')) {
+            err = this.updateSettingsFromDefaultFiles(settings);
+        }
+        if (!err) {
+            // default printResults to true since running as cli
+            settings.printResults = true;
+            err = this.updateSettingsFromArgs(settings, args);
+        }
         cb(err, settings);
     }
 

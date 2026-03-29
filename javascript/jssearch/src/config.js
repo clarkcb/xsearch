@@ -6,6 +6,7 @@
 
 "use strict";
 
+const path = require("path");
 const isWin = /^win/.test(process.platform);
 
 const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
@@ -16,3 +17,4 @@ exports.SHARED_PATH = `${exports.XSEARCH_PATH}/shared`;
 const JSSEARCH_PATH = `${exports.XSEARCH_PATH}/javascript/jssearch`;
 const DATA_PATH = `${JSSEARCH_PATH}/data`;
 exports.SEARCH_OPTIONS_JSON_PATH = `${DATA_PATH}/searchoptions.json`;
+exports.DEFAULT_SEARCH_SETTINGS_PATH = path.join(HOME, '.config', 'xsearch', 'settings.json');
