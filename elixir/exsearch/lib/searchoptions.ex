@@ -64,6 +64,7 @@ defmodule ExSearch.SearchOptions do
       archivesonly: fn b, settings -> SearchSettings.set_archives_only(settings, b) end,
       colorize: fn b, settings -> %{settings | colorize: b} end,
       debug: fn b, settings -> SearchSettings.set_debug(settings, b) end,
+      defaultfiles: fn b, settings -> %{settings | default_files: b} end,
       excludehidden: fn b, settings -> %{settings | include_hidden: not b} end,
       firstmatch: fn b, settings -> %{settings | first_match: b} end,
       followsymlinks: fn b, settings -> %{settings | follow_symlinks: b} end,
@@ -71,6 +72,7 @@ defmodule ExSearch.SearchOptions do
       includehidden: fn b, settings -> %{settings | include_hidden: b} end,
       multilinesearch: fn b, settings -> %{settings | multi_line_search: b} end,
       nocolorize: fn b, settings -> %{settings | colorize: not b} end,
+      nodefaultfiles: fn b, settings -> %{settings | default_files: not b} end,
       nofollowsymlinks: fn b, settings -> %{settings | follow_symlinks: not b} end,
       noprintdirs: fn b, settings -> %{settings | print_dirs: not b} end,
       noprintfiles: fn b, settings -> %{settings | print_files: not b} end,
@@ -208,6 +210,11 @@ defmodule ExSearch.SearchOptions do
             k = t.name
             v = t.value
             cond do
+              k == :defaultfiles && v == true ->
+                case update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+                  {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
+                  {:error, message} -> raise SearchError, message: message
+                end
               Map.has_key?(bool_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(bool_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
               true -> raise SearchError, message: "Invalid option: #{k}"
@@ -246,26 +253,47 @@ defmodule ExSearch.SearchOptions do
     end
   end
 
-  def update_settings_from_args!(settings, args, options) do
-    arg_action_maps = arg_action_maps()
-    arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
+  def update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps) do
     case ArgTokenizer.tokenize_args(args, arg_tokenizer) do
       {:ok, tokens} -> update_settings_from_tokens!(settings, tokens, arg_tokenizer, arg_action_maps)
       {:error, message} -> raise SearchError, message: message
     end
   end
 
-  def update_settings_from_args(settings, args, options) do
+  def update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps) do
     try do
-      {:ok, update_settings_from_args!(settings, args, options)}
+      {:ok, update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps)}
     rescue
       e in SearchError -> {:error, e.message}
     end
   end
 
+  def update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+    if File.exists?(ExFind.Config.default_find_settings_path) do
+      update_settings_from_file(settings, ExFind.Config.default_find_settings_path, arg_tokenizer, arg_action_maps)
+    else
+      {:ok, settings}
+    end
+  end
+
   def get_settings_from_args(args, options) do
     settings = SearchSettings.new([print_results: true])
-    update_settings_from_args(settings, args, options)
+    if Enum.empty?(args) do
+      {:ok, settings}
+    else
+      arg_action_maps = arg_action_maps()
+      arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
+      if Enum.any?(args, fn a -> a == "--defaultfiles" || a == "--nodefaultfiles" end) do
+        update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps)
+      else
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        case update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+          {:error, message} -> {:error, message}
+          {:ok, settings} ->
+            update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps)
+        end
+      end
+    end
   end
 
   def get_settings_from_args!(args, options) do
