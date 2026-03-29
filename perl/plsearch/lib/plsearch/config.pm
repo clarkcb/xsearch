@@ -23,8 +23,9 @@ if (defined $ENV{XSEARCH_PATH}) {
 }
 our $SHARED_PATH = $XSEARCH_PATH->subdir('shared');
 our $SEARCH_OPTIONS_PATH = $SHARED_PATH->file('searchoptions.json');
+our $DEFAULT_SEARCH_SETTINGS_PATH = file($ENV{'HOME'}, '.config', 'xsearch', 'settings.json');
 
-our @EXPORT = qw($XSEARCH_PATH $SHARED_PATH $SEARCH_OPTIONS_PATH);
+our @EXPORT = qw($XSEARCH_PATH $SHARED_PATH $SEARCH_OPTIONS_PATH $DEFAULT_SEARCH_SETTINGS_PATH);
 
 1;
 

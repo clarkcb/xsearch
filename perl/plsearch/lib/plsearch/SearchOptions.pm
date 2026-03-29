@@ -25,7 +25,7 @@ use plfind::FileType;
 use plfind::FileTypes;
 use plfind::FileUtil;
 
-use plsearch::config qw($SEARCH_OPTIONS_PATH);
+use plsearch::config;
 use plsearch::SearchOption;
 use plsearch::SearchSettings;
 
@@ -45,6 +45,10 @@ my $bool_action_hash = {
     'debug' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('debug', $bool);
+    },
+    'defaultfiles' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('default_files', $bool);
     },
     'excludehidden' => sub {
         my ($bool, $settings) = @_;
@@ -73,6 +77,10 @@ my $bool_action_hash = {
     'nocolorize' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('colorize', !$bool);
+    },
+    'nodefaultfiles' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('default_files', !$bool);
     },
     'nofollowsymlinks' => sub {
         my ($bool, $settings) = @_;
@@ -331,6 +339,15 @@ sub update_settings_from_arg_tokens {
         if ($arg_token->{type} eq plfind::ArgTokenType->BOOL) {
             if (plfind::common::is_bool($arg_value)) {
                 &{$bool_action_hash->{$arg_token->{name}}}($arg_value, $settings);
+                if ($arg_token->{name} eq 'help' || $arg_token->{name} eq 'version') {
+                    return \@errs;
+                }
+                if ($arg_token->{name} eq 'defaultfiles') {
+                    my $e = $self->update_settings_from_default_files($settings);
+                    if (scalar @$e) {
+                        push(@errs, @$e);
+                    }
+                }
             } else {
                 push(@errs, 'Invalid value for option: ' . $arg_token->{name});
             }
@@ -396,6 +413,16 @@ sub settings_from_file {
     return ($settings, $errs);
 }
 
+sub update_settings_from_default_files {
+    my ($self, $settings) = @_;
+    my @errs;
+    if (-e $DEFAULT_SEARCH_SETTINGS_PATH) {
+        my $e = $self->update_settings_from_file($settings, $DEFAULT_SEARCH_SETTINGS_PATH);
+        @errs = @$e;
+    }
+    return \@errs;
+}
+
 sub update_settings_from_args {
     my ($self, $settings, $args) = @_;
     my ($arg_tokens, $errs) = $self->{arg_tokenizer}->tokenize_args($args);
@@ -408,6 +435,13 @@ sub update_settings_from_args {
 sub settings_from_args {
     my ($self, $args) = @_;
     my $settings = plsearch::SearchSettings->new();
+    # if a defaultfiles option isn't included, go ahead and apply default files now
+    if (!(grep { $_ eq '--defaultfiles' } @$args) && !(grep { $_ eq '--nodefaultfiles' } @$args)) {
+        my $errs = $self->update_settings_from_default_files($settings);
+        if (scalar @$errs) {
+            return ($settings, $errs);
+        }
+    }
     # default print_results to true since running as cli
     $settings->set_property('print_results', 1);
     my $errs = $self->update_settings_from_args($settings, $args);
