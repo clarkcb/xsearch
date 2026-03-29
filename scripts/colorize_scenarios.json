@@ -1,0 +1,108 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "node_modules", "pycache", "target", "venv"
+        ],
+        "common_startpaths": ["~/src/xsearch/python"],
+        "scriptpath": "$XSEARCH_PATH/scripts",
+        "sharedpath": "$XSEARCH_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "colorize",
+            "name": "colorize in usage",
+            "args": ["-h" ],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize error",
+            "args": ["-c"],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "no colorize error",
+            "args": ["-C"],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize names by default in listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize names in listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-c", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize names in listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-C", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize dirs and names in listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-d", "script", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize dirs and names in listing",
+            "args": ["--maxdepth", "1", "-C", "-t", "code", "-d", "script", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize dirs and names in dir and listings",
+            "args": ["--maxdepth", "1", "-t", "code", "-d", "cript", "--printdirs", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize dirs and names in dir and listings",
+            "args": ["--maxdepth", "1", "-C", "-t", "code", "-d", "cript", "--printdirs", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize dirs, names and exts in listing",
+            "args": ["--maxdepth", "1", "-x", "sh", "-d", "script", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize dirs, names and exts in listing",
+            "args": ["--maxdepth", "1", "-C", "-x", "sh", "-d", "script", "-f", "build", "-s", "build", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        }
+    ]
+}

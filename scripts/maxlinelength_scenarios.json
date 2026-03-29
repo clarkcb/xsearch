@@ -1,0 +1,151 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "node_modules", "pycache", "target", "venv"
+        ],
+        "common_startpaths": ["~/src/xsearch/python"],
+        "scriptpath": "$XSEARCH_PATH/scripts",
+        "sharedpath": "$XSEARCH_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "maxlinelength",
+            "name": "long matching line with maxlinelength == 0",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "--maxlinelength", "0", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "long matching line with maxlinelength == -1",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "--maxlinelength", "-1", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "long match with maxlinelength == 0",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "--maxlinelength", "0", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "long match with maxlinelength == -1",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "--maxlinelength", "-1", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "matching line longer than default maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "-C", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "colorize matching line longer than default maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "-c", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "match longer than default maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "-C", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "colorize match longer than default maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "-c", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "matching line longer than odd maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "-C", "--maxlinelength", "99", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "colorize matching line longer than odd maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "-c", "--maxlinelength", "99", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "match longer than odd maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "-C", "--maxlinelength", "99", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "colorize match longer than odd maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "-c", "--maxlinelength", "99", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+
+        {
+            "group": "maxlinelength",
+            "name": "matching line shorter than maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "-C", "--maxlinelength", "200", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "colorize matching line shorter than maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "-c", "--maxlinelength", "200", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "match shorter than maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "-C", "--maxlinelength", "200", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "maxlinelength",
+            "name": "colorize match shorter than maxlinelength",
+            "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "-c", "--maxlinelength", "200", "~/src/xsearch/shared/testFiles"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        }
+    ],
+    "ignore_scenarios": [
+        {
+            "group": "maxlinelength",
+            "name": "maxlinelength in usage",
+            "args": ["-h" ],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        }
+    ]
+}

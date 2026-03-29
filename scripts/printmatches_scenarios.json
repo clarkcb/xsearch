@@ -1,0 +1,44 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "node_modules", "pycache", "target", "venv"
+        ],
+        "common_startpaths": ["~/src/xsearch/python"],
+        "scriptpath": "$XSEARCH_PATH/scripts",
+        "sharedpath": "$XSEARCH_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "printmatches",
+            "name": "printmatches in usage",
+            "args": ["-h" ],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "printmatches",
+            "name": "printmatches error",
+            "args": ["--printmatches"],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "printmatches",
+            "name": "no printmatches error",
+            "args": ["--noprintmatches"],
+            "replace_exe_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "printmatches",
+            "name": "printmatches names by default in listing",
+            "args": ["--maxdepth", "1", "-x", "py", "--printmatches", "-u", "-s", "[a-z0-9]+search\\b", "~/src/xsearch/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        }
+    ]
+}

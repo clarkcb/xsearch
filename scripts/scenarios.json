@@ -16,13 +16,13 @@
             "group": "help/usage",
             "name": "no args",
             "args": [],
-            "replace_xsearch_name": true
+            "replace_exe_name": true
         },
         {
             "group": "help/usage",
             "name": "help",
             "args": ["-h"],
-            "replace_xsearch_name": true
+            "replace_exe_name": true
         },
         {
             "group": "search lines",
