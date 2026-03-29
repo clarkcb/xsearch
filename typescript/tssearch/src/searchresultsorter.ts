@@ -16,7 +16,7 @@ export class SearchResultSorter {
 
     constructor(settings: SearchSettings) {
         this.settings = settings;
-        this.fileSorter = new FileResultSorter(settings.getFindSettings());
+        this.fileSorter = new FileResultSorter(settings);
     }
 
     private cmpBySearchFields(sr1: SearchResult, sr2: SearchResult) {

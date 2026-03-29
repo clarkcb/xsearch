@@ -18,7 +18,7 @@ export class SearchResultFormatter {
 
     constructor(settings: SearchSettings) {
         this.settings = settings;
-        this.fileFormatter = new FileResultFormatter(settings.getFindSettings());
+        this.fileFormatter = new FileResultFormatter(settings);
         if (settings.colorize) {
             this.formatLine = this.formatLineWithColor.bind(this);
             this.formatMatch = this.formatMatchWithColor.bind(this);

@@ -25,7 +25,7 @@ export class Searcher {
     _settings: SearchSettings;
 
     constructor(settings: SearchSettings) {
-        this._finder = new Finder(settings.getFindSettings());
+        this._finder = new Finder(settings);
         this._settings = settings;
         this.validateSettings();
     }
