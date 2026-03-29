@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Text.Json
 open FsFindLib
 
@@ -15,6 +16,7 @@ module SearchOptions =
             ("archivesonly", (fun (b : bool) (settings : SearchSettings) -> settings.ArchivesOnly <- b));
             ("colorize", (fun (b : bool) (settings : SearchSettings) -> settings.Colorize <- b));
             ("debug", (fun (b : bool) (settings : SearchSettings) -> settings.Debug <- b));
+            ("defaultfiles", (fun (b : bool) (settings : SearchSettings) -> settings.DefaultFiles <- b));
             ("excludehidden", (fun (b : bool) (settings : SearchSettings) -> settings.IncludeHidden <- not b));
             ("firstmatch", (fun (b : bool) (settings : SearchSettings) -> settings.FirstMatch <- b));
             ("followsymlinks", (fun (b : bool) (settings : SearchSettings) -> settings.FollowSymlinks <- b));
@@ -22,6 +24,7 @@ module SearchOptions =
             ("includehidden", (fun (b : bool) (settings : SearchSettings) -> settings.IncludeHidden <- b));
             ("multilinesearch", (fun (b : bool) (settings : SearchSettings) -> settings.MultiLineSearch <- b));
             ("nocolorize", (fun (b : bool) (settings : SearchSettings) -> settings.Colorize <- not b));
+            ("nodefaultfiles", (fun (b : bool) (settings : SearchSettings) -> settings.DefaultFiles <- not b));
             ("nofollowsymlinks", (fun (b : bool) (settings : SearchSettings) -> settings.FollowSymlinks <- not b));
             ("noprintdirs", (fun (b : bool) (settings : SearchSettings) -> settings.PrintDirs <- not b));
             ("noprintfiles", (fun (b : bool) (settings : SearchSettings) -> settings.PrintFiles <- not b));
@@ -110,11 +113,15 @@ module SearchOptions =
         Seq.append shortArgs longArgs
         |> Seq.append [("path", "path")]
         |> Map.ofSeq
-        
+
     let optionNameMap = GetOptionNameMap
-    
+
     let argTokenizer : ArgTokenizer =
         ArgTokenizer(options)
+
+    // These are required to do a "forward declaration" of the UpdateSettingsFromDefaultFiles
+    let dummyUpdateSettingsFromDefaultFiles: SearchSettings -> Result<SearchSettings, string> = (fun (settings : SearchSettings) -> Error "not implemented")
+    let mutable forwardUpdateSettingsFromDefaultFiles = ref dummyUpdateSettingsFromDefaultFiles
 
     let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : SearchSettings) : Result<SearchSettings, string> =
         if argToken.Type = ArgTokenType.Bool then
@@ -122,7 +129,10 @@ module SearchOptions =
                 match argToken.Value with
                 | :? Boolean as b ->
                     boolActionMap[argToken.Name] b settings
-                    Ok settings
+                    if argToken.Name = "defaultfiles" then
+                        forwardUpdateSettingsFromDefaultFiles.Value settings
+                    else
+                        Ok settings
                 | _ -> Error $"Invalid value for option: {argToken.Name}"
             else
                 Error $"Invalid value for option: {argToken.Name}"
@@ -184,6 +194,16 @@ module SearchOptions =
         let settings = SearchSettings()
         UpdateSettingsFromFile settings filePath
 
+    let UpdateSettingsFromDefaultFiles (settings : SearchSettings) : Result<SearchSettings, string> =
+        let homePath = FileUtil.GetHomePath()
+        let defaultSettingsPath = Path.Join(homePath, ".config", "xsearch", "settings.json")
+        if Path.Exists(defaultSettingsPath) then
+            UpdateSettingsFromFile settings defaultSettingsPath
+        else
+            Ok settings
+
+    forwardUpdateSettingsFromDefaultFiles.Value <- UpdateSettingsFromDefaultFiles
+
     let UpdateSettingsFromArgs (settings : SearchSettings) (args : string[]) : Result<SearchSettings, string> =
         match argTokenizer.TokenizeArgs(args) with
         | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
@@ -191,7 +211,14 @@ module SearchOptions =
 
     let SettingsFromArgs (args : string[]) : Result<SearchSettings, string> =
         let settings = SearchSettings(PrintResults=true)
-        UpdateSettingsFromArgs settings args
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if not (Array.contains "--defaultfiles" args) && not (Array.contains "--nodefaultfiles" args) then
+            match UpdateSettingsFromDefaultFiles(settings) with
+            | Ok settings ->
+                UpdateSettingsFromArgs settings args
+            | Error e -> Error e
+        else
+            UpdateSettingsFromArgs settings args
 
     let SortOption (o1 : SearchOption) (o2 : SearchOption) : int =
         let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
