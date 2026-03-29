@@ -3,6 +3,8 @@ package gosearch
 import (
 	"fmt"
 	"gofind/pkg/gofind"
+	"reflect"
+	"strings"
 	"time"
 
 	"golang.org/x/text/encoding/ianaindex"
@@ -547,110 +549,26 @@ func (s *SearchSettings) SetVerbose(b bool) {
 	s.FindSettings.SetVerbose(b)
 }
 
+func settingsToString(settings *SearchSettings) string {
+	rv := reflect.ValueOf(settings)
+
+	if rv.Kind() != reflect.Pointer {
+		ptr := reflect.New(rv.Type())
+		ptr.Elem().Set(rv)
+		rv = ptr
+	}
+
+	rv = rv.Elem()
+
+	var b strings.Builder
+	seen := map[uintptr]bool{}
+
+	gofind.Walk(rv, "", seen, &b)
+
+	return b.String()
+}
+
 func (s *SearchSettings) String() string {
-	const template = "SearchSettings{" +
-		"ArchivesOnly: %t" +
-		", Colorize: %t" +
-		", Debug: %t" +
-		", FirstMatch: %t" +
-		", FollowSymlinks: %t" +
-		", InArchiveExtensions: %s" +
-		", InArchiveFilePatterns: %s" +
-		", IncludeHidden: %t" +
-		", InDirPatterns: %s" +
-		", InExtensions: %s" +
-		", InFilePatterns: %s" +
-		", InFileTypes: %s" +
-		", InLinesAfterPatterns: %s" +
-		", InLinesBeforePatterns: %s" +
-		", LinesAfter: %d" +
-		", LinesAfterToPatterns: %s" +
-		", LinesAfterUntilPatterns: %s" +
-		", LinesBefore: %d" +
-		", MaxDepth: %d" +
-		", MaxLastMod: %s" +
-		", MaxLineLength: %d" +
-		", MaxSize: %d" +
-		", MinDepth: %d" +
-		", MinLastMod: %s" +
-		", MinSize: %d" +
-		", MultiLineSearch: %t" +
-		", OutArchiveExtensions: %s" +
-		", OutArchiveFilePatterns: %s" +
-		", OutDirPatterns: %s" +
-		", OutExtensions: %s" +
-		", OutFilePatterns: %s" +
-		", OutFileTypes: %s" +
-		", OutLinesAfterPatterns: %s" +
-		", OutLinesBeforePatterns: %s" +
-		", Paths: %s" +
-		", PrintDirs: %t" +
-		", PrintFiles: %t" +
-		", PrintLines: %t" +
-		", PrintMatches: %t" +
-		", PrintResults: %t" +
-		", PrintUsage: %t" +
-		", PrintVersion: %t" +
-		", Recursive: %t" +
-		", SearchArchives: %t" +
-		", SearchPatterns: %s" +
-		", SortBy: %s" +
-		", SortCaseInsensitive: %t" +
-		", SortDescending: %t" +
-		", TextFileEncoding: \"%s\"" +
-		", UniqueLines: %t" +
-		", Verbose: %t}"
-	return fmt.Sprintf(template,
-		s.ArchivesOnly(),
-		s.Colorize(),
-		s.Debug(),
-		s.FirstMatch(),
-		s.FollowSymlinks(),
-		gofind.StringListToString(s.InArchiveExtensions()),
-		gofind.PatternsToString(s.InArchiveFilePatterns()),
-		s.IncludeHidden(),
-		gofind.PatternsToString(s.InDirPatterns()),
-		gofind.StringListToString(s.InExtensions()),
-		gofind.PatternsToString(s.InFilePatterns()),
-		gofind.FileTypeListToString(s.InFileTypes()),
-		gofind.PatternsToString(s.InLinesAfterPatterns()),
-		gofind.PatternsToString(s.InLinesBeforePatterns()),
-		s.LinesAfter(),
-		gofind.PatternsToString(s.LinesAfterToPatterns()),
-		gofind.PatternsToString(s.LinesAfterUntilPatterns()),
-		s.LinesBefore(),
-		s.MaxDepth(),
-		gofind.LastModToString(s.MaxLastMod()),
-		s.MaxLineLength(),
-		s.MaxSize(),
-		s.MinDepth(),
-		gofind.LastModToString(s.MinLastMod()),
-		s.MinSize(),
-		s.MultiLineSearch(),
-		gofind.StringListToString(s.OutArchiveExtensions()),
-		gofind.PatternsToString(s.OutArchiveFilePatterns()),
-		gofind.PatternsToString(s.OutDirPatterns()),
-		gofind.StringListToString(s.OutExtensions()),
-		gofind.PatternsToString(s.OutFilePatterns()),
-		gofind.FileTypeListToString(s.OutFileTypes()),
-		gofind.PatternsToString(s.OutLinesAfterPatterns()),
-		gofind.PatternsToString(s.OutLinesBeforePatterns()),
-		gofind.StringListToString(s.Paths()),
-		s.PrintDirs(),
-		s.PrintFiles(),
-		s.PrintLines(),
-		s.PrintMatches(),
-		s.PrintResults(),
-		s.FindSettings.PrintUsage(),
-		s.FindSettings.PrintVersion(),
-		s.FindSettings.Recursive(),
-		s.SearchArchives(),
-		gofind.PatternsToString(s.SearchPatterns()),
-		gofind.NameForSortBy(s.FindSettings.SortBy()),
-		s.FindSettings.SortCaseInsensitive(),
-		s.FindSettings.SortDescending(),
-		s.TextFileEncoding(),
-		s.UniqueLines(),
-		s.FindSettings.Verbose(),
-	)
+	fieldString := settingsToString(s)
+	return fmt.Sprintf("SearchSettings(%v)", fieldString)
 }
