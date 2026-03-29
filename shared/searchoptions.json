@@ -19,6 +19,10 @@
       "desc": "Set output mode to debug"
     },
     {
+      "long": "defaultfiles",
+      "desc": "Load default settings files, if found*"
+    },
+    {
       "long": "encoding",
       "short": "e",
       "desc": "Set the encoding to use with text files (default: \"utf-8\")"
@@ -143,6 +147,10 @@
       "long": "nocolorize",
       "short": "C",
       "desc": "Do not colorize console output"
+    },
+    {
+      "long": "nodefaultfiles",
+      "desc": "Do not load default settings files"
     },
     {
       "long": "nofollowsymlinks",
