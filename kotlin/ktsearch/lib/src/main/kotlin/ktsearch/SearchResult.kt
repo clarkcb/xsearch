@@ -95,7 +95,7 @@ data class SearchResult(val searchPattern: Regex,
 
 class SearchResultFormatter(val settings: SearchSettings) {
     private val noSearchFileText = "<text>"
-    val fileResultFormatter = FileResultFormatter(settings.findSettings)
+    val fileResultFormatter = FileResultFormatter(settings.getFindSettings())
 
     private fun formatLineWithColor(line: String): String {
         var formattedLine = line

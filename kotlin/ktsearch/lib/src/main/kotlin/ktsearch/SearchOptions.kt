@@ -3,6 +3,8 @@ package ktsearch
 import ktfind.*
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -35,6 +37,7 @@ class SearchOptions {
             if (b) ss.copy(debug = b, verbose = b) else
                 ss.copy(debug = b)
         },
+        "defaultfiles" to { b, ss -> ss.copy(defaultFiles = b) },
         "excludehidden" to { b, ss -> ss.copy(includeHidden = !b) },
         "firstmatch" to { b, ss -> ss.copy(firstMatch = b) },
         "followsymlinks" to { b, ss -> ss.copy(followSymlinks = b) },
@@ -42,6 +45,7 @@ class SearchOptions {
         "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
         "multilinesearch" to { b, ss -> ss.copy(multiLineSearch = b) },
         "nocolorize" to { b, ss -> ss.copy(colorize = !b) },
+        "nodefaultfiles" to { b, ss -> ss.copy(defaultFiles = !b) },
         "nofollowsymlinks" to { b, ss -> ss.copy(followSymlinks = !b) },
         "noprintdirs" to { b, ss -> ss.copy(printDirs = !b) },
         "noprintfiles" to { b, ss -> ss.copy(printFiles = !b) },
@@ -171,7 +175,12 @@ class SearchOptions {
     private fun applyArgTokenToSettings(argToken: ArgToken, settings: SearchSettings): SearchSettings {
         if (argToken.type == ArgTokenType.BOOL) {
             if (argToken.value is Boolean) {
-                return this.boolActionMap[argToken.name]!!.invoke(argToken.value as Boolean, settings)
+                val updatedSettings = this.boolActionMap[argToken.name]!!.invoke(argToken.value as Boolean, settings)
+                return if (argToken.name == "defaultfiles") {
+                    updateSettingsFromDefaultFiles(updatedSettings)
+                } else {
+                    updatedSettings
+                }
             } else {
                 throw SearchException("Invalid value for option: ${argToken.name}")
             }
@@ -242,17 +251,27 @@ class SearchOptions {
         return updateSettingsFromArgTokens(settings, argTokens)
     }
 
+    fun updateSettingsFromDefaultFiles(settings: SearchSettings): SearchSettings {
+        val defaultSearchSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xsearch", "settings.json")
+        if (Files.exists(defaultSearchSettingsPath)) {
+            return updateSettingsFromFile(settings, defaultSearchSettingsPath.toString())
+        }
+        return settings
+    }
+
     fun updateSettingsFromArgs(settings: SearchSettings, args: Array<String>): SearchSettings {
         val argTokens = argTokenizer.tokenizeArgs(args)
         return updateSettingsFromArgTokens(settings, argTokens)
     }
 
     fun settingsFromArgs(args: Array<String>): SearchSettings {
-        if (args.isEmpty()) {
-            throw SearchException(FindError.STARTPATH_NOT_DEFINED.message)
-        }
         val settings = getDefaultSettings().copy(printResults = true)
-        return updateSettingsFromArgs(settings, args)
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        return if (!args.contains("--defaultfiles") && !args.contains("--nodefaultfiles")) {
+            updateSettingsFromArgs(updateSettingsFromDefaultFiles(settings), args)
+        } else {
+            updateSettingsFromArgs(settings, args)
+        }
     }
 
     private fun getUsageString(): String {

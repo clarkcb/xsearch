@@ -17,7 +17,7 @@ class Searcher(val settings: SearchSettings) {
 
     init {
         try {
-            finder = Finder(settings.findSettings)
+            finder = Finder(settings.getFindSettings())
             if (settings.sortCaseInsensitive) {
                 comparator = { s1: String, s2: String -> s1.uppercase().compareTo(s2.uppercase()) }
             }
