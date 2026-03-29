@@ -2,18 +2,16 @@ module HsSearch.Config
   (
       getXsearchPath
     , getDataPath
+    , getDefaultSearchSettingsPath
   ) where
 
-import System.Environment (getEnv, lookupEnv)
+import System.Environment (lookupEnv)
 import System.FilePath ((</>))
 import System.Info (os)
+import HsFind.Config (getHome)
 
 isWin :: Bool
 isWin = os == "mingw32"
-
-getHome :: IO FilePath
-getHome = getEnv homeName
-  where homeName = if isWin then "HOMEPATH" else "HOME"
 
 getXsearchPath :: IO FilePath
 getXsearchPath = do
@@ -28,4 +26,11 @@ getDataPath = do
   xsearchPath <- getXsearchPath
   let elems = ["haskell", "hssearch", "data"]
   return $ foldl concatPath xsearchPath elems
+  where concatPath path p = path </> p  
+
+getDefaultSearchSettingsPath :: IO FilePath
+getDefaultSearchSettingsPath = do
+  home <- getHome
+  let elems = [".config", "xsearch", "settings.json"]
+  return $ foldl concatPath home elems
   where concatPath path p = path </> p  

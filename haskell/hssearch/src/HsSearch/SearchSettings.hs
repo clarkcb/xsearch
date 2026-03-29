@@ -21,15 +21,17 @@ import qualified Data.Vector as V (toList)
 import GHC.Generics (Generic)
 
 import HsFind.ConsoleColor (Color(..))
-import HsFind.FileTypes (FileType, getFileTypeForName, getFileTypeName)
+import HsFind.FileTypes (FileType, getFileTypeForName, fileTypesToString)
 import HsFind.FileUtil (normalizeExtension)
-import qualified HsFind.FindSettings as FS (FindSettings(..))
+import qualified HsFind.FindSettings as FS (FindSettings(..), lastModToString)
 import HsFind.SortBy (SortBy(..), getSortByForName, sortByToString)
+import HsFind.StringUtil (stringListToString)
 
 data SearchSettings = SearchSettings {
                                        archivesOnly :: Bool
                                      , colorize :: Bool
                                      , debug :: Bool
+                                     , defaultFiles :: Bool
                                      , dirColor :: Color
                                      , extColor :: Color
                                      , fileColor :: Color
@@ -89,6 +91,7 @@ defaultSearchSettings = SearchSettings {
                                          archivesOnly=False
                                        , colorize=True
                                        , debug=False
+                                       , defaultFiles=True
                                        , dirColor=ColorCyan
                                        , extColor=ColorYellow
                                        , fileColor=ColorMagenta
@@ -149,6 +152,7 @@ toFindSettings searchSettings = FS.FindSettings {
                                      FS.archivesOnly=archivesOnly searchSettings
                                    , FS.colorize=colorize searchSettings
                                    , FS.debug=debug searchSettings
+                                   , FS.defaultFiles=defaultFiles searchSettings
                                    , FS.dirColor=dirColor searchSettings
                                    , FS.extColor=extColor searchSettings
                                    , FS.fileColor=fileColor searchSettings
@@ -191,38 +195,39 @@ searchSettingsToString settings =
   "archivesOnly=" ++ show (archivesOnly settings) ++
   ", colorize=" ++ show (colorize settings) ++
   ", debug=" ++ show (debug settings) ++
+  ", defaultFiles=" ++ show (defaultFiles settings) ++
   ", firstMatch=" ++ show (firstMatch settings) ++
   ", followSymlinks=" ++ show (followSymlinks settings) ++
-  ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
-  ", inArchiveFilePatterns=" ++ listToString (inArchiveFilePatterns settings) ++
+  ", inArchiveExtensions=" ++ stringListToString (inArchiveExtensions settings) ++
+  ", inArchiveFilePatterns=" ++ stringListToString (inArchiveFilePatterns settings) ++
   ", includeHidden=" ++ show (includeHidden settings) ++
-  ", inDirPatterns=" ++ listToString (inDirPatterns settings) ++
-  ", inExtensions=" ++ listToString (inExtensions settings) ++
-  ", inFilePatterns=" ++ listToString (inFilePatterns settings) ++
+  ", inDirPatterns=" ++ stringListToString (inDirPatterns settings) ++
+  ", inExtensions=" ++ stringListToString (inExtensions settings) ++
+  ", inFilePatterns=" ++ stringListToString (inFilePatterns settings) ++
   ", inFileTypes=" ++ fileTypesToString (inFileTypes settings) ++
-  ", inLinesAfterPatterns=" ++ listToString (inLinesAfterPatterns settings) ++
-  ", inLinesBeforePatterns=" ++ listToString (inLinesBeforePatterns settings) ++
+  ", inLinesAfterPatterns=" ++ stringListToString (inLinesAfterPatterns settings) ++
+  ", inLinesBeforePatterns=" ++ stringListToString (inLinesBeforePatterns settings) ++
   ", linesAfter=" ++ show (linesAfter settings) ++
-  ", linesAfterToPatterns=" ++ listToString (linesAfterToPatterns settings) ++
-  ", linesAfterUntilPatterns=" ++ listToString (linesAfterUntilPatterns settings) ++
+  ", linesAfterToPatterns=" ++ stringListToString (linesAfterToPatterns settings) ++
+  ", linesAfterUntilPatterns=" ++ stringListToString (linesAfterUntilPatterns settings) ++
   ", linesBefore=" ++ show (linesBefore settings) ++
   ", maxDepth=" ++ show (maxDepth settings) ++
-  ", maxLastMod=" ++ lastModToString (maxLastMod settings) ++
+  ", maxLastMod=" ++ FS.lastModToString (maxLastMod settings) ++
   ", maxLineLength=" ++ show (maxLineLength settings) ++
   ", maxSize=" ++ show (maxSize settings) ++
   ", minDepth=" ++ show (minDepth settings) ++
-  ", minLastMod=" ++ lastModToString (minLastMod settings) ++
+  ", minLastMod=" ++ FS.lastModToString (minLastMod settings) ++
   ", minSize=" ++ show (minSize settings) ++
   ", multiLineSearch=" ++ show (multiLineSearch settings) ++
-  ", outArchiveExtensions=" ++ listToString (outArchiveExtensions settings) ++
-  ", outArchiveFilePatterns=" ++ listToString (outArchiveFilePatterns settings) ++
-  ", outDirPatterns=" ++ listToString (outDirPatterns settings) ++
-  ", outExtensions=" ++ listToString (outExtensions settings) ++
-  ", outFilePatterns=" ++ listToString (outFilePatterns settings) ++
+  ", outArchiveExtensions=" ++ stringListToString (outArchiveExtensions settings) ++
+  ", outArchiveFilePatterns=" ++ stringListToString (outArchiveFilePatterns settings) ++
+  ", outDirPatterns=" ++ stringListToString (outDirPatterns settings) ++
+  ", outExtensions=" ++ stringListToString (outExtensions settings) ++
+  ", outFilePatterns=" ++ stringListToString (outFilePatterns settings) ++
   ", outFileTypes=" ++ fileTypesToString (outFileTypes settings) ++
-  ", outLinesAfterPatterns=" ++ listToString (outLinesAfterPatterns settings) ++
-  ", outLinesBeforePatterns=" ++ listToString (outLinesBeforePatterns settings) ++
-  ", paths=" ++ listToString (paths settings) ++
+  ", outLinesAfterPatterns=" ++ stringListToString (outLinesAfterPatterns settings) ++
+  ", outLinesBeforePatterns=" ++ stringListToString (outLinesBeforePatterns settings) ++
+  ", paths=" ++ stringListToString (paths settings) ++
   ", printDirs=" ++ show (printDirs settings) ++
   ", printFiles=" ++ show (printFiles settings) ++
   ", printLines=" ++ show (printLines settings) ++
@@ -232,7 +237,7 @@ searchSettingsToString settings =
   ", printVersion=" ++ show (printVersion settings) ++
   ", recursive=" ++ show (recursive settings) ++
   ", searchArchives=" ++ show (searchArchives settings) ++
-  ", searchPatterns=" ++ listToString (searchPatterns settings) ++
+  ", searchPatterns=" ++ stringListToString (searchPatterns settings) ++
   ", sortBy=" ++ sortByToString (sortResultsBy settings) ++
   ", sortCaseInsensitive=" ++ show (sortCaseInsensitive settings) ++
   ", sortDescending=" ++ show (sortDescending settings) ++
@@ -240,19 +245,12 @@ searchSettingsToString settings =
   ", uniqueLines=" ++ show (uniqueLines settings) ++
   ", verbose=" ++ show (verbose settings) ++
   ")"
-  where listToString lst | null lst = "[]"
-                         | otherwise = "[\"" ++ intercalate "\", \"" lst ++ "\"]"
-        fileTypesToString fts = "[" ++ intercalate ", " (fileTypeNames fts) ++ "]"
-        fileTypeNames = Prelude.map getFileTypeName
-        lastModToString :: Maybe UTCTime -> String
-        lastModToString Nothing = "0"
-        lastModToString (Just t) = show t
 
 -- JSON parsing stuff below here
 validKeys :: [Text]
-validKeys = ["allmatches", "archivesonly", "colorize", "debug", "encoding", "excludehidden",
-             "firstmatch", "followsymlinks", "help", "includehidden", "in-archiveext",
-             "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern",
+validKeys = ["allmatches", "archivesonly", "colorize", "debug", "defaultfiles", "encoding",
+             "excludehidden", "firstmatch", "followsymlinks", "help", "includehidden",
+             "in-archiveext", "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern",
              "in-filetype", "in-linesafterpattern", "in-linesbeforepattern", "linesafter",
              "linesaftertopattern", "linesafteruntilpattern", "linesbefore", "maxdepth",
              "maxlastmod", "maxlinelength", "maxsize", "mindepth", "minlastmod", "minsize",
@@ -280,6 +278,7 @@ instance FromJSON SearchSettings where
     archivesOnly <- obj .:? "archivesonly" .!= False
     colorize <- obj .:? "colorize" .!= True
     debug <- obj .:? "debug" .!= False
+    defaultFiles <- obj .:? "defaultfiles" .!= False
     firstMatch <- parseFirstMatch obj
     followSymlinks <- obj .:? "followsymlinks" .!= False
     inArchiveExtensions <- obj .:? "in-archiveext" >>= parseStringOrArray
@@ -332,6 +331,7 @@ instance FromJSON SearchSettings where
       archivesOnly=archivesOnly
     , colorize=colorize
     , debug=debug
+    , defaultFiles=defaultFiles
     , firstMatch=firstMatch
     , followSymlinks=followSymlinks
     , inArchiveExtensions=inArchiveExtensions
@@ -471,6 +471,7 @@ mergeSearchSettings old new = SearchSettings
   { archivesOnly = archivesOnly new || archivesOnly old
   , colorize = if not (colorize new) then colorize new else colorize old
   , debug = debug new || debug old
+  , defaultFiles = defaultFiles new || defaultFiles old
   , firstMatch = firstMatch new || firstMatch old
   , followSymlinks = followSymlinks new || followSymlinks old
   , inArchiveExtensions = inArchiveExtensions old ++ inArchiveExtensions new

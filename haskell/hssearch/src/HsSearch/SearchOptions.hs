@@ -18,12 +18,13 @@ import GHC.Generics
 
 import HsFind.ArgTokenizer
 import HsFind.FileTypes (getFileTypeForName)
-import HsFind.FileUtil (getFileString, isFile)
+import HsFind.FileUtil (getFileString, pathExists)
 import HsFind.FindOptions (parseDateToUtc)
 import HsFind.FindSettings (newExtensions)
 import HsFind.SortBy (getSortByForName)
 
 import HsSearch.Paths_hssearch (getDataFileName)
+import HsSearch.Config (getDefaultSearchSettingsPath)
 import HsSearch.SearchSettings
 
 
@@ -147,6 +148,7 @@ boolActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                                               searchArchives=b})
               , ("colorize", \ss b -> ss {colorize=b})
               , ("debug", \ss b -> ss {debug=b, verbose=b})
+              , ("defaultfiles", \ss b -> ss {defaultFiles=b})
               , ("excludehidden", \ss b -> ss {includeHidden=not b})
               , ("firstmatch", \ss b -> ss {firstMatch=b})
               , ("followsymlinks", \ss b -> ss {followSymlinks=b})
@@ -154,6 +156,7 @@ boolActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
               , ("includehidden", \ss b -> ss {includeHidden=b})
               , ("multilinesearch", \ss b -> ss {multiLineSearch=b})
               , ("nocolorize", \ss b -> ss {colorize=not b})
+              , ("nodefaultfiles", \ss b -> ss {defaultFiles=not b})
               , ("nofollowsymlinks", \ss b -> ss {followSymlinks=not b})
               , ("noprintdirs", \ss b -> ss {printDirs=not b})
               , ("noprintfiles", \ss b -> ss {printFiles=not b})
@@ -223,7 +226,14 @@ updateSettingsFromTokens settings searchOptions tokens = do
       case getActionType (name t) of
         BoolActionType ->
           case value t of
-            TypeA b -> updateSettingsFromTokens (getBoolAction (name t) settings b) searchOptions ts
+            TypeA b ->
+              if name t == "defaultfiles"
+              then do
+                settingsEither <- updateSettingsFromDefaultFiles settings searchOptions
+                case settingsEither of
+                  Left e -> return $ Left e
+                  Right settings' -> updateSettingsFromTokens settings' searchOptions ts
+              else updateSettingsFromTokens (getBoolAction (name t) settings b) searchOptions ts
             _ -> return $ Left $ "Invalid boolean value for option: " ++ name t
         StringActionType ->
           case value t of
@@ -282,6 +292,14 @@ updateSettingsFromFile settings searchOptions filePath = do
 settingsFromFile :: SearchOptions -> FilePath -> IO (Either String SearchSettings)
 settingsFromFile = updateSettingsFromFile defaultSearchSettings
 
+updateSettingsFromDefaultFiles :: SearchSettings -> SearchOptions -> IO (Either String SearchSettings)
+updateSettingsFromDefaultFiles settings searchOptions = do
+  defaultSearchSettingsPath <- getDefaultSearchSettingsPath
+  defaultSearchSettingsPathExists <- pathExists defaultSearchSettingsPath
+  if defaultSearchSettingsPathExists
+  then updateSettingsFromFile settings searchOptions defaultSearchSettingsPath
+  else return $ Right settings
+
 updateSettingsFromArgs :: SearchSettings -> SearchOptions -> [String] -> IO (Either String SearchSettings)
 updateSettingsFromArgs settings searchOptions arguments = do
   case tokenizeArgs (argTokenizer searchOptions) arguments of
@@ -289,4 +307,11 @@ updateSettingsFromArgs settings searchOptions arguments = do
     Right tokens -> updateSettingsFromTokens settings searchOptions tokens
 
 settingsFromArgs :: SearchOptions -> [String] -> IO (Either String SearchSettings)
-settingsFromArgs = updateSettingsFromArgs defaultSearchSettings{printResults=True}
+settingsFromArgs searchOptions arguments = do
+  if "--defaultfiles" `elem` arguments || "--nodefaultfiles" `elem` arguments
+  then updateSettingsFromArgs defaultSearchSettings{printResults=True} searchOptions arguments
+  else do
+    settingsWithDefaultsEither <- updateSettingsFromDefaultFiles defaultSearchSettings{printResults=True} searchOptions
+    case settingsWithDefaultsEither of
+      Left e -> return $ Left e
+      Right settingsWithDefaults -> updateSettingsFromArgs settingsWithDefaults searchOptions arguments
