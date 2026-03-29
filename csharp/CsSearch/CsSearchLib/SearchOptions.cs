@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -19,6 +20,7 @@ public class SearchOptions
 			{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
 			{ "colorize", (b, settings) => settings.Colorize = b },
 			{ "debug", (b, settings) => settings.Debug = b },
+			{ "defaultfiles", (b, settings) => settings.DefaultFiles = b },
 			{ "excludehidden", (b, settings) => settings.IncludeHidden = !b },
 			{ "firstmatch", (b, settings) => settings.FirstMatch = b },
 			{ "followsymlinks", (b, settings) => settings.FollowSymlinks = b },
@@ -26,6 +28,7 @@ public class SearchOptions
 			{ "includehidden", (b, settings) => settings.IncludeHidden = b },
 			{ "multilinesearch", (b, settings) => settings.MultiLineSearch = b },
 			{ "nocolorize", (b, settings) => settings.Colorize = !b },
+			{ "nodefaultfiles", (b, settings) => settings.DefaultFiles = !b },
 			{ "nofollowsymlinks", (b, settings) => settings.FollowSymlinks = !b },
 			{ "noprintdirs", (b, settings) => settings.PrintDirs = !b },
 			{ "noprintfiles", (b, settings) => settings.PrintFiles = !b },
@@ -165,6 +168,10 @@ public class SearchOptions
 				else
 				{
 					throw new SearchException($"Invalid value for option: {argToken.Name}");
+				}
+				if (argToken.Name == "defaultfiles")
+				{
+					UpdateSettingsFromDefaultFiles(settings);
 				}
 			}
 			else
@@ -321,6 +328,16 @@ public class SearchOptions
 		return settings;
 	}
 
+	private void UpdateSettingsFromDefaultFiles(SearchSettings settings)
+	{
+		var homePath = FileUtil.GetHomePath();
+		var defaultSettingsPath = Path.Join(homePath, ".config", "xsearch", "settings.json");
+		if (Path.Exists(defaultSettingsPath))
+		{
+			UpdateSettingsFromFile(settings, defaultSettingsPath);
+		}
+	}
+
 	public void UpdateSettingsFromArgs(SearchSettings settings, IEnumerable<string> args)
 	{
 		try
@@ -338,7 +355,15 @@ public class SearchOptions
 	{
 		// default to PrintResults = true since this is called from CLI
 		var settings = new SearchSettings {PrintResults = true};
-		UpdateSettingsFromArgs(settings, args);
+
+		var argList = args.ToList();
+		// if a defaultfiles option isn't included, go ahead and apply default files now
+		if (!argList.Contains("--defaultfiles") && !argList.Contains("--nodefaultfiles"))
+		{
+			UpdateSettingsFromDefaultFiles(settings);
+		}
+
+		UpdateSettingsFromArgs(settings, argList);
 		return settings;
 	}
 
