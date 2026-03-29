@@ -11,7 +11,6 @@ const {SearchResult} = require('./searchresult');
 const { SearchResultSorter } = require('./searchresultsorter');
 
 class Searcher {
-    'use strict'
 
     constructor(settings) {
         this.settings = settings;
@@ -19,7 +18,7 @@ class Searcher {
         // from https://github.com/nodejs/node/blob/master/lib/buffer.js
         this.supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
             'binary', 'base64', 'hex'];
-        this.finder = new Finder(settings.findSettings);
+        this.finder = new Finder(settings);
         this.validateSettings();
     }
 
