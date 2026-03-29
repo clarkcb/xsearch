@@ -106,8 +106,9 @@ namespace cppsearch {
         std::vector<std::unique_ptr<cppfind::Option>> m_options;
         cppfind::ArgTokenizer m_arg_tokenizer;
         std::vector<std::unique_ptr<cppfind::Option>> load_options();
-        void update_settings_from_arg_token(SearchSettings& settings, const cppfind::ArgToken& arg_tokens);
+        void update_settings_from_arg_token(SearchSettings& settings, const cppfind::ArgToken& arg_token);
         void update_settings_from_arg_tokens(SearchSettings& settings, const std::vector<cppfind::ArgToken>& arg_tokens);
+        void update_settings_from_default_files(SearchSettings& settings);
     };
 }
 

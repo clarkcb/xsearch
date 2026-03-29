@@ -19,7 +19,7 @@ namespace cppsearch {
 
     std::vector<std::unique_ptr<cppfind::Option>> SearchOptions::load_options() {
         std::vector<std::unique_ptr<cppfind::Option>> options;
-        auto search_options_path = std::filesystem::path(xsearchpath()) / "shared/searchoptions.json";
+        auto search_options_path = std::filesystem::path(xsearchpath()) / SEARCH_OPTIONS_REL_PATH;
 
         if (!std::filesystem::exists(search_options_path)) {
             std::string msg{"Searchoptions file not found: "};
@@ -87,6 +87,9 @@ namespace cppsearch {
             if (m_bool_arg_map.contains(arg_token.name())) {
                 if (arg_token.value().type() == typeid(bool)) {
                     m_bool_arg_map[arg_token.name()](std::any_cast<bool>(arg_token.value()), settings);
+                    if (arg_token.name() == "defaultfiles") {
+                        update_settings_from_default_files(settings);
+                    }
                 } else {
                     std::string msg{"Invalid value for option: " + arg_token.name()};
                     throw SearchException(msg);
@@ -143,18 +146,35 @@ namespace cppsearch {
         }
     }
 
+    void SearchOptions::update_settings_from_default_files(SearchSettings& settings) {
+        if (const auto default_settings_path = default_search_settings_path();
+            std::filesystem::exists(default_settings_path)) {
+            update_settings_from_file(settings, default_settings_path);
+        }
+    }
+
     void SearchOptions::update_settings_from_args(SearchSettings& settings, int argc, char **argv) {
         const auto arg_tokens = m_arg_tokenizer.tokenize_args(argc, argv);
         update_settings_from_arg_tokens(settings, arg_tokens);
     }
 
     SearchSettings SearchOptions::settings_from_args(int argc, char **argv) {
-        assert(argv != nullptr);
-        assert(argc >= 0);
         auto settings = SearchSettings();
-
         // set print_results to true since we are running the executable
         settings.print_results(true);
+
+        bool has_default_files_arg = false;
+        for (int i=1; i < argc; ++i) {
+            if (strncmp(argv[i], "--defaultfiles", strlen("--defaultfiles")) == 0
+                || strncmp(argv[i], "--nodefaultfiles", strlen("--nodefaultfiles")) == 0) {
+                has_default_files_arg = true;
+                break;
+            }
+        }
+
+        if (!has_default_files_arg) {
+            update_settings_from_default_files(settings);
+        }
 
         update_settings_from_args(settings, argc, argv);
 

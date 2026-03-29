@@ -6,8 +6,6 @@
 namespace cppsearch {
     class SearchSettings : public cppfind::FindSettings {
     public:
-        //using cppfind::FindSettings::FindSettings;
-
         SearchSettings();
         SearchSettings(const SearchSettings &) = default;
         SearchSettings(SearchSettings &&) = default;
