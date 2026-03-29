@@ -18,3 +18,6 @@
 
 (def ^:const ^String SEARCHOPTIONSPATH
   (clojure.string/join java.io.File/separator [SHAREDPATH "searchoptions.json"]))
+
+(def ^:const ^String DEFAULTSEARCHSETTINGSPATH
+  (clojure.string/join java.io.File/separator [(System/getenv "HOME") ".config" "xsearch" "settings.json"]))

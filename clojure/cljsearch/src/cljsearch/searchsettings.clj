@@ -20,9 +20,10 @@
     ^Boolean archives-only
     ^Boolean colorize
     ^Boolean debug
-    ^String dir-color
-    ^String ext-color
-    ^String file-color
+    ^Boolean default-files
+    ^clojure.lang.Keyword dir-color
+    ^clojure.lang.Keyword ext-color
+    ^clojure.lang.Keyword file-color
     ^Boolean first-match
     ^Boolean follow-symlinks
     ^clojure.lang.PersistentHashSet in-archive-extensions
@@ -42,10 +43,10 @@
     ^Integer max-depth
     ^java.util.Date max-last-mod
     ^Integer max-line-length
-    ^Integer max-size
+    ^long max-size
     ^Integer min-depth
     ^java.util.Date min-last-mod
-    ^Integer min-size
+    ^long min-size
     ^Boolean multi-line-search
     ^clojure.lang.PersistentHashSet out-archive-extensions
     ^clojure.lang.PersistentHashSet out-archive-file-patterns
@@ -79,6 +80,7 @@
    false     ; archives-only
    true      ; colorize
    false     ; debug
+   true      ; default-files
    :cyan     ; dir-color
    :yellow   ; ext-color
    :magenta  ; file-color
@@ -138,6 +140,7 @@
    (:archives-only search-settings)             ; archives-only
    (:colorize search-settings)                  ; colorize
    (:debug search-settings)                     ; debug
+   (:default-files search-settings)             ; default-files
    (:dir-color search-settings)                 ; dir-color
    (:ext-color search-settings)                 ; ext-color
    (:file-color search-settings)                ; file-color

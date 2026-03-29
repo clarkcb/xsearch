@@ -17,12 +17,13 @@
   (:import (cljsearch.searchsettings SearchSettings))
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
-        [cljfind.common :only (as-keyword as-string log-msg)]
         [cljfind.argtokenizer]
+        [cljfind.common :only (as-keyword as-string log-msg)]
         [cljfind.fileutil :only (exists-path? expand-path path-str to-path)]
         [cljfind.findsettings :only
          (add-extension add-file-type add-path add-pattern
           set-archives-only set-debug set-int-val set-long-val)]
+        [cljsearch.config :only (DEFAULTSEARCHSETTINGSPATH)]
         [cljsearch.searchsettings :only
          (->SearchSettings DEFAULT-SEARCH-SETTINGS)]
         [cljfind.sortby :only (sort-by-from-name)]))
@@ -39,6 +40,7 @@
     :archivesonly (fn [^SearchSettings settings b] (set-archives-only settings b))
     :colorize (fn [^SearchSettings settings b] (assoc settings :colorize b))
     :debug (fn [^SearchSettings settings b] (set-debug settings b))
+    :defaultfiles (fn [^SearchSettings settings b] (assoc settings :default-files b))
     :excludehidden (fn [^SearchSettings settings b] (assoc settings :exclude-hidden b))
     :firstmatch (fn [^SearchSettings settings b] (assoc settings :first-match b))
     :followsymlinks (fn [^SearchSettings settings b] (assoc settings :follow-symlinks b))
@@ -46,6 +48,7 @@
     :includehidden (fn [^SearchSettings settings b] (assoc settings :exclude-hidden (not b)))
     :multilinesearch (fn [^SearchSettings settings b] (assoc settings :multi-line-search b))
     :nocolorize (fn [^SearchSettings settings b] (assoc settings :colorize (not b)))
+    :nodefaultfiles (fn [^SearchSettings settings b] (assoc settings :default-files (not b)))
     :nofollowsymlinks (fn [^SearchSettings settings b] (assoc settings :follow-symlinks (not b)))
     :noprintmatches (fn [^SearchSettings settings b] (assoc settings :print-matches (not b)))
     :noprintresults (fn [^SearchSettings settings b] (assoc settings :print-results (not b)))
@@ -142,12 +145,14 @@
         short-long-map (zipmap (map :short-arg short-options) (map #(keyword %) (map :long-arg short-options)))]
     (merge long-map short-long-map)))
 
+(declare update-settings-from-default-files)
+
 (declare update-settings-from-file)
 
 (defn update-settings-from-tokens
-  ([^SearchSettings settings tokens]
-   (update-settings-from-tokens settings tokens []))
-  ([^SearchSettings settings tokens errs]
+  ([arg-tokenizer ^SearchSettings settings tokens]
+   (update-settings-from-tokens arg-tokenizer settings tokens []))
+  ([arg-tokenizer ^SearchSettings settings tokens errs]
    (if (or (empty? tokens) (not (empty? errs)))
      [settings errs]
      (let [token (first tokens)
@@ -156,83 +161,102 @@
            value (:value token)]
        (case arg-type
          :bool
-         (cond
-           (not (contains? bool-action-map name))
-           (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
-           (not (boolean? value))
-           (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
-           :else
-           (update-settings-from-tokens ((name bool-action-map) settings value) (rest tokens) errs))
+           (cond
+             (not (contains? bool-action-map name))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid option: " name)])
+             (not (boolean? value))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid value option: " name)])
+             :else
+               (if (= name :defaultfiles)
+                 (let [[new-settings new-errs] (update-settings-from-default-files arg-tokenizer settings)]
+                   (if (empty? new-errs)
+                     (update-settings-from-tokens arg-tokenizer new-settings (rest tokens) errs)
+                     (update-settings-from-tokens arg-tokenizer settings (rest tokens) (concat errs new-errs))))
+                 (update-settings-from-tokens arg-tokenizer ((name bool-action-map) settings value) (rest tokens) errs)))
          :string
-         (cond
-           (and (not (contains? string-action-map name)) (not (= name :settings-file)))
-           (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
-           (not (string? value))
-           (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
-           :else
-           (if (= name :settings-file)
-             (let [[new-settings new-errs] (update-settings-from-file settings value)]
-               (if (empty? new-errs)
-                 (update-settings-from-tokens new-settings (rest tokens) errs)
-                 (update-settings-from-tokens settings (rest tokens) (concat errs new-errs))))
-             (update-settings-from-tokens ((name string-action-map) settings value) (rest tokens) errs)))
+           (cond
+             (and (not (contains? string-action-map name)) (not (= name :settings-file)))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid option: " name)])
+             (not (string? value))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid value option: " name)])
+             :else
+               (if (= name :settings-file)
+                 (let [[new-settings new-errs] (update-settings-from-file settings value)]
+                   (if (empty? new-errs)
+                     (update-settings-from-tokens arg-tokenizer new-settings (rest tokens) errs)
+                     (update-settings-from-tokens arg-tokenizer settings (rest tokens) (concat errs new-errs))))
+                 (update-settings-from-tokens arg-tokenizer ((name string-action-map) settings value) (rest tokens) errs)))
          :int
-         (cond
-           (not (contains? int-action-map name))
-           (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
-           (not (int? value))
-           (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
-           :else
-           (update-settings-from-tokens ((name int-action-map) settings value) (rest tokens) errs))
+           (cond
+             (not (contains? int-action-map name))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid option: " name)])
+             (not (int? value))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid value option: " name)])
+             :else
+               (update-settings-from-tokens arg-tokenizer ((name int-action-map) settings value) (rest tokens) errs))
          :long
-         (cond
-           (not (contains? long-action-map name))
-           (update-settings-from-tokens settings [] [(str "Invalid option: " name)])
-           (not (integer? value))
-           (update-settings-from-tokens settings [] [(str "Invalid value option: " name)])
-           :else
-           (update-settings-from-tokens ((name long-action-map) settings value) (rest tokens) errs))
-         (update-settings-from-tokens settings [] [(str "Unknown token type: " name arg-type)]))))))
+           (cond
+             (not (contains? long-action-map name))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid option: " name)])
+             (not (integer? value))
+               (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid value option: " name)])
+             :else
+               (update-settings-from-tokens arg-tokenizer ((name long-action-map) settings value) (rest tokens) errs))
+         (update-settings-from-tokens arg-tokenizer settings [] [(str "Unknown token type: " name arg-type)]))))))
 
 (defn settings-from-tokens [tokens]
-  (update-settings-from-tokens DEFAULT-SEARCH-SETTINGS tokens))
+  (update-settings-from-tokens (get-arg-tokenizer-for-options SEARCH-OPTIONS) DEFAULT-SEARCH-SETTINGS tokens))
 
-(defn update-settings-from-arg-map [^SearchSettings settings arg-map]
+(defn update-settings-from-arg-map [arg-tokenizer ^SearchSettings settings arg-map]
   (let [[tokens errs] (tokenize-arg-map arg-tokenizer arg-map)]
     (if (not (empty? errs))
       [settings errs]
-      (update-settings-from-tokens settings tokens))))
+      (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-arg-map [arg-map]
-  (update-settings-from-arg-map DEFAULT-SEARCH-SETTINGS (get-long-arg-map) arg-map))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options SEARCH-OPTIONS)]
+    (update-settings-from-arg-map arg-tokenizer DEFAULT-SEARCH-SETTINGS arg-map)))
 
-(defn update-settings-from-json [^SearchSettings settings ^String json]
+(defn update-settings-from-json [arg-tokenizer ^SearchSettings settings ^String json]
   (let [[tokens errs] (tokenize-json arg-tokenizer json)]
     (if (not (empty? errs))
       [settings errs]
-      (update-settings-from-tokens settings tokens))))
+      (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-json [^String json]
-  (update-settings-from-json DEFAULT-SEARCH-SETTINGS json))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options SEARCH-OPTIONS)]
+    (update-settings-from-json arg-tokenizer DEFAULT-SEARCH-SETTINGS json)))
 
-(defn update-settings-from-file [^SearchSettings settings f]
+(defn update-settings-from-file [arg-tokenizer ^SearchSettings settings f]
   (let [[tokens errs] (tokenize-file arg-tokenizer f)]
     (if (not (empty? errs))
       [settings errs]
-      (update-settings-from-tokens settings tokens))))
+      (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-file [f]
-  (update-settings-from-file DEFAULT-SEARCH-SETTINGS (get-long-arg-map) f))
+  (let [arg-tokenizer (get-arg-tokenizer-for-options SEARCH-OPTIONS)]
+    (update-settings-from-file arg-tokenizer DEFAULT-SEARCH-SETTINGS f)))
 
-(defn update-settings-from-args [^SearchSettings settings args]
+(defn update-settings-from-default-files [arg-tokenizer ^SearchSettings settings]
+  (if (exists-path? (to-path DEFAULTSEARCHSETTINGSPATH))
+    (update-settings-from-file arg-tokenizer settings DEFAULTSEARCHSETTINGSPATH)
+    [settings []]))
+
+(defn update-settings-from-args [arg-tokenizer ^SearchSettings settings args]
   (let [[tokens errs] (tokenize-args arg-tokenizer args)]
     (if (not (empty? errs))
       [settings errs]
-      (update-settings-from-tokens settings tokens))))
+      (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-args [args]
-  ;; default print-results to true since running as cli
-  (update-settings-from-args (assoc DEFAULT-SEARCH-SETTINGS :print-results true) args))
+  (let [settings (assoc DEFAULT-SEARCH-SETTINGS :print-files true)
+        arg-tokenizer (get-arg-tokenizer-for-options SEARCH-OPTIONS)]
+    (if (some #(.endsWith % "defaultfiles") args)
+      (update-settings-from-args arg-tokenizer settings args)
+      (let [[settings' errs] (update-settings-from-default-files arg-tokenizer settings)]
+        (if (not (empty? errs))
+          [settings' errs]
+          (update-settings-from-args arg-tokenizer settings' args))))))
 
 (defn longest-length [options]
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
@@ -246,7 +270,7 @@
         opt-string (str short-string "--" l)]
     (format (str "%-" longest "s %s") opt-string d)))
 
-(defn usage-string []
+(defn usage-string ^String []
   (let [options (sort-by get-sort-arg SEARCH-OPTIONS)
         longest (longest-length SEARCH-OPTIONS)]
     (str
