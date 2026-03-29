@@ -106,63 +106,6 @@ class SearchSettings : FindSettings {
 		$this.UniqueLines = $false
 		$this.Verbose = $false
     }
-
-    [string]ToString() {
-        return "SearchSettings(" +
-        "ArchivesOnly=$($this.ArchivesOnly)" +
-        ", Colorize=$($this.Colorize)" +
-        ", Debug=$($this.Debug)" +
-        ", FirstMatch=$($this.FirstMatch)" +
-        ", FollowSymlinks=$($this.FollowSymlinks)" +
-        ", InArchiveExtensions=$($this.StringArrayToString($this.InArchiveExtensions))" +
-        ", InArchiveFilePatterns=$($this.StringArrayToString($this.InArchiveFilePatterns))" +
-        ", InDirPatterns=$($this.StringArrayToString($this.InDirPatterns))" +
-        ", InExtensions=$($this.StringArrayToString($this.InExtensions))" +
-        ", InFilePatterns=$($this.StringArrayToString($this.InFilePatterns))" +
-        ", InFileTypes=$($this.FileTypeArrayToString($this.InFileTypes))" +
-        ", InLinesAfterPatterns=$($this.StringArrayToString($this.InLinesAfterPatterns))" +
-        ", InLinesBeforePatterns=$($this.StringArrayToString($this.InLinesBeforePatterns))" +
-        ", IncludeArchives=$($this.IncludeArchives)" +
-        ", IncludeHidden=$($this.IncludeHidden)" +
-        ", LinesAfter=$($this.LinesAfter)" +
-        ", LinesAfterToPatterns=$($this.StringArrayToString($this.LinesAfterToPatterns))" +
-        ", LinesAfterUntilPatterns=$($this.StringArrayToString($this.LinesAfterUntilPatterns))" +
-        ", LinesBefore=$($this.LinesBefore)" +
-        ", MaxDepth=$($this.MaxDepth)" +
-        ", MaxLastMod=$($this.DateTimeToString($this.MaxLastMod))" +
-        ", MaxLineLength=$($this.MaxLineLength)" +
-        ", MaxSize=$($this.MaxSize)" +
-        ", MinDepth=$($this.MinDepth)" +
-        ", MinLastMod=$($this.DateTimeToString($this.MinLastMod))" +
-        ", MinSize=$($this.MinSize)" +
-        ", MultiLineSearch=$($this.MultiLineSearch)" +
-        ", OutArchiveExtensions=$($this.StringArrayToString($this.OutArchiveExtensions))" +
-        ", OutArchiveFilePatterns=$($this.StringArrayToString($this.OutArchiveFilePatterns))" +
-        ", OutDirPatterns=$($this.StringArrayToString($this.OutDirPatterns))" +
-        ", OutExtensions=$($this.StringArrayToString($this.OutExtensions))" +
-        ", OutFilePatterns=$($this.StringArrayToString($this.OutFilePatterns))" +
-        ", OutFileTypes=$($this.FileTypeArrayToString($this.OutFileTypes))" +
-        ", OutLinesAfterPatterns=$($this.StringArrayToString($this.OutLinesAfterPatterns))" +
-        ", OutLinesBeforePatterns=$($this.StringArrayToString($this.OutLinesBeforePatterns))" +
-        ", Paths=$($this.StringArrayToString($this.Paths))" +
-        ", PrintDirs=$($this.PrintDirs)" +
-        ", PrintFiles=$($this.PrintFiles)" +
-        ", PrintLines=$($this.PrintLines)" +
-        ", PrintMatches=$($this.PrintMatches)" +
-        ", PrintResults=$($this.PrintResults)" +
-        ", PrintUsage=$($this.PrintUsage)" +
-        ", PrintVersion=$($this.PrintVersion)" +
-        ", Recursive=$($this.Recursive)" +
-        ", SearchArchives=$($this.SearchArchives)" +
-        ", SearchPatterns=$($this.StringArrayToString($this.SearchPatterns))" +
-        ", SortBy=$(SortByToName($this.SortBy))" +
-        ", SortCaseInsensitive=$($this.SortCaseInsensitive)" +
-        ", SortDescending=$($this.SortDescending)" +
-        ", TextFileEncoding=`"$($this.TextFileEncoding)`"" +
-        ", UniqueLines=$($this.UniqueLines)" +
-        ", Verbose=$($this.Verbose)" +
-        ")"
-    }
 }
 #endregion
 
