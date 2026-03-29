@@ -7,10 +7,12 @@
 'use strict';
 
 import * as config from './config';
-import {ArgToken, ArgTokenizer, ArgTokenType, FileUtil, SortUtil} from 'tsfind';
+import {ArgToken, ArgTokenizer, ArgTokenType, FileUtil, FindSettings, SortUtil} from 'tsfind';
 import {SearchError} from './searcherror';
 import {SearchOption} from './searchoption';
 import {SearchSettings} from './searchsettings';
+import fs from "fs";
+import {DEFAULT_SEARCH_SETTINGS_PATH} from "./config";
 
 type BoolAction = (b: boolean, settings: SearchSettings) => void;
 type NumAction = (n: number, settings: SearchSettings) => void;
@@ -38,6 +40,8 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.colorize = b; },
             'debug':
                 (b: boolean, settings: SearchSettings) => { settings.debug = b; },
+            'defaultfiles':
+                (b: boolean, settings: SearchSettings) => { settings.defaultFiles = b; },
             'excludehidden':
                 (b: boolean, settings: SearchSettings) => { settings.includeHidden = !b; },
             'firstmatch':
@@ -52,6 +56,8 @@ export class SearchOptions {
                 (b: boolean, settings: SearchSettings) => { settings.multilineSearch = b; },
             'nocolorize':
                 (b: boolean, settings: SearchSettings) => { settings.colorize = !b; },
+            'nodefaultfiles':
+                (b: boolean, settings: SearchSettings) => { settings.defaultFiles = !b; },
             'nofollowsymlinks':
                 (b: boolean, settings: SearchSettings) => { settings.followSymlinks = !b; },
             'noprintdirs':
@@ -203,6 +209,12 @@ export class SearchOptions {
             if (argToken.type === ArgTokenType.Bool) {
                 if (typeof argToken.value === 'boolean') {
                     this.boolActionMap[argToken.name](argToken.value, settings);
+                    if (argToken.name === 'help' || argToken.name === 'version') {
+                        return;
+                    }
+                    if (argToken.name === 'defaultfiles' && argToken.value) {
+                        err = this.updateSettingsFromDefaultFiles(settings);
+                    }
                 } else {
                     err = new SearchError(`Invalid value for option: ${argToken}`);
                 }
@@ -251,6 +263,14 @@ export class SearchOptions {
         return this.updateSettingsFromArgTokens(settings, argTokens);
     }
 
+    public updateSettingsFromDefaultFiles(settings: SearchSettings): Error | undefined {
+        let err: Error | undefined;
+        if (fs.existsSync(config.DEFAULT_SEARCH_SETTINGS_PATH)) {
+            err = this.updateSettingsFromFile(settings, config.DEFAULT_SEARCH_SETTINGS_PATH);
+        }
+        return err;
+    }
+
     public updateSettingsFromArgs(settings: SearchSettings, args: string[]): Error | undefined {
         const { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
         if (err) {
@@ -261,9 +281,16 @@ export class SearchOptions {
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: SearchSettings) => void): void {
         const settings: SearchSettings = new SearchSettings();
-        // default printResults to true since it's being run from cmd line
-        settings.printResults = true;
-        const err = this.updateSettingsFromArgs(settings, args);
+        let err: Error | undefined;
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (!args.includes('--defaultfiles') && !args.includes('--nodefaultfiles')) {
+            err = this.updateSettingsFromDefaultFiles(settings);
+        }
+        if (!err) {
+            // default printResults to true since it's being run from cmd line
+            settings.printResults = true;
+            err = this.updateSettingsFromArgs(settings, args);
+        }
         cb(err, settings);
     }
 
