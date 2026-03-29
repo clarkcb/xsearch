@@ -30,8 +30,6 @@
 @property(nonatomic) NSMutableArray<Regex*> *outLinesBeforePatterns;
 @property(nonatomic) NSMutableArray<Regex*> *searchPatterns;
 
--(NSString *) description;
-
 - (void) addSearchPattern: (NSString*)pattern;
 
 //- (void) setArchivesOnly: (BOOL)b;
