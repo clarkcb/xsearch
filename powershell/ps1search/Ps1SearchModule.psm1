@@ -20,6 +20,7 @@ if (-not (Test-Path env:XSEARCH_PATH)) {
 $xsearchPath = $env:XSEARCH_PATH
 $sharedPath = Join-Path -Path $xsearchPath -ChildPath 'shared'
 $searchOptionsPath = Join-Path -Path $sharedPath -ChildPath 'searchoptions.json'
+$defaultSearchSettingsPath = Join-Path $HOME '.config' 'xsearch' 'settings.json'
 #endregion
 
 
@@ -28,7 +29,6 @@ $searchOptionsPath = Join-Path -Path $sharedPath -ChildPath 'searchoptions.json'
 # SearchSettings
 ########################################
 class SearchSettings : FindSettings {
-    [bool]$Colorize
     [bool]$FirstMatch
     [string[]]$InLinesAfterPatterns
     [string[]]$InLinesBeforePatterns
@@ -53,6 +53,7 @@ class SearchSettings : FindSettings {
 		$this.ArchivesOnly = $false
 		$this.Colorize = $true
 		$this.Debug = $false
+        $this.DefaultFiles = $true
 		$this.DirColor = [Color]::Cyan
 		$this.ExtColor = [Color]::Yellow
 		$this.FileColor = [Color]::Magenta
@@ -210,6 +211,10 @@ class SearchOptions {
             param([bool]$b, [SearchSettings]$settings)
             $settings.SetDebug($b)
         }
+        "defaultfiles" = {
+            param([bool]$b, [SearchSettings]$settings)
+            $settings.DefaultFiles = $b
+        }
         "excludearchives" = {
             param([bool]$b, [SearchSettings]$settings)
             $settings.IncludeArchives = !$b
@@ -245,6 +250,10 @@ class SearchOptions {
         "nocolorize" = {
             param([bool]$b, [SearchSettings]$settings)
             $settings.Colorize = !$b
+        }
+        "nodefaultfiles" = {
+            param([bool]$b, [SearchSettings]$settings)
+            $settings.DefaultFiles = !$b
         }
         "nofollowsymlinks" = {
             param([bool]$b, [SearchSettings]$settings)
@@ -504,6 +513,9 @@ class SearchOptions {
                 if ($this.BoolActionMap.ContainsKey($argToken.Name)) {
                     if ($argToken.Value -is [bool]) {
                         $this.BoolActionMap[$argToken.Name].Invoke($argToken.Value, $settings)
+                        if ($argToken.Name -eq 'defaultfiles') {
+                            $this.UpdateSettingsFromDefaultFiles($settings)
+                        }
                     } else {
                         throw "Invalid value for option: " + $argToken.Name
                     }
@@ -546,6 +558,12 @@ class SearchOptions {
         $this.UpdateSettingsFromArgTokens($settings, $argTokens)
     }
 
+    [void]UpdateSettingsFromDefaultFiles([SearchSettings]$settings) {
+        if (Test-Path $script:defaultSearchSettingsPath) {
+            $this.UpdateSettingsFromFilePath($settings, $script:defaultSearchSettingsPath)
+        }
+    }
+
     [void]UpdateSettingsFromArgs([SearchSettings]$settings, [string[]]$argList) {
         $argTokens = $this.ArgTokenizer.TokenizeArgs($argList)
         $this.UpdateSettingsFromArgTokens($settings, $argTokens)
@@ -555,6 +573,13 @@ class SearchOptions {
         $settings = [SearchSettings]::new()
         # default PrintResults to true since we're using via CLI
         $settings.PrintResults = $true
+
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        $defaultFilesArgs = $argList | Where-Object { $_.EndsWith('defaultfiles') }
+        if (-not $defaultFilesArgs) {
+            $this.UpdateSettingsFromDefaultFiles($settings)
+        }
+
         $this.UpdateSettingsFromArgs($settings, $argList)
         return $settings
     }
