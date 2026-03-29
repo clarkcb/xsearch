@@ -11,6 +11,7 @@
 """
 import importlib.resources
 import json
+import os
 import sys
 from datetime import datetime
 from io import StringIO
@@ -18,6 +19,7 @@ from typing import Any
 
 from pyfind import common, ArgToken, ArgTokenType, ArgTokenizer, FindException
 
+from .config import DEFAULT_SEARCH_SETTINGS_PATH
 from .searchexception import SearchException
 from .searchoption import SearchOption
 from .searchsettings import SearchSettings
@@ -46,6 +48,9 @@ class SearchOptions:
             'debug':
                 lambda b, settings:
                 settings.set_property('debug', b),
+            'defaultfiles':
+                lambda b, settings:
+                settings.set_property('default_files', b),
             'excludehidden':
                 lambda b, settings:
                 settings.set_property('include_hidden', not b),
@@ -67,6 +72,9 @@ class SearchOptions:
             'nocolorize':
                 lambda b, settings:
                 settings.set_property('colorize', not b),
+            'nodefaultfiles':
+                lambda b, settings:
+                settings.set_property('default_files', not b),
             'nofollowsymlinks':
                 lambda b, settings:
                 settings.set_property('follow_symlinks', not b),
@@ -275,6 +283,10 @@ class SearchOptions:
                 if arg_token.name in self.__bool_action_dict:
                     if type(arg_token.value) is bool:
                         self.__bool_action_dict[arg_token.name](arg_token.value, settings)
+                        if arg_token.name in ('help', 'version'):
+                            return
+                        if arg_token.name == 'defaultfiles':
+                            self.__update_settings_from_default_files(settings)
                     else:
                         raise SearchException(f'Invalid value for option: {arg_token.name}')
                 else:
@@ -344,6 +356,11 @@ class SearchOptions:
         self.update_settings_from_file(settings, file_path)
         return settings
 
+    def __update_settings_from_default_files(self, settings: SearchSettings):
+        """Update settings from default file(s)"""
+        if os.path.exists(DEFAULT_SEARCH_SETTINGS_PATH):
+            self.update_settings_from_file(settings, DEFAULT_SEARCH_SETTINGS_PATH)
+
     def update_settings_from_args(self, settings: SearchSettings, args: list[str]):
         """Update settings from a given list of args"""
         try:
@@ -354,8 +371,12 @@ class SearchOptions:
 
     def search_settings_from_args(self, args: list[str]) -> SearchSettings:
         """Read settings from a given list of args"""
-        # default print_results to True since running from command line
-        settings = SearchSettings(print_results=True)
+        settings = SearchSettings()
+        # if a defaultfiles option isn't included, go ahead and apply default files now
+        if '--defaultfiles' not in args and '--nodefaultfiles' not in args:
+            self.__update_settings_from_default_files(settings)
+        # default print_files to True since running from command line
+        settings.set_property('print_files', True)
         self.update_settings_from_args(settings, args)
         return settings
 

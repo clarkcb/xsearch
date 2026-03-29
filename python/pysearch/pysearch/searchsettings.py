@@ -8,12 +8,12 @@
 #
 ###############################################################################
 """
+import re
 from datetime import datetime
 from pathlib import Path
-import re
 from typing import Optional, Pattern
 
-from pyfind import Color, ConsoleColor, FindSettings, FindException, SortBy, list_to_str, FileType
+from pyfind import Color, FindSettings, FindException, SortBy, FileType
 
 from .searchexception import SearchException
 
@@ -41,17 +41,18 @@ class SearchSettings(FindSettings):
                  archives_only: bool = False,
                  colorize: bool = True,
                  debug: bool = False,
+                 default_files: bool = True,
                  dir_color: Color = Color.CYAN,
                  ext_color: Color = Color.YELLOW,
                  file_color: Color = Color.MAGENTA,
                  first_match: bool = False,
                  follow_symlinks: bool = False,
                  in_archive_extensions: list[str] | set[str] | str = None,
-                 in_archive_file_patterns: PatternSet = None,
+                 in_archive_file_patterns: list | set | str | Pattern = None,
                  include_hidden: bool = False,
-                 in_dir_patterns: PatternSet = None,
+                 in_dir_patterns: list | set | str | Pattern = None,
                  in_extensions: list[str] | set[str] | str = None,
-                 in_file_patterns: PatternSet = None,
+                 in_file_patterns: list | set | str | Pattern = None,
                  in_file_types: list | set | str | FileType = None,
                  in_lines_after_patterns: PatternSet = None,
                  in_lines_before_patterns: PatternSet = None,
@@ -69,10 +70,10 @@ class SearchSettings(FindSettings):
                  min_size: int = 0,
                  multi_line_search: bool = False,
                  out_archive_extensions: list[str] | set[str] | str = None,
-                 out_archive_file_patterns: PatternSet = None,
-                 out_dir_patterns: PatternSet = None,
+                 out_archive_file_patterns: list | set | str | Pattern = None,
+                 out_dir_patterns: list | set | str | Pattern = None,
                  out_extensions: list[str] | set[str] | str = None,
-                 out_file_patterns: PatternSet = None,
+                 out_file_patterns: list | set | str | Pattern = None,
                  out_file_types: list | set | str | FileType = None,
                  out_lines_after_patterns: PatternSet = None,
                  out_lines_before_patterns: PatternSet = None,
@@ -97,6 +98,7 @@ class SearchSettings(FindSettings):
                               archives_only=archives_only,
                               colorize=colorize,
                               debug=debug,
+                              default_files=default_files,
                               dir_color=dir_color,
                               ext_color=ext_color,
                               file_color=file_color,
