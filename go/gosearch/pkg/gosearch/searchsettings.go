@@ -111,6 +111,14 @@ func (s *SearchSettings) SetDebug(b bool) {
 	s.FindSettings.SetDebug(b)
 }
 
+func (s *SearchSettings) DefaultFiles() bool {
+	return s.FindSettings.DefaultFiles()
+}
+
+func (s *SearchSettings) SetDefaultFiles(b bool) {
+	s.FindSettings.SetDefaultFiles(b)
+}
+
 func (s *SearchSettings) FirstMatch() bool {
 	return s.firstMatch
 }

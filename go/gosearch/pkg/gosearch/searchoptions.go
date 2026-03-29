@@ -57,6 +57,9 @@ func getBoolActionMap() map[string]boolAction {
 		"debug": func(b bool, settings *SearchSettings) {
 			settings.SetDebug(b)
 		},
+		"defaultfiles": func(b bool, settings *SearchSettings) {
+			settings.SetDefaultFiles(b)
+		},
 		"excludehidden": func(b bool, settings *SearchSettings) {
 			settings.SetIncludeHidden(!b)
 		},
@@ -77,6 +80,9 @@ func getBoolActionMap() map[string]boolAction {
 		},
 		"nocolorize": func(b bool, settings *SearchSettings) {
 			settings.SetColorize(!b)
+		},
+		"nodefaultfiles": func(b bool, settings *SearchSettings) {
+			settings.SetDefaultFiles(!b)
 		},
 		"nofollowsymlinks": func(b bool, settings *SearchSettings) {
 			settings.SetFollowSymlinks(!b)
@@ -332,6 +338,12 @@ func (so *SearchOptions) updateSettingsFromArgTokens(settings *SearchSettings, a
 		if argToken.Type == gofind.ArgTokenTypeBool {
 			if bf, isBool := so.BoolActionMap[argToken.Name]; isBool {
 				bf(argToken.Value.(bool), settings)
+				if argToken.Name == "defaultfiles" {
+					err := so.updateSettingsFromDefaultFiles(settings)
+					if err != nil {
+						return err
+					}
+				}
 			} else {
 				return fmt.Errorf("Invalid value for option: %v", argToken.Name)
 			}
@@ -381,6 +393,16 @@ func (so *SearchOptions) UpdateSettingsFromFile(settings *SearchSettings, filePa
 	return so.updateSettingsFromArgTokens(settings, argTokens)
 }
 
+func (so *SearchOptions) updateSettingsFromDefaultFiles(settings *SearchSettings) error {
+	config := NewSearchConfig()
+	var err error
+	_, statErr := os.Stat(config.DEFAULTSEARCHSETTINGSPATH)
+	if statErr == nil {
+		err = so.UpdateSettingsFromFile(settings, config.DEFAULTSEARCHSETTINGSPATH)
+	}
+	return err
+}
+
 func (so *SearchOptions) UpdateSettingsFromArgs(settings *SearchSettings, args []string) error {
 	argTokens, err := so.ArgTokenizer.TokenizeArgs(args)
 	if err != nil {
@@ -393,9 +415,17 @@ func (so *SearchOptions) SearchSettingsFromArgs(args []string) (*SearchSettings,
 	settings := GetDefaultSearchSettings()
 	// default printResults to true since running as cli
 	settings.SetPrintResults(true)
+	var err error
 
-	err := so.UpdateSettingsFromArgs(settings, args)
+	// if a defaultfiles option isn't included, go ahead and apply default files now
+	if !gofind.Contains(args, "--defaultfiles") && !gofind.Contains(args, "--nodefaultfiles") {
+		err = so.updateSettingsFromDefaultFiles(settings)
+		if err != nil {
+			return settings, err
+		}
+	}
 
+	err = so.UpdateSettingsFromArgs(settings, args)
 	return settings, err
 }
 
