@@ -17,6 +17,8 @@ import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static javafind.FindError.STARTPATH_NOT_DEFINED;
@@ -37,13 +39,14 @@ public class SearchOptions {
         void set(Boolean b, SearchSettings settings);
     }
 
-    private final int boolActionMapSize = 31;
+    private final int boolActionMapSize = 36;
     private final Map<String, BooleanSetter> boolActionMap = new HashMap<>(boolActionMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
             put("colorize", (b, settings) -> settings.setColorize(b));
             put("debug", (b, settings) -> settings.setDebug(b));
+            put("defaultfiles", (b, settings) -> settings.setDefaultFiles(b));
             put("excludehidden", (b, settings) -> settings.setIncludeHidden(!b));
             put("firstmatch", (b, settings) -> settings.setFirstMatch(b));
             put("followsymlinks", (b, settings) -> settings.setFollowSymlinks(b));
@@ -51,6 +54,7 @@ public class SearchOptions {
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
             put("multilinesearch", (b, settings) -> settings.setMultiLineSearch(b));
             put("nocolorize", (b, settings) -> settings.setColorize(!b));
+            put("nodefaultfiles", (b, settings) -> settings.setDefaultFiles(!b));
             put("nofollowsymlinks", (b, settings) -> settings.setFollowSymlinks(!b));
             put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
             put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
@@ -173,6 +177,9 @@ public class SearchOptions {
         if (argToken.type().equals(ArgTokenType.BOOL)) {
             if (argToken.value() instanceof Boolean b) {
                 this.boolActionMap.get(argToken.name()).set(b, settings);
+                if (argToken.name().equals("defaultfiles")) {
+                    updateSettingsFromDefaultFiles(settings);
+                }
             } else {
                 throw new SearchException("Invalid value for option: " + argToken.name());
             }
@@ -260,6 +267,13 @@ public class SearchOptions {
         return settings;
     }
 
+    private void updateSettingsFromDefaultFiles(SearchSettings settings) throws SearchException {
+        var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xsearch", "settings.json");
+        if (Files.exists(defaultSettingsPath)) {
+            updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
+        }
+    }
+
     public final void updateSettingsFromArgs(SearchSettings settings, final String[] args) throws SearchException {
         try {
             var argTokens = argTokenizer.tokenizeArgs(args);
@@ -270,13 +284,15 @@ public class SearchOptions {
     }
 
     public final SearchSettings settingsFromArgs(final String[] args) throws SearchException {
-        if (args == null || args.length == 0) {
-            throw new SearchException(STARTPATH_NOT_DEFINED.getMessage());
-        }
-
         var settings = new SearchSettings();
         // default printResults to true since running from command line
         settings.setPrintResults(true);
+
+        // if a defaultfiles option isn't included, go ahead and apply default files now
+        if (Arrays.stream(args).noneMatch(a -> a.equals("--defaultfiles") || a.equals("--nodefaultfiles"))) {
+            updateSettingsFromDefaultFiles(settings);
+        }
+
         updateSettingsFromArgs(settings, args);
         return settings;
     }
