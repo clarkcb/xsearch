@@ -376,7 +376,7 @@ class SearchOptions:
         if '--defaultfiles' not in args and '--nodefaultfiles' not in args:
             self.__update_settings_from_default_files(settings)
         # default print_files to True since running from command line
-        settings.set_property('print_files', True)
+        settings.set_property('print_results', True)
         self.update_settings_from_args(settings, args)
         return settings
 

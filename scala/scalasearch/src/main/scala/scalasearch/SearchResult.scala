@@ -231,47 +231,43 @@ class SearchResultFormatter(val settings: SearchSettings) {
       ""
     } else {
       val line = result.line.get
-      val matchLength = result.matchEndIndex - result.matchStartIndex
-      val maxLineLength =
-        if (settings.maxLineLength < 0) {
-          result.line.get.length + 1
-        } else {
-          settings.maxLineLength
-        }
-
       val lineStartIdx = leadingWhitespaceCount(line)
-      val lineEndIdx = line.length - 1 - trailingWhitespaceCount(line)
-      val trimmedLength = lineEndIdx - lineStartIdx
+      val lineEndIdx = line.length - trailingWhitespaceCount(line) - 1
 
-      val matchStartIdx = result.matchStartIndex - 1
+      val matchLength = result.matchEndIndex - result.matchStartIndex
+      val matchStartIdx = result.matchStartIndex - 1 - lineStartIdx
       val matchEndIdx = matchStartIdx + matchLength
 
-      val (lsi, lei, msi, mei) =
-        if (maxLineLength > 0 && trimmedLength > maxLineLength) {
-          getLineIndices(matchStartIdx, matchEndIdx, 0, matchLength, trimmedLength, maxLineLength)
-        } else {
-          (lineStartIdx, lineEndIdx+1, matchStartIdx, matchEndIdx)
-        }
+      lineEndIdx - lineStartIdx match {
+        case 0 => ""
+        case trimmedLength =>
+          val (lsi, lei, msi, mei) =
+            if (settings.maxLineLength > 0 && trimmedLength > settings.maxLineLength) {
+              getLineIndices(matchStartIdx, matchEndIdx, 0, matchLength, trimmedLength, settings.maxLineLength)
+            } else {
+              (lineStartIdx, lineEndIdx+1, matchStartIdx, matchEndIdx)
+            }
 
-      val (prefix, lsi2) =
-        if (lsi > 2) {
-          ("...", lsi + 3)
-        } else {
-          ("", lsi)
-        }
-      val (suffix, lei2) =
-        if (lei < (trimmedLength - 3)) {
-          ("...", lei - 3)
-        } else {
-          ("", lei)
-        }
+          val (prefix, lsi2) =
+            if (trimmedLength > settings.maxLineLength && lsi > 2) {
+              ("...", lsi + 3)
+            } else {
+              ("", lsi)
+            }
+          val (suffix, lei2) =
+            if (trimmedLength > settings.maxLineLength && lei < (trimmedLength - 3)) {
+              ("...", lei - 3)
+            } else {
+              ("", lei)
+            }
 
-      val formatted = prefix + line.substring(lsi2, lei2) + suffix
+          val formatted = prefix + line.substring(lsi2, lei2) + suffix
 
-      if (settings.colorize) {
-        colorize(formatted, msi, mei, settings.lineColor)
-      } else {
-        formatted
+          if (settings.colorize) {
+            colorize(formatted, msi, mei, settings.lineColor)
+          } else {
+            formatted
+          }
       }
     }
   }

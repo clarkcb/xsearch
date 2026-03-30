@@ -249,7 +249,7 @@
       (update-settings-from-tokens arg-tokenizer settings tokens))))
 
 (defn settings-from-args [args]
-  (let [settings (assoc DEFAULT-SEARCH-SETTINGS :print-files true)
+  (let [settings (assoc DEFAULT-SEARCH-SETTINGS :print-results true)
         arg-tokenizer (get-arg-tokenizer-for-options SEARCH-OPTIONS)]
     (if (some #(.endsWith % "defaultfiles") args)
       (update-settings-from-args arg-tokenizer settings args)

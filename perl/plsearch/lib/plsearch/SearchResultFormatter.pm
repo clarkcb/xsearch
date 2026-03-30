@@ -133,15 +133,20 @@ sub format_result_line {
         return $self->format_result_match($result);
     }
 
-    my $line_start_idx = plfind::common::leading_whitespace_chars($result->{line});
-    my $trimmed = $result->{line};
-    $trimmed =~ s/^\s+|\s+$//g;
-    my $trimmed_length = length($trimmed);
-    my $line_end_idx = $trimmed_length - 1;
+    my $result_line = $result->{line};
+    my $result_line_length = length($result_line);
+    my $line_start_idx = plfind::common::leading_whitespace_chars($result_line);
+    my $line_end_idx = $result_line_length - $line_start_idx - plfind::common::trailing_whitespace_chars($result_line) - 1;
 
     my $match_length = $result->{match_end_index} - $result->{match_start_index};
-    my $match_start_idx = $result->{match_start_index} - 1;
-    my $match_end_idx = $result->{match_end_index} - 1;
+    my $match_start_idx = $result->{match_start_index} - 1 - $line_start_idx;
+    my $match_end_idx = $match_start_idx + $match_length;
+
+    my $trimmed_length = $line_end_idx - $line_start_idx;
+
+    if ($trimmed_length == 0) {
+        return '';
+    }
 
     my $prefix = '';
     my $suffix = '';
@@ -176,10 +181,10 @@ sub format_result_line {
             $line_end_idx -= 3;
         }
     } else {
-        $line_end_idx += 2;
+        $line_end_idx++;
     }
 
-    my $formatted = $prefix . substr($result->{line}, $line_start_idx, $line_end_idx - $line_start_idx) . $suffix;
+    my $formatted = $prefix . substr($result_line, $line_start_idx, $line_end_idx) . $suffix;
 
     if ($self->{settings}->{colorize}) {
         $formatted = colorize($formatted, $match_start_idx, $match_end_idx, $self->{settings}->{line_color});

@@ -227,7 +227,7 @@ class SearchResultFormatter(val settings: SearchSettings) {
         }
 
         val matchLength = result.matchEndIndex - result.matchStartIndex
-        var matchStartIdx = result.matchStartIndex - 1
+        var matchStartIdx = result.matchStartIndex - 1 - lineStartIdx
         var matchEndIdx = matchStartIdx + matchLength
 
         var prefix = ""

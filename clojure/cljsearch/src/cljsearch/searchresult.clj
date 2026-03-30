@@ -118,14 +118,14 @@
           match-start-idx (dec (:matchstartindex r))
           match-end-idx (dec (:matchendindex r))
           match-length (- match-end-idx match-start-idx)
+          max-limit (> (:max-line-length settings) 0)
           max-line-length (if (< (:max-line-length settings) 0) (inc line-length) (:max-line-length settings))
-          max-limit (> max-line-length 0)
           [lsi lei msi mei] (get-string-indices line match-start-idx match-end-idx max-line-length)
           line-length' (- lei lsi)]
       (if (= line-length' 0)
         ""
-        (let [prefix (if (and max-limit (> lsi 2)) "..." "")
-              suffix (if (and max-limit (< lei (- line-length 2))) "..." "")
+        (let [prefix (if (and max-limit (> line-length' max-line-length) (> lsi 2)) "..." "")
+              suffix (if (and max-limit (> line-length' max-line-length) (< lei (- line-length 2))) "..." "")
               lsi' (+ lsi (.length prefix))
               lei' (- lei (.length suffix))
               truncated (str prefix (subs line lsi' lei') suffix)]

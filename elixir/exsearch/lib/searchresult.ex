@@ -105,8 +105,18 @@ defmodule ExSearch.SearchResultFormatter do
           else
             {line_start_idx, line_end_idx + 1, match_start_idx, match_end_idx}
           end
-        {prefix, line_start_idx} = if line_start_idx > 2, do: {"...", line_start_idx + 3}, else: {"", line_start_idx}
-        {suffix, line_end_idx} = if line_end_idx < (trimmed_length - 2), do: {"...", line_end_idx - 3}, else: {"", line_end_idx}
+        {prefix, line_start_idx} =
+          if trimmed_length > formatter.settings.max_line_length && line_start_idx > 2 do
+            {"...", line_start_idx + 3}
+          else
+            {"", line_start_idx}
+          end
+        {suffix, line_end_idx} =
+          if trimmed_length > formatter.settings.max_line_length && line_end_idx < (trimmed_length - 2) do
+            {"...", line_end_idx - 3}
+          else
+            {"", line_end_idx}
+          end
         formatted = prefix <> String.slice(search_result.line, line_start_idx, line_end_idx - line_start_idx) <> suffix
         if formatter.settings.colorize do
           FileResultFormatter.colorize(formatted, match_start_idx, match_end_idx, formatter.settings.line_color)

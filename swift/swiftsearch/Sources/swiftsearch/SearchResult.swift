@@ -125,15 +125,17 @@ public class SearchResultFormatter {
         }
 
         let whitespaceChars: Set<Character> = [" ", "\t", "\n", "\r"]
+        let lineLength = result.line.count
         var lineStartIndex = result.line.prefix(while: { whitespaceChars.contains($0) }).count
         let trimmed = result.line.trimmingCharacters(in: whitespace as CharacterSet)
-        let trimmedLength = trimmed.count
-        var lineEndIndex = trimmedLength - 1
+        var lineEndIndex = lineLength - (lineLength - trimmed.count - lineStartIndex) - 1;
 
         let matchLength = result.matchEndIndex - result.matchStartIndex
         var matchStartIndex = result.matchStartIndex - 1 - lineStartIndex
         var matchEndIndex = matchStartIndex + matchLength
-        
+
+        let trimmedLength = lineEndIndex - lineStartIndex
+
         if trimmedLength == 0 {
             return ""
         }
@@ -170,7 +172,7 @@ public class SearchResultFormatter {
                 lineEndIndex -= 3
             }
         } else {
-            lineEndIndex += 2
+            lineEndIndex += 1
         }
 
         let strLineStartIndex = result.line.index(result.line.startIndex, offsetBy: lineStartIndex)

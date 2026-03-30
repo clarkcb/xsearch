@@ -147,9 +147,10 @@ formatResultLineWithMatch settings result =
     matchLength = matchEndIdx - matchStartIdx
     intMaxLineLength = if maxLineLength settings < 0 then lineLength + 1 else fromInteger $ maxLineLength settings
     maxLimit = intMaxLineLength > 0
+    overMax = matchLength > intMaxLineLength
     (lsi, lei, msi, mei) = getIndicesForStringAndMaxLength l matchStartIdx matchEndIdx intMaxLineLength
-    prefix = if maxLimit && lsi > 2 then BC.pack "..." else BC.pack ""
-    suffix = if maxLimit && lei < (lineLength - 2) then BC.pack "..." else BC.pack ""
+    prefix = if maxLimit && overMax && lsi > 2 then BC.pack "..." else BC.pack ""
+    suffix = if maxLimit && overMax && lei < (lineLength - 2) then BC.pack "..." else BC.pack ""
     lsi' = lsi + BC.length prefix
     lei' = lei - BC.length suffix
     trimSliceByteString :: Int -> Int -> B.ByteString -> B.ByteString

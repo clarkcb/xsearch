@@ -44,55 +44,49 @@ type SearchResultFormatter (settings : SearchSettings) =
         elif settings.MaxLineLength > 0 && result.MatchEndIndex - result.MatchStartIndex > settings.MaxLineLength then
             FormatLineMatch result
         else
-            let matchLength = result.MatchEndIndex - result.MatchStartIndex
-            let leadingWhitespaceCount = result.Line.Length - result.Line.TrimStart().Length
-            // let mutable lineStartIndex = result.Line.Length - result.Line.TrimStart().Length
-            let mutable trailingWhitespaceCount = result.Line.Length - result.Line.TrimEnd().Length
-            // let mutable lineEndIndex = result.Line.TrimEnd().Length - 1
-            // let matchStartIndex = result.MatchStartIndex - 1 - leadingWhitespaceCount
-            // let matchEndIndex = matchStartIndex + matchLength
-            
-            // let mutable prefix = ""
-            // let mutable suffix = ""
-            
-            let trimmedLength = result.Line.Length - trailingWhitespaceCount - leadingWhitespaceCount
+            let lineStartIdx = result.Line.Length - result.Line.TrimStart().Length
+            let lineEndIdx = result.Line.Length - (result.Line.Length - result.Line.TrimEnd().Length) - 1
 
-            let rec recGetIndices (lineStartIndex : int) (lineEndIndex : int) (matchStartIndex : int) (matchEndIndex : int) (maxLineLength : int) : int * int * int * int =
-                if lineEndIndex - lineStartIndex < maxLineLength then
+            let matchLength = result.MatchEndIndex - result.MatchStartIndex
+            let matchStartIdx = result.MatchStartIndex - 1 - lineStartIdx
+            let matchEndIdx = matchStartIdx + matchLength
+
+            let trimmedLength = lineEndIdx - lineStartIdx
+
+            let rec recGetIndices (lineStartIndex : int) (lineEndIndex : int) (matchStartIndex : int) (matchEndIndex : int) (maxIndex : int) (maxLineLength : int) : int * int * int * int =
+                if maxLineLength = 0 || lineEndIdx - lineStartIdx = 0 then
+                    (0, 0, 0, 0)
+                elif lineEndIndex - lineStartIndex < maxLineLength then
                     let lsi =
                         if lineStartIndex > 0
                         then lineStartIndex - 1
                         else lineStartIndex
                     let lei =
-                        if lineEndIndex - lsi < maxLineLength && lineEndIndex < trimmedLength
+                        if lineEndIndex - lsi < maxLineLength && lineEndIndex < maxIndex
                         then lineEndIndex + 1
                         else lineEndIndex
                     let msi, mei =
                         if lineStartIndex > 0
                         then (matchStartIndex + 1, matchEndIndex + 1)
                         else (matchStartIndex, matchEndIndex)
-                    recGetIndices lsi lei msi mei maxLineLength
+                    recGetIndices lsi lei msi mei maxIndex maxLineLength
                 else
                     (lineStartIndex, lineEndIndex, matchStartIndex, matchEndIndex)
 
-            let maxLineLength =
-                if settings.MaxLineLength < 0 then trimmedLength + 1
-                else settings.MaxLineLength
-
             let lineStartIndex, lineEndIndex, matchStartIndex, matchEndIndex =
-                if maxLineLength > 0 && trimmedLength > maxLineLength then
-                    recGetIndices (result.MatchStartIndex - 1) (result.MatchEndIndex - 1) 0 matchLength maxLineLength
+                if settings.MaxLineLength > 0 && trimmedLength > settings.MaxLineLength then
+                    recGetIndices matchStartIdx matchEndIdx 0 matchLength trimmedLength settings.MaxLineLength
                 else
-                    (leadingWhitespaceCount, (result.Line.Length - trailingWhitespaceCount), (result.MatchStartIndex - 1), (result.MatchEndIndex - 1))
+                    (lineStartIdx, lineEndIdx+1, matchStartIdx, matchEndIdx)
 
             let prefix, lineStartIndex =
-                if maxLineLength > 0 && trimmedLength > maxLineLength && lineStartIndex > 2 then
+                if settings.MaxLineLength > 0 && trimmedLength > settings.MaxLineLength && lineStartIndex > 2 then
                     ("...", lineStartIndex + 3)
                 else
                     ("", lineStartIndex)
 
             let suffix, lineEndIndex =
-                if maxLineLength > 0 && trimmedLength > maxLineLength && lineEndIndex < (trimmedLength - 3) then
+                if settings.MaxLineLength > 0 && trimmedLength > settings.MaxLineLength && lineEndIndex < (trimmedLength - 3) then
                     ("...", lineEndIndex - 3)
                 else
                     ("", lineEndIndex)

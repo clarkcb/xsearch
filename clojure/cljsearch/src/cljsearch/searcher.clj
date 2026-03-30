@@ -267,7 +267,9 @@
   (if (:verbose settings)
     (log-msg (format "Searching text file %s" (file-result-path fr))))
   (if (:multi-line-search settings)
-    (search-text-file-contents fr settings)
+    ;; Temporarily disabling contents search
+;    (search-text-file-contents fr settings)
+    (search-text-file-lines fr settings)
     (search-text-file-lines fr settings)))
 
 (defn search-file [^FileResult fr ^SearchSettings settings]

@@ -254,7 +254,9 @@ defmodule ExSearch.SearchOptions do
   end
 
   def update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps) do
-    case ArgTokenizer.tokenize_args(args, arg_tokenizer) do
+    # Replace -1 with --firstmatch if found (numbers apparently not valid according to OptionParser)
+    fixed_args = Enum.map(args, fn a -> if a == "-1", do: "--firstmatch", else: a end)
+    case ArgTokenizer.tokenize_args(fixed_args, arg_tokenizer) do
       {:ok, tokens} -> update_settings_from_tokens!(settings, tokens, arg_tokenizer, arg_action_maps)
       {:error, message} -> raise SearchError, message: message
     end
