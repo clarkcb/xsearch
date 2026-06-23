@@ -1338,6 +1338,9 @@ class Searcher {
     [string[]]GetMatchingLines([SearchResult[]]$searchResults, [SearchSettings]$settings) {
         [string[]]$lines = @()
         foreach ($r in $searchResults) {
+            if ($r.LineNum -lt 1) {
+                continue
+            }
             $lines += $r.Line.Trim()
         }
         if ($settings.UniqueLines) {
@@ -1369,6 +1372,9 @@ class Searcher {
     [string[]]GetMatches([SearchResult[]]$searchResults, [SearchSettings]$settings) {
         [string[]]$matches = @()
         foreach ($r in $searchResults) {
+            if ($r.LineNum -lt 1) {
+                continue
+            }
             $matches += $r.Line.Substring($r.MatchStartIndex - 1, $r.MatchEndIndex - $r.MatchStartIndex)
         }
         if ($settings.UniqueLines) {

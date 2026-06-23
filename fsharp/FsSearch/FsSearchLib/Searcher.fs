@@ -287,6 +287,7 @@ type Searcher (settings : SearchSettings) =
                 (fun (s : string) -> s)
         let lines =
             results
+            |> Seq.filter (fun r -> r.LineNum > 0)
             |> Seq.map (fun r -> r.Line.Trim())
         if settings.UniqueLines then
             Seq.sortBy sortBy lines
@@ -316,6 +317,7 @@ type Searcher (settings : SearchSettings) =
                 (fun (s : string) -> s)
         let matches =
             results
+            |> Seq.filter (fun r -> r.LineNum > 0)
             |> Seq.map (fun r -> r.Line.Substring(r.MatchStartIndex - 1, r.MatchEndIndex - r.MatchStartIndex))
         if settings.UniqueLines then
             Seq.sortBy sortBy matches

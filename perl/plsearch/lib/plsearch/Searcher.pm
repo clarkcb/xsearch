@@ -466,7 +466,8 @@ sub print_matching_files {
 
 sub get_matching_lines {
     my ($search_results, $settings) = @_;
-    my @lines = map { plfind::common::trim($_->{line}) } @$search_results;
+    my @line_results = grep { $_->{line_num} > 0 } @$search_results;
+    my @lines = map { plfind::common::trim($_->{line}) } @line_results;
     if ($settings->{unique_lines}) {
         my $uniq = plfind::common::uniq(\@lines);
         @lines = @$uniq;
@@ -499,7 +500,8 @@ sub print_matching_lines {
 
 sub get_matches {
     my ($search_results, $settings) = @_;
-    my @matches = map { substr($_->{line}, $_->{match_start_index} - 1, $_->{match_end_index} - $_->{match_start_index}) } @$search_results;
+    my @match_results = grep { $_->{line_num} > 0 } @$search_results;
+    my @matches = map { substr($_->{line}, $_->{match_start_index} - 1, $_->{match_end_index} - $_->{match_start_index}) } @match_results;
     if ($settings->{unique_lines}) {
         my $uniq = plfind::common::uniq(\@matches);
         @matches = @$uniq;

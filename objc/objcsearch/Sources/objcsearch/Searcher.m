@@ -379,7 +379,9 @@
 - (NSArray<NSString*>*) getMatchingLines:(NSArray<SearchResult*>*)searchResults {
     NSMutableArray<NSString*> *lines = [NSMutableArray array];
     for (SearchResult *r in searchResults) {
-        [lines addObject:[[r line] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]]];
+        if (r.lineNum > 0) {
+            [lines addObject:[[r line] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]]];
+        }
     }
     if (_settings.uniqueLines) {
         NSSet<NSString*> *lineSet = [NSSet setWithArray:lines];
@@ -416,8 +418,10 @@
 - (NSArray<NSString*>*) getMatches:(NSArray<SearchResult*>*)searchResults {
     NSMutableArray<NSString*> *matches = [NSMutableArray array];
     for (SearchResult *r in searchResults) {
-        NSRange range = NSMakeRange(r.matchStartIndex - 1, r.matchEndIndex - r.matchStartIndex);
-        [matches addObject:[r.line substringWithRange:range]];
+        if (r.lineNum > 0) {
+            NSRange range = NSMakeRange(r.matchStartIndex - 1, r.matchEndIndex - r.matchStartIndex);
+            [matches addObject:[r.line substringWithRange:range]];
+        }
     }
     if (_settings.uniqueLines) {
         NSSet<NSString*> *matchSet = [NSSet setWithArray:matches];

@@ -826,7 +826,9 @@ fn get_str_comparator(sort_case_insensitive: bool) -> impl Fn(&&str, &&str) -> O
 fn get_result_lines(results: &[SearchResult], sort_case_insensitive: bool, unique: bool) -> Vec<&str> {
     let mut lines: Vec<&str> = Vec::new();
     for r in results.iter() {
-        lines.push(&r.line.trim());
+        if r.line_num > 0 {
+            lines.push(&r.line.trim());
+        }
     }
     lines.sort_unstable();
     let comparator = get_str_comparator(sort_case_insensitive);
@@ -856,7 +858,9 @@ pub fn print_result_lines(results: &Vec<SearchResult>, formatter: &SearchResultF
 fn get_result_matches(results: &[SearchResult], sort_case_insensitive: bool, unique: bool) -> Vec<&str> {
     let mut matches: Vec<&str> = Vec::new();
     for r in results.iter() {
-        matches.push(&r.line[r.match_start_index - 1..r.match_end_index - 1]);
+        if r.line_num > 0 {
+            matches.push(&r.line[r.match_start_index - 1..r.match_end_index - 1]);
+        }
     }
     let comparator = get_str_comparator(sort_case_insensitive);
     matches.sort_by(comparator);

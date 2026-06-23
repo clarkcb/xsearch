@@ -434,7 +434,7 @@ public class Searcher {
     }
 
     private func getMatchingLines(_ searchResults: [SearchResult]) -> [String] {
-        var lines = searchResults.map { $0.line.trimmingCharacters(in: whitespace as CharacterSet) }
+        var lines = searchResults.filter { (r: SearchResult) in r.lineNum > 0 }.map { $0.line.trimmingCharacters(in: whitespace as CharacterSet) }
         if settings.uniqueLines {
             let lineSet = Set<String>(lines)
             lines = Array(lineSet)
@@ -460,7 +460,7 @@ public class Searcher {
     }
 
     private func getMatches(_ searchResults: [SearchResult]) -> [String] {
-        var matches = searchResults.map { (r: SearchResult) -> String in
+        var matches = searchResults.filter { (r: SearchResult) in r.lineNum > 0 }.map { (r: SearchResult) -> String in
             let start = r.line.index(r.line.startIndex, offsetBy: r.matchStartIndex - 1)
             let end = r.line.index(r.line.startIndex, offsetBy: r.matchEndIndex - 1)
             return String(r.line[start..<end])

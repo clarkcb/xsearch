@@ -418,9 +418,9 @@ class Searcher(val settings: SearchSettings) {
 
     fun printMatchingLines(results: List<SearchResult>, formatter: SearchResultFormatter) {
         val lines: List<String> =
-            if (settings.uniqueLines) results.map { r -> r.line.trim() }.
+            if (settings.uniqueLines) results.filter {r -> r.lineNum > 0}.map { r -> r.line.trim() }.
             distinct().sortedWith(comparator)
-            else results.map { r -> r.line.trim() }.sortedWith(comparator)
+            else results.filter {r -> r.lineNum > 0}.map { r -> r.line.trim() }.sortedWith(comparator)
         val hdr =
             if (settings.uniqueLines) "\nUnique matching lines"
             else "\nMatching lines"
@@ -436,9 +436,9 @@ class Searcher(val settings: SearchSettings) {
 
     fun printMatches(results: List<SearchResult>, formatter: SearchResultFormatter) {
         val matches: List<String> =
-            if (settings.uniqueLines) results.map { r -> r.line.substring(r.matchStartIndex-1, r.matchEndIndex-1) }.
+            if (settings.uniqueLines) results.filter {r -> r.lineNum > 0}.map { r -> r.line.substring(r.matchStartIndex-1, r.matchEndIndex-1) }.
             distinct().sortedWith(comparator)
-            else results.map { r -> r.line.substring(r.matchStartIndex-1, r.matchEndIndex-1) }.sortedWith(comparator)
+            else results.filter {r -> r.lineNum > 0}.map { r -> r.line.substring(r.matchStartIndex-1, r.matchEndIndex-1) }.sortedWith(comparator)
         val hdr =
             if (settings.uniqueLines) "\nUnique matches"
             else "\nMatches"

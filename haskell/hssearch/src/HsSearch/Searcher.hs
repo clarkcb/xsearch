@@ -327,13 +327,14 @@ doSortCaseInsensitive = sortBy compareCaseInsensitive
   where compareCaseInsensitive a b = byteStringToUpper a `compare` byteStringToUpper b
 
 getMatchingLines :: SearchSettings -> [SearchResult] -> [B.ByteString]
-getMatchingLines settings results | unique = (doSort . nub . map trimLine) results
-                                  | otherwise = (doSort . map trimLine) results
+getMatchingLines settings results | unique = (doSort . nub . map trimLine) matchResults
+                                  | otherwise = (doSort . map trimLine) matchResults
   where unique = uniqueLines settings
         doSort = if sortCaseInsensitive settings
                    then doSortCaseInsensitive
                    else sort
         trimLine = trimLeftByteString . line
+        matchResults = filter (\r -> lineNum r > 0) results
 
 formatSearchResultMatchingLines :: SearchSettings -> [SearchResult] -> String
 formatSearchResultMatchingLines settings results = 
@@ -345,12 +346,13 @@ formatSearchResultMatchingLines settings results =
                   else "Matching lines"
 
 getMatches :: SearchSettings -> [SearchResult] -> [B.ByteString]
-getMatches settings results | unique = (doSort . nub . map getMatchString) results
-                            | otherwise = (doSort . map getMatchString) results
+getMatches settings results | unique = (doSort . nub . map getMatchString) matchResults
+                            | otherwise = (doSort . map getMatchString) matchResults
   where unique = uniqueLines settings
         doSort = if sortCaseInsensitive settings
                    then doSortCaseInsensitive
                    else sort
+        matchResults = filter (\r -> lineNum r > 0) results
         getMatchString r =
           let l = line r
               msi = matchStartIndex r - 1

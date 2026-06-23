@@ -47,16 +47,22 @@ std::vector<std::string> get_matching_lines(const std::vector<SearchFileResult>&
     std::vector<std::string> matching_lines;
     if (settings.unique_lines()) {
         std::set<std::string> line_set;
-        for (const auto& sr : search_results) {
-            const std::string line = sr.line();
-            if (!line_set.contains(line)) {
-                matching_lines.push_back(line);
+        for (const auto& r : search_results) {
+            if (r.line_num() > 0) {
+                const std::string line = r.line();
+                if (!line_set.contains(line)) {
+                    matching_lines.push_back(line);
+                }
+                line_set.emplace(line);
             }
-            line_set.emplace(line);
         }
     } else {
-        std::ranges::transform(search_results.begin(), search_results.end(), std::back_inserter(matching_lines),
-            [](const SearchFileResult& r){ return r.line(); });
+        for (const auto& r : search_results) {
+            if (r.line_num() > 0) {
+                const std::string line = r.line();
+                matching_lines.push_back(line);
+            }
+        }
     }
     const auto string_comparator = get_string_comparator(settings.sort_case_insensitive());
     std::ranges::sort(matching_lines, string_comparator);
@@ -68,15 +74,21 @@ std::vector<std::string> get_matches(const std::vector<SearchFileResult>& search
     if (settings.unique_lines()) {
         std::set<std::string> match_set;
         for (const auto& r : search_results) {
-            const std::string match = r.line().substr(r.match_start_idx() - 1, r.match_end_idx() - 1);
-            if (!match_set.contains(match)) {
-                matches.push_back(match);
+            if (r.line_num() > 0) {
+                const std::string match = r.line().substr(r.match_start_idx() - 1, r.match_end_idx() - 1);
+                if (!match_set.contains(match)) {
+                    matches.push_back(match);
+                }
+                match_set.emplace(match);
             }
-            match_set.emplace(match);
         }
     } else {
-        std::ranges::transform(search_results.begin(), search_results.end(), std::back_inserter(matches),
-            [](const SearchFileResult& r){ return r.line().substr(r.match_start_idx() - 1, r.match_end_idx() - 1); });
+        for (const auto& r : search_results) {
+            if (r.line_num() > 0) {
+                const std::string match = r.line().substr(r.match_start_idx() - 1, r.match_end_idx() - 1);
+                matches.push_back(match);
+            }
+        }
     }
     const auto string_comparator = get_string_comparator(settings.sort_case_insensitive());
     std::ranges::sort(matches, string_comparator);

@@ -422,7 +422,7 @@ module RbSearch
     end
 
     def get_matching_lines(results, settings)
-      lines = results.map { |r| r.line.strip }
+      lines = results.filter { |r| r.line_num > 0 }.map { |r| r.line.strip }
       lines.uniq! if settings.unique_lines
       if settings.sort_case_insensitive
         lines.sort! { |s1, s2| s1.upcase <=> s2.upcase }
@@ -433,7 +433,7 @@ module RbSearch
     end
 
     def get_matches(results, settings)
-      matches = results.map { |r| r.line[r.match_start_index - 1, r.match_end_index - r.match_start_index] }
+      matches = results.filter { |r| r.line_num > 0 }.map { |r| r.line[r.match_start_index - 1, r.match_end_index - r.match_start_index] }
       matches.uniq! if settings.unique_lines
       if settings.sort_case_insensitive
         matches.sort! { |s1, s2| s1.upcase <=> s2.upcase }

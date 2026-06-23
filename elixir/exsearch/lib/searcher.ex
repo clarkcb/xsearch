@@ -324,6 +324,7 @@ defmodule ExSearch.Searcher do
       []
     else
       lines = search_results
+      |> Enum.filter(fn r -> r.line_num > 0 end)
       |> Enum.map(fn r -> SearchResultFormatter.format_line(formatter, r.line, r.match_start_index - 1, r.match_end_index - 1) end)
       |> Enum.map(fn l -> String.trim_leading(l) end)
       case {formatter.settings.unique_lines, formatter.settings.sort_case_insensitive} do
@@ -359,6 +360,7 @@ defmodule ExSearch.Searcher do
       []
     else
       matches = search_results
+      |> Enum.filter(fn r -> r.line_num > 0 end)
       |> Enum.map(fn r -> String.slice(r.line, r.match_start_index - 1, r.match_end_index - r.match_start_index) end)
       |> Enum.map(fn m -> SearchResultFormatter.format_line(formatter, m, 0, String.length(m)) end)
       case {formatter.settings.unique_lines, formatter.settings.sort_case_insensitive} do

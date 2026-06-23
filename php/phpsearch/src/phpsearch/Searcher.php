@@ -487,6 +487,7 @@ class Searcher
     {
         $lines = array();
         foreach ($results as $r) {
+            if ($r->line_num < 1) continue;
             $l = trim($r->line);
             if (!$this->settings->unique_lines || !in_array($l, $lines)) {
                 $lines[] = $l;
@@ -521,6 +522,7 @@ class Searcher
     {
         $matches = array();
         foreach ($results as $r) {
+            if ($r->line_num < 0) continue;
             $m = substr($r->line, $r->match_start_index - 1, $r->match_end_index - $r->match_start_index);
             if (!$this->settings->unique_lines || !in_array($m, $matches)) {
                 $matches[] = $m;

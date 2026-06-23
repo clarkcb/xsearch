@@ -332,7 +332,7 @@
     (print-matching-files files settings)))
 
 (defn get-search-results-matching-lines [results ^SearchSettings settings]
-  (let [lines (map #(str/trim (:line %)) results)]
+  (let [lines (map #(str/trim (:line %)) (filter #(> (:line-num %) 0) results))]
     (cond
       (and (:unique-lines settings) (:sort-case-insensitive settings)) (sort-by str/upper-case (distinct lines))
       (:unique-lines settings) (sort (distinct lines))
@@ -352,7 +352,7 @@
       (log-msg (format "%s: 0" hdr)))))
 
 (defn get-search-results-matches [results ^SearchSettings settings]
-  (let [matches (map #(subs (:line %) (dec (:matchstartindex %)) (dec (:matchendindex %))) results)]
+  (let [matches (map #(subs (:line %) (dec (:matchstartindex %)) (dec (:matchendindex %))) (filter #(> (:line-num %) 0) results))]
     (cond
       (and (:unique-lines settings) (:sort-case-insensitive settings)) (sort-by str/upper-case (distinct matches))
       (:unique-lines settings) (sort (distinct matches))

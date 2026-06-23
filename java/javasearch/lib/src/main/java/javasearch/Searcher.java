@@ -515,7 +515,9 @@ public class Searcher {
     private static List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {
         var lines = new ArrayList<String>();
         for (var r : results) {
-            lines.add(r.getLine().trim());
+            if (r.getLineNum() > 0) {
+                lines.add(r.getLine().trim());
+            }
         }
         if (settings.getUniqueLines()) {
             Set<String> lineSet = new HashSet<>(lines);
@@ -550,7 +552,10 @@ public class Searcher {
     private static List<String> getMatches(List<SearchResult> results, SearchSettings settings) {
         var matches = new ArrayList<String>();
         for (var r : results) {
-            matches.add(r.getLine().substring(r.getMatchStartIndex() - 1, r.getMatchEndIndex() - 1));
+            if (r.getLineNum() > 0) {
+                var match = r.getLine().substring(r.getMatchStartIndex() - 1, r.getMatchEndIndex() - 1);
+                matches.add(match);
+            }
         }
         if (settings.getUniqueLines()) {
             Set<String> lineSet = new HashSet<>(matches);

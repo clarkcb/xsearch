@@ -62,9 +62,11 @@ func (srs *SearchResults) PrintMatchingFiles(formatter *SearchResultFormatter) {
 func (srs *SearchResults) getMatchingLineMap() map[string]int {
 	lineMap := make(map[string]int)
 	for _, r := range srs.SearchResults {
-		trimmed := strings.TrimSpace(r.Line)
-		if trimmed != "" {
-			lineMap[trimmed]++
+		if r.LineNum > 0 {
+			trimmed := strings.TrimSpace(r.Line)
+			if trimmed != "" {
+				lineMap[trimmed]++
+			}
 		}
 	}
 	return lineMap
@@ -100,9 +102,11 @@ func (srs *SearchResults) PrintMatchingLines(formatter *SearchResultFormatter) {
 func (srs *SearchResults) getMatchMap() map[string]int {
 	matchMap := make(map[string]int)
 	for _, r := range srs.SearchResults {
-		m := r.Line[r.MatchStartIndex-1 : r.MatchEndIndex-1]
-		if m != "" {
-			matchMap[m]++
+		if r.LineNum > 0 {
+			m := r.Line[r.MatchStartIndex-1 : r.MatchEndIndex-1]
+			if m != "" {
+				matchMap[m]++
+			}
 		}
 	}
 	return matchMap

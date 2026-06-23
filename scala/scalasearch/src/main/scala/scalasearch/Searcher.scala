@@ -585,7 +585,7 @@ class Searcher (_settings: SearchSettings) {
   }
 
   private def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
-    val allLines = results.flatMap(r => r.line).map(_.trim)
+    val allLines = results.filter(r => r.line.isDefined).flatMap(r => r.line).map(_.trim)
     if (settings.uniqueLines) {
       allLines.distinct.sortWith(comparator)
     } else {
