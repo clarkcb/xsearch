@@ -14,6 +14,7 @@ import {SearchResult} from './searchresult';
 import {SearchResultFormatter} from "./searchresultformatter";
 import {SearchResultSorter} from "./searchresultsorter";
 import {SearchSettings} from './searchsettings';
+import path from "path";
 
 export class Searcher {
     _binaryEncoding: BufferEncoding = 'latin1';
@@ -49,35 +50,19 @@ export class Searcher {
         }
     }
 
-    private static matchesAnyString(s: string, elements: string[]): boolean {
-        return elements.indexOf(s) > -1;
-    }
-
-    private static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
-        return patterns.some((p: RegExp) => s.search(p) > -1);
-    }
-
-    private static matchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
-        return fileTypes.indexOf(ft) > -1;
-    }
-
-    private static anyMatchesAnyPattern(ss: string[], patterns: RegExp[]): boolean {
-        return ss.some((s: string) => this.matchesAnyPattern(s, patterns));
-    }
-
     public async search(): Promise<SearchResult[]> {
         // get the search files
         const fileResults: FileResult[] = await this._finder.find();
 
         if (this._settings.verbose) {
-            let dirs = fileResults.map(sf => sf.path);
+            let dirs = fileResults.map(fr => path.dirname(fr.filePath));
             dirs = common.setFromArray(dirs);
             dirs.sort();
             common.log("\nDirectories to be searched " + `(${dirs.length}):`);
             dirs.forEach(d => common.log(d));
 
             common.log("\nFiles to be searched " + `(${fileResults.length}):`);
-            fileResults.forEach(sf => common.log(sf.toString()));
+            fileResults.forEach(fr => common.log(fr.filePath));
             common.log("");
         }
 
@@ -123,7 +108,7 @@ export class Searcher {
         if (this._settings.verbose) {
             common.log(`Searching binary file: "${fileResult}"`);
         }
-        const contents: string = FileUtil.getFileContentsSync(fileResult.relativePath(), this._binaryEncoding);
+        const contents: string = FileUtil.getFileContentsSync(fileResult.filePath, this._binaryEncoding);
         let results: SearchResult[] = [];
 
         const searchPattern = (p: RegExp): SearchResult[] => {
@@ -169,7 +154,7 @@ export class Searcher {
     }
 
     private async searchTextFileContents(fileResult: FileResult): Promise<SearchResult[]> {
-        const contents: string = FileUtil.getFileContentsSync(fileResult.relativePath(), this._settings.textFileEncoding);
+        const contents: string = FileUtil.getFileContentsSync(fileResult.filePath, this._settings.textFileEncoding);
         const results: SearchResult[] = await this.searchMultiLineString(contents);
         return results.map((r: SearchResult) => {
             return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
@@ -295,8 +280,8 @@ export class Searcher {
     }
 
     private static linesMatch(lines: string[], inPatterns: RegExp[], outPatterns: RegExp[]): boolean {
-        return ((inPatterns.length === 0 || Searcher.anyMatchesAnyPattern(lines, inPatterns)) &&
-               (outPatterns.length === 0 || ! Searcher.anyMatchesAnyPattern(lines, outPatterns)));
+        return (Finder.emptyOrAnyMatchesAnyPattern(lines, inPatterns) &&
+               Finder.emptyOrNotAnyMatchesAnyPattern(lines, outPatterns));
     }
 
     private linesBeforeMatch(linesBefore: string[]): boolean {
@@ -311,7 +296,7 @@ export class Searcher {
 
     private async searchTextFileLines(fileResult: FileResult): Promise<SearchResult[]> {
         const self = this;
-        const lines: string[] = FileUtil.getFileLinesSync(fileResult.relativePath(), this._settings.textFileEncoding);
+        const lines: string[] = FileUtil.getFileLinesSync(fileResult.filePath, this._settings.textFileEncoding);
         const linesResults: SearchResult[] = await this.searchLines(lines);
         return linesResults.map((r: SearchResult) => {
             return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
@@ -389,8 +374,8 @@ export class Searcher {
         const fileMap: {[key: string]: FileResult} = {};
         const fileResults: FileResult[] = [];
         for (const r of results) {
-            if (r.file && !(r.file.relativePath() in fileMap)) {
-                fileMap[r.file.relativePath()] = r.file;
+            if (r.file && !(r.file.filePath in fileMap)) {
+                fileMap[r.file.filePath] = r.file;
                 fileResults.push(r.file);
             }
         }

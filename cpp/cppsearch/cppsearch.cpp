@@ -96,34 +96,35 @@ std::vector<std::string> get_matches(const std::vector<SearchFileResult>& search
 }
 
 int main(int argc, char *argv[]) {
-    std::unique_ptr<SearchOptions> options;
+    std::unique_ptr<SearchOptions> options_ptr;
+    std::unique_ptr<SearchSettings> settings_ptr;
 
     try {
-        options = std::make_unique<SearchOptions>();
+        options_ptr = std::make_unique<SearchOptions>();
     } catch (const SearchException& e) {
         cppfind::log_msg("");
-        cppfind::log_error(e.msg());
+        cppfind::log_error(e.what());
         exit(1);
     }
 
     try {
-        auto settings = options->settings_from_args(argc, argv);
+        const auto settings = options_ptr->settings_from_args(argc, argv);
 
         if (settings.debug()) {
             cppfind::log_msg(settings.string());
         }
 
         if (settings.print_usage()) {
-            options->usage();
+            options_ptr->usage();
         }
 
-        const auto settings_ptr = std::make_unique<SearchSettings>(settings);
+        settings_ptr = std::make_unique<SearchSettings>(settings);
 
         // auto searcher = Searcher(settings);
         // auto finder = cppfind::Finder(settings_ptr);
-        auto searcher = Searcher(settings_ptr);
+        const auto searcher = Searcher(settings_ptr);
 
-        std::vector<SearchFileResult> results = searcher.search();
+        const std::vector<SearchFileResult> results = searcher.search();
 
         if (settings.print_results()) {
             auto formatter = SearchResultFormatter(settings);
@@ -207,7 +208,7 @@ int main(int argc, char *argv[]) {
     } catch (const SearchException& e) {
         cppfind::log_msg("");
         cppfind::log_error(e.msg());
-        options->usage();
+        options_ptr->usage();
     }
 
     return 0;

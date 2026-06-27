@@ -156,7 +156,11 @@ module RbSearch
 
     def search
       # get the file results
-      file_results = @finder.find
+      begin
+        file_results = @finder.find
+      rescue RbFind::FindError => e
+        raise SearchError, e
+      end
       if @settings.verbose
         dir_results = file_results.map(&:path).uniq.sort
         RbFind.log("\nDirectories to be searched (#{dir_results.size}):")

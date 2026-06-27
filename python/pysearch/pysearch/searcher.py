@@ -19,9 +19,12 @@ from collections import deque
 from io import StringIO
 from typing import Deque, Optional, TextIO
 
-from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, SortBy,
-                    log, log_error, print_dir_results, print_file_results)
+# from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, FindException,
+#                     log, log_error, print_dir_results, print_file_results)
+from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, FindException,
+                    log, log_error, print_matching_dirs, print_matching_files)
 
+from .searchexception import SearchException
 from .searchresult import SearchResult, SearchResultFormatter, SearchResultSorter
 from .searchsettings import SearchSettings, PatternSet
 
@@ -66,7 +69,10 @@ class Searcher(object):
         """Search files to find instances of searchpattern(s) starting from
            startpath"""
         # get the matching files via finder
-        file_results = await self.finder.find()
+        try:
+            file_results = await self.finder.find()
+        except FindException as e:
+            raise SearchException(e)
         if self.settings.verbose:
             find_dirs = set([])
             for fr in file_results:
@@ -736,13 +742,13 @@ def get_matching_file_results(search_results: list[SearchResult]) -> list[FileRe
 def print_search_dir_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
     """Print the dir results"""
     file_results = get_matching_file_results(search_results)
-    print_dir_results(file_results, formatter.file_formatter)
+    print_matching_dirs(file_results, formatter.file_formatter)
 
 
 def print_search_file_results(search_results: list[SearchResult], formatter: SearchResultFormatter):
     """Print the file results"""
     file_results = get_matching_file_results(search_results)
-    print_file_results(file_results, formatter.file_formatter)
+    print_matching_files(file_results, formatter.file_formatter)
 
 
 def get_matching_lines(search_results: list[SearchResult], settings: SearchSettings) -> list[str]:

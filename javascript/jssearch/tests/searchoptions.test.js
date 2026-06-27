@@ -90,7 +90,7 @@ describe('testing searchoptions', () => {
         const args = ['-x'];
         searchOptions.settingsFromArgs(args, (err) => {
             if (err) {
-                const expected = "Missing argument for option x";
+                const expected = "Missing value for option x";
                 expect(err.message).toEqual(expected);
             } else {
                 console.log("Did not get expected missing argument error");

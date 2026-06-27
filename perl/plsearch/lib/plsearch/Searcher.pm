@@ -213,7 +213,7 @@ sub search_multiline_string {
 
 sub search_text_file_contents {
     my ($self, $fr) = @_;
-    my $contents = plfind::FileUtil::get_file_contents($fr->to_string());
+    my $contents = $fr->{file_path}->slurp;
     my $results = $self->search_multiline_string($contents);
     foreach my $r (@$results) {
         $r->{file} = $fr;
@@ -323,7 +323,7 @@ sub search_lines {
 
 sub search_text_file_lines {
     my ($self, $fr) = @_;
-    my $lines = plfind::FileUtil::get_file_lines($fr->to_string());
+    my $lines = plfind::FileUtil::get_file_lines($fr->{file_path}->stringify);
     my $results = $self->search_lines($lines);
     foreach my $r (@$results) {
         $r->{file} = $fr;
@@ -397,7 +397,11 @@ sub search_file {
 
 sub search {
     my $self = shift;
-    my $file_results = $self->{finder}->find();
+    my ($file_results, $find_errs) = $self->{finder}->find();
+
+    if (scalar @$find_errs) {
+        return ([], $find_errs);
+    }
 
     if ($self->{settings}->{verbose}) {
         my @dirs = map {$_->{file_path}->parent} @$file_results;
@@ -424,9 +428,9 @@ sub search {
 
     if (scalar @$search_results > 1) {
         my $search_result_sorter = plsearch::SearchResultSorter->new($self->{settings});
-        return $search_result_sorter->sort($search_results);
+        return ($search_result_sorter->sort($search_results), []);
     }
-    return $search_results;
+    return ($search_results, []);
 }
 
 sub print_results {

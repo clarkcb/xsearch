@@ -151,7 +151,7 @@ type Searcher (settings : SearchSettings) =
     member this.SearchTextFileContents (f : FileResult.t) : SearchResult.t list =
         let mutable results : SearchResult.t list = []
         try
-            let contents = FileUtil.GetFileContents f.File.FullName this.TextFileEncoding
+            let contents = FileUtil.GetFileContents f.FilePath this.TextFileEncoding
             results <-
                 this.SearchContents contents
                 |> List.map (fun r -> { r with File = f })
@@ -196,7 +196,7 @@ type Searcher (settings : SearchSettings) =
     member this.SearchTextFileLines (f : FileResult.t) : SearchResult.t list =
         let mutable results : SearchResult.t list = []
         try
-            let lines = File.ReadLines f.File.FullName |> List.ofSeq
+            let lines = File.ReadLines f.FilePath |> List.ofSeq
             results <-
                 this.SearchLines lines
                 |> List.map (fun r -> { r with File = f })
@@ -206,7 +206,7 @@ type Searcher (settings : SearchSettings) =
 
     member this.SearchTextFile (f : FileResult.t) : SearchResult.t list =
         if settings.Debug then
-            Logger.Log $"Searching text file %s{f.File.FullName}"
+            Logger.Log $"Searching text file %s{f.FilePath}"
         if settings.MultiLineSearch then
             this.SearchTextFileContents f
         else
@@ -222,9 +222,9 @@ type Searcher (settings : SearchSettings) =
     member this.SearchBinaryFile (f : FileResult.t) : SearchResult.t list =
         let mutable results : SearchResult.t list = []
         if settings.Verbose then
-            Logger.Log $"Searching binary file %s{f.File.FullName}"
+            Logger.Log $"Searching binary file %s{f.FilePath}"
         try
-            use sr = new StreamReader (f.File.FullName, this.BinaryEncoding)
+            use sr = new StreamReader (f.FilePath, this.BinaryEncoding)
             let contents = sr.ReadToEnd()
             for p in Seq.filter (fun p -> (p:Regex).Match(contents).Success) settings.SearchPatterns do
                 let mutable m = p.Match contents
@@ -242,7 +242,7 @@ type Searcher (settings : SearchSettings) =
         results
 
     member this.SearchFile (f : FileResult.t) : SearchResult.t list =
-        match f.FileType with
+        match f.Type with
         | FileType.Archive ->
             Logger.Log "Archive file searching not currently supported"
             []
@@ -252,17 +252,21 @@ type Searcher (settings : SearchSettings) =
             Logger.Log "Skipping file of unknown type"
             []
         | _ ->
-            Logger.Log $"Skipping file of indeterminate type (this shouldn't happen): %s{f.File.FullName}"
+            Logger.Log $"Skipping file of indeterminate type (this shouldn't happen): %s{f.FilePath}"
             []
 
     member this.Search () : SearchResult.t list =
-        let files = _finder.Find()
-        let results = files |> List.collect this.SearchFile
-        if results.Length > 1 then
-            let searchResultSorter = SearchResultSorter(settings)
-            searchResultSorter.Sort results
-        else
-            results
+        match _finder.Find() with
+        | Ok files ->
+            let results = files |> List.collect this.SearchFile
+            if results.Length > 1 then
+                let searchResultSorter = SearchResultSorter(settings)
+                searchResultSorter.Sort results
+            else
+                results
+        | Error e ->
+            Logger.Log $"TODO: change this function to return Result"
+            []
 
     member this.PrintResults (results : SearchResult.t list) (formatter : SearchResultFormatter) : unit =
         if results.Length > 0 then

@@ -1,5 +1,6 @@
 package ktsearch
 
+import ktfind.FindException
 import ktfind.log
 import ktfind.logError
 
@@ -45,6 +46,8 @@ fun main(args : Array<String>) {
         if (settings.debug) log("settings: $settings")
         if (settings.printUsage) printUsage(searchOptions)
         else search(settings)
+    } catch (e: FindException) {
+        printErrorWithUsage(e.message ?: "Unknown error", colorize, searchOptions)
     } catch (e: SearchException) {
         printErrorWithUsage(e.message ?: "Unknown error", colorize, searchOptions)
     }

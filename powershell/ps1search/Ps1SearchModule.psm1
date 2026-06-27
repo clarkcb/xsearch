@@ -1068,7 +1068,7 @@ class Searcher {
 
     [SearchResult[]]SearchTextFileLines([FileResult]$file) {
         [SearchResult[]]$searchResults = @()
-        $lines = Get-Content $file.File.ToString() -Encoding $this.TextFileEncoding
+        $lines = Get-Content $file.FilePath -Encoding $this.TextFileEncoding
         $searchResults = $this.SearchLines($lines)
         foreach ($searchResult in $searchResults) {
             $searchResult.File = $file
@@ -1091,7 +1091,7 @@ class Searcher {
     [SearchResult[]]SearchBinaryFile([FileResult]$file)
     {
         [SearchResult[]]$searchResults = @()
-        $content = Get-Content $file.File.ToString() -Encoding $this.BinaryFileEncoding -Raw
+        $content = Get-Content $file.FilePath -Encoding $this.BinaryFileEncoding -Raw
         foreach ($p in $this.Settings.SearchPatterns) {
             if ($this.Settings.FirstMatch) {
                 $m = $p.Match($content)

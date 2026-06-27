@@ -9,7 +9,7 @@ type SearchResultFormatter (settings : SearchSettings) =
     let fileFormatter = FileResultFormatter(settings)
 
     let GetRelativeFilePath (result : SearchResult.t) : string =
-        result.File.File.ToString()
+        result.File.FilePath
 
     let FormatLineMatch (result : SearchResult.t) : string =
         if String.IsNullOrWhiteSpace(result.Line) || settings.MaxLineLength = 0 then

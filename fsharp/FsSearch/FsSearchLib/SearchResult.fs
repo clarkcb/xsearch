@@ -1,5 +1,6 @@
 ﻿namespace FsSearchLib
 
+open System
 open System.Text.RegularExpressions
 open FsFindLib
 
@@ -18,7 +19,7 @@ module SearchResult =
     let Create (pattern : Regex) (lineNum : int) (startIndex : int) (endIndex : int) (line : string) (linesBefore : string list) (linesAfter : string list) : t =
         {
             SearchPattern = pattern;
-            File = { Containers=[]; File=null; FileType=FileType.Unknown; };
+            File = { Containers=[]; FilePath=""; Type=FileType.Unknown; Size=0; LastMod=None };
             LineNum = lineNum;
             MatchStartIndex = startIndex;
             MatchEndIndex = endIndex;

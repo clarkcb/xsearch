@@ -18,8 +18,8 @@ type SearchResultTests () =
     [<Test>]
     member this.SearchResultSingleLine_ToString_EqualsExpected () =
         let pattern = Regex("Search")
-        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
-        let fileResult = FileResult.Create file FileType.Code
+        let filePath = Path.Join(this.CsSearchPath, "Searcher.cs")
+        let fileResult = FileResult.Create filePath FileType.Code 0 None
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
@@ -37,8 +37,8 @@ type SearchResultTests () =
     [<Test>]
     member this.SearchResultMultiLine_ToString_EqualsExpected () =
         let pattern = Regex("Search")
-        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
-        let fileResult = FileResult.Create file FileType.Code
+        let filePath = Path.Join(this.CsSearchPath, "Searcher.cs")
+        let fileResult = FileResult.Create filePath FileType.Code 0 None
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23

@@ -22,16 +22,15 @@ type SearchResultFormatterTests () =
         settings.Paths <- [this.CsSearchPath]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
-        let fileResult = FileResult.Create file FileType.Code
+        let filePath = Path.Join(this.CsSearchPath, "Searcher.cs")
+        let fileResult = FileResult.Create filePath FileType.Code 0 None
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
         let line = "\tpublic class Searcher\n"
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line [] []
         let searchResult = { searchResult with File=fileResult }
-        let expectedPath = Path.Join(this.CsSearchPath, "Searcher.cs")
-        let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{line.Trim()}"
+        let expectedOutput = $"%s{filePath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{line.Trim()}"
         let output = formatter.Format searchResult
         Assert.That(output, Is.EqualTo(expectedOutput))
         ()
@@ -44,17 +43,16 @@ type SearchResultFormatterTests () =
         settings.Paths <- ["."]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("maxlen")
-        let file = FileInfo(Path.Join(this.CsSearchPath, "maxlen.txt"))
-        let fileResult = FileResult.Create file FileType.Code
+        let filePath = Path.Join(this.CsSearchPath, "maxlen.txt")
+        let fileResult = FileResult.Create filePath FileType.Code 0 None
         let lineNum = 1
         let matchStartIndex = 53
         let matchEndIndex = 59
         let line = "0123456789012345678901234567890123456789012345678901maxlen8901234567890123456789012345678901234567890123456789"
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line [] []
         let searchResult = { searchResult with File=fileResult }
-        let expectedPath = Path.Join(this.CsSearchPath, "maxlen.txt")
         let expectedLine = "...89012345678901234567890123456789012345678901maxlen89012345678901234567890123456789012345678901..."
-        let expectedOutput = $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{expectedLine}"
+        let expectedOutput = $"%s{filePath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]: %s{expectedLine}"
         let output = formatter.Format searchResult
         Assert.That(output, Is.EqualTo(expectedOutput))
         ()
@@ -66,8 +64,8 @@ type SearchResultFormatterTests () =
         settings.Paths <- ["~"]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.cs"))
-        let fileResult = FileResult.Create file FileType.Code
+        let filePath = Path.Join(this.CsSearchPath, "Searcher.cs")
+        let fileResult = FileResult.Create filePath FileType.Code 0 None
         let lineNum = 10
         let matchStartIndex = 15
         let matchEndIndex = 23
@@ -76,10 +74,9 @@ type SearchResultFormatterTests () =
         let linesAfter = [ "\t{"; "\t\tprivate readonly FileTypes _fileTypes" ]
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line linesBefore linesAfter
         let searchResult = { searchResult with File=fileResult }
-        let expectedPath = Path.Join(this.CsSearchPath, "Searcher.cs")
         let expectedLines = [
                 "================================================================================";
-                $"%s{expectedPath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]";
+                $"%s{filePath}: %d{lineNum}: [%d{matchStartIndex}:%d{matchEndIndex}]";
                 "--------------------------------------------------------------------------------";
                 "   8 | namespace CsSearch";
                 "   9 | {";
@@ -98,16 +95,15 @@ type SearchResultFormatterTests () =
         settings.Paths <- ["~"]
         let formatter = SearchResultFormatter(settings)
         let pattern = Regex("Search")
-        let file = FileInfo(Path.Join(this.CsSearchPath, "Searcher.exe"))
-        let fileResult = FileResult.Create file FileType.Binary
+        let filePath = Path.Join(this.CsSearchPath, "Searcher.exe")
+        let fileResult = FileResult.Create filePath FileType.Binary 0 None
         let lineNum = 0
         let matchStartIndex = 0
         let matchEndIndex = 0
         let line : string = null
         let searchResult = SearchResult.Create pattern lineNum matchStartIndex matchEndIndex line [] []
         let searchResult = { searchResult with File=fileResult }
-        let expectedPath = Path.Join(this.CsSearchPath, "Searcher.exe")
-        let expectedOutput = $"%s{expectedPath} matches at [0:0]"
+        let expectedOutput = $"%s{filePath} matches at [0:0]"
         let output = formatter.Format searchResult
         Assert.That(output, Is.EqualTo(expectedOutput))
         ()

@@ -247,7 +247,7 @@ class Searcher
      */
     private function search_text_file_contents(FileResult $f): array
     {
-        $contents = file_get_contents($f->file_path());
+        $contents = file_get_contents($f->file_path);
         $results = $this->search_multi_line_string($contents);
         foreach ($results as $r) {
             $r->file = $f;
@@ -332,7 +332,7 @@ class Searcher
      */
     private function search_text_file_lines(FileResult $f): array
     {
-        $lines = file($f->file_path());
+        $lines = file($f->file_path);
         $results = $this->search_lines($lines);
         foreach ($results as $r) {
             $r->file = $f;
@@ -363,7 +363,7 @@ class Searcher
         if ($this->settings->debug) {
             Logger::log_msg("Searching binary file $f");
         }
-        $contents = file_get_contents($f->file_path());
+        $contents = file_get_contents($f->file_path);
         $results = [];
         foreach ($this->settings->search_patterns as $pattern) {
             $p = '/' . $pattern . '/';
@@ -462,9 +462,9 @@ class Searcher
         foreach ($results as $r) {
             if (null != $r->file) {
                 $f = $r->file;
-                if (!array_key_exists($f->file_path(), $file_hash)) {
+                if (!array_key_exists($f->file_path, $file_hash)) {
                     $file_results[] = $f;
-                    $file_hash[$f->file_path()] = $f;
+                    $file_hash[$f->file_path] = $f;
                 }
             }
         }

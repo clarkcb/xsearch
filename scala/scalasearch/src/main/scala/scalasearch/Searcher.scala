@@ -62,23 +62,28 @@ class Searcher (_settings: SearchSettings) {
 
   def search(): Seq[SearchResult] = {
 
-    val fileResults = finder.find()
+    try {
+      val fileResults = finder.find()
 
-    if (settings.verbose) {
-      val dirs = fileResults.map(f => pathOrCurrent(f.path.getParent))
-        .map(_.toString).distinct.sorted
-      log("\nDirectories to be searched (%d):\n%s".format(dirs.size,
-        dirs.mkString("\n")))
-      log("\nFiles to be searched (%d):\n%s".format(fileResults.size,
-        fileResults.map(_.toString).mkString("\n")))
-      log("\nStarting file search...\n")
-    }
-    val searchResults: Seq[SearchResult] = searchFiles(fileResults)
-    if (settings.verbose) {
-      log("\nFile search complete.\n")
-    }
+      if (settings.verbose) {
+        val dirs = fileResults.map(f => pathOrCurrent(f.path.getParent))
+          .map(_.toString).distinct.sorted
+        log("\nDirectories to be searched (%d):\n%s".format(dirs.size,
+          dirs.mkString("\n")))
+        log("\nFiles to be searched (%d):\n%s".format(fileResults.size,
+          fileResults.map(_.toString).mkString("\n")))
+        log("\nStarting file search...\n")
+      }
+      val searchResults: Seq[SearchResult] = searchFiles(fileResults)
+      if (settings.verbose) {
+        log("\nFile search complete.\n")
+      }
 
-    searchResults
+      searchResults
+    } catch {
+      case e: Exception =>
+        throw new SearchException(e.getMessage)
+    }
   }
 
   def searchFiles(files: Seq[FileResult]): Seq[SearchResult] = {

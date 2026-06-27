@@ -45,21 +45,6 @@ namespace cppsearch {
         return results;
     }
 
-    bool matches_any_pattern(const std::string_view s,
-                             const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& patterns) {
-        const std::string ss{s};
-        return std::ranges::any_of(patterns.cbegin(), patterns.cend(), [ss](const cppfind::RegexPattern& p) {
-            return regex_search(ss, p.regex());
-        });
-    }
-
-    bool any_matches_any_pattern(const std::vector<std::string>& ss,
-                                 const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& patterns) {
-        return std::ranges::any_of(ss.begin(), ss.end(), [patterns](const std::string& s) {
-            return matches_any_pattern(s, patterns);
-        });
-    }
-
     std::vector<SearchFileResult> Searcher::search_files(const std::vector<cppfind::FileResult>& files) const {
         std::vector<SearchFileResult> results{};
         for (auto& fr : files) {
@@ -116,8 +101,8 @@ namespace cppsearch {
                      const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& in_patterns,
                      const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& out_patterns) {
         return lines.empty() ||
-               ((in_patterns.empty() || any_matches_any_pattern(lines, in_patterns)) &&
-                (out_patterns.empty() || !any_matches_any_pattern(lines, out_patterns)));
+               (cppfind::empty_or_any_matches_any_pattern(lines, in_patterns) &&
+                cppfind::empty_or_not_any_matches_any_pattern(lines, out_patterns));
     }
 
     std::vector<SearchTextResult> Searcher::search_ifstream_lines(std::ifstream& fin) const {

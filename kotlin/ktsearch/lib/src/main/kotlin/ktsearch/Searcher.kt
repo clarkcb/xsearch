@@ -62,24 +62,28 @@ class Searcher(val settings: SearchSettings) {
     }
 
     fun search(): List<SearchResult> {
-        val fileResults = finder.find()
-        if (settings.verbose) {
-            val dirResults: List<String> = fileResults.asSequence()
-                .map { it.path.parent }
-                .map { it?.toString() ?: "." }
-                .distinct().sorted().toList()
-            log("\nDirectories to be searched (${dirResults.size}):")
-            for (d in dirResults) {
-                log(d)
+        try {
+            val fileResults = finder.find()
+            if (settings.verbose) {
+                val dirResults: List<String> = fileResults.asSequence()
+                    .map { it.path.parent }
+                    .map { it?.toString() ?: "." }
+                    .distinct().sorted().toList()
+                log("\nDirectories to be searched (${dirResults.size}):")
+                for (d in dirResults) {
+                    log(d)
+                }
+                log("\n\nFiles to be searched (${fileResults.size}):")
+                for (fr in fileResults) {
+                    log(fr.toString())
+                }
+                log("")
             }
-            log("\n\nFiles to be searched (${fileResults.size}):")
-            for (fr in fileResults) {
-                log(fr.toString())
-            }
-            log("")
-        }
 
-        return searchFiles(fileResults)
+            return searchFiles(fileResults)
+        } catch (e: FindException) {
+            throw SearchException(e.message!!)
+        }
     }
 
     private fun searchFiles(frs: List<FileResult>): List<SearchResult> {

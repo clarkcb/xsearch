@@ -1,6 +1,6 @@
 package scalasearch
 
-import scalafind.Common
+import scalafind.{Common, FindException}
 
 object SearchMain {
   def main(args: Array[String]): Unit = {
@@ -31,6 +31,10 @@ object SearchMain {
       if (settings.printMatches) { searcher.printMatches(results, formatter) }
 
     } catch {
+      case e: FindException =>
+        Common.log("")
+        Common.logError(e.getMessage + "\n", colorize)
+        SearchOptions.usage(1)
       case e: SearchException =>
         Common.log("")
         Common.logError(e.getMessage + "\n", colorize)

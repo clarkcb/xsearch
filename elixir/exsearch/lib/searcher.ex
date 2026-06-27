@@ -14,10 +14,11 @@ defmodule ExSearch.Searcher do
   alias ExSearch.SearchResultSorter
   alias ExSearch.SearchSettings
 
-  defstruct [:settings]
+  defstruct [:settings, :finder]
 
   def new(settings) do
-    __struct__([settings: settings])
+    finder = Finder.new(SearchSettings.to_find_settings(settings))
+    __struct__([settings: settings, finder: finder])
   end
 
   # ----------------------------------------------------------------------------
@@ -261,12 +262,10 @@ defmodule ExSearch.Searcher do
   def search(searcher) do
     # temporary for turning on/off async search
     do_async = true
-    case validate_settings(searcher.settings) do
+    case validate_settings(searcher) do
       {:error, message} -> {:error, message}
       {:ok, _} ->
-        # finder = Finder.new(searcher.settings)
-        finder = Finder.new(SearchSettings.to_find_settings(searcher.settings))
-        case Finder.find(finder) do
+        case Finder.find(searcher.finder) do
           {:error, message} -> {:error, message}
           {:ok, file_results} ->
             if do_async do
@@ -285,16 +284,16 @@ defmodule ExSearch.Searcher do
     end
   end
 
-  def validate_settings(settings) do
-    case Finder.validate_settings(settings) do
+  def validate_settings(searcher) do
+    case Finder.validate_settings(searcher.finder) do
       {:error, message} -> {:error, message}
       {:ok, _} ->
         cond do
-          Enum.empty?(settings.search_patterns) ->
+          Enum.empty?(searcher.settings.search_patterns) ->
             {:error, "No search patterns defined"}
-          settings.lines_after < 0 ->
+          searcher.settings.lines_after < 0 ->
             {:error, "Invalid linesafter"}
-          settings.lines_before < 0 ->
+          searcher.settings.lines_before < 0 ->
             {:error, "Invalid linesbefore"}
           true -> {:ok, "Settings are valid"}
         end
