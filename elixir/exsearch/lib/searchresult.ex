@@ -178,6 +178,14 @@ defmodule ExSearch.SearchResultFormatter do
     FileResultFormatter.format_file_result(formatter.file_formatter, search_result.file) <> line_result
   end
 
+  def format_line(formatter, line, start_idx, end_idx) do
+    if formatter.settings.colorize do
+      FileResultFormatter.colorize(line, start_idx, end_idx, formatter.settings.line_color)
+    else
+      line
+    end
+  end
+
   def format(formatter, search_result) do
     if formatter.settings.lines_before > 0 or formatter.settings.lines_after > 0 do
       multi_line_format(formatter, search_result)
