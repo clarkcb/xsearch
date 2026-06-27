@@ -44,6 +44,7 @@ defmodule ExSearch.SearchOptions do
   Documentation for `ExSearch.SearchOptions`.
   """
 
+  alias ExFind.ArgToken
   alias ExFind.ArgTokenizer
   alias ExFind.FileTypes
   alias ExFind.SortBy
@@ -217,7 +218,7 @@ defmodule ExSearch.SearchOptions do
                 end
               Map.has_key?(bool_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(bool_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
-              true -> raise SearchError, message: "Invalid option: #{k}"
+              true -> raise SearchError, message: "Invalid value for option: #{k}"
             end
           :integer ->
             k = t.name
@@ -225,7 +226,7 @@ defmodule ExSearch.SearchOptions do
             cond do
               Map.has_key?(int_arg_action_map, k) ->
                 update_settings_from_tokens!(Map.get(int_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
-              true -> raise SearchError, message: "Invalid option: #{k}"
+              true -> raise SearchError, message: "Invalid value for option: #{k}"
             end
           :string ->
             k = t.name
@@ -237,7 +238,7 @@ defmodule ExSearch.SearchOptions do
                 {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
                 {:error, message} -> raise SearchError, message: message
               end
-              true -> raise SearchError, message: "Invalid option: #{k}"
+              true -> raise SearchError, message: "Invalid value for option: #{k}"
             end
           :unknown ->
             raise SearchError, message: "Invalid option: #{t.name}"
@@ -253,11 +254,20 @@ defmodule ExSearch.SearchOptions do
     end
   end
 
+  defp convert_path_to_firstmatch(token) do
+    case token do
+      %ArgToken{name: :path, arg_type: :string, value: "(-1)"} -> ArgToken.new(name: :firstmatch, arg_type: :boolean, value: true)
+      _ -> token
+    end
+  end
+
   def update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps) do
-    # Replace -1 with --firstmatch if found (numbers apparently not valid according to OptionParser)
-    fixed_args = Enum.map(args, fn a -> if a == "-1", do: "--firstmatch", else: a end)
+    # Temporarily escape -1 as "(-1)" then convert back later
+    fixed_args = Enum.map(args, fn a -> if a == "-1", do: "(-1)", else: a end)
     case ArgTokenizer.tokenize_args(fixed_args, arg_tokenizer) do
-      {:ok, tokens} -> update_settings_from_tokens!(settings, tokens, arg_tokenizer, arg_action_maps)
+      {:ok, tokens} ->
+        fixed_tokens = Enum.map(tokens, fn t -> convert_path_to_firstmatch(t) end)
+        update_settings_from_tokens!(settings, fixed_tokens, arg_tokenizer, arg_action_maps)
       {:error, message} -> raise SearchError, message: message
     end
   end
