@@ -24,17 +24,22 @@ use plsearch::Searcher;
 use plsearch::SearchOptions;
 use plsearch::SearchResultFormatter;
 
+sub handle_err {
+    my ($err, $search_options, $colorize) = @_;
+    plfind::common::log_msg('');
+    plfind::common::log_err($err, $colorize);
+    plfind::common::log_msg('');
+    $search_options->usage();
+    plfind::common::log_msg('');
+    exit;
+}
+
 sub main {
     my $search_options = plsearch::SearchOptions->new();
     my ($settings, $errs) = $search_options->settings_from_args(\@ARGV);
 
     if (scalar @$errs) {
-        plfind::common::log_msg('');
-        plfind::common::log_err($errs->[0]);
-        plfind::common::log_msg('');
-        $search_options->usage();
-        plfind::common::log_msg('');
-        exit;
+        handle_err($errs->[0], $search_options, 1);
     }
 
     if ($settings->{debug}) {
@@ -49,18 +54,19 @@ sub main {
     }
 
     my ($searcher, $errs2) = plsearch::Searcher->new($settings);
-
     if (scalar @$errs2) {
-        plfind::common::log_msg('');
-        plfind::common::log_err($errs2->[0], $settings->{colorize});
-        plfind::common::log_msg('');
-        $search_options->usage();
-        plfind::common::log_msg('');
-        exit;
+        handle_err($errs2->[0], $search_options, $settings->{colorize});
     }
 
-    my $search_results = $searcher->search();
-    my $formatter = plsearch::SearchResultFormatter->new($settings);
+    my ($search_results, $errs3) = $searcher->search();
+    if (scalar @$errs3) {
+        handle_err($errs3->[0], $search_options, $settings->{colorize});
+    }
+
+    my $formatter;
+    if (scalar @$search_results) {
+        $formatter = plsearch::SearchResultFormatter->new($settings);
+    }
 
     if ($settings->{print_results}) {
         plfind::common::log_msg('');

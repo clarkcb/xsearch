@@ -35,6 +35,11 @@ sub new {
     return $self;
 }
 
+sub colorize {
+    my ($s, $match_start_index, $match_end_index, $color) = @_;
+    plfind::FileResultFormatter::colorize($s, $match_start_index, $match_end_index, $color);
+}
+
 sub format_line_with_color {
     my ($self, $line) = @_;
     my $formatted_line = $line;
@@ -136,7 +141,7 @@ sub format_result_line {
     my $result_line = $result->{line};
     my $result_line_length = length($result_line);
     my $line_start_idx = plfind::common::leading_whitespace_chars($result_line);
-    my $line_end_idx = $result_line_length - $line_start_idx - plfind::common::trailing_whitespace_chars($result_line) - 1;
+    my $line_end_idx = $result_line_length - plfind::common::trailing_whitespace_chars($result_line) - 1;
 
     my $match_length = $result->{match_end_index} - $result->{match_start_index};
     my $match_start_idx = $result->{match_start_index} - 1 - $line_start_idx;
@@ -184,17 +189,12 @@ sub format_result_line {
         $line_end_idx++;
     }
 
-    my $formatted = $prefix . substr($result_line, $line_start_idx, $line_end_idx) . $suffix;
+    my $formatted = $prefix . substr($result_line, $line_start_idx, $line_end_idx - $line_start_idx) . $suffix;
 
     if ($self->{settings}->{colorize}) {
         $formatted = colorize($formatted, $match_start_idx, $match_end_idx, $self->{settings}->{line_color});
     }
     return $formatted;
-}
-
-sub colorize {
-    my ($s, $match_start_index, $match_end_index, $color) = @_;
-    plfind::FileResultFormatter::colorize($s, $match_start_index, $match_end_index, $color);
 }
 
 sub line_num_padding {
