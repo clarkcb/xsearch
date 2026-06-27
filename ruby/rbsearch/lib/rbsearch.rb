@@ -62,7 +62,13 @@ def search(options, settings)
     rescue => e
       handle_search_error(e, settings.colorize, options)
     end
+
+  begin
   search_results = searcher.search
+  rescue RbSearch::SearchError => e
+    handle_search_error(e, settings.colorize, options)
+  end
+
   formatter = RbSearch::SearchResultFormatter.new(settings)
 
   # print the results
