@@ -16,7 +16,6 @@ import org.apache.commons.io.LineIterator;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +24,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static javafind.Logger.log;
+import static javafind.Logger.logError;
 
 public class Searcher {
 
@@ -61,16 +61,6 @@ public class Searcher {
         } catch (IllegalArgumentException e) {
             throw new SearchException("Invalid encoding provided");
         }
-    }
-
-    private boolean anyMatchesAnyPattern(final List<String> sList,
-                                         final Set<Pattern> patternSet) {
-        return sList.stream().anyMatch(s -> matchesAnyPattern(s, patternSet));
-    }
-
-    private boolean matchesAnyPattern(final String s,
-                                      final Set<Pattern> patternSet) {
-        return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
     public final List<SearchResult> search() throws SearchException {
@@ -149,7 +139,7 @@ public class Searcher {
             try {
                 results.addAll(future.get());
             } catch (InterruptedException | ExecutionException e) {
-                log(e.toString());
+                logError(e.toString());
             }
         }
         return results;
@@ -185,9 +175,9 @@ public class Searcher {
                 r.setFileResult(fr);
             }
         } catch (NoSuchElementException e) {
-            log(e.toString() + ": " + fr.toString());
+            logError(e.toString() + ": " + fr.toString());
         } catch (IllegalStateException | IOException e) {
-            log(e.toString());
+            logError(e.toString());
         }
         return results;
     }
@@ -345,9 +335,9 @@ public class Searcher {
     private boolean linesMatch(final List<String> lines,
                                final Set<Pattern> inPatterns,
                                final Set<Pattern> outPatterns) {
-        return ((inPatterns.isEmpty() || anyMatchesAnyPattern(lines, inPatterns))
+        return (Finder.emptyOrAnyMatchesAnyPattern(lines, inPatterns))
                 &&
-                (outPatterns.isEmpty() || !anyMatchesAnyPattern(lines, outPatterns)));
+                (Finder.emptyOrNotAnyMatchesAnyPattern(lines, outPatterns));
     }
 
     private boolean linesBeforeMatch(final List<String> linesBefore) {
@@ -369,11 +359,11 @@ public class Searcher {
         } else { // should never get here
             linesAfterPatterns = new HashSet<>();
         }
-        boolean linesAfterMatch = anyMatchesAnyPattern(linesAfter, linesAfterPatterns);
+        boolean linesAfterMatch = Finder.anyMatchesAnyPattern(linesAfter, linesAfterPatterns);
         while (!linesAfterMatch && it.hasNext()) {
             String nextLine = it.next();
             linesAfter.add(nextLine);
-            linesAfterMatch = matchesAnyPattern(nextLine, linesAfterPatterns);
+            linesAfterMatch = Finder.matchesAnyPattern(nextLine, linesAfterPatterns);
         }
         if (linesAfterMatch) {
             if (settings.hasLinesAfterUntilPatterns()) {
@@ -482,7 +472,7 @@ public class Searcher {
                 }
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
-            log(e.toString());
+            logError(e.toString());
         }
         return results;
     }
@@ -498,18 +488,10 @@ public class Searcher {
         }
     }
 
-    private static List<FileResult> getMatchingFileResults(List<SearchResult> results) {
+    public static List<FileResult> getMatchingFileResults(List<SearchResult> results) {
         return results.stream()
                 .map(SearchResult::getFileResult).distinct()
                 .sorted().collect(Collectors.toList());
-    }
-
-    public static void printMatchingDirs(List<SearchResult> results, SearchResultFormatter formatter) {
-        Finder.printMatchingDirs(getMatchingFileResults(results), formatter.getFileResultFormatter());
-    }
-
-    public static void printMatchingFiles(List<SearchResult> results, SearchResultFormatter formatter) {
-        Finder.printMatchingFiles(getMatchingFileResults(results), formatter.getFileResultFormatter());
     }
 
     private static List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {

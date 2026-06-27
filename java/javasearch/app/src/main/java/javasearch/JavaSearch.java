@@ -10,6 +10,8 @@ Main class for initiating javasearch from command line
 
 package javasearch;
 
+import javafind.Finder;
+
 import java.io.IOException;
 
 import static javafind.Logger.log;
@@ -57,11 +59,14 @@ public class JavaSearch {
                     log("");
                     Searcher.printSearchResults(searchResults, formatter);
                 }
-                if (settings.getPrintDirs()) {
-                    Searcher.printMatchingDirs(searchResults, formatter);
-                }
-                if (settings.getPrintFiles()) {
-                    Searcher.printMatchingFiles(searchResults, formatter);
+                if (settings.getPrintDirs() || settings.getPrintFiles()) {
+                    var fileResults = Searcher.getMatchingFileResults(searchResults);
+                    if (settings.getPrintDirs()) {
+                        Finder.printMatchingDirs(fileResults, formatter.getFileResultFormatter());
+                    }
+                    if (settings.getPrintFiles()) {
+                        Finder.printMatchingFiles(fileResults, formatter.getFileResultFormatter());
+                    }
                 }
                 if (settings.getPrintLines()) {
                     Searcher.printMatchingLines(searchResults, formatter);

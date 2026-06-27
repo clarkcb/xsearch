@@ -1,6 +1,6 @@
 package scalasearch
 
-import scalafind.{Common, FindException}
+import scalafind.{Common, Finder, FindException}
 
 object SearchMain {
   def main(args: Array[String]): Unit = {
@@ -23,10 +23,17 @@ object SearchMain {
       val formatter = new SearchResultFormatter(settings)
 
       if (settings.printResults) {
-        searcher.printSearchResults(results, formatter)
+        Searcher.printSearchResults(results, formatter)
       }
-      if (settings.printDirs) { searcher.printMatchingDirs(results, formatter) }
-      if (settings.printFiles) { searcher.printMatchingFiles(results, formatter) }
+      if (settings.printDirs || settings.printFiles) {
+        val fileResults = Searcher.getMatchingFileResults(results)
+        if (settings.printDirs) {
+          Finder.printMatchingDirs(fileResults, formatter.fileResultFormatter)
+        }
+        if (settings.printFiles) {
+          Finder.printMatchingFiles(fileResults, formatter.fileResultFormatter)
+        }
+      }
       if (settings.printLines) { searcher.printMatchingLines(results, formatter) }
       if (settings.printMatches) { searcher.printMatches(results, formatter) }
 

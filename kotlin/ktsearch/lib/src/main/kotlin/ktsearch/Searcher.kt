@@ -5,7 +5,6 @@ import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.charset.IllegalCharsetNameException
 import java.nio.charset.UnsupportedCharsetException
-import kotlin.streams.toList
 
 /**
  * @author cary on 7/23/16.
@@ -46,19 +45,6 @@ class Searcher(val settings: SearchSettings) {
         } catch (_: UnsupportedCharsetException) {
             throw SearchException("Unsupported text encoding: ${settings.textFileEncoding}")
         }
-    }
-
-    private fun anyMatchesAnyPattern(sList: List<String>,
-                                     patternSet: Set<Regex>): Boolean {
-        return sList.any { s -> matchesAnyPattern(s, patternSet) }
-    }
-
-    private fun matchesAnyPattern(s: String, patternSet: Set<Regex>): Boolean {
-        return patternSet.any { p -> p.containsMatchIn(s) }
-    }
-
-    private fun findAnyMatches(s: String, startIndex: Int, patternSet: Set<Regex>): List<MatchResult> {
-        return patternSet.mapNotNull { p -> p.find(s, startIndex) }
     }
 
     fun search(): List<SearchResult> {
@@ -228,10 +214,9 @@ class Searcher(val settings: SearchSettings) {
 
     private fun linesMatch(lines: List<String>, inPatterns: Set<Regex>,
                    outPatterns: Set<Regex>): Boolean {
-        return (inPatterns.isEmpty() || anyMatchesAnyPattern(lines, inPatterns))
+        return (Finder.emptyOrAnyMatchesAnyPattern(lines, inPatterns))
                 &&
-                (outPatterns.isEmpty() || !anyMatchesAnyPattern(lines, outPatterns))
-
+                (Finder.emptyOrNotAnyMatchesAnyPattern(lines, outPatterns))
     }
 
     private fun linesBeforeMatch(linesBefore: List<String>): Boolean {
@@ -255,10 +240,10 @@ class Searcher(val settings: SearchSettings) {
             return true
 
         for (i: Int in linesAfter.indices) {
-            if (matchesAnyPattern(linesAfter[i], settings.linesAfterToPatterns)) {
+            if (Finder.matchesAnyPattern(linesAfter[i], settings.linesAfterToPatterns)) {
                 while (i + 1 < linesAfter.size) linesAfter.removeAt(i + 1)
                 return true
-            } else if (matchesAnyPattern(linesAfter[i], settings.linesAfterUntilPatterns)) {
+            } else if (Finder.matchesAnyPattern(linesAfter[i], settings.linesAfterUntilPatterns)) {
                 while (i < linesAfter.size) linesAfter.removeAt(i)
                 return true
             }
@@ -267,11 +252,11 @@ class Searcher(val settings: SearchSettings) {
         while (!foundMatch && lines.hasNext()) {
             val nextLine = lines.next()
             when {
-                matchesAnyPattern(nextLine, settings.linesAfterToPatterns) -> {
+                Finder.matchesAnyPattern(nextLine, settings.linesAfterToPatterns) -> {
                     linesAfter.add(nextLine)
                     foundMatch = true
                 }
-                matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns) -> {
+                Finder.matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns) -> {
                     foundMatch = true
                 }
                 else -> {
@@ -412,12 +397,12 @@ class Searcher(val settings: SearchSettings) {
 
     fun printMatchingDirs(results: List<SearchResult>, formatter: SearchResultFormatter) {
         val files = results.mapNotNull { r -> r.file }.distinct().sorted()
-        finder.printMatchingDirs(files, formatter.fileResultFormatter)
+        Finder.printMatchingDirs(files, formatter.fileResultFormatter)
     }
 
     fun printMatchingFiles(results: List<SearchResult>, formatter: SearchResultFormatter) {
         val files = results.mapNotNull { r -> r.file }.distinct().sorted()
-        finder.printMatchingFiles(files, formatter.fileResultFormatter)
+        Finder.printMatchingFiles(files, formatter.fileResultFormatter)
     }
 
     fun printMatchingLines(results: List<SearchResult>, formatter: SearchResultFormatter) {
@@ -453,6 +438,12 @@ class Searcher(val settings: SearchSettings) {
             for (m in matches) {
                 log(formatter.formatMatch(m))
             }
+        }
+    }
+
+    companion object {
+        private fun findAnyMatches(s: String, startIndex: Int, patternSet: Set<Regex>): List<MatchResult> {
+            return patternSet.mapNotNull { p -> p.find(s, startIndex) }
         }
     }
 }

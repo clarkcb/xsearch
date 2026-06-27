@@ -3,7 +3,7 @@ package scalasearch
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
-import scalafind.{FileResult, FileType, FileTypes, Finder}
+import scalafind.{FileResult, FileType, FileTypes, FileUtil, Finder}
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
@@ -19,7 +19,6 @@ import scala.util.matching.Regex
 
 class Searcher (_settings: SearchSettings) {
   import Searcher.*
-  import scalafind.FileUtil.*
 
   val settings: SearchSettings = _settings
   private val comparator: (String, String) => Boolean =
@@ -52,8 +51,8 @@ class Searcher (_settings: SearchSettings) {
   validateSettings()
 
   def isSearchDir(dirName: String): Boolean = {
-    val pathElems = splitPath(dirName)
-    if (!settings.includeHidden && pathElems.exists(p => isHiddenName(p))) {
+    val pathElems = FileUtil.splitPath(dirName)
+    if (!settings.includeHidden && pathElems.exists(p => FileUtil.isHiddenName(p))) {
       false
     } else {
       filterByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
@@ -66,7 +65,7 @@ class Searcher (_settings: SearchSettings) {
       val fileResults = finder.find()
 
       if (settings.verbose) {
-        val dirs = fileResults.map(f => pathOrCurrent(f.path.getParent))
+        val dirs = fileResults.map(f => FileUtil.pathOrCurrent(f.path.getParent))
           .map(_.toString).distinct.sorted
         log("\nDirectories to be searched (%d):\n%s".format(dirs.size,
           dirs.mkString("\n")))
@@ -291,10 +290,10 @@ class Searcher (_settings: SearchSettings) {
                                        lines: Iterator[String]): Boolean = returning {
     if (settings.hasLinesAfterToOrUntilPatterns) {
       linesAfter.zipWithIndex.foreach { li =>
-        if (matchesAnyPattern(li._1, settings.linesAfterToPatterns)) {
+        if (Finder.matchesAnyPattern(li._1, settings.linesAfterToPatterns)) {
           while (li._2 + 1 < linesAfter.size) linesAfter.remove(li._2 + 1)
           throwReturn(true)
-        } else if (matchesAnyPattern(li._1, settings.linesAfterUntilPatterns)) {
+        } else if (Finder.matchesAnyPattern(li._1, settings.linesAfterUntilPatterns)) {
           while (li._2 < linesAfter.size) linesAfter.remove(li._2)
           throwReturn(true)
         }
@@ -302,10 +301,10 @@ class Searcher (_settings: SearchSettings) {
       var foundMatch = false
       while (!foundMatch && lines.hasNext) {
         val nextLine = lines.next()
-        if (matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
+        if (Finder.matchesAnyPattern(nextLine, settings.linesAfterToPatterns)) {
           linesAfter += nextLine
           foundMatch = true
-        } else if (matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
+        } else if (Finder.matchesAnyPattern(nextLine, settings.linesAfterUntilPatterns)) {
           foundMatch = true
         } else {
           linesAfter += nextLine
@@ -348,7 +347,7 @@ class Searcher (_settings: SearchSettings) {
         }
       if (settings.linesAfter > 0) {
         while (linesAfter.length < settings.linesAfter && lines.hasNext)
-          linesAfter += lines.next
+          linesAfter += lines.next()
       }
 
       val searchPatterns =
@@ -435,7 +434,7 @@ class Searcher (_settings: SearchSettings) {
       searchTarFileInputStream(fr, tis)
     } else {
       log("Currently unsupported archive file type: %s (%s)".
-        format(getExtension(fr), fr.toString))
+        format(FileUtil.getExtension(fr), fr.toString))
       Seq.empty[SearchResult]
     }
   }
@@ -513,7 +512,7 @@ class Searcher (_settings: SearchSettings) {
     }
     val containedFileName = fr.path.getFileName.toString.split("\\.").init.mkString(currentPath)
     val containedFileType = FileTypes.getFileType(fr.path.getFileName)
-    val containedExtension = getExtension(fr)
+    val containedExtension = FileUtil.getExtension(fr)
     val gzsf = new FileResult(fr.containers :+ fr.path, Paths.get(containedFileName),
       containedFileType, 0L, None)
     val gzResults = mutable.ListBuffer[SearchResult]()
@@ -537,7 +536,7 @@ class Searcher (_settings: SearchSettings) {
     }
     val containedFileName = fr.path.getFileName.toString.split("\\.").init.mkString(currentPath)
     val containedFileType = FileTypes.getFileType(fr.path.getFileName)
-    val containedExtension = getExtension(fr)
+    val containedExtension = FileUtil.getExtension(fr)
     val bzsf = new FileResult(fr.containers :+ fr.path, Paths.get(containedFileName),
       containedFileType, 0L, None)
     val bzResults = mutable.ListBuffer[SearchResult]()
@@ -553,40 +552,6 @@ class Searcher (_settings: SearchSettings) {
       bzis.close()
     }
     Seq.empty[SearchResult] ++ bzResults
-  }
-
-  def printSearchResults(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
-    // TODO: add includePattern setting in formatted output
-    if (results.isEmpty) {
-      log("\nSearch results: 0")
-    } else {
-      log("\nSearch results (%d):".format(results.length))
-      results.foreach(r => log(formatter.format(r)))
-    }
-  }
-
-  private def getMatchingFiles(results: Seq[SearchResult]): Seq[String] = {
-    results
-      .filter(_.file.isDefined)
-      .map(_.file.get.path.toString)
-      .distinct
-  }
-
-  private def getMatchingFileResults(results: Seq[SearchResult]): Seq[FileResult] = {
-    results
-      .filter(_.file.isDefined)
-      .flatMap(_.file)
-      .distinct
-  }
-
-  def printMatchingDirs(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
-    val files = getMatchingFileResults(results)
-    finder.printMatchingDirs(files, formatter.fileResultFormatter)
-  }
-
-  def printMatchingFiles(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
-    val files = getMatchingFileResults(results)
-    finder.printMatchingFiles(files, formatter.fileResultFormatter)
   }
 
   private def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
@@ -652,28 +617,16 @@ object Searcher {
     ss => if (ss.linesBefore >= 0) None else Some("Invalid linesbefore"),
   )
 
-  def listToString(stringList: Iterable[Any]): String = {
-    stringList.mkString("[\"", "\", \"", "\"]")
-  }
-
-  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
-    patterns exists (_.findFirstMatchIn(s).isDefined)
-  }
-
-  def anyMatchesAnyPattern(strings: Seq[String], patterns: Set[Regex]): Boolean = {
-    strings exists (matchesAnyPattern(_, patterns))
-  }
-
   def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]): Boolean = {
-    ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
+    Finder.emptyOrMatchesAnyPattern(s, inPatterns)
       &&
-      (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
+      Finder.emptyOrNotMatchesAnyPattern(s, outPatterns)
   }
 
   def linesMatch(lines: Seq[String], inPatterns: Set[Regex],
                          outPatterns: Set[Regex]): Boolean = {
-    (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
-      (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
+    Finder.emptyOrAnyMatchesAnyPattern(lines, inPatterns) &&
+      Finder.emptyOrNotAnyMatchesAnyPattern(lines, outPatterns)
   }
 
   def getLineIndices(contents: String): Seq[(Int,Int)] = {
@@ -684,6 +637,23 @@ object Searcher {
       lineIndices.toSeq
     } else {
       Seq[(Int,Int)]((0,contents.length-1))
+    }
+  }
+
+  def getMatchingFileResults(results: Seq[SearchResult]): Seq[FileResult] = {
+    results
+      .filter(_.file.isDefined)
+      .flatMap(_.file)
+      .distinct
+  }
+
+  def printSearchResults(results: Seq[SearchResult], formatter: SearchResultFormatter): Unit = {
+    // TODO: add includePattern setting in formatted output
+    if (results.isEmpty) {
+      log("\nSearch results: 0")
+    } else {
+      log("\nSearch results (%d):".format(results.length))
+      results.foreach(r => log(formatter.format(r)))
     }
   }
 }
