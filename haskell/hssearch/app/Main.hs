@@ -16,7 +16,7 @@ logMsg :: String -> IO ()
 logMsg = putStr
 
 logErr :: String -> IO ()
-logErr s = hPutStr stderr $ "ERROR: " ++ s
+logErr s = logErrColor s True
 
 logErrColor :: String -> Bool -> IO ()
 logErrColor s colorize =
@@ -56,7 +56,7 @@ main = do
                 case searchResultsEither of
                   Left errMsg -> do
                     logMsg "\n"
-                    logErr $ errMsg ++ "\n"
+                    logErrColor (errMsg ++ "\n") $ colorize settings
                     logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
                   Right searchResults -> do
                     logMsg $ formatSearchResults settings searchResults
