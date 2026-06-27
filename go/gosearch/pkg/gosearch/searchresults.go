@@ -309,7 +309,7 @@ func (f *SearchResultFormatter) formatMatchingLine(r *SearchResult) string {
 	}
 
 	runes := []rune(r.Line)
-	for i := len(r.Line) - 1; i > 0; i = i - 1 {
+	for i := len(runes) - 1; i >= 0; i-- {
 		if unicode.IsSpace(runes[i]) {
 			lineEndIndex -= 1
 		} else {
@@ -387,6 +387,12 @@ func (r *SearchResult) Text() string {
 	for _, l := range r.LinesAfter {
 		buffer.WriteString(fmt.Sprintf("%s\n", l))
 	}
+	return buffer.String()
+}
+
+func (r *SearchResult) String() string {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("%s: %d: [%d:%d]", r.File.String(), r.LineNum, r.MatchStartIndex, r.MatchEndIndex))
 	return buffer.String()
 }
 

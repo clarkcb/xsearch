@@ -14,11 +14,16 @@ func errorAndExit(err error, colorize bool, searchOptions *gosearch.SearchOption
 	} else {
 		gofind.LogError(fmt.Sprintf("%s", err))
 	}
-	searchOptions.PrintUsage()
+	if searchOptions != nil {
+		searchOptions.PrintUsage()
+	}
 }
 
 func main() {
-	searchOptions := gosearch.NewSearchOptions()
+	searchOptions, err := gosearch.SearchOptionsFromJson()
+	if err != nil {
+		errorAndExit(err, true, searchOptions)
+	}
 	settings, err := searchOptions.SearchSettingsFromArgs(os.Args[1:])
 	if err != nil {
 		errorAndExit(err, true, searchOptions)
@@ -37,7 +42,11 @@ func main() {
 		gofind.Log(fmt.Sprintf("settings: %s\n", settings.String()))
 	}
 
-	searcher := gosearch.NewSearcher(settings)
+	searcher, err := gosearch.NewSearcher(settings)
+	if err != nil {
+		errorAndExit(err, colorize, searchOptions)
+	}
+
 	searchResults, err := searcher.Search()
 	if err != nil {
 		errorAndExit(err, colorize, searchOptions)

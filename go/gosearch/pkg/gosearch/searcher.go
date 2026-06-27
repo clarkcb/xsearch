@@ -28,10 +28,8 @@ type Searcher struct {
 	searchDirs         []string
 	fileResults        *gofind.FileResults
 	errors             []error
-	fileSearchedChan   chan string
 	errChan            chan error
 	addSearchFilesDone bool
-	//searchDone         bool
 	searchResults      *SearchResults
 	addResultChan      chan *SearchResult
 	addResultsDoneChan chan bool
@@ -39,28 +37,57 @@ type Searcher struct {
 	textDecoder        *encoding.Decoder
 }
 
-func NewSearcher(settings *SearchSettings) *Searcher {
+func NewSearcher(settings *SearchSettings) (*Searcher, error) {
 	enc, err := ianaindex.IANA.Encoding(settings.TextFileEncoding())
-	var textDecoder *encoding.Decoder = nil
-	if err == nil {
-		textDecoder = enc.NewDecoder()
+	if err != nil {
+		return nil, err
 	}
-	return &Searcher{
-		gofind.NewFinder(settings.FindSettings),
-		settings,                // Settings
-		[]string{},              // searchDirs
-		gofind.NewFileResults(), // fileResults
-		[]error{},               // errors
-		make(chan string, 1),    // fileSearchedChan
-		make(chan error, 1),     // errChan
-		false,                   // addSearchFilesDone
-		//false,                      // searchDone
+	textDecoder := enc.NewDecoder()
+	finder, err := gofind.NewFinder(settings.FindSettings)
+	if err != nil {
+		return nil, err
+	}
+	searcher := &Searcher{
+		finder,
+		settings,                   // Settings
+		[]string{},                 // searchDirs
+		gofind.NewFileResults(),    // fileResults
+		[]error{},                  // errors
+		make(chan error, 1),        // errChan
+		false,                      // addSearchFilesDone
 		NewSearchResults(settings), // searchResults
 		make(chan *SearchResult),   // addResultChan
 		make(chan bool),            // addResultsDoneChan
 		make(chan bool),            // searchDoneChan
 		textDecoder,
 	}
+	err = searcher.validateSettings()
+	if err != nil {
+		return nil, err
+	}
+	return searcher, nil
+}
+
+func (s *Searcher) validateSettings() error {
+	// No need to call this here, it is called by Finder
+	//err := s.FindSettings.Validate()
+	//if err != nil {
+	//	return err
+	//}
+	if s.Settings.SearchPatterns().IsEmpty() {
+		return fmt.Errorf(NoSearchPatternsDefined)
+	}
+	if s.Settings.LinesAfter() < 0 {
+		return fmt.Errorf(InvalidLinesAfter)
+	}
+	if s.Settings.LinesBefore() < 0 {
+		return fmt.Errorf(InvalidLinesBefore)
+	}
+	enc, err := ianaindex.IANA.Encoding(s.Settings.TextFileEncoding())
+	if err != nil && enc == nil {
+		return fmt.Errorf(InvalidTextFileEncoding)
+	}
+	return nil
 }
 
 func (s *Searcher) ClearSearchResults() {
@@ -540,7 +567,7 @@ func (s *Searcher) searchBzip2FileReader(r io.Reader, fr *gofind.FileResult) {
 		gofind.Log(fmt.Sprintf("Searching bzip2 file %s", fr.String()))
 	}
 	br := bzip2.NewReader(r)
-	if strings.HasSuffix(fr.Name, "tar.bz2") {
+	if strings.HasSuffix(fr.FilePath, "tar.bz2") {
 		s.searchTarFileReader(br, fr)
 	} else {
 		// TODO: modify xfind to pre-find all matching files in archives
@@ -563,7 +590,8 @@ func (s *Searcher) searchZipFileReader(r io.Reader, fr *gofind.FileResult) {
 		gofind.Log(fmt.Sprintf("Searching zip file %s", fr.String()))
 	}
 	// zip.OpenReader returns a *zip.ReaderCloser struct type that extends Reader
-	zr, err := zip.OpenReader(filepath.Join(fr.Path, fr.Name))
+	//zr, err := zip.OpenReader(filepath.Join(fr.Path, fr.Name))
+	zr, err := zip.OpenReader(fr.FilePath)
 	if err != nil {
 		s.errChan <- err
 		return
@@ -601,7 +629,7 @@ func (s *Searcher) searchZipFileReader(r io.Reader, fr *gofind.FileResult) {
 }
 
 func (s *Searcher) searchArchiveFileReader(r io.Reader, fr *gofind.FileResult) {
-	ext := gofind.GetExtension(fr.Name)
+	ext := gofind.GetExtension(fr.FilePath)
 	switch ext {
 	case "zip", "jar", "war", "ear":
 		s.searchZipFileReader(r, fr)
@@ -635,7 +663,7 @@ func (s *Searcher) searchFileReader(r io.Reader, fr *gofind.FileResult) {
 
 func (s *Searcher) searchFileResult(fr *gofind.FileResult) {
 	if fr.FileType == gofind.FileTypeUnknown {
-		if gofind.Contains(s.Settings.InExtensions(), gofind.GetExtension(fr.Name)) {
+		if gofind.Contains(s.Settings.InExtensions(), gofind.GetExtension(fr.FilePath)) {
 			if s.Settings.Debug() {
 				gofind.Log(fmt.Sprintf("File made searchable by passing in-ext: %s",
 					fr.String()))
@@ -652,36 +680,21 @@ func (s *Searcher) searchFileResult(fr *gofind.FileResult) {
 		gofind.Log(fmt.Sprintf("Has containers: %s", fr.String()))
 	} else {
 		// create an io.Reader
-		fullName := filepath.Join(fr.Path, fr.Name)
+		fullName := fr.FilePath
 		r, err := os.Open(fullName)
 		if err != nil {
 			s.errChan <- err
 			return
 		}
-		//defer func(r *os.File) {
-		//	err := r.Close()
-		//	if err != nil {
-		//
-		//	}
-		//}(r)
-		defer r.Close()
+		defer func(r *os.File) {
+			err := r.Close()
+			if err != nil {
+				s.errChan <- err
+				return
+			}
+		}(r)
 		s.searchFileReader(r, fr)
-		s.fileSearchedChan <- fullName
 	}
-}
-
-// initiates goroutines to search each file in the batch, waiting for all
-// to finish before returning
-func (s *Searcher) batchSearchFiles(files []*gofind.FileResult) {
-	wg := &sync.WaitGroup{}
-	wg.Add(len(files)) // set the WaitGroup counter to files length
-	for _, fr := range files {
-		go func(wg *sync.WaitGroup, fr *gofind.FileResult) {
-			s.searchFileResult(fr)
-			wg.Done() // decrement the counter
-		}(wg, fr)
-	}
-	wg.Wait()
 }
 
 func (s *Searcher) printToBeSearched(fileResults *gofind.FileResults) {
@@ -690,8 +703,8 @@ func (s *Searcher) printToBeSearched(fileResults *gofind.FileResults) {
 
 	fri := fileResults.Iterator()
 	for fri.Next() {
-		dirs = append(dirs, fri.Value().Path)
-		files = append(files, fri.Value().String())
+		dirs = append(dirs, filepath.Dir(fri.Value().FilePath))
+		files = append(files, fri.Value().FilePath)
 	}
 
 	dirMap := gofind.MakeStringMap(dirs)
@@ -730,16 +743,29 @@ func (s *Searcher) activateSearchChannels() {
 }
 
 func (s *Searcher) searchFiles(fileResults *gofind.FileResults) error {
-	const batchSize = 240 // max files to search at one time
-
 	// start the activateSearchChannels goroutine
 	go s.activateSearchChannels()
 
+	const batchSize = 240 // max files to search at one time
+	var wg sync.WaitGroup
+
+	processFileResult := func(wg *sync.WaitGroup, fr *gofind.FileResult) {
+		defer wg.Done() // decrement the counter
+		s.searchFileResult(fr)
+	}
+
 	fri := fileResults.Iterator()
-	var files []*gofind.FileResult
 	for fri.Next() && len(s.errors) == 0 {
-		files = fri.Take(batchSize)
-		s.batchSearchFiles(files)
+		// Grab the current batch
+		fileResultsBatch := fri.Take(batchSize)
+
+		// Process current batch concurrently
+		for _, fr := range fileResultsBatch {
+			wg.Add(1)
+			go processFileResult(&wg, fr)
+		}
+		// Wait for the entire current batch to complete before moving to the next
+		wg.Wait()
 	}
 
 	if len(s.errors) > 0 {
@@ -751,10 +777,6 @@ func (s *Searcher) searchFiles(fileResults *gofind.FileResults) error {
 }
 
 func (s *Searcher) Search() (*SearchResults, error) {
-	if err := s.Settings.Validate(); err != nil {
-		return nil, err
-	}
-
 	// get search file list + validate find settings
 	var err error
 	s.searchResults.FileResults, err = s.Finder.Find()

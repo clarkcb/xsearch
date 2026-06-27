@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
-	"golang.org/x/text/encoding/ianaindex"
 )
 
 type SearchSettings struct {
@@ -64,27 +62,6 @@ const (
 	InvalidLinesBefore      = "Invalid linesbefore"
 	InvalidTextFileEncoding = "Invalid or unsupported text file encoding"
 )
-
-func (s *SearchSettings) Validate() error {
-	err := s.FindSettings.Validate()
-	if err != nil {
-		return err
-	}
-	if s.SearchPatterns().IsEmpty() {
-		return fmt.Errorf(NoSearchPatternsDefined)
-	}
-	if s.LinesAfter() < 0 {
-		return fmt.Errorf(InvalidLinesAfter)
-	}
-	if s.LinesBefore() < 0 {
-		return fmt.Errorf(InvalidLinesBefore)
-	}
-	enc, err := ianaindex.IANA.Encoding(s.TextFileEncoding())
-	if err != nil && enc == nil {
-		return fmt.Errorf(InvalidTextFileEncoding)
-	}
-	return nil
-}
 
 func (s *SearchSettings) ArchivesOnly() bool {
 	return s.FindSettings.ArchivesOnly()
