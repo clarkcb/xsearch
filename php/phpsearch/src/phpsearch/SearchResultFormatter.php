@@ -34,6 +34,11 @@ class SearchResultFormatter
         }
     }
 
+    private function colorize(string $s, int $match_start_index, int $match_end_index, Color $color): string
+    {
+        return $this->file_result_formatter->colorize($s, $match_start_index, $match_end_index, $color);
+    }
+
     private function format_line_with_color(string $line): string
     {
         $formatted_line = $line;
@@ -73,16 +78,6 @@ class SearchResultFormatter
             return $this->multi_line_format($result);
         }
         return $this->single_line_format($result);
-    }
-
-    private function trim_newline(string $s): string
-    {
-        return rtrim($s, "\r\n");
-    }
-
-    private function colorize(string $s, int $match_start_index, int $match_end_index, Color $color): string
-    {
-        return $this->file_result_formatter->colorize($s, $match_start_index, $match_end_index, $color);
     }
 
     private function format_line_match(SearchResult $result): string
@@ -145,10 +140,10 @@ class SearchResultFormatter
         $match_start_idx = $result->match_start_index - 1 - $line_start_idx;
         $match_end_idx = $match_start_idx + $match_length;
 
+        $trimmed_length = $line_end_idx - $line_start_idx;
+
         $prefix = '';
         $suffix = '';
-
-        $trimmed_length = $line_end_idx - $line_start_idx;
 
         if ($max_limit && $trimmed_length > $this->settings->max_line_length) {
             $line_start_idx = $result->match_start_index - 1;
@@ -208,6 +203,11 @@ class SearchResultFormatter
     private function line_num_padding(SearchResult $result): int
     {
         return strlen(sprintf("%d", $result->line_num + count($result->lines_after)));
+    }
+
+    private function trim_newline(string $s): string
+    {
+        return rtrim($s, "\r\n");
     }
 
     private function multi_line_format(SearchResult $result): string
