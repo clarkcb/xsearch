@@ -2,10 +2,10 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin-gradle-plugin = "2.3.0"
-commons-io = "2.21.0"
-org-json = "20251224"
-junit-jupiter = "6.0.3"
+kotlin-gradle-plugin = "2.4.0"
+commons-io = "2.22.0"
+org-json = "20260522"
+junit-jupiter = "6.1.0"
 
 [libraries]
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
@@ -14,4 +14,4 @@ org-json = { module = "org.json:json", version.ref = "org-json" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.0" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.4.0" }
