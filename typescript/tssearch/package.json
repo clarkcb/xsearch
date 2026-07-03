@@ -23,7 +23,7 @@
     "clean": "rm -rf ./dist ./node_modules",
     "create": "npm run build && npm run test",
     "refresh": "npm run clean && npm install",
-    "lint": "eslint ./src --ext .ts",
+    "lint": "eslint .",
     "test": "jest",
     "coverage": "jest --coverage"
   },
@@ -39,9 +39,12 @@
     "@typescript-eslint/eslint-plugin": "^8.61.1",
     "@typescript-eslint/parser": "^8.61.1",
     "eslint": "^10.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
     "globals": "^17.6.0",
     "jest": "^30.4.2",
     "jiti": "^2.7.0",
+    "prettier": "^3.9.1",
     "ts-jest": "^29.4.11",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"

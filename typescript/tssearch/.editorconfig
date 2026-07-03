@@ -1,0 +1,38 @@
+# Stop searching for other .editorconfig files in parent folders
+root = true
+
+# Global settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# TypeScript and JavaScript code styling
+[*.{ts,tsx,js,jsx}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# JSON and Configuration files
+[*.{json,json5,rc}]
+indent_style = space
+indent_size = 2
+
+# Markdown documentation
+# Keep trailing whitespaces for proper line breaks
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+# Build and package management files (YAML / Make / TSV)
+[*.{yaml,yml}]
+indent_style = space
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+indent_size = 4
