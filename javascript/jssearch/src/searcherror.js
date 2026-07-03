@@ -5,10 +5,10 @@
  */
 
 class SearchError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "SearchError";
-    }
+  constructor(message) {
+    super(message);
+    this.name = 'SearchError';
+  }
 }
 
 exports.SearchError = SearchError;

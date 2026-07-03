@@ -3,13 +3,12 @@
  *
  * SearchResultSorter class provides sorting of search results
  */
-const {FileResultSorter, SortBy} = require('jsfind');
-
+const { FileResultSorter, SortBy } = require('jsfind');
 
 class SearchResultSorter {
-  'use strict'
+  'use strict';
 
-  constructor (settings) {
+  constructor(settings) {
     this.settings = settings;
     this.fileSorter = new FileResultSorter(settings);
   }
@@ -97,8 +96,6 @@ class SearchResultSorter {
     let sortComparator = this.getSearchResultComparator();
     searchResults.sort(sortComparator);
   }
-
 }
 
 exports.SearchResultSorter = SearchResultSorter;
-

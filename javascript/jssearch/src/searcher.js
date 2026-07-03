@@ -5,467 +5,523 @@
  */
 
 const assert = require('assert');
-const {common, FileType, FileUtil, Finder} = require('jsfind');
-const {SearchError} = require('./searcherror');
-const {SearchResult} = require('./searchresult');
+const { common, FileType, FileUtil, Finder } = require('jsfind');
+const { SearchError } = require('./searcherror');
+const { SearchResult } = require('./searchresult');
 const { SearchResultSorter } = require('./searchresultsorter');
 const path = require('path');
 
 class Searcher {
+  constructor(settings) {
+    this.settings = settings;
+    this.binaryEncoding = 'latin1';
+    // from https://github.com/nodejs/node/blob/master/lib/buffer.js
+    this.supportedEncodings = [
+      'utf-8',
+      'utf8',
+      'latin1',
+      'ascii',
+      'ucs2',
+      'ucs-2',
+      'utf16le',
+      'binary',
+      'base64',
+      'hex',
+    ];
+    this.finder = new Finder(settings);
+    this.validateSettings();
+  }
 
-    constructor(settings) {
-        this.settings = settings;
-        this.binaryEncoding = 'latin1';
-        // from https://github.com/nodejs/node/blob/master/lib/buffer.js
-        this.supportedEncodings = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
-            'binary', 'base64', 'hex'];
-        this.finder = new Finder(settings);
-        this.validateSettings();
+  validateSettings() {
+    try {
+      assert.ok(this.settings.searchPatterns.length, 'No search patterns defined');
+      assert.ok(
+        this.supportedEncodings.indexOf(this.settings.textFileEncoding) > -1,
+        'Invalid encoding'
+      );
+      assert.ok(this.settings.linesBefore > -1, 'Invalid linesbefore');
+      assert.ok(this.settings.linesAfter > -1, 'Invalid linesafter');
+    } catch (err) {
+      let msg = err.message;
+      if (err.code === 'ENOENT') {
+        msg = 'Startpath not found';
+      } else if (err.code === 'EACCES') {
+        msg = 'Startpath not readable';
+      }
+      throw new SearchError(msg);
+    }
+  }
+
+  async search() {
+    try {
+      // get the search files
+      let fileResults = await this.finder.find();
+
+      if (this.settings.verbose) {
+        let dirs = fileResults.map((fr) => path.dirname(fr.filePath));
+        dirs = common.setFromArray(dirs);
+        dirs.sort();
+        common.log('\nDirectories to be searched ' + `(${dirs.length}):`);
+        dirs.forEach((d) => common.log(d));
+
+        common.log('\nFiles to be searched ' + `(${fileResults.length}):`);
+        fileResults.forEach((fr) => common.log(fr.filePath));
+        common.log('');
+      }
+
+      // search the files
+      let searchResults = [];
+      const searchResultsArrays = await Promise.all(fileResults.map((fr) => this.searchFile(fr)));
+      searchResultsArrays.forEach((fileSearchResults) => {
+        searchResults = searchResults.concat(fileSearchResults);
+      });
+
+      if (this.settings.verbose) {
+        common.log('Search complete.');
+      }
+
+      if (searchResults.length > 1) {
+        const searchResultSorter = new SearchResultSorter(this.settings);
+        searchResultSorter.sort(searchResults);
+      }
+
+      return searchResults;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async searchFile(fileResult) {
+    let results = [];
+    switch (fileResult.fileType) {
+      case FileType.CODE:
+      case FileType.TEXT:
+      case FileType.XML:
+        results = await this.searchTextFile(fileResult);
+        break;
+      case FileType.BINARY:
+        results = await this.searchBinaryFile(fileResult);
+        break;
+      default:
+        // TODO: add message about unsupported fileType
+        break;
+    }
+    return results;
+  }
+
+  async searchBinaryFile(fileResult) {
+    if (this.settings.verbose) {
+      common.log(`Searching binary file: "${fileResult}"`);
     }
 
-    validateSettings() {
-        try {
-            assert.ok(this.settings.searchPatterns.length, 'No search patterns defined');
-            assert.ok(this.supportedEncodings.indexOf(this.settings.textFileEncoding) > -1,
-                'Invalid encoding');
-            assert.ok(this.settings.linesBefore > -1, 'Invalid linesbefore');
-            assert.ok(this.settings.linesAfter > -1, 'Invalid linesafter');
+    const contents = FileUtil.getFileContentsSync(fileResult.filePath, this.binaryEncoding);
+    let results = [];
 
-        } catch (err) {
-            let msg = err.message;
-            if (err.code === 'ENOENT') {
-                msg = 'Startpath not found';
-            } else if (err.code === 'EACCES') {
-                msg = 'Startpath not readable';
-            }
-            throw new SearchError(msg);
+    const searchPattern = (p) => {
+      let pattern = new RegExp(p.source, 'g');
+      let patternResults = [];
+      let match = pattern.exec(contents);
+      while (match) {
+        patternResults.push(
+          new SearchResult(
+            pattern,
+            fileResult,
+            0,
+            match.index + 1,
+            pattern.lastIndex + 1,
+            null,
+            [],
+            []
+          )
+        );
+        if (this.settings.firstMatch) {
+          return patternResults;
         }
+        match = pattern.exec(contents);
+      }
+      return patternResults;
+    };
+
+    const patternResultArrays = await Promise.all(
+      this.settings.searchPatterns.map((p) => searchPattern(p))
+    );
+    patternResultArrays.forEach((patternResults) => {
+      results = results.concat(patternResults);
+    });
+    return results;
+  }
+
+  async searchTextFile(fileResult) {
+    if (this.settings.verbose) {
+      common.log(`Searching text file ${fileResult}`);
     }
-
-    async search() {
-        try {
-            // get the search files
-            let fileResults = await this.finder.find();
-    
-            if (this.settings.verbose) {
-                let dirs = fileResults.map(fr => path.dirname(fr.filePath));
-                dirs = common.setFromArray(dirs);
-                dirs.sort();
-                common.log("\nDirectories to be searched " + `(${dirs.length}):`);
-                dirs.forEach(d => common.log(d));
-
-                common.log("\nFiles to be searched " + `(${fileResults.length}):`);
-                fileResults.forEach(fr => common.log(fr.filePath));
-                common.log("");
-            }
-
-            // search the files
-            let searchResults = [];
-            const searchResultsArrays = await Promise.all(fileResults.map(fr => this.searchFile(fr)));
-            searchResultsArrays.forEach(fileSearchResults => {
-                searchResults = searchResults.concat(fileSearchResults);
-            });
-
-            if (this.settings.verbose) {
-                common.log('Search complete.');
-            }
-
-            if (searchResults.length > 1) {
-                const searchResultSorter = new SearchResultSorter(this.settings);
-                searchResultSorter.sort(searchResults);
-            }
-
-            return searchResults;
-
-        } catch (err) {
-            throw err;
-        }
+    let results;
+    if (this.settings.multilineSearch) {
+      results = await this.searchTextFileContents(fileResult);
+    } else {
+      results = await this.searchTextFileLines(fileResult);
     }
+    return results;
+  }
 
-    async searchFile(fileResult) {
-        let results = [];
-        switch (fileResult.fileType) {
-            case FileType.CODE:
-            case FileType.TEXT:
-            case FileType.XML:
-                results = await this.searchTextFile(fileResult);
-                break;
-            case FileType.BINARY:
-                results = await this.searchBinaryFile(fileResult);
-                break;
-            default:
-                // TODO: add message about unsupported fileType
-                break;
-        }
-        return results;
+  async searchTextFileContents(fileResult) {
+    const contents = FileUtil.getFileContentsSync(
+      fileResult.filePath,
+      this.settings.textFileEncoding
+    );
+    let stringResults = await this.searchMultiLineString(contents);
+    return stringResults.map((r) => {
+      return new SearchResult(
+        r.pattern,
+        fileResult,
+        r.lineNum,
+        r.matchStartIndex,
+        r.matchEndIndex,
+        r.line,
+        r.linesBefore,
+        r.linesAfter,
+        this.settings.maxLineLength,
+        this.settings.colorize
+      );
+    });
+  }
+
+  getNewLineIndices(s) {
+    let indices = [];
+    for (let i = 0; i < s.length; i++) {
+      if (s.charAt(i) === '\n') {
+        indices.push(i);
+      }
     }
+    return indices;
+  }
 
-    async searchBinaryFile(fileResult) {
-        if (this.settings.verbose) {
-            common.log(`Searching binary file: "${fileResult}"`);
-        }
+  getLinesAtIndices(s, atIndices, startLineIndices, endLineIndices) {
+    if (atIndices.length === 0) return [];
+    let lines = [];
+    atIndices.forEach((i) => {
+      let line = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
+      lines.push(line);
+    });
+    return lines;
+  }
 
-        const contents = FileUtil.getFileContentsSync(fileResult.filePath, this.binaryEncoding);
-        let results = [];
+  getLinesBefore(s, beforeStartIndices, startLineIndices, endLineIndices) {
+    return this.getLinesAtIndices(s, beforeStartIndices, startLineIndices, endLineIndices);
+  }
 
-        const searchPattern = p => {
-            let pattern = new RegExp(p.source, 'g');
-            let patternResults = [];
-            let match = pattern.exec(contents);
-            while (match) {
-                patternResults.push(new SearchResult(
-                    pattern,
-                    fileResult,
-                    0,
-                    match.index+1,
-                    pattern.lastIndex+1,
-                    null,
-                    [],
-                    []));
-                if (this.settings.firstMatch) {
-                    return patternResults;
-                }
-                match = pattern.exec(contents);
-            }
+  getLinesAfter(s, afterStartIndices, startLineIndices, endLineIndices) {
+    return this.getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
+  }
+
+  getLessThanOrEqual(matchVal) {
+    return (i) => {
+      return i <= matchVal;
+    };
+  }
+
+  getGreaterThan(matchVal) {
+    return (i) => {
+      return i > matchVal;
+    };
+  }
+
+  plusOne(i) {
+    return i + 1;
+  }
+
+  async searchMultiLineString(s) {
+    let linesBefore = [];
+    let linesAfter = [];
+    let results = [];
+    try {
+      let newLineIndices = this.getNewLineIndices(s);
+      let startLineIndices = [0].concat(newLineIndices.map(this.plusOne));
+      let endLineIndices = newLineIndices.concat([s.length - 1]);
+
+      const searchPattern = (pattern) => {
+        pattern = new RegExp(pattern.source, 'g');
+        let patternResults = [];
+        let match = pattern.exec(s);
+        while (match) {
+          if (this.settings.firstMatch && patternResults.length > 0) {
             return patternResults;
-        }
-
-        const patternResultArrays = await Promise.all(this.settings.searchPatterns.map(p => searchPattern(p)));
-        patternResultArrays.forEach(patternResults => {
-            results = results.concat(patternResults);
-        });
-        return results;
-    }
-
-    async searchTextFile(fileResult) {
-        if (this.settings.verbose) {
-            common.log(`Searching text file ${fileResult}`);
-        }
-        let results;
-        if (this.settings.multilineSearch) {
-            results = await this.searchTextFileContents(fileResult);
-        } else {
-            results = await this.searchTextFileLines(fileResult);
-        }
-        return results;
-    }
-
-    async searchTextFileContents(fileResult) {
-        const contents = FileUtil.getFileContentsSync(fileResult.filePath, this.settings.textFileEncoding);
-        let stringResults = await this.searchMultiLineString(contents);
-        return stringResults.map(r => {
-            return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
-                r.linesBefore, r.linesAfter, this.settings.maxLineLength, this.settings.colorize);
-        });
-    }
-
-    getNewLineIndices(s) {
-        let indices = [];
-        for (let i = 0; i < s.length; i++) {
-            if (s.charAt(i) === "\n") {
-                indices.push(i);
+          }
+          let lessOrEqual = this.getLessThanOrEqual(match.index);
+          let greaterThan = this.getGreaterThan(match.index);
+          let lineStartIndex = 0;
+          let lineEndIndex = s.length - 1;
+          let beforeLineCount = 0;
+          let beforeStartIndices = startLineIndices.filter(lessOrEqual);
+          if (beforeStartIndices.length > 0) {
+            lineStartIndex = beforeStartIndices.pop();
+            beforeLineCount = beforeStartIndices.length;
+            if (beforeStartIndices.length > this.settings.linesBefore) {
+              beforeStartIndices = beforeStartIndices.slice(
+                beforeStartIndices.length - this.settings.linesBefore
+              );
             }
-        }
-        return indices;
-    }
-
-    getLinesAtIndices(s, atIndices, startLineIndices, endLineIndices) {
-        if (atIndices.length === 0)
-            return [];
-        let lines = [];
-        atIndices.forEach(i => {
-            let line = s.substring(i, endLineIndices[startLineIndices.indexOf(i)]);
-            lines.push(line);
-        });
-        return lines;
-    }
-
-    getLinesBefore(s, beforeStartIndices, startLineIndices, endLineIndices) {
-        return this.getLinesAtIndices(s, beforeStartIndices, startLineIndices, endLineIndices);
-    }
-
-    getLinesAfter(s, afterStartIndices, startLineIndices, endLineIndices) {
-        return this.getLinesAtIndices(s, afterStartIndices, startLineIndices, endLineIndices);
-    }
-
-    getLessThanOrEqual(matchVal) {
-        return i => { return i <= matchVal; };
-    }
-
-    getGreaterThan(matchVal) {
-        return i => { return i > matchVal; };
-    }
-
-    plusOne(i) {
-        return i + 1;
-    }
-
-    async searchMultiLineString(s) {
-        let linesBefore = [];
-        let linesAfter = [];
-        let results = [];
-        try {
-            let newLineIndices = this.getNewLineIndices(s);
-            let startLineIndices = [0].concat(newLineIndices.map(this.plusOne));
-            let endLineIndices = newLineIndices.concat([s.length - 1]);
-
-            const searchPattern = pattern => {
-                pattern = new RegExp(pattern.source, 'g');
-                let patternResults = [];
-                let match = pattern.exec(s);
-                while (match) {
-                    if (this.settings.firstMatch && patternResults.length > 0) {
-                        return patternResults;
-                    }
-                    let lessOrEqual = this.getLessThanOrEqual(match.index);
-                    let greaterThan = this.getGreaterThan(match.index);
-                    let lineStartIndex = 0;
-                    let lineEndIndex = s.length - 1;
-                    let beforeLineCount = 0;
-                    let beforeStartIndices = startLineIndices.filter(lessOrEqual);
-                    if (beforeStartIndices.length > 0) {
-                        lineStartIndex = beforeStartIndices.pop();
-                        beforeLineCount = beforeStartIndices.length;
-                        if (beforeStartIndices.length > this.settings.linesBefore) {
-                            beforeStartIndices = beforeStartIndices.slice(
-                                beforeStartIndices.length - this.settings.linesBefore);
-                        }
-                    }
-                    lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
-                    let line = s.substring(lineStartIndex, lineEndIndex);
-                    if (this.settings.linesBefore && beforeLineCount) {
-                        linesBefore = this.getLinesBefore(s, beforeStartIndices,
-                            startLineIndices, endLineIndices);
-                    }
-                    if (this.settings.linesAfter) {
-                        let afterStartIndices = startLineIndices.filter(greaterThan);
-                        if (afterStartIndices.length > this.settings.linesAfter) {
-                            afterStartIndices = afterStartIndices.slice(0,
-                                this.settings.linesAfter);
-                        }
-                        linesAfter = this.getLinesAfter(s, afterStartIndices,
-                            startLineIndices, endLineIndices);
-                    }
-                    let matchStartIndex = match.index - lineStartIndex + 1;
-                    let matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
-                    if ((this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
-                        (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
-                        patternResults.push(new SearchResult(
-                            pattern,
-                            null,
-                            beforeLineCount + 1,
-                            matchStartIndex,
-                            matchEndIndex,
-                            line,
-                            [].concat(linesBefore),
-                            [].concat(linesAfter),
-                            this.settings.maxLineLength,
-                            this.settings.colorize));
-                        if (!(pattern.source in patternResults)) {
-                            patternResults[pattern.source] = 1;
-                        }
-                    }
-                    match = pattern.exec(s);
-                }
-                return patternResults;
+          }
+          lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
+          let line = s.substring(lineStartIndex, lineEndIndex);
+          if (this.settings.linesBefore && beforeLineCount) {
+            linesBefore = this.getLinesBefore(
+              s,
+              beforeStartIndices,
+              startLineIndices,
+              endLineIndices
+            );
+          }
+          if (this.settings.linesAfter) {
+            let afterStartIndices = startLineIndices.filter(greaterThan);
+            if (afterStartIndices.length > this.settings.linesAfter) {
+              afterStartIndices = afterStartIndices.slice(0, this.settings.linesAfter);
             }
-
-            const patternResultArrays = await Promise.all(this.settings.searchPatterns.map(p => searchPattern(p)));
-            patternResultArrays.forEach(patternResults => {
-                results = results.concat(patternResults);
-            });
-            return results;
-
-        } catch (err) {
-            throw err;
-        }
-    }
-
-    linesMatch(lines, inPatterns, outPatterns) {
-        return (Finder.emptyOrAnyMatchesAnyPattern(lines, inPatterns) &&
-            Finder.emptyOrNotAnyMatchesAnyPattern(lines, outPatterns));
-    }
-
-    linesBeforeMatch(linesBefore) {
-        return this.linesMatch(linesBefore, this.settings.inLinesBeforePatterns,
-            this.settings.outLinesBeforePatterns);
-    }
-
-    linesAfterMatch(linesAfter) {
-        return this.linesMatch(linesAfter, this.settings.inLinesAfterPatterns,
-            this.settings.outLinesAfterPatterns);
-    }
-
-    async searchTextFileLines(fileResult) {
-        let lines = FileUtil.getFileLinesSync(fileResult.filePath, this.settings.textFileEncoding);
-        let linesResults = await this.searchLines(lines);
-        return linesResults.map(r => {
-            return new SearchResult(r.pattern, fileResult, r.lineNum, r.matchStartIndex, r.matchEndIndex, r.line,
-                r.linesBefore, r.linesAfter, this.settings.maxLineLength, this.settings.colorize);
-        });
-    }
-
-    // return results so that filepath can be added to them
-    async searchLines(lines) {
-        let lineNum = 0;
-        let pattern;
-        let linesBefore = [];
-        let linesAfter = [];
-        let results = [];
-        let patternResults = {};
-        while (true) {
-            if (Object.keys(patternResults).length === this.settings.searchPatterns.length) {
-                break;
+            linesAfter = this.getLinesAfter(s, afterStartIndices, startLineIndices, endLineIndices);
+          }
+          let matchStartIndex = match.index - lineStartIndex + 1;
+          let matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
+          if (
+            (this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
+            (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))
+          ) {
+            patternResults.push(
+              new SearchResult(
+                pattern,
+                null,
+                beforeLineCount + 1,
+                matchStartIndex,
+                matchEndIndex,
+                line,
+                [].concat(linesBefore),
+                [].concat(linesAfter),
+                this.settings.maxLineLength,
+                this.settings.colorize
+              )
+            );
+            if (!(pattern.source in patternResults)) {
+              patternResults[pattern.source] = 1;
             }
-            let line = "";
-            if (linesAfter.length > 0) {
-                line = linesAfter.shift();
-            } else if (lines.length > 0) {
-                line = lines.shift();
-            } else {
-                break;
+          }
+          match = pattern.exec(s);
+        }
+        return patternResults;
+      };
+
+      const patternResultArrays = await Promise.all(
+        this.settings.searchPatterns.map((p) => searchPattern(p))
+      );
+      patternResultArrays.forEach((patternResults) => {
+        results = results.concat(patternResults);
+      });
+      return results;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  linesMatch(lines, inPatterns, outPatterns) {
+    return (
+      Finder.emptyOrAnyMatchesAnyPattern(lines, inPatterns) &&
+      Finder.emptyOrNotAnyMatchesAnyPattern(lines, outPatterns)
+    );
+  }
+
+  linesBeforeMatch(linesBefore) {
+    return this.linesMatch(
+      linesBefore,
+      this.settings.inLinesBeforePatterns,
+      this.settings.outLinesBeforePatterns
+    );
+  }
+
+  linesAfterMatch(linesAfter) {
+    return this.linesMatch(
+      linesAfter,
+      this.settings.inLinesAfterPatterns,
+      this.settings.outLinesAfterPatterns
+    );
+  }
+
+  async searchTextFileLines(fileResult) {
+    let lines = FileUtil.getFileLinesSync(fileResult.filePath, this.settings.textFileEncoding);
+    let linesResults = await this.searchLines(lines);
+    return linesResults.map((r) => {
+      return new SearchResult(
+        r.pattern,
+        fileResult,
+        r.lineNum,
+        r.matchStartIndex,
+        r.matchEndIndex,
+        r.line,
+        r.linesBefore,
+        r.linesAfter,
+        this.settings.maxLineLength,
+        this.settings.colorize
+      );
+    });
+  }
+
+  // return results so that filepath can be added to them
+  async searchLines(lines) {
+    let lineNum = 0;
+    let pattern;
+    let linesBefore = [];
+    let linesAfter = [];
+    let results = [];
+    let patternResults = {};
+    while (true) {
+      if (Object.keys(patternResults).length === this.settings.searchPatterns.length) {
+        break;
+      }
+      let line = '';
+      if (linesAfter.length > 0) {
+        line = linesAfter.shift();
+      } else if (lines.length > 0) {
+        line = lines.shift();
+      } else {
+        break;
+      }
+      lineNum += 1;
+      if (this.settings.linesAfter > 0) {
+        while (linesAfter.length < this.settings.linesAfter && lines.length > 0) {
+          linesAfter.push(lines.shift());
+        }
+      }
+      this.settings.searchPatterns.forEach((p) => {
+        pattern = new RegExp(p.source, 'g');
+        let match = pattern.exec(line);
+        while (match) {
+          if (
+            (this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
+            (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))
+          ) {
+            results.push(
+              new SearchResult(
+                pattern,
+                null,
+                lineNum,
+                match.index + 1,
+                pattern.lastIndex + 1,
+                line,
+                [...linesBefore],
+                [...linesAfter],
+                this.settings.maxLineLength,
+                this.settings.colorize
+              )
+            );
+            if (this.settings.firstMatch) {
+              patternResults[pattern.source] = 1;
+              break;
             }
-            lineNum += 1;
-            if (this.settings.linesAfter > 0) {
-                while (linesAfter.length < this.settings.linesAfter && lines.length > 0) {
-                    linesAfter.push(lines.shift());
-                }
-            }
-            this.settings.searchPatterns.forEach(p => {
-                pattern = new RegExp(p.source, "g");
-                let match = pattern.exec(line);
-                while (match) {
-                    if ((this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
-                        (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
-                        results.push(new SearchResult(
-                            pattern,
-                            null,
-                            lineNum,
-                            match.index+1,
-                            pattern.lastIndex+1,
-                            line,
-                            [...linesBefore],
-                            [...linesAfter],
-                            this.settings.maxLineLength,
-                            this.settings.colorize));
-                        if (this.settings.firstMatch) {
-                            patternResults[pattern.source] = 1;
-                            break;
-                        }
-                    }
-                    match = pattern.exec(line);
-                }
-            });
-            if (this.settings.linesBefore > 0) {
-                if (linesBefore.length === this.settings.linesBefore)
-                    linesBefore.shift();
-                if (linesBefore.length < this.settings.linesBefore)
-                    linesBefore.push(line);
-            }
+          }
+          match = pattern.exec(line);
         }
-        return results;
+      });
+      if (this.settings.linesBefore > 0) {
+        if (linesBefore.length === this.settings.linesBefore) linesBefore.shift();
+        if (linesBefore.length < this.settings.linesBefore) linesBefore.push(line);
+      }
     }
+    return results;
+  }
 
-    printSearchResults(results, formatter) {
-        common.log(`\nSearch results (${results.length}):`);
-        results.forEach(r => common.log(formatter.format(r)));
-    }
+  printSearchResults(results, formatter) {
+    common.log(`\nSearch results (${results.length}):`);
+    results.forEach((r) => common.log(formatter.format(r)));
+  }
 
-    getFileResults(results) {
-        let fileMap = {};
-        let fileResults = [];
-        for (let r of results) {
-            if (!fileMap[r.file.filePath]) {
-                fileMap[r.file.filePath] = r.file;
-                fileResults.push(r.file);
-            }
-        }
-        return fileResults;
+  getFileResults(results) {
+    let fileMap = {};
+    let fileResults = [];
+    for (let r of results) {
+      if (!fileMap[r.file.filePath]) {
+        fileMap[r.file.filePath] = r.file;
+        fileResults.push(r.file);
+      }
     }
+    return fileResults;
+  }
 
-    printMatchingDirs(results, formatter) {
-        const fileResults = this.getFileResults(results);
-        this.finder.printMatchingDirs(fileResults, formatter.fileFormatter);
-    }
+  printMatchingDirs(results, formatter) {
+    const fileResults = this.getFileResults(results);
+    this.finder.printMatchingDirs(fileResults, formatter.fileFormatter);
+  }
 
-    printMatchingFiles(results, formatter) {
-        const fileResults = this.getFileResults(results);
-        this.finder.printMatchingFiles(fileResults, formatter.fileFormatter);
-    }
+  printMatchingFiles(results, formatter) {
+    const fileResults = this.getFileResults(results);
+    this.finder.printMatchingFiles(fileResults, formatter.fileFormatter);
+  }
 
-    getSortFn() {
-        let sortFn;
-        if (this.settings.sortCaseInsensitive) {
-            sortFn = (a, b) => {
-                let aUpper = a.toUpperCase();
-                let bUpper = b.toUpperCase();
-                if (aUpper === bUpper)
-                    return 0;
-                return aUpper < bUpper ? -1 : 1;
-            };
-        } else {
-            sortFn = (a, b) => {
-                if (a === b) return 0;
-                return a < b ? -1 : 1;
-            }
-        }
-        return sortFn;
+  getSortFn() {
+    let sortFn;
+    if (this.settings.sortCaseInsensitive) {
+      sortFn = (a, b) => {
+        let aUpper = a.toUpperCase();
+        let bUpper = b.toUpperCase();
+        if (aUpper === bUpper) return 0;
+        return aUpper < bUpper ? -1 : 1;
+      };
+    } else {
+      sortFn = (a, b) => {
+        if (a === b) return 0;
+        return a < b ? -1 : 1;
+      };
     }
+    return sortFn;
+  }
 
-    getMatchingLines(results) {
-        let lines = results.filter(r => r.lineNum > 0).map(r => r.line.trim());
-        if (this.settings.uniqueLines) {
-            lines = common.setFromArray(lines);
-        }
-        let sortFn = this.getSortFn();
-        lines.sort(sortFn);
-        return lines;
+  getMatchingLines(results) {
+    let lines = results.filter((r) => r.lineNum > 0).map((r) => r.line.trim());
+    if (this.settings.uniqueLines) {
+      lines = common.setFromArray(lines);
     }
+    let sortFn = this.getSortFn();
+    lines.sort(sortFn);
+    return lines;
+  }
 
-    printMatchingLines(results, formatter) {
-        const lines = this.getMatchingLines(results);
-        let hdrText;
-        if (this.settings.uniqueLines)
-            hdrText = `\nUnique matching lines`;
-        else
-            hdrText = `\nMatching lines`;
-        if (lines.length > 0) {
-            hdrText = `${hdrText} (${lines.length}):`;
-            common.log(hdrText);
-            lines.forEach(l => common.log(formatter.formatLine(l)));
-        } else {
-            hdrText = `${hdrText}: 0`;
-            common.log(hdrText);
-        }
+  printMatchingLines(results, formatter) {
+    const lines = this.getMatchingLines(results);
+    let hdrText;
+    if (this.settings.uniqueLines) hdrText = `\nUnique matching lines`;
+    else hdrText = `\nMatching lines`;
+    if (lines.length > 0) {
+      hdrText = `${hdrText} (${lines.length}):`;
+      common.log(hdrText);
+      lines.forEach((l) => common.log(formatter.formatLine(l)));
+    } else {
+      hdrText = `${hdrText}: 0`;
+      common.log(hdrText);
     }
+  }
 
-    getMatches(results) {
-        let matches = results.filter(r => r.lineNum > 0)
-            .map(r => r.line.substring(r.matchStartIndex - 1, r.matchEndIndex - 1));
-        if (this.settings.uniqueLines) {
-            matches = common.setFromArray(matches);
-        }
-        let sortFn = this.getSortFn();
-        matches.sort(sortFn);
-        return matches;
+  getMatches(results) {
+    let matches = results
+      .filter((r) => r.lineNum > 0)
+      .map((r) => r.line.substring(r.matchStartIndex - 1, r.matchEndIndex - 1));
+    if (this.settings.uniqueLines) {
+      matches = common.setFromArray(matches);
     }
+    let sortFn = this.getSortFn();
+    matches.sort(sortFn);
+    return matches;
+  }
 
-    printMatches(results, formatter) {
-        const matches = this.getMatches(results);
-        let hdrText;
-        if (this.settings.uniqueLines)
-            hdrText = `\nUnique matches`;
-        else
-            hdrText = `\nMatches`;
-        if (matches.length > 0) {
-            hdrText = `${hdrText} (${matches.length}):`;
-            common.log(hdrText);
-            matches.forEach(m => common.log(formatter.formatMatch(m)));
-        } else {
-            hdrText = `${hdrText}: 0`;
-            common.log(hdrText);
-        }
+  printMatches(results, formatter) {
+    const matches = this.getMatches(results);
+    let hdrText;
+    if (this.settings.uniqueLines) hdrText = `\nUnique matches`;
+    else hdrText = `\nMatches`;
+    if (matches.length > 0) {
+      hdrText = `${hdrText} (${matches.length}):`;
+      common.log(hdrText);
+      matches.forEach((m) => common.log(formatter.formatMatch(m)));
+    } else {
+      hdrText = `${hdrText}: 0`;
+      common.log(hdrText);
     }
+  }
 }
 
 exports.Searcher = Searcher;

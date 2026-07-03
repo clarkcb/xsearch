@@ -4,9 +4,9 @@
  * Configuration values
  */
 
-"use strict";
+'use strict';
 
-const path = require("path");
+const path = require('path');
 const isWin = /^win/.test(process.platform);
 
 const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';

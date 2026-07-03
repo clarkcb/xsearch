@@ -5,19 +5,28 @@
  */
 
 class SearchResult {
-    'use strict'
+  'use strict';
 
-    constructor(pattern, file, lineNum, matchStartIndex, matchEndIndex, line, linesBefore, linesAfter) {
-        this.pattern = pattern;
-        // file is FileResult instance (jsfind)
-        this.file = file;
-        this.lineNum = lineNum;
-        this.matchStartIndex = matchStartIndex;
-        this.matchEndIndex = matchEndIndex;
-        this.line = line;
-        this.linesBefore = linesBefore;
-        this.linesAfter = linesAfter;
-    }
+  constructor(
+    pattern,
+    file,
+    lineNum,
+    matchStartIndex,
+    matchEndIndex,
+    line,
+    linesBefore,
+    linesAfter
+  ) {
+    this.pattern = pattern;
+    // file is FileResult instance (jsfind)
+    this.file = file;
+    this.lineNum = lineNum;
+    this.matchStartIndex = matchStartIndex;
+    this.matchEndIndex = matchEndIndex;
+    this.line = line;
+    this.linesBefore = linesBefore;
+    this.linesAfter = linesAfter;
+  }
 }
 
 exports.SearchResult = SearchResult;
