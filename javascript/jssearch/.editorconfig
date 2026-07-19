@@ -7,14 +7,14 @@ charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-indent_style = space
-indent_size = 2
 
-# Configuration files and documentation
-[{*.json,*.yml,*.yaml,*.md}]
+# JavaScript and configuration files
+[*.{js,jsx,json,json5,mjs,rc,yaml,yml}]
 indent_style = space
 indent_size = 2
 
 # Keep trailing whitespaces in Markdown files for proper line breaks
 [*.md]
+indent_style = space
+indent_size = 4
 trim_trailing_whitespace = false

@@ -7,7 +7,7 @@
     "email": "clarkcb@gmail.com"
   },
   "engines": {
-    "node": ">=23.10.0"
+    "node": ">=26.1.0"
   },
   "repository": {
     "type": "git",
@@ -23,12 +23,14 @@
     "node.js"
   ],
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "build": "babel src -d dist",
     "clean": "rm -rf ./dist ./node_modules package-lock.json",
     "lint": "eslint .",
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "formatall": "npx prettier --write ./*.js ./*.json ./*.mjs ./src ./tests"
   },
   "files": [
     "data/",
@@ -40,7 +42,6 @@
     "@babel/core": "^8.0.1",
     "@babel/preset-env": "^8.0.2",
     "@eslint/js": "^10.0.1",
-    "babel-preset-minify": "^0.5.2",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.15.3",
