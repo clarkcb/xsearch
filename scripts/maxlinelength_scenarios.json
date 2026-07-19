@@ -14,7 +14,8 @@
             "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "--maxlinelength", "0", "~/src/xsearch/shared/testFiles"],
             "common_args": [
                 "common_out_dirpatterns"
-            ]
+            ],
+            "replace_exe_name": true
         },
         {
             "group": "maxlinelength",
@@ -22,7 +23,8 @@
             "args": ["-x", "txt", "-f", "maxlen", "-s", "maxlen", "--maxlinelength", "-1", "~/src/xsearch/shared/testFiles"],
             "common_args": [
                 "common_out_dirpatterns"
-            ]
+            ],
+            "replace_exe_name": true
         },
         {
             "group": "maxlinelength",
@@ -30,7 +32,8 @@
             "args": ["-x", "txt", "-f", "maxlen", "-s", "\\d+maxlen\\d+", "--maxlinelength", "0", "~/src/xsearch/shared/testFiles"],
             "common_args": [
                 "common_out_dirpatterns"
-            ]
+            ],
+            "replace_exe_name": true
         },
         {
             "group": "maxlinelength",

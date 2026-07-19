@@ -34,10 +34,16 @@
         },
         {
             "group": "printmatches",
-            "name": "printmatches names by default in listing",
-            "args": ["--maxdepth", "1", "-x", "py", "--printmatches", "-u", "-s", "[a-z0-9]+search\\b", "~/src/xsearch/scripts"],
+            "name": "printmatches unique names after results",
+            "args": ["--maxdepth", "1", "-x", "py", "--printmatches", "-u", "-s", "[a-z0-9]+search\\b", "/Users/cary/src/xsearch/scripts"],
             "common_args": [
-                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "printmatches",
+            "name": "noprintmatches after results",
+            "args": ["--maxdepth", "1", "-x", "py", "--noprintmatches", "-s", "[a-z0-9]+search\\b", "/Users/cary/src/xsearch/scripts"],
+            "common_args": [
             ]
         }
     ]
