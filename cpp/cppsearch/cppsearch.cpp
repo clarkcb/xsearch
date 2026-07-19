@@ -8,6 +8,20 @@
 
 using namespace cppsearch;
 
+std::vector<cppfind::FileResult> get_matching_file_results(const std::vector<SearchFileResult>& search_results) {
+    std::unordered_set<std::string> file_path_set;
+    std::vector<cppfind::FileResult> matching_file_results;
+    matching_file_results.reserve(search_results.size());
+    for (const auto& sr : search_results) {
+        const std::string file_path = sr.file().file_path().string();
+        if (!file_path_set.contains(file_path)) {
+            matching_file_results.push_back(sr.file());
+        }
+        file_path_set.emplace(file_path);
+    }
+    return matching_file_results;
+}
+
 std::vector<std::string> get_matching_dirs(const std::vector<SearchFileResult>& search_results) {
     std::unordered_set<std::string> dir_set;
     std::vector<std::string> matching_dirs;
@@ -126,8 +140,9 @@ int main(int argc, char *argv[]) {
 
         const std::vector<SearchFileResult> results = searcher.search();
 
+        auto formatter = SearchResultFormatter(settings);
+
         if (settings.print_results()) {
-            auto formatter = SearchResultFormatter(settings);
             std::string msg{"\nSearch results ("};
             msg.append(std::to_string(results.size())).append("):");
             cppfind::log_msg(msg);
@@ -136,33 +151,15 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings.print_dirs()) {
-            std::vector<std::string> result_dirs = get_matching_dirs(results);
-            std::string msg{"\nMatching directories"};
-            if (result_dirs.empty()) {
-                msg.append(": 0");
-                cppfind::log_msg(msg);
-            } else {
-                msg.append(" (").append(std::to_string(result_dirs.size())).append("):");
-                cppfind::log_msg(msg);
-                for (const auto& d : result_dirs) {
-                    cppfind::log_msg(d);
-                }
-            }
-        }
+        if (settings.print_dirs() || settings.print_files()) {
+            std::vector<cppfind::FileResult> file_results = get_matching_file_results(results);
 
-        if (settings.print_files()) {
-            std::vector<std::string> result_files = get_matching_files(results);
-            std::string msg{"\nMatching files"};
-            if (result_files.empty()) {
-                msg.append(": 0");
-                cppfind::log_msg(msg);
-            } else {
-                msg.append(" (").append(std::to_string(result_files.size())).append("):");
-                cppfind::log_msg(msg);
-                for (const auto& f : result_files) {
-                    cppfind::log_msg(f);
-                }
+            if (settings.print_dirs()) {
+                cppfind::print_file_result_dirs(file_results, formatter.file_result_formatter());
+            }
+
+            if (settings.print_files()) {
+                cppfind::print_file_results(file_results, formatter.file_result_formatter());
             }
         }
 

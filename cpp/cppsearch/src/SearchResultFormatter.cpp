@@ -21,6 +21,10 @@ namespace cppsearch {
         return m_settings;
     }
 
+    cppfind::FileResultFormatter SearchResultFormatter::file_result_formatter() const {
+        return m_file_formatter;
+    }
+
     std::string SearchResultFormatter::format(const SearchFileResult& result) const {
         if (m_settings.lines_before() > 0 || m_settings.lines_after() > 0) {
             return multi_line_format(result);

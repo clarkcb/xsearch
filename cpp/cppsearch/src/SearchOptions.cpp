@@ -141,7 +141,7 @@ namespace cppsearch {
     }
 
     void SearchOptions::update_settings_from_arg_tokens(SearchSettings& settings, const std::vector<cppfind::ArgToken>& arg_tokens) {
-        for (const auto& arg_token : arg_tokens) {
+        for (const cppfind::ArgToken& arg_token : arg_tokens) {
             update_settings_from_arg_token(settings, arg_token);
         }
     }

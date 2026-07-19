@@ -14,7 +14,7 @@ namespace cppsearch {
         explicit Searcher(const std::unique_ptr<SearchSettings>& settings_ptr);
         Searcher(Searcher& other) = delete;
         Searcher(Searcher&& other) = delete;
-        std::vector<SearchFileResult> search() const;
+        [[nodiscard]] std::vector<SearchFileResult> search() const;
 
     private:
         cppfind::Finder m_finder;
