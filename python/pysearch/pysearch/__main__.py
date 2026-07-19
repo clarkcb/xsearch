@@ -73,6 +73,11 @@ async def main():
         log('')
         log_error(f'{e}\n', settings.colorize)
         search_options.usage(1)
+
+    except SearchException as e:
+        log('')
+        log_error(f'{e}\n', settings.colorize)
+        search_options.usage(1)
     except KeyboardInterrupt:
         log('')
         sys.exit(0)

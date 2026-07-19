@@ -19,8 +19,6 @@ from collections import deque
 from io import StringIO
 from typing import Deque, Optional, TextIO
 
-# from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, FindException,
-#                     log, log_error, print_dir_results, print_file_results)
 from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, FindException,
                     log, log_error, print_matching_dirs, print_matching_files)
 
