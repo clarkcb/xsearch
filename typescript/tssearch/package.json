@@ -25,7 +25,8 @@
     "refresh": "npm run clean && npm install",
     "lint": "eslint .",
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "formatall": "npx prettier --write ./*.js ./*.json ./src ./tests"
   },
   "keywords": [
     "xsearch",
