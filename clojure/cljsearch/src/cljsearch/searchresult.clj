@@ -80,35 +80,35 @@
       (= (- end-idx start-idx) max-length) [start-idx end-idx]
       :else
       (let [next-start-idx (if (> start-idx min-idx) (dec start-idx) start-idx)
-            next-end-idx (if (< (- end-idx next-start-idx) max-idx) (inc end-idx) end-idx)]
+            next-end-idx (if (and (< (- end-idx next-start-idx) max-length) (< end-idx max-idx)) (inc end-idx) end-idx)]
         (get-max-length-indices next-start-idx next-end-idx min-idx max-idx max-length))
     )))
-;    (if (= (- end-idx start-idx) max-length)
-;      [start-idx end-idx]
-;      (let [next-start-idx (if (> start-idx 0) (dec start-idx) start-idx)
-;            next-end-idx (if (< (- end-idx next-start-idx) max-length) (inc end-idx) end-idx)]
-;        (get-max-length-indices next-start-idx next-end-idx max-length)))))
 
-(defn get-string-indices [^String s match-start-idx match-end-idx max-length]
+(defn leading-whitespace [^String s i]
+  (if (contains? #{ \space \tab \newline \return } (.charAt s i))
+    (leading-whitespace s (inc i))
+    i))
+
+(defn get-line-indices [^String line match-start-idx match-end-idx max-length]
   (cond
-    (= (str/trim s) "") [0, 0, 0, 0]
+    (= (str/trim line) "") [0, 0, 0, 0]
     (= max-length 0) [0, 0, 0, 0]
-    (< max-length 0) (get-string-indices s match-start-idx match-end-idx (inc (.length s)))
     :else
-      (let [s-length (.length s)
-            line-start-idx (- s-length (.length (str/triml s)))
-            line-end-idx (- (dec s-length) (- s-length (.length (str/trimr s))))
+      (let [line-length (.length line)
+            line-start-idx (leading-whitespace line 0)
+            line-end-idx (- line-length (leading-whitespace (str (reverse line)) 0) 1)
             trimmed-length (- line-end-idx line-start-idx)
             match-length (- match-end-idx match-start-idx)
             match-start-idx' (- match-start-idx line-start-idx)
             match-end-idx' (+ match-start-idx' match-length)
             [lsi lei]
               (if (> trimmed-length max-length)
-                (get-max-length-indices match-start-idx' match-end-idx' trimmed-length max-length)
+                (get-max-length-indices match-start-idx' match-end-idx' 0 trimmed-length max-length)
                 [line-start-idx (inc line-end-idx)])
             msi (- match-start-idx lsi)
             mei (+ msi match-length)]
-        [lsi lei msi mei])))
+        [lsi lei msi mei])
+    ))
 
 (defn format-result-line-with-match [^SearchResult r ^SearchSettings settings]
   (if (or (= (str/trim (:line r)) "") (= (:max-line-length settings) 0))
@@ -117,15 +117,14 @@
           line-length (.length line)
           match-start-idx (dec (:matchstartindex r))
           match-end-idx (dec (:matchendindex r))
-          match-length (- match-end-idx match-start-idx)
-          max-limit (> (:max-line-length settings) 0)
           max-line-length (if (< (:max-line-length settings) 0) (inc line-length) (:max-line-length settings))
-          [lsi lei msi mei] (get-string-indices line match-start-idx match-end-idx max-line-length)
+          [lsi lei msi mei] (get-line-indices line match-start-idx match-end-idx max-line-length)
+          max-limit (> max-line-length 0)
           line-length' (- lei lsi)]
       (if (= line-length' 0)
         ""
-        (let [prefix (if (and max-limit (> line-length' max-line-length) (> lsi 2)) "..." "")
-              suffix (if (and max-limit (> line-length' max-line-length) (< lei (- line-length 2))) "..." "")
+        (let [prefix (if (and max-limit (> line-length max-line-length) (> lsi 2)) "..." "")
+              suffix (if (and max-limit (> line-length max-line-length) (< lei (- line-length 2))) "..." "")
               lsi' (+ lsi (.length prefix))
               lei' (- lei (.length suffix))
               truncated (str prefix (subs line lsi' lei') suffix)]

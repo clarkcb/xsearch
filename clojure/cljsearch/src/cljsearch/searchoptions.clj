@@ -181,7 +181,7 @@
                (update-settings-from-tokens arg-tokenizer settings [] [(str "Invalid value option: " name)])
              :else
                (if (= name :settings-file)
-                 (let [[new-settings new-errs] (update-settings-from-file settings value)]
+                 (let [[new-settings new-errs] (update-settings-from-file arg-tokenizer settings value)]
                    (if (empty? new-errs)
                      (update-settings-from-tokens arg-tokenizer new-settings (rest tokens) errs)
                      (update-settings-from-tokens arg-tokenizer settings (rest tokens) (concat errs new-errs))))
