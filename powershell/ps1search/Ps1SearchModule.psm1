@@ -1249,12 +1249,14 @@ class Searcher {
             $searched += $this.BatchSize
         }
 
+        # TODO: this needs a little reworking
         if ($fileResults.Count -gt $searched) {
             $batch = $fileResults[$searched..$fileResults.Count]
 #            $searchResults += $this.SearchBatchParallel($batch)
 #            $searchResults += $this.SearchBatchJobs($batch)
             $searchResults += $this.SearchFiles($batch)
-            $searched += $this.BatchSize
+#            $searched += $this.BatchSize
+            $searched += $batch.Count
         }
 
         if ($searchResults.Count -gt 1) {
