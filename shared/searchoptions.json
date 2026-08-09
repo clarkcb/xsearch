@@ -121,7 +121,7 @@
     {
       "long": "maxsize",
       "arg": "size",
-      "desc": "Find files with size <= maxsize"
+      "desc": "Find files with size <= maxsize (opt mod: k, m, g, t, p)"
     },
     {
       "long": "mindepth",
@@ -136,7 +136,7 @@
     {
       "long": "minsize",
       "arg": "size",
-      "desc": "Find files with size >= minsize"
+      "desc": "Find files with size >= minsize (opt mod: k, m, g, t, p)"
     },
     {
       "long": "multilinesearch",
