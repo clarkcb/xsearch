@@ -6,10 +6,12 @@
 
 import { SearchOptions } from '../src/searchoptions';
 import { SearchSettings } from '../src/searchsettings';
+import { SearchConfig } from '../src/searchconfig';
 
 describe('testing searchoptions', () => {
   it('testNoArgs', () => {
-    const searchOptions: SearchOptions = new SearchOptions();
+    const config: SearchConfig = new SearchConfig();
+    const searchOptions: SearchOptions = new SearchOptions(config);
     searchOptions.settingsFromArgs([], function (err: Error | void, settings: SearchSettings) {
       if (err) {
         console.log('There was an error calling settingsFromArgs: ' + err);
@@ -38,7 +40,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testValidArgs', () => {
-    const searchOptions: SearchOptions = new SearchOptions();
+    const config: SearchConfig = new SearchConfig();
+    const searchOptions: SearchOptions = new SearchOptions(config);
     const args: string[] = ['-x', 'js,java', '-s', 'Searcher', '.'];
     searchOptions.settingsFromArgs(args, function (err: Error | void, settings: SearchSettings) {
       if (err) {
@@ -56,7 +59,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testInvalidArg', () => {
-    const searchOptions: SearchOptions = new SearchOptions();
+    const config: SearchConfig = new SearchConfig();
+    const searchOptions: SearchOptions = new SearchOptions(config);
     const args: string[] = ['-Q'];
     searchOptions.settingsFromArgs(args, function (err: Error | void) {
       if (err) {
@@ -69,7 +73,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testSettingsFromJson', () => {
-    const searchOptions: SearchOptions = new SearchOptions();
+    const config: SearchConfig = new SearchConfig();
+    const searchOptions: SearchOptions = new SearchOptions(config);
     const settings: SearchSettings = new SearchSettings();
     const json: string =
       '{\n' +

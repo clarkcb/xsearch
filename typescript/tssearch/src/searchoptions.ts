@@ -6,19 +6,19 @@
 
 'use strict';
 
-import * as config from './config';
-import { ArgToken, ArgTokenizer, ArgTokenType, FileUtil, FindSettings, SortUtil } from 'tsfind';
+import { ArgToken, ArgTokenizer, ArgTokenType, FileUtil, SortUtil } from 'tsfind';
+import { SearchConfig } from './searchconfig';
 import { SearchError } from './searcherror';
 import { SearchOption } from './searchoption';
 import { SearchSettings } from './searchsettings';
 import fs from 'fs';
-import { DEFAULT_SEARCH_SETTINGS_PATH } from './config';
 
 type BoolAction = (b: boolean, settings: SearchSettings) => void;
 type NumAction = (n: number, settings: SearchSettings) => void;
 type StringAction = (s: string, settings: SearchSettings) => void;
 
 export class SearchOptions {
+  config: SearchConfig;
   options: SearchOption[];
   argNameMap: { [index: string]: string };
   boolActionMap: { [key: string]: BoolAction };
@@ -26,7 +26,8 @@ export class SearchOptions {
   intActionMap: { [key: string]: NumAction };
   argTokenizer: ArgTokenizer;
 
-  constructor() {
+  constructor(config: SearchConfig) {
+    this.config = config;
     this.options = [];
     // path included separately because it is not included as an option in findoptions.json
     this.argNameMap = { path: 'path' };
@@ -244,7 +245,7 @@ export class SearchOptions {
 
   // setOptionsFromJsonFile
   private setOptionsFromJsonFile(): void {
-    const json = FileUtil.getFileContentsSync(config.SEARCH_OPTIONS_JSON_PATH);
+    const json = FileUtil.getFileContentsSync(this.config.searchOptionsPath);
     const obj = JSON.parse(json);
     if (
       Object.prototype.hasOwnProperty.call(obj, 'searchoptions') &&
@@ -268,7 +269,7 @@ export class SearchOptions {
         }
         this.options.push(new SearchOption(shortArg, longArg, desc, argType));
       });
-    } else throw new Error(`Invalid searchoptions file: ${config.SEARCH_OPTIONS_JSON_PATH}`);
+    } else throw new Error(`Invalid searchoptions file: ${this.config.searchOptionsPath}`);
   }
 
   private updateSettingsFromArgTokens(
@@ -337,8 +338,8 @@ export class SearchOptions {
 
   public updateSettingsFromDefaultFiles(settings: SearchSettings): Error | undefined {
     let err: Error | undefined;
-    if (fs.existsSync(config.DEFAULT_SEARCH_SETTINGS_PATH)) {
-      err = this.updateSettingsFromFile(settings, config.DEFAULT_SEARCH_SETTINGS_PATH);
+    if (fs.existsSync(this.config.defaultSearchSettingsPath)) {
+      err = this.updateSettingsFromFile(settings, this.config.defaultSearchSettingsPath);
     }
     return err;
   }

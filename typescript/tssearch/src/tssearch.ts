@@ -7,6 +7,7 @@
 'use strict';
 
 import * as common from './common';
+import { SearchConfig } from './searchconfig';
 import { Searcher } from './searcher';
 import { SearchOptions } from './searchoptions';
 import { SearchSettings } from './searchsettings';
@@ -19,7 +20,8 @@ function handleError(err: Error | any, colorize: boolean, searchOptions: SearchO
 }
 
 const searchMain = async () => {
-  const searchOptions = new SearchOptions();
+  const config = new SearchConfig();
+  const searchOptions = new SearchOptions(config);
   const args = process.argv.slice(2);
 
   searchOptions.settingsFromArgs(args, async (err: Error | void, settings: SearchSettings) => {
@@ -40,7 +42,7 @@ const searchMain = async () => {
     }
 
     try {
-      const searcher: Searcher = new Searcher(settings);
+      const searcher: Searcher = new Searcher(config, settings);
       const results = await searcher.search();
       const formatter = new SearchResultFormatter(settings);
 

@@ -33,6 +33,15 @@ export class SearchSettings extends FindSettings {
     super();
   }
 
+  public get archivesOnly() {
+    return super.archivesOnly;
+  }
+
+  public set archivesOnly(value: boolean) {
+    super.archivesOnly = value;
+    if (value) this.searchArchives = value;
+  }
+
   public addInLinesAfterPatterns(pattern: string | string[]): void {
     SearchSettings.addPatterns(pattern, this.inLinesAfterPatterns);
   }

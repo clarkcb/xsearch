@@ -9,6 +9,7 @@
 import * as assert from 'assert';
 import * as common from './common';
 import { FileResult, FileType, FileUtil, Finder } from 'tsfind';
+import { SearchConfig } from './searchconfig';
 import { SearchError } from './searcherror';
 import { SearchResult } from './searchresult';
 import { SearchResultFormatter } from './searchresultformatter';
@@ -35,8 +36,8 @@ export class Searcher {
   _finder: Finder;
   _settings: SearchSettings;
 
-  constructor(settings: SearchSettings) {
-    this._finder = new Finder(settings);
+  constructor(config: SearchConfig, settings: SearchSettings) {
+    this._finder = new Finder(config, settings);
     this._settings = settings;
     this.validateSettings();
   }

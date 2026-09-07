@@ -9,6 +9,7 @@ import { FileUtil } from 'tsfind';
 import { Searcher } from '../src/searcher';
 import { SearchResult } from '../src/searchresult';
 import { SearchSettings } from '../src/searchsettings';
+import { SearchConfig } from '../src/searchconfig';
 
 const testFile = config.SHARED_PATH + '/testFiles/testFile2.txt';
 
@@ -24,8 +25,9 @@ describe('testing searcher', () => {
    * searchLines test
    *************************************************************/
   it('TestSearchLines', async () => {
+    const config: SearchConfig = new SearchConfig();
     const settings: SearchSettings = getSettings();
-    const searcher: Searcher = new Searcher(settings);
+    const searcher: Searcher = new Searcher(config, settings);
     const lines: string[] = FileUtil.getFileLinesSync(testFile, 'utf-8');
 
     const results: SearchResult[] = await searcher.searchLines(lines);
@@ -52,8 +54,9 @@ describe('testing searcher', () => {
    * searchMultiLineString test
    *************************************************************/
   it('TestSearchMultiLineString', async () => {
+    const config: SearchConfig = new SearchConfig();
     const settings: SearchSettings = getSettings();
-    const searcher: Searcher = new Searcher(settings);
+    const searcher: Searcher = new Searcher(config, settings);
     const contents: string = FileUtil.getFileContentsSync(testFile, 'utf-8');
 
     const results: SearchResult[] = await searcher.searchMultiLineString(contents);
