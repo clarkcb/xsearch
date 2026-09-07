@@ -8,6 +8,7 @@ use warnings;
 
 use Cwd 'abs_path';
 use File::Basename;
+use Path::Class;
 
 my $lib_path;
 
@@ -20,10 +21,18 @@ use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
 use Test::Simple tests => 17;
 
-use plsearch::config;
 use plfind::FileUtil;
+use plsearch::SearchConfig;
 use plsearch::SearchSettings;
 use plsearch::Searcher;
+
+my $XSEARCH_PATH;
+if (defined $ENV{XSEARCH_PATH}) {
+    $XSEARCH_PATH = dir($ENV{'XSEARCH_PATH'})
+} else {
+    $XSEARCH_PATH = dir($ENV{'HOME'}, 'src', 'xsearch');
+}
+my $SHARED_PATH = $XSEARCH_PATH->subdir('shared');
 
 
 sub get_settings {
@@ -38,8 +47,9 @@ sub get_test_file {
 }
 
 sub test_validate_settings {
+    my $config = plsearch::SearchConfig->new();
     my $settings = get_settings();
-    my ($searcher, $errs) = plsearch::Searcher->new($settings);
+    my ($searcher, $errs) = plsearch::Searcher->new($config, $settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
 }
 
@@ -47,8 +57,9 @@ sub test_validate_settings {
 # search_lines tests
 ################################################################################
 sub test_search_lines {
+    my $config = plsearch::SearchConfig->new();
     my $settings = get_settings();
-    my ($searcher, $errs) = plsearch::Searcher->new($settings);
+    my ($searcher, $errs) = plsearch::Searcher->new($config, $settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $test_file = get_test_file();
     my $contents = plfind::FileUtil::get_file_contents($test_file);
@@ -69,8 +80,9 @@ sub test_search_lines {
 # search_multiline_string tests
 ################################################################################
 sub test_search_multiline_string {
+    my $config = plsearch::SearchConfig->new();
     my $settings = get_settings();
-    my ($searcher, $errs) = plsearch::Searcher->new($settings);
+    my ($searcher, $errs) = plsearch::Searcher->new($config, $settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $test_file = get_test_file();
     my $lines = plfind::FileUtil::get_file_lines($test_file);

@@ -27,10 +27,11 @@ use plsearch::SearchResultSorter;
 sub new {
     my $class = shift;
     my $self = {
+        config => shift,
         settings => shift,
         results => [],
     };
-    my ($finder, $finder_errs) = plfind::Finder->new($self->{settings});
+    my ($finder, $finder_errs) = plfind::Finder->new($self->{config}, $self->{settings});
     if (scalar @$finder_errs) {
         return ($self, $finder_errs);
     }

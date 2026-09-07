@@ -20,6 +20,7 @@ use lib $ENV{XFIND_PATH} . '/perl/plfind/lib';
 
 use plfind::common;
 use plsearch::config;
+use plsearch::SearchConfig;
 use plsearch::Searcher;
 use plsearch::SearchOptions;
 use plsearch::SearchResultFormatter;
@@ -35,7 +36,8 @@ sub handle_err {
 }
 
 sub main {
-    my $search_options = plsearch::SearchOptions->new();
+    my $config = plsearch::SearchConfig->new();
+    my $search_options = plsearch::SearchOptions->new($config);
     my ($settings, $errs) = $search_options->settings_from_args(\@ARGV);
 
     if (scalar @$errs) {
@@ -53,7 +55,7 @@ sub main {
         exit;
     }
 
-    my ($searcher, $errs2) = plsearch::Searcher->new($settings);
+    my ($searcher, $errs2) = plsearch::Searcher->new($config, $settings);
     if (scalar @$errs2) {
         handle_err($errs2->[0], $search_options, $settings->{colorize});
     }

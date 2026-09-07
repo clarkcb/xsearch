@@ -8,6 +8,7 @@ bin/plsearch.bat
 lib/plsearch.pm
 lib/plsearch/Color.pm
 lib/plsearch/config.pm
+lib/plsearch/SearchConfig.pm
 lib/plsearch/Searcher.pm
 lib/plsearch/SearchOption.pm
 lib/plsearch/SearchOptions.pm

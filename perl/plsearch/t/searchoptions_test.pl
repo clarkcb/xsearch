@@ -19,9 +19,11 @@ BEGIN {
 
 use Test::Simple tests => 55;
 
+use plsearch::SearchConfig;
 use plsearch::SearchOptions;
 
-my $search_options = plsearch::SearchOptions->new();
+my $config = plsearch::SearchConfig->new();
+my $search_options = plsearch::SearchOptions->new($config);
 
 sub test_no_args {
     my $args = [];

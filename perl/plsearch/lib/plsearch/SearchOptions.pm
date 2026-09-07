@@ -294,9 +294,11 @@ my $int_action_hash = {
 
 sub new {
     my $class = shift;
-    my $options_hash = set_options_from_json();
+    my $config = shift;
+    my $options_hash = load_options_from_json_file($config->{search_options_path});
     my $arg_tokenizer = plfind::ArgTokenizer->new($options_hash);
     my $self = {
+        config => $config,
         options => $options_hash,
         arg_tokenizer => $arg_tokenizer,
     };
@@ -304,9 +306,11 @@ sub new {
     return $self;
 }
 
-sub set_options_from_json {
+sub load_options_from_json_file {
+    # $search_options_path is an instance of Path::Class::File
+    my $search_options_path = shift;
     my $options_hash = {};
-    my $contents = $SEARCH_OPTIONS_PATH->slurp;
+    my $contents = $search_options_path->slurp;
     my $options_json_hash = decode_json $contents;
     foreach my $search_option (@{$options_json_hash->{searchoptions}}) {
         my $short = $search_option->{short};
@@ -416,8 +420,8 @@ sub settings_from_file {
 sub update_settings_from_default_files {
     my ($self, $settings) = @_;
     my @errs;
-    if (-e $DEFAULT_SEARCH_SETTINGS_PATH) {
-        my $e = $self->update_settings_from_file($settings, $DEFAULT_SEARCH_SETTINGS_PATH);
+    if (-e $self->{config}->{default_search_settings_path}) {
+        my $e = $self->update_settings_from_file($settings, $self->{config}->{default_search_settings_path});
         @errs = @$e;
     }
     return \@errs;
