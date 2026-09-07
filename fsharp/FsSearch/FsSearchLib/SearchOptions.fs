@@ -6,11 +6,12 @@ open System.IO
 open System.Text.Json
 open FsFindLib
 
-module SearchOptions =
+type SearchOption = Option
 
-    type SearchOption = Option
+type SearchOptionsDictionary = Dictionary<string, List<Dictionary<string,string>>>
 
-    let boolActionMap : Map<string, bool -> SearchSettings -> Unit> =
+type SearchOptions (config : SearchConfig) =
+    static let boolActionMap : Map<string, bool -> SearchSettings -> Unit> =
         [
             ("allmatches", (fun (b : bool) (settings : SearchSettings) -> settings.FirstMatch <- not b));
             ("archivesonly", (fun (b : bool) (settings : SearchSettings) -> settings.ArchivesOnly <- b));
@@ -49,7 +50,7 @@ module SearchOptions =
             ("version", (fun (b : bool) (settings : SearchSettings) -> settings.PrintVersion <- b));
         ] |> Map.ofList;
 
-    let stringActionMap : Map<string, string -> SearchSettings -> Unit> =
+    static let stringActionMap : Map<string, string -> SearchSettings -> Unit> =
         [
             ("encoding", (fun (s : string) (settings : SearchSettings) -> settings.TextFileEncoding <- s ))
             ("in-archiveext", (fun (s : string) (settings : SearchSettings) -> settings.InArchiveExtensions <- settings.AddExtensions s settings.InArchiveExtensions))
@@ -77,7 +78,7 @@ module SearchOptions =
             ("sort-by", (fun (s : string) (settings : SearchSettings) -> settings.SortBy <- SortUtil.SortByFromName s));
         ] |> Map.ofList
 
-    let intActionMap : Map<string, int -> SearchSettings -> Unit> =
+    static let intActionMap : Map<string, int -> SearchSettings -> Unit> =
         [
             ("linesafter", (fun (i : int) (settings : SearchSettings) -> settings.LinesAfter <- i))
             ("linesbefore", (fun (i : int) (settings : SearchSettings) -> settings.LinesBefore <- i))
@@ -88,9 +89,7 @@ module SearchOptions =
             ("minsize", (fun (i : int) (settings : SearchSettings) -> settings.MinSize <- i));
         ] |> Map.ofList
 
-    type SearchOptionsDictionary = Dictionary<string, List<Dictionary<string,string>>>
-
-    let OptionsFromJson (jsonString : string) : SearchOption list =
+    let LoadOptionsFromJson (jsonString : string) : SearchOption list =
         let searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(jsonString)
         let optionDicts = searchOptionsDict["searchoptions"]
         [ for optionDict in optionDicts do
@@ -104,33 +103,22 @@ module SearchOptions =
                 else ArgTokenType.Unknown
             yield { ShortArg=shortArg; LongArg=longArg; Description=desc; ArgType=argType } ]
 
-    let _searchOptionsResource = FsSearchLib.EmbeddedResource.GetResourceFileContents("FsSearchLib.Resources.searchoptions.json");
-    let options = OptionsFromJson(_searchOptionsResource)
-
-    let GetOptionNameMap : Map<string, string> =
-        let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
-        let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
-        Seq.append shortArgs longArgs
-        |> Seq.append [("path", "path")]
-        |> Map.ofSeq
-
-    let optionNameMap = GetOptionNameMap
+    let _searchOptionsResource = FsSearchLib.EmbeddedResource.GetResourceFileContents(config.SearchOptionsPath);
+    let options = LoadOptionsFromJson(_searchOptionsResource)
 
     let argTokenizer : ArgTokenizer =
         ArgTokenizer(options)
 
-    // These are required to do a "forward declaration" of the UpdateSettingsFromDefaultFiles
-    let dummyUpdateSettingsFromDefaultFiles: SearchSettings -> Result<SearchSettings, string> = (fun (settings : SearchSettings) -> Error "not implemented")
-    let mutable forwardUpdateSettingsFromDefaultFiles = ref dummyUpdateSettingsFromDefaultFiles
+    member this.Options = options
 
-    let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : SearchSettings) : Result<SearchSettings, string> =
+    member this.ApplyArgTokenToSettings (argToken : ArgToken) (settings : SearchSettings) : Result<SearchSettings, string> =
         if argToken.Type = ArgTokenType.Bool then
             if boolActionMap.ContainsKey(argToken.Name) then
                 match argToken.Value with
                 | :? Boolean as b ->
                     boolActionMap[argToken.Name] b settings
                     if argToken.Name = "defaultfiles" then
-                        forwardUpdateSettingsFromDefaultFiles.Value settings
+                        this.UpdateSettingsFromDefaultFiles settings
                     else
                         Ok settings
                 | _ -> Error $"Invalid value for option: {argToken.Name}"
@@ -157,12 +145,12 @@ module SearchOptions =
         else
             Error $"Invalid option: {argToken.Name}"
 
-    let UpdateSettingsFromArgTokens (settings : SearchSettings) (argTokens : ArgToken list) : Result<SearchSettings, string> =
+    member this.UpdateSettingsFromArgTokens (settings : SearchSettings) (argTokens : ArgToken list) : Result<SearchSettings, string> =
         let rec recSettingsFromArgTokens (tokens : ArgToken list) (settings : SearchSettings) : Result<SearchSettings, string> =
             match tokens with
             | [] -> Ok settings
             | token :: tail ->
-                match ApplyArgTokenToSettings token settings with
+                match this.ApplyArgTokenToSettings token settings with
                 | Ok settings ->
                     if token.Name = "help" then
                         Ok settings
@@ -171,62 +159,59 @@ module SearchOptions =
                 | Error e -> Error e
         recSettingsFromArgTokens argTokens settings
 
-    let UpdateSettingsFromDictionary (settings : SearchSettings) (dict : Dictionary<string, obj>) : Result<SearchSettings, string> =
+    member this.UpdateSettingsFromDictionary (settings : SearchSettings) (dict : Dictionary<string, obj>) : Result<SearchSettings, string> =
         match argTokenizer.TokenizeDictionary(dict) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let UpdateSettingsFromJson (settings : SearchSettings) (jsonString : string) : Result<SearchSettings, string> =
+    member this.UpdateSettingsFromJson (settings : SearchSettings) (jsonString : string) : Result<SearchSettings, string> =
         match argTokenizer.TokenizeJson(jsonString) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let SettingsFromJson (jsonString : string) : Result<SearchSettings, string> =
+    member this.SettingsFromJson (jsonString : string) : Result<SearchSettings, string> =
         let settings = SearchSettings()
-        UpdateSettingsFromJson settings jsonString
+        this.UpdateSettingsFromJson settings jsonString
 
-    let UpdateSettingsFromFile (settings : SearchSettings) (filePath : string) : Result<SearchSettings, string> =
+    member this.UpdateSettingsFromFile (settings : SearchSettings) (filePath : string) : Result<SearchSettings, string> =
         match argTokenizer.TokenizeFile(filePath) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let SettingsFromFile (filePath : string) : Result<SearchSettings, string> =
+    member this.SettingsFromFile (filePath : string) : Result<SearchSettings, string> =
         let settings = SearchSettings()
-        UpdateSettingsFromFile settings filePath
+        this.UpdateSettingsFromFile settings filePath
 
-    let UpdateSettingsFromDefaultFiles (settings : SearchSettings) : Result<SearchSettings, string> =
-        let homePath = FileUtil.GetHomePath()
-        let defaultSettingsPath = Path.Join(homePath, ".config", "xsearch", "settings.json")
-        if Path.Exists(defaultSettingsPath) then
-            UpdateSettingsFromFile settings defaultSettingsPath
+    member this.UpdateSettingsFromDefaultFiles (settings : SearchSettings) : Result<SearchSettings, string> =
+        if Path.Exists(config.DefaultSearchSettingsPath) then
+            this.UpdateSettingsFromFile settings config.DefaultSearchSettingsPath
         else
             Ok settings
 
-    forwardUpdateSettingsFromDefaultFiles.Value <- UpdateSettingsFromDefaultFiles
-
-    let UpdateSettingsFromArgs (settings : SearchSettings) (args : string[]) : Result<SearchSettings, string> =
+    member this.UpdateSettingsFromArgs (settings : SearchSettings) (args : string[]) : Result<SearchSettings, string> =
         match argTokenizer.TokenizeArgs(args) with
-        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Ok argTokens -> this.UpdateSettingsFromArgTokens settings argTokens
         | Error e -> Error e
 
-    let SettingsFromArgs (args : string[]) : Result<SearchSettings, string> =
+    member this.SettingsFromArgs (args : string[]) : Result<SearchSettings, string> =
         let settings = SearchSettings(PrintResults=true)
         // if a defaultfiles option isn't included, go ahead and apply default files now
         if not (Array.contains "--defaultfiles" args) && not (Array.contains "--nodefaultfiles" args) then
-            match UpdateSettingsFromDefaultFiles(settings) with
+            match this.UpdateSettingsFromDefaultFiles(settings) with
             | Ok settings ->
-                UpdateSettingsFromArgs settings args
+                this.UpdateSettingsFromArgs settings args
             | Error e -> Error e
         else
-            UpdateSettingsFromArgs settings args
+            this.UpdateSettingsFromArgs settings args
 
-    let SortOption (o1 : SearchOption) (o2 : SearchOption) : int =
+    member this.SortOption (o1 : SearchOption) (o2 : SearchOption) : int =
         let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
         let os2 = if o2.ShortArg <> "" then o2.ShortArg + "@" + o2.LongArg else o2.LongArg
         String.Compare(os1, os2, StringComparison.OrdinalIgnoreCase)
 
-    let GetUsageString () : string =
-        let sortedOptions = options |> List.sortWith SortOption
+    member this.GetUsageString () : string =
+
+        let sortedOptions = options |> List.sortWith this.SortOption
         let optStringMap =
             [ for opt in sortedOptions do
                 let shortString : string = 
@@ -263,7 +248,7 @@ module SearchOptions =
             |> String.concat "\n"
         usageString
 
-    let Usage (exitCode : int) : unit =
-        let usageString = GetUsageString()
+    member this.Usage (exitCode : int) : unit =
+        let usageString = this.GetUsageString()
         printfn $"%s{usageString}\n"
         Environment.Exit(exitCode)

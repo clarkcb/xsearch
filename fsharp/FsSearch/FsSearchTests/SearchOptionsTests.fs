@@ -6,6 +6,9 @@ open FsSearchLib
 [<TestFixture>]
 type SearchOptionsTests () =
 
+    member this.Config = SearchConfig()
+    member this.SearchOptions = SearchOptions(this.Config)
+
     [<SetUp>]
     member this.Setup () =
         ()
@@ -13,7 +16,7 @@ type SearchOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_NoArgs_HasDefaultValues () =
         let args : string[] = [||]
-        match SearchOptions.SettingsFromArgs(args) with
+        match this.SearchOptions.SettingsFromArgs(args) with
         | Ok settings ->
             Assert.That(settings.ArchivesOnly, Is.False)
             Assert.That(settings.Colorize)
@@ -43,7 +46,7 @@ type SearchOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_ValidArgs_HasArgValues () =
         let args = [| "-x"; "cs"; "-s"; "Search"; "." |]
-        match SearchOptions.SettingsFromArgs(args) with
+        match this.SearchOptions.SettingsFromArgs(args) with
         | Ok settings ->
             Assert.That(settings.InExtensions.Length, Is.EqualTo(1))
             Assert.That(settings.InExtensions |> List.exists (fun e -> e = ".cs"))
@@ -57,7 +60,7 @@ type SearchOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_InValidArgs_ThrowsSearchException () =
         let args = [| "-x"; "cs"; "-s"; "Search"; "."; "-Q" |]
-        match SearchOptions.SettingsFromArgs(args) with
+        match this.SearchOptions.SettingsFromArgs(args) with
         | Ok _ ->
             Assert.That(true, Is.False)
         | Error e->

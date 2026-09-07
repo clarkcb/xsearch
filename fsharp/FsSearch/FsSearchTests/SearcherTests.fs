@@ -8,7 +8,8 @@ open FsFindLib
 [<TestFixture>]
 type SearcherTests () =
 
-    member this.FileTypes = FileTypes()
+    member this.Config = SearchConfig()
+    member this.FileTypes = FileTypes(this.Config)
 
     [<SetUp>]
     member this.Setup () =
@@ -34,7 +35,7 @@ type SearcherTests () =
     [<Test>]
     member this.TestSearchTextReaderLines () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let searcher = Searcher(this.Config, settings)
         let enumerableLines = this.GetTestFileContent().Split([|'\n'; '\r'|]) |> Array.toList
         let results = searcher.SearchLines(enumerableLines)
 
@@ -65,7 +66,7 @@ type SearcherTests () =
     [<Test>]
     member this.TestSearchMultiLineString () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let searcher = Searcher(this.Config, settings)
         let contents = this.GetTestFileContent()
         let results = searcher.SearchContents(contents)
 

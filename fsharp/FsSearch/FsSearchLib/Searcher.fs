@@ -6,8 +6,8 @@ open System.Text
 open System.Text.RegularExpressions
 open FsFindLib
 
-type Searcher (settings : SearchSettings) =
-    let _finder = Finder(settings)
+type Searcher (config : SearchConfig, settings : SearchSettings) =
+    let _finder = Finder(config, settings)
     let _binaryEncoding = Encoding.GetEncoding("ISO-8859-1")
     let mutable _textFileEncoding = Encoding.GetEncoding("utf-8")
 

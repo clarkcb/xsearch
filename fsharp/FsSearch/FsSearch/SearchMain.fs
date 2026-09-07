@@ -5,17 +5,17 @@ open FsSearchLib
 
 module Main =
 
-    let HandleError (err : string) (colorize : bool) : unit =
+    let HandleError (err : string) (colorize : bool) (searchOptions : SearchOptions) : unit =
         Logger.Log("");
         Logger.LogErrorColor err colorize
-        SearchOptions.Usage(1)
+        searchOptions.Usage(1)
 
-    let Search (settings : SearchSettings) : unit =
-        let searcher = Searcher(settings)
+    let Search (config : SearchConfig) (searchOptions : SearchOptions) (settings : SearchSettings) : unit =
+        let searcher = Searcher(config, settings)
 
         let errs = searcher.ValidateSettings()
         if errs.Length > 0 then
-            HandleError errs.Head settings.Colorize
+            HandleError errs.Head settings.Colorize searchOptions
 
         let results = searcher.Search()
         let formatter = SearchResultFormatter(settings)
@@ -38,15 +38,17 @@ module Main =
 
     [<EntryPoint>]
     let Main(args : string[]) = 
-        match SearchOptions.SettingsFromArgs(args) with
+        let config = SearchConfig()
+        let searchOptions = SearchOptions(config)
+        match searchOptions.SettingsFromArgs(args) with
         | Ok settings ->
             if settings.Debug then
                 Logger.Log settings.ToString
             if settings.PrintUsage then
-                SearchOptions.Usage(0)
+                searchOptions.Usage(0)
             else
-                Search settings
-        | Error e -> HandleError e true
+                Search config searchOptions settings
+        | Error e -> HandleError e true searchOptions
 
         // main entry point return
         0;;
