@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../src/autoload.php';
 
 use phpfind\Logger;
+use phpsearch\SearchConfig;
 use phpsearch\Searcher;
 use phpsearch\SearchException;
 use phpsearch\SearchOptions;
@@ -14,8 +15,9 @@ use phpsearch\SearchResultFormatter;
 function main($argv): void
 {
     $colorize = true;
-    $search_options = new SearchOptions();
+    $config = new SearchConfig();
     try {
+        $search_options = new SearchOptions($config);
         $settings = $search_options->settings_from_args(array_slice($argv, 1));
         $colorize = $settings->colorize;
 
@@ -28,7 +30,7 @@ function main($argv): void
             $search_options->usage_and_exit(0);
         }
 
-        $searcher = new Searcher($settings);
+        $searcher = new Searcher($config, $settings);
         $search_results = $searcher->search();
         $formatter = new SearchResultFormatter($settings);
 

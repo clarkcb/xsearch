@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use phpsearch\SearchConfig;
 use phpsearch\SearchException;
 use phpsearch\SearchOptions;
 use phpsearch\SearchSettings;
@@ -13,7 +14,8 @@ class SearchOptionsTest extends TestCase
 {
     public function test_no_args()
     {
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         try {
             $settings = $search_options->settings_from_args([]);
         } catch (SearchException $e) {
@@ -43,7 +45,8 @@ class SearchOptionsTest extends TestCase
 
     public function test_valid_args()
     {
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         $args = ['-x', 'php,py', '-s', 'Search', '.'];
         try {
             $settings = $search_options->settings_from_args($args);
@@ -61,7 +64,8 @@ class SearchOptionsTest extends TestCase
 
     public function test_archives_only_arg()
     {
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         $args = ['--archivesonly'];
         $settings = $search_options->settings_from_args($args);
         $this->assertTrue($settings->archives_only);
@@ -70,7 +74,8 @@ class SearchOptionsTest extends TestCase
 
     public function test_debug_arg()
     {
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         $args = ['--debug'];
         $settings = $search_options->settings_from_args($args);
         $this->assertTrue($settings->debug);
@@ -79,7 +84,8 @@ class SearchOptionsTest extends TestCase
 
     public function test_missing_arg()
     {
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         $this->expectException(SearchException::class);
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-D'];
         $search_options->settings_from_args($args);
@@ -87,7 +93,8 @@ class SearchOptionsTest extends TestCase
 
     public function test_invalid_arg()
     {
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         $this->expectException(SearchException::class);
         $args = ['-x', 'php,py', '-s', 'Search', '.', '-Q'];
         $search_options->settings_from_args($args);
@@ -111,7 +118,8 @@ class SearchOptionsTest extends TestCase
   "includehidden": true
 }
 END_JSON;
-        $search_options = new SearchOptions();
+        $config = new SearchConfig();
+        $search_options = new SearchOptions($config);
         $search_options->update_settings_from_json($settings, $json);
         $this->assertCount(1, $settings->paths);
         $this->assertTrue(in_array('~/src/xsearch/', $settings->paths));

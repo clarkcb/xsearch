@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use phpfind\FileUtil;
 use phpsearch\Config;
+use phpsearch\SearchConfig;
 use phpsearch\Searcher;
 use phpsearch\SearchException;
 use phpsearch\SearchSettings;
@@ -31,9 +32,10 @@ class SearcherTest extends TestCase
     ################################################################################
     public function test_search_multi_line_string()
     {
+        $config = new SearchConfig();
         $settings = $this->get_settings();
         try {
-            $searcher = new Searcher($settings);
+            $searcher = new Searcher($config, $settings);
             $test_file = $this->get_test_file();
             $contents = file_get_contents($test_file);
             $results = $searcher->search_multi_line_string($contents);
@@ -58,9 +60,10 @@ class SearcherTest extends TestCase
     ################################################################################
     public function test_search_lines()
     {
+        $config = new SearchConfig();
         $settings = $this->get_settings();
         try {
-            $searcher = new Searcher($settings);
+            $searcher = new Searcher($config, $settings);
             $test_file = $this->get_test_file();
             $lines = file($test_file);
             $results = $searcher->search_lines($lines);

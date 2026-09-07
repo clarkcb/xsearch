@@ -21,11 +21,11 @@ class Searcher
     /**
      * @throws SearchException
      */
-    public function __construct(SearchSettings $settings)
+    public function __construct(SearchConfig $config, SearchSettings $settings)
     {
         $this->settings = $settings;
         try {
-            $this->finder = new Finder($settings);
+            $this->finder = new Finder($config, $settings);
         } catch (FindException $e) {
             throw new SearchException($e->getMessage());
         }

@@ -11,9 +11,16 @@ use phpfind\FindException;
 
 /**
  * Class SearchOptions
+ *
+ * @property SearchConfig $config
+ * @property SearchOption[] $options
  */
 class SearchOptions
 {
+    /**
+     * @var SearchConfig $config
+     */
+    private SearchConfig $config;
     /**
      * @var SearchOption[] $options
      */
@@ -39,8 +46,9 @@ class SearchOptions
     /**
      * @throws SearchException
      */
-    public function __construct()
+    public function __construct(SearchConfig $config)
     {
+        $this->config = $config;
         $this->options = [];
 
         $this->bool_action_map = [
@@ -133,16 +141,15 @@ class SearchOptions
             'minsize' => fn (int $i, SearchSettings $ss) => $ss->min_size = $i
         ];
 
-        $this->set_options_from_json();
+        $this->load_options_from_json_file($this->config->search_options_path);
         $this->arg_tokenizer = new ArgTokenizer($this->options);
     }
 
     /**
      * @throws SearchException
      */
-    private function set_options_from_json(): void
+    private function load_options_from_json_file(string $search_options_path): void
     {
-        $search_options_path = FileUtil::expand_path(Config::SEARCH_OPTIONS_PATH);
         if (file_exists($search_options_path)) {
             $contents = file_get_contents($search_options_path);
             if ($contents === false || trim($contents) === '') {
@@ -269,8 +276,8 @@ class SearchOptions
      */
     private function update_settings_from_default_files(SearchSettings $settings): void
     {
-        if (file_exists(Config::DEFAULT_SEARCH_SETTINGS_PATH)) {
-            $this->update_settings_from_file($settings, Config::DEFAULT_SEARCH_SETTINGS_PATH);
+        if (file_exists($this->config->default_search_settings_path)) {
+            $this->update_settings_from_file($settings, $this->config->default_search_settings_path);
         }
     }
 
