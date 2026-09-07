@@ -113,7 +113,7 @@
 (defn format-result-line-with-match [^SearchResult r ^SearchSettings settings]
   (if (or (= (str/trim (:line r)) "") (= (:max-line-length settings) 0))
     ""
-    (let [line (:line r)
+    (let [line (str/trimr (:line r))
           line-length (.length line)
           match-start-idx (dec (:matchstartindex r))
           match-end-idx (dec (:matchendindex r))

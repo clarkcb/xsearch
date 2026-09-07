@@ -2,15 +2,15 @@
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (trim)]
         [clojure.java.io :only (file)]
-        [cljsearch.config :only (XSEARCHPATH)]
         [cljfind.consolecolor]
         [cljfind.fileresult :only (new-file-result file-result-path)]
         [cljfind.fileutil :only (get-path-name to-path)]
+        [cljsearch.searchconfig :only (get-xsearch-path)]
         [cljsearch.searchresult :only (->SearchResult get-max-length-indices get-search-result-formatter)]
         [cljsearch.searchsettings :only (DEFAULT-SEARCH-SETTINGS)]))
 
 (def CSSEARCHPATH
-  (str XSEARCHPATH "/csharp/CsSearch/CsSearch"))
+  (str (get-xsearch-path) "/csharp/CsSearch/CsSearch"))
 
 (deftest test-singleline-search-result
   (testing "test-singleline-search-result"
