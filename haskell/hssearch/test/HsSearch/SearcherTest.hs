@@ -5,7 +5,7 @@ module HsSearch.SearcherTest
 
 import HsFind.FileUtil (getFileByteString, getFileLines)
 
-import HsSearch.Config
+import HsSearch.SearchConfig
 import HsSearch.Searcher
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
@@ -27,11 +27,13 @@ getFileContents f = do
 
 getSearchContentsTests :: IO [Test]
 getSearchContentsTests = do
+  config <- getSearchConfig
   let settings = defaultSearchSettings { searchPatterns = ["Searcher"] }
+  let searcher = getSearcher config settings
   xsearchPath <- getXsearchPath
   let testFile = xsearchPath ++ sharedTestFile
   contents <- getFileContents testFile
-  let results = searchContents settings contents
+  let results = searchContents searcher contents
   return [ testCase "length results == 2" (length results @?= 2)
          , testCase "lineNum (head results) == 30" (lineNum (head results) @?= 30)
          , testCase "matchStartIndex (head results) == 3" (matchStartIndex (head results) @?= 3)
@@ -50,11 +52,13 @@ getLines f = do
 
 getSearchLinesTests :: IO [Test]
 getSearchLinesTests = do
+  config <- getSearchConfig
   let settings = defaultSearchSettings { searchPatterns = ["Searcher"] }
+  let searcher = getSearcher config settings
   xsearchPath <- getXsearchPath
   let testFile = xsearchPath ++ sharedTestFile
   fileLines <- getLines testFile
-  let results = searchLines settings fileLines
+  let results = searchLines searcher fileLines
   return [ testCase "length results == 2" (length results @?= 2)
          , testCase "lineNum (head results) == 30" (lineNum (head results) @?= 30)
          , testCase "matchStartIndex (head results) == 3" (matchStartIndex (head results) @?= 3)

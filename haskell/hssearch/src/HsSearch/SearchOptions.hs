@@ -24,7 +24,7 @@ import HsFind.FindSettings (newExtensions)
 import HsFind.SortBy (getSortByForName)
 
 import HsSearch.Paths_hssearch (getDataFileName)
-import HsSearch.Config (getDefaultSearchSettingsPath)
+import HsSearch.SearchConfig (SearchConfig(..), getDefaultSearchSettingsPath)
 import HsSearch.SearchSettings
 
 
@@ -43,7 +43,8 @@ newtype JsonSearchOptions
 instance FromJSON JsonSearchOptions
 
 data SearchOptions = SearchOptions
-  { options :: [SearchOption]
+  { config :: SearchConfig
+  , options :: [SearchOption]
   , argTokenizer :: ArgTokenizer
   } deriving (Show, Eq, Generic)
 
@@ -80,22 +81,22 @@ getArgTokenizer jsonOpts =
     isIntOption :: SearchOption -> Bool
     isIntOption o = long o `elem` map fst integerActions
 
-getSearchOptions :: IO (Either String SearchOptions)
-getSearchOptions = do
-  searchOptionsPath <- getDataFileName searchOptionsFile
-  searchOptionsJsonString <- getFileString searchOptionsPath
+getSearchOptions :: SearchConfig -> IO (Either String SearchOptions)
+getSearchOptions config = do
+  searchOptionsJsonString <- getFileString $ searchOptionsPath config
   case searchOptionsJsonString of
     Left e -> return $ Left e
     Right jsonString ->
       case (eitherDecode (BC.pack jsonString) :: Either String JsonSearchOptions) of
         Left e -> return $ Left e
-        Right jsonSearchOptions -> return $ Right SearchOptions { options = searchoptions jsonSearchOptions,
+        Right jsonSearchOptions -> return $ Right SearchOptions { config = config,
+                                                                  options = searchoptions jsonSearchOptions,
                                                                   argTokenizer = getArgTokenizer (searchoptions jsonSearchOptions) }
 
-getUsage :: [SearchOption] -> String
+getUsage :: SearchOptions -> String
 getUsage searchOptions =
   "Usage:\n hssearch [options] -s <searchpattern> <path> [<path> ...]\n\nOptions:\n" ++
-  searchOptionsToString searchOptions
+  searchOptionsToString (options searchOptions)
 
 getOptStrings :: [SearchOption] -> [String]
 getOptStrings = map formatOpts
@@ -218,8 +219,8 @@ integerActions = [ ("linesafter", \ss i -> ss {linesAfter = i})
                  , ("minsize", \ss i -> ss {minSize = i})
                  ]
 
-updateSettingsFromTokens :: SearchSettings -> SearchOptions -> [ArgToken] -> IO (Either String SearchSettings)
-updateSettingsFromTokens settings searchOptions tokens = do
+updateSettingsFromTokens :: SearchOptions -> SearchSettings -> [ArgToken] -> IO (Either String SearchSettings)
+updateSettingsFromTokens searchOptions settings tokens = do
   case tokens of
     [] -> return $ Right settings
     t:ts ->
@@ -229,26 +230,26 @@ updateSettingsFromTokens settings searchOptions tokens = do
             TypeA b ->
               if name t == "defaultfiles"
               then do
-                settingsEither <- updateSettingsFromDefaultFiles settings searchOptions
+                settingsEither <- updateSettingsFromDefaultFiles searchOptions settings
                 case settingsEither of
                   Left e -> return $ Left e
-                  Right settings' -> updateSettingsFromTokens settings' searchOptions ts
-              else updateSettingsFromTokens (getBoolAction (name t) settings b) searchOptions ts
+                  Right settings' -> updateSettingsFromTokens searchOptions settings' ts
+              else updateSettingsFromTokens searchOptions (getBoolAction (name t) settings b) ts
             _ -> return $ Left $ "Invalid boolean value for option: " ++ name t
         StringActionType ->
           case value t of
             TypeB s ->
               if name t == "settings-file"
               then do
-                settingsEither <- updateSettingsFromFile settings searchOptions s
+                settingsEither <- updateSettingsFromFile searchOptions settings s
                 case settingsEither of
                   Left e -> return $ Left e
-                  Right settings' -> updateSettingsFromTokens settings' searchOptions ts
-              else updateSettingsFromTokens (getStringAction (name t) settings s) searchOptions ts
+                  Right settings' -> updateSettingsFromTokens searchOptions settings' ts
+              else updateSettingsFromTokens searchOptions (getStringAction (name t) settings s) ts
             _ -> return $ Left $ "Invalid string value for option: " ++ name t
         IntegerActionType ->
           case value t of
-            TypeC i -> updateSettingsFromTokens (getIntegerAction (name t) settings (toInteger i)) searchOptions ts
+            TypeC i -> updateSettingsFromTokens searchOptions (getIntegerAction (name t) settings (toInteger i)) ts
             _ -> return $ Left $ "Invalid integer value for option: " ++ name t
         UnknownActionType -> return $ Left $ "Invalid option from updateSettingsFromTokens: " ++ name t
   where
@@ -272,46 +273,46 @@ updateSettingsFromTokens settings searchOptions tokens = do
     isIntegerAction :: String -> Bool
     isIntegerAction a = isJust $ lookup a integerActions
 
-updateSettingsFromJson :: SearchSettings -> SearchOptions -> String -> IO (Either String SearchSettings)
-updateSettingsFromJson settings searchOptions jsonStr = do
+updateSettingsFromJson :: SearchOptions -> SearchSettings -> String -> IO (Either String SearchSettings)
+updateSettingsFromJson searchOptions settings jsonStr = do
   let eitherTokens = tokenizeJson (argTokenizer searchOptions) jsonStr
   case eitherTokens of
     Left e -> return $ Left e
-    Right tokens -> updateSettingsFromTokens settings searchOptions tokens
+    Right tokens -> updateSettingsFromTokens searchOptions settings tokens
 
 settingsFromJson :: SearchOptions -> String -> IO (Either String SearchSettings)
-settingsFromJson = updateSettingsFromJson defaultSearchSettings
+settingsFromJson searchOptions jsonStr = updateSettingsFromJson searchOptions defaultSearchSettings jsonStr
 
-updateSettingsFromFile :: SearchSettings -> SearchOptions -> FilePath -> IO (Either String SearchSettings)
-updateSettingsFromFile settings searchOptions filePath = do
+updateSettingsFromFile :: SearchOptions -> SearchSettings -> FilePath -> IO (Either String SearchSettings)
+updateSettingsFromFile searchOptions settings filePath = do
   eitherTokens <- tokenizeFile (argTokenizer searchOptions) filePath
   case eitherTokens of
     Left e -> return $ Left e
-    Right tokens -> updateSettingsFromTokens settings searchOptions tokens
+    Right tokens -> updateSettingsFromTokens searchOptions settings tokens
 
 settingsFromFile :: SearchOptions -> FilePath -> IO (Either String SearchSettings)
-settingsFromFile = updateSettingsFromFile defaultSearchSettings
+settingsFromFile searchOptions filePath = updateSettingsFromFile searchOptions defaultSearchSettings filePath
 
-updateSettingsFromDefaultFiles :: SearchSettings -> SearchOptions -> IO (Either String SearchSettings)
-updateSettingsFromDefaultFiles settings searchOptions = do
-  defaultSearchSettingsPath <- getDefaultSearchSettingsPath
-  defaultSearchSettingsPathExists <- pathExists defaultSearchSettingsPath
+updateSettingsFromDefaultFiles :: SearchOptions -> SearchSettings -> IO (Either String SearchSettings)
+updateSettingsFromDefaultFiles searchOptions settings = do
+  let defaultSearchSettingsPath' = defaultSearchSettingsPath $ config searchOptions
+  defaultSearchSettingsPathExists <- pathExists defaultSearchSettingsPath'
   if defaultSearchSettingsPathExists
-  then updateSettingsFromFile settings searchOptions defaultSearchSettingsPath
+  then updateSettingsFromFile searchOptions settings defaultSearchSettingsPath'
   else return $ Right settings
 
-updateSettingsFromArgs :: SearchSettings -> SearchOptions -> [String] -> IO (Either String SearchSettings)
-updateSettingsFromArgs settings searchOptions arguments = do
+updateSettingsFromArgs :: SearchOptions -> SearchSettings -> [String] -> IO (Either String SearchSettings)
+updateSettingsFromArgs searchOptions settings arguments = do
   case tokenizeArgs (argTokenizer searchOptions) arguments of
     Left e -> return $ Left e
-    Right tokens -> updateSettingsFromTokens settings searchOptions tokens
+    Right tokens -> updateSettingsFromTokens searchOptions settings tokens
 
 settingsFromArgs :: SearchOptions -> [String] -> IO (Either String SearchSettings)
 settingsFromArgs searchOptions arguments = do
   if "--defaultfiles" `elem` arguments || "--nodefaultfiles" `elem` arguments
-  then updateSettingsFromArgs defaultSearchSettings{printResults=True} searchOptions arguments
+  then updateSettingsFromArgs searchOptions defaultSearchSettings{printResults=True} arguments
   else do
-    settingsWithDefaultsEither <- updateSettingsFromDefaultFiles defaultSearchSettings{printResults=True} searchOptions
+    settingsWithDefaultsEither <- updateSettingsFromDefaultFiles searchOptions defaultSearchSettings{printResults=True}
     case settingsWithDefaultsEither of
       Left e -> return $ Left e
-      Right settingsWithDefaults -> updateSettingsFromArgs settingsWithDefaults searchOptions arguments
+      Right settingsWithDefaults -> updateSettingsFromArgs searchOptions settingsWithDefaults arguments

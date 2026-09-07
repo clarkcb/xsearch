@@ -8,7 +8,7 @@ module HsSearch.SearchResultTest
   ) where
 
 import qualified Data.ByteString.Char8 as BC
-import HsSearch.Config
+import HsSearch.SearchConfig (getXsearchPath)
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 

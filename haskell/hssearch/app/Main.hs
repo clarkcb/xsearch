@@ -5,10 +5,11 @@ import System.IO (hPutStr, stderr)
 
 import HsFind.ConsoleColor (boldRed, consoleReset)
 
+import HsSearch.SearchConfig
 import HsSearch.SearchOptions
 import HsSearch.Searcher (doSearch, formatSearchResultMatchingDirs, formatSearchResultMatchingFiles,
                           formatSearchResultMatchingLines, formatSearchResultMatches, formatSearchResults,
-                          validateSearchSettings)
+                          getSearcher, ioValidateSearchSettings, validateSearchSettings)
 import HsSearch.SearchSettings
 
 
@@ -27,7 +28,8 @@ logErrColor s colorize =
 main :: IO ()
 main = do
   args <- getArgs
-  searchOptionsEither <- getSearchOptions
+  config' <- getSearchConfig
+  searchOptionsEither <- getSearchOptions config'
   case searchOptionsEither of
     Left errMsg -> do
       logMsg "\n"
@@ -38,26 +40,27 @@ main = do
         Left errMsg -> do
           logMsg "\n"
           logErr $ errMsg ++ "\n"
-          logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
+          logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
         Right settings -> do
           logMsg $ if debug settings
                    then searchSettingsToString settings ++ "\n"
                    else ""
-          case validateSearchSettings settings of
+          maybeErrMsg <- ioValidateSearchSettings settings
+          case maybeErrMsg of
             Just errMsg -> do
               logMsg "\n"
               logErrColor errMsg $ colorize settings
-              logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
+              logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
             Nothing -> do
               if printUsage settings
-              then logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
+              then logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
               else do
-                searchResultsEither <- doSearch settings
+                searchResultsEither <- doSearch $ getSearcher config' settings
                 case searchResultsEither of
                   Left errMsg -> do
                     logMsg "\n"
                     logErrColor (errMsg ++ "\n") $ colorize settings
-                    logMsg $ "\n" ++ getUsage (options searchOptions) ++ "\n"
+                    logMsg $ "\n" ++ getUsage searchOptions ++ "\n"
                   Right searchResults -> do
                     logMsg $ formatSearchResults settings searchResults
                     logMsg $ if printDirs settings

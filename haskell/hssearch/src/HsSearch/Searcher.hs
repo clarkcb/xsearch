@@ -7,7 +7,9 @@ module HsSearch.Searcher
     , formatSearchResultMatchingLines
     , formatSearchResultMatches
     , formatSearchResults
+    , getSearcher
     , getSearchFiles
+    , ioValidateSearchSettings
     , searchContents
     , searchLines
     , validateSearchSettings
@@ -27,12 +29,24 @@ import Text.Regex.PCRE
 import HsFind.FileResult
 import HsFind.FileTypes
 import HsFind.FileUtil
-import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
+import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, ioValidateFindSettings, validateFindSettings)
 
 import HsSearch.ByteStringUtil (sliceByteString, trimLeftByteString, trimRightByteString)
+import HsSearch.SearchConfig
 import HsSearch.SearchResult
 import HsSearch.SearchSettings
 
+
+data Searcher = Searcher
+  { config:: SearchConfig
+  , settings :: SearchSettings
+  }
+
+getSearcher :: SearchConfig -> SearchSettings -> Searcher
+getSearcher config settings = Searcher
+  { config = config
+  , settings = settings
+  }
 
 validateSearchSettings :: SearchSettings -> Maybe String
 validateSearchSettings settings =
@@ -41,42 +55,63 @@ validateSearchSettings settings =
     else
       case validateFindSettings $ toFindSettings settings of
         Just err -> Just err
-        Nothing -> recValidateSettings validators []
-  where recValidateSettings :: [SearchSettings -> [String]] -> [String] -> Maybe String
-        recValidateSettings validators' errs = do
+        Nothing -> recValidateSearchSettings settings validators []
+  where recValidateSearchSettings :: SearchSettings -> [SearchSettings -> [String]] -> [String] -> Maybe String
+        recValidateSearchSettings settings' validators' errs = do
           case errs of
             [] -> case validators' of
                     [] -> Nothing
-                    (v:vs) -> recValidateSettings vs (v settings)
+                    (v:vs) -> recValidateSearchSettings settings' vs (v settings')
             _ -> Just $ head errs
         validators = [ \s -> ["No search patterns defined" | null (searchPatterns s)]
                      , \s -> ["Invalid lines after" | linesAfter s < 0]
                      , \s -> ["Invalid lines before" | linesBefore s < 0]
-                     , \s -> ["Invalid max size" | maxSize s < 0]
-                     , \s -> ["Invalid min size" | minSize s < 0]
+                    --  , \s -> ["Invalid max size" | maxSize s < 0]
+                    --  , \s -> ["Invalid min size" | minSize s < 0]
                      ]
 
-getSearchFiles :: SearchSettings -> IO (Either String [FileResult])
-getSearchFiles settings = do
-  doFind $ getFinder $ toFindSettings settings
+-- This function adds validation for things like path existence that require IO
+ioValidateSearchSettings :: SearchSettings -> IO (Maybe String)
+ioValidateSearchSettings settings =
+  case validateSearchSettings settings of
+    Just err -> return $ Just err
+    Nothing -> do
+      ioFindErrs <- ioValidateFindSettings $ toFindSettings settings
+      case ioFindErrs of
+        Just err -> return $ Just err
+        Nothing -> recIoValidateSearchSettings settings validators []
+  where recIoValidateSearchSettings :: SearchSettings -> [SearchSettings -> IO [String]] -> [String] -> IO (Maybe String)
+        recIoValidateSearchSettings settings' validators' errs = do
+          case errs of
+            [] -> case validators' of
+                    [] -> return Nothing
+                    (v:vs) -> do
+                      newErrs <- v settings'
+                      recIoValidateSearchSettings settings' vs newErrs
+            _ -> return $ Just $ head errs
+        -- currently no search-specific IO validators
+        validators = []
 
--- searchBinaryFile :: SearchSettings -> FilePath -> IO [SearchResult]
-searchBinaryFile :: SearchSettings -> FileResult -> IO [SearchResult]
-searchBinaryFile settings fr = do
+getSearchFiles :: Searcher -> IO (Either String [FileResult])
+getSearchFiles searcher = do
+  doFind $ getFinder (findConfig (config searcher)) (toFindSettings (settings searcher))
+
+searchBinaryFile :: Searcher -> FileResult -> IO [SearchResult]
+searchBinaryFile searcher fr = do
   blobEither <- getFileByteString $ fileResultPath fr
   case blobEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right blob) -> return $ addFileResult (searchBlob settings blob)
+    (Right blob) -> return $ addFileResult (searchBlob searcher blob)
   where addFileResult = map (\r -> r {fileResult=fr})
 
-searchBlob :: SearchSettings -> B.ByteString -> [SearchResult]
-searchBlob settings blob =
-  concatMap (searchBlobForPattern settings blob) (searchPatterns settings)
+searchBlob :: Searcher -> B.ByteString -> [SearchResult]
+searchBlob searcher blob =
+  concatMap (searchBlobForPattern searcher blob) (searchPatterns (settings searcher))
 
-searchBlobForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
-searchBlobForPattern settings blob = patternResults
+searchBlobForPattern :: Searcher -> B.ByteString -> String -> [SearchResult]
+searchBlobForPattern searcher blob = patternResults
   where lineMatchIndices :: String -> [(Int,Int)]
-        lineMatchIndices p = if firstMatch settings
+        lineMatchIndices p = if firstMatch (settings searcher)
                                then take 1 $ matchIndices blob p
                                else matchIndices blob p
         patternResults :: String -> [SearchResult]
@@ -90,11 +125,11 @@ searchBlobForPattern settings blob = patternResults
                             , line=B.empty
                             }
 
-searchTextFile :: SearchSettings -> FileResult -> IO [SearchResult]
-searchTextFile settings fr =
-  if multiLineSearch settings
-    then searchTextFileContents settings fr
-    else searchTextFileLines settings fr
+searchTextFile :: Searcher -> FileResult -> IO [SearchResult]
+searchTextFile searcher fr =
+  if multiLineSearch (settings searcher)
+    then searchTextFileContents searcher fr
+    else searchTextFileLines searcher fr
 
 matchOffsetsAndLengths :: B.ByteString -> String -> [(MatchOffset,MatchLength)]
 matchOffsetsAndLengths s p = getAllMatches $ s =~ p :: [(MatchOffset,MatchLength)]
@@ -121,23 +156,23 @@ anyMatchesPattern ls p = any (`matchesPattern` p) ls
 matchesAnyPattern :: B.ByteString -> [String] -> Bool
 matchesAnyPattern l = any (matchesPattern l)
 
-searchTextFileContents :: SearchSettings -> FileResult -> IO [SearchResult]
-searchTextFileContents settings fr = do
+searchTextFileContents :: Searcher -> FileResult -> IO [SearchResult]
+searchTextFileContents searcher fr = do
   contentsEither <- getFileByteString $ fileResultPath fr
   case contentsEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right contents) -> return $ addFileResult (searchContents settings contents)
+    (Right contents) -> return $ addFileResult (searchContents searcher contents)
   where addFileResult = map (\r -> r {fileResult=fr})
 
-searchContents :: SearchSettings -> B.ByteString -> [SearchResult]
-searchContents settings contents =
-  concatMap (searchContentsForPattern settings contents) (searchPatterns settings)
+searchContents :: Searcher -> B.ByteString -> [SearchResult]
+searchContents searcher contents =
+  concatMap (searchContentsForPattern searcher contents) (searchPatterns (settings searcher))
 
-searchContentsForPattern :: SearchSettings -> B.ByteString -> String -> [SearchResult]
-searchContentsForPattern settings contents = patternResults
+searchContentsForPattern :: Searcher -> B.ByteString -> String -> [SearchResult]
+searchContentsForPattern searcher contents = patternResults
   where patternResults p = catMaybes (maybePatternResults p)
         maybePatternResults p = map (maybeResultFromPatternMatchIndices p) (firstOrAllIndices p)
-        firstOrAllIndices p = if firstMatch settings
+        firstOrAllIndices p = if firstMatch (settings searcher)
                               then take 1 (matchIndices contents p)
                               else matchIndices contents p
         newlineIndices =  BC.findIndices (=='\n') contents
@@ -151,25 +186,25 @@ searchContentsForPattern settings contents = patternResults
         lineLength i = endLineIndex i - startLineIndex i
         lineAtIndex i = B.take (lineLength i) $ B.drop (startLineIndex i) contents
         countNewlines s = BC.length $ BC.filter (=='\n') s
-        intLinesBefore = fromInteger $ linesBefore settings
+        intLinesBefore = fromInteger $ linesBefore (settings searcher)
         takeRight n = reverse . take n . reverse
         linesBeforeIndices i n = (takeRight n . takeWhile (<i)) startLineIndices
         getLinesBefore i n = map lineAtIndex (linesBeforeIndices i n)
         beforeLns i | intLinesBefore == 0 = []
                     | otherwise = getLinesBefore (startLineIndex i) intLinesBefore
-        intLinesAfter = fromInteger $ linesAfter settings
+        intLinesAfter = fromInteger $ linesAfter (settings searcher)
         linesAfterIndices i n = (take n . dropWhile (<=i)) startLineIndices
         getLinesAfter i n = map lineAtIndex (linesAfterIndices i n)
         afterLns i | intLinesAfter == 0 = []
                    | otherwise = getLinesAfter (startLineIndex i) intLinesAfter
-        checkBefore = linesBefore settings > 0
+        checkBefore = linesBefore (settings searcher) > 0
         beforeLinesMatch bs =
           not checkBefore
-          || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
-        checkAfter = linesAfter settings > 0
+          || linesMatch bs (inLinesBeforePatterns (settings searcher)) (outLinesBeforePatterns (settings searcher))
+        checkAfter = linesAfter (settings searcher) > 0
         afterLinesMatch as =
           not checkAfter
-          || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
+          || linesMatch as (inLinesAfterPatterns (settings searcher)) (outLinesAfterPatterns (settings searcher))
         maybeResultFromPatternMatchIndices :: String -> (Int, Int) -> Maybe SearchResult
         maybeResultFromPatternMatchIndices p ix =
           if beforeLinesMatch bs && afterLinesMatch as
@@ -190,29 +225,29 @@ searchContentsForPattern settings contents = patternResults
                 bs = beforeLns (fst ix)
                 as = afterLns (fst ix)
 
-searchTextFileLines :: SearchSettings -> FileResult -> IO [SearchResult]
-searchTextFileLines settings fr = do
+searchTextFileLines :: Searcher -> FileResult -> IO [SearchResult]
+searchTextFileLines searcher fr = do
   fileLinesEither <- getFileLines $ fileResultPath fr
   case fileLinesEither of
     (Left _) -> return [] -- todo: figure out to relay error
-    (Right fileLines) -> return $ addFileResult (searchLines settings fileLines)
+    (Right fileLines) -> return $ addFileResult (searchLines searcher fileLines)
   where addFileResult = map (\r -> r {fileResult=fr})
 
-searchLines :: SearchSettings -> [B.ByteString] -> [SearchResult]
-searchLines settings lineList = recSearchLines settings [] lineList 0 []
+searchLines :: Searcher -> [B.ByteString] -> [SearchResult]
+searchLines searcher lineList = recSearchLines searcher [] lineList 0 []
 
-recSearchLines :: SearchSettings -> [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
-recSearchLines settings beforeList lst num results =
+recSearchLines :: Searcher -> [B.ByteString] -> [B.ByteString] -> Int -> [SearchResult] -> [SearchResult]
+recSearchLines searcher beforeList lst num results =
   case lst of
     []     -> results
-    (l:ls) -> recSearchLines settings (newBefore l) ls (num + 1) (updatedResults l)
-  where intLinesBefore = fromInteger $ linesBefore settings
+    (l:ls) -> recSearchLines searcher (newBefore l) ls (num + 1) (updatedResults l)
+  where intLinesBefore = fromInteger $ linesBefore (settings searcher)
         newBefore l | intLinesBefore == 0 = []
                     | length beforeList == intLinesBefore = tail beforeList ++ [l]
                     | otherwise = beforeList ++ [l]
-        intLinesAfter = fromInteger $ linesAfter settings
-        afterToPatterns = linesAfterToPatterns settings
-        afterUntilPatterns = linesAfterUntilPatterns settings
+        intLinesAfter = fromInteger $ linesAfter (settings searcher)
+        afterToPatterns = linesAfterToPatterns (settings searcher)
+        afterUntilPatterns = linesAfterUntilPatterns (settings searcher)
         checkAfterTo = not (null afterToPatterns)
         checkAfterUntil = not (null afterUntilPatterns)
         notMatchesAnyPattern ps l = not $ matchesAnyPattern l ps
@@ -230,26 +265,26 @@ recSearchLines settings beforeList lst num results =
           | otherwise = take intLinesAfter (tail lst)
         updatedResults l = results ++ newResults l
         newResults l = concatMap (searchNextPattern l) filteredPatterns
-        searchNextPattern l = searchLineForPattern settings (num + 1) beforeList l afterList
-        filteredPatterns = if firstMatch settings
+        searchNextPattern l = searchLineForPattern searcher (num + 1) beforeList l afterList
+        filteredPatterns = if firstMatch (settings searcher)
                            then filter firstMatchNotMet patterns
                            else patterns
         firstMatchNotMet p = not (any (\r -> searchPattern r == p) results)
-        patterns = searchPatterns settings
+        patterns = searchPatterns (settings searcher)
 
-searchLineForPattern :: SearchSettings -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
-searchLineForPattern settings num bs l as = patternResults
-  where checkBefore = linesBefore settings > 0
+searchLineForPattern :: Searcher -> Int -> [B.ByteString] -> B.ByteString -> [B.ByteString] -> String -> [SearchResult]
+searchLineForPattern searcher num bs l as = patternResults
+  where checkBefore = linesBefore (settings searcher) > 0
         beforeLinesMatch =
           not checkBefore
-          || linesMatch bs (inLinesBeforePatterns settings) (outLinesBeforePatterns settings)
-        checkAfter = linesAfter settings > 0
+          || linesMatch bs (inLinesBeforePatterns (settings searcher)) (outLinesBeforePatterns (settings searcher))
+        checkAfter = linesAfter (settings searcher) > 0
         afterLinesMatch =
           not checkAfter
-          || linesMatch as (inLinesAfterPatterns settings) (outLinesAfterPatterns settings)
+          || linesMatch as (inLinesAfterPatterns (settings searcher)) (outLinesAfterPatterns (settings searcher))
         lineMatchIndices :: String -> [(Int,Int)]
         lineMatchIndices p = if beforeLinesMatch && afterLinesMatch
-                             then if firstMatch settings
+                             then if firstMatch (settings searcher)
                                   then take 1 $ matchIndices l p
                                   else matchIndices l p
                              else []
@@ -266,26 +301,26 @@ searchLineForPattern settings num bs l as = patternResults
                             , afterLines=as
                             }
 
-doSearchFile :: SearchSettings -> FileResult -> IO [SearchResult]
-doSearchFile settings fr =
+doSearchFile :: Searcher -> FileResult -> IO [SearchResult]
+doSearchFile searcher fr =
   case fileResultType fr of
-    Binary -> searchBinaryFile settings fr
-    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile settings fr
+    Binary -> searchBinaryFile searcher fr
+    filetype | filetype `elem` [Code, Text, Xml] -> searchTextFile searcher fr
     _ -> return []
 
-doSearchFiles :: SearchSettings -> [FileResult] -> IO [SearchResult]
-doSearchFiles settings files = do
-  results <- mapM (doSearchFile settings) files
+doSearchFiles :: Searcher -> [FileResult] -> IO [SearchResult]
+doSearchFiles searcher files = do
+  results <- mapM (doSearchFile searcher) files
   return $ concat results
 
-doSearch :: SearchSettings -> IO (Either String [SearchResult])
-doSearch settings = do
-  findResultsEither <- getSearchFiles settings
+doSearch :: Searcher -> IO (Either String [SearchResult])
+doSearch searcher = do
+  findResultsEither <- getSearchFiles searcher
   case findResultsEither of
     Left err -> return $ Left err
     Right fileResults -> do
-      searchResults <- doSearchFiles settings fileResults
-      return $ Right $ sortSearchResults settings searchResults
+      searchResults <- doSearchFiles searcher fileResults
+      return $ Right $ sortSearchResults (settings searcher) searchResults
 
 formatSearchResults :: SearchSettings -> [SearchResult] -> String
 formatSearchResults settings results =
