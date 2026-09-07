@@ -5,6 +5,7 @@
 
 @interface SearchOptions ()
 // private properties
+@property SearchConfig *config;
 @property NSArray<SearchOption*> *searchOptions;
 @property NSDictionary<NSString*,NSString*> *longArgDict;
 @property NSDictionary *boolActionDict;
@@ -16,9 +17,10 @@
 
 @implementation SearchOptions
 
-- (instancetype) init {
+- (instancetype) initWithConfig:(SearchConfig*)config error:(NSError**)error {
     self = [super init];
     if (self) {
+        self.config = config;
         self.longArgDict = [self getLongArgDict];
         self.boolActionDict = [self getBoolActionDict];
         self.stringActionDict = [self getStringActionDict];
@@ -30,16 +32,13 @@
 }
 
 - (NSArray<SearchOption*>*) searchOptionsFromJson {
-    NSMutableString *searchOptionsJsonPath = [NSMutableString stringWithString:getXsearchSharedPath()];
-    [searchOptionsJsonPath appendString:@"/searchoptions.json"];
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:searchOptionsJsonPath]) {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:self.config.searchOptionsPath]) {
         return nil;
     }
     
     NSMutableArray *searchOptions = [[NSMutableArray alloc] initWithCapacity:44];
 
-    NSData *data = [NSData dataWithContentsOfFile:searchOptionsJsonPath];
+    NSData *data = [NSData dataWithContentsOfFile:self.config.searchOptionsPath];
     
     if (NSClassFromString(@"NSJSONSerialization")) {
         NSError *error = nil;
@@ -328,9 +327,9 @@ typedef void (^IntegerActionBlockType)(NSInteger, SearchSettings*);
 
 // this is intended to be private, so not including in the header file
 - (void) updateSettingsFromDefaultFiles:(SearchSettings *)settings error:(NSError **)error {
-    NSString *defaultSettingsPath = getXsearchDefaultSettingsPath();
-    if ([FileUtil exists:defaultSettingsPath]) {
-        [self updateSettingsFromFile:settings filePath:defaultSettingsPath error:error];
+//    NSString *defaultSettingsPath = getXsearchDefaultSettingsPath();
+    if ([FileUtil exists:self.config.defaultSearchSettingsPath]) {
+        [self updateSettingsFromFile:settings filePath:self.config.defaultSearchSettingsPath error:error];
     }
 }
 

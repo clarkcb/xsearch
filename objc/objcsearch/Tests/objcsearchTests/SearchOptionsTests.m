@@ -25,9 +25,10 @@
 }
 
 - (void)testSettingsFromMinimalArgs {
-    SearchOptions *options = [[SearchOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objsearch",@"-s",@"Searcher",@".",nil];
     NSError *error = nil;
+    SearchConfig *config = [[SearchConfig alloc] init];
+    SearchOptions *options = [[SearchOptions alloc] initWithConfig:config error:&error];
+    NSArray *args =[NSArray arrayWithObjects:@"objsearch",@"-s",@"Searcher",@".",nil];
     SearchSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
@@ -53,9 +54,10 @@
 }
 
 - (void)testSettingsFromValidArgs {
-    SearchOptions *options = [[SearchOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objsearch",@"-x",@"java,scala",@"-s",@"Search",@".",nil];
     NSError *error = nil;
+    SearchConfig *config = [[SearchConfig alloc] init];
+    SearchOptions *options = [[SearchOptions alloc] initWithConfig:config error:&error];
+    NSArray *args =[NSArray arrayWithObjects:@"objsearch",@"-x",@"java,scala",@"-s",@"Search",@".",nil];
     SearchSettings *settings = [options settingsFromArgs:args error:&error];
     
     XCTAssert([[settings inExtensions] count] == 2);
@@ -87,8 +89,9 @@
 
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
 
-    SearchOptions *options = [[SearchOptions alloc] init];
     NSError *error = nil;
+    SearchConfig *config = [[SearchConfig alloc] init];
+    SearchOptions *options = [[SearchOptions alloc] initWithConfig:config error:&error];
     SearchSettings *settings = [options settingsFromData:data error:&error];
 
     XCTAssert([[settings paths] count] == 1);

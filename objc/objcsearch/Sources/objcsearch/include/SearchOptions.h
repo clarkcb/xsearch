@@ -2,11 +2,13 @@
 #define SearchOptions_h
 
 #import <Foundation/Foundation.h>
+#import "SearchConfig.h"
 #import "SearchOption.h"
 #import "SearchSettings.h"
 
 @interface SearchOptions : NSObject
 
+- (instancetype) initWithConfig:(SearchConfig*)config error:(NSError**)error;
 - (NSArray<SearchOption*>*) searchOptionsFromJson;
 - (SearchSettings*) settingsFromArgs:(NSArray*)args error:(NSError**)error;
 - (void) updateSettingsFromArgs:(SearchSettings*)settings args:(NSArray *)args error:(NSError **)error;

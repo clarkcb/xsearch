@@ -5,6 +5,7 @@
 #import "FileResult.h"
 #import "FileTypes.h"
 #import "Finder.h"
+#import "SearchConfig.h"
 #import "SearchResult.h"
 #import "SearchResultFormatter.h"
 #import "SearchSettings.h"
@@ -16,7 +17,7 @@
 @property SearchSettings *settings;
 @property NSStringEncoding textFileEncoding;
 
-- (instancetype) initWithSettings:(SearchSettings*)settings error:(NSError**)error;
+- (instancetype) initWithConfig:(SearchConfig*)config settings:(SearchSettings*)settings error:(NSError**)error;
 - (NSArray<SearchResult*>*) search:(NSError**)error;
 - (NSArray<SearchResult*>*) searchFile:(FileResult*)fr error:(NSError**)error;
 - (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s error:(NSError**)error;

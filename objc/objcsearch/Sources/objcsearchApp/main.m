@@ -24,8 +24,10 @@ void handleError(NSError *error, BOOL colorize, SearchOptions *options) {
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         NSError *error = nil;
+        
+        SearchConfig *config = [[SearchConfig alloc] init];
 
-        SearchOptions *options = [[SearchOptions alloc] init];
+        SearchOptions *options = [[SearchOptions alloc] initWithConfig:config error:&error];
 
         NSArray *args = argvToNSArray(argc, argv);
 
@@ -43,7 +45,7 @@ int main(int argc, const char * argv[]) {
             [options usage:0];
         }
 
-        Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
+        Searcher *searcher = [[Searcher alloc] initWithConfig:config settings:settings error:&error];
 
         if (error) {
             handleError(error, settings.colorize, options);

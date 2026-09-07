@@ -8,10 +8,12 @@
 
 #import <XCTest/XCTest.h>
 #import "FileUtil.h"
+#import "SearchConfig.h"
 #import "Searcher.h"
 #import "SearchSettings.h"
 
 @interface SearcherTests : XCTestCase
+@property SearchConfig *config;
 @property NSString *testFilePath;
 @end
 
@@ -19,7 +21,8 @@
 
 - (void)setUp {
     [super setUp];
-    self.testFilePath = [FileUtil joinPath:[NSString stringWithString:getXfindSharedPath()] childPath:@"testFiles/testFile2.txt"];
+    self.config = [[SearchConfig alloc] init];
+    self.testFilePath = [NSString stringWithFormat:@"%@/shared/testFiles/testFile2.txt", self.config.xsearchPath];
 }
 
 - (void)tearDown {
@@ -34,7 +37,7 @@
     [settings addPath:self.testFilePath];
     [settings addSearchPattern:@"Searcher"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
+    Searcher *searcher = [[Searcher alloc] initWithConfig:self.config settings:settings error:&error];
     
     NSArray<SearchResult*> *results = [searcher search:&error];
 

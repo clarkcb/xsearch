@@ -7,10 +7,10 @@
 
 @implementation Searcher
 
-- (instancetype) initWithSettings:(SearchSettings*)settings error:(NSError**)error {
+- (instancetype) initWithConfig:(SearchConfig*)config settings:(SearchSettings*)settings error:(NSError**)error {
     self = [super init];
     if (self) {
-        self.finder = [[Finder alloc] initWithSettings:settings error:error];
+        self.finder = [[Finder alloc] initWithConfig:config settings:settings error:error];
         if (*error) {
             return self;
         }
