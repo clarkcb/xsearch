@@ -10,7 +10,7 @@ import (
 
 func getTestFileContents() (string, error) {
 	config := NewSearchConfig()
-	testFile := fmt.Sprintf("%s/shared/testFiles/testFile2.txt", config.XSEARCHPATH)
+	testFile := fmt.Sprintf("%s/shared/testFiles/testFile2.txt", config.XSearchPath)
 	r, err1 := os.Open(testFile)
 	if err1 != nil {
 		return "", err1
@@ -30,8 +30,13 @@ func getSettings() *SearchSettings {
 }
 
 func getSearcher() *Searcher {
+	config := NewSearchConfig()
 	settings := getSettings()
-	return NewSearcher(settings)
+	searcher, err := NewSearcher(config, settings)
+	if err != nil {
+		panic(err)
+	}
+	return searcher
 }
 
 /*************************************************************

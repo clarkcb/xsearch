@@ -14,9 +14,8 @@ func TestAddSearchResult(t *testing.T) {
 	settings.SetColorize(false)
 	searchResults := NewSearchResults(settings)
 
-	path := fmt.Sprintf("%s/go/gosearch/pkg/gosearch", config.XSEARCHPATH)
-	name := "searchresults_test.go"
-	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeCode, 0, time.Time{})
+	filePath := fmt.Sprintf("%s/go/gosearch/pkg/gosearch/searchresults_test.go", config.XSearchPath)
+	fileResult := gofind.NewFileResult(filePath, gofind.FileTypeCode, 0, time.Time{})
 
 	line := "func TestAddSearchResult(t *testing.T) {"
 
@@ -45,9 +44,8 @@ func TestAddSearchResult(t *testing.T) {
 
 func TestSingleLineSearchResult(t *testing.T) {
 	pattern := "Search"
-	path := "~/src/xsearch/csharp/CsSearch/CsSearchLib"
-	name := "Searcher.cs"
-	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeCode, 0, time.Time{})
+	filePath := "~/src/xsearch/csharp/CsSearch/CsSearchLib/Searcher.cs"
+	fileResult := gofind.NewFileResult(filePath, gofind.FileTypeCode, 0, time.Time{})
 	lineNum := 14
 	matchStartIndex := 14
 	matchEndIndex := 20
@@ -99,9 +97,8 @@ func TestSingleLineSearchResult(t *testing.T) {
 
 func TestSingleLineSearchResultLongerThanMaxLineLength(t *testing.T) {
 	pattern := "maxlen"
-	path := "."
-	name := "maxlen.txt"
-	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeText, 0, time.Time{})
+	filePath := "./maxlen.txt"
+	fileResult := gofind.NewFileResult(filePath, gofind.FileTypeText, 0, time.Time{})
 	lineNum := 1
 	matchStartIndex := 53
 	matchEndIndex := 59
@@ -141,9 +138,8 @@ func TestSingleLineSearchResultLongerThanMaxLineLength(t *testing.T) {
 
 func TestSingleLineSearchResultLongerThanMaxLineLengthColorize(t *testing.T) {
 	pattern := "maxlen"
-	path := "."
-	name := "maxlen.txt"
-	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeText, 0, time.Time{})
+	filePath := "./maxlen.txt"
+	fileResult := gofind.NewFileResult(filePath, gofind.FileTypeText, 0, time.Time{})
 	lineNum := 1
 	matchStartIndex := 53
 	matchEndIndex := 59
@@ -184,9 +180,8 @@ func TestSingleLineSearchResultLongerThanMaxLineLengthColorize(t *testing.T) {
 
 func TestSearchResultMatchLongerThanMaxLineLengthColorize(t *testing.T) {
 	pattern := "\\d+maxlen\\d+"
-	path := "."
-	name := "maxlen.txt"
-	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeText, 0, time.Time{})
+	filePath := "./maxlen.txt"
+	fileResult := gofind.NewFileResult(filePath, gofind.FileTypeText, 0, time.Time{})
 	lineNum := 1
 	matchStartIndex := 1
 	matchEndIndex := 110
@@ -227,9 +222,8 @@ func TestSearchResultMatchLongerThanMaxLineLengthColorize(t *testing.T) {
 
 func TestSearchResult2MatchLongerThanMaxLineLengthColorize(t *testing.T) {
 	pattern := "\\d+maxlen\\d+"
-	path := "."
-	name := "maxlen.txt"
-	fileResult := gofind.NewFileResult(path, name, gofind.FileTypeText, 0, time.Time{})
+	filePath := "./maxlen.txt"
+	fileResult := gofind.NewFileResult(filePath, gofind.FileTypeText, 0, time.Time{})
 	lineNum := 1
 	matchStartIndex := 11
 	matchEndIndex := 120

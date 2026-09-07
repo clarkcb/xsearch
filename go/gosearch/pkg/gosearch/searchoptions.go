@@ -33,6 +33,7 @@ func (o SearchOption) ArgType() gofind.ArgTokenType {
 }
 
 type SearchOptions struct {
+	SearchConfig    *SearchConfig
 	SearchOptions   []*SearchOption
 	BoolActionMap   map[string]boolAction
 	StringActionMap map[string]stringAction
@@ -275,9 +276,8 @@ type JsonSearchOptions struct {
 	SearchOptions []*SearchOption
 }
 
-func SearchOptionsFromJson() (*SearchOptions, error) {
-	config := NewSearchConfig()
-	data, err := os.ReadFile(config.SEARCHOPTIONSPATH)
+func SearchOptionsFromJson(config *SearchConfig) (*SearchOptions, error) {
+	data, err := os.ReadFile(config.SearchOptionsPath)
 	if err != nil {
 		return &SearchOptions{}, err
 	}
@@ -316,6 +316,7 @@ func SearchOptionsFromJson() (*SearchOptions, error) {
 	}
 
 	return &SearchOptions{
+		config,
 		searchOptions,
 		boolActionMap,
 		stringActionMap,
@@ -325,8 +326,8 @@ func SearchOptionsFromJson() (*SearchOptions, error) {
 	}, nil
 }
 
-func NewSearchOptions() *SearchOptions {
-	searchOptions, err := SearchOptionsFromJson()
+func NewSearchOptions(config *SearchConfig) *SearchOptions {
+	searchOptions, err := SearchOptionsFromJson(config)
 	if err != nil {
 		// do something
 	}
@@ -394,11 +395,10 @@ func (so *SearchOptions) UpdateSettingsFromFile(settings *SearchSettings, filePa
 }
 
 func (so *SearchOptions) updateSettingsFromDefaultFiles(settings *SearchSettings) error {
-	config := NewSearchConfig()
 	var err error
-	_, statErr := os.Stat(config.DEFAULTSEARCHSETTINGSPATH)
+	_, statErr := os.Stat(so.SearchConfig.DefaultSearchSettingsPath)
 	if statErr == nil {
-		err = so.UpdateSettingsFromFile(settings, config.DEFAULTSEARCHSETTINGSPATH)
+		err = so.UpdateSettingsFromFile(settings, so.SearchConfig.DefaultSearchSettingsPath)
 	}
 	return err
 }
@@ -455,7 +455,7 @@ func (so *SearchOptions) PrintUsage() {
 
 func (so *SearchOptions) PrintVersion() {
 	config := NewSearchConfig()
-	gofind.Log(fmt.Sprintf("xsearch version %s", config.VERSION))
+	gofind.Log(fmt.Sprintf("xsearch version %s", config.Version))
 	os.Exit(0)
 }
 

@@ -3,7 +3,7 @@ package gosearch
 import "testing"
 
 func TestSearchSettingsFromNoArgs(t *testing.T) {
-	searchOptions := NewSearchOptions()
+	searchOptions := NewSearchOptions(NewSearchConfig())
 
 	var args []string
 
@@ -32,7 +32,7 @@ func TestSearchSettingsFromNoArgs(t *testing.T) {
 }
 
 func TestSearchSettingsFromValidArgs(t *testing.T) {
-	searchOptions := NewSearchOptions()
+	searchOptions := NewSearchOptions(NewSearchConfig())
 
 	args := []string{
 		"-x", "go", "-s", "Searcher", ".",
@@ -63,7 +63,7 @@ func TestSearchSettingsFromValidArgs(t *testing.T) {
 }
 
 func TestSearchSettingsFromJson(t *testing.T) {
-	searchOptions := NewSearchOptions()
+	searchOptions := NewSearchOptions(NewSearchConfig())
 
 	jsonSettings := []byte(`{
   "path": "~/src/xsearch/",

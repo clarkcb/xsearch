@@ -37,13 +37,13 @@ type Searcher struct {
 	textDecoder        *encoding.Decoder
 }
 
-func NewSearcher(settings *SearchSettings) (*Searcher, error) {
+func NewSearcher(config *SearchConfig, settings *SearchSettings) (*Searcher, error) {
 	enc, err := ianaindex.IANA.Encoding(settings.TextFileEncoding())
 	if err != nil {
 		return nil, err
 	}
 	textDecoder := enc.NewDecoder()
-	finder, err := gofind.NewFinder(settings.FindSettings)
+	finder, err := gofind.NewFinder(config.FindConfig, settings.FindSettings)
 	if err != nil {
 		return nil, err
 	}
