@@ -16,8 +16,8 @@ defmodule ExSearch.Searcher do
 
   defstruct [:settings, :finder]
 
-  def new(settings) do
-    finder = Finder.new(SearchSettings.to_find_settings(settings))
+  def new(config, settings) do
+    finder = Finder.new(config.find_config, SearchSettings.to_find_settings(settings))
     __struct__([settings: settings, finder: finder])
   end
 

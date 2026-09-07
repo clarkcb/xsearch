@@ -29,10 +29,9 @@ defmodule ExSearch.SearchOptionsLoader do
   Documentation for `ExSearch.SearchOptionsLoader`.
   """
 
-  def load_options() do
+  def load_options(config) do
     # Load the search options from the searchoptions.json file.
-    search_options_path = ExSearch.Config.search_options_path
-    {:ok, json} = File.read(search_options_path)
+    {:ok, json} = File.read(config.search_options_path)
     search_options = JSON.decode!(json)
     search_options["searchoptions"]
     |> Enum.map(fn o -> ExSearch.SearchOption.new([short_arg: Map.get(o, "short", ""), long_arg: o["long"], description: o["desc"]]) end)
@@ -53,11 +52,20 @@ defmodule ExSearch.SearchOptions do
   alias ExSearch.SearchError
   alias ExSearch.SearchSettings
 
-  require OptionParser
+  defstruct [:config, :options, :arg_tokenizer, :arg_action_maps]
 
-  defstruct options: ExSearch.SearchOptionsLoader.load_options()
-
-  def new(), do: __struct__()
+  def new(config) do
+    options = ExSearch.SearchOptionsLoader.load_options(config)
+    arg_action_maps = arg_action_maps()
+    {bool_arg_action_map, int_arg_action_map, str_arg_action_map} = arg_action_maps
+    arg_tokenizer = %ArgTokenizer{
+      options: options,
+      bool_opts: Map.keys(bool_arg_action_map),
+      int_opts: Map.keys(int_arg_action_map),
+      str_opts: Map.keys(str_arg_action_map)
+    }
+    __struct__([config: config, options: options, arg_tokenizer: arg_tokenizer, arg_action_maps: arg_action_maps])
+  end
 
   defp bool_arg_action_map() do
     %{
@@ -147,62 +155,48 @@ defmodule ExSearch.SearchOptions do
     {bool_arg_action_map(), int_arg_action_map(), str_arg_action_map()}
   end
 
-  defp get_arg_tokenizer(options, arg_action_maps) do
-    {bool_arg_action_map, int_arg_action_map, str_arg_action_map} = arg_action_maps
-    %ArgTokenizer{
-      options: options,
-      bool_opts: Map.keys(bool_arg_action_map),
-      int_opts: Map.keys(int_arg_action_map),
-      str_opts: Map.keys(str_arg_action_map)
-    }
-  end
-
-  def update_settings_from_json(settings, json, arg_tokenizer, arg_action_maps) do
-    case ArgTokenizer.tokenize_json(json, arg_tokenizer) do
-      {:ok, tokens} -> update_settings_from_tokens(settings, tokens, arg_tokenizer, arg_action_maps)
+  def update_settings_from_json(search_options, settings, json) do
+    case ArgTokenizer.tokenize_json(json, search_options.arg_tokenizer) do
+      {:ok, tokens} -> update_settings_from_tokens(search_options, settings, tokens)
       {:error, message} -> {:error, message}
     end
   end
 
-  def get_settings_from_json(json, options) do
-    arg_action_maps = arg_action_maps()
-    arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
-    update_settings_from_json(SearchSettings.new(), json, arg_tokenizer, arg_action_maps)
+  def get_settings_from_json(search_options, json) do
+    update_settings_from_json(search_options, SearchSettings.new(), json)
   end
 
-  def get_settings_from_json!(json, options) do
-    case get_settings_from_json(json, options) do
+  def get_settings_from_json!(search_options, json) do
+    case get_settings_from_json(search_options, json) do
       {:error, message} -> raise SearchError, message: message
       {:ok, settings} -> settings
     end
   end
 
-  def update_settings_from_file(settings, json_file, arg_tokenizer, arg_action_maps) do
-    case ArgTokenizer.tokenize_file(json_file, arg_tokenizer) do
-      {:ok, tokens} -> update_settings_from_tokens(settings, tokens, arg_tokenizer, arg_action_maps)
+  def update_settings_from_file(search_options, settings, json_file) do
+    case ArgTokenizer.tokenize_file(json_file, search_options.arg_tokenizer) do
+      {:ok, tokens} -> update_settings_from_tokens(search_options, settings, tokens)
       {:error, message} -> {:error, message}
     end
   end
 
-  def get_settings_from_file(json_file, options) do
-    arg_action_maps = arg_action_maps()
-    arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
-    case update_settings_from_file(SearchSettings.new(), json_file, arg_tokenizer, arg_action_maps) do
+  def get_settings_from_file(search_options, json_file) do
+    case update_settings_from_file(search_options, SearchSettings.new(), json_file) do
       {:error, "Unable to parse JSON"} -> {:error, "Unable to parse JSON in settings file: #{json_file}"}
       {:error, message} -> {:error, message}
       {:ok, settings} -> {:ok, settings}
     end
   end
 
-  def get_settings_from_file!(json_file, options) do
-    case get_settings_from_file(json_file, options) do
+  def get_settings_from_file!(search_options, json_file) do
+    case get_settings_from_file(search_options, json_file) do
       {:error, message} -> raise SearchError, message: message
       {:ok, settings} -> settings
     end
   end
 
-  def update_settings_from_tokens!(settings, tokens, arg_tokenizer, arg_action_maps) do
-    {bool_arg_action_map, int_arg_action_map, str_arg_action_map} = arg_action_maps
+  def update_settings_from_tokens!(search_options, settings, tokens) do
+    {bool_arg_action_map, int_arg_action_map, str_arg_action_map} = search_options.arg_action_maps
     case tokens do
       [] -> settings
       [t | ts] ->
@@ -212,12 +206,12 @@ defmodule ExSearch.SearchOptions do
             v = t.value
             cond do
               k == :defaultfiles && v == true ->
-                case update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
-                  {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
+                case update_settings_from_default_files(search_options, settings) do
+                  {:ok, new_settings} -> update_settings_from_tokens!(search_options, new_settings, ts)
                   {:error, message} -> raise SearchError, message: message
                 end
               Map.has_key?(bool_arg_action_map, k) ->
-                update_settings_from_tokens!(Map.get(bool_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
+                update_settings_from_tokens!(search_options, Map.get(bool_arg_action_map, k).(v, settings), ts)
               true -> raise SearchError, message: "Invalid value for option: #{k}"
             end
           :integer ->
@@ -225,7 +219,7 @@ defmodule ExSearch.SearchOptions do
             v = t.value
             cond do
               Map.has_key?(int_arg_action_map, k) ->
-                update_settings_from_tokens!(Map.get(int_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
+                update_settings_from_tokens!(search_options, Map.get(int_arg_action_map, k).(v, settings), ts)
               true -> raise SearchError, message: "Invalid value for option: #{k}"
             end
           :string ->
@@ -233,9 +227,9 @@ defmodule ExSearch.SearchOptions do
             v = t.value
             cond do
               Map.has_key?(str_arg_action_map, k) ->
-                update_settings_from_tokens!(Map.get(str_arg_action_map, k).(v, settings), ts, arg_tokenizer, arg_action_maps)
-              k == :settings_file -> case update_settings_from_file(settings, v, arg_tokenizer, arg_action_maps) do
-                {:ok, new_settings} -> update_settings_from_tokens!(new_settings, ts, arg_tokenizer, arg_action_maps)
+                update_settings_from_tokens!(search_options, Map.get(str_arg_action_map, k).(v, settings), ts)
+              k == :settings_file -> case update_settings_from_file(search_options, settings, v) do
+                {:ok, new_settings} -> update_settings_from_tokens!(search_options, new_settings, ts)
                 {:error, message} -> raise SearchError, message: message
               end
               true -> raise SearchError, message: "Invalid value for option: #{k}"
@@ -246,9 +240,9 @@ defmodule ExSearch.SearchOptions do
     end
   end
 
-  def update_settings_from_tokens(settings, tokens, arg_tokenizer, arg_action_maps) do
+  def update_settings_from_tokens(search_options, settings, tokens) do
     try do
-      {:ok, update_settings_from_tokens!(settings, tokens, arg_tokenizer, arg_action_maps)}
+      {:ok, update_settings_from_tokens!(search_options, settings, tokens)}
     rescue
       e in SearchError -> {:error, e.message}
     end
@@ -261,62 +255,60 @@ defmodule ExSearch.SearchOptions do
     end
   end
 
-  def update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps) do
+  def update_settings_from_args!(search_options, settings, args) do
     # Temporarily escape -1 as "(-1)" then convert back later
     fixed_args = Enum.map(args, fn a -> if a == "-1", do: "(-1)", else: a end)
-    case ArgTokenizer.tokenize_args(fixed_args, arg_tokenizer) do
+    case ArgTokenizer.tokenize_args(fixed_args, search_options.arg_tokenizer) do
       {:ok, tokens} ->
         fixed_tokens = Enum.map(tokens, fn t -> convert_path_to_firstmatch(t) end)
-        update_settings_from_tokens!(settings, fixed_tokens, arg_tokenizer, arg_action_maps)
+        update_settings_from_tokens!(search_options, settings, fixed_tokens)
       {:error, message} -> raise SearchError, message: message
     end
   end
 
-  def update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps) do
+  def update_settings_from_args(search_options, settings, args) do
     try do
-      {:ok, update_settings_from_args!(settings, args, arg_tokenizer, arg_action_maps)}
+      {:ok, update_settings_from_args!(search_options, settings, args)}
     rescue
       e in SearchError -> {:error, e.message}
     end
   end
 
-  def update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
-    if File.exists?(ExFind.Config.default_find_settings_path) do
-      update_settings_from_file(settings, ExFind.Config.default_find_settings_path, arg_tokenizer, arg_action_maps)
+  def update_settings_from_default_files(search_options, settings) do
+    if File.exists?(search_options.config.default_search_settings_path) do
+      update_settings_from_file(search_options, settings, search_options.config.default_search_settings_path)
     else
       {:ok, settings}
     end
   end
 
-  def get_settings_from_args(args, options) do
+  def get_settings_from_args(search_options, args) do
     settings = SearchSettings.new([print_results: true])
     if Enum.empty?(args) do
       {:ok, settings}
     else
-      arg_action_maps = arg_action_maps()
-      arg_tokenizer = get_arg_tokenizer(options, arg_action_maps)
       if Enum.any?(args, fn a -> a == "--defaultfiles" || a == "--nodefaultfiles" end) do
-        update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps)
+        update_settings_from_args(search_options, settings, args)
       else
         # if a defaultfiles option isn't included, go ahead and apply default files now
-        case update_settings_from_default_files(settings, arg_tokenizer, arg_action_maps) do
+        case update_settings_from_default_files(search_options, settings) do
           {:error, message} -> {:error, message}
           {:ok, settings} ->
-            update_settings_from_args(settings, args, arg_tokenizer, arg_action_maps)
+            update_settings_from_args(search_options, settings, args)
         end
       end
     end
   end
 
-  def get_settings_from_args!(args, options) do
-    case get_settings_from_args(args, options) do
+  def get_settings_from_args!(search_options, args) do
+    case get_settings_from_args(search_options, args) do
       {:error, message} -> raise SearchError, message: message
       {:ok, settings} -> settings
     end
   end
 
-  defp get_usage_string(options) do
-    opt_strings = options
+  defp get_usage_string(search_options) do
+    opt_strings = search_options.options
                   |> Enum.sort(fn o1, o2 -> ExSearch.SearchOption.sort_arg(o1) <= ExSearch.SearchOption.sort_arg(o2) end)
                   |> Enum.map(fn o -> {ExSearch.SearchOption.to_arg_string(o), o.description} end)
     longest = Enum.map(opt_strings, fn {opt, _} -> String.length(opt) end) |> Enum.max()
@@ -331,8 +323,8 @@ defmodule ExSearch.SearchOptions do
     """
   end
 
-  def usage(options) do
-    IO.puts(get_usage_string(options))
+  def usage(search_options) do
+    IO.puts(get_usage_string(search_options))
   end
 
 end

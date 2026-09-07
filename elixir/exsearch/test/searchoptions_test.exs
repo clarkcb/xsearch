@@ -1,13 +1,15 @@
 alias ExFind.FindOptions
 
 defmodule ExSearchTest.SearchOptionsTest do
+  alias ExSearch.SearchConfig
   alias ExSearch.SearchOptions
   use ExUnit.Case
   doctest ExSearch.SearchOptions
 
   test "no args" do
-    search_options = SearchOptions.new()
-    {:ok, settings} = SearchOptions.get_settings_from_args([], search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {:ok, settings} = SearchOptions.get_settings_from_args(search_options, [])
     assert settings.archives_only == false
     assert settings.debug == false
     assert settings.colorize == true
@@ -52,23 +54,26 @@ defmodule ExSearchTest.SearchOptionsTest do
   end
 
   test "valid args" do
-    search_options = SearchOptions.new()
-    {:ok, settings} = SearchOptions.get_settings_from_args(["-x", "ex,exs", "src", "-f", "find"], search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {:ok, settings} = SearchOptions.get_settings_from_args(search_options, ["-x", "ex,exs", "src", "-f", "find"])
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["src"]
     assert Enum.map(settings.in_file_patterns, fn p -> p.source end) == ["find"]
   end
 
   test "set archives_only" do
-    search_options = SearchOptions.new()
-    {:ok, settings} = SearchOptions.get_settings_from_args(["--archivesonly"], search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {:ok, settings} = SearchOptions.get_settings_from_args(search_options, ["--archivesonly"])
     assert settings.archives_only == true
     assert settings.search_archives == true
   end
 
   test "set debug" do
-    search_options = SearchOptions.new()
-    {:ok, settings} = SearchOptions.get_settings_from_args(["--debug"], search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {:ok, settings} = SearchOptions.get_settings_from_args(search_options, ["--debug"])
     assert settings.debug == true
     assert settings.verbose == true
   end
@@ -84,8 +89,9 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    search_options = SearchOptions.new()
-    {status, settings} = FindOptions.get_settings_from_json(json, search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {status, settings} = SearchOptions.get_settings_from_json(search_options, json)
     assert status == :ok
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
@@ -106,8 +112,9 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    search_options = SearchOptions.new()
-    {status, _value} = FindOptions.get_settings_from_json(json, search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {status, _value} = SearchOptions.get_settings_from_json(search_options, json)
     assert status == :error
   end
 
@@ -122,8 +129,9 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    search_options = SearchOptions.new()
-    settings = FindOptions.get_settings_from_json!(json, search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    settings = SearchOptions.get_settings_from_json!(search_options, json)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
     assert Enum.map(settings.out_dir_patterns, fn p -> p.source end) == ["dep"]
@@ -143,16 +151,18 @@ defmodule ExSearchTest.SearchOptionsTest do
       "includehidden": true,
     }
     """
-    search_options = SearchOptions.new()
-    assert_raise ExFind.FindError, fn ->
-      _ = FindOptions.get_settings_from_json!(json, search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    assert_raise ExSearch.SearchError, fn ->
+      _ = SearchOptions.get_settings_from_json!(search_options, json)
     end
   end
 
   test "settings from non-existent file" do
     json_file = "/non/existent/file.json"
-    search_options = SearchOptions.new()
-    {status, _value} = FindOptions.get_settings_from_file(json_file, search_options.options)
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
+    {status, _value} = SearchOptions.get_settings_from_file(search_options, json_file)
     assert status == :error
   end
 end

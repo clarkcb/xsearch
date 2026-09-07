@@ -1,16 +1,17 @@
 defmodule ExSearchTest.SearcherTest do
-  alias ExSearch.Config
+  alias ExSearch.SearchConfig
   alias ExSearch.Searcher
   alias ExSearch.SearchSettings
   use ExUnit.Case
   doctest ExSearch.Searcher
 
     test "search lines" do
-      file_path = Path.join([Config.shared_path, "testFiles", "testFile2.txt"])
+      config = SearchConfig.new()
+      file_path = Path.join([config.xsearch_path, "shared", "testFiles", "testFile2.txt"])
       settings = SearchSettings.new([paths: [file_path]])
                  |> SearchSettings.add_patterns(["Searcher"], :search_patterns)
 
-      searcher = Searcher.new(settings)
+      searcher = Searcher.new(config, settings)
 
       [first_result, second_result] = Searcher.search!(searcher)
 

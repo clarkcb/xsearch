@@ -4,6 +4,7 @@ defmodule ExSearch.Main do
   """
 
   alias ExFind.Logging
+  alias ExSearch.SearchConfig
   alias ExSearch.Searcher
   alias ExSearch.SearchError
   alias ExSearch.SearchOptions
@@ -11,7 +12,7 @@ defmodule ExSearch.Main do
 
   def handle_error(message, colorize, search_options) do
     Logging.log_error("\nERROR: #{message}", colorize)
-    SearchOptions.usage(search_options.options)
+    SearchOptions.usage(search_options)
   end
 
   def handle_results(results, settings) do
@@ -33,19 +34,19 @@ defmodule ExSearch.Main do
     end
   end
 
-  def search(settings, search_options) do
+  def search(config, settings, search_options) do
     if settings.debug do
       Logging.log("\nsettings: #{inspect(settings)}\n")
     end
 
     if settings.print_usage or settings.print_version do
       if settings.print_usage do
-        SearchOptions.usage(search_options.options)
+        SearchOptions.usage(search_options)
       else
-        Logging.log("\nExSearch version: #{ExSearch.Config.version()}")
+        Logging.log("\nExSearch version: #{config.version()}")
       end
     else
-      searcher = Searcher.new(settings)
+      searcher = Searcher.new(config, settings)
       case Searcher.search(searcher) do
         {:error, message} -> handle_error(message, settings.colorize, search_options)
         {:ok, results} -> handle_results(results, settings)
@@ -54,11 +55,12 @@ defmodule ExSearch.Main do
   end
 
   def main(args) do
-    search_options = SearchOptions.new()
+    config = SearchConfig.new()
+    search_options = SearchOptions.new(config)
     try do
-      case SearchOptions.get_settings_from_args(args, search_options.options) do
+      case SearchOptions.get_settings_from_args(search_options, args) do
         {:error, message} -> handle_error(message, true, search_options)
-        {:ok, settings} -> search(settings, search_options)
+        {:ok, settings} -> search(config, settings, search_options)
       end
     rescue
       e in SearchError -> handle_error(e.message, true, search_options)
