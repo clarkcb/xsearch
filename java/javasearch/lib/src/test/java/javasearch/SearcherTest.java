@@ -27,8 +27,9 @@ public class SearcherTest {
      *************************************************************/
     @Test
     public final void testSearchStringIterator() {
+        var config = new SearchConfig();
         SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+        Searcher searcher = new Searcher(config, settings);
         Iterator<String> lineIterator;
         try {
             InputStream is = getClass().getResourceAsStream(testFilePath);
@@ -36,23 +37,23 @@ public class SearcherTest {
             lineIterator = lines.iterator();
             List<SearchResult> results = searcher.searchStringIterator(lineIterator);
 
-            assertEquals(results.size(), 2);
+            assertEquals(2, results.size());
 
             SearchResult firstResult = results.get(0);
             int expectedFirstLineNum = 30;
-            assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
+            assertEquals(expectedFirstLineNum, firstResult.getLineNum());
             int expectedFirstMatchStartIndex = 3;
-            assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
+            assertEquals(expectedFirstMatchStartIndex, firstResult.getMatchStartIndex());
             int expectedFirstMatchEndIndex = 11;
-            assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
+            assertEquals(expectedFirstMatchEndIndex, firstResult.getMatchEndIndex());
 
             SearchResult secondResult = results.get(1);
             int expectedSecondLineNum = 36;
-            assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
+            assertEquals(expectedSecondLineNum, secondResult.getLineNum());
             int expectedSecondMatchStartIndex = 24;
-            assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
+            assertEquals(expectedSecondMatchStartIndex, secondResult.getMatchStartIndex());
             int expectedSecondMatchEndIndex = 32;
-            assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
+            assertEquals(expectedSecondMatchEndIndex, secondResult.getMatchEndIndex());
 
         } catch (IllegalArgumentException e) {
             fail();
@@ -64,8 +65,9 @@ public class SearcherTest {
      *************************************************************/
     @Test
     public final void testSearchMultiLineString() {
+        var config = new SearchConfig();
         SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+        Searcher searcher = new Searcher(config, settings);
         String contents;
         try {
             InputStream is = getClass().getResourceAsStream(testFilePath);
@@ -73,23 +75,23 @@ public class SearcherTest {
             //System.out.println("contents: " + contents);
             List<SearchResult> results = searcher.searchMultiLineString(contents);
 
-            assert(results.size() == 2);
+            assertEquals(2, results.size());
 
             SearchResult firstResult = results.get(0);
             int expectedFirstLineNum = 30;
-            assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
+            assertEquals(expectedFirstLineNum, firstResult.getLineNum());
             int expectedFirstMatchStartIndex = 3;
-            assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
+            assertEquals(expectedFirstMatchStartIndex, firstResult.getMatchStartIndex());
             int expectedFirstMatchEndIndex = 11;
-            assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
+            assertEquals(expectedFirstMatchEndIndex, firstResult.getMatchEndIndex());
 
             SearchResult secondResult = results.get(1);
             int expectedSecondLineNum = 36;
-            assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
+            assertEquals(expectedSecondLineNum, secondResult.getLineNum());
             int expectedSecondMatchStartIndex = 24;
-            assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
+            assertEquals(expectedSecondMatchStartIndex, secondResult.getMatchStartIndex());
             int expectedSecondMatchEndIndex = 32;
-            assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
+            assertEquals(expectedSecondMatchEndIndex, secondResult.getMatchEndIndex());
 
         } catch (IllegalArgumentException e) {
             fail();
@@ -98,9 +100,10 @@ public class SearcherTest {
 
     @Test
     public final void testSearchMultiLineStringWithLinesBefore() {
+        var config = new SearchConfig();
         SearchSettings settings = getSettings();
         settings.setLinesBefore(2);
-        Searcher searcher = new Searcher(settings);
+        Searcher searcher = new Searcher(config, settings);
         String contents;
         try {
             InputStream is = getClass().getResourceAsStream(testFilePath);
@@ -108,25 +111,25 @@ public class SearcherTest {
             //System.out.println("contents: " + contents);
             List<SearchResult> results = searcher.searchMultiLineString(contents);
 
-            assertEquals(results.size(), 2);
+            assertEquals(2, results.size());
 
             SearchResult firstResult = results.get(0);
             System.out.println("firstResult:\n" + firstResult);
             int expectedFirstLineNum = 30;
-            assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
+            assertEquals(expectedFirstLineNum, firstResult.getLineNum());
             int expectedFirstMatchStartIndex = 3;
-            assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
+            assertEquals(expectedFirstMatchStartIndex, firstResult.getMatchStartIndex());
             int expectedFirstMatchEndIndex = 11;
-            assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
+            assertEquals(expectedFirstMatchEndIndex, firstResult.getMatchEndIndex());
 
             SearchResult secondResult = results.get(1);
             System.out.println("secondResult:\n" + secondResult);
             int expectedSecondLineNum = 36;
-            assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
+            assertEquals(expectedSecondLineNum, secondResult.getLineNum());
             int expectedSecondMatchStartIndex = 24;
-            assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
+            assertEquals(expectedSecondMatchStartIndex, secondResult.getMatchStartIndex());
             int expectedSecondMatchEndIndex = 32;
-            assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
+            assertEquals(expectedSecondMatchEndIndex, secondResult.getMatchEndIndex());
 
         } catch (IllegalArgumentException e) {
             fail();

@@ -17,7 +17,8 @@ public class SearchOptionsTest {
     public final void testSettingsFromMinimalArgs() {
         String[] args = new String[]{"-s", "Search", "."};
         try {
-            SearchOptions searchOptions = new SearchOptions();
+            var config = new SearchConfig();
+            SearchOptions searchOptions = new SearchOptions(config);
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
@@ -51,7 +52,8 @@ public class SearchOptionsTest {
     public final void testSettingsFromValidArgs() {
         String[] args = new String[]{"-x", "java,scala", "-s", "Search", "."};
         try {
-            SearchOptions searchOptions = new SearchOptions();
+            var config = new SearchConfig();
+            SearchOptions searchOptions = new SearchOptions(config);
             SearchSettings settings = searchOptions.settingsFromArgs(args);
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("java"));
@@ -82,7 +84,8 @@ public class SearchOptionsTest {
                 .append("  \"includehidden\": false\n")
                 .append("}");
         try {
-            SearchOptions searchOptions = new SearchOptions();
+            var config = new SearchConfig();
+            SearchOptions searchOptions = new SearchOptions(config);
             SearchSettings settings = new SearchSettings();
             searchOptions.updateSettingsFromJson(settings, json.toString());
 

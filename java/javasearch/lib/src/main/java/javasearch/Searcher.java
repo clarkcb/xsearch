@@ -28,13 +28,13 @@ import static javafind.Logger.logError;
 
 public class Searcher {
 
-    final private SearchSettings settings;
-    final private Finder finder;
+    private final SearchSettings settings;
+    private final Finder finder;
     private Charset charset;
 
-    public Searcher(final SearchSettings settings) {
+    public Searcher(final SearchConfig config, final SearchSettings settings) {
         this.settings = settings;
-        this.finder = new Finder(settings);
+        this.finder = new Finder(config, settings);
     }
 
     public SearchSettings getSettings() {

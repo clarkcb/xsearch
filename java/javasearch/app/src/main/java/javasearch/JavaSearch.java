@@ -34,7 +34,8 @@ public class JavaSearch {
     public static void main(final String[] args) {
         var colorize = true;
         try {
-            var options = new SearchOptions();
+            var config = new SearchConfig();
+            var options = new SearchOptions(config);
 
             try {
                 var settings = options.settingsFromArgs(args);
@@ -50,7 +51,7 @@ public class JavaSearch {
                     options.usage(0);
                 }
 
-                var searcher = new Searcher(settings);
+                var searcher = new Searcher(config, settings);
                 searcher.validateSettings();
                 var searchResults = searcher.search();
                 var formatter = new SearchResultFormatter(settings);

@@ -21,16 +21,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static javafind.FindError.STARTPATH_NOT_DEFINED;
-
 public class SearchOptions {
-    private static final String SEARCH_OPTIONS_JSON_PATH = "/searchoptions.json";
+    private final SearchConfig config;
     private final List<SearchOption> options;
     private final ArgTokenizer argTokenizer;
 
-    public SearchOptions() throws IOException {
+    public SearchOptions(SearchConfig config) throws IOException {
+        this.config = config;
         options = new ArrayList<>();
-        setOptionsFromJson();
+        loadOptionsFromJson(config.getSearchOptionsPath());
         argTokenizer = new ArgTokenizer(options);
     }
 
@@ -144,8 +143,8 @@ public class SearchOptions {
         }
     };
 
-    private void setOptionsFromJson() {
-        InputStream searchOptionsInputStream = getClass().getResourceAsStream(SEARCH_OPTIONS_JSON_PATH);
+    private void loadOptionsFromJson(String searchOptionsPath) {
+        InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsPath);
         assert searchOptionsInputStream != null;
         var jsonObj = new JSONObject(new JSONTokener(searchOptionsInputStream));
         var searchOptionsArray = jsonObj.getJSONArray("searchoptions");
@@ -268,7 +267,7 @@ public class SearchOptions {
     }
 
     private void updateSettingsFromDefaultFiles(SearchSettings settings) throws SearchException {
-        var defaultSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xsearch", "settings.json");
+        var defaultSettingsPath = Paths.get(config.getDefaultSearchSettingsPath());
         if (Files.exists(defaultSettingsPath)) {
             updateSettingsFromFilePath(settings, defaultSettingsPath.toString());
         }
