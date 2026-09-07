@@ -1,12 +1,16 @@
 package scalasearch
 
-import scalafind.{Common, Finder, FindException}
+import scalafind.{Common, FindException, Finder}
 
 object SearchMain {
   def main(args: Array[String]): Unit = {
     var colorize = true
+    var searchOptions: Option[SearchOptions] = None
+
     try {
-      val settings = SearchOptions.settingsFromArgs(args)
+      val config = new SearchConfig()
+      searchOptions = Some(new SearchOptions(config))
+      val settings = searchOptions.get.settingsFromArgs(args)
       colorize = settings.colorize
 
       if (settings.debug) {
@@ -15,10 +19,10 @@ object SearchMain {
 
       if (settings.printUsage) {
         Common.log("")
-        SearchOptions.usage(0)
+        searchOptions.foreach(_.usage(0))
       }
 
-      val searcher = new Searcher(settings)
+      val searcher = new Searcher(config, settings)
       val results = searcher.search()
       val formatter = new SearchResultFormatter(settings)
 
@@ -41,11 +45,11 @@ object SearchMain {
       case e: FindException =>
         Common.log("")
         Common.logError(e.getMessage + "\n", colorize)
-        SearchOptions.usage(1)
+        searchOptions.foreach(_.usage(1))
       case e: SearchException =>
         Common.log("")
         Common.logError(e.getMessage + "\n", colorize)
-        SearchOptions.usage(1)
+        searchOptions.foreach(_.usage(1))
     }
   }
 }

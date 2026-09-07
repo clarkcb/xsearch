@@ -9,6 +9,7 @@ import java.nio.file.Paths
 import scala.io.Source
 
 class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
+  val config = new SearchConfig()
 
   val testFile1 = new File(getClass.getResource("/testFile1.txt").toURI)
   var lines1: Iterator[String] = Iterator.empty
@@ -40,7 +41,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
    *************************************************************/
   test("test searchLineStringIterator #1 - simple") {
     val settings = getSearchSettings
-    val searcher = new Searcher(settings)
+    val searcher = new Searcher(config, settings)
     val source = Source.fromFile(testFile1)
     val lines = source.getLines()
     val results = searcher.searchStringIterator(lines)
@@ -56,7 +57,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
 
   test("test searchLineStringIterator #2 - linesBefore+linesAfter") {
     val settings = getSearchSettings.copy(linesBefore = 2, linesAfter = 2)
-    val searcher = new Searcher(settings)
+    val searcher = new Searcher(config, settings)
     val source = Source.fromFile(testFile1)
     val lines = source.getLines()
     val results = searcher.searchStringIterator(lines)
@@ -69,7 +70,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
   test("test searchLineStringIterator #3 - inLinesBeforeAfterPattern") {
     val settings = getSearchSettings.copy(linesBefore = 1, linesAfter = 1,
       inLinesBeforePatterns = Set("line".r), inLinesAfterPatterns = Set("line".r))
-    val searcher = new Searcher(settings)
+    val searcher = new Searcher(config, settings)
     val source = Source.fromFile(testFile1)
     val lines = source.getLines()
     val results = searcher.searchStringIterator(lines)
@@ -86,7 +87,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
    *************************************************************/
   test("test searchMultiLineString #1 - simple") {
     val settings = getSearchSettings
-    val searcher = new Searcher(settings)
+    val searcher = new Searcher(config, settings)
     val results = searcher.searchMultiLineString(contents1)
     println("results (%d):\n%s".format(results.length, results.mkString("\n")))
     assert(results.length == 2)
@@ -97,7 +98,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
 
   test("test searchMultiLineString #2 - linesBefore+linesAfter") {
     val settings = getSearchSettings.copy(linesBefore = 2, linesAfter = 2)
-    val searcher = new Searcher(settings)
+    val searcher = new Searcher(config, settings)
     val results = searcher.searchMultiLineString(contents1)
     println("results (%d):\n%s".format(results.length, results.mkString("\n")))
     assert(results.length == 2)
@@ -107,7 +108,7 @@ class SearcherTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAft
   test("test searchMultiLineString #3 - inLinesBeforeAfterPattern") {
     val settings = getSearchSettings.copy(linesBefore = 1, linesAfter = 1,
       inLinesBeforePatterns = Set("line".r), inLinesAfterPatterns = Set("line".r))
-    val searcher = new Searcher(settings)
+    val searcher = new Searcher(config, settings)
     val results = searcher.searchMultiLineString(contents1)
     println("results (%d):\n%s".format(results.length, results.mkString("\n")))
     assert(results.length == 1)

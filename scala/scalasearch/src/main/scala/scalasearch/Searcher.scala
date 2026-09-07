@@ -17,9 +17,10 @@ import scala.jdk.CollectionConverters.*
 import scala.util.control.NonLocalReturns.*
 import scala.util.matching.Regex
 
-class Searcher (_settings: SearchSettings) {
+class Searcher (_config: SearchConfig, _settings: SearchSettings) {
   import Searcher.*
 
+  val config: SearchConfig = _config
   val settings: SearchSettings = _settings
   private val comparator: (String, String) => Boolean =
     if (settings.sortCaseInsensitive) {
@@ -28,7 +29,7 @@ class Searcher (_settings: SearchSettings) {
       (s1: String, s2: String) => s1 < s2
     }
   private val finder: Finder = try {
-    Finder(_settings.getFindSettings)
+    Finder(config, _settings.getFindSettings)
   } catch {
     case e: Exception => throw new SearchException(e.getMessage)
     case _ => throw new SearchException("An unknown error occurred trying to create Finder")
@@ -139,7 +140,7 @@ class Searcher (_settings: SearchSettings) {
   }
 
   def searchFile(fr: FileResult): Seq[SearchResult] = {
-    FileTypes.getFileType(fr.path.getFileName) match {
+    finder.fileTypes.getFileType(fr.path.getFileName) match {
       case ft if Set(FileType.Text, FileType.Code, FileType.Xml).contains(ft) =>
         searchTextFileSource(fr, Source.fromFile(fr.path.toFile, settings.textFileEncoding))
       case FileType.Binary =>
@@ -153,7 +154,7 @@ class Searcher (_settings: SearchSettings) {
   }
 
   private def searchFileSource(fr: FileResult, source: Source): Seq[SearchResult] = {
-    FileTypes.getFileType(fr.path.getFileName) match {
+    finder.fileTypes.getFileType(fr.path.getFileName) match {
       case ft if Set(FileType.Code, FileType.Text, FileType.Xml).contains(ft) =>
         searchTextFileSource(fr, source)
       case FileType.Binary =>
@@ -423,13 +424,13 @@ class Searcher (_settings: SearchSettings) {
     if (settings.verbose) {
       log("Searching archive file %s".format(fr.toString))
     }
-    if (FileTypes.isZipArchiveFile(fr.path)) {
+    if (finder.fileTypes.isZipArchiveFile(fr.path)) {
       searchZipFile(fr)
-    } else if (FileTypes.isGzArchiveFile(fr.path)) {
+    } else if (finder.fileTypes.isGzArchiveFile(fr.path)) {
       searchGzFile(fr)
-    } else if (FileTypes.isBz2ArchiveFile(fr.path)) {
+    } else if (finder.fileTypes.isBz2ArchiveFile(fr.path)) {
       searchBz2File(fr)
-    } else if (FileTypes.isTarArchiveFile(fr.path)) {
+    } else if (finder.fileTypes.isTarArchiveFile(fr.path)) {
       val tis = new BufferedInputStream(new FileInputStream(fr.path.toFile))
       searchTarFileInputStream(fr, tis)
     } else {
@@ -454,7 +455,7 @@ class Searcher (_settings: SearchSettings) {
       }
       //.filter(filterFile)
       .flatMap { f =>
-        val fileType = FileTypes.getFileType(f.toPath.getFileName)
+        val fileType = finder.fileTypes.getFileType(f.toPath.getFileName)
         if (fileType != FileType.Unknown) {
           val zsf = new FileResult(fr.containers :+ fr.path, f.toPath, fileType, 0L, None)
           val zis = zf.getInputStream(zf.getEntry(zsf.path.toString))
@@ -484,7 +485,7 @@ class Searcher (_settings: SearchSettings) {
         val dirName = new File(entry.getName).getParent
         if (isSearchDir(dirName)) {
           val file = new File(entry.getName)
-          val fileType = FileTypes.getFileType(file.toPath.getFileName)
+          val fileType = finder.fileTypes.getFileType(file.toPath.getFileName)
           if (fileType != FileType.Unknown) {
             val bytes = new Array[Byte](entry.getSize.toInt)
             val count = tis.read(bytes, 0, entry.getSize.toInt)
@@ -511,7 +512,7 @@ class Searcher (_settings: SearchSettings) {
       log("Searching gzip file %s".format(fr.toString))
     }
     val containedFileName = fr.path.getFileName.toString.split("\\.").init.mkString(currentPath)
-    val containedFileType = FileTypes.getFileType(fr.path.getFileName)
+    val containedFileType = finder.fileTypes.getFileType(fr.path.getFileName)
     val containedExtension = FileUtil.getExtension(fr)
     val gzsf = new FileResult(fr.containers :+ fr.path, Paths.get(containedFileName),
       containedFileType, 0L, None)
@@ -535,7 +536,7 @@ class Searcher (_settings: SearchSettings) {
       log("Searching bzip2 file %s".format(fr.toString))
     }
     val containedFileName = fr.path.getFileName.toString.split("\\.").init.mkString(currentPath)
-    val containedFileType = FileTypes.getFileType(fr.path.getFileName)
+    val containedFileType = finder.fileTypes.getFileType(fr.path.getFileName)
     val containedExtension = FileUtil.getExtension(fr)
     val bzsf = new FileResult(fr.containers :+ fr.path, Paths.get(containedFileName),
       containedFileType, 0L, None)

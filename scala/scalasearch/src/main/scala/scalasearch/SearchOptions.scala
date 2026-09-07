@@ -16,62 +16,7 @@ case class SearchOption(shortArg: Option[String], longArg: String, desc: String,
   }
 }
 
-object SearchOptions {
-  private val _searchOptionsJsonPath = "/searchoptions.json"
-  private val _searchOptions = mutable.ListBuffer.empty[SearchOption]
-
-  private def searchOptions: List[SearchOption] = {
-    if (_searchOptions.isEmpty) {
-      loadSearchOptionsFromJson()
-    }
-    List.empty[SearchOption] ++ _searchOptions
-  }
-
-  private var _longArgMap = Map.empty[String, String]
-
-  private def longArgMap: Map[String, String] = {
-    if (_longArgMap.isEmpty) {
-      val longOpts: Map[String, String] = searchOptions.map { o => (o.longArg, o.longArg)}.toMap
-      val shortOpts = searchOptions.filter(_.shortArg.nonEmpty).map { o => (o.shortArg.get, o.longArg)}.toMap
-      _longArgMap = longOpts ++ shortOpts ++ Map("path" -> "path")
-    }
-    _longArgMap
-  }
-
-  private def loadSearchOptionsFromJson(): Unit = {
-    try {
-      val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
-      val jsonObj = new JSONObject(new JSONTokener(new InputStreamReader(searchOptionsInputStream)))
-      val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
-      while (searchOptionsArray.hasNext) {
-        val searchOptionObj = searchOptionsArray.next().asInstanceOf[JSONObject]
-        val longArg = searchOptionObj.getString("long")
-        val shortArg =
-          if (searchOptionObj.has("short")) {
-            Some(searchOptionObj.getString("short"))
-          } else {
-            None
-          }
-        val desc = searchOptionObj.getString("desc")
-        val argType =
-          if (boolActionMap.contains(longArg)) {
-            ArgTokenType.Bool
-          } else if (stringActionMap.contains(longArg)) {
-            ArgTokenType.Str
-          } else if (intActionMap.contains(longArg)) {
-            ArgTokenType.Int
-          } else if (longActionMap.contains(longArg)) {
-            ArgTokenType.Long
-          } else {
-            throw new SearchException("Invalid option in searchoptions.json: " + longArg)
-          }
-        _searchOptions += SearchOption(shortArg, longArg, desc, argType)
-      }
-    } catch {
-      case e: IOException =>
-        print(e.getMessage)
-    }
-  }
+class SearchOptions (val config: SearchConfig) {
 
   private type BoolAction = (Boolean, SearchSettings) => SearchSettings
 
@@ -132,11 +77,11 @@ object SearchOptions {
     "in-filetype" ->
       ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileType.forName(s))),
     "in-linesafterpattern" ->
-      ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
+      ((s, ss) => ss.copy(inLinesAfterPatterns = ss.inLinesAfterPatterns + s.r)),
     "in-linesbeforepattern" ->
       ((s, ss) => ss.copy(inLinesBeforePatterns = ss.inLinesBeforePatterns + s.r)),
     "linesaftertopattern" ->
-      ((s, ss) => ss.copy(linesAfterToPatterns  = ss.linesAfterToPatterns + s.r)),
+      ((s, ss) => ss.copy(linesAfterToPatterns = ss.linesAfterToPatterns + s.r)),
     "linesafteruntilpattern" ->
       ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
     "maxlastmod" ->
@@ -185,6 +130,45 @@ object SearchOptions {
     "maxsize" -> ((l, ss) => ss.copy(maxSize = l)),
     "minsize" -> ((l, ss) => ss.copy(minSize = l)),
   )
+
+  private def loadSearchOptionsFromJson(searchOptionsPath: String): List[SearchOption] = {
+    val _searchOptions = mutable.ListBuffer.empty[SearchOption]
+    try {
+      val searchOptionsInputStream = getClass.getResourceAsStream(searchOptionsPath)
+      val jsonObj = new JSONObject(new JSONTokener(new InputStreamReader(searchOptionsInputStream)))
+      val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
+      while (searchOptionsArray.hasNext) {
+        val searchOptionObj = searchOptionsArray.next().asInstanceOf[JSONObject]
+        val longArg = searchOptionObj.getString("long")
+        val shortArg =
+          if (searchOptionObj.has("short")) {
+            Some(searchOptionObj.getString("short"))
+          } else {
+            None
+          }
+        val desc = searchOptionObj.getString("desc")
+        val argType =
+          if (boolActionMap.contains(longArg)) {
+            ArgTokenType.Bool
+          } else if (stringActionMap.contains(longArg)) {
+            ArgTokenType.Str
+          } else if (intActionMap.contains(longArg)) {
+            ArgTokenType.Int
+          } else if (longActionMap.contains(longArg)) {
+            ArgTokenType.Long
+          } else {
+            throw new SearchException("Invalid option in searchoptions.json: " + longArg)
+          }
+        _searchOptions += SearchOption(shortArg, longArg, desc, argType)
+      }
+    } catch {
+      case e: IOException =>
+        print(e.getMessage)
+    }
+    List.empty[SearchOption] ++ _searchOptions
+  }
+
+  val searchOptions: List[SearchOption] = loadSearchOptionsFromJson(config.searchOptionsPath)
 
   @tailrec
   private def applySettings(arg: String, lst: List[Any], ss: SearchSettings): SearchSettings = lst match {
@@ -261,7 +245,7 @@ object SearchOptions {
   }
 
   private def updateSettingsFromDefaultFiles(settings: SearchSettings): SearchSettings = {
-    val defaultSearchSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xsearch", "settings.json")
+    val defaultSearchSettingsPath = Paths.get(config.defaultSearchSettingsPath)
     if (Files.exists(defaultSearchSettingsPath)) {
       updateSettingsFromFile(settings, defaultSearchSettingsPath.toString)
     } else {
