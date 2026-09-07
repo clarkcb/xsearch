@@ -9,6 +9,8 @@ namespace CsSearchTests;
 [TestFixture]
 class SearcherTests
 {
+	private readonly SearchConfig _config = new();
+	
 	private static string GetTestFileContent()
 	{
 		return EmbeddedTestResource.GetResourceFileContents("CsSearchTests.Resources.testFile2.txt");
@@ -39,7 +41,7 @@ class SearcherTests
 	public void TestSearchTextReaderLines()
 	{
 		var settings = GetSettings();
-		var searcher = new Searcher(settings);
+		var searcher = new Searcher(_config, settings);
 		var enumerableLines = GetTestFileLines();
 		var results = searcher.SearchLines(enumerableLines).ToList();
 
@@ -69,7 +71,7 @@ class SearcherTests
 	public void TestSearchMultiLineString()
 	{
 		var settings = GetSettings();
-		var searcher = new Searcher(settings);
+		var searcher = new Searcher(_config, settings);
 		var contents = GetTestFileContent();
 		var results = searcher.SearchContents(contents).ToList();
 

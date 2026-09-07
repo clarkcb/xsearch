@@ -11,13 +11,14 @@ namespace CsSearch
 			SearchOptions? options = null;
 			try
 			{
-				options = new SearchOptions();
+				var config = new SearchConfig();
+				options = new SearchOptions(config);
 				var settings = options.SettingsFromArgs(args);
 				colorize = settings.Colorize;
 
 				if (settings.Debug)
 				{
-					Logger.Log("settings: " + settings + "\n");
+					Logger.Log(settings.ToString());
 				}
 
 				if (settings.PrintUsage)
@@ -25,7 +26,7 @@ namespace CsSearch
 					options.Usage();
 				}
 
-				var searcher = new Searcher(settings);
+				var searcher = new Searcher(config, settings);
 				var results = searcher.Search();
 				var formatter = new SearchResultFormatter(settings);
 

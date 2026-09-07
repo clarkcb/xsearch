@@ -11,8 +11,6 @@ namespace CsSearchLib;
 
 public class SearchOptions
 {
-	private readonly string _searchOptionsResource;
-
 	private static readonly Dictionary<string, Action<bool, SearchSettings>> BoolActionDictionary =
 		new()
 		{
@@ -100,20 +98,22 @@ public class SearchOptions
 			{ "minsize", (i, settings) => settings.MinSize = i },
 		};
 
+	public SearchConfig Config { get; }
 	public List<IOption> Options { get; }
 	private ArgTokenizer ArgTokenizer { get; }
 
-	public SearchOptions()
+	public SearchOptions(SearchConfig config)
 	{
-		_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearchLib.Resources.searchoptions.json");
+		Config = config;
 		Options = [];
-		SetOptionsFromJson();
+		LoadOptionsFromJson(config.SearchOptionsPath);
 		ArgTokenizer = new ArgTokenizer(Options);
 	}
 
-	private void SetOptionsFromJson()
+	private void LoadOptionsFromJson(string searchOptionsPath)
 	{
-		var searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(_searchOptionsResource);
+		var searchOptionsResource = EmbeddedResource.GetResourceFileContents(searchOptionsPath);
+		var searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(searchOptionsResource);
 		if (searchOptionsDict == null
 		    || !searchOptionsDict.TryGetValue("searchoptions", out List<Dictionary<string, string>>? optionDicts))
 		{
@@ -330,11 +330,9 @@ public class SearchOptions
 
 	private void UpdateSettingsFromDefaultFiles(SearchSettings settings)
 	{
-		var homePath = FileUtil.GetHomePath();
-		var defaultSettingsPath = Path.Join(homePath, ".config", "xsearch", "settings.json");
-		if (Path.Exists(defaultSettingsPath))
+		if (Path.Exists(Config.DefaultSearchSettingsPath))
 		{
-			UpdateSettingsFromFile(settings, defaultSettingsPath);
+			UpdateSettingsFromFile(settings, Config.DefaultSearchSettingsPath);
 		}
 	}
 

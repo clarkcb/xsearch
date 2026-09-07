@@ -23,12 +23,12 @@ public class Searcher
 	// use single-byte encoding for reading binary files (will break if UTF8)
 	private readonly Encoding _binaryEncoding = Encoding.GetEncoding("ISO-8859-1");
 
-	public Searcher(SearchSettings settings)
+	public Searcher(SearchConfig config, SearchSettings settings)
 	{
 		Settings = settings;
 		try
 		{
-			_finder = new Finder(settings);
+			_finder = new Finder(config, settings);
 		}
 		catch (FindException e)
 		{

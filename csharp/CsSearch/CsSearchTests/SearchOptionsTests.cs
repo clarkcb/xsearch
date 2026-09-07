@@ -9,7 +9,7 @@ namespace CsSearchTests;
 [TestFixture]
 public class SearchOptionsTests
 {
-	private readonly SearchOptions _searchOptions = new();
+	private readonly SearchOptions _searchOptions = new(new SearchConfig());
 
 	[Test]
 	public void SettingsFromArgs_NoArgs_HasDefaultValues()
@@ -85,7 +85,7 @@ public class SearchOptionsTests
   ""allmatches"": false,
   ""includehidden"": true
 }";
-		var options = new SearchOptions();
+		var options = new SearchOptions(new SearchConfig());
 		var settings = new SearchSettings();
 		options.UpdateSettingsFromJson(settings, json);
 		var startPath = new FilePath("~/src/xsearch/");
