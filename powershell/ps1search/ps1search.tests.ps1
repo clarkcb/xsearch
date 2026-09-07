@@ -88,7 +88,8 @@ Describe -tag "SearchSettings" -name "test_set_debug" {
 #region SearchOptions
 Describe -tag "SearchOptions" -name "test_settings_from_args_no_args" {
     It "equals default settings" {
-        $options = [SearchOptions]::new()
+        $config = [SearchConfig]::new()
+        $options = [SearchOptions]::new($config)
         $_args = @()
         $settings = $options.SettingsFromArgs($_args)
 
@@ -113,7 +114,8 @@ Describe -tag "SearchOptions" -name "test_settings_from_args_no_args" {
 
 Describe -tag "SearchOptions" -name "test_settings_from_args_valid_args" {
     It "has valid settings" {
-        $options = [SearchOptions]::new()
+        $config = [SearchConfig]::new()
+        $options = [SearchOptions]::new($config)
         $_args = @('-x', 'php,py', '-s', 'Searcher', '.')
         $settings = $options.SettingsFromArgs($_args)
 
@@ -141,7 +143,8 @@ Describe -tag "SearchOptions" -name "test_settings_from_args_valid_args" {
 
 Describe -tag "SearchOptions" -name "test_settings_from_args_invalid_args" {
     It "reports invalid option" {
-        $options = [SearchOptions]::new()
+        $config = [SearchConfig]::new()
+        $options = [SearchOptions]::new($config)
         $_args = @('-x', 'php,py', '-Q', '-s', 'Searcher', '.')
         try {
             $settings = $options.SettingsFromArgs($_args)
@@ -159,9 +162,9 @@ Describe -tag "SearchResult" -name "test_search_result_abs_path" {
         # /Users/cary/src/xsearch/powershell/ps1search/ps1search.ps1: 32 [10:18]: [Searcher]$searcher = [Searcher]::new($settings)
         $path = "/home/user/src/xsearch/powershell/ps1search";
         $fileName = 'ps1search.ps1';
-        $file = [System.IO.FileInfo]::new("$path/$fileName")
-        $fileResult = [FileResult]::new($file, [FileType]::Code);
-        $fileResult.File.ToString() | Should -BeExactly "/home/user/src/xsearch/powershell/ps1search/ps1search.ps1"
+        $filePath = "$path/$fileName"
+        $fileResult = [FileResult]::new($filePath, [FileType]::Code, 0, [DateTime]::MinValue);
+        $fileResult.FilePath | Should -BeExactly "/home/user/src/xsearch/powershell/ps1search/ps1search.ps1"
         $pattern = [regex]"Searcher"
         $lineNum = 32
         $matchStartIdx = 10
@@ -339,6 +342,7 @@ Describe -tag "SearchResultFormatter" -name "test_search_result2_match_longer_th
 Describe -tag "Searcher" -name "test_searcher_search_test_file" {
     It "matches test file expected results" {
         # Create Settings
+        $config = [SearchConfig]::new()
         $settings = [SearchSettings]::new()
         $settings.InExtensions += $settings.GetExtensions('txt')
         $settings.InFilePatterns += [regex]"testFile2"
@@ -347,7 +351,7 @@ Describe -tag "Searcher" -name "test_searcher_search_test_file" {
         $settings.Paths += $testFilesPath
 
         # Create Searcher
-        $searcher = [Searcher]::new($settings)
+        $searcher = [Searcher]::new($config, $settings)
         
         # Search and get results
         $results = $searcher.Search()

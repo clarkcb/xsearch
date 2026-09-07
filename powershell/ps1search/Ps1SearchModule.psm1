@@ -14,13 +14,33 @@ using module 'Ps1FindModule'
 ########################################
 # Config
 ########################################
-if (-not (Test-Path env:XSEARCH_PATH)) {
-    $env:XSEARCH_PATH = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xsearch'
+$xSearchConfigDir = Join-Path -Path $HOME -ChildPath '.config' -AdditionalChildPath 'xsearch'
+if (Test-Path env:XSEARCH_CONFIG_DIR) {
+    $xSearchConfigDir = $env:XSEARCH_CONFIG_DIR
 }
-$xsearchPath = $env:XSEARCH_PATH
+$xsearchPath = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xsearch'
+if (Test-Path env:XSEARCH_PATH) {
+    $xsearchPath = $env:XSEARCH_PATH
+}
 $sharedPath = Join-Path -Path $xsearchPath -ChildPath 'shared'
 $searchOptionsPath = Join-Path -Path $sharedPath -ChildPath 'searchoptions.json'
-$defaultSearchSettingsPath = Join-Path $HOME '.config' 'xsearch' 'settings.json'
+$defaultSearchSettingsPath = Join-Path $xSearchConfigDir 'settings.json'
+#endregion
+
+
+#region SearchConfig
+########################################
+# SearchConfig
+########################################
+class SearchConfig : FindConfig {
+    $SearchOptionsPath = '' # path to searchoptions.json
+    $DefaultSearchSettingsPath = '' # path to default settings.json
+
+    SearchConfig() {
+        $this.SearchOptionsPath = $script:searchOptionsPath
+        $this.DefaultSearchSettingsPath = $script:defaultSearchSettingsPath
+    }
+}
 #endregion
 
 
@@ -134,6 +154,7 @@ class SearchOption : Option {
 }
 
 class SearchOptions {
+    [SearchConfig]$Config
     [SearchOption[]]$SearchOptions = @()
     [ArgTokenizer]$ArgTokenizer
     # instantiate this way to get case sensitivity of keys
@@ -420,13 +441,14 @@ class SearchOptions {
         }
     }
 
-    SearchOptions() {
-        $this.SearchOptions = $this.LoadOptionsFromJson()
+    SearchOptions([SearchConfig]$config) {
+        $this.Config = $config
+        $this.SearchOptions = $this.LoadOptionsFromJson($config.SearchOptionsPath)
         $this.ArgTokenizer = [ArgTokenizer]::new($this.SearchOptions)
     }
     
-    [SearchOption[]]LoadOptionsFromJson() {
-        $optionsHash = Get-Content $script:searchOptionsPath | ConvertFrom-Json -AsHashtable
+    [SearchOption[]]LoadOptionsFromJson([string]$searchOptionsPath) {
+        $optionsHash = Get-Content $searchOptionsPath | ConvertFrom-Json -AsHashtable
         if (-not $optionsHash.ContainsKey('searchoptions')) {
             throw "Missing searchoptions in JSON"
         }
@@ -502,8 +524,8 @@ class SearchOptions {
     }
 
     [void]UpdateSettingsFromDefaultFiles([SearchSettings]$settings) {
-        if (Test-Path $script:defaultSearchSettingsPath) {
-            $this.UpdateSettingsFromFilePath($settings, $script:defaultSearchSettingsPath)
+        if (Test-Path $this.Config.DefaultSearchSettingsPath) {
+            $this.UpdateSettingsFromFilePath($settings, $this.Config.DefaultSearchSettingsPath)
         }
     }
 
@@ -959,9 +981,9 @@ class Searcher {
     [System.Text.Encoding]$BinaryFileEncoding = [System.Text.Encoding]::GetEncoding("ISO-8859-1");
     [int]$BatchSize = 255
 
-    Searcher([SearchSettings]$settings) {
+    Searcher([SearchConfig]$config, [SearchSettings]$settings) {
         $this.Settings = $settings
-        $this.Finder = [Finder]::new($settings)
+        $this.Finder = [Finder]::new($config, $settings)
         $this.ValidateSettings()
         # $this.TextFileEncoding = [System.Text.Encoding]::GetEncoding($settings.TextFileEncoding)
         $this.TextFileEncoding = [System.Text.Encoding]::Default

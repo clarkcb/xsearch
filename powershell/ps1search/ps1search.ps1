@@ -16,7 +16,8 @@ function SearchMain {
     )
 
     $colorize = $true
-    $options = [SearchOptions]::new()
+    $config = [SearchConfig]::new()
+    $options = [SearchOptions]::new($config)
 
     try {
         $settings = $options.SettingsFromArgs($_args)
@@ -32,7 +33,7 @@ function SearchMain {
             exit
         }
 
-        $searcher = [Searcher]::new($settings)
+        $searcher = [Searcher]::new($config, $settings)
         $results = $searcher.Search()
         $formatter = [SearchResultFormatter]::new($settings)
 
