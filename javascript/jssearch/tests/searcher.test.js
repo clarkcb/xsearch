@@ -4,12 +4,14 @@
  * Some tests of searcher.js
  */
 
-const config = require('../src/config');
+// const config = require('../src/searchconfig');
 const { FileUtil } = require('jsfind');
+const { SearchConfig } = require('../src/searchconfig');
 const { Searcher } = require('../src/searcher');
 const { SearchSettings } = require('../src/searchsettings');
 
-const testFile = config.SHARED_PATH + '/testFiles/testFile2.txt';
+const config = new SearchConfig();
+const testFile = config.xsearchPath + '/shared/testFiles/testFile2.txt';
 
 const getSettings = () => {
   let settings = new SearchSettings();
@@ -24,7 +26,7 @@ describe('testing searcher', () => {
    *************************************************************/
   it('TestSearchLines', async () => {
     const settings = getSettings();
-    const searcher = new Searcher(settings);
+    const searcher = new Searcher(config, settings);
     const lines = FileUtil.getFileLinesSync(testFile);
 
     const results = await searcher.searchLines(lines);
@@ -52,7 +54,7 @@ describe('testing searcher', () => {
    *************************************************************/
   it('TestSearchMultiLineString', () => {
     const settings = getSettings();
-    const searcher = new Searcher(settings);
+    const searcher = new Searcher(config, settings);
     const contents = FileUtil.getFileContents(testFile);
 
     searcher.searchMultiLineString(contents, (err, results) => {

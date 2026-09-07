@@ -4,7 +4,7 @@
  * Some tests of searchresult.js
  */
 
-const config = require('../src/config');
+const config = require('../src/searchconfig');
 const { ConsoleColor, FileResult, FileType } = require('jsfind');
 const { SearchResult } = require('../src/searchresult');
 const { SearchResultFormatter } = require('../src/searchresultformatter');

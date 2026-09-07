@@ -4,12 +4,14 @@
  * Some tests of searchoptions.js
  */
 
+const { SearchConfig } = require('../src/searchconfig');
 const { SearchOptions } = require('../src/searchoptions');
 const { SearchSettings } = require('../src/searchsettings');
 
 describe('testing searchoptions', () => {
   it('testNoArgs', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     searchOptions.settingsFromArgs([], (err, settings) => {
       if (err) {
         console.log('There was an error calling settingsFromArgs: ' + err);
@@ -41,7 +43,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testValidArgs', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     const args = ['-x', 'js,java', '-s', 'Searcher', '.'];
     searchOptions.settingsFromArgs(args, (err, settings) => {
       if (err) {
@@ -59,7 +62,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testArchivesOnly', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     const args = ['--archivesonly'];
     searchOptions.settingsFromArgs(args, (err, settings) => {
       if (err) {
@@ -73,7 +77,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testDebug', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     const args = ['--debug'];
     searchOptions.settingsFromArgs(args, (err, settings) => {
       if (err) {
@@ -86,7 +91,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testMissingArg', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     const args = ['-x'];
     searchOptions.settingsFromArgs(args, (err) => {
       if (err) {
@@ -100,7 +106,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testIvalidArg', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     const args = ['-Q'];
     searchOptions.settingsFromArgs(args, (err) => {
       if (err) {
@@ -114,7 +121,8 @@ describe('testing searchoptions', () => {
   });
 
   it('testSettingsFromJson', () => {
-    const searchOptions = new SearchOptions();
+    const config = new SearchConfig();
+    const searchOptions = new SearchOptions(config);
     const settings = new SearchSettings();
     const json =
       '{\n' +

@@ -7,6 +7,7 @@
 'use strict';
 
 const { common } = require('jsfind');
+const { SearchConfig } = require('./searchconfig');
 const { Searcher } = require('./searcher');
 const { SearchOptions } = require('./searchoptions');
 const { SearchResultFormatter } = require('./searchresultformatter');
@@ -18,7 +19,8 @@ function handleError(err, colorize, searchOptions) {
 }
 
 const searchMain = async () => {
-  const searchOptions = new SearchOptions();
+  const config = new SearchConfig();
+  const searchOptions = new SearchOptions(config);
   const args = process.argv.slice(2);
 
   searchOptions.settingsFromArgs(args, async (err, settings) => {
@@ -39,7 +41,7 @@ const searchMain = async () => {
     }
 
     try {
-      const searcher = new Searcher(settings);
+      const searcher = new Searcher(config, settings);
       const results = await searcher.search();
       const formatter = new SearchResultFormatter(settings);
 

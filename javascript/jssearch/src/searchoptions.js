@@ -5,7 +5,7 @@
  */
 
 const { ArgTokenType, ArgTokenizer, FileUtil, FindError, nameToSortBy } = require('jsfind');
-const config = require('./config');
+// const { SearchConfig } = require('./searchconfig');
 const { SearchError } = require('./searcherror');
 const { SearchOption } = require('./searchoption');
 const { SearchSettings } = require('./searchsettings');
@@ -14,7 +14,8 @@ const fs = require('fs');
 class SearchOptions {
   'use strict';
 
-  constructor() {
+  constructor(config) {
+    this.config = config;
     // path included separately because it is not included as an option in findoptions.json
     this.argNameMap = { path: 'path' };
     this.boolActionMap = {
@@ -227,7 +228,7 @@ class SearchOptions {
     // the list of SearchOption objects (populated from JSON)
     this.options = [];
     (() => {
-      let json = FileUtil.getFileContentsSync(config.SEARCH_OPTIONS_JSON_PATH, 'utf-8');
+      let json = FileUtil.getFileContentsSync(this.config.searchOptionsPath, 'utf-8');
       let obj = JSON.parse(json);
       if (
         Object.prototype.hasOwnProperty.call(obj, 'searchoptions') &&
@@ -252,8 +253,7 @@ class SearchOptions {
           }
           this.options.push(new SearchOption(shortArg, longArg, desc, argType));
         });
-      } else
-        throw new SearchError(`Invalid searchoptions file: ${config.SEARCH_OPTIONS_JSON_PATH}`);
+      } else throw new SearchError(`Invalid searchoptions file: ${this.config.searchOptionsPath}`);
       this.argTokenizer = new ArgTokenizer(this.options);
     })();
   }
@@ -321,8 +321,8 @@ class SearchOptions {
 
   updateSettingsFromDefaultFiles(settings) {
     let err;
-    if (fs.existsSync(config.DEFAULT_SEARCH_SETTINGS_PATH)) {
-      err = this.updateSettingsFromFile(settings, config.DEFAULT_SEARCH_SETTINGS_PATH);
+    if (fs.existsSync(this.config.defaultSearchSettingsPath)) {
+      err = this.updateSettingsFromFile(settings, this.config.defaultSearchSettingsPath);
     }
     return err;
   }

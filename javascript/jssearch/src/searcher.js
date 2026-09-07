@@ -12,7 +12,7 @@ const { SearchResultSorter } = require('./searchresultsorter');
 const path = require('path');
 
 class Searcher {
-  constructor(settings) {
+  constructor(config, settings) {
     this.settings = settings;
     this.binaryEncoding = 'latin1';
     // from https://github.com/nodejs/node/blob/master/lib/buffer.js
@@ -28,7 +28,7 @@ class Searcher {
       'base64',
       'hex',
     ];
-    this.finder = new Finder(settings);
+    this.finder = new Finder(config, settings);
     this.validateSettings();
   }
 

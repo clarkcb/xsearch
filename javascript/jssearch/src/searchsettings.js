@@ -31,6 +31,15 @@ class SearchSettings extends FindSettings {
     super();
   }
 
+  get archivesOnly() {
+    return super.archivesOnly;
+  }
+
+  set archivesOnly(value) {
+    super.archivesOnly = value;
+    if (value) this.searchArchives = value;
+  }
+
   addInLinesAfterPatterns(pattern) {
     this.addPatterns(pattern, this.inLinesAfterPatterns);
   }
