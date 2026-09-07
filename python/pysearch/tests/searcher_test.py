@@ -15,8 +15,9 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
+from .common import get_xsearch_path
 from pyfind import FileType, FileResult
-from pysearch import Searcher, SearchSettings, SHAREDPATH
+from pysearch import SearchConfig, Searcher, SearchSettings
 
 
 def get_settings():
@@ -32,9 +33,10 @@ class SearcherTest(unittest.TestCase):
     # search_lines tests
     ############################################################################
     def test_search_lines(self):
+        config = SearchConfig()
         settings = get_settings()
-        searcher = Searcher(settings)
-        fr = FileResult(path=Path(SHAREDPATH, 'testFiles','testFile2.txt'),
+        searcher = Searcher(config, settings)
+        fr = FileResult(path=Path(get_xsearch_path(), 'shared', 'testFiles','testFile2.txt'),
                         file_type=FileType.TEXT)
         results = []
         try:
@@ -60,9 +62,10 @@ class SearcherTest(unittest.TestCase):
     # search_multi_line_string tests
     ############################################################################
     def test_search_multi_line_string(self):
+        config = SearchConfig()
         settings = get_settings()
-        searcher = Searcher(settings)
-        fr = FileResult(path=Path(SHAREDPATH, 'testFiles','testFile2.txt'),
+        searcher = Searcher(config, settings)
+        fr = FileResult(path=Path(get_xsearch_path(), 'shared', 'testFiles','testFile2.txt'),
                         file_type=FileType.TEXT)
         results = []
         try:

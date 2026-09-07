@@ -17,6 +17,7 @@ from . import VERSION
 from .searcher import (Searcher, print_search_results, print_search_dir_results,
                        print_search_file_results, print_search_lines_results,
                        print_search_matches_results)
+from .searchconfig import SearchConfig
 from .searchexception import SearchException
 from .searchoptions import SearchOptions
 from .searchresult import SearchResultFormatter
@@ -26,9 +27,10 @@ async def main():
     if sys.version_info < (3, 9):
         sys.exit('Sorry, Python < 3.9 is not supported')
 
-    search_options = SearchOptions()
+    config = SearchConfig()
+    search_options = SearchOptions(config)
 
-    settings = None
+    # settings = None
     try:
         settings = search_options.search_settings_from_args(sys.argv[1:])
     except SearchException as e:
@@ -48,7 +50,7 @@ async def main():
         sys.exit(0)
 
     try:
-        searcher = Searcher(settings)
+        searcher = Searcher(config, settings)
         results = await searcher.search()
         formatter = SearchResultFormatter(settings)
 

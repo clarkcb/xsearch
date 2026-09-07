@@ -9,17 +9,17 @@
 #
 ###############################################################################
 """
-import importlib.resources
 import json
 import os
 import sys
 from datetime import datetime
 from io import StringIO
+from pathlib import Path
 from typing import Any
 
-from pyfind import common, ArgToken, ArgTokenType, ArgTokenizer, FindException
+from pyfind import ArgToken, ArgTokenType, ArgTokenizer, FileUtil, FindException
 
-from .config import DEFAULT_SEARCH_SETTINGS_PATH
+from .searchconfig import SearchConfig
 from .searchexception import SearchException
 from .searchoption import SearchOption
 from .searchsettings import SearchSettings
@@ -28,10 +28,11 @@ from .searchsettings import SearchSettings
 class SearchOptions:
     """class to provide usage info and parse command-line arguments into settings"""
 
-    def __init__(self):
+    def __init__(self, config: SearchConfig):
+        self.config = config
         self.options = []
         self.__set_dicts()
-        self.__set_options_from_json()
+        self.__load_options_from_json_file(config.search_options_path)
         self.arg_tokenizer = ArgTokenizer(options=self.options)
 
     def __set_dicts(self):
@@ -251,9 +252,11 @@ class SearchOptions:
                 settings.set_property('min_size', i),
         }
 
-    def __set_options_from_json(self):
-        data = importlib.resources.files('pysearch').joinpath('data')
-        search_options_json = data.joinpath('searchoptions.json').read_text()
+    def __load_options_from_json_file(self, search_options_path: str | Path):
+        """Load search options from a JSON file"""
+        # data = importlib.resources.files('pysearch').joinpath('data')
+        # search_options_json = data.joinpath('searchoptions.json').read_text()
+        search_options_json = FileUtil.get_file_contents(search_options_path) or '{}'
         search_options_dict = json.loads(search_options_json)
         for search_option_obj in search_options_dict['searchoptions']:
             long_arg = search_option_obj['long']
@@ -358,8 +361,8 @@ class SearchOptions:
 
     def __update_settings_from_default_files(self, settings: SearchSettings):
         """Update settings from default file(s)"""
-        if os.path.exists(DEFAULT_SEARCH_SETTINGS_PATH):
-            self.update_settings_from_file(settings, DEFAULT_SEARCH_SETTINGS_PATH)
+        if os.path.exists(self.config.default_search_settings_path):
+            self.update_settings_from_file(settings, self.config.default_search_settings_path)
 
     def update_settings_from_args(self, settings: SearchSettings, args: list[str]):
         """Update settings from a given list of args"""

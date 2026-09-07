@@ -15,17 +15,18 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pysearch import SearchException, SearchOptions, SearchSettings
+from pysearch import SearchConfig, SearchException, SearchOptions, SearchSettings
 
 
 class SearchOptionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.search_options = SearchOptions()
+        config = SearchConfig()
+        cls.search_options = SearchOptions(config)
 
     def test_no_args(self):
-        # test the props
-        settings = self.search_options.search_settings_from_args([])
+        # test the props (nodefaultfiles is needed to avoid loading the default file patterns)
+        settings = self.search_options.search_settings_from_args(['--nodefaultfiles'])
         self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
         self.assertFalse(settings.first_match)
@@ -67,7 +68,7 @@ class SearchOptionsTest(unittest.TestCase):
         self.assertEqual(1, len(settings.paths))
         for x in {'py', 'rb'}:
             self.assertIn(x, settings.in_extensions)
-        self.assertEqual('Search', list(settings.search_patterns)[0].pattern)
+        self.assertTrue(any([p.pattern == 'Search' for p in settings.search_patterns]))
 
     def test_archives_only_arg(self):
         args = ['--archivesonly']

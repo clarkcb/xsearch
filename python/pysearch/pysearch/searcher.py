@@ -22,6 +22,7 @@ from typing import Deque, Optional, TextIO
 from pyfind import (FileResult, FileType, FileTypes, FileUtil, Finder, FindException,
                     log, log_error, print_matching_dirs, print_matching_files)
 
+from .searchconfig import SearchConfig
 from .searchexception import SearchException
 from .searchresult import SearchResult, SearchResultFormatter, SearchResultSorter
 from .searchsettings import SearchSettings, PatternSet
@@ -41,14 +42,14 @@ except ImportError as ie:
     ZIPFILE_MODULE_AVAILABLE = False
 
 
-class Searcher(object):
+class Searcher:
     """a class to search files"""
 
     __slots__ = ['settings', 'file_types', 'finder']
 
-    def __init__(self, settings: SearchSettings):
+    def __init__(self, config: SearchConfig, settings: SearchSettings):
         self.settings = settings
-        self.finder = Finder(settings)
+        self.finder = Finder(config, settings)
         self.__validate_settings()
         self.file_types = self.finder.file_types
 

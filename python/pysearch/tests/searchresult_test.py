@@ -15,8 +15,9 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pyfind import Color, ConsoleColor, FileType, FileResult
-from pysearch import SearchResult, SearchResultFormatter, SearchSettings, XSEARCHPATH
+from .common import get_xsearch_path
+from pyfind import ConsoleColor, FileType, FileResult
+from pysearch import SearchResult, SearchResultFormatter, SearchSettings
 
 
 def get_formatter(colorize: bool = True):
@@ -24,13 +25,13 @@ def get_formatter(colorize: bool = True):
 
 
 class SearchResultTest(unittest.TestCase):
-    cssearch_path = os.path.join(XSEARCHPATH, 'csharp/CsSearch/CsSearch')
+    cssearch_path = os.path.join(get_xsearch_path(), 'csharp', 'CsSearch', 'CsSearch')
 
     def test_single_line_search_result(self):
         formatter = get_formatter(colorize=False)
         pattern = "Search"
         file_name = 'Searcher.cs'
-        path = Path(XSEARCHPATH, 'csharp/CsSearch/CsSearch', file_name)
+        path = Path(self.cssearch_path, file_name)
         fr = FileResult(path=path, file_type=FileType.CODE)
         line_num = 10
         match_start_index = 15
@@ -118,7 +119,7 @@ class SearchResultTest(unittest.TestCase):
         formatter = get_formatter(colorize=True)
         pattern = "Search"
         file_name = 'Searcher.exe'
-        path = Path(XSEARCHPATH, 'csharp/CsSearch/CsSearch', file_name)
+        path = Path(self.cssearch_path, file_name)
         fr = FileResult(path=path, file_type=FileType.BINARY)
         line_num = 0
         match_start_index = 0
@@ -144,7 +145,7 @@ class SearchResultTest(unittest.TestCase):
         formatter = get_formatter(colorize=False)
         pattern = "Search"
         file_name = 'Searcher.cs'
-        path = Path(XSEARCHPATH, 'csharp/CsSearch/CsSearch', file_name)
+        path = Path(self.cssearch_path, file_name)
         fr = FileResult(path=path, file_type=FileType.TEXT)
         line_num = 10
         match_start_index = 15
