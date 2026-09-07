@@ -13,7 +13,7 @@ import swiftsearch
 import swiftfind
 
 class SearchOptionsTests: XCTestCase {
-    let options = SearchOptions()
+    let options = SearchOptions(config: SearchConfig())
     let startPath: String = "."
     let searchString: String = "Searcher"
     var requiredArgs: [String] = []

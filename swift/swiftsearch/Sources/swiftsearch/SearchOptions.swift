@@ -28,8 +28,8 @@ public class SearchOptions {
     private var searchOptions = [SearchOption]()
     private var argTokenizer: ArgTokenizer?
 
-    public init() {
-        self.config = SearchConfig()
+    public init(config: SearchConfig) {
+        self.config = config
         setSearchOptionsFromJson()
         argTokenizer = ArgTokenizer(searchOptions)
     }

@@ -26,7 +26,8 @@ func handleFindError(_ error: FindError, _ colorize: Bool, _ options: SearchOpti
 
 func main() {
     var colorize = true
-    let options = SearchOptions()
+    let config = SearchConfig()
+    let options = SearchOptions(config: config)
 
     let args: [String] = [] + CommandLine.arguments.dropFirst()
 
@@ -42,7 +43,7 @@ func main() {
             options.usage()
         }
 
-        let searcher = try Searcher(settings: settings)
+        let searcher = try Searcher(config: config, settings: settings)
 
         let results = try searcher.search()
         let formatter = SearchResultFormatter(settings: settings)

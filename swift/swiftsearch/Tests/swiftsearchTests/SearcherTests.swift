@@ -6,7 +6,6 @@ import swiftfind
 
 class SearcherTests: XCTestCase {
     let config = SearchConfig()
-    let fileTypes = FileTypes()
 
     func getSettings() -> SearchSettings {
         let settings = SearchSettings()
@@ -28,7 +27,7 @@ class SearcherTests: XCTestCase {
      ========================================================================= */
     func testSearchLineReader() {
         let settings = getSettings()
-        let searcher = try! Searcher(settings: settings)
+        let searcher = try! Searcher(config: config, settings: settings)
         let testFilePath = FileUtil.joinPath(config.sharedPath, childPath: "testFiles/testFile2.txt")
 
         if let reader = StreamReader(path: testFilePath, encoding: .utf8) {
@@ -57,7 +56,7 @@ class SearcherTests: XCTestCase {
     func testSearchMultiLineString() {
         let settings = getSettings()
         settings.multiLineSearch = true
-        let searcher = try! Searcher(settings: settings)
+        let searcher = try! Searcher(config: config, settings: settings)
         let testFilePath = FileUtil.joinPath(config.sharedPath, childPath: "testFiles/testFile2.txt")
         let testFileContents = try? String(contentsOfFile: testFilePath, encoding: .utf8)
         if testFileContents != nil {

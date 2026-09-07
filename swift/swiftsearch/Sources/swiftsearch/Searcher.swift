@@ -27,9 +27,9 @@ public class Searcher {
     let settings: SearchSettings
     private var textFileEncoding: String.Encoding?
 
-    public init(settings: SearchSettings) throws {
+    public init(config: SearchConfig, settings: SearchSettings) throws {
         self.settings = settings
-        self.finder = try Finder(settings: settings)
+        self.finder = try Finder(config: config.findConfig, settings: settings)
         try validateSettings()
     }
 

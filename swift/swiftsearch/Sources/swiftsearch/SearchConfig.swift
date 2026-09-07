@@ -8,13 +8,23 @@
 
 import Foundation
 
+import swiftfind
+
 public struct SearchConfig {
+    public let findConfig: FindConfig
     public let xsearchPath: String
     public let sharedPath: String
     public let searchOptionsPath: String
     public let defaultSearchSettingsPath: String
 
     public init() {
+        findConfig = FindConfig()
+        var xSearchConfigDir: String
+        if let xSearchEnvConfigDir = ProcessInfo.processInfo.environment["XSEARCH_CONFIG_DIR"] {
+            xSearchConfigDir = xSearchEnvConfigDir
+        } else {
+            xSearchConfigDir = "\(NSHomeDirectory())/.config/xsearch"
+        }
         if let xsearchEnvPath = ProcessInfo.processInfo.environment["XSEARCH_PATH"] {
             xsearchPath = xsearchEnvPath
         } else {
@@ -22,6 +32,6 @@ public struct SearchConfig {
         }
         sharedPath = "\(xsearchPath)/shared"
         searchOptionsPath = "\(sharedPath)/searchoptions.json"
-        defaultSearchSettingsPath = "\(NSHomeDirectory())/.config/xsearch/settings.json"
+        defaultSearchSettingsPath = "\(xSearchConfigDir)/settings.json"
     }
 }
