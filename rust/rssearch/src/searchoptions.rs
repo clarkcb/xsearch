@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use crate::common::log;
-use crate::config::{Config, CONFIG_FILE_PATH};
+use crate::searchconfig::SearchConfig;
 use crate::searcherror::SearchError;
 use crate::searchsettings::SearchSettings;
 
@@ -32,7 +32,7 @@ type IntAction = Box<dyn Fn(i32, &mut SearchSettings) -> Result<(), SearchError>
 type LongAction = Box<dyn Fn(u64, &mut SearchSettings) -> Result<(), SearchError>>;
 
 pub struct SearchOptions {
-    pub config: Config,
+    pub config: SearchConfig,
     pub search_options: Vec<SearchOption>,
     pub bool_action_map: HashMap<String, BoolAction>,
     pub string_action_map: HashMap<String, StringAction>,
@@ -42,8 +42,8 @@ pub struct SearchOptions {
 }
 
 impl SearchOptions {
-    pub fn new() -> Result<SearchOptions, SearchError> {
-        let config = Config::new();
+    pub fn new(config: SearchConfig) -> Result<SearchOptions, SearchError> {
+        // let config = SearchConfig::new();
         let contents: String = match fs::read_to_string(&config.search_options_path) {
             Ok(contents) => contents,
             Err(error) => return Err(SearchError::new(&error.to_string())),
@@ -715,7 +715,8 @@ mod tests {
 
     #[test]
     fn test_settings_from_args() {
-        let options = match SearchOptions::new() {
+        let config = SearchConfig::new();
+        let options = match SearchOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -727,7 +728,7 @@ mod tests {
 
         let args: Vec<String> = vec![
             "-x", "php,rs", "-D", "debug", "-f", "search", "-s", "Searcher", "-t",
-            "code", "--debug", ".",
+            "code", "--debug", ".", "--nodefaultfiles",
         ]
         .into_iter()
         .map(|a| a.to_string())
@@ -764,7 +765,8 @@ mod tests {
 
     #[test]
     fn test_settings_with_archives_only() {
-        let options = match SearchOptions::new() {
+        let config = SearchConfig::new();
+        let options = match SearchOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -789,7 +791,8 @@ mod tests {
 
     #[test]
     fn test_settings_from_json() {
-        let options = match SearchOptions::new() {
+        let config = SearchConfig::new();
+        let options = match SearchOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -851,7 +854,9 @@ mod tests {
 
     #[test]
     fn test_settings_from_file() {
-        let options = match SearchOptions::new() {
+        let config = SearchConfig::new();
+        let settings_path = config.xsearch_path.clone() + "/shared/settings.json";
+        let options = match SearchOptions::new(config) {
             Ok(options) => options,
             Err(error) => {
                 log(&error.to_string());
@@ -861,8 +866,7 @@ mod tests {
         };
         assert!(!options.search_options.is_empty());
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let path = Path::new(config.shared_path.as_str()).join("settings.json");
+        let path = Path::new(settings_path.as_str());
         let settings_file = path.to_str().unwrap();
 
         let args: Vec<&str> = vec!["rssearch", "--settings-file", &settings_file];

@@ -5,13 +5,14 @@ use std::process;
 extern crate rsfind;
 
 use crate::common::{log, log_err_color};
+use crate::searchconfig::SearchConfig;
 use crate::searcher::{print_results, print_result_dirs, print_result_files, print_result_lines,
                       print_result_matches};
 use crate::searcherror::SearchError;
 use crate::searchresultformatter::SearchResultFormatter;
 
 pub mod common;
-pub mod config;
+pub mod searchconfig;
 pub mod searcher;
 pub mod searcherror;
 pub mod searchoptions;
@@ -32,7 +33,8 @@ fn error_and_exit(error: SearchError, colorize: bool, options: &searchoptions::S
 }
 
 fn search(args: Iter<String>) {
-    let options = match searchoptions::SearchOptions::new() {
+    let config = SearchConfig::new();
+    let options = match searchoptions::SearchOptions::new(config.clone()) {
         Ok(options) => options,
         Err(error) => {
             log(format!("\nERROR: {}", error.description).as_str());
@@ -56,7 +58,7 @@ fn search(args: Iter<String>) {
 
             let colorize = settings.colorize();
 
-            let searcher = match searcher::Searcher::new(settings) {
+            let searcher = match searcher::Searcher::new(config, settings) {
                 Ok(searcher) => searcher,
                 Err(error) => {
                     print_error(error, colorize, &options);

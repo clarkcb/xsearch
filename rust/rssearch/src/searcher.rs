@@ -16,6 +16,7 @@ use rsfind::finder::{print_matching_dirs, print_matching_files};
 // use zip::read::ZipFile;
 
 use crate::common::log;
+use crate::searchconfig::SearchConfig;
 use crate::searcherror::SearchError;
 use crate::searchresult::SearchResult;
 use crate::searchresultformatter::SearchResultFormatter;
@@ -31,8 +32,8 @@ pub struct Searcher {
 
 impl Searcher {
     /// Create a new Searcher instance for the given settings, if valid
-    pub fn new(settings: SearchSettings) -> Result<Searcher, SearchError> {
-        let finder = match rsfind::finder::Finder::new(settings.find_settings()) {
+    pub fn new(config: SearchConfig, settings: SearchSettings) -> Result<Searcher, SearchError> {
+        let finder = match rsfind::finder::Finder::new(config.find_config, settings.find_settings()) {
             Ok(finder) => finder,
             Err(error) => return Err(SearchError::new(error.description.as_str())),
         };
@@ -889,19 +890,19 @@ pub fn print_result_matches(results: &Vec<SearchResult>, formatter: &SearchResul
 mod tests {
     use std::path::Path;
 
-    use crate::config::{Config, CONFIG_FILE_PATH};
+    use crate::searchconfig::SearchConfig;
 
     use super::*;
 
     #[test]
     fn test_search_text_lines() {
+        let config = SearchConfig::new();
+        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let mut settings = SearchSettings::default();
         settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
         let mut lines: Lines = contents.lines();
@@ -923,14 +924,15 @@ mod tests {
 
     #[test]
     fn test_search_text_lines_lines_after_to_until() {
+        let config = SearchConfig::new();
+        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let mut settings = SearchSettings::default();
         settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
         settings.add_lines_after_to_pattern("after".to_string());
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
+        //let config = SearchConfig::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
         let mut lines: Lines = contents.lines();
@@ -946,6 +948,8 @@ mod tests {
 
     #[test]
     fn test_search_text_contents() {
+        let config = SearchConfig::new();
+        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let mut settings = SearchSettings::default();
         settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
@@ -953,10 +957,9 @@ mod tests {
         settings.set_lines_before(2);
         settings.set_lines_after(2);
 
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
+        //let config = SearchConfig::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
 
@@ -977,16 +980,17 @@ mod tests {
 
     #[test]
     fn test_search_text_contents_lines_after_to_until() {
+        let config = SearchConfig::new();
+        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let mut settings = SearchSettings::default();
         settings.add_path(String::from("."));
         settings.add_search_pattern(String::from("Searcher"));
 
         settings.add_lines_after_to_pattern("after".to_string());
 
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
+        //let config = SearchConfig::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
 
@@ -1001,11 +1005,12 @@ mod tests {
 
     #[test]
     fn test_search_code_files() {
+        let config = SearchConfig::new();
         let mut settings = SearchSettings::default();
         settings.add_path(String::from("/Users/cary/src/xsearch/rust"));
         settings.add_in_extension(String::from("go,rs"));
         settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
         let results = searcher.search();
         assert!(results.is_ok());
@@ -1015,9 +1020,10 @@ mod tests {
 
     #[test]
     fn test_search_helloworld_file() {
+        let config = SearchConfig::new();
         let mut settings = SearchSettings::default();
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
+        //let config = SearchConfig::from_json_file(CONFIG_FILE_PATH.to_string());
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/helloworld_utf8.txt");
 
         if testfile_path.exists() {
@@ -1025,7 +1031,7 @@ mod tests {
             settings.add_search_pattern(String::from("Hello"));
             settings.add_search_pattern(String::from("你好"));
             //settings.text_file_encoding = String::from("windows-1252");
-            let searcher = Searcher::new(settings).ok().unwrap();
+            let searcher = Searcher::new(config, settings).ok().unwrap();
 
             let results = searcher.search();
             assert!(results.is_ok());
@@ -1036,11 +1042,12 @@ mod tests {
 
     #[test]
     fn test_search_binary_files() {
+        let config = SearchConfig::new();
         let mut settings = SearchSettings::default();
         settings.add_path(String::from("/Users/cary/src/xsearch/java"));
         settings.add_in_extension(String::from("class"));
         settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
         let results = searcher.search();
         assert!(results.is_ok());
@@ -1056,6 +1063,7 @@ mod tests {
 
     #[test]
     fn test_search_zip_file() {
+        let config = SearchConfig::new();
         let mut settings = SearchSettings::default();
         let path = Path::new("../../shared/testFiles.zip");
         let startpath = if path.exists() {
@@ -1066,7 +1074,7 @@ mod tests {
         settings.add_path(startpath);
         settings.set_search_archives(true);
         settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let searcher = Searcher::new(config, settings).ok().unwrap();
 
         let results = searcher.search();
         assert!(results.is_ok());
