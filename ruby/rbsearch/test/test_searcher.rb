@@ -21,7 +21,6 @@ module RbSearch
     end
 
     def get_test_file
-      # File.expand_path("#{SHAREDPATH}/testFiles/testFile2.txt")
       Pathname.new(File.dirname(__FILE__)).join("fixtures/testFile2.txt")
     end
 
@@ -29,8 +28,9 @@ module RbSearch
     # search_lines tests
     ################################################################################
     def test_search_lines
+      config = RbSearch::SearchConfig.new
       settings = get_settings
-      searcher = Searcher.new(settings)
+      searcher = Searcher.new(config, settings)
       testfile = get_test_file
       fo = File.open(testfile, mode: 'r:ISO-8859-1')
       contents = fo.read
@@ -48,15 +48,16 @@ module RbSearch
       assert_equal(24, second_result.match_start_index)
       assert_equal(32, second_result.match_end_index)
     ensure
-      fo.close
+      fo.close unless fo.nil?
     end
 
     ################################################################################
     # search_multi_line_string tests
     ################################################################################
     def test_search_multi_line_string
+      config = RbSearch::SearchConfig.new
       settings = get_settings
-      searcher = Searcher.new(settings)
+      searcher = Searcher.new(config, settings)
       test_file = get_test_file
       fo = File.open(test_file, mode: 'r:ISO-8859-1')
       line_iterator = fo.each_line
@@ -73,7 +74,7 @@ module RbSearch
       assert_equal(24, second_result.match_start_index)
       assert_equal(32, second_result.match_end_index)
     ensure
-      fo.close
+      fo.close unless fo.nil?
     end
   end
 end

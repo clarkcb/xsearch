@@ -11,9 +11,11 @@ module RbSearch
 
   # SearchOptions - parses CLI args into settings, generates usage string
   class SearchOptions
+    attr_reader :config
     attr_reader :options
 
-    def initialize
+    def initialize(config)
+      @config = config
       @options = []
       @bool_action_dict = {}
       @str_action_dict = {}
@@ -171,8 +173,7 @@ module RbSearch
     end
 
     def set_options_from_json
-      search_options_json_path = File.join(File.dirname(__FILE__), "../../data/searchoptions.json")
-      f = File.open(search_options_json_path, mode: 'r')
+      f = File.open(@config.search_options_path, mode: 'r')
       json = f.read
       json_hash = JSON.parse(json)
       json_hash['searchoptions'].each do |so|
@@ -240,7 +241,7 @@ module RbSearch
     end
 
     def update_settings_from_default_files(settings)
-      default_settings_path = Pathname.new(Dir.home).join('.config', 'xsearch', 'settings.json')
+      default_settings_path = Pathname.new(@config.default_search_settings_path)
       if default_settings_path.exist?
         update_settings_from_file(settings, default_settings_path.to_s)
       end

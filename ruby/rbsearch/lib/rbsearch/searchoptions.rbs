@@ -1,6 +1,7 @@
 module RbSearch
   # SearchOptions - parses CLI args into settings, generates usage string
   class SearchOptions
+    @config: SearchConfig
     @options: Array[SearchOption]
     @bool_action_dict: Hash[Symbol, Proc]
     @str_action_dict: Hash[Symbol, Proc]
@@ -8,9 +9,10 @@ module RbSearch
     @long_arg_dict: Hash[String, Symbol]
     @arg_tokenizer: RbFind::ArgTokenizer
 
+    attr_reader config: SearchConfig
     attr_reader options: Array[SearchOption]
 
-    def initialize: () -> void
+    def initialize: (SearchConfig config) -> void
 
     def update_settings_from_json: (SearchSettings settings, String json) -> void
 

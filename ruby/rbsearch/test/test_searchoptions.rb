@@ -13,11 +13,12 @@ module RbSearch
 
   class SearchOptionsTest < Test::Unit::TestCase
     def setup
-      @search_options = RbSearch::SearchOptions.new
+      @config = RbSearch::SearchConfig.new
+      @search_options = RbSearch::SearchOptions.new(@config)
     end
 
     def test_no_args
-      settings = @search_options.search_settings_from_args([])
+      settings = @search_options.search_settings_from_args(['--nodefaultfiles'])
       assert_equal(false, settings.archives_only)
       assert_equal(false, settings.debug)
       assert_equal(false, settings.first_match)

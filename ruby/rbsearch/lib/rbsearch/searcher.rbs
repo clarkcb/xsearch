@@ -8,7 +8,7 @@ module RbSearch
 
     attr_reader settings: SearchSettings
 
-    def initialize: (SearchSettings settings) -> void
+    def initialize: (SearchConfig config, SearchSettings settings) -> void
 
     def search: () -> Array[SearchResult]
 

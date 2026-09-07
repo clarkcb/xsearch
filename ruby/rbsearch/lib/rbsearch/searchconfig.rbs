@@ -1,0 +1,9 @@
+module RbSearch
+  # SearchConfig - basic config info
+  class SearchConfig < RbFind::FindConfig
+    attr_reader search_options_path: String
+    attr_reader default_search_settings_path: String
+
+    def initialize: () -> void
+  end
+end

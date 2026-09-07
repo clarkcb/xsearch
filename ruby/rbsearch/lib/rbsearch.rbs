@@ -3,5 +3,5 @@ class Object
 
   def handle_search_error: (StandardError err, bool colorize, RbSearch::SearchOptions options) -> void
 
-  def search: (RbSearch::SearchOptions options, RbSearch::SearchSettings settings) -> void
+  def search: (RbSearch::SearchConfig config, RbSearch::SearchOptions options, RbSearch::SearchSettings settings) -> void
 end

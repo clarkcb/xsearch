@@ -20,11 +20,11 @@ module RbSearch
   class Searcher
     attr_reader :settings
 
-    def initialize(settings)
+    def initialize(config, settings)
       @settings = settings
       @finder =
         begin
-          RbFind::Finder.new(settings)
+          RbFind::Finder.new(config, settings)
         rescue RbFind::FindError => e
           raise SearchError, e
         end

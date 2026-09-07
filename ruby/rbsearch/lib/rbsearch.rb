@@ -13,6 +13,7 @@ require 'rbfind/common'
 require 'rbfind/filetypes'
 require 'rbfind/fileutil'
 
+require_relative 'rbsearch/searchconfig'
 require_relative 'rbsearch/searcher'
 require_relative 'rbsearch/searchoption'
 require_relative 'rbsearch/searchoptions'
@@ -21,7 +22,8 @@ require_relative 'rbsearch/searchresultformatter'
 require_relative 'rbsearch/searchsettings'
 
 def search_main
-  options = RbSearch::SearchOptions.new
+  config = RbSearch::SearchConfig.new
+  options = RbSearch::SearchOptions.new(config)
 
   settings =
     begin
@@ -42,7 +44,7 @@ def search_main
     abort
   end
 
-  search(options, settings)
+  search(config, options, settings)
 end
 
 def handle_search_error(err, colorize, options)
@@ -51,10 +53,10 @@ def handle_search_error(err, colorize, options)
   options.usage
 end
 
-def search(options, settings)
+def search(config, options, settings)
   searcher =
     begin
-      RbSearch::Searcher.new(settings)
+      RbSearch::Searcher.new(config, settings)
     rescue RbSearch::SearchError => e
       handle_search_error(e, settings.colorize, options)
     rescue RbFind::FindError => e
