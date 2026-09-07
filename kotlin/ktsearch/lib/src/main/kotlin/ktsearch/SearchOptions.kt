@@ -19,10 +19,8 @@ data class SearchOption(override val shortArg: String?, override val longArg: St
             }
 }
 
-class SearchOptions {
-    private val searchOptionsJsonPath = "/searchoptions.json"
+class SearchOptions(val config: SearchConfig) {
     private val searchOptions : List<SearchOption>
-    // We add path manually since it's not an option in searchoptions.json
     private var argTokenizer: ArgTokenizer
 
     private val boolActionMap: Map<String, ((Boolean, SearchSettings) -> SearchSettings)> = mapOf(
@@ -136,8 +134,8 @@ class SearchOptions {
         "minsize" to { l, ss -> ss.copy(minSize = l) },
     )
 
-    private fun loadSearchOptionsFromJson() : List<SearchOption> {
-        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsJsonPath)
+    private fun loadSearchOptionsFromJson(searchOptionsPath : String) : List<SearchOption> {
+        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsPath)
         val jsonObj = JSONObject(JSONTokener(searchOptionsInputStream))
         val searchOptionsArray = jsonObj.getJSONArray("searchoptions").iterator()
         val options : MutableList<SearchOption> = mutableListOf()
@@ -168,7 +166,7 @@ class SearchOptions {
     }
 
     init {
-        searchOptions = loadSearchOptionsFromJson()
+        searchOptions = loadSearchOptionsFromJson(config.searchOptionsPath)
         argTokenizer = ArgTokenizer(searchOptions)
     }
 
@@ -252,7 +250,7 @@ class SearchOptions {
     }
 
     fun updateSettingsFromDefaultFiles(settings: SearchSettings): SearchSettings {
-        val defaultSearchSettingsPath = Paths.get(System.getProperty("user.home"), ".config", "xsearch", "settings.json")
+        val defaultSearchSettingsPath = Paths.get(config.defaultSearchSettingsPath)
         if (Files.exists(defaultSearchSettingsPath)) {
             return updateSettingsFromFile(settings, defaultSearchSettingsPath.toString())
         }

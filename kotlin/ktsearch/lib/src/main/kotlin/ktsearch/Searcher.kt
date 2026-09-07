@@ -9,14 +9,14 @@ import java.nio.charset.UnsupportedCharsetException
 /**
  * @author cary on 7/23/16.
  */
-class Searcher(val settings: SearchSettings) {
+class Searcher(config: SearchConfig, val settings: SearchSettings) {
     private val finder: Finder
     private var charset: Charset? = null
     private var comparator: (String, String) -> Int = { s1: String, s2: String -> s1.compareTo(s2) }
 
     init {
         try {
-            finder = Finder(settings.getFindSettings())
+            finder = Finder(config, settings.getFindSettings())
             if (settings.sortCaseInsensitive) {
                 comparator = { s1: String, s2: String -> s1.uppercase().compareTo(s2.uppercase()) }
             }

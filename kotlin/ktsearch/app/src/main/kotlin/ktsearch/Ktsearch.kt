@@ -15,8 +15,8 @@ fun printErrorWithUsage(err: String, colorize: Boolean, searchOptions: SearchOpt
     searchOptions.usage()
 }
 
-fun search(settings: SearchSettings) {
-    val searcher = Searcher(settings)
+fun search(config: SearchConfig, settings: SearchSettings) {
+    val searcher = Searcher(config, settings)
     val results: List<SearchResult> = searcher.search()
     val formatter = SearchResultFormatter(settings)
 
@@ -38,14 +38,15 @@ fun search(settings: SearchSettings) {
 }
 
 fun main(args : Array<String>) {
-    val searchOptions = SearchOptions()
+    val config = SearchConfig()
+    val searchOptions = SearchOptions(config)
     var colorize = true
     try {
         val settings = searchOptions.settingsFromArgs(args)
         colorize = settings.colorize
         if (settings.debug) log("settings: $settings")
         if (settings.printUsage) printUsage(searchOptions)
-        else search(settings)
+        else search(config, settings)
     } catch (e: FindException) {
         printErrorWithUsage(e.message ?: "Unknown error", colorize, searchOptions)
     } catch (e: SearchException) {

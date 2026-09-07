@@ -19,8 +19,9 @@ class SearcherTest {
      **************************************************************************/
     @Test
     fun testSearchStringIterator() {
+        val config = SearchConfig()
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val searcher = Searcher(config, settings)
         val lineIterator = javaClass.getResourceAsStream(testFilePath).reader().readLines().iterator()
 
         val results = searcher.searchLineIterator(lineIterator)
@@ -49,8 +50,9 @@ class SearcherTest {
      **************************************************************************/
     @Test
     fun testSearchMultiLineString() {
+        val config = SearchConfig()
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val searcher = Searcher(config, settings)
         val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
         val results = searcher.searchMultilineString(contents)
 
@@ -75,8 +77,9 @@ class SearcherTest {
 
     @Test
     fun testSearchMultiLineStringWithLinesBefore() {
+        val config = SearchConfig()
         val settings = getSettings().copy(linesBefore = 2)
-        val searcher = Searcher(settings)
+        val searcher = Searcher(config, settings)
         val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
         val results = searcher.searchMultilineString(contents)
 

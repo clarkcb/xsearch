@@ -14,7 +14,8 @@ class SearchOptionsTest {
     @Test
     fun testSettingsFromMinimalArgs() {
         val args = arrayOf("-s", "Search", ".")
-        val searchOptions = SearchOptions()
+        val config = SearchConfig()
+        val searchOptions = SearchOptions(config)
         val settings = searchOptions.settingsFromArgs(args)
         assertFalse(settings.archivesOnly)
         assertFalse(settings.debug)
@@ -40,7 +41,8 @@ class SearchOptionsTest {
     @Test
     fun testSettingsFromValidArgs() {
         val args = arrayOf("-x", "java,scala", "-s", "Search", ".")
-        val searchOptions = SearchOptions()
+        val config = SearchConfig()
+        val searchOptions = SearchOptions(config)
         val settings = searchOptions.settingsFromArgs(args)
         assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("java"))
@@ -65,7 +67,8 @@ class SearchOptionsTest {
                  |  "allmatches": false,
                  |  "includehidden": false
                  |}""".trimMargin()
-        val searchOptions = SearchOptions()
+        val config = SearchConfig()
+        val searchOptions = SearchOptions(config)
         val settings = searchOptions.updateSettingsFromJson(getDefaultSettings(), json)
 
         assertEquals(1, settings.paths.size)
