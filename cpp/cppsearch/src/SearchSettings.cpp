@@ -3,7 +3,7 @@
 
 namespace cppsearch {
 
-    SearchSettings::SearchSettings() :
+    SearchSettings::SearchSettings() : FindSettings(),
     m_first_match{false},
     m_line_color{cppfind::Color::GREEN},
     m_lines_after{0},

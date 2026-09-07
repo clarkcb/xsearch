@@ -14,12 +14,12 @@
 #include "cppfind.h"
 
 namespace cppsearch {
-    SearchOptions::SearchOptions() : m_options(load_options()), m_arg_tokenizer(m_options) {
+    SearchOptions::SearchOptions(const SearchConfig& config) : m_config(config), m_options(load_options()), m_arg_tokenizer(m_options) {
     }
 
     std::vector<std::unique_ptr<cppfind::Option>> SearchOptions::load_options() {
         std::vector<std::unique_ptr<cppfind::Option>> options;
-        auto search_options_path = std::filesystem::path(xsearchpath()) / SEARCH_OPTIONS_REL_PATH;
+        auto search_options_path = m_config.search_options_path();
 
         if (!std::filesystem::exists(search_options_path)) {
             std::string msg{"Searchoptions file not found: "};
@@ -147,7 +147,7 @@ namespace cppsearch {
     }
 
     void SearchOptions::update_settings_from_default_files(SearchSettings& settings) {
-        if (const auto default_settings_path = default_search_settings_path();
+        if (const auto default_settings_path = m_config.default_search_settings_path();
             std::filesystem::exists(default_settings_path)) {
             update_settings_from_file(settings, default_settings_path);
         }

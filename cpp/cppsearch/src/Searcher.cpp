@@ -8,7 +8,7 @@
 #include "cppfind.h"
 
 namespace cppsearch {
-    Searcher::Searcher(const SearchSettings& settings)  try : m_finder(cppfind::Finder(settings)),  m_search_settings(settings)
+    Searcher::Searcher(const SearchConfig& config, const SearchSettings& settings)  try : m_finder(cppfind::FindConfig(config), cppfind::FindSettings(settings)),  m_search_settings(settings)
     {
         validate_settings(settings);
     } catch (const cppfind::FindException& e) {
@@ -17,7 +17,7 @@ namespace cppsearch {
         throw SearchException(e.what());
     }
 
-    Searcher::Searcher(const std::unique_ptr<SearchSettings>& settings_ptr)  try : m_finder(cppfind::Finder(*settings_ptr)),  m_search_settings(*settings_ptr)
+    Searcher::Searcher(const SearchConfig& config, const std::unique_ptr<SearchSettings>& settings_ptr)  try : m_finder(cppfind::FindConfig(config), cppfind::FindSettings(*settings_ptr)),  m_search_settings(*settings_ptr)
     {
         validate_settings(m_search_settings);
     } catch (const cppfind::FindException& e) {

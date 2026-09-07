@@ -5,17 +5,17 @@ namespace cppsearch {
     SearchResultFormatter::SearchResultFormatter(const SearchSettings& settings) :
     m_settings{settings},
     m_file_formatter{cppfind::FileResultFormatter(settings)} {
-        init();
+        //init();
     }
 
     SearchResultFormatter::SearchResultFormatter(const std::unique_ptr<SearchSettings>& settings_ptr) :
     m_settings{*settings_ptr},
     m_file_formatter{cppfind::FileResultFormatter(*settings_ptr)} {
-        init();
+        //init();
     }
 
-    void SearchResultFormatter::init() {
-    }
+    // void SearchResultFormatter::init() {
+    // }
 
     SearchSettings SearchResultFormatter::settings() const {
         return m_settings;

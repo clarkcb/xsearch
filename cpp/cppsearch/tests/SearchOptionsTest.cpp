@@ -4,7 +4,8 @@
 #include "SearchOptions.h"
 
 TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
-    auto* options = new cppsearch::SearchOptions();
+    const auto config = cppsearch::SearchConfig();
+    auto* options = new cppsearch::SearchOptions(config);
     char arg0[] = "cppsearch";
     char arg1[] = "-s";
     char arg2[] = "Searcher";
@@ -55,7 +56,8 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
 }
 
 TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
-    auto* options = new cppsearch::SearchOptions();
+    const auto config = cppsearch::SearchConfig();
+    auto* options = new cppsearch::SearchOptions(config);
     char arg0[] = "cppsearch";
     char arg1[] = "-x";
     char arg2[] = "java,scala";
@@ -112,7 +114,8 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
 }
 
 TEST_CASE("Get SearchSettings with archives-only", "[SearchOptions]") {
-    auto* options = new cppsearch::SearchOptions();
+    const auto config = cppsearch::SearchConfig();
+    auto* options = new cppsearch::SearchOptions(config);
     char arg0[] = "cppsearch";
     char arg1[] = "-x";
     char arg2[] = "java,scala";
@@ -144,7 +147,8 @@ TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
 }
 )";
 
-    auto options = cppsearch::SearchOptions();
+    const auto config = cppsearch::SearchConfig();
+    auto options = cppsearch::SearchOptions(config);
     auto settings = cppsearch::SearchSettings();
     options.update_settings_from_json(settings, json_str);
 

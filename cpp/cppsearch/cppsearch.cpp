@@ -110,11 +110,12 @@ std::vector<std::string> get_matches(const std::vector<SearchFileResult>& search
 }
 
 int main(int argc, char *argv[]) {
+    const auto config = SearchConfig();
     std::unique_ptr<SearchOptions> options_ptr;
     std::unique_ptr<SearchSettings> settings_ptr;
 
     try {
-        options_ptr = std::make_unique<SearchOptions>();
+        options_ptr = std::make_unique<SearchOptions>(config);
     } catch (const SearchException& e) {
         cppfind::log_msg("");
         cppfind::log_error(e.what());
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
 
         // auto searcher = Searcher(settings);
         // auto finder = cppfind::Finder(settings_ptr);
-        const auto searcher = Searcher(settings_ptr);
+        const auto searcher = Searcher(config, settings_ptr);
 
         const std::vector<SearchFileResult> results = searcher.search();
 

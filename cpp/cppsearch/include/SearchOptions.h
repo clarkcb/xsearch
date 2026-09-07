@@ -7,12 +7,14 @@
 #include <vector>
 
 #include "cppfind.h"
+#include "SearchConfig.h"
 #include "SearchSettings.h"
 
 namespace cppsearch {
     class SearchOptions {
     public:
-        SearchOptions();
+        // SearchOptions();
+        explicit SearchOptions(const SearchConfig& config);
         SearchSettings settings_from_args(int argc, char **argv);
         void update_settings_from_args(SearchSettings& settings, int argc, char **argv);
         void update_settings_from_file(SearchSettings& settings, const std::filesystem::path& file_path);
@@ -21,6 +23,7 @@ namespace cppsearch {
         std::string get_usage_string();
 
     private:
+        SearchConfig m_config;
         std::unordered_map<std::string, std::function<void(bool, SearchSettings&)>> m_bool_arg_map = {
             {"archivesonly", [](const bool b, SearchSettings& ss) { ss.archives_only(b); }},
             {"allmatches", [](const bool b, SearchSettings& ss) { ss.first_match(!b); }},

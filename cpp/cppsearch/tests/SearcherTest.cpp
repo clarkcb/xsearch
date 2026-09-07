@@ -2,17 +2,23 @@
 #include "SearchConfig.h"
 #include "Searcher.h"
 
+cppsearch::SearchConfig get_config() {
+    return cppsearch::SearchConfig();
+}
+
 /***************************************************************************
  * search tests
  **************************************************************************/
 TEST_CASE("Test search with test file start_path", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
+    std::cout << "Before settings: " << config.xsearch_path() << "\n";
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     const auto p = start_path;
     settings.add_path(p);
     settings.add_search_pattern("Searcher");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -26,14 +32,15 @@ TEST_CASE("Test search with test file start_path", "[Searcher]") {
 }
 
 TEST_CASE("Test search with in lines before matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.lines_before(2);
     settings.add_in_lines_before_pattern("FileUtil");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -44,14 +51,15 @@ TEST_CASE("Test search with in lines before matching", "[Searcher]") {
 }
 
 TEST_CASE("Test search with out lines before matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.lines_before(2);
     settings.add_out_lines_before_pattern("FileUtil");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -62,14 +70,15 @@ TEST_CASE("Test search with out lines before matching", "[Searcher]") {
 }
 
 TEST_CASE("Test search with in lines after matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.lines_after(2);
     settings.add_in_lines_after_pattern("Settings");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -80,14 +89,15 @@ TEST_CASE("Test search with in lines after matching", "[Searcher]") {
 }
 
 TEST_CASE("Test search with out lines after matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.lines_after(2);
     settings.add_out_lines_after_pattern("Settings");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -98,13 +108,14 @@ TEST_CASE("Test search with out lines after matching", "[Searcher]") {
 }
 
 TEST_CASE("Test multiline search with test file start_path", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.multi_line_search(true);
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -118,15 +129,16 @@ TEST_CASE("Test multiline search with test file start_path", "[Searcher]") {
 }
 
 TEST_CASE("Test multiline search with in lines before matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.multi_line_search(true);
     settings.lines_before(2);
     settings.add_in_lines_before_pattern("FileUtil");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -137,15 +149,16 @@ TEST_CASE("Test multiline search with in lines before matching", "[Searcher]") {
 }
 
 TEST_CASE("Test multiline search with out lines before matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.multi_line_search(true);
     settings.lines_before(2);
     settings.add_out_lines_before_pattern("FileUtil");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -156,15 +169,16 @@ TEST_CASE("Test multiline search with out lines before matching", "[Searcher]") 
 }
 
 TEST_CASE("Test multiline search with in lines after matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.multi_line_search(true);
     settings.lines_after(2);
     settings.add_in_lines_after_pattern("Settings");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 
@@ -175,15 +189,16 @@ TEST_CASE("Test multiline search with in lines after matching", "[Searcher]") {
 }
 
 TEST_CASE("Test multiline search with out lines after matching", "[Searcher]") {
+    const auto config = cppsearch::SearchConfig();
     auto settings = cppsearch::SearchSettings();
-    std::string start_path = cppsearch::xsearchpath();
+    std::string start_path = config.xsearch_path();
     start_path.append("/shared/testFiles/testFile2.txt");
     settings.add_path(start_path);
     settings.add_search_pattern("Searcher");
     settings.multi_line_search(true);
     settings.lines_after(2);
     settings.add_out_lines_after_pattern("Settings");
-    auto searcher = cppsearch::Searcher(settings);
+    auto searcher = cppsearch::Searcher(config, settings);
 
     auto results = searcher.search();
 

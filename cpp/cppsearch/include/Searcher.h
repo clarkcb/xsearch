@@ -2,6 +2,7 @@
 #define CPPSEARCH_SEARCHER_H
 
 //#include "SearchResult.h"
+#include "SearchConfig.h"
 #include "SearchFileResult.h"
 #include "SearchTextResult.h"
 #include "SearchSettings.h"
@@ -10,8 +11,8 @@
 namespace cppsearch {
     class Searcher {
     public:
-        explicit Searcher(const SearchSettings& settings);
-        explicit Searcher(const std::unique_ptr<SearchSettings>& settings_ptr);
+        explicit Searcher(const SearchConfig& config, const SearchSettings& settings);
+        explicit Searcher(const SearchConfig& config, const std::unique_ptr<SearchSettings>& settings_ptr);
         Searcher(Searcher& other) = delete;
         Searcher(Searcher&& other) = delete;
         [[nodiscard]] std::vector<SearchFileResult> search() const;
