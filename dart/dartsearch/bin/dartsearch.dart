@@ -10,10 +10,10 @@ void _handleError(err, bool colorize, SearchOptions options) {
   exitCode = 1;
 }
 
-Future<void> search(SearchSettings settings, SearchOptions options) async {
+Future<void> search(SearchConfig config, SearchSettings settings, SearchOptions options) async {
   var results = <SearchResult>[];
   try {
-    var searcher = Searcher(settings);
+    var searcher = Searcher(config, settings);
     results = await searcher.search();
     var formatter = SearchResultFormatter(settings);
 
@@ -54,7 +54,8 @@ Future<void> main(List<String> arguments) async {
   // initialize as success
   exitCode = 0;
 
-  var options = SearchOptions();
+  var config = SearchConfig();
+  var options = SearchOptions(config);
 
   await options.settingsFromArgs(arguments).then((settings) {
     if (settings.debug) logMsg('settings: $settings');
@@ -62,7 +63,7 @@ Future<void> main(List<String> arguments) async {
       logMsg('');
       options.usage();
     } else {
-      search(settings, options);
+      search(config, settings, options);
     }
   }).catchError((e) {
     _handleError(e, true, options);

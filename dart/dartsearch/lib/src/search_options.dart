@@ -2,9 +2,10 @@ import 'dart:convert' show json;
 import 'dart:io';
 
 import 'package:dartfind/dartfind.dart';
-import 'package:dartsearch/src/config.dart'
-    show searchOptionsPath, defaultSearchSettingsPath;
-import 'package:dartsearch/src/search_settings.dart';
+import 'package:dartsearch/src/search_config.dart'
+    show SearchConfig;
+import 'package:dartsearch/src/search_settings.dart'
+    show SearchSettings;
 
 class SearchOption implements Option {
   final String? _shortArg;
@@ -44,6 +45,7 @@ class SearchOption implements Option {
 }
 
 class SearchOptions {
+  final SearchConfig config;
   List<SearchOption> searchOptions = [];
   var boolActionMap = {};
   var stringActionMap = {};
@@ -52,13 +54,13 @@ class SearchOptions {
   ArgTokenizer? argTokenizer;
   late Future ready;
 
-  SearchOptions() {
+  SearchOptions(this.config) {
     setActionMaps();
     ready = loadSearchOptionsFromJson().then((f) => setArgTokenizer());
   }
 
   Future<void> loadSearchOptionsFromJson() async {
-    var contents = await File(searchOptionsPath).readAsString();
+    var contents = await File(config.searchOptionsPath).readAsString();
     Map soMap = json.decode(contents);
     if (soMap.containsKey('searchoptions')) {
       var soList = soMap['searchoptions'] as List;
@@ -241,9 +243,9 @@ class SearchOptions {
   }
 
   Future<void> updateSettingsFromDefaultFiles(SearchSettings settings) async {
-    if (FileSystemEntity.typeSync(defaultSearchSettingsPath) ==
+    if (FileSystemEntity.typeSync(config.defaultSearchSettingsPath) ==
         FileSystemEntityType.file) {
-      await updateSettingsFromFile(settings, defaultSearchSettingsPath);
+      await updateSettingsFromFile(settings, config.defaultSearchSettingsPath);
     }
   }
 

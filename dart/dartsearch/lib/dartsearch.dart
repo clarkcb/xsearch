@@ -1,3 +1,4 @@
+export 'src/search_config.dart';
 export 'src/search_exception.dart';
 export 'src/search_options.dart';
 export 'src/search_result.dart';

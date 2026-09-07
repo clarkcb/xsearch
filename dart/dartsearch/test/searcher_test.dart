@@ -17,9 +17,10 @@ void main() {
    * searchLineStream tests
    **************************************************************************/
   test('test searchLineStream testFile2.txt', () async {
+    var config = SearchConfig();
     var settings = getSettings();
-    var searcher = Searcher(settings);
-    var testFilePath = '$sharedPath/testFiles/testFile2.txt';
+    var searcher = Searcher(config, settings);
+    var testFilePath = '${config.xSearchPath}/shared/testFiles/testFile2.txt';
     var inputStream = File(testFilePath).openRead();
     var results = [];
     try {
@@ -46,9 +47,10 @@ void main() {
    * searchMultiLineString tests
    **************************************************************************/
   test('test searchMultiLineString testFile2.txt', () async {
+    var config = SearchConfig();
     var settings = getSettings();
-    var searcher = Searcher(settings);
-    var testFilePath = '$sharedPath/testFiles/testFile2.txt';
+    var searcher = Searcher(config, settings);
+    var testFilePath = '${config.xSearchPath}/shared/testFiles/testFile2.txt';
 
     var contents = await File(testFilePath).readAsString();
     var results = searcher.searchMultilineString(contents);

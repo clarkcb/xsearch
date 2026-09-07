@@ -1,9 +1,10 @@
-import 'package:dartsearch/dartsearch.dart' show SearchOptions, SearchSettings;
+import 'package:dartsearch/dartsearch.dart' show SearchConfig, SearchOptions, SearchSettings;
 import 'package:test/test.dart';
 
 void main() {
   test('test get settings from minimal args', () async {
-    var options = SearchOptions();
+    var config = SearchConfig();
+    var options = SearchOptions(config);
     var settings = await options.settingsFromArgs(['-s', 'Search', '.']);
     expect(settings.archivesOnly, false);
     expect(settings.colorize, true);
@@ -32,7 +33,8 @@ void main() {
   });
 
   test('test get settings from valid args', () async {
-    var options = SearchOptions();
+    var config = SearchConfig();
+    var options = SearchOptions(config);
     var settings =
         await options.settingsFromArgs(['-x', 'dart,kt', '-s', 'Search', '.']);
     expect(settings.inExtensions.length, 2);
@@ -45,7 +47,8 @@ void main() {
   });
 
   test('test get settings with archives-only', () async {
-    var options = SearchOptions();
+    var config = SearchConfig();
+    var options = SearchOptions(config);
     var args = ['-x', 'dart,kt', '-s', 'Search', '--archivesonly', '.'];
     var settings = await options.settingsFromArgs(args);
     expect(settings.archivesOnly, true);
@@ -65,7 +68,8 @@ void main() {
         '"allmatches": false,'
         '"includehidden": true'
         '}';
-    var options = SearchOptions();
+    var config = SearchConfig();
+    var options = SearchOptions(config);
     var settings = SearchSettings();
     await options.updateSettingsFromJson(settings, json);
 

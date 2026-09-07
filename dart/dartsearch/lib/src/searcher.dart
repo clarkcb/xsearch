@@ -21,10 +21,10 @@ class Searcher {
   late final Encoding _binaryEncoding;
   Encoding? _textEncoding = systemEncoding;
 
-  Searcher(this.settings) {
-    _fileTypes = FileTypes();
+  Searcher(config, this.settings) {
     try {
-      _finder = Finder(settings);
+      _finder = Finder(config, settings);
+      _fileTypes = _finder.fileTypes;
     } on FindException catch (e) {
       throw SearchException(e.message);
     } catch (e) {
